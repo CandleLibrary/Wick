@@ -1,0 +1,39 @@
+{
+  "name": "wick",
+  "version": "0.0.1",
+  "description": "SPA Framework",
+  "main": "build/wick.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config ./wp-config/build.config.js",
+    "dev-build": "webpack --config ./wp-config/build-dev.config.js",
+    "watch": "webpack --config ./wp-config/watch.config.js",
+    "docs":"jsdoc ./source/ --destination ./documents/api"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Galactrax/wick.git"
+  },
+  "keywords": [
+    "SPA",
+    "Framework",
+    "JavaScript",
+    "Animation",
+    "Forms",
+    "Website",
+    "REST"
+  ],
+  "author": "Anthony Weathersby",
+  "license": "copyright",
+  "bugs": {
+    "url": "https://github.com/Galactrax/wick/issues"
+  },
+  "private": true,
+  "homepage": "https://github.com/Galactrax/wick#readme",
+  "devDependencies": {},
+  "optionalDependencies": {
+    "uglifyjs-webpack-plugin": "^1.2.5",
+    "webpack": "^4.10.1",
+    "webpack-cli": "^2.1.4"
+  }
+}
