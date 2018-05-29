@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: animation/rid.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: animation/rid.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import {
+    Color
+} from "./color"
+import {
+    CBezier
+} from "../common"
+
+var ease_out = new CBezier(0.5, 0.2, 0, 1);
+
+class Rid_From {
+    constructor(element) {
+        //extracted animatable componts
+        var rect = element.getBoundingClientRect();
+        this.color = new Color(window.getComputedStyle(element, null).getPropertyValue("background-color"));
+        this.height = parseFloat(window.getComputedStyle(element, null).getPropertyValue("height"));
+        this.width = parseFloat(window.getComputedStyle(element, null).getPropertyValue("width"));
+
+
+        this.left = parseFloat(rect.left);
+        this.top = parseFloat(rect.top);
+        this.element = element;
+
+    }
+
+    destructor() {
+        this.element = null;
+        this.color = null;
+    }
+
+    start() {
+        this.element.style.opacity = 0;
+    }
+}
+
+class Rid_To extends Rid_From {
+    constructor(element, from) {
+        super(element);
+
+        console.log(this.left, this.top, element);
+
+        this.from = from;
+
+        this.res = ((element.style.top) &amp;&amp; (element.style.left));
+
+        this.rt = (element.style.top) ? (element.style.top) : null;
+        this.rl = element.style.left ? element.style.left : null;
+
+
+        //get the relative offset of this object
+        var offset_x = 0; - element.getParentWindowLeft();
+        var offset_y = 0; - element.getParentWindowTop();
+
+        var offset_x = parseFloat(window.getComputedStyle(element, null).getPropertyValue("left"));
+        var offset_y = parseFloat(window.getComputedStyle(element, null).getPropertyValue("top"));
+
+        console.log(element, this.top, from.top, offset_y, this.rt, this.rl)
+
+        //And adjust start to respect the elements own parental offsets
+        var diffx = this.left - this.from.left;
+        this.left = offset_x;
+        this.from.left = this.left - diffx;
+
+        var diffy = this.top - this.from.top;
+        this.top = offset_y;
+        this.from.top = this.top - diffy;
+
+        this.time = 60 * .35;
+        this.s = 0;
+        this.color_o = window.getComputedStyle(element, null).getPropertyValue("background-color");
+        this.height_o = window.getComputedStyle(element, null).getPropertyValue("height");
+        this.width_o = this.element.getStyle("width");
+        this.top_o = this.top;
+        this.left_o = this.left;
+        this.pos = window.getComputedStyle(element, null).getPropertyValue("position");
+    }
+
+    destructor() {
+        this.end(); //Restore everything back to it's original type;
+        this.from = null;
+        super.destructor();
+    }
+
+    start() {
+        this.element.style.opacity = 1;
+        this.element.style.top = this.from.top + "px";
+        this.element.style.left = this.from.left + "px";
+        this.element.style.width = this.from.width + "px";
+        this.element.style.height = this.from.height + "px";
+    }
+
+    step() {
+        this.s++;
+        var t = this.s / this.time;
+
+        if (t > 1) t = 1;
+        var ratio = ease_out.getYatX(t);
+
+        if (ratio > 1) ratio = 1;
+
+        this.element.style.top = ((this.top - this.from.top) * ratio + this.from.top) + "px";
+        this.element.style.left = ((this.left - this.from.left) * ratio + this.from.left) + "px";
+        this.element.style.width = ((this.width - this.from.width) * ratio + this.from.width) + "px";
+        this.element.style.height = ((this.height - this.from.height) * ratio + this.from.height) + "px";
+        this.element.style.backgroundColor = (this.color.sub(this.from.color).mult(ratio).add(this.from.color)) + "";
+
+        return (t &lt; 0.9999995);
+    }
+
+    end() {
+        this.element.style.backgroundColor = null;
+        this.element.style.height = null;
+        this.element.style.width = null;
+        this.element.style.top = this.rt;
+        this.element.style.left = this.rl;
+    }
+}
+
+
+class RidPair {
+    constructor(e_to, e_from) {
+        this.b = new Rid_From(e_from);
+        this.a = new Rid_To(e_to, this.b);
+    }
+
+    destructor() {
+        this.a.destructor();
+    }
+
+    start() {
+        this.b.start();
+        this.a.start();
+    }
+
+    step() {
+        return this.a.step();
+    }
+}
+
+var rp = [];
+/**
+    Transform one element from another back to itself
+*/
+function TransformTo(element_to, element_from, HIDE_OTHER) {
+    var pair = new RidPair(element_to, element_from);
+    rp.push(pair);
+    pair.start();
+}
+
+var RAF = requestAnimationFrame;
+
+var t = function(a) {
+    for (var i = 0; i &lt; rp.length; i++) {
+        var _rp = rp[i];
+        if (!_rp.step()) {
+            _rp.destructor();
+            rp.splice(i, 1);
+            i--;
+        };
+    }
+
+    RAF(t);
+}
+
+RAF(t);
+
+export {
+    TransformTo
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Element.html">Element</a></li><li><a href="Getter.html">Getter</a></li><li><a href="Linker.html">Linker</a></li><li><a href="ModelContainer.html">ModelContainer</a></li><li><a href="Setter.html">Setter</a></li><li><a href="View.html">View</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Lex">Lex</a></li><li><a href="global.html#light">light</a></li><li><a href="global.html#setLinks">setLinks</a></li><li><a href="global.html#TransformTo">TransformTo</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue May 29 2018 15:49:37 GMT-0600 (Mountain Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

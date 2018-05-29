@@ -6,9 +6,10 @@ module.exports = {
   mode:"production",
   output: {
     filename: 'wick-min.js',
-    path: path.resolve(__dirname, '../build')
+    path: path.resolve(__dirname, '../build'),
+    library: 'wick'
   },
   plugins: [
     new UglifyJsPlugin()
-  ]
+  ],
 };

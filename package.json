@@ -8,7 +8,7 @@
     "build": "webpack --config ./wp-config/build.config.js",
     "dev-build": "webpack --config ./wp-config/build-dev.config.js",
     "watch": "webpack --config ./wp-config/watch.config.js",
-    "docs":"jsdoc ./source/ --destination ./documents/api"
+    "docs": "jsdoc ./source/ --destination ./documents/api --configure ./wp-config/jsdoc.json "
   },
   "repository": {
     "type": "git",
@@ -32,6 +32,8 @@
   "homepage": "https://github.com/Galactrax/wick#readme",
   "devDependencies": {},
   "optionalDependencies": {
+    "jsdoc-webpack-plugin": "0.0.2",
+    "jsdoc-webpack-plugin-v2": "^2.0.2",
     "uglifyjs-webpack-plugin": "^1.2.5",
     "webpack": "^4.10.1",
     "webpack-cli": "^2.1.4"

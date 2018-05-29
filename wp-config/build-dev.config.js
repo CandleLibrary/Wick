@@ -6,6 +6,7 @@ module.exports = {
   mode:"development",
   output: {
     filename: 'wick-dev.js',
-    path: path.resolve(__dirname, '../build')
-  }
+    path: path.resolve(__dirname, '../build'),
+    library: 'wick'
+  },
 };

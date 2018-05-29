@@ -1,0 +1,8 @@
+/**
+  Used by the Linker and other Classes to load and use user defined objects.
+
+  @typedef LinkerPresets
+  @type {object}
+  @property {object} links 
+  @property {object} models
+*/

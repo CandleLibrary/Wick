@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: linker/linker.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: linker/linker.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import {
+    Component,
+    CaseComponent
+} from "./component"
+
+import {
+    TurnQueryIntoData
+} from "../common"
+/**
+	Converts links into javascript enabled buttons that will be handled within the current active page.
+*/
+function setLinks(element, __function__) {
+    let links = element.getElementsByTagName("a");
+    for (let i = 0, l = links.length, temp, href; i &lt; l; i++) {
+        let temp = links[i];
+
+        if (!temp.dataset.link) continue;
+
+        if (!temp.onclick) temp.onclick = ((href, a) => (e) => {
+            if (__function__(href, a)) e.preventDefault();
+        })(temp.href, temp);
+    }
+};
+
+/**
+    An area to hold data and UI components.
+*/
+class Element {
+    constructor(element, component) {
+        this.id = element.classList[0];
+        this.component = component;
+        this.element = element;
+    }
+
+    transitionOut() {
+        if (this.component) {
+            var t = this.component.transitionOut();
+            this.element.removeChild(this.component.element);
+            this.component.LOADED = false;
+            return;
+        }
+        return {};
+    }
+
+    transitionIn(transition_elements, query, IS_SAME_PAGE) {
+        if (this.component &amp;&amp; !this.component.LOADED) {
+            var element = this.component.element;
+            if (!element.parentElement) this.element.appendChild(element);
+            this.component.transitionIn(transition_elements, query, IS_SAME_PAGE);
+        }
+    }
+}
+/*
+	Handles the parsing and loading of components for a particular page.
+*/
+class PageView {
+
+    constructor(URL) {
+        this.url = URL;
+        this.elements = [];
+        this.finalizing_view = null;
+    }
+
+    transitionIn(OldView, query, IS_SAME_PAGE) {
+        let final_time = 0;
+
+        for (var i = 0; i &lt; this.elements.length; i++) {
+            var element = this.elements[i];
+            if (OldView &amp;&amp; OldView[element.id]) {
+                final_time = Math.max(element.transitionIn(OldView[element.id], query[element.id] ? query[element.id] : query, IS_SAME_PAGE), final_time);
+            } else {
+                element.transitionIn(null, query, IS_SAME_PAGE);
+            }
+        }
+
+        if (OldView) {
+            this.finalizing_view = () => {
+                OldView.finalize()
+            };
+            setTimeout(() => {
+                this.finalizeView()
+            }, final_time)
+        }
+    }
+
+    finalizeView() {
+        if (this.finalizing_view) this.finalizing_view();
+        this.finalizing_view = null;
+    }
+
+    transitionOut() {
+        var out_data = {
+            finalize: () => {
+                console.log(this);
+            }
+        };
+
+        for (var i = 0; i &lt; this.elements.length; i++) {
+            out_data[this.elements[i].id] = this.elements[i].transitionOut();
+        }
+
+        return out_data;
+    }
+
+    compareComponents() {
+        //This will transition objects
+    }
+}
+
+/**
+* This Object is responsible for loading pages dynamically, handling the transition of page components, and monitoring and reacting to URL changes 
+*/
+class Linker {
+
+    constructor(presets) {
+        this.views = {};
+        this.components = {};
+        this.component_constructors = {};
+        this.models_constructors = {};
+        this.presets = presets;
+        this.current_url = null;
+        this.current_query;
+        this.current_view = null;
+
+        /* */
+        this.page_stack = [];
+
+        window.onpopstate = () => {
+            this.parseURL(document.location.pathname, document.location.search)
+        }
+    }
+
+    /*
+    	This function will parse a URL and determine what elements need to be loaded into the current view.
+    */
+    parseURL(url, query = document.location.search) {
+
+        if (this.current_url == url &amp;&amp; this.current_query == query) return;
+
+        let IS_SAME_PAGE = (this.current_url == url);
+
+        this.current_url = url;
+
+        this.current_query = query;
+
+        if (this.views[url])
+            return this.loadPage(url, TurnQueryIntoData(query.slice(1)), IS_SAME_PAGE);
+
+        fetch(url, {
+            credentials: "same-origin", // Sends cookies back to server with request
+            method: 'GET'
+        }).then((response) => {
+            (response.text().then((html) => {
+                var DOM = (new DOMParser()).parseFromString(html, "text/html")
+                this.loadNewPage(url, DOM);
+                this.loadPage(url, TurnQueryIntoData(query.slice(1)));
+            }));
+        }).catch((error) => {
+            console.warn(`Unable to process response for request made to: ${this.url}. Response: ${error}. Error Received: ${error}`);
+        })
+    }
+
+    /*
+    	Loads pages from server, or from local cache, and sends it to the page parser.
+    */
+    loadPage(url, query, IS_SAME_PAGE) {
+        if (this.views[url]) {
+            if (this.current_view) {
+                this.views[url].transitionIn(this.current_view.transitionOut(), query, IS_SAME_PAGE);
+            } else
+                this.views[url].transitionIn(null, query, IS_SAME_PAGE);
+            this.current_view = this.views[url];
+        }
+    }
+
+    /*
+    	Pre-loads a custom constructor for an element with the specified id and provides a model to that constructor when it is called.
+    	The constructor must have Component in its inheritance chain.
+    */
+    addStatic(element_id, constructor, model) {
+        this.component_constructors[element_id] = {
+            constructor,
+            model_name: model
+        };
+
+    }
+
+    addModel(model_name, modelConstructor) {
+        //if(modelConstructor instanceof Model &amp;&amp; !this.models_constructors[model_name]){
+        this.models_constructors[model_name] = modelConstructor;
+        //}
+    }
+
+    loadNewPage(URL, DOM) {
+        //look for the app section.
+
+        var app = DOM.getElementsByTagName("app")[0];
+        var templates = DOM.getElementsByTagName("template");
+
+        var page = new PageView(URL);
+
+        if (app) {
+            var elements = app.getElementsByTagName("element");
+
+
+
+            for (var i = 0; i &lt; elements.length; i++) {
+
+                let ele = elements[i];
+
+                var equivilant_in_document = document.getElementById(ele.id);
+
+                if (!equivilant_in_document) {
+                    var insert;
+                    //need figure out the order that this goes into.
+
+                    if (elements[i + 1] &amp;&amp; (insert = document.getElementById(elements[i + 1].id)))
+                        insert.parentElement.insertBefore(ele.cloneNode(), insert);
+
+                    else if (elements[i - 1] &amp;&amp; (insert = document.getElementById(elements[i - 1].id)))
+                        insert.parentElement.insertAfter(ele.cloneNode(), insert);
+
+                    else
+                        insert.parentElement.getElementsByTagName("app")[0].appendChild();
+                }
+
+                var equivilant_in_document = document.getElementById(ele.id);
+                //if there is a component inside the element, register that component if it has not already been registered
+                var component = ele.getElementsByTagName("component")[0];
+
+                if (component) {
+                    var id = component.classList[0],
+                        comp;
+
+
+
+                    if (!equivilant_in_document.getElementsByClassName(id)[0]) {
+                        component = component.cloneNode();
+                        equivilant_in_document.appendChild(component);
+                    }
+
+                    if (id) {
+                        if (!this.components[id]) {
+                            if (comp = this.component_constructors[id]) {
+                                var js_component = new comp.constructor(component, this.presets, templates);
+
+                                if (comp.model_name &amp;&amp; this.models_constructors[comp.model_name]) {
+                                    debugger
+                                    var model = this.models_constructors[comp.model_name];
+                                    if (model.getter)
+                                        model.getter.get();
+                                    model.addView(js_component);
+                                }
+
+                                js_component.id = id;
+
+                                this.components[id] = js_component;
+                            } else {
+                                var template = templates[id];
+
+                                if (template) {
+                                    this.components[id] = new CaseComponent(template, this.presets, this.models_constructors, null, DOM);
+                                }
+                            }
+                        }
+                        if (this.components[id]) {
+                            this.components[id].containerElementID = ele.id;
+                        }
+                    }
+
+
+
+                    page.elements.push(new Element(component, this.components[id]));
+                }
+
+
+            }
+        } else {
+            //do nothing
+        }
+
+        this.views[URL] = page;
+    }
+}
+
+
+
+export {
+    Linker,
+    Component
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Element.html">Element</a></li><li><a href="Getter.html">Getter</a></li><li><a href="Linker.html">Linker</a></li><li><a href="ModelContainer.html">ModelContainer</a></li><li><a href="Setter.html">Setter</a></li><li><a href="View.html">View</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Lex">Lex</a></li><li><a href="global.html#light">light</a></li><li><a href="global.html#setLinks">setLinks</a></li><li><a href="global.html#TransformTo">TransformTo</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue May 29 2018 15:49:37 GMT-0600 (Mountain Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

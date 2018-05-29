@@ -1,1 +1,26 @@
-<h1> Wick Powered </h1>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Wick Powered</title>
+    <script src="build/wick-dev.js" type="text/javascript"></script>
+    <link href="build/wick.css" type="text/css" rel="stylesheet"/>
+  </head>
+  <body>
+
+    <app>
+      <element id="main">
+        <component>
+          <a href="documents/getting_started_with_wick.html">Getting Started</a>
+          <a href="documents/api/">API</a>
+          <a href="documents/examples.html">Examples</a>
+        </component>
+      </element>
+    </app>
+
+    <script type="text/javascript">
+      //Here we will load the Wick engine when the page completes its loading. Wick will automatically start when the page complets its loading.
+      wick.light();
+    </script>
+
+  </body>
+</html>

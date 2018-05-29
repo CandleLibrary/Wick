@@ -42,8 +42,8 @@ Wick uses caching and selective dumping of data to handle Performance. Upfront v
 
 Have we held your attention so far? Great! Let's dig into wick and see how we can put it to use. Visit the following links to learn more:
 
-[Getting Started](./documents/getting_started_with_wick.html)
+[Getting Started](https://galactrax.github.io/wick/documents/getting_started_with_wick.html)
 
-[API](./documents/api/index.html)
+[API](https://galactrax.github.io/wick/documents/api/index.html)
 
-[Examples](./documents/examples.html)
+[Examples](https://galactrax.github.io/wick/documents/examples.html)

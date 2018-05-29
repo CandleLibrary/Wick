@@ -6,11 +6,12 @@ import {
 import {
     TurnQueryIntoData
 } from "../common"
-/*
+/**
 	Converts links into javascript enabled buttons that will be handled within the current active page.
 */
 function setLinks(element, __function__) {
     let links = element.getElementsByTagName("a");
+    
     for (let i = 0, l = links.length, temp, href; i < l; i++) {
         let temp = links[i];
 
@@ -23,7 +24,7 @@ function setLinks(element, __function__) {
 };
 
 /**
-    An area to hold data and UI components. 
+    An area to hold data and UI components.
 */
 class Element {
     constructor(element, component) {
@@ -51,7 +52,7 @@ class Element {
     }
 }
 /*
-	Handles the parsing and loading of components for a particular page. 
+	Handles the parsing and loading of components for a particular page.
 */
 class PageView {
 
@@ -107,7 +108,9 @@ class PageView {
     }
 }
 
-/* This Object is responsible for loading pages dynamically, handling the transition of page components, and monitoring and reacting to URL changes */
+/**
+* This Object is responsible for loading pages dynamically, handling the transition of page components, and monitoring and reacting to URL changes
+*/
 class Linker {
 
     constructor(presets) {
@@ -129,7 +132,7 @@ class Linker {
     }
 
     /*
-    	This function will parse a URL and determine what elements need to be loaded into the current view. 
+    	This function will parse a URL and determine what elements need to be loaded into the current view.
     */
     parseURL(url, query = document.location.search) {
 
@@ -171,7 +174,7 @@ class Linker {
         }
     }
 
-    /* 
+    /*
     	Pre-loads a custom constructor for an element with the specified id and provides a model to that constructor when it is called.
     	The constructor must have Component in its inheritance chain.
     */
@@ -214,11 +217,11 @@ class Linker {
 
                     if (elements[i + 1] && (insert = document.getElementById(elements[i + 1].id)))
                         insert.parentElement.insertBefore(ele.cloneNode(), insert);
-                    
+
                     else if (elements[i - 1] && (insert = document.getElementById(elements[i - 1].id)))
                         insert.parentElement.insertAfter(ele.cloneNode(), insert);
 
-                    else 
+                    else
                         insert.parentElement.getElementsByTagName("app")[0].appendChild();
                 }
 
@@ -265,7 +268,11 @@ class Linker {
                             this.components[id].containerElementID = ele.id;
                         }
                     }
-
+                    setLinks(component, (URL)=>{
+                      window.history.pushstate({}, "", URL);
+                      //window.history.popstate();
+                      return true;
+                    })
 
 
                     page.elements.push(new Element(component, this.components[id]));
