@@ -9,6 +9,7 @@ import {
 import {
     ArrayModelContainer,
     BinaryTreeModelContainer,
+    MultiIndexedContainer,
     DateModelContainer,
     Model,
     ModelContainer
@@ -74,6 +75,7 @@ export {
     Animation,
     ArrayModelContainer,
     BinaryTreeModelContainer,
+    MultiIndexedContainer,
     Controller,
     Case,
     Cassette,
@@ -81,6 +83,7 @@ export {
     Component,
     DateModelContainer,
     Getter,
+    Linker,
     Model,
     ModelContainer,
     Setter,

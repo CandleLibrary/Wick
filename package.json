@@ -8,6 +8,7 @@
     "build": "webpack --config ./wp-config/build.config.js",
     "dev-build": "webpack --config ./wp-config/build-dev.config.js",
     "watch": "webpack --config ./wp-config/watch.config.js",
+    "watch-es5": "webpack --config ./wp-config/watches5.config.js",
     "docs": "jsdoc ./source/ --destination ./documents/api --configure ./wp-config/jsdoc.json "
   },
   "repository": {

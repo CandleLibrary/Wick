@@ -53,6 +53,10 @@ class Linker {
         this.current_view = null;
         this.finalizing_pages = [];
 
+        for(let component_name in presets.static){
+            this.addStatic(component_name, presets.static[component_name]);
+        }
+
         /* */
         this.modal_stack = [];
 

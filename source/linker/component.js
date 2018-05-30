@@ -53,7 +53,7 @@ class CaseComponent extends Case {
         if (!this.model) {
             let model = null;
 
-            if ((model = this.element.dataset.schema) && (model = model_constructors[model])) {
+            if ((model = this.element.dataset.schema) && (model = presets.models[model])) {
                 this.model_constructor = model;
             }
 
