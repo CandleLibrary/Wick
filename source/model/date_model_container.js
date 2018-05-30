@@ -1,5 +1,11 @@
 //Stores EM_Days
-import {ArrayModelContainer, BinaryTreeModelContainer} from "./model_container"
+import{
+    ArrayModelContainer
+} from "./array_container"
+
+import{
+    BinaryTreeModelContainer
+} from "./binary_container"
 
 class DateModelContainer extends BinaryTreeModelContainer {
     constructor(schema, date) {
@@ -80,7 +86,7 @@ class Day_Container extends BinaryTreeModelContainer {
     }
 
     __getAllItems__(){
-        return { data : this.models.get(), date: this.min};
+        return this.models.get(); //{ data : this.models.get(), date: this.min};
     }
 
     __insertItem__(item) {

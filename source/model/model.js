@@ -4,11 +4,20 @@ import {
 
 import {
     ModelContainer,
-    ArrayModelContainer,
-    BinaryTreeModelContainer
+    MultiIndexedContainer
 } from "./model_container"
 
-import {DateModelContainer} from "./date_model_container"
+import {
+    ArrayModelContainer
+} from "./array_container"
+
+import {
+    BinaryTreeModelContainer
+} from "./binary_container"
+
+import {
+    DateModelContainer
+} from "./date_model_container"
 
 var schema_catch = {
 
@@ -25,35 +34,40 @@ class Model {
         this.data = {};
         this._temp_data_ = null;
         this.export_data = [];
+        this.index = null;
 
         if (!this.schema.identifier) {
-            console.error("identifier prop name needed in schema!", this.schema)
+            console.error("identifier property name needed in schema!", this.schema, this)
             return;
         }
 
         for (var a in this.schema) {
+
+            let scheme = this.schema[a];
+
             if (a == "identifier") continue;
-            if (this.schema[a] instanceof Array) {
-                if (this.schema[a][0] instanceof ModelContainer) {
-                    this.data[a] = new this.schema[a][0].constructor();
+
+            if (scheme instanceof Array) {
+                if (scheme[0] instanceof ModelContainer) {
+                    this.data[a] = new scheme[0].constructor();
                     this.export_data.push({
                         name: a,
                         type: "ModelContainer",
                         exportable: false
                     })
-                } else if(this.schema[a][0].container && this.schema[a][0].schema){
-                    this.data[a] = new this.schema[a][0].container(this.schema[a][0].schema);
+                } else if (scheme[0].container && scheme[0].schema) {
+                    this.data[a] = new scheme[0].container(scheme[0].schema);
                     this.export_data.push({
                         name: a,
                         type: "ModelContainer",
                         exportable: false
                     })
-                }else{
+                } else {
 
                     console.error(`Schema cannot contain an array that does not contain a single object constructor of type ModelContainer or {schema:schema, container: ModelContainer}.`);
                 }
-            } else if (this.schema[a] instanceof Model) {
-                this.data[a] = new this.schema[a].constructor();
+            } else if (scheme instanceof Model) {
+                this.data[a] = new scheme.constructor();
                 this.export_data.push({
                     name: a,
                     type: "Model",
@@ -87,7 +101,7 @@ class Model {
         for (let a in this.data) {
             if (typeof(this.data[a]) == "object") {
                 this.data[a].destructor();
-            }else{
+            } else {
                 this.data[a] = null;
             }
         }
@@ -144,7 +158,7 @@ class Model {
                 child_view = child_view.next;
             }
 
-            debugger
+            //debugger
             console.warn("View not a member of Model!", view);
         }
     }
@@ -161,12 +175,23 @@ class Model {
     add(data) {
         var NEED_UPDATE = false;
 
+        if (data instanceof Model) {
+
+            if (data.identifier == this.identifier) {
+                data = data.data;
+
+            } else {
+                console.trace("Only models with matching unique id's can be merged!", this, data);
+                return;
+            }
+        }
+
         for (var a in data) {
             var datum = data[a];
             var scheme = this.schema[a];
             if (scheme) {
                 if (scheme instanceof Array) {
-                   NEED_UPDATE = (this.insertDataIntoContainer(this.data[a], data[a])) ?  true : NEED_UPDATE;
+                    NEED_UPDATE = (this.insertDataIntoContainer(this.data[a], data[a])) ? true : NEED_UPDATE;
                 } else if (scheme instanceof Model) {
                     if (!this.data[a])
                         this.data[a] = new scheme();
@@ -236,10 +261,9 @@ class Model {
             for (var a in data) {
                 var scheme = this.schema[a];
                 if (scheme)
-                    if (scheme instanceof Array){
+                    if (scheme instanceof Array) {
                         out_data[a] = this.getDataFromContainer(this.data[a], data[a]);
-                    }
-                    else if (scheme instanceof Model)
+                    } else if (scheme instanceof Model)
                     out_data[a] = this.data[a].getData(data[a]);
             }
         }
@@ -258,7 +282,7 @@ class Model {
     }
 
     insertDataIntoContainer(container, item) {
-       return container.insert(item); 
+        return container.insert(item);
     }
 
     getDataFromContainer(container, item) {
@@ -274,6 +298,7 @@ export {
     Model,
     ModelContainer,
     ArrayModelContainer,
+    MultiIndexedContainer,
     BinaryTreeModelContainer,
     DateModelContainer
 }

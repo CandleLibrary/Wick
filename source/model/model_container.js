@@ -1,3 +1,5 @@
+
+
 class ModelContainer {
     /**
     	The type of object this container holds.
@@ -5,11 +7,12 @@ class ModelContainer {
     constructor(schema) {
         this.schema = schema || this.constructor.schema || {};
         this.id = "";
+        this.model = schema;
 
         if (this.schema.identifier && typeof(this.schema.identifier) == "string") {
             this.id = this.schema.identifier;
         } else {
-            console.error(`Wrong schema identifier type given to ModelContainer. Expected type String, got: ${typeof(this.schema.identifier)}!`, this);
+            throw (`Wrong schema identifier type given to ModelContainer. Expected type String, got: ${typeof(this.schema.identifier)}!`, this);
         }
     }
 
@@ -67,7 +70,7 @@ class ModelContainer {
 
             return (out.length > 0) ? out : null;
         } else {
-            return this.getAll(item);
+            return this.__get__(item);
         }
     }
 
@@ -81,7 +84,7 @@ class ModelContainer {
 
             return out;
         } else {
-            return this.removeAll(item);
+            return this.__remove__(item);
         }
     }
 
@@ -90,11 +93,11 @@ class ModelContainer {
     }
 
     __get__(item) {
-        return null;
+        return [];
     }
 
     __getAll__() {
-        return null;
+        return [];
     }
 
     __remove__(item) {
@@ -109,264 +112,87 @@ class ModelContainer {
     }
 
     checkRawID(item) {
-        return !(!item.data[this.schema.identifier]);
+        if(item.data && item.schema){
+            return !(!item.data[this.schema.identifier]);
+        }else{
+            return item !== undefined;
+        }
     }
 
     getIdentifier(item) {
-        return item.data[this.schema.identifier];
+        if(item.data && item.schema){
+            return item.data[this.schema.identifier];
+        }else{
+            return item;
+        }
     }
 }
 
-class ArrayModelContainer extends ModelContainer {
-    constructor(schema) {
-        super(schema);
-        this.data = [];
+class MultiIndexedContainer extends ModelContainer{
+    constructor(schema){
+
+        super({identifier : "indexed", model:schema.model});
+
+        this.schema = schema;
+        this.indexes = {};
+        this.first_index = null;
+        
+        this.addIndex(schema.index);
     }
 
-    destructor() {
+    addIndex(index_schema){
+        for(let name in index_schema){
+            let scheme = index_schema[name];
 
-        for (var i = 0; i < this.data.length; i++) {
-            this.data[i].destructor();
-        }
+            if(scheme.container && !this.indexes[name]){
+                this.indexes[name] = new scheme.container(scheme.schema);
 
-        this.data = null;
-
-        super.destructor();
-    }
-
-    __insert__(item) {
-        if (this.checkIdentifier(item)) {
-            for (var i = 0, l = this.data.length; i < l; i++) {
-                var obj = this.data[i];
-
-                if (obj.identifier == this.getIdentifier(item)) {
-                    obj.add(item);
-                    return true;
-                }
-            }
-
-            if (item instanceof this.schema.model) {
-                this.data.push(item);
-                return true;
-            } else if (this.schema.model) {
-                var temp = new this.schema.model();
-                temp.add(item);
-                this.data.push(temp);
-                return true;
-            } else {
-                console.error(`Model has not been created yet for dataset ${this.getIdentifier(item)}`, item);
-            }
-        }
-
-        if (this.checkRawID(item)) {
-            //Item is not a model yet
-            for (var i = 0, l = this.data.length; i < l; i++) {
-                var obj = this.data[i];
-
-                if (obj.identifier == item[this.schema.identifier]) {
-                    obj.add(item);
-                    return true;
-                }
-            }
-
-            //create a new model and push into array. 
-
-            var model = new this.schema.model();
-            model.add(item);
-            this.__insert__(model);
-            return true;
-        }
-        return false;
-    }
-
-    __get__(item) {
-        if (this.checkIdentifier(item)) {
-            for (var i = 0, l = this.data.length; i < l; i++) {
-                var obj = this.data[i];
-
-                if (obj.identifier == this.getIdentifier(item)) {
-                    return obj.get();
-                }
-            }
-        }
-
-        return null;
-    }
-
-    __getAll__(item) {
-        return this.data.map((d) => d.get());
-    }
-
-    __remove__(item) {
-        if (this.checkIdentifier(item)) {
-            for (var i = 0, l = this.data.length; i < l; i++) {
-                var obj = this.data[i];
-
-                if (obj.identifier == this.getIdentifier(item)) {
-
-                    this.data[i].splice(i, 1);
-
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-}
-
-class BinaryTreeModelContainer extends ModelContainer {
-
-    /*
-        {start} : UTF time stamp 
-    */
-
-    constructor(schema, min, max) {
-        super(schema);
-
-        this.min = min;
-        this.max = max || min;
-
-        this.left = null;
-        this.right = null;
-
-        this.id = min;
-    }
-
-    getPrev() {
-        return this.min - 1;
-    }
-
-    getNext() {
-        return this.max + 1;
-    }
-
-    __insert__(item, numerical_id) {
-
-        if (this.checkIdentifier(item)) {
-            if (!numerical_id)
-                numerical_id = this.getIdentifier(item);
-
-
-            if (numerical_id < this.min) {
-                if (this.left)
-                    return this.left.insert(item, numerical_id);
+                if(this.first_index)
+                    this.indexes[name].insert(this.first_index.__getAll__());
                 else
-                if (item instanceof this.constructor)
-                    return this.left = item;
-                else {
-                    this.left = new this.constructor(this.schema, this.getPrev(), null);
-                    return this.left.insert(item, numerical_id);
-                }
+                    this.first_index = this.indexes[name];
             }
-
-            if (numerical_id > this.max) {
-                if (this.right)
-                    return this.right.insert(item, numerical_id);
-                else
-                if (item instanceof this.constructor)
-                    return this.right = item;
-                else {
-                    this.right = new this.constructor(this.schema, this.getNext(), null);
-                    return this.right.insert(item, numerical_id);
-                }
-            }
-
-            return this.__insertItem__(item, numerical_id);
         }
-
-        return false;
-    }
-
-    __get__(item, numerical_id) {
-        if (this.checkIdentifier(item)) {
-            if (!numerical_id)
-                numerical_id = this.getIdentifier(item);
-
-
-            if (numerical_id < this.min) {
-                if (this.left)
-                    return this.left.__get__(item, numerical_id);
-            }
-
-            if (numerical_id > this.max) {
-                if (this.right)
-                    return this.right.__get__(item, numerical_id);
-            }
-
-            return this.__getItem__(item, numerical_id);
-        }
-    }
-
-    __getAll__(start = -Infinity, end = Infinity) {
-        var items = [];
-
-        var a_condition = (this.min >= start) | 0;
-        var b_condition = (this.max <= end) | 0;
-
-        var c_condition = (this.min <= end) | 0;
-        var d_condition = (this.max >= start) | 0;
-
-        if (a_condition && this.left) {
-            var t = this.left.__getAll__(start, end)
-            items = items.concat(t);
-        }
-
-        if (c_condition && d_condition) {
-            var t = this.__getAllItems__(start, end);
-            items = items.concat(t);
-        }
-
-        if (b_condition && this.right) {
-            var t = this.right.__getAll__(start, end)
-            items = items.concat(t);
-        }
-
-        return items;
     }
 
     get(item) {
-        if (item instanceof Array) {
+        var out = [];
 
-            if (typeof(item[0]) == "number") {
-                var items = [];
-
-                for (var i = 0; i < item.length; i += 2) {
-                    var a_val = item[i];
-                    var b_val = item[i + 1];
-
-                    if (typeof(a_val) == "number" && typeof(b_val) == "number") {
-                        items = items.concat(this.__getAll__(a_val, b_val));
-                    }
-                }
-
-                return items.length > 0 ? items : null;
-            }
+        for(let a in item){
+            if(this.indexes[a])
+                out = out.concat(this.indexes[a].get(item[a]));
         }
 
-        return super.get(item);
+        return out;
     }
 
+    __insert__(item) {
+        let out = false
 
-    __insertItem__(item, numerical_id) {
-        return false;
+        if(!item.identifier) debugger;
+        for(let a in this.indexes){
+            let index = this.indexes[a];
+            if(index.insert(item)) out = true;
+            else{
+                console.warn(`Indexed container ${a} ${index} failed to insert:`,item);
+            }
+        }
+        return out;
     }
 
-    __removeItem__(item, numerical_id) {
-        return false;
-    }
-
-    __getItem__(item) {
-        return false;
-    }
-
-    __getAllItems__(start, end) {
-        return null;
+    __remove__(item) {
+        let out = false;
+        for(let a in this.indexes){
+            let index = this.indexes[a];
+            if(index.remove(item))
+                out = true;
+        }
+        return out;
     }
 }
 
+
 export {
-    ModelContainer,
-    ArrayModelContainer,
-    BinaryTreeModelContainer
+    ModelContainer,    
+    MultiIndexedContainer,
 };

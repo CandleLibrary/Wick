@@ -22,7 +22,6 @@ class Component extends View {
         	Takes as an input a list of transition objects that can be used 
         */
     transitionIn(elements, query) {
-
     }
 
     transitionOut() {
@@ -61,6 +60,8 @@ class CaseComponent extends Case {
             this.model = null;
         }
 
+        console.log(this.model_constructor, model_constructors)
+
         this.anchor = null;
         this.LOADED = false;
     }
@@ -91,8 +92,6 @@ class CaseComponent extends Case {
             this.model.add(query);
 
             this.model.addView(this);
-
-            console.log(this.model, query)
                 //if(query)
                 //	this.getter.request(TurnDataIntoQuery(query))
         } else {

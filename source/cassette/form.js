@@ -15,6 +15,7 @@ class Form extends Cassette{
 				t = a.next();
 			}
 			console.log(e)
+			debugger
 		})
 
 	}

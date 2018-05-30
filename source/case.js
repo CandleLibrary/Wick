@@ -27,14 +27,18 @@ import {
 import {
     ImportQuery
 } from "./cassette/import_query"
+import {
+    EpochToDateTime
+} from "./cassette/epoch_to_dt"
 
 let PresetCassettes = {
-    w: Cassette,
+    raw: Cassette,
     cassette: Cassette,
     form: Form,
     input: Input,
     export: Exporter,
-    iquery: ImportQuery
+    iquery: ImportQuery,
+    edt:EpochToDateTime
 }
 
 class CaseParentView extends View {
@@ -100,7 +104,7 @@ class Case extends View {
         }
 
         for (let prop in this.data) {
-            if(this.data[prop] == "" || !this.data[prop]){
+            if (this.data[prop] == "" || !this.data[prop]) {
                 this.data[prop] = parent.data[prop];
             }
         }
@@ -130,6 +134,8 @@ class Case extends View {
                 model.addView(this);
 
                 if (this.url) {
+
+
 
                     this.receiver = new Getter(this.url);
                     this.receiver.setModel(model);
@@ -187,9 +193,10 @@ class Case extends View {
             let comp = this.components[i];
             if (comp instanceof Case) {
                 comp.updateFromParent(data);
-            } else
-            if (comp.import_prop && data[comp.import_prop]) {
-                comp.update(data);
+            } else {
+                if (comp.import_prop && data[comp.import_prop]) {
+                    comp.update(data);
+                }
             }
         }
     }
@@ -314,7 +321,7 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
     if (tag == "CASE") {
         var constructor = (class_ && cassettes[class_]) ?
             cassettes[class_] : Case;
-        return [new constructor(element, presets, parentCase)];
+        return [new constructor(element, presets, parentCase, WORKING_DOM)];
     }
 
     //Case of a template
@@ -324,11 +331,11 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
             let ele;
 
             if (ele = WORKING_DOM.getElementById(element.classList[0])) {
-
+                ele = ele.cloneNode(true);
 
                 for (let prop in element.dataset)
                     ele.dataset[prop] = element.dataset[prop];
-                
+
                 var c = new Case(ele, presets, parentCase, WORKING_DOM);
                 //Import the element into the DOM tree, replacing the existing TEMPLATE element.
                 var p = element.parentElement;

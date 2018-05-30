@@ -6,115 +6,44 @@ import {
 import {
     TurnQueryIntoData
 } from "../common"
-/**
+
+import {
+    PageView
+} from "./page"
+
+import {
+    Element
+} from "./element"
+
+import {
+    Modal
+} from "./modal"
+
+
+/*
 	Converts links into javascript enabled buttons that will be handled within the current active page.
 */
 function setLinks(element, __function__) {
     let links = element.getElementsByTagName("a");
-    
     for (let i = 0, l = links.length, temp, href; i < l; i++) {
         let temp = links[i];
 
+        console.log(temp)
+
         if (!temp.dataset.link) continue;
 
-        if (!temp.onclick) temp.onclick = ((href, a) => (e) => {
+        if (!temp.onclick) temp.onclick = ((href, a, __function__) => (e) => {
+            e.preventDefault();
             if (__function__(href, a)) e.preventDefault();
-        })(temp.href, temp);
+        })(temp.href, temp, __function__);
     }
 };
 
-/**
-    An area to hold data and UI components.
-*/
-class Element {
-    constructor(element, component) {
-        this.id = element.classList[0];
-        this.component = component;
-        this.element = element;
-    }
-
-    transitionOut() {
-        if (this.component) {
-            var t = this.component.transitionOut();
-            this.element.removeChild(this.component.element);
-            this.component.LOADED = false;
-            return;
-        }
-        return {};
-    }
-
-    transitionIn(transition_elements, query, IS_SAME_PAGE) {
-        if (this.component && !this.component.LOADED) {
-            var element = this.component.element;
-            if (!element.parentElement) this.element.appendChild(element);
-            this.component.transitionIn(transition_elements, query, IS_SAME_PAGE);
-        }
-    }
-}
-/*
-	Handles the parsing and loading of components for a particular page.
-*/
-class PageView {
-
-    constructor(URL) {
-        this.url = URL;
-        this.elements = [];
-        this.finalizing_view = null;
-    }
-
-    transitionIn(OldView, query, IS_SAME_PAGE) {
-        let final_time = 0;
-
-        for (var i = 0; i < this.elements.length; i++) {
-            var element = this.elements[i];
-            if (OldView && OldView[element.id]) {
-                final_time = Math.max(element.transitionIn(OldView[element.id], query[element.id] ? query[element.id] : query, IS_SAME_PAGE), final_time);
-            } else {
-                element.transitionIn(null, query, IS_SAME_PAGE);
-            }
-        }
-
-        if (OldView) {
-            this.finalizing_view = () => {
-                OldView.finalize()
-            };
-            setTimeout(() => {
-                this.finalizeView()
-            }, final_time)
-        }
-    }
-
-    finalizeView() {
-        if (this.finalizing_view) this.finalizing_view();
-        this.finalizing_view = null;
-    }
-
-    transitionOut() {
-        var out_data = {
-            finalize: () => {
-                console.log(this);
-            }
-        };
-
-        for (var i = 0; i < this.elements.length; i++) {
-            out_data[this.elements[i].id] = this.elements[i].transitionOut();
-        }
-
-        return out_data;
-    }
-
-    compareComponents() {
-        //This will transition objects
-    }
-}
-
-/**
-* This Object is responsible for loading pages dynamically, handling the transition of page components, and monitoring and reacting to URL changes
-*/
+/* This Object is responsible for loading pages dynamically, handling the transition of page components, and monitoring and reacting to URL changes */
 class Linker {
 
     constructor(presets) {
-        this.views = {};
+        this.pages = {};
         this.components = {};
         this.component_constructors = {};
         this.models_constructors = {};
@@ -122,9 +51,10 @@ class Linker {
         this.current_url = null;
         this.current_query;
         this.current_view = null;
+        this.finalizing_pages = [];
 
         /* */
-        this.page_stack = [];
+        this.modal_stack = [];
 
         window.onpopstate = () => {
             this.parseURL(document.location.pathname, document.location.search)
@@ -132,7 +62,7 @@ class Linker {
     }
 
     /*
-    	This function will parse a URL and determine what elements need to be loaded into the current view.
+    	This function will parse a URL and determine what elements need to be loaded into the current view. 
     */
     parseURL(url, query = document.location.search) {
 
@@ -144,7 +74,7 @@ class Linker {
 
         this.current_query = query;
 
-        if (this.views[url])
+        if (this.pages[url])
             return this.loadPage(url, TurnQueryIntoData(query.slice(1)), IS_SAME_PAGE);
 
         fetch(url, {
@@ -161,20 +91,92 @@ class Linker {
         })
     }
 
+    finalizePages() {
+        for (var i = 0, l = this.finalizing_pages.length; i < l; i++) {
+            var page = this.finalizing_pages[i];
+            page.finalize();
+        }
+
+        this.finalizing_pages.length = 0;
+    }
+
     /*
     	Loads pages from server, or from local cache, and sends it to the page parser.
     */
     loadPage(url, query, IS_SAME_PAGE) {
-        if (this.views[url]) {
-            if (this.current_view) {
-                this.views[url].transitionIn(this.current_view.transitionOut(), query, IS_SAME_PAGE);
-            } else
-                this.views[url].transitionIn(null, query, IS_SAME_PAGE);
-            this.current_view = this.views[url];
+        let page, transition_length = 0;
+
+        //Finalize any existing page transitions;
+        this.finalizePages();
+
+        if (page = this.pages[url]) {
+
+            if (page instanceof Modal) {
+                //trace modal stack and see if the modal already exists
+                if (IS_SAME_PAGE) {
+                    page.transitionIn(null, query, IS_SAME_PAGE)
+                    return;
+                }
+
+                let UNWIND = 0;
+
+
+                for (var i = 0, l = this.modal_stack.length; i < l; i++) {
+                    let modal = this.modal_stack[i];
+
+                    if (UNWIND == 0) {
+                        if (modal.page.url == url) {
+                            UNWIND = i + 1;
+                        }
+                    } else {
+                        let trs = 0;
+                        if (trs = this.modal_stack[i].transitionOut()) {
+                            transition_length = Math.max(trs, transition_length);
+                            this.finalizing_pages.push(this.modal_stack[i]);
+                        }
+                    }
+                }
+
+                if (UNWIND > 0) {
+                    this.modal_stack.length = UNWIND;
+                    page.transitionIn(null, query, IS_SAME_PAGE);
+                } else {
+                    //create new modal
+                    this.modal_stack.push(page);
+                    page.transitionIn(null, query, IS_SAME_PAGE);
+                }
+
+            } else {
+
+                for (var i = 0, l = this.modal_stack.length; i < l; i++) {
+                    let trs = 0;
+                    if (trs = this.modal_stack[i].transitionOut()) {
+                        transition_length = Math.max(trs, transition_length);
+                        this.finalizing_pages.push(this.modal_stack[i]);
+                    }
+                }
+
+                this.modal_stack.length = 0;
+                
+                let trs = 0;
+                
+                if (this.current_view && (trs = this.current_view.transitionOut())) {
+                    transition_length = Math.max(trs, transition_length);
+                    this.finalizing_pages.push(this.current_view);
+                }
+
+                page.transitionIn(this.current_view, query, IS_SAME_PAGE);
+
+                this.current_view = page;
+
+                if(transition_length > 0){
+                    setTimeout(()=>{this.finalizePages()}, transition_length);
+                }
+            }
         }
     }
 
-    /*
+    /* 
     	Pre-loads a custom constructor for an element with the specified id and provides a model to that constructor when it is called.
     	The constructor must have Component in its inheritance chain.
     */
@@ -195,37 +197,68 @@ class Linker {
     loadNewPage(URL, DOM) {
         //look for the app section.
 
-        var app = DOM.getElementsByTagName("app")[0];
+        let app_source = DOM.getElementsByTagName("app")[0]
+
+        if (!app_source)
+            console.warn("page does not have an app element!");
+
+        var app = app_source.cloneNode(true);
+        var dom_app = document.getElementsByTagName("app")[0];
+
         var templates = DOM.getElementsByTagName("template");
 
         var page = new PageView(URL);
 
         if (app) {
+            //get the page type, defaults to Normal
+            var PageType = DOM.getElementsByTagName("pagetype")[0];
+
+            if (PageType) {
+                page.setType(PageType.innerHTML);
+                if (page.type == "modal") {
+                    if (app.getElementsByTagName("modal")[0]) {
+                        app = app.getElementsByTagName("modal")[0];
+                        let dom_modal = DOM.getElementsByTagName("modal")[0];
+                        dom_modal.parentElement.removeChild(dom_modal);
+                    } else
+                        page.type = "normal";
+                }
+            }
+
+
             var elements = app.getElementsByTagName("element");
-
-
 
             for (var i = 0; i < elements.length; i++) {
 
                 let ele = elements[i];
+                let equivilant_element_main_dom = null;
 
-                var equivilant_in_document = document.getElementById(ele.id);
+                if (page.type !== "modal") {
 
-                if (!equivilant_in_document) {
-                    var insert;
-                    //need figure out the order that this goes into.
+                    equivilant_element_main_dom = dom_app.querySelector(`#${ele.id}`);
 
-                    if (elements[i + 1] && (insert = document.getElementById(elements[i + 1].id)))
-                        insert.parentElement.insertBefore(ele.cloneNode(), insert);
+                    if (!equivilant_element_main_dom) {
+                        var insert;
+                        //need figure out the order that this goes into.
 
-                    else if (elements[i - 1] && (insert = document.getElementById(elements[i - 1].id)))
-                        insert.parentElement.insertAfter(ele.cloneNode(), insert);
+                        if (elements[i + 1] && (insert = dom_app.querySelector(`#${elements[i + 1].id}`)))
+                            dom_app.insertBefore(ele.cloneNode(), insert);
 
-                    else
-                        insert.parentElement.getElementsByTagName("app")[0].appendChild();
+                        else if (elements[i - 1] && (insert = dom_app.querySelector(`#${elements[i - 1].id}`)))
+                            dom_app.insertBefore(ele.cloneNode(), insert.nextSibling);
+
+                        else
+                            dom_app.appendChild(ele.cloneNode());
+
+                    }
+
+                    equivilant_element_main_dom = dom_app.querySelector(`#${ele.id}`);
+
+                    if (document == DOM) {
+                        //clear out the existing element
+                        equivilant_element_main_dom.innerHTML = "";
+                    }
                 }
-
-                var equivilant_in_document = document.getElementById(ele.id);
                 //if there is a component inside the element, register that component if it has not already been registered
                 var component = ele.getElementsByTagName("component")[0];
 
@@ -233,11 +266,9 @@ class Linker {
                     var id = component.classList[0],
                         comp;
 
-
-
-                    if (!equivilant_in_document.getElementsByClassName(id)[0]) {
+                    if (page.type !== "modal") {
                         component = component.cloneNode();
-                        equivilant_in_document.appendChild(component);
+                        if (equivilant_element_main_dom) equivilant_element_main_dom.appendChild(component);
                     }
 
                     if (id) {
@@ -268,24 +299,32 @@ class Linker {
                             this.components[id].containerElementID = ele.id;
                         }
                     }
-                    setLinks(component, (URL)=>{
-                      window.history.pushstate({}, "", URL);
-                      //window.history.popstate();
-                      return true;
+
+                    page.elements.push(new Element(component, this.components[id]));
+                } else {
+                    //create a wrapped component for the elements inside the 
+                    let component = new Component(ele.firstElementChild);
+
+                    setLinks(ele, (href, e) => {
+                        history.pushState({}, "ignored title", href);
+                        window.onpopstate();
+                        return true;
                     })
 
 
-                    page.elements.push(new Element(component, this.components[id]));
+                    if (page.type !== "modal") {
+                        ele.removeChild(ele.firstElementChild);
+                        page.elements.push(new Element(equivilant_element_main_dom, component));
+                    } else
+                        page.elements.push(new Element(ele, component));
+
                 }
-
-
             }
-        } else {
-            //do nothing
-        }
 
-        this.views[URL] = page;
+            this.pages[URL] = (page.type == "modal") ? new Modal(URL, page, app) : page;
+        }
     }
+
 }
 
 

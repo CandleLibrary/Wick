@@ -1,5 +1,6 @@
-/** View
-*/
+//Updates UI
+//Updated By Model
+
 class View{
 	constructor(){
 		this.next = null;
@@ -23,7 +24,7 @@ class View{
 	setModel(model){
 	}
 	/**
-	* Called by model when it is destroyed. Destroys view by default
+	* Called by model when it is destroyed. Destroys view as a default action
 	*/
 	unsetModel(){
 		this.destructor();

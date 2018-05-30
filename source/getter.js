@@ -23,7 +23,7 @@ class Getter extends Controller {
         this.FETCH_IN_PROGRESS = true;
 
         var url = "http://" + window.location.host + this.url + ( (request_object) ? ("?" + this.__process_url__(request_object)) : "");
-        console.log(url)
+
         return fetch(url, 
         { 
             credentials: "same-origin", // Sends cookies back to server with request
