@@ -9,6 +9,18 @@
 
     <app>
       <!-- This element will synch with other elements id'd main in other documents. And represents the first part of creating a wick power app. -->
+      <element id="intro">
+        <h1>Getting Started with Wick</h1>
+        <p>Wick is a multi paradigm platform that can be used to create website. It is SPA forward, while respecting state of web</p>
+      </element>
+
+      <element id="source">
+        <h1> Forms and Input Elements </h1>
+        One can construct a filtering system to handle multiple results with search filtering.
+
+        <component class="user_lookup"></component>
+      </element>
+
       <element id="main">
         <div data-transform="the" class="p">HI, this is the main page!</div>
         <component class="unified_message">
@@ -18,10 +30,48 @@
       </element>
     </app>
 
-  <script type="text/javascript">
-    //Here we will load the Wick engine when the page completes its loading. Wick will automatically start when the page complets its loading.
-    wick.light();
-  </script>
+  <template id="user_lookup">
+    <case data-schema="users" data-url="/documents/data/users.json" data-prop="data">
+      <template class="user_entry">
+        <case model="user">
+          <div data-class="raw" data-prop="name"></div>
+          <input type="text"  data-prop="name" name ="note">
+        </case>
+      </template>
+    </case>
+  </template>
+
+  <template id="user_entry">
+    <case model="user">
+    </case>
+  </template>
 
   </body>
+
+  <script type="text/javascript">
+    //Here we will load the Wick engine when the page completes its loading. Wick will automatically start when the page complets its loading.
+    let presets = {schemas:{}, cassettes:{}};
+
+    //Create a new schema for Users and User container
+    class User extends wick.Model {};
+    User.schema = {
+      name:String,
+      identifier:"name"
+    }
+
+    class Users extends wick.Model {};
+
+    Users.schema = {
+      data: [{container: wick.ArrayModelContainer, schema: {
+        identifier: "name",
+        model: User,
+      }}],
+      identifier:"name"
+    }
+
+    presets.schemas.users = Users;
+
+    wick.light(presets);
+
+  </script>
 </html>

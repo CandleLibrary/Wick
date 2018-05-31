@@ -80,6 +80,10 @@ class Linker {
             }
         }
 
+        /**
+          TODO Validate that every schama is a Model constructor
+        */
+
         /* */
         this.modal_stack = [];
 
@@ -194,7 +198,7 @@ class Linker {
                 let trs = 0;
 
                 let transition_elements = {};
-                
+
                 console.log("transition elements", transition_elements)
 
                 if (
