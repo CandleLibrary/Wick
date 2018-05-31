@@ -1,5 +1,5 @@
 /**
-    An area to hold data and UI components. 
+    An area to hold data and UI components.
 */
 class Element {
     constructor(element, component) {
@@ -13,9 +13,9 @@ class Element {
             var t = this.component.transitionOut();
             this.element.removeChild(this.component.element);
             this.component.LOADED = false;
-            return;
+            return t;
         }
-        return {};
+        return 0;
     }
 
     transitionIn(transition_elements, query, IS_SAME_PAGE) {

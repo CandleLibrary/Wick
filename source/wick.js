@@ -59,7 +59,7 @@ function light(presets){
 
     LINKER_LOADED = true;
 
-    let link = new Linker(presets);
+    let link = new Linker(presets || {});
 
     window.addEventListener("load", ()=>{
         link.loadNewPage(document.location.pathname, document);

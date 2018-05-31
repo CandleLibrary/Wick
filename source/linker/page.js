@@ -1,5 +1,5 @@
 /*
-	Handles the parsing and loading of components for a particular page. 
+	Handles the parsing and loading of components for a particular page.
 */
 class PageView {
 
@@ -27,11 +27,13 @@ class PageView {
     }
 
     transitionOut() {
+        let time = 0;
+
         for (var i = 0; i < this.elements.length; i++) {
-            this.elements[i].transitionOut();
+            time = Math.max(time,this.elements[i].transitionOut());
         }
 
-        return 0;
+        return time;
     }
 
     compareComponents() {

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: ModelContainer</title>
+    <title>JSDoc: Source: linker/element.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,135 +17,49 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: ModelContainer</h1>
+    <h1 class="page-title">Source: linker/element.js</h1>
 
     
 
 
 
-
-<section>
-
-<header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>ModelContainer<span class="signature">()</span><span class="type-signature"></span></h2>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-    
-        
-
-    
-
-    
-    <h4 class="name" id="ModelContainer"><span class="type-signature"></span>new ModelContainer<span class="signature">()</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    The type of object this container holds.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="model_model_container.js.html">model/model_container.js</a>, <a href="model_model_container.js.html#line7">line 7</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+    An area to hold data and UI components. 
+*/
+class Element {
+    constructor(element, component) {
+        this.id =  (element.classList) ? element.classList[0] : element.id;
+        this.component = component;
+        this.element = element;
+    }
+
+    transitionOut() {
+        if (this.component.transitionOut) {
+            var t = this.component.transitionOut();
+            this.element.removeChild(this.component.element);
+            this.component.LOADED = false;
+            return;
+        }
+        return {};
+    }
+
+    transitionIn(transition_elements, query, IS_SAME_PAGE) {
+        if (this.component &amp;&amp; !this.component.LOADED) {
+            var element = this.component.element;
+            if (!element.parentElement) this.element.appendChild(element);
+            this.component.transitionIn(transition_elements, query, IS_SAME_PAGE);
+        }
+    }
+}
+
+export {
+    Element
+}</code></pre>
+        </article>
+    </section>
 
 
 

@@ -11,6 +11,10 @@ import {
     TurnDataIntoQuery
 } from "../common"
 
+
+/**
+
+*/
 class Component extends View {
     constructor(element) {
             super();
@@ -18,14 +22,21 @@ class Component extends View {
             this.anchor = null;
             this.LOADED = false;
         }
-        /*
-        	Takes as an input a list of transition objects that can be used 
-        */
+    /**
+      	Takes as an input a list of transition objects that can be used
+
+    */
     transitionIn(elements, query) {
+      this.element.style.opacity = 0;
+      this.element.style.opacity = 1;
+      var discard = this.element.style.opacity;
     }
-
+    /**
+      @returns {number} Time in milliseconds that the transtion will take to complete.
+    */
     transitionOut() {
-
+      this.element.style.opacity = 0;
+      return 500;
     }
 }
 
@@ -67,7 +78,7 @@ class CaseComponent extends Case {
     }
 
     /*
-    	Takes as an input a list of transition objects that can be used 
+    	Takes as an input a list of transition objects that can be used
     */
     transitionIn(elements, query) {
 

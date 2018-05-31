@@ -19,9 +19,10 @@ case {
 }
 
 /* Component Wrapper */
-/* Used to wrap component elements that are not part of case */
+/* Used to wrap component elements that are not part of a case */
 .comp_wrap {
-
+  opacity:0;
+  transition: all 8.25s
 }
 
 /* PageType */
