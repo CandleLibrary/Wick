@@ -21,8 +21,15 @@ case {
 /* Component Wrapper */
 /* Used to wrap component elements that are not part of a case */
 .comp_wrap {
-  opacity:0;
-  transition: all 8.25s
+    transition: all 0.25s;
+}
+
+/* Component Wrapper */
+/* Used to wrap component elements that are not part of a case */
+.ele_wrap {
+    position: absolute;
+    top:0;
+    left:0;
 }
 
 /* PageType */
@@ -30,7 +37,27 @@ pagetype {
   display: none
 }
 
-/* Modals */
-modal {
+.p{
+    position: relative;
+    background-color: red;
+    overflow: hidden;
+    border-radius: 5px;
+    display: block;
+}
 
+.c{
+    position: relative;
+    background-color: green;
+}
+
+/* Modals */
+modal, .modal {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    border: none;
+    padding: 0;
+    margin: 0;
 }

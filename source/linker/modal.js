@@ -1,5 +1,5 @@
-/*
-	Handles the parsing and loading of components for a particular page. 
+/**
+	Handles pages that appear ontop of other pages, and do not represent a change of the view.
 */
 class Modal {
 
@@ -23,14 +23,13 @@ class Modal {
     }
 
     transitionIn(OldView, query, IS_SAME_PAGE) {
-        this.history_depth++;        
-        
+        this.history_depth++;
+
         if(!IS_SAME_PAGE){
             document.body.appendChild(this.element);
             var t = this.element.style.opacity;
             setTimeout(()=>{
-            this.element.style.opacity = 1;
-                
+                this.element.style.opacity = 1;
             }, 50)
         }
 

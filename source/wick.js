@@ -59,6 +59,8 @@ function light(presets){
 
     LINKER_LOADED = true;
 
+    //Pass in the presets or a plain object if presets is undefined.
+
     let link = new Linker(presets || {});
 
     window.addEventListener("load", ()=>{
@@ -66,7 +68,17 @@ function light(presets){
         link.parseURL(document.location.pathname, document.location.search);
     })
 
-    console.log("The Wick has been lit")
+console.log(`
+\ \(\ \ \(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \)
+\ \)\\\)\)\(\ \ \ \'\ \(\ \ \ \ \ \ \ \ \ \ \(\ \/\(
+\(\(\_\)\(\)\\\ \)\ \ \)\\\ \ \ \ \(\ \ \ \ \)\\\(\)\)
+\_\(\(\)\)\\\_\)\(\)\(\(\_\)\ \ \ \)\\\ \ \(\(\_\)\\
+\\\ \\\(\(\_\)\/\ \/\ \(\_\)\ \ \(\(\_\)\ \|\ \|\(\_\)
+\ \\\ \\\/\\\/\ \/\ \ \|\ \|\ \/\ \_\|\ \ \|\ \/\ \/
+\ \ \\\_\/\\\_\/\ \ \ \|\_\|\ \\\_\_\|\ \ \|\_\\\_\\
+Copyright 2018 Anthony C Weathersby
+https://www.github.com/galactrax/wick
+`)
 }
 
 /*** Exports ***/

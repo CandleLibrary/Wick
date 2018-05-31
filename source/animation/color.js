@@ -1,8 +1,10 @@
 import {Lex} from "../common"
 
-class Color{
+class Color extends Float64Array{
 
 	constructor(r,g,b,a = 1){
+		super(4)
+
 		this.r = 0;
 		this.g = 0;
 		this.b = 0;
@@ -11,11 +13,43 @@ class Color{
 		if(typeof(r) == "string"){
 			this.fromString(r);
 		}else{
-			this.r = r;
-			this.g = g;
-			this.b = b;
-			this.a = a;	
-		}		
+			this.r = Math.max(Math.min(Math.round(r),255),0);
+			this.g = Math.max(Math.min(Math.round(g),255),0);
+			this.b = Math.max(Math.min(Math.round(b),255),0);
+			this.a = Math.max(Math.min(a,1),0);
+		}
+	}
+
+	get r(){
+		return this[0];
+	}
+
+	set r(r){
+		this[0] = r;
+	}
+
+	get g(){
+		return this[1];
+	}
+
+	set g(g){
+		this[1] = g;
+	}
+
+	get b(){
+		return this[2];
+	}
+
+	set b(b){
+		this[2] = b;
+	}
+
+	get a(){
+		return this[3];
+	}
+
+	set a(a){
+		this[3] = a;
 	}
 
 	set(color){
@@ -72,7 +106,7 @@ class Color{
 
 		let r,g,b,a;
 		switch(lexer.token.text){
-			
+
 
 			case "rgb":
 				lexer.next() // (
@@ -101,7 +135,7 @@ class Color{
 			break;
 
 			default:
-				debugger
+
 				if(Color.colors[string])
 					this.set(Color.colors[string]  || new Color(255, 255, 255, 0.0001));
 			break;

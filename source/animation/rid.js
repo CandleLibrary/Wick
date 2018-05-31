@@ -12,8 +12,13 @@ class Rid_From {
         //extracted animatable componts
         var rect = element.getBoundingClientRect();
         this.color = new Color(window.getComputedStyle(element, null).getPropertyValue("background-color"));
-        this.height = parseFloat(window.getComputedStyle(element, null).getPropertyValue("height"));
-        this.width = parseFloat(window.getComputedStyle(element, null).getPropertyValue("width"));
+        //this.height = parseFloat(window.getComputedStyle(element, null).getPropertyValue("height"));
+        //this.width = parseFloat(window.getComputedStyle(element, null).getPropertyValue("width"));
+
+        if(!this.height || !this.width){
+            this.height = rect.height;
+            this.width = rect.width;
+        }
 
 
         this.left = parseFloat(rect.left);
@@ -36,8 +41,6 @@ class Rid_To extends Rid_From {
     constructor(element, from) {
         super(element);
 
-        console.log(this.left, this.top, element);
-
         this.from = from;
 
         this.res = ((element.style.top) && (element.style.left));
@@ -53,7 +56,7 @@ class Rid_To extends Rid_From {
         var offset_x = parseFloat(window.getComputedStyle(element, null).getPropertyValue("left"));
         var offset_y = parseFloat(window.getComputedStyle(element, null).getPropertyValue("top"));
 
-        console.log(element, this.top, from.top, offset_y, this.rt, this.rl)
+        console.log(this.height, this.width, this.from.height, this.from.width)
 
         //And adjust start to respect the elements own parental offsets
         var diffx = this.left - this.from.left;
@@ -68,7 +71,7 @@ class Rid_To extends Rid_From {
         this.s = 0;
         this.color_o = window.getComputedStyle(element, null).getPropertyValue("background-color");
         this.height_o = window.getComputedStyle(element, null).getPropertyValue("height");
-        this.width_o = this.element.getStyle("width");
+        this.width_o = window.getComputedStyle(element, null).getPropertyValue("width");
         this.top_o = this.top;
         this.left_o = this.left;
         this.pos = window.getComputedStyle(element, null).getPropertyValue("position");
@@ -96,10 +99,10 @@ class Rid_To extends Rid_From {
         var ratio = ease_out.getYatX(t);
 
         if (ratio > 1) ratio = 1;
-
+        
         this.element.style.top = ((this.top - this.from.top) * ratio + this.from.top) + "px";
         this.element.style.left = ((this.left - this.from.left) * ratio + this.from.left) + "px";
-        this.element.style.width = ((this.width - this.from.width) * ratio + this.from.width) + "px";
+        this.element.style.width = ((this.width - this.from.width) * ratio+ this.from.width) + "px";
         this.element.style.height = ((this.height - this.from.height) * ratio + this.from.height) + "px";
         this.element.style.backgroundColor = (this.color.sub(this.from.color).mult(ratio).add(this.from.color)) + "";
 

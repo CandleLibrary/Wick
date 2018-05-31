@@ -13,7 +13,7 @@ import {
 
 
 /**
-
+    Handles the transition of seperate elements.
 */
 class Component extends View {
     constructor(element) {
@@ -24,19 +24,28 @@ class Component extends View {
         }
     /**
       	Takes as an input a list of transition objects that can be used
-
     */
     transitionIn(elements, query) {
-      this.element.style.opacity = 0;
-      this.element.style.opacity = 1;
-      var discard = this.element.style.opacity;
+        this.LOADED = true;
     }
     /**
       @returns {number} Time in milliseconds that the transtion will take to complete.
     */
     transitionOut() {
-      this.element.style.opacity = 0;
-      return 500;
+        this.LOADED = false;
+        return 0;
+    }
+
+    getNamedElements(named_elements){
+        let children = this.element.children;
+
+        for(var i = 0; i < children.length; i++){
+            let child = children[i];
+
+            if (child.dataset.transform) {
+                named_elements[child.dataset.transform] = child;
+            }
+        }
     }
 }
 
@@ -109,13 +118,19 @@ class CaseComponent extends Case {
             this.model.add(query);
         }
         //}
-
+        this.LOADED = true;
         this.show();
     }
 
     transitionOut() {
-
+        this.LOADED = false;
         this.hide();
+    }
+
+    getNamedElements(named_elements){
+        for(let comp_name in this.named_components){
+            named_elements[comp_name] = this.named_components[comp_name];
+        }
     }
 }
 

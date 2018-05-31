@@ -10,20 +10,33 @@ class PageView {
         this.type = "normal";
     }
 
-    transitionIn(OldView, query, IS_SAME_PAGE) {
+    destructor(){
+        for (var i = 0; i < this.elements.length; i++) {
+            let element = this.elements[i];
+            element.destructor();
+        }
+
+        this.elements = null;
+    }
+
+    transitionIn(OldView, query, IS_SAME_PAGE, transition_elements) {
         let final_time = 0;
 
         for (var i = 0; i < this.elements.length; i++) {
-            var element = this.elements[i];
+            let element = this.elements[i];
             if (OldView && OldView[element.id]) {
                 final_time = Math.max(element.transitionIn(OldView[element.id], query[element.id] ? query[element.id] : query, IS_SAME_PAGE), final_time);
             } else {
-                element.transitionIn(null, query, IS_SAME_PAGE);
+                element.transitionIn(null, query, IS_SAME_PAGE, transition_elements);
             }
         }
     }
 
     finalize() {
+        for (var i = 0; i < this.elements.length; i++) {
+            let element = this.elements[i];
+            element.finalize();
+        }
     }
 
     transitionOut() {
@@ -34,6 +47,13 @@ class PageView {
         }
 
         return time;
+    }
+
+    getNamedElements(named_elements){
+        for (var i = 0; i < this.elements.length; i++) {
+            let element = this.elements[i];
+            element.getNamedElements(named_elements);
+        }
     }
 
     compareComponents() {
