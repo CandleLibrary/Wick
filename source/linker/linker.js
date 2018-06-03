@@ -57,12 +57,12 @@ class Linker {
             for (let component_name in presets.static) {
                 let component = presets.static[component_name];
 
-                if (
-                    (component.transitionIn && component.transitionIn instanceof Function)
-                    (component.transitionOut && component.transitionOut instanceof Function)
-                    (component.setModel && component.setModel instanceof Function)
-                    (component.unsetModel && component.unsetModel instanceof Function)
-                    (component.transitionIn && component.transitionIn instanceof Function)
+                if ( true
+                    //(component.transitionIn && component.transitionIn instanceof Function) &&
+                    //(component.transitionOut && component.transitionOut instanceof Function) &&
+                    //(component.setModel && component.setModel instanceof Function) &&
+                    //(component.unsetModel && component.unsetModel instanceof Function) &&
+                    //(component.transitionIn && component.transitionIn instanceof Function)
                 ) this.addStatic(component_name, component);
                 else
                     console.warn(`Static component ${component_name} lacks correct component methods`);
@@ -194,7 +194,7 @@ class Linker {
                 let trs = 0;
 
                 let transition_elements = {};
-                
+
                 console.log("transition elements", transition_elements)
 
                 if (
@@ -289,7 +289,7 @@ class Linker {
             for (var i = 0; i < elements.length; i++) {
 
                 let ele = elements[i];
-                let equivilant_element_main_dom = null;
+                let equivilant_element_main_dom = ele;
 
                 if (page.type !== "modal") {
 
@@ -311,7 +311,6 @@ class Linker {
                     }
 
                     equivilant_element_main_dom = dom_app.querySelector(`#${ele.id}`);
-
                 }
 
                 let WickElement;
@@ -321,21 +320,27 @@ class Linker {
                     let element  = document.createElement("div");
                     element.innerHTML = ele.innerHTML;
                     element.classList.add("ele_wrap");
+
                     WickElement = new Element(equivilant_element_main_dom, element);
+
+                    if (document == DOM) {
+                        /* If the DOM is the page we're working on, then clear out it's contents, which may contain <no-script> tags for fallback purposes.*/
+                        equivilant_element_main_dom.innerHTML = "";
+                    }
                 } else {
-                    WickElement = new Element(null, ele);
+
+                    let element  = document.createElement("div");
+                    element.innerHTML = ele.innerHTML;
+                    element.classList.add("ele_wrap");
+
+                    WickElement = new Element(equivilant_element_main_dom, element);
                 }
 
-                if (document == DOM) {
-                    //clear out the existing element
-                    equivilant_element_main_dom.innerHTML = "";
-                }
+
 
                 page.elements.push(WickElement);
 
                 WickElement.setComponents(this.components, this.models_constructors,this.component_constructors, this.presets, DOM);
-
-                console.log(WickElement);
             }
 
             this.pages[URL] = (page.type == "modal") ? new Modal(URL, page, app) : page;
