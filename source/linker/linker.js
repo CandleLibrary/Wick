@@ -80,6 +80,10 @@ class Linker {
             }
         }
 
+        /**
+          TODO Validate that every schama is a Model constructor
+        */
+
         /* */
         this.modal_stack = [];
 

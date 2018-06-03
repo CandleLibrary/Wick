@@ -2,13 +2,19 @@ import {Cassette} from "./cassette"
 
 class Input extends Cassette{
 	constructor(parent, element){
-		//Scan the element and look for inputs that can be mapped to the 
+		//Scan the element and look for inputs that can be mapped to the
 		super(parent, element);
 
-		//Inputs in forms are automatically hidden. 
+		//Inputs in forms are automatically hidden.
 		this.element.display = "none";
+
+		this.element.addEventListener("input", ()=>{
+				var data = {}
+				data[this.prop] = this.element.value;
+				this.parent.model.add(data);
+		})
 	}
-	
+
 	update(data){
 		console.log(this.element.type)
 		switch(this.element.type){

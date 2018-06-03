@@ -27,8 +27,12 @@ case {
 /* Component Wrapper */
 /* Used to wrap component elements that are not part of a case */
 .ele_wrap {
+<<<<<<< HEAD
     top:0;
     left:0;
+=======
+  display: block;
+>>>>>>> cfb186cc9e510baa44d074c03c7793e1e8268645
 }
 
 /* PageType */
@@ -69,4 +73,10 @@ modal, .modal {
     background-color: transparent;
     position:  absolute;
     top:0
+}
+
+
+element {
+  position: relative;
+  display: block;
 }

@@ -134,16 +134,13 @@ class Case extends View {
                 model.addView(this);
 
                 if (this.url) {
-
-
-
                     this.receiver = new Getter(this.url);
                     this.receiver.setModel(model);
                     this.request();
                 }
 
 
-                return_object = this.parent_view;
+                //return_object = this.parent_view;
             }
 
             for (var i = 0; i < children.length; i++) {
@@ -216,9 +213,9 @@ class Case extends View {
 
             var result = data[this.prop].get();
 
-            //We should establish filtering mechanisms here to remove unneeded data. 
+            //We should establish filtering mechanisms here to remove unneeded data.
 
-            //Need to isolate new results from existing, and cull existing that do not match results. 
+            //Need to isolate new results from existing, and cull existing that do not match results.
             a:
                 for (var i = 0; i < result.length; i++) {
                     //check for existing matches
@@ -248,7 +245,7 @@ class Case extends View {
     setModel(model) {
 
         if (this.prop && (model.schema[this.prop] instanceof Array)) {
-            //This case will create sub templates from from each entry in the data array 
+            //This case will create sub templates from from each entry in the data array
             this.TEMPLATE_HANDLER = true;
 
             return;
@@ -326,7 +323,7 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
 
     //Case of a template
     if (tag == "TEMPLATE") {
-        //If the template is empty, Check the working DOM for another TEMPLATE element whose ID matches this elements first class name 
+        //If the template is empty, Check the working DOM for another TEMPLATE element whose ID matches this elements first class name
         if (element.innerHTML == "") {
             let ele;
 

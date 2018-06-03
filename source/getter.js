@@ -24,8 +24,8 @@ class Getter extends Controller {
 
         var url = "http://" + window.location.host + this.url + ( (request_object) ? ("?" + this.__process_url__(request_object)) : "");
 
-        return fetch(url, 
-        { 
+        return fetch(url,
+        {
             credentials: "same-origin", // Sends cookies back to server with request
             method: 'GET'
         }).then((response)=>{
@@ -53,19 +53,18 @@ class Getter extends Controller {
     }
 
     __process_response__(json) {
-        
+
         var response = {}
         var request = response.target;
 
         //result(request);
             if (this.model){
-
             //should be able to pipe responses as objects created from well formulated data directly into the model.
                 this.set(this.parseJson(json));
             }
             else
                 console.warn(`Unable to process response for request made to: ${this.url}. There is no model attached to this request controller!`)
-        
+
     }
 }
 
