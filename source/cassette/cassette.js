@@ -50,8 +50,6 @@ class Cassette {
         this.height = d.height;
         this.top = d.top;
         this.left = d.left;
-
-        this.update();
     }
 
     hide() {

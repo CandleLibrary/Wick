@@ -18,6 +18,10 @@ case {
   display: block;
 }
 
+case a {
+    display: unset;
+}
+
 /* Component Wrapper */
 /* Used to wrap component elements that are not part of a case */
 .comp_wrap {
@@ -27,12 +31,9 @@ case {
 /* Component Wrapper */
 /* Used to wrap component elements that are not part of a case */
 .ele_wrap {
-<<<<<<< HEAD
     top:0;
     left:0;
-=======
-  display: block;
->>>>>>> cfb186cc9e510baa44d074c03c7793e1e8268645
+    display: block;
 }
 
 /* PageType */
@@ -53,7 +54,8 @@ pagetype {
     background-color: green;
 }
 
-/* Modals */
+/* =========================== Modals =========================== */
+
 modal, .modal {
     position: absolute;
     display:block;
@@ -70,8 +72,11 @@ modal, .modal {
 }
 /* Used to provide a touch/click surface to with which the page can be navigated back to the main content */
 .modal_backer{
-    background-color: transparent;
+    background-color: rgba(0,0,0,0.5);
     position:  absolute;
+    width:100%;
+    height: 100vh;
+    z-index: -1;
     top:0
 }
 

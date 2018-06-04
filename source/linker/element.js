@@ -3,13 +3,17 @@ import {TransformTo} from "../animation/animation"
 
 import {
     Component,
-    CaseComponent
+    CaseComponent,
+    FailedComponent
 } from "./component"
 
 /**
     An area to hold data and UI components.
 */
 class Element {
+    /**
+
+    */
     constructor(parent_element, element) {
         this.id =  (element.classList) ? element.classList[0] : element.id;
         this.components = [];
@@ -105,7 +109,7 @@ class Element {
     setComponents(App_Components, Model_Constructors, Component_Constructors, presets, DOM){
         //if there is a component inside the element, register that component if it has not already been registered
         var components = Array.prototype.map.call(this.element.getElementsByTagName("component"),(a)=>a);
-        console.log(components)
+
         setLinks(this.element, (href, e) => {
             history.pushState({}, "ignored title", href);
             window.onpopstate();
@@ -124,66 +128,77 @@ class Element {
         var templates = DOM.getElementsByTagName("template");
 
         for (var i = 0; i < components.length; i++) {
-
             let app_component = null;
             let component = components[i];
 
+            try{
+                /**
+                    Replace the component with a component wrapper to help preserve DOM arrangement
+                */
 
-            /**
-                Replace the component with a component wrapper to help preserve DOM arrangement
-            */
+                let comp_wrap = document.createElement("div");
+                comp_wrap.classList.add("comp_wrap");
+                this.wraps.push(comp_wrap);
+                this.element.replaceChild(comp_wrap, component);
 
-            let comp_wrap = document.createElement("div");
-            comp_wrap.classList.add("comp_wrap");
-            this.wraps.push(comp_wrap);
-            this.element.replaceChild(comp_wrap, component);
+                var id = component.classList[0],
+                    comp;
+                /**
+                  We must ensure that components act as template "landing spots". In order for that to happen we must check for:
+                  (1) The component has, as it's first class name, an id that (2) matches the id of a template. If either of these prove to be not true, we should reject the adoption of the component as a Wick
+                  component and instead treat it as a normal "pass through" element.
+                */
+                if (!id) {
+                    /*setLinks(component, (href, e) => {
+                        history.pushState({}, "ignored title", href);
+                        window.onpopstate();
+                        return true;
+                    })*/
 
-            var id = component.classList[0],
-                comp;
-            /**
-              We must ensure that components act as template "landing spots". In order for that to happen we must check for:
-              (1) The component has, as it's first class name, an id that (2) matches the id of a template. If either of these prove to be not true, we should reject the adoption of the component as a Wick
-              component and instead treat it as a normal "pass through" element.
-            */
-            if (!id) {
-                /*setLinks(component, (href, e) => {
-                    history.pushState({}, "ignored title", href);
-                    window.onpopstate();
-                    return true;
-                })*/
+                    app_component = new Component(component);
 
-                app_component = new Component(component);
+                } else {
 
-            } else {
+                    if (!App_Components[id]) {
+                        if (comp = Component_Constructors[id]) {
+                            app_component = new comp.constructor(component, presets, templates);
 
-                if (!App_Components[id]) {
-                    if (comp = Component_Constructors[id]) {
-                        app_component = new comp.constructor(component, presets, templates);
+                            if (comp.model_name && Model_Constructors[comp.model_name]) {
+                                var model = Model_Constructors[comp.model_name];
+                                if (model.getter)
+                                    model.getter.get();
+                                model.addView(app_component);
+                            }
 
-                        if (comp.model_name && Model_Constructors[comp.model_name]) {
-                            var model = Model_Constructors[comp.model_name];
-                            if (model.getter)
-                                model.getter.get();
-                            model.addView(app_component);
+                            app_component.id = id;
+
+                            App_Components[id] = app_component;
+                        } else {
+                            var template = templates[id];
+
+                            if (template)
+                                app_component = new CaseComponent(template, presets, Model_Constructors, null, DOM);
+                            else
+                                app_component = new Component(component);
                         }
 
-                        app_component.id = id;
-
-                        App_Components[id] = app_component;
-                    } else {
-                        var template = templates[id];
-
-                        if (template)
-                            app_component = new CaseComponent(template, presets, Model_Constructors, null, DOM);
-                        else
-                            app_component = new Component(component);
+                        if(!app_component){
+                            console.warn("App Component not constructed");
+                            /** TODO: If there is a fallback <no-script> section use that instead. */
+                            app_component = new FailedComponent();
+                        }else{
+                            App_Components[id] = app_component;
+                        }
+                    }else{
+                        app_component = App_Components[id];
                     }
-
-                    App_Components[id] = app_component;
-                }else{
-                    app_component = App_Components[id];
                 }
+            }catch(e){
+                app_component = new FailedComponent(e, presets);
             }
+
+
+
 
             this.components.push(app_component);
         }

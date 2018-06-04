@@ -1,4 +1,7 @@
 import {
+    WURL
+} from "./wurl"
+import {
     Component,
     CaseComponent
 } from "./component"
@@ -32,7 +35,7 @@ class Linker {
      *
      *  @param {LinkerPresets} presets - A preset based object that will be used by Wick for handling custom components. Is validated according to the definition of a LinkerPreset
      */
-    constructor(presets) {
+    constructor(presets, url_host) {
         this.pages = {};
         this.components = {};
         this.component_constructors = {};
@@ -42,6 +45,7 @@ class Linker {
         this.current_query;
         this.current_view = null;
         this.finalizing_pages = [];
+        this.url_host = url_host;
 
         /*
           The static field in presets are all Component-like objects contructors that are defined by the client
@@ -55,17 +59,18 @@ class Linker {
         */
         if (presets.static) {
             for (let component_name in presets.static) {
+
                 let component = presets.static[component_name];
 
-                if ( true
-                    //(component.transitionIn && component.transitionIn instanceof Function) &&
-                    //(component.transitionOut && component.transitionOut instanceof Function) &&
-                    //(component.setModel && component.setModel instanceof Function) &&
-                    //(component.unsetModel && component.unsetModel instanceof Function) &&
-                    //(component.transitionIn && component.transitionIn instanceof Function)
-                ) this.addStatic(component_name, component);
+                let a = 0,b = 0,c = 0,d = 0,e=0;
+
+                if ((a = (component.prototype.transitionIn && component.prototype.transitionIn instanceof Function)) &&
+                    (b = (component.prototype.transitionOut && component.prototype.transitionOut instanceof Function)) &&
+                    (c = (component.prototype.setModel && component.prototype.setModel instanceof Function)) &&
+                    (d = (component.prototype.unsetModel && component.prototype.unsetModel instanceof Function)))
+                    this.addStatic(component_name, component);
                 else
-                    console.warn(`Static component ${component_name} lacks correct component methods`);
+                    console.warn(`Static component ${component_name} lacks correct component methods, \nHas transitionIn function:${a}\nHas transitionOut functon:${b}\nHas set model function:${c}\nHas unsetModel function:${d}`);
             }
         }
 
@@ -81,6 +86,15 @@ class Linker {
         }
 
         /**
+            Schemas provide the constructors for models
+        */
+        if(presets.schemas){
+
+        }else{
+            presets.schemas = {};
+        }
+
+        /**
           TODO Validate that every schama is a Model constructor
         */
 
@@ -88,25 +102,25 @@ class Linker {
         this.modal_stack = [];
 
         window.onpopstate = () => {
-            this.parseURL(document.location.pathname, document.location.search)
+            this.parseURL(document.location)
         }
     }
 
     /*
     	This function will parse a URL and determine what Page needs to be loaded into the current view.
     */
-    parseURL(url, query = document.location.search) {
+    parseURL(location) {
 
-        if (this.current_url == url && this.current_query == query) return;
+        let url = location.pathname;
 
-        let IS_SAME_PAGE = (this.current_url == url);
+        if (this.current_url == url) return;
+
+        let IS_SAME_PAGE = (this.current_url == url), page = null, wurl = new WURL(location);
 
         this.current_url = url;
 
-        this.current_query = query;
-
-        if (this.pages[url])
-            return this.loadPage(url, TurnQueryIntoData(query.slice(1)), IS_SAME_PAGE);
+        if ((page = this.pages[url]))
+            return this.loadPage(page, wurl, IS_SAME_PAGE);
 
         fetch(url, {
             credentials: "same-origin", // Sends cookies back to server with request
@@ -115,7 +129,7 @@ class Linker {
             (response.text().then((html) => {
                 var DOM = (new DOMParser()).parseFromString(html, "text/html")
                 this.loadNewPage(url, DOM);
-                this.loadPage(url, TurnQueryIntoData(query.slice(1)));
+                this.loadPage(this.pages[url], wurl, IS_SAME_PAGE);
             }));
         }).catch((error) => {
             console.warn(`Unable to process response for request made to: ${this.url}. Response: ${error}. Error Received: ${error}`);
@@ -139,14 +153,14 @@ class Linker {
       @param {string} query -
       @param {Bool} IS_SAME_PAGE -
     */
-    loadPage(url, query, IS_SAME_PAGE) {
+    loadPage(page, wurl, IS_SAME_PAGE) {
 
-        let page, transition_length = 0;
+        this.url_host.wurl = wurl;
+
+        let transition_length = 0;
 
         //Finalize any existing page transitions;
         this.finalizePages();
-
-        if (page = this.pages[url]) {
 
             if (page instanceof Modal) {
                 //trace modal stack and see if the modal already exists
@@ -199,8 +213,6 @@ class Linker {
 
                 let transition_elements = {};
 
-                console.log("transition elements", transition_elements)
-
                 if (
                     this.current_view &&
                     this.current_view != page
@@ -212,13 +224,13 @@ class Linker {
 
                 this.current_view = page;
 
-                page.transitionIn(this.current_view, query, IS_SAME_PAGE, transition_elements);
+                page.transitionIn(this.current_view, wurl, IS_SAME_PAGE, transition_elements);
 
                 setTimeout(() => {
                     this.finalizePages();
                 }, transition_length + 1);
             }
-        }
+
     }
 
     /**
@@ -270,15 +282,17 @@ class Linker {
         var app = app_source.cloneNode(true);
         var dom_app = document.getElementsByTagName("app")[0];
 
+
+
+        //get the page type, defaults to Normal
+        var PageType = DOM.getElementsByTagName("pagetype")[0];
+
         var page = new PageView(URL);
 
         if (app) {
-            //get the page type, defaults to Normal
-            var PageType = DOM.getElementsByTagName("pagetype")[0];
-
             if (PageType) {
-                page.setType(PageType.innerHTML);
-                if (page.type == "modal") {
+                page.setType(PageType.classList[0]);
+                if (PageType.classList[0] == "modal") {
                     if (app.getElementsByTagName("modal")[0]) {
                         app = app.getElementsByTagName("modal")[0];
                         let dom_modal = DOM.getElementsByTagName("modal")[0];
@@ -340,14 +354,12 @@ class Linker {
                     WickElement = new Element(equivilant_element_main_dom, element);
                 }
 
-
-
                 page.elements.push(WickElement);
 
                 WickElement.setComponents(this.components, this.models_constructors,this.component_constructors, this.presets, DOM);
             }
 
-            this.pages[URL] = (page.type == "modal") ? new Modal(URL, page, app) : page;
+            this.pages[URL] = (page.type == "modal") ? new Modal(url, page, app) : page;
         }
     }
 

@@ -65,18 +65,20 @@ class CaseParentView extends View {
 }
 
 class Case extends View {
-    constructor(element, presets, parent, WORKING_DOM) {
+    /**
+        Case constructor. Builds a Case object.
+        @params [DOMElement] element - A DOM <template> element that contains a <case> element.
+        @params [LinkerPresets] presets
+        @params [Case] parent
+        @params [DOM]  WORKING_DOM
+    */
+    constructor(element, presets, parent = null, WORKING_DOM) {
         super();
 
         if (!element) {
-            debugger;
-            console.warn("No element has been supplied to this Case");
+            console.warn("No element has been supplied to this Case constructor!");
             return;
         }
-
-
-
-        //clone the template
 
         this.named_components = {};
         this.data = {};
@@ -113,21 +115,22 @@ class Case extends View {
 
             var children = this.element.children;
 
-            if (this.element.dataset.url)
-                this.url = this.element.dataset.url;
+            if (this.data.url)
+                this.url = this.data.url;
 
-            if (this.element.dataset.prop)
-                this.prop = this.element.dataset.prop;
 
-            if (this.element.dataset.export)
-                this.exports = this.element.dataset.export;
+            if (this.data.prop)
+                this.prop = this.data.prop;
 
-            if (this.element.dataset.model) {
-                if (presets.models[this.element.dataset.model])
-                    presets.models[this.element.dataset.model].addView(this);
-            } else if (this.element.dataset.schema && presets.schemas[this.element.dataset.schema]) {
+            if (this.data.export)
+                this.exports = this.data.export;
 
-                var model = new presets.schemas[this.element.dataset.schema]();
+            if (this.data.model) {
+                if (presets.models[this.data.model])
+                    presets.models[this.data.model].addView(this);
+            } else if (this.data.schema && presets.schemas[this.data.schema]) {
+
+                var model = new presets.schemas[this.data.schema]();
 
                 this.parent_view = new CaseParentView(this);
 
@@ -152,6 +155,8 @@ class Case extends View {
                     this.components = this.components.concat(component);
             }
 
+            this.setModel(this.model);
+
             return return_object;
         } else {
             console.warn(`Case may only be constructed out of <case></case> elements. Received a ${element} in the case constructor!`)
@@ -167,8 +172,8 @@ class Case extends View {
         }
 
         this.components = null;
-        if (this.element.parentElement)
 
+        if (this.element.parentElement)
             this.element.parentElement.removeChild(this.element);
 
         this.element = null;
@@ -199,6 +204,8 @@ class Case extends View {
     }
 
     update(data) {
+        this.updateDimensions();
+
         for (var i = 0; i < this.components.length; i++) {
             let comp = this.components[i];
             if (comp instanceof Case)
@@ -212,6 +219,7 @@ class Case extends View {
             //components for each data element
 
             var result = data[this.prop].get();
+
 
             //We should establish filtering mechanisms here to remove unneeded data.
 
@@ -255,8 +263,9 @@ class Case extends View {
             model = model.data[this.prop];
         }
 
-        for (var i = 0; i < this.components.length; i++)
+        for (var i = 0; i < this.components.length; i++){
             this.components[i].setModel(model);
+        }
 
 
         super.setModel(model);

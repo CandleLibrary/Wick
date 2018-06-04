@@ -1,6 +1,6 @@
 function TurnDataIntoQuery(data) {
     var str = "";
-    
+
     if (arguments.length > 1)
         for (var i = 0; i < arguments.length; i++) {
             data = arguments[i];
@@ -31,7 +31,7 @@ function TurnQueryIntoData(query) {
             var t = {};
             if (a.length > 1) {
                 a.split("&").forEach((a, i) => {
-                    if (i < 1) out[a[0]] = t;
+                    if (i < 1) out[a] = t;
                     else {
                         let b = a.split("=");
                         out[b[0]] = b[1];

@@ -49,13 +49,24 @@ class Component extends View {
     }
 }
 
+/**
+    This is a fallback component if constructing a CaseComponent or normal Component throws an error.
+*/
+
+
+class FailedComponent extends Component {
+    constructor(error_messge, presets){
+        var div = document.createElement("div");
+        div.innerHTML = `<h2>WICK</h2><h3> This Wick component has failed!</h3> <h4>Error Message</h4><p>${error_messge}</p><p>Please contact the website maintainers to address the problem.</p> ${presets.error_contact}`;
+        super(div);
+    }
+}
+/**
+    This Component extends the Case class.
+*/
 class CaseComponent extends Case {
     constructor(element, presets, model_constructors, query, WORKING_DOM) {
         super(element, presets, null, WORKING_DOM);
-
-
-        //get the request id from the element.
-        console.log(this.element)
 
         this.getter = null;
         this.model_constructor = null;
@@ -72,15 +83,22 @@ class CaseComponent extends Case {
 
         if (!this.model) {
             let model = null;
-
-            if ((model = this.element.dataset.schema) && (model = presets.models[model])) {
+            if ((model = this.element.dataset.schema) && (model = presets.schemas[model])) {
                 this.model_constructor = model;
+            }else{
+
+                /**
+                    There is no model or schema set for this Case object. This will result in undefined behavior, as all cases are intended to be associated with a model. Thus, we'll kill this case construction and throw a warning about it.
+                */
+                var error = `No model found in the presets for this component which requires${(this.data.model)?` a model named:  "${this.data.model}"`: ` a schema named: "${this.data.schema}"`}.`;
+
+                console.warn(error)
+
+                return new FailedComponent(error, presets);
             }
 
             this.model = null;
         }
-
-        console.log(this.model_constructor, model_constructors)
 
         this.anchor = null;
         this.LOADED = false;
@@ -136,5 +154,6 @@ class CaseComponent extends Case {
 
 export {
     Component,
-    CaseComponent
+    CaseComponent,
+    FailedComponent
 }
