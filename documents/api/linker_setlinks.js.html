@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Home</title>
+    <title>JSDoc: Source: linker/setlinks.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,32 +17,44 @@
 
 <div id="main">
 
-    <h1 class="page-title">Home</h1>
+    <h1 class="page-title">Source: linker/setlinks.js</h1>
 
     
 
 
 
     
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ *	Converts links into Javacript enabled buttons that will be handled within the current Active page.
+ *
+ * @param {HTMLElement} element - Parent Element that contains the &lt;a> elements to be evaulated by function.
+ * @param {function} __function__ - A function the link will call when it is clicked by user. If it returns false, the link will act like a normal &lt;a> element and cause the browser to navigate to the "href" value.
+ *
+ * If the &lt;a> element has a data-ignore_link attribute set to a truthy value, then this function will not change the way that link operates.
+ * Likewise, if the &lt;a> element has a href that points another domain, then the link will remain unaffected.
+ */
+function setLinks(element, __function__) {
+    let links = element.getElementsByTagName("a");
+    for (let i = 0, l = links.length, temp, href; i &lt; l; i++) {
+        let temp = links[i];
 
+        if (temp.dataset.ignore_link) continue;
 
-    <h3> </h3>
+        if (temp.origin !== location.origin) continue;
 
+        if (!temp.onclick) temp.onclick = ((href, a, __function__) => (e) => {
+            e.preventDefault();
+            if (__function__(href, a)) e.preventDefault();
+        })(temp.href, temp, __function__);
+    }
+};
 
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
+export {setLinks}
+</code></pre>
+        </article>
+    </section>
 
 
 

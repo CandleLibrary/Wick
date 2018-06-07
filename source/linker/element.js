@@ -42,16 +42,16 @@ class Element {
     }
 
     transitionIn(transition_elements, query, IS_SAME_PAGE, named_elements) {
-        if(this.parent_element)
+        if(!IS_SAME_PAGE && this.parent_element)
             this.parent_element.appendChild(this.element);
 
         for (var i = 0; i < this.components.length; i++) {
 
             let component = this.components[i];
 
-            if (component && !component.LOADED) {
+            if (component) {
 
-                this.wraps[i].appendChild(component.element);
+                if(!IS_SAME_PAGE) this.wraps[i].appendChild(component.element);
 
                 component.LOADED = true;
 

@@ -221,6 +221,7 @@ class Tokenizer {
                 for (i = test_index; i < this.string.length; i++) {
                     e = SPF_function.scanToEnd(this.string.charCodeAt(i));
                     if (e > -1) break;
+                    e = 0;
                 }
                 token_length = i + e;
                 break;

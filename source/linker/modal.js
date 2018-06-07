@@ -3,7 +3,7 @@
 */
 class Modal {
 
-    constructor(URL, page, element) {
+    constructor(page, element) {
         this.page = page;
         this.element = element;
         this.element.classList.add("modal");

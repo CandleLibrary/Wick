@@ -27,6 +27,9 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>import {
+    WURL
+} from "./wurl"
+import {
     Component,
     CaseComponent
 } from "./component"
@@ -48,31 +51,6 @@ import {
 } from "./modal"
 
 
-/**
- *	Converts links into Javacript enabled buttons that will be handled within the current Active page.
- *
- * @param {HTMLElement} element - Parent Element that contains the &lt;a> elements to be evaulated by function.
- * @param {function} __function__ - A function the link will call when it is clicked by user. If it returns false, the link will act like a normal &lt;a> element and cause the browser to navigate to the "href" value.
- *
- * If the &lt;a> element has a data-ignore_link attribute set to a truthy value, then this function will not change the way that link operates.
- * Likewise, if the &lt;a> element has a href that points another domain, then the link will remain unaffected.
- */
-function setLinks(element, __function__) {
-    let links = element.getElementsByTagName("a");
-    for (let i = 0, l = links.length, temp, href; i &lt; l; i++) {
-        let temp = links[i];
-
-        if (temp.dataset.ignore_link) continue;
-
-        if(temp.origin !== location.origin) continue;
-
-        if (!temp.onclick) temp.onclick = ((href, a, __function__) => (e) => {
-            e.preventDefault();
-            if (__function__(href, a)) e.preventDefault();
-        })(temp.href, temp, __function__);
-    }
-};
-
 /** @namespace linker */
 
 /**
@@ -85,7 +63,7 @@ class Linker {
      *
      *  @param {LinkerPresets} presets - A preset based object that will be used by Wick for handling custom components. Is validated according to the definition of a LinkerPreset
      */
-    constructor(presets) {
+    constructor(presets, url_host) {
         this.pages = {};
         this.components = {};
         this.component_constructors = {};
@@ -95,6 +73,7 @@ class Linker {
         this.current_query;
         this.current_view = null;
         this.finalizing_pages = [];
+        this.url_host = url_host;
 
         /*
           The static field in presets are all Component-like objects contructors that are defined by the client
@@ -108,54 +87,68 @@ class Linker {
         */
         if (presets.static) {
             for (let component_name in presets.static) {
+
                 let component = presets.static[component_name];
 
-                if (
-                    (component.transitionIn &amp;&amp; component.transitionIn instanceof Function)
-                    (component.transitionOut &amp;&amp; component.transitionOut instanceof Function)
-                    (component.setModel &amp;&amp; component.setModel instanceof Function)
-                    (component.unsetModel &amp;&amp; component.unsetModel instanceof Function)
-                    (component.transitionIn &amp;&amp; component.transitionIn instanceof Function)
-                ) this.addStatic(component_name, component);
+                let a = 0,b = 0,c = 0,d = 0,e=0;
+
+                if ((a = (component.prototype.transitionIn &amp;&amp; component.prototype.transitionIn instanceof Function)) &amp;&amp;
+                    (b = (component.prototype.transitionOut &amp;&amp; component.prototype.transitionOut instanceof Function)) &amp;&amp;
+                    (c = (component.prototype.setModel &amp;&amp; component.prototype.setModel instanceof Function)) &amp;&amp;
+                    (d = (component.prototype.unsetModel &amp;&amp; component.prototype.unsetModel instanceof Function)))
+                    this.addStatic(component_name, component);
                 else
-                    console.warn(`Static component ${component_name} lacks correct component methods`);
+                    console.warn(`Static component ${component_name} lacks correct component methods, \nHas transitionIn function:${a}\nHas transitionOut functon:${b}\nHas set model function:${c}\nHas unsetModel function:${d}`);
             }
         }
-        
+
         /** TODO
             @define PageParser
 
             A page parser will parse templates before passing that data to the Case handler.
         */
-        if(presets.parser){
-            for(let parser_name in presets.page_parser){
+        if (presets.parser) {
+            for (let parser_name in presets.page_parser) {
                 let parser = presets.page_parser[parser_name];
             }
         }
+
+        /**
+            Schemas provide the constructors for models
+        */
+        if(presets.schemas){
+
+        }else{
+            presets.schemas = {};
+        }
+
+        /**
+          TODO Validate that every schama is a Model constructor
+        */
 
         /* */
         this.modal_stack = [];
 
         window.onpopstate = () => {
-            this.parseURL(document.location.pathname, document.location.search)
+            this.parseURL(document.location)
         }
     }
 
     /*
     	This function will parse a URL and determine what Page needs to be loaded into the current view.
     */
-    parseURL(url, query = document.location.search) {
+    parseURL(location) {
 
-        if (this.current_url == url &amp;&amp; this.current_query == query) return;
+        let url = location.pathname;
 
-        let IS_SAME_PAGE = (this.current_url == url);
+        if (this.current_url == url) return;
+
+        let IS_SAME_PAGE = (this.current_url == url), page = null, wurl = new WURL(location);
 
         this.current_url = url;
 
-        this.current_query = query;
-
-        if (this.pages[url])
-            return this.loadPage(url, TurnQueryIntoData(query.slice(1)), IS_SAME_PAGE);
+        if ((page = this.pages[url]))
+            return this.loadPage(page, wurl, IS_SAME_PAGE);
 
         fetch(url, {
             credentials: "same-origin", // Sends cookies back to server with request
@@ -164,7 +157,7 @@ class Linker {
             (response.text().then((html) => {
                 var DOM = (new DOMParser()).parseFromString(html, "text/html")
                 this.loadNewPage(url, DOM);
-                this.loadPage(url, TurnQueryIntoData(query.slice(1)));
+                this.loadPage(this.pages[url], wurl, IS_SAME_PAGE);
             }));
         }).catch((error) => {
             console.warn(`Unable to process response for request made to: ${this.url}. Response: ${error}. Error Received: ${error}`);
@@ -172,6 +165,7 @@ class Linker {
     }
 
     finalizePages() {
+
         for (var i = 0, l = this.finalizing_pages.length; i &lt; l; i++) {
             var page = this.finalizing_pages[i];
             page.finalize();
@@ -187,13 +181,14 @@ class Linker {
       @param {string} query -
       @param {Bool} IS_SAME_PAGE -
     */
-    loadPage(url, query, IS_SAME_PAGE) {
-        let page, transition_length = 0;
+    loadPage(page, wurl, IS_SAME_PAGE) {
+
+        this.url_host.wurl = wurl;
+
+        let transition_length = 0;
 
         //Finalize any existing page transitions;
         this.finalizePages();
-
-        if (page = this.pages[url]) {
 
             if (page instanceof Modal) {
                 //trace modal stack and see if the modal already exists
@@ -244,22 +239,26 @@ class Linker {
 
                 let trs = 0;
 
-                if (this.current_view &amp;&amp; (trs = this.current_view.transitionOut())) {
-                    transition_length = Math.max(trs, transition_length);
+                let transition_elements = {};
+
+                if (
+                    this.current_view &amp;&amp;
+                    this.current_view != page
+                ) {
+                    this.current_view.getNamedElements(transition_elements);
+                    transition_length = Math.max(this.current_view.transitionOut(), transition_length);
                     this.finalizing_pages.push(this.current_view);
                 }
 
-                page.transitionIn(this.current_view, query, IS_SAME_PAGE);
-
                 this.current_view = page;
 
-                if (transition_length > 0) {
-                    setTimeout(() => {
-                        this.finalizePages()
-                    }, transition_length);
-                }
+                page.transitionIn(this.current_view, wurl, IS_SAME_PAGE, transition_elements);
+
+                setTimeout(() => {
+                    this.finalizePages();
+                }, transition_length + 1);
             }
-        }
+
     }
 
     /**
@@ -275,15 +274,25 @@ class Linker {
     }
 
     addModel(model_name, modelConstructor) {
-        //if(modelConstructor instanceof Model &amp;&amp; !this.models_constructors[model_name]){
-        this.models_constructors[model_name] = modelConstructor;
-        //}
-    }
-
-    loadNonWickPage(URL){
-      debugger;
-    }
-
+            //if(modelConstructor instanceof Model &amp;&amp; !this.models_constructors[model_name]){
+            this.models_constructors[model_name] = modelConstructor;
+            //}
+        }
+        /**
+            Creates a new iframe object that acts as a modal that will sit ontop of everything else.
+        */
+    loadNonWickPage(URL) {
+            let iframe = document.createElement("iframe");
+            iframe.src = URL;
+            iframe.classList.add("modal", "comp_wrap");
+            var page = new PageView(URL);
+            page.type = "modal";
+            this.pages[URL] = new Modal(URL, page, iframe);
+        }
+        /**
+            Takes the DOM of another page and strips it, looking for component and app elements to use to integrate into the SPA system.
+            If it is unable to find these elements, then it will pass the DOM to loadNonWickPage to handle wrapping the page body into a wick app element.
+        */
     loadNewPage(URL, DOM) {
         //look for the app section.
 
@@ -293,25 +302,25 @@ class Linker {
           If there is no &lt;app> element within the DOM, then we must handle this case carefuly. This likely indicates a page delivered from the same origin that has not been converted to work with the Wick system.
           The entire contents of the page can be wrapped into a iframe, that will be could set as a modal ontop of existing pages. &lt;- this.
         */
-        if (!app_source){
-          console.warn("Page does not have an &lt;app> element!");
-          return this.loadNonWickPage(URL);
+        if (!app_source) {
+            console.warn("Page does not have an &lt;app> element!");
+            return this.loadNonWickPage(URL);
         }
 
         var app = app_source.cloneNode(true);
         var dom_app = document.getElementsByTagName("app")[0];
 
-        var templates = DOM.getElementsByTagName("template");
+
+
+        //get the page type, defaults to Normal
+        var PageType = DOM.getElementsByTagName("pagetype")[0];
 
         var page = new PageView(URL);
 
         if (app) {
-            //get the page type, defaults to Normal
-            var PageType = DOM.getElementsByTagName("pagetype")[0];
-
             if (PageType) {
-                page.setType(PageType.innerHTML);
-                if (page.type == "modal") {
+                page.setType(PageType.classList[0]);
+                if (PageType.classList[0] == "modal") {
                     if (app.getElementsByTagName("modal")[0]) {
                         app = app.getElementsByTagName("modal")[0];
                         let dom_modal = DOM.getElementsByTagName("modal")[0];
@@ -326,7 +335,7 @@ class Linker {
             for (var i = 0; i &lt; elements.length; i++) {
 
                 let ele = elements[i];
-                let equivilant_element_main_dom = null;
+                let equivilant_element_main_dom = ele;
 
                 if (page.type !== "modal") {
 
@@ -348,98 +357,41 @@ class Linker {
                     }
 
                     equivilant_element_main_dom = dom_app.querySelector(`#${ele.id}`);
-
-                    if (document == DOM) {
-                        //clear out the existing element
-                        equivilant_element_main_dom.innerHTML = "";
-                    }
                 }
 
-                //if there is a component inside the element, register that component if it has not already been registered
-                var component = ele.getElementsByTagName("component")[0];
-
-                if (component) {
-                    var id = component.classList[0],
-                        comp;
-                    /*
-                      We must ensure that components act as template "landing spots". In order for that to happen we must check for:
-                      (1) The component has, as it's first class name, an id that (2) matches the id of a template. If either of these prove to be not true, we should reject the adoption of the component as a Wick
-                      component and instead treat it as a normal "pass through" element.
-                    */
-                    if (!id) {
-                        console.warn("Component does not have a Template ID! Treating component as a passthrough element.")
-                    } else {
-
-
-
-                        if (page.type !== "modal") {
-                            component = component.cloneNode();
-                            if (equivilant_element_main_dom) equivilant_element_main_dom.appendChild(component);
-                        }
-
-                        if (id) {
-                            if (!this.components[id]) {
-                                if (comp = this.component_constructors[id]) {
-                                    var js_component = new comp.constructor(component, this.presets, templates);
-
-                                    if (comp.model_name &amp;&amp; this.models_constructors[comp.model_name]) {
-                                        var model = this.models_constructors[comp.model_name];
-                                        if (model.getter)
-                                            model.getter.get();
-                                        model.addView(js_component);
-                                    }
-
-                                    js_component.id = id;
-
-                                    this.components[id] = js_component;
-                                } else {
-                                    var template = templates[id];
-
-                                    if (template) {
-                                        this.components[id] = new CaseComponent(template, this.presets, this.models_constructors, null, DOM);
-                                    }
-                                }
-                            }
-                            if (this.components[id]) {
-                                this.components[id].containerElementID = ele.id;
-                            }
-                        }
-
-                        page.elements.push(new Element(component, this.components[id]));
-
-                        continue
-                    }
-                }
-                //Create a wrapped component for the elements inside the &lt;element>
-                component = document.createElement("div");
-                component.classList.add("comp_wrap");
-
-                //Straight up string copy of the element's DOM.
-                component.innerHTML = ele.innerHTML;
-
-                setLinks(component, (href, e) => {
-                    history.pushState({}, "ignored title", href);
-                    window.onpopstate();
-                    return true;
-                })
+                let WickElement;
 
                 if (page.type !== "modal") {
                     //This is a way to make sure that Wick is completely in control of the &lt;element>.
-                    ele.innerHTML = "";
-                    page.elements.push(new Element(equivilant_element_main_dom, new Component(component)));
-                } else
-                    page.elements.push(new Element(ele, new Component(component)));
+                    let element  = document.createElement("div");
+                    element.innerHTML = ele.innerHTML;
+                    element.classList.add("ele_wrap");
 
+                    WickElement = new Element(equivilant_element_main_dom, element);
 
+                    if (document == DOM) {
+                        /* If the DOM is the page we're working on, then clear out it's contents, which may contain &lt;no-script> tags for fallback purposes.*/
+                        equivilant_element_main_dom.innerHTML = "";
+                    }
+                } else {
+
+                    let element  = document.createElement("div");
+                    element.innerHTML = ele.innerHTML;
+                    element.classList.add("ele_wrap");
+
+                    WickElement = new Element(equivilant_element_main_dom, element);
+                }
+
+                page.elements.push(WickElement);
+
+                WickElement.setComponents(this.components, this.models_constructors,this.component_constructors, this.presets, DOM);
             }
 
-            this.pages[URL] = (page.type == "modal") ? new Modal(URL, page, app) : page;
+            this.pages[URL] = (page.type == "modal") ? new Modal(page, app) : page;
         }
     }
 
 }
-
-
 
 export {
     Linker,
@@ -455,13 +407,13 @@ export {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Element.html">Element</a></li><li><a href="Getter.html">Getter</a></li><li><a href="Linker.html">Linker</a></li><li><a href="ModelContainer.html">ModelContainer</a></li><li><a href="Setter.html">Setter</a></li></ul><h3>Namespaces</h3><ul><li><a href="linker_.html">linker</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Lex">Lex</a></li><li><a href="global.html#light">light</a></li><li><a href="global.html#setLinks">setLinks</a></li><li><a href="global.html#TransformTo">TransformTo</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Case.html">Case</a></li><li><a href="CaseComponent.html">CaseComponent</a></li><li><a href="Component.html">Component</a></li><li><a href="Element.html">Element</a></li><li><a href="FailedComponent.html">FailedComponent</a></li><li><a href="Getter.html">Getter</a></li><li><a href="Linker_.html">Linker</a></li><li><a href="Modal.html">Modal</a></li><li><a href="ModelContainer.html">ModelContainer</a></li><li><a href="Setter.html">Setter</a></li><li><a href="Value.html">Value</a></li></ul><h3>Namespaces</h3><ul><li><a href="linker.html">linker</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Lex">Lex</a></li><li><a href="global.html#light">light</a></li><li><a href="global.html#QueryStringToQueryMap">QueryStringToQueryMap</a></li><li><a href="global.html#setLinks">setLinks</a></li><li><a href="global.html#TransformTo">TransformTo</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed May 30 2018 13:47:50 GMT-0600 (Mountain Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Jun 04 2018 19:21:37 GMT-0600 (Mountain Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

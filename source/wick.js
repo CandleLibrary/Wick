@@ -29,7 +29,8 @@ import {
 
 import {
     Component,
-    Linker
+    Linker,
+    URL
 } from "./linker/linker"
 
 import * as Animation from "./animation/animation"
@@ -39,22 +40,6 @@ import * as Common from "./common"
 /** Case and Cassetes **/
 
 import {Case, Cassette} from "./case"
-
-let URL_HOST = {wurl:null};
-let URL = (function(){
-    return {
-        set:function(a,b,c){
-            if(URL_HOST.wurl)
-                URL_HOST.wurl.set(a,b,c);
-        },
-        get:function(a,b){
-            if(URL_HOST.wurl)
-                return URL_HOST.wurl.set(a,b);
-            return null;
-        }
-    }
-})();
-
 
 let LINKER_LOADED = false;
 
@@ -75,12 +60,12 @@ function light(presets){
 
     //Pass in the presets or a plain object if presets is undefined.
 
-    let link = new Linker(presets || {}, URL_HOST);
+    let link = new Linker(presets || {});
 
     window.addEventListener("load", ()=>{
-        link.parseURL(document.location);
-        //link.loadNewPage(document.location.pathname, document);
-        //link.parseURL(document.location.pathname, document.location.search);
+        //link.parseURL(document.location);
+        link.loadNewPage(document.location.pathname, document);
+        link.parseURL(document.location, document.location.search);
     })
 let wick_vanity = "\ \(\ \ \(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \)\n\ \)\\\)\)\(\ \ \ \'\ \(\ \ \ \ \ \ \ \ \ \ \(\ \/\(\n\(\(\_\)\(\)\\\ \)\ \ \)\\\ \ \ \ \(\ \ \ \ \)\\\(\)\)\n\_\(\(\)\)\\\_\)\(\)\(\(\_\)\ \ \ \)\\\ \ \(\(\_\)\\\n\\\ \\\(\(\_\)\/\ \/\ \(\_\)\ \ \(\(\_\)\ \|\ \|\(\_\)\n\ \\\ \\\/\\\/\ \/\ \ \|\ \|\ \/\ \_\|\ \ \|\ \/\ \/\n\ \ \\\_\/\\\_\/\ \ \ \|\_\|\ \\\_\_\|\ \ \|\_\\\_\\\n";
 console.log(`${wick_vanity}Copyright 2018 Anthony C Weathersby\nhttps://www.github.com/galactrax/wick`)

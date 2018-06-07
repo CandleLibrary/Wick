@@ -7,10 +7,6 @@ import {
 } from "./component"
 
 import {
-    TurnQueryIntoData
-} from "../common"
-
-import {
     PageView
 } from "./page"
 
@@ -22,6 +18,29 @@ import {
     Modal
 } from "./modal"
 
+import {
+    TurnDataIntoQuery
+} from "../common/url/url"
+
+
+let URL_HOST = {wurl:null};
+let URL = (function(){
+    return {
+        set:function(a,b,c){
+            if(URL_HOST.wurl)
+                URL_HOST.wurl.set(a,b,c);
+        },
+        get:function(a,b){
+            if(URL_HOST.wurl)
+                return URL_HOST.wurl.set(a,b);
+            return null;
+        },
+        goto:function(a,b){
+            history.pushState({}, "ignored title", `${a}${ ((b) ? `?${TurnDataIntoQuery(b,{})}` : "") }`);
+            window.onpopstate();
+        }
+    }
+})();
 
 /** @namespace linker */
 
@@ -35,7 +54,7 @@ class Linker {
      *
      *  @param {LinkerPresets} presets - A preset based object that will be used by Wick for handling custom components. Is validated according to the definition of a LinkerPreset
      */
-    constructor(presets, url_host) {
+    constructor(presets) {
         this.pages = {};
         this.components = {};
         this.component_constructors = {};
@@ -45,7 +64,6 @@ class Linker {
         this.current_query;
         this.current_view = null;
         this.finalizing_pages = [];
-        this.url_host = url_host;
 
         /*
           The static field in presets are all Component-like objects contructors that are defined by the client
@@ -113,27 +131,31 @@ class Linker {
 
         let url = location.pathname;
 
-        if (this.current_url == url) return;
-
         let IS_SAME_PAGE = (this.current_url == url), page = null, wurl = new WURL(location);
 
         this.current_url = url;
 
-        if ((page = this.pages[url]))
+        if ((page = this.pages[url])){
+            if (IS_SAME_PAGE){
+                URL_HOST.wurl = wurl;
+                return this.pages[url].transitionIn(null, wurl , IS_SAME_PAGE);
+            }
             return this.loadPage(page, wurl, IS_SAME_PAGE);
+        }
 
-        fetch(url, {
-            credentials: "same-origin", // Sends cookies back to server with request
-            method: 'GET'
-        }).then((response) => {
-            (response.text().then((html) => {
-                var DOM = (new DOMParser()).parseFromString(html, "text/html")
-                this.loadNewPage(url, DOM);
-                this.loadPage(this.pages[url], wurl, IS_SAME_PAGE);
-            }));
-        }).catch((error) => {
-            console.warn(`Unable to process response for request made to: ${this.url}. Response: ${error}. Error Received: ${error}`);
-        })
+        if(location)
+            fetch(url, {
+                credentials: "same-origin", // Sends cookies back to server with request
+                method: 'GET'
+            }).then((response) => {
+                (response.text().then((html) => {
+                    var DOM = (new DOMParser()).parseFromString(html, "text/html")
+                    this.loadNewPage(url, DOM);
+                    this.loadPage(this.pages[url], wurl, IS_SAME_PAGE);
+                }));
+            }).catch((error) => {
+                console.warn(`Unable to process response for request made to: ${this.url}. Response: ${error}. Error Received: ${error}`);
+            })
     }
 
     finalizePages() {
@@ -155,7 +177,7 @@ class Linker {
     */
     loadPage(page, wurl, IS_SAME_PAGE) {
 
-        this.url_host.wurl = wurl;
+        URL_HOST.wurl = wurl;
 
         let transition_length = 0;
 
@@ -190,11 +212,11 @@ class Linker {
 
                 if (UNWIND > 0) {
                     this.modal_stack.length = UNWIND;
-                    page.transitionIn(null, query, IS_SAME_PAGE);
+                    page.transitionIn(null, wurl, IS_SAME_PAGE);
                 } else {
                     //create new modal
                     this.modal_stack.push(page);
-                    page.transitionIn(null, query, IS_SAME_PAGE);
+                    page.transitionIn(null, wurl, IS_SAME_PAGE);
                 }
 
             } else {
@@ -359,7 +381,7 @@ class Linker {
                 WickElement.setComponents(this.components, this.models_constructors,this.component_constructors, this.presets, DOM);
             }
 
-            this.pages[URL] = (page.type == "modal") ? new Modal(url, page, app) : page;
+            this.pages[URL] = (page.type == "modal") ? new Modal(page, app) : page;
         }
     }
 
@@ -367,5 +389,6 @@ class Linker {
 
 export {
     Linker,
-    Component
+    Component,
+    URL
 }

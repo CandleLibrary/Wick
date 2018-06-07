@@ -6,7 +6,8 @@ import {Tokenizer} from "../string_parsing/tokenizer"
 /**
 URL Query Syntax
 
-root => [root_class [& classes]]
+root => [root_class] [& [classes]]
+     => [classes]
 
 root_class = key_list
 
@@ -23,7 +24,7 @@ name => ALPHANUMERIC_ID
 val => NUMBER
     => ALPHANUMERIC_ID
 */
-function QueryParse(query){
+function QueryStringToQueryMap(query){
 
   let mapped_object = new Map;
 
@@ -43,8 +44,9 @@ function QueryParse(query){
         let key = token.text;
         lex.next();
         lex.next();
-        let val = lex.token.text;
-        map.set(key, val);
+        let val = lex.token;
+        map.set(key, (val.type == "number")?parseFloat(val.text):val.text);
+        lex.next();
         lex.next();
         continue;
       }
@@ -71,10 +73,15 @@ function QueryParse(query){
   }
 
   function root(lex,map){
+       map.set(null, new Map());
 
-    map[null] = new Map();
+      if(lex.peek().text == "&"){
+          class_(lex, map)
+      }else{
+          key_val_list(lex, map.get(null));
+      }
 
-    key_val_list(lex, map[null]);
+
 
     while(lex.token && lex.token.text =="&"){
       lex.next();
@@ -84,6 +91,26 @@ function QueryParse(query){
 
   root(lex, mapped_object);
   return mapped_object;
+}
+
+function QueryMapToQueryString(map){
+    let class_, null_class,str ="";
+    if((null_class = map.get(null))){
+        if(null_class.length > 0){
+            for(let [key,val] of null_class.entries()){
+                str += `&${key}=${val}`;
+            }
+        }
+        for(let [key,class_] of map.entries()){
+            if(key == null) continue;
+            str += `&${key}`
+            for(let [key,val] of class_.entries()){
+                str += `&${key}=${val}`;
+            }
+        }
+        return str.slice(1);
+    }
+    return str;
 }
 function TurnDataIntoQuery(data) {
     var str = "";
@@ -141,5 +168,6 @@ function TurnQueryIntoData(query) {
 export {
     TurnQueryIntoData,
     TurnDataIntoQuery,
-    QueryParse
+    QueryMapToQueryString,
+    QueryStringToQueryMap
 }

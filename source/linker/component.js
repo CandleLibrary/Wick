@@ -107,18 +107,10 @@ class CaseComponent extends Case {
     /*
     	Takes as an input a list of transition objects that can be used
     */
-    transitionIn(elements, query) {
+    transitionIn(elements, wurl) {
 
         //if(this.getter && this.model_constructor){
-        if (query && this.element.dataset.import) {
-            //import data from query into model.
-            let imports = this.element.dataset.import;
 
-            imports.split(",").forEach(()=>{
-
-            })
-
-        }
 
         if (!this.model) {
 
@@ -132,10 +124,13 @@ class CaseComponent extends Case {
             this.model.addView(this);
                 //if(query)
                 //	this.getter.request(TurnDataIntoQuery(query))
-        } else {
-            this.model.add(query);
         }
-        //}
+
+        if (wurl && this.data.import) {
+            //import data from query into model.
+            this.model.add(wurl.getClass(this.data.import));
+        }
+
         this.LOADED = true;
         this.show();
     }
