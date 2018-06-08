@@ -27,27 +27,29 @@ let URL_HOST = {
     wurl: null
 };
 let URL = (function() {
+
             return {
                 /**
-                    Changes the URL to the one provided, prompts page update. overwrites current URL.
-                */
+                            Changes the URL to the one provided, prompts page update. overwrites current URL.
+                        */
                 set: function(a, b, c) {
                     if (URL_HOST.wurl)
                         URL_HOST.wurl.set(a, b, c);
                 },
                 /**
-                    Returns a Query entry if it exists in the query string. 
-                */
+                            Returns a Query entry if it exists in the query string. 
+                        */
                 get: function(a, b) {
                     if (URL_HOST.wurl)
-                        return URL_HOST.wurl.get(a, b);
+                        return URL_HOST.wurl.set(a, b);
                     return null;
                 },
                 /**
-                    Changes the URL state to the one provided and prompts the Browser to respond o the change. 
-                */
+                            Changes the URL state to the one provided and prompts the Browser to respond o the change. 
+                        */
                 goto: function(a, b) {
                         history.pushState({}, "ignored title", `${a}${ ((b) ? `?${TurnDataIntoQuery(b)}` : "") }`);
+                
             window.onpopstate();
         }
     }
@@ -91,7 +93,11 @@ class Linker {
 
                 let component = presets.static[component_name];
 
-                let a = 0,b = 0,c = 0,d = 0,e=0;
+                let a = 0,
+                    b = 0,
+                    c = 0,
+                    d = 0,
+                    e = 0;
 
                 if ((a = (component.prototype.transitionIn && component.prototype.transitionIn instanceof Function)) &&
                     (b = (component.prototype.transitionOut && component.prototype.transitionOut instanceof Function)) &&
@@ -117,9 +123,9 @@ class Linker {
         /**
             Schemas provide the constructors for models
         */
-        if(presets.schemas){
+        if (presets.schemas) {
 
-        }else{
+        } else {
             presets.schemas = {};
         }
 
@@ -136,25 +142,27 @@ class Linker {
     }
 
     /*
-    	This function will parse a URL and determine what Page needs to be loaded into the current view.
+        This function will parse a URL and determine what Page needs to be loaded into the current view.
     */
     parseURL(location) {
 
         let url = location.pathname;
 
-        let IS_SAME_PAGE = (this.current_url == url && this.pages[url]), page = null, wurl = new WURL(location);
+        let IS_SAME_PAGE = (this.current_url == url),
+            page = null,
+            wurl = new WURL(location);
 
         this.current_url = url;
 
-        if ((page = this.pages[url])){
-            if (IS_SAME_PAGE){
+        if ((page = this.pages[url])) {
+            if (IS_SAME_PAGE) {
                 URL_HOST.wurl = wurl;
-                return this.pages[url].transitionIn(null, wurl , IS_SAME_PAGE);
+                return this.pages[url].transitionIn(null, wurl, IS_SAME_PAGE);
             }
             return this.loadPage(page, wurl, IS_SAME_PAGE);
         }
 
-        if(location)
+        if (location)
             fetch(url, {
                 credentials: "same-origin", // Sends cookies back to server with request
                 method: 'GET'
@@ -183,7 +191,7 @@ class Linker {
     }
 
     /**
-    	Loads pages from server, or from local cache, and sends it to the page parser.
+        Loads pages from server, or from local cache, and sends it to the page parser.
 
       @param {string} url - The URL id of the cached page to load.
       @param {string} query -
@@ -198,80 +206,80 @@ class Linker {
         //Finalize any existing page transitions;
         this.finalizePages();
 
-            if (page instanceof Modal) {
-                //trace modal stack and see if the modal already exists
-                if (IS_SAME_PAGE) {
-                    page.transitionIn(null, query, IS_SAME_PAGE)
-                    return;
-                }
+        if (page instanceof Modal) {
+            //trace modal stack and see if the modal already exists
+            if (IS_SAME_PAGE) {
+                page.transitionIn(null, query, IS_SAME_PAGE)
+                return;
+            }
 
-                let UNWIND = 0;
+            let UNWIND = 0;
 
 
-                for (var i = 0, l = this.modal_stack.length; i < l; i++) {
-                    let modal = this.modal_stack[i];
+            for (var i = 0, l = this.modal_stack.length; i < l; i++) {
+                let modal = this.modal_stack[i];
 
-                    if (UNWIND == 0) {
-                        if (modal.page.url == url) {
-                            UNWIND = i + 1;
-                        }
-                    } else {
-                        let trs = 0;
-                        if (trs = this.modal_stack[i].transitionOut()) {
-                            transition_length = Math.max(trs, transition_length);
-                            this.finalizing_pages.push(this.modal_stack[i]);
-                        }
+                if (UNWIND == 0) {
+                    if (modal.page.url == url) {
+                        UNWIND = i + 1;
                     }
-                }
-
-                if (UNWIND > 0) {
-                    this.modal_stack.length = UNWIND;
-                    page.transitionIn(null, wurl, IS_SAME_PAGE);
                 } else {
-                    //create new modal
-                    this.modal_stack.push(page);
-                    page.transitionIn(null, wurl, IS_SAME_PAGE);
-                }
-
-            } else {
-
-                for (var i = 0, l = this.modal_stack.length; i < l; i++) {
                     let trs = 0;
                     if (trs = this.modal_stack[i].transitionOut()) {
                         transition_length = Math.max(trs, transition_length);
                         this.finalizing_pages.push(this.modal_stack[i]);
                     }
                 }
-
-                this.modal_stack.length = 0;
-
-                let trs = 0;
-
-                let transition_elements = {};
-
-                if (
-                    this.current_view &&
-                    this.current_view != page
-                ) {
-                    this.current_view.getNamedElements(transition_elements);
-                    transition_length = Math.max(this.current_view.transitionOut(), transition_length);
-                    this.finalizing_pages.push(this.current_view);
-                }
-
-                this.current_view = page;
-
-                page.transitionIn(this.current_view, wurl, IS_SAME_PAGE, transition_elements);
-
-                setTimeout(() => {
-                    this.finalizePages();
-                }, transition_length + 1);
             }
+
+            if (UNWIND > 0) {
+                this.modal_stack.length = UNWIND;
+                page.transitionIn(null, wurl, IS_SAME_PAGE);
+            } else {
+                //create new modal
+                this.modal_stack.push(page);
+                page.transitionIn(null, wurl, IS_SAME_PAGE);
+            }
+
+        } else {
+
+            for (var i = 0, l = this.modal_stack.length; i < l; i++) {
+                let trs = 0;
+                if (trs = this.modal_stack[i].transitionOut()) {
+                    transition_length = Math.max(trs, transition_length);
+                    this.finalizing_pages.push(this.modal_stack[i]);
+                }
+            }
+
+            this.modal_stack.length = 0;
+
+            let trs = 0;
+
+            let transition_elements = {};
+
+            if (
+                this.current_view &&
+                this.current_view != page
+            ) {
+                this.current_view.getNamedElements(transition_elements);
+                transition_length = Math.max(this.current_view.transitionOut(), transition_length);
+                this.finalizing_pages.push(this.current_view);
+            }
+
+            this.current_view = page;
+
+            page.transitionIn(this.current_view, wurl, IS_SAME_PAGE, transition_elements);
+
+            setTimeout(() => {
+                this.finalizePages();
+            }, transition_length + 1);
+        }
 
     }
 
     /**
-    	Pre-loads a custom constructor for an element with the specified id and provides a model to that constructor when it is called.
-    	The constructor must have Component in its inheritance chain.
+        Pre-loads a custom constructor for an element with the specified id and provides a model to that constructor when it is called.
+        The constructor must have Component in its inheritance chain.
     */
     addStatic(element_id, constructor, model) {
         this.component_constructors[element_id] = {
@@ -282,13 +290,11 @@ class Linker {
     }
 
     addModel(model_name, modelConstructor) {
-            //if(modelConstructor instanceof Model && !this.models_constructors[model_name]){
-            this.models_constructors[model_name] = modelConstructor;
-            //}
-        }
-        /**
-            Creates a new iframe object that acts as a modal that will sit ontop of everything else.
-        */
+        this.models_constructors[model_name] = modelConstructor;
+    }
+    /**
+        Creates a new iframe object that acts as a modal that will sit ontop of everything else.
+    */
     loadNonWickPage(URL) {
         let iframe = document.createElement("iframe");
         iframe.src = URL;
@@ -327,29 +333,21 @@ class Linker {
         var app = app_source.cloneNode(true);
         var dom_app = document.getElementsByTagName("app")[0];
 
-
-
-        //get the page type, defaults to Normal
-        var PageType = DOM.getElementsByTagName("pagetype")[0];
-
         var page = new PageView(URL);
 
         if (app) {
-            if (PageType) {
-                page.setType(PageType.classList[0]);
-                if (PageType.classList[0] == "modal") {
-                    if (app.getElementsByTagName("modal")[0]) {
-                        app = app.getElementsByTagName("modal")[0];
-                        let dom_modal = DOM.getElementsByTagName("modal")[0];
-                        dom_modal.parentElement.removeChild(dom_modal);
-                    } else
-                        page.type = "normal";
-                }
 
-                if(PageType.dataset.no_buffer == "true"){
+            if (app.dataset.modal == "true") {
+                page.setType("modal");
+                let modal = document.createElement("modal");
+                modal.innerHTML = app.innerHTML;
+                app.innerHTML = "";
+                app = modal;
+            }
+
+            if(app.dataset.no_buffer == "true"){
                     NO_BUFFER = true;
                 }
-            }
 
             var elements = app.getElementsByTagName("element");
 
@@ -384,7 +382,7 @@ class Linker {
 
                 if (page.type !== "modal") {
                     //This is a way to make sure that Wick is completely in control of the <element>.
-                    let element  = document.createElement("div");
+                    let element = document.createElement("div");
                     element.innerHTML = ele.innerHTML;
                     element.classList.add("ele_wrap");
 
@@ -396,7 +394,7 @@ class Linker {
                     }
                 } else {
 
-                    let element  = document.createElement("div");
+                    let element = document.createElement("div");
                     element.innerHTML = ele.innerHTML;
                     element.classList.add("ele_wrap");
 
@@ -405,7 +403,7 @@ class Linker {
 
                 page.elements.push(WickElement);
 
-                WickElement.setComponents(this.components, this.models_constructors,this.component_constructors, this.presets, DOM);
+                WickElement.setComponents(this.components, this.models_constructors, this.component_constructors, this.presets, DOM);
             }
 
 
