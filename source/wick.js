@@ -1,7 +1,9 @@
 /**
 	Light it up!
 */
-
+import {
+    WURL
+} from "./linker/wurl"
 import {
     View
 } from "./view"
@@ -39,22 +41,26 @@ import * as Common from "./common"
 
 /** Case and Cassetes **/
 
-import {Case, Cassette} from "./case"
+import {
+    Case,
+    Cassette,
+    Filter
+} from "./case"
 
 let LINKER_LOADED = false;
 
 /**
-*    Creates a new {Linker} instance, passing any presets from the client.
-*    It will then wait for the document to load, and once loaded, will start the linker and load the current page into the linker.
-*
-*    Note: This function should only be called once. Any subsequent calls will not do anything.
-*
-*    @param {LinkerPresets} presets - An object of user defined Wick objects.
-*/
+ *    Creates a new {Linker} instance, passing any presets from the client.
+ *    It will then wait for the document to load, and once loaded, will start the linker and load the current page into the linker.
+ *
+ *    Note: This function should only be called once. Any subsequent calls will not do anything.
+ *
+ *    @param {LinkerPresets} presets - An object of user defined Wick objects.
+ */
 
-function light(presets){
+function light(presets) {
 
-    if(LINKER_LOADED) return;
+    if (LINKER_LOADED) return;
 
     LINKER_LOADED = true;
 
@@ -62,13 +68,15 @@ function light(presets){
 
     let link = new Linker(presets || {});
 
-    window.addEventListener("load", ()=>{
-        //link.parseURL(document.location);
-        link.loadNewPage(document.location.pathname, document);
-        link.parseURL(document.location, document.location.search);
+    window.addEventListener("load", () => {
+        link.loadPage(
+            link.loadNewPage(document.location.pathname, document),
+            new WURL(document.location),
+            false
+        );
     })
-let wick_vanity = "\ \(\ \ \(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \)\n\ \)\\\)\)\(\ \ \ \'\ \(\ \ \ \ \ \ \ \ \ \ \(\ \/\(\n\(\(\_\)\(\)\\\ \)\ \ \)\\\ \ \ \ \(\ \ \ \ \)\\\(\)\)\n\_\(\(\)\)\\\_\)\(\)\(\(\_\)\ \ \ \)\\\ \ \(\(\_\)\\\n\\\ \\\(\(\_\)\/\ \/\ \(\_\)\ \ \(\(\_\)\ \|\ \|\(\_\)\n\ \\\ \\\/\\\/\ \/\ \ \|\ \|\ \/\ \_\|\ \ \|\ \/\ \/\n\ \ \\\_\/\\\_\/\ \ \ \|\_\|\ \\\_\_\|\ \ \|\_\\\_\\\n";
-console.log(`${wick_vanity}Copyright 2018 Anthony C Weathersby\nhttps://www.github.com/galactrax/wick`)
+    let wick_vanity = "\ \(\ \ \(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \)\n\ \)\\\)\)\(\ \ \ \'\ \(\ \ \ \ \ \ \ \ \ \ \(\ \/\(\n\(\(\_\)\(\)\\\ \)\ \ \)\\\ \ \ \ \(\ \ \ \ \)\\\(\)\)\n\_\(\(\)\)\\\_\)\(\)\(\(\_\)\ \ \ \)\\\ \ \(\(\_\)\\\n\\\ \\\(\(\_\)\/\ \/\ \(\_\)\ \ \(\(\_\)\ \|\ \|\(\_\)\n\ \\\ \\\/\\\/\ \/\ \ \|\ \|\ \/\ \_\|\ \ \|\ \/\ \/\n\ \ \\\_\/\\\_\/\ \ \ \|\_\|\ \\\_\_\|\ \ \|\_\\\_\\\n";
+    console.log(`${wick_vanity}Copyright 2018 Anthony C Weathersby\nhttps://www.github.com/galactrax/wick`)
 }
 
 /*** Exports ***/
@@ -82,6 +90,7 @@ export {
     Controller,
     Case,
     Cassette,
+    Filter,
     Common,
     Component,
     DateModelContainer,

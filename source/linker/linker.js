@@ -23,20 +23,31 @@ import {
 } from "../common/url/url"
 
 
-let URL_HOST = {wurl:null};
-let URL = (function(){
-    return {
-        set:function(a,b,c){
-            if(URL_HOST.wurl)
-                URL_HOST.wurl.set(a,b,c);
-        },
-        get:function(a,b){
-            if(URL_HOST.wurl)
-                return URL_HOST.wurl.set(a,b);
-            return null;
-        },
-        goto:function(a,b){
-            history.pushState({}, "ignored title", `${a}${ ((b) ? `?${TurnDataIntoQuery(b,{})}` : "") }`);
+let URL_HOST = {
+    wurl: null
+};
+let URL = (function() {
+            return {
+                /**
+                    Changes the URL to the one provided, prompts page update. overwrites current URL.
+                */
+                set: function(a, b, c) {
+                    if (URL_HOST.wurl)
+                        URL_HOST.wurl.set(a, b, c);
+                },
+                /**
+                    Returns a Query entry if it exists in the query string. 
+                */
+                get: function(a, b) {
+                    if (URL_HOST.wurl)
+                        return URL_HOST.wurl.get(a, b);
+                    return null;
+                },
+                /**
+                    Changes the URL state to the one provided and prompts the Browser to respond o the change. 
+                */
+                goto: function(a, b) {
+                        history.pushState({}, "ignored title", `${a}${ ((b) ? `?${TurnDataIntoQuery(b)}` : "") }`);
             window.onpopstate();
         }
     }
@@ -131,7 +142,7 @@ class Linker {
 
         let url = location.pathname;
 
-        let IS_SAME_PAGE = (this.current_url == url), page = null, wurl = new WURL(location);
+        let IS_SAME_PAGE = (this.current_url == url && this.pages[url]), page = null, wurl = new WURL(location);
 
         this.current_url = url;
 
@@ -150,8 +161,11 @@ class Linker {
             }).then((response) => {
                 (response.text().then((html) => {
                     var DOM = (new DOMParser()).parseFromString(html, "text/html")
-                    this.loadNewPage(url, DOM);
-                    this.loadPage(this.pages[url], wurl, IS_SAME_PAGE);
+                    this.loadPage(
+                        this.loadNewPage(url, DOM), 
+                        wurl, 
+                        IS_SAME_PAGE
+                    );
                 }));
             }).catch((error) => {
                 console.warn(`Unable to process response for request made to: ${this.url}. Response: ${error}. Error Received: ${error}`);
@@ -276,13 +290,15 @@ class Linker {
             Creates a new iframe object that acts as a modal that will sit ontop of everything else.
         */
     loadNonWickPage(URL) {
-            let iframe = document.createElement("iframe");
-            iframe.src = URL;
-            iframe.classList.add("modal", "comp_wrap");
-            var page = new PageView(URL);
-            page.type = "modal";
-            this.pages[URL] = new Modal(URL, page, iframe);
-        }
+        let iframe = document.createElement("iframe");
+        iframe.src = URL;
+        iframe.classList.add("modal", "comp_wrap");
+        var page = new PageView(URL);
+        page.type = "modal";
+        this.pages[URL] = new Modal(URL, page, iframe);
+
+        return this.pages[URL];
+    }
         /**
             Takes the DOM of another page and strips it, looking for component and app elements to use to integrate into the SPA system.
             If it is unable to find these elements, then it will pass the DOM to loadNonWickPage to handle wrapping the page body into a wick app element.
@@ -290,11 +306,18 @@ class Linker {
     loadNewPage(URL, DOM) {
         //look for the app section.
 
+        /*
+            If the page should not be reused, as in cases where the server does all thee rendering for a dynamic page and we're just presenting the results,
+            then having NO_BUFFER set to true will cause the linker to not save the page to the hashtable of existing pages, forcing a request to the servr every time the page is visited.
+        */
+
+        let NO_BUFFER = false;
+
         let app_source = DOM.getElementsByTagName("app")[0]
 
         /**
-          If there is no <app> element within the DOM, then we must handle this case carefuly. This likely indicates a page delivered from the same origin that has not been converted to work with the Wick system.
-          The entire contents of the page can be wrapped into a iframe, that will be could set as a modal ontop of existing pages. <- this.
+          If there is no <app> element within the DOM, then we must handle this case carefully. This likely indicates a page delivered from the same origin that has not been converted to work with the Wick system.
+          The entire contents of the page can be wrapped into a <iframe>, that will be could set as a modal on top of existing pages.
         */
         if (!app_source) {
             console.warn("Page does not have an <app> element!");
@@ -321,6 +344,10 @@ class Linker {
                         dom_modal.parentElement.removeChild(dom_modal);
                     } else
                         page.type = "normal";
+                }
+
+                if(PageType.dataset.no_buffer == "true"){
+                    NO_BUFFER = true;
                 }
             }
 
@@ -381,7 +408,12 @@ class Linker {
                 WickElement.setComponents(this.components, this.models_constructors,this.component_constructors, this.presets, DOM);
             }
 
-            this.pages[URL] = (page.type == "modal") ? new Modal(page, app) : page;
+
+            let result = (page.type == "modal") ? new Modal(page, app) : page;
+            
+            if(!NO_BUFFER) this.pages[URL] = result;
+            
+            return result;
         }
     }
 

@@ -22,6 +22,9 @@ import {
     Input
 } from "./cassette/input"
 import {
+    Filter
+} from "./cassette/filter"
+import {
     Exporter
 } from "./cassette/exporter"
 import {
@@ -38,7 +41,7 @@ let PresetCassettes = {
     input: Input,
     export: Exporter,
     iquery: ImportQuery,
-    edt:EpochToDateTime
+    edt: EpochToDateTime
 }
 
 class CaseParentView extends View {
@@ -95,6 +98,7 @@ class Case extends View {
         this.cl = presets;
         this.exports = null;
         this.parent = parent;
+        this.filter_list = [];
 
         var return_object = this;
 
@@ -204,6 +208,14 @@ class Case extends View {
     }
 
     update(data) {
+
+        if (!data) {
+            if (this.data_cache)
+                data = this.data_cache
+            else return;
+        }
+        this.data_cache = data;
+
         this.updateDimensions();
 
         for (var i = 0; i < this.components.length; i++) {
@@ -218,8 +230,18 @@ class Case extends View {
             this.REQUESTING = false;
             //components for each data element
 
+            //This by default should be an array of Model objects
             var result = data[this.prop].get();
 
+            
+            for(var j = 0; j < this.filter_list.length; j++){
+                let filter = this.filter_list[j];
+                
+                result = result.filter((a)=>{
+                    return filter(a.get());
+                });
+            }
+            
 
             //We should establish filtering mechanisms here to remove unneeded data.
 
@@ -263,7 +285,7 @@ class Case extends View {
             model = model.data[this.prop];
         }
 
-        for (var i = 0; i < this.components.length; i++){
+        for (var i = 0; i < this.components.length; i++) {
             this.components[i].setModel(model);
         }
 
@@ -398,5 +420,6 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
 
 export {
     Case,
-    Cassette
+    Cassette,
+    Filter
 }
