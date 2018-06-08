@@ -313,8 +313,8 @@ class Linker {
 
         if (app) {
             if (PageType) {
-                page.setType(PageType.classList[0]);
-                if (PageType.classList[0] == "modal") {
+                page.setType(PageType.innerHTML);
+                if (PageType.innerHTML == "modal") {
                     if (app.getElementsByTagName("modal")[0]) {
                         app = app.getElementsByTagName("modal")[0];
                         let dom_modal = DOM.getElementsByTagName("modal")[0];

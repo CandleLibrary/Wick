@@ -209,8 +209,10 @@ class Model {
                 }
             }
         }
-        if (NEED_UPDATE)
+        if (NEED_UPDATE){
+            this._temp_data_ = null; //Invalidate the current cache.
             this.updateViews();
+        }
 
         return NEED_UPDATE;
     }
@@ -220,6 +222,10 @@ class Model {
     }
 
     set identifier(a) {
+
+    }
+
+    __createCacheData__(){
 
     }
 

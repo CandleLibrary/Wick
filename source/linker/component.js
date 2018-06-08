@@ -72,6 +72,7 @@ class CaseComponent extends Case {
         this.model_constructor = null;
 
         let req = null;
+
         if (req = this.element.dataset.requesturl) {
             let split = req.split(/\?/)[0];
             let url = split[0],
@@ -125,11 +126,23 @@ class CaseComponent extends Case {
                 //if(query)
                 //	this.getter.request(TurnDataIntoQuery(query))
         }
-
+        /* This part of the function will import data into the model that is obtained from the query string */
         if (wurl && this.data.import) {
-            //import data from query into model.
-            this.model.add(wurl.getClass(this.data.import));
+             var l = this.data.import.split(";")
+            var d = {};
+            for(var i = 0; i < l.length; i++){
+                let n = l[i].split(":");
+                let class_name = n[0];
+                let p = n[1].split("=>");
+                var key_name = p[0];
+                var import_name = p[1];
+                d[import_name] = wurl.get(class_name, key_name);
+            }
+            
+            this.model.add(d);
         }
+
+        this.update(this.model.get());
 
         this.LOADED = true;
         this.show();
