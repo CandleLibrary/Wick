@@ -98,7 +98,7 @@ class Case extends View {
 
         var return_object = this;
 
-        ImportDataFromDataSet(this.data, element.dataset)
+        ImportDataFromDataSet(this.data, element.dataset);
 
         if (element.nodeName == "TEMPLATE") {
             this.element = document.importNode(element.content, true).children[0];
