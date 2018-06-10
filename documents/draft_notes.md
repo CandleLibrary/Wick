@@ -23,5 +23,22 @@ Predefined data attributes
 	model - existing model name that the case will bind to.
 
 Model Lift - Allow internal wick elements to create modal.
+
+## Model
+
+Immutable model - Every add action cases a collapse and rebuild of the model.
+Mutable model - Model is mutated at every add action
+
+Container Purging - Data in container can be set to be deleted.The purge start action will mark all nodes as purgable. any set action following purge start will change that nodes status to unpurgable. pargeend will scan all Models that are purgable and remove the from the container. 
+
+## Cassettes 
+    
+| Name | Data | Result |
+|:-|-|-:|
+|raw|any|sets the innerHTML of the element to the raw form of the data property|
+|edt|Epoch date integer| Sets the innerHTML of of the element to a formated date/time |
+|exists|any|If the property of the object does not have a value the element is removed from the document|
+|raw|||
+
 	
 	

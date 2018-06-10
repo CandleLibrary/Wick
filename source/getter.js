@@ -7,10 +7,12 @@ import {
  * {name} Getter
  */
 class Getter extends Controller {
-    constructor(url) {
+    constructor(url, process_data) {
         super();
         this.url = url;
         this.FETCH_IN_PROGRESS = false;
+        console.log(this.rurl,"rurl")
+        this.rurl = process_data;
     }
 
     destructor() {
@@ -23,7 +25,8 @@ class Getter extends Controller {
         this.FETCH_IN_PROGRESS = true;
 
         var url = "http://" + window.location.host + this.url + ( (request_object) ? ("?" + this.__process_url__(request_object)) : "");
-
+        
+        console.log(url, request_object)
         return fetch(url,
         {
             credentials: "same-origin", // Sends cookies back to server with request
@@ -53,6 +56,16 @@ class Getter extends Controller {
     }
 
     __process_response__(json) {
+
+        if(this.rurl && json){
+            var watch_points = this.rurl.split("<");
+            
+            for(var i = 0; i < watch_points.length && json; i++){
+                json = json[parseInt(watch_points[i])?parseInt(watch_points[i]):watch_points[i]];
+            } 
+
+            console.log("json", json)
+        }
 
         var response = {}
         var request = response.target;

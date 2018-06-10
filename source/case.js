@@ -135,10 +135,13 @@ class Case extends View {
                     switch(component[0]){
                         case "p":
                         //TODO
+                        this.url_parent_import = component.slice(1)
                         break;
                         case "q":
                         this.url_query = component.slice(1);
                         break;
+                        case "<":
+                        this.url_return = component.slice(1);
                     }
                 }
                 
@@ -162,9 +165,8 @@ class Case extends View {
 
                 model.addView(this);
 
-                if (this.url) {
-                    debugger
-                    this.receiver = new Getter(this.url);
+                if (this.data.url) {
+                    this.receiver = new Getter(this.data.url, this.url_return);
                     this.receiver.setModel(model);
                     this.request();
                 }
@@ -210,7 +212,7 @@ class Case extends View {
     }
 
     request(query) {
-        if (this.REQUESTING) return;
+        //if (this.REQUESTING) return;
 
 
         this.receiver.get(query).then(() => {
@@ -250,9 +252,9 @@ class Case extends View {
             else
                 this.components[i].update(data);
         }
+            this.REQUESTING = false;
 
         if (this.TEMPLATE_HANDLER && this.template) {
-            this.REQUESTING = false;
             //components for each data element
 
             //This by default should be an array of Model objects

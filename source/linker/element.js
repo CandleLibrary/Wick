@@ -194,6 +194,7 @@ class Element {
                     }
                 }
             }catch(e){
+                console.log(e)
                 app_component = new FailedComponent(e, presets);
             }
 
