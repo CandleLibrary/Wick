@@ -10,10 +10,13 @@ import {
 import {
     TurnDataIntoQuery
 } from "../common"
+import {
+    DataTemplate
+} from "./data_template"
 
 
 /**
-    Handles the transition of seperate elements.
+    Handles the transition of separate elements.
 */
 class Component extends View {
     constructor(element) {
@@ -22,24 +25,24 @@ class Component extends View {
             this.anchor = null;
             this.LOADED = false;
         }
-    /**
-      	Takes as an input a list of transition objects that can be used
-    */
+        /**
+          	Takes as an input a list of transition objects that can be used
+        */
     transitionIn(elements, query) {
-        this.LOADED = true;
-    }
-    /**
-      @returns {number} Time in milliseconds that the transtion will take to complete.
-    */
+            this.LOADED = true;
+        }
+        /**
+          @returns {number} Time in milliseconds that the transtion will take to complete.
+        */
     transitionOut() {
         this.LOADED = false;
         return 0;
     }
 
-    getNamedElements(named_elements){
+    getNamedElements(named_elements) {
         let children = this.element.children;
 
-        for(var i = 0; i < children.length; i++){
+        for (var i = 0; i < children.length; i++) {
             let child = children[i];
 
             if (child.dataset.transform) {
@@ -55,9 +58,9 @@ class Component extends View {
 
 
 class FailedComponent extends Component {
-    constructor(error_messge, presets){
+    constructor(error_message, presets) {
         var div = document.createElement("div");
-        div.innerHTML = `<h2>WICK</h2><h3> This Wick component has failed!</h3> <h4>Error Message</h4><p>${error_messge}</p><p>Please contact the website maintainers to address the problem.</p> ${presets.error_contact}`;
+        div.innerHTML = `<h2>WICK</h2><h3> This Wick component has failed!</h3> <h4>Error Message</h4><p>${error_message.stack}</p><p>Please contact the website maintainers to address the problem.</p> ${presets.error_contact}`;
         super(div);
     }
 }
@@ -66,32 +69,41 @@ class FailedComponent extends Component {
 */
 class CaseComponent extends Case {
     constructor(element, presets, model_constructors, query, WORKING_DOM) {
-        super(element, presets, null, WORKING_DOM);
+            super(element, presets, null, WORKING_DOM);
 
-        this.getter = null;
-        this.model_constructor = null;
+            this.getter = null;
+            this.model_constructor = null;
 
-        let req = null;
+            let req = null;
 
-        if (req = this.element.dataset.requesturl) {
-            let split = req.split(/\?/)[0];
-            let url = split[0],
-                query = split[1];
-            if (url) {
-                this.getter = new Getter(url);
+            if (req = this.data.requesturl) {
+                let split = req.split(/\?/)[0];
+                let url = split[0],
+                    query = split[1];
+                if (url)
+                    this.getter = new Getter(url);
+
             }
-        }
 
-        if (!this.model) {
-            let model = null;
-            if ((model = this.element.dataset.schema) && (model = presets.schemas[model])) {
-                this.model_constructor = model;
-            }else{
+            if(this.data.model_template && this.data.schema){
+                var template = WORKING_DOM.getElementById(this.data.model_template, true);
+                console.log(template, WORKING_DOM)
+                if(template){
+                    new DataTemplate(template, this.model, this.element);
+                }
+            }
 
-                /**
-                    There is no model or schema set for this Case object. This will result in undefined behavior, as all cases are intended to be associated with a model. Thus, we'll kill this case construction and throw a warning about it.
-                */
-                var error = `No model found in the presets for this component which requires${(this.data.model)?` a model named:  "${this.data.model}"`: ` a schema named: "${this.data.schema}"`}.`;
+            if (!this.model) {
+                debugger
+                let model = null;
+                if ((model = this.data.schema) && (model = presets.schemas[model])) {
+                    this.model_constructor = model;
+                } else {
+
+                    /**
+                        There is no model or schema set for this Case object. This will result in undefined behavior, as all cases are intended to be associated with a model. Thus, we'll kill this case construction and throw a warning about it.
+                    */
+                    var error = `No model found in the presets for this component which requires${(this.data.model)?` a model named:  "${this.data.model}"`: ` a schema named: "${this.data.schema}"`}.`;
 
                 console.warn(error)
 
@@ -110,40 +122,64 @@ class CaseComponent extends Case {
     */
     transitionIn(elements, wurl) {
 
-        //if(this.getter && this.model_constructor){
+        let query_data = null;
+         /* 
+            This part of the function will import data into the model that is obtained from the query string 
+        */   
+        if (wurl && this.data.import) {
+            query_data = {};
+            if(this.data.import == "null"){
+                query_data = wurl.getClass();
+            }else{
+                var l = this.data.import.split(";")
+                for(var i = 0; i < l.length; i++){
+                    let n = l[i].split(":");
 
+                    let class_name = n[0];
+                    let p = n[1].split("=>");
+                    var key_name = p[0];
+                    var import_name = p[1];
+                    query_data[import_name] = wurl.get(class_name, key_name);
+                }
+            }
+        }
+
+        if (wurl && this.data.url) {
+            debugger
+            query_data = {};
+            if(this.url_query){
+                var l = this.url_query.split(";")
+                for(var i = 0; i < l.length; i++){
+                    let n = l[i].split(":");
+                    let class_name = n[0];
+                    let p = n[1].split("=>");
+                    var key_name = p[0];
+                    var import_name = p[1];
+                    if(import_name == "root") import_name = null;
+                    query_data[import_name] = wurl.get(class_name, key_name);
+                }
+            }
+            debugger
+            this.request(query_data)
+        }
 
         if (!this.model) {
 
+            debugger
             this.model = new this.model_constructor();
+            
 
             if (this.getter)
                 this.getter.setModel(this.model);
 
-            this.model.add(query);
-
             this.model.addView(this);
-                //if(query)
-                //	this.getter.request(TurnDataIntoQuery(query))
-        }
-        /* This part of the function will import data into the model that is obtained from the query string */
-        if (wurl && this.data.import) {
-             var l = this.data.import.split(";")
-            var d = {};
-            for(var i = 0; i < l.length; i++){
-                let n = l[i].split(":");
-                let class_name = n[0];
-                let p = n[1].split("=>");
-                var key_name = p[0];
-                var import_name = p[1];
-                d[import_name] = wurl.get(class_name, key_name);
-            }
-            
-            this.model.add(d);
         }
 
-        this.update(this.model.get());
-
+        if(query_data)
+           this.model.add(query_data);
+        else
+            this.update(this.model.get());
+       
         this.LOADED = true;
         this.show();
     }

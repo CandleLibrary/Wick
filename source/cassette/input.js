@@ -16,14 +16,13 @@ class Input extends Cassette{
 	}
 
 	update(data){
-		console.log(this.element.type)
+			console.log(this.element.type)
 		switch(this.element.type){
 			case "date":
 				this.element.value = (new Date(parseInt(data[this.prop]))).toISOString().split("T")[0];
 			break;
 			case "time":
 				this.element.value = `${("00"+(data[this.prop] | 0)).slice(-2)}:${("00"+((data[this.prop]%1)*60)).slice(-2)}:00.000`;
-				console.log(this.element.value)
 			break;
 			case "text":
 				this.element.value = (data[this.prop] != undefined) ? data[this.prop] : "";

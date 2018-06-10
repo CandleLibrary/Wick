@@ -1,8 +1,6 @@
 import {Lexer} from "../string_parsing/lexer"
 import {Tokenizer} from "../string_parsing/tokenizer"
 
-
-
 /**
 URL Query Syntax
 

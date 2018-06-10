@@ -33,6 +33,9 @@ import {
 import {
     EpochToDateTime
 } from "./cassette/epoch_to_dt"
+import {
+    Exists
+} from "./cassette/exists"
 
 let PresetCassettes = {
     raw: Cassette,
@@ -41,7 +44,8 @@ let PresetCassettes = {
     input: Input,
     export: Exporter,
     iquery: ImportQuery,
-    edt: EpochToDateTime
+    edt: EpochToDateTime,
+    exists : Exists
 }
 
 class CaseParentView extends View {
@@ -110,7 +114,7 @@ class Case extends View {
         }
 
         for (let prop in this.data) {
-            if (this.data[prop] == "" || !this.data[prop]) {
+            if ((this.data[prop] == "" || !this.data[prop]) && parent) {
                 this.data[prop] = parent.data[prop];
             }
         }
@@ -119,8 +123,26 @@ class Case extends View {
 
             var children = this.element.children;
 
-            if (this.data.url)
-                this.url = this.data.url;
+            if (this.data.url){
+                //import query info from the wurl
+                let str = this.data.url;
+                let components = str.split(";");
+                this.data.url = components[0];
+
+                for(var i = 1; i < components.length; i++){
+                    let component = components[i];
+
+                    switch(component[0]){
+                        case "p":
+                        //TODO
+                        break;
+                        case "q":
+                        this.url_query = component.slice(1);
+                        break;
+                    }
+                }
+                
+            }
 
 
             if (this.data.prop)
@@ -141,6 +163,7 @@ class Case extends View {
                 model.addView(this);
 
                 if (this.url) {
+                    debugger
                     this.receiver = new Getter(this.url);
                     this.receiver.setModel(model);
                     this.request();
@@ -186,9 +209,11 @@ class Case extends View {
             this.receiver.destructor();
     }
 
-    request() {
+    request(query) {
         if (this.REQUESTING) return;
-        this.receiver.get(this.query).then(() => {
+
+
+        this.receiver.get(query).then(() => {
             this.REQUESTING = false;
         });
         this.REQUESTING = true;

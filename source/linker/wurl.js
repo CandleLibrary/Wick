@@ -28,6 +28,9 @@ class WURL {
     }
 
     getClass(class_name){
+
+        if(!class_name) class_name = null;
+        
         let out = {}, class_;
 
         if(class_ = this.query.get(class_name)){
@@ -57,7 +60,8 @@ class WURL {
 
         let class_ = this.query.get(class_name);
 
-        return (class_) ? class_.get(key_name) : null;
+
+        return (class_) ? class_.get(key_name) : null;  
     }
 
 };

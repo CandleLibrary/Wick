@@ -209,7 +209,7 @@ class Model {
                 }
             }
         }
-        if (NEED_UPDATE){
+        if (NEED_UPDATE) {
             this._temp_data_ = null; //Invalidate the current cache.
             this.updateViews();
         }
@@ -225,7 +225,7 @@ class Model {
 
     }
 
-    __createCacheData__(){
+    __createCacheData__() {
 
     }
 
@@ -297,6 +297,23 @@ class Model {
 
     removeDataFromContainer(container, item) {
         return container.remove(item);
+    }
+
+    toString() {
+        let str = "{\n"
+        
+        for (var i = 0; i < this.export_data.length; i++) {
+            var id = this.export_data[i];
+
+            if (id.exportable)
+                str += `"${id.name}":${this.data[id.name].toString()},\n`;
+            else
+                str += `"${id.name}":[${this.data[id.name].toString()}],\n`;
+        }
+
+        str = str.slice(0, -2) + "\n";
+
+        return str += "}";
     }
 }
 

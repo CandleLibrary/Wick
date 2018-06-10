@@ -22,6 +22,9 @@ import {
     TurnDataIntoQuery
 } from "../common/url/url"
 
+import {
+    GLOBAL 
+} from "../global"
 
 let URL_HOST = {
     wurl: null
@@ -30,8 +33,8 @@ let URL = (function() {
 
             return {
                 /**
-                            Changes the URL to the one provided, prompts page update. overwrites current URL.
-                        */
+                    Changes the URL to the one provided, prompts page update. overwrites current URL.
+                */
                 set: function(a, b, c) {
                     if (URL_HOST.wurl)
                         URL_HOST.wurl.set(a, b, c);
@@ -49,11 +52,28 @@ let URL = (function() {
                         */
                 goto: function(a, b) {
                         history.pushState({}, "ignored title", `${a}${ ((b) ? `?${TurnDataIntoQuery(b)}` : "") }`);
-                
-            window.onpopstate();
-        }
+                        window.onpopstate();
+                }
     }
 })();
+
+function getModalContainer(){
+    let modal_container = document.getElementsByTagName("modals")[0];                
+   
+    if(!modal_container){
+        
+        modal_container = document.createElement("modals");
+        
+        var dom_app = document.getElementsByTagName("app")[0];
+        
+        if(dom_app)
+            dom_app.parentElement.insertBefore(modal_container, dom_app);
+        else
+            document.body.appendChild(modal_container);
+    }
+
+    return modal_container
+}
 
 /** @namespace linker */
 
@@ -77,6 +97,8 @@ class Linker {
         this.current_query;
         this.current_view = null;
         this.finalizing_pages = [];
+
+        GLOBAL.linker = this;
 
         /*
           The static field in presets are all Component-like objects contructors that are defined by the client
@@ -136,6 +158,16 @@ class Linker {
         /* */
         this.modal_stack = [];
 
+        /*
+            Setup Auto Modal
+        */
+        Modal.create = (name, element)=>{
+            let app = element.getElementsByTagName("app")[0];
+            if(!app) return;
+            app.setAttribute("data-modal", "true");
+            loadPage(loadNewPage("", element), new WURL(document.location), false);
+        }   
+
         window.onpopstate = () => {
             this.parseURL(document.location)
         }
@@ -163,7 +195,7 @@ class Linker {
         }
 
         if (location)
-            fetch(url, {
+            fetch(location.href, {
                 credentials: "same-origin", // Sends cookies back to server with request
                 method: 'GET'
             }).then((response) => {
@@ -197,7 +229,8 @@ class Linker {
       @param {string} query -
       @param {Bool} IS_SAME_PAGE -
     */
-    loadPage(page, wurl, IS_SAME_PAGE) {
+    loadPage(page, wurl = new WURL(document.location), IS_SAME_PAGE) {
+
 
         URL_HOST.wurl = wurl;
 
@@ -220,7 +253,7 @@ class Linker {
                 let modal = this.modal_stack[i];
 
                 if (UNWIND == 0) {
-                    if (modal.page.url == url) {
+                    if (modal == page) {
                         UNWIND = i + 1;
                     }
                 } else {
@@ -301,7 +334,7 @@ class Linker {
         iframe.classList.add("modal", "comp_wrap");
         var page = new PageView(URL);
         page.type = "modal";
-        this.pages[URL] = new Modal(URL, page, iframe);
+        this.pages[URL] = new Modal(page, iframe, getModalContainer());
 
         return this.pages[URL];
     }
@@ -312,26 +345,36 @@ class Linker {
     loadNewPage(URL, DOM) {
         //look for the app section.
 
-        /*
-            If the page should not be reused, as in cases where the server does all thee rendering for a dynamic page and we're just presenting the results,
-            then having NO_BUFFER set to true will cause the linker to not save the page to the hashtable of existing pages, forcing a request to the servr every time the page is visited.
+        /**
+            If the page should not be reused, as in cases where the server does all the rendering for a dynamic page and we're just presenting the results,
+            then having NO_BUFFER set to true will cause the linker to not save the page to the hashtable of existing pages, forcing a request to the server every time the page is visited.
         */
-
         let NO_BUFFER = false;
 
-        let app_source = DOM.getElementsByTagName("app")[0]
+
+        /* 
+            App elements: There should only be one. 
+        */
+        let app_list = DOM.getElementsByTagName("app");
+
+        if(app_list.length > 1){
+            console.warn(`Wick is designed to work with just one <app> element in a page. There are ${app_list.length} apps elements in ${url}. Wick will proceed with the first <app> element in the DOM. Unexpected behavior may occur.`)
+        }
+
+        let app_source = app_list[0]
 
         /**
           If there is no <app> element within the DOM, then we must handle this case carefully. This likely indicates a page delivered from the same origin that has not been converted to work with the Wick system.
           The entire contents of the page can be wrapped into a <iframe>, that will be could set as a modal on top of existing pages.
         */
         if (!app_source) {
-            console.warn("Page does not have an <app> element!");
+            console.trace("Page does not have an <app> element!");
             return this.loadNonWickPage(URL);
         }
 
         var app = app_source.cloneNode(true);
         var dom_app = document.getElementsByTagName("app")[0];
+
 
         var page = new PageView(URL);
 
@@ -343,26 +386,32 @@ class Linker {
                 modal.innerHTML = app.innerHTML;
                 app.innerHTML = "";
                 app = modal;
+
+                /*
+                    If the DOM is the same element as the actual document, then we shall rebuild the existing <app> element, clearing it of it's contents.
+                */
+                if(DOM == document && dom_app){
+                    let new_app = document.createElement("app");
+                    document.body.replaceChild(new_app, dom_app);
+                    dom_app = new_app;
+                }
             }
 
-            if(app.dataset.no_buffer == "true"){
-                    NO_BUFFER = true;
-                }
+            if(app.dataset.no_buffer == "true")
+                NO_BUFFER = true;
 
             var elements = app.getElementsByTagName("element");
 
             for (var i = 0; i < elements.length; i++) {
 
-                let ele = elements[i];
-                let equivilant_element_main_dom = ele;
+                let ele = elements[i], equivilant_element_from_main_dom = ele, wick_element;
 
                 if (page.type !== "modal") {
 
-                    equivilant_element_main_dom = dom_app.querySelector(`#${ele.id}`);
+                    equivilant_element_from_main_dom = dom_app.querySelector(`#${ele.id}`);
 
-                    if (!equivilant_element_main_dom) {
+                    if (!equivilant_element_from_main_dom) {
                         var insert;
-                        //need figure out the order that this goes into.
 
                         if (elements[i + 1] && (insert = dom_app.querySelector(`#${elements[i + 1].id}`)))
                             dom_app.insertBefore(ele.cloneNode(), insert);
@@ -372,49 +421,42 @@ class Linker {
 
                         else
                             dom_app.appendChild(ele.cloneNode());
-
                     }
 
-                    equivilant_element_main_dom = dom_app.querySelector(`#${ele.id}`);
-                }
-
-                let WickElement;
-
-                if (page.type !== "modal") {
+                    equivilant_element_from_main_dom = dom_app.querySelector(`#${ele.id}`);
+                    
                     //This is a way to make sure that Wick is completely in control of the <element>.
                     let element = document.createElement("div");
                     element.innerHTML = ele.innerHTML;
                     element.classList.add("ele_wrap");
 
-                    WickElement = new Element(equivilant_element_main_dom, element);
+                    wick_element = new Element(equivilant_element_from_main_dom, element);
 
-                    if (document == DOM) {
-                        /* If the DOM is the page we're working on, then clear out it's contents, which may contain <no-script> tags for fallback purposes.*/
-                        equivilant_element_main_dom.innerHTML = "";
-                    }
+                    /* If the DOM is the page we're working on, then clear out it's contents, which may contain <no-script> tags for fallback purposes.*/
+                    if (document == DOM) 
+                        equivilant_element_from_main_dom.innerHTML = "";
+                    
                 } else {
-
                     let element = document.createElement("div");
                     element.innerHTML = ele.innerHTML;
                     element.classList.add("ele_wrap");
 
-                    WickElement = new Element(equivilant_element_main_dom, element);
+                    wick_element = new Element(equivilant_element_from_main_dom, element);
                 }
 
-                page.elements.push(WickElement);
+                page.elements.push(wick_element);
 
-                WickElement.setComponents(this.components, this.models_constructors, this.component_constructors, this.presets, DOM);
+                wick_element.setComponents(this.components, this.models_constructors, this.component_constructors, this.presets, DOM);
             }
 
-
-            let result = (page.type == "modal") ? new Modal(page, app) : page;
-            
+            let result = (page.type == "modal") ? new Modal(page, app, getModalContainer()) : page;
+                        
             if(!NO_BUFFER) this.pages[URL] = result;
             
             return result;
+        
         }
     }
-
 }
 
 export {

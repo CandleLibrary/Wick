@@ -1,32 +1,81 @@
-import {Cassette} from "./cassette"
+import {
+	GLOBAL 
+}from "../global"
 
-class Form extends Cassette{
-	constructor(parent, element){
-		//Scan the element and look for inputs that can be mapped to the 
-		super(parent, element);
+import {
+    Cassette
+} from "./cassette"
 
-		element.addEventListener("submit", (e)=>{
-			//e.returnValue= false;
-			var a = (new FormData(e.target)).entries();
-			let t = a.next();
-			var e = "";
-			while(!t.done){
-				e += `${t.value[0]}: ${t.value[1]} \n`;
-				t = a.next();
-			}
-			console.log(e)
-			debugger
-		})
+class Form extends Cassette {
+    constructor(parent, element) {
+        //Scan the element and look for inputs that can be mapped to the 
+        super(parent, element);
 
-	}
+        /**
+        	A case that will handle the acceptance of the form submission 
+        */
+        this.accept_case = null;
 
-	destructor(){
+        /**
+        	A case that will handle the rejection of the form submission 
+        */
+        this.reject_case = null;
 
-	}
+        element.addEventListener("submit", (e) => {
+            this.submit();
+            e.preventDefault();
+            return false;
+        })
+    }
 
-	update(data){
-		
-	}
+    destructor() {
+
+    }
+
+    update(data) {
+
+    }
+
+    submit() {
+
+        let url = this.element.action;
+
+        var form_data = (new FormData(this.element));
+      
+
+        console.log("Wick Form Submitted", url, form_data)
+
+        fetch(url, {
+            method: "post",
+            credentials: "same-origin", 
+            body: form_data,
+        }).then((result) => {
+
+        	if(result.status != 200){
+        		result.text().then((e)=>{
+        			GLOBAL.linker.loadPage(
+                        GLOBAL.linker.loadNewPage(url, (new DOMParser()).parseFromString(e, "text/html")), 
+                        false
+                    );
+        		})
+        		return;
+        	}
+
+            if (this.data.accept_url) {
+                if (this.data.accept_url == "back"){
+                    window.history.back();
+                }
+                else {
+                	history.pushState({}, "ignored title", `${this.data.accept_url}`);
+                    window.onpopstate();
+                }
+            }
+        }).catch(() => {
+        	console.error("TODO: Form submission failed!")
+        })
+    }
 }
 
-export {Form}
+export {
+    Form
+}

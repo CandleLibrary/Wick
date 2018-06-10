@@ -85,3 +85,9 @@ element {
   position: relative;
   display: block;
 }
+
+/*********************** DEBUG VALUES **********************************/
+
+.text_model_modal {
+  position: absolute;
+}

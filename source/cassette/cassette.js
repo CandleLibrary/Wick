@@ -1,6 +1,13 @@
-function ImportDataFromDataSet(data_object, data_set_object) {
-    for (let prop in data_set_object) {
-        data_object[prop] = data_set_object[prop];
+function ImportDataFromDataSet(data_object, data_set_object, element) {
+    if(element){
+        for (let prop in data_set_object) {
+            data_object[prop] = data_set_object[prop];
+            element.removeAttribute(`data-${prop}`);
+        }
+    }else{
+        for (let prop in data_set_object) {
+            data_object[prop] = data_set_object[prop];
+        }
     }
 }
 

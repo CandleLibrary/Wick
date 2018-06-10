@@ -1,12 +1,13 @@
 /**
-	Handles pages that appear ontop of other pages, and do not represent a change of the view.
+	Handles pages that appear on-top of other pages; ones that do not represent a change of the page location.
 */
 class Modal {
 
-    constructor(page, element) {
+    constructor(page, element, parent_element) {
         this.page = page;
         this.element = element;
         this.element.classList.add("modal");
+        this.parent_element = parent_element;
 
         var backer = document.createElement("div")
         backer.classList.add("modal_backer");
@@ -22,11 +23,17 @@ class Modal {
         this.element.style.opacity = 0;
     }
 
+    destructor(){
+        this.page.destructor();
+        this.element = null;
+        this.backer = null;
+    }
+
     transitionIn(OldView, query, IS_SAME_PAGE) {
         this.history_depth++;
 
         if(!IS_SAME_PAGE){
-            document.body.appendChild(this.element);
+            this.parent_element.appendChild(this.element);
             var t = this.element.style.opacity;
             setTimeout(()=>{
                 this.element.style.opacity = 1;
@@ -38,7 +45,7 @@ class Modal {
 
     finalize() {
         this.page.finalize();
-        document.body.removeChild(this.element)
+        this.parent_element.removeChild(this.element)
     }
 
     transitionOut() {
@@ -55,6 +62,10 @@ class Modal {
 
     setPageType(type){
     }
+}
+
+Modal.create = function(){
+    console.warn("Modal.create function not emplemented at this point. ")
 }
 
 export {
