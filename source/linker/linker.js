@@ -237,8 +237,10 @@ class Linker {
         let transition_length = 0;
 
         //Finalize any existing page transitions;
-        this.finalizePages();
+       // this.finalizePages();
 
+        let transition_elements = {};
+        
         if (page instanceof Modal) {
             //trace modal stack and see if the modal already exists
             if (IS_SAME_PAGE) {
@@ -288,15 +290,14 @@ class Linker {
 
             let trs = 0;
 
-            let transition_elements = {};
 
             if (
                 this.current_view &&
                 this.current_view != page
             ) {
-                this.current_view.getNamedElements(transition_elements);
-                transition_length = Math.max(this.current_view.transitionOut(), transition_length);
+                transition_length = Math.max(this.current_view.transitionOut(transition_elements), transition_length);
                 this.finalizing_pages.push(this.current_view);
+                this.current_view.finalize();
             }
 
             this.current_view = page;
@@ -304,7 +305,7 @@ class Linker {
             page.transitionIn(this.current_view, wurl, IS_SAME_PAGE, transition_elements);
 
             setTimeout(() => {
-                this.finalizePages();
+                //this.finalizePages();
             }, transition_length + 1);
         }
 

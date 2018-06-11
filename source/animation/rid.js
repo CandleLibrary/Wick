@@ -121,7 +121,7 @@ class Rid_To extends Rid_From {
 
 class RidPair {
     constructor(e_to, e_from) {
-        this.b = new Rid_From(e_from);
+        this.b = (e_from instanceof Rid_From) ? e_from : new Rid_From(e_from);
         this.a = new Rid_To(e_to, this.b);
     }
 
@@ -143,9 +143,24 @@ var rp = [];
 /**
     Transform one element from another back to itself
 */
-function TransformTo(element_to, element_from, HIDE_OTHER) {
+function TransformTo(element_from, element_to, HIDE_OTHER) {
+    
+    if(!element_to){
+        let a = (from, rp)=>((element_to, HIDE_OTHER) => {
+            let pair = new RidPair(element_to, from);
+            rp.push(pair);
+            pair.start();
+        })
+
+        let b = a(new Rid_From(element_from), rp);
+
+        return b;
+    }
+
     var pair = new RidPair(element_to, element_from);
+    
     rp.push(pair);
+    
     pair.start();
 }
 

@@ -3,11 +3,12 @@
 */
 class PageView {
 
-    constructor(URL) {
+    constructor(URL, element) {
         this.url = URL;
         this.elements = [];
         this.finalizing_view = null;
         this.type = "normal";
+        this.element = element;
     }
 
     destructor(){
@@ -39,11 +40,11 @@ class PageView {
         }
     }
 
-    transitionOut() {
+    transitionOut(transitions) {
         let time = 0;
 
         for (var i = 0; i < this.elements.length; i++) {
-            time = Math.max(time,this.elements[i].transitionOut());
+            time = Math.max(time,this.elements[i].transitionOut(transitions));
         }
 
         return time;

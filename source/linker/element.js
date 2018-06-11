@@ -26,8 +26,18 @@ class Element {
         this.element = element;
     }
 
-    transitionOut() {
+    transitionOut(transitions) {
         let t = 0;
+
+        if(transitions){
+            let own_elements = {};
+            
+            this.getNamedElements(own_elements);
+
+            for(let name in own_elements){
+                transitions[name] = TransformTo(own_elements[name]);
+            }
+        }
 
         for (var i = 0; i < this.components.length; i++) {
 
@@ -41,7 +51,7 @@ class Element {
         return t;
     }
 
-    transitionIn(transition_elements, query, IS_SAME_PAGE, named_elements) {
+    transitionIn(transition_elements, query, IS_SAME_PAGE, transitions) {
         if(!IS_SAME_PAGE && this.parent_element)
             this.parent_element.appendChild(this.element);
 
@@ -59,16 +69,19 @@ class Element {
             }
         };
 
+        /**
+            This is to force a document repaint, which should cause all elements to report correct positioning hereafter
+        */
         var t = this.parent_element.style.opacity;
 
-        if(named_elements){
+        if(transitions){
             let own_elements = {};
             this.getNamedElements(own_elements);
 
-            for(let name in named_elements){
-                let to, from = named_elements[name];
-                if((to = own_elements[name])){
-                    TransformTo(to, from, false);
+            for(let name in own_elements){
+                let to, from = transitions[name];
+                if((to = own_elements[name]) && from){
+                    from(to, false);
                 }
             }
         }
@@ -85,7 +98,7 @@ class Element {
             component.LOADED = false;
         }
 
-        if(this.parent_element)
+        if(this.parent_element && this.element.parentNode)
             this.parent_element.removeChild(this.element);
     }
 
