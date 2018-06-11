@@ -13,10 +13,10 @@ class Color extends Float64Array{
 		if(typeof(r) == "string"){
 			this.fromString(r);
 		}else{
-			this.r = Math.max(Math.min(Math.round(r),255),0);
-			this.g = Math.max(Math.min(Math.round(g),255),0);
-			this.b = Math.max(Math.min(Math.round(b),255),0);
-			this.a = Math.max(Math.min(a,1),0);
+			this.r = r //Math.max(Math.min(Math.round(r),255),-255);
+			this.g = g //Math.max(Math.min(Math.round(g),255),-255);
+			this.b = b //Math.max(Math.min(Math.round(b),255),-255);
+			this.a = a //Math.max(Math.min(a,1),-1);
 		}
 	}
 
@@ -101,8 +101,6 @@ class Color extends Float64Array{
 
 	fromString(string){
 		let lexer = Lex(string)
-
-		console.log(string)
 
 		let r,g,b,a;
 		switch(lexer.token.text){

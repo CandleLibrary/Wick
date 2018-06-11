@@ -12,6 +12,13 @@ app {
   padding: 0;
 }
 
+apppage {
+  position: absolute;
+  top:0;
+  left:0;
+  display: block;
+}
+
 /* Case */
 
 case {

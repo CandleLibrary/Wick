@@ -302,7 +302,7 @@ class Linker {
 
             this.current_view = page;
 
-            page.transitionIn(this.current_view, wurl, IS_SAME_PAGE, transition_elements);
+            page.transitionIn(document.getElementsByTagName("app")[0], this.current_view, wurl, IS_SAME_PAGE, transition_elements);
 
             setTimeout(() => {
                 //this.finalizePages();
@@ -373,15 +373,18 @@ class Linker {
             return this.loadNonWickPage(URL);
         }
 
+        var app_page = document.createElement("apppage");
+        app_page.innerHTML = app_source.innerHTML;
+        
         var app = app_source.cloneNode(true);
+
+
         var dom_app = document.getElementsByTagName("app")[0];
 
+        var page = new PageView(URL, app_page);
+        if (app_source) {
 
-        var page = new PageView(URL);
-
-        if (app) {
-
-            if (app.dataset.modal == "true") {
+            if (app_source.dataset.modal == "true") {
                 page.setType("modal");
                 let modal = document.createElement("modal");
                 modal.innerHTML = app.innerHTML;
@@ -401,17 +404,20 @@ class Linker {
             if(app.dataset.no_buffer == "true")
                 NO_BUFFER = true;
 
-            var elements = app.getElementsByTagName("element");
+            var elements = app_page.getElementsByTagName("element");
 
             for (var i = 0; i < elements.length; i++) {
 
                 let ele = elements[i], equivilant_element_from_main_dom = ele, wick_element;
 
+
+                let element_id = ele.id;
+
                 if (page.type !== "modal") {
 
-                    equivilant_element_from_main_dom = dom_app.querySelector(`#${ele.id}`);
+                    //equivilant_element_from_main_dom = dom_app.querySelector(`#${ele.id}`);
 
-                    if (!equivilant_element_from_main_dom) {
+                    /*if (!equivilant_element_from_main_dom) {
                         var insert;
 
                         if (elements[i + 1] && (insert = dom_app.querySelector(`#${elements[i + 1].id}`)))
@@ -422,33 +428,38 @@ class Linker {
 
                         else
                             dom_app.appendChild(ele.cloneNode());
-                    }
+                    }*/
 
-                    equivilant_element_from_main_dom = dom_app.querySelector(`#${ele.id}`);
+                    //equivilant_element_from_main_dom = dom_app.querySelector(`#${ele.id}`);
                     
                     //This is a way to make sure that Wick is completely in control of the <element>.
-                    let element = document.createElement("div");
-                    element.innerHTML = ele.innerHTML;
-                    element.classList.add("ele_wrap");
+                    
+                    /*
+                        let element = document.createElement("div");
+                        element.innerHTML = ele.innerHTML;
+                        element.classList.add("ele_wrap");
+                    */
 
-                    wick_element = new Element(equivilant_element_from_main_dom, element);
-
-                    /* If the DOM is the page we're working on, then clear out it's contents, which may contain <no-script> tags for fallback purposes.*/
-                    if (document == DOM) 
-                        equivilant_element_from_main_dom.innerHTML = "";
+                    wick_element = new Element(ele);
                     
                 } else {
                     let element = document.createElement("div");
                     element.innerHTML = ele.innerHTML;
                     element.classList.add("ele_wrap");
 
-                    wick_element = new Element(equivilant_element_from_main_dom, element);
+                    wick_element = new Element(ele);
                 }
 
                 page.elements.push(wick_element);
 
-                wick_element.setComponents(this.components, this.models_constructors, this.component_constructors, this.presets, DOM);
+                if(!this.components[element_id])
+                    this.components[element_id] = {};
+
+                wick_element.setComponents(this.components[element_id], this.models_constructors, this.component_constructors, this.presets, DOM);
             }
+
+            if(document == DOM)
+                dom_app.innerHTML = "";
 
             let result = (page.type == "modal") ? new Modal(page, app, getModalContainer()) : page;
                         

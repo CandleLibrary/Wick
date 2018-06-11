@@ -3,12 +3,12 @@
 */
 class PageView {
 
-    constructor(URL, element) {
+    constructor(URL, app_page) {
         this.url = URL;
         this.elements = [];
         this.finalizing_view = null;
         this.type = "normal";
-        this.element = element;
+        this.element = app_page;
     }
 
     destructor(){
@@ -18,19 +18,32 @@ class PageView {
         }
 
         this.elements = null;
+        this.element = null;
     }
 
-    transitionIn(OldView, query, IS_SAME_PAGE, transition_elements) {
+    transitionIn(app_element, OldView, query, IS_SAME_PAGE, transitions) {
         let final_time = 0;
+
+        app_element.appendChild(this.element);
 
         for (var i = 0; i < this.elements.length; i++) {
             let element = this.elements[i];
             if (OldView && OldView[element.id]) {
                 final_time = Math.max(element.transitionIn(OldView[element.id], query[element.id] ? query[element.id] : query, IS_SAME_PAGE), final_time);
             } else {
-                element.transitionIn(null, query, IS_SAME_PAGE, transition_elements);
+                element.transitionIn(null, query, IS_SAME_PAGE, transitions);
             }
         }
+
+        var t = this.element.style.opacity;
+
+        console.log(t);
+
+        for (var i = 0; i < this.elements.length; i++) {
+            let element = this.elements[i];
+            element.setTransformTo(transitions);
+        }
+
     }
 
     finalize() {
@@ -38,10 +51,18 @@ class PageView {
             let element = this.elements[i];
             element.finalize();
         }
+        
+        if(this.element.parentElement)
+            this.element.parentElement.removeChild(this.element);
     }
 
     transitionOut(transitions) {
         let time = 0;
+
+        for (var i = 0; i < this.elements.length; i++) {
+            let element = this.elements[i];
+            element.getTransformTo(transitions);
+        }
 
         for (var i = 0; i < this.elements.length; i++) {
             time = Math.max(time,this.elements[i].transitionOut(transitions));

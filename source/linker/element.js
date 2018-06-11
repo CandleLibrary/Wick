@@ -14,13 +14,13 @@ class Element {
     /**
 
     */
-    constructor(parent_element, element) {
+    constructor(element) {
         this.id =  (element.classList) ? element.classList[0] : element.id;
         this.components = [];
         this.wraps = [];
 
         //The original element container.
-        this.parent_element = parent_element;
+        //this.parent_element = parent_element;
 
         //Content that is wrapped in an ele_wrap
         this.element = element;
@@ -28,16 +28,6 @@ class Element {
 
     transitionOut(transitions) {
         let t = 0;
-
-        if(transitions){
-            let own_elements = {};
-            
-            this.getNamedElements(own_elements);
-
-            for(let name in own_elements){
-                transitions[name] = TransformTo(own_elements[name]);
-            }
-        }
 
         for (var i = 0; i < this.components.length; i++) {
 
@@ -51,9 +41,9 @@ class Element {
         return t;
     }
 
-    transitionIn(transition_elements, query, IS_SAME_PAGE, transitions) {
-        if(!IS_SAME_PAGE && this.parent_element)
-            this.parent_element.appendChild(this.element);
+    transitionIn(transition_elements, query, IS_SAME_PAGE) {
+        //if(!IS_SAME_PAGE && this.parent_element)
+            //this.parent_element.appendChild(this.element);
 
         for (var i = 0; i < this.components.length; i++) {
 
@@ -61,7 +51,13 @@ class Element {
 
             if (component) {
 
-                if(!IS_SAME_PAGE) this.wraps[i].appendChild(component.element);
+                if(!IS_SAME_PAGE) {
+                    
+                    if(component.element.parentElement)
+                        component.element.parentElement.removeChild(component.element);
+
+                    this.wraps[i].appendChild(component.element);
+                }
 
                 component.LOADED = true;
 
@@ -72,9 +68,23 @@ class Element {
         /**
             This is to force a document repaint, which should cause all elements to report correct positioning hereafter
         */
-        var t = this.parent_element.style.opacity;
+        var t = this.element.style.top;        
+    }
 
-        if(transitions){
+    getTransformTo(transitions){
+         if(transitions){
+            let own_elements = {};
+            
+            this.getNamedElements(own_elements);
+
+            for(let name in own_elements){
+                transitions[name] = TransformTo(own_elements[name]);
+            }
+        }
+    }
+
+    setTransformTo(transitions){
+       if(transitions){
             let own_elements = {};
             this.getNamedElements(own_elements);
 
@@ -84,7 +94,7 @@ class Element {
                     from(to, false);
                 }
             }
-        }
+        } 
     }
 
     finalize(){
@@ -98,8 +108,8 @@ class Element {
             component.LOADED = false;
         }
 
-        if(this.parent_element && this.element.parentNode)
-            this.parent_element.removeChild(this.element);
+        //if(this.parent_element && this.element.parentNode)
+            //this.parent_element.removeChild(this.element);
     }
 
     getNamedElements(named_elements){
@@ -139,6 +149,7 @@ class Element {
         }
 
         var templates = DOM.getElementsByTagName("template");
+
 
         for (var i = 0; i < components.length; i++) {
             let app_component = null;
