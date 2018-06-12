@@ -27,25 +27,15 @@ class Model {
     constructor(data) {
         this.first_view = null;
 
-        this.schema = this.constructor.schema || {
-            identifier: "__"
-        };
+        this.schema = this.constructor.schema || {};
 
         this.data = {};
         this._temp_data_ = null;
         this.export_data = [];
-        this.index = null;
-
-        if (!this.schema.identifier) {
-            console.error("identifier property name needed in schema!", this.schema, this)
-            return;
-        }
 
         for (var a in this.schema) {
 
             let scheme = this.schema[a];
-
-            if (a == "identifier") continue;
 
             if (scheme instanceof Array) {
                 if (scheme[0] instanceof ModelContainer) {
@@ -172,18 +162,34 @@ class Model {
         }
     }
 
+    /**
+        Given a key, returns an object that represents the status of the value contained, if it is valid or not, according to the schema for that property. 
+    */
+
+    getDataStatus(key) {
+        
+        let out_data = {valid: true, reason: ""};
+
+        var scheme = this.schema[key];
+
+        if (scheme) {
+            if (scheme instanceof Array) {
+              
+            } else if (scheme instanceof Model) {
+                
+            } else {
+                scheme(this.data[key], out_data);
+            }
+        }
+
+        return out_data
+    }
+
     add(data) {
         var NEED_UPDATE = false;
 
         if (data instanceof Model) {
-
-            if (data.identifier == this.identifier) {
-                data = data.data;
-
-            } else {
-                console.trace("Only models with matching unique id's can be merged!", this, data);
-                return;
-            }
+            data = data.data;
         }
 
         for (var a in data) {
@@ -202,10 +208,12 @@ class Model {
                 } else {
                     var prev = this.data[a];
 
-                    this.data[a] = scheme(data[a]);
+                    var next = scheme(data[a]);
 
-                    if (prev !== this.data[a])
+                    if(next !== null && next !== prev){
+                        this.data[a] = next;
                         NEED_UPDATE = true;
+                    }
                 }
             }
         }
@@ -217,18 +225,6 @@ class Model {
         return NEED_UPDATE;
     }
 
-    get identifier() {
-        return this.data[this.schema.identifier];
-    }
-
-    set identifier(a) {
-
-    }
-
-    __createCacheData__() {
-
-    }
-
     get(data) {
         var out_data = {};
         if (!data) {
@@ -237,7 +233,7 @@ class Model {
                 this._temp_data_ = {
                     addView: view => this.addView(view),
                     get: data => this.get(data),
-                    identifier: () => this.identifier
+                    getStatus: key => this.getDataStatus(key)
                 };
 
                 for (var i = 0; i < this.export_data.length; i++) {
@@ -301,7 +297,7 @@ class Model {
 
     toString() {
         let str = "{\n"
-        
+
         for (var i = 0; i < this.export_data.length; i++) {
             var id = this.export_data[i];
 

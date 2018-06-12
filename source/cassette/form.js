@@ -11,16 +11,6 @@ class Form extends Cassette {
         //Scan the element and look for inputs that can be mapped to the 
         super(parent, element);
 
-        /**
-        	A case that will handle the acceptance of the form submission 
-        */
-        this.accept_case = null;
-
-        /**
-        	A case that will handle the rejection of the form submission 
-        */
-        this.reject_case = null;
-
         element.addEventListener("submit", (e) => {
             this.submit();
             e.preventDefault();
@@ -32,6 +22,24 @@ class Form extends Cassette {
 
     }
 
+    accepted(result){
+        result.text().then((e)=>{
+            GLOBAL.linker.loadPage(
+                GLOBAL.linker.loadNewPage(url, (new DOMParser()).parseFromString(e, "text/html")), 
+                false
+            );
+        })
+    }
+
+    rejected(result){
+        result.text().then((e)=>{
+            GLOBAL.linker.loadPage(
+                GLOBAL.linker.loadNewPage(url, (new DOMParser()).parseFromString(e, "text/html")), 
+                false
+            );
+        })
+    }
+
     update(data) {
 
     }
@@ -41,7 +49,6 @@ class Form extends Cassette {
         let url = this.element.action;
 
         var form_data = (new FormData(this.element));
-      
 
         console.log("Wick Form Submitted", url, form_data)
 
@@ -51,27 +58,13 @@ class Form extends Cassette {
             body: form_data,
         }).then((result) => {
 
-        	if(result.status != 200){
-        		result.text().then((e)=>{
-        			GLOBAL.linker.loadPage(
-                        GLOBAL.linker.loadNewPage(url, (new DOMParser()).parseFromString(e, "text/html")), 
-                        false
-                    );
-        		})
-        		return;
-        	}
+        	if(result.status != 200)
+        		this.rejected(result);
+        	else
+                this.accepted(result)
 
-            if (this.data.accept_url) {
-                if (this.data.accept_url == "back"){
-                    window.history.back();
-                }
-                else {
-                	history.pushState({}, "ignored title", `${this.data.accept_url}`);
-                    window.onpopstate();
-                }
-            }
-        }).catch(() => {
-        	console.error("TODO: Form submission failed!")
+        }).catch((e) => {
+            this.rejected(e);
         })
     }
 }

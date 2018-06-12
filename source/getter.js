@@ -19,7 +19,7 @@ class Getter extends Controller {
         super.destructor();
     }
 
-    get(request_object) {
+    get(request_object, store_object) {
         //if(this.FETCH_IN_PROGRESS)
         //    return null;
         this.FETCH_IN_PROGRESS = true;
@@ -27,19 +27,20 @@ class Getter extends Controller {
         var url = "http://" + window.location.host + this.url + ( (request_object) ? ("?" + this.__process_url__(request_object)) : "");
         
         console.log(url, request_object)
-        return fetch(url,
+        return ((store) => fetch(url,
         {
             credentials: "same-origin", // Sends cookies back to server with request
             method: 'GET'
         }).then((response)=>{
             this.FETCH_IN_PROGRESS = false;
             (response.json().then((j)=>{
-                this.__process_response__(j);
+                this.__process_response__(j, store);
             }));
         }).catch((error)=>{
             this.FETCH_IN_PROGRESS = false;
+            this.__rejected_reponse__(store);
             console.warn(`Unable to process response for request made to: ${this.url}. Response: ${error}. Error Received: ${error}`);
-        })
+        })) (store)
     }
 
     parseJson(in_json){
@@ -55,7 +56,12 @@ class Getter extends Controller {
         return str.slice(0, -1);
     }
 
-    __process_response__(json) {
+    __rejected_reponse__(store){
+        if(store)
+            console.error("Unprocessed stored data in getter.");
+    }   
+
+    __process_response__(json, store) {
 
         if(this.rurl && json){
             var watch_points = this.rurl.split("<");
@@ -73,7 +79,7 @@ class Getter extends Controller {
         //result(request);
             if (this.model){
             //should be able to pipe responses as objects created from well formulated data directly into the model.
-                this.set(this.parseJson(json));
+                this.set(this.parseJson(json, store));
             }
             else
                 console.warn(`Unable to process response for request made to: ${this.url}. There is no model attached to this request controller!`)

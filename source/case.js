@@ -45,7 +45,7 @@ let PresetCassettes = {
     export: Exporter,
     iquery: ImportQuery,
     edt: EpochToDateTime,
-    exists : Exists
+    exists: Exists
 }
 
 class CaseParentView extends View {
@@ -123,28 +123,28 @@ class Case extends View {
 
             var children = this.element.children;
 
-            if (this.data.url){
+            if (this.data.url) {
                 //import query info from the wurl
                 let str = this.data.url;
                 let components = str.split(";");
                 this.data.url = components[0];
 
-                for(var i = 1; i < components.length; i++){
+                for (var i = 1; i < components.length; i++) {
                     let component = components[i];
 
-                    switch(component[0]){
+                    switch (component[0]) {
                         case "p":
-                        //TODO
-                        this.url_parent_import = component.slice(1)
-                        break;
+                            //TODO
+                            this.url_parent_import = component.slice(1)
+                            break;
                         case "q":
-                        this.url_query = component.slice(1);
-                        break;
+                            this.url_query = component.slice(1);
+                            break;
                         case "<":
-                        this.url_return = component.slice(1);
+                            this.url_return = component.slice(1);
                     }
                 }
-                
+
             }
 
 
@@ -252,7 +252,7 @@ class Case extends View {
             else
                 this.components[i].update(data);
         }
-            this.REQUESTING = false;
+        this.REQUESTING = false;
 
         if (this.TEMPLATE_HANDLER && this.template) {
             //components for each data element
@@ -260,42 +260,44 @@ class Case extends View {
             //This by default should be an array of Model objects
             var result = data[this.prop].get();
 
-            
-            for(var j = 0; j < this.filter_list.length; j++){
+
+            for (var j = 0; j < this.filter_list.length; j++) {
                 let filter = this.filter_list[j];
-                
-                result = result.filter((a)=>{
+
+                result = result.filter((a) => {
                     return filter(a.get());
                 });
             }
-            
+
 
             //We should establish filtering mechanisms here to remove unneeded data.
 
+
             //Need to isolate new results from existing, and cull existing that do not match results.
-            a:
-                for (var i = 0; i < result.length; i++) {
-                    //check for existing matches
-                    for (var j = 0; j < this.components.length; j++) {
 
-                        var component = this.components[j];
+            for (var j = 0; j < this.components.length; j++) {
 
-                        if (component instanceof Case)
-                            if (component.model && component.model.identifier == result[i].identifier())
-                                continue a;
+                var component = this.components[j];
 
-                    }
+                component.destructor();
+            }
 
-                    var temp_ele = document.importNode(this.template.content, true).children[0];
+            this.components.length = 0;
 
-                    var d = new Case(temp_ele, this.cl, this);
 
-                    result[i].addView(d);
+            for (var i = 0; i < result.length; i++) {
+                //check for existing matche
 
-                    this.element.appendChild(temp_ele);
+                var temp_ele = document.importNode(this.template.content, true).children[0];
 
-                    this.components.push(d);
-                }
+                var d = new Case(temp_ele, this.cl, this);
+
+                result[i].addView(d);
+
+                this.element.appendChild(temp_ele);
+
+                this.components.push(d);
+            }
         }
     }
 
@@ -416,9 +418,12 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
         }
     }
 
-    //Case of form, the special case of Component
+    //Case of form, a special case of Component
     if (tag == "FORM") {
-        if (cassettes.form || PresetCassettes.form) {
+        let form_class = PresetCassettes.form;
+        if (class_ && (form_class = cassettes[class_]) && form_class.prototype instanceof Form) {
+            component = [new form_class(parentCase, element)];
+        } else if (cassettes.form || PresetCassettes.form) {
             component = [new(cassettes.form || PresetCassettes.form)(parentCase, element)];
         } else {
             console.warn("Missing form constructor in presets, unable to process form data!");
@@ -448,5 +453,6 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
 export {
     Case,
     Cassette,
-    Filter
+    Filter,
+    Form
 }
