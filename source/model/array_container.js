@@ -21,10 +21,11 @@ class ArrayModelContainer extends ModelContainer {
 
     __insert__(item) {
         if (this.checkIdentifier(item)) {
+
             for (var i = 0, l = this.data.length; i < l; i++) {
                 var obj = this.data[i];
-
-                if (obj.identifier == this.getIdentifier(item)) {
+                console.log(this.getIdentifier(obj), this.getIdentifier(item), this.data)
+                if (this.getIdentifier(obj) == this.getIdentifier(item)) {
                     obj.add(item);
                     return true;
                 }
@@ -48,7 +49,7 @@ class ArrayModelContainer extends ModelContainer {
             for (var i = 0, l = this.data.length; i < l; i++) {
                 var obj = this.data[i];
 
-                if (obj.identifier == item[this.schema.identifier]) {
+                if (this.getIdentifier(obj) == item[this.schema.identifier]) {
                     obj.add(item);
                     return true;
                 }
@@ -69,7 +70,7 @@ class ArrayModelContainer extends ModelContainer {
             for (var i = 0, l = this.data.length; i < l; i++) {
                 var obj = this.data[i];
 
-                if (obj.identifier == this.getIdentifier(item)) {
+                if (this.getIdentifier(obj) == this.getIdentifier(item)) {
                     return obj.get();
                 }
             }
@@ -95,7 +96,7 @@ class ArrayModelContainer extends ModelContainer {
             for (var i = 0, l = this.data.length; i < l; i++) {
                 var obj = this.data[i];
 
-                if (obj.identifier == this.getIdentifier(item)) {
+                if (this.getIdentifier(obj) == this.getIdentifier(item)) {
 
                     this.data[i].splice(i, 1);
 
