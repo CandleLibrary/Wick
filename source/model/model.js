@@ -19,10 +19,6 @@ import {
     DateModelContainer
 } from "./date_model_container"
 
-var schema_catch = {
-
-}
-
 class Model {
     constructor(data) {
         this.first_view = null;
@@ -229,6 +225,10 @@ class Model {
 
     }
 
+    /**
+        Returns values that match the data properties. 
+    */
+
     get(data) {
         var out_data = {};
         if (!data) {
@@ -276,15 +276,22 @@ class Model {
         return out_data;
     }
 
+    /**
+        Removes items in containers based on matching index.
+    */
+
     remove(data) {
+        var out_data = {};
         for (var a in data) {
             var scheme = this.schema[a];
             if (scheme)
-                if (scheme instanceof Array)
-                    this.removeDataFromContainer(this.data[a], data[a]);
-                else if (scheme instanceof Model)
-                this.data[a].remove(data[a]);
+                if (scheme instanceof Array) {
+                    out_data[a] = this.removeDataFromContainer(this.data[a], data[a]);
+                } else if (scheme instanceof Model)
+                out_data[a] = this.data[a].remove(data[a]);
         }
+
+        return out_data;
     }
 
     insertDataIntoContainer(container, item) {
@@ -301,7 +308,7 @@ class Model {
 
     toString() {
         let str = "{\n"
-        
+
         for (var i = 0; i < this.export_data.length; i++) {
             var id = this.export_data[i];
 

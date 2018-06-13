@@ -76,8 +76,8 @@ class Case extends View {
         Case constructor. Builds a Case object.
         @params [DOMElement] element - A DOM <template> element that contains a <case> element.
         @params [LinkerPresets] presets
-        @params [Case] parent
-        @params [DOM]  WORKING_DOM
+        @params [Case] parent - The parent Case object, used internally to build Case's in a hierarchy
+        @params [DOM]  WORKING_DOM - The DOM object that contains templates to be used to build the case objects. 
     */
     constructor(element, presets, parent = null, WORKING_DOM) {
         super();

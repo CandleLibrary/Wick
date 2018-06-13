@@ -68,19 +68,21 @@ class ModelContainer {
                     out.push(temp);
 
 
-            return (out.length > 0) ? out : null;
+            return out;
         } else {
             return this.__get__(item);
         }
     }
 
     remove(item) {
-        if (item instanceof Array) {
-            var out = false;
-            for (var i = 0; i < item.length; i++) {
-                if (this.removeAll(item[i]))
-                    out = true;
-            }
+        if(!item){
+            return this.__removeAll__();
+        } if (item instanceof Array) {
+            var out = [],
+                temp = null;
+            for (var i = 0; i < item.length; i++)
+                if ((temp = this.removeAll(item[i])))
+                    out.push(temp);
 
             return out;
         } else {
@@ -100,8 +102,13 @@ class ModelContainer {
         return [];
     }
 
+    __removeAll__() {
+        return [];
+    }
+
+
     __remove__(item) {
-        return false;
+        return [];
     }
 
 
@@ -162,6 +169,26 @@ class MultiIndexedContainer extends ModelContainer{
             if(this.indexes[a])
                 out = out.concat(this.indexes[a].get(item[a]));
         }
+
+        return out;
+    }
+
+    remove(item) {
+        var out = [];
+
+        for(let a in item){
+            if(this.indexes[a])
+                out = out.concat(this.indexes[a].remove(item[a]));
+        }
+
+        /* Replay items against indexes to insure all items have been removed from all indexes */
+
+        for(var j = 0; j < this.indexes.length; j++){
+            for(var i = 0; i < out.length; i++){
+                this.indexes[j].remove(out[i]);
+            }    
+        }
+        
 
         return out;
     }

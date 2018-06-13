@@ -27,6 +27,7 @@ class Getter extends Controller {
         var url = "http://" + window.location.host + this.url + ( (request_object) ? ("?" + this.__process_url__(request_object)) : "");
         
         console.log(url, request_object)
+
         return fetch(url,
         {
             credentials: "same-origin", // Sends cookies back to server with request

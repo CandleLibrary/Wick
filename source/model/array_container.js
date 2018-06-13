@@ -82,6 +82,14 @@ class ArrayModelContainer extends ModelContainer {
         return this.data.map((d) => d.get()) || [];
     }
 
+    __removeAll__(){
+        let items = this.__getAll__();
+
+        this.data.length = 0;
+
+        return items;
+    }
+
     __remove__(item) {
         if (this.checkIdentifier(item)) {
             for (var i = 0, l = this.data.length; i < l; i++) {
@@ -91,12 +99,12 @@ class ArrayModelContainer extends ModelContainer {
 
                     this.data[i].splice(i, 1);
 
-                    return true;
+                    return [obj];
                 }
             }
         }
 
-        return false;
+        return [];
     }
 }
 

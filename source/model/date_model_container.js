@@ -44,6 +44,10 @@ class DateModelContainer extends BinaryTreeModelContainer {
         return this.days.__getAll__(start, end);
     }
 
+    __removeAllItems__(start, end){
+        return this.days.__removeAll__(start, end);
+    }
+
     getNext(){
         var d = (new Date(this.max))
         d.setMonth(d.getMonth() + 1);
@@ -85,8 +89,16 @@ class Day_Container extends BinaryTreeModelContainer {
         return this.models.get(item);
     }
 
+    __removeItem__(start_date, end_date) {
+        return this.models.remove(item);
+    }
+
     __getAllItems__(){
         return this.models.get(); //{ data : this.models.get(), date: this.min};
+    }
+
+    __removeAllItems__(){
+        return this.models.remove();
     }
 
     __insertItem__(item) {

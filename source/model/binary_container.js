@@ -112,6 +112,34 @@ class BinaryTreeModelContainer extends ModelContainer {
         return items;
     }
 
+
+    __removeAll__(start = -Infinity, end = Infinity) {
+        var items = [];
+
+        var a_condition = (this.min >= start) | 0;
+        var b_condition = (this.max <= end) | 0;
+
+        var c_condition = (this.min <= end) | 0;
+        var d_condition = (this.max >= start) | 0;
+
+        if (a_condition && this.left) {
+            var t = this.left.__removeAll__(start, end)
+            items = items.concat(t);
+        }
+
+        if (c_condition && d_condition) {
+            var t = this.__removeAllItems__(start, end);
+            items = items.concat(t);
+        }
+
+        if (b_condition && this.right) {
+            var t = this.right.__removeAll__(start, end)
+            items = items.concat(t);
+        }
+
+        return items;
+    }
+
     get(item) {
         if (item instanceof Array) {
 
@@ -134,6 +162,28 @@ class BinaryTreeModelContainer extends ModelContainer {
         return super.get(item);
     }
 
+    remove(item) {
+        if (item instanceof Array) {
+
+            if (typeof(item[0]) == "number") {
+                var items = [];
+
+                for (var i = 0; i < item.length; i += 2) {
+                    var a_val = item[i];
+                    var b_val = item[i + 1];
+
+                    if (typeof(a_val) == "number" && typeof(b_val) == "number") {
+                        items = items.concat(this.__removeAll__(a_val, b_val));
+                    }
+                }
+
+                return items.length > 0 ? items : [];
+            }
+        }
+
+        return super.remove(item);
+    }
+
 
     __insertItem__(item, numerical_id) {
         return false;
@@ -148,7 +198,11 @@ class BinaryTreeModelContainer extends ModelContainer {
     }
 
     __getAllItems__(start, end) {
-        return null;
+        return [];
+    }
+
+    __removeAllItems__(start, end) {
+        return [];
     }
 }
 
