@@ -36,7 +36,9 @@ import {
 import {
     Exists
 } from "./cassette/exists"
-
+import {
+    Verify
+} from "./cassette/verify"
 let PresetCassettes = {
     raw: Cassette,
     cassette: Cassette,
@@ -45,7 +47,8 @@ let PresetCassettes = {
     export: Exporter,
     iquery: ImportQuery,
     edt: EpochToDateTime,
-    exists: Exists
+    exists: Exists,
+    verify: Verify
 }
 
 class CaseParentView extends View {

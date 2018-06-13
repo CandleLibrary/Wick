@@ -47,6 +47,11 @@ import {
     Filter
 } from "./case"
 
+import {
+    SchemaType,
+    schema
+} from "./schema/schemas"
+
 let LINKER_LOADED = false;
 
 /**
@@ -100,5 +105,7 @@ export {
     ModelContainer,
     Setter,
     View,
-    light
+    light,
+    SchemaType,
+    schema
 }

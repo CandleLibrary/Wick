@@ -19,6 +19,10 @@ import {
     DateModelContainer
 } from "./date_model_container"
 
+import {
+    SchemaType
+} from "../schema/schemas"
+
 class Model {
     constructor(data) {
         this.first_view = null;
@@ -152,8 +156,10 @@ class Model {
     updateViews() {
         var view = this.first_view;
 
+        let data = this.get();
+
         while (view) {
-            view.update(this.data);
+            view.update(data);
             view = view.next;
         }
     }
@@ -162,7 +168,7 @@ class Model {
         Given a key, returns an object that represents the status of the value contained, if it is valid or not, according to the schema for that property. 
     */
 
-    getDataStatus(key) {
+    verify(key) {
         
         let out_data = {valid: true, reason: ""};
 
@@ -174,7 +180,7 @@ class Model {
             } else if (scheme instanceof Model) {
                 
             } else {
-                scheme(this.data[key], out_data);
+                scheme.verify(this.data[key], out_data);
             }
         }
 
@@ -196,7 +202,7 @@ class Model {
                     NEED_UPDATE = (this.insertDataIntoContainer(this.data[a], data[a])) ? true : NEED_UPDATE;
                 } else if (scheme instanceof Model) {
                     if (!this.data[a])
-                        this.data[a] = new scheme();
+                        this.data[a] = scheme.parse();
 
                     if (this.data[a].add(data[a])) {
                         NEED_UPDATE = true;
@@ -204,7 +210,7 @@ class Model {
                 } else {
                     var prev = this.data[a];
 
-                    var next = scheme(data[a]);
+                    var next = scheme.parse(data[a]);
 
                     if(next !== null && next !== prev){
                         this.data[a] = next;
@@ -229,7 +235,7 @@ class Model {
                 this._temp_data_ = {
                     addView: view => this.addView(view),
                     get: data => this.get(data),
-                    getStatus: key => this.getDataStatus(key)
+                    verify: key => this.verify(key)
                 };
 
                 for (var i = 0; i < this.export_data.length; i++) {

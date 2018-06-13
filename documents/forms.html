@@ -26,18 +26,12 @@
     </app>
 
   <template id="test_form">
-    <case data-schema="users" data-url="/documents/data/users.json" data-prop="data">
-      <template class="user_entry">
-        <case model="user">
+        <case data-schema="user">
           <div data-class="raw" data-prop="name"></div>
           <input type="text"  data-prop="name" name ="note">
+          <input type="text"  data-prop="email" name ="note">
+          <span data-class="verify" data-prop="email"></span>
         </case>
-      </template>
-    </case>
-  </template>
-
-  <template id="user_entry">
-    <case model="user">
     </case>
   </template>
 
@@ -49,8 +43,9 @@
 
     //Create a new schema for Users and User container
     class User extends wick.Model {};
+
     User.schema = {
-      email: wick.schema.EMAIL,
+      email: wick.schema.STRING,
       name: wick.schema.STRING,
       identifier:"name"
     }
@@ -66,6 +61,7 @@
     }
 
     presets.schemas.users = Users;
+    presets.schemas.user = User;
 
     wick.light(presets);
 

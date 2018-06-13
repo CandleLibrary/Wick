@@ -1,18 +1,10 @@
-/**
-	Schema type. Handles the parsing and verification of data of models. 
-*/
-class SchemaType {
-	constructor(){
+import {SchemaType} from "./schema_type"
+import {DATE} from "./date_type"
+import {STRING} from "./string_type"
 
-	}
-
-	parse(value){
-
-	}
-
-	verify(value, result){
-		result
-	}
+let schema = {
+	DATE,
+	STRING
 }
 
-export {}
+export {SchemaType, schema}; 
