@@ -14,10 +14,15 @@ class Form extends Cassette {
         this.submitted = false;
 
         element.addEventListener("submit", (e) => {
+            console.log(e.target, this, parent)
+
             if(!this.submitted) 
                 this.submit();
+            
             this.submitted = true;
+            
             e.preventDefault();
+            
             return false;
         })
     }

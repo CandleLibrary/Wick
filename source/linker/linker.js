@@ -175,7 +175,10 @@ class Linker {
         if ((page = this.pages[url])) {
             if (IS_SAME_PAGE) {
                 URL_HOST.wurl = wurl;
-                return this.pages[url].transitionIn(null, wurl, IS_SAME_PAGE);
+
+                return page.transitionIn(
+                    (page.type == "modal") ? getModalContainer() : document.getElementsByTagName("app")[0], 
+                    null, wurl, IS_SAME_PAGE);
             }
             return this.loadPage(page, wurl, IS_SAME_PAGE);
         }

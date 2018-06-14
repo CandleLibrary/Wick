@@ -72,6 +72,17 @@ class Model {
             this.add(data);
     }
 
+    /**
+        Alias for destructor
+    */
+
+    destroy(){
+        this.destructor();
+    }
+
+    /**
+        Removes all held references and calls unsetModel on all listening views.
+    */
     destructor() {
 
         //inform views of the models demise
@@ -83,6 +94,10 @@ class Model {
         }
 
         this.first_view = null;
+        this.schema = null;
+        this.data = {};
+        this._temp_data_ = null;
+        this.export_data = null;
 
         for (let a in this.data) {
             if (typeof(this.data[a]) == "object") {

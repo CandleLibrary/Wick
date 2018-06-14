@@ -409,7 +409,7 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
         if (!parent.template) parent.template = element;
 
         return [];
-    }
+    } 
 
     //Case of input, if parent is form
     if (tag == "INPUT" && element.dataset.prop) {
@@ -418,7 +418,7 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
         } else {
             console.warn("Missing input constructor in presets, unable to process form data!");
         }
-    }
+    } else
 
     //Case of form, a special case of Component
     if (tag == "FORM") {
@@ -430,7 +430,9 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
         } else {
             console.warn("Missing form constructor in presets, unable to process form data!");
         }
-    }
+
+
+    } else 
 
     //Case of Component
     if (class_ && (cassettes[class_] || PresetCassettes[class_])) {

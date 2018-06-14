@@ -10,6 +10,7 @@ class PageView {
         this.type = "normal";
         if(!app_page) debugger
         this.element = app_page;
+        this.element_backer = null;
     }
 
     destructor(){
@@ -28,10 +29,16 @@ class PageView {
         if(!IS_SAME_PAGE)
             app_element.appendChild(this.element);
 
-        if(this.type == "modal")
+        if(this.type == "modal"){
+            if(!this.element_backer){
+                this.element_backer = document.createElement("div");
+                this.element_backer.classList.add("modal_backer")
+                this.element.appendChild(this.element_backer)
+            }
             setTimeout(()=>{
                 this.element.style.opacity = 1;
             }, 50)
+        }
         
 
         for (var i = 0; i < this.elements.length; i++) {
