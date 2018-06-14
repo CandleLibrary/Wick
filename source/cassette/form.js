@@ -11,8 +11,12 @@ class Form extends Cassette {
         //Scan the element and look for inputs that can be mapped to the 
         super(parent, element);
 
+        this.submitted = false;
+
         element.addEventListener("submit", (e) => {
-            this.submit();
+            if(!this.submitted) 
+                this.submit();
+            this.submitted = true;
             e.preventDefault();
             return false;
         })
@@ -25,7 +29,7 @@ class Form extends Cassette {
     accepted(result){
         result.text().then((e)=>{
             GLOBAL.linker.loadPage(
-                GLOBAL.linker.loadNewPage(url, (new DOMParser()).parseFromString(e, "text/html")), 
+                GLOBAL.linker.loadNewPage(result.url, (new DOMParser()).parseFromString(e, "text/html")), 
                 false
             );
         })
@@ -34,7 +38,7 @@ class Form extends Cassette {
     rejected(result){
         result.text().then((e)=>{
             GLOBAL.linker.loadPage(
-                GLOBAL.linker.loadNewPage(url, (new DOMParser()).parseFromString(e, "text/html")), 
+                GLOBAL.linker.loadNewPage(result.url, (new DOMParser()).parseFromString(e, "text/html")), 
                 false
             );
         })

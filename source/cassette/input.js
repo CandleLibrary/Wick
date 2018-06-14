@@ -16,7 +16,7 @@ class Input extends Cassette{
 	}
 
 	update(data){
-			console.log(this.element.type)
+
 		switch(this.element.type){
 			case "date":
 				this.element.value = (new Date(parseInt(data[this.prop]))).toISOString().split("T")[0];
@@ -30,7 +30,7 @@ class Input extends Cassette{
 			default:
 
 				var t = this.element.classList[0];
-				console.log(t)
+				
 				switch(t){
 					case "modulo_time":
 						var time = data[this.prop];

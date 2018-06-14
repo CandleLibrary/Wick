@@ -11,7 +11,6 @@ class Getter extends Controller {
         super();
         this.url = url;
         this.FETCH_IN_PROGRESS = false;
-        console.log(this.rurl,"rurl")
         this.rurl = process_data;
     }
 
@@ -25,8 +24,6 @@ class Getter extends Controller {
         this.FETCH_IN_PROGRESS = true;
 
         var url = "http://" + window.location.host + this.url + ( (request_object) ? ("?" + this.__process_url__(request_object)) : "");
-        
-        console.log(url, request_object)
 
         return ((store) => fetch(url,
         {
@@ -41,7 +38,7 @@ class Getter extends Controller {
             this.FETCH_IN_PROGRESS = false;
             this.__rejected_reponse__(store);
             console.warn(`Unable to process response for request made to: ${this.url}. Response: ${error}. Error Received: ${error}`);
-        })) (store)
+        })) (store_object)
     }
 
     parseJson(in_json){

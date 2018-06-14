@@ -44,7 +44,8 @@ let wick_vanity = "\ \(\ \ \(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \)\n\ \)\\\
 import {
     Case,
     Cassette,
-    Filter
+    Filter,
+    Form
 } from "./case"
 
 let LINKER_LOADED = false;
@@ -90,6 +91,7 @@ export {
     Controller,
     Case,
     Cassette,
+    Form,
     Filter,
     Common,
     Component,

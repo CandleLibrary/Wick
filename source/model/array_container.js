@@ -24,7 +24,6 @@ class ArrayModelContainer extends ModelContainer {
 
             for (var i = 0, l = this.data.length; i < l; i++) {
                 var obj = this.data[i];
-                console.log(this.getIdentifier(obj), this.getIdentifier(item), this.data)
                 if (this.getIdentifier(obj) == this.getIdentifier(item)) {
                     obj.add(item);
                     return true;
@@ -84,7 +83,7 @@ class ArrayModelContainer extends ModelContainer {
     }
 
     __removeAll__(){
-        let items = this.__getAll__();
+        let items = this.data.map(d => d) || [];
 
         this.data.length = 0;
 

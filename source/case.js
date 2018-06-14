@@ -196,8 +196,10 @@ class Case extends View {
     destructor() {
         this.parent = null;
 
-        for (var i = 0; i < this.components.length; i++) {
-            this.components[i].destructor();
+        if(this.components){
+            for (var i = 0; i < this.components.length; i++) {
+                this.components[i].destructor();
+            }
         }
 
         this.components = null;

@@ -196,7 +196,7 @@ class MultiIndexedContainer extends ModelContainer{
     __insert__(item) {
         let out = false
 
-        if(!item.identifier) debugger;
+        //if(!this.getIdentifier(item)) debugger;
         for(let a in this.indexes){
             let index = this.indexes[a];
             if(index.insert(item)) out = true;

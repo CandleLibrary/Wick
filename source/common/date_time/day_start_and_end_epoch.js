@@ -4,7 +4,7 @@ function GetDayStartAndEnd(date) {
         end: 0
     };
 
-    if (date instanceof Date) {
+    if (date instanceof Date || typeof(date) == "number" ) {
         var d = new Date(date);
 
         d.setHours(0);
