@@ -15,15 +15,11 @@ import {
 } from "./element"
 
 import {
-    Modal
-} from "./modal"
-
-import {
     TurnDataIntoQuery
 } from "../common/url/url"
 
 import {
-    GLOBAL 
+    GLOBAL
 } from "../global"
 
 let URL_HOST = {
@@ -31,42 +27,42 @@ let URL_HOST = {
 };
 let URL = (function() {
 
-            return {
-                /**
-                    Changes the URL to the one provided, prompts page update. overwrites current URL.
+    return {
+        /**
+            Changes the URL to the one provided, prompts page update. overwrites current URL.
+        */
+        set: function(a, b, c) {
+            if (URL_HOST.wurl)
+                URL_HOST.wurl.set(a, b, c);
+        },
+        /**
+                    Returns a Query entry if it exists in the query string. 
                 */
-                set: function(a, b, c) {
-                    if (URL_HOST.wurl)
-                        URL_HOST.wurl.set(a, b, c);
-                },
-                /**
-                            Returns a Query entry if it exists in the query string. 
-                        */
-                get: function(a, b) {
-                    if (URL_HOST.wurl)
-                        return URL_HOST.wurl.set(a, b);
-                    return null;
-                },
-                /**
-                            Changes the URL state to the one provided and prompts the Browser to respond o the change. 
-                        */
-                goto: function(a, b) {
-                        history.pushState({}, "ignored title", `${a}${ ((b) ? `?${TurnDataIntoQuery(b)}` : "") }`);
-                        window.onpopstate();
-                }
+        get: function(a, b) {
+            if (URL_HOST.wurl)
+                return URL_HOST.wurl.set(a, b);
+            return null;
+        },
+        /**
+                    Changes the URL state to the one provided and prompts the Browser to respond o the change. 
+                */
+        goto: function(a, b) {
+            history.pushState({}, "ignored title", `${a}${ ((b) ? `?${TurnDataIntoQuery(b)}` : "") }`);
+            window.onpopstate();
+        }
     }
 })();
 
-function getModalContainer(){
-    let modal_container = document.getElementsByTagName("modals")[0];                
-   
-    if(!modal_container){
-        
+function getModalContainer() {
+    let modal_container = document.getElementsByTagName("modals")[0];
+
+    if (!modal_container) {
+
         modal_container = document.createElement("modals");
-        
+
         var dom_app = document.getElementsByTagName("app")[0];
-        
-        if(dom_app)
+
+        if (dom_app)
             dom_app.parentElement.insertBefore(modal_container, dom_app);
         else
             document.body.appendChild(modal_container);
@@ -158,16 +154,6 @@ class Linker {
         /* */
         this.modal_stack = [];
 
-        /*
-            Setup Auto Modal
-        */
-        Modal.create = (name, element)=>{
-            let app = element.getElementsByTagName("app")[0];
-            if(!app) return;
-            app.setAttribute("data-modal", "true");
-            loadPage(loadNewPage("", element), new WURL(document.location), false);
-        }   
-
         window.onpopstate = () => {
             this.parseURL(document.location)
         }
@@ -202,8 +188,8 @@ class Linker {
                 (response.text().then((html) => {
                     var DOM = (new DOMParser()).parseFromString(html, "text/html")
                     this.loadPage(
-                        this.loadNewPage(url, DOM), 
-                        wurl, 
+                        this.loadNewPage(url, DOM),
+                        wurl,
                         IS_SAME_PAGE
                     );
                 }));
@@ -213,8 +199,9 @@ class Linker {
     }
 
     finalizePages() {
-
+        
         for (var i = 0, l = this.finalizing_pages.length; i < l; i++) {
+            
             var page = this.finalizing_pages[i];
             page.finalize();
         }
@@ -237,14 +224,14 @@ class Linker {
         let transition_length = 0;
 
         //Finalize any existing page transitions;
-       // this.finalizePages();
+        // this.finalizePages();
 
         let transition_elements = {};
-        
-        if (page instanceof Modal) {
+
+        if (page.type == "modal") {
             //trace modal stack and see if the modal already exists
             if (IS_SAME_PAGE) {
-                page.transitionIn(null, query, IS_SAME_PAGE)
+                page.transitionIn(getModalContainer(), null, query, IS_SAME_PAGE)
                 return;
             }
 
@@ -263,17 +250,19 @@ class Linker {
                     if (trs = this.modal_stack[i].transitionOut()) {
                         transition_length = Math.max(trs, transition_length);
                         this.finalizing_pages.push(this.modal_stack[i]);
+                    } else {
+                        this.modal_stack[i].finalize();
                     }
                 }
             }
 
             if (UNWIND > 0) {
                 this.modal_stack.length = UNWIND;
-                page.transitionIn(null, wurl, IS_SAME_PAGE);
+                page.transitionIn(getModalContainer(), null, wurl, IS_SAME_PAGE);
             } else {
                 //create new modal
                 this.modal_stack.push(page);
-                page.transitionIn(null, wurl, IS_SAME_PAGE);
+                page.transitionIn(getModalContainer(), null, wurl, IS_SAME_PAGE);
             }
 
         } else {
@@ -283,6 +272,8 @@ class Linker {
                 if (trs = this.modal_stack[i].transitionOut()) {
                     transition_length = Math.max(trs, transition_length);
                     this.finalizing_pages.push(this.modal_stack[i]);
+                } else {
+                    this.modal_stack[i].finalize();
                 }
             }
 
@@ -297,17 +288,17 @@ class Linker {
             ) {
                 transition_length = Math.max(this.current_view.transitionOut(transition_elements), transition_length);
                 this.finalizing_pages.push(this.current_view);
-                this.current_view.finalize();
+                //this.current_view.finalize();
             }
 
             this.current_view = page;
 
             page.transitionIn(document.getElementsByTagName("app")[0], this.current_view, wurl, IS_SAME_PAGE, transition_elements);
 
-            setTimeout(() => {
-                //this.finalizePages();
-            }, transition_length + 1);
         }
+        setTimeout(() => {
+            this.finalizePages();
+        }, transition_length + 1);
 
     }
 
@@ -333,16 +324,15 @@ class Linker {
         let iframe = document.createElement("iframe");
         iframe.src = URL;
         iframe.classList.add("modal", "comp_wrap");
-        var page = new PageView(URL);
+        var page = new PageView(URL, iframe);
         page.type = "modal";
-        this.pages[URL] = new Modal(page, iframe, getModalContainer());
-
+        this.pages[URL] = page //new Modal(page, iframe, getModalContainer());
         return this.pages[URL];
     }
-        /**
-            Takes the DOM of another page and strips it, looking for component and app elements to use to integrate into the SPA system.
-            If it is unable to find these elements, then it will pass the DOM to loadNonWickPage to handle wrapping the page body into a wick app element.
-        */
+    /**
+        Takes the DOM of another page and strips it, looking for component and app elements to use to integrate into the SPA system.
+        If it is unable to find these elements, then it will pass the DOM to loadNonWickPage to handle wrapping the page body into a wick app element.
+    */
     loadNewPage(URL, DOM) {
         //look for the app section.
 
@@ -358,7 +348,7 @@ class Linker {
         */
         let app_list = DOM.getElementsByTagName("app");
 
-        if(app_list.length > 1){
+        if (app_list.length > 1) {
             console.warn(`Wick is designed to work with just one <app> element in a page. There are ${app_list.length} apps elements in ${url}. Wick will proceed with the first <app> element in the DOM. Unexpected behavior may occur.`)
         }
 
@@ -375,7 +365,7 @@ class Linker {
 
         var app_page = document.createElement("apppage");
         app_page.innerHTML = app_source.innerHTML;
-        
+
         var app = app_source.cloneNode(true);
 
 
@@ -394,54 +384,31 @@ class Linker {
                 /*
                     If the DOM is the same element as the actual document, then we shall rebuild the existing <app> element, clearing it of it's contents.
                 */
-                if(DOM == document && dom_app){
+                if (DOM == document && dom_app) {
                     let new_app = document.createElement("app");
                     document.body.replaceChild(new_app, dom_app);
                     dom_app = new_app;
                 }
             }
 
-            if(app.dataset.no_buffer == "true")
+            if (app.dataset.no_buffer == "true")
                 NO_BUFFER = true;
 
             var elements = app_page.getElementsByTagName("element");
 
             for (var i = 0; i < elements.length; i++) {
 
-                let ele = elements[i], equivilant_element_from_main_dom = ele, wick_element;
+                let ele = elements[i],
+                    equivilant_element_from_main_dom = ele,
+                    wick_element;
 
 
                 let element_id = ele.id;
 
                 if (page.type !== "modal") {
 
-                    //equivilant_element_from_main_dom = dom_app.querySelector(`#${ele.id}`);
-
-                    /*if (!equivilant_element_from_main_dom) {
-                        var insert;
-
-                        if (elements[i + 1] && (insert = dom_app.querySelector(`#${elements[i + 1].id}`)))
-                            dom_app.insertBefore(ele.cloneNode(), insert);
-
-                        else if (elements[i - 1] && (insert = dom_app.querySelector(`#${elements[i - 1].id}`)))
-                            dom_app.insertBefore(ele.cloneNode(), insert.nextSibling);
-
-                        else
-                            dom_app.appendChild(ele.cloneNode());
-                    }*/
-
-                    //equivilant_element_from_main_dom = dom_app.querySelector(`#${ele.id}`);
-                    
-                    //This is a way to make sure that Wick is completely in control of the <element>.
-                    
-                    /*
-                        let element = document.createElement("div");
-                        element.innerHTML = ele.innerHTML;
-                        element.classList.add("ele_wrap");
-                    */
-
                     wick_element = new Element(ele);
-                    
+
                 } else {
                     let element = document.createElement("div");
                     element.innerHTML = ele.innerHTML;
@@ -452,21 +419,21 @@ class Linker {
 
                 page.elements.push(wick_element);
 
-                if(!this.components[element_id])
+                if (!this.components[element_id])
                     this.components[element_id] = {};
 
                 wick_element.setComponents(this.components[element_id], this.models_constructors, this.component_constructors, this.presets, DOM);
             }
 
-            if(document == DOM)
+            if (document == DOM)
                 dom_app.innerHTML = "";
 
-            let result = (page.type == "modal") ? new Modal(page, app, getModalContainer()) : page;
-                        
-            if(!NO_BUFFER) this.pages[URL] = result;
-            
+            let result = page;
+
+            if (!NO_BUFFER) this.pages[URL] = result;
+
             return result;
-        
+
         }
     }
 }
