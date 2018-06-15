@@ -18,12 +18,12 @@ class Getter extends Controller {
         super.destructor();
     }
 
-    get(request_object, store_object) {
+    get(request_object, store_object, secure = true) {
         //if(this.FETCH_IN_PROGRESS)
         //    return null;
         this.FETCH_IN_PROGRESS = true;
 
-        var url = "http://" + window.location.host + this.url + ( (request_object) ? ("?" + this.__process_url__(request_object)) : "");
+        var url = ((secure) ? "https://" : "http://") + window.location.host + this.url + ( (request_object) ? ("?" + this.__process_url__(request_object)) : "");
 
         return ((store) => fetch(url,
         {

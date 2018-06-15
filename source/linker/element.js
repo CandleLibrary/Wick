@@ -102,7 +102,7 @@ class Element {
 
             let component = this.components[i];
 
-            if(!component.LOADED)
+            if(!component.LOADED && component.parentElement)
                 this.wraps[i].removeChild(component.element);
 
             component.LOADED = false;
