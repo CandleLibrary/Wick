@@ -55,7 +55,7 @@ var string_parse_and_format_functions = (function() {
                 //token.color = randomColor();
             }
 
-        }, {
+        },/* {
             type: "comment",
             //Initial check function. Return index offset to start for scan. If 0 is returned then the parser will move on to the next check function
             check(code, text) {
@@ -69,7 +69,7 @@ var string_parse_and_format_functions = (function() {
                 //console.log(token)
             }
 
-        }, {
+        }, */{
             type: "string",
             //Initial check function. Return index offset to start for scan. If 0 is returned then the parser will move on to the next check function
             check(code, text) {

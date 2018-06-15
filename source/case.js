@@ -257,6 +257,7 @@ class Case extends View {
         this.REQUESTING = false;
 
         if (this.TEMPLATE_HANDLER && this.template) {
+
             //components for each data element
 
             //This by default should be an array of Model objects

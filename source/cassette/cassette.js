@@ -1,3 +1,6 @@
+import {setLinks} from "../linker/setlinks"
+import {Lex} from "../common"
+
 function ImportDataFromDataSet(data_object, data_set_object, element) {
     if(element){
         for (let prop in data_set_object) {
@@ -23,10 +26,72 @@ class Cassette {
         this.top = 0;
         this.left = 0;
         this.data = {};
+        
+        if(this.element.tagName == "A")
+            this.processLink(this.element);
 
         /* import data into basic JavaScript object */
         ImportDataFromDataSet(this.data, element.dataset);
 
+    }
+    /**
+        This will attach a function to the link element to intercept and process data from the cassette.
+    */
+    processLink(element){
+
+        if (element.origin !== location.origin) return;
+
+        if (!element.onclick) element.onclick = ((href, a, __function__) => (e) => {
+            e.preventDefault();
+            if (__function__(href, a)) e.preventDefault();
+        })(element.href, element, (href, a)=>{
+            let real_href = "";
+            let lex = Lex(href);
+            while(lex.token){
+                if(lex.token.text == "{"){
+                    lex.next();
+                    let prop = lex.token.text;
+                    lex.next();
+
+                    real_href += this[prop];
+
+                    if(lex.token.text != "}")
+                        console.warn(`incorrect value found in url ${href}`)
+                }else{
+                    real_href += lex.token.text;
+                }
+
+                lex.next();
+            }
+
+            history.pushState({}, "ignored title", real_href);
+            window.onpopstate();
+            return true;
+        });
+
+        element.onmouseover = (()=>{
+            let href = element.href;
+            let real_href = "";
+            let lex = Lex(href);
+            while(lex.token){
+                console.log(lex.token.text)
+                if(lex.token.text == "{"){
+                    lex.next();
+                    let prop = lex.token.text;
+                    lex.next();
+
+                    real_href += this[prop];
+
+                    if(lex.token.text != "}")
+                        console.warn(`incorrect value found in url ${href}`)
+                }else{
+                    real_href += lex.token.text;
+                }
+
+                lex.next();
+            }
+            console.log(href, real_href)
+        })
     }
 
     update(data) {
