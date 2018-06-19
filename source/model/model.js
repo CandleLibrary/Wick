@@ -31,49 +31,61 @@ class Model {
 
         this.data = {};
         this._temp_data_ = null;
-        this.export_data = [];
 
-        for (var a in this.schema) {
+        if(!this.schema.__export_data__){
+            let __export_data__ = [];
+            this.schema.__export_data__ = __export_data__;
 
-            let scheme = this.schema[a];
+            for (var a in this.schema) {
 
-            if (scheme instanceof Array) {
-                if (scheme[0] instanceof ModelContainer) {
-                    this.data[a] = new scheme[0].constructor();
-                    this.export_data.push({
+                let scheme = this.schema[a];
+
+                if (scheme instanceof Array) {
+                    if (scheme[0] instanceof ModelContainer) {
+                        this.data[a] = new scheme[0].constructor();
+                        __export_data__.push({
+                            name: a,
+                            type: "ModelContainer",
+                            exportable: false
+                        })
+                    } else if (scheme[0].container && scheme[0].schema) {
+                        this.data[a] = new scheme[0].container(scheme[0].schema);
+                        __export_data__.push({
+                            name: a,
+                            type: "ModelContainer",
+                            exportable: false
+                        })
+                    } else {
+
+                        console.error(`Schema cannot contain an array that does not contain a single object constructor of type ModelContainer or {schema:schema, container: ModelContainer}.`);
+                    }
+                } else if (scheme instanceof Model) {
+                    this.data[a] = new scheme.constructor();
+                    __export_data__.push({
                         name: a,
-                        type: "ModelContainer",
-                        exportable: false
-                    })
-                } else if (scheme[0].container && scheme[0].schema) {
-                    this.data[a] = new scheme[0].container(scheme[0].schema);
-                    this.export_data.push({
-                        name: a,
-                        type: "ModelContainer",
+                        type: "Model",
                         exportable: false
                     })
                 } else {
-
-                    console.error(`Schema cannot contain an array that does not contain a single object constructor of type ModelContainer or {schema:schema, container: ModelContainer}.`);
+                    __export_data__.push({
+                        name: a,
+                        type: this.schema[a].name,
+                        exportable: true
+                    })
                 }
-            } else if (scheme instanceof Model) {
-                this.data[a] = new scheme.constructor();
-                this.export_data.push({
-                    name: a,
-                    type: "Model",
-                    exportable: false
-                })
-            } else {
-                this.export_data.push({
-                    name: a,
-                    type: this.schema[a].name,
-                    exportable: true
-                })
             }
-        }
 
+        }
         if (data)
             this.add(data);
+    }
+
+    get __export_data__(){
+        return this.schema.__export_data__;
+    }
+
+    set __export_data__(e){
+        null;
     }
 
     destructor() {
@@ -238,8 +250,10 @@ class Model {
                     verify: key => this.verify(key)
                 };
 
-                for (var i = 0; i < this.export_data.length; i++) {
-                    var id = this.export_data[i];
+                let __export_data__ = this.__export_data__;
+
+                for (var i = 0, l = __export_data__.length; i < l; i++) {
+                    var id = __export_data__[i];
 
                     if (id.exportable)
                         this._temp_data_[id.name] = this.data[id.name];
@@ -305,10 +319,12 @@ class Model {
     }
 
     toString() {
+
+        let __export_data__ = this.__export_data__;
         let str = "{\n"
 
-        for (var i = 0; i < this.export_data.length; i++) {
-            var id = this.export_data[i];
+        for (var i = 0; i < __export_data__.length; i++) {
+            var id = __export_data__[i];
 
             if (id.exportable)
                 str += `"${id.name}":${this.data[id.name].toString()},\n`;
