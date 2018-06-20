@@ -92,7 +92,7 @@ class Case extends View {
             console.warn("No element has been supplied to this Case constructor!");
             return;
         }
-
+        this.USE_SECURE = presets.USE_HTTPS;
         this.named_cassettes = {};
         this.data = {};
         this.template = null;
@@ -223,7 +223,7 @@ class Case extends View {
 
     request(query) {
 
-        this.receiver.get(query, null, false).then(() => {
+        this.receiver.get(query, null, this.USE_SECURE).then(() => {
             this.REQUESTING = false;
         });
         this.REQUESTING = true;
