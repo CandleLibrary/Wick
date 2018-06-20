@@ -25,14 +25,16 @@ class Component extends View {
             this.anchor = null;
             this.LOADED = false;
         }
+        
         /**
           	Takes as an input a list of transition objects that can be used
         */
     transitionIn(elements, query) {
             this.LOADED = true;
         }
+
         /**
-          @returns {number} Time in milliseconds that the transtion will take to complete.
+          @returns {number} Time in milliseconds that the transition will take to complete.
         */
     transitionOut() {
         this.LOADED = false;
@@ -69,34 +71,34 @@ class FailedComponent extends Component {
 */
 class CaseComponent extends Case {
     constructor(element, presets, model_constructors, query, WORKING_DOM) {
-        super(element, presets, null, WORKING_DOM);
+            super(element, presets, null, WORKING_DOM);
 
-        this.getter = null;
-        this.model_constructor = null;
+            this.getter = null;
+            this.model_constructor = null;
 
-        let req = null;
+            let req = null;
 
-        if (req = this.data.requesturl) {
-            let split = req.split(/\?/)[0];
-            let url = split[0],
-                query = split[1];
-            if (url)
-                this.getter = new Getter(url);
+            if (req = this.data.requesturl) {
+                let split = req.split(/\?/)[0];
+                let url = split[0],
+                    query = split[1];
+                if (url)
+                    this.getter = new Getter(url);
 
-        }
+            }
 
-        if (this.data.model_template && this.data.schema) {
-            
-            var template = WORKING_DOM.getElementById(this.data.model_template, true);
-            
-            
-            if (template) 
-                new DataTemplate(template, this.model, this.element);
-            
-        }
+            if (this.data.model_template && this.data.schema) {
 
-        if (!this.model) 
-            throw new Error(`No model found in the presets for this component which requires${(this.data.model)?` a model named:  "${this.data.model}"`: ` a schema named: "${this.data.schema}"`}.`);
+                var template = WORKING_DOM.getElementById(this.data.model_template, true);
+
+
+                if (template)
+                    new DataTemplate(template, this.model, this.element);
+
+            }
+
+            if (!this.model)
+                throw new Error(`No model found in the presets for this component which requires${(this.data.model)?` a model named:  "${this.data.model}"`: ` a schema named: "${this.data.schema}"`}.`);
         
         
 
@@ -153,7 +155,6 @@ class CaseComponent extends Case {
 
         if (!this.model) {
 
-            debugger
             this.model = new this.model_constructor();
             
 

@@ -31,11 +31,12 @@ import {
     ImportQuery
 } from "./cassette/import_query"
 import {
-    EpochToDateTime
-} from "./cassette/epoch_to_dt"
-import {
-    Exists
+    Exists,
+    NotExists
 } from "./cassette/exists"
+import {
+    EpochDay, EpochDate, EpochMonth, EpochYear, EpochToDateTime
+} from "./cassette/epoch"
 
 let PresetCassettes = {
     raw: Cassette,
@@ -45,7 +46,12 @@ let PresetCassettes = {
     export: Exporter,
     iquery: ImportQuery,
     edt: EpochToDateTime,
-    exists: Exists
+    eday : EpochDay,
+    edate : EpochDate,
+    eyear : EpochYear,
+    emonth : EpochMonth,
+    exists: Exists,
+    not_exists: NotExists
 }
 
 class CaseParentView extends View {
@@ -87,11 +93,11 @@ class Case extends View {
             return;
         }
 
-        this.named_components = {};
+        this.named_cassettes = {};
         this.data = {};
         this.template = null;
         this.element = element;
-        this.components = [];
+        this.cassettes = [];
         this.prop = null;
         this.url = null;
         this.parent_view = null;
@@ -103,6 +109,7 @@ class Case extends View {
         this.exports = null;
         this.parent = parent;
         this.filter_list = [];
+        this.is = 0;
 
         var return_object = this;
 
@@ -126,25 +133,33 @@ class Case extends View {
             if (this.data.url) {
                 //import query info from the wurl
                 let str = this.data.url;
-                let components = str.split(";");
-                this.data.url = components[0];
+                let cassettes = str.split(";");
+                this.data.url = cassettes[0];
 
-                for (var i = 1; i < components.length; i++) {
-                    let component = components[i];
+                for (var i = 1; i < cassettes.length; i++) {
+                    let cassette = cassettes[i];
 
-                    switch (component[0]) {
+                    switch (cassette[0]) {
                         case "p":
                             //TODO
-                            this.url_parent_import = component.slice(1)
+                            this.url_parent_import = cassette.slice(1)
                             break;
                         case "q":
-                            this.url_query = component.slice(1);
+                            this.url_query = cassette.slice(1);
                             break;
                         case "<":
-                            this.url_return = component.slice(1);
+                            this.url_return = cassette.slice(1);
                     }
                 }
+            }
 
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
+
+                var cassette = ComponentConstructor(this, child, presets, this.named_cassettes, this, WORKING_DOM);
+
+                if (cassette)
+                    this.cassettes = this.cassettes.concat(cassette);
             }
 
 
@@ -175,14 +190,7 @@ class Case extends View {
                 //return_object = this.parent_view;
             }
 
-            for (var i = 0; i < children.length; i++) {
-                var child = children[i];
-
-                var component = ComponentConstructor(this, child, presets, this.named_components, this, WORKING_DOM);
-
-                if (component)
-                    this.components = this.components.concat(component);
-            }
+            
 
             this.setModel(this.model);
 
@@ -196,13 +204,13 @@ class Case extends View {
     destructor() {
         this.parent = null;
 
-        if(this.components){
-            for (var i = 0; i < this.components.length; i++) {
-                this.components[i].destructor();
+        if (this.cassettes) {
+            for (var i = 0; i < this.cassettes.length; i++) {
+                this.cassettes[i].destructor();
             }
         }
 
-        this.components = null;
+        this.cassettes = null;
 
         if (this.element.parentElement)
             this.element.parentElement.removeChild(this.element);
@@ -214,51 +222,70 @@ class Case extends View {
     }
 
     request(query) {
-        //if (this.REQUESTING) return;
 
-
-        this.receiver.get(query).then(() => {
+        this.receiver.get(query, null, false).then(() => {
             this.REQUESTING = false;
         });
         this.REQUESTING = true;
     }
 
-    updateFromParent(data) {
-        for (var i = 0; i < this.components.length; i++) {
-            let comp = this.components[i];
-            if (comp instanceof Case) {
-                comp.updateFromParent(data);
-            } else {
-                if (comp.import_prop && data[comp.import_prop]) {
-                    comp.update(data);
+    updateSubs(cassettes, data, IMPORT = false){
+
+        for (var i = 0, l = cassettes.length; i < l; i++) {
+            let cassette = cassettes[i];
+            if (cassette.is == 0)
+                cassette.update(data, true);
+            else {
+                let r_val;
+
+                if (IMPORT) {
+                    if (cassette.import_prop && data[cassette.import_prop]) {
+                        r_val = cassette.update(data);
+
+                    }
+
+
+                } else {
+                    /** 
+                        Overriding the model data happens when a cassette returns an object instead of undefined. This is assigned to the "r_val" variable
+                        Any child cassette of the returning cassette will be fed "r_val" instead of "data".
+                    */
+
+                    r_val = cassette.update(data);
+
                 }
+
+                this.updateSubs(cassette.sub_cassettes, r_val || data, IMPORT);
+                
             }
         }
     }
 
-    update(data) {
+    update(data, IMPORT = false) {
 
-        if (!data) {
-            if (this.data_cache)
-                data = this.data_cache
-            else return;
+        if (!IMPORT) {
+
+            if (!data) {
+                if (this.data_cache)
+                    data = this.data_cache
+                else return;
+            }
+
+            this.data_cache = data;
+            
+            this.updateDimensions();
         }
-        this.data_cache = data;
 
-        this.updateDimensions();
 
-        for (var i = 0; i < this.components.length; i++) {
-            let comp = this.components[i];
-            if (comp instanceof Case)
-                comp.updateFromParent(data);
-            else
-                this.components[i].update(data);
-        }
+        this.updateSubs(this.cassettes, data, IMPORT)
+
+        if (IMPORT) return;
+
         this.REQUESTING = false;
 
         if (this.TEMPLATE_HANDLER && this.template) {
 
-            //components for each data element
+            //cassettes for each data element
 
             //This by default should be an array of Model objects
             var result = data[this.prop].get();
@@ -278,15 +305,16 @@ class Case extends View {
 
             //Need to isolate new results from existing, and cull existing that do not match results.
 
-            for (var j = 0; j < this.components.length; j++) {
+            for (var j = 0; j < this.cassettes.length; j++) {
 
-                var component = this.components[j];
+                var cassette = this.cassettes[j];
 
-                component.destructor();
+                cassette.destructor();
             }
 
-            this.components.length = 0;
+            this.cassettes.length = 0;
 
+            console.log("clearing")
 
             for (var i = 0; i < result.length; i++) {
                 //check for existing matche
@@ -299,7 +327,7 @@ class Case extends View {
 
                 this.element.appendChild(temp_ele);
 
-                this.components.push(d);
+                this.cassettes.push(d);
             }
         }
     }
@@ -317,24 +345,23 @@ class Case extends View {
             model = model.data[this.prop];
         }
 
-        for (var i = 0; i < this.components.length; i++) {
-            this.components[i].setModel(model);
+        for (var i = 0; i < this.cassettes.length; i++) {
+            this.cassettes[i].setModel(model);
         }
-
 
         super.setModel(model);
     }
 
     updateDimensions() {
-        for (var i = 0; i < this.components.length; i++) {
-            this.components[i].updateDimensions();
+        for (var i = 0; i < this.cassettes.length; i++) {
+            this.cassettes[i].updateDimensions();
         }
     }
 
-    close(named_components) {}
+    close(named_cassettes) {}
 
     hide() {
-        this.close(this.named_components);
+        this.close(this.named_cassettes);
         this.display = this.element.style.display;
         this.element.style.display = "none";
     }
@@ -367,7 +394,7 @@ class Case extends View {
 function ComponentConstructor(parent, element, presets, named_list, parentCase, WORKING_DOM) {
     //Will only construct if there is a matching widget to handle the element
 
-    var component = [];
+    var cassette = [];
     var cassettes = presets.cassettes;
 
     var class_ = element.dataset.class;
@@ -410,12 +437,12 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
         if (!parent.template) parent.template = element;
 
         return [];
-    } 
+    }
 
     //Case of input, if parent is form
     if (tag == "INPUT" && element.dataset.prop) {
         if (cassettes.input || PresetCassettes.input) {
-            component = [new(cassettes.input || PresetCassettes.input)(parentCase, element)];
+            cassette = [new(cassettes.input || PresetCassettes.input)(parentCase, element)];
         } else {
             console.warn("Missing input constructor in presets, unable to process form data!");
         }
@@ -425,19 +452,19 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
     if (tag == "FORM") {
         let form_class = PresetCassettes.form;
         if (class_ && (form_class = cassettes[class_]) && form_class.prototype instanceof Form) {
-            component = [new form_class(parentCase, element)];
+            cassette = [new form_class(parentCase, element)];
         } else if (cassettes.form || PresetCassettes.form) {
-            component = [new(cassettes.form || PresetCassettes.form)(parentCase, element)];
+            cassette = [new(cassettes.form || PresetCassettes.form)(parentCase, element)];
         } else {
             console.warn("Missing form constructor in presets, unable to process form data!");
         }
 
 
-    } else 
+    } else
 
     //Case of Component
     if (class_ && (cassettes[class_] || PresetCassettes[class_])) {
-        component = [new(cassettes[class_] || PresetCassettes[class_])(parentCase, element)];
+        cassette = [new(cassettes[class_] || PresetCassettes[class_])(parentCase, element)];
     }
     //Continue parsing through the DOM tree.
 
@@ -445,14 +472,18 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
 
     for (var i = 0; i < children.length; i++) {
 
-        var c_components = ComponentConstructor(component[0] || parent, children[i], presets, named_list, parentCase, WORKING_DOM);
+        var c_cassettes = ComponentConstructor(cassette[0] || parent, children[i], presets, named_list, parentCase, WORKING_DOM);
 
-        if (component) {
-            component = component.concat(c_components);
+        if (cassette) {
+            if (cassette[0] && cassette[0].sub_cassettes) {
+                cassette[0].sub_cassettes = cassette[0].sub_cassettes.concat(c_cassettes);
+            } else {
+                cassette = cassette.concat(c_cassettes);
+            }
         }
     }
 
-    return component;
+    return cassette;
 }
 
 export {

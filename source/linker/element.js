@@ -163,7 +163,7 @@ class Element {
                 let comp_wrap = document.createElement("div");
                 comp_wrap.classList.add("comp_wrap");
                 this.wraps.push(comp_wrap);
-                this.element.replaceChild(comp_wrap, component);
+                component.parentElement.replaceChild(comp_wrap, component);
 
                 var id = component.classList[0],
                     comp;

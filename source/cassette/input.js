@@ -17,6 +17,8 @@ class Input extends Cassette{
 
 	update(data){
 
+		if(!data[this.prop]) return;
+
 		switch(this.element.type){
 			case "date":
 				this.element.value = (new Date(parseInt(data[this.prop]))).toISOString().split("T")[0];

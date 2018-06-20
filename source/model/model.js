@@ -130,13 +130,14 @@ class Model {
 
             if (!this._temp_data_)
                 this._temp_data_ = this.get();
+
             view.setModel(this);
             view.update(this._temp_data_);
         }
     }
 
     removeView(view) {
-        if (view instanceof View) {
+        if (view instanceof View && view.model == this) {
             var child_view = this.first_view;
             var prev_child = null;
 
@@ -160,8 +161,8 @@ class Model {
             }
 
             //debugger
-            console.warn("View not a member of Model!", view);
         }
+            console.warn("View not a member of Model!", view);
     }
 
     updateViews() {

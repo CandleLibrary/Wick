@@ -25,15 +25,43 @@ class Cassette {
         this.height = 0;
         this.top = 0;
         this.left = 0;
+        this.lvl = 0;
+        this.is = 1;
         this.data = {};
+        this.data_cache = null;
+        this.sub_cassettes = [];
         
         if(this.element.tagName == "A")
             this.processLink(this.element);
 
         /* import data into basic JavaScript object */
         ImportDataFromDataSet(this.data, element.dataset);
+    }    
 
+    destructor() {
+        this.parent = null;
+
+        this.sub_cassettes.forEach((sc)=>{
+            sc.destructor();
+        })
+
+        if (this.controller)
+            this.controller.destructor();
+
+        if(this.element.tagName == "A")
+            this.destroyLink(this.element);
+
+        this.sub_cassettes = null;
+
+        this.element = null;
+
+        this.data = null;
+
+        this.data_cache = null;
+
+        this.controller = null;
     }
+
     /**
         This will attach a function to the link element to intercept and process data from the cassette.
     */
@@ -47,13 +75,14 @@ class Cassette {
         })(element.href, element, (href, a)=>{
             let real_href = "";
             let lex = Lex(href);
+
             while(lex.token){
                 if(lex.token.text == "{"){
                     lex.next();
                     let prop = lex.token.text;
                     lex.next();
 
-                    real_href += this[prop];
+                    real_href += this[prop] || this.data_cache[prop];
 
                     if(lex.token.text != "}")
                         console.warn(`incorrect value found in url ${href}`)
@@ -74,13 +103,12 @@ class Cassette {
             let real_href = "";
             let lex = Lex(href);
             while(lex.token){
-                console.log(lex.token.text)
                 if(lex.token.text == "{"){
                     lex.next();
                     let prop = lex.token.text;
                     lex.next();
 
-                    real_href += this[prop];
+                    real_href += this[prop] || this.data_cache[prop];
 
                     if(lex.token.text != "}")
                         console.warn(`incorrect value found in url ${href}`)
@@ -90,29 +118,33 @@ class Cassette {
 
                 lex.next();
             }
-            console.log(href, real_href)
         })
     }
 
+    destroyLink(element){
+        element.onclick = null
+        element.onmouseover = null;
+    }
+
     update(data) {
-        if (data)
+        if (data){
             if (this.prop) {
                 this.element.innerHTML = data[this.prop];
+                this[this.prop] = data[this.prop];
+            }else{
+                this.data_cache = data;
             }
+        }
     }
 
     setModel(model) {
         if (this.controller)
             this.controller.setModel(model);
-    }
 
-    destructor() {
-        this.parent = null;
-
-        if (this.controller)
-            this.controller.destructor();
-
-        this.controller = null;
+        this.sub_cassettes.forEach((e)=>{
+            if(e.is == 1)
+                e.setModel(model);
+        })
     }
 
     updateDimensions() {
@@ -122,6 +154,10 @@ class Cassette {
         this.height = d.height;
         this.top = d.top;
         this.left = d.left;
+
+        this.sub_cassettes.forEach((e)=>{
+            e.updateDimensions();
+        })
     }
 
     hide() {
