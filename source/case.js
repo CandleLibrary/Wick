@@ -239,12 +239,15 @@ class Case extends View {
                 let r_val;
 
                 if (IMPORT) {
+                    
                     if (cassette.import_prop && data[cassette.import_prop]) {
                         r_val = cassette.update(data);
 
+                        if(r_val){
+                            this.updateSubs(cassette.sub_cassettes, r_val);
+                            continue;
+                        }
                     }
-
-
                 } else {
                     /** 
                         Overriding the model data happens when a cassette returns an object instead of undefined. This is assigned to the "r_val" variable
@@ -253,10 +256,11 @@ class Case extends View {
 
                     r_val = cassette.update(data);
 
+
                 }
 
-                this.updateSubs(cassette.sub_cassettes, r_val || data, IMPORT);
                 
+                this.updateSubs(cassette.sub_cassettes, r_val || data, IMPORT);
             }
         }
     }

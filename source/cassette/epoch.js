@@ -100,7 +100,7 @@ class EpochYear extends Cassette {
         let epoch_date = new Date(date);
         
         if(data && epoch_date)
-            this.element.innerHTML = epoch_date.getYear();
+            this.element.innerHTML = epoch_date.getFullYear();
     }
 }
 
