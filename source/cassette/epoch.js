@@ -25,7 +25,7 @@ class EpochDay extends Cassette {
         let date = data[this.prop];
         let epoch_date = new Date(date);
         
-        if(data && epoch_date){
+        if(date && epoch_date){
             let day_name = day_of_week[epoch_date.getDay()];
 
             day_name = (this.limit > 0) ? day_name.slice(0, this.limit) : day_name;
@@ -57,7 +57,7 @@ class EpochMonth extends Cassette {
         let date = data[this.prop];
         let epoch_date = new Date(date);
         
-        if(data && epoch_date){
+        if(date && epoch_date){
             let month_name = months[epoch_date.getMonth()].name;
 
             month_name = (this.limit > 0) ? month_name.slice(0, this.limit) : month_name;
@@ -81,7 +81,7 @@ class EpochDate extends Cassette {
         let date = data[this.prop];
         let epoch_date = new Date(date);
         
-        if(data && epoch_date)
+        if(date && epoch_date)
             this.element.innerHTML = epoch_date.getDate();
     }
 }
@@ -99,7 +99,7 @@ class EpochYear extends Cassette {
         let date = data[this.prop];
         let epoch_date = new Date(date);
         
-        if(data && epoch_date)
+        if(date && epoch_date)
             this.element.innerHTML = epoch_date.getFullYear();
     }
 }
@@ -116,7 +116,7 @@ class EpochToDateTime extends Cassette {
         let date = data[this.prop];
         let epoch_date = new Date(date);
         
-        if(data && epoch_date)
+        if(date && epoch_date)
             this.element.innerHTML = epoch_date;
     }
 }
