@@ -1,3 +1,5 @@
+Pre-ALpha
+
 1. [ ] Form validation through schema types
 2. [ ] Form response actions
 3. [ ] Immutable Model data type
@@ -6,6 +8,14 @@
 6. [ ] Create a "fuzzy" container type that will match against any index value
 7. [ ] Implement promise / callback mechanism for asynch Model responses
 8. [ ] 1 to 1 Model and ModelContainer connections to server / database
+9. [ ] Plugin model for handling custom element types, such as markdown content. 
 
+Alpha
+
+1. [ ] Component based development environment. 
+
+Experimental
+
+1. [ ] CSS houdini integration
 
 

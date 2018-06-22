@@ -315,6 +315,7 @@ class Model {
     }
 
     toString() {
+        debugger;
         let str = "{\n"
 
         for (var i = 0; i < this.export_data.length; i++) {

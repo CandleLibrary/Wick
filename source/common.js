@@ -8,6 +8,7 @@ import {GetDayStartAndEnd} from "./common/date_time/day_start_and_end_epoch"
 import {QBezier} from "./common/math/quadratic_bezier"
 import {CBezier} from "./common/math/cubic_bezier"
 import {TurnQueryIntoData, TurnDataIntoQuery} from "./common/url/url"
+import {TouchScroller} from "./common/event/touch_scroller"
 
 
 /*********** String Parsing Basic Function ************************/
@@ -33,7 +34,8 @@ export {
 	CBezier,
 	TurnQueryIntoData,
 	TurnDataIntoQuery,
-	GetDayStartAndEnd
+	GetDayStartAndEnd,
+	TouchScroller
 };
 
 /****** Global Object Extenders *************/
