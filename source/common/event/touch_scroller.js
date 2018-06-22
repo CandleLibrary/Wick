@@ -68,7 +68,7 @@ class TouchScroller {
 
             let diff = time_new - time_old;
 
-            let steps = diff / 16.6666666; // 60 FPS
+            let steps = Math.min(diff / 8.6666666, 1 / this.drag); // 60 FPS
 
             this.GO = true;
 
@@ -82,6 +82,12 @@ class TouchScroller {
         }
 
         this.event_a = (e) => {
+
+            if(!this.GO){
+                e.preventDefualt();
+                e.stopPropagation();
+                return false;
+            }
 
             time_old = performance.now();
 
