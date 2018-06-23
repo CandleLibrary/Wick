@@ -30,20 +30,25 @@ class TouchScroller {
 
             let dm = Math.max(Math.abs(dy), Math.abs(dy));
 
+            let end = !(steps > 0 && dm > 0.1 && this.GO);
+
+            if (!end) {
+                requestAnimationFrame(() => {
+                    frame(dx, dy, 1);
+                })
+            }
+
+            end = end && steps != 0;
+
             for (var i = 0, l = this.listeners.length; i < l; i++) {
 
                 if (this.listeners[i]({
                         dx,
                         dy,
+                        end
                     })) {
                     this.GO = false;
                 } 
-            }
-
-            if (steps > 0 && dm > 0.1 && this.GO) {
-                requestAnimationFrame(() => {
-                    frame(dx, dy, 1);
-                })
             }
         }
 
