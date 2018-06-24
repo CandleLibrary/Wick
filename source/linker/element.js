@@ -1,5 +1,9 @@
-import {setLinks} from "./setlinks"
-import {TransformTo} from "../animation/animation"
+import {
+    setLinks
+} from "./setlinks"
+import {
+    TransformTo
+} from "../animation/animation"
 
 import {
     Component,
@@ -12,11 +16,12 @@ import {
 */
 class Element {
     /**
-
-    */
+     
+     */
     constructor(element) {
-        this.id =  (element.classList) ? element.classList[0] : element.id;
+        this.id = (element.classList) ? element.classList[0] : element.id;
         this.components = [];
+        this.bubbled_elements = null;
         this.wraps = [];
 
         //The original element container.
@@ -33,17 +38,19 @@ class Element {
 
             let component = this.components[i];
 
+            component.parent = null;
+
             if (component.transitionOut) {
-                t = Math.max(component.transitionOut(),t);
+                t = Math.max(component.transitionOut(), t);
             }
         };
 
         return t;
     }
 
-    transitionIn(transition_elements, query, IS_SAME_PAGE) {
+    transitionIn(transition_elements, query, IS_SAME_PAGE, wurl) {
         //if(!IS_SAME_PAGE && this.parent_element)
-            //this.parent_element.appendChild(this.element);
+        //this.parent_element.appendChild(this.element);
 
         for (var i = 0; i < this.components.length; i++) {
 
@@ -51,9 +58,13 @@ class Element {
 
             if (component) {
 
-                if(!IS_SAME_PAGE) {
-                    
-                    if(component.element.parentElement)
+                component.handleModel(wurl);
+
+                component.parent = this;
+
+                if (!IS_SAME_PAGE) {
+
+                    if (component.element.parentElement)
                         component.element.parentElement.removeChild(component.element);
 
                     this.wraps[i].appendChild(component.element);
@@ -61,65 +72,97 @@ class Element {
 
                 component.LOADED = true;
 
-                component.transitionIn(transition_elements, query, IS_SAME_PAGE);
+                console.log("LODING");
+
             }
         };
+        
+        var t = this.element.style.top;
+
+        for (var i = 0; i < this.components.length; i++) {
+            let component = this.components[i];
+
+            if (component) {
+                component.transitionIn(transition_elements, query, IS_SAME_PAGE);
+            }
+        }
 
         /**
             This is to force a document repaint, which should cause all elements to report correct positioning hereafter
         */
-        var t = this.element.style.top;        
     }
 
-    getTransformTo(transitions){
-         if(transitions){
+    bubbleLink(link_url, child, trs_ele = {}) {
+
+        this.bubbled_elements = trs_ele;
+
+        history.pushState({}, "ignored title", link_url);
+
+        window.onpopstate();
+    }
+
+    getTransformTo(transitions) {
+        if (transitions) {
             let own_elements = {};
-            
+
             this.getNamedElements(own_elements);
 
-            for(let name in own_elements){
+            for (let name in own_elements) {
                 transitions[name] = TransformTo(own_elements[name]);
             }
         }
     }
 
-    setTransformTo(transitions){
-       if(transitions){
+    setTransformTo(transitions) {
+        if (transitions) {
             let own_elements = {};
+
             this.getNamedElements(own_elements);
 
-            for(let name in own_elements){
+
+            for (let name in own_elements) {
                 let to, from = transitions[name];
-                if((to = own_elements[name]) && from){
+                if ((to = own_elements[name]) && from) {
                     from(to, false);
                 }
             }
-        } 
+        }
     }
 
-    finalize(){
+    finalize() {
         for (var i = 0; i < this.components.length; i++) {
 
             let component = this.components[i];
 
-            if(!component.LOADED && component.parentElement)
+            if (!component.LOADED && component.parentElement)
                 this.wraps[i].removeChild(component.element);
 
             component.LOADED = false;
         }
 
         //if(this.parent_element && this.element.parentNode)
-            //this.parent_element.removeChild(this.element);
+        //this.parent_element.removeChild(this.element);
     }
 
-    getNamedElements(named_elements){
+    getNamedElements(named_elements) {
+        if (this.bubbled_elements) {
+            let t = this.bubbled_elements;
+
+            for (let t in this.bubbled_elements)
+                named_elements[t] = this.bubbled_elements[t];
+
+            //this.bubbled_elements = null;
+
+            return;
+        }
+
         let children = this.element.children;
 
-        for(var i = 0; i < children.length; i++){
+        for (var i = 0; i < children.length; i++) {
             let child = children[i];
 
-            if (child.dataset.transform) {
-                named_elements[child.dataset.transform] = child;
+            if (child.dataset.transition) {
+                named_elements[child.dataset.transition] = child;
             }
         }
 
@@ -129,9 +172,9 @@ class Element {
         }
     }
 
-    setComponents(App_Components, Model_Constructors, Component_Constructors, presets, DOM){
+    setComponents(App_Components, Model_Constructors, Component_Constructors, presets, DOM, wurl) {
         //if there is a component inside the element, register that component if it has not already been registered
-        var components = Array.prototype.map.call(this.element.getElementsByTagName("component"),(a)=>a);
+        var components = Array.prototype.map.call(this.element.getElementsByTagName("component"), (a) => a);
 
         setLinks(this.element, (href, e) => {
             history.pushState({}, "ignored title", href);
@@ -139,7 +182,7 @@ class Element {
             return true;
         })
 
-        if(components.length < 1){
+        if (components.length < 1) {
             //Create a wrapped component for the elements inside the <element>
             let component = document.createElement("div");
             component.classList.add("comp_wrap");
@@ -155,7 +198,7 @@ class Element {
             let app_component = null;
             let component = components[i];
 
-            try{
+            try {
                 /**
                     Replace the component with a component wrapper to help preserve DOM arrangement
                 */
@@ -200,30 +243,29 @@ class Element {
                         } else {
                             var template = templates[id];
 
-                            if (template)
+                            if (template) {
                                 app_component = new CaseComponent(template, presets, Model_Constructors, null, DOM);
-                            else
+                            } else
                                 app_component = new Component(component);
                         }
 
-                        if(!app_component){
+                        if (!app_component) {
                             console.warn("App Component not constructed");
                             /** TODO: If there is a fallback <no-script> section use that instead. */
                             app_component = new FailedComponent();
-                        }else{
+                        } else {
                             App_Components[id] = app_component;
                         }
-                    }else{
+                    } else {
                         app_component = App_Components[id];
                     }
+
+                    app_component.handleModel(wurl);
                 }
-            }catch(e){
+            } catch (e) {
                 console.log(e)
                 app_component = new FailedComponent(e, presets);
             }
-
-
-
 
             this.components.push(app_component);
         }

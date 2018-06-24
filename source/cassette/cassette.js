@@ -1,5 +1,6 @@
 import {setLinks} from "../linker/setlinks"
 import {Lex} from "../common"
+import {Rivet} from "../rivet"
 
 function ImportDataFromDataSet(data_object, data_set_object, element) {
     if(element){
@@ -14,22 +15,22 @@ function ImportDataFromDataSet(data_object, data_set_object, element) {
     }
 }
 
-class Cassette {
+class Cassette extends Rivet{
     constructor(parent, element, controller) {
-        this.parent = parent;
+        
+        super(parent, element);
+
         this.controller = controller;
-        this.element = element
-        this.prop = element.dataset.prop;
-        this.import_prop = element.dataset.iprop;
+        this.prop = this.data.prop;
+        this.import_prop = this.data.iprop;
         this.width = 0;
         this.height = 0;
         this.top = 0;
         this.left = 0;
         this.lvl = 0;
         this.is = 1;
-        this.data = {};
         this.data_cache = null;
-        this.sub_cassettes = [];
+        this.children = [];
         
         if(this.element.tagName == "A")
             this.processLink(this.element);
@@ -41,7 +42,7 @@ class Cassette {
     destructor() {
         this.parent = null;
 
-        this.sub_cassettes.forEach((sc)=>{
+        this.children.forEach((sc)=>{
             sc.destructor();
         })
 
@@ -51,7 +52,7 @@ class Cassette {
         if(this.element.tagName == "A")
             this.destroyLink(this.element);
 
-        this.sub_cassettes = null;
+        this.children = null;
 
         this.element = null;
 
@@ -65,7 +66,7 @@ class Cassette {
     /**
         This will attach a function to the link element to intercept and process data from the cassette.
     */
-    processLink(element){
+    processLink(element, link){
 
         if (element.origin !== location.origin) return;
 
@@ -81,7 +82,6 @@ class Cassette {
                     lex.next();
                     let prop = lex.token.text;
                     lex.next();
-
                     real_href += this[prop] || this.data_cache[prop];
 
                     if(lex.token.text != "}")
@@ -93,8 +93,7 @@ class Cassette {
                 lex.next();
             }
 
-            history.pushState({}, "ignored title", real_href);
-            window.onpopstate();
+            this.bubbleLink(real_href);
             return true;
         });
 
@@ -141,7 +140,7 @@ class Cassette {
         if (this.controller)
             this.controller.setModel(model);
 
-        this.sub_cassettes.forEach((e)=>{
+        this.children.forEach((e)=>{
             if(e.is == 1)
                 e.setModel(model);
         })
@@ -155,13 +154,18 @@ class Cassette {
         this.top = d.top;
         this.left = d.left;
 
-        this.sub_cassettes.forEach((e)=>{
+        this.children.forEach((e)=>{
             e.updateDimensions();
         })
     }
 
     hide() {
         if (this.parent) this.parent.hide();
+    }
+
+    setActivating(){
+        if(this.parent)
+            this.parent.setActivating();
     }
 }
 

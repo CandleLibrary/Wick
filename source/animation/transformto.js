@@ -9,22 +9,22 @@ var ease_out = new CBezier(0.5, 0.2, 0, 1);
 
 class TT_From {
     constructor(element) {
-        //extracted animatable componts
+        //extracted animatable components
         var rect = element.getBoundingClientRect();
         
         this.color = new Color(window.getComputedStyle(element, null).getPropertyValue("background-color"));
         this.height = parseFloat(window.getComputedStyle(element, null).getPropertyValue("height"));
         this.width = parseFloat(window.getComputedStyle(element, null).getPropertyValue("width"));
 
-        /*if(!this.height || !this.width){
+        //*if(!this.height || !this.width){
             this.height = rect.height;
             this.width = rect.width;
-        }*/
+        //}*/
 
-        console.log(this.width, this.height)
 
         this.left = parseFloat(rect.left);
         this.top = parseFloat(rect.top);
+        
         this.element = element;
 
     }
@@ -42,6 +42,9 @@ class TT_From {
 class TT_To extends TT_From {
     constructor(element, from) {
         super(element);
+
+
+        console.log(this.width, this.height, this.top, this.left)
 
         this.from = from;
 
@@ -99,8 +102,8 @@ class TT_To extends TT_From {
 
         if (ratio > 1) ratio = 1;
         
-        this.element.style.top = ((this.top - this.from.top) * ratio + this.from.top) + "px";
-        this.element.style.left = ((this.left - this.from.left) * ratio + this.from.left) + "px";
+        this.element.style.top = Math.round((this.top - this.from.top) * ratio + this.from.top) + "px";
+        this.element.style.left = Math.round((this.left - this.from.left) * ratio + this.from.left) + "px";
         this.element.style.width = ((this.width - this.from.width) * ratio+ this.from.width) + "px";
         this.element.style.height = ((this.height - this.from.height) * ratio + this.from.height) + "px";
         this.element.style.backgroundColor = (this.color.sub(this.from.color).mult(ratio).add(this.from.color)) + "";
@@ -147,6 +150,8 @@ function TransformTo(element_from, element_to, HIDE_OTHER) {
     if(!element_to){
         let a = (from, rp)=>
         {
+            if(!from instanceof HTMLElement) debugger;
+
             return (element_to, HIDE_OTHER) => {
             let pair = new TTPair(element_to, from);
             rp.push(pair);

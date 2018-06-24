@@ -1,6 +1,6 @@
 import {
-    View
-} from "./view"
+    Rivet
+} from "./rivet"
 import {
     Model
 } from "./model/model"
@@ -35,7 +35,11 @@ import {
     NotExists
 } from "./cassette/exists"
 import {
-    EpochDay, EpochDate, EpochMonth, EpochYear, EpochToDateTime
+    EpochDay,
+    EpochDate,
+    EpochMonth,
+    EpochYear,
+    EpochToDateTime
 } from "./cassette/epoch"
 
 let PresetCassettes = {
@@ -46,15 +50,15 @@ let PresetCassettes = {
     export: Exporter,
     iquery: ImportQuery,
     edt: EpochToDateTime,
-    eday : EpochDay,
-    edate : EpochDate,
-    eyear : EpochYear,
-    emonth : EpochMonth,
+    eday: EpochDay,
+    edate: EpochDate,
+    eyear: EpochYear,
+    emonth: EpochMonth,
     exists: Exists,
     not_exists: NotExists
 }
-
-class CaseParentView extends View {
+/*
+class CaseParentView extends Rivet {
     constructor(Case) {
         super();
         this.case = Case;
@@ -76,49 +80,57 @@ class CaseParentView extends View {
             this.case.updateDimensions();
     }
 }
+*/
 
-class Case extends View {
+class Case extends Rivet {
     /**
         Case constructor. Builds a Case object.
         @params [DOMElement] element - A DOM <template> element that contains a <case> element.
         @params [LinkerPresets] presets
         @params [Case] parent - The parent Case object, used internally to build Case's in a hierarchy
+        @params [Model] model - A model that can be passed to the case instead of having one created or pulled from presets. 
         @params [DOM]  WORKING_DOM - The DOM object that contains templates to be used to build the case objects. 
     */
-    constructor(element, presets, parent = null, WORKING_DOM) {
-        super();
+    constructor(element, presets, parent = null, model = null, WORKING_DOM) {
+
+        super(parent, 
+            (element.nodeName == "TEMPLATE") ? 
+                document.importNode(element.content, true).children[0] :
+                element
+        )
+
+        if(element.nodeName == "TEMPLATE")
+            ImportDataFromDataSet(this.data, element.dataset);
 
         if (!element) {
             console.warn("No element has been supplied to this Case constructor!");
-            return;
+            return undefined;
         }
+
+        if (!presets) {
+            console.warn("No preset object has been supplied to this Case constructor!");
+            return undefined;
+        }
+
         this.USE_SECURE = presets.USE_HTTPS;
         this.named_cassettes = {};
-        this.data = {};
         this.template = null;
-        this.element = element;
-        this.cassettes = [];
         this.prop = null;
         this.url = null;
-        this.parent_view = null;
+        //this.parent_view = null;
         this.receiver = null;
         this.query = {};
         this.TEMPLATE_HANDLER = false;
         this.REQUESTING = false;
         this.cl = presets;
         this.exports = null;
-        this.parent = parent;
         this.filter_list = [];
         this.is = 0;
 
         var return_object = this;
 
-        ImportDataFromDataSet(this.data, element.dataset);
+        
 
-        if (element.nodeName == "TEMPLATE") {
-            this.element = document.importNode(element.content, true).children[0];
-            ImportDataFromDataSet(this.data, this.element.dataset);
-        }
 
         for (let prop in this.data) {
             if ((this.data[prop] == "" || !this.data[prop]) && parent) {
@@ -159,7 +171,7 @@ class Case extends View {
                 var cassette = ComponentConstructor(this, child, presets, this.named_cassettes, this, WORKING_DOM);
 
                 if (cassette)
-                    this.cassettes = this.cassettes.concat(cassette);
+                    this.children = this.children.concat(cassette);
             }
 
 
@@ -169,14 +181,15 @@ class Case extends View {
             if (this.data.export)
                 this.exports = this.data.export;
 
-            if (this.data.model) {
-                if (presets.models[this.data.model])
-                    presets.models[this.data.model].addView(this);
-            } else if (this.data.schema && presets.schemas[this.data.schema]) {
+            if (model && model instanceof Model) {
 
-                var model = new presets.schemas[this.data.schema]();
+                if (this.data.schema && presets.schemas[this.data.schema]) {
+                    /* Opinionated Case - Only accepts Models that are of the same type as its schema.*/
+                    if (model.schema != presets.schemas[this.data.schema]) {
+                        throw new Error(`Model Schema ${this.model.schema} does not match Case Schema ${presets.schemas[this.data.schema].schema}`)
+                    }
+                }
 
-                this.parent_view = new CaseParentView(this);
 
                 model.addView(this);
 
@@ -187,30 +200,51 @@ class Case extends View {
                 }
 
 
-                //return_object = this.parent_view;
+            } else if (this.data.model) {
+
+                if (presets.models[this.data.model])
+                    presets.models[this.data.model].addView(this);
+
+            } else if (this.data.schema && presets.schemas[this.data.schema]) {
+
+                var model = new presets.schemas[this.data.schema]();
+
+                //this.parent_view = new CaseParentView(this);
+
+                model.addView(this);
+
+                if (this.data.url) {
+                    this.receiver = new Getter(this.data.url, this.url_return);
+                    this.receiver.setModel(model);
+                    this.request();
+                }
             }
 
-            
+            if (!this.model) {
+                this.destructor();
+                throw new Error(`No Model could be found for Case constructor! Case schema "${this.data.schema}", "${presets.schemas[this.data.schema]}"; Case model "${this.data.model}", "${presets.models[this.data.model]}";`);
+            }
 
             this.setModel(this.model);
 
             return return_object;
         } else {
-            console.warn(`Case may only be constructed out of <case></case> elements. Received a ${element} in the case constructor!`)
+            throw new Error(`Case may only be constructed out of <case></case> elements. Received a ${element} in the case constructor!`)
             return undefined;
         }
     }
 
     destructor() {
+
         this.parent = null;
 
-        if (this.cassettes) {
-            for (var i = 0; i < this.cassettes.length; i++) {
-                this.cassettes[i].destructor();
+        if (this.children) {
+            for (var i = 0; i < this.children.length; i++) {
+                this.children[i].destructor();
             }
         }
 
-        this.cassettes = null;
+        this.children = null;
 
         if (this.element.parentElement)
             this.element.parentElement.removeChild(this.element);
@@ -229,7 +263,7 @@ class Case extends View {
         this.REQUESTING = true;
     }
 
-    updateSubs(cassettes, data, IMPORT = false){
+    updateSubs(cassettes, data, IMPORT = false) {
 
         for (var i = 0, l = cassettes.length; i < l; i++) {
             let cassette = cassettes[i];
@@ -239,12 +273,12 @@ class Case extends View {
                 let r_val;
 
                 if (IMPORT) {
-                    
+
                     if (cassette.import_prop && data[cassette.import_prop]) {
                         r_val = cassette.update(data);
 
-                        if(r_val){
-                            this.updateSubs(cassette.sub_cassettes, r_val);
+                        if (r_val) {
+                            this.updateSubs(cassette.children, r_val);
                             continue;
                         }
                     }
@@ -259,8 +293,8 @@ class Case extends View {
 
                 }
 
-                
-                this.updateSubs(cassette.sub_cassettes, r_val || data, IMPORT);
+
+                this.updateSubs(cassette.children, r_val || data, IMPORT);
             }
         }
     }
@@ -276,12 +310,12 @@ class Case extends View {
             }
 
             this.data_cache = data;
-            
+
             this.updateDimensions();
         }
 
 
-        this.updateSubs(this.cassettes, data, IMPORT)
+        this.updateSubs(this.children, data, IMPORT)
 
         if (IMPORT) return;
 
@@ -309,29 +343,31 @@ class Case extends View {
 
             //Need to isolate new results from existing, and cull existing that do not match results.
 
-            for (var j = 0; j < this.cassettes.length; j++) {
+            for (var j = 0; j < this.children.length; j++) {
 
-                var cassette = this.cassettes[j];
+                var cassette = this.children[j];
 
                 cassette.destructor();
             }
 
-            this.cassettes.length = 0;
-
-            console.log("clearing")
+            this.children.length = 0;
 
             for (var i = 0; i < result.length; i++) {
                 //check for existing matche
 
                 var temp_ele = document.importNode(this.template.content, true).children[0];
 
-                var d = new Case(temp_ele, this.cl, this);
+                try {
 
-                result[i].addView(d);
+                    var d = new Case(temp_ele, this.cl, this, result[i].____self____);
 
-                this.element.appendChild(temp_ele);
+                    this.element.appendChild(temp_ele);
 
-                this.cassettes.push(d);
+                    this.children.push(d);
+
+                } catch (e) {
+                    console.warn(e)
+                }
             }
         }
     }
@@ -339,7 +375,7 @@ class Case extends View {
     setModel(model) {
 
         if (this.prop && (model.schema[this.prop] instanceof Array)) {
-            //This case will create sub templates from from each entry in the data array
+            //This case will create sub templates from from each entry in the array
             this.TEMPLATE_HANDLER = true;
 
             return;
@@ -349,16 +385,16 @@ class Case extends View {
             model = model.data[this.prop];
         }
 
-        for (var i = 0; i < this.cassettes.length; i++) {
-            this.cassettes[i].setModel(model);
+        for (var i = 0; i < this.children.length; i++) {
+            this.children[i].setModel(model);
         }
 
         super.setModel(model);
     }
 
     updateDimensions() {
-        for (var i = 0; i < this.cassettes.length; i++) {
-            this.cassettes[i].updateDimensions();
+        for (var i = 0; i < this.children.length; i++) {
+            this.children[i].updateDimensions();
         }
     }
 
@@ -371,16 +407,15 @@ class Case extends View {
     }
 
     show() {
-        if (this.element.style.display == "none") {
+        if (this.element.style.display == "none")
             this.element.style.display = this.display;
-        }
     }
 
     export (t = {}) {
 
-        if (this.exports && this.model) {
+        if (this.exports && this.model)
             t[this.exports] = this.model.get()[this.exports];
-        }
+
 
         if (this.parent)
             this.parent.import(t);
@@ -393,6 +428,11 @@ class Case extends View {
 
         this.export(data);
     }
+
+    setActivating() {
+        if (this.parent)
+            this.parent.setActivating();
+    }
 }
 
 function ComponentConstructor(parent, element, presets, named_list, parentCase, WORKING_DOM) {
@@ -404,15 +444,15 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
     var class_ = element.dataset.class;
     var tag = element.tagName;
 
-    if (element.dataset.name) {
-        named_list[element.dataset.name] = element;
-    }
+    if (element.dataset.transition) 
+        named_list[element.dataset.transition] = element;
+    
 
     //Case of a Sub Case, hehe
     if (tag == "CASE") {
         var constructor = (class_ && cassettes[class_]) ?
             cassettes[class_] : Case;
-        return [new constructor(element, presets, parentCase, WORKING_DOM)];
+        return [new constructor(element, presets, parentCase, null, WORKING_DOM)];
     }
 
     //Case of a template
@@ -427,7 +467,7 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
                 for (let prop in element.dataset)
                     ele.dataset[prop] = element.dataset[prop];
 
-                var c = new Case(ele, presets, parentCase, WORKING_DOM);
+                var c = new Case(ele, presets, parentCase, null, WORKING_DOM);
                 //Import the element into the DOM tree, replacing the existing TEMPLATE element.
                 var p = element.parentElement;
 
@@ -479,8 +519,8 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
         var c_cassettes = ComponentConstructor(cassette[0] || parent, children[i], presets, named_list, parentCase, WORKING_DOM);
 
         if (cassette) {
-            if (cassette[0] && cassette[0].sub_cassettes) {
-                cassette[0].sub_cassettes = cassette[0].sub_cassettes.concat(c_cassettes);
+            if (cassette[0] && cassette[0].children) {
+                cassette[0].children = cassette[0].children.concat(c_cassettes);
             } else {
                 cassette = cassette.concat(c_cassettes);
             }

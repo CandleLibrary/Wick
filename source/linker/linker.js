@@ -191,7 +191,7 @@ class Linker {
                 (response.text().then((html) => {
                     var DOM = (new DOMParser()).parseFromString(html, "text/html")
                     this.loadPage(
-                        this.loadNewPage(url, DOM),
+                        this.loadNewPage(url, DOM, wurl),
                         wurl,
                         IS_SAME_PAGE
                     );
@@ -336,7 +336,7 @@ class Linker {
         Takes the DOM of another page and strips it, looking for component and app elements to use to integrate into the SPA system.
         If it is unable to find these elements, then it will pass the DOM to loadNonWickPage to handle wrapping the page body into a wick app element.
     */
-    loadNewPage(URL, DOM) {
+    loadNewPage(URL, DOM, wurl) {
         //look for the app section.
 
         /**
@@ -425,7 +425,7 @@ class Linker {
                 if (!this.components[element_id])
                     this.components[element_id] = {};
 
-                wick_element.setComponents(this.components[element_id], this.models_constructors, this.component_constructors, this.presets, DOM);
+                wick_element.setComponents(this.components[element_id], this.models_constructors, this.component_constructors, this.presets, DOM, wurl);
             }
 
             if (document == DOM)

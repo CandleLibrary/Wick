@@ -1,4 +1,4 @@
 
-var dow = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+var dow = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export {dow}

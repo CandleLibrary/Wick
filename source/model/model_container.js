@@ -1,5 +1,3 @@
-
-
 class ModelContainer {
     /**
     	The type of object this container holds.
@@ -36,11 +34,10 @@ class ModelContainer {
 
                 var model = item[i];
 
-                if (!(model instanceof this.schema.model)) {
+                if (!(model instanceof this.schema.model) && !(model = model.____self____)) {
                     model = new this.schema.model();
                     model.add(item[i]);
                 }
-
 
                 if (this.__insert__(model)) {
                     out = true;
@@ -49,10 +46,12 @@ class ModelContainer {
             return out;
         } else {
             var model = item;
-            if (!(model instanceof this.schema.model)) {
+
+            if (!(model instanceof this.schema.model) && !(model = model.____self____)) {
                 model = new this.schema.model();
-                model.add(item[i]);
+                model.add(item);
             }
+
             return this.__insert__(model);
         }
     }
@@ -75,9 +74,10 @@ class ModelContainer {
     }
 
     remove(item) {
-        if(!item){
+        if (!item) {
             return this.__removeAll__();
-        } if (item instanceof Array) {
+        }
+        if (item instanceof Array) {
             var out = [],
                 temp = null;
             for (var i = 0; i < item.length; i++)
@@ -119,42 +119,45 @@ class ModelContainer {
     }
 
     checkRawID(item) {
-        if(item.data && item.schema){
+        if (item.data && item.schema) {
             return !(!item.data[this.schema.identifier]);
-        }else{
+        } else {
             return item !== undefined;
         }
     }
 
     getIdentifier(item) {
-        if(item.data && item.schema){
+        if (item.data && item.schema) {
             return item.data[this.schema.identifier];
-        }else{
+        } else {
             return item;
         }
     }
 }
 
-class MultiIndexedContainer extends ModelContainer{
-    constructor(schema){
+class MultiIndexedContainer extends ModelContainer {
+    constructor(schema) {
 
-        super({identifier : "indexed", model:schema.model});
+        super({
+            identifier: "indexed",
+            model: schema.model
+        });
 
         this.schema = schema;
         this.indexes = {};
         this.first_index = null;
-        
+
         this.addIndex(schema.index);
     }
 
-    addIndex(index_schema){
-        for(let name in index_schema){
+    addIndex(index_schema) {
+        for (let name in index_schema) {
             let scheme = index_schema[name];
 
-            if(scheme.container && !this.indexes[name]){
+            if (scheme.container && !this.indexes[name]) {
                 this.indexes[name] = new scheme.container(scheme.schema);
 
-                if(this.first_index)
+                if (this.first_index)
                     this.indexes[name].insert(this.first_index.__getAll__());
                 else
                     this.first_index = this.indexes[name];
@@ -165,10 +168,16 @@ class MultiIndexedContainer extends ModelContainer{
     get(item) {
         var out = [];
 
-        for(let a in item){
-            if(this.indexes[a])
-                out = out.concat(this.indexes[a].get(item[a]));
+        if (item) {
+
+            for (let a in item) {
+                if (this.indexes[a])
+                    out = out.concat(this.indexes[a].get(item[a]));
+            }
+        } else {
+            out = this.first_index.get();
         }
+
 
         return out;
     }
@@ -176,19 +185,19 @@ class MultiIndexedContainer extends ModelContainer{
     remove(item) {
         var out = [];
 
-        for(let a in item){
-            if(this.indexes[a])
+        for (let a in item) {
+            if (this.indexes[a])
                 out = out.concat(this.indexes[a].remove(item[a]));
         }
 
         /* Replay items against indexes to insure all items have been removed from all indexes */
 
-        for(var j = 0; j < this.indexes.length; j++){
-            for(var i = 0; i < out.length; i++){
+        for (var j = 0; j < this.indexes.length; j++) {
+            for (var i = 0; i < out.length; i++) {
                 this.indexes[j].remove(out[i]);
-            }    
+            }
         }
-        
+
 
         return out;
     }
@@ -197,11 +206,11 @@ class MultiIndexedContainer extends ModelContainer{
         let out = false
 
         //if(!this.getIdentifier(item)) debugger;
-        for(let a in this.indexes){
+        for (let a in this.indexes) {
             let index = this.indexes[a];
-            if(index.insert(item)) out = true;
-            else{
-                console.warn(`Indexed container ${a} ${index} failed to insert:`,item);
+            if (index.insert(item)) out = true;
+            else {
+                console.warn(`Indexed container ${a} ${index} failed to insert:`, item);
             }
         }
         return out;
@@ -209,9 +218,9 @@ class MultiIndexedContainer extends ModelContainer{
 
     __remove__(item) {
         let out = false;
-        for(let a in this.indexes){
+        for (let a in this.indexes) {
             let index = this.indexes[a];
-            if(index.remove(item))
+            if (index.remove(item))
                 out = true;
         }
         return out;
@@ -220,6 +229,6 @@ class MultiIndexedContainer extends ModelContainer{
 
 
 export {
-    ModelContainer,    
+    ModelContainer,
     MultiIndexedContainer,
 };

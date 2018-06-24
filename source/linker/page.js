@@ -43,10 +43,12 @@ class PageView {
 
         for (var i = 0; i < this.elements.length; i++) {
             let element = this.elements[i];
+            element.parent = this;
             if (OldView && OldView[element.id]) {
-                final_time = Math.max(element.transitionIn(OldView[element.id], query[element.id] ? query[element.id] : query, IS_SAME_PAGE), final_time);
+                OldView[element.id]
+                final_time = Math.max(element.transitionIn(null, query[element.id] ? query[element.id] : query, IS_SAME_PAGE, wurl), final_time);
             } else {
-                element.transitionIn(null, query, IS_SAME_PAGE, transitions);
+                element.transitionIn(null, query, IS_SAME_PAGE, query);
             }
         }
 
@@ -57,6 +59,7 @@ class PageView {
         for (var i = 0; i < this.elements.length; i++) {
             let element = this.elements[i];
             element.setTransformTo(transitions);
+
         }
 
     }

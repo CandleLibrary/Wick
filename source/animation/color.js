@@ -2,7 +2,7 @@ import {Lex} from "../common"
 
 class Color extends Float64Array{
 
-	constructor(r,g,b,a = 1){
+	constructor(r,g,b,a = 0){
 		super(4)
 
 		this.r = 0;
@@ -100,6 +100,7 @@ class Color extends Float64Array{
 	}
 
 	fromString(string){
+		console.log("color", string)
 		let lexer = Lex(string)
 
 		let r,g,b,a;

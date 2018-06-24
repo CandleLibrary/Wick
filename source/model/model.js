@@ -245,7 +245,9 @@ class Model {
                 this._temp_data_ = {
                     addView: view => this.addView(view),
                     get: data => this.get(data),
-                    getStatus: key => this.getDataStatus(key)
+                    getStatus: key => this.getDataStatus(key),
+                    __________self : () => this,
+                    get ____self____(){ return this.__________self(); }
                 };
 
                 for (var i = 0; i < this.export_data.length; i++) {
@@ -259,9 +261,11 @@ class Model {
                                 get(data) {
                                     return that.getDataFromContainer(that.data[name], data);
                                 },
-
                                 addView(view) {
                                     this.data[name].addView(view);
+                                },
+                                get ____self____ (){
+                                    return that;
                                 }
                             }
 
@@ -314,7 +318,7 @@ class Model {
         return container.remove(item);
     }
 
-    toString() {
+    toJsonString() {
         debugger;
         let str = "{\n"
 

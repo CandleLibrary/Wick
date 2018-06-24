@@ -20,22 +20,26 @@ import {
 */
 class Component extends View {
     constructor(element) {
-            super();
-            this.element = element;
-            this.anchor = null;
-            this.LOADED = false;
-        }
-        
-        /**
-          	Takes as an input a list of transition objects that can be used
-        */
-    transitionIn(elements, query) {
-            this.LOADED = true;
-        }
+        super();
+        this.element = element;
+        this.anchor = null;
+        this.LOADED = false;
+    }
 
-        /**
-          @returns {number} Time in milliseconds that the transition will take to complete.
-        */
+    handleModel(wurl){
+        console.log(wurl)
+    }
+
+    /**
+      	Takes as an input a list of transition objects that can be used
+    */
+    transitionIn(elements, query) {
+        this.LOADED = true;
+    }
+
+    /**
+      @returns {number} Time in milliseconds that the transition will take to complete.
+    */
     transitionOut() {
         this.LOADED = false;
         return 0;
@@ -47,8 +51,8 @@ class Component extends View {
         for (var i = 0; i < children.length; i++) {
             let child = children[i];
 
-            if (child.dataset.transform) {
-                named_elements[child.dataset.transform] = child;
+            if (child.dataset.transition) {
+                named_elements[child.dataset.transition] = child;
             }
         }
     }
@@ -71,7 +75,7 @@ class FailedComponent extends Component {
 */
 class CaseComponent extends Case {
     constructor(element, presets, model_constructors, query, WORKING_DOM) {
-            super(element, presets, null, WORKING_DOM);
+            super(element, presets, null, null, WORKING_DOM);
 
             this.getter = null;
             this.model_constructor = null;
@@ -99,6 +103,7 @@ class CaseComponent extends Case {
 
             if (!this.model)
                 throw new Error(`No model found in the presets for this component which requires${(this.data.model)?` a model named:  "${this.data.model}"`: ` a schema named: "${this.data.schema}"`}.`);
+
         
         
 
@@ -106,19 +111,16 @@ class CaseComponent extends Case {
         this.LOADED = false;
     }
 
-    /*
-    	Takes as an input a list of transition objects that can be used
-    */
-    transitionIn(elements, wurl) {
-
+    handleModel(wurl){
         let query_data = null;
-         /* 
+        /* 
             This part of the function will import data into the model that is obtained from the query string 
         */   
         if (wurl && this.data.import) {
             query_data = {};
             if(this.data.import == "null"){
                 query_data = wurl.getClass();
+                console.log(query_data)
             }else{
                 var l = this.data.import.split(";")
                 for(var i = 0; i < l.length; i++){
@@ -164,13 +166,19 @@ class CaseComponent extends Case {
             this.model.addView(this);
         }
 
-        if(query_data)
-           this.model.add(query_data);
+        if(query_data){
+           if(!this.model.add(query_data)){
+                this.update(this.model.get());
+           }
+        }
         else
             this.update(this.model.get());
-       
-        this.LOADED = true;
+    }
+
+    transitionIn(elements, wurl) { 
         this.show();
+        this.handleModel(wurl);       
+        this.LOADED = true;
     }
 
     transitionOut() {
@@ -179,8 +187,8 @@ class CaseComponent extends Case {
     }
 
     getNamedElements(named_elements){
-        for(let comp_name in this.named_components){
-            named_elements[comp_name] = this.named_components[comp_name];
+        for(let comp_name in this.named_cassettes){
+            named_elements[comp_name] = this.named_cassettes[comp_name];
         }
     }
 }

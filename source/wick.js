@@ -49,6 +49,7 @@ import {
 } from "./case"
 
 let LINKER_LOADED = false;
+let DEBUGGER = true;
 
 /**
  *    Creates a new {Linker} instance, passing any presets from the client.
@@ -60,6 +61,7 @@ let LINKER_LOADED = false;
  */
 
 function light(presets) {
+    if( DEBUGGER ) console.log(presets)
 
     if (LINKER_LOADED) return;
 
