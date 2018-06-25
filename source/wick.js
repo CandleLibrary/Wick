@@ -42,11 +42,14 @@ import * as Common from "./common"
 let wick_vanity = "\ \(\ \ \(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \)\n\ \)\\\)\)\(\ \ \ \'\ \(\ \ \ \ \ \ \ \ \ \ \(\ \/\(\n\(\(\_\)\(\)\\\ \)\ \ \)\\\ \ \ \ \(\ \ \ \ \)\\\(\)\)\n\_\(\(\)\)\\\_\)\(\)\(\(\_\)\ \ \ \)\\\ \ \(\(\_\)\\\n\\\ \\\(\(\_\)\/\ \/\ \(\_\)\ \ \(\(\_\)\ \|\ \|\(\_\)\n\ \\\ \\\/\\\/\ \/\ \ \|\ \|\ \/\ \_\|\ \ \|\ \/\ \/\n\ \ \\\_\/\\\_\/\ \ \ \|\_\|\ \\\_\_\|\ \ \|\_\\\_\\\n";
 
 import {
-    Case,
-    Cassette,
+    CustomCase,
     Filter,
     Form
-} from "./case"
+} from "./case/case"
+
+import {
+    Cassette
+} from "./case/cassette/cassette"
 
 let LINKER_LOADED = false;
 let DEBUGGER = true;
@@ -61,7 +64,7 @@ let DEBUGGER = true;
  */
 
 function light(presets) {
-    if( DEBUGGER ) console.log(presets)
+    if (DEBUGGER) console.log(presets)
 
     if (LINKER_LOADED) return;
 
@@ -91,7 +94,7 @@ export {
     BinaryTreeModelContainer,
     MultiIndexedContainer,
     Controller,
-    Case,
+    CustomCase,
     Cassette,
     Form,
     Filter,

@@ -56,7 +56,7 @@ class Color extends Float64Array{
 		this.r = color.r;
 		this.g = color.g;
 		this.b = color.b;
-		this.a = color.a || this.a;
+		this.a = (color.a != undefined) ? color.a : this.a;
 	}
 
 	add(color){
@@ -100,7 +100,7 @@ class Color extends Float64Array{
 	}
 
 	fromString(string){
-		console.log("color", string)
+		
 		let lexer = Lex(string)
 
 		let r,g,b,a;

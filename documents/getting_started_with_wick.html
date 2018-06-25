@@ -34,47 +34,45 @@
       </element>
 
       <element id="main">
-        <div data-transform="the" class="p">HI, this is the main page!</div>
+        <div data-transition="the" class="p">HI, this is the main page!</div>
         <component class="unified_message">
             This component was loaded with Getting Started
         </component>
-        <div data-transform="t" class="c">Currently Wick is operating on these pages!</div>
+        <div data-transition="t" class="c">Currently Wick is operating on these pages!</div>
       </element>
     </app>
 
   <template id="user_lookup">
-    <case data-schema="users" data-model_template="test_data" data-prop="data">
-      <template class="user_entry">
-        <case model="user">
-          <div data-class="raw" data-prop="name"></div>
+    <case data-schema="users" data-prop="data" data-trs="base">
+      <template class="user_entry" data-prop="data">
+        <filter data-class ="limit" data-value="2" data-import="page" data-export="page"></filter>
+        <case model="user"  >
+          <div data-class="raw" data-prop="name" data-trs="base"></div>
           <input type="text"  data-prop="name" name ="note">
         </case>
       </template>
+      <textarea data-class="data_edit" data-model="true">
+        {
+          "data": [
+            {
+              "name" : "Tom Harrison"
+            },
+
+            {
+              "name" : "Deb McCacie"
+            },
+
+            {
+              "name" : "Tonada Yonoki"
+            },
+
+            {
+              "name" : "Umbadi Tinak"
+            }
+          ]
+        }
+      </textarea>
     </case>
-  </template>
-
-  <template id="test_data">
-    <textarea>
-{
-  "data": [
-    {
-      "name" : "Tom Harrison"
-    },
-
-    {
-      "name" : "Deb McCacie"
-    },
-
-    {
-      "name" : "Tonada Yonoki"
-    },
-
-    {
-      "name" : "Umbadi Tinak"
-    }
-  ]
-}
-    </textarea>
   </template>
 
   <template id="user_entry">

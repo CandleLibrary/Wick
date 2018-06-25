@@ -3,8 +3,8 @@ import {
 } from "./cassette"
 
 class Exists extends Cassette {
-    constructor(parent, element, controller) {
-        super(parent, element, controller);
+    constructor(parent, element, d, p) {
+        super(parent, element, d, p);
         this.defualt = element.getStyle("display");
         this.temp = document.createElement("span");
 
@@ -14,19 +14,19 @@ class Exists extends Cassette {
         if (data) {
 
             if (data[this.prop]) {
-            	if(this.temp.parentElement)
-            		this.temp.parentElement.replaceChild(this.element, this.temp);
-            }else{
-            	if(this.element.parentElement)
-            		this.element.parentElement.replaceChild(this.temp, this.element);
+                if (this.temp.parentElement)
+                    this.temp.parentElement.replaceChild(this.element, this.temp);
+            } else {
+                if (this.element.parentElement)
+                    this.element.parentElement.replaceChild(this.temp, this.element);
             }
         }
     }
 }
 
 class NotExists extends Cassette {
-    constructor(parent, element, controller) {
-        super(parent, element, controller);
+    constructor(parent, element, d, p) {
+        super(parent, element, d, p);
         this.defualt = element.getStyle("display");
         this.temp = document.createElement("span");
 
@@ -36,10 +36,10 @@ class NotExists extends Cassette {
         if (data) {
 
             if (data[this.prop]) {
-                if(this.element.parentElement)
+                if (this.element.parentElement)
                     this.element.parentElement.replaceChild(this.temp, this.element);
-            }else{
-                if(this.temp.parentElement)
+            } else {
+                if (this.temp.parentElement)
                     this.temp.parentElement.replaceChild(this.element, this.temp);
             }
         }
@@ -47,5 +47,6 @@ class NotExists extends Cassette {
 }
 
 export {
-    Exists, NotExists
+    Exists,
+    NotExists
 }

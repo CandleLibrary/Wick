@@ -6,13 +6,16 @@ import {
 } from "../animation/animation"
 
 import {
-    Component,
-    CaseComponent,
-    FailedComponent
+    BasicCase,
+    FailedCase
 } from "./component"
 
+import {
+    CaseConstructor
+} from "../case/case_constructor"
+
 /**
-    An area to hold data and UI components.
+    The main container of Cases. Represents an area of interest on the client view.
 */
 class Element {
     /**
@@ -31,16 +34,24 @@ class Element {
         this.element = element;
     }
 
-    transitionOut(transitions) {
+
+    unloadComponents() {
+        for (var i = 0; i < this.components.length; i++)
+            this.components[i].LOADED = false;
+    }
+
+    transitionOut() {
+
         let t = 0;
 
         for (var i = 0; i < this.components.length; i++) {
 
             let component = this.components[i];
 
-            component.parent = null;
+            if (!component.LOADED) {
 
-            if (component.transitionOut) {
+                component.parent = null;
+
                 t = Math.max(component.transitionOut(), t);
             }
         };
@@ -48,48 +59,53 @@ class Element {
         return t;
     }
 
-    transitionIn(transition_elements, query, IS_SAME_PAGE, wurl) {
-        //if(!IS_SAME_PAGE && this.parent_element)
-        //this.parent_element.appendChild(this.element);
+    finalize() {
 
         for (var i = 0; i < this.components.length; i++) {
 
             let component = this.components[i];
 
-            if (component) {
-
-                component.handleModel(wurl);
-
-                component.parent = this;
-
-                if (!IS_SAME_PAGE) {
-
-                    if (component.element.parentElement)
-                        component.element.parentElement.removeChild(component.element);
-
-                    this.wraps[i].appendChild(component.element);
-                }
-
-                component.LOADED = true;
-
-                console.log("LODING");
-
+            if (!component.LOADED && component.parentElement) {
+                component.finalizeTransitionOut();
+                this.wraps[i].removeChild(component.element);
             }
-        };
-        
-        var t = this.element.style.top;
 
-        for (var i = 0; i < this.components.length; i++) {
-            let component = this.components[i];
-
-            if (component) {
-                component.transitionIn(transition_elements, query, IS_SAME_PAGE);
-            }
+            component.LOADED = false;
         }
+    }
 
-        /**
-            This is to force a document repaint, which should cause all elements to report correct positioning hereafter
-        */
+    loadComponents(wurl) {            
+
+        for (let i = 0; i < this.components.length; i++) {
+
+            let component = this.components[i];
+
+            component.parent = this;
+
+            if (component.element.parentElement)
+                component.element.parentElement.removeChild(component.element);
+
+            this.wraps[i].appendChild(component.element);
+
+            component.handleUrlUpdate(wurl);
+
+            this.components[i].LOADED = true;
+        };
+    }
+
+    transitionIn() {
+
+        // This is to force a document repaint, which should cause all elements to report correct positioning hereafter
+
+        let t = this.element.style.top;
+        this.element.style.top = t;
+
+        for (let i = 0; i < this.components.length; i++) {
+            let component = this.components[i];
+
+            component.transitionIn();
+            
+        }
     }
 
     bubbleLink(link_url, child, trs_ele = {}) {
@@ -127,21 +143,6 @@ class Element {
                 }
             }
         }
-    }
-
-    finalize() {
-        for (var i = 0; i < this.components.length; i++) {
-
-            let component = this.components[i];
-
-            if (!component.LOADED && component.parentElement)
-                this.wraps[i].removeChild(component.element);
-
-            component.LOADED = false;
-        }
-
-        //if(this.parent_element && this.element.parentNode)
-        //this.parent_element.removeChild(this.element);
     }
 
     getNamedElements(named_elements) {
@@ -195,7 +196,7 @@ class Element {
 
 
         for (var i = 0; i < components.length; i++) {
-            let app_component = null;
+            let app_case = null;
             let component = components[i];
 
             try {
@@ -222,52 +223,61 @@ class Element {
                         return true;
                     })*/
 
-                    app_component = new Component(component);
+                    app_case = new BasicCase(component);
 
                 } else {
 
                     if (!App_Components[id]) {
                         if (comp = Component_Constructors[id]) {
-                            app_component = new comp.constructor(component, presets, templates);
+
+                            app_case = new comp.constructor(component, presets, templates);
 
                             if (comp.model_name && Model_Constructors[comp.model_name]) {
                                 var model = Model_Constructors[comp.model_name];
                                 if (model.getter)
                                     model.getter.get();
-                                model.addView(app_component);
+                                model.addView(app_case);
                             }
 
-                            app_component.id = id;
+                            app_case.id = id;
 
-                            App_Components[id] = app_component;
+                            App_Components[id] = app_case;
                         } else {
                             var template = templates[id];
 
                             if (template) {
-                                app_component = new CaseComponent(template, presets, Model_Constructors, null, DOM);
-                            } else
-                                app_component = new Component(component);
+                                app_case = CaseConstructor(template, presets, DOM)(); //new CaseComponent(template, presets, Model_Constructors, null, DOM);
+                            } else {
+                                let constructor = CaseConstructor(component, presets, DOM);
+
+                                if (!constructor)
+                                    constructor = CaseConstructor(component.children[0], presets, DOM);
+                                if (!constructor)
+                                    app_case = new BasicCase(component);
+                                else
+                                    app_case = constructor();
+                            }
                         }
 
-                        if (!app_component) {
+                        if (!app_case) {
                             console.warn("App Component not constructed");
                             /** TODO: If there is a fallback <no-script> section use that instead. */
-                            app_component = new FailedComponent();
+                            app_case = new FailedCase();
                         } else {
-                            App_Components[id] = app_component;
+                            App_Components[id] = app_case;
                         }
                     } else {
-                        app_component = App_Components[id];
+                        app_case = App_Components[id];
                     }
 
-                    app_component.handleModel(wurl);
+                    app_case.handleUrlUpdate(wurl);
                 }
             } catch (e) {
                 console.log(e)
-                app_component = new FailedComponent(e, presets);
+                app_case = new FailedCase(e, presets);
             }
 
-            this.components.push(app_component);
+            this.components.push(app_case);
         }
     }
 }

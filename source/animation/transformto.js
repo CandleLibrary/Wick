@@ -37,15 +37,16 @@ class TT_From {
     start() {
         this.element.style.opacity = 0;
     }
+
+    end(){
+        this.element.style.opacity = 1;
+    }
 }
 
 class TT_To extends TT_From {
     constructor(element, from) {
         super(element);
-
-
-        console.log(this.width, this.height, this.top, this.left)
-
+        
         this.from = from;
 
         this.res = ((element.style.top) && (element.style.left));
@@ -77,11 +78,15 @@ class TT_To extends TT_From {
         this.top_o = this.top;
         this.left_o = this.left;
         this.pos = window.getComputedStyle(element, null).getPropertyValue("position");
+
+
     }
 
     destructor() {
         this.end(); //Restore everything back to it's original type;
         this.from = null;
+        this.s = Infinity;
+        this.element = null;
         super.destructor();
     }
 
@@ -95,9 +100,11 @@ class TT_To extends TT_From {
 
     step() {
         this.s++
+        
         var t = this.s / this.time;
 
-        if (t > 1) t = 1;
+        if (t > 1) return false;
+
         var ratio = ease_out.getYatX(t);
 
         if (ratio > 1) ratio = 1;
@@ -125,10 +132,29 @@ class TTPair {
     constructor(e_to, e_from) {
         this.b = (e_from instanceof TT_From) ? e_from : new TT_From(e_from);
         this.a = new TT_To(e_to, this.b);
+
+        if(this.a.element.__TT__)
+            this.a.element.__TT__.destructor();
+        
+        if(this.b.element.__TT__)
+            this.b.element.__TT__.destructor();
+        
+        this.a.element.__TT__ = this;
+        this.b.element.__TT__ = this;
+
+        this.destroyed = false;
+
+        this.start();
     }
 
     destructor() {
+        if(this.destroyed) return
+        if(this.b.element)
+        this.b.element.__TT__ = null;
+        if(this.a.element)
+        this.a.element.__TT__ = null;
         this.a.destructor();
+        this.destroyed = true;
     }
 
     start() {
@@ -148,14 +174,11 @@ var rp = [];
 function TransformTo(element_from, element_to, HIDE_OTHER) {
     
     if(!element_to){
-        let a = (from, rp)=>
-        {
-            if(!from instanceof HTMLElement) debugger;
 
-            return (element_to, HIDE_OTHER) => {
+        let a = (from, rp)=>(element_to, HIDE_OTHER) => {
             let pair = new TTPair(element_to, from);
             rp.push(pair);
-        }}
+        }
 
         let b = a(new TT_From(element_from), rp);
 

@@ -11,16 +11,26 @@ class View{
 		if(this.model){
 			this.model.removeView(this);
 		}
-	}
-
+	}	
+	/**
+		Called a Model when its data has changed.
+	*/
 	update(data){
 
 	}
-
-	reset(){
+	/**
+		Called by a ModelContainer when an item has been removed.
+	*/
+	removed(data){
 
 	}
 
+	/**
+		Called by a ModelContainer when an item has been added.
+	*/
+	added(data){
+
+	}
 	setModel(model){
 	}
 	/**

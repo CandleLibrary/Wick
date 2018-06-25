@@ -1,12 +1,18 @@
-class ModelContainer {
+import {
+    ModelBase
+} from "./model_base.js"
+
+class ModelContainer extends ModelBase {
     /**
     	The type of object this container holds.
     */
     constructor(schema) {
+
+        super();
+
         this.schema = schema || this.constructor.schema || {};
         this.id = "";
         this.model = schema;
-
         if (this.schema.identifier && typeof(this.schema.identifier) == "string") {
             this.id = this.schema.identifier;
         } else {
@@ -26,34 +32,43 @@ class ModelContainer {
     set identifier(a) {
 
     }
-
+    /**
+        Inserts an item into the container. 
+    */
     insert(item) {
-        if (item instanceof Array) {
-            var out = false;
-            for (var i = 0; i < item.length; i++) {
 
-                var model = item[i];
+        let add_list = (this.first_view) ? [] : null;
+
+        let out = false;
+
+        if (item instanceof Array) {
+            for (let i = 0; i < item.length; i++) {
+
+                let model = item[i];
 
                 if (!(model instanceof this.schema.model) && !(model = model.____self____)) {
                     model = new this.schema.model();
                     model.add(item[i]);
                 }
-
-                if (this.__insert__(model)) {
+                if(this.__insert__(model, add_list))
                     out = true;
-                }
             }
-            return out;
+
         } else {
-            var model = item;
+            let model = item;
 
             if (!(model instanceof this.schema.model) && !(model = model.____self____)) {
                 model = new this.schema.model();
                 model.add(item);
             }
 
-            return this.__insert__(model);
+            let out = this.__insert__(model, add_list);
         }
+
+        if (add_list)
+            this.updateViewsAdded(add_list);
+
+        return out;
     }
 
     get(item) {
@@ -73,24 +88,38 @@ class ModelContainer {
         }
     }
 
+    /**
+        Removes an item from the container. 
+    */
     remove(item) {
-        if (!item) {
+
+        if (!item)
             return this.__removeAll__();
-        }
+
         if (item instanceof Array) {
-            var out = [],
+            let out = [],
                 temp = null;
-            for (var i = 0; i < item.length; i++)
+
+            for (let i = 0; i < item.length; i++)
                 if ((temp = this.removeAll(item[i])))
                     out.push(temp);
 
+            if (out)
+                this.updateViews();
+
+
             return out;
         } else {
-            return this.__remove__(item);
+
+            let out = this.__remove__(item);
+
+            this.updateViewsRemoved(out);
+
+            return out;
         }
     }
 
-    __insert__(item) {
+    __insert__(item, add_list) {
         return false;
     }
 
@@ -110,9 +139,6 @@ class ModelContainer {
     __remove__(item) {
         return [];
     }
-
-
-    addView(view) {}
 
     checkIdentifier(item) {
         return this.checkRawID(item);
@@ -178,6 +204,8 @@ class MultiIndexedContainer extends ModelContainer {
             out = this.first_index.get();
         }
 
+        //Update all views
+        this.updateViews(this.first_index.get());
 
         return out;
     }
@@ -198,6 +226,8 @@ class MultiIndexedContainer extends ModelContainer {
             }
         }
 
+        //Update all views
+        this.updateViewsRemoved(out);
 
         return out;
     }
@@ -223,6 +253,7 @@ class MultiIndexedContainer extends ModelContainer {
             if (index.remove(item))
                 out = true;
         }
+
         return out;
     }
 }

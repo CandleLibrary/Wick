@@ -5,8 +5,8 @@ import {
     Getter
 } from "../getter"
 import {
-    Case
-} from "../case"
+    Rivet
+} from "../case/rivet"
 import {
     TurnDataIntoQuery
 } from "../common"
@@ -14,35 +14,22 @@ import {
     DataTemplate
 } from "./data_template"
 
+import {
+    Transitioneer
+} from "../animation/transition/transitioneer"
+
 
 /**
     Handles the transition of separate elements.
 */
-class Component extends View {
+class BasicCase extends Rivet {
     constructor(element) {
-        super();
-        this.element = element;
+        super(null, element, {}, {});
         this.anchor = null;
         this.LOADED = false;
-    }
 
-    handleModel(wurl){
-        console.log(wurl)
-    }
-
-    /**
-      	Takes as an input a list of transition objects that can be used
-    */
-    transitionIn(elements, query) {
-        this.LOADED = true;
-    }
-
-    /**
-      @returns {number} Time in milliseconds that the transition will take to complete.
-    */
-    transitionOut() {
-        this.LOADED = false;
-        return 0;
+        this.transitioneer = new Transitioneer();
+        this.transitioneer.set(this.element)
     }
 
     getNamedElements(named_elements) {
@@ -62,139 +49,18 @@ class Component extends View {
     This is a fallback component if constructing a CaseComponent or normal Component throws an error.
 */
 
-
-class FailedComponent extends Component {
+class FailedCase extends Rivet {
     constructor(error_message, presets) {
         var div = document.createElement("div");
         div.innerHTML = `<h3> This Wick component has failed!</h3> <h4>Error Message:</h4><p>${error_message.stack}</p><p>Please contact the website maintainers to address the problem.</p> <p>${presets.error_contact}</p>`;
-        super(div);
-    }
-}
-/**
-    This Component extends the Case class.
-*/
-class CaseComponent extends Case {
-    constructor(element, presets, model_constructors, query, WORKING_DOM) {
-            super(element, presets, null, null, WORKING_DOM);
+        super(null, div, {}, {});
 
-            this.getter = null;
-            this.model_constructor = null;
-
-            let req = null;
-
-            if (req = this.data.requesturl) {
-                let split = req.split(/\?/)[0];
-                let url = split[0],
-                    query = split[1];
-                if (url)
-                    this.getter = new Getter(url);
-
-            }
-
-            if (this.data.model_template && this.data.schema) {
-
-                var template = WORKING_DOM.getElementById(this.data.model_template, true);
-
-
-                if (template)
-                    new DataTemplate(template, this.model, this.element);
-
-            }
-
-            if (!this.model)
-                throw new Error(`No model found in the presets for this component which requires${(this.data.model)?` a model named:  "${this.data.model}"`: ` a schema named: "${this.data.schema}"`}.`);
-
-        
-        
-
-        this.anchor = null;
-        this.LOADED = false;
-    }
-
-    handleModel(wurl){
-        let query_data = null;
-        /* 
-            This part of the function will import data into the model that is obtained from the query string 
-        */   
-        if (wurl && this.data.import) {
-            query_data = {};
-            if(this.data.import == "null"){
-                query_data = wurl.getClass();
-                console.log(query_data)
-            }else{
-                var l = this.data.import.split(";")
-                for(var i = 0; i < l.length; i++){
-                    let n = l[i].split(":");
-
-                    let class_name = n[0];
-                    let p = n[1].split("=>");
-                    var key_name = p[0];
-                    var import_name = p[1];
-                    if(class_name == "root") class_name = null;
-                    query_data[import_name] = wurl.get(class_name, key_name);
-                }
-            }
-        }
-
-        if (wurl && this.data.url) {
-            
-            let query_data = {};
-            if(this.url_query){
-                var l = this.url_query.split(";")
-                for(var i = 0; i < l.length; i++){
-                    let n = l[i].split(":");
-                    let class_name = n[0];
-                    let p = n[1].split("=>");
-                    var key_name = p[0];
-                    var import_name = p[1];
-                    if(class_name == "root") class_name = null;
-                    query_data[import_name] = wurl.get(class_name, key_name);
-                }
-            }
-
-            this.request(query_data)
-        }
-
-        if (!this.model) {
-
-            this.model = new this.model_constructor();
-            
-
-            if (this.getter)
-                this.getter.setModel(this.model);
-
-            this.model.addView(this);
-        }
-
-        if(query_data){
-           if(!this.model.add(query_data)){
-                this.update(this.model.get());
-           }
-        }
-        else
-            this.update(this.model.get());
-    }
-
-    transitionIn(elements, wurl) { 
-        this.show();
-        this.handleModel(wurl);       
-        this.LOADED = true;
-    }
-
-    transitionOut() {
-        this.LOADED = false;
-        this.hide();
-    }
-
-    getNamedElements(named_elements){
-        for(let comp_name in this.named_cassettes){
-            named_elements[comp_name] = this.named_cassettes[comp_name];
-        }
+         this.transitioneer = new Transitioneer();
+        this.transitioneer.set(this.element)
     }
 }
 
 export {
-    Component,
-    CaseComponent,
-    FailedComponent
+    BasicCase,
+    FailedCase
 }

@@ -27,27 +27,27 @@ let URL_HOST = {
 };
 let URL = (function() {
 
-    return {
-        /**
-            Changes the URL to the one provided, prompts page update. overwrites current URL.
-        */
-        set: function(a, b, c) {
-            if (URL_HOST.wurl)
-                URL_HOST.wurl.set(a, b, c);
-        },
-        /**
-                    Returns a Query entry if it exists in the query string. 
+            return {
+                /**
+                    Changes the URL to the one provided, prompts page update. overwrites current URL.
                 */
-        get: function(a, b) {
-            if (URL_HOST.wurl)
-                return URL_HOST.wurl.set(a, b);
-            return null;
-        },
-        /**
-                    Changes the URL state to the one provided and prompts the Browser to respond o the change. 
-                */
-        goto: function(a, b) {
-            history.pushState({}, "ignored title", `${a}${ ((b) ? `?${TurnDataIntoQuery(b)}` : "") }`);
+                set: function(a, b, c) {
+                    if (URL_HOST.wurl)
+                        URL_HOST.wurl.set(a, b, c);
+                },
+                /**
+                            Returns a Query entry if it exists in the query string. 
+                        */
+                get: function(a, b) {
+                    if (URL_HOST.wurl)
+                        return URL_HOST.wurl.set(a, b);
+                    return null;
+                },
+                /**
+                            Changes the URL state to the one provided and prompts the Browser to respond o the change. 
+                        */
+                goto: function(a, b) {
+                        history.pushState({}, "ignored title", `${a}${ ((b) ? `?${TurnDataIntoQuery(b)}` : "") }`);
             window.onpopstate();
         }
     }
@@ -148,6 +148,15 @@ class Linker {
         }
 
         /**
+            Modals are the global models that can be accessed by any Case
+        */
+        if (presets.models) {
+
+        } else {
+            presets.models = {};
+        }
+
+        /**
           TODO Validate that every schama is a Model constructor
         */
 
@@ -202,6 +211,12 @@ class Linker {
     }
 
     finalizePages() {
+
+        if(this.armed){
+            let a = this.armed;
+          //  a.p.transitionIn(a.e, this.current_view, a.wurl, a.SP, a.te);
+            this.armed = null;
+        }
         
         for (var i = 0, l = this.finalizing_pages.length; i < l; i++) {
             
@@ -226,6 +241,8 @@ class Linker {
 
         let transition_length = 0;
 
+        let app_ele = document.getElementsByTagName("app")[0];
+
         //Finalize any existing page transitions;
         // this.finalizePages();
 
@@ -234,12 +251,11 @@ class Linker {
         if (page.type == "modal") {
             //trace modal stack and see if the modal already exists
             if (IS_SAME_PAGE) {
-                page.transitionIn(getModalContainer(), null, query, IS_SAME_PAGE)
+                page.transitionIn()
                 return;
             }
 
             let UNWIND = 0;
-
 
             for (var i = 0, l = this.modal_stack.length; i < l; i++) {
                 let modal = this.modal_stack[i];
@@ -250,34 +266,41 @@ class Linker {
                     }
                 } else {
                     let trs = 0;
-                    if (trs = this.modal_stack[i].transitionOut()) {
+                    modal.unload();
+
+                    if (trs = modal.transitionOut()) {
                         transition_length = Math.max(trs, transition_length);
-                        this.finalizing_pages.push(this.modal_stack[i]);
-                    } else {
-                        this.modal_stack[i].finalize();
-                    }
+                        this.finalizing_pages.push(modal);
+                    } else 
+                        modal.finalize();
                 }
             }
 
             if (UNWIND > 0) {
                 this.modal_stack.length = UNWIND;
-                page.transitionIn(getModalContainer(), null, wurl, IS_SAME_PAGE);
+                page.load(getModalContainer(), wurl);
+                page.transitionIn();
             } else {
                 //create new modal
                 this.modal_stack.push(page);
-                page.transitionIn(getModalContainer(), null, wurl, IS_SAME_PAGE);
+                page.load(getModalContainer(), wurl);
+                page.transitionIn();
             }
 
         } else {
 
             for (var i = 0, l = this.modal_stack.length; i < l; i++) {
+                let modal = this.modal_stack[i];
                 let trs = 0;
-                if (trs = this.modal_stack[i].transitionOut()) {
+                
+                modal.unload();
+
+                if (trs = modal.transitionOut()) {
                     transition_length = Math.max(trs, transition_length);
-                    this.finalizing_pages.push(this.modal_stack[i]);
-                } else {
-                    this.modal_stack[i].finalize();
-                }
+                    this.finalizing_pages.push(modal);
+                } else 
+                    modal.finalize();
+                
             }
 
             this.modal_stack.length = 0;
@@ -285,24 +308,34 @@ class Linker {
             let trs = 0;
 
 
-            if (
-                this.current_view &&
-                this.current_view != page
-            ) {
-                transition_length = Math.max(this.current_view.transitionOut(transition_elements), transition_length);
+            if (this.current_view && this.current_view != page) {
+                this.current_view.unload(transition_elements);
+                
+                page.load(app_ele, wurl);
+               
+                let t = this.current_view.transitionOut();
+                
+                window.requestAnimationFrame(()=>{
+                    page.transitionIn(transition_elements)
+                })
+
+                transition_length = Math.max(t, transition_length);
+                
                 this.finalizing_pages.push(this.current_view);
-                //this.current_view.finalize();
+            } else if(!this.current_view){
+                page.load(app_ele, wurl);
+
+                window.requestAnimationFrame(()=>{
+                    page.transitionIn(transition_elements)
+                })
             }
 
             this.current_view = page;
-
-            page.transitionIn(document.getElementsByTagName("app")[0], this.current_view, wurl, IS_SAME_PAGE, transition_elements);
-
         }
+
         setTimeout(() => {
             this.finalizePages();
-        }, transition_length + 1);
-
+        }, (transition_length*1000) + 1);
     }
 
     /**

@@ -1,5 +1,5 @@
 import {Cassette} from "./cassette"
-import * as Common from "../common"
+import * as Common from "../../common"
 
 let day_of_week = Common.dow;
 let months = Common.months;
@@ -15,8 +15,8 @@ let months = Common.months;
 */
 class EpochDay extends Cassette {
 
-    constructor(parent, element) {
-        super(parent, element);
+    constructor(parent, element,d,p) {
+        super(parent, element,d,p);
         this.TO_UPPERCASE = (this.data.uppercase == "true") ? true : false;
         this.limit = (parseInt(this.data.limit) > 0) ? parseInt(this.data.limit) : 0;
     }
@@ -47,8 +47,8 @@ class EpochDay extends Cassette {
 */
 class EpochMonth extends Cassette {
 
-    constructor(parent, element) {
-        super(parent, element);
+    constructor(parent, element,d,p) {
+        super(parent, element,d,p);
         this.TO_UPPERCASE = (this.data.uppercase == "true") ? true : false;
         this.limit = (parseInt(this.data.limit) > 0) ? parseInt(this.data.limit) : 0;
     }
@@ -73,8 +73,8 @@ class EpochMonth extends Cassette {
 */
 class EpochDate extends Cassette {
 
-    constructor(parent, element) {
-        super(parent, element);
+    constructor(parent, element,d,p) {
+        super(parent, element,d,p);
     }
 
     update(data) {
@@ -91,8 +91,8 @@ class EpochDate extends Cassette {
 */
 class EpochYear extends Cassette {
 
-    constructor(parent, element) {
-        super(parent, element);
+    constructor(parent, element,d,p) {
+        super(parent, element,d,p);
     }
 
     update(data) {
@@ -108,8 +108,8 @@ class EpochYear extends Cassette {
     Outputs the toString() value of a Date object provided the data-prop value is a valid epoch timestamp.
 */
 class EpochToDateTime extends Cassette {
-    constructor(parent, element) {
-        super(parent, element);
+    constructor(parent, element,d,p) {
+        super(parent, element,d,p);
     }
 
     update(data) {

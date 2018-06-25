@@ -1,6 +1,6 @@
 import {
-    View
-} from "../view"
+    ModelBase
+} from "./model_base.js"
 
 import {
     ModelContainer,
@@ -19,10 +19,11 @@ import {
     DateModelContainer
 } from "./date_model_container"
 
-class Model {
+class Model extends ModelBase{
     constructor(data) {
-        this.first_view = null;
 
+        super();
+        
         this.schema = this.constructor.schema || {};
 
         this.data = {};
@@ -85,15 +86,7 @@ class Model {
     */
     destructor() {
 
-        //inform views of the models demise
-        var view = this.first_view;
 
-        while (view) {
-            view.unsetModel();
-            view = view.next;
-        }
-
-        this.first_view = null;
         this.schema = null;
         this.data = {};
         this._temp_data_ = null;
@@ -108,70 +101,8 @@ class Model {
         }
 
         this.data = null;
-    }
 
-    addView(view) {
-        if (view instanceof View) {
-            if (view.model)
-                view.model.removeView(view);
-
-            var child_view = this.first_view;
-
-            while (child_view) {
-                if (view == child_view) return;
-                child_view = child_view.next;
-            }
-
-            view.model = this;
-            view.next = this.first_view;
-            this.first_view = view;
-
-            view.model = this;
-
-            if (!this._temp_data_)
-                this._temp_data_ = this.get();
-
-            view.setModel(this);
-            view.update(this._temp_data_);
-        }
-    }
-
-    removeView(view) {
-        if (view instanceof View && view.model == this) {
-            var child_view = this.first_view;
-            var prev_child = null;
-
-            while (child_view) {
-                if (view == child_view) {
-
-                    if (prev_child) {
-                        prev_child.next = view.next;
-                    } else {
-                        this.first_view = view.next;
-                    }
-
-                    view.next = null
-                    view.model = null;
-                    view.reset();
-                    return;
-                };
-
-                prev_child = child_view;
-                child_view = child_view.next;
-            }
-
-            //debugger
-        }
-            console.warn("View not a member of Model!", view);
-    }
-
-    updateViews() {
-        var view = this.first_view;
-
-        while (view) {
-            view.update(this.data);
-            view = view.next;
-        }
+        super.destructor();
     }
 
     /**
@@ -231,7 +162,7 @@ class Model {
         }
         if (NEED_UPDATE) {
             this._temp_data_ = null; //Invalidate the current cache.
-            this.updateViews();
+            this.updateViews(this.get());
         }
 
         return NEED_UPDATE;
@@ -295,7 +226,9 @@ class Model {
     remove(data) {
         var out_data = {};
         for (var a in data) {
+            
             var scheme = this.schema[a];
+            
             if (scheme)
                 if (scheme instanceof Array) {
                     out_data[a] = this.removeDataFromContainer(this.data[a], data[a]);

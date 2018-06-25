@@ -19,24 +19,36 @@ class ArrayModelContainer extends ModelContainer {
         super.destructor();
     }
 
-    __insert__(item) {
+    __insert__(item, add_list) {
         if (this.checkIdentifier(item)) {
 
             for (var i = 0, l = this.data.length; i < l; i++) {
+
                 var obj = this.data[i];
+
                 if (this.getIdentifier(obj) == this.getIdentifier(item)) {
+
                     obj.add(item);
+
                     return true;
                 }
             }
 
             if (item instanceof this.schema.model) {
                 this.data.push(item);
+
+                if (add_list) add_list.push(item)
+
                 return true;
             } else if (this.schema.model) {
                 var temp = new this.schema.model();
+
                 temp.add(item);
+
                 this.data.push(temp);
+
+                if (add_list) add_list.push(temp)
+
                 return true;
             } else {
                 console.error(`Model has not been created yet for dataset ${this.getIdentifier(item)}`, item);
@@ -57,8 +69,13 @@ class ArrayModelContainer extends ModelContainer {
             //create a new model and push into array. 
 
             var model = new this.schema.model();
+            
             model.add(item);
+            
             this.__insert__(model);
+
+            if (add_list) add_list.push(model)
+
             return true;
         }
         return false;
@@ -82,7 +99,7 @@ class ArrayModelContainer extends ModelContainer {
         return this.data.map((d) => d.get()) || [];
     }
 
-    __removeAll__(){
+    __removeAll__() {
         let items = this.data.map(d => d) || [];
 
         this.data.length = 0;
