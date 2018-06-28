@@ -249,6 +249,7 @@ class Linker {
         let transition_elements = {};
 
         if (page.type == "modal") {
+            
             //trace modal stack and see if the modal already exists
             if (IS_SAME_PAGE) {
                 page.transitionIn()
