@@ -7,6 +7,11 @@ import {
 
 var ease_out = new CBezier(0.5, 0.2, 0, 1);
 
+if(!requestAnimationFrame)
+    requestAnimationFrame = (e)=>{
+        setTimeout(e,1000);
+    }
+
 class TT_From {
     constructor(element) {
         //extracted animatable components

@@ -1,6 +1,25 @@
 import {
-    ModelBase
+    ModelBase,
 } from "./model_base.js"
+
+class MCArray extends Array {
+    constructor() {
+        super();
+    }
+
+    push(item) {
+        if (item instanceof Array)
+            item.forEach((i) => {
+                this.push(i)
+            })
+        else
+            super.push(item);
+    }
+
+    setBounds() {
+
+    }
+}
 
 class ModelContainer extends ModelBase {
     /**
@@ -10,13 +29,18 @@ class ModelContainer extends ModelBase {
 
         super();
 
+        //For Linking to original 
+        this.source = null;
+        this.lfirst_link = null;
+        this.next = null;
+        this.prev = null;
+
         this.schema = schema || this.constructor.schema || {};
         this.id = "";
-        this.model = schema;
         if (this.schema.identifier && typeof(this.schema.identifier) == "string") {
             this.id = this.schema.identifier;
         } else {
-            throw (`Wrong schema identifier type given to ModelContainer. Expected type String, got: ${typeof(this.schema.identifier)}!`, this);
+            // throw (`Wrong schema identifier type given to ModelContainer. Expected type String, got: ${typeof(this.schema.identifier)}!`, this);
         }
     }
 
@@ -32,90 +56,166 @@ class ModelContainer extends ModelBase {
     set identifier(a) {
 
     }
+
+    defaultReturn(params) {
+        return new MCArray;
+    }
+
+    push(item) {
+        return this.insert(item);
+    }
+
+    get(item, return_data) {
+
+        let out = null;
+        
+        if (item)
+
+            if (return_data) {
+                out = return_data;
+            } else {
+                out = this.defaultReturn(item);
+                out.setBounds(item);
+            }
+        else
+            out = [];
+
+        if (!item)
+            this.__getAll__(out);
+        else if (item instanceof Array) {
+            temp = null;
+            for (var i = 0; i < item.length; i++)
+                (temp = this.getAll(item[i], out))
+        } else
+            this.__get__(item, out);
+
+
+        return out
+    }
+
     /**
         Inserts an item into the container. 
     */
-    insert(item) {
+    insert(item, FROM_SOURCE = false) {
 
         let add_list = (this.first_view) ? [] : null;
 
         let out = false;
 
-        if (item instanceof Array) {
-            for (let i = 0; i < item.length; i++) {
+        if (!FROM_SOURCE && this.source)
+            return this.source.insert(item);
 
-                let model = item[i];
+        this.__links__insert__(item);
+
+        if (item instanceof Array) {
+
+
+            for (var i = 0; i < item.length; i++) {
+
+                var model = item[i];
 
                 if (!(model instanceof this.schema.model) && !(model = model.____self____)) {
                     model = new this.schema.model();
                     model.add(item[i]);
                 }
-                if(this.__insert__(model, add_list))
+
+                if (this.__insert__(model, add_list)) {
                     out = true;
+                }
             }
-
+            return out;
         } else {
-            let model = item;
+            var model = item;
 
-            if (!(model instanceof this.schema.model) && !(model = model.____self____)) {
+            if (!(model instanceof this.schema.model) && !(item = model.____self____)) {
                 model = new this.schema.model();
                 model.add(item);
             }
 
-            let out = this.__insert__(model, add_list);
-        }
+            out = this.__insert__(item, add_list);
 
-        if (add_list)
-            this.updateViewsAdded(add_list);
+        }
 
         return out;
     }
-
-    get(item) {
-        if (!item) {
-            return this.__getAll__();
-        } else if (item instanceof Array) {
-            var out = [],
-                temp = null;
-            for (var i = 0; i < item.length; i++)
-                if ((temp = this.getAll(item[i])))
-                    out.push(temp);
-
-
-            return out;
-        } else {
-            return this.__get__(item);
-        }
-    }
-
     /**
         Removes an item from the container. 
     */
-    remove(item) {
+    remove(item, FROM_SOURCE = false) {
+
+        if (!FROM_SOURCE && this.source)
+            return this.source.remove(item);
+
+        let out = [];
 
         if (!item)
-            return this.__removeAll__();
-
-        if (item instanceof Array) {
-            let out = [],
-                temp = null;
-
+            out = this.__removeAll__();
+        else if (item instanceof Array) {
+            let temp = null;
             for (let i = 0; i < item.length; i++)
                 if ((temp = this.removeAll(item[i])))
                     out.push(temp);
-
-            if (out)
-                this.updateViews();
-
-
-            return out;
         } else {
-
             let out = this.__remove__(item);
+        }
 
-            this.updateViewsRemoved(out);
+        this.__links__remove__(item);
 
-            return out;
+
+        return out;
+
+    }
+    __unlink__(container) {
+        if (container instanceof ModelContainer && container.source == this) {
+
+            if (container == this.first_link)
+                this.first_link = container.next;
+
+            if (container.next)
+                container.next.prev = container.prev;
+
+            if (container.prev)
+                container.prev.next = container.next;
+
+            container.source = null;
+        }
+    }
+
+    __link__(container) {
+        if (container instanceof ModelContainer && !container.source) {
+
+            container.source = this;
+
+            container.next = this.first_link;
+
+            if (this.first_link)
+                this.first_link.prev = container;
+
+            this.first_link = container;
+
+            container.pin = ((container) => {
+                let id = setTimeout(() => {
+                    container.__unlink__();
+                }, 50)
+
+                return () => {
+                    clearTimeout(id);
+                    if (!container.source)
+                        console.warn("failed to clear the destruction of container in time!");
+                }
+            })(container)
+        }
+    }
+    __links__remove__(item) {
+        let a = this.lfirst_link;
+        while (a) {
+            a.remove(item, true)
+        }
+    }
+    __links__insert__(item) {
+        let a = this.lfirst_link;
+        while (a) {
+            a.insert(item, true)
         }
     }
 
@@ -123,12 +223,38 @@ class ModelContainer extends ModelBase {
         return false;
     }
 
-    __get__(item) {
-        return [];
+    __get__(item, return_data, UNWRAPPED = false) {
+        return return_data;
     }
 
-    __getAll__() {
-        return [];
+    __getAll__(return_data, UNWRAPPED = false) {
+        return return_data;
+    }
+
+    cull(items) {
+        let hash_table = {};
+        let existing_items = __getAll__([], true);
+
+        let loadHash = (item) => {
+            if (item instanceof Array)
+                return item.forEach((e) => loadHash(e));
+
+            let identifier = this.getIdentifier(item);
+
+            if (identifier) {
+                hash_table[identifier] = item;
+            }
+        }
+
+        loadHash(items);
+
+        for (let i = 0; i < existing_items.lenth; i++) {
+            let e_item = existing_items[i];
+            if (!existing_items[this.getIdentifier(e_item)])
+                this.__remove__(e_item);
+        }
+
+        this.insert(items);
     }
 
     __removeAll__() {
@@ -156,7 +282,7 @@ class ModelContainer extends ModelBase {
         if (item.data && item.schema) {
             return item.data[this.schema.identifier];
         } else {
-            return item;
+            return item[this.schema.identifier];
         }
     }
 }
@@ -192,20 +318,25 @@ class MultiIndexedContainer extends ModelContainer {
     }
 
     get(item) {
-        var out = [];
+        let out
+
+        let add_list = (this.first_view) ? [] : null;;
 
         if (item) {
 
             for (let a in item) {
-                if (this.indexes[a])
-                    out = out.concat(this.indexes[a].get(item[a]));
+                let out = {};
+
+                if (this.indexes[a]) {
+                    out[a] = this.indexes[a].get(item[a]);
+                }
             }
         } else {
             out = this.first_index.get();
         }
 
-        //Update all views
         this.updateViews(this.first_index.get());
+
 
         return out;
     }
@@ -262,4 +393,5 @@ class MultiIndexedContainer extends ModelContainer {
 export {
     ModelContainer,
     MultiIndexedContainer,
+    array_container
 };

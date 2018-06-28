@@ -1,8 +1,11 @@
 import {
-    ModelContainer,
+    ModelContainer
 } from "./model_container"
 
+
+
 class ArrayModelContainer extends ModelContainer {
+
     constructor(schema) {
         super(schema);
         this.data = [];
@@ -10,13 +13,26 @@ class ArrayModelContainer extends ModelContainer {
 
     destructor() {
 
-        for (var i = 0; i < this.data.length; i++) {
+        for (var i = 0; i < this.data.length; i++)
             this.data[i].destructor();
-        }
 
         this.data = null;
 
         super.destructor();
+    }
+
+    setBounds(item) {
+
+    }
+
+    defaultReturn(params) {
+        if (this.source) return new MCArray;
+
+        debugger
+        
+        let n = new ArrayModelContainer(this.schema);
+
+        return n;
     }
 
     __insert__(item, add_list) {
@@ -69,9 +85,9 @@ class ArrayModelContainer extends ModelContainer {
             //create a new model and push into array. 
 
             var model = new this.schema.model();
-            
+
             model.add(item);
-            
+
             this.__insert__(model);
 
             if (add_list) add_list.push(model)
@@ -81,22 +97,39 @@ class ArrayModelContainer extends ModelContainer {
         return false;
     }
 
-    __get__(item) {
+    __get__(item, return_data, UNWRAPPED = false) {
         if (this.checkIdentifier(item)) {
-            for (var i = 0, l = this.data.length; i < l; i++) {
-                var obj = this.data[i];
-
-                if (this.getIdentifier(obj) == this.getIdentifier(item)) {
-                    return obj.get();
+            if (UNWRAPPED)
+                for (let i = 0, l = this.data.length; i < l; i++) {
+                    let obj = this.data[i];
+                    if (this.getIdentifier(obj) == this.getIdentifier(item)) {
+                        return_data.push(obj);
+                    }
                 }
-            }
+            else
+                for (let i = 0, l = this.data.length; i < l; i++) {
+                    let obj = this.data[i];
+                    if (this.getIdentifier(obj) == this.getIdentifier(item)) {
+                        return_data.push(obj.get());
+                    }
+                }
         }
 
         return [];
     }
 
-    __getAll__(item) {
-        return this.data.map((d) => d.get()) || [];
+    __getAll__(return_data, UNWRAPPED = false) {
+
+        if (UNWRAPPED)
+            this.data.forEach((m) => {
+                return_data.push(m)
+            })
+        else
+            this.data.forEach((m) => {
+                return_data.push(m.get())
+            })
+
+        return return_data;
     }
 
     __removeAll__() {
@@ -120,11 +153,9 @@ class ArrayModelContainer extends ModelContainer {
                 }
             }
         }
-
         return [];
     }
 }
-
 
 export {
     ArrayModelContainer

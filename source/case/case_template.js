@@ -111,8 +111,10 @@ class CaseTemplate extends Case {
     }
 
     update(data) {
-        let object = data.____self____;
 
+        //data.get({data:null})
+
+        let object = data.____self____;
 
         if (this.model) {
 

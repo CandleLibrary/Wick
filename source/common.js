@@ -43,7 +43,7 @@ export {
 };
 
 /****** Global Object Extenders *************/
-
+//*
 Element.prototype.getWindowTop = function(){
     return (this.offsetTop + ((this.parentElement) ? this.parentElement.getWindowTop() : 0));
 }
@@ -63,3 +63,4 @@ Element.prototype.getParentWindowLeft = function(bool = false){
 Element.prototype.getStyle = function(style_name){
 	return window.getComputedStyle(this,null).getPropertyValue(style_name);
 }
+//*/

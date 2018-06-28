@@ -1,6 +1,4 @@
-import {
-    ModelBase
-} from "./model_base.js"
+import { ModelBase } from "./model_base.js"
 
 import {
     ModelContainer,
