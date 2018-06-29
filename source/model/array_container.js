@@ -27,10 +27,10 @@ class ArrayModelContainer extends ModelContainer {
 
     defaultReturn(params) {
         if (this.source) return new MCArray;
-
-        debugger
         
         let n = new ArrayModelContainer(this.schema);
+
+        this.__link__(n); 
 
         return n;
     }
@@ -147,7 +147,7 @@ class ArrayModelContainer extends ModelContainer {
 
                 if (this.getIdentifier(obj) == this.getIdentifier(item)) {
 
-                    this.data[i].splice(i, 1);
+                    this.data.splice(i, 1);
 
                     return [obj];
                 }

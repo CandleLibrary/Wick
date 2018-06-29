@@ -33,6 +33,10 @@ class View{
 	}
 	setModel(model){
 	}
+
+	reset(){
+		
+	}
 	/**
 	* Called by model when it is destroyed. Destroys view as a default action
 	*/

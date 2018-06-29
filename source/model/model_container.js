@@ -21,6 +21,8 @@ class MCArray extends Array {
     }
 }
 
+let EmptyFunction = ()=>{};
+
 class ModelContainer extends ModelBase {
     /**
     	The type of object this container holds.
@@ -31,9 +33,11 @@ class ModelContainer extends ModelBase {
 
         //For Linking to original 
         this.source = null;
-        this.lfirst_link = null;
+        this.first_link = null;
         this.next = null;
         this.prev = null;
+
+        this.pin = EmptyFunction;
 
         this.schema = schema || this.constructor.schema || {};
         this.id = "";
@@ -65,10 +69,13 @@ class ModelContainer extends ModelBase {
         return this.insert(item);
     }
 
-    get(item, return_data) {
+    get(item, return_data, UNWRAPPED = false){
+        
+        if(item === null)
+            UNWRAPPED = true;
 
         let out = null;
-        
+
         if (item)
 
             if (return_data) {
@@ -81,13 +88,12 @@ class ModelContainer extends ModelBase {
             out = [];
 
         if (!item)
-            this.__getAll__(out);
+            this.__getAll__(out, UNWRAPPED);
         else if (item instanceof Array) {
-            temp = null;
             for (var i = 0; i < item.length; i++)
-                (temp = this.getAll(item[i], out))
+                this.get(item[i], out, UNWRAPPED)
         } else
-            this.__get__(item, out);
+            this.__get__(item, out, UNWRAPPED);
 
 
         return out
@@ -133,8 +139,10 @@ class ModelContainer extends ModelBase {
             }
 
             out = this.__insert__(item, add_list);
-
         }
+
+        if(add_list.length > 0)
+        this.updateViewsAdded(add_list);
 
         return out;
     }
@@ -207,15 +215,17 @@ class ModelContainer extends ModelBase {
         }
     }
     __links__remove__(item) {
-        let a = this.lfirst_link;
+        let a = this.first_link;
         while (a) {
-            a.remove(item, true)
+            a.remove(item, true);
+            a = a.next;
         }
     }
     __links__insert__(item) {
-        let a = this.lfirst_link;
+        let a = this.first_link;
         while (a) {
-            a.insert(item, true)
+            a.insert(item, true);
+            a = a.next;
         }
     }
 
@@ -282,7 +292,7 @@ class ModelContainer extends ModelBase {
         if (item.data && item.schema) {
             return item.data[this.schema.identifier];
         } else {
-            return item[this.schema.identifier];
+            return item[this.schema.identifier] || item;
         }
     }
 }
@@ -358,7 +368,8 @@ class MultiIndexedContainer extends ModelContainer {
         }
 
         //Update all views
-        this.updateViewsRemoved(out);
+        if(out.length > 0)
+            this.updateViewsRemoved(out);
 
         return out;
     }

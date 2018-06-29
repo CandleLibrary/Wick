@@ -49,7 +49,7 @@ class ModelBase {
 				this._temp_data_ = this.get();
 
 			view.setModel(this);
-			view.update(this._temp_data_);
+			view.update(this.get());
 		}else{
 			throw new Exception("Passed in view is not an instance of wick.View!");
 		}

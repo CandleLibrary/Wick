@@ -25,6 +25,7 @@ class CaseTemplate extends Case {
         this.cases = [];
         this.case_constructors = [];
         this.filters = [];
+        this.range = null;
 
 
         //need to find the cases in the skeleton, these will be used to create reoccurring objects from the model.
@@ -61,21 +62,55 @@ class CaseTemplate extends Case {
             output = this.filters[i].filter(output);
         }
 
-        for(var i = 0; i < output.length; i++){
+        for (var i = 0; i < output.length; i++) {
             this.element.appendChild(output[i].element);
         }
 
         this.element.style.position = this.element.style.position;
 
-        setTimeout(()=>{
-            
+        setTimeout(() => {
 
-        for (var i = 0; i < output.length; i++) {    
-            output[i].transitionIn(i);
-        }
+
+            for (var i = 0; i < output.length; i++) {
+                output[i].transitionIn(i);
+            }
 
         })
         //Sort and filter the output to present the results on screen.
+    }
+
+    cull(new_items) {
+        if (new_items.length == 0) {
+            
+            for (let i = 0, l = this.cases.length; i < l; i++) 
+                this.cases[i].destructor();
+            
+
+            this.cases.length = 0;
+
+        } else {
+
+            let exists = new Map(new_items.map(e => [e, true]));
+
+            var out = [];
+
+            for (let i = 0, l = this.cases.length; i < l; i++)
+                if (!exists.has(this.cases[i].model)) {
+                    this.cases[i].destructor();
+                    this.cases.slice(i, 1);
+                    l--;
+                    i--;
+                } else
+                    exists.set(this.cases[i].model, false);
+
+
+            exists.forEach((v, k, m) => {
+                if (v) out.push(k);
+            });
+
+            if (out.length > 0)
+                this.added(out);
+        }
     }
 
     load(model) {
@@ -112,26 +147,27 @@ class CaseTemplate extends Case {
 
     update(data) {
 
-        //data.get({data:null})
+        if (!data.____self____)
+            return;
 
-        let object = data.____self____;
+        let d = data[this.prop].get(this.range);
 
-        if (this.model) {
+        let own_container = d.____self____;
 
-            if (this.model == object) {
-                debugger;
-            } else {
-                return null;
-            }
+        if (own_container instanceof ModelContainer) {
+            own_container.pin();
+            own_container.addView(this);
+            this.cull(this.model.get(null))
         } else {
-
-            let container = object.data[this.prop]
-
-            if (container instanceof ModelContainer) {
-
-                container.addView(this);
+            own_container = data.____self____.data[this.prop]
+            if (own_container instanceof ModelContainer) {
+                own_container.addView(this);
+                this.cull(this.model.get(null))
             }
+
         }
+
+        return;
     }
 
     transitionIn(elements, wurl) {
