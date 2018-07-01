@@ -51,6 +51,11 @@ import {
     Cassette
 } from "./case/cassette/cassette"
 
+import {
+    SchemaType,
+    schema
+} from "./schema/schemas"
+
 let LINKER_LOADED = false;
 let DEBUGGER = true;
 
@@ -107,5 +112,7 @@ export {
     ModelContainer,
     Setter,
     View,
-    light
+    light,
+    SchemaType,
+    schema
 }

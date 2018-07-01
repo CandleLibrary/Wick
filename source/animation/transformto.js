@@ -177,6 +177,7 @@ var rp = [];
     Transform one element from another back to itself
 */
 function TransformTo(element_from, element_to, HIDE_OTHER) {
+
     
     if(!element_to){
 
@@ -204,6 +205,7 @@ var t = function(a) {
     for (var i = 0; i < rp.length; i++) {
         var _rp = rp[i];
         if (!_rp.step()) {
+
             _rp.destructor();
             rp.splice(i, 1);
             i--;

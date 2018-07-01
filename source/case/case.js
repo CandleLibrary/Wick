@@ -54,6 +54,9 @@ class Case extends Rivet {
         super.destructor();
     }
 
+    /**
+        Sets up Model connection or creates a new Model from a schema.
+    */
     load(model) {
 
         super.load(model);
@@ -116,7 +119,7 @@ class Case extends Rivet {
             if (this.data.url) {
                 this.receiver = new Getter(this.data.url, this.url_return);
                 this.receiver.setModel(model);
-                this.request();
+                this.____request____();
             }
         } else {
             throw new Error(`No Model could be found for Case constructor! Case schema "${this.data.schema}", "${this.presets.schemas[this.data.schema]}"; Case model "${this.data.model}", "${this.presets.models[this.data.model]}";`);
@@ -128,7 +131,7 @@ class Case extends Rivet {
         }
     }
 
-    request(query) {
+    ____request____(query) {
 
         this.receiver.get(query, null, this.USE_SECURE).then(() => {
             this.REQUESTING = false;
@@ -244,7 +247,7 @@ class Case extends Rivet {
                 }
             }
 
-            this.request(query_data)
+            this.____request____(query_data)
         }
 
         if (!this.model) {
@@ -315,7 +318,7 @@ class Case extends Rivet {
 
 class CustomCase extends Case {
     constructor(element, presets, templates) {
-        super(parent, element, data, presets)
+        
         super(null, element)
     }
 }

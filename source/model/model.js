@@ -18,6 +18,9 @@ import {
 import {
     DateModelContainer
 } from "./date_model_container"
+import {
+    SchemaType
+} from "../schema/schemas"
 
 class Model extends ModelBase {
     constructor(data) {
@@ -28,55 +31,68 @@ class Model extends ModelBase {
 
         this.data = {};
         this._temp_data_ = null;
-        this.export_data = [];
 
-        for (var a in this.schema) {
+        if (!this.schema.__export_data__) {
+            let __export_data__ = [];
+            this.schema.__export_data__ = __export_data__;
 
-            let scheme = this.schema[a];
+            for (var a in this.schema) {
 
-            if (scheme instanceof Array) {
-                if (scheme[0] instanceof ModelContainer) {
-                    this.data[a] = new scheme[0].constructor();
-                    this.export_data.push({
+                let scheme = this.schema[a];
+
+                if (scheme == __export_data__) continue;
+
+                if (scheme instanceof Array) {
+                    if (scheme[0] instanceof ModelContainer) {
+                        this.data[a] = new scheme[0].constructor();
+                        __export_data__.push({
+                            name: a,
+                            type: "ModelContainer",
+                            exportable: false
+                        })
+                    } else if (scheme[0].container && scheme[0].schema) {
+                        this.data[a] = new scheme[0].container(scheme[0].schema);
+                        __export_data__.push({
+                            name: a,
+                            type: "ModelContainer",
+                            exportable: false
+                        })
+                    } else {
+
+                        console.error(`Schema cannot contain an array that does not contain a single object constructor of type ModelContainer or {schema:schema, container: ModelContainer}.`);
+                    }
+                } else if (scheme instanceof Model) {
+                    this.data[a] = new scheme.constructor();
+                    __export_data__.push({
                         name: a,
-                        type: "ModelContainer",
-                        exportable: false
-                    })
-                } else if (scheme[0].container && scheme[0].schema) {
-                    this.data[a] = new scheme[0].container(scheme[0].schema);
-                    this.export_data.push({
-                        name: a,
-                        type: "ModelContainer",
+                        type: "Model",
                         exportable: false
                     })
                 } else {
-
-                    console.error(`Schema cannot contain an array that does not contain a single object constructor of type ModelContainer or {schema:schema, container: ModelContainer}.`);
+                    __export_data__.push({
+                        name: a,
+                        type: this.schema[a].name,
+                        exportable: true
+                    })
                 }
-            } else if (scheme instanceof Model) {
-                this.data[a] = new scheme.constructor();
-                this.export_data.push({
-                    name: a,
-                    type: "Model",
-                    exportable: false
-                })
-            } else {
-                this.export_data.push({
-                    name: a,
-                    type: this.schema[a].name,
-                    exportable: true
-                })
             }
-        }
 
+        }
         if (data)
             this.add(data);
+    }
+
+    get __export_data__() {
+        return this.schema.__export_data__;
+    }
+
+    set __export_data__(e) {
+        null;
     }
 
     /**
         Alias for destructor
     */
-
     destroy() {
         this.destructor();
     }
@@ -103,13 +119,34 @@ class Model extends ModelBase {
         this.data = null;
 
         super.destructor();
+        //debugger
     }
+
+    updateViews() {
+        var view = this.first_view;
+
+        let data = this.get();
+
+        while (view) {
+            view.update(data);
+            view = view.next;
+        }
+    }
+
+    /*
+    getDataStatus(key) {
+        debugger
+        let out_data = {
+            valid: true,
+            reason: ""
+        };
+    }
+    */
 
     /**
         Given a key, returns an object that represents the status of the value contained, if it is valid or not, according to the schema for that property. 
     */
-
-    getDataStatus(key) {
+    verify(key) {
 
         let out_data = {
             valid: true,
@@ -124,14 +161,18 @@ class Model extends ModelBase {
             } else if (scheme instanceof Model) {
 
             } else {
-                scheme(this.data[key], out_data);
+                scheme.verify(this.data[key], out_data);
             }
         }
 
         return out_data
     }
 
+    /**
+        @param data : An object containing key value pairs to insert into the model. 
+    */
     add(data) {
+
         var NEED_UPDATE = false;
 
         if (data instanceof Model) {
@@ -146,7 +187,7 @@ class Model extends ModelBase {
                     NEED_UPDATE = (this.____insertDataIntoContainer____(this.data[a], data[a])) ? true : NEED_UPDATE;
                 } else if (scheme instanceof Model) {
                     if (!this.data[a])
-                        this.data[a] = new scheme();
+                        this.data[a] = scheme.parse();
 
                     if (this.data[a].add(data[a])) {
                         NEED_UPDATE = true;
@@ -154,7 +195,7 @@ class Model extends ModelBase {
                 } else {
                     var prev = this.data[a];
 
-                    var next = scheme(data[a]);
+                    var next = scheme.parse(data[a]);
 
                     if (next !== null && next !== prev) {
                         this.data[a] = next;
@@ -180,14 +221,17 @@ class Model extends ModelBase {
                     addView: view => this.addView(view),
                     get: data => this.get(data),
                     getStatus: key => this.getDataStatus(key),
+                    verify: key => this.verify(key),
                     __________self: () => this,
                     get ____self____() {
                         return this.__________self();
                     }
                 };
 
-                for (var i = 0; i < this.export_data.length; i++) {
-                    var id = this.export_data[i];
+                let __export_data__ = this.__export_data__;
+
+                for (var i = 0, l = __export_data__.length; i < l; i++) {
+                    var id = __export_data__[i];
 
                     if (id.exportable)
                         this._temp_data_[id.name] = this.data[id.name];
@@ -224,10 +268,10 @@ class Model extends ModelBase {
         return out_data;
     }
 
+
     /**
         Removes items in containers based on matching index.
     */
-
     remove(data) {
         var out_data = {};
         for (var a in data) {
@@ -256,12 +300,16 @@ class Model extends ModelBase {
         return container.remove(item);
     }
 
+
     toJsonString() {
-        debugger;
+        debugger
+
+        let __export_data__ = this.__export_data__;
+
         let str = "{\n"
 
-        for (var i = 0; i < this.export_data.length; i++) {
-            var id = this.export_data[i];
+        for (var i = 0; i < __export_data__.length; i++) {
+            var id = __export_data__[i];
 
             if (id.exportable)
                 str += `"${id.name}":"${this.data[id.name].toString()}",\n`;
@@ -275,8 +323,9 @@ class Model extends ModelBase {
     }
 }
 
+
 class AnyModel extends ModelBase {
-     constructor(data) {
+    constructor(data) {
 
         super();
 
@@ -312,7 +361,7 @@ class AnyModel extends ModelBase {
         for (var a in data) {
             let original = this.data[a];
 
-            if(original != data[a]){
+            if (original != data[a]) {
                 this.data[a] = data[a];
                 NEED_UPDATE = true;
             }
@@ -341,7 +390,7 @@ class AnyModel extends ModelBase {
                     }
                 };
 
-                for(let a in this.data){
+                for (let a in this.data) {
                     this._temp_data_[a] = this.data[a];
                 }
             }

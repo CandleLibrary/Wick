@@ -40,5 +40,9 @@ Container Purging - Data in container can be set to be deleted.The purge start a
 |exists|any|If the property of the object does not have a value the element is removed from the document|
 |raw|||
 
+# Animation
+
+Use data-transform
+
 	
 	
