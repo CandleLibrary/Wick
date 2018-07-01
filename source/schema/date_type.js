@@ -9,6 +9,7 @@ scape_date.setTime(0);
 
 let DATE = new (class extends SchemaType {
     parse(value){
+        debugger
         if (!isNaN(value))
         return (new Date(parseInt(value))).valueOf();
         let lex = Lex(value);

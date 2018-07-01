@@ -6,7 +6,17 @@ class Input extends Cassette{
 		super(parent, element);
 
 		//Inputs in forms are automatically hidden.
-		this.element.display = "none";
+		if(this.prop.show != "true")
+			this.element.display = "none";  
+
+		this.parent_element = document.createElement("div");
+
+		this.error_element = document.createElement("div");
+
+		this.element.parentElement.replaceChild(this.parent_element, this.element );
+
+		this.parent_element.appendChild(this.element)
+		this.parent_element.appendChild(this.error_element)
 
 		this.element.addEventListener("input", ()=>{
 				var data = {}
@@ -26,6 +36,13 @@ class Input extends Cassette{
 			break;
 			case "text":
 				this.element.value = (data[this.prop] != undefined) ? data[this.prop] : "";
+				let v = data.verify(this.prop);
+				console.log(v)
+				if(!v.valid){
+					this.error_element.innerHTML = v.reason;
+				}else{
+					this.error_element.innerHTML = ""
+				}
 			break;
 			default:
 

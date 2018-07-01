@@ -90,8 +90,9 @@
 
     //Create a new schema for Users and User container
     class User extends wick.Model {};
+    
     User.schema = {
-      name:String,
+      name: wick.schema.STRING,
       identifier:"name"
     }
 

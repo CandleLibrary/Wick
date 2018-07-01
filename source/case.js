@@ -203,6 +203,9 @@ class Case extends View {
             this.components[i].destructor();
         }
 
+        if(this.model)
+            this.model.removeView(this)
+
         this.components = null;
 
         if (this.element.parentElement)

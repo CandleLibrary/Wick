@@ -40,6 +40,8 @@ class Model {
 
                 let scheme = this.schema[a];
 
+                if(scheme == __export_data__) continue;    
+
                 if (scheme instanceof Array) {
                     if (scheme[0] instanceof ModelContainer) {
                         this.data[a] = new scheme[0].constructor();
@@ -198,8 +200,11 @@ class Model {
 
         return out_data
     }
-
+    /**
+        @param data : An object containing key value pairs to insert into the model. 
+    */
     add(data) {
+
         var NEED_UPDATE = false;
 
         if (data instanceof Model) {
