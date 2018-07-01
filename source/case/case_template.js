@@ -7,6 +7,10 @@ import {
 } from "./cassette/filter"
 
 import {
+    Term
+} from "./cassette/term"
+
+import {
     ModelContainer
 } from "../model/model_container"
 
@@ -26,21 +30,28 @@ class CaseTemplate extends Case {
         this.case_constructors = [];
         this.filters = [];
         this.range = null;
+        this.terms = [];
+
+        this.prop_elements = []
 
 
         //need to find the cases in the skeleton, these will be used to create reoccurring objects from the model.
 
         if (skeleton) {
             for (var i = 0, l = skeleton.length; i < l; i++) {
-                let element = skeleton[i];
+                let ele = skeleton[i];
 
-                if (element.IS_CASE)
-                    this.case_constructors.push(element);
+                if (ele.IS_CASE)
+                    this.case_constructors.push(ele);
 
-                else
+                else {
 
-                if (element.constructor == Filter)
-                    this.filters.push(element.____copy____(element, this));
+                    if (ele.Constructor == Filter)
+                        this.filters.push(ele.____copy____(element, this));
+
+                    if (ele.Constructor == Term)
+                        this.terms.push(ele.____copy____(element, this));
+                }
             }
         }
 
@@ -51,7 +62,6 @@ class CaseTemplate extends Case {
         this.element = div;
 
         this.prop = this.data.prop;
-
     }
 
     filterUpdate() {
@@ -71,20 +81,20 @@ class CaseTemplate extends Case {
         setTimeout(() => {
 
 
-            for (var i = 0; i < output.length; i++) {
-                output[i].transitionIn(i);
-            }
+                for (var i = 0; i < output.length; i++) {
+                    output[i].transitionIn(i);
+                }
 
-        })
-        //Sort and filter the output to present the results on screen.
+            })
+            //Sort and filter the output to present the results on screen.
     }
 
     cull(new_items) {
         if (new_items.length == 0) {
-            
-            for (let i = 0, l = this.cases.length; i < l; i++) 
+
+            for (let i = 0, l = this.cases.length; i < l; i++)
                 this.cases[i].destructor();
-            
+
 
             this.cases.length = 0;
 
@@ -97,7 +107,7 @@ class CaseTemplate extends Case {
             for (let i = 0, l = this.cases.length; i < l; i++)
                 if (!exists.has(this.cases[i].model)) {
                     this.cases[i].destructor();
-                    this.cases.slice(i, 1);
+                    this.cases.splice(i, 1);
                     l--;
                     i--;
                 } else
@@ -145,29 +155,56 @@ class CaseTemplate extends Case {
         this.filterUpdate();
     }
 
-    update(data) {
+    revise() {
+        if (this.cache)
+            this.update(this.cache);
+    }
 
-        if (!data.____self____)
-            return;
 
-        let d = data[this.prop].get(this.range);
+    getTerms() {
 
-        let own_container = d.____self____;
+        let out_terms = [];
 
-        if (own_container instanceof ModelContainer) {
-            own_container.pin();
-            own_container.addView(this);
-            this.cull(this.model.get(null))
-        } else {
-            own_container = data.____self____.data[this.prop]
-            if (own_container instanceof ModelContainer) {
-                own_container.addView(this);
-                this.cull(this.model.get(null))
-            }
-
+        for (let i = 0, l = this.terms.length; i < l; i++) {
+            out_terms.push(this.terms[i].term);
         }
 
-        return;
+        if (out_terms.length == 0)
+            return null;
+
+        return out_terms;
+    }
+
+    update(data, IMPORT = false) {
+
+        if (IMPORT) {
+
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                this.terms[i].update(data);
+            }
+
+        } else {
+
+            if (!data.____self____)
+                return;
+
+            this.cache = data;
+
+            let own_container = data[this.prop].get(this.getTerms());
+
+            if (own_container instanceof ModelContainer) {
+                own_container.pin();
+                own_container.addView(this);
+                this.cull(this.model.get(this.getTerms(), true))
+            } else {
+                own_container = data.____self____.data[this.prop]
+                if (own_container instanceof ModelContainer) {
+                    own_container.addView(this);
+                    this.cull(this.model.get(this.getTerms(), true))
+                }
+
+            }
+        }
     }
 
     transitionIn(elements, wurl) {

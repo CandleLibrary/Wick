@@ -1,9 +1,11 @@
 import {
-    ModelContainer
+    ModelContainer,
+    MCArray
 } from "./model_container"
 
 
-
+/**
+*/
 class ArrayModelContainer extends ModelContainer {
 
     constructor(schema) {
@@ -23,6 +25,10 @@ class ArrayModelContainer extends ModelContainer {
 
     setBounds(item) {
 
+    }
+
+    get length(){
+        return this.data.length;
     }
 
     defaultReturn(params) {

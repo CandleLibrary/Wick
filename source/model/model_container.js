@@ -66,10 +66,10 @@ class ModelContainer extends ModelBase {
     }
 
     push(item) {
-        return this.insert(item);
+        return this.insert(item, true);
     }
 
-    get(item, return_data, UNWRAPPED = false){
+    get(item, UNWRAPPED = false, return_data){
         
         if(item === null)
             UNWRAPPED = true;
@@ -85,13 +85,13 @@ class ModelContainer extends ModelBase {
                 out.setBounds(item);
             }
         else
-            out = [];
+            out = this.defaultReturn(item);
 
         if (!item)
             this.__getAll__(out, UNWRAPPED);
         else if (item instanceof Array) {
             for (var i = 0; i < item.length; i++)
-                this.get(item[i], out, UNWRAPPED)
+                this.get(item[i], UNWRAPPED, out)
         } else
             this.__get__(item, out, UNWRAPPED);
 
@@ -141,8 +141,8 @@ class ModelContainer extends ModelBase {
             out = this.__insert__(item, add_list);
         }
 
-        if(add_list.length > 0)
-        this.updateViewsAdded(add_list);
+        if(add_list && add_list.length > 0)
+            this.updateViewsAdded(add_list);
 
         return out;
     }
@@ -402,6 +402,7 @@ class MultiIndexedContainer extends ModelContainer {
 
 
 export {
+    MCArray,
     ModelContainer,
     MultiIndexedContainer,
     array_container

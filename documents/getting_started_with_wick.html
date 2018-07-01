@@ -42,15 +42,27 @@
       </element>
     </app>
 
+  <textarea data-prop="raw" data-export="id"></textarea>
+
   <template id="user_lookup">
-    <case data-schema="users" data-prop="data" data-trs="base">
-      <template class="user_entry" data-prop="data">
-        <filter data-class ="limit" data-value="2" data-import="page" data-export="page"></filter>
-        <case model="user"  >
-          <div data-class="raw" data-prop="name" data-trs="base"></div>
-          <input type="text"  data-prop="name" name ="note">
-        </case>
-      </template>
+
+
+    <case data-schema="any">
+      
+
+      <case data-schema="users" data-prop="data" data-trs="base">
+        
+        <template class="user_entry" data-prop="data">
+          
+          <filter data-class="limit" data-value="2" data-import="page" data-export="page"></filter>
+          <filter data-class="term" data-prop="name">Tom Harrison</filter>
+          
+          <case model="user">
+            <div data-class="raw" data-prop="name" data-trs="base"></div>
+            <input type="text"  data-prop="name" name ="note">
+          </case>
+        </template>
+
       <textarea data-class="data_edit" data-model="true">
         {
           "data": [
@@ -72,7 +84,12 @@
           ]
         }
       </textarea>
-    </case>
+        </case>
+        
+        <input type="text"  data-prop="name" name ="note">
+        <input type="text"  data-prop="name" name ="note">
+      
+      </case>
   </template>
 
   <template id="user_entry">

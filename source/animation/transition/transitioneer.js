@@ -19,7 +19,7 @@ class Transitioneer {
         return 0.8;
     }
 
-    finalize_out() {
+    finalize_out(element) {
     	element.style.opacity = 0;
     }
 }

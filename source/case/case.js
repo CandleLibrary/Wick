@@ -193,7 +193,7 @@ class Case extends Rivet {
 
         if (this.templates.length > 0) {
             for (var i = 0, l = this.templates.length; i < l; i++) {
-                this.templates[i].update(data);
+                this.templates[i].update(data, IMPORT);
             }
         }
 
@@ -315,13 +315,12 @@ class Case extends Rivet {
 
 class CustomCase extends Case {
     constructor(element, presets, templates) {
+        super(parent, element, data, presets)
         super(null, element)
     }
 }
 
 export {
     Case,
-    CustomCase,
-    Filter,
-    Form
+    CustomCase
 }

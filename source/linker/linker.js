@@ -5,7 +5,9 @@ import {
     Component,
     CaseComponent
 } from "./component"
-
+import {
+    AnyModel
+}from "../model/model"
 import {
     PageView
 } from "./page"
@@ -143,8 +145,12 @@ class Linker {
         */
         if (presets.schemas) {
 
+            presets.schemas.any = AnyModel;
+
         } else {
-            presets.schemas = {};
+            presets.schemas = {
+                any : AnyModel
+            };
         }
 
         /**

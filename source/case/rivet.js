@@ -38,6 +38,7 @@ class Rivet extends View {
         this.children = [];
         this.data = data;
         this.named_elements = null;
+        this.active = false;
 
         //Setting the transitioneer
         this.transitioneer = null;
@@ -57,16 +58,34 @@ class Rivet extends View {
 
     destructor() {
 
-        this.children.forEach((c) => c.destructor());
-        this.children.length = 0;
-        this.data = null;
+        if (this.LOADED) {
 
-        if (this.element.parentElement)
-            this.element.parentElement.removeChild(this.element);
 
-        this.element = null;
+            let t = this.transitionOut();
 
-        super.destructor()
+            for (let i = 0, l = this.children.length; i < l; i++) {
+                let child = this.children[i];
+
+                t = Math.max(t, child.transitionOut());
+            }
+            if (t > 0) {
+                setTimeout(() => {
+                    this.destructor();
+                }, t*1000 + 5)
+            }
+        } else {
+            this.finalizeTransitionOut();
+            this.children.forEach((c) => c.destructor());
+            this.children.length = 0;
+            this.data = null;
+
+            if (this.element.parentElement)
+                this.element.parentElement.removeChild(this.element);
+
+            this.element = null;
+
+            super.destructor()
+        }
     }
 
     bubbleLink(link_url, child, trs_ele = {}) {
@@ -125,12 +144,12 @@ class Rivet extends View {
 
     handleUrlUpdate(wurl) {}
 
-    finalizeTransitionOut(){
+    finalizeTransitionOut() {
         for (let i = 0, l = this.children.length; i < l; i++)
             this.children[i].finalizeTransitionOut();
 
-        if(this.transitioneer){
-            this.transitioneer.finalize_out();
+        if (this.transitioneer) {
+            this.transitioneer.finalize_out(this.element);
         }
 
         this.hide();
@@ -176,7 +195,7 @@ class Rivet extends View {
         }
 
         for (let i = 0, l = this.children.length; i < l; i++)
-            transition_time = Math.max(transition_time, this.children[i].transitionOut(index)); 
+            transition_time = Math.max(transition_time, this.children[i].transitionOut(index));
 
 
 

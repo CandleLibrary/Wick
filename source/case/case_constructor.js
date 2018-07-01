@@ -32,6 +32,9 @@ import {
     Filter
 } from "./cassette/filter"
 import {
+    Term
+} from "./cassette/term"
+import {
     Exporter
 } from "./cassette/exporter"
 import {
@@ -66,7 +69,8 @@ let PresetCassettes = {
     emonth: EpochMonth,
     exists: Exists,
     not_exists: NotExists,
-    data_edit: DataEdit
+    data_edit: DataEdit,
+    term: Term
 }
 
 /*
@@ -128,9 +132,9 @@ function ComponentConstructor(parent, element, presets, WORKING_DOM) {
 
         children = element.content.children;
 
-        if (children.length < 1) {
+        let ele;
 
-            let ele;
+        if (children.length < 1) {
 
             if (
                 ele = WORKING_DOM.getElementById(element.classList[0]) &&
@@ -146,8 +150,26 @@ function ComponentConstructor(parent, element, presets, WORKING_DOM) {
                 return ComponentConstructor(parent, ele, presets, WORKING_DOM);
 
             } else
+
                 return [];
 
+
+        } else {
+
+            ele = document.importNode(element.content, true);
+
+            ele.attributes = element.attributes
+
+            let p = element.parentElement;
+
+            if (p) {
+
+                p.replaceChild(ele, element);
+
+                return ComponentConstructor(parent, ele, presets, WORKING_DOM);
+            } else
+
+                element = ele;
         }
     }
 
@@ -176,16 +198,25 @@ function ComponentConstructor(parent, element, presets, WORKING_DOM) {
 
             case "TEMPLATE":
 
+                let div = document.createElement("div");
+
+                let ele = document.importNode(child_element.content, true);
+
+                div.appendChild(ele);
+
+                element.replaceChild(div, child_element);
+
                 let bone = new CaseSkeleton(null, null, i, NAMED, presets);
 
-                let skeleton = ComponentConstructor(parent, child_element, presets, WORKING_DOM);
+                bone.data = data;
+
+                let skeleton = ComponentConstructor(parent, div, presets, WORKING_DOM);
 
                 bone.Constructor = ((s) => class extends CaseTemplate {
                     constructor(p, e, pr, d) {
                         super(p, e, pr, d, s);
                     }
                 })(skeleton);
-
 
                 parent.templates.push(bone);
 

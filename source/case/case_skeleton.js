@@ -25,7 +25,7 @@ class CaseSkeleton {
         let named_elements = {};
 
         let Case = this.____copy____(null, null, named_elements);
-
+        
         Case.load(Model);
 
         Case.named_elements = named_elements;
@@ -35,8 +35,14 @@ class CaseSkeleton {
 
     ____copy____(element, parent, named_elements){
 
-        if(this.element)
-            element = this.element.cloneNode(true);
+        if(this.element){
+            let ele = this.element.cloneNode(true);
+            if(element){
+                element = element.children[this.DOM_index];
+                element.parentElement.replaceChild(ele, element);
+            }
+            element = ele;
+        }
         else
             element = element.children[this.DOM_index];
         

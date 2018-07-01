@@ -5,6 +5,7 @@ import {
 class Filter extends Cassette {
 	
     constructor(parent, element, d, p) {
+        debugger
         super(parent, element, d, p);
 
         parent.filter_list.push((data) => this.filter(data));
