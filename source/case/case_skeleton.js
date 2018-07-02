@@ -20,7 +20,9 @@ class CaseSkeleton {
         this.presets = presets;
     }
 
-
+    /**
+    
+    */
     flesh(Model){
         let named_elements = {};
 
@@ -33,6 +35,9 @@ class CaseSkeleton {
         return Case;
     }
 
+    /**
+        Constructs a new object.
+    */
     ____copy____(element, parent, named_elements){
 
         if(this.element){

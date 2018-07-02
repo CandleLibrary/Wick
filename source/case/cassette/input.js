@@ -13,7 +13,7 @@ class Input extends Cassette {
         this.element.addEventListener("input", () => {
             var data = {}
             data[this.prop] = this.element.value;
-            this.parent.model.add(data);
+            this.add(data);
         })
     }
 

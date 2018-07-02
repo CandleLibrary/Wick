@@ -18,7 +18,7 @@ class CaseTemplate extends Case {
 
     /**
         CaseTemplate constructor. Builds a CaseTemplate object.
-      */
+    */
 
     constructor(parent = null, element, presets, data, skeleton) {
         //replace element with a template area
@@ -27,6 +27,7 @@ class CaseTemplate extends Case {
 
 
         this.cases = [];
+        this.activeCases = [];
         this.case_constructors = [];
         this.filters = [];
         this.range = null;
@@ -46,11 +47,10 @@ class CaseTemplate extends Case {
 
                 else {
 
-                    if (ele.Constructor == Filter)
-                        this.filters.push(ele.____copy____(element, this));
-
                     if (ele.Constructor == Term)
                         this.terms.push(ele.____copy____(element, this));
+                    else
+                        this.filters.push(ele.____copy____(element, this));
                 }
             }
         }
@@ -72,21 +72,21 @@ class CaseTemplate extends Case {
             output = this.filters[i].filter(output);
         }
 
+        for (var i = 0; i < this.activeCases.length; i++){
+            this.element.removeChild(this.activeCases[i].element);
+        } 
+
         for (var i = 0; i < output.length; i++) {
             this.element.appendChild(output[i].element);
         }
 
         this.element.style.position = this.element.style.position;
 
-        setTimeout(() => {
+        for (var i = 0; i < output.length; i++)
+            output[i].transitionIn(i);
 
-
-                for (var i = 0; i < output.length; i++) {
-                    output[i].transitionIn(i);
-                }
-
-            })
-            //Sort and filter the output to present the results on screen.
+        this.activeCases = output;
+        //Sort and filter the output to present the results on screen.
     }
 
     cull(new_items) {
@@ -94,7 +94,6 @@ class CaseTemplate extends Case {
 
             for (let i = 0, l = this.cases.length; i < l; i++)
                 this.cases[i].destructor();
-
 
             this.cases.length = 0;
 
@@ -123,9 +122,7 @@ class CaseTemplate extends Case {
         }
     }
 
-    load(model) {
-
-    }
+    load(model) {}
 
     removed(items) {
         for (let i = 0; i < items.length; i++) {
@@ -149,6 +146,7 @@ class CaseTemplate extends Case {
 
         for (let i = 0; i < items.length; i++) {
             let Case = this.case_constructors[0].flesh(items[i]);
+            Case.parent = this;
             this.cases.push(Case);
         }
 
@@ -165,9 +163,9 @@ class CaseTemplate extends Case {
 
         let out_terms = [];
 
-        for (let i = 0, l = this.terms.length; i < l; i++) {
+        for (let i = 0, l = this.terms.length; i < l; i++)
             out_terms.push(this.terms[i].term);
-        }
+
 
         if (out_terms.length == 0)
             return null;
@@ -178,10 +176,19 @@ class CaseTemplate extends Case {
     update(data, IMPORT = false) {
 
         if (IMPORT) {
+            let UPDATE = 0;
 
-            for (let i = 0, l = this.terms.length; i < l; i++) {
-                this.terms[i].update(data);
-            }
+            for (let i = 0, l = this.terms.length; i < l; i++)
+                if (this.terms[i].update(data))
+                    UPDATE = true;
+
+            for (let i = 0, l = this.filters.length; i < l; i++)
+                if (this.filters[i].update(data))
+                    UPDATE = true;
+
+
+            if (UPDATE)
+                this.filterUpdate();
 
         } else {
 

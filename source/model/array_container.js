@@ -5,7 +5,7 @@ import {
 
 
 /**
-*/
+ */
 class ArrayModelContainer extends ModelContainer {
 
     constructor(schema) {
@@ -23,105 +23,66 @@ class ArrayModelContainer extends ModelContainer {
         super.destructor();
     }
 
-    setBounds(item) {
-
-    }
-
-    get length(){
+    get length() {
         return this.data.length;
     }
 
-    defaultReturn(params) {
+    __defaultReturn__() {
         if (this.source) return new MCArray;
-        
+
         let n = new ArrayModelContainer(this.schema);
 
-        this.__link__(n); 
+        this.__link__(n);
 
         return n;
     }
 
-    __insert__(item, add_list) {
-        if (this.checkIdentifier(item)) {
+    __insert__(model, add_list, identifier) {
 
-            for (var i = 0, l = this.data.length; i < l; i++) {
+        for (var i = 0, l = this.data.length; i < l; i++) {
 
-                var obj = this.data[i];
+            var obj = this.data[i];
 
-                if (this.getIdentifier(obj) == this.getIdentifier(item)) {
+            if (this.__getIdentifier__(obj) == identifier) {
 
-                    obj.add(item);
-
-                    return true;
-                }
-            }
-
-            if (item instanceof this.schema.model) {
-                this.data.push(item);
-
-                if (add_list) add_list.push(item)
+                obj.add(model);
 
                 return true;
-            } else if (this.schema.model) {
-                var temp = new this.schema.model();
-
-                temp.add(item);
-
-                this.data.push(temp);
-
-                if (add_list) add_list.push(temp)
-
-                return true;
-            } else {
-                console.error(`Model has not been created yet for dataset ${this.getIdentifier(item)}`, item);
             }
         }
 
-        if (this.checkRawID(item)) {
-            //Item is not a model yet
-            for (var i = 0, l = this.data.length; i < l; i++) {
-                var obj = this.data[i];
+        this.data.push(model);
 
-                if (this.getIdentifier(obj) == item[this.schema.identifier]) {
-                    obj.add(item);
-                    return true;
-                }
-            }
+        if (add_list) add_list.push(model);
 
-            //create a new model and push into array. 
-
-            var model = new this.schema.model();
-
-            model.add(item);
-
-            this.__insert__(model);
-
-            if (add_list) add_list.push(model)
-
-            return true;
-        }
-        return false;
+        return true;
     }
 
-    __get__(item, return_data, UNWRAPPED = false) {
-        if (this.checkIdentifier(item)) {
-            if (UNWRAPPED)
-                for (let i = 0, l = this.data.length; i < l; i++) {
-                    let obj = this.data[i];
-                    if (this.getIdentifier(obj) == this.getIdentifier(item)) {
-                        return_data.push(obj);
-                    }
-                }
-            else
-                for (let i = 0, l = this.data.length; i < l; i++) {
-                    let obj = this.data[i];
-                    if (this.getIdentifier(obj) == this.getIdentifier(item)) {
-                        return_data.push(obj.get());
-                    }
-                }
-        }
+    __get__(term, return_data, UNWRAPPED = false) {
 
-        return [];
+        let terms = null;
+
+        if (term instanceof Array)
+            terms = term;
+        else
+            terms = [term];
+
+        if (UNWRAPPED)
+            for (let i = 0, l = this.data.length; i < l; i++) {
+                let obj = this.data[i];
+                if (this.__getIdentifier__(obj, terms)) {
+                    return_data.push(obj);
+                }
+            }
+        else
+            for (let i = 0, l = this.data.length; i < l; i++) {
+                let obj = this.data[i];
+                if (this.__getIdentifier__(obj, terms)) {
+                    return_data.push(obj.get());
+                }
+            }
+
+        return return_data;
     }
 
     __getAll__(return_data, UNWRAPPED = false) {
@@ -146,12 +107,12 @@ class ArrayModelContainer extends ModelContainer {
         return items;
     }
 
-    __remove__(item) {
-        if (this.checkIdentifier(item)) {
+    __remove__(term) {
+        if (this.__getIdentifier__(term)) {
             for (var i = 0, l = this.data.length; i < l; i++) {
                 var obj = this.data[i];
 
-                if (this.getIdentifier(obj) == this.getIdentifier(item)) {
+                if (this.__getIdentifier__(obj) == this.__getIdentifier__(term)) {
 
                     this.data.splice(i, 1);
 

@@ -8,13 +8,17 @@ import {
     Rivet
 } from "../rivet"
 
+/**
+    Deals with specific properties on a model. 
+*/
+
 class Cassette extends Rivet {
     constructor(parent, element, presets, data) {
 
         super(parent, element, presets, data);
 
         this.prop = this.data.prop;
-        this.import_prop = this.data.iprop;
+
         this.width = 0;
         this.height = 0;
         this.top = 0;
@@ -49,9 +53,11 @@ class Cassette extends Rivet {
             e.preventDefault();
             if (__function__(href, a)) e.preventDefault();
         })(element.href, element, (href, a) => {
-            
+
+            let hashtag = href.includes("#");
+
             let real_href = "";
-            
+
             let lex = Lex(href);
 
             while (lex.token) {
@@ -71,7 +77,10 @@ class Cassette extends Rivet {
                 lex.next();
             }
 
+            if (hashtag)
+                this.export();
             this.bubbleLink(real_href);
+
             return true;
         });
 
@@ -108,9 +117,13 @@ class Cassette extends Rivet {
         element.onmouseover = null;
     }
 
+
     update(data) {
 
+        super.__updateExports__(data);
+
         if (data) {
+
             if (this.prop) {
                 this.element.innerHTML = data[this.prop];
                 this[this.prop] = data[this.prop];
@@ -118,6 +131,10 @@ class Cassette extends Rivet {
                 this.data_cache = data;
             }
         }
+    }
+
+    import (data) {
+
     }
 
     load(model) {
@@ -144,8 +161,8 @@ class Cassette extends Rivet {
 }
 
 class CloseCassette extends Cassette {
-    constructor(parent, element,d,p) {
-        super(parent, element,d,p);
+    constructor(parent, element, d, p) {
+        super(parent, element, d, p);
 
         this.element.addEventListener("click", () => {
             parent.hide(); //Or URL back;

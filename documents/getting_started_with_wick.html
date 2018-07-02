@@ -46,20 +46,30 @@
 
   <template id="user_lookup">
 
-
     <case data-schema="any">
-      
 
+      <span data-class="raw" data-import="page_count" data-prop="page_count"></span>
+
+      <input type="text" data-prop="page_number" name="note">
+
+      <span data-class="raw" data-import="name" data-prop="name"></span>
+      
       <case data-schema="users" data-prop="data" data-trs="base">
         
         <template class="user_entry" data-prop="data">
           
-          <filter data-class="limit" data-value="2" data-import="page" data-export="page"></filter>
-          <filter data-class="term" data-prop="name">Tom Harrison</filter>
+          <filter data-class="limit" data-value="2" data-import="page_number" data-export="page_count"></filter>
+
+          <filter data-class="term" data-import="start" data-prop="start">1481785200000</filter>
+          <filter data-class="term" data-import="end" data-prop="end">1525154400000</filter>
           
-          <case model="user">
-            <div data-class="raw" data-prop="name" data-trs="base"></div>
-            <input type="text"  data-prop="name" name ="note">
+          <case model="user" data-trs="base">
+            <a data-class="raw"  href="#" >
+              <div data-class="raw" data-export="name" data-prop="name"></div>
+              <input type="text"  data-prop="name" name ="note">
+              birthday
+              <input type="text"  data-prop="birthday" name ="note">
+            </a>
           </case>
         </template>
 
@@ -67,27 +77,31 @@
         {
           "data": [
             {
-              "name" : "Tom Harrison"
+              "name" : "Tom Harrison",
+              "birthday": "Jul 01 2018"
             },
 
             {
-              "name" : "Deb McCacie"
+              "name" : "Deb McCacie",
+              "birthday": "May 01 2018"
             },
 
             {
-              "name" : "Tonada Yonoki"
+              "name" : "Tonada Yonoki",
+              "birthday": "Sep 15 2017"
             },
 
             {
-              "name" : "Umbadi Tinak"
+              "name" : "Umbadi Tinak",
+              "birthday": "Dec 15 2016"
             }
           ]
         }
       </textarea>
         </case>
         
-        <input type="text"  data-prop="name" name ="note">
-        <input type="text"  data-prop="name" name ="note">
+        <input type="text" data-prop="start" name="note">
+        <input type="text"  data-prop="end" name ="note">
       
       </case>
   </template>
@@ -101,31 +115,38 @@
 
   <script type="text/javascript">
     //Here we will load the Wick engine when the page completes its loading. Wick will automatically start when the page complets its loading.
-    let presets = {schemas:{}, cassettes:{}};
+    let presets = {
+        schemas: {},
+        cassettes: {}
+    };
 
     //Create a new schema for Users and User container
     class User extends wick.Model {};
-    
+
     User.schema = {
-      name: wick.schema.STRING,
-      identifier:"name"
+        name: wick.schema.STRING,
+        birthday: wick.schema.DATE
     }
 
     class Users extends wick.Model {};
 
     Users.schema = {
-      data: [{container: wick.ArrayModelContainer, schema: {
-        identifier: "name",
-        model: User,
-      }}],
-      identifier:"name"
+        data: [{
+            container: wick.BTreeModelContainer,
+            schema: {
+                identifier: "birthday",
+                parser: wick.schema.STRING,
+                model: User,
+            }
+        }],
     }
+
+    //
 
     presets.schemas.users = Users;
 
     wick.light(presets);
 
     new wick.Common.TouchScroller(document.body);
-
   </script>
 </html>

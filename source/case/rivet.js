@@ -39,6 +39,9 @@ class Rivet extends View {
         this.data = data;
         this.named_elements = null;
         this.active = false;
+        this.export_val = null;
+
+        this.DESTROYED = false;
 
         //Setting the transitioneer
         this.transitioneer = null;
@@ -58,6 +61,8 @@ class Rivet extends View {
 
     destructor() {
 
+        this.DESTROYED = true;
+
         if (this.LOADED) {
 
 
@@ -71,7 +76,7 @@ class Rivet extends View {
             if (t > 0) {
                 setTimeout(() => {
                     this.destructor();
-                }, t*1000 + 5)
+                }, t * 1000 + 5)
             }
         } else {
             this.finalizeTransitionOut();
@@ -176,7 +181,6 @@ class Rivet extends View {
         }
 
 
-
         return transition_time;
     }
 
@@ -212,7 +216,6 @@ class Rivet extends View {
     }
 
     hide() {
-        //this.close(this.named_cassettes);
         this.display = this.element.style.display;
         this.element.style.display = "none";
     }
@@ -222,14 +225,31 @@ class Rivet extends View {
             this.element.style.display = this.display;
     }
 
-    export (t = {}) {
+    __updateExports__(data) {
+        if (this.data.export && data[this.data.export])
+            this.export_val = data[this.data.export];
+    }
 
-        if (this.exports && this.model)
-            t[this.exports] = this.model.get()[this.exports];
+    __getExports__(exports) {
+        if (this.export_val)
+            exports[this.data.export] = this.export_val;
+    }
+
+    /**
+        Exports data stored from updateExports() into a an Object exports and calls it's parent's export function, passing exports
+    */
+    export (exports = {}) {
+
+        if (this.parent && this.parent.export) {
 
 
-        if (this.parent)
-            this.parent.import(t);
+            this.__getExports__(exports)
+
+            for (let i = 0, l = this.children.length; i < l; i++)
+                this.children[i].__getExports__(exports);
+
+            this.parent.export(exports);
+        }
     }
 
     import (data) {
@@ -238,6 +258,20 @@ class Rivet extends View {
             this.model.add(data);
 
         this.export(data);
+    }
+
+    updateExports(data) {
+        if (this.data.export && data[this.data.export])
+            this.export = data[this.data.export];
+    }
+
+    add(value){
+        if(this.model){
+            this.model.add(value);
+            this.export(value);
+        }
+        else if(this.parent && this.parent.add)
+            this.parent.add(value)
     }
 }
 

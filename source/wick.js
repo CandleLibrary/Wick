@@ -10,9 +10,8 @@ import {
 
 import {
     ArrayModelContainer,
-    BinaryTreeModelContainer,
+    BTreeModelContainer,
     MultiIndexedContainer,
-    DateModelContainer,
     Model,
     ModelContainer
 } from "./model/model"
@@ -96,7 +95,7 @@ export {
     URL,
     Animation,
     ArrayModelContainer,
-    BinaryTreeModelContainer,
+    BTreeModelContainer,
     MultiIndexedContainer,
     Controller,
     CustomCase,
@@ -105,7 +104,6 @@ export {
     Filter,
     Common,
     Component,
-    DateModelContainer,
     Getter,
     Linker,
     Model,

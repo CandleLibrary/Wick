@@ -42,7 +42,16 @@ Container Purging - Data in container can be set to be deleted.The purge start a
 
 # Animation
 
-Use data-transform
+Use data-transform to cause one element to morph into another
+
+
+# Best Practice
+
+__propertyName__ - Private property style
+____propertyName____ - Wick internal property style. To be accessed by wick library objects only
+camelCase for functions
+lowercase_underscore for properties
+UPPERCASE_UNDERSCORE for boolean values
 
 	
 	

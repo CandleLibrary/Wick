@@ -10,8 +10,12 @@ import {
 import {
     Getter
 } from "../getter"
+import {
+    Cassette
+} from "./cassette/cassette"
 
 class Case extends Rivet {
+
     /**
         Case constructor. Builds a Case object.
         @params [DOMElement] element - A DOM <template> element that contains a <case> element.
@@ -139,18 +143,46 @@ class Case extends Rivet {
         this.REQUESTING = true;
     }
 
+    export (exports) {
+
+        let children = this.children;
+
+        for (var i = 0, l = children.length; i < l; i++) {
+
+            let child = children[i];
+
+            if (child instanceof Cassette) {
+
+                let r_val;
+
+                if (child.data.import && exports[child.data.import]) {
+                    r_val = child.update(exports);
+
+                    if (r_val) {
+                        this.updateSubs(child.children, r_val);
+                        continue;
+                    }
+                }
+
+                //this.updateSubs(child.children, r_val || exports, IMPORT);
+            }
+        }
+
+        super.export(exports);
+    }
+
     updateSubs(cassettes, data, IMPORT = false) {
 
         for (var i = 0, l = cassettes.length; i < l; i++) {
             let cassette = cassettes[i];
-            if (cassette.is == 0)
+            if (cassette instanceof Case)
                 cassette.update(data, true);
             else {
                 let r_val;
 
                 if (IMPORT) {
 
-                    if (cassette.import_prop && data[cassette.import_prop]) {
+                    if (cassette.data.import && data[cassette.data.import]) {
                         r_val = cassette.update(data);
 
                         if (r_val) {
@@ -174,6 +206,8 @@ class Case extends Rivet {
             }
         }
     }
+
+
 
     update(data, IMPORT = false) {
 
@@ -295,7 +329,7 @@ class Case extends Rivet {
 
         return transition_time;
     }
-    
+
     finalizeTransitionOut() {
 
         for (let i = 0, l = this.templates.length; i < l; i++)
@@ -318,7 +352,7 @@ class Case extends Rivet {
 
 class CustomCase extends Case {
     constructor(element, presets, templates) {
-        
+
         super(null, element)
     }
 }

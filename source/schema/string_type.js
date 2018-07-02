@@ -1,22 +1,32 @@
 import {
-	SchemaType
+    SchemaType
 } from "./schemas.js"
 
 let STRING = new(class extends SchemaType {
-	parse(value) {
-		return value + "";
-	}
+    
+    parse(value) {
+        return value + "";
+    }
 
-	verify(value, out_data) {
-		out_data.valid = true;
-		
-		if (value.length > 20) {
-			out_data.valid = false;
-			out_data.reason = "Too Many Characters";
-		}
-	}
+    verify(value, result) {
+        result.valid = true;
+
+        if (value.length > 20) {
+            result.valid = false;
+            result.reason = "Too Many Characters";
+        }
+    }
+
+    filter(identifier, filters) {
+        for (let i = 0, l = filters.length; i < l; i++) {
+            if (identifier.match(filters[i]+""))
+                return true;
+        }
+        return false;
+    }
+
 })()
 
 export {
-	STRING
+    STRING
 };

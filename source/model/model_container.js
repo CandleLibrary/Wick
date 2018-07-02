@@ -2,6 +2,10 @@ import {
     ModelBase,
 } from "./model_base.js"
 
+import {
+    SchemaType
+} from "../schema/schema_type"
+
 class MCArray extends Array {
     constructor() {
         super();
@@ -16,17 +20,17 @@ class MCArray extends Array {
             super.push(item);
     }
 
-    setBounds() {
+    //For compatibility
+    __setFilters__() {
 
     }
 }
 
-let EmptyFunction = ()=>{};
+// A "null" function
+let EmptyFunction = () => {};
 
 class ModelContainer extends ModelBase {
-    /**
-    	The type of object this container holds.
-    */
+
     constructor(schema) {
 
         super();
@@ -37,10 +41,25 @@ class ModelContainer extends ModelBase {
         this.next = null;
         this.prev = null;
 
+        //For keeping the container from automatic deletion.
         this.pin = EmptyFunction;
 
+        //Filters are a series of strings or number selectors used to determine if a model should be inserted into or retrieved from the container.
+        this.__filters__ = [];
+
+
         this.schema = schema || this.constructor.schema || {};
+
+        //The parser will handle the evaluation of identifiers according to the criteria set by the __filters__ list. 
+
+        if (this.schema.parser && this.schema.parser instanceof SchemaType) {
+            this.parser = this.schema.parser
+        } else {
+            this.parser = new SchemaType();
+        }
+
         this.id = "";
+
         if (this.schema.identifier && typeof(this.schema.identifier) == "string") {
             this.id = this.schema.identifier;
         } else {
@@ -50,130 +69,167 @@ class ModelContainer extends ModelBase {
 
     destructor() {
         this.schema = null;
-        this.identifier = null;
+
+        this.__filters__ = null;
     }
 
-    get identifier() {
-        return this.id;
+    /**
+        Get the number of Models held in this ModelContainer
+
+        @returns {Number}
+    */
+    length() {
+        return 0;
     }
 
-    set identifier(a) {
+    /**
+        Array emulating kludge
 
-    }
-
-    defaultReturn(params) {
-        return new MCArray;
-    }
-
+        @returns The result of calling this.insert
+    */
     push(item) {
         return this.insert(item, true);
     }
 
-    get(item, UNWRAPPED = false, return_data){
-        
-        if(item === null)
+    /**
+        Retrieves a list of items that match the term/terms. 
+
+        @param {(Array|SearchTerm)} term - A single term or a set of terms to look for in the ModelContainer. 
+        @param {Boolean} UNWRAPPED - If set to true, this will result in actual Models being returned, and not just the wrapped data. 
+        @param {Array} __return_data__ - Set to true by a source Container if it is calling a SubContainer insert function. 
+
+        @returns {(ModelContainer|Array)} Returns a Model container or an Array of Models matching the search terms. 
+    */
+    get(term, UNWRAPPED = false, __return_data__) {
+
+        if (term === null)
             UNWRAPPED = true;
 
         let out = null;
 
-        if (item)
-
-            if (return_data) {
-                out = return_data;
+        if (term)
+            if (__return_data__) {
+                out = __return_data__;
             } else {
-                out = this.defaultReturn(item);
-                out.setBounds(item);
+                out = this.__defaultReturn__();
+                out.__setFilters__(term);
             }
         else
-            out = this.defaultReturn(item);
+            out = this.__defaultReturn__(term);
 
-        if (!item)
+        if (!term)
             this.__getAll__(out, UNWRAPPED);
-        else if (item instanceof Array) {
-            for (var i = 0; i < item.length; i++)
-                this.get(item[i], UNWRAPPED, out)
-        } else
-            this.__get__(item, out, UNWRAPPED);
+        else {
 
+            let terms = term;
+
+            if (!term instanceof Array) {
+                terms = [term];
+            }
+
+            this.__get__(terms, out, UNWRAPPED);
+        }
 
         return out
     }
 
     /**
-        Inserts an item into the container. 
+        Inserts an item into the container. If the item is not a {Model}, an attempt will be made to convert the data in the Object into a Model.
+        If the item is an array of objects, each object in the array will be considered separately. 
+
+        @param {Object} item - An Object to insert into the container. On of the properties of the object MUST have the same name as the ModelContainer's 
+        @param {Array} item - An array of Objects to insert into the container.
+        @param {Boolean} __FROM_SOURCE__ - Set to true by a source Container if it is calling a SubContainer insert function. 
+
+        @returns {Boolean} Returns true if an insertion into the ModelContainer occurred, false otherwise.
     */
-    insert(item, FROM_SOURCE = false) {
+    insert(item, __FROM_SOURCE__ = false) {
 
         let add_list = (this.first_view) ? [] : null;
 
         let out = false;
 
-        if (!FROM_SOURCE && this.source)
+        if (!__FROM_SOURCE__ && this.source)
             return this.source.insert(item);
 
-        this.__links__insert__(item);
-
         if (item instanceof Array) {
-
-
-            for (var i = 0; i < item.length; i++) {
-
-                var model = item[i];
-
-                if (!(model instanceof this.schema.model) && !(model = model.____self____)) {
-                    model = new this.schema.model();
-                    model.add(item[i]);
-                }
-
-                if (this.__insert__(model, add_list)) {
+            for (var i = 0; i < item.length; i++)
+                if (this.__insertSub__(item[i], out, add_list))
                     out = true;
-                }
-            }
-            return out;
-        } else {
-            var model = item;
+        } else
+            out = this.__insertSub__(item, out, add_list);
 
-            if (!(model instanceof this.schema.model) && !(item = model.____self____)) {
-                model = new this.schema.model();
-                model.add(item);
-            }
-
-            out = this.__insert__(item, add_list);
-        }
-
-        if(add_list && add_list.length > 0)
+        if (add_list && add_list.length > 0)
             this.updateViewsAdded(add_list);
 
         return out;
     }
+
+    /**
+        A subset of the insert function. Handles the test of identifier, the conversion of an Object into a Model, and the calling of the internal __insert__ function.
+    */
+
+    __insertSub__(item, out, add_list) {
+
+        let model = item;
+
+        var identifier = this.__getIdentifier__(item);
+
+        if (identifier != undefined) {
+
+            if (!(model instanceof this.schema.model) && !(model = model.____self____)) {
+                model = new this.schema.model();
+                model.add(item);
+            }
+
+            identifier = this.__getIdentifier__(model, this.filters);
+
+            if(identifier){
+                out = this.__insert__(model, add_list, identifier)
+            }
+
+            this.__linksInsert__(model);
+        }
+
+        return out;
+    }
+
+
     /**
         Removes an item from the container. 
     */
-    remove(item, FROM_SOURCE = false) {
+    remove(term, __FROM_SOURCE__ = false) {
 
-        if (!FROM_SOURCE && this.source)
-            return this.source.remove(item);
+        if (!__FROM_SOURCE__ && this.source)
+            return this.source.remove(term);
 
         let out = [];
 
-        if (!item)
-            out = this.__removeAll__();
-        else if (item instanceof Array) {
-            let temp = null;
-            for (let i = 0; i < item.length; i++)
-                if ((temp = this.removeAll(item[i])))
-                    out.push(temp);
-        } else {
-            let out = this.__remove__(item);
+        if (!term)
+            this.__removeAll__();
+        else {
+
+            let terms = term;
+
+            if (!term instanceof Array) {
+                terms = [term];
+            }
+
+            this.__remove__(terms, out, UNWRAPPED);
         }
 
-        this.__links__remove__(item);
-
+        this.__linksRemove__(terms);
 
         return out;
-
     }
+
+    /**
+        Removes a ModelContainer from list of linked containers. 
+
+        @param {ModelContainer} container - The ModelContainer instance to remove from the set of linked containers. Must be a member of the linked containers. 
+    */
     __unlink__(container) {
+
         if (container instanceof ModelContainer && container.source == this) {
 
             if (container == this.first_link)
@@ -189,6 +245,11 @@ class ModelContainer extends ModelBase {
         }
     }
 
+    /**
+        Adds a container to the list of tracked containers. 
+
+        @param {ModelContainer} container - The ModelContainer instance to add the set of linked containers.
+    */
     __link__(container) {
         if (container instanceof ModelContainer && !container.source) {
 
@@ -214,14 +275,16 @@ class ModelContainer extends ModelBase {
             })(container)
         }
     }
-    __links__remove__(item) {
+
+    __linksRemove__(terms) {
         let a = this.first_link;
         while (a) {
-            a.remove(item, true);
+            a.remove(terms, true);
             a = a.next;
         }
     }
-    __links__insert__(item) {
+
+    __linksInsert__(item) {
         let a = this.first_link;
         while (a) {
             a.insert(item, true);
@@ -229,19 +292,13 @@ class ModelContainer extends ModelBase {
         }
     }
 
-    __insert__(item, add_list) {
-        return false;
-    }
+    /**
+        Removes any items in the model not included in the array "items", and adds any items in items not already in the ModelContainer.
 
-    __get__(item, return_data, UNWRAPPED = false) {
-        return return_data;
-    }
-
-    __getAll__(return_data, UNWRAPPED = false) {
-        return return_data;
-    }
-
+        @param {Array} items - An array of identifiable Models or objects. 
+    */
     cull(items) {
+
         let hash_table = {};
         let existing_items = __getAll__([], true);
 
@@ -249,7 +306,7 @@ class ModelContainer extends ModelBase {
             if (item instanceof Array)
                 return item.forEach((e) => loadHash(e));
 
-            let identifier = this.getIdentifier(item);
+            let identifier = this.__getIdentifier__(item);
 
             if (identifier) {
                 hash_table[identifier] = item;
@@ -260,41 +317,87 @@ class ModelContainer extends ModelBase {
 
         for (let i = 0; i < existing_items.lenth; i++) {
             let e_item = existing_items[i];
-            if (!existing_items[this.getIdentifier(e_item)])
+            if (!existing_items[this.__getIdentifier__(e_item)])
                 this.__remove__(e_item);
         }
 
         this.insert(items);
     }
 
+    __setFilters__(term) {
+        if (term instanceof Array) {
+            this.__filters__ = this.__filters__.concat(term)
+        } else {
+            this.__filters__.push(term);
+        }
+    }
+
+    /**
+        Returns true if the identifier matches a predefined filter pattern, which is evaluated by this.parser. If a 
+        parser was not present the ModelContainers schema, then the function will return true upon every evaluation.
+    */
+    __filterIdentifier__(identifier, filters) {
+        if (filters.length > 0)
+            return this.parser.filter(identifier, filters);
+        return true;
+    }
+
+    /**
+        Returns the Identifier value if it exists in the item. If FILTERED is true, then undefined is returned if the identifier value does not pass filtering criteria.
+        @param {(Object|Model)} item
+        @param {Array} filters - An array of filter terms to test whether the identifier meets the criteria to be handled by the ModelContainer.
+    */
+    __getIdentifier__(item, filters = null) {
+
+        let identifier = null;
+
+        if (item.data && item.schema) {
+            identifier = item.data[this.schema.identifier];
+        } else {
+            identifier = item[this.schema.identifier] || item;
+        }
+
+        if (filters)
+            return (this.__filterIdentifier__(identifier, filters)) ? identifier : undefined;
+
+        return identifier;
+    }
+
+    /** 
+        OVERRIDE SECTION ********************************************************************
+        
+        All of these functions should be overridden by inheriting classes
+    */
+
+    /** 
+        Returns a ModelContainer type to store the results of a get().
+    */
+    __defaultReturn__(params) {
+        return new MCArray;
+    }
+
+    __insert__(item, add_list, identifier) {
+        return false;
+    }
+
+    __get__(item, __return_data__, UNWRAPPED = false) {
+        return __return_data__;
+    }
+
+    __getAll__(__return_data__, UNWRAPPED = false) {
+        return __return_data__;
+    }
+
     __removeAll__() {
         return [];
     }
-
 
     __remove__(item) {
         return [];
     }
 
-    checkIdentifier(item) {
-        return this.checkRawID(item);
-    }
+    // END OVERRIDE *************************************************************************
 
-    checkRawID(item) {
-        if (item.data && item.schema) {
-            return !(!item.data[this.schema.identifier]);
-        } else {
-            return item !== undefined;
-        }
-    }
-
-    getIdentifier(item) {
-        if (item.data && item.schema) {
-            return item.data[this.schema.identifier];
-        } else {
-            return item[this.schema.identifier] || item;
-        }
-    }
 }
 
 class MultiIndexedContainer extends ModelContainer {
@@ -368,21 +471,21 @@ class MultiIndexedContainer extends ModelContainer {
         }
 
         //Update all views
-        if(out.length > 0)
+        if (out.length > 0)
             this.updateViewsRemoved(out);
 
         return out;
     }
 
-    __insert__(item) {
+    __insert__(model) {
         let out = false
 
-        //if(!this.getIdentifier(item)) debugger;
+        //if(!this.__getIdentifier__(model)) debugger;
         for (let a in this.indexes) {
             let index = this.indexes[a];
-            if (index.insert(item)) out = true;
+            if (index.insert(model)) out = true;
             else {
-                console.warn(`Indexed container ${a} ${index} failed to insert:`, item);
+                console.warn(`Indexed container ${a} ${index} failed to insert:`, model);
             }
         }
         return out;

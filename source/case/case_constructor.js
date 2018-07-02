@@ -17,7 +17,9 @@ import {
 /* 
     Cassettes
 */
-
+import {
+    FilterLimit
+} from "./cassette/filter_limit"
 import {
     Cassette,
     CloseCassette
@@ -70,7 +72,8 @@ let PresetCassettes = {
     exists: Exists,
     not_exists: NotExists,
     data_edit: DataEdit,
-    term: Term
+    term: Term,
+    limit: FilterLimit
 }
 
 /*

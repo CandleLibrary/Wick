@@ -1,22 +1,28 @@
 /**
-	Schema type. Handles the parsing and verification of data of models. 
+	Schema type. Handles the parsing, validation, and filtering of Model data properties. 
 */
 class SchemaType {
-	constructor(){
-
-	}
-
+	
+	/**
+		Parses value returns an appropriate transformed value
+	*/
 	parse(value){
 		return value;
 	}
 
+	/**
+
+	*/
 	verify(value, result){
-		if(!value){
-			result.valid = false;
-			result.reason = "No value supplied for member."
-		}else{
-			result.valid = true;
-		}
+		result.valid = true;
+	}
+
+	filter(){
+		return true;
+	}
+
+	string(value){
+		return value + "";
 	}
 }
 

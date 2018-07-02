@@ -12,12 +12,9 @@ import {
 } from "./array_container"
 
 import {
-    BinaryTreeModelContainer
-} from "./binary_container"
+    BTreeModelContainer
+} from "./btree_container"
 
-import {
-    DateModelContainer
-} from "./date_model_container"
 import {
     SchemaType
 } from "../schema/schemas"
@@ -169,6 +166,13 @@ class Model extends ModelBase {
     }
 
     /**
+        Returns a parsed value based on the key 
+    */
+    getString(key){
+        
+    }
+
+    /**
         @param data : An object containing key value pairs to insert into the model. 
     */
     add(data) {
@@ -301,6 +305,7 @@ class Model extends ModelBase {
     }
 
 
+
     toJsonString() {
         debugger
 
@@ -430,6 +435,5 @@ export {
     ModelContainer,
     ArrayModelContainer,
     MultiIndexedContainer,
-    BinaryTreeModelContainer,
-    DateModelContainer
+    BTreeModelContainer
 }
