@@ -3,7 +3,7 @@ const path = require('path');
 module.exports = {
   entry: './source/wick.js',
   watch:true,
-  devtool:"eval",
+  devtool:"eval-source-map",
   mode:"development",
   watchOptions: {
     aggregateTimeout: 300,

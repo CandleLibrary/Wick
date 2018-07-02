@@ -1,4 +1,32 @@
-import {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: case.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: case.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import {
     View
 } from "./view"
 import {
@@ -27,14 +55,18 @@ import {
 import {
     ImportQuery
 } from "./cassette/import_query"
+import {
+    EpochToDateTime
+} from "./cassette/epoch_to_dt"
 
 let PresetCassettes = {
-    w: Cassette,
+    raw: Cassette,
     cassette: Cassette,
     form: Form,
     input: Input,
     export: Exporter,
-    iquery: ImportQuery
+    iquery: ImportQuery,
+    edt:EpochToDateTime
 }
 
 class CaseParentView extends View {
@@ -61,18 +93,20 @@ class CaseParentView extends View {
 }
 
 class Case extends View {
-    constructor(element, presets, parent, WORKING_DOM) {
+    /**
+        Case constructor. Builds a Case object.
+        @params [DOMElement] element - A DOM &lt;template> element that contains a &lt;case> element.
+        @params [LinkerPresets] presets
+        @params [Case] parent
+        @params [DOM]  WORKING_DOM
+    */
+    constructor(element, presets, parent = null, WORKING_DOM) {
         super();
 
         if (!element) {
-            debugger;
-            console.warn("No element has been supplied to this Case");
+            console.warn("No element has been supplied to this Case constructor!");
             return;
         }
-
-
-
-        //clone the template
 
         this.named_components = {};
         this.data = {};
@@ -100,7 +134,7 @@ class Case extends View {
         }
 
         for (let prop in this.data) {
-            if(this.data[prop] == "" || !this.data[prop]){
+            if (this.data[prop] == "" || !this.data[prop]) {
                 this.data[prop] = parent.data[prop];
             }
         }
@@ -109,38 +143,38 @@ class Case extends View {
 
             var children = this.element.children;
 
-            if (this.element.dataset.url)
-                this.url = this.element.dataset.url;
+            if (this.data.url)
+                this.url = this.data.url;
 
-            if (this.element.dataset.prop)
-                this.prop = this.element.dataset.prop;
 
-            if (this.element.dataset.export)
-                this.exports = this.element.dataset.export;
+            if (this.data.prop)
+                this.prop = this.data.prop;
 
-            if (this.element.dataset.model) {
-                if (presets.models[this.element.dataset.model])
-                    presets.models[this.element.dataset.model].addView(this);
-            } else if (this.element.dataset.schema && presets.schemas[this.element.dataset.schema]) {
+            if (this.data.export)
+                this.exports = this.data.export;
 
-                var model = new presets.schemas[this.element.dataset.schema]();
+            if (this.data.model) {
+                if (presets.models[this.data.model])
+                    presets.models[this.data.model].addView(this);
+            } else if (this.data.schema &amp;&amp; presets.schemas[this.data.schema]) {
+
+                var model = new presets.schemas[this.data.schema]();
 
                 this.parent_view = new CaseParentView(this);
 
                 model.addView(this);
 
                 if (this.url) {
-
                     this.receiver = new Getter(this.url);
                     this.receiver.setModel(model);
                     this.request();
                 }
 
 
-                return_object = this.parent_view;
+                //return_object = this.parent_view;
             }
 
-            for (var i = 0; i < children.length; i++) {
+            for (var i = 0; i &lt; children.length; i++) {
                 var child = children[i];
 
                 var component = ComponentConstructor(this, child, presets, this.named_components, this, WORKING_DOM);
@@ -149,9 +183,11 @@ class Case extends View {
                     this.components = this.components.concat(component);
             }
 
+            this.setModel(this.model);
+
             return return_object;
         } else {
-            console.warn(`Case may only be constructed out of <case></case> elements. Received a ${element} in the case constructor!`)
+            console.warn(`Case may only be constructed out of &lt;case>&lt;/case> elements. Received a ${element} in the case constructor!`)
             return undefined;
         }
     }
@@ -159,13 +195,13 @@ class Case extends View {
     destructor() {
         this.parent = null;
 
-        for (var i = 0; i < this.components.length; i++) {
+        for (var i = 0; i &lt; this.components.length; i++) {
             this.components[i].destructor();
         }
 
         this.components = null;
-        if (this.element.parentElement)
 
+        if (this.element.parentElement)
             this.element.parentElement.removeChild(this.element);
 
         this.element = null;
@@ -183,19 +219,22 @@ class Case extends View {
     }
 
     updateFromParent(data) {
-        for (var i = 0; i < this.components.length; i++) {
+        for (var i = 0; i &lt; this.components.length; i++) {
             let comp = this.components[i];
             if (comp instanceof Case) {
                 comp.updateFromParent(data);
-            } else
-            if (comp.import_prop && data[comp.import_prop]) {
-                comp.update(data);
+            } else {
+                if (comp.import_prop &amp;&amp; data[comp.import_prop]) {
+                    comp.update(data);
+                }
             }
         }
     }
 
     update(data) {
-        for (var i = 0; i < this.components.length; i++) {
+        this.updateDimensions();
+
+        for (var i = 0; i &lt; this.components.length; i++) {
             let comp = this.components[i];
             if (comp instanceof Case)
                 comp.updateFromParent(data);
@@ -203,24 +242,25 @@ class Case extends View {
                 this.components[i].update(data);
         }
 
-        if (this.TEMPLATE_HANDLER && this.template) {
+        if (this.TEMPLATE_HANDLER &amp;&amp; this.template) {
             this.REQUESTING = false;
             //components for each data element
 
             var result = data[this.prop].get();
 
-            //We should establish filtering mechanisms here to remove unneeded data. 
 
-            //Need to isolate new results from existing, and cull existing that do not match results. 
+            //We should establish filtering mechanisms here to remove unneeded data.
+
+            //Need to isolate new results from existing, and cull existing that do not match results.
             a:
-                for (var i = 0; i < result.length; i++) {
+                for (var i = 0; i &lt; result.length; i++) {
                     //check for existing matches
-                    for (var j = 0; j < this.components.length; j++) {
+                    for (var j = 0; j &lt; this.components.length; j++) {
 
                         var component = this.components[j];
 
                         if (component instanceof Case)
-                            if (component.model && component.model.identifier == result[i].identifier())
+                            if (component.model &amp;&amp; component.model.identifier == result[i].identifier())
                                 continue a;
 
                     }
@@ -240,26 +280,27 @@ class Case extends View {
 
     setModel(model) {
 
-        if (this.prop && (model.schema[this.prop] instanceof Array)) {
-            //This case will create sub templates from from each entry in the data array 
+        if (this.prop &amp;&amp; (model.schema[this.prop] instanceof Array)) {
+            //This case will create sub templates from from each entry in the data array
             this.TEMPLATE_HANDLER = true;
 
             return;
         }
 
-        if (this.prop && model.schema[this.prop] && model.schema[this.prop].prototype instanceof Model) {
+        if (this.prop &amp;&amp; model.schema[this.prop] &amp;&amp; model.schema[this.prop].prototype instanceof Model) {
             model = model.data[this.prop];
         }
 
-        for (var i = 0; i < this.components.length; i++)
+        for (var i = 0; i &lt; this.components.length; i++){
             this.components[i].setModel(model);
+        }
 
 
         super.setModel(model);
     }
 
     updateDimensions() {
-        for (var i = 0; i < this.components.length; i++) {
+        for (var i = 0; i &lt; this.components.length; i++) {
             this.components[i].updateDimensions();
         }
     }
@@ -280,7 +321,7 @@ class Case extends View {
 
     export (t = {}) {
 
-        if (this.exports && this.model) {
+        if (this.exports &amp;&amp; this.model) {
             t[this.exports] = this.model.get()[this.exports];
         }
 
@@ -312,23 +353,23 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
 
     //Case of a Sub Case, hehe
     if (tag == "CASE") {
-        var constructor = (class_ && cassettes[class_]) ?
+        var constructor = (class_ &amp;&amp; cassettes[class_]) ?
             cassettes[class_] : Case;
-        return [new constructor(element, presets, parentCase)];
+        return [new constructor(element, presets, parentCase, WORKING_DOM)];
     }
 
     //Case of a template
     if (tag == "TEMPLATE") {
-        //If the template is empty, Check the working DOM for another TEMPLATE element whose ID matches this elements first class name 
+        //If the template is empty, Check the working DOM for another TEMPLATE element whose ID matches this elements first class name
         if (element.innerHTML == "") {
             let ele;
 
             if (ele = WORKING_DOM.getElementById(element.classList[0])) {
-
+                ele = ele.cloneNode(true);
 
                 for (let prop in element.dataset)
                     ele.dataset[prop] = element.dataset[prop];
-                
+
                 var c = new Case(ele, presets, parentCase, WORKING_DOM);
                 //Import the element into the DOM tree, replacing the existing TEMPLATE element.
                 var p = element.parentElement;
@@ -346,7 +387,7 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
     }
 
     //Case of input, if parent is form
-    if (tag == "INPUT" && element.dataset.prop) {
+    if (tag == "INPUT" &amp;&amp; element.dataset.prop) {
         if (cassettes.input || PresetCassettes.input) {
             component = [new(cassettes.input || PresetCassettes.input)(parentCase, element)];
         } else {
@@ -364,14 +405,14 @@ function ComponentConstructor(parent, element, presets, named_list, parentCase, 
     }
 
     //Case of Component
-    if (class_ && (cassettes[class_] || PresetCassettes[class_])) {
+    if (class_ &amp;&amp; (cassettes[class_] || PresetCassettes[class_])) {
         component = [new(cassettes[class_] || PresetCassettes[class_])(parentCase, element)];
     }
     //Continue parsing through the DOM tree.
 
     var children = element.children;
 
-    for (var i = 0; i < children.length; i++) {
+    for (var i = 0; i &lt; children.length; i++) {
 
         var c_components = ComponentConstructor(component[0] || parent, children[i], presets, named_list, parentCase, WORKING_DOM);
 
@@ -387,3 +428,26 @@ export {
     Case,
     Cassette
 }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Case.html">Case</a></li><li><a href="CaseComponent.html">CaseComponent</a></li><li><a href="Component.html">Component</a></li><li><a href="Element.html">Element</a></li><li><a href="FailedComponent.html">FailedComponent</a></li><li><a href="Getter.html">Getter</a></li><li><a href="Linker_.html">Linker</a></li><li><a href="Modal.html">Modal</a></li><li><a href="ModelContainer.html">ModelContainer</a></li><li><a href="Setter.html">Setter</a></li><li><a href="Value.html">Value</a></li></ul><h3>Namespaces</h3><ul><li><a href="linker.html">linker</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Lex">Lex</a></li><li><a href="global.html#light">light</a></li><li><a href="global.html#QueryStringToQueryMap">QueryStringToQueryMap</a></li><li><a href="global.html#setLinks">setLinks</a></li><li><a href="global.html#TransformTo">TransformTo</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Jun 04 2018 19:21:37 GMT-0600 (Mountain Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

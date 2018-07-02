@@ -1,175 +1,197 @@
 import {
-    View
-} from "../view"
+    ModelBase
+} from "./model_base.js"
 
 import {
     ModelContainer,
-    ArrayModelContainer,
-    BinaryTreeModelContainer
+    MultiIndexedContainer
 } from "./model_container"
 
-import {DateModelContainer} from "./date_model_container"
+import {
+    ArrayModelContainer
+} from "./array_container"
 
-var schema_catch = {
+import {
+    BTreeModelContainer
+} from "./btree_container"
 
-}
+import {
+    SchemaType
+} from "../schema/schemas"
 
-class Model {
+class Model extends ModelBase {
     constructor(data) {
-        this.first_view = null;
 
-        this.schema = this.constructor.schema || {
-            identifier: "__"
-        };
+        super();
+
+        this.schema = this.constructor.schema || {};
 
         this.data = {};
         this._temp_data_ = null;
-        this.export_data = [];
 
-        if (!this.schema.identifier) {
-            console.error("identifier prop name needed in schema!", this.schema)
-            return;
-        }
+        if (!this.schema.__export_data__) {
+            let __export_data__ = [];
+            this.schema.__export_data__ = __export_data__;
 
-        for (var a in this.schema) {
-            if (a == "identifier") continue;
-            if (this.schema[a] instanceof Array) {
-                if (this.schema[a][0] instanceof ModelContainer) {
-                    this.data[a] = new this.schema[a][0].constructor();
-                    this.export_data.push({
+            for (var a in this.schema) {
+
+                let scheme = this.schema[a];
+
+                if (scheme == __export_data__) continue;
+
+                if (scheme instanceof Array) {
+                    if (scheme[0] instanceof ModelContainer) {
+                        this.data[a] = new scheme[0].constructor();
+                        __export_data__.push({
+                            name: a,
+                            type: "ModelContainer",
+                            exportable: false
+                        })
+                    } else if (scheme[0].container && scheme[0].schema) {
+                        this.data[a] = new scheme[0].container(scheme[0].schema);
+                        __export_data__.push({
+                            name: a,
+                            type: "ModelContainer",
+                            exportable: false
+                        })
+                    } else {
+
+                        console.error(`Schema cannot contain an array that does not contain a single object constructor of type ModelContainer or {schema:schema, container: ModelContainer}.`);
+                    }
+                } else if (scheme instanceof Model) {
+                    this.data[a] = new scheme.constructor();
+                    __export_data__.push({
                         name: a,
-                        type: "ModelContainer",
+                        type: "Model",
                         exportable: false
                     })
-                } else if(this.schema[a][0].container && this.schema[a][0].schema){
-                    this.data[a] = new this.schema[a][0].container(this.schema[a][0].schema);
-                    this.export_data.push({
+                } else {
+                    __export_data__.push({
                         name: a,
-                        type: "ModelContainer",
-                        exportable: false
+                        type: this.schema[a].name,
+                        exportable: true
                     })
-                }else{
-
-                    console.error(`Schema cannot contain an array that does not contain a single object constructor of type ModelContainer or {schema:schema, container: ModelContainer}.`);
                 }
-            } else if (this.schema[a] instanceof Model) {
-                this.data[a] = new this.schema[a].constructor();
-                this.export_data.push({
-                    name: a,
-                    type: "Model",
-                    exportable: false
-                })
-            } else {
-                this.export_data.push({
-                    name: a,
-                    type: this.schema[a].name,
-                    exportable: true
-                })
             }
-        }
 
+        }
         if (data)
             this.add(data);
     }
 
+    get __export_data__() {
+        return this.schema.__export_data__;
+    }
+
+    set __export_data__(e) {
+        null;
+    }
+
+    /**
+        Alias for destructor
+    */
+    destroy() {
+        this.destructor();
+    }
+
+    /**
+        Removes all held references and calls unsetModel on all listening views.
+    */
     destructor() {
 
-        //inform views of the models demise
-        var view = this.first_view;
 
-        while (view) {
-            view.unsetModel();
-            view = view.next;
-        }
-
-        this.first_view = null;
+        this.schema = null;
+        this.data = {};
+        this._temp_data_ = null;
+        this.export_data = null;
 
         for (let a in this.data) {
             if (typeof(this.data[a]) == "object") {
                 this.data[a].destructor();
-            }else{
+            } else {
                 this.data[a] = null;
             }
         }
 
         this.data = null;
-    }
 
-    addView(view) {
-        if (view instanceof View) {
-            if (view.model)
-                view.model.removeView(view);
-
-            var child_view = this.first_view;
-
-            while (child_view) {
-                if (view == child_view) return;
-                child_view = child_view.next;
-            }
-
-            view.model = this;
-            view.next = this.first_view;
-            this.first_view = view;
-
-            view.model = this;
-
-            if (!this._temp_data_)
-                this._temp_data_ = this.get();
-            view.setModel(this);
-            view.update(this._temp_data_);
-        }
-    }
-
-    removeView(view) {
-        if (view instanceof View) {
-            var child_view = this.first_view;
-            var prev_child = null;
-
-            while (child_view) {
-                if (view == child_view) {
-
-                    if (prev_child) {
-                        prev_child.next = view.next;
-                    } else {
-                        this.first_view = view.next;
-                    }
-
-                    view.next = null
-                    view.model = null;
-                    view.reset();
-                    return;
-                };
-
-                prev_child = child_view;
-                child_view = child_view.next;
-            }
-
-            debugger
-            console.warn("View not a member of Model!", view);
-        }
+        super.destructor();
+        //debugger
     }
 
     updateViews() {
         var view = this.first_view;
 
+        let data = this.get();
+
         while (view) {
-            view.update(this.data);
+            view.update(data);
             view = view.next;
         }
     }
 
+    /*
+    getDataStatus(key) {
+        debugger
+        let out_data = {
+            valid: true,
+            reason: ""
+        };
+    }
+    */
+
+    /**
+        Given a key, returns an object that represents the status of the value contained, if it is valid or not, according to the schema for that property. 
+    */
+    verify(key) {
+
+        let out_data = {
+            valid: true,
+            reason: ""
+        };
+
+        var scheme = this.schema[key];
+
+        if (scheme) {
+            if (scheme instanceof Array) {
+
+            } else if (scheme instanceof Model) {
+
+            } else {
+                scheme.verify(this.data[key], out_data);
+            }
+        }
+
+        return out_data
+    }
+
+    /**
+        Returns a parsed value based on the key 
+    */
+    getString(key){
+        
+    }
+
+    /**
+        @param data : An object containing key value pairs to insert into the model. 
+    */
     add(data) {
+
         var NEED_UPDATE = false;
+
+        if (data instanceof Model) {
+            data = data.data;
+        }
 
         for (var a in data) {
             var datum = data[a];
             var scheme = this.schema[a];
             if (scheme) {
                 if (scheme instanceof Array) {
-                   NEED_UPDATE = (this.insertDataIntoContainer(this.data[a], data[a])) ?  true : NEED_UPDATE;
+                    NEED_UPDATE = (this.____insertDataIntoContainer____(this.data[a], data[a])) ? true : NEED_UPDATE;
                 } else if (scheme instanceof Model) {
                     if (!this.data[a])
-                        this.data[a] = new scheme();
+                        this.data[a] = scheme.parse();
 
                     if (this.data[a].add(data[a])) {
                         NEED_UPDATE = true;
@@ -177,25 +199,21 @@ class Model {
                 } else {
                     var prev = this.data[a];
 
-                    this.data[a] = scheme(data[a]);
+                    var next = scheme.parse(data[a]);
 
-                    if (prev !== this.data[a])
+                    if (next !== null && next !== prev) {
+                        this.data[a] = next;
                         NEED_UPDATE = true;
+                    }
                 }
             }
         }
-        if (NEED_UPDATE)
-            this.updateViews();
+        if (NEED_UPDATE) {
+            this._temp_data_ = null; //Invalidate the current cache.
+            this.updateViews(this.get());
+        }
 
         return NEED_UPDATE;
-    }
-
-    get identifier() {
-        return this.data[this.schema.identifier];
-    }
-
-    set identifier(a) {
-
     }
 
     get(data) {
@@ -206,11 +224,18 @@ class Model {
                 this._temp_data_ = {
                     addView: view => this.addView(view),
                     get: data => this.get(data),
-                    identifier: () => this.identifier
+                    getStatus: key => this.getDataStatus(key),
+                    verify: key => this.verify(key),
+                    __________self: () => this,
+                    get ____self____() {
+                        return this.__________self();
+                    }
                 };
 
-                for (var i = 0; i < this.export_data.length; i++) {
-                    var id = this.export_data[i];
+                let __export_data__ = this.__export_data__;
+
+                for (var i = 0, l = __export_data__.length; i < l; i++) {
+                    var id = __export_data__[i];
 
                     if (id.exportable)
                         this._temp_data_[id.name] = this.data[id.name];
@@ -218,11 +243,13 @@ class Model {
                         this._temp_data_[id.name] = ((that, name) => {
                             return {
                                 get(data) {
-                                    return that.getDataFromContainer(that.data[name], data);
+                                    return that.____getDataFromContainer____(that.data[name], data);
                                 },
-
                                 addView(view) {
                                     this.data[name].addView(view);
+                                },
+                                get ____self____() {
+                                    return that;
                                 }
                             }
 
@@ -236,44 +263,177 @@ class Model {
             for (var a in data) {
                 var scheme = this.schema[a];
                 if (scheme)
-                    if (scheme instanceof Array){
-                        out_data[a] = this.getDataFromContainer(this.data[a], data[a]);
-                    }
-                    else if (scheme instanceof Model)
+                    if (scheme instanceof Array) {
+                        out_data[a] = this.____getDataFromContainer____(this.data[a], data[a]);
+                    } else if (scheme instanceof Model)
                     out_data[a] = this.data[a].getData(data[a]);
             }
         }
         return out_data;
     }
 
+
+    /**
+        Removes items in containers based on matching index.
+    */
     remove(data) {
+        var out_data = {};
         for (var a in data) {
+
             var scheme = this.schema[a];
+
             if (scheme)
-                if (scheme instanceof Array)
-                    this.removeDataFromContainer(this.data[a], data[a]);
-                else if (scheme instanceof Model)
-                this.data[a].remove(data[a]);
+                if (scheme instanceof Array) {
+                    out_data[a] = this.____removeDataFromContainer____(this.data[a], data[a]);
+                } else if (scheme instanceof Model)
+                out_data[a] = this.data[a].remove(data[a]);
         }
+
+        return out_data;
     }
 
-    insertDataIntoContainer(container, item) {
-       return container.insert(item); 
+    ____insertDataIntoContainer____(container, item) {
+        return container.insert(item);
     }
 
-    getDataFromContainer(container, item) {
+    ____getDataFromContainer____(container, item) {
         return container.get(item);
     }
 
-    removeDataFromContainer(container, item) {
+    ____removeDataFromContainer____(container, item) {
         return container.remove(item);
+    }
+
+
+
+    toJsonString() {
+        debugger
+
+        let __export_data__ = this.__export_data__;
+
+        let str = "{\n"
+
+        for (var i = 0; i < __export_data__.length; i++) {
+            var id = __export_data__[i];
+
+            if (id.exportable)
+                str += `"${id.name}":"${this.data[id.name].toString()}",\n`;
+            else
+                str += `"${id.name}":[${this.data[id.name].toString()}],\n`;
+        }
+
+        str = str.slice(0, -2) + "\n";
+
+        return str += "}";
+    }
+}
+
+
+class AnyModel extends ModelBase {
+    constructor(data) {
+
+        super();
+
+        this.data = {};
+        this._temp_data_ = null;
+    }
+
+    /**
+        Alias for destructor
+    */
+
+    destroy() {
+        this.destructor();
+    }
+
+    /**
+        Removes all held references and calls unsetModel on all listening views.
+    */
+    destructor() {
+
+        this.data = null;
+
+        super.destructor();
+    }
+
+    add(data) {
+        var NEED_UPDATE = false;
+
+        if (data instanceof Model) {
+            data = data.data;
+        }
+
+        for (var a in data) {
+            let original = this.data[a];
+
+            if (original != data[a]) {
+                this.data[a] = data[a];
+                NEED_UPDATE = true;
+            }
+        }
+
+        if (NEED_UPDATE) {
+            this._temp_data_ = null; //Invalidate the current cache.
+            this.updateViews(this.get());
+        }
+
+        return NEED_UPDATE;
+    }
+
+    get(data) {
+        var out_data = {};
+        if (!data) {
+            if (!this._temp_data_) {
+
+                this._temp_data_ = {
+                    addView: view => this.addView(view),
+                    get: data => this.get(data),
+                    getStatus: key => this.getDataStatus(key),
+                    __________self: () => this,
+                    get ____self____() {
+                        return this.__________self();
+                    }
+                };
+
+                for (let a in this.data) {
+                    this._temp_data_[a] = this.data[a];
+                }
+            }
+
+            return this._temp_data_;
+        } else {
+
+            for (var a in data) {
+                var scheme = this.schema[a];
+                if (scheme)
+                    if (scheme instanceof Array) {
+                        out_data[a] = this.____getDataFromContainer____(this.data[a], data[a]);
+                    } else if (scheme instanceof Model)
+                    out_data[a] = this.data[a].getData(data[a]);
+            }
+        }
+
+        return out_data;
+    }
+
+    /**
+        Removes items in containers based on matching index.
+    */
+
+    remove(data) {
+        return {};
+    }
+
+    toJsonString() {
+        return this.data + "";
     }
 }
 
 export {
     Model,
+    AnyModel,
     ModelContainer,
     ArrayModelContainer,
-    BinaryTreeModelContainer,
-    DateModelContainer
+    MultiIndexedContainer,
+    BTreeModelContainer
 }

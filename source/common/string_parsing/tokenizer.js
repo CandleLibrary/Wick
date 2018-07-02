@@ -1,4 +1,4 @@
-//Compares code with argument list and returns true if match is found, otherwise false is returned 
+//Compares code with argument list and returns true if match is found, otherwise false is returned
 function compareCode(code) {
     var list = arguments;
     for (var i = 1, l = list.length; i < l; i++) {
@@ -7,7 +7,7 @@ function compareCode(code) {
     return false;
 }
 
-//Returns true if code lies between the other two arguments 
+//Returns true if code lies between the other two arguments
 function inRange(code) {
     return (code > arguments[1] && code < arguments[2]);
 }
@@ -48,14 +48,14 @@ var string_parse_and_format_functions = (function() {
             },
             // Scan for end of token. Return false if character not part of token
             scanToEnd(code) {
-                return (inRange(code, 47, 58) || inRange(code, 64, 91) || inRange(code, 96, 123) || compareCode(code, 35, 36, 38, 45, 95)) ? -1 : 0;
+                return (inRange(code, 47, 58) || inRange(code, 64, 91) || inRange(code, 96, 123) || compareCode(code, 35, 36, 45, 95)) ? -1 : 0;
             },
             format(token) {
 
                 //token.color = randomColor();
             }
 
-        }, {
+        },/* {
             type: "comment",
             //Initial check function. Return index offset to start for scan. If 0 is returned then the parser will move on to the next check function
             check(code, text) {
@@ -69,7 +69,7 @@ var string_parse_and_format_functions = (function() {
                 //console.log(token)
             }
 
-        }, {
+        }, */{
             type: "string",
             //Initial check function. Return index offset to start for scan. If 0 is returned then the parser will move on to the next check function
             check(code, text) {
@@ -174,7 +174,7 @@ var string_parse_and_format_functions = (function() {
         }
     ];
 
-    //This allows for creation custom parsers and formatters based upon this object. 
+    //This allows for creation custom parsers and formatters based upon this object.
     array.clone = function() {
         return string_parse_and_format_functions();
     };
@@ -199,9 +199,9 @@ class Tokenizer {
     }
 
     next() {
-      
+
         var token_length = 0;
-       
+
         if (this.h) {
             var t = this.h;
             this.h = null;
@@ -221,6 +221,7 @@ class Tokenizer {
                 for (i = test_index; i < this.string.length; i++) {
                     e = SPF_function.scanToEnd(this.string.charCodeAt(i));
                     if (e > -1) break;
+                    e = 0;
                 }
                 token_length = i + e;
                 break;

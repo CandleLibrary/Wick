@@ -1,8 +1,18 @@
+
+
+/**
+  A collection of key value pairs were the key is the public name of a model constructor, and the value is the model constructor object.
+
+  @typedef PresetModels
+  @type {object}
+  @property {ModelConstructor} "public model name"
+*/
+
 /**
   Used by the Linker and other Classes to load and use user defined objects.
 
   @typedef LinkerPresets
   @type {object}
-  @property {object} links 
-  @property {object} models
+  @property {object} links
+  @property {PresetModels} models - An object collection of model constructors to be used by Wick.
 */

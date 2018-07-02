@@ -1,13 +1,17 @@
 import {Lexer} from "./common/string_parsing/lexer"
 import {Tokenizer} from "./common/string_parsing/tokenizer"
+
+//Time
 import {months} from "./common/date_time/months"
 import {dow} from "./common/date_time/days_of_week"
 import {GetDayStartAndEnd} from "./common/date_time/day_start_and_end_epoch"
+import {float24to12ModTime} from "./common/date_time/time.js"
 
 //Math
 import {QBezier} from "./common/math/quadratic_bezier"
 import {CBezier} from "./common/math/cubic_bezier"
 import {TurnQueryIntoData, TurnDataIntoQuery} from "./common/url/url"
+import {TouchScroller} from "./common/event/touch_scroller"
 
 
 /*********** String Parsing Basic Function ************************/
@@ -33,11 +37,13 @@ export {
 	CBezier,
 	TurnQueryIntoData,
 	TurnDataIntoQuery,
-	GetDayStartAndEnd
+	GetDayStartAndEnd,
+	TouchScroller,
+	float24to12ModTime
 };
 
 /****** Global Object Extenders *************/
-
+//*
 Element.prototype.getWindowTop = function(){
     return (this.offsetTop + ((this.parentElement) ? this.parentElement.getWindowTop() : 0));
 }
@@ -57,3 +63,4 @@ Element.prototype.getParentWindowLeft = function(bool = false){
 Element.prototype.getStyle = function(style_name){
 	return window.getComputedStyle(this,null).getPropertyValue(style_name);
 }
+//*/

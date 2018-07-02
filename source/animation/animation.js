@@ -2,7 +2,7 @@ import {
 	StyleMappings
 } from "./style_mappings"
 import {Color} from "./color" 
-import {TransformTo} from "./rid"
+import {TransformTo} from "./transformto"
 
 class StyleAnimBloc {
 	constructor(style, to_val, duration, delay) {

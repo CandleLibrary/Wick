@@ -5,111 +5,62 @@ import {
     Getter
 } from "../getter"
 import {
-    Case
-} from "../case"
+    Rivet
+} from "../case/rivet"
 import {
     TurnDataIntoQuery
 } from "../common"
+import {
+    DataTemplate
+} from "./data_template"
 
-class Component extends View {
+import {
+    Transitioneer
+} from "../animation/transition/transitioneer"
+
+
+/**
+    Handles the transition of separate elements.
+*/
+class BasicCase extends Rivet {
     constructor(element) {
-            super();
-            this.element = element;
-            this.anchor = null;
-            this.LOADED = false;
-        }
-        /*
-        	Takes as an input a list of transition objects that can be used 
-        */
-    transitionIn(elements, query) {
+        super(null, element, {}, {});
+        this.anchor = null;
+        this.LOADED = false;
 
+        this.transitioneer = new Transitioneer();
+        this.transitioneer.set(this.element)
     }
 
-    transitionOut() {
+    getNamedElements(named_elements) {
+        let children = this.element.children;
 
+        for (var i = 0; i < children.length; i++) {
+            let child = children[i];
+
+            if (child.dataset.transition) {
+                named_elements[child.dataset.transition] = child;
+            }
+        }
     }
 }
 
-class CaseComponent extends Case {
-    constructor(element, presets, model_constructors, query, WORKING_DOM) {
-        super(element, presets, null, WORKING_DOM);
+/**
+    This is a fallback component if constructing a CaseComponent or normal Component throws an error.
+*/
 
+class FailedCase extends Rivet {
+    constructor(error_message, presets) {
+        var div = document.createElement("div");
+        div.innerHTML = `<h3> This Wick component has failed!</h3> <h4>Error Message:</h4><p>${error_message.stack}</p><p>Please contact the website maintainers to address the problem.</p> <p>${presets.error_contact}</p>`;
+        super(null, div, {}, {});
 
-        //get the request id from the element.
-        console.log(this.element)
-
-        this.getter = null;
-        this.model_constructor = null;
-
-        let req = null;
-        if (req = this.element.dataset.requesturl) {
-            let split = req.split(/\?/)[0];
-            let url = split[0],
-                query = split[1];
-            if (url) {
-                this.getter = new Getter(url);
-            }
-        }
-
-        if (!this.model) {
-            let model = null;
-
-            if ((model = this.element.dataset.schema) && (model = model_constructors[model])) {
-                this.model_constructor = model;
-            }
-
-            this.model = null;
-        }
-
-        this.anchor = null;
-        this.LOADED = false;
-    }
-
-    /*
-    	Takes as an input a list of transition objects that can be used 
-    */
-    transitionIn(elements, query) {
-
-        //if(this.getter && this.model_constructor){
-        if (query && this.element.dataset.import) {
-            //import data from query into model.
-            let imports = this.element.dataset.import;
-
-            imports.split(",").forEach(()=>{
-
-            })
-
-        }
-
-        if (!this.model) {
-
-            this.model = new this.model_constructor();
-
-            if (this.getter)
-                this.getter.setModel(this.model);
-
-            this.model.add(query);
-
-            this.model.addView(this);
-
-            console.log(this.model, query)
-                //if(query)
-                //	this.getter.request(TurnDataIntoQuery(query))
-        } else {
-            this.model.add(query);
-        }
-        //}
-
-        this.show();
-    }
-
-    transitionOut() {
-
-        this.hide();
+         this.transitioneer = new Transitioneer();
+        this.transitioneer.set(this.element)
     }
 }
 
 export {
-    Component,
-    CaseComponent
+    BasicCase,
+    FailedCase
 }

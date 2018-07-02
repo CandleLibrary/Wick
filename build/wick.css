@@ -1,15 +1,19 @@
 /* Defualts for all Wick elements */
 
 app {
-  display: block;
-  width: 100%;
-  height: 100%;
   position: absolute;
   top:0;
   left:0;
-  border:0;
-  margin: 0;
-  padding: 0;
+  width:100%;
+  height:100%;
+}
+
+apppage {
+  position: absolute;
+  top:0;
+  left: 0;
+  width: 100%;
+  height :100%;
 }
 
 /* Case */
@@ -18,10 +22,22 @@ case {
   display: block;
 }
 
-/* Component Wrapper */
-/* Used to wrap component elements that are not part of case */
-.comp_wrap {
+case a {
+    display: unset;
+}
 
+/* Component Wrapper */
+/* Used to wrap component elements that are not part of a case */
+.comp_wrap {
+    transition: all 0.25s;
+}
+
+/* Component Wrapper */
+/* Used to wrap component elements that are not part of a case */
+.ele_wrap {
+    top:0;
+    left:0;
+    display: block;
 }
 
 /* PageType */
@@ -29,7 +45,59 @@ pagetype {
   display: none
 }
 
-/* Modals */
-modal {
+.p{
+    position: relative;
+    background-color: red;
+    overflow: hidden;
+    border-radius: 5px;
+    display: block;
+}
 
+.c{
+    position: relative;
+    background-color: green;
+}
+
+/* =========================== Modals =========================== */
+modals {
+  position: absolute;
+  width:100%;
+  z-index: 100000;
+  top:0;
+  left:0;
+}
+modal, .modal {
+    position: absolute;
+    display:block;
+    width: 100%;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    border: none;
+    padding: 0;
+    margin: 0;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.25s;
+}
+/* Used to provide a touch/click surface to with which the page can be navigated back to the main content */
+.modal_backer{
+    background-color: rgba(0,0,0,0.5);
+    position:  absolute;
+    width:100%;
+    height: 100vh;
+    z-index: -1;
+    top:0
+}
+
+
+element {
+  position: relative;
+  display: block;
+}
+
+/*********************** DEBUG VALUES **********************************/
+
+.text_model_modal {
+  position: absolute;
 }
