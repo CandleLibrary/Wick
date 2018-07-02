@@ -183,7 +183,7 @@ class Case extends Rivet {
                 if (IMPORT) {
 
                     if (cassette.data.import && data[cassette.data.import]) {
-                        r_val = cassette.update(data);
+                        r_val = cassette.update(data, true);
 
                         if (r_val) {
                             this.updateSubs(cassette.children, r_val);
@@ -196,9 +196,7 @@ class Case extends Rivet {
                         Any child cassette of the returning cassette will be fed "r_val" instead of "data".
                     */
 
-                    r_val = cassette.update(data);
-
-
+                    r_val = cassette.update(data, true);
                 }
 
 
@@ -351,9 +349,8 @@ class Case extends Rivet {
 }
 
 class CustomCase extends Case {
-    constructor(element, presets, templates) {
-
-        super(null, element)
+    constructor(element, data = {}, presets = {}) {
+        super(null, element, data, presets)
     }
 }
 

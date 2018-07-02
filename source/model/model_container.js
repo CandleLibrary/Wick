@@ -78,8 +78,12 @@ class ModelContainer extends ModelBase {
 
         @returns {Number}
     */
-    length() {
+    get length() {
         return 0;
+    }
+
+    set length(e) {
+        //NULL function. Do Not Override!
     }
 
     /**
@@ -123,9 +127,9 @@ class ModelContainer extends ModelBase {
 
             let terms = term;
 
-            if (!term instanceof Array) {
+            if (!term instanceof Array)
                 terms = [term];
-            }
+
 
             this.__get__(terms, out, UNWRAPPED);
         }
@@ -156,8 +160,9 @@ class ModelContainer extends ModelBase {
             for (var i = 0; i < item.length; i++)
                 if (this.__insertSub__(item[i], out, add_list))
                     out = true;
-        } else
+        } else if (item)
             out = this.__insertSub__(item, out, add_list);
+
 
         if (add_list && add_list.length > 0)
             this.updateViewsAdded(add_list);
@@ -168,7 +173,6 @@ class ModelContainer extends ModelBase {
     /**
         A subset of the insert function. Handles the test of identifier, the conversion of an Object into a Model, and the calling of the internal __insert__ function.
     */
-
     __insertSub__(item, out, add_list) {
 
         let model = item;
@@ -182,9 +186,9 @@ class ModelContainer extends ModelBase {
                 model.add(item);
             }
 
-            identifier = this.__getIdentifier__(model, this.filters);
+            identifier = this.__getIdentifier__(model, this.__filters__);
 
-            if(identifier){
+            if (identifier) {
                 out = this.__insert__(model, add_list, identifier)
             }
 
@@ -308,9 +312,9 @@ class ModelContainer extends ModelBase {
 
             let identifier = this.__getIdentifier__(item);
 
-            if (identifier) {
+            if (identifier)
                 hash_table[identifier] = item;
-            }
+
         }
 
         loadHash(items);
@@ -325,11 +329,11 @@ class ModelContainer extends ModelBase {
     }
 
     __setFilters__(term) {
-        if (term instanceof Array) {
+        if (term instanceof Array)
             this.__filters__ = this.__filters__.concat(term)
-        } else {
+        else
             this.__filters__.push(term);
-        }
+
     }
 
     /**
@@ -337,8 +341,9 @@ class ModelContainer extends ModelBase {
         parser was not present the ModelContainers schema, then the function will return true upon every evaluation.
     */
     __filterIdentifier__(identifier, filters) {
-        if (filters.length > 0)
+        if (filters.length > 0){
             return this.parser.filter(identifier, filters);
+        }
         return true;
     }
 
@@ -351,11 +356,10 @@ class ModelContainer extends ModelBase {
 
         let identifier = null;
 
-        if (item.data && item.schema) {
+        if (item.data && item.schema)
             identifier = item.data[this.schema.identifier];
-        } else {
+        else
             identifier = item[this.schema.identifier] || item;
-        }
 
         if (filters)
             return (this.__filterIdentifier__(identifier, filters)) ? identifier : undefined;
@@ -415,7 +419,18 @@ class MultiIndexedContainer extends ModelContainer {
         this.addIndex(schema.index);
     }
 
+    /**
+        Returns the length of the first index in this container. 
+    */
+    get length() {
+        return this.first_index.length;
+    }
+
+    /**
+        Insert a new ModelContainer into the index through the schema.  
+    */
     addIndex(index_schema) {
+
         for (let name in index_schema) {
             let scheme = index_schema[name];
 
@@ -430,45 +445,35 @@ class MultiIndexedContainer extends ModelContainer {
         }
     }
 
-    get(item) {
-        let out
+    get(item, UNWRAPPED = false) {
 
-        let add_list = (this.first_view) ? [] : null;;
+        let out = {};
 
         if (item) {
+            for (let a in item)
+                if (this.indexes[a])
+                    out[a] = this.indexes[a].get(item[a], UNWRAPPED);
+        } else
 
-            for (let a in item) {
-                let out = {};
-
-                if (this.indexes[a]) {
-                    out[a] = this.indexes[a].get(item[a]);
-                }
-            }
-        } else {
-            out = this.first_index.get();
-        }
-
-        this.updateViews(this.first_index.get());
+            out = this.first_index.get(null, UNWRAPPED);
 
 
         return out;
     }
 
     remove(item) {
+
         var out = [];
 
-        for (let a in item) {
+        for (let a in item)
             if (this.indexes[a])
                 out = out.concat(this.indexes[a].remove(item[a]));
-        }
 
-        /* Replay items against indexes to insure all items have been removed from all indexes */
+            /* Replay items against indexes to insure all items have been removed from all indexes */
 
-        for (var j = 0; j < this.indexes.length; j++) {
-            for (var i = 0; i < out.length; i++) {
+        for (var j = 0; j < this.indexes.length; j++)
+            for (var i = 0; i < out.length; i++)
                 this.indexes[j].remove(out[i]);
-            }
-        }
 
         //Update all views
         if (out.length > 0)
@@ -477,22 +482,33 @@ class MultiIndexedContainer extends ModelContainer {
         return out;
     }
 
-    __insert__(model) {
-        let out = false
+    __insert__(model, add_list, identifier) {
 
-        //if(!this.__getIdentifier__(model)) debugger;
-        for (let a in this.indexes) {
-            let index = this.indexes[a];
-            if (index.insert(model)) out = true;
-            else {
-                console.warn(`Indexed container ${a} ${index} failed to insert:`, model);
+            let out = false
+
+            for (let a in this.indexes) {
+
+                let index = this.indexes[a];
+
+                if (index.insert(model))
+                    out = true;
+                else
+                    console.warn(`Indexed container ${a} ${index} failed to insert:`, model);
+
             }
-        }
-        return out;
-    }
 
+            if (out)
+                this.updateViews(this.first_index.get());
+
+            return out;
+        }
+        /**
+            @private 
+        */
     __remove__(item) {
+
         let out = false;
+
         for (let a in this.indexes) {
             let index = this.indexes[a];
             if (index.remove(item))
@@ -500,6 +516,14 @@ class MultiIndexedContainer extends ModelContainer {
         }
 
         return out;
+    }
+
+    /**
+        Overrides Model container default __getIdentifier__ to force item to pass.
+        @private 
+    */
+    __getIdentifier__(item, filters = null) {
+        return true;
     }
 }
 

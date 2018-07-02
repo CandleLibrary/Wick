@@ -211,6 +211,15 @@ class Rivet extends View {
             this.children[i].updateDimensions();
     }
 
+    __update__(data, FROM_PARENT = false) {
+
+        let r_data = this.update(data, FROM_PARENT);
+
+        for (let i = 0, l = this.children.length; i < l; i++) {
+            this.children[i].__update__(r_data || data, true);
+        }
+    }
+
     load() {
 
     }
@@ -265,12 +274,11 @@ class Rivet extends View {
             this.export = data[this.data.export];
     }
 
-    add(value){
-        if(this.model){
+    add(value) {
+        if (this.model) {
             this.model.add(value);
             this.export(value);
-        }
-        else if(this.parent && this.parent.add)
+        } else if (this.parent && this.parent.add)
             this.parent.add(value)
     }
 }

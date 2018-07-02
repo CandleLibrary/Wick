@@ -2,10 +2,6 @@ import {
     WURL
 } from "./wurl"
 import {
-    Component,
-    CaseComponent
-} from "./component"
-import {
     AnyModel
 }from "../model/model"
 import {
@@ -483,6 +479,5 @@ class Linker {
 
 export {
     Linker,
-    Component,
     URL
 }

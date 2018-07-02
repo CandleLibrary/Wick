@@ -118,7 +118,7 @@ class Cassette extends Rivet {
     }
 
 
-    update(data) {
+    update(data, __FROM_PARENT__ = false) {
 
         super.__updateExports__(data);
 

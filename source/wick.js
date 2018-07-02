@@ -29,7 +29,6 @@ import {
 } from "./setter"
 
 import {
-    Component,
     Linker,
     URL
 } from "./linker/linker"
@@ -41,10 +40,16 @@ import * as Common from "./common"
 let wick_vanity = "\ \(\ \ \(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \)\n\ \)\\\)\)\(\ \ \ \'\ \(\ \ \ \ \ \ \ \ \ \ \(\ \/\(\n\(\(\_\)\(\)\\\ \)\ \ \)\\\ \ \ \ \(\ \ \ \ \)\\\(\)\)\n\_\(\(\)\)\\\_\)\(\)\(\(\_\)\ \ \ \)\\\ \ \(\(\_\)\\\n\\\ \\\(\(\_\)\/\ \/\ \(\_\)\ \ \(\(\_\)\ \|\ \|\(\_\)\n\ \\\ \\\/\\\/\ \/\ \ \|\ \|\ \/\ \_\|\ \ \|\ \/\ \/\n\ \ \\\_\/\\\_\/\ \ \ \|\_\|\ \\\_\_\|\ \ \|\_\\\_\\\n";
 
 import {
-    CustomCase,
-    Filter,
-    Form
+    CustomCase
 } from "./case/case"
+
+import{
+    Filter
+} from "./case/cassette/filter"
+
+import{
+    Form
+} from "./case/cassette/form"
 
 import {
     Cassette
@@ -103,7 +108,6 @@ export {
     Form,
     Filter,
     Common,
-    Component,
     Getter,
     Linker,
     Model,

@@ -47,7 +47,7 @@ class ArrayModelContainer extends ModelContainer {
 
                 obj.add(model);
 
-                return true;
+                return false; //Model not added to Container. Model just updated.
             }
         }
 
@@ -55,7 +55,7 @@ class ArrayModelContainer extends ModelContainer {
 
         if (add_list) add_list.push(model);
 
-        return true;
+        return true; // Model added to Container.
     }
 
     __get__(term, return_data, UNWRAPPED = false) {

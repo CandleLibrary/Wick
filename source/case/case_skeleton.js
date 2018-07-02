@@ -9,12 +9,12 @@
 */
 class CaseSkeleton {
     
-    constructor(element, constructor, DOM_INDEX, named = false, presets){
+    constructor(element, constructor, dom_index, named = false, presets){
         this.element = element;
         this.Constructor = constructor;
         this.children  = [];
         this.templates = [];
-        this.DOM_index = DOM_INDEX;
+        this.dom_index = dom_index;
         this.IS_NAMED_ELEMENT = named;
         this.data = {};
         this.presets = presets;
@@ -36,20 +36,25 @@ class CaseSkeleton {
     }
 
     /**
-        Constructs a new object.
+        Constructs a new object, attaching to elements hosted by a case. If the component to construct is a Case, then the 
+        parent_element gets swapped out by a cloned element that is hosted by the newly constructed Case.
     */
-    ____copy____(element, parent, named_elements){
+    ____copy____(parent_element, parent, named_elements){
+        
+        let element;
 
         if(this.element){
             let ele = this.element.cloneNode(true);
-            if(element){
-                element = element.children[this.DOM_index];
+            if(parent_element){
+                element = this.dom_index.getElement(parent_element);
                 element.parentElement.replaceChild(ele, element);
             }
+            parent_element = ele;
             element = ele;
         }
         else
-            element = element.children[this.DOM_index];
+            element = this.dom_index.getElement(parent_element);
+
         
         if(this.IS_NAMED_ELEMENT)
             named_elements[this.data.transition] = element;
@@ -63,7 +68,7 @@ class CaseSkeleton {
         
             for(var i = 0, l = this.children.length; i < l; i++){
                 let child = this.children[i];
-                out_object.children[i] = child.____copy____(element, out_object, named_elements);
+                out_object.children[i] = child.____copy____(parent_element, out_object, named_elements);
             }
         }
 
@@ -72,7 +77,7 @@ class CaseSkeleton {
         
             for(var i = 0, l = this.templates.length; i < l; i++){
                 let child = this.templates[i];
-                out_object.templates[i] = child.____copy____(element, out_object, named_elements);
+                out_object.templates[i] = child.____copy____(parent_element, out_object, named_elements);
             }
         }
         

@@ -12,6 +12,7 @@ class BTreeModelContainer extends ModelContainer {
         this.root = null;
         this.min = 10;
         this.max = 20;
+        this.size = 0;
     }
 
     destructor() {
@@ -19,6 +20,10 @@ class BTreeModelContainer extends ModelContainer {
         this.root.destructor();
 
         super.destructor();
+    }
+
+    get length(){
+        return this.size;
     }
 
     __defaultReturn__() {
@@ -33,12 +38,19 @@ class BTreeModelContainer extends ModelContainer {
 
     __insert__(model, add_list, identifier) {
 
+        let result = {added:false};
+
         if (!this.root)
             this.root = new BtreeNode(true);
 
-        this.root = this.root.insert(identifier, model, this.max, true).newnode;
+        this.root = this.root.insert(identifier, model, this.max, true, result).newnode;
 
         if (add_list) add_list.push(model);
+
+        if(result.added)
+            this.size++;
+
+        return result.added;
     }
 
     __get__(terms, __return_data__, UNWRAPPED = false) {
@@ -78,6 +90,9 @@ class BTreeModelContainer extends ModelContainer {
             }
         }
 
+        if(result)
+            this.size--;
+
         return result;
     }
 
@@ -101,6 +116,7 @@ class BtreeNode {
         this.LEAF = IS_LEAF;
         this.nodes = [];
         this.keys = [];
+        this.items = 0;
     }
 
     destructor() {
@@ -165,7 +181,7 @@ class BtreeNode {
     /**
         Inserts model into the tree, sorted by identifier. 
     */
-    insert(identifier, model, max_size, IS_ROOT = false) {
+    insert(identifier, model, max_size, IS_ROOT = false, result) {
 
         let l = this.keys.length;
 
@@ -178,7 +194,7 @@ class BtreeNode {
                 if (identifier < key) {
                     let node = this.nodes[i];
 
-                    let o = node.insert(identifier, model, max_size);
+                    let o = node.insert(identifier, model, max_size, false, result);
                     let keyr = o.key;
                     let newnode = o.newnode;
 
@@ -198,7 +214,7 @@ class BtreeNode {
             let {
                 newnode,
                 key
-            } = node.insert(identifier, model, max_size);
+            } = node.insert(identifier, model, max_size, false, result);
 
             if (key == undefined) debugger
 
@@ -216,6 +232,9 @@ class BtreeNode {
 
                 if (identifier == key) {
                     this.nodes[i].add(key);
+
+                    result.added = false;
+
                     return {
                         newnode: this,
                         key: identifier
@@ -225,12 +244,16 @@ class BtreeNode {
                     this.keys.splice(i, 0, identifier);
                     this.nodes.splice(i, 0, model);
 
+                    result.added = true;
+
                     return this.balanceInsert(max_size, IS_ROOT);
                 }
             }
 
             this.keys.push(identifier);
             this.nodes.push(model);
+
+            result.added = true;
 
             return this.balanceInsert(max_size, IS_ROOT);
         }
@@ -239,7 +262,7 @@ class BtreeNode {
 
         return {
             newnode: this,
-            key: identifier
+            key: identifier,
         };
     }
 

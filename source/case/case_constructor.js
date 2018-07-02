@@ -93,6 +93,21 @@ function ImportDataFromDataSet(data_object, data_set_object, element) {
     }
 }
 
+class lvl {
+    constructor(index = 0, parent = null){
+        this.index = index;
+        this.parent = parent;
+    }
+
+    getElement(element_root) {
+        if (this.parent) {
+
+            let element = this.parent.getElement(element_root)
+            return element.children[this.index];
+        }
+        return element_root.children[this.index];
+    }
+}
 
 function CaseConstructor(Template, Presets, WORKING_DOM) {
 
@@ -121,7 +136,11 @@ function CaseConstructor(Template, Presets, WORKING_DOM) {
     return Template.skeleton;
 }
 
-function ComponentConstructor(parent, element, presets, WORKING_DOM) {
+function ReplaceTemplateWithElement(Template) {
+
+}
+
+function ComponentConstructor(parent, element, presets, WORKING_DOM, parent_lvl) {
 
     //Will only construct if there is a matching widget to handle the element
     var children = element.children;
@@ -140,7 +159,7 @@ function ComponentConstructor(parent, element, presets, WORKING_DOM) {
         if (children.length < 1) {
 
             if (
-                ele = WORKING_DOM.getElementById(element.classList[0]) &&
+                (ele = WORKING_DOM.getElementById(element.classList[0])) &&
                 element.nodeName == "TEMPLATE"
             ) {
 
@@ -176,16 +195,26 @@ function ComponentConstructor(parent, element, presets, WORKING_DOM) {
         }
     }
 
+    var template = null;
+
     //Continue parsing through the DOM tree.
     for (var i = 0; i < children.length; i++) {
 
+
+
         let child_element = children[i];
+
 
         //We'll build a data object that will contain the data-* attributes for the object. 
         let data = {},
             NAMED = false;
 
         ImportDataFromDataSet(data, child_element.dataset);
+
+        if (template) {
+            ImportDataFromDataSet(data, template.dataset);
+            template = null;
+        }
 
         let class_ = data.class;
 
@@ -197,19 +226,70 @@ function ComponentConstructor(parent, element, presets, WORKING_DOM) {
         let tag = child_element.tagName;
         let Constructor = null;
 
+
         switch (tag) {
 
             case "TEMPLATE":
 
+                let template_children = child_element.content.children;
+
+                var ele;
+
+                template = child_element;
+
+                if (template_children.length < 1) {
+
+                    if (
+                        (ele = WORKING_DOM.getElementById(child_element.classList[0])) &&
+                        child_element.nodeName == "TEMPLATE"
+                    ) {
+
+                        ele = document.importNode(ele.content, true);
+
+                        var p = child_element.parentElement;
+
+                        p.replaceChild(ele, child_element);
+
+                    } else {
+
+                        template = null;
+
+                        continue;
+
+                    }
+
+
+
+                } else {
+
+                    ele = document.importNode(child_element.content, true);
+
+                    ele.attributes = child_element.attributes
+
+                    let p = child_element.parentElement;
+
+                    if (p) {
+
+                        p.replaceChild(ele, child_element);
+
+                    }
+                }
+                //Since the template has been replaced by its contents, the state of children has changed. We simply need to redo parsing at this point to handle those changes
+                i--;
+
+                continue
+
+            case "CASETEMPLATE":
+
                 let div = document.createElement("div");
 
-                let ele = document.importNode(child_element.content, true);
+                var ele = document.importNode(child_element.content, true);
 
                 div.appendChild(ele);
 
                 element.replaceChild(div, child_element);
 
-                let bone = new CaseSkeleton(null, null, i, NAMED, presets);
+                let bone = new CaseSkeleton(null, null, new lvl(i, parent_lvl), NAMED, presets);
 
                 bone.data = data;
 
@@ -241,7 +321,7 @@ function ComponentConstructor(parent, element, presets, WORKING_DOM) {
                         })(Constructor, data.model, data.schema);
                     }
 
-                    let bone = new CaseSkeleton(child_element, Constructor, i, NAMED, presets);
+                    let bone = new CaseSkeleton(child_element, Constructor, new lvl(i, parent_lvl), NAMED, presets);
 
                     ImportDataFromDataSet(data, element.dataset);
 
@@ -264,11 +344,11 @@ function ComponentConstructor(parent, element, presets, WORKING_DOM) {
 
                 if (Constructor) {
 
-                    let bone = new CaseSkeleton(null, Constructor, i, NAMED, presets);
+                    let bone = new CaseSkeleton(null, Constructor, new lvl(i, parent_lvl), NAMED, presets);
 
                     bone.data = data;
 
-                    bone.children = ComponentConstructor(bone, child_element, presets, WORKING_DOM);
+                    bone.children = ComponentConstructor(bone, child_element, presets, WORKING_DOM, new lvl(i, parent_lvl));
 
                     out.push(bone);
 
@@ -291,13 +371,13 @@ function ComponentConstructor(parent, element, presets, WORKING_DOM) {
 
                 if (Constructor) {
 
-                    let bone = new CaseSkeleton(null, Constructor, i, NAMED, presets);
+                    let bone = new CaseSkeleton(null, Constructor, new lvl(i, parent_lvl), NAMED, presets);
 
                     bone.data = data;
 
                     out.push(bone);
 
-                    bone.children = ComponentConstructor(bone, child_element, presets, bone, WORKING_DOM);
+                    bone.children = ComponentConstructor(bone, child_element, presets, bone, WORKING_DOM, new lvl(i, parent_lvl));
 
                     continue
 
@@ -315,13 +395,15 @@ function ComponentConstructor(parent, element, presets, WORKING_DOM) {
 
                 if (Constructor) {
 
-                    let bone = new CaseSkeleton(null, Constructor, i, NAMED, presets);
+                    //console.log(element, element.children[i], data)
+
+                    let bone = new CaseSkeleton(null, Constructor, new lvl(i, parent_lvl), NAMED, presets);
 
                     bone.data = data;
 
                     out.push(bone);
 
-                    bone.children = ComponentConstructor(bone, child_element, presets, WORKING_DOM);
+                    bone.children = ComponentConstructor(bone, child_element, presets, WORKING_DOM, new lvl(i, parent_lvl));
 
                     continue
                 }
@@ -330,7 +412,7 @@ function ComponentConstructor(parent, element, presets, WORKING_DOM) {
 
         }
 
-        out = out.concat(ComponentConstructor(parent, child_element, presets, WORKING_DOM));
+        out = out.concat(ComponentConstructor(parent, child_element, presets, WORKING_DOM, new lvl(i, parent_lvl)));
     }
 
 
