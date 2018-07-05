@@ -47,8 +47,6 @@ class Case extends Rivet {
 
         this.parent = null;
 
-
-
         if (this.receiver)
             this.receiver.destructor();
 
@@ -63,7 +61,6 @@ class Case extends Rivet {
     */
     load(model) {
 
-        super.load(model);
 
         if (this.data.url) {
             //import query info from the wurl
@@ -101,23 +98,20 @@ class Case extends Rivet {
 
             if (this.schema) {
                 /* Opinionated Case - Only accepts Models that are of the same type as its schema.*/
-                if (model.schema != this.schema) {
-                    throw new Error(`Model Schema ${this.model.schema} does not match Case Schema ${presets.schemas[this.data.schema].schema}`)
+                if (model.constructor != this.schema) {
+                    //throw new Error(`Model Schema ${this.model.schema} does not match Case Schema ${presets.schemas[this.data.schema].schema}`)
+                }else{
+                    this.schema = null;
                 }
             }
-
             this.model = null;
+        } 
 
-            model.addView(this);
-
-        } else if (this.schema) {
-
-            var model = new this.schema();
-
-            //this.parent_view = new CaseParentView(this);
-
-            model.addView(this);
+        if (this.schema) {
+            model = new this.schema();
         }
+        
+        model.addView(this);
 
         if (this.model) {
             if (this.data.url) {
@@ -145,28 +139,7 @@ class Case extends Rivet {
 
     export (exports) {
 
-        let children = this.children;
-
-        for (var i = 0, l = children.length; i < l; i++) {
-
-            let child = children[i];
-
-            if (child instanceof Cassette) {
-
-                let r_val;
-
-                if (child.data.import && exports[child.data.import]) {
-                    r_val = child.update(exports);
-
-                    if (r_val) {
-                        this.updateSubs(child.children, r_val);
-                        continue;
-                    }
-                }
-
-                //this.updateSubs(child.children, r_val || exports, IMPORT);
-            }
-        }
+        this.updateSubs(this.children, exports, true);
 
         super.export(exports);
     }
@@ -208,6 +181,8 @@ class Case extends Rivet {
 
 
     update(data, IMPORT = false) {
+        
+        this.updateDimensions();
 
         if (!IMPORT) {
 
@@ -218,8 +193,6 @@ class Case extends Rivet {
             }
 
             this.data_cache = data;
-
-            this.updateDimensions();
         }
 
 
@@ -228,7 +201,7 @@ class Case extends Rivet {
 
         if (this.templates.length > 0) {
             for (var i = 0, l = this.templates.length; i < l; i++) {
-                this.templates[i].update(data, IMPORT);
+                this.templates[i].update(data, true);
             }
         }
 
@@ -310,20 +283,22 @@ class Case extends Rivet {
 
         transition_time = Math.max(transition_time, super.transitionIn(index));
 
+       this.updateDimensions();
+
         return transition_time;
     }
 
     /**
         Takes as an input a list of transition objects that can be used
     */
-    transitionOut(index = 0) {
+    transitionOut(index = 0, DESTROY = false) {
 
         let transition_time = 0;
 
         for (let i = 0, l = this.templates.length; i < l; i++)
             transition_time = Math.max(transition_time, this.templates[i].transitionOut(index));
 
-        transition_time = Math.max(transition_time, super.transitionOut(index));
+        transition_time = Math.max(transition_time, super.transitionOut(index, DESTROY));
 
         return transition_time;
     }

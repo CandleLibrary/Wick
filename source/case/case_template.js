@@ -11,7 +11,9 @@ import {
 } from "./cassette/term"
 
 import {
-    ModelContainer
+    MCArray,
+    ModelContainer,
+    MultiIndexedContainer
 } from "../model/model_container"
 
 class CaseTemplate extends Case {
@@ -72,9 +74,9 @@ class CaseTemplate extends Case {
             output = this.filters[i].filter(output);
         }
 
-        for (var i = 0; i < this.activeCases.length; i++){
+        for (var i = 0; i < this.activeCases.length; i++) {
             this.element.removeChild(this.activeCases[i].element);
-        } 
+        }
 
         for (var i = 0; i < output.length; i++) {
             this.element.appendChild(output[i].element);
@@ -90,6 +92,7 @@ class CaseTemplate extends Case {
     }
 
     cull(new_items) {
+
         if (new_items.length == 0) {
 
             for (let i = 0, l = this.cases.length; i < l; i++)
@@ -174,13 +177,19 @@ class CaseTemplate extends Case {
     }
 
     update(data, IMPORT = false) {
-
+        let container = data[this.prop];
+        
         if (IMPORT) {
-            let UPDATE = 0;
 
-            for (let i = 0, l = this.terms.length; i < l; i++)
+            let UPDATE = false;
+
+            for (let i = 0, l = this.terms.length; i < l; i++){
                 if (this.terms[i].update(data))
                     UPDATE = true;
+            }
+
+            if (UPDATE && this.model)
+                this.cull(this.get())
 
             for (let i = 0, l = this.filters.length; i < l; i++)
                 if (this.filters[i].update(data))
@@ -190,28 +199,58 @@ class CaseTemplate extends Case {
             if (UPDATE)
                 this.filterUpdate();
 
-        } else {
+        } 
 
-            if (!data.____self____)
-                return;
+        if (!this.model && this.prop && container && (container instanceof ModelContainer || container.____self____)) {
 
             this.cache = data;
 
-            let own_container = data[this.prop].get(this.getTerms());
+            let own_container = container.get(this.getTerms(), true, null);
 
             if (own_container instanceof ModelContainer) {
                 own_container.pin();
                 own_container.addView(this);
-                this.cull(this.model.get(this.getTerms(), true))
+                this.cull(this.get())
+            } else if (own_container instanceof MCArray) {
+                this.cull(own_container)
             } else {
                 own_container = data.____self____.data[this.prop]
                 if (own_container instanceof ModelContainer) {
                     own_container.addView(this);
-                    this.cull(this.model.get(this.getTerms(), true))
+                    this.cull(this.get())
                 }
-
             }
         }
+    }
+
+    get() {
+        if (this.model instanceof MultiIndexedContainer) {
+            if (this.data.index) {
+                let index = this.data.index;
+
+                let query = {};
+
+                query[index] = this.getTerms();
+
+                return this.model.get(query, true)[index];
+            } else
+                console.warn("No index value provided for MultiIndexedContainer!")
+        } else{
+            let source = this.model.source;
+            let terms = this.getTerms();
+
+            if(source){
+                this.model.destructor();
+                
+                let model = source.get(terms, true, null);
+
+                model.pin();
+                model.addView(this);
+            }
+
+            return this.model.get(terms, true);
+        }
+        return [];
     }
 
     transitionIn(elements, wurl) {
@@ -229,14 +268,12 @@ class CaseTemplate extends Case {
     /**
         Takes as an input a list of transition objects that can be used
     */
-    transitionOut() {
-
-        let transition_time = 0;
+    transitionOut(transition_time = 0, DESTROY = false) {
 
         for (let i = 0, l = this.templates.length; i < l; i++)
             transition_time = Math.max(transition_time, this.templates[i].transitionOut());
 
-        Math.max(transition_time, super.transitionOut());
+        Math.max(transition_time, super.transitionOut(transition_time, DESTROY));
 
         return transition_time;
     }

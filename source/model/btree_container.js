@@ -16,24 +16,14 @@ class BTreeModelContainer extends ModelContainer {
     }
 
     destructor() {
-
-        this.root.destructor();
+        if(this.root)
+            this.root.destructor();
 
         super.destructor();
     }
 
     get length(){
         return this.size;
-    }
-
-    __defaultReturn__() {
-        if (this.source) return new MCArray;
-
-        let n = new BTreeModelContainer(this.schema);
-
-        this.__link__(n);
-
-        return n;
     }
 
     __insert__(model, add_list, identifier) {

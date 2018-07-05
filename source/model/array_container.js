@@ -15,9 +15,6 @@ class ArrayModelContainer extends ModelContainer {
 
     destructor() {
 
-        for (var i = 0; i < this.data.length; i++)
-            this.data[i].destructor();
-
         this.data = null;
 
         super.destructor();
@@ -62,8 +59,10 @@ class ArrayModelContainer extends ModelContainer {
 
         let terms = null;
 
-        if (term instanceof Array)
+
+        if (term instanceof Array){
             terms = term;
+        }
         else
             terms = [term];
 

@@ -28,6 +28,7 @@ class MCArray extends Array {
 
 // A "null" function
 let EmptyFunction = () => {};
+let EmptyArray = [];
 
 class ModelContainer extends ModelBase {
 
@@ -45,7 +46,7 @@ class ModelContainer extends ModelBase {
         this.pin = EmptyFunction;
 
         //Filters are a series of strings or number selectors used to determine if a model should be inserted into or retrieved from the container.
-        this.__filters__ = [];
+        this.__filters__ = EmptyArray;
 
 
         this.schema = schema || this.constructor.schema || {};
@@ -71,6 +72,12 @@ class ModelContainer extends ModelBase {
         this.schema = null;
 
         this.__filters__ = null;
+
+        if(this.source){
+            this.source.__unlink__(this);
+        }
+
+        super.destructor();
     }
 
     /**
@@ -84,6 +91,19 @@ class ModelContainer extends ModelBase {
 
     set length(e) {
         //NULL function. Do Not Override!
+    }
+
+    /** 
+        Returns a ModelContainer type to store the results of a get().
+    */
+    __defaultReturn__(USE_ARRAY) {
+        if (USE_ARRAY) return new MCArray;
+
+        let n = new this.constructor(this.schema);
+
+        this.__link__(n);
+
+        return n;
     }
 
     /**
@@ -111,15 +131,24 @@ class ModelContainer extends ModelBase {
 
         let out = null;
 
+        let USE_ARRAY = true;
+
         if (term)
             if (__return_data__) {
                 out = __return_data__;
             } else {
-                out = this.__defaultReturn__();
+
+                if (__return_data__ === null)
+                    USE_ARRAY = false;
+
+                if (!this.source)
+                    USE_ARRAY = false;
+
+                out = this.__defaultReturn__(USE_ARRAY);
                 out.__setFilters__(term);
             }
         else
-            out = this.__defaultReturn__(term);
+            out = this.__defaultReturn__(USE_ARRAY);
 
         if (!term)
             this.__getAll__(out, UNWRAPPED);
@@ -190,9 +219,8 @@ class ModelContainer extends ModelBase {
 
             if (identifier) {
                 out = this.__insert__(model, add_list, identifier)
+                this.__linksInsert__(model);
             }
-
-            this.__linksInsert__(model);
         }
 
         return out;
@@ -341,7 +369,7 @@ class ModelContainer extends ModelBase {
         parser was not present the ModelContainers schema, then the function will return true upon every evaluation.
     */
     __filterIdentifier__(identifier, filters) {
-        if (filters.length > 0){
+        if (filters.length > 0) {
             return this.parser.filter(identifier, filters);
         }
         return true;
@@ -372,13 +400,6 @@ class ModelContainer extends ModelBase {
         
         All of these functions should be overridden by inheriting classes
     */
-
-    /** 
-        Returns a ModelContainer type to store the results of a get().
-    */
-    __defaultReturn__(params) {
-        return new MCArray;
-    }
 
     __insert__(item, add_list, identifier) {
         return false;
@@ -445,14 +466,14 @@ class MultiIndexedContainer extends ModelContainer {
         }
     }
 
-    get(item, UNWRAPPED = false) {
+    get(item, UNWRAPPED = false, __return_data__) {
 
         let out = {};
 
         if (item) {
-            for (let a in item)
-                if (this.indexes[a])
-                    out[a] = this.indexes[a].get(item[a], UNWRAPPED);
+            for (let name in item)
+                if (this.indexes[name])
+                    out[name] = this.indexes[name].get(item[name], UNWRAPPED, __return_data__);
         } else
 
             out = this.first_index.get(null, UNWRAPPED);
@@ -486,15 +507,14 @@ class MultiIndexedContainer extends ModelContainer {
 
             let out = false
 
-            for (let a in this.indexes) {
+            for (let name in this.indexes) {
 
-                let index = this.indexes[a];
+                let index = this.indexes[name];
 
                 if (index.insert(model))
                     out = true;
-                else
-                    console.warn(`Indexed container ${a} ${index} failed to insert:`, model);
-
+                //else
+                //    console.warn(`Indexed container ${a} ${index} failed to insert:`, model);
             }
 
             if (out)
@@ -509,14 +529,27 @@ class MultiIndexedContainer extends ModelContainer {
 
         let out = false;
 
-        for (let a in this.indexes) {
-            let index = this.indexes[a];
+        for (let name in this.indexes) {
+            let index = this.indexes[name];
             if (index.remove(item))
                 out = true;
         }
 
         return out;
     }
+
+    __removeAll__() {
+
+        let out = false;
+
+        for (let name in this.indexes) {
+            if (index.__removeAll__())
+                out = true;
+        }
+
+        return out;
+    }
+
 
     /**
         Overrides Model container default __getIdentifier__ to force item to pass.

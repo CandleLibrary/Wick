@@ -1,4 +1,6 @@
-import {Cassette} from "./cassette"
+import {
+    Cassette
+} from "./cassette"
 import * as Common from "../../common"
 
 let day_of_week = Common.dow;
@@ -15,8 +17,8 @@ let months = Common.months;
 */
 class EpochDay extends Cassette {
 
-    constructor(parent, element,d,p) {
-        super(parent, element,d,p);
+    constructor(parent, element, d, p) {
+        super(parent, element, d, p);
         this.TO_UPPERCASE = (this.data.uppercase == "true") ? true : false;
         this.limit = (parseInt(this.data.limit) > 0) ? parseInt(this.data.limit) : 0;
     }
@@ -24,8 +26,8 @@ class EpochDay extends Cassette {
     update(data) {
         let date = data[this.prop];
         let epoch_date = new Date(date);
-        
-        if(date && epoch_date){
+
+        if (date && epoch_date) {
             let day_name = day_of_week[epoch_date.getDay()];
 
             day_name = (this.limit > 0) ? day_name.slice(0, this.limit) : day_name;
@@ -47,8 +49,8 @@ class EpochDay extends Cassette {
 */
 class EpochMonth extends Cassette {
 
-    constructor(parent, element,d,p) {
-        super(parent, element,d,p);
+    constructor(parent, element, d, p) {
+        super(parent, element, d, p);
         this.TO_UPPERCASE = (this.data.uppercase == "true") ? true : false;
         this.limit = (parseInt(this.data.limit) > 0) ? parseInt(this.data.limit) : 0;
     }
@@ -56,8 +58,8 @@ class EpochMonth extends Cassette {
     update(data) {
         let date = data[this.prop];
         let epoch_date = new Date(date);
-        
-        if(date && epoch_date){
+
+        if (date && epoch_date) {
             let month_name = months[epoch_date.getMonth()].name;
 
             month_name = (this.limit > 0) ? month_name.slice(0, this.limit) : month_name;
@@ -73,15 +75,15 @@ class EpochMonth extends Cassette {
 */
 class EpochDate extends Cassette {
 
-    constructor(parent, element,d,p) {
-        super(parent, element,d,p);
+    constructor(parent, element, d, p) {
+        super(parent, element, d, p);
     }
 
     update(data) {
         let date = data[this.prop];
         let epoch_date = new Date(date);
-        
-        if(date && epoch_date)
+
+        if (date && epoch_date)
             this.element.innerHTML = epoch_date.getDate();
     }
 }
@@ -91,15 +93,15 @@ class EpochDate extends Cassette {
 */
 class EpochYear extends Cassette {
 
-    constructor(parent, element,d,p) {
-        super(parent, element,d,p);
+    constructor(parent, element, d, p) {
+        super(parent, element, d, p);
     }
 
     update(data) {
         let date = data[this.prop];
         let epoch_date = new Date(date);
-        
-        if(date && epoch_date)
+
+        if (date && epoch_date)
             this.element.innerHTML = epoch_date.getFullYear();
     }
 }
@@ -108,19 +110,49 @@ class EpochYear extends Cassette {
     Outputs the toString() value of a Date object provided the data-prop value is a valid epoch timestamp.
 */
 class EpochToDateTime extends Cassette {
-    constructor(parent, element,d,p) {
-        super(parent, element,d,p);
+    constructor(parent, element, d, p) {
+        super(parent, element, d, p);
     }
 
     update(data) {
         let date = data[this.prop];
         let epoch_date = new Date(date);
-        
-        if(date && epoch_date)
+
+        if (date && epoch_date)
             this.element.innerHTML = epoch_date;
     }
 }
 
+
+/**
+    Outputs the time portion of an Epoch time value
+*/
+class EpochTime extends Cassette {
+    constructor(parent, element, d, p) {
+        super(parent, element, d, p);
+    }
+
+    update(data) {
+        let date = data[this.prop];
+        let epoch_date = new Date(date);
+
+        if (date && epoch_date) {
+
+            let hour = epoch_date.getHours();
+            let minutes = epoch_date.getMinutes();
+
+            let time = hour + (minutes / 60);
+
+            this.element.innerHTML = Common.float24to12ModTime(time, true);
+        }
+    }
+}
+
 export {
-    EpochDay, EpochDate, EpochMonth, EpochYear, EpochToDateTime
+    EpochDay,
+    EpochDate,
+    EpochMonth,
+    EpochYear,
+    EpochToDateTime,
+    EpochTime
 }

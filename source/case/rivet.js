@@ -2,19 +2,6 @@ import {
     View
 } from "../view"
 
-function ImportDataFromDataSet(data_object, data_set_object, element) {
-    if (element) {
-        for (let prop in data_set_object) {
-            data_object[prop] = data_set_object[prop];
-            element.removeAttribute(`data-${prop}`);
-        }
-    } else {
-        for (let prop in data_set_object) {
-            data_object[prop] = data_set_object[prop];
-        }
-    }
-}
-
 /*
     Transitioneers
 */
@@ -29,7 +16,7 @@ let PresetTransitioneers = {
 
 class Rivet extends View {
 
-    constructor(parent, element, presets, data) {
+    constructor(parent = null, element = null, presets = {}, data = {}) {
 
         super();
 
@@ -43,7 +30,7 @@ class Rivet extends View {
 
         this.DESTROYED = false;
 
-        //Setting the transitioneer
+        //Setting the transitioner
         this.transitioneer = null;
 
         if (data.trs) {
@@ -54,9 +41,6 @@ class Rivet extends View {
 
             this.transitioneer.set(this.element)
         }
-
-
-        ImportDataFromDataSet(this.data, element.dataset);
     }
 
     destructor() {
@@ -84,7 +68,7 @@ class Rivet extends View {
             this.children.length = 0;
             this.data = null;
 
-            if (this.element.parentElement)
+            if (this.element && this.element.parentElement)
                 this.element.parentElement.removeChild(this.element);
 
             this.element = null;
@@ -176,9 +160,10 @@ class Rivet extends View {
             transition_time = Math.max(transition_time, this.children[i].transitionIn(index));
 
         if (this.transitioneer) {
-
             transition_time = Math.max(transition_time, this.transitioneer.set_in(this.element, this.data, index));
         }
+
+
 
 
         return transition_time;
@@ -187,21 +172,25 @@ class Rivet extends View {
     /**
         Takes as an input a list of transition objects that can be used
     */
-    transitionOut(index = 0) {
+    transitionOut(index = 0, DESTROY = false) {
 
         let transition_time = 0;
 
         this.LOADED = false;
 
         if (this.transitioneer) {
-
             transition_time = Math.max(transition_time, this.transitioneer.set_out(this.element, this.data, index));
         }
 
         for (let i = 0, l = this.children.length; i < l; i++)
             transition_time = Math.max(transition_time, this.children[i].transitionOut(index));
 
-
+        if (DESTROY) {
+            setTimeout(() => {
+                this.finalizeTransitionOut();
+                this.destructor();
+            }, transition_time * 1000);
+        }
 
         return transition_time;
     }
@@ -220,18 +209,24 @@ class Rivet extends View {
         }
     }
 
-    load() {
-
+    load(model) {
+        for (var i = 0; i < this.children.length; i++) {
+            this.children[i].load(model);
+        }
     }
 
     hide() {
-        this.display = this.element.style.display;
-        this.element.style.display = "none";
+        if (this.element) {
+            this.display = this.element.style.display;
+            this.element.style.display = "none";
+        }
     }
 
     show() {
-        if (this.element.style.display == "none")
-            this.element.style.display = this.display;
+        if (this.element) {
+            if (this.element.style.display == "none")
+                this.element.style.display = this.display;
+        }
     }
 
     __updateExports__(data) {

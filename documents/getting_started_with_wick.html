@@ -56,7 +56,7 @@
       
       <case data-schema="users" data-prop="data" data-trs="base">
         
-        <template class="user_entry" data-prop="data">
+        <casetemplate class="user_entry" data-prop="data">
           
           <filter data-class="limit" data-value="2" data-import="page_number" data-export="page_count"></filter>
 
@@ -71,7 +71,7 @@
               <input type="text"  data-prop="birthday" name ="note">
             </a>
           </case>
-        </template>
+        </casetemplate>
 
       <textarea data-class="data_edit" data-model="true">
         {
@@ -135,7 +135,7 @@
             container: wick.BTreeModelContainer,
             schema: {
                 identifier: "birthday",
-                parser: wick.schema.STRING,
+                parser: wick.schema.DATE,
                 model: User,
             }
         }],

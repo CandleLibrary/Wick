@@ -51,6 +51,7 @@ import {
 } from "./cassette/exists"
 import {
     EpochDay,
+    EpochTime,
     EpochDate,
     EpochMonth,
     EpochYear,
@@ -65,6 +66,7 @@ let PresetCassettes = {
     export: Exporter,
     iquery: ImportQuery,
     edt: EpochToDateTime,
+    etime: EpochTime,
     eday: EpochDay,
     edate: EpochDate,
     eyear: EpochYear,
@@ -76,10 +78,7 @@ let PresetCassettes = {
     limit: FilterLimit
 }
 
-/*
-    This function's role is to construct a case skeleton given a template, a list of presets, and 
-    and optionally a working DOM. This will return Case Skeleton that can be cloned into a new Case object. 
-*/
+
 
 function ImportDataFromDataSet(data_object, data_set_object, element) {
     if (element) {
@@ -108,7 +107,14 @@ class lvl {
         return element_root.children[this.index];
     }
 }
+/*
+    This function's role is to construct a case skeleton given a template, a list of presets, and 
+    and optionally a working DOM. This will return Case Skeleton that can be cloned into a new Case object. 
 
+    @param {HTMLElement} Template
+    @param {Presets} presets 
+    @param {DOMElement} WORKING_DOM
+*/
 function CaseConstructor(Template, Presets, WORKING_DOM) {
 
     let skeleton;
@@ -281,19 +287,19 @@ function ComponentConstructor(parent, element, presets, WORKING_DOM, parent_lvl)
 
             case "CASETEMPLATE":
 
-                let div = document.createElement("div");
+                //let div = document.createElement("div");
 
-                var ele = document.importNode(child_element.content, true);
+                //var ele = child_element.cloneNode(true);
 
-                div.appendChild(ele);
+                //div.appendChild(ele);
 
-                element.replaceChild(div, child_element);
+                //element.replaceChild(ele, child_element);
 
                 let bone = new CaseSkeleton(null, null, new lvl(i, parent_lvl), NAMED, presets);
 
                 bone.data = data;
 
-                let skeleton = ComponentConstructor(parent, div, presets, WORKING_DOM);
+                let skeleton = ComponentConstructor(parent, child_element, presets, WORKING_DOM);
 
                 bone.Constructor = ((s) => class extends CaseTemplate {
                     constructor(p, e, pr, d) {
@@ -362,12 +368,12 @@ function ComponentConstructor(parent, element, presets, WORKING_DOM, parent_lvl)
 
                 Constructor = PresetCassettes.form;
 
+                let form_class;
+
                 if (class_ && (form_class = cassettes[class_]) && form_class.prototype instanceof Form)
-                    Constructor = form_class(parentCase, child_element);
+                    Constructor = form_class;
                 else if (cassettes.form || PresetCassettes.form)
                     Constructor = (cassettes.form || PresetCassettes.form);
-
-
 
                 if (Constructor) {
 
@@ -377,7 +383,7 @@ function ComponentConstructor(parent, element, presets, WORKING_DOM, parent_lvl)
 
                     out.push(bone);
 
-                    bone.children = ComponentConstructor(bone, child_element, presets, bone, WORKING_DOM, new lvl(i, parent_lvl));
+                    bone.children = ComponentConstructor(bone, child_element, presets, WORKING_DOM, new lvl(i, parent_lvl));
 
                     continue
 

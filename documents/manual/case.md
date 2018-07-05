@@ -35,3 +35,11 @@ MyCassette extends Cassette{
 	}
 }
 ```
+
+## CaseConstructor
+
+The CaseConstructor is used to convert html into ready made Case builders, known as case_skeletons. Once a skeleton is constructed, it can be used to create active UI elements. 
+
+CaseConstructor(Template, Presets, WORKING_DOM)
+returns a function ()=>{} Returns case or cassette object.
+CustomCase(element, data, Presets);

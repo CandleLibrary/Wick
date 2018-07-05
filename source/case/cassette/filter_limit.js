@@ -45,8 +45,6 @@ class FilterLimit extends Filter {
 
         let out_data = [];
 
-        console.log(offset, page_count)
-
         for(let i = offset; i < page_count+offset && i < l; i++)
             out_data.push(data[i]);
 

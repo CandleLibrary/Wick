@@ -54,6 +54,8 @@ class Cassette extends Rivet {
             if (__function__(href, a)) e.preventDefault();
         })(element.href, element, (href, a) => {
 
+            let SAME_LOCALE = (location.pathname == a.pathname);
+
             let hashtag = href.includes("#");
 
             let real_href = "";
@@ -79,7 +81,9 @@ class Cassette extends Rivet {
 
             if (hashtag)
                 this.export();
-            this.bubbleLink(real_href);
+
+            if(!SAME_LOCALE)
+                this.bubbleLink(real_href);
 
             return true;
         });

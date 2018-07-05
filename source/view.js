@@ -37,11 +37,9 @@ class View{
 	reset(){
 		
 	}
-	/**
-	* Called by model when it is destroyed. Destroys view as a default action
-	*/
 	unsetModel(){
-		this.destructor();
+		this.next = null;
+		this.model = null;
 	}
 }
 

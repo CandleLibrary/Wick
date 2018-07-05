@@ -29,8 +29,12 @@ class Model extends ModelBase {
         this.data = {};
         this._temp_data_ = null;
 
-        if (!this.schema.__export_data__) {
-            let __export_data__ = [];
+        let __export_data__ = this.schema.__export_data__;
+
+        if (!__export_data__) {
+
+            __export_data__ = [];
+
             this.schema.__export_data__ = __export_data__;
 
             for (var a in this.schema) {
@@ -73,7 +77,20 @@ class Model extends ModelBase {
                     })
                 }
             }
+        } else {
+            for (let i = 0, l = __export_data__.length; i < l; i++) {
+                let _export_ = __export_data__[i];
+                let name = _export_.name;
+                if (_export_.type == "ModelContainer") {
+                    let scheme = this.schema[name];
+                    if (scheme[0] instanceof ModelContainer)
+                        this.data[name] = new scheme[0].constructor();
+                    else if (scheme[0].container && scheme[0].schema)
+                        this.data[name] = new scheme[0].container(scheme[0].schema);
+                } else if (_export_.type == "Model")
+                    this.data[name] = new this.schema[name].constructor();
 
+            }
         }
         if (data)
             this.add(data);
@@ -168,8 +185,8 @@ class Model extends ModelBase {
     /**
         Returns a parsed value based on the key 
     */
-    getString(key){
-        
+    getString(key) {
+
     }
 
     /**

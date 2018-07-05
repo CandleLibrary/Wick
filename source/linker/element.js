@@ -74,7 +74,7 @@ class Element {
         }
     }
 
-    loadComponents(wurl) {            
+    loadComponents(wurl) {
 
         for (let i = 0; i < this.components.length; i++) {
 
@@ -104,7 +104,7 @@ class Element {
             let component = this.components[i];
 
             component.transitionIn();
-            
+
         }
     }
 
@@ -230,7 +230,7 @@ class Element {
                     if (!App_Components[id]) {
                         if (comp = Component_Constructors[id]) {
 
-                            app_case = new comp.constructor(component, presets, templates);
+                            app_case = new comp.constructor(templates, presets, component, DOM);
 
                             if (comp.model_name && Model_Constructors[comp.model_name]) {
                                 var model = Model_Constructors[comp.model_name];

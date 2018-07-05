@@ -43,6 +43,14 @@ import {
     CustomCase
 } from "./case/case"
 
+import {
+    Rivet
+} from "./case/rivet"
+
+import {
+    CaseConstructor
+} from "./case/case_constructor"
+
 import{
     Filter
 } from "./case/cassette/filter"
@@ -104,6 +112,8 @@ export {
     MultiIndexedContainer,
     Controller,
     CustomCase,
+    Rivet,
+    CaseConstructor,
     Cassette,
     Form,
     Filter,
