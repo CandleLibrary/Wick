@@ -1,10 +1,10 @@
 {
   "name": "wick",
-  "version": "0.0.1",
-  "description": "SPA Framework",
+  "version": "0.0.2",
+  "description": "PWA Framework",
   "main": "build/wick.js",
   "scripts": {
-    "test": "",
+    "test": "mocha",
     "build": "webpack --config ./wp-config/build.config.js",
     "dev-build": "webpack --config ./wp-config/build-dev.config.js",
     "watch": "webpack --config ./wp-config/watch.config.js",
@@ -32,6 +32,8 @@
   "private": true,
   "homepage": "https://github.com/Galactrax/wick#readme",
   "devDependencies": {
+    "jsdom": "^11.11.0",
+    "mocha": "^5.2.0"
   },
   "optionalDependencies": {
     "jsdoc-webpack-plugin": "0.0.2",

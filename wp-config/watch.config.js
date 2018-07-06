@@ -13,6 +13,6 @@ module.exports = {
     filename: 'wick-dev.js',
     path: path.resolve(__dirname, '../build'),
     library: 'wick',
-    libraryTarget: 'var'
+    libraryTarget : 'umd'
   }
 };
