@@ -2,6 +2,10 @@ import {
     View
 } from "../view"
 
+import {
+    AnyModel
+} from "../model/model"
+
 /*
     Transitioneers
 */
@@ -242,7 +246,7 @@ class Rivet extends View {
     /**
         Exports data stored from updateExports() into a an Object exports and calls it's parent's export function, passing exports
     */
-    export (exports = {}) {
+    export (exports = new AnyModel) {
 
         if (this.parent && this.parent.export) {
 
@@ -272,7 +276,7 @@ class Rivet extends View {
     add(value) {
         if (this.model) {
             this.model.add(value);
-            this.export(value);
+            this.export(this.model);
         } else if (this.parent && this.parent.add)
             this.parent.add(value)
     }

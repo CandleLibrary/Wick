@@ -120,6 +120,21 @@
         cassettes: {}
     };
 
+
+    class NM extends wick.Model {};
+    NM.schema = {
+        name: wick.schema.STRING,
+        birthday: wick.schema.DATE,
+        data:[new wick.ArrayModelContainer]
+    }
+    let n = {chocolate:"pudding!"}
+    let test = new NM({
+              "name" : "Umbadi Tinak",
+              "birthday": "Dec 15 2016"
+            });
+
+    console.log(test.toJson())
+
     //Create a new schema for Users and User container
     class User extends wick.Model {};
 

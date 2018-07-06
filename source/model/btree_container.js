@@ -16,19 +16,21 @@ class BTreeModelContainer extends ModelContainer {
     }
 
     destructor() {
-        if(this.root)
+        if (this.root)
             this.root.destructor();
 
         super.destructor();
     }
 
-    get length(){
+    get length() {
         return this.size;
     }
 
     __insert__(model, add_list, identifier) {
 
-        let result = {added:false};
+        let result = {
+            added: false
+        };
 
         if (!this.root)
             this.root = new BtreeNode(true);
@@ -37,22 +39,22 @@ class BTreeModelContainer extends ModelContainer {
 
         if (add_list) add_list.push(model);
 
-        if(result.added)
+        if (result.added)
             this.size++;
 
         return result.added;
     }
 
-    __get__(terms, __return_data__, UNWRAPPED = false) {
+    __get__(terms, __return_data__) {
 
         if (this.root && terms.length > 0) {
             if (terms.length == 1) {
-                this.root.get(parseFloat(terms[0]), parseFloat(terms[0]), __return_data__, UNWRAPPED);
+                this.root.get(parseFloat(terms[0]), parseFloat(terms[0]), __return_data__);
             } else if (terms.length < 3) {
-                this.root.get(parseFloat(terms[0]), parseFloat(terms[1]), __return_data__, UNWRAPPED);
+                this.root.get(parseFloat(terms[0]), parseFloat(terms[1]), __return_data__);
             } else {
                 for (let i = 0, l = terms.length - 1; i > l; i += 2)
-                    this.root.get(parseFloat(terms[i]), parseFloat(terms[i + 1]), __return_data__, UNWRAPPED);
+                    this.root.get(parseFloat(terms[i]), parseFloat(terms[i + 1]), __return_data__);
             }
         }
 
@@ -80,15 +82,15 @@ class BTreeModelContainer extends ModelContainer {
             }
         }
 
-        if(result)
+        if (result)
             this.size--;
 
         return result;
     }
 
-    __getAll__(__return_data__, UNWRAPPED = false) {
+    __getAll__(__return_data__) {
         if (this.root)
-            this.root.get(-Infinity, Infinity, __return_data__, UNWRAPPED);
+            this.root.get(-Infinity, Infinity, __return_data__);
         return __return_data__;
     }
 
@@ -98,7 +100,16 @@ class BTreeModelContainer extends ModelContainer {
         this.root = null;
     }
 
+    toJSON() {
+        let out_data = [];
 
+        if (this.root) {
+
+            this.root.get(-Infinity, Infinity, out_data);
+        }
+
+        return out_data;
+    }
 }
 
 class BtreeNode {
@@ -248,8 +259,6 @@ class BtreeNode {
             return this.balanceInsert(max_size, IS_ROOT);
         }
 
-        debugger
-
         return {
             newnode: this,
             key: identifier,
@@ -287,7 +296,7 @@ class BtreeNode {
             right.nodes.splice(0, 1);
 
             this.keys[index] = (node.LEAF) ? right.keys[1] : right.keys[0];
-            
+
             return false;
 
         } else {
@@ -371,7 +380,7 @@ class BtreeNode {
         };
     }
 
-    get(start, end, out_container, UNWRAPPED) {
+    get(start, end, out_container) {
 
         if (!start || !end)
             return false;
@@ -383,10 +392,10 @@ class BtreeNode {
                 let key = this.keys[i];
 
                 if (start <= key)
-                    this.nodes[i].get(start, end, out_container, UNWRAPPED)
+                    this.nodes[i].get(start, end, out_container)
             }
 
-            this.nodes[i].get(start, end, out_container, UNWRAPPED)
+            this.nodes[i].get(start, end, out_container, )
 
         } else {
 
@@ -395,14 +404,8 @@ class BtreeNode {
             for (let i = 0, l = this.keys.length; i < l; i++) {
                 let key = this.keys[i];
 
-                if (key <= end && key >= start) {
-
-                    if (UNWRAPPED)
-                        out_container.push(this.nodes[i]);
-                    else
-                        out_container.push(this.nodes[i].get());
-                }
-
+                if (key <= end && key >= start)
+                    out_container.push(this.nodes[i]);
             }
         }
     }

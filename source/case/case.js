@@ -107,9 +107,8 @@ class Case extends Rivet {
             this.model = null;
         } 
 
-        if (this.schema) {
+        if (this.schema) 
             model = new this.schema();
-        }
         
         model.addView(this);
 

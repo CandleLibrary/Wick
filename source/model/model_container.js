@@ -24,11 +24,24 @@ class MCArray extends Array {
     __setFilters__() {
 
     }
+    getChanged(){
+
+    }
+
+    toJSON(){
+        return this;
+    }
+
+    toJson() {
+        return JSON.stringify(this,null, '\t');
+    }
 }
 
 // A "null" function
 let EmptyFunction = () => {};
 let EmptyArray = [];
+
+
 
 class ModelContainer extends ModelBase {
 
@@ -48,7 +61,6 @@ class ModelContainer extends ModelBase {
         //Filters are a series of strings or number selectors used to determine if a model should be inserted into or retrieved from the container.
         this.__filters__ = EmptyArray;
 
-
         this.schema = schema || this.constructor.schema || {};
 
         //The parser will handle the evaluation of identifiers according to the criteria set by the __filters__ list. 
@@ -66,6 +78,10 @@ class ModelContainer extends ModelBase {
         } else {
             // throw (`Wrong schema identifier type given to ModelContainer. Expected type String, got: ${typeof(this.schema.identifier)}!`, this);
         }
+        return this
+        return new Proxy(this, {
+            get: (obj, prop, val) => (prop in obj) ? obj[prop] : obj.get(val)
+        })
     }
 
     destructor() {
@@ -73,7 +89,7 @@ class ModelContainer extends ModelBase {
 
         this.__filters__ = null;
 
-        if(this.source){
+        if (this.source) {
             this.source.__unlink__(this);
         }
 
@@ -119,15 +135,11 @@ class ModelContainer extends ModelBase {
         Retrieves a list of items that match the term/terms. 
 
         @param {(Array|SearchTerm)} term - A single term or a set of terms to look for in the ModelContainer. 
-        @param {Boolean} UNWRAPPED - If set to true, this will result in actual Models being returned, and not just the wrapped data. 
         @param {Array} __return_data__ - Set to true by a source Container if it is calling a SubContainer insert function. 
 
         @returns {(ModelContainer|Array)} Returns a Model container or an Array of Models matching the search terms. 
     */
-    get(term, UNWRAPPED = false, __return_data__) {
-
-        if (term === null)
-            UNWRAPPED = true;
+    get(term, __return_data__) {
 
         let out = null;
 
@@ -151,7 +163,7 @@ class ModelContainer extends ModelBase {
             out = this.__defaultReturn__(USE_ARRAY);
 
         if (!term)
-            this.__getAll__(out, UNWRAPPED);
+            this.__getAll__(out);
         else {
 
             let terms = term;
@@ -160,7 +172,7 @@ class ModelContainer extends ModelBase {
                 terms = [term];
 
 
-            this.__get__(terms, out, UNWRAPPED);
+            this.__get__(terms, out);
         }
 
         return out
@@ -247,7 +259,7 @@ class ModelContainer extends ModelBase {
                 terms = [term];
             }
 
-            this.__remove__(terms, out, UNWRAPPED);
+            this.__remove__(terms, out);
         }
 
         this.__linksRemove__(terms);
@@ -376,7 +388,7 @@ class ModelContainer extends ModelBase {
     }
 
     /**
-        Returns the Identifier value if it exists in the item. If FILTERED is true, then undefined is returned if the identifier value does not pass filtering criteria.
+        Returns the Identifier property value if it exists in the item. If an array value for filters is passed, then undefined is returned if the identifier value does not pass filtering criteria.
         @param {(Object|Model)} item
         @param {Array} filters - An array of filter terms to test whether the identifier meets the criteria to be handled by the ModelContainer.
     */
@@ -384,12 +396,12 @@ class ModelContainer extends ModelBase {
 
         let identifier = null;
 
-        if (item.data && item.schema)
-            identifier = item.data[this.schema.identifier];
+        if (typeof(item) == "object")
+            identifier = item[this.schema.identifier];
         else
-            identifier = item[this.schema.identifier] || item;
+            identifier = item;
 
-        if (filters)
+        if (filters && identifier)
             return (this.__filterIdentifier__(identifier, filters)) ? identifier : undefined;
 
         return identifier;
@@ -405,11 +417,11 @@ class ModelContainer extends ModelBase {
         return false;
     }
 
-    __get__(item, __return_data__, UNWRAPPED = false) {
+    __get__(item, __return_data__) {
         return __return_data__;
     }
 
-    __getAll__(__return_data__, UNWRAPPED = false) {
+    __getAll__(__return_data__) {
         return __return_data__;
     }
 
@@ -466,17 +478,17 @@ class MultiIndexedContainer extends ModelContainer {
         }
     }
 
-    get(item, UNWRAPPED = false, __return_data__) {
+    get(item, __return_data__) {
 
         let out = {};
 
         if (item) {
             for (let name in item)
                 if (this.indexes[name])
-                    out[name] = this.indexes[name].get(item[name], UNWRAPPED, __return_data__);
+                    out[name] = this.indexes[name].get(item[name], __return_data__);
         } else
 
-            out = this.first_index.get(null, UNWRAPPED);
+            out = this.first_index.get(null);
 
 
         return out;
@@ -558,8 +570,59 @@ class MultiIndexedContainer extends ModelContainer {
     __getIdentifier__(item, filters = null) {
         return true;
     }
+
+    toJSON(){
+        return "[]";
+    }
 }
 
+
+/*
+    Removing Non Enumerable properties 
+*/
+
+Object.defineProperty(ModelContainer.constructor, "__filters__", {
+    writable: true,
+    enumerable: false,
+    configurable: false,
+    value: EmptyArray
+});
+Object.defineProperty(ModelContainer.constructor, "prev", {
+    writable: true,
+    enumerable: false,
+    configurable: false,
+    value: null
+});
+Object.defineProperty(ModelContainer.constructor, "next", {
+    writable: true,
+    enumerable: false,
+    configurable: false,
+    value: null
+});
+Object.defineProperty(ModelContainer.constructor, "first_link", {
+    writable: true,
+    enumerable: false,
+    configurable: false,
+    value: null
+});
+Object.defineProperty(ModelContainer.constructor, "source", {
+    writable: true,
+    enumerable: false,
+    configurable: false,
+    value: null
+});
+Object.defineProperty(ModelContainer.constructor, "pin", {
+    writable: true,
+    enumerable: false,
+    configurable: false,
+    value: null
+});
+Object.defineProperty(ModelContainer.constructor, "schema", {
+    writable: true,
+    enumerable: false,
+    configurable: false,
+    value: null
+});
 
 export {
     MCArray,

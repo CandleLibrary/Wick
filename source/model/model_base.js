@@ -1,11 +1,14 @@
 import {
 	View
 } from "../view"
+import {
+	Scheduler
+} from "../scheduler"
 
 
 class ModelBase {
 	constructor() {
-		this.first_view = null;
+   		this.changed_values = [];
 	};
 
 	destructor() {
@@ -17,12 +20,44 @@ class ModelBase {
             view = view.next;
         }
 
-        this.first_view = null;
+        //this.first_view = null;
+
+        this.changed_values = null;
 	}
 
 	get (){
-		return {}
+		return this;
 	}
+
+
+	/**
+		
+	*/
+
+    scheduleUpdate(changed_value) {
+    	if(!this.first_view)
+    		return;
+
+    	this.changed_values.push(changed_value);
+
+        Scheduler.queueUpdate(this);
+    }
+
+    getChanged(prop_name) {
+
+        for (let i = 0, l = this.changed_values.length; i < l; i++)
+            if (this.changed_values[i] == prop_name)
+                return this[prop_name];
+
+        return null;
+    }
+
+    update(step) {
+
+        this.updateViews(this);
+
+        this.changed_values.length = 0;
+    }
 
 	/**
 		Adds a view to the linked list of views on the model. argument view MUST be an instance of View. 
@@ -42,11 +77,6 @@ class ModelBase {
 			view.model = this;
 			view.next = this.first_view;
 			this.first_view = view;
-
-			view.model = this;
-
-			if (!this._temp_data_)
-				this._temp_data_ = this.get();
 
 			view.setModel(this);
 			view.update(this.get());
@@ -89,20 +119,23 @@ class ModelBase {
 	/**
 		Calls update() on every view object, passing the current state of the Model.
 	*/	
-	updateViews(data) {
+	updateViews() {
 		var view = this.first_view;
 
 		while (view) {
 			
-			view.update(data);
+			view.update(this, this.changed_values);
+
 			
 			view = view.next;
 		}
+		
+		this.changed_values.length = 0;
 	}
 
 	/**
 		Updates views with a list of models that have been removed. 
-		Primarily used in conjuction with container based views, such as CaseTemplates.
+		Primarily used in conjunction with container based views, such as CaseTemplates.
 	*/
 	updateViewsRemoved(data) {
 		var view = this.first_view;
@@ -117,7 +150,7 @@ class ModelBase {
 
 	/**
 		Updates views with a list of models that have been added. 
-		Primarily used in conjuction with container based views, such as CaseTemplates.
+		Primarily used in conjunction with container based views, such as CaseTemplates.
 	*/
 	updateViewsAdded(data) {
 		var view = this.first_view;
@@ -129,7 +162,28 @@ class ModelBase {
 			view = view.next;
 		}
 	}
+
+    toJson() {
+        return JSON.stringify(this,null, '\t');
+    }
 }
+
+Object.defineProperty(ModelBase.prototype, "first_view", {
+	writable : true,
+	configurable : false,
+	enumerable : false,
+})
+
+Object.defineProperty(ModelBase.prototype, "changed_values", {
+	writable : true,
+	configurable : false,
+	enumerable : false,
+})
+
+
+Object.seal(ModelBase.prototype);
+
+
 export {
 	ModelBase
 }

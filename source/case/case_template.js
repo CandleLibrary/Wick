@@ -177,13 +177,16 @@ class CaseTemplate extends Case {
     }
 
     update(data, IMPORT = false) {
-        let container = data[this.prop];
-        
+
+        console.log(data.toJson())
+
+        let container = data.getChanged(this.prop);
+
         if (IMPORT) {
 
             let UPDATE = false;
 
-            for (let i = 0, l = this.terms.length; i < l; i++){
+            for (let i = 0, l = this.terms.length; i < l; i++) {
                 if (this.terms[i].update(data))
                     UPDATE = true;
             }
@@ -191,21 +194,21 @@ class CaseTemplate extends Case {
             if (UPDATE && this.model)
                 this.cull(this.get())
 
+
             for (let i = 0, l = this.filters.length; i < l; i++)
                 if (this.filters[i].update(data))
                     UPDATE = true;
 
-
             if (UPDATE)
                 this.filterUpdate();
 
-        } 
+        }
 
-        if (!this.model && this.prop && container && (container instanceof ModelContainer || container.____self____)) {
+        if (container && (container instanceof ModelContainer || container.____self____)) {
 
             this.cache = data;
 
-            let own_container = container.get(this.getTerms(), true, null);
+            let own_container = container.get(this.getTerms(), null);
 
             if (own_container instanceof ModelContainer) {
                 own_container.pin();
@@ -232,23 +235,23 @@ class CaseTemplate extends Case {
 
                 query[index] = this.getTerms();
 
-                return this.model.get(query, true)[index];
+                return this.model.get(query)[index];
             } else
                 console.warn("No index value provided for MultiIndexedContainer!")
-        } else{
+        } else {
             let source = this.model.source;
             let terms = this.getTerms();
 
-            if(source){
+            if (source) {
                 this.model.destructor();
-                
-                let model = source.get(terms, true, null);
+
+                let model = source.get(terms, null);
 
                 model.pin();
                 model.addView(this);
             }
 
-            return this.model.get(terms, true);
+            return this.model.get(terms);
         }
         return [];
     }

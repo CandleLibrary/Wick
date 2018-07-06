@@ -14,6 +14,7 @@ class DataEdit extends Cassette{
         let data = JSON.parse(this.element.value);
         
         if(data){
+        	
         	model.add(data);
         }
 

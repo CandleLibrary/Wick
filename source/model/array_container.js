@@ -121,6 +121,16 @@ class ArrayModelContainer extends ModelContainer {
         }
         return [];
     }
+
+    toJSON(){
+        let out_string = "["
+
+        for(var i  = 0, l = this.data.length; i < l;i++){
+            out_string += `${JSON.stringify(this.data[i])} ${(i+1 == l)?",":""}`;
+        }
+
+        return out_string.slice(-1) + "]"; 
+    }
 }
 
 export {

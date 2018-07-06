@@ -19,96 +19,204 @@ import {
     SchemaType
 } from "../schema/schemas"
 
+import {
+    Scheduler
+} from "../scheduler"
+
+
+/**
+    This is used by NModel to create custom property getter and setters 
+    on non-ModelContainer and non-Model properties of the NModel constructor.
+*/
+
+function CreateSchemedProperty(constructor, scheme, schema_name) {
+
+    if (constructor.prototype[schema_name])
+        return;
+
+    let __shadow_name__ = `__${schema_name}__`;
+
+
+    Object.defineProperty(constructor.prototype, __shadow_name__, {
+        writable: true,
+        configurable: false,
+        enumerable: false,
+        value: scheme.start_value || undefined
+    })
+
+    Object.defineProperty(constructor.prototype, schema_name, {
+        configurable: false,
+        enumerable: true,
+        get: function() {
+            return this[__shadow_name__];
+        },
+
+        set: function(value) {
+
+            let result = {
+                valid: false
+            };
+
+            let val = scheme.parse(value);
+
+            scheme.verify(val, result);
+
+            if (result.valid && this[__shadow_name__] != val)
+                (this[__shadow_name__] = val, this.scheduleUpdate(schema_name));
+        }
+    })
+}
+
+/**
+    This is used by NModel to create custom property getter and setters 
+    on Schemed ModelContainer properties of the NModel constructor.
+*/
+
+function CreateMCSchemedProperty(constructor, scheme, schema_name) {
+
+    let schema = scheme.schema;
+
+    let mc_constructor = scheme.container;
+
+    let __shadow_name__ = `__${schema_name}__`;
+
+    Object.defineProperty(constructor.prototype, __shadow_name__, {
+        enumerable: false,
+        writable: true,
+        value: null
+    })
+
+    Object.defineProperty(constructor.prototype, schema_name, {
+        configurable: false,
+        enumerable: true,
+        get: function() {
+
+            if (!this[__shadow_name__])
+                this[__shadow_name__] = new mc_constructor(scheme.schema)
+
+            return this[__shadow_name__];
+        },
+
+        set: function(value) {
+
+            let MC = this[__shadow_name__];
+            let data = null;
+
+            if (typeof(value) == "string")
+                try {
+                    value = JSON.parse(value);
+                } catch (e) {
+                    console.log(e)
+                    return;
+                }
+
+            if (value instanceof Array) {
+                data = value;
+                MC = new mc_constructor(scheme.schema);
+                this[__shadow_name__] = MC;
+                MC.insert(data)
+                this.scheduleUpdate(schema_name);
+            } else if (value instanceof mc_constructor) {
+                this[__shadow_name__] = value;
+                console.log(schema_name)
+                this.scheduleUpdate(schema_name);
+            }
+        }
+    })
+}
+
+/**
+    This is used by NModel to create custom property getter and setters 
+    on Model properties of the NModel constructor.
+*/
+
+function CreateModelProperty(constructor, scheme, schema_name) {
+
+    let schema = scheme.schema;
+
+    let __shadow_name__ = `__${schema_name}__`;
+
+    Object.defineProperty(constructor.prototype, schema_name, {
+        configurable: false,
+        enumerable: true,
+
+        get: function() {
+            Object.defineProperty(this, schema_name, {
+                configurable: false,
+                enumerable: true,
+                writable: false,
+                value: new scheme()
+            })
+            return this[schema_name];
+        },
+
+        set: function(value) {}
+    })
+}
+
 class Model extends ModelBase {
+    /**
+     
+     */
     constructor(data) {
 
         super();
+        //The schema is stored directly on the constructor. If it is not there, then consider this model type to "ANY"
+        let schema = this.constructor.schema;
 
-        this.schema = this.constructor.schema || {};
+        if (schema) {
+            let __FinalConstructor__ = schema.__FinalConstructor__;
 
-        this.data = {};
-        this._temp_data_ = null;
+            let constructor = this.constructor;
 
-        let __export_data__ = this.schema.__export_data__;
+            Object.defineProperty(constructor.prototype, "schema", {
+                writable: false,
+                enumerable: false,
+                configurable: false,
+                value: schema
+            })
 
-        if (!__export_data__) {
+            if (!__FinalConstructor__) {
+                for (let schema_name in schema) {
+                    let scheme = schema[schema_name];
 
-            __export_data__ = [];
+                    if (scheme instanceof Array) {
+                        if (scheme[0] && scheme[0].container && scheme[0].schema) {
+                            CreateMCSchemedProperty(constructor, scheme[0], schema_name);
+                        } else if (scheme[0] instanceof ModelContainer) {
+                            CreateModelProperty(constructor, scheme[0].constructor, schema_name);
+                        }
+                    } else if (scheme instanceof Model)
+                        CreateModelProperty(constructor, scheme[0].constructor, schema_name);
+                    else if (scheme instanceof SchemaType)
+                        CreateSchemedProperty(constructor, scheme, schema_name);
+                    else
+                        console.warn(`Could not create property ${schema_name}.`)
 
-            this.schema.__export_data__ = __export_data__;
-
-            for (var a in this.schema) {
-
-                let scheme = this.schema[a];
-
-                if (scheme == __export_data__) continue;
-
-                if (scheme instanceof Array) {
-                    if (scheme[0] instanceof ModelContainer) {
-                        this.data[a] = new scheme[0].constructor();
-                        __export_data__.push({
-                            name: a,
-                            type: "ModelContainer",
-                            exportable: false
-                        })
-                    } else if (scheme[0].container && scheme[0].schema) {
-                        this.data[a] = new scheme[0].container(scheme[0].schema);
-                        __export_data__.push({
-                            name: a,
-                            type: "ModelContainer",
-                            exportable: false
-                        })
-                    } else {
-
-                        console.error(`Schema cannot contain an array that does not contain a single object constructor of type ModelContainer or {schema:schema, container: ModelContainer}.`);
-                    }
-                } else if (scheme instanceof Model) {
-                    this.data[a] = new scheme.constructor();
-                    __export_data__.push({
-                        name: a,
-                        type: "Model",
-                        exportable: false
-                    })
-                } else {
-                    __export_data__.push({
-                        name: a,
-                        type: this.schema[a].name,
-                        exportable: true
-                    })
                 }
+
+                Object.seal(constructor);
+
+
+                Object.defineProperty(schema, "__FinalConstructor__", {
+                        writable: false,
+                        enumerable: false,
+                        configurable: false,
+                        value: constructor
+                    })
+                    //schema.__FinalConstructor__ = constructor;
+
+
+                //Start the process over with a newly minted Model that has the properties defined in the Schema
+                return new constructor(data);
             }
         } else {
-            for (let i = 0, l = __export_data__.length; i < l; i++) {
-                let _export_ = __export_data__[i];
-                let name = _export_.name;
-                if (_export_.type == "ModelContainer") {
-                    let scheme = this.schema[name];
-                    if (scheme[0] instanceof ModelContainer)
-                        this.data[name] = new scheme[0].constructor();
-                    else if (scheme[0].container && scheme[0].schema)
-                        this.data[name] = new scheme[0].container(scheme[0].schema);
-                } else if (_export_.type == "Model")
-                    this.data[name] = new this.schema[name].constructor();
-
-            }
+            /* This will be an ANY Model */
+            return new AnyModel(data);
         }
+
         if (data)
             this.add(data);
-    }
-
-    get __export_data__() {
-        return this.schema.__export_data__;
-    }
-
-    set __export_data__(e) {
-        null;
-    }
-
-    /**
-        Alias for destructor
-    */
-    destroy() {
-        this.destructor();
     }
 
     /**
@@ -116,46 +224,19 @@ class Model extends ModelBase {
     */
     destructor() {
 
-
         this.schema = null;
-        this.data = {};
-        this._temp_data_ = null;
-        this.export_data = null;
 
-        for (let a in this.data) {
-            if (typeof(this.data[a]) == "object") {
-                this.data[a].destructor();
-            } else {
-                this.data[a] = null;
-            }
+        for (let a in this) {
+            let prop = this[a];
+            if (typeof(prop) == "object" && prop.destructor instanceof Function)
+                prop.destructor();
+            else
+                this[a] = null;
         }
-
-        this.data = null;
 
         super.destructor();
         //debugger
     }
-
-    updateViews() {
-        var view = this.first_view;
-
-        let data = this.get();
-
-        while (view) {
-            view.update(data);
-            view = view.next;
-        }
-    }
-
-    /*
-    getDataStatus(key) {
-        debugger
-        let out_data = {
-            valid: true,
-            reason: ""
-        };
-    }
-    */
 
     /**
         Given a key, returns an object that represents the status of the value contained, if it is valid or not, according to the schema for that property. 
@@ -175,7 +256,7 @@ class Model extends ModelBase {
             } else if (scheme instanceof Model) {
 
             } else {
-                scheme.verify(this.data[key], out_data);
+                scheme.verify(this[key], out_data);
             }
         }
 
@@ -185,174 +266,126 @@ class Model extends ModelBase {
     /**
         Returns a parsed value based on the key 
     */
-    getString(key) {
+    string(key) {
+        let out_data = {
+            valid: true,
+            reason: ""
+        };
 
+        if (key) {
+            var scheme = this.schema[key];
+
+            if (scheme) {
+                if (scheme instanceof Array) {
+                    this[key].string();
+                } else if (scheme instanceof Model) {
+                    this[key].string();
+                } else {
+                    return scheme.string(this[key]);
+                }
+            }
+        }
     }
 
     /**
         @param data : An object containing key value pairs to insert into the model. 
     */
     add(data) {
-
-        var NEED_UPDATE = false;
-
-        if (data instanceof Model) {
-            data = data.data;
-        }
-
-        for (var a in data) {
-            var datum = data[a];
-            var scheme = this.schema[a];
-            if (scheme) {
-                if (scheme instanceof Array) {
-                    NEED_UPDATE = (this.____insertDataIntoContainer____(this.data[a], data[a])) ? true : NEED_UPDATE;
-                } else if (scheme instanceof Model) {
-                    if (!this.data[a])
-                        this.data[a] = scheme.parse();
-
-                    if (this.data[a].add(data[a])) {
-                        NEED_UPDATE = true;
-                    }
-                } else {
-                    var prev = this.data[a];
-
-                    var next = scheme.parse(data[a]);
-
-                    if (next !== null && next !== prev) {
-                        this.data[a] = next;
-                        NEED_UPDATE = true;
-                    }
-                }
-            }
-        }
-        if (NEED_UPDATE) {
-            this._temp_data_ = null; //Invalidate the current cache.
-            this.updateViews(this.get());
-        }
-
-        return NEED_UPDATE;
+        for (let a in data)
+            if (a in this) this[a] = data[a];
     }
+
 
     get(data) {
         var out_data = {};
-        if (!data) {
-            if (!this._temp_data_) {
 
-                this._temp_data_ = {
-                    addView: view => this.addView(view),
-                    get: data => this.get(data),
-                    getStatus: key => this.getDataStatus(key),
-                    verify: key => this.verify(key),
-                    __________self: () => this,
-                    get ____self____() {
-                        return this.__________self();
-                    }
-                };
-
-                let __export_data__ = this.__export_data__;
-
-                for (var i = 0, l = __export_data__.length; i < l; i++) {
-                    var id = __export_data__[i];
-
-                    if (id.exportable)
-                        this._temp_data_[id.name] = this.data[id.name];
-                    else
-                        this._temp_data_[id.name] = ((that, name) => {
-                            return {
-                                get(data) {
-                                    return that.____getDataFromContainer____(that.data[name], data);
-                                },
-                                addView(view) {
-                                    this.data[name].addView(view);
-                                },
-                                get ____self____() {
-                                    return that;
-                                }
-                            }
-
-                        })(this, id.name)
-                }
-            }
-
-            out_data = this._temp_data_;
-        } else {
-
-            for (var a in data) {
-                var scheme = this.schema[a];
-                if (scheme)
-                    if (scheme instanceof Array) {
-                        out_data[a] = this.____getDataFromContainer____(this.data[a], data[a]);
-                    } else if (scheme instanceof Model)
-                    out_data[a] = this.data[a].getData(data[a]);
-            }
-        }
-        return out_data;
-    }
-
-
-    /**
-        Removes items in containers based on matching index.
-    */
-    remove(data) {
-        var out_data = {};
-        for (var a in data) {
-
-            var scheme = this.schema[a];
-
-            if (scheme)
-                if (scheme instanceof Array) {
-                    out_data[a] = this.____removeDataFromContainer____(this.data[a], data[a]);
-                } else if (scheme instanceof Model)
-                out_data[a] = this.data[a].remove(data[a]);
-        }
+        if (!data)
+            return this;
+        else
+            for (var a in data)
+                if (a in this) out_data[a] = this[a];
 
         return out_data;
     }
 
-    ____insertDataIntoContainer____(container, item) {
-        return container.insert(item);
-    }
+    toJSON() {
+        let out = {};
 
-    ____getDataFromContainer____(container, item) {
-        return container.get(item);
-    }
+        let schema = this.schema;
 
-    ____removeDataFromContainer____(container, item) {
-        return container.remove(item);
-    }
+        for (let prop in schema) {
 
+            let scheme = schema[prop];
 
-
-    toJsonString() {
-        debugger
-
-        let __export_data__ = this.__export_data__;
-
-        let str = "{\n"
-
-        for (var i = 0; i < __export_data__.length; i++) {
-            var id = __export_data__[i];
-
-            if (id.exportable)
-                str += `"${id.name}":"${this.data[id.name].toString()}",\n`;
-            else
-                str += `"${id.name}":[${this.data[id.name].toString()}],\n`;
+            out[prop] = this[prop]
         }
 
-        str = str.slice(0, -2) + "\n";
-
-        return str += "}";
+        return out;
     }
 }
 
+/**
+    This is used by NModel to create custom property getter and setters 
+    on non-ModelContainer and non-Model properties of the NModel constructor.
+*/
+
+function CreateGenericProperty(constructor, prop_val, prop_name, model) {
+
+    if (constructor.prototype[prop_name])
+        return;
+
+    let __shadow_name__ = `__${prop_name}__`;
+
+
+    Object.defineProperty(constructor.prototype, __shadow_name__, {
+        writable: true,
+        configurable: false,
+        enumerable: false,
+        val: prop_val
+    })
+
+    Object.defineProperty(constructor.prototype, prop_name, {
+        configurable: false,
+        enumerable: true,
+
+        get: function() {
+            return this[__shadow_name__];
+        },
+
+        set: function(value) {
+            if (result.valid && this[__shadow_name__] != val)
+                (this[__shadow_name__] = val, model.scheduleUpdate(prop_name));
+        }
+    })
+}
+
+function AnyModelProxySet(obj, prop, val) {
+    if (prop in obj && obj[prop] == val)
+        return true
+
+    obj[prop] = val;
+
+    obj.scheduleUpdate(prop);
+
+    return true;
+}
 
 class AnyModel extends ModelBase {
+
     constructor(data) {
 
         super();
 
-        this.data = {};
-        this._temp_data_ = null;
+        if (data) {
+            for (let prop_name in data) {
+
+                this[prop_name] = data[prop_name];
+            }
+        }
+
+        return new Proxy(this, {
+            set: AnyModelProxySet
+        })
     }
 
     /**
@@ -367,66 +400,25 @@ class AnyModel extends ModelBase {
         Removes all held references and calls unsetModel on all listening views.
     */
     destructor() {
-
-        this.data = null;
-
         super.destructor();
     }
 
     add(data) {
-        var NEED_UPDATE = false;
-
-        if (data instanceof Model) {
-            data = data.data;
-        }
-
-        for (var a in data) {
-            let original = this.data[a];
-
-            if (original != data[a]) {
-                this.data[a] = data[a];
-                NEED_UPDATE = true;
-            }
-        }
-
-        if (NEED_UPDATE) {
-            this._temp_data_ = null; //Invalidate the current cache.
-            this.updateViews(this.get());
-        }
-
-        return NEED_UPDATE;
+        for (var a in data)
+            this[a] = data[a];
     }
 
     get(data) {
         var out_data = {};
+
         if (!data) {
-            if (!this._temp_data_) {
-
-                this._temp_data_ = {
-                    addView: view => this.addView(view),
-                    get: data => this.get(data),
-                    getStatus: key => this.getDataStatus(key),
-                    __________self: () => this,
-                    get ____self____() {
-                        return this.__________self();
-                    }
-                };
-
-                for (let a in this.data) {
-                    this._temp_data_[a] = this.data[a];
-                }
-            }
-
-            return this._temp_data_;
+            return this;
         } else {
-
             for (var a in data) {
-                var scheme = this.schema[a];
-                if (scheme)
-                    if (scheme instanceof Array) {
-                        out_data[a] = this.____getDataFromContainer____(this.data[a], data[a]);
-                    } else if (scheme instanceof Model)
-                    out_data[a] = this.data[a].getData(data[a]);
+                let prop = this[a];
+                if (prop) {
+                    out_data[a] = prop;
+                }
             }
         }
 
@@ -439,6 +431,23 @@ class AnyModel extends ModelBase {
 
     remove(data) {
         return {};
+    }
+
+    toJSON() {
+        let out = {};
+
+
+        for (let prop in this) {
+
+            if (prop == "first_view" ||
+                prop == "changed_values" ||
+                prop == "____SCHEDULED____")
+                continue;
+
+            out[prop] = this[prop]
+        }
+
+        return out;
     }
 
     toJsonString() {

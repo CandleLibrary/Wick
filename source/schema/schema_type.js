@@ -3,6 +3,10 @@
 */
 class SchemaType {
 	
+	constructor(){
+		this.start_value = null;
+	}
+	
 	/**
 		Parses value returns an appropriate transformed value
 	*/
