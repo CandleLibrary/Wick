@@ -1,6 +1,6 @@
 import {
     SchemaType
-} from "./schemas.js"
+} from "./schema_type.js"
 
 let NUMBER = new(class extends SchemaType {
     

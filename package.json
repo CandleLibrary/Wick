@@ -5,6 +5,7 @@
   "main": "build/wick.js",
   "scripts": {
     "test": "mocha",
+    "rollup" : "npx rollup ./source/wick.js --format iife --name \"wick\" --file build/wick.js",
     "build": "webpack --config ./wp-config/build.config.js",
     "dev-build": "webpack --config ./wp-config/build-dev.config.js",
     "watch": "webpack --config ./wp-config/watch.config.js",
@@ -33,7 +34,8 @@
   "homepage": "https://gitlab.com/anthonycweathersby/wick#readme",
   "devDependencies": {
     "jsdom": "^11.11.0",
-    "mocha": "^5.2.0"
+    "mocha": "^5.2.0",
+    "rollup": "^0.62.0"
   },
   "optionalDependencies": {
     "jsdoc-webpack-plugin": "0.0.2",

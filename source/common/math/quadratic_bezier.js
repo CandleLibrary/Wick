@@ -1,4 +1,3 @@
-'use esversion: 6';
 import {
     Point2D
 } from "./point2D"

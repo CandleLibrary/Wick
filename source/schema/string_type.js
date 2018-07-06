@@ -1,6 +1,6 @@
 import {
     SchemaType
-} from "./schemas.js"
+} from "./schema_type.js"
 
 let STRING = new(class extends SchemaType {
     

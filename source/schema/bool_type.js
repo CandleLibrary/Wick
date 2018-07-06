@@ -1,6 +1,6 @@
 import {
     SchemaType
-} from "./schemas.js"
+} from "./schema_type.js"
 
 let BOOL = new(class extends SchemaType {
     

@@ -1,6 +1,6 @@
 import {
     SchemaType
-} from "./schemas.js"
+} from "./schema_type.js"
 
 let TIME = new(class extends SchemaType {
     parse(value) {
