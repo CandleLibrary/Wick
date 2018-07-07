@@ -8,15 +8,20 @@
 
 <body>
     <div id="mocha"></div>
+    
     <script src="https://cdn.rawgit.com/jquery/jquery/2.1.4/dist/jquery.min.js"></script>
     <script src="https://cdn.rawgit.com/Automattic/expect.js/0.3.1/index.js"></script>
     <script src="https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.js"></script>
+    
     <script> mocha.setup('bdd') </script>
-    <script src="/build/wick-dev.js" type="text/javascript"></script>
-    <script type="module" src="./test.js"></script>
+
+    <script src="/build/wick-dev.js" ></script>
+    <script src="./suite/mc_tests.js"></script>
+    <script src="./suite/amc_tests.js"></script>
+    <script src="./suite/btmc_tests.js"></script>
+
     <script>
         mocha.checkLeaks();
-        mocha.globals(['jQuery']);
         mocha.run();
     </script>
 </body>

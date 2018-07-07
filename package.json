@@ -1,16 +1,21 @@
 {
   "name": "wick",
-  "version": "0.0.2",
+  "version": "0.0.31",
   "description": "PWA Framework",
-  "main": "build/wick.js",
+  "main": "build/wick-min-es.js",
   "scripts": {
     "test": "mocha",
-    "rollup" : "npx rollup ./source/wick.js --format iife --name \"wick\" --file build/wick.js",
-    "build": "webpack --config ./wp-config/build.config.js",
-    "dev-build": "webpack --config ./wp-config/build-dev.config.js",
-    "watch": "webpack --config ./wp-config/watch.config.js",
-    "watch-es5": "webpack --config ./wp-config/watches5.config.js",
-    "docs": "jsdoc ./source/ --destination ./documents/api --configure ./wp-config/jsdoc.json "
+
+    "build-production": "npx rollup --config ./build_config/minibuild.config.js",
+    "build-production-es": "npx rollup --config ./build_config/minibuildes.config.js",
+
+    "build-dev": "npx rollup --config ./build_config/browserdev.config.js",
+    "build-node": "npx rollup --config ./build_config/node.config.js",
+
+    "watch": "npx rollup --config ./build_config/browserdev.config.js --watch",
+    "watch-node": "npx rollup --config ./build_config/node.config.js --watch",
+
+    "docs": "npx jsdoc ./source/ --destination ./documents/api --configure ./build_config/jsdoc.json "
   },
   "repository": {
     "type": "git",
@@ -18,12 +23,14 @@
   },
   "keywords": [
     "SPA",
+    "PWA",
     "Framework",
     "JavaScript",
     "Animation",
     "Forms",
     "Website",
-    "REST"
+    "REST",
+    "APP"
   ],
   "author": "Anthony Weathersby",
   "license": "copyright",
@@ -33,16 +40,12 @@
   "private": true,
   "homepage": "https://gitlab.com/anthonycweathersby/wick#readme",
   "devDependencies": {
+    "jsdocs": "^1.0.0",
     "jsdom": "^11.11.0",
     "mocha": "^5.2.0",
-    "rollup": "^0.62.0"
+    "rollup": "^0.62.0",
+    "rollup-plugin-terser": "^1.0.1"
   },
-  "optionalDependencies": {
-    "jsdoc-webpack-plugin": "0.0.2",
-    "jsdoc-webpack-plugin-v2": "^2.0.2",
-    "uglifyjs-webpack-plugin": "^1.2.5",
-    "webpack": "^4.10.1",
-    "webpack-cli": "^2.1.4"
-  },
+  "optionalDependencies": {},
   "dependencies": {}
 }

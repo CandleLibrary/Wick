@@ -160,7 +160,7 @@ class ModelContainer extends ModelBase {
                 out.__setFilters__(term);
             }
         else
-            out = this.__defaultReturn__(USE_ARRAY);
+            out = (__return_data__) ? __return_data__ : this.__defaultReturn__(USE_ARRAY);
 
         if (!term)
             this.__getAll__(out);

@@ -3,9 +3,9 @@ if(typeof require !== "undefined"){
 	var ModelContainerTests = require("./mc_tests.js")
 }
 
-describe('wick.BTreeModelContainer', function() {
+describe('wick.ArrayModelContainer', function() {
 
 	//Load the ModelContainer test Suite
-	ModelContainerTests(wick.BTreeModelContainer);
+	ModelContainerTests(wick.ArrayModelContainer);
 	
 });

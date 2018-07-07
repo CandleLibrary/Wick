@@ -55,45 +55,33 @@ class ArrayModelContainer extends ModelContainer {
         return true; // Model added to Container.
     }
 
-    __get__(term, return_data, UNWRAPPED = false) {
+    __get__(term, return_data) {
 
         let terms = null;
 
+        if (term)
+            if (term instanceof Array) {
+                terms = term;
+            } else
+                terms = [term];
 
-        if (term instanceof Array){
-            terms = term;
+
+
+        for (let i = 0, l = this.data.length; i < l; i++) {
+            let obj = this.data[i];
+            if (this.__getIdentifier__(obj, terms)) {
+                return_data.push(obj);
+            }
         }
-        else
-            terms = [term];
-
-        if (UNWRAPPED)
-            for (let i = 0, l = this.data.length; i < l; i++) {
-                let obj = this.data[i];
-                if (this.__getIdentifier__(obj, terms)) {
-                    return_data.push(obj);
-                }
-            }
-        else
-            for (let i = 0, l = this.data.length; i < l; i++) {
-                let obj = this.data[i];
-                if (this.__getIdentifier__(obj, terms)) {
-                    return_data.push(obj.get());
-                }
-            }
 
         return return_data;
     }
 
-    __getAll__(return_data, UNWRAPPED = false) {
+    __getAll__(return_data) {
 
-        if (UNWRAPPED)
-            this.data.forEach((m) => {
-                return_data.push(m)
-            })
-        else
-            this.data.forEach((m) => {
-                return_data.push(m.get())
-            })
+        this.data.forEach((m) => {
+            return_data.push(m)
+        })
 
         return return_data;
     }
@@ -122,14 +110,14 @@ class ArrayModelContainer extends ModelContainer {
         return [];
     }
 
-    toJSON(){
+    toJSON() {
         let out_string = "["
 
-        for(var i  = 0, l = this.data.length; i < l;i++){
+        for (var i = 0, l = this.data.length; i < l; i++) {
             out_string += `${JSON.stringify(this.data[i])} ${(i+1 == l)?",":""}`;
         }
 
-        return out_string.slice(-1) + "]"; 
+        return out_string.slice(-1) + "]";
     }
 }
 

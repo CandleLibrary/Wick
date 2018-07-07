@@ -1,4 +1,4 @@
-const null_token = {
+var  null_token = {
     type: "",
     text: ""
 };

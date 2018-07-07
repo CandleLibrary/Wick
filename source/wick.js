@@ -9,6 +9,7 @@ import {
 } from "./view"
 
 import {
+    AnyModel,
     ArrayModelContainer,
     BTreeModelContainer,
     MultiIndexedContainer,
@@ -126,5 +127,6 @@ export {
     View,
     light,
     SchemaType,
+    AnyModel,
     schema
 }

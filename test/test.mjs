@@ -1,1 +1,0 @@
-import * as dd from "./suite/btmc_tests.js"

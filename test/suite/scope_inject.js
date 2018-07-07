@@ -39,6 +39,6 @@ if(typeof window === 'undefined' && require){
 
 	global.Element = window.Element
 
-	global.wick = require("../../build/wick-dev.js");
+	global.wick = require("../../build/wick.node.js");
 
 }
