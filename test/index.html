@@ -16,11 +16,24 @@
     <script> mocha.setup('bdd') </script>
 
     <script src="/build/wick-dev.js" ></script>
+    <script src="./suite/schema_tests.js"></script>
+    <script src="./suite/model_tests.js"></script>
     <script src="./suite/mc_tests.js"></script>
     <script src="./suite/amc_tests.js"></script>
     <script src="./suite/btmc_tests.js"></script>
+    <script src="./suite/case_tests.js"></script>
+    <script src="./suite/cassette_tests.js"></script>
+    <script src="./suite/caseconstructor_tests.js"></script>
+    <script src="./suite/linker_tests.js"></script>
 
     <script>
+        //load the test modules
+        SCHEMATESTS()
+        MODELTESTS();
+        MCTESTS()
+        AMCTESTS()
+        BTMCTESTS()
+        LINKERTESTS()
         mocha.checkLeaks();
         mocha.run();
     </script>

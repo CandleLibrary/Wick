@@ -1,9 +1,6 @@
 const caller = (window && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
     setTimeout(f, 1)
 };
-
-console.log(caller)
-
 /** 
     The Scheduler handles updating objects. It does this by splitting up update cycles, 
     to respect the browser event model. 

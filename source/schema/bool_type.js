@@ -2,8 +2,12 @@ import {
     SchemaType
 } from "./schema_type.js"
 
-let BOOL = new(class extends SchemaType {
-    
+let BOOL = new(class BoolSchema extends SchemaType {
+    constructor(){
+        super();
+        this.start_value = false;
+    }
+
     parse(value) {
         return (value) ? true : false; 
     }
@@ -12,6 +16,7 @@ let BOOL = new(class extends SchemaType {
         result.valid = true;
         if(!value instanceof Boolean){
             result.valid = false;
+            result.reason = " Value is not a Boolean."
         }
     }
 

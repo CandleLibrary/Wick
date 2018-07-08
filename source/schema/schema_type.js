@@ -4,7 +4,7 @@
 class SchemaType {
 	
 	constructor(){
-		this.start_value = null;
+		this.start_value = undefined;
 	}
 	
 	/**

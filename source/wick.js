@@ -122,11 +122,11 @@ export {
     Getter,
     Linker,
     Model,
+    AnyModel,
     ModelContainer,
     Setter,
     View,
     light,
     SchemaType,
-    AnyModel,
     schema
 }

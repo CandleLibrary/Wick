@@ -24,16 +24,16 @@ class MCArray extends Array {
     __setFilters__() {
 
     }
-    getChanged(){
+    getChanged() {
 
     }
 
-    toJSON(){
+    toJSON() {
         return this;
     }
 
     toJson() {
-        return JSON.stringify(this,null, '\t');
+        return JSON.stringify(this, null, '\t');
     }
 }
 
@@ -145,7 +145,11 @@ class ModelContainer extends ModelBase {
 
         let USE_ARRAY = true;
 
-        if (term)
+        if (term) {
+
+
+
+
             if (__return_data__) {
                 out = __return_data__;
             } else {
@@ -159,7 +163,7 @@ class ModelContainer extends ModelBase {
                 out = this.__defaultReturn__(USE_ARRAY);
                 out.__setFilters__(term);
             }
-        else
+        } else
             out = (__return_data__) ? __return_data__ : this.__defaultReturn__(USE_ARRAY);
 
         if (!term)
@@ -170,6 +174,9 @@ class ModelContainer extends ModelBase {
 
             if (!term instanceof Array)
                 terms = [term];
+
+            //Need to convert terms into a form that will work for the identifier type
+            terms = terms.map(t => this.parser.parse(t));
 
 
             this.__get__(terms, out);
@@ -244,27 +251,34 @@ class ModelContainer extends ModelBase {
     */
     remove(term, __FROM_SOURCE__ = false) {
 
-        if (!__FROM_SOURCE__ && this.source)
-            return this.source.remove(term);
+        let terms = term;
 
-        let out = [];
+        if (!__FROM_SOURCE__ && this.source) {
+
+            if (!term)
+                return this.source.remove(this.__filters__);
+            else
+                return this.source.remove(term);
+        }
+
+        let out_container = [];
 
         if (!term)
             this.__removeAll__();
         else {
-
-            let terms = term;
-
             if (!term instanceof Array) {
                 terms = [term];
             }
 
-            this.__remove__(terms, out);
+            //Need to convert terms into a form that will work for the identifier type
+            terms = terms.map(t => this.parser.parse(t));
+
+            this.__remove__(terms, out_container);
         }
 
         this.__linksRemove__(terms);
 
-        return out;
+        return out_container;
     }
 
     /**
@@ -370,9 +384,9 @@ class ModelContainer extends ModelBase {
 
     __setFilters__(term) {
         if (term instanceof Array)
-            this.__filters__ = this.__filters__.concat(term)
+            this.__filters__ = this.__filters__.concat(term.map(t => this.parser.parse(t)))
         else
-            this.__filters__.push(term);
+            this.__filters__.push(this.parser.parse(term));
 
     }
 
@@ -400,6 +414,9 @@ class ModelContainer extends ModelBase {
             identifier = item[this.schema.identifier];
         else
             identifier = item;
+
+        if (identifier)
+            identifier = this.parser.parse(identifier);
 
         if (filters && identifier)
             return (this.__filterIdentifier__(identifier, filters)) ? identifier : undefined;
@@ -502,7 +519,7 @@ class MultiIndexedContainer extends ModelContainer {
             if (this.indexes[a])
                 out = out.concat(this.indexes[a].remove(item[a]));
 
-            /* Replay items against indexes to insure all items have been removed from all indexes */
+        /* Replay items against indexes to insure all items have been removed from all indexes */
 
         for (var j = 0; j < this.indexes.length; j++)
             for (var i = 0; i < out.length; i++)
@@ -517,26 +534,26 @@ class MultiIndexedContainer extends ModelContainer {
 
     __insert__(model, add_list, identifier) {
 
-            let out = false
+        let out = false
 
-            for (let name in this.indexes) {
+        for (let name in this.indexes) {
 
-                let index = this.indexes[name];
+            let index = this.indexes[name];
 
-                if (index.insert(model))
-                    out = true;
-                //else
-                //    console.warn(`Indexed container ${a} ${index} failed to insert:`, model);
-            }
-
-            if (out)
-                this.updateViews(this.first_index.get());
-
-            return out;
+            if (index.insert(model))
+                out = true;
+            //else
+            //    console.warn(`Indexed container ${a} ${index} failed to insert:`, model);
         }
-        /**
-            @private 
-        */
+
+        if (out)
+            this.updateViews(this.first_index.get());
+
+        return out;
+    }
+    /**
+        @private 
+    */
     __remove__(item) {
 
         let out = false;
@@ -571,58 +588,10 @@ class MultiIndexedContainer extends ModelContainer {
         return true;
     }
 
-    toJSON(){
+    toJSON() {
         return "[]";
     }
 }
-
-
-/*
-    Removing Non Enumerable properties 
-*/
-
-Object.defineProperty(ModelContainer.constructor, "__filters__", {
-    writable: true,
-    enumerable: false,
-    configurable: false,
-    value: EmptyArray
-});
-Object.defineProperty(ModelContainer.constructor, "prev", {
-    writable: true,
-    enumerable: false,
-    configurable: false,
-    value: null
-});
-Object.defineProperty(ModelContainer.constructor, "next", {
-    writable: true,
-    enumerable: false,
-    configurable: false,
-    value: null
-});
-Object.defineProperty(ModelContainer.constructor, "first_link", {
-    writable: true,
-    enumerable: false,
-    configurable: false,
-    value: null
-});
-Object.defineProperty(ModelContainer.constructor, "source", {
-    writable: true,
-    enumerable: false,
-    configurable: false,
-    value: null
-});
-Object.defineProperty(ModelContainer.constructor, "pin", {
-    writable: true,
-    enumerable: false,
-    configurable: false,
-    value: null
-});
-Object.defineProperty(ModelContainer.constructor, "schema", {
-    writable: true,
-    enumerable: false,
-    configurable: false,
-    value: null
-});
 
 export {
     MCArray,

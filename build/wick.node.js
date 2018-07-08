@@ -597,9 +597,6 @@ class View{
 const caller = (window && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
     setTimeout(f, 1);
 };
-
-console.log(caller);
-
 /** 
     The Scheduler handles updating objects. It does this by splitting up update cycles, 
     to respect the browser event model. 
@@ -858,7 +855,7 @@ Object.seal(ModelBase.prototype);
 class SchemaType {
 	
 	constructor(){
-		this.start_value = null;
+		this.start_value = undefined;
 	}
 	
 	/**
@@ -902,16 +899,16 @@ class MCArray extends Array {
     __setFilters__() {
 
     }
-    getChanged(){
+    getChanged() {
 
     }
 
-    toJSON(){
+    toJSON() {
         return this;
     }
 
     toJson() {
-        return JSON.stringify(this,null, '\t');
+        return JSON.stringify(this, null, '\t');
     }
 }
 
@@ -1021,7 +1018,11 @@ class ModelContainer extends ModelBase {
 
         let USE_ARRAY = true;
 
-        if (term)
+        if (term) {
+
+
+
+
             if (__return_data__) {
                 out = __return_data__;
             } else {
@@ -1035,7 +1036,7 @@ class ModelContainer extends ModelBase {
                 out = this.__defaultReturn__(USE_ARRAY);
                 out.__setFilters__(term);
             }
-        else
+        } else
             out = (__return_data__) ? __return_data__ : this.__defaultReturn__(USE_ARRAY);
 
         if (!term)
@@ -1046,6 +1047,9 @@ class ModelContainer extends ModelBase {
 
             if (!term instanceof Array)
                 terms = [term];
+
+            //Need to convert terms into a form that will work for the identifier type
+            terms = terms.map(t => this.parser.parse(t));
 
 
             this.__get__(terms, out);
@@ -1120,27 +1124,34 @@ class ModelContainer extends ModelBase {
     */
     remove(term, __FROM_SOURCE__ = false) {
 
-        if (!__FROM_SOURCE__ && this.source)
-            return this.source.remove(term);
+        let terms = term;
 
-        let out = [];
+        if (!__FROM_SOURCE__ && this.source) {
+
+            if (!term)
+                return this.source.remove(this.__filters__);
+            else
+                return this.source.remove(term);
+        }
+
+        let out_container = [];
 
         if (!term)
             this.__removeAll__();
         else {
-
-            let terms = term;
-
             if (!term instanceof Array) {
                 terms = [term];
             }
 
-            this.__remove__(terms, out);
+            //Need to convert terms into a form that will work for the identifier type
+            terms = terms.map(t => this.parser.parse(t));
+
+            this.__remove__(terms, out_container);
         }
 
         this.__linksRemove__(terms);
 
-        return out;
+        return out_container;
     }
 
     /**
@@ -1241,9 +1252,9 @@ class ModelContainer extends ModelBase {
 
     __setFilters__(term) {
         if (term instanceof Array)
-            this.__filters__ = this.__filters__.concat(term);
+            this.__filters__ = this.__filters__.concat(term.map(t => this.parser.parse(t)));
         else
-            this.__filters__.push(term);
+            this.__filters__.push(this.parser.parse(term));
 
     }
 
@@ -1271,6 +1282,9 @@ class ModelContainer extends ModelBase {
             identifier = item[this.schema.identifier];
         else
             identifier = item;
+
+        if (identifier)
+            identifier = this.parser.parse(identifier);
 
         if (filters && identifier)
             return (this.__filterIdentifier__(identifier, filters)) ? identifier : undefined;
@@ -1373,7 +1387,7 @@ class MultiIndexedContainer extends ModelContainer {
             if (this.indexes[a])
                 out = out.concat(this.indexes[a].remove(item[a]));
 
-            /* Replay items against indexes to insure all items have been removed from all indexes */
+        /* Replay items against indexes to insure all items have been removed from all indexes */
 
         for (var j = 0; j < this.indexes.length; j++)
             for (var i = 0; i < out.length; i++)
@@ -1388,26 +1402,26 @@ class MultiIndexedContainer extends ModelContainer {
 
     __insert__(model, add_list, identifier) {
 
-            let out = false;
+        let out = false;
 
-            for (let name in this.indexes) {
+        for (let name in this.indexes) {
 
-                let index = this.indexes[name];
+            let index = this.indexes[name];
 
-                if (index.insert(model))
-                    out = true;
-                //else
-                //    console.warn(`Indexed container ${a} ${index} failed to insert:`, model);
-            }
-
-            if (out)
-                this.updateViews(this.first_index.get());
-
-            return out;
+            if (index.insert(model))
+                out = true;
+            //else
+            //    console.warn(`Indexed container ${a} ${index} failed to insert:`, model);
         }
-        /**
-            @private 
-        */
+
+        if (out)
+            this.updateViews(this.first_index.get());
+
+        return out;
+    }
+    /**
+        @private 
+    */
     __remove__(item) {
 
         let out = false;
@@ -1442,58 +1456,10 @@ class MultiIndexedContainer extends ModelContainer {
         return true;
     }
 
-    toJSON(){
+    toJSON() {
         return "[]";
     }
 }
-
-
-/*
-    Removing Non Enumerable properties 
-*/
-
-Object.defineProperty(ModelContainer.constructor, "__filters__", {
-    writable: true,
-    enumerable: false,
-    configurable: false,
-    value: EmptyArray
-});
-Object.defineProperty(ModelContainer.constructor, "prev", {
-    writable: true,
-    enumerable: false,
-    configurable: false,
-    value: null
-});
-Object.defineProperty(ModelContainer.constructor, "next", {
-    writable: true,
-    enumerable: false,
-    configurable: false,
-    value: null
-});
-Object.defineProperty(ModelContainer.constructor, "first_link", {
-    writable: true,
-    enumerable: false,
-    configurable: false,
-    value: null
-});
-Object.defineProperty(ModelContainer.constructor, "source", {
-    writable: true,
-    enumerable: false,
-    configurable: false,
-    value: null
-});
-Object.defineProperty(ModelContainer.constructor, "pin", {
-    writable: true,
-    enumerable: false,
-    configurable: false,
-    value: null
-});
-Object.defineProperty(ModelContainer.constructor, "schema", {
-    writable: true,
-    enumerable: false,
-    configurable: false,
-    value: null
-});
 
 /**
  */
@@ -1585,30 +1551,30 @@ class ArrayModelContainer extends ModelContainer {
         return items;
     }
 
-    __remove__(term) {
-        if (this.__getIdentifier__(term)) {
-            for (var i = 0, l = this.data.length; i < l; i++) {
-                var obj = this.data[i];
+    __remove__(term, out_container) {
+        let result = false;
+        for (var i = 0, l = this.data.length; i < l; i++) {
+            var obj = this.data[i];
 
-                if (this.__getIdentifier__(obj) == this.__getIdentifier__(term)) {
+            if (this.__getIdentifier__(obj, term)) {
 
-                    this.data.splice(i, 1);
+                result = true;
 
-                    return [obj];
-                }
+                this.data.splice(i, 1);
+
+                l--;
+                i--;
+
+                out_container.push(obj);
             }
         }
-        return [];
+
+        return result;
     }
 
     toJSON() {
-        let out_string = "[";
 
-        for (var i = 0, l = this.data.length; i < l; i++) {
-            out_string += `${JSON.stringify(this.data[i])} ${(i+1 == l)?",":""}`;
-        }
-
-        return out_string.slice(-1) + "]";
+        return this.data;
     }
 }
 
@@ -1670,31 +1636,30 @@ class BTreeModelContainer extends ModelContainer {
         return __return_data__;
     }
 
-    __remove__(terms) {
-        let result = false;
+    __remove__(terms, out_container) {
+        let result = 0;
 
         if (this.root && terms.length > 0) {
             if (terms.length == 1) {
-                let o = this.root.remove(terms[0], terms[0], true, this.min);
-                result = (o.out) ? true : result;
+                let o = this.root.remove(terms[0], terms[0], true, this.min, out_container);
+                result = o.out;
                 this.root = o.out_node;
             } else if (terms.length < 3) {
-                let o = this.root.remove(terms[0], terms[1], true, this.min);
-                result = (o.out) ? true : result;
+                let o = this.root.remove(terms[0], terms[1], true, this.min, out_container);
+                result =o.out;
                 this.root = o.out_node;
             } else {
                 for (let i = 0, l = terms.length - 1; i > l; i += 2) {
-                    let o = this.root.remove(terms[i], terms[i + 1], true, this.min);
-                    result = (o.out) ? true : result;
+                    let o = this.root.remove(terms[i], terms[i + 1], true, this.min, out_container);
+                    result = o.out;
                     this.root = o.out_node;
                 }
             }
         }
 
-        if (result)
-            this.size--;
+        this.size -= result;
 
-        return result;
+        return result !== 0;
     }
 
     __getAll__(__return_data__) {
@@ -1936,9 +1901,9 @@ class BtreeNode {
 
     }
 
-    remove(start, end, IS_ROOT = false, min_size) {
+    remove(start, end, IS_ROOT = false, min_size, out_container) {
         let l = this.keys.length,
-            out = false,
+            out = 0,
             out_node = this;
 
         if (!this.LEAF) {
@@ -1947,12 +1912,11 @@ class BtreeNode {
 
                 let key = this.keys[i];
 
-                if (start <= key && this.nodes[i].remove(start, end, false, min_size).out)
-                    out = true;
+                if (start <= key)
+                    out += this.nodes[i].remove(start, end, false, min_size, out_container).out;
             }
-
-            if (this.nodes[i].remove(start, end, false, min_size).out)
-                out = true;
+            
+            out += this.nodes[i].remove(start, end, false, min_size, out_container).out;
 
             for (var i = 0; i < this.nodes.length; i++) {
                 if (this.nodes[i].keys.length < min_size) {
@@ -1964,15 +1928,14 @@ class BtreeNode {
             if (this.nodes.length == 1)
                 out_node = this.nodes[0];
 
-
-
         } else {
 
             for (let i = 0, l = this.keys.length; i < l; i++) {
                 let key = this.keys[i];
 
                 if (key <= end && key >= start) {
-                    out = true;
+                    out_container.push(this.nodes[i]);
+                    out++;
                     this.keys.splice(i, 1);
                     this.nodes.splice(i, 1);
                     l--;
@@ -2015,6 +1978,36 @@ class BtreeNode {
         }
     }
 }
+
+let NUMBER = new(class NumberSchema extends SchemaType {
+    
+    constructor(){
+        super();
+        this.start_value = 0;
+    }
+
+    parse(value) {
+        return parseFloat(value);
+    }
+
+    verify(value, result) {
+        result.valid = true;
+
+        if(value == NaN || value == undefined){
+            result.valid = false;
+            result.reason = "Invalid number type.";
+        }
+    }
+
+    filter(identifier, filters) {
+        for (let i = 0, l = filters.length; i < l; i++) {
+            if (identifier == filters[i])
+                return true;
+        }
+        return false;
+    }
+
+})();
 
 const months = [{
     name: "January",
@@ -2827,7 +2820,7 @@ scape_date.setMilliseconds(0);
 scape_date.setSeconds(0);
 scape_date.setTime(0);
 
-let DATE = new(class extends SchemaType {
+let DATE = new(class DateSchema extends NUMBER.constructor {
     parse(value) {
 
         if (!isNaN(value))
@@ -2875,7 +2868,8 @@ let DATE = new(class extends SchemaType {
      
      */
     verify(value, result) {
-        result.valid = true;
+        this.parse(value);
+        super.verify(value, result);
     }
 
     filter(identifier, filters) {
@@ -2900,7 +2894,8 @@ let DATE = new(class extends SchemaType {
     }
 });
 
-let TIME = new(class extends SchemaType {
+let TIME = new(class TimeSchema extends NUMBER.constructor {
+
     parse(value) {
         if (!isNaN(value))
             return parseInt(value);
@@ -2917,11 +2912,9 @@ let TIME = new(class extends SchemaType {
         return parseFloat((hour + ((half) ? 12 : 0) + (min / 60)));
     }
 
-    /**
-     
-     */
     verify(value, result) {
-        result.valid = true;
+        this.parse(value);
+        super.verify(value, result);
     }
 
     filter(identifier, filters) {
@@ -2931,10 +2924,13 @@ let TIME = new(class extends SchemaType {
     string(value) {
         return (new Date(value)) + "";
     }
-});
+})();
 
-let STRING = new(class extends SchemaType {
-    
+let STRING = new(class StringSchema extends SchemaType {
+    constructor(){
+        super();
+        this.start_value = "";
+    }
     parse(value) {
         return value + "";
     }
@@ -2953,33 +2949,12 @@ let STRING = new(class extends SchemaType {
 
 })();
 
-let NUMBER = new(class extends SchemaType {
-    
-    parse(value) {
-        return parseFloat(value);
+let BOOL = new(class BoolSchema extends SchemaType {
+    constructor(){
+        super();
+        this.start_value = false;
     }
 
-    verify(value, result) {
-        result.valid = true;
-
-        if(value == NaN || value == undefined){
-            result.valid = false;
-            result.reason = "Invalid number type.";
-        }
-    }
-
-    filter(identifier, filters) {
-        for (let i = 0, l = filters.length; i < l; i++) {
-            if (identifier == filters[i])
-                return true;
-        }
-        return false;
-    }
-
-})();
-
-let BOOL = new(class extends SchemaType {
-    
     parse(value) {
         return (value) ? true : false; 
     }
@@ -2988,6 +2963,7 @@ let BOOL = new(class extends SchemaType {
         result.valid = true;
         if(!value instanceof Boolean){
             result.valid = false;
+            result.reason = " Value is not a Boolean.";
         }
     }
 
@@ -7097,10 +7073,10 @@ exports.Common = common;
 exports.Getter = Getter;
 exports.Linker = Linker;
 exports.Model = Model;
+exports.AnyModel = AnyModel;
 exports.ModelContainer = ModelContainer;
 exports.Setter = Setter;
 exports.View = View;
 exports.light = light;
 exports.SchemaType = SchemaType;
-exports.AnyModel = AnyModel;
 exports.schema = schema;

@@ -5,6 +5,7 @@
   "main": "build/wick-min-es.js",
   "scripts": {
     "test": "mocha",
+    "test-n-watch": "mocha -w --check-leaks -R min",
 
     "build-production": "npx rollup --config ./build_config/minibuild.config.js",
     "build-production-es": "npx rollup --config ./build_config/minibuildes.config.js",

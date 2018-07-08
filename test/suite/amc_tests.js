@@ -1,11 +1,10 @@
-if(typeof require !== "undefined"){
-	require("./scope_inject.js");
-	var ModelContainerTests = require("./mc_tests.js")
+function AMCTESTS()  {
+
+    describe('wick.ArrayModelContainer', function() {
+        //Load the ModelContainer test Suite
+        ModelContainerTests(wick.ArrayModelContainer, true);
+
+    });
 }
 
-describe('wick.ArrayModelContainer', function() {
-
-	//Load the ModelContainer test Suite
-	ModelContainerTests(wick.ArrayModelContainer);
-	
-});
+if (typeof module !== "undefined") module.exports = AMCTESTS;
