@@ -8,10 +8,11 @@ import {
 
 class ModelBase {
 	constructor() {
-   		this.changed_values = [];
+   		this.____changed_values____ = [];
 	};
 
 	destructor() {
+		debugger
         //inform views of the models demise
         var view = this.first_view;
 
@@ -22,7 +23,7 @@ class ModelBase {
 
         //this.first_view = null;
 
-        this.changed_values = null;
+        this.____changed_values____ = null;
 	}
 
 	get (){
@@ -38,15 +39,15 @@ class ModelBase {
     	if(!this.first_view)
     		return;
 
-    	this.changed_values.push(changed_value);
+    	this.____changed_values____.push(changed_value);
 
         Scheduler.queueUpdate(this);
     }
 
     getChanged(prop_name) {
 
-        for (let i = 0, l = this.changed_values.length; i < l; i++)
-            if (this.changed_values[i] == prop_name)
+        for (let i = 0, l = this.____changed_values____.length; i < l; i++)
+            if (this.____changed_values____[i] == prop_name)
                 return this[prop_name];
 
         return null;
@@ -56,7 +57,7 @@ class ModelBase {
 
         this.updateViews(this);
 
-        this.changed_values.length = 0;
+        this.____changed_values____.length = 0;
     }
 
 	/**
@@ -124,13 +125,13 @@ class ModelBase {
 
 		while (view) {
 			
-			view.update(this, this.changed_values);
+			view.update(this, this.____changed_values____);
 
 			
 			view = view.next;
 		}
 		
-		this.changed_values.length = 0;
+		this.____changed_values____.length = 0;
 	}
 
 	/**
@@ -174,7 +175,7 @@ Object.defineProperty(ModelBase.prototype, "first_view", {
 	enumerable : false,
 })
 
-Object.defineProperty(ModelBase.prototype, "changed_values", {
+Object.defineProperty(ModelBase.prototype, "____changed_values____", {
 	writable : true,
 	configurable : false,
 	enumerable : false,
