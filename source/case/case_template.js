@@ -22,48 +22,20 @@ class CaseTemplate extends Case {
         CaseTemplate constructor. Builds a CaseTemplate object.
     */
 
-    constructor(parent = null, element, presets, data, skeleton) {
-        //replace element with a template area
+    constructor(parent = null, data, presets) {
 
-        super(parent, element, presets, data);
-
+        super(parent, data, presets);
 
         this.cases = [];
         this.activeCases = [];
-        this.case_constructors = [];
+        
+        this.templates = [];
         this.filters = [];
-        this.range = null;
         this.terms = [];
+        
+        this.range = null;
 
-        this.prop_elements = []
-
-
-        //need to find the cases in the skeleton, these will be used to create reoccurring objects from the model.
-
-        if (skeleton) {
-            for (var i = 0, l = skeleton.length; i < l; i++) {
-                let ele = skeleton[i];
-
-                if (ele.IS_CASE)
-                    this.case_constructors.push(ele);
-
-                else {
-
-                    if (ele.Constructor == Term)
-                        this.terms.push(ele.____copy____(element, this));
-                    else
-                        this.filters.push(ele.____copy____(element, this));
-                }
-            }
-        }
-
-        let div = document.createElement("div");
-
-        element.parentElement.replaceChild(div, element);
-
-        this.element = div;
-
-        this.prop = this.data.prop;
+        this.prop_elements = [];
     }
 
     filterUpdate() {
@@ -148,7 +120,7 @@ class CaseTemplate extends Case {
     added(items) {
 
         for (let i = 0; i < items.length; i++) {
-            let Case = this.case_constructors[0].flesh(items[i]);
+            let Case = this.templates[0].flesh(items[i]);
             Case.parent = this;
             this.cases.push(Case);
         }

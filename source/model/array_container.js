@@ -94,30 +94,30 @@ class ArrayModelContainer extends ModelContainer {
         return items;
     }
 
-    __remove__(term) {
-        if (this.__getIdentifier__(term)) {
-            for (var i = 0, l = this.data.length; i < l; i++) {
-                var obj = this.data[i];
+    __remove__(term, out_container) {
+        let result = false;
+        for (var i = 0, l = this.data.length; i < l; i++) {
+            var obj = this.data[i];
 
-                if (this.__getIdentifier__(obj) == this.__getIdentifier__(term)) {
+            if (this.__getIdentifier__(obj, term)) {
 
-                    this.data.splice(i, 1);
+                result = true;
 
-                    return [obj];
-                }
+                this.data.splice(i, 1);
+
+                l--;
+                i--;
+
+                out_container.push(obj);
             }
         }
-        return [];
+
+        return result;
     }
 
     toJSON() {
-        let out_string = "["
 
-        for (var i = 0, l = this.data.length; i < l; i++) {
-            out_string += `${JSON.stringify(this.data[i])} ${(i+1 == l)?",":""}`;
-        }
-
-        return out_string.slice(-1) + "]";
+        return this.data;
     }
 }
 

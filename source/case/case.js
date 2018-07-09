@@ -24,9 +24,9 @@ class Case extends Rivet {
         @params [Model] model - A model that can be passed to the case instead of having one created or pulled from presets. 
         @params [DOM]  WORKING_DOM - The DOM object that contains templates to be used to build the case objects. 
     */
-    constructor(parent = null, element, data, presets) {
+    constructor(parent = null, data, presets) {
 
-        super(parent, element, data, presets)
+        super(parent, data, presets)
 
         this.USE_SECURE = presets.USE_HTTPS;
         this.named_elements = {};
@@ -38,8 +38,11 @@ class Case extends Rivet {
         this.query = {};
         this.REQUESTING = false;
         this.exports = null;
+
+
         this.filter_list = [];
         this.templates = [];
+        this.filters = [];
         this.is = 0;
     }
 
@@ -60,8 +63,6 @@ class Case extends Rivet {
         Sets up Model connection or creates a new Model from a schema.
     */
     load(model) {
-
-
         if (this.data.url) {
             //import query info from the wurl
             let str = this.data.url;
@@ -177,35 +178,12 @@ class Case extends Rivet {
         }
     }
 
+    up(data){
+        this.model.add(data);
+    }
 
-
-    update(data, IMPORT = false) {
-        
-        this.updateDimensions();
-
-        if (!IMPORT) {
-
-            if (!data) {
-                if (this.data_cache)
-                    data = this.data_cache
-                else return;
-            }
-
-            this.data_cache = data;
-        }
-
-
-        this.updateSubs(this.children, data, IMPORT)
-
-
-        if (this.templates.length > 0) {
-            for (var i = 0, l = this.templates.length; i < l; i++) {
-                this.templates[i].update(data, true);
-            }
-        }
-
-        this.REQUESTING = false;
-
+    update(data, changed_values) {
+        this.__down__(data, changed_values);
         return;
     }
 

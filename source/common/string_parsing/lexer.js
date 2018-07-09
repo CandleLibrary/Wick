@@ -1,4 +1,4 @@
-var  null_token = {
+var null_token = {
     type: "",
     text: ""
 };
@@ -14,6 +14,12 @@ class Lexer {
         while (this.token && (this.token.type === "new_line" || this.token.type === "white_space" || this.token.type === "generic")) {
             this.token = this.tk.next();
         }
+    }
+
+    reset(){
+        this.tk.reset();
+        this.token = this.tk.next();
+        this.hold = null;
     }
 
     next() {
@@ -35,12 +41,15 @@ class Lexer {
     }
 
     assert(text) {
-        if (!this.token) return false;
+        if (!this.token) throw new Error(`Expecting ${text} got null`);
 
         var bool = this.token.text == text;
 
+
         if (bool) {
             this.next();
+        }else{
+            throw new Error(`Expecting "${text}" got "${this.token.text}"`)
         }
 
         return bool;
@@ -65,6 +74,30 @@ class Lexer {
 
         return null_token;
     }
+
+    get text() {
+        if (this.token)
+            return this.token.text;
+        return null;
+    }
+
+    get type() {
+        if (this.token)
+            return this.token.type;
+        return "";
+    }
+
+    get pos(){
+        if (this.token)
+            return this.token.pos;
+        return -1;
+    }
+
+    slice(start) {
+        if (this.token)
+            return this.tk.string.slice(start, this.token.pos)
+        return this.tk.string.slice(start)
+    }
 }
 
-export {Lexer}
+export { Lexer }

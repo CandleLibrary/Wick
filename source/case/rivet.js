@@ -20,12 +20,12 @@ let PresetTransitioneers = {
 
 class Rivet extends View {
 
-    constructor(parent = null, element = null, presets = {}, data = {}) {
+    constructor(parent = null, data = {}, presets = {}) {
 
         super();
 
         this.parent = parent;
-        this.element = element;
+        this.element = null;
         this.children = [];
         this.data = data;
         this.named_elements = null;
@@ -45,6 +45,12 @@ class Rivet extends View {
 
             this.transitioneer.set(this.element)
         }
+
+        this.addToParent();
+    }
+
+    addToParent() {
+        if (this.parent) this.parent.children.push(this);
     }
 
     destructor() {
@@ -202,6 +208,37 @@ class Rivet extends View {
     updateDimensions() {
         for (var i = 0; i < this.children.length; i++)
             this.children[i].updateDimensions();
+    }
+
+    /**
+        Called by  parent when data is update and passed down from further up the graph. 
+        @param {(Object | Model)} data - Data that has been updated and is to be read. 
+        @param {Array} changed_properties - An array of property names that have been updated. 
+        @param {Boolean} IMPORTED - True if the data did not originate from the model watched by the parent Case. False otherwise.
+    */
+    __down__(data, changed_properties = null, IMPORTED = false) {
+        let r_val = this.down(data, changed_properties, IMPORTED);
+        if (r_val)(data = r_val, IMPORTED = true);
+        for (let i = 0, l = this.children.length; i < l; i++) {
+            this.children[i].__down__(data, changed_properties, IMPORTED);
+        }
+    }
+    down(data, changed_properties = null, IMPORTED) {}
+
+    /**
+        Called by  parent when data is update and passed up from a leaf. 
+        @param {(Object | Model)} data - Data that has been updated and is to be read. 
+        @param {Array} changed_properties - An array of property names that have been updated. 
+        @param {Boolean} IMPORTED - True if the data did not originate from the model watched by the parent Case. False otherwise.
+    */
+    __up__(data) {
+        if (this.parent)
+            this.parent(up);
+    }
+    
+    up(data) {
+        if(data)
+            this.__up__(data)
     }
 
     __update__(data, FROM_PARENT = false) {

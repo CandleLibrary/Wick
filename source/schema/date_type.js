@@ -1,6 +1,6 @@
 import {
-    SchemaType
-} from "./schema_type.js"
+    NUMBER
+} from "./number_type.js"
 import {
     Lex
 } from "../common"
@@ -11,7 +11,7 @@ scape_date.setMilliseconds(0);
 scape_date.setSeconds(0);
 scape_date.setTime(0);
 
-let DATE = new(class extends SchemaType {
+let DATE = new(class DateSchema extends NUMBER.constructor {
     parse(value) {
 
         if (!isNaN(value))
@@ -59,7 +59,8 @@ let DATE = new(class extends SchemaType {
      
      */
     verify(value, result) {
-        result.valid = true;
+        this.parse(value);
+        super.verify(value, result);
     }
 
     filter(identifier, filters) {

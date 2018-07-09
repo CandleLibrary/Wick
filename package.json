@@ -1,10 +1,11 @@
 {
   "name": "wick",
-  "version": "0.0.31",
+  "version": "0.1.0",
   "description": "PWA Framework",
   "main": "build/wick-min-es.js",
   "scripts": {
     "test": "mocha",
+    "test-n-watch": "mocha -w --check-leaks -R min",
 
     "build-production": "npx rollup --config ./build_config/minibuild.config.js",
     "build-production-es": "npx rollup --config ./build_config/minibuildes.config.js",

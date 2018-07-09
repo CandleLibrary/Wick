@@ -61,31 +61,30 @@ class BTreeModelContainer extends ModelContainer {
         return __return_data__;
     }
 
-    __remove__(terms) {
-        let result = false;
+    __remove__(terms, out_container) {
+        let result = 0;
 
         if (this.root && terms.length > 0) {
             if (terms.length == 1) {
-                let o = this.root.remove(terms[0], terms[0], true, this.min);
-                result = (o.out) ? true : result;
+                let o = this.root.remove(terms[0], terms[0], true, this.min, out_container);
+                result = o.out;
                 this.root = o.out_node;
             } else if (terms.length < 3) {
-                let o = this.root.remove(terms[0], terms[1], true, this.min);
-                result = (o.out) ? true : result;
+                let o = this.root.remove(terms[0], terms[1], true, this.min, out_container);
+                result =o.out;
                 this.root = o.out_node;
             } else {
                 for (let i = 0, l = terms.length - 1; i > l; i += 2) {
-                    let o = this.root.remove(terms[i], terms[i + 1], true, this.min);
-                    result = (o.out) ? true : result;
+                    let o = this.root.remove(terms[i], terms[i + 1], true, this.min, out_container);
+                    result = o.out;
                     this.root = o.out_node;
                 }
             }
         }
 
-        if (result)
-            this.size--;
+        this.size -= result;
 
-        return result;
+        return result !== 0;
     }
 
     __getAll__(__return_data__) {
@@ -327,9 +326,9 @@ class BtreeNode {
 
     }
 
-    remove(start, end, IS_ROOT = false, min_size) {
+    remove(start, end, IS_ROOT = false, min_size, out_container) {
         let l = this.keys.length,
-            out = false,
+            out = 0,
             out_node = this;
 
         if (!this.LEAF) {
@@ -338,12 +337,11 @@ class BtreeNode {
 
                 let key = this.keys[i];
 
-                if (start <= key && this.nodes[i].remove(start, end, false, min_size).out)
-                    out = true;
+                if (start <= key)
+                    out += this.nodes[i].remove(start, end, false, min_size, out_container).out;
             }
-
-            if (this.nodes[i].remove(start, end, false, min_size).out)
-                out = true;
+            
+            out += this.nodes[i].remove(start, end, false, min_size, out_container).out;
 
             for (var i = 0; i < this.nodes.length; i++) {
                 if (this.nodes[i].keys.length < min_size) {
@@ -357,15 +355,14 @@ class BtreeNode {
             if (this.nodes.length == 1)
                 out_node = this.nodes[0];
 
-
-
         } else {
 
             for (let i = 0, l = this.keys.length; i < l; i++) {
                 let key = this.keys[i];
 
                 if (key <= end && key >= start) {
-                    out = true;
+                    out_container.push(this.nodes[i])
+                    out++;
                     this.keys.splice(i, 1)
                     this.nodes.splice(i, 1);
                     l--;

@@ -2,8 +2,11 @@ import {
     SchemaType
 } from "./schema_type.js"
 
-let STRING = new(class extends SchemaType {
-    
+let STRING = new(class StringSchema extends SchemaType {
+    constructor(){
+        super();
+        this.start_value = ""
+    }
     parse(value) {
         return value + "";
     }

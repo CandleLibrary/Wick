@@ -1,8 +1,9 @@
 import {
-    SchemaType
-} from "./schema_type.js"
+    NUMBER
+} from "./number_type.js"
 
-let TIME = new(class extends SchemaType {
+let TIME = new(class TimeSchema extends NUMBER.constructor {
+
     parse(value) {
         if (!isNaN(value))
             return parseInt(value);
@@ -19,11 +20,9 @@ let TIME = new(class extends SchemaType {
         return parseFloat((hour + ((half) ? 12 : 0) + (min / 60)));
     }
 
-    /**
-     
-     */
     verify(value, result) {
-        result.valid = true;
+        this.parse(value);
+        super.verify(value, result);
     }
 
     filter(identifier, filters) {
@@ -33,7 +32,7 @@ let TIME = new(class extends SchemaType {
     string(value) {
         return (new Date(value)) + "";
     }
-})
+})()
 
 export {
     TIME

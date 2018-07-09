@@ -35,16 +35,42 @@
 
       <element id="main">
         <div data-transition="the" class="p">HI, this is the main page!</div>
-        <component class="unified_message">
-            This component was loaded with Getting Started
-        </component>
         <div data-transition="t" class="c">Currently Wick is operating on these pages!</div>
       </element>
     </app>
 
   <textarea data-prop="raw" data-export="id"></textarea>
 
-  <template id="user_lookup">
+<template id="user_lookup">
+    <w-case schema="any">
+        <w import><w-red>page_number</w-red> of [page_count]</w>
+        
+        <w-input type="text" name="note">[page_number]</w-input>
+        
+        <w-case id="user_list" model="users">
+            [data](
+                <w-filter class="limit" value="2" import>[page_number]</w-filter>
+                <w-term>[start]</w-term>
+                <w-term>[end]</w-term>
+
+                <w-case trs model="user">
+                    <w-a href="<w>[location]</w>">
+                        <my-input></my-input>
+                    </w-a>
+                        Date: <w_datetime><w>[value]</w><w_reverse><w_color r="233">[time][date]</w_color><w_blue>date</w_blue></w_reverse>[time]</w_datetime>
+                </w-case>
+            )
+        </w-case>
+    </w-case>
+</template>
+
+<template id="my-input">
+    <w export>[name]</w>
+    <w-input type="text" export>[page]</w-input>
+    <w-input type="text" export><w_date>[page]<w_date></w-input>
+</template>
+
+  <template id="user_lookuper">
 
     <case data-schema="any">
 

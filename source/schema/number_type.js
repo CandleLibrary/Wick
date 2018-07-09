@@ -2,8 +2,13 @@ import {
     SchemaType
 } from "./schema_type.js"
 
-let NUMBER = new(class extends SchemaType {
+let NUMBER = new(class NumberSchema extends SchemaType {
     
+    constructor(){
+        super();
+        this.start_value = 0;
+    }
+
     parse(value) {
         return parseFloat(value);
     }

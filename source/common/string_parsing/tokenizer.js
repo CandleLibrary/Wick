@@ -17,15 +17,15 @@ var string_parse_and_format_functions = (function() {
     var array = [{
             type: "number",
             //Initial check function. Return index offset to start for scan. If 0 is returned then the parser will move on to the next check function
-            check(code, text) {
+            check(code, text, offset) {
                 if (inRange(code, 47, 58)) {
-                    code = text.charCodeAt(1);
+                    code = text.charCodeAt(1 + offset);
                     if (compareCode(code, 66, 98, 88, 120, 79, 111)) {
                         return 2;
                     }
                     return 1;
                 } else if (code == 46) {
-                    code = text.charCodeAt(1);
+                    code = text.charCodeAt(1 + offset);
                     if (inRange(code, 47, 58)) {
                         return 2;
                     }
@@ -194,6 +194,12 @@ class Tokenizer {
 	    this.string = string;
     }
 
+    reset(){
+        this.line = 0;
+        this.char = 0;
+        this.offset = 0;
+    }
+
     hold(token) {
         this.h = token;
     }
@@ -210,16 +216,20 @@ class Tokenizer {
 
         if (this.string.length < 1) return null;
 
-        var code = this.string.charCodeAt(0);
+        let offset = this.offset;
+        
+        if (offset >= this.string.length) return null;
+
+        var code = this.string.charCodeAt(offset);
         let SPF_function;
         for (var i = 0; i < SPF_length; i++) {
             SPF_function = SPF[i];
-            let test_index = SPF_function.check(code, this.string);
+            let test_index = SPF_function.check(code, this.string, offset);
             if (test_index > 0) {
                 this.type = SPF_function.type;
                 var e = 0;
                 for (i = test_index; i < this.string.length; i++) {
-                    e = SPF_function.scanToEnd(this.string.charCodeAt(i));
+                    e = SPF_function.scanToEnd(this.string.charCodeAt(i + offset));
                     if (e > -1) break;
                     e = 0;
                 }
@@ -228,14 +238,12 @@ class Tokenizer {
             }
         }
 
-        var temp = this.string.slice(0, token_length);
-        this.string = this.string.slice(token_length);
+        var temp = this.string.slice(offset, offset + token_length);
 
         if (SPF_function.type === "new_line") {
             this.char = 0;
             this.line++;
         }
-
 
         var out = {
             type: SPF_function.type,
