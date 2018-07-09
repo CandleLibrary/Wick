@@ -1,7 +1,7 @@
-function CASECONSTRUCTTESTS()  {
-	let element = document.createElement("div")
-	element.innerHTML = 
-`<template id="user_lookup">
+function CASECONSTRUCTTESTS() {
+    let element = document.createElement("div")
+    element.innerHTML =
+        `<template id="user_lookup">
     <w-case schema="any">
         <w import><div>[date][time]sd[page_count]Z[value]</div><w-red><div>  [time][date][time][date][page_count]</div> Locovl [page_count]</w-red> of [page_count]</w>
         <div>
@@ -32,10 +32,10 @@ function CASECONSTRUCTTESTS()  {
     <w-input type="text" export><w_date>[page]<w_date></w-input>
 </template>`
 
-let ill_element = document.createElement("div")
-	ill_element.innerHTML = 
+    let ill_element = document.createElement("div")
+    ill_element.innerHTML =
 
-`<template id="user_lookup">
+        `<template id="user_lookup">
     <w-case schema="any">
  
         <w impt><w-red>page_number<-red> of [page_count]</w>
@@ -69,42 +69,51 @@ let ill_element = document.createElement("div")
 </template>`
 
     describe('wick.CaseConstructor', function() {
- 		
- 		it('Constructs an AST on properly formatted HTML', function(){
- 			let constructucting_template = element.getElementsByTagName('template')[0];
- 			let skeleton = wick.CaseConstructor(constructucting_template, {}, element);
 
- 			let any = new wick.Model({
- 				page_count : 34500,
- 				page_number : 0,
- 				value : "Toco Mako!!",
- 				time: "8pm",
- 				date : "Jun 19 998"
- 			});
+        it('Constructs an AST on properly formatted HTML', function() {
+            let constructucting_template = element.getElementsByTagName('template')[0];
+            let skeleton = wick.CaseConstructor(constructucting_template, {}, element);
 
- 			let Case = skeleton(any);
+            let any = new wick.Model({
+                page_count: 34500,
+                page_number: 0,
+                value: "Toco Mako!!",
+                time: "8pm",
+                date: "Jun 19 998"
+            });
 
- 			document.body.appendChild(Case.element);
+            let Case = skeleton(any);
 
- 			any.page_count = 50
- 		})
+            document.body.appendChild(Case.element);
 
- 		it('Throws on ill formatted HTML', function(){
- 			try{
- 				let constructucting_template = ill_element.getElementsByTagName('template')[0];
- 				wick.CaseConstructor(constructucting_template, {}, ill_element)
- 				
- 			}catch(e){
- 				console.log(e)
- 				return;
- 			}
- 			console.log(ill_element.innerHTML);
- 			throw new Error("No error was thrown!")
- 		})
+            any.page_count = 50
+        })
 
- 		//Only one case allowed in template check
+        describe.only("Throws appropiate errors for various ill formatted HTML", function() {
 
-    });
+            function test(description,expected_error_message, HTML_text){
+                it(description, function(){
+                    let element = document.createElement("template");
+                    element.innerHTML = HTML_text;
+                    element.innerHTML = HTML_text;
+                    console.log(element.innerHTML)
+
+                    try{
+                        wick.CaseConstructor(constructucting_template, {}, element)
+                    }
+                    catch(e){
+                        if(e.message !== expected_error_message)
+                            throw new Error(`Received incorrect error message "${e.message}". Expecting: "${expected_error_message}"`);
+                        else return;
+                    }
+
+                    throw new Error(`No error thrown. Expecting error: ${expected_error_message}`)
+                })
+            }
+
+            test("Unmatched tag", "Tag is unmatched", "<w-case><div></w-case>");
+        });
+    })
 }
 
 if (typeof module !== "undefined") module.exports = CASECONSTRUCTTESTS;

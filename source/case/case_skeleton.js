@@ -136,7 +136,7 @@ export class CaseSkeleton {
             if (parent_element.parentElement) {
                 parent_element.parentElement.replaceNode(parent_element, element);
             }
-            console.log(parent_element.innerHTML)
+            
 
             indexer = new Indexer(parent_element);
         }

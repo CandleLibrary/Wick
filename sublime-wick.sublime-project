@@ -1,0 +1,30 @@
+{
+	"name" : "Wick",
+	"folders":
+	[
+		{
+	"folder_exclude_patterns" : [".git", "node_modules"],
+	"binary_folder_patterns" : ["build"],
+			"path": "."
+		}
+	],
+	"settings":
+	{
+		"tab_size" : 4
+	},
+	"build_systems":
+	[
+		{
+			"name" : "mocha tests",
+			"shell_cmd" : "npm test",
+			"working_dir" : "${project_path}",
+			"selector" : "*.js"
+		},
+		{
+			"name" : "mocha tests watch",
+			"shell_cmd" : "npm run test-n-watch",
+			"working_dir" : "${project_path}",
+			"selector" : "*.js"
+		}
+	]
+}

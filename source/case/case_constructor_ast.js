@@ -441,7 +441,6 @@ export class IONode extends GenericNode {
     constructor(prop_name, attributes, parent, ctx, index) {
         super("", null, parent);
         this.index = index;
-        console.log(index)
         ctx.html += `<io prop="${prop_name}">##:${index}</io>`
         this.prop_name = prop_name;
         this.CONSUMES_TAG = true;

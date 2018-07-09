@@ -56,7 +56,6 @@ function ComponentConstructor(element, presets, WORKING_DOM) {
             //off to a good start
             let root = new AST.Root();
             ParseTag(lexer, root, presets);
-            console.log(root)
             return root.constructSkeleton(presets);
         }
     }
