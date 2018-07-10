@@ -44,10 +44,9 @@ function SCHEMATESTS()  {
 
     describe('wick.schema - Built-in Schemas', function() {
         
-        for(let name in wick.schema.instances){
-        	let schema = wick.schema.instances[name];
+        for(let name in wick.core.schema.instances){
+        	let schema = wick.core.schema.instances[name];
         	testSchema(schema, name)
-
         }
 
     });

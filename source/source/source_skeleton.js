@@ -2,15 +2,13 @@ import { Lex } from "../common/common"
 
 class Indexer {
 
-    constructor(ele) {
-
-        this.lexer = new Lex(ele.innerHTML);
-        this.ele = ele;
+    constructor(elementInnerHTML) {
+        this.lexer = new Lex(elementInnerHTML);
         this.stack = [];
         this.sp = 0;
     }
 
-    get(index, REDO = false) {
+    get(index, parent_element, REDO = false) {
 
         let lex = this.lexer;
 
@@ -26,7 +24,7 @@ class Indexer {
                 if (REDO)
                     return null;
                 else
-                    return this.get(index, true);
+                    return this.get(index, parent_element, true);
             }
 
             switch (lex.text) {
@@ -64,7 +62,7 @@ class Indexer {
                                     lex.next();
                                     if (lex.type == "number") {
                                         let number = parseInt(lex.text);
-                                        if (number == index) return this.getElement();
+                                        if (number == index) return this.getElement(parent_element);
                                     }
                                 }
                             }
@@ -76,8 +74,7 @@ class Indexer {
             }
         }
     }
-    getElement() {
-        let element = this.ele;
+    getElement(element) {
         for (let i = 0; i < this.sp; i++) {
             element = element.children[this.stack[i]];
         }
@@ -98,6 +95,11 @@ export class SourceSkeleton {
 
     constructor(element, constructor, data, presets, index) {
         this.ele = element;
+        this.eli = (element) ? element.innerHTML : ""; 
+        
+        if(element) //Strip index marks.
+            this.ele.innerHTML = this.eli.replace(/\#\#\:\d*\s/g, "");
+        
         this.Constructor = constructor;
         this.children = [];
         this.templates = [];
@@ -125,14 +127,16 @@ export class SourceSkeleton {
     */
     ____copy____(parent_element, parent, indexer) {
 
-        let element, CLAIMED_ELEMENT = false;
+        let element = null, CLAIMED_ELEMENT = false;
 
         if (this.i > 0) {
-            element = indexer.get(this.i);
+            element = indexer.get(this.i, parent_element);
+            //Remove index marker;
             CLAIMED_ELEMENT = true;
         }
 
         if (this.ele) {
+            indexer = new Indexer(this.eli);
             parent_element = this.ele.cloneNode(true);
 
             if (parent_element.parentElement) {
@@ -140,18 +144,14 @@ export class SourceSkeleton {
             }
 
 
-            indexer = new Indexer(parent_element);
         }
 
         let out_object;
         if (this.Constructor) {
             out_object = new this.Constructor(parent, this.d, this.p, element);
-            if (CLAIMED_ELEMENT)
-                out_object.ele = element;
         } else if (!parent) {
             out_object = this.children[0].____copy____(parent_element, null, indexer);
             out_object.ele = parent_element;
-            console.log(parent_element.innerHTML)
             return out_object;
         } else
             out_object = parent;

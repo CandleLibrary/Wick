@@ -1,4 +1,6 @@
-import { Lex } from "../common/common"
+import {
+    Lex
+} from "../common/common"
 
 import * as AST from "./source_constructor_ast"
 
@@ -10,7 +12,7 @@ import * as AST from "./source_constructor_ast"
     @param {Presets} presets 
     @param {DOMElement} WORKING_DOM - Should include any other templates that need to be rolled in. 
 */
-export function SourceConstructor(Template, Presets, WORKING_DOM) {
+export function SourceConstructor(Template, Presets) {
 
     let skeleton;
 
@@ -20,12 +22,9 @@ export function SourceConstructor(Template, Presets, WORKING_DOM) {
     if (Template.skeleton)
         return Template.skeleton;
 
-
-    //TEmplate Filtration handled here.
-    //Import the 
     let element = document.importNode(Template, true);
 
-    skeleton = ComponentConstructor(element, Presets, WORKING_DOM);
+    skeleton = ComponentConstructor(element, Presets);
 
     if (!skeleton)
         return null;
@@ -36,7 +35,7 @@ export function SourceConstructor(Template, Presets, WORKING_DOM) {
 }
 
 
-function ComponentConstructor(element, presets, WORKING_DOM) {
+function ComponentConstructor(element, presets) {
 
     let attributes = [];
     let props = [];
@@ -58,7 +57,7 @@ function ComponentConstructor(element, presets, WORKING_DOM) {
     return null;
 }
 
-function MiniParse(string, root, presets){
+function MiniParse(string, root, presets) {
     const lexer = Lex(string);
     if (lexer.text == "<") {
         ParseTag(lexer, root, presets);
@@ -90,10 +89,12 @@ function Dispatch(lexer, tagname, attributes, parent, presets) {
         case "w-term":
             ast = new AST.TermNode(tagname, attributes, parent);
             return ast;
-        case "w-c":
-        case "w_c":
-        case "w-case":
-        case "w_case":
+        case "w-s":
+        case "w-src":
+        case "w-source":
+        case "w_s":
+        case "w_src":
+        case "w_source":
             ast = new AST.SourceNode(tagname, attributes, parent);
             return ast;
         default:
@@ -107,6 +108,30 @@ function Dispatch(lexer, tagname, attributes, parent, presets) {
     return ast;
 }
 
+
+function HandleTemplateImport(ele, presets) {
+
+    let tagname = ele.tagname;
+
+    if (presets.templates[tagname]) {
+
+        let template = presets.templates[tagname];
+
+        if (template) {
+
+            let element = document.importNode(template, true);
+            let lexer = Lex(element.innerHTML);
+
+            while (lexer.text)
+                ParseTag(lexer, ele, presets);           
+
+        } else {
+
+            //Networking setup here if element is undefined but the Node has network calls. 
+        }
+    }
+}
+
 /**
     Handles the parsing of HTML tags and content
     @param {String} tagname
@@ -114,7 +139,7 @@ function Dispatch(lexer, tagname, attributes, parent, presets) {
     @param {CCAstNode} parent
 */
 function ParseTag(lexer, parent, presets) {
-    let start = lexer.pos;
+    let begin = lexer.pos;
     let attributes = {};
 
     lexer.assert("<")
@@ -128,14 +153,16 @@ function ParseTag(lexer, parent, presets) {
 
     let ele = Dispatch(lexer, tagname, attributes, parent, presets);
 
-    ele.open_tag += lexer.slice(start);
+    ele.open_tag += lexer.slice(begin);
 
-    start = lexer.token.pos;
+    let start = lexer.pos;
+
+    if (start < 0) throw new Error(`Unexpected end of output. Tag <${tagname}> at pos ${begin} has not been closed.`);
 
     while (true) {
 
         if (!lexer.text)
-            throw ("Unexpected end of output");
+            throw new Error(`Unexpected end of output. Tag <${tagname}> at pos ${begin} has not been closed.`);
 
         switch (lexer.text) {
             case "<":
@@ -143,37 +170,49 @@ function ParseTag(lexer, parent, presets) {
 
                     ele.html += lexer.slice(start);
 
+                    let begin = start;
+
                     start = lexer.pos;
 
+
                     //Should be closing it's own tag.
-                    lexer.assert("<");
-                    lexer.assert("/");
-                    lexer.assert(tagname);
+                    lexer.a("<");
+                    lexer.a("/");
+
+                    if (lexer.text !== tagname)
+                        throw new Error(`Unexpected closing Tag. Expected </${tagname}>  but got </${lexer.text}>.`);
+
+                    lexer.n();
 
                     let out = lexer.pos + 1;
 
-                    lexer.assert(">");
+                    lexer.a(">");
 
                     ele.close_tag = lexer.slice(start);
 
-                    ele.finalize(parent || { html: "" }, presets);
+                    if (start - begin < 1)
+                        HandleTemplateImport(ele, presets)
+
+
+                    ele.finalize(parent || {
+                        html: ""
+                    }, presets);
 
                     return out;
                 } else
-                    start = ParseTag(lexer, ele);
+                    start = ParseTag(lexer, ele, presets);
                 break;
             case "[":
                 ele.html += lexer.slice(start);
-                lexer.next()
+                lexer.n()
                 let prop_name = lexer.text;
-                lexer.next()
+                lexer.n()
                 start = lexer.pos + 1;
-                lexer.assert("]");
+                lexer.a("]");
                 start = ele.addProp(lexer, prop_name, ParseTag, presets) || start;
                 break;
             default:
-                lexer.next();
-                break;
+                lexer.n();
         }
     }
 }
@@ -187,13 +226,28 @@ function ParseTag(lexer, parent, presets) {
 function GetAttributes(lexer, attribs) {
     while (lexer.text !== ">" && lexer.text !== "/") {
         if (!lexer.text) throw Error("Unexpected end of input.");
+
+        if (lexer.type !== "identifier")
+            throw new Error(`Expected an identifier. Got ${lexer.type}:${lexer.text}`)
+
         let attrib_name = lexer.text;
         let attrib_val = null;
+
         lexer.next();
+
         if (lexer.text == "=") {
             lexer.next();
-            if (lexer.token.type == "string") {
+
+            if (!lexer.token)
+                throw Error(`Unexpected end of input. Expecting value for attribute "${attrib_name}"`);
+            else if (lexer.token.type == "string") {
                 attrib_val = lexer.text.slice(1, -1);
+                lexer.next();
+            } else if (lexer.token.type == "number") {
+                attrib_val = parseFloat(lexer.text);
+                lexer.next();
+            } else if (lexer.token.type == "Symbol") {
+                attrib_val = lexer.text;
                 lexer.next();
             } else
                 throw new Error("Expecting attribute definition.");

@@ -16,12 +16,14 @@ class Lexer {
         }
     }
 
+    r(){return this.reset()}
     reset(){
         this.tk.reset();
         this.token = this.tk.next();
         this.hold = null;
     }
 
+    n(){return this.next()}
     next() {
         if (this.hold !== null) {
             this.token = this.hold;
@@ -40,6 +42,7 @@ class Lexer {
         return null;
     }
 
+    a(text){return this.assert(text)}
     assert(text) {
         if (!this.token) throw new Error(`Expecting ${text} got null`);
 
@@ -55,6 +58,7 @@ class Lexer {
         return bool;
     }
 
+    p(){return this.p()}
     peek() {
         if (this.hold) {
             return this.hold;
@@ -75,12 +79,14 @@ class Lexer {
         return null_token;
     }
 
+    get tx(){return this.text}
     get text() {
         if (this.token)
             return this.token.text;
         return null;
     }
 
+    get ty(){return this.type}
     get type() {
         if (this.token)
             return this.token.type;
@@ -93,6 +99,7 @@ class Lexer {
         return -1;
     }
 
+    s(start){return this.slice(start)}
     slice(start) {
         if (this.token)
             return this.tk.string.slice(start, this.token.pos)

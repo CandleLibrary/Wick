@@ -1,124 +1,172 @@
 function SOURCECONSTRUCTTESTS() {
-    let element = document.createElement("div")
-    element.innerHTML =
-`<template id="user_lookup">
-	<w-case schema="any">
-        <w import><div id="test_core">[date][time]sd[page_count]Z[value]</div><w-red><div>  [time][date][time][date][page_count]</div> Locovl [page_count]</w-red> of [page_count]</w>
-        
-        <div id="style_test" style="<w>[style]</w>">
-        	<w-input type="text" name="note">[page_number]</w-input>
-        </div>
-        
-        <div>
-	        <w-case id="user_list" model="users"> Doogy
-	            [data]((
+	let element = document.createElement("div")
+	element.innerHTML =
+		`<template id="user_lookup">
+	<w-s schema="any">
+		<w import><div id="test_core">[date][time]sd[page_count]Z[value]</div><w-red><div id="class" class="<w>[class]</w>">  [time][date][time][date][page_count]</div> Locovl [page_count]</w-red> of [page_count]</w>
+		
+		<div id="style" style="<w>[style]</w>" name="<w>[name]</w>">
+			<w-input type="text" name="note">[page_number]</w-input>
+		</div>
 
-	                <w-filter class="limit" value="2" import>[page_number]</w-filter>
-	                <w-term>[start]</w-term>
-	                <w-term>[end]</w-term>
+		<my-input></my-input>
+		
+		<div>
+			<w-s id="user_list" model="users"> Doogy
+				[data]((
 
-	                <w-case trs model="any">
-	                    <w-a href="<w>[location]</w>">
-	                        <my-input></my-input>
-	                    </w-a>
-	                        Date: <w><w_datetime>[value]<w_reverse><w_color r="233">[time][date]</w_color><w_blue>date</w_blue></w_reverse>[time]</w_datetime><w>
-	                </w-case>
-	            ))
-	        </w-case>
-        </div>
-    </w-case>
+					<w-filter class="limit" value="2" import>[page_number]</w-filter>
+					<w-term>[start]</w-term>
+					<w-term>[end]</w-term>
+
+					<w-s trs model="any">
+						<w-a href="<w>[location]</w>">
+							<my-input></my-input>
+						</w-a>
+							Date: <w><w_datetime>[value]<w_reverse><w_color r="233">[time][date]</w_color><w_blue>date</w_blue></w_reverse>[time]</w_datetime><w>
+					</w-s>
+				))
+			</w-s>
+		</div>
+	</w-s>
 </template>
 
 <template id="my-input">
-   	<w export>[name]</w>
-    <w-input type="text" export>[page]</w-input>
-    <w-input type="text" export><w_date>[page]<w_date></w-input>
-</template>`
+	<w export>[name]</w>
+	<w-input type="text" export>[page]</w-input>
+	<w-input type="text" export><w_date>[page]<w_date></w-input>
+	<div id="importtest1">
+	<my-other-input></my-other-input>
+	</div>
+</template>
 
-    describe('wick.core.source.SourceConstructor', function() {
+<template id="my-other-input">
+	<div id="importtest2"></div>
+</template>
+`
 
-        describe("Construction of Source's", function() {
 
-            let Source;
 
-            let Any = wick.any({
-                page_count: 34500,
-                page_number: 0,
-                value: "Toco Mako!!",
-                time: "8pm",
-                date: "Jun 19 998",
-                style: "color:red"
-            });
+	describe('wick.core.source.SourceConstructor', function() {
 
-            console.log(Any)
+		describe("Construction of Source's", function() {
 
-            it('Constructs an AST on properly formatted HTML', function() {
-                let constructucting_template = element.getElementsByTagName('template')[0];
-                let skeleton = wick.core.source.SourceConstructor(constructucting_template, {}, element);
-                Source = skeleton(Any);
-                document.body.appendChild(Source.ele);
-            })
+			let Source;
 
-            it('DOM is correctly updated when Model is changed.', function(done) {
-                element = Source.ele;
-                let date_element = document.getElementById("test_core").getElementsByTagName("io")[0];
-                let date = date_element.innerHTML;
+			let Any = wick.any({
+				page_count: 34500,
+				page_number: 0,
+				value: "Toco Mako!!",
+				time: "8pm",
+				date: "Jun 19 998",
+				style: "color:red",
+				name: "shmoolie"
+			});
 
-                Any.date = date + "bc";
+			it('Constructs an AST on properly formatted HTML', function() {
+				let constructucting_template = element.getElementsByTagName('template')[0];
 
-                setTimeout(() => {
-                    
-                    let date2 = date_element.innerHTML;
-                    
-                    if (Any.date !== date2) throw new Error(`Expecting element to have "${Any.date}". Got "${date2}"`);
-                    
-                    done()
-                }, 5)
-            })
+				let templates = element.getElementsByTagName('template');
 
-            it('Element attributes are updated when Model is changed.', function(done) {
+				let presets = {
+					templates: {}
+				};
 
-                element = Source.ele;
-                let style_element = document.getElementById("style_test");
+				for (let i = 0, l = templates.length, t; i < l; i++)
+					(t = templates[i], presets.templates[t.id] = t);
 
-                if(!style_element.style) style_element.style = "";
-                
-                Any.style += ";border:1px solid black";
 
-                setTimeout(() => {
+				let skeleton = wick.core.source.SourceConstructor(constructucting_template, presets, element);
+				Source = skeleton(Any);
+				document.body.appendChild(Source.ele);
+			})
 
-                    let style = style_element.style.border;
-                    
-                    if ("1px solid black" !== style) throw new Error(`Expecting element to have its border style set to "${"1px solid black"}". Got "${style}"`);
-                    
-                    done()
-                }, 5)
-            })
-        })
+			it('Inorporates other templates based on tagname', function() {
+				let element1 = document.getElementById("importtest1");
+				let element2 = document.getElementById("importtest2");
 
-        describe("Throws appropriate errors for various ill formatted HTML", function() {
 
-            function test(description, expected_error_message, HTML_text) {
-                it(description, function() {
-                    let element = document.createElement("div")
-                    element.innerHTML = HTML_text;
-                    element = element.getElementsByTagName('template')[0]
+				if (!element1 || !element2)
+					throw new Error("Failed to import templates.")
+			})
 
-                    try {
-                        let t = wick.core.source.SourceConstructor(element, {}, element)
-                    } catch (e) {
-                        if (e.message !== expected_error_message)
-                            throw new Error(`Received incorrect error message "${e.message}". Expecting: "${expected_error_message}"`);
-                        else return;
-                    }
+			it('Loads templates from network.', function() {
+				let element1 = document.getElementById("importtest3");
+				let element2 = document.getElementById("importtest4");
 
-                    throw new Error(`No error thrown. Expecting error: ${expected_error_message}`)
-                })
-            }
+				if (!element1 || !element2)
+					throw new Error("Failed to import templates.")
+			})
 
-            test("Unmatched tag", "Tag is unmatched", `<template><w-case temp="ee"><div></div></w-case></template>`);
-        });
-    })
+			it('DOM is correctly updated when Model is changed.', function(done) {
+
+				let date_element = document.getElementById("test_core").getElementsByTagName("io")[0];
+				let date = date_element.innerHTML;
+
+				Any.date = date + "bc";
+
+				setTimeout(() => {
+
+					let date2 = date_element.innerHTML;
+
+					if (Any.date !== date2) throw new Error(`Expecting element to have "${Any.date}". Got "${date2}"`);
+
+					done()
+				}, 15)
+			})
+
+			it('Element attributes are updated when Model is changed.', function(done) {
+
+				let style_element = document.getElementById("style");
+				let class_element = document.getElementById("class");
+
+				Any.add({
+					style: Any.style + ";border:1px solid black",
+					class: "china",
+					name: "schmoolie2"
+				})
+
+				setTimeout(() => {
+
+					let style = style_element.attributes.getNamedItem("style").value;
+					let name = style_element.attributes.getNamedItem("name").value;
+					let class_ = class_element.attributes.getNamedItem("class").value;
+
+					if (Any.style !== style) throw new Error(`Expecting element#style to have its style set to "${Any.style}". Got "${style}"`);
+					if (Any.name !== name) throw new Error(`Expecting element#style to have its name set to "${Any.name}". Got "${name}"`);
+					if (Any.class !== class_) throw new Error(`Expecting element#class to have its class set to "${Any.class}". Got "${class_}"`);
+
+					done()
+				}, 15)
+			})
+		})
+
+		describe("Throws appropriate errors for various ill formatted HTML", function() {
+
+			function test(description, expected_error_message, HTML_text) {
+				it(description, function() {
+					let element = document.createElement("div")
+					element.innerHTML = HTML_text;
+					element = element.getElementsByTagName('template')[0]
+
+					try {
+						let t = wick.core.source.SourceConstructor(element, {}, element)
+					} catch (e) {
+						if (e.message !== expected_error_message)
+							throw new Error(`Received incorrect error message "${e.message}". Expecting: "${expected_error_message}"`);
+						else return;
+					}
+
+					throw new Error(`No error thrown. Expecting error: ${expected_error_message}`)
+				})
+			}
+
+			test("Unexpected end of output. Input = <w>", "Unexpected end of output. Tag <w> at pos 0 has not been closed.", `<template><div error="<w>"></template>`);
+			test("Unexpected closing tag. Input = <w></w-el></w>", "Unexpected closing Tag. Expected </w>  but got </w-el>.", `<template><div error="<w></w-el></w>"></template>`);
+			test("Unexpected attribute value. Input = <w attribute=\"this></w>", "Unexpected end of input. Expecting value for attribute \"attribute\"", `<template><div error="<w attribute=this></w>"></template>`);
+			test("Unexpected attribute value. Input = <w attribute'this\"></w>", "Expected an identifier. Got Symbol:'", `<template><div error="<w attribute'this"></w>"></template>`);
+		});
+	})
 }
 
 if (typeof module !== "undefined") module.exports = SOURCECONSTRUCTTESTS;

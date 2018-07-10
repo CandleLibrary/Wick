@@ -1,4 +1,6 @@
-import { SchemaConstructor } from "../constructor.js"
+import {
+    SchemaConstructor
+} from "../constructor.js"
 
 class BoolSchemaConstructor extends SchemaConstructor {
 
@@ -18,9 +20,12 @@ class BoolSchemaConstructor extends SchemaConstructor {
 
         result.valid = true;
 
-        if (!value instanceof Boolean) {
+        if (value === undefined) {
             result.valid = false;
-            result.reason = " Value is not a Boolean."
+            result.reason = " value is undefined"
+        } else if (!value instanceof Boolean) {
+            result.valid = false;
+            result.reason = " value is not a Boolean."
         }
     }
 
@@ -33,6 +38,9 @@ class BoolSchemaConstructor extends SchemaConstructor {
     }
 }
 
-let bool = new BoolSchemaConstructor ()
+let bool = new BoolSchemaConstructor()
 
-export { bool, BoolSchemaConstructor };
+export {
+    bool,
+    BoolSchemaConstructor
+};

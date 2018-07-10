@@ -7,9 +7,6 @@ function MCTESTS() {
     */
     ModelContainerTests = function(Constructor, IS_STRING_CAPABLE = true) {
 
-        it('suports')
-
-
         it('Is a constructor', function() {
             if (!constructor instanceof Function)
                 throw new Error("Container is not a constructor")
@@ -24,7 +21,6 @@ function MCTESTS() {
             if (!Container instanceof wick.core.model.Model)
                 throw new Error("Container is not an instance of ModelContainer")
         });
-
 
         function handlesSchemaTypeAnyModel(SCHEMA_TYPE, MODEL_TYPE, identifier, models, extra_matching_models, filters, valid_count, filtered_count, reject_count) {
 

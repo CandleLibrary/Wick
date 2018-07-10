@@ -93,12 +93,14 @@ class Lexer {
         }
     }
 
+    r(){return this.reset()}
     reset(){
         this.tk.reset();
         this.token = this.tk.next();
         this.hold = null;
     }
 
+    n(){return this.next()}
     next() {
         if (this.hold !== null) {
             this.token = this.hold;
@@ -117,6 +119,7 @@ class Lexer {
         return null;
     }
 
+    a(text){return this.assert(text)}
     assert(text) {
         if (!this.token) throw new Error(`Expecting ${text} got null`);
 
@@ -132,6 +135,7 @@ class Lexer {
         return bool;
     }
 
+    p(){return this.p()}
     peek() {
         if (this.hold) {
             return this.hold;
@@ -152,12 +156,14 @@ class Lexer {
         return null_token;
     }
 
+    get tx(){return this.text}
     get text() {
         if (this.token)
             return this.token.text;
         return null;
     }
 
+    get ty(){return this.type}
     get type() {
         if (this.token)
             return this.token.type;
@@ -170,6 +176,7 @@ class Lexer {
         return -1;
     }
 
+    s(start){return this.slice(start)}
     slice(start) {
         if (this.token)
             return this.tk.string.slice(start, this.token.pos)
@@ -1542,8 +1549,15 @@ class StringSchemaConstructor extends SchemaConstructor {
     }
 
     verify(value, result) {
-
         result.valid = true;
+
+        if (value === undefined) {
+            result.valid = false;
+            result.reason = " value is undefined";
+        } else if (!value instanceof String) {
+            result.valid = false;
+            result.reason = " value is not a string.";
+        }
     }
 
     filter(identifier, filters) {
@@ -1576,9 +1590,12 @@ class BoolSchemaConstructor extends SchemaConstructor {
 
         result.valid = true;
 
-        if (!value instanceof Boolean) {
+        if (value === undefined) {
             result.valid = false;
-            result.reason = " Value is not a Boolean.";
+            result.reason = " value is undefined";
+        } else if (!value instanceof Boolean) {
+            result.valid = false;
+            result.reason = " value is not a Boolean.";
         }
     }
 
@@ -1591,7 +1608,7 @@ class BoolSchemaConstructor extends SchemaConstructor {
     }
 }
 
-let bool = new BoolSchemaConstructor ();
+let bool = new BoolSchemaConstructor();
 
 let schema = { date, string, number, bool, time };
 
@@ -4545,15 +4562,13 @@ class SourceTemplate extends Source {
 
 class Indexer {
 
-    constructor(ele) {
-
-        this.lexer = new Lex(ele.innerHTML);
-        this.ele = ele;
+    constructor(elementInnerHTML) {
+        this.lexer = new Lex(elementInnerHTML);
         this.stack = [];
         this.sp = 0;
     }
 
-    get(index, REDO = false) {
+    get(index, parent_element, REDO = false) {
 
         let lex = this.lexer;
 
@@ -4569,7 +4584,7 @@ class Indexer {
                 if (REDO)
                     return null;
                 else
-                    return this.get(index, true);
+                    return this.get(index, parent_element, true);
             }
 
             switch (lex.text) {
@@ -4607,7 +4622,7 @@ class Indexer {
                                     lex.next();
                                     if (lex.type == "number") {
                                         let number = parseInt(lex.text);
-                                        if (number == index) return this.getElement();
+                                        if (number == index) return this.getElement(parent_element);
                                     }
                                 }
                             }
@@ -4619,8 +4634,7 @@ class Indexer {
             }
         }
     }
-    getElement() {
-        let element = this.ele;
+    getElement(element) {
         for (let i = 0; i < this.sp; i++) {
             element = element.children[this.stack[i]];
         }
@@ -4641,6 +4655,11 @@ class SourceSkeleton {
 
     constructor(element, constructor, data, presets, index) {
         this.ele = element;
+        this.eli = (element) ? element.innerHTML : ""; 
+        
+        if(element) //Strip index marks.
+            this.ele.innerHTML = this.eli.replace(/\#\#\:\d*\s/g, "");
+        
         this.Constructor = constructor;
         this.children = [];
         this.templates = [];
@@ -4668,14 +4687,14 @@ class SourceSkeleton {
     */
     ____copy____(parent_element, parent, indexer) {
 
-        let element, CLAIMED_ELEMENT = false;
+        let element = null;
 
         if (this.i > 0) {
-            element = indexer.get(this.i);
-            CLAIMED_ELEMENT = true;
+            element = indexer.get(this.i, parent_element);
         }
 
         if (this.ele) {
+            indexer = new Indexer(this.eli);
             parent_element = this.ele.cloneNode(true);
 
             if (parent_element.parentElement) {
@@ -4683,18 +4702,14 @@ class SourceSkeleton {
             }
 
 
-            indexer = new Indexer(parent_element);
         }
 
         let out_object;
         if (this.Constructor) {
             out_object = new this.Constructor(parent, this.d, this.p, element);
-            if (CLAIMED_ELEMENT)
-                out_object.ele = element;
         } else if (!parent) {
             out_object = this.children[0].____copy____(parent_element, null, indexer);
             out_object.ele = parent_element;
-            console.log(parent_element.innerHTML);
             return out_object;
         } else
             out_object = parent;
@@ -5019,24 +5034,20 @@ class IO extends PipeBase {
 	This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
 */
 class AttribIO extends IO {
-    constructor(parent, data, presets, element) {
+    constructor(parent, data, presets, element) {        
+        
+        const attrib = element.attributes.getNamedItem(data.prop);
+        
         super(parent, data, presets);
 
-        this.element = element;
-
-        //Remove the index marker
-        element.childNodes[0].data = element.childNodes[0].data.replace(/\#\#\:\d*\s/, "");
+        this.ele = attrib;
     }
 
     /**
     	Puts data into the watched element's attribute. The default action is to simply update the attribute with data.value.  
     */
     down(data) {
-        if (this.prop == "style"){
-            this.ele.style = data.value;
-        }
-        else
-            this.ele.attributes[this.prop] = data.value;
+        this.ele.value = data.value;
     }
 }
 
@@ -5142,18 +5153,19 @@ class GenericNode {
                 this.children[i].setAttribProp(name);
     }
 
+    /** 
+        Builds ASTs on attributes 
+    */
     treeParseAttributes(MiniParse, presets){
-         for (let a in this.attributes) {
-            let attrib = this.attributes[a];
+        let i = -1;
+        for (let n in this.attributes) {
+            let attrib = this.attributes[n];
             if (attrib[0] == "<") {
-                const root = new SourceNode("", null, null);
-                this.index = this.getIndex();
-                root.tag_index = this.index;
-                this.index_tag = "##:" + this.index + " ";
-                let sub_tree = MiniParse(attrib, root, presets);
-                let child = root.children[0];
-                child.setAttribProp(a);
-                this.addChild(child);
+                let root = new SourceNode("", null, null);
+                root.tag_index = (i < 0) ? (i = this.getIndex(), this.index_tag = `##:${i} `, this.index = i) : i;
+                MiniParse(attrib, root, presets);
+                root.children[0].setAttribProp(n);
+                this.addChild(root.children[0]);
             }
         }
     }
@@ -5283,7 +5295,7 @@ class TemplateNode extends GenericNode {
     constructor(tagname, attributes, parent, ctx) {
         super(tagname, attributes, parent);
         this.index = this.getIndex();
-        ctx.html += `<list>##:${this.index}</list>`;
+        ctx.html += `<list>##:${this.index} </list>`;
         this.filters = [];
         this.terms = [];
         this.templates = [];
@@ -5395,6 +5407,7 @@ class TermNode extends GenericNode {
 
 
 class PipeNode extends GenericNode {
+    
     constructor(tagname, attributes, parent) {
         super(tagname, attributes, parent);
     };
@@ -5427,7 +5440,7 @@ class IONode extends GenericNode {
     constructor(prop_name, attributes, parent, ctx, index) {
         super("", null, parent);
         this.index = index;
-        ctx.html += `<io prop="${prop_name}">##:${index}</io>`;
+        ctx.html += `<io prop="${prop_name}">##:${index} </io>`;
         this.CONSUMES_TAG = true;
     };
 
@@ -5444,7 +5457,7 @@ class IONode extends GenericNode {
     @param {Presets} presets 
     @param {DOMElement} WORKING_DOM - Should include any other templates that need to be rolled in. 
 */
-function SourceConstructor(Template, Presets, WORKING_DOM) {
+function SourceConstructor(Template, Presets) {
 
     let skeleton;
 
@@ -5454,12 +5467,9 @@ function SourceConstructor(Template, Presets, WORKING_DOM) {
     if (Template.skeleton)
         return Template.skeleton;
 
-
-    //TEmplate Filtration handled here.
-    //Import the 
     let element = document.importNode(Template, true);
 
-    skeleton = ComponentConstructor(element, Presets, WORKING_DOM);
+    skeleton = ComponentConstructor(element, Presets);
 
     if (!skeleton)
         return null;
@@ -5470,7 +5480,7 @@ function SourceConstructor(Template, Presets, WORKING_DOM) {
 }
 
 
-function ComponentConstructor(element, presets, WORKING_DOM) {
+function ComponentConstructor(element, presets) {
 
     if (element.tagName === "TEMPLATE") {
         let component_name = element.id;
@@ -5489,7 +5499,7 @@ function ComponentConstructor(element, presets, WORKING_DOM) {
     return null;
 }
 
-function MiniParse(string, root, presets){
+function MiniParse(string, root, presets) {
     const lexer = Lex(string);
     if (lexer.text == "<") {
         ParseTag(lexer, root, presets);
@@ -5521,10 +5531,12 @@ function Dispatch(lexer, tagname, attributes, parent, presets) {
         case "w-term":
             ast = new TermNode(tagname, attributes, parent);
             return ast;
-        case "w-c":
-        case "w_c":
-        case "w-case":
-        case "w_case":
+        case "w-s":
+        case "w-src":
+        case "w-source":
+        case "w_s":
+        case "w_src":
+        case "w_source":
             ast = new SourceNode(tagname, attributes, parent);
             return ast;
         default:
@@ -5538,6 +5550,27 @@ function Dispatch(lexer, tagname, attributes, parent, presets) {
     return ast;
 }
 
+
+function HandleTemplateImport(ele, presets) {
+
+    let tagname = ele.tagname;
+
+    if (presets.templates[tagname]) {
+
+        let template = presets.templates[tagname];
+
+        if (template) {
+
+            let element = document.importNode(template, true);
+            let lexer = Lex(element.innerHTML);
+
+            while (lexer.text)
+                ParseTag(lexer, ele, presets);           
+
+        }
+    }
+}
+
 /**
     Handles the parsing of HTML tags and content
     @param {String} tagname
@@ -5545,7 +5578,7 @@ function Dispatch(lexer, tagname, attributes, parent, presets) {
     @param {CCAstNode} parent
 */
 function ParseTag(lexer, parent, presets) {
-    let start = lexer.pos;
+    let begin = lexer.pos;
     let attributes = {};
 
     lexer.assert("<");
@@ -5559,14 +5592,16 @@ function ParseTag(lexer, parent, presets) {
 
     let ele = Dispatch(lexer, tagname, attributes, parent, presets);
 
-    ele.open_tag += lexer.slice(start);
+    ele.open_tag += lexer.slice(begin);
 
-    start = lexer.token.pos;
+    let start = lexer.pos;
+
+    if (start < 0) throw new Error(`Unexpected end of output. Tag <${tagname}> at pos ${begin} has not been closed.`);
 
     while (true) {
 
         if (!lexer.text)
-            throw ("Unexpected end of output");
+            throw new Error(`Unexpected end of output. Tag <${tagname}> at pos ${begin} has not been closed.`);
 
         switch (lexer.text) {
             case "<":
@@ -5574,37 +5609,49 @@ function ParseTag(lexer, parent, presets) {
 
                     ele.html += lexer.slice(start);
 
+                    let begin = start;
+
                     start = lexer.pos;
 
+
                     //Should be closing it's own tag.
-                    lexer.assert("<");
-                    lexer.assert("/");
-                    lexer.assert(tagname);
+                    lexer.a("<");
+                    lexer.a("/");
+
+                    if (lexer.text !== tagname)
+                        throw new Error(`Unexpected closing Tag. Expected </${tagname}>  but got </${lexer.text}>.`);
+
+                    lexer.n();
 
                     let out = lexer.pos + 1;
 
-                    lexer.assert(">");
+                    lexer.a(">");
 
                     ele.close_tag = lexer.slice(start);
 
-                    ele.finalize(parent || { html: "" }, presets);
+                    if (start - begin < 1)
+                        HandleTemplateImport(ele, presets);
+
+
+                    ele.finalize(parent || {
+                        html: ""
+                    }, presets);
 
                     return out;
                 } else
-                    start = ParseTag(lexer, ele);
+                    start = ParseTag(lexer, ele, presets);
                 break;
             case "[":
                 ele.html += lexer.slice(start);
-                lexer.next();
+                lexer.n();
                 let prop_name = lexer.text;
-                lexer.next();
+                lexer.n();
                 start = lexer.pos + 1;
-                lexer.assert("]");
+                lexer.a("]");
                 start = ele.addProp(lexer, prop_name, ParseTag, presets) || start;
                 break;
             default:
-                lexer.next();
-                break;
+                lexer.n();
         }
     }
 }
@@ -5618,13 +5665,28 @@ function ParseTag(lexer, parent, presets) {
 function GetAttributes(lexer, attribs) {
     while (lexer.text !== ">" && lexer.text !== "/") {
         if (!lexer.text) throw Error("Unexpected end of input.");
+
+        if (lexer.type !== "identifier")
+            throw new Error(`Expected an identifier. Got ${lexer.type}:${lexer.text}`)
+
         let attrib_name = lexer.text;
         let attrib_val = null;
+
         lexer.next();
+
         if (lexer.text == "=") {
             lexer.next();
-            if (lexer.token.type == "string") {
+
+            if (!lexer.token)
+                throw Error(`Unexpected end of input. Expecting value for attribute "${attrib_name}"`);
+            else if (lexer.token.type == "string") {
                 attrib_val = lexer.text.slice(1, -1);
+                lexer.next();
+            } else if (lexer.token.type == "number") {
+                attrib_val = parseFloat(lexer.text);
+                lexer.next();
+            } else if (lexer.token.type == "Symbol") {
+                attrib_val = lexer.text;
                 lexer.next();
             } else
                 throw new Error("Expecting attribute definition.");
@@ -7317,7 +7379,7 @@ Object.freeze(model.any);
 Object.freeze(model);
 
 //Construct Schema Exports
-const schema$1 = schema;
+const schema$1 = Object.create(schema);
 schema$1.constr = SchemaConstructor;
 schema$1.constr.bool = BoolSchemaConstructor;
 schema$1.constr.number = NumberSchemaConstructor;

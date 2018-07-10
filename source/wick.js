@@ -180,7 +180,7 @@ Object.freeze(model.any);
 Object.freeze(model);
 
 //Construct Schema Exports
-const schema = Schemas;
+const schema = Object.create(Schemas);
 schema.constr = SchemaConstructor;
 schema.constr.bool = BoolSchemaConstructor;
 schema.constr.number = NumberSchemaConstructor;

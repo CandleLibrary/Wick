@@ -29,23 +29,19 @@ export class IO extends PipeBase {
 	This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
 */
 export class AttribIO extends IO {
-    constructor(parent, data, presets, element) {
+    constructor(parent, data, presets, element) {        
+        
+        const attrib = element.attributes.getNamedItem(data.prop);
+        
         super(parent, data, presets)
 
-        this.element = element;
-
-        //Remove the index marker
-        element.childNodes[0].data = element.childNodes[0].data.replace(/\#\#\:\d*\s/, "");
+        this.ele = attrib;
     }
 
     /**
     	Puts data into the watched element's attribute. The default action is to simply update the attribute with data.value.  
     */
     down(data) {
-        if (this.prop == "style"){
-            this.ele.style = data.value;
-        }
-        else
-            this.ele.attributes[this.prop] = data.value;
+        this.ele.value = data.value;
     }
 }

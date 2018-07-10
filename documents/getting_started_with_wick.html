@@ -48,7 +48,7 @@
         <w-input type="text" name="note">[page_number]</w-input>
         
         <w-case id="user_list" model="users">
-            [data](
+            [data]((
                 <w-filter class="limit" value="2" import>[page_number]</w-filter>
                 <w-term>[start]</w-term>
                 <w-term>[end]</w-term>
@@ -59,7 +59,7 @@
                     </w-a>
                         Date: <w_datetime><w>[value]</w><w_reverse><w_color r="233">[time][date]</w_color><w_blue>date</w_blue></w_reverse>[time]</w_datetime>
                 </w-case>
-            )
+            ))
         </w-case>
     </w-case>
 </template>

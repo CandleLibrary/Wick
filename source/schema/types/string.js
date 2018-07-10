@@ -6,7 +6,7 @@ class StringSchemaConstructor extends SchemaConstructor {
 
         super();
 
-        this.start_value = ""
+        this.start_value = "";
     }
     parse(value) {
 
@@ -14,8 +14,15 @@ class StringSchemaConstructor extends SchemaConstructor {
     }
 
     verify(value, result) {
-
         result.valid = true;
+
+        if (value === undefined) {
+            result.valid = false;
+            result.reason = " value is undefined"
+        } else if (!value instanceof String) {
+            result.valid = false;
+            result.reason = " value is not a string."
+        }
     }
 
     filter(identifier, filters) {

@@ -177,18 +177,19 @@ export class GenericNode {
                 this.children[i].setAttribProp(name);
     }
 
+    /** 
+        Builds ASTs on attributes 
+    */
     treeParseAttributes(MiniParse, presets){
-         for (let a in this.attributes) {
-            let attrib = this.attributes[a];
+        let i = -1;
+        for (let n in this.attributes) {
+            let attrib = this.attributes[n];
             if (attrib[0] == "<") {
-                const root = new SourceNode("", null, null);
-                this.index = this.getIndex();
-                root.tag_index = this.index;
-                this.index_tag = "##:" + this.index + " ";
-                let sub_tree = MiniParse(attrib, root, presets);
-                let child = root.children[0];
-                child.setAttribProp(a);
-                this.addChild(child);
+                let root = new SourceNode("", null, null);
+                root.tag_index = (i < 0) ? (i = this.getIndex(), this.index_tag = `##:${i} `, this.index = i) : i;
+                MiniParse(attrib, root, presets);
+                root.children[0].setAttribProp(n);
+                this.addChild(root.children[0]);
             }
         }
     }
@@ -318,7 +319,7 @@ export class TemplateNode extends GenericNode {
     constructor(tagname, attributes, parent, ctx) {
         super(tagname, attributes, parent);
         this.index = this.getIndex();
-        ctx.html += `<list>##:${this.index}</list>`
+        ctx.html += `<list>##:${this.index} </list>`
         this.filters = [];
         this.terms = [];
         this.templates = [];
@@ -432,6 +433,7 @@ export class TermNode extends GenericNode {
 
 
 export class PipeNode extends GenericNode {
+    
     constructor(tagname, attributes, parent) {
         super(tagname, attributes, parent);
     };
@@ -464,7 +466,7 @@ export class IONode extends GenericNode {
     constructor(prop_name, attributes, parent, ctx, index) {
         super("", null, parent);
         this.index = index;
-        ctx.html += `<io prop="${prop_name}">##:${index}</io>`
+        ctx.html += `<io prop="${prop_name}">##:${index} </io>`
         this.CONSUMES_TAG = true;
     };
 
