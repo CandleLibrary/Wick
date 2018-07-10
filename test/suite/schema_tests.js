@@ -1,11 +1,11 @@
 function SCHEMATESTS()  {
 
-	function testSchema(schema){
+	function testSchema(schema, name){
 
 
-		describe(`${schema.constructor.name}`, function(){
+		describe(`${name}`, function(){
 			it(`Is an instance of SchemaType`, function(){
-				if(!schema instanceof wick.SchemaType)
+				if(!schema instanceof wick.core.schema.SchemaConstructor)
 					throw new Error("schema is not an instance of SchemaType");
 			})
 
@@ -44,9 +44,9 @@ function SCHEMATESTS()  {
 
     describe('wick.schema - Built-in Schemas', function() {
         
-        for(let name in wick.schema){
-        	let schema = wick.schema[name];
-        	testSchema(schema)
+        for(let name in wick.schema.instances){
+        	let schema = wick.schema.instances[name];
+        	testSchema(schema, name)
 
         }
 

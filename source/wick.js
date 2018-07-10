@@ -1,87 +1,137 @@
+let wick_vanity = "\ \(\ \ \(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \)\n\ \)\\\)\)\(\ \ \ \'\ \(\ \ \ \ \ \ \ \ \ \ \(\ \/\(\n\(\(\_\)\(\)\\\ \)\ \ \)\\\ \ \ \ \(\ \ \ \ \)\\\(\)\)\n\_\(\(\)\)\\\_\)\(\)\(\(\_\)\ \ \ \)\\\ \ \(\(\_\)\\\n\\\ \\\(\(\_\)\/\ \/\ \(\_\)\ \ \(\(\_\)\ \|\ \|\(\_\)\n\ \\\ \\\/\\\/\ \/\ \ \|\ \|\ \/\ \_\|\ \ \|\ \/\ \/\n\ \ \\\_\/\\\_\/\ \ \ \|\_\|\ \\\_\_\|\ \ \|\_\\\_\\\n";
+
 /**
-	Light it up!
+    Light it up!
 */
-import {
-    WURL
-} from "./linker/wurl"
-import {
-    View
-} from "./view"
 
-import {
-    AnyModel,
-    ArrayModelContainer,
-    BTreeModelContainer,
-    MultiIndexedContainer,
-    Model,
-    ModelContainer
-} from "./model/model"
+//Schema
 
-import {
-    Controller
-} from "./controller"
+import { SchemaConstructor, DateSchemaConstructor, TimeSchemaConstructor, StringSchemaConstructor, NumberSchemaConstructor, BoolSchemaConstructor, schema as Schemas } from "./schema/schemas"
 
-import {
-    Getter
-} from "./getter"
+//Models
 
-import {
-    Setter
-} from "./setter"
+import { Model, AnyModel } from "./model/model"
 
-import {
-    Linker,
-    URL
-} from "./linker/linker"
+import { ModelContainerBase } from "./model/container/base"
+
+import { MultiIndexedContainer } from "./model/container/multi"
+
+import { BTreeModelContainer } from "./model/container/btree"
+
+import { ArrayModelContainer } from "./model/container/array"
+
+//Views
+
+import { View } from "./view"
+
+//Source
+
+import { SourceBase } from "./source/base"
+
+import { CustomSource } from "./source/source"
+
+import { SourceConstructor } from "./source/source_constructor"
+
+import { Filter } from "./source/cassette/filter"
+
+import { Form } from "./source/cassette/form"
+
+import { Cassette } from "./source/cassette/cassette"
+
+//Network
+
+import { Getter } from "./getter"
+
+import { Setter } from "./setter"
+
+//Routing
+
+import { WURL } from "./router/wurl"
+
+import { Router, URL } from "./router/router"
+
+//Other
 
 import * as Animation from "./animation/animation"
 
 import * as Common from "./common"
 
-let wick_vanity = "\ \(\ \ \(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \)\n\ \)\\\)\)\(\ \ \ \'\ \(\ \ \ \ \ \ \ \ \ \ \(\ \/\(\n\(\(\_\)\(\)\\\ \)\ \ \)\\\ \ \ \ \(\ \ \ \ \)\\\(\)\)\n\_\(\(\)\)\\\_\)\(\)\(\(\_\)\ \ \ \)\\\ \ \(\(\_\)\\\n\\\ \\\(\(\_\)\/\ \/\ \(\_\)\ \ \(\(\_\)\ \|\ \|\(\_\)\n\ \\\ \\\/\\\/\ \/\ \ \|\ \|\ \/\ \_\|\ \ \|\ \/\ \/\n\ \ \\\_\/\\\_\/\ \ \ \|\_\|\ \\\_\_\|\ \ \|\_\\\_\\\n";
-
-import {
-    CustomCase
-} from "./case/case"
-
-import {
-    Rivet
-} from "./case/rivet"
-
-import {
-    CaseConstructor
-} from "./case/case_constructor"
-
-import{
-    Filter
-} from "./case/cassette/filter"
-
-import{
-    Form
-} from "./case/cassette/form"
-
-import {
-    Cassette
-} from "./case/cassette/cassette"
-
-import {
-    SchemaType,
-    schema
-} from "./schema/schemas"
-
 let LINKER_LOADED = false;
 let DEBUGGER = true;
 
 /**
- *    Creates a new {Linker} instance, passing any presets from the client.
+ *    Creates a new {Router} instance, passing any presets from the client.
  *    It will then wait for the document to load, and once loaded, will start the linker and load the current page into the linker.
  *
  *    Note: This function should only be called once. Any subsequent calls will not do anything.
  *
- *    @param {LinkerPresets} presets - An object of user defined Wick objects.
+ *    @param {RouterPresets} presets - An object of user defined Wick objects.
  */
 
-function light(presets) {
+function startRouting(presets) {
+
+    /*
+      The static field in presets are all Component-like objects constructors that are defined by the client
+      to be used by Wick for custom components.
+
+      The constructors must support several Component based methods in ordered to be accepted for use. These methods include:
+        transitionIn
+        transitionOut
+        setModel
+        unsetModel
+    */
+
+    if (presets.static) {
+        for (let component_name in presets.static) {
+
+            let component = presets.static[component_name];
+
+            let a = 0,
+                b = 0,
+                c = 0,
+                d = 0,
+                e = 0;
+
+            if ((a = (component.prototype.transitionIn && component.prototype.transitionIn instanceof Function)) &&
+                (b = (component.prototype.transitionOut && component.prototype.transitionOut instanceof Function)) &&
+                (c = (component.prototype.setModel && component.prototype.setModel instanceof Function)) &&
+                (d = (component.prototype.unsetModel && component.prototype.unsetModel instanceof Function)))
+                this.addStatic(component_name, component);
+            else
+                console.warn(`Static component ${component_name} lacks correct component methods, \nHas transitionIn function:${a}\nHas transitionOut functon:${b}\nHas set model function:${c}\nHas unsetModel function:${d}`);
+        }
+    }
+
+    /** TODO
+        @define PageParser
+
+        A page parser will parse templates before passing that data to the Source handler.
+    */
+    if (presets.parser) {
+        for (let parser_name in presets.page_parser) {
+            let parser = presets.page_parser[parser_name];
+        }
+    }
+
+    /**
+        Schemas provide the constructors for Models
+    */
+    if (presets.schemas) {
+
+        presets.schemas.any = AnyModel;
+
+    } else {
+        presets.schemas = {
+            any: AnyModel
+        };
+    }
+
+    if (presets.models) {
+
+    } else {
+        presets.models = {};
+    }
+
     if (DEBUGGER) console.log(presets)
 
     if (LINKER_LOADED) return;
@@ -90,9 +140,10 @@ function light(presets) {
 
     //Pass in the presets or a plain object if presets is undefined.
 
-    let link = new Linker(presets || {});
+    let link = new Router(presets || {});
 
     window.addEventListener("load", () => {
+
         link.loadPage(
             link.loadNewPage(document.location.pathname, document),
             new WURL(document.location),
@@ -103,30 +154,92 @@ function light(presets) {
     console.log(`${wick_vanity}Copyright 2018 Anthony C Weathersby\nhttps://gitlab.com/anthonycweathersby/wick`)
 }
 
-/*** Exports ***/
+/**
+    Exports 
+*/
+
+//Construct Model Exports
+let model = Model;
+
+model.any = (data) => new AnyModel(data);
+model.any.constr = AnyModel;
+
+model.container = {
+    multi: (...args) => new MultiIndexedContainer(...args),
+    array: (...args) => new ArrayModelContainer(...args),
+    btree: (...args) => new BTreeModelContainer(...args),
+    constr: ModelContainerBase
+}
+
+model.container.constr.multi = MultiIndexedContainer;
+model.container.constr.array = ArrayModelContainer;
+model.container.constr.btree = BTreeModelContainer;
+
+Object.freeze(model.container.constr);
+Object.freeze(model.container);
+Object.freeze(model.any);
+Object.freeze(model);
+
+//Construct Schema Exports
+let schema = Schemas;
+schema.constr = SchemaConstructor;
+schema.constr.bool = BoolSchemaConstructor;
+schema.constr.number = NumberSchemaConstructor;
+schema.constr.string = StringSchemaConstructor;
+schema.constr.date = DateSchemaConstructor;
+schema.constr.time = TimeSchemaConstructor;
+
+Object.freeze(schema.constr);
+Object.freeze(schema);
+
+
+let core = {
+    Common,
+    Animation,
+    view: {View},
+    schema: {
+        instances : Schemas,
+        SchemaConstructor,
+        DateSchemaConstructor,
+        TimeSchemaConstructor,
+        StringSchemaConstructor,
+        NumberSchemaConstructor,
+        BoolSchemaConstructor
+    },
+    model: {
+        Model,
+        AnyModel,
+        ModelContainerBase,
+        MultiIndexedContainer,
+        ArrayModelContainer,
+        BTreeModelContainer
+    },
+    network: {
+        router: {
+            WURL,
+            URL,
+            Router
+        },
+        Getter,
+        Setter,
+    },
+    source: {
+        CustomSource,
+        SourceBase,
+        SourceConstructor,
+        Cassette,
+        Form,
+        Filter
+    }
+}
+
+Object.freeze(core);
+
+let any = model.any;
 
 export {
-    URL,
-    Animation,
-    ArrayModelContainer,
-    BTreeModelContainer,
-    MultiIndexedContainer,
-    Controller,
-    CustomCase,
-    Rivet,
-    CaseConstructor,
-    Cassette,
-    Form,
-    Filter,
-    Common,
-    Getter,
-    Linker,
-    Model,
-    AnyModel,
-    ModelContainer,
-    Setter,
-    View,
-    light,
-    SchemaType,
-    schema
+    core,
+    schema,
+    model,
+    any
 }

@@ -1,16 +1,15 @@
-import {SchemaType} from "./schema_type"
-import {DATE} from "./date_type"
-import {TIME} from "./time_type"
-import {STRING} from "./string_type"
-import {NUMBER} from "./number_type"
-import {BOOL} from "./bool_type"
+import { SchemaConstructor } from "./constructor"
 
-let schema = {
-	DATE,
-	STRING,
-	NUMBER,
-	BOOL,
-	TIME
-}
+import { date, DateSchemaConstructor } from "./types/date"
 
-export {SchemaType, schema}; 
+import { time, TimeSchemaConstructor } from "./types/time"
+
+import { string, StringSchemaConstructor } from "./types/string"
+
+import { number, NumberSchemaConstructor } from "./types/number"
+
+import { bool, BoolSchemaConstructor } from "./types/bool"
+
+let schema = { date, string, number, bool, time }
+
+export { SchemaConstructor, DateSchemaConstructor, TimeSchemaConstructor, StringSchemaConstructor, NumberSchemaConstructor, BoolSchemaConstructor, schema };

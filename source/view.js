@@ -1,16 +1,15 @@
-//Updates UI
-//Updated By Model
+export class View{
 
-class View{
 	constructor(){
+
 		this.next = null;
 		this.model = null;
 	}
 
 	destructor(){
-		if(this.model){
+
+		if(this.model)
 			this.model.removeView(this);
-		}
 	}	
 	/**
 		Called a Model when its data has changed.
@@ -19,14 +18,14 @@ class View{
 
 	}
 	/**
-		Called by a ModelContainer when an item has been removed.
+		Called by a ModelContainerBase when an item has been removed.
 	*/
 	removed(data){
 
 	}
 
 	/**
-		Called by a ModelContainer when an item has been added.
+		Called by a ModelContainerBase when an item has been added.
 	*/
 	added(data){
 
@@ -38,9 +37,8 @@ class View{
 		
 	}
 	unsetModel(){
+
 		this.next = null;
 		this.model = null;
 	}
 }
-
-export{View}

@@ -59,7 +59,7 @@ describe("Wick test suite.", function() {
     })
 
     it("tests", function() {
-    	require("./suite/caseconstructor_tests.js")()
+    	require("./suite/source_constructor_tests.js")()
         require("./suite/schema_tests.js")()
         require("./suite/model_tests.js")()
         describe("Model Container Tests", function() {

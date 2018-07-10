@@ -1,34 +1,23 @@
-import {
-    ModelBase
-} from "./model_base.js"
+import { ModelBase } from "./base.js"
 
-import {
-    ModelContainer,
-    MultiIndexedContainer
-} from "./model_container"
+import { ModelContainerBase } from "./container/base"
 
-import {
-    ArrayModelContainer
-} from "./array_container"
+import { MultiIndexedContainer } from "./container/multi"
 
-import {
-    BTreeModelContainer
-} from "./btree_container"
+import { ArrayModelContainer } from "./container/array"
 
-import {
-    SchemaType
-} from "../schema/schemas"
+import { BTreeModelContainer } from "./container/btree"
 
-import {
-    Scheduler
-} from "../scheduler"
+import { SchemaConstructor } from "../schema/schemas"
 
+import { Scheduler } from "../scheduler"
+
+/** @namespace Model */
 
 /**
     This is used by NModel to create custom property getter and setters 
-    on non-ModelContainer and non-Model properties of the NModel constructor.
+    on non-ModelContainerBase and non-Model properties of the NModel constructor.
 */
-
 function CreateSchemedProperty(constructor, scheme, schema_name) {
 
     if (constructor.prototype[schema_name])
@@ -69,9 +58,8 @@ function CreateSchemedProperty(constructor, scheme, schema_name) {
 
 /**
     This is used by NModel to create custom property getter and setters 
-    on Schemed ModelContainer properties of the NModel constructor.
+    on Schemed ModelContainerBase properties of the NModel constructor.
 */
-
 function CreateMCSchemedProperty(constructor, scheme, schema_name) {
 
     let schema = scheme.schema;
@@ -129,7 +117,6 @@ function CreateMCSchemedProperty(constructor, scheme, schema_name) {
     This is used by NModel to create custom property getter and setters 
     on Model properties of the NModel constructor.
 */
-
 function CreateModelProperty(constructor, scheme, schema_name) {
 
     let schema = scheme.schema;
@@ -154,7 +141,7 @@ function CreateModelProperty(constructor, scheme, schema_name) {
     })
 }
 
-class Model extends ModelBase {
+export class Model extends ModelBase {
     /**
      
      */
@@ -183,12 +170,12 @@ class Model extends ModelBase {
                     if (scheme instanceof Array) {
                         if (scheme[0] && scheme[0].container && scheme[0].schema) {
                             CreateMCSchemedProperty(constructor, scheme[0], schema_name);
-                        } else if (scheme[0] instanceof ModelContainer) {
+                        } else if (scheme[0] instanceof ModelContainerBase) {
                             CreateModelProperty(constructor, scheme[0].constructor, schema_name);
                         }
                     } else if (scheme instanceof Model)
                         CreateModelProperty(constructor, scheme[0].constructor, schema_name);
-                    else if (scheme instanceof SchemaType)
+                    else if (scheme instanceof SchemaConstructor)
                         CreateSchemedProperty(constructor, scheme, schema_name);
                     else
                         console.warn(`Could not create property ${schema_name}.`)
@@ -199,12 +186,12 @@ class Model extends ModelBase {
 
 
                 Object.defineProperty(schema, "__FinalConstructor__", {
-                        writable: false,
-                        enumerable: false,
-                        configurable: false,
-                        value: constructor
-                    })
-                    //schema.__FinalConstructor__ = constructor;
+                    writable: false,
+                    enumerable: false,
+                    configurable: false,
+                    value: constructor
+                })
+                //schema.__FinalConstructor__ = constructor;
 
 
                 //Start the process over with a newly minted Model that has the properties defined in the Schema
@@ -267,6 +254,7 @@ class Model extends ModelBase {
         Returns a parsed value based on the key 
     */
     string(key) {
+        
         let out_data = {
             valid: true,
             reason: ""
@@ -291,12 +279,14 @@ class Model extends ModelBase {
         @param data : An object containing key value pairs to insert into the model. 
     */
     add(data) {
+
         for (let a in data)
             if (a in this) this[a] = data[a];
     }
 
 
     get(data) {
+
         var out_data = {};
 
         if (!data)
@@ -326,7 +316,7 @@ class Model extends ModelBase {
 
 /**
     This is used by NModel to create custom property getter and setters 
-    on non-ModelContainer and non-Model properties of the NModel constructor.
+    on non-ModelContainerBase and non-Model properties of the NModel constructor.
 */
 
 function CreateGenericProperty(constructor, prop_val, prop_name, model) {
@@ -360,6 +350,7 @@ function CreateGenericProperty(constructor, prop_val, prop_name, model) {
 }
 
 function AnyModelProxySet(obj, prop, val) {
+
     if (prop in obj && obj[prop] == val)
         return true
 
@@ -370,16 +361,15 @@ function AnyModelProxySet(obj, prop, val) {
     return true;
 }
 
-class AnyModel extends ModelBase {
+export class AnyModel extends ModelBase {
 
     constructor(data) {
 
         super();
 
         if (data) {
-            for (let prop_name in data) {
+            for (let prop_name in data)
                 this[prop_name] = data[prop_name];
-            }
         }
 
         return new Proxy(this, {
@@ -392,6 +382,7 @@ class AnyModel extends ModelBase {
     */
 
     destroy() {
+
         this.destructor();
     }
 
@@ -399,15 +390,18 @@ class AnyModel extends ModelBase {
         Removes all held references and calls unsetModel on all listening views.
     */
     destructor() {
+
         super.destructor();
     }
 
     add(data) {
+
         for (var a in data)
             this[a] = data[a];
     }
 
     get(data) {
+
         var out_data = {};
 
         if (!data) {
@@ -429,10 +423,12 @@ class AnyModel extends ModelBase {
     */
 
     remove(data) {
+
         return {};
     }
 
     toJSON() {
+
         let out = {};
 
 
@@ -450,15 +446,7 @@ class AnyModel extends ModelBase {
     }
 
     toJsonString() {
+
         return this.data + "";
     }
-}
-
-export {
-    Model,
-    AnyModel,
-    ModelContainer,
-    ArrayModelContainer,
-    MultiIndexedContainer,
-    BTreeModelContainer
 }
