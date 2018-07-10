@@ -376,12 +376,120 @@
 	"buffers":
 	[
 		{
-			"contents": "",
+			"file": "source/case/case.js",
 			"settings":
 			{
-				"buffer_size": 0,
-				"line_ending": "Windows",
-				"name": "untitled.sublime-build"
+				"buffer_size": 8985,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/case/case_constructor.js",
+			"settings":
+			{
+				"buffer_size": 5511,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/case/case_constructor_ast.js",
+			"settings":
+			{
+				"buffer_size": 11449,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/case/case_skeleton.js",
+			"settings":
+			{
+				"buffer_size": 5723,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/case/case_template.js",
+			"settings":
+			{
+				"buffer_size": 6250,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/case/cassette/epoch.js",
+			"settings":
+			{
+				"buffer_size": 4390,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/case/rivet.js",
+			"settings":
+			{
+				"buffer_size": 8381,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/linker/component.js",
+			"settings":
+			{
+				"buffer_size": 1575,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/linker/element.js",
+			"settings":
+			{
+				"buffer_size": 8743,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/linker/linker.js",
+			"settings":
+			{
+				"buffer_size": 15464,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/model/model_base.js",
+			"settings":
+			{
+				"buffer_size": 3451,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/schema/time_type.js",
+			"settings":
+			{
+				"buffer_size": 845,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/wick.js",
+			"settings":
+			{
+				"buffer_size": 2703,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
 			}
 		}
 	],
@@ -421,7 +529,7 @@
 	},
 	"expanded_folders":
 	[
-		"/D/_$_$_$_/wick"
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick"
 	],
 	"file_history":
 	[
@@ -556,13 +664,14 @@
 	],
 	"find":
 	{
-		"height": 46.0
+		"height": 52.0
 	},
 	"find_in_files":
 	{
 		"height": 430.0,
 		"where_history":
 		[
+			"D:\\Users\\Anthony\\Paranoms\\pytrucks\\static\\js\\libraries\\wick\\source"
 		]
 	},
 	"find_state":
@@ -570,6 +679,9 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"./case",
+			"case_constructor",
+			"Case"
 		],
 		"highlight": false,
 		"in_selection": false,
@@ -577,6 +689,9 @@
 		"regex": false,
 		"replace_history":
 		[
+			"./source",
+			"source_constructor",
+			"Source"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -587,15 +702,47 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 12,
 			"sheets":
 			[
 				{
 					"buffer": 0,
+					"file": "source/case/case.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 0,
+						"buffer_size": 8985,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								225,
+								229
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531190431.54,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 12,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "source/case/case_constructor.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5511,
 						"regions":
 						{
 						},
@@ -608,11 +755,352 @@
 						],
 						"settings":
 						{
-							"default_dir": "C:\\Users\\aweathersby\\AppData\\Roaming\\Sublime Text 3\\Packages\\User",
-							"syntax": "Packages/JavaScript/JSON.sublime-syntax"
+							"markdonw_live_preview_last_run": 1531190493.3,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "source/case/case_constructor_ast.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11449,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531190493.37,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "source/case/case_skeleton.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5723,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531190493.37,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "source/case/case_template.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6250,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531190493.37,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "source/case/cassette/epoch.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4390,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531190493.37,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "source/case/rivet.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8381,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531190493.37,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "source/linker/component.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1575,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531190493.37,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "source/linker/element.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8743,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531190493.37,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "source/linker/linker.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 15464,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531190493.37,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "source/model/model_base.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3451,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531190493.37,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "source/schema/time_type.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 845,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531190493.38,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "source/wick.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2703,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1148,
+								1148
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531190493.38,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1440.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -673,6 +1161,10 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"case.js",
+				"source\\case\\case.js"
+			],
 			[
 				"packa",
 				"static\\package.json"

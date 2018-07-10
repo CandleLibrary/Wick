@@ -1,3 +1,7 @@
+## Getting started 
+
+wick.startRouting(presets)
+
 ## Element
  
 An element tag represents an area of interest and segregation of data. Same named elements with same named components will share those components

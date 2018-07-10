@@ -1,6 +1,6 @@
 # WICK
 
-version: 0.1-pre-alpha
+version: 0.2.0 Alpha
 
 ## Boyah!
 
@@ -21,10 +21,6 @@ Wick takes advantage of URL query syntax to pass data between pages. This is the
 ### Pages
 
 Though Wick is designed with SPA notions in mind, different views are still analogous to different documents served from the server. Thus, every time the user changes the URL within the site, the Wick ends pulling a new document from the server. So we maintain the name `page` for this new document, even if the browser itself does not appear to have loaded a new page.
-
-### MVC
-
-Data from servers can be stored in Models, and essentially provides a miniature database with which data can be accessed. Controllers and Views, through the use of Cases, Components, and Widgets, allow for dynamic access and update to data. Additionally, if one prefers, data can be made immutable, giving rise to new ways to handle complex data sets.
 
 ### Forms
 

@@ -241,5 +241,6 @@ export {
     core,
     schema,
     model,
-    any
+    any,
+    startRouting
 }
