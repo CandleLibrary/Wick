@@ -78,3 +78,9 @@ Shop
 Blog
 About
 Press h to open a hovercard with more details.
+
+#Build directory
+
+build/*
+!build/build_config/
+!build/wick.css
