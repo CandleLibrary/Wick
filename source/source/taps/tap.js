@@ -1,6 +1,6 @@
-import { SourceBase } from "../base"
+import { PipeBase } from "../pipe_base"
 
-export class Tap extends SourceBase {
+export class Tap extends PipeBase {
 
     constructor(parent, data, presets) {
         super(parent, data, presets);

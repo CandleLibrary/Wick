@@ -1226,7 +1226,7 @@ class TouchScroller {
         this.velocity_y = 0;
         this.GO = true;
         this.drag = (drag > 0) ? drag : 0.02;
-        this.element = element;
+        this.ele = element;
 
         if (!touchid instanceof Number)
             touchid = 0;
@@ -1322,7 +1322,7 @@ class TouchScroller {
             window.addEventListener("touchend", this.event_c);
         };
 
-        this.element.addEventListener("touchstart", this.event_a);
+        this.ele.addEventListener("touchstart", this.event_a);
 
         this.listeners = [];
 
@@ -1330,7 +1330,7 @@ class TouchScroller {
 
     destructor() {
         this.listeners = null;
-        this.element.removeEventListener("touchstart", this.event_a);
+        this.ele.removeEventListener("touchstart", this.event_a);
     }
 
 
@@ -3146,7 +3146,7 @@ function CreateModelProperty(constructor, scheme, schema_name) {
     });
 }
 
-class Model extends ModelBase {
+class Model$1 extends ModelBase {
     /**
      
      */
@@ -3178,7 +3178,7 @@ class Model extends ModelBase {
                         } else if (scheme[0] instanceof ModelContainerBase) {
                             CreateModelProperty(constructor, scheme[0].constructor, schema_name);
                         }
-                    } else if (scheme instanceof Model)
+                    } else if (scheme instanceof Model$1)
                         CreateModelProperty(constructor, scheme[0].constructor, schema_name);
                     else if (scheme instanceof SchemaConstructor)
                         CreateSchemedProperty(constructor, scheme, schema_name);
@@ -3243,7 +3243,7 @@ class Model extends ModelBase {
         var scheme = this.schema[key];
 
         if (scheme) {
-            if (scheme instanceof Array) ; else if (scheme instanceof Model) ; else {
+            if (scheme instanceof Array) ; else if (scheme instanceof Model$1) ; else {
                 scheme.verify(this[key], out_data);
             }
         }
@@ -3262,7 +3262,7 @@ class Model extends ModelBase {
             if (scheme) {
                 if (scheme instanceof Array) {
                     this[key].string();
-                } else if (scheme instanceof Model) {
+                } else if (scheme instanceof Model$1) {
                     this[key].string();
                 } else {
                     return scheme.string(this[key]);
@@ -3438,9 +3438,7 @@ class Transitioneer {
     }
 }
 
-let PresetTransitioneers = {
-    base: Transitioneer
-};
+let PresetTransitioneers = { base: Transitioneer };
 
 class SourceBase extends View {
 
@@ -3449,7 +3447,7 @@ class SourceBase extends View {
         super();
 
         this.parent = parent;
-        this.element = null;
+        this.ele = null;
         this.children = [];
         this.data = data;
         this.named_elements = null;
@@ -3459,16 +3457,16 @@ class SourceBase extends View {
         this.DESTROYED = false;
 
         //Setting the transitioner
-        this.transitioneer = null;
+        this.trs = null;
 
         if (data.trs) {
 
             if (presets.transitions && presets.transitions[data.trs])
-                this.transitioneer = new presets.transitions[data.trs]();
+                this.trs = new presets.transitions[data.trs]();
             else if (PresetTransitioneers[data.trs])
-                this.transitioneer = new PresetTransitioneers[data.trs]();
+                this.trs = new PresetTransitioneers[data.trs]();
 
-            this.transitioneer.set(this.element);
+            this.trs.set(this.ele);
         }
 
         this.addToParent();
@@ -3478,7 +3476,7 @@ class SourceBase extends View {
         if (this.parent) this.parent.children.push(this);
     }
 
-    destructor() {
+    dstr() {
 
         this.DESTROYED = true;
 
@@ -3494,21 +3492,21 @@ class SourceBase extends View {
             }
 
             if (t > 0)
-                setTimeout(() => { this.destructor(); }, t * 1000 + 5);
+                setTimeout(() => { this.dstr(); }, t * 1000 + 5);
 
 
         } else {
             this.finalizeTransitionOut();
-            this.children.forEach((c) => c.destructor());
+            this.children.forEach((c) => c.dstr());
             this.children.length = 0;
             this.data = null;
 
-            if (this.element && this.element.parentElement)
-                this.element.parentElement.removeChild(this.element);
+            if (this.ele && this.ele.parentElement)
+                this.ele.parentElement.removeChild(this.ele);
 
-            this.element = null;
+            this.ele = null;
 
-            super.destructor();
+            super.dstr();
         }
     }
 
@@ -3517,7 +3515,7 @@ class SourceBase extends View {
         if (this.parent) {
 
             if (this.data.transition)
-                trs_ele[this.data.transition] = this.element;
+                trs_ele[this.data.transition] = this.ele;
 
             for (var i = 0, l = this.children.length; i < l; i++) {
 
@@ -3539,7 +3537,7 @@ class SourceBase extends View {
     gatherTransitionElements(trs_ele) {
 
         if (this.data.transition && !trs_ele[this.data.transition])
-            trs_ele[this.data.transition] = this.element;
+            trs_ele[this.data.transition] = this.ele;
 
         this.children.forEach((e) => {
             if (e.is == 1)
@@ -3548,19 +3546,19 @@ class SourceBase extends View {
     }
 
     copy(element, index) {
-        
+
         let out_object = {};
 
         if (!element)
-            element = this.element.cloneNode(true);
+            element = this.ele.cloneNode(true);
 
         if (this.children) {
-            out_object.element = element.children[this.element];
+            out_object.ele = element.children[this.ele];
             out_object.children = new Array(this.children.length);
 
             for (var i = 0, l = this.children.length; i < l; i++) {
                 let child = this.children[i];
-                out_object.children[i] = child.copy(out_object.element);
+                out_object.children[i] = child.copy(out_object.ele);
             }
         }
 
@@ -3574,8 +3572,8 @@ class SourceBase extends View {
         for (let i = 0, l = this.children.length; i < l; i++)
             this.children[i].finalizeTransitionOut();
 
-        if (this.transitioneer)
-            this.transitioneer.finalize_out(this.element);
+        if (this.trs)
+            this.trs.finalize_out(this.ele);
 
         this.hide();
     }
@@ -3595,8 +3593,8 @@ class SourceBase extends View {
         for (let i = 0, l = this.children.length; i < l; i++)
             transition_time = Math.max(transition_time, this.children[i].transitionIn(index));
 
-        if (this.transitioneer)
-            transition_time = Math.max(transition_time, this.transitioneer.set_in(this.element, this.data, index));
+        if (this.trs)
+            transition_time = Math.max(transition_time, this.trs.set_in(this.ele, this.data, index));
 
         return transition_time;
     }
@@ -3610,15 +3608,17 @@ class SourceBase extends View {
 
         this.LOADED = false;
 
-        if (this.transitioneer)
-            transition_time = Math.max(transition_time, this.transitioneer.set_out(this.element, this.data, index));
+        if (this.trs)
+            transition_time = Math.max(transition_time, this.trs.set_out(this.ele, this.data, index));
 
         for (let i = 0, l = this.children.length; i < l; i++)
             transition_time = Math.max(transition_time, this.children[i].transitionOut(index));
 
         if (DESTROY)
-            setTimeout(() => { this.finalizeTransitionOut();
-                this.destructor(); }, transition_time * 1000);
+            setTimeout(() => {
+                this.finalizeTransitionOut();
+                this.dstr();
+            }, transition_time * 1000);
 
         return transition_time;
     }
@@ -3679,18 +3679,18 @@ class SourceBase extends View {
 
     hide() {
 
-        if (this.element) {
+        if (this.ele) {
 
-            this.display = this.element.style.display;
-            this.element.style.display = "none";
+            this.display = this.ele.style.display;
+            this.ele.style.display = "none";
         }
     }
 
     show() {
 
-        if (this.element)
-            if (this.element.style.display == "none")
-                this.element.style.display = this.display;
+        if (this.ele)
+            if (this.ele.style.display == "none")
+                this.ele.style.display = this.display;
     }
 
     __updateExports__(data) {
@@ -3746,44 +3746,21 @@ class SourceBase extends View {
     }
 }
 
-class Controller{
-	
-	constructor(){
-		this.model = null;
-	}
-
-	destructor(){
-		this.model = null;
-	}
-
-	setModel(model){
-		if(model instanceof Model){
-			this.model = model;
-		}
-	}
-
-	set(data){
-		if(this.model)
-			this.model.add(data);
-		
-	}
-}
-
 /**
  * This Class is responsible for handling requests to the server. It can act as a controller to specifically pull data down from the server and push into data members.
  *
  * {name} Getter
  */
-class Getter extends Controller {
+class Getter {
     constructor(url, process_data) {
-        super();
         this.url = url;
         this.FETCH_IN_PROGRESS = false;
         this.rurl = process_data;
+        this.model = null;
     }
 
     destructor() {
-        super.destructor();
+        this.model = null;
     }
 
     get(request_object, store_object, secure = true) {
@@ -3811,6 +3788,17 @@ class Getter extends Controller {
 
     parseJson(in_json){
         return in_json;
+    }
+
+    setModel(model){
+        if(model instanceof Model){
+            this.model = model;
+        }
+    }
+
+    set(data){
+        if(this.model)
+            this.model.add(data);
     }
 
     __process_url__(data) {
@@ -3851,31 +3839,6 @@ class Getter extends Controller {
 }
 
 /**
- *	Converts links into Javacript enabled buttons that will be handled within the current Active page.
- *
- * @param {HTMLElement} element - Parent Element that contains the <a> elements to be evaulated by function.
- * @param {function} __function__ - A function the link will call when it is clicked by user. If it returns false, the link will act like a normal <a> element and cause the browser to navigate to the "href" value.
- *
- * If the <a> element has a data-ignore_link attribute set to a truthy value, then this function will not change the way that link operates.
- * Likewise, if the <a> element has a href that points another domain, then the link will remain unaffected.
- */
-function setLinks(element, __function__) {
-    let links = element.getElementsByTagName("a");
-    for (let i = 0, l = links.length; i < l; i++) {
-        let temp = links[i];
-
-        if (temp.dataset.ignore_link) continue;
-
-        if (temp.origin !== location.origin) continue;
-
-        if (!temp.onclick) temp.onclick = ((href, a, __function__) => (e) => {
-            e.preventDefault();
-            if (__function__(href, a)) e.preventDefault();
-        })(temp.href, temp, __function__);
-    }
-}
-
-/**
     Deals with specific properties on a model. 
 */
 class Cassette extends SourceBase {
@@ -3894,18 +3857,18 @@ class Cassette extends SourceBase {
         this.data_cache = null;
         this.children = [];
 
-        if (this.element.tagName == "A")
-            this.processLink(this.element);
+        if (this.ele.tagName == "A")
+            this.processLink(this.ele);
     }
 
-    destructor() {
+    dstr() {
 
-        if (this.element.tagName == "A")
-            this.destroyLink(this.element);
+        if (this.ele.tagName == "A")
+            this.destroyLink(this.ele);
 
         this.data_cache = null;
 
-        super.destructor();
+        super.dstr();
     }
 
     /**
@@ -3995,7 +3958,7 @@ class Cassette extends SourceBase {
         if (data) {
 
             if (this.prop) {
-                this.element.innerHTML = data[this.prop];
+                this.ele.innerHTML = data[this.prop];
                 this[this.prop] = data[this.prop];
             } else {
                 this.data_cache = data;
@@ -4019,7 +3982,7 @@ class Cassette extends SourceBase {
 
     updateDimensions() {
 
-        var d = this.element.getBoundingClientRect();
+        var d = this.ele.getBoundingClientRect();
 
         this.width = d.width;
         this.height = d.height;
@@ -4062,17 +4025,17 @@ class Source extends SourceBase {
         this.is = 0;
     }
 
-    destructor() {
+    dstr() {
 
         this.parent = null;
 
         if (this.receiver)
-            this.receiver.destructor();
+            this.receiver.dstr();
 
         for (let i = 0, l = this.templates.length; i < l; i++)
-            this.templates[i].destructor();
+            this.templates[i].dstr();
 
-        super.destructor();
+        super.dstr();
     }
 
     /**
@@ -4112,7 +4075,7 @@ class Source extends SourceBase {
             this.model = null;
         }
 
-        if (model && model instanceof Model) {
+        if (model && model instanceof Model$1) {
 
             if (this.schema) {
                 /* Opinionated Source - Only accepts Models that are of the same type as its schema.*/
@@ -4326,7 +4289,7 @@ class Filter extends Cassette {
 
         parent.filter_list.push((data) => this.filter(data));
 
-        this.element.addEventListener("input", () => {
+        this.ele.addEventListener("input", () => {
             this.parent.update();
         });
     }
@@ -4372,14 +4335,14 @@ class SourceTemplate extends Source {
         }
 
         for (var i = 0; i < this.activeSources.length; i++) {
-            this.element.removeChild(this.activeSources[i].element);
+            this.ele.removeChild(this.activeSources[i].ele);
         }
 
         for (var i = 0; i < output.length; i++) {
-            this.element.appendChild(output[i].element);
+            this.ele.appendChild(output[i].ele);
         }
 
-        this.element.style.position = this.element.style.position;
+        this.ele.style.position = this.ele.style.position;
 
         for (var i = 0; i < output.length; i++)
             output[i].transitionIn(i);
@@ -4393,7 +4356,7 @@ class SourceTemplate extends Source {
         if (new_items.length == 0) {
 
             for (let i = 0, l = this.cases.length; i < l; i++)
-                this.cases[i].destructor();
+                this.cases[i].dstr();
 
             this.cases.length = 0;
 
@@ -4405,7 +4368,7 @@ class SourceTemplate extends Source {
 
             for (let i = 0, l = this.cases.length; i < l; i++)
                 if (!exists.has(this.cases[i].model)) {
-                    this.cases[i].destructor();
+                    this.cases[i].dstr();
                     this.cases.splice(i, 1);
                     l--;
                     i--;
@@ -4540,7 +4503,7 @@ class SourceTemplate extends Source {
             let terms = this.getTerms();
 
             if (source) {
-                this.model.destructor();
+                this.model.dstr();
 
                 let model = source.get(terms, null);
 
@@ -4581,14 +4544,17 @@ class SourceTemplate extends Source {
 }
 
 class Indexer {
-    constructor(element) {
-        this.lexer = new Lex(element.innerHTML);
-        this.element = element;
+
+    constructor(ele) {
+
+        this.lexer = new Lex(ele.innerHTML);
+        this.ele = ele;
         this.stack = [];
         this.sp = 0;
     }
 
     get(index, REDO = false) {
+
         let lex = this.lexer;
 
         if (REDO) {
@@ -4598,6 +4564,7 @@ class Indexer {
         }
 
         while (true) {
+            
             if (!lex.text) {
                 if (REDO)
                     return null;
@@ -4612,7 +4579,7 @@ class Indexer {
                         lex.next(); // /
                         lex.next(); // tagname
                         lex.next(); // >
-                        if(--this.sp < 0) return null;
+                        if (--this.sp < 0) return null;
                         this.stack.length = this.sp + 1;
                         this.stack[this.sp]++;
                     } else {
@@ -4653,7 +4620,7 @@ class Indexer {
         }
     }
     getElement() {
-        let element = this.element;
+        let element = this.ele;
         for (let i = 0; i < this.sp; i++) {
             element = element.children[this.stack[i]];
         }
@@ -4673,15 +4640,15 @@ class Indexer {
 class SourceSkeleton {
 
     constructor(element, constructor, data, presets, index) {
-        this.element = element;
+        this.ele = element;
         this.Constructor = constructor;
         this.children = [];
         this.templates = [];
         this.filters = [];
         this.terms = [];
-        this.data = data;
-        this.presets = presets;
-        this.index = index;
+        this.d = data;
+        this.p = presets;
+        this.i = index;
     }
 
     /**
@@ -4703,30 +4670,31 @@ class SourceSkeleton {
 
         let element, CLAIMED_ELEMENT = false;
 
-        if (this.index > 0) {
-            element = indexer.get(this.index);
+        if (this.i > 0) {
+            element = indexer.get(this.i);
             CLAIMED_ELEMENT = true;
         }
 
-        if (this.element) {
-            parent_element = this.element.cloneNode(true);
+        if (this.ele) {
+            parent_element = this.ele.cloneNode(true);
 
             if (parent_element.parentElement) {
                 parent_element.parentElement.replaceNode(parent_element, element);
             }
-            
+
 
             indexer = new Indexer(parent_element);
         }
 
         let out_object;
         if (this.Constructor) {
-            out_object = new this.Constructor(parent, this.data, this.presets);
+            out_object = new this.Constructor(parent, this.d, this.p, element);
             if (CLAIMED_ELEMENT)
-                out_object.element = element;
+                out_object.ele = element;
         } else if (!parent) {
             out_object = this.children[0].____copy____(parent_element, null, indexer);
-            out_object.element = parent_element;
+            out_object.ele = parent_element;
+            console.log(parent_element.innerHTML);
             return out_object;
         } else
             out_object = parent;
@@ -4754,30 +4722,17 @@ class SourceSkeleton {
     }
 }
 
-let GLOBAL = (()=>{
-	let linker = null;
-	return {
-		get linker(){
-			return linker;
-		},
-		set linker(l){
-			if(!linker)
-				linker = l;
-		}
-	}
-});
-
 class Input extends Cassette {
     constructor(parent, element, d, p) {
         //Scan the element and look for inputs that can be mapped to the
         super(parent, element, d, p);
 
         //Inputs in forms are automatically hidden.
-        this.element.display = "none";
+        this.ele.display = "none";
 
-        this.element.addEventListener("input", () => {
+        this.ele.addEventListener("input", () => {
             var data = {};
-            data[this.prop] = this.element.value;
+            data[this.prop] = this.ele.value;
             this.add(data);
         });
     }
@@ -4788,19 +4743,19 @@ class Input extends Cassette {
 
         this.val = data[this.prop];
 
-        switch (this.element.type) {
+        switch (this.ele.type) {
             case "date":
-                this.element.value = (new Date(parseInt(data[this.prop]))).toISOString().split("T")[0];
+                this.ele.value = (new Date(parseInt(data[this.prop]))).toISOString().split("T")[0];
                 break;
             case "time":
-                this.element.value = `${("00"+(data[this.prop] | 0)).slice(-2)}:${("00"+((data[this.prop]%1)*60)).slice(-2)}:00.000`;
+                this.ele.value = `${("00"+(data[this.prop] | 0)).slice(-2)}:${("00"+((data[this.prop]%1)*60)).slice(-2)}:00.000`;
                 break;
             case "text":
-                this.element.value = (data[this.prop] != undefined) ? data[this.prop] : "";
+                this.ele.value = (data[this.prop] != undefined) ? data[this.prop] : "";
                 break;
             default:
 
-                var t = this.element.classList[0];
+                var t = this.ele.classList[0];
 
                 switch (t) {
                     case "modulo_time":
@@ -4809,11 +4764,11 @@ class Input extends Cassette {
                         var minutes = ((time % 1) * 60) | 0;
                         var hours = (((time | 0) % 12) != 0) ? (time | 0) % 12 : 12;
 
-                        this.element.value = (hours + ":" + ("0" + minutes).slice(-2)) + ((IS_PM) ? " PM" : " AM");
+                        this.ele.value = (hours + ":" + ("0" + minutes).slice(-2)) + ((IS_PM) ? " PM" : " AM");
                         break;
 
                     default:
-                        this.element.value = (data[this.prop] != undefined) ? data[this.prop] : "";
+                        this.ele.value = (data[this.prop] != undefined) ? data[this.prop] : "";
                 }
                 break;
         }
@@ -4824,6 +4779,8 @@ class Form extends Cassette {
     constructor(parent, element, d, p) {
         //Scan the element and look for inputs that can be mapped to the 
         super(parent, element, d, p);
+
+        this.router = p.router;
 
         this.submitted = false;
         this.schema = null;
@@ -4842,15 +4799,14 @@ class Form extends Cassette {
         });
     }
 
-    destructor() {
+    dstr() {
 
     }
 
     accepted(result) {
         result.text().then((e) => {
-            debugger
-            GLOBAL.router.loadPage(
-                GLOBAL.router.loadNewPage(result.url, (new DOMParser()).parseFromString(e, "text/html")),
+            this.router.loadPage(
+                this.router.loadNewPage(result.url, (new DOMParser()).parseFromString(e, "text/html")),
                 false
             );
         });
@@ -4858,9 +4814,8 @@ class Form extends Cassette {
 
     rejected(result) {
         result.text().then((e) => {
-            debugger
-            GLOBAL.router.loadPage(
-                GLOBAL.router.loadNewPage(result.url, (new DOMParser()).parseFromString(e, "text/html")),
+            this.router.loadPage(
+                this.router.loadNewPage(result.url, (new DOMParser()).parseFromString(e, "text/html")),
                 false
             );
         });
@@ -4880,15 +4835,15 @@ class Form extends Cassette {
 
     submit() {
 
-        let url = this.element.action;
+        let url = this.ele.action;
 
-        var form_data = (new FormData(this.element));
+        var form_data = (new FormData(this.ele));
         if (this.schema) {
             for (let i = 0, l = this.children.length; i < l; i++) {
                 let child = this.children[i];
 
                 if (child instanceof Input) {
-                    let name = child.element.name;
+                    let name = child.ele.name;
                     let prop = child.prop;
                     let scheme = this.schema[prop];
                     if (scheme && prop) {
@@ -4924,7 +4879,59 @@ class Form extends Cassette {
     }
 }
 
-class Tap extends SourceBase {
+class PipeBase {
+
+    constructor(parent = null, data = {}, presets = {}) {
+        this.parent = parent;
+        this.data = data;
+        this.children = [];
+        if (this.parent) this.parent.children.push(this);
+    }
+
+    load(){
+        // NO OP
+    }
+
+    dstr() {
+        this.data = null;
+    }
+
+    /**
+        Called by  parent when data is update and passed down from further up the graph. 
+        @param {(Object | Model)} data - Data that has been updated and is to be read. 
+        @param {Array} changed_properties - An array of property names that have been updated. 
+        @param {Boolean} IMPORTED - True if the data did not originate from the model watched by the parent Source. False otherwise.
+    */
+    __down__(data, changed_properties = null, IMPORTED = false) {
+
+        let r_val = this.down(data, changed_properties, IMPORTED);
+
+        if (r_val)(data = r_val, IMPORTED = true);
+
+        for (let i = 0, l = this.children.length; i < l; i++)
+            this.children[i].__down__(data, changed_properties, IMPORTED);
+    }
+    down(data, changed_properties = null, IMPORTED) {}
+
+    /**
+        Called by  parent when data is update and passed up from a leaf. 
+        @param {(Object | Model)} data - Data that has been updated and is to be read. 
+        @param {Array} changed_properties - An array of property names that have been updated. 
+        @param {Boolean} IMPORTED - True if the data did not originate from the model watched by the parent Source. False otherwise.
+    */
+    __up__(data) {
+
+        if (this.parent)
+            this.parent(up);
+    }
+
+    up(data) {
+        if (data)
+            this.__up__(data);
+    }
+}
+
+class Tap extends PipeBase {
 
     constructor(parent, data, presets) {
         super(parent, data, presets);
@@ -4969,7 +4976,7 @@ class Tap extends SourceBase {
     }
 }
 
-class Pipe extends SourceBase {
+class Pipe extends PipeBase {
 
     constructor(parent, data, presets) {
         super(parent, data, presets);
@@ -4989,26 +4996,48 @@ Pipe.CAN_BE_STATIC = true;
 	The IO is the last link in the Source chain. It is responsible for putting date into the DOM through it's connected element, and present it to the viewer. 
 	It is also responsible for responding to user input, though the base IO object does not provide any code for that. 
 */
-class IO extends SourceBase{
+class IO extends PipeBase {
 
-	constructor(parent, data, presets){
-		super(parent, data, presets);
-		this.prop = data.prop;
-	}
+    constructor(parent, data, presets, element = null) {
 
-	/**
-		Inheritors of IO should use this function to push data back up to the Source from input by the user. 
-	*/
-	up(){
-		//This is empty for the basic IO object. 
-	}
+        if (element && element.tagName !== "IO") return new AttribIO(parent, data, presets, element);
 
-	/**
-		Puts data into the watched element. The default action is to simply update the elements innerHTML with data.value.  
-	*/
-	down(data){
-		this.element.innerHTML = data.value;
-	}
+        super(parent, data, presets);
+        this.prop = data.prop;
+        this.ele = element;
+    }
+
+
+    down(data) {
+        this.ele.innerHTML = data.value;
+    }
+}
+
+/** @namespace IO */
+
+/**
+	This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
+*/
+class AttribIO extends IO {
+    constructor(parent, data, presets, element) {
+        super(parent, data, presets);
+
+        this.element = element;
+
+        //Remove the index marker
+        element.childNodes[0].data = element.childNodes[0].data.replace(/\#\#\:\d*\s/, "");
+    }
+
+    /**
+    	Puts data into the watched element's attribute. The default action is to simply update the attribute with data.value.  
+    */
+    down(data) {
+        if (this.prop == "style"){
+            this.ele.style = data.value;
+        }
+        else
+            this.ele.attributes[this.prop] = data.value;
+    }
 }
 
 /*
@@ -5056,7 +5085,7 @@ class Root {
 
 class GenericNode {
 
-    constructor(tagname, attributes, parent) {
+    constructor(tagname, attributes, parent, MiniParse, presets) {
         this.parent = null;
         this.tagname = tagname;
         this.attributes = attributes || {};
@@ -5066,18 +5095,19 @@ class GenericNode {
         this.children = [];
         this.prop_name = null;
         this.html = "";
+        this.index_tag = "";
         this.open_tag = "";
         this.close_tag = "";
         this.tag_index = 0;
         this.index = 0;
         if (parent)
             parent.addChild(this);
+        if(MiniParse)
+            this.treeParseAttributes(MiniParse, presets);
     };
 
-
-
     finalize(ctx) {
-        ctx.html += this.open_tag + this.html + this.close_tag;
+        ctx.html += this.open_tag + this.index_tag + this.html + this.close_tag;
     }
 
     replaceChild(child, new_child) {
@@ -5098,18 +5128,40 @@ class GenericNode {
 
     addChild(child) {
 
-        if (child instanceof TapNode && !(this instanceof SourceNode)) {
+        if (child instanceof TapNode && !(this instanceof SourceNode))
             return this.parent.addChild(child);
-        }
 
         child.parent = this;
         this.children.push(child);
     }
 
+    setAttribProp(name){
+        if(!this.prop_name) this.prop_name = name;
+
+        for (let i = 0; i < this.children.length; i++)
+                this.children[i].setAttribProp(name);
+    }
+
+    treeParseAttributes(MiniParse, presets){
+         for (let a in this.attributes) {
+            let attrib = this.attributes[a];
+            if (attrib[0] == "<") {
+                const root = new SourceNode("", null, null);
+                this.index = this.getIndex();
+                root.tag_index = this.index;
+                this.index_tag = "##:" + this.index + " ";
+                let sub_tree = MiniParse(attrib, root, presets);
+                let child = root.children[0];
+                child.setAttribProp(a);
+                this.addChild(child);
+            }
+        }
+    }
+
     parseAttributes() {
         let out = {};
         out.prop = this.prop_name;
-        this.attributes;
+
         return out;
     }
 
@@ -5149,7 +5201,6 @@ class GenericNode {
                 return this.parent.split(this, prop_name);
             }
         } else {
-            debugger
             if (this.prop_name) {
                 if (prop_name == this.prop_name) ; else {
                     let r = new this.constructor(this.tagname, this.attributes, null);
@@ -5168,8 +5219,9 @@ class GenericNode {
 
 
     getIndex() {
-        if(this.tag_index > 0) return this.tag_index++;
-        if (this.parent) return this.parent.getIndex();
+        if (this.tag_index > 0) return this.tag_index++;
+        if (this.parent) this.index = this.parent.getIndex();
+        return this.index;
     }
 
     constructSkeleton(parent_skeleton, presets) {
@@ -5258,7 +5310,7 @@ class TemplateNode extends GenericNode {
         skeleton.terms = this.terms.map((term) => term.createSkeletonConstructor(presets));
         skeleton.templates = this.templates.map((template) => {
             let skl = template.createSkeletonConstructor(presets);
-            skl.element = element;
+            skl.ele = element;
             return skl;
         });
         parent_skeleton.children.push(skeleton);
@@ -5376,7 +5428,6 @@ class IONode extends GenericNode {
         super("", null, parent);
         this.index = index;
         ctx.html += `<io prop="${prop_name}">##:${index}</io>`;
-        this.prop_name = prop_name;
         this.CONSUMES_TAG = true;
     };
 
@@ -5418,6 +5469,7 @@ function SourceConstructor(Template, Presets, WORKING_DOM) {
     return Template.skeleton;
 }
 
+
 function ComponentConstructor(element, presets, WORKING_DOM) {
 
     if (element.tagName === "TEMPLATE") {
@@ -5437,6 +5489,14 @@ function ComponentConstructor(element, presets, WORKING_DOM) {
     return null;
 }
 
+function MiniParse(string, root, presets){
+    const lexer = Lex(string);
+    if (lexer.text == "<") {
+        ParseTag(lexer, root, presets);
+    }
+}
+
+
 /**
     Handles the selection of AST nodes based on tagname;
     
@@ -5446,7 +5506,7 @@ function ComponentConstructor(element, presets, WORKING_DOM) {
     @param {Object} ctx
     @param {CCAstNode} parent
 */
-function Dispatch(lexer, tagname, attributes, parent) {
+function Dispatch(lexer, tagname, attributes, parent, presets) {
     let ast;
     switch (tagname) {
         /* Taps */
@@ -5474,7 +5534,7 @@ function Dispatch(lexer, tagname, attributes, parent) {
             }
             break;
     }
-    ast = new GenericNode(tagname, attributes, parent);
+    ast = new GenericNode(tagname, attributes, parent, MiniParse, presets);
     return ast;
 }
 
@@ -5487,17 +5547,17 @@ function Dispatch(lexer, tagname, attributes, parent) {
 function ParseTag(lexer, parent, presets) {
     let start = lexer.pos;
     let attributes = {};
-    
+
     lexer.assert("<");
-    
+
     let tagname = lexer.text;
-    
+
     if (lexer.type == "identifier") {
         lexer.next();
         GetAttributes(lexer, attributes);
     } else throw new Error(`Expected tag-name identifier, got ${lexer.text}`);
 
-    let ele = Dispatch(lexer, tagname, attributes, parent);
+    let ele = Dispatch(lexer, tagname, attributes, parent, presets);
 
     ele.open_tag += lexer.slice(start);
 
@@ -5522,12 +5582,12 @@ function ParseTag(lexer, parent, presets) {
                     lexer.assert(tagname);
 
                     let out = lexer.pos + 1;
-                    
+
                     lexer.assert(">");
 
                     ele.close_tag = lexer.slice(start);
 
-                    ele.finalize(parent || {html:""}, presets);
+                    ele.finalize(parent || { html: "" }, presets);
 
                     return out;
                 } else
@@ -5705,32 +5765,34 @@ class WURL {
 class PageView {
 
     constructor(URL, app_page) {
+
         this.url = URL;
-        this.elements = [];
+        this.eles = [];
         this.finalizing_view = null;
         this.type = "normal";
         if (!app_page) debugger
-        this.element = app_page;
-        this.element_backer = null;
+        this.ele = app_page;
+        this.ele_backer = null;
         this.LOADED = false;
     }
 
     destructor() {
-        for (var i = 0; i < this.elements.length; i++) {
-            let element = this.elements[i];
+
+        for (var i = 0; i < this.eles.length; i++) {
+            let element = this.eles[i];
             element.destructor();
         }
 
-        this.elements = null;
-        this.element = null;
+        this.eles = null;
+        this.ele = null;
     }
 
     unload(transitions) {
 
         this.LOADED = false;
         
-        for (var i = 0; i < this.elements.length; i++) {
-            let element = this.elements[i];
+        for (var i = 0; i < this.eles.length; i++) {
+            let element = this.eles[i];
             element.getTransformTo(transitions);
             element.unloadComponents();
         }
@@ -5740,54 +5802,55 @@ class PageView {
 
         let time = 0;
 
-        for (var i = 0; i < this.elements.length; i++) {
-            time = Math.max(time, this.elements[i].transitionOut(transitions));
-        }
+        for (var i = 0; i < this.eles.length; i++) 
+            time = Math.max(time, this.eles[i].transitionOut(transitions));
+        
 
         return time;
     }
 
     finalize() {
+
         if(this.LOADED) return;
 
-        for (var i = 0; i < this.elements.length; i++) {
-            let element = this.elements[i];
+        for (var i = 0; i < this.eles.length; i++) {
+            let element = this.eles[i];
             element.finalize();
         }
 
-        if (this.element.parentElement)
-            this.element.parentElement.removeChild(this.element);
+        if (this.ele.parentElement)
+            this.ele.parentElement.removeChild(this.ele);
     }
 
     load(app_element, wurl) {
 
         this.LOADED = true;
         
-        for (var i = 0; i < this.elements.length; i++) {
-            let element = this.elements[i];
+        for (var i = 0; i < this.eles.length; i++) {
+            let element = this.eles[i];
             element.loadComponents(wurl);
         }
 
-        app_element.appendChild(this.element);
+        app_element.appendChild(this.ele);
 
-        var t = this.element.style.opacity;
+        var t = this.ele.style.opacity;
     }
 
     transitionIn(transitions) {
 
         if (this.type == "modal") {
-            if (!this.element_backer) {
-                this.element_backer = document.createElement("div");
-                this.element_backer.classList.add("modal_backer");
-                this.element.appendChild(this.element_backer);
+            if (!this.ele_backer) {
+                this.ele_backer = document.createElement("div");
+                this.ele_backer.classList.add("modal_backer");
+                this.ele.appendChild(this.ele_backer);
             }
             setTimeout(() => {
-                this.element.style.opacity = 1;
+                this.ele.style.opacity = 1;
             }, 50);
         }
 
-        for (var i = 0; i < this.elements.length; i++) {
-            let element = this.elements[i];
+        for (var i = 0; i < this.eles.length; i++) {
+            let element = this.eles[i];
             element.parent = this;
             element.setTransformTo(transitions);
             element.transitionIn();
@@ -5795,8 +5858,9 @@ class PageView {
     }
 
     getNamedElements(named_elements) {
-        for (var i = 0; i < this.elements.length; i++) {
-            let element = this.elements[i];
+
+        for (var i = 0; i < this.eles.length; i++) {
+            let element = this.eles[i];
             element.getNamedElements(named_elements);
         }
     }
@@ -5810,320 +5874,345 @@ class PageView {
     }
 }
 
-class Color extends Float64Array{
+/**
+ *	Converts links into Javacript enabled buttons that will be handled within the current Active page.
+ *
+ * @param {HTMLElement} element - Parent Element that contains the <a> elements to be evaulated by function.
+ * @param {function} __function__ - A function the link will call when it is clicked by user. If it returns false, the link will act like a normal <a> element and cause the browser to navigate to the "href" value.
+ *
+ * If the <a> element has a data-ignore_link attribute set to a truthy value, then this function will not change the way that link operates.
+ * Likewise, if the <a> element has a href that points another domain, then the link will remain unaffected.
+ */
+function setLinks(element, __function__) {
+    let links = element.getElementsByTagName("a");
+    for (let i = 0, l = links.length; i < l; i++) {
+        let temp = links[i];
 
-	constructor(r,g,b,a = 0){
-		super(4);
+        if (temp.dataset.ignore_link) continue;
 
-		this.r = 0;
-		this.g = 0;
-		this.b = 0;
-		this.a = 1;
+        if (temp.origin !== location.origin) continue;
 
-		if(typeof(r) == "string"){
-			this.fromString(r);
-		}else{
-			this.r = r; //Math.max(Math.min(Math.round(r),255),-255);
-			this.g = g; //Math.max(Math.min(Math.round(g),255),-255);
-			this.b = b; //Math.max(Math.min(Math.round(b),255),-255);
-			this.a = a; //Math.max(Math.min(a,1),-1);
-		}
-	}
+        if (!temp.onclick) temp.onclick = ((href, a, __function__) => (e) => {
+            e.preventDefault();
+            if (__function__(href, a)) e.preventDefault();
+        })(temp.href, temp, __function__);
+    }
+}
 
-	get r(){
-		return this[0];
-	}
+class Color extends Float64Array {
 
-	set r(r){
-		this[0] = r;
-	}
+    constructor(r, g, b, a = 0) {
+        super(4);
 
-	get g(){
-		return this[1];
-	}
+        this.r = 0;
+        this.g = 0;
+        this.b = 0;
+        this.a = 1;
 
-	set g(g){
-		this[1] = g;
-	}
+        if (typeof(r) == "string") {
+            this.fromString(r);
+        } else {
+            this.r = r; //Math.max(Math.min(Math.round(r),255),-255);
+            this.g = g; //Math.max(Math.min(Math.round(g),255),-255);
+            this.b = b; //Math.max(Math.min(Math.round(b),255),-255);
+            this.a = a; //Math.max(Math.min(a,1),-1);
+        }
+    }
 
-	get b(){
-		return this[2];
-	}
+    get r() {
+        return this[0];
+    }
 
-	set b(b){
-		this[2] = b;
-	}
+    set r(r) {
+        this[0] = r;
+    }
 
-	get a(){
-		return this[3];
-	}
+    get g() {
+        return this[1];
+    }
 
-	set a(a){
-		this[3] = a;
-	}
+    set g(g) {
+        this[1] = g;
+    }
 
-	set(color){
-		this.r = color.r;
-		this.g = color.g;
-		this.b = color.b;
-		this.a = (color.a != undefined) ? color.a : this.a;
-	}
+    get b() {
+        return this[2];
+    }
 
-	add(color){
-		return new Color(
-			color.r + this.r,
-			color.g + this.g,
-			color.b + this.b,
-			color.a + this.a
-		)
-	}
+    set b(b) {
+        this[2] = b;
+    }
 
-	mult(color){
-		if(typeof(color) == "number"){
-			return new Color(
-				this.r * color,
-				this.g * color,
-				this.b * color,
-				this.a * color
-			)
-		}else{
-			return new Color(
-				this.r * color.r,
-				this.g * color.g,
-				this.b * color.b,
-				this.a * color.a
-			)
-		}
-	}
+    get a() {
+        return this[3];
+    }
 
-	sub(color){
-		return new Color(
-			 this.r - color.r,
-			 this.g - color.g,
-			 this.b - color.b,
-			 this.a - color.a
-		)
-	}
+    set a(a) {
+        this[3] = a;
+    }
 
-	toString(){
-		return `rgba(${this.r|0}, ${this.g|0}, ${this.b|0}, ${this.a})`;
-	}
+    set(color) {
+        this.r = color.r;
+        this.g = color.g;
+        this.b = color.b;
+        this.a = (color.a != undefined) ? color.a : this.a;
+    }
 
-	fromString(string){
-		
-		let lexer = Lex(string);
+    add(color) {
+        return new Color(
+            color.r + this.r,
+            color.g + this.g,
+            color.b + this.b,
+            color.a + this.a
+        )
+    }
 
-		let r,g,b,a;
-		switch(lexer.token.text){
+    mult(color) {
+        if (typeof(color) == "number") {
+            return new Color(
+                this.r * color,
+                this.g * color,
+                this.b * color,
+                this.a * color
+            )
+        } else {
+            return new Color(
+                this.r * color.r,
+                this.g * color.g,
+                this.b * color.b,
+                this.a * color.a
+            )
+        }
+    }
+
+    sub(color) {
+        return new Color(
+            this.r - color.r,
+            this.g - color.g,
+            this.b - color.b,
+            this.a - color.a
+        )
+    }
+
+    toString() {
+        return `rgba(${this.r|0}, ${this.g|0}, ${this.b|0}, ${this.a})`;
+    }
+
+    fromString(string) {
+
+        let lexer = Lex(string);
+
+        let r, g, b, a;
+        switch (lexer.token.text) {
 
 
-			case "rgb":
-				lexer.next(); // (
-				r = parseInt(lexer.next().text);
-				lexer.next(); // ,
-				g = parseInt(lexer.next().text);
-				lexer.next(); // ,
-				b = parseInt(lexer.next().text);
-				this.set({r,g,b});
-			break;
+            case "rgb":
+                lexer.next(); // (
+                r = parseInt(lexer.next().text);
+                lexer.next(); // ,
+                g = parseInt(lexer.next().text);
+                lexer.next(); // ,
+                b = parseInt(lexer.next().text);
+                this.set({ r, g, b });
+                break;
 
-			case "rgba":
-				lexer.next(); // (
-				r = parseInt(lexer.next().text);
-				lexer.next(); // ,
-				g = parseInt(lexer.next().text);
-				lexer.next(); // ,
-				b = parseInt(lexer.next().text);
-				lexer.next(); // ,
-				a = parseFloat(lexer.next().text);
-				this.set({r,g,b,a});
-			break;
+            case "rgba":
+                lexer.next(); // (
+                r = parseInt(lexer.next().text);
+                lexer.next(); // ,
+                g = parseInt(lexer.next().text);
+                lexer.next(); // ,
+                b = parseInt(lexer.next().text);
+                lexer.next(); // ,
+                a = parseFloat(lexer.next().text);
+                this.set({ r, g, b, a });
+                break;
 
-			case "#":
-				var value = lexer.next().text;
-			break;
+            case "#":
+                var value = lexer.next().text;
+                break;
 
-			default:
+            default:
 
-				if(Color.colors[string])
-					this.set(Color.colors[string]  || new Color(255, 255, 255, 0.0001));
-			break;
-		}
-	}
+                if (Color.colors[string])
+                    this.set(Color.colors[string] || new Color(255, 255, 255, 0.0001));
+                break;
+        }
+    }
 }
 
 Color.colors = {
-	"transparent" : new Color(255, 255, 255, 0.0001),
-	"clear" : new Color(255, 255, 255, 0.0001),
-	"red" : new Color(255, 0, 0),
-	"green" : new Color(0, 255, 0),
-	"blue" : new Color(0, 0, 255),
-	"Black": new Color(0,0,0),
- 	"White": new Color(255,255,255),
- 	"white": new Color(255,255,255),
- 	"Red": new Color(255,0,0),
- 	"Lime": new Color(0,255,0),
- 	"Blue": new Color(0,0,255),
- 	"Yellow": new Color(255,255,0),
- 	"Cyan": new Color(0,255,255),
- 	"Aqua": new Color(0,255,255),
- 	"Magenta": new Color(255,0,255) ,
- 	"Fuchsia": new Color(255,0,255),
- 	"Silver": new Color(192,192,192),
- 	"Gray": new Color(128,128,128),
- 	"Maroon": new Color(128,0,0),
- 	"Olive": new Color(128,128,0),
- 	"Green": new Color(0,128,0),
- 	"Purple": new Color(128,0,128),
- 	"Teal": new Color(0,128,128),
- 	"Navy": new Color(0,0,128),
- 	"maroon": new Color(128,0,0),
- 	"dark red": new Color(139,0,0),
- 	"brown": new Color(165,42,42),
- 	"firebrick": new Color(178,34,34),
- 	"crimson": new Color(220,20,60),
- 	"red": new Color(255,0,0),
- 	"tomato": new Color(255,99,71),
- 	"coral": new Color(255,127,80),
- 	"indian red": new Color(205,92,92),
- 	"light coral": new Color(240,128,128),
- 	"dark salmon": new Color(233,150,122),
- 	"salmon": new Color(250,128,114),
- 	"light salmon": new Color(255,160,122),
- 	"orange red": new Color(255,69,0),
- 	"dark orange": new Color(255,140,0),
- 	"orange": new Color(255,165,0),
- 	"gold": new Color(255,215,0),
- 	"dark golden rod": new Color(184,134,11),
- 	"golden rod": new Color(218,165,32),
- 	"pale golden rod": new Color(238,232,170),
- 	"dark khaki": new Color(189,183,107),
- 	"khaki": new Color(240,230,140),
- 	"olive": new Color(128,128,0),
- 	"yellow": new Color(255,255,0),
- 	"yellow green": new Color(154,205,50),
- 	"dark olive green": new Color(85,107,47),
- 	"olive drab": new Color(107,142,35),
- 	"lawn green": new Color(124,252,0),
- 	"chart reuse": new Color(127,255,0),
- 	"green yellow": new Color(173,255,47),
- 	"dark green": new Color(0,100,0),
- 	"green": new Color(0,128,0),
- 	"forest green": new Color(34,139,34),
- 	"lime": new Color(0,255,0),
- 	"lime green": new Color(50,205,50),
- 	"light green": new Color(144,238,144),
- 	"pale green": new Color(152,251,152),
- 	"dark sea green": new Color(143,188,143),
- 	"medium spring green": new Color(0,250,154),
- 	"spring green": new Color(0,255,127),
- 	"sea green": new Color(46,139,87),
- 	"medium aqua marine": new Color(102,205,170),
- 	"medium sea green": new Color(60,179,113),
- 	"light sea green": new Color(32,178,170),
- 	"dark slate gray": new Color(47,79,79),
- 	"teal": new Color(0,128,128),
- 	"dark cyan": new Color(0,139,139),
- 	"aqua": new Color(0,255,255),
- 	"cyan": new Color(0,255,255),
- 	"light cyan": new Color(224,255,255),
- 	"dark turquoise": new Color(0,206,209),
- 	"turquoise": new Color(64,224,208),
- 	"medium turquoise": new Color(72,209,204),
- 	"pale turquoise": new Color(175,238,238),
- 	"aqua marine": new Color(127,255,212),
- 	"powder blue": new Color(176,224,230),
- 	"cadet blue": new Color(95,158,160),
- 	"steel blue": new Color(70,130,180),
- 	"corn flower blue": new Color(100,149,237),
- 	"deep sky blue": new Color(0,191,255),
- 	"dodger blue": new Color(30,144,255),
- 	"light blue": new Color(173,216,230),
- 	"sky blue": new Color(135,206,235),
- 	"light sky blue": new Color(135,206,250),
- 	"midnight blue": new Color(25,25,112),
- 	"navy": new Color(0,0,128),
- 	"dark blue": new Color(0,0,139),
- 	"medium blue": new Color(0,0,205),
- 	"blue": new Color(0,0,255),
- 	"royal blue": new Color(65,105,225),
- 	"blue violet": new Color(138,43,226),
- 	"indigo": new Color(75,0,130),
- 	"dark slate blue": new Color(72,61,139),
- 	"slate blue": new Color(106,90,205),
- 	"medium slate blue": new Color(123,104,238),
- 	"medium purple": new Color(147,112,219),
- 	"dark magenta": new Color(139,0,139),
- 	"dark violet": new Color(148,0,211),
- 	"dark orchid": new Color(153,50,204),
- 	"medium orchid": new Color(186,85,211),
- 	"purple": new Color(128,0,128),
- 	"thistle": new Color(216,191,216),
- 	"plum": new Color(221,160,221),
- 	"violet": new Color(238,130,238),
- 	"magenta": new Color(255,0,255),
- 	"fuchsia": new Color(255,0,255),
- 	"orchid": new Color(218,112,214),
- 	"medium violet red": new Color(199,21,133),
- 	"pale violet red": new Color(219,112,147),
- 	"deep pink": new Color(255,20,147),
- 	"hot pink": new Color(255,105,180),
- 	"light pink": new Color(255,182,193),
- 	"pink": new Color(255,192,203),
- 	"antique white": new Color(250,235,215),
- 	"beige": new Color(245,245,220),
- 	"bisque": new Color(255,228,196),
- 	"blanched almond": new Color(255,235,205),
- 	"wheat": new Color(245,222,179),
- 	"corn silk": new Color(255,248,220),
- 	"lemon chiffon": new Color(255,250,205),
- 	"light golden rod yellow": new Color(250,250,210),
- 	"light yellow": new Color(255,255,224),
- 	"saddle brown": new Color(139,69,19),
- 	"sienna": new Color(160,82,45),
- 	"chocolate": new Color(210,105,30),
- 	"peru": new Color(205,133,63),
- 	"sandy brown": new Color(244,164,96),
- 	"burly wood": new Color(222,184,135),
- 	"tan": new Color(210,180,140),
- 	"rosy brown": new Color(188,143,143),
- 	"moccasin": new Color(255,228,181),
- 	"navajo white": new Color(255,222,173),
- 	"peach puff": new Color(255,218,185),
- 	"misty rose": new Color(255,228,225),
- 	"lavender blush": new Color(255,240,245),
- 	"linen": new Color(250,240,230),
- 	"old lace": new Color(253,245,230),
- 	"papaya whip": new Color(255,239,213),
- 	"sea shell": new Color(255,245,238),
- 	"mint cream": new Color(245,255,250),
- 	"slate gray": new Color(112,128,144),
- 	"light slate gray": new Color(119,136,153),
- 	"light steel blue": new Color(176,196,222),
- 	"lavender": new Color(230,230,250),
- 	"floral white": new Color(255,250,240),
- 	"alice blue": new Color(240,248,255),
- 	"ghost white": new Color(248,248,255),
- 	"honeydew": new Color(240,255,240),
- 	"ivory": new Color(255,255,240),
- 	"azure": new Color(240,255,255),
- 	"snow": new Color(255,250,250),
- 	"black": new Color(0,0,0),
- 	"dim gray": new Color(105,105,105),
- 	"dim grey": new Color(105,105,105),
- 	"gray": new Color(128,128,128),
- 	"grey": new Color(128,128,128),
- 	"dark gray": new Color(169,169,169),
- 	"dark grey": new Color(169,169,169),
- 	"silver": new Color(192,192,192),
- 	"light gray": new Color(211,211,211),
- 	"light grey": new Color(211,211,211),
- 	"gainsboro": new Color(220,220,220),
- 	"white smoke": new Color(245,245,245),
- 	"white": new Color(255,255,255)
+    "transparent": new Color(255, 255, 255, 0.0001),
+    "clear": new Color(255, 255, 255, 0.0001),
+    "red": new Color(255, 0, 0),
+    "green": new Color(0, 255, 0),
+    "blue": new Color(0, 0, 255),
+    "Black": new Color(0, 0, 0),
+    "White": new Color(255, 255, 255),
+    "white": new Color(255, 255, 255),
+    "Red": new Color(255, 0, 0),
+    "Lime": new Color(0, 255, 0),
+    "Blue": new Color(0, 0, 255),
+    "Yellow": new Color(255, 255, 0),
+    "Cyan": new Color(0, 255, 255),
+    "Aqua": new Color(0, 255, 255),
+    "Magenta": new Color(255, 0, 255),
+    "Fuchsia": new Color(255, 0, 255),
+    "Silver": new Color(192, 192, 192),
+    "Gray": new Color(128, 128, 128),
+    "Maroon": new Color(128, 0, 0),
+    "Olive": new Color(128, 128, 0),
+    "Green": new Color(0, 128, 0),
+    "Purple": new Color(128, 0, 128),
+    "Teal": new Color(0, 128, 128),
+    "Navy": new Color(0, 0, 128),
+    "maroon": new Color(128, 0, 0),
+    "dark red": new Color(139, 0, 0),
+    "brown": new Color(165, 42, 42),
+    "firebrick": new Color(178, 34, 34),
+    "crimson": new Color(220, 20, 60),
+    "red": new Color(255, 0, 0),
+    "tomato": new Color(255, 99, 71),
+    "coral": new Color(255, 127, 80),
+    "indian red": new Color(205, 92, 92),
+    "light coral": new Color(240, 128, 128),
+    "dark salmon": new Color(233, 150, 122),
+    "salmon": new Color(250, 128, 114),
+    "light salmon": new Color(255, 160, 122),
+    "orange red": new Color(255, 69, 0),
+    "dark orange": new Color(255, 140, 0),
+    "orange": new Color(255, 165, 0),
+    "gold": new Color(255, 215, 0),
+    "dark golden rod": new Color(184, 134, 11),
+    "golden rod": new Color(218, 165, 32),
+    "pale golden rod": new Color(238, 232, 170),
+    "dark khaki": new Color(189, 183, 107),
+    "khaki": new Color(240, 230, 140),
+    "olive": new Color(128, 128, 0),
+    "yellow": new Color(255, 255, 0),
+    "yellow green": new Color(154, 205, 50),
+    "dark olive green": new Color(85, 107, 47),
+    "olive drab": new Color(107, 142, 35),
+    "lawn green": new Color(124, 252, 0),
+    "chart reuse": new Color(127, 255, 0),
+    "green yellow": new Color(173, 255, 47),
+    "dark green": new Color(0, 100, 0),
+    "green": new Color(0, 128, 0),
+    "forest green": new Color(34, 139, 34),
+    "lime": new Color(0, 255, 0),
+    "lime green": new Color(50, 205, 50),
+    "light green": new Color(144, 238, 144),
+    "pale green": new Color(152, 251, 152),
+    "dark sea green": new Color(143, 188, 143),
+    "medium spring green": new Color(0, 250, 154),
+    "spring green": new Color(0, 255, 127),
+    "sea green": new Color(46, 139, 87),
+    "medium aqua marine": new Color(102, 205, 170),
+    "medium sea green": new Color(60, 179, 113),
+    "light sea green": new Color(32, 178, 170),
+    "dark slate gray": new Color(47, 79, 79),
+    "teal": new Color(0, 128, 128),
+    "dark cyan": new Color(0, 139, 139),
+    "aqua": new Color(0, 255, 255),
+    "cyan": new Color(0, 255, 255),
+    "light cyan": new Color(224, 255, 255),
+    "dark turquoise": new Color(0, 206, 209),
+    "turquoise": new Color(64, 224, 208),
+    "medium turquoise": new Color(72, 209, 204),
+    "pale turquoise": new Color(175, 238, 238),
+    "aqua marine": new Color(127, 255, 212),
+    "powder blue": new Color(176, 224, 230),
+    "cadet blue": new Color(95, 158, 160),
+    "steel blue": new Color(70, 130, 180),
+    "corn flower blue": new Color(100, 149, 237),
+    "deep sky blue": new Color(0, 191, 255),
+    "dodger blue": new Color(30, 144, 255),
+    "light blue": new Color(173, 216, 230),
+    "sky blue": new Color(135, 206, 235),
+    "light sky blue": new Color(135, 206, 250),
+    "midnight blue": new Color(25, 25, 112),
+    "navy": new Color(0, 0, 128),
+    "dark blue": new Color(0, 0, 139),
+    "medium blue": new Color(0, 0, 205),
+    "blue": new Color(0, 0, 255),
+    "royal blue": new Color(65, 105, 225),
+    "blue violet": new Color(138, 43, 226),
+    "indigo": new Color(75, 0, 130),
+    "dark slate blue": new Color(72, 61, 139),
+    "slate blue": new Color(106, 90, 205),
+    "medium slate blue": new Color(123, 104, 238),
+    "medium purple": new Color(147, 112, 219),
+    "dark magenta": new Color(139, 0, 139),
+    "dark violet": new Color(148, 0, 211),
+    "dark orchid": new Color(153, 50, 204),
+    "medium orchid": new Color(186, 85, 211),
+    "purple": new Color(128, 0, 128),
+    "thistle": new Color(216, 191, 216),
+    "plum": new Color(221, 160, 221),
+    "violet": new Color(238, 130, 238),
+    "magenta": new Color(255, 0, 255),
+    "fuchsia": new Color(255, 0, 255),
+    "orchid": new Color(218, 112, 214),
+    "medium violet red": new Color(199, 21, 133),
+    "pale violet red": new Color(219, 112, 147),
+    "deep pink": new Color(255, 20, 147),
+    "hot pink": new Color(255, 105, 180),
+    "light pink": new Color(255, 182, 193),
+    "pink": new Color(255, 192, 203),
+    "antique white": new Color(250, 235, 215),
+    "beige": new Color(245, 245, 220),
+    "bisque": new Color(255, 228, 196),
+    "blanched almond": new Color(255, 235, 205),
+    "wheat": new Color(245, 222, 179),
+    "corn silk": new Color(255, 248, 220),
+    "lemon chiffon": new Color(255, 250, 205),
+    "light golden rod yellow": new Color(250, 250, 210),
+    "light yellow": new Color(255, 255, 224),
+    "saddle brown": new Color(139, 69, 19),
+    "sienna": new Color(160, 82, 45),
+    "chocolate": new Color(210, 105, 30),
+    "peru": new Color(205, 133, 63),
+    "sandy brown": new Color(244, 164, 96),
+    "burly wood": new Color(222, 184, 135),
+    "tan": new Color(210, 180, 140),
+    "rosy brown": new Color(188, 143, 143),
+    "moccasin": new Color(255, 228, 181),
+    "navajo white": new Color(255, 222, 173),
+    "peach puff": new Color(255, 218, 185),
+    "misty rose": new Color(255, 228, 225),
+    "lavender blush": new Color(255, 240, 245),
+    "linen": new Color(250, 240, 230),
+    "old lace": new Color(253, 245, 230),
+    "papaya whip": new Color(255, 239, 213),
+    "sea shell": new Color(255, 245, 238),
+    "mint cream": new Color(245, 255, 250),
+    "slate gray": new Color(112, 128, 144),
+    "light slate gray": new Color(119, 136, 153),
+    "light steel blue": new Color(176, 196, 222),
+    "lavender": new Color(230, 230, 250),
+    "floral white": new Color(255, 250, 240),
+    "alice blue": new Color(240, 248, 255),
+    "ghost white": new Color(248, 248, 255),
+    "honeydew": new Color(240, 255, 240),
+    "ivory": new Color(255, 255, 240),
+    "azure": new Color(240, 255, 255),
+    "snow": new Color(255, 250, 250),
+    "black": new Color(0, 0, 0),
+    "dim gray": new Color(105, 105, 105),
+    "dim grey": new Color(105, 105, 105),
+    "gray": new Color(128, 128, 128),
+    "grey": new Color(128, 128, 128),
+    "dark gray": new Color(169, 169, 169),
+    "dark grey": new Color(169, 169, 169),
+    "silver": new Color(192, 192, 192),
+    "light gray": new Color(211, 211, 211),
+    "light grey": new Color(211, 211, 211),
+    "gainsboro": new Color(220, 220, 220),
+    "white smoke": new Color(245, 245, 245),
+    "white": new Color(255, 255, 255)
 };
 
-var ease_out = new CBezier(0.5, 0.2, 0, 1);
+const ease_out = new CBezier(0.5, 0.2, 0, 1);
 
 if (!requestAnimationFrame)
     requestAnimationFrame = (e) => {
@@ -6148,21 +6237,21 @@ class TT_From {
         this.left = parseFloat(rect.left);
         this.top = parseFloat(rect.top);
 
-        this.element = element;
+        this.ele = element;
 
     }
 
     destructor() {
-        this.element = null;
+        this.ele = null;
         this.color = null;
     }
 
     start() {
-        this.element.style.opacity = 0;
+        this.ele.style.opacity = 0;
     }
 
     end() {
-        this.element.style.opacity = 1;
+        this.ele.style.opacity = 1;
     }
 }
 
@@ -6209,16 +6298,16 @@ class TT_To extends TT_From {
         this.end(); //Restore everything back to it's original type;
         this.from = null;
         this.s = Infinity;
-        this.element = null;
+        this.ele = null;
         super.destructor();
     }
 
     start() {
-        this.element.style.opacity = 1;
-        this.element.style.top = this.from.top + "px";
-        this.element.style.left = this.from.left + "px";
-        this.element.style.width = this.from.width + "px";
-        this.element.style.height = this.from.height + "px";
+        this.ele.style.opacity = 1;
+        this.ele.style.top = this.from.top + "px";
+        this.ele.style.left = this.from.left + "px";
+        this.ele.style.width = this.from.width + "px";
+        this.ele.style.height = this.from.height + "px";
     }
 
     step() {
@@ -6232,21 +6321,21 @@ class TT_To extends TT_From {
 
         if (ratio > 1) ratio = 1;
 
-        this.element.style.top = Math.round((this.top - this.from.top) * ratio + this.from.top) + "px";
-        this.element.style.left = Math.round((this.left - this.from.left) * ratio + this.from.left) + "px";
-        this.element.style.width = ((this.width - this.from.width) * ratio + this.from.width) + "px";
-        this.element.style.height = ((this.height - this.from.height) * ratio + this.from.height) + "px";
-        this.element.style.backgroundColor = (this.color.sub(this.from.color).mult(ratio).add(this.from.color)) + "";
+        this.ele.style.top = Math.round((this.top - this.from.top) * ratio + this.from.top) + "px";
+        this.ele.style.left = Math.round((this.left - this.from.left) * ratio + this.from.left) + "px";
+        this.ele.style.width = ((this.width - this.from.width) * ratio + this.from.width) + "px";
+        this.ele.style.height = ((this.height - this.from.height) * ratio + this.from.height) + "px";
+        this.ele.style.backgroundColor = (this.color.sub(this.from.color).mult(ratio).add(this.from.color)) + "";
 
         return (t < 0.9999995);
     }
 
     end() {
-        this.element.style.backgroundColor = null;
-        this.element.style.height = this.height_o;
-        this.element.style.width = this.width_o;
-        this.element.style.top = this.rt;
-        this.element.style.left = this.rl;
+        this.ele.style.backgroundColor = null;
+        this.ele.style.height = this.height_o;
+        this.ele.style.width = this.width_o;
+        this.ele.style.top = this.rt;
+        this.ele.style.left = this.rl;
     }
 }
 
@@ -6256,14 +6345,14 @@ class TTPair {
         this.b = (e_from instanceof TT_From) ? e_from : new TT_From(e_from);
         this.a = new TT_To(e_to, this.b);
 
-        if (this.a.element.__TT__)
-            this.a.element.__TT__.destructor();
+        if (this.a.ele.__TT__)
+            this.a.ele.__TT__.destructor();
 
-        if (this.b.element.__TT__)
-            this.b.element.__TT__.destructor();
+        if (this.b.ele.__TT__)
+            this.b.ele.__TT__.destructor();
 
-        this.a.element.__TT__ = this;
-        this.b.element.__TT__ = this;
+        this.a.ele.__TT__ = this;
+        this.b.ele.__TT__ = this;
 
         this.destroyed = false;
 
@@ -6272,10 +6361,10 @@ class TTPair {
 
     destructor() {
         if (this.destroyed) return
-        if (this.b.element)
-            this.b.element.__TT__ = null;
-        if (this.a.element)
-            this.a.element.__TT__ = null;
+        if (this.b.ele)
+            this.b.ele.__TT__ = null;
+        if (this.a.ele)
+            this.a.ele.__TT__ = null;
         this.a.destructor();
         this.destroyed = true;
     }
@@ -6290,7 +6379,7 @@ class TTPair {
     }
 }
 
-const TransformRunner = new (class{
+const TransformRunner = new(class {
     constructor() {
         this.pairs = [];
         this.____SCHEDULED____ = false;
@@ -6304,7 +6393,7 @@ const TransformRunner = new (class{
     update(ratio) {
         let rp = this.pairs;
 
-        if(rp.length > 0)
+        if (rp.length > 0)
             Scheduler.queueUpdate(this);
 
         for (var i = 0; i < rp.length; i++) {
@@ -6315,7 +6404,7 @@ const TransformRunner = new (class{
                 i--;
             }        }
 
-        
+
     }
 })();
 
@@ -6391,12 +6480,12 @@ class BasicSource extends SourceBase {
         this.LOADED = false;
 
         this.transitioneer = new Transitioneer();
-        this.transitioneer.set(this.element);
+        this.transitioneer.set(this.ele);
     }
 
     getNamedElements(named_elements) {
 
-        let children = this.element.children;
+        let children = this.ele.children;
 
         for (var i = 0; i < children.length; i++) {
             let child = children[i];
@@ -6419,7 +6508,7 @@ class FailedSource extends SourceBase {
         super(null, div, {}, {});
 
         this.transitioneer = new Transitioneer();
-        this.transitioneer.set(this.element);
+        this.transitioneer.set(this.ele);
     }
 }
 
@@ -6443,7 +6532,7 @@ class Component {
         //this.parent_element = parent_element;
 
         //Content that is wrapped in an ele_wrap
-        this.element = element;
+        this.ele = element;
     }
 
 
@@ -6479,7 +6568,7 @@ class Component {
 
             if (!component.LOADED && component.parentElement) {
                 component.finalizeTransitionOut();
-                this.wraps[i].removeChild(component.element);
+                this.wraps[i].removeChild(component.ele);
             }
 
             component.LOADED = false;
@@ -6494,10 +6583,10 @@ class Component {
 
             component.parent = this;
 
-            if (component.element.parentElement)
-                component.element.parentElement.removeChild(component.element);
+            if (component.ele.parentElement)
+                component.ele.parentElement.removeChild(component.ele);
 
-            this.wraps[i].appendChild(component.element);
+            this.wraps[i].appendChild(component.ele);
 
             component.handleUrlUpdate(wurl);
 
@@ -6508,9 +6597,9 @@ class Component {
 
         // This is to force a document repaint, which should cause all elements to report correct positioning hereafter
 
-        let t = this.element.style.top;
+        let t = this.ele.style.top;
 
-        this.element.style.top = t;
+        this.ele.style.top = t;
 
         for (let i = 0; i < this.components.length; i++) {
 
@@ -6569,7 +6658,7 @@ class Component {
             return;
         }
 
-        let children = this.element.children;
+        let children = this.ele.children;
 
         for (var i = 0; i < children.length; i++) {
             let child = children[i];
@@ -6587,9 +6676,9 @@ class Component {
 
     setComponents(App_Components, Model_Constructors, Component_Constructors, presets, DOM, wurl) {
         //if there is a component inside the element, register that component if it has not already been registered
-        var components = Array.prototype.map.call(this.element.getElementsByTagName("component"), (a) => a);
+        var components = Array.prototype.map.call(this.ele.getElementsByTagName("component"), (a) => a);
 
-        setLinks(this.element, (href, e) => {
+        setLinks(this.ele, (href, e) => {
             history.pushState({}, "ignored title", href);
             window.onpopstate();
             return true;
@@ -6601,7 +6690,7 @@ class Component {
             component.classList.add("comp_wrap");
 
             //Straight up string copy of the element's DOM.
-            component.innerHTML = this.element.innerHTML;
+            component.innerHTML = this.ele.innerHTML;
         }
 
         var templates = DOM.getElementsByTagName("template");
@@ -6694,11 +6783,11 @@ class Component {
     }
 }
 
-let URL_HOST = { wurl: null };
+const URL_HOST = { wurl: null };
 
 /** @namespace Router */
 
-let URL = (function() {
+const URL = (function() {
 
     return {
         /**
@@ -6758,6 +6847,8 @@ class Router {
 
     constructor(presets) {
 
+        presets.router = this;
+
         this.pages = {};
         this.components = {};
         this.component_constructors = {};
@@ -6767,8 +6858,6 @@ class Router {
         this.current_query;
         this.current_view = null;
         this.finalizing_pages = [];
-
-        GLOBAL.router = this;
 
         /* */
         this.modal_stack = [];
@@ -7086,7 +7175,7 @@ class Router {
                     component = new Component(ele);
                 }
 
-                page.elements.push(component);
+                page.eles.push(component);
 
                 if (!this.components[element_id])
                     this.components[element_id] = {};
@@ -7106,7 +7195,7 @@ class Router {
     }
 }
 
-let wick_vanity = "\ \(\ \ \(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \)\n\ \)\\\)\)\(\ \ \ \'\ \(\ \ \ \ \ \ \ \ \ \ \(\ \/\(\n\(\(\_\)\(\)\\\ \)\ \ \)\\\ \ \ \ \(\ \ \ \ \)\\\(\)\)\n\_\(\(\)\)\\\_\)\(\)\(\(\_\)\ \ \ \)\\\ \ \(\(\_\)\\\n\\\ \\\(\(\_\)\/\ \/\ \(\_\)\ \ \(\(\_\)\ \|\ \|\(\_\)\n\ \\\ \\\/\\\/\ \/\ \ \|\ \|\ \/\ \_\|\ \ \|\ \/\ \/\n\ \ \\\_\/\\\_\/\ \ \ \|\_\|\ \\\_\_\|\ \ \|\_\\\_\\\n";
+const wick_vanity = "\ \(\ \ \(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \)\n\ \)\\\)\)\(\ \ \ \'\ \(\ \ \ \ \ \ \ \ \ \ \(\ \/\(\n\(\(\_\)\(\)\\\ \)\ \ \)\\\ \ \ \ \(\ \ \ \ \)\\\(\)\)\n\_\(\(\)\)\\\_\)\(\)\(\(\_\)\ \ \ \)\\\ \ \(\(\_\)\\\n\\\ \\\(\(\_\)\/\ \/\ \(\_\)\ \ \(\(\_\)\ \|\ \|\(\_\)\n\ \\\ \\\/\\\/\ \/\ \ \|\ \|\ \/\ \_\|\ \ \|\ \/\ \/\n\ \ \\\_\/\\\_\/\ \ \ \|\_\|\ \\\_\_\|\ \ \|\_\\\_\\\n";
 
 let LINKER_LOADED = false;
 
@@ -7207,11 +7296,10 @@ function startRouting(presets) {
 */
 
 //Construct Model Exports
-let model = Model;
+const model = Model$1;
 
 model.any = (data) => new AnyModel(data);
 model.any.constr = AnyModel;
-
 model.container = {
     multi: (...args) => new MultiIndexedContainer(...args),
     array: (...args) => new ArrayModelContainer(...args),
@@ -7229,7 +7317,7 @@ Object.freeze(model.any);
 Object.freeze(model);
 
 //Construct Schema Exports
-let schema$1 = schema;
+const schema$1 = schema;
 schema$1.constr = SchemaConstructor;
 schema$1.constr.bool = BoolSchemaConstructor;
 schema$1.constr.number = NumberSchemaConstructor;
@@ -7241,7 +7329,7 @@ Object.freeze(schema$1.constr);
 Object.freeze(schema$1);
 
 
-let core = {
+const core = {
     Common,
     Animation,
     view: {View},
@@ -7255,7 +7343,7 @@ let core = {
         BoolSchemaConstructor
     },
     model: {
-        Model,
+        Model: Model$1,
         AnyModel,
         ModelContainerBase,
         MultiIndexedContainer,
@@ -7283,7 +7371,7 @@ let core = {
 
 Object.freeze(core);
 
-let any = model.any;
+const any = model.any;
 
 exports.core = core;
 exports.schema = schema$1;

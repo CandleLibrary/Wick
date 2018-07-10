@@ -5,9 +5,9 @@ class Verify extends Cassette{
 		//apply a filter object to the parent
 		let result = data.verify(this.prop);
 		if(!result.valid){
-			this.element.innerHTML = result.reason;
+			this.ele.innerHTML = result.reason;
 		}else{
-			this.element.innerHTML = "";
+			this.ele.innerHTML = "";
 		}
 	}
 }

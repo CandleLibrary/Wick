@@ -1,6 +1,4 @@
-import { setLinks } from "../../router/setlinks"
-
-import { Lex } from "../../common"
+import { Lex } from "../../common/common"
 
 import { SourceBase } from "../base"
 
@@ -23,18 +21,18 @@ export class Cassette extends SourceBase {
         this.data_cache = null;
         this.children = [];
 
-        if (this.element.tagName == "A")
-            this.processLink(this.element);
+        if (this.ele.tagName == "A")
+            this.processLink(this.ele);
     }
 
-    destructor() {
+    dstr() {
 
-        if (this.element.tagName == "A")
-            this.destroyLink(this.element);
+        if (this.ele.tagName == "A")
+            this.destroyLink(this.ele);
 
         this.data_cache = null;
 
-        super.destructor();
+        super.dstr();
     }
 
     /**
@@ -124,7 +122,7 @@ export class Cassette extends SourceBase {
         if (data) {
 
             if (this.prop) {
-                this.element.innerHTML = data[this.prop];
+                this.ele.innerHTML = data[this.prop];
                 this[this.prop] = data[this.prop];
             } else {
                 this.data_cache = data;
@@ -148,7 +146,7 @@ export class Cassette extends SourceBase {
 
     updateDimensions() {
 
-        var d = this.element.getBoundingClientRect();
+        var d = this.ele.getBoundingClientRect();
 
         this.width = d.width;
         this.height = d.height;
@@ -163,7 +161,7 @@ export class CloseCassette extends Cassette {
     constructor(parent, element, d, p) {
         super(parent, element, d, p);
 
-        this.element.addEventListener("click", () => {
+        this.ele.addEventListener("click", () => {
             parent.hide(); //Or URL back;
         })
     }

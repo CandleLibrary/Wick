@@ -1,12 +1,17 @@
 import {terser} from 'rollup-plugin-terser';
 
+import gzip from "rollup-plugin-gzip";
+
 export default {
 	input : "./source/wick",
 	output: {
-		file : "./build/wick-min.jsm",	
+		file : "./build/wick-min.js",	
 		format : "es"
 	},
 	plugins: [
-		terser()
+		terser({
+			module:true
+		}),
+		gzip()
 	]
 }

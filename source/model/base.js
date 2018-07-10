@@ -1,6 +1,6 @@
-import { View } from "../view"
+import { View } from "../view/view"
 
-import { Scheduler } from "../scheduler"
+import { Scheduler } from "../common/scheduler"
 
 /** @namespace Model */
 

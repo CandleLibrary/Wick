@@ -1,6 +1,6 @@
 import { NumberSchemaConstructor } from "./number.js"
 
-import { Lex } from "../../common"
+import { Lex } from "../../common/common"
 
 let scape_date = new Date();
 scape_date.setHours(0);

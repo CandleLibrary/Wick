@@ -1,16 +1,17 @@
-import {
-    Lex
-} from "../common"
+import { Lex } from "../common/common"
 
 class Indexer {
-    constructor(element) {
-        this.lexer = new Lex(element.innerHTML);
-        this.element = element;
+
+    constructor(ele) {
+
+        this.lexer = new Lex(ele.innerHTML);
+        this.ele = ele;
         this.stack = [];
         this.sp = 0;
     }
 
     get(index, REDO = false) {
+
         let lex = this.lexer;
 
         if (REDO) {
@@ -20,6 +21,7 @@ class Indexer {
         }
 
         while (true) {
+            
             if (!lex.text) {
                 if (REDO)
                     return null;
@@ -34,7 +36,7 @@ class Indexer {
                         lex.next(); // /
                         lex.next(); // tagname
                         lex.next(); // >
-                        if(--this.sp < 0) return null;
+                        if (--this.sp < 0) return null;
                         this.stack.length = this.sp + 1;
                         this.stack[this.sp]++;
                     } else {
@@ -75,7 +77,7 @@ class Indexer {
         }
     }
     getElement() {
-        let element = this.element;
+        let element = this.ele;
         for (let i = 0; i < this.sp; i++) {
             element = element.children[this.stack[i]];
         }
@@ -95,15 +97,15 @@ class Indexer {
 export class SourceSkeleton {
 
     constructor(element, constructor, data, presets, index) {
-        this.element = element;
+        this.ele = element;
         this.Constructor = constructor;
         this.children = [];
         this.templates = [];
         this.filters = [];
         this.terms = [];
-        this.data = data;
-        this.presets = presets;
-        this.index = index;
+        this.d = data;
+        this.p = presets;
+        this.i = index;
     }
 
     /**
@@ -125,30 +127,31 @@ export class SourceSkeleton {
 
         let element, CLAIMED_ELEMENT = false;
 
-        if (this.index > 0) {
-            element = indexer.get(this.index)
+        if (this.i > 0) {
+            element = indexer.get(this.i);
             CLAIMED_ELEMENT = true;
         }
 
-        if (this.element) {
-            parent_element = this.element.cloneNode(true);
+        if (this.ele) {
+            parent_element = this.ele.cloneNode(true);
 
             if (parent_element.parentElement) {
                 parent_element.parentElement.replaceNode(parent_element, element);
             }
-            
+
 
             indexer = new Indexer(parent_element);
         }
 
         let out_object;
         if (this.Constructor) {
-            out_object = new this.Constructor(parent, this.data, this.presets);
+            out_object = new this.Constructor(parent, this.d, this.p, element);
             if (CLAIMED_ELEMENT)
-                out_object.element = element;
+                out_object.ele = element;
         } else if (!parent) {
             out_object = this.children[0].____copy____(parent_element, null, indexer);
-            out_object.element = parent_element;
+            out_object.ele = parent_element;
+            console.log(parent_element.innerHTML)
             return out_object;
         } else
             out_object = parent;

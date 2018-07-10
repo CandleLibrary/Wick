@@ -1,10 +1,9 @@
-import {
-    Cassette
-} from "./cassette"
-import * as Common from "../../common"
+import { Cassette } from "./cassette"
 
-let day_of_week = Common.dow;
-let months = Common.months;
+import * as Common from "../../common/common"
+
+const day_of_week = Common.dow;
+const months = Common.months;
 
 /**
     Outputs day of the week name in the element innerHTML, provided the data-prop value is a valid epoch timestamp.
@@ -33,7 +32,7 @@ class EpochDay extends Cassette {
             day_name = (this.limit > 0) ? day_name.slice(0, this.limit) : day_name;
             day_name = (this.TO_UPPERCASE) ? day_name.toUpperSource() : day_name;
 
-            this.element.innerHTML = day_name;
+            this.ele.innerHTML = day_name;
         }
     }
 }
@@ -65,7 +64,7 @@ class EpochMonth extends Cassette {
             month_name = (this.limit > 0) ? month_name.slice(0, this.limit) : month_name;
             month_name = (this.TO_UPPERCASE) ? month_name.toUpperSource() : month_name;
 
-            this.element.innerHTML = month_name;
+            this.ele.innerHTML = month_name;
         }
     }
 }
@@ -84,7 +83,7 @@ class EpochDate extends Cassette {
         let epoch_date = new Date(date);
 
         if (date && epoch_date)
-            this.element.innerHTML = epoch_date.getDate();
+            this.ele.innerHTML = epoch_date.getDate();
     }
 }
 
@@ -102,7 +101,7 @@ class EpochYear extends Cassette {
         let epoch_date = new Date(date);
 
         if (date && epoch_date)
-            this.element.innerHTML = epoch_date.getFullYear();
+            this.ele.innerHTML = epoch_date.getFullYear();
     }
 }
 
@@ -119,7 +118,7 @@ class EpochToDateTime extends Cassette {
         let epoch_date = new Date(date);
 
         if (date && epoch_date)
-            this.element.innerHTML = epoch_date;
+            this.ele.innerHTML = epoch_date;
     }
 }
 
@@ -143,7 +142,7 @@ class EpochTime extends Cassette {
 
             let time = hour + (minutes / 60);
 
-            this.element.innerHTML = Common.float24to12ModTime(time, true);
+            this.ele.innerHTML = Common.float24to12ModTime(time, true);
         }
     }
 }

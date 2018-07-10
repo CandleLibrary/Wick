@@ -3,7 +3,7 @@ import {
     TurnDataIntoQuery,
     QueryStringToQueryMap,
     QueryMapToQueryString
-} from "../common/url/url"
+} from "../../common/url/url"
 
 class WURL {
     constructor(location){

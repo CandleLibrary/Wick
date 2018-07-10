@@ -7,7 +7,7 @@
  * If the <a> element has a data-ignore_link attribute set to a truthy value, then this function will not change the way that link operates.
  * Likewise, if the <a> element has a href that points another domain, then the link will remain unaffected.
  */
-function setLinks(element, __function__) {
+export function setLinks(element, __function__) {
     let links = element.getElementsByTagName("a");
     for (let i = 0, l = links.length, temp, href; i < l; i++) {
         let temp = links[i];
@@ -22,5 +22,3 @@ function setLinks(element, __function__) {
         })(temp.href, temp, __function__);
     }
 };
-
-export {setLinks}

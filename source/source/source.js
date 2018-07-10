@@ -2,9 +2,7 @@ import { SourceBase } from "./base"
 
 import { Model } from "../model/model"
 
-import { Controller } from "../controller"
-
-import { Getter } from "../getter"
+import { Getter } from "../network/getter"
 
 import { Cassette } from "./cassette/cassette"
 
@@ -40,17 +38,17 @@ export class Source extends SourceBase {
         this.is = 0;
     }
 
-    destructor() {
+    dstr() {
 
         this.parent = null;
 
         if (this.receiver)
-            this.receiver.destructor();
+            this.receiver.dstr();
 
         for (let i = 0, l = this.templates.length; i < l; i++)
-            this.templates[i].destructor();
+            this.templates[i].dstr();
 
-        super.destructor();
+        super.dstr();
     }
 
     /**

@@ -11,7 +11,7 @@ class DataEdit extends Cassette{
 			 e.load(model);
         })
 
-        let data = JSON.parse(this.element.value);
+        let data = JSON.parse(this.ele.value);
         
         if(data){
         	
@@ -30,9 +30,9 @@ class DataEdit extends Cassette{
 		this.parent.export();
 	}
 
-	destructor(){
-		this.element.removeEventListener("click",this.event)	
-		super.destructor();
+	dstr(){
+		this.ele.removeEventListener("click",this.event)	
+		super.dstr();
 	}
 }
 

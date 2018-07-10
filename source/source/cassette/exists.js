@@ -15,10 +15,10 @@ class Exists extends Cassette {
 
             if (data[this.prop]) {
                 if (this.temp.parentElement)
-                    this.temp.parentElement.replaceChild(this.element, this.temp);
+                    this.temp.parentElement.replaceChild(this.ele, this.temp);
             } else {
-                if (this.element.parentElement)
-                    this.element.parentElement.replaceChild(this.temp, this.element);
+                if (this.ele.parentElement)
+                    this.ele.parentElement.replaceChild(this.temp, this.ele);
             }
         }
     }
@@ -36,11 +36,11 @@ class NotExists extends Cassette {
         if (data) {
 
             if (data[this.prop]) {
-                if (this.element.parentElement)
-                    this.element.parentElement.replaceChild(this.temp, this.element);
+                if (this.ele.parentElement)
+                    this.ele.parentElement.replaceChild(this.temp, this.ele);
             } else {
                 if (this.temp.parentElement)
-                    this.temp.parentElement.replaceChild(this.element, this.temp);
+                    this.temp.parentElement.replaceChild(this.ele, this.temp);
             }
         }
     }

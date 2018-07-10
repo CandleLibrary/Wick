@@ -1,22 +1,22 @@
 import { setLinks } from "./setlinks"
 
-import { TransformTo } from "../animation/animation"
+import { TransformTo } from "../../animation/animation"
 
 import { BasicSource, FailedSource } from "./component"
 
-import { SourceConstructor } from "../source/source_constructor"
+import { SourceConstructor } from "../../source/source_constructor"
 
-import { View } from "../view"
+import { View } from "../../view"
 
-import { Getter } from "../getter"
+import { Getter } from "../../getter"
 
-import { SourceBase } from "../source/base"
+import { SourceBase } from "../../source/base"
 
-import { TurnDataIntoQuery } from "../common"
+import { TurnDataIntoQuery } from "../../common"
 
 import { DataTemplate } from "./data_template"
 
-import { Transitioneer } from "../animation/transition/transitioneer"
+import { Transitioneer } from "../../animation/transition/transitioneer"
 
 /** @namespace Source */
 
@@ -30,11 +30,11 @@ class BasicSource extends SourceBase {
         this.LOADED = false;
 
         this.transitioneer = new Transitioneer();
-        this.transitioneer.set(this.element)
+        this.transitioneer.set(this.ele)
     }
 
     getNamedElements(named_elements) {
-        let children = this.element.children;
+        let children = this.ele.children;
 
         for (var i = 0; i < children.length; i++) {
             let child = children[i];
@@ -57,7 +57,7 @@ class FailedSource extends SourceBase {
         super(null, div, {}, {});
 
         this.transitioneer = new Transitioneer();
-        this.transitioneer.set(this.element)
+        this.transitioneer.set(this.ele)
     }
 }
 
@@ -80,7 +80,7 @@ class Element {
         //this.parent_element = parent_element;
 
         //Content that is wrapped in an ele_wrap
-        this.element = element;
+        this.ele = element;
     }
 
 
@@ -116,7 +116,7 @@ class Element {
 
             if (!component.LOADED && component.parentElement) {
                 component.finalizeTransitionOut();
-                this.wraps[i].removeChild(component.element);
+                this.wraps[i].removeChild(component.ele);
             }
 
             component.LOADED = false;
@@ -131,10 +131,10 @@ class Element {
 
             component.parent = this;
 
-            if (component.element.parentElement)
-                component.element.parentElement.removeChild(component.element);
+            if (component.ele.parentElement)
+                component.ele.parentElement.removeChild(component.ele);
 
-            this.wraps[i].appendChild(component.element);
+            this.wraps[i].appendChild(component.ele);
 
             component.handleUrlUpdate(wurl);
 
@@ -146,8 +146,8 @@ class Element {
 
         // This is to force a document repaint, which should cause all elements to report correct positioning hereafter
 
-        let t = this.element.style.top;
-        this.element.style.top = t;
+        let t = this.ele.style.top;
+        this.ele.style.top = t;
 
         for (let i = 0; i < this.components.length; i++) {
             let component = this.components[i];
@@ -206,7 +206,7 @@ class Element {
             return;
         }
 
-        let children = this.element.children;
+        let children = this.ele.children;
 
         for (var i = 0; i < children.length; i++) {
             let child = children[i];
@@ -224,9 +224,9 @@ class Element {
 
     setComponents(App_Components, Model_Constructors, Component_Constructors, presets, DOM, wurl) {
         //if there is a component inside the element, register that component if it has not already been registered
-        var components = Array.prototype.map.call(this.element.getElementsByTagName("component"), (a) => a);
+        var components = Array.prototype.map.call(this.ele.getElementsByTagName("component"), (a) => a);
 
-        setLinks(this.element, (href, e) => {
+        setLinks(this.ele, (href, e) => {
             history.pushState({}, "ignored title", href);
             window.onpopstate();
             return true;
@@ -238,7 +238,7 @@ class Element {
             component.classList.add("comp_wrap");
 
             //Straight up string copy of the element's DOM.
-            component.innerHTML = this.element.innerHTML;
+            component.innerHTML = this.ele.innerHTML;
         }
 
         var templates = DOM.getElementsByTagName("template");

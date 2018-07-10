@@ -8,11 +8,11 @@ class Input extends Cassette {
         super(parent, element, d, p);
 
         //Inputs in forms are automatically hidden.
-        this.element.display = "none";
+        this.ele.display = "none";
 
-        this.element.addEventListener("input", () => {
+        this.ele.addEventListener("input", () => {
             var data = {}
-            data[this.prop] = this.element.value;
+            data[this.prop] = this.ele.value;
             this.add(data);
         })
     }
@@ -23,19 +23,19 @@ class Input extends Cassette {
 
         this.val = data[this.prop];
 
-        switch (this.element.type) {
+        switch (this.ele.type) {
             case "date":
-                this.element.value = (new Date(parseInt(data[this.prop]))).toISOString().split("T")[0];
+                this.ele.value = (new Date(parseInt(data[this.prop]))).toISOString().split("T")[0];
                 break;
             case "time":
-                this.element.value = `${("00"+(data[this.prop] | 0)).slice(-2)}:${("00"+((data[this.prop]%1)*60)).slice(-2)}:00.000`;
+                this.ele.value = `${("00"+(data[this.prop] | 0)).slice(-2)}:${("00"+((data[this.prop]%1)*60)).slice(-2)}:00.000`;
                 break;
             case "text":
-                this.element.value = (data[this.prop] != undefined) ? data[this.prop] : "";
+                this.ele.value = (data[this.prop] != undefined) ? data[this.prop] : "";
                 break;
             default:
 
-                var t = this.element.classList[0];
+                var t = this.ele.classList[0];
 
                 switch (t) {
                     case "modulo_time":
@@ -44,11 +44,11 @@ class Input extends Cassette {
                         var minutes = ((time % 1) * 60) | 0;
                         var hours = (((time | 0) % 12) != 0) ? (time | 0) % 12 : 12;
 
-                        this.element.value = (hours + ":" + ("0" + minutes).slice(-2)) + ((IS_PM) ? " PM" : " AM");
+                        this.ele.value = (hours + ":" + ("0" + minutes).slice(-2)) + ((IS_PM) ? " PM" : " AM");
                         break;
 
                     default:
-                        this.element.value = (data[this.prop] != undefined) ? data[this.prop] : "";
+                        this.ele.value = (data[this.prop] != undefined) ? data[this.prop] : "";
                 }
                 break;
         }

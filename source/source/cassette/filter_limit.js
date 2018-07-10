@@ -10,7 +10,7 @@ class FilterLimit extends Filter {
 
         parent.filter_list.push((data) => this.filter(data));
 
-        this.element.addEventListener("input", () => {
+        this.ele.addEventListener("input", () => {
             this.parent.update();
         })
     }

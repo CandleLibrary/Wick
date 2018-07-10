@@ -10,7 +10,7 @@ import { BTreeModelContainer } from "./container/btree"
 
 import { SchemaConstructor } from "../schema/schemas"
 
-import { Scheduler } from "../scheduler"
+import { Scheduler } from "../common/scheduler"
 
 /** @namespace Model */
 

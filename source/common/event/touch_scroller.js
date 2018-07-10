@@ -14,7 +14,7 @@ class TouchScroller {
         this.velocity_y = 0;
         this.GO = true;
         this.drag = (drag > 0) ? drag : 0.02;
-        this.element = element;
+        this.ele = element;
 
         if (!touchid instanceof Number)
             touchid = 0;
@@ -110,7 +110,7 @@ class TouchScroller {
             window.addEventListener("touchend", this.event_c);
         }
 
-        this.element.addEventListener("touchstart", this.event_a);
+        this.ele.addEventListener("touchstart", this.event_a);
 
         this.listeners = [];
 
@@ -118,7 +118,7 @@ class TouchScroller {
 
     destructor() {
         this.listeners = null;
-        this.element.removeEventListener("touchstart", this.event_a);
+        this.ele.removeEventListener("touchstart", this.event_a);
     }
 
 

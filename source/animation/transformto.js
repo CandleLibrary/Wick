@@ -1,14 +1,10 @@
-import {
-    Color
-} from "./color"
-import {
-    CBezier
-} from "../common"
-import {
-    Scheduler
-} from "../scheduler"
+import { Color } from "./color"
 
-var ease_out = new CBezier(0.5, 0.2, 0, 1);
+import { CBezier } from "../common/common"
+
+import { Scheduler } from "../common/scheduler"
+
+const ease_out = new CBezier(0.5, 0.2, 0, 1);
 
 if (!requestAnimationFrame)
     requestAnimationFrame = (e) => {
@@ -33,21 +29,21 @@ class TT_From {
         this.left = parseFloat(rect.left);
         this.top = parseFloat(rect.top);
 
-        this.element = element;
+        this.ele = element;
 
     }
 
     destructor() {
-        this.element = null;
+        this.ele = null;
         this.color = null;
     }
 
     start() {
-        this.element.style.opacity = 0;
+        this.ele.style.opacity = 0;
     }
 
     end() {
-        this.element.style.opacity = 1;
+        this.ele.style.opacity = 1;
     }
 }
 
@@ -94,16 +90,16 @@ class TT_To extends TT_From {
         this.end(); //Restore everything back to it's original type;
         this.from = null;
         this.s = Infinity;
-        this.element = null;
+        this.ele = null;
         super.destructor();
     }
 
     start() {
-        this.element.style.opacity = 1;
-        this.element.style.top = this.from.top + "px";
-        this.element.style.left = this.from.left + "px";
-        this.element.style.width = this.from.width + "px";
-        this.element.style.height = this.from.height + "px";
+        this.ele.style.opacity = 1;
+        this.ele.style.top = this.from.top + "px";
+        this.ele.style.left = this.from.left + "px";
+        this.ele.style.width = this.from.width + "px";
+        this.ele.style.height = this.from.height + "px";
     }
 
     step() {
@@ -117,21 +113,21 @@ class TT_To extends TT_From {
 
         if (ratio > 1) ratio = 1;
 
-        this.element.style.top = Math.round((this.top - this.from.top) * ratio + this.from.top) + "px";
-        this.element.style.left = Math.round((this.left - this.from.left) * ratio + this.from.left) + "px";
-        this.element.style.width = ((this.width - this.from.width) * ratio + this.from.width) + "px";
-        this.element.style.height = ((this.height - this.from.height) * ratio + this.from.height) + "px";
-        this.element.style.backgroundColor = (this.color.sub(this.from.color).mult(ratio).add(this.from.color)) + "";
+        this.ele.style.top = Math.round((this.top - this.from.top) * ratio + this.from.top) + "px";
+        this.ele.style.left = Math.round((this.left - this.from.left) * ratio + this.from.left) + "px";
+        this.ele.style.width = ((this.width - this.from.width) * ratio + this.from.width) + "px";
+        this.ele.style.height = ((this.height - this.from.height) * ratio + this.from.height) + "px";
+        this.ele.style.backgroundColor = (this.color.sub(this.from.color).mult(ratio).add(this.from.color)) + "";
 
         return (t < 0.9999995);
     }
 
     end() {
-        this.element.style.backgroundColor = null;
-        this.element.style.height = this.height_o;
-        this.element.style.width = this.width_o;
-        this.element.style.top = this.rt;
-        this.element.style.left = this.rl;
+        this.ele.style.backgroundColor = null;
+        this.ele.style.height = this.height_o;
+        this.ele.style.width = this.width_o;
+        this.ele.style.top = this.rt;
+        this.ele.style.left = this.rl;
     }
 }
 
@@ -141,14 +137,14 @@ class TTPair {
         this.b = (e_from instanceof TT_From) ? e_from : new TT_From(e_from);
         this.a = new TT_To(e_to, this.b);
 
-        if (this.a.element.__TT__)
-            this.a.element.__TT__.destructor();
+        if (this.a.ele.__TT__)
+            this.a.ele.__TT__.destructor();
 
-        if (this.b.element.__TT__)
-            this.b.element.__TT__.destructor();
+        if (this.b.ele.__TT__)
+            this.b.ele.__TT__.destructor();
 
-        this.a.element.__TT__ = this;
-        this.b.element.__TT__ = this;
+        this.a.ele.__TT__ = this;
+        this.b.ele.__TT__ = this;
 
         this.destroyed = false;
 
@@ -157,10 +153,10 @@ class TTPair {
 
     destructor() {
         if (this.destroyed) return
-        if (this.b.element)
-            this.b.element.__TT__ = null;
-        if (this.a.element)
-            this.a.element.__TT__ = null;
+        if (this.b.ele)
+            this.b.ele.__TT__ = null;
+        if (this.a.ele)
+            this.a.ele.__TT__ = null;
         this.a.destructor();
         this.destroyed = true;
     }
@@ -175,7 +171,7 @@ class TTPair {
     }
 }
 
-const TransformRunner = new (class{
+const TransformRunner = new(class {
     constructor() {
         this.pairs = [];
         this.____SCHEDULED____ = false;
@@ -189,7 +185,7 @@ const TransformRunner = new (class{
     update(ratio) {
         let rp = this.pairs;
 
-        if(rp.length > 0)
+        if (rp.length > 0)
             Scheduler.queueUpdate(this);
 
         for (var i = 0; i < rp.length; i++) {
@@ -201,7 +197,7 @@ const TransformRunner = new (class{
             };
         }
 
-        
+
     }
 })()
 
@@ -209,7 +205,7 @@ const TransformRunner = new (class{
 /**
     Transform one element from another back to itself
 */
-function TransformTo(element_from, element_to, HIDE_OTHER) {
+export function TransformTo(element_from, element_to, HIDE_OTHER) {
 
 
     if (!element_to) {
@@ -229,10 +225,4 @@ function TransformTo(element_from, element_to, HIDE_OTHER) {
     TransformRunner.pushPair(pair);
 
     pair.start();
-}
-
-
-
-export {
-    TransformTo
 }

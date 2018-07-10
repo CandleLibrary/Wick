@@ -5,7 +5,7 @@ function SOURCECONSTRUCTTESTS() {
 	<w-case schema="any">
         <w import><div id="test_core">[date][time]sd[page_count]Z[value]</div><w-red><div>  [time][date][time][date][page_count]</div> Locovl [page_count]</w-red> of [page_count]</w>
         
-        <div id="style_test" style="[style]">
+        <div id="style_test" style="<w>[style]</w>">
         	<w-input type="text" name="note">[page_number]</w-input>
         </div>
         
@@ -56,11 +56,11 @@ function SOURCECONSTRUCTTESTS() {
                 let constructucting_template = element.getElementsByTagName('template')[0];
                 let skeleton = wick.core.source.SourceConstructor(constructucting_template, {}, element);
                 Source = skeleton(Any);
-                document.body.appendChild(Source.element);
+                document.body.appendChild(Source.ele);
             })
 
             it('DOM is correctly updated when Model is changed.', function(done) {
-                element = Source.element;
+                element = Source.ele;
                 let date_element = document.getElementById("test_core").getElementsByTagName("io")[0];
                 let date = date_element.innerHTML;
 
@@ -78,16 +78,18 @@ function SOURCECONSTRUCTTESTS() {
 
             it('Element attributes are updated when Model is changed.', function(done) {
 
-                element = Source.element;
+                element = Source.ele;
                 let style_element = document.getElementById("style_test");
 
-                Any.style += ";border:0";
+                if(!style_element.style) style_element.style = "";
+                
+                Any.style += ";border:1px solid black";
 
                 setTimeout(() => {
+
+                    let style = style_element.style.border;
                     
-                    let style = style_element.attributes.style;
-                    
-                    if (Any.style !== style) throw new Error(`Expecting element to have its style attribute set to "${Any.style}". Got "${style}"`);
+                    if ("1px solid black" !== style) throw new Error(`Expecting element to have its border style set to "${"1px solid black"}". Got "${style}"`);
                     
                     done()
                 }, 5)

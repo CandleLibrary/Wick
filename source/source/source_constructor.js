@@ -1,6 +1,4 @@
-import {
-    Lex
-} from "../common"
+import { Lex } from "../common/common"
 
 import * as AST from "./source_constructor_ast"
 
@@ -37,7 +35,9 @@ export function SourceConstructor(Template, Presets, WORKING_DOM) {
     return Template.skeleton;
 }
 
+
 function ComponentConstructor(element, presets, WORKING_DOM) {
+
     let attributes = [];
     let props = [];
 
@@ -58,6 +58,14 @@ function ComponentConstructor(element, presets, WORKING_DOM) {
     return null;
 }
 
+function MiniParse(string, root, presets){
+    const lexer = Lex(string);
+    if (lexer.text == "<") {
+        ParseTag(lexer, root, presets);
+    }
+}
+
+
 /**
     Handles the selection of AST nodes based on tagname;
     
@@ -67,7 +75,7 @@ function ComponentConstructor(element, presets, WORKING_DOM) {
     @param {Object} ctx
     @param {CCAstNode} parent
 */
-function Dispatch(lexer, tagname, attributes, parent) {
+function Dispatch(lexer, tagname, attributes, parent, presets) {
     let ast;
     switch (tagname) {
         /* Taps */
@@ -95,7 +103,7 @@ function Dispatch(lexer, tagname, attributes, parent) {
             }
             break;
     }
-    ast = new AST.GenericNode(tagname, attributes, parent);
+    ast = new AST.GenericNode(tagname, attributes, parent, MiniParse, presets);
     return ast;
 }
 
@@ -108,17 +116,17 @@ function Dispatch(lexer, tagname, attributes, parent) {
 function ParseTag(lexer, parent, presets) {
     let start = lexer.pos;
     let attributes = {};
-    
+
     lexer.assert("<")
-    
+
     let tagname = lexer.text;
-    
+
     if (lexer.type == "identifier") {
         lexer.next();
         GetAttributes(lexer, attributes);
     } else throw new Error(`Expected tag-name identifier, got ${lexer.text}`);
 
-    let ele = Dispatch(lexer, tagname, attributes, parent);
+    let ele = Dispatch(lexer, tagname, attributes, parent, presets);
 
     ele.open_tag += lexer.slice(start);
 
@@ -143,12 +151,12 @@ function ParseTag(lexer, parent, presets) {
                     lexer.assert(tagname);
 
                     let out = lexer.pos + 1;
-                    
+
                     lexer.assert(">");
 
                     ele.close_tag = lexer.slice(start);
 
-                    ele.finalize(parent || {html:""}, presets);
+                    ele.finalize(parent || { html: "" }, presets);
 
                     return out;
                 } else

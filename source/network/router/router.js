@@ -1,20 +1,18 @@
 import { WURL } from "./wurl"
 
-import { AnyModel } from "../model/model"
+import { AnyModel } from "../../model/model"
 
 import { PageView } from "./page"
 
 import { Component } from "./component"
 
-import { TurnDataIntoQuery } from "../common/url/url"
+import { TurnDataIntoQuery } from "../../common/url/url"
 
-import { GLOBAL } from "../global"
-
-let URL_HOST = { wurl: null };
+const URL_HOST = { wurl: null };
 
 /** @namespace Router */
 
-let URL = (function() {
+const URL = (function() {
 
     return {
         /**
@@ -76,6 +74,8 @@ export class Router {
 
     constructor(presets) {
 
+        presets.router = this;
+
         this.pages = {};
         this.components = {};
         this.component_constructors = {};
@@ -85,8 +85,6 @@ export class Router {
         this.current_query;
         this.current_view = null;
         this.finalizing_pages = [];
-
-        GLOBAL.router = this;
 
         /* */
         this.modal_stack = [];
@@ -407,7 +405,7 @@ export class Router {
                     component = new Component(ele);
                 }
 
-                page.elements.push(component);
+                page.eles.push(component);
 
                 if (!this.components[element_id])
                     this.components[element_id] = {};

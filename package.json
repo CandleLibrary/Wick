@@ -1,18 +1,18 @@
 {
   "name": "wick",
-  "version": "0.2.0a",
+  "version": "0.2.1a",
   "description": "PWA Framework",
   "main": "build/wick-min-es.js",
   "scripts": {
     "test": "nyc mocha",
     "test-n-watch": "mocha -w --check-leaks -R min",
-    "build-production": "npx rollup --config ./build_config/minibuild.config.js",
-    "build-production-es": "npx rollup --config ./build_config/minibuildes.config.js",
-    "build-dev": "npx rollup --config ./build_config/browserdev.config.js",
-    "build-node": "npx rollup --config ./build_config/node.config.js",
-    "watch": "npx rollup --config ./build_config/browserdev.config.js --watch",
-    "watch-node": "npx rollup --config ./build_config/node.config.js --watch",
-    "docs": "npx jsdoc ./source/ --destination ./documents/api --configure ./build_config/jsdoc.json "
+    "build-production": "npx rollup --config ./build/build_config/minibuild.config.js",
+    "build-production-es": "npx rollup --config ./build/build_config/minibuild_es.config.js",
+    "build-dev": "npx rollup --config ./build/build_config/browserdev.config.js",
+    "build-node": "npx rollup --config ./build/build_config/node.config.js",
+    "watch": "npx rollup --config ./build/build_config/browserdev.config.js --watch",
+    "watch-node": "npx rollup --config ./build/build_config/node.config.js --watch",
+    "docs": "npx jsdoc ./source/ --destination ./documents/api --configure ./build/build_config/jsdoc.json "
   },
   "repository": {
     "type": "git",

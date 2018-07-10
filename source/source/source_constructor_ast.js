@@ -120,7 +120,7 @@ export class Root {
 
 export class GenericNode {
 
-    constructor(tagname, attributes, parent) {
+    constructor(tagname, attributes, parent, MiniParse, presets) {
         this.parent = null;
         this.tagname = tagname;
         this.attributes = attributes || {};
@@ -130,18 +130,19 @@ export class GenericNode {
         this.children = [];
         this.prop_name = null;
         this.html = "";
+        this.index_tag = ""
         this.open_tag = "";
         this.close_tag = "";
         this.tag_index = 0;
         this.index = 0;
         if (parent)
             parent.addChild(this);
+        if(MiniParse)
+            this.treeParseAttributes(MiniParse, presets);
     };
 
-
-
     finalize(ctx) {
-        ctx.html += this.open_tag + this.html + this.close_tag;
+        ctx.html += this.open_tag + this.index_tag + this.html + this.close_tag;
     }
 
     replaceChild(child, new_child) {
@@ -162,18 +163,40 @@ export class GenericNode {
 
     addChild(child) {
 
-        if (child instanceof TapNode && !(this instanceof SourceNode)) {
+        if (child instanceof TapNode && !(this instanceof SourceNode))
             return this.parent.addChild(child);
-        }
 
         child.parent = this;
         this.children.push(child);
     }
 
+    setAttribProp(name){
+        if(!this.prop_name) this.prop_name = name;
+
+        for (let i = 0; i < this.children.length; i++)
+                this.children[i].setAttribProp(name);
+    }
+
+    treeParseAttributes(MiniParse, presets){
+         for (let a in this.attributes) {
+            let attrib = this.attributes[a];
+            if (attrib[0] == "<") {
+                const root = new SourceNode("", null, null);
+                this.index = this.getIndex();
+                root.tag_index = this.index;
+                this.index_tag = "##:" + this.index + " ";
+                let sub_tree = MiniParse(attrib, root, presets);
+                let child = root.children[0];
+                child.setAttribProp(a);
+                this.addChild(child);
+            }
+        }
+    }
+
     parseAttributes() {
         let out = {};
         out.prop = this.prop_name;
-        this.attributes;
+
         return out;
     }
 
@@ -213,7 +236,6 @@ export class GenericNode {
                 return this.parent.split(this, prop_name);
             }
         } else {
-            debugger
             if (this.prop_name) {
                 if (prop_name == this.prop_name) {} else {
                     let r = new this.constructor(this.tagname, this.attributes, null);
@@ -232,8 +254,9 @@ export class GenericNode {
 
 
     getIndex() {
-        if(this.tag_index > 0) return this.tag_index++;
-        if (this.parent) return this.parent.getIndex();
+        if (this.tag_index > 0) return this.tag_index++;
+        if (this.parent) this.index = this.parent.getIndex();
+        return this.index;
     }
 
     constructSkeleton(parent_skeleton, presets) {
@@ -322,7 +345,7 @@ export class TemplateNode extends GenericNode {
         skeleton.terms = this.terms.map((term) => term.createSkeletonConstructor(presets))
         skeleton.templates = this.templates.map((template) => {
             let skl = template.createSkeletonConstructor(presets);
-            skl.element = element;
+            skl.ele = element;
             return skl;
         })
         parent_skeleton.children.push(skeleton)
@@ -442,7 +465,6 @@ export class IONode extends GenericNode {
         super("", null, parent);
         this.index = index;
         ctx.html += `<io prop="${prop_name}">##:${index}</io>`
-        this.prop_name = prop_name;
         this.CONSUMES_TAG = true;
     };
 

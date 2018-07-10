@@ -1,5 +1,3 @@
-import { GLOBAL } from "../../global"
-
 import { Input } from "./input"
 
 import { Cassette } from "./cassette"
@@ -8,6 +6,8 @@ export class Form extends Cassette {
     constructor(parent, element, d, p) {
         //Scan the element and look for inputs that can be mapped to the 
         super(parent, element, d, p);
+
+        this.router = p.router;
 
         this.submitted = false;
         this.schema = null;
@@ -26,15 +26,14 @@ export class Form extends Cassette {
         })
     }
 
-    destructor() {
+    dstr() {
 
     }
 
     accepted(result) {
         result.text().then((e) => {
-            debugger
-            GLOBAL.router.loadPage(
-                GLOBAL.router.loadNewPage(result.url, (new DOMParser()).parseFromString(e, "text/html")),
+            this.router.loadPage(
+                this.router.loadNewPage(result.url, (new DOMParser()).parseFromString(e, "text/html")),
                 false
             );
         })
@@ -42,9 +41,8 @@ export class Form extends Cassette {
 
     rejected(result) {
         result.text().then((e) => {
-            debugger
-            GLOBAL.router.loadPage(
-                GLOBAL.router.loadNewPage(result.url, (new DOMParser()).parseFromString(e, "text/html")),
+            this.router.loadPage(
+                this.router.loadNewPage(result.url, (new DOMParser()).parseFromString(e, "text/html")),
                 false
             );
         })
@@ -64,15 +62,15 @@ export class Form extends Cassette {
 
     submit() {
 
-        let url = this.element.action;
+        let url = this.ele.action;
 
-        var form_data = (new FormData(this.element));
+        var form_data = (new FormData(this.ele));
         if (this.schema) {
             for (let i = 0, l = this.children.length; i < l; i++) {
                 let child = this.children[i];
 
                 if (child instanceof Input) {
-                    let name = child.element.name;
+                    let name = child.ele.name;
                     let prop = child.prop;
                     let scheme = this.schema[prop];
                     if (scheme && prop) {

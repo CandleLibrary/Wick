@@ -9,12 +9,12 @@ class ImportQuery extends Cassette {
 
         //ImportQuerys in forms are automatically hidden. 
 
-        this.query = this.element.dataset.query;
+        this.query = this.ele.dataset.query;
     }
 
     update(data) {
         if (data[this.import_prop]) {
-            this.element.innerHTML = (data[this.import_prop] != undefined) ? data[this.import_prop] : "";
+            this.ele.innerHTML = (data[this.import_prop] != undefined) ? data[this.import_prop] : "";
             if (this.query) {
                 if (this.parent.query[this.query] != data[this.import_prop]) {
                     this.parent.query[this.query] = data[this.import_prop];

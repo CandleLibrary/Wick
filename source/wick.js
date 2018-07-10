@@ -1,4 +1,4 @@
-let wick_vanity = "\ \(\ \ \(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \)\n\ \)\\\)\)\(\ \ \ \'\ \(\ \ \ \ \ \ \ \ \ \ \(\ \/\(\n\(\(\_\)\(\)\\\ \)\ \ \)\\\ \ \ \ \(\ \ \ \ \)\\\(\)\)\n\_\(\(\)\)\\\_\)\(\)\(\(\_\)\ \ \ \)\\\ \ \(\(\_\)\\\n\\\ \\\(\(\_\)\/\ \/\ \(\_\)\ \ \(\(\_\)\ \|\ \|\(\_\)\n\ \\\ \\\/\\\/\ \/\ \ \|\ \|\ \/\ \_\|\ \ \|\ \/\ \/\n\ \ \\\_\/\\\_\/\ \ \ \|\_\|\ \\\_\_\|\ \ \|\_\\\_\\\n";
+const wick_vanity = "\ \(\ \ \(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \)\n\ \)\\\)\)\(\ \ \ \'\ \(\ \ \ \ \ \ \ \ \ \ \(\ \/\(\n\(\(\_\)\(\)\\\ \)\ \ \)\\\ \ \ \ \(\ \ \ \ \)\\\(\)\)\n\_\(\(\)\)\\\_\)\(\)\(\(\_\)\ \ \ \)\\\ \ \(\(\_\)\\\n\\\ \\\(\(\_\)\/\ \/\ \(\_\)\ \ \(\(\_\)\ \|\ \|\(\_\)\n\ \\\ \\\/\\\/\ \/\ \ \|\ \|\ \/\ \_\|\ \ \|\ \/\ \/\n\ \ \\\_\/\\\_\/\ \ \ \|\_\|\ \\\_\_\|\ \ \|\_\\\_\\\n";
 
 /**
     Light it up!
@@ -22,7 +22,7 @@ import { ArrayModelContainer } from "./model/container/array"
 
 //Views
 
-import { View } from "./view"
+import { View } from "./view/view"
 
 //Source
 
@@ -40,21 +40,21 @@ import { Cassette } from "./source/cassette/cassette"
 
 //Network
 
-import { Getter } from "./getter"
+import { Getter } from "./network/getter"
 
-import { Setter } from "./setter"
+import { Setter } from "./network/setter"
 
 //Routing
 
-import { WURL } from "./router/wurl"
+import { WURL } from "./network/router/wurl"
 
-import { Router, URL } from "./router/router"
+import { Router, URL } from "./network/router/router"
 
 //Other
 
 import * as Animation from "./animation/animation"
 
-import * as Common from "./common"
+import * as Common from "./common/common"
 
 let LINKER_LOADED = false;
 let DEBUGGER = true;
@@ -159,11 +159,10 @@ function startRouting(presets) {
 */
 
 //Construct Model Exports
-let model = Model;
+const model = Model;
 
 model.any = (data) => new AnyModel(data);
 model.any.constr = AnyModel;
-
 model.container = {
     multi: (...args) => new MultiIndexedContainer(...args),
     array: (...args) => new ArrayModelContainer(...args),
@@ -181,7 +180,7 @@ Object.freeze(model.any);
 Object.freeze(model);
 
 //Construct Schema Exports
-let schema = Schemas;
+const schema = Schemas;
 schema.constr = SchemaConstructor;
 schema.constr.bool = BoolSchemaConstructor;
 schema.constr.number = NumberSchemaConstructor;
@@ -193,7 +192,7 @@ Object.freeze(schema.constr);
 Object.freeze(schema);
 
 
-let core = {
+const core = {
     Common,
     Animation,
     view: {View},
@@ -235,7 +234,7 @@ let core = {
 
 Object.freeze(core);
 
-let any = model.any;
+const any = model.any;
 
 export {
     core,

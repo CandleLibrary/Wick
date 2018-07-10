@@ -39,14 +39,14 @@ export class SourceTemplate extends Source {
         }
 
         for (var i = 0; i < this.activeSources.length; i++) {
-            this.element.removeChild(this.activeSources[i].element);
+            this.ele.removeChild(this.activeSources[i].ele);
         }
 
         for (var i = 0; i < output.length; i++) {
-            this.element.appendChild(output[i].element);
+            this.ele.appendChild(output[i].ele);
         }
 
-        this.element.style.position = this.element.style.position;
+        this.ele.style.position = this.ele.style.position;
 
         for (var i = 0; i < output.length; i++)
             output[i].transitionIn(i);
@@ -60,7 +60,7 @@ export class SourceTemplate extends Source {
         if (new_items.length == 0) {
 
             for (let i = 0, l = this.cases.length; i < l; i++)
-                this.cases[i].destructor();
+                this.cases[i].dstr();
 
             this.cases.length = 0;
 
@@ -72,7 +72,7 @@ export class SourceTemplate extends Source {
 
             for (let i = 0, l = this.cases.length; i < l; i++)
                 if (!exists.has(this.cases[i].model)) {
-                    this.cases[i].destructor();
+                    this.cases[i].dstr();
                     this.cases.splice(i, 1);
                     l--;
                     i--;
@@ -207,7 +207,7 @@ export class SourceTemplate extends Source {
             let terms = this.getTerms();
 
             if (source) {
-                this.model.destructor();
+                this.model.dstr();
 
                 let model = source.get(terms, null);
 

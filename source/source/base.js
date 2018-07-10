@@ -1,22 +1,12 @@
-import {
-    View
-} from "../view"
+import { View } from "../view/view"
 
-import {
-    AnyModel
-} from "../model/model"
+import { AnyModel } from "../model/model"
 
-/*
-    Transitioneers
-*/
+/* Transitioneers */
 
-import {
-    Transitioneer
-} from "../animation/transition/transitioneer"
+import { Transitioneer } from "../animation/transition/transitioneer"
 
-let PresetTransitioneers = {
-    base: Transitioneer
-}
+let PresetTransitioneers = { base: Transitioneer }
 
 export class SourceBase extends View {
 
@@ -25,7 +15,7 @@ export class SourceBase extends View {
         super();
 
         this.parent = parent;
-        this.element = null;
+        this.ele = null;
         this.children = [];
         this.data = data;
         this.named_elements = null;
@@ -35,16 +25,16 @@ export class SourceBase extends View {
         this.DESTROYED = false;
 
         //Setting the transitioner
-        this.transitioneer = null;
+        this.trs = null;
 
         if (data.trs) {
 
             if (presets.transitions && presets.transitions[data.trs])
-                this.transitioneer = new presets.transitions[data.trs]();
+                this.trs = new presets.transitions[data.trs]();
             else if (PresetTransitioneers[data.trs])
-                this.transitioneer = new PresetTransitioneers[data.trs]();
+                this.trs = new PresetTransitioneers[data.trs]();
 
-            this.transitioneer.set(this.element)
+            this.trs.set(this.ele)
         }
 
         this.addToParent();
@@ -54,7 +44,7 @@ export class SourceBase extends View {
         if (this.parent) this.parent.children.push(this);
     }
 
-    destructor() {
+    dstr() {
 
         this.DESTROYED = true;
 
@@ -70,21 +60,21 @@ export class SourceBase extends View {
             }
 
             if (t > 0)
-                setTimeout(() => { this.destructor(); }, t * 1000 + 5)
+                setTimeout(() => { this.dstr(); }, t * 1000 + 5)
 
 
         } else {
             this.finalizeTransitionOut();
-            this.children.forEach((c) => c.destructor());
+            this.children.forEach((c) => c.dstr());
             this.children.length = 0;
             this.data = null;
 
-            if (this.element && this.element.parentElement)
-                this.element.parentElement.removeChild(this.element);
+            if (this.ele && this.ele.parentElement)
+                this.ele.parentElement.removeChild(this.ele);
 
-            this.element = null;
+            this.ele = null;
 
-            super.destructor()
+            super.dstr()
         }
     }
 
@@ -93,7 +83,7 @@ export class SourceBase extends View {
         if (this.parent) {
 
             if (this.data.transition)
-                trs_ele[this.data.transition] = this.element;
+                trs_ele[this.data.transition] = this.ele;
 
             for (var i = 0, l = this.children.length; i < l; i++) {
 
@@ -115,7 +105,7 @@ export class SourceBase extends View {
     gatherTransitionElements(trs_ele) {
 
         if (this.data.transition && !trs_ele[this.data.transition])
-            trs_ele[this.data.transition] = this.element;
+            trs_ele[this.data.transition] = this.ele;
 
         this.children.forEach((e) => {
             if (e.is == 1)
@@ -124,19 +114,19 @@ export class SourceBase extends View {
     }
 
     copy(element, index) {
-        
+
         let out_object = {};
 
         if (!element)
-            element = this.element.cloneNode(true);
+            element = this.ele.cloneNode(true);
 
         if (this.children) {
-            out_object.element = element.children[this.element];
+            out_object.ele = element.children[this.ele];
             out_object.children = new Array(this.children.length);
 
             for (var i = 0, l = this.children.length; i < l; i++) {
                 let child = this.children[i];
-                out_object.children[i] = child.copy(out_object.element);
+                out_object.children[i] = child.copy(out_object.ele);
             }
         }
 
@@ -150,8 +140,8 @@ export class SourceBase extends View {
         for (let i = 0, l = this.children.length; i < l; i++)
             this.children[i].finalizeTransitionOut();
 
-        if (this.transitioneer)
-            this.transitioneer.finalize_out(this.element);
+        if (this.trs)
+            this.trs.finalize_out(this.ele);
 
         this.hide();
     }
@@ -171,8 +161,8 @@ export class SourceBase extends View {
         for (let i = 0, l = this.children.length; i < l; i++)
             transition_time = Math.max(transition_time, this.children[i].transitionIn(index));
 
-        if (this.transitioneer)
-            transition_time = Math.max(transition_time, this.transitioneer.set_in(this.element, this.data, index));
+        if (this.trs)
+            transition_time = Math.max(transition_time, this.trs.set_in(this.ele, this.data, index));
 
         return transition_time;
     }
@@ -186,15 +176,17 @@ export class SourceBase extends View {
 
         this.LOADED = false;
 
-        if (this.transitioneer)
-            transition_time = Math.max(transition_time, this.transitioneer.set_out(this.element, this.data, index));
+        if (this.trs)
+            transition_time = Math.max(transition_time, this.trs.set_out(this.ele, this.data, index));
 
         for (let i = 0, l = this.children.length; i < l; i++)
             transition_time = Math.max(transition_time, this.children[i].transitionOut(index));
 
         if (DESTROY)
-            setTimeout(() => { this.finalizeTransitionOut();
-                this.destructor(); }, transition_time * 1000);
+            setTimeout(() => {
+                this.finalizeTransitionOut();
+                this.dstr();
+            }, transition_time * 1000);
 
         return transition_time;
     }
@@ -255,18 +247,18 @@ export class SourceBase extends View {
 
     hide() {
 
-        if (this.element) {
+        if (this.ele) {
 
-            this.display = this.element.style.display;
-            this.element.style.display = "none";
+            this.display = this.ele.style.display;
+            this.ele.style.display = "none";
         }
     }
 
     show() {
 
-        if (this.element)
-            if (this.element.style.display == "none")
-                this.element.style.display = this.display;
+        if (this.ele)
+            if (this.ele.style.display == "none")
+                this.ele.style.display = this.display;
     }
 
     __updateExports__(data) {
