@@ -60,12 +60,12 @@ describe("Wick test suite.", function() {
 
     it("tests", function() {
     	require("./suite/caseconstructor_tests.js")()
-        //require("./suite/schema_tests.js")()
-        //require("./suite/model_tests.js")()
-        //describe("Model Container Tests", function() {
-        //    require("./suite/mc_tests.js")()
-        //    require("./suite/amc_tests.js")()
-        //    require("./suite/btmc_tests.js")()
-        //})
+        require("./suite/schema_tests.js")()
+        require("./suite/model_tests.js")()
+        describe("Model Container Tests", function() {
+            require("./suite/mc_tests.js")()
+            require("./suite/amc_tests.js")()
+            require("./suite/btmc_tests.js")()
+        })
     })
 })

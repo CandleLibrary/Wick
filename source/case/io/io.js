@@ -9,6 +9,7 @@ export class IO extends Rivet{
 	}
 
 	down(data){
+		console.log(data)
 		this.element.innerHTML = data.value;
 	}
 }

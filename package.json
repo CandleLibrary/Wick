@@ -4,7 +4,7 @@
   "description": "PWA Framework",
   "main": "build/wick-min-es.js",
   "scripts": {
-    "test": "mocha",
+    "test": "nyc mocha",
     "test-n-watch": "mocha -w --check-leaks -R min",
     "build-production": "npx rollup --config ./build_config/minibuild.config.js",
     "build-production-es": "npx rollup --config ./build_config/minibuildes.config.js",
@@ -40,6 +40,7 @@
     "jsdocs": "^1.0.0",
     "jsdom": "^11.11.0",
     "mocha": "^5.2.0",
+    "nyc": "^12.0.2",
     "rollup": "^0.62.0",
     "rollup-plugin-terser": "^1.0.1"
   },

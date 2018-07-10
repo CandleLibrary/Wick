@@ -63,6 +63,7 @@ class Case extends Rivet {
         Sets up Model connection or creates a new Model from a schema.
     */
     load(model) {
+        
         if (this.data.url) {
             //import query info from the wurl
             let str = this.data.url;
@@ -101,16 +102,16 @@ class Case extends Rivet {
                 /* Opinionated Case - Only accepts Models that are of the same type as its schema.*/
                 if (model.constructor != this.schema) {
                     //throw new Error(`Model Schema ${this.model.schema} does not match Case Schema ${presets.schemas[this.data.schema].schema}`)
-                }else{
+                }else
                     this.schema = null;
-                }
+                
             }
             this.model = null;
         } 
 
         if (this.schema) 
             model = new this.schema();
-        
+
         model.addView(this);
 
         if (this.model) {
@@ -119,14 +120,11 @@ class Case extends Rivet {
                 this.receiver.setModel(model);
                 this.____request____();
             }
-        } else {
+        } else 
             throw new Error(`No Model could be found for Case constructor! Case schema "${this.data.schema}", "${this.presets.schemas[this.data.schema]}"; Case model "${this.data.model}", "${this.presets.models[this.data.model]}";`);
-        }
 
-
-        for (var i = 0; i < this.children.length; i++) {
+        for (var i = 0; i < this.children.length; i++) 
             this.children[i].load(this.model);
-        }
     }
 
     ____request____(query) {
@@ -147,7 +145,9 @@ class Case extends Rivet {
     updateSubs(cassettes, data, IMPORT = false) {
 
         for (var i = 0, l = cassettes.length; i < l; i++) {
+            
             let cassette = cassettes[i];
+            
             if (cassette instanceof Case)
                 cassette.update(data, true);
             else {
@@ -184,7 +184,6 @@ class Case extends Rivet {
 
     update(data, changed_values) {
         this.__down__(data, changed_values);
-        return;
     }
 
 
@@ -294,9 +293,8 @@ class Case extends Rivet {
     }
 
     getNamedElements(named_elements) {
-        for (let comp_name in this.named_elements) {
+        for (let comp_name in this.named_elements) 
             named_elements[comp_name] = this.named_elements[comp_name];
-        }
     }
 }
 

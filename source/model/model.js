@@ -378,7 +378,6 @@ class AnyModel extends ModelBase {
 
         if (data) {
             for (let prop_name in data) {
-
                 this[prop_name] = data[prop_name];
             }
         }

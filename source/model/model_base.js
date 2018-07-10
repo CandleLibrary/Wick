@@ -46,6 +46,7 @@ class ModelBase {
 
     getChanged(prop_name) {
 
+
         for (let i = 0, l = this.____changed_values____.length; i < l; i++)
             if (this.____changed_values____[i] == prop_name)
                 return this[prop_name];
@@ -64,6 +65,7 @@ class ModelBase {
 		Adds a view to the linked list of views on the model. argument view MUST be an instance of View. 
 	*/
 	addView(view) {
+		
 		if (view instanceof View) {
 			if (view.model)
 				view.model.removeView(view);

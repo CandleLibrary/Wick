@@ -38,6 +38,7 @@ class Rivet extends View {
         this.transitioneer = null;
 
         if (data.trs) {
+
             if (presets.transitions && presets.transitions[data.trs])
                 this.transitioneer = new presets.transitions[data.trs]();
             else if (PresetTransitioneers[data.trs])
@@ -67,11 +68,11 @@ class Rivet extends View {
 
                 t = Math.max(t, child.transitionOut());
             }
-            if (t > 0) {
-                setTimeout(() => {
-                    this.destructor();
-                }, t * 1000 + 5)
-            }
+
+            if (t > 0)
+                setTimeout(() => { this.destructor(); }, t * 1000 + 5)
+
+
         } else {
             this.finalizeTransitionOut();
             this.children.forEach((c) => c.destructor());
@@ -88,17 +89,18 @@ class Rivet extends View {
     }
 
     bubbleLink(link_url, child, trs_ele = {}) {
+
         if (this.parent) {
 
             if (this.data.transition)
                 trs_ele[this.data.transition] = this.element;
 
             for (var i = 0, l = this.children.length; i < l; i++) {
+
                 let ch = this.children[i];
 
                 if (ch !== child)
                     ch.gatherTransitionElements(trs_ele);
-
             }
 
             this.parent.bubbleLink(link_url, this, trs_ele)
@@ -122,11 +124,11 @@ class Rivet extends View {
     }
 
     copy(element, index) {
+        
         let out_object = {};
 
-        if (!element) {
+        if (!element)
             element = this.element.cloneNode(true);
-        }
 
         if (this.children) {
             out_object.element = element.children[this.element];
@@ -144,12 +146,12 @@ class Rivet extends View {
     handleUrlUpdate(wurl) {}
 
     finalizeTransitionOut() {
+
         for (let i = 0, l = this.children.length; i < l; i++)
             this.children[i].finalizeTransitionOut();
 
-        if (this.transitioneer) {
+        if (this.transitioneer)
             this.transitioneer.finalize_out(this.element);
-        }
 
         this.hide();
     }
@@ -169,12 +171,8 @@ class Rivet extends View {
         for (let i = 0, l = this.children.length; i < l; i++)
             transition_time = Math.max(transition_time, this.children[i].transitionIn(index));
 
-        if (this.transitioneer) {
+        if (this.transitioneer)
             transition_time = Math.max(transition_time, this.transitioneer.set_in(this.element, this.data, index));
-        }
-
-
-
 
         return transition_time;
     }
@@ -188,24 +186,21 @@ class Rivet extends View {
 
         this.LOADED = false;
 
-        if (this.transitioneer) {
+        if (this.transitioneer)
             transition_time = Math.max(transition_time, this.transitioneer.set_out(this.element, this.data, index));
-        }
 
         for (let i = 0, l = this.children.length; i < l; i++)
             transition_time = Math.max(transition_time, this.children[i].transitionOut(index));
 
-        if (DESTROY) {
-            setTimeout(() => {
-                this.finalizeTransitionOut();
-                this.destructor();
-            }, transition_time * 1000);
-        }
+        if (DESTROY)
+            setTimeout(() => { this.finalizeTransitionOut();
+                this.destructor(); }, transition_time * 1000);
 
         return transition_time;
     }
 
     updateDimensions() {
+
         for (var i = 0; i < this.children.length; i++)
             this.children[i].updateDimensions();
     }
@@ -217,11 +212,13 @@ class Rivet extends View {
         @param {Boolean} IMPORTED - True if the data did not originate from the model watched by the parent Case. False otherwise.
     */
     __down__(data, changed_properties = null, IMPORTED = false) {
+
         let r_val = this.down(data, changed_properties, IMPORTED);
+
         if (r_val)(data = r_val, IMPORTED = true);
-        for (let i = 0, l = this.children.length; i < l; i++) {
+
+        for (let i = 0, l = this.children.length; i < l; i++)
             this.children[i].__down__(data, changed_properties, IMPORTED);
-        }
     }
     down(data, changed_properties = null, IMPORTED) {}
 
@@ -232,12 +229,14 @@ class Rivet extends View {
         @param {Boolean} IMPORTED - True if the data did not originate from the model watched by the parent Case. False otherwise.
     */
     __up__(data) {
+
         if (this.parent)
             this.parent(up);
     }
-    
+
     up(data) {
-        if(data)
+
+        if (data)
             this.__up__(data)
     }
 
@@ -245,37 +244,39 @@ class Rivet extends View {
 
         let r_data = this.update(data, FROM_PARENT);
 
-        for (let i = 0, l = this.children.length; i < l; i++) {
+        for (let i = 0, l = this.children.length; i < l; i++)
             this.children[i].__update__(r_data || data, true);
-        }
     }
 
     load(model) {
-        for (var i = 0; i < this.children.length; i++) {
+        for (var i = 0; i < this.children.length; i++)
             this.children[i].load(model);
-        }
     }
 
     hide() {
+
         if (this.element) {
+
             this.display = this.element.style.display;
             this.element.style.display = "none";
         }
     }
 
     show() {
-        if (this.element) {
+
+        if (this.element)
             if (this.element.style.display == "none")
                 this.element.style.display = this.display;
-        }
     }
 
     __updateExports__(data) {
+
         if (this.data.export && data[this.data.export])
             this.export_val = data[this.data.export];
     }
 
     __getExports__(exports) {
+
         if (this.export_val)
             exports[this.data.export] = this.export_val;
     }
@@ -306,11 +307,13 @@ class Rivet extends View {
     }
 
     updateExports(data) {
+
         if (this.data.export && data[this.data.export])
             this.export = data[this.data.export];
     }
 
     add(value) {
+
         if (this.model) {
             this.model.add(value);
             this.export(this.model);

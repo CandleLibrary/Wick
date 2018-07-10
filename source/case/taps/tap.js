@@ -12,7 +12,8 @@ export class Tap extends Rivet {
         if (changed_properties) {
             for (var i = 0, l = changed_properties.length; i < l; i++) {
                 if (changed_properties[i] == this.prop)
-                    break;
+                    if (data[this.prop] !== undefined)
+                        return { value: data[this.prop] }
 
                 if (i == l - 1)
                     return null;

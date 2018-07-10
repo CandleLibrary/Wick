@@ -3,10 +3,6 @@ import {
 } from "../rivet"
 export class Pipe extends Rivet {
 
-    static Static(data, html) {
-        return `<${data.tagname}>${html}</${data.tagname}>`
-    }
-
     constructor(parent, data, presets) {
         super(parent, data, presets);
     }
