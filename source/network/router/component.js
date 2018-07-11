@@ -2,11 +2,11 @@ import { setLinks } from "./setlinks"
 
 import { TransformTo } from "../../animation/animation"
 
-import { SourceConstructor } from "../../source/source_constructor"
+import { SourceConstructor } from "../../source/constructor"
 
 import { SourceBase } from "../../source/base"
 
-import { Transitioneer } from "../../animation/transition/transitioneer"
+import { Transitioner } from "../../animation/transition/transitioner"
 
 /** @namespace Source */
 
@@ -22,7 +22,7 @@ class BasicSource extends SourceBase {
         this.anchor = null;
         this.LOADED = false;
 
-        this.transitioneer = new Transitioneer();
+        this.transitioneer = new Transitioner();
         this.transitioneer.set(this.ele)
     }
 
@@ -50,7 +50,7 @@ class FailedSource extends SourceBase {
         div.innerHTML = `<h3> This Wick component has failed!</h3> <h4>Error Message:</h4><p>${error_message.stack}</p><p>Please contact the website maintainers to address the problem.</p> <p>${presets.error_contact}</p>`;
         super(null, div, {}, {});
 
-        this.transitioneer = new Transitioneer();
+        this.transitioneer = new Transitioner();
         this.transitioneer.set(this.ele)
     }
 }

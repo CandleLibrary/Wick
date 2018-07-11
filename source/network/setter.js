@@ -12,8 +12,8 @@ export class Setter extends View {
         this.url = url;
     }
 
-    destructor() {
-        super.destructor();
+    destroy() {
+        super.destroy();
     }
 
     set(request_object) {

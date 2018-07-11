@@ -26,7 +26,7 @@ export class Form extends Cassette {
         })
     }
 
-    dstr() {
+    destroy() {
 
     }
 

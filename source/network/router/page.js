@@ -15,11 +15,11 @@ export class PageView {
         this.LOADED = false;
     }
 
-    destructor() {
+    destroy() {
 
         for (var i = 0; i < this.eles.length; i++) {
             let element = this.eles[i];
-            element.destructor();
+            element.destroy();
         }
 
         this.eles = null;

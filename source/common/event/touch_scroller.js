@@ -116,7 +116,7 @@ class TouchScroller {
 
     }
 
-    destructor() {
+    destroy() {
         this.listeners = null;
         this.ele.removeEventListener("touchstart", this.event_a);
     }

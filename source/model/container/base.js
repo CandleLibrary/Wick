@@ -41,6 +41,12 @@ export class MCArray extends Array {
 let EmptyFunction = () => {};
 let EmptyArray = [];
 
+class ModelContainer extends Proxy {
+    constructor() {
+        super(this)
+    }
+}
+
 export class ModelContainerBase extends ModelBase {
 
     constructor(schema) {
@@ -59,14 +65,13 @@ export class ModelContainerBase extends ModelBase {
         //Filters are a series of strings or number selectors used to determine if a model should be inserted into or retrieved from the container.
         this.__filters__ = EmptyArray;
 
-        this.schema = schema || this.constructor.schema || {};
+        this.schema = schema || this.constructor.schema || {identifier:"constructor"};
 
         //The parser will handle the evaluation of identifiers according to the criteria set by the __filters__ list. 
         if (this.schema.parser && this.schema.parser instanceof SchemaConstructor)
-            this.parser = this.schema.parser
+            this.parser = this.schema.parser;
         else
             this.parser = new SchemaConstructor();
-
 
         this.id = "";
 
@@ -77,13 +82,33 @@ export class ModelContainerBase extends ModelBase {
         }
 
         return this;
+    }
 
+    proxy() {
         return new Proxy(this, {
-            get: (obj, prop, val) => (prop in obj) ? obj[prop] : obj.get(val)
+            get: function(t, p, r) {
+                if(isNaN(p))
+                    return t[p];
+                return t.getByIndex(parseInt(p));
+            },
+            set: function(t, p, v) {
+                if (typeof(p) === "number")
+                    t.setByIndex(p,v);
+                else t[p] = v;
+                return true;
+            }
         })
     }
 
-    destructor() {
+    setByIndex(index) {
+        /** NO OP **/
+    }
+
+    getByIndex(index, value) {
+        /** NO OP **/
+    }
+
+    destroy() {
 
         this.schema = null;
 
@@ -93,7 +118,7 @@ export class ModelContainerBase extends ModelBase {
             this.source.__unlink__(this);
         }
 
-        super.destructor();
+        super.destroy();
     }
 
     /**
@@ -410,12 +435,12 @@ export class ModelContainerBase extends ModelBase {
 
         let identifier = null;
 
-        if (typeof(item) == "object")
+        if (typeof(item) == "object" && this.schema.identifier)
             identifier = item[this.schema.identifier];
         else
             identifier = item;
 
-        if (identifier)
+        if (identifier && this.parser)
             identifier = this.parser.parse(identifier);
 
         if (filters && identifier)

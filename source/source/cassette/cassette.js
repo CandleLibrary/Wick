@@ -25,14 +25,14 @@ export class Cassette extends SourceBase {
             this.processLink(this.ele);
     }
 
-    dstr() {
+    destroy() {
 
         if (this.ele.tagName == "A")
             this.destroyLink(this.ele);
 
         this.data_cache = null;
 
-        super.dstr();
+        super.destroy();
     }
 
     /**

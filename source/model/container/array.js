@@ -8,14 +8,15 @@ export class ArrayModelContainer extends ModelContainerBase {
 
     constructor(schema) {
         super(schema);
+        
         this.data = [];
     }
 
-    destructor() {
+    destroy() {
 
         this.data = null;
 
-        super.destructor();
+        super.destroy();
     }
 
     get length() {
@@ -51,6 +52,14 @@ export class ArrayModelContainer extends ModelContainerBase {
         if (add_list) add_list.push(model);
 
         return true; // Model added to Container.
+    }
+
+    getByIndex(i){
+        return this.data[i];
+    }
+
+    setByIndex(i, m){        
+        this.data[i] = m;
     }
 
     __get__(term, return_data) {

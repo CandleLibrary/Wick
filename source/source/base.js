@@ -2,20 +2,18 @@ import { View } from "../view/view"
 
 import { AnyModel } from "../model/model"
 
-/* Transitioneers */
+/* Transitioners */
 
-import { Transitioneer } from "../animation/transition/transitioneer"
-
-let PresetTransitioneers = { base: Transitioneer }
+import { Transitioner } from "../animation/transition/transitioner"
 
 export class SourceBase extends View {
 
-    constructor(parent = null, data = {}, presets = {}) {
+    constructor(parent = null, data = {}, presets = {}, element = null) {
 
         super();
 
         this.parent = parent;
-        this.ele = null;
+        this.ele = element;
         this.children = [];
         this.data = data;
         this.named_elements = null;
@@ -23,19 +21,10 @@ export class SourceBase extends View {
         this.export_val = null;
 
         this.DESTROYED = false;
+        this.ACTIVE = false;
 
         //Setting the transitioner
-        this.trs = null;
-
-        if (data.trs) {
-
-            if (presets.transitions && presets.transitions[data.trs])
-                this.trs = new presets.transitions[data.trs]();
-            else if (PresetTransitioneers[data.trs])
-                this.trs = new PresetTransitioneers[data.trs]();
-
-            this.trs.set(this.ele)
-        }
+        this.trs = new Transitioner(this.ele);
 
         this.addToParent();
     }
@@ -44,7 +33,7 @@ export class SourceBase extends View {
         if (this.parent) this.parent.children.push(this);
     }
 
-    dstr() {
+    destroy() {
 
         this.DESTROYED = true;
 
@@ -60,12 +49,12 @@ export class SourceBase extends View {
             }
 
             if (t > 0)
-                setTimeout(() => { this.dstr(); }, t * 1000 + 5)
+                setTimeout(() => { this.destroy(); }, t * 1000 + 5)
 
 
         } else {
             this.finalizeTransitionOut();
-            this.children.forEach((c) => c.dstr());
+            this.children.forEach((c) => c.destroy());
             this.children.length = 0;
             this.data = null;
 
@@ -74,7 +63,7 @@ export class SourceBase extends View {
 
             this.ele = null;
 
-            super.dstr()
+            super.destroy()
         }
     }
 
@@ -156,14 +145,16 @@ export class SourceBase extends View {
 
         let transition_time = 0;
 
-        this.LOADED = true;
+        this.ACTIVE = true;
 
+        this.trs.set_in(this.ele, this.data);
+        /*
         for (let i = 0, l = this.children.length; i < l; i++)
             transition_time = Math.max(transition_time, this.children[i].transitionIn(index));
 
         if (this.trs)
             transition_time = Math.max(transition_time, this.trs.set_in(this.ele, this.data, index));
-
+        */
         return transition_time;
     }
 
@@ -174,7 +165,7 @@ export class SourceBase extends View {
 
         let transition_time = 0;
 
-        this.LOADED = false;
+        this.ACTIVE = false;
 
         if (this.trs)
             transition_time = Math.max(transition_time, this.trs.set_out(this.ele, this.data, index));
@@ -185,7 +176,7 @@ export class SourceBase extends View {
         if (DESTROY)
             setTimeout(() => {
                 this.finalizeTransitionOut();
-                this.dstr();
+                this.destroy();
             }, transition_time * 1000);
 
         return transition_time;

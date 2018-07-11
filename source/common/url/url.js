@@ -1,5 +1,4 @@
 import {Lexer} from "../string_parsing/lexer"
-import {Tokenizer} from "../string_parsing/tokenizer"
 
 /**
 URL Query Syntax
@@ -33,7 +32,7 @@ function QueryStringToQueryMap(query){
 
   if(query[0] == "?") query = query.slice(1);
 
-  let lex = new Lexer(new Tokenizer(query));
+  let lex = new Lexer(query);
 
   function key_val_list(lex, map){
     let token;

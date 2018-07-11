@@ -1,6 +1,6 @@
 import { SourceBase } from "./base"
 
-import { Model } from "../model/model"
+import { ModelBase } from "../model/base"
 
 import { Getter } from "../network/getter"
 
@@ -16,9 +16,9 @@ export class Source extends SourceBase {
         @params [Model] model - A model that can be passed to the case instead of having one created or pulled from presets. 
         @params [DOM]  WORKING_DOM - The DOM object that contains templates to be used to build the case objects. 
     */
-    constructor(parent = null, data, presets) {
+    constructor(parent = null, data, presets, element) {
 
-        super(parent, data, presets)
+        super(parent, data, presets, element)
 
         this.USE_SECURE = presets.USE_HTTPS;
         this.named_elements = {};
@@ -38,23 +38,25 @@ export class Source extends SourceBase {
         this.is = 0;
     }
 
-    dstr() {
+    destroy() {
 
         this.parent = null;
 
         if (this.receiver)
-            this.receiver.dstr();
+            this.receiver.destroy();
 
         for (let i = 0, l = this.templates.length; i < l; i++)
-            this.templates[i].dstr();
+            this.templates[i].destroy();
 
-        super.dstr();
+        super.destroy();
     }
 
     /**
         Sets up Model connection or creates a new Model from a schema.
     */
     load(model) {
+
+        this.ACTIVE = true;
 
         if (this.data.url) {
             //import query info from the wurl
@@ -88,7 +90,7 @@ export class Source extends SourceBase {
             this.model = null;
         }
 
-        if (model && model instanceof Model) {
+        if (model && model instanceof ModelBase) {
 
             if (this.schema) {
                 /* Opinionated Source - Only accepts Models that are of the same type as its schema.*/
@@ -117,6 +119,8 @@ export class Source extends SourceBase {
 
         for (var i = 0; i < this.children.length; i++)
             this.children[i].load(this.model);
+
+
     }
 
     ____request____(query) {
@@ -175,9 +179,9 @@ export class Source extends SourceBase {
     }
 
     update(data, changed_values) {
-        this.__down__(data, changed_values);
+        if(this.ACTIVE)
+            this.__down__(data, changed_values);
     }
-
 
     handleUrlUpdate(wurl) {
         let query_data = null;
@@ -188,7 +192,6 @@ export class Source extends SourceBase {
             query_data = {};
             if (this.data.import == "null") {
                 query_data = wurl.getClass();
-                console.log(query_data)
             } else {
                 var l = this.data.import.split(";")
                 for (var i = 0; i < l.length; i++) {
@@ -243,6 +246,9 @@ export class Source extends SourceBase {
     }
 
     transitionIn(index = 0) {
+
+        super.transitionIn(index)
+        return
 
         let transition_time = 0;
 

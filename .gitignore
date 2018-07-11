@@ -84,3 +84,6 @@ Press h to open a hovercard with more details.
 build/*
 !build/build_config/
 !build/wick.css
+
+#Api directory
+documents/api/*
