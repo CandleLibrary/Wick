@@ -1,4 +1,4 @@
-import { Lex } from "../../common/common"
+import { Lexer } from "../../common/common"
 
 import { SourceBase } from "../base"
 
@@ -53,20 +53,20 @@ export class Cassette extends SourceBase {
 
             let real_href = "";
 
-            let lex = Lex(href);
+            let lex = new Lexer(href);
 
-            while (lex.token) {
+            while (lex.tx) {
 
-                if (lex.token.text == "{") {
+                if (lex.tx == "{") {
                     lex.next();
-                    let prop = lex.token.text;
+                    let prop = lex.text;
                     lex.next();
                     real_href += this[prop] || this.data_cache[prop];
 
-                    if (lex.token.text != "}")
+                    if (lex.text != "}")
                         console.warn(`incorrect value found in url ${href}`)
                 } else {
-                    real_href += lex.token.text;
+                    real_href += lex.text;
                 }
 
                 lex.next();
@@ -87,20 +87,20 @@ export class Cassette extends SourceBase {
 
             let real_href = "";
 
-            let lex = Lex(href);
+            let lex = new Lexer(href);
 
-            while (lex.token) {
-                if (lex.token.text == "{") {
+            while (lex) {
+                if (lex.text == "{") {
                     lex.next();
-                    let prop = lex.token.text;
+                    let prop = lex.text;
                     lex.next();
 
                     real_href += this[prop] || this.data_cache[prop];
 
-                    if (lex.token.text != "}")
+                    if (lex.text != "}")
                         console.warn(`incorrect value found in url ${href}`)
                 } else {
-                    real_href += lex.token.text;
+                    real_href += lex.text;
                 }
 
                 lex.next();

@@ -1,4 +1,4 @@
-import { Lex } from "../common/common"
+import { Lexer } from "../common/common"
 
 
 /** 
@@ -16,7 +16,7 @@ import { Lex } from "../common/common"
 class Indexer {
 
     constructor(elementInnerHTML) {
-        this.lexer = new Lex(elementInnerHTML);
+        this.lexer = new Lexer(elementInnerHTML);
         this.stack = [];
         this.sp = 0;
     }

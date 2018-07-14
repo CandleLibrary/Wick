@@ -17,17 +17,9 @@ import {CSSParser} from "./css/parser/parser"
 
 
 /*********** String Parsing Basic Function ************************/
-/**
-	If a string object is passed, creates a lexer that tokenize the input string. 
-*/
-function Lex(string){
-	return new Lexer(string);
-}
 
 export {
-	Lex,
 	Lexer, 
-	Tokenizer,
 	months,
 	dow,
 	QBezier,

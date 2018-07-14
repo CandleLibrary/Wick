@@ -1,6 +1,4 @@
-import {
-    Lex
-} from "../common/common"
+import { Lexer } from "../common/common"
 
 import * as AST from "./ast"
 
@@ -46,7 +44,7 @@ function ComponentConstructor(element, presets) {
 
         input = input.replace(/\&lt;/g, "<")
         input = input.replace(/\&gt;/g, ">")
-        let lexer = Lex(input);
+        let lexer = new Lexer(input);
 
         //Make sure we are starting with a case object. 
 
@@ -126,7 +124,7 @@ function HandleTemplateImport(ele, presets) {
             let lexer = Lex(element.innerHTML);
 
             while (lexer.text)
-                ParseTag(lexer, ele, presets);           
+                ParseTag(lexer, ele, presets);
 
         } else {
 

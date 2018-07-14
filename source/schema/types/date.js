@@ -1,6 +1,6 @@
 import { NumberSchemaConstructor } from "./number.js"
 
-import { Lex } from "../../common/common"
+import { Lexer } from "../../common/common"
 
 let scape_date = new Date();
 scape_date.setHours(0);
@@ -18,7 +18,7 @@ class DateSchemaConstructor extends NumberSchemaConstructor {
         if (!isNaN(value))
             return parseInt(value);
 
-        let lex = Lex(value);
+        let lex = new Lexer(value);
 
         let year = parseInt(lex.text)
 

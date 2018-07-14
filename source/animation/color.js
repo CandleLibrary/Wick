@@ -1,4 +1,4 @@
-import { Lex } from "../common/common"
+import { Lexer } from "../common/common"
 
 class Color extends Float64Array {
 
@@ -101,36 +101,36 @@ class Color extends Float64Array {
 
     fromString(string) {
 
-        let lexer = Lex(string)
+        let lexer = new Lexer(string)
 
         let r, g, b, a;
-        switch (lexer.token.text) {
+        switch (lexer.token.tx) {
 
 
             case "rgb":
-                lexer.next() // (
-                r = parseInt(lexer.next().text)
-                lexer.next() // ,
-                g = parseInt(lexer.next().text)
-                lexer.next() // ,
-                b = parseInt(lexer.next().text)
+                lexer.n() // (
+                r = parseInt(lexer.n().tx)
+                lexer.n() // ,
+                g = parseInt(lexer.n().tx)
+                lexer.n() // ,
+                b = parseInt(lexer.n().tx)
                 this.set({ r, g, b });
                 break;
 
             case "rgba":
-                lexer.next() // (
-                r = parseInt(lexer.next().text)
-                lexer.next() // ,
-                g = parseInt(lexer.next().text)
-                lexer.next() // ,
-                b = parseInt(lexer.next().text)
-                lexer.next() // ,
-                a = parseFloat(lexer.next().text)
+                lexer.n() // (
+                r = parseInt(lexer.n().tx)
+                lexer.n() // ,
+                g = parseInt(lexer.n().tx)
+                lexer.n() // ,
+                b = parseInt(lexer.n().tx)
+                lexer.n() // ,
+                a = parseFloat(lexer.n().tx)
                 this.set({ r, g, b, a });
                 break;
 
             case "#":
-                var value = lexer.next().text;
+                var value = lexer.n().tx;
                 break;
 
             default:

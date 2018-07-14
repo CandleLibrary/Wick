@@ -5,10 +5,9 @@ import {CSSRootNode as R} from "./tree/root.js"
 /**
 	CSS Parser
 
-	Builds a CSS Node tree that stores information pulled from a css formatted string. 
+	Builds a CSS object graph that stores information pulled from a css formatted string. 
 
 */
-
 export function CSSParser (css_string){
 	let r = null;
 
@@ -26,5 +25,3 @@ export function CSSParser (css_string){
 
 	return r
 }
-
-console.log(CSSParser("a {color : red} "))

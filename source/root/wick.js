@@ -48,6 +48,10 @@ import { Form } from "../source/cassette/form"
 
 import { Cassette } from "../source/cassette/cassette"
 
+//CSS
+
+import { CSSParser } from "../common/css/parser/parser"
+
 //Network
 
 import { Getter } from "../network/getter"
@@ -205,9 +209,12 @@ Object.freeze(schema);
 const core = {
     Common,
     Animation,
-    view: {View},
+    view: { View },
+    css: {
+        parser: CSSParser
+    },
     schema: {
-        instances : Schemas,
+        instances: Schemas,
         SchemaConstructor,
         DateSchemaConstructor,
         TimeSchemaConstructor,

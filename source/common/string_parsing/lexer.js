@@ -108,6 +108,7 @@ export class Lexer {
         this.tl = 0;
         this.char = 0;
         this.line = 0;
+        this.END = false;
 
         this.p = null;
 
@@ -135,6 +136,7 @@ export class Lexer {
             this.tl = marker.tl;
             this.char = marker.char;
             this.line = marker.line;
+            this.END = marker.END;
         }
     }
 
@@ -147,6 +149,7 @@ export class Lexer {
         this.tl = 0;
         this.char = 0;
         this.line = 0;
+        this.END = false;
     }
 
     n() { return this.next() }
@@ -201,10 +204,8 @@ export class Lexer {
         } while (marker.IWS && (type & (Types.ws | Types.nl)))
 
         if (offset >= str.length) {
-            marker.off = -1;
-            marker.type = -1;
-            marker.tl = 0;
-            return;
+            this.END = true;
+            return null;
         };
 
         marker.type = type;
@@ -212,6 +213,8 @@ export class Lexer {
         marker.tl = token_length;
         marker.char = char;
         marker.line = line;
+
+        return this;
     }
 
     a(text) { return this.assert(text) }
@@ -226,10 +229,10 @@ export class Lexer {
         else
             throw new Error(`Expecting "${text}" got "${this.text}" at char:${this.char} line:${this.line}`)
 
-        return bool;
+        return this;
     }
 
-    p() { return this.peek() }
+    get pk() { return this.peek() }
     peek(marker = this, peek_marker = this.p) {
 
         if (!peek_marker) {
