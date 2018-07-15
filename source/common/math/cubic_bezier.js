@@ -1,5 +1,5 @@
 import {Point2D} from "./point2D"
-import {sqrt,cos,acos,PI} from "./consts"
+import {sqrt,cos,acos,PI, pow} from "./consts"
 
 // A helper function to filter for values in the [0,1] interval:
 function accept(t) {
@@ -8,8 +8,8 @@ function accept(t) {
 
 // A real-cuberoots-only function:
 function cuberoot(v) {
-  if(v<0) return -Math.pow(-v,1/3);
-  return Math.pow(v,1/3);
+  if(v<0) return -pow(-v,1/3);
+  return pow(v,1/3);
 }
 
 
@@ -23,7 +23,7 @@ function point(t, p1, p2, p3, p4) {
 }
 
 
-class CBezier extends Float64Array{
+export class CBezier extends Float64Array{
 	constructor(x1, y1, x2, y2, x3, y3, x4, y4) {
 		super(8)
 
@@ -111,7 +111,7 @@ class CBezier extends Float64Array{
 	}
 	
 	/** 
-		Aquired from : https://pomax.github.io/bezierinfo/
+		Acquired from : https://pomax.github.io/bezierinfo/
 		Author:  Mike "Pomax" Kamermans
 		GitHub: https://github.com/Pomax/
 	*/
@@ -227,5 +227,3 @@ class CBezier extends Float64Array{
 		ctx.stroke()
 	}
 }
-
-export {CBezier}

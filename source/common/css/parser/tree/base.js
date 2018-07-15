@@ -7,21 +7,21 @@ export class CSSRule {
 
         this.name = name;
 
-        this.rules = {};
+        this.rules = null;
 
-        this.props = {};
+        this.props = null;
 
-        this.sub_nodes = {};
+        this.sub_nodes = null;
 
-        this.pseudo_class = {};
+        this.pseudo_class = null;
 
-        this.pseudo_element = {};
+        this.pseudo_element = null;
 
-        this.classes = {};
+        this.classes = null;
 
-        this.ids = {};
+        this.ids = null;
 
-        this.tags = {};
+        this.tags = null;
     }
 
     addProperty(prop){

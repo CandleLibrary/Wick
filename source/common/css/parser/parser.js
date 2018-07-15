@@ -1,6 +1,6 @@
-import {Lexer as L} from "../../string_parsing/lexer"
+import {Lexer} from "../../string_parsing/lexer"
 
-import {CSSRootNode as R} from "./tree/root.js"
+import {CSSRootNode} from "./tree/root.js"
 
 /**
 	CSS Parser
@@ -13,9 +13,9 @@ export function CSSParser (css_string){
 
 	try{
 
-		let lex = new L(css_string, true);
+		let lex = new Lexer(css_string, true);
 
-		r = new R();
+		r = new CSSRootNode();
 
 		r.parse(lex)
 

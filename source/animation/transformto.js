@@ -1,6 +1,6 @@
-import { Color } from "./color"
+import { Color } from "../common/design/color"
 
-import { CBezier } from "../common/common"
+import { CBezier } from "../common/math/cubic_bezier"
 
 import { Scheduler } from "../common/scheduler"
 

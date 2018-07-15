@@ -16,7 +16,7 @@ export class CSSRootNode extends C {
             if (lexer.tx == "/") this.comment(lexer);
 
             if (lexer.tx == "{") {
-                this.applyRules(lexer.n(), rules);
+                this.applyProperties(lexer.n(), rules);
                 rules.length = 0;
                 continue;
             }
@@ -25,21 +25,14 @@ export class CSSRootNode extends C {
         };
     }
 
-    getProperty(lexer) {
-        return GetProperty(lexer);
-    }
-
-    applyRules(lexer, rules) {
+    applyProperties(lexer, rules) {
         let props = [];
 
-        while (lexer.tx !== "}")
-            props.push(this.getProperty(lexer));
-
-        for (let i = 0, l = rules.length, jl = props.length; i < l; i++) {
-            let rule = rules[i];
-            for (let j = 0; j < jl; j++)
-                if (props[j]) rule.addProperty(props[j]);
+        while (lexer.tx !== "}"){
+            props.push(GetProperty(lexer, rules));
         }
+
+        lexer.n();
     }
 
     getRule(lexer, root) {
@@ -55,21 +48,25 @@ export class CSSRootNode extends C {
                 case ":":
                     id = lexer.n().tx;
                     if (lexer.ty != lexer.types.id) throw new Error("Expecting Identifier");
+                    if(!rule.pseudo_class) rule.pseudo_class = {};
                     rule = (rule.pseudo_class[id]) ? rule.pseudo_class[id] : (rule.pseudo_class[id] = new C(`:${id}`));
                     break;
                 case ".":
                     id = lexer.n().tx;
                     if (lexer.ty != lexer.types.id) throw new Error("Expecting Identifier");
+                    if(!rule.classes) rule.classes = {};
                     rule = (rule.classes[id]) ? rule.classes[id] : (rule.classes[id] = new C(`.${id}`));
                     break;
                 case "#":
                     id = lexer.n().tx;
                     if (lexer.ty != lexer.types.id) throw new Error("Expecting Identifier");
+                    if(!rule.ids) rule.ids = {};
                     rule = (rule.ids[id]) ? rule.ids[id] : (rule.ids[id] = new C(`#${id}`));
                     break;
                 default:
                     id = lexer.tx;
                     if (lexer.ty != lexer.types.id) throw new Error("Expecting Identifier");
+                    if(!rule.rules) rule.rules = {};
                     rule = (rule.rules[id]) ? rule.rules[id] : (rule.rules[id] = new C(`${id}`));
                     break;
             }

@@ -1,6 +1,6 @@
 {
   "name": "wick",
-  "version": "0.2.2a",
+  "version": "0.2.3a",
   "description": "PWA Framework",
   "main": "build/wick-min-es.js",
   "scripts": {

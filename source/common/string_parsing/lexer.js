@@ -57,9 +57,9 @@ const SPF = [{
     check(code) { return (inRange(code, 64, 91) || inRange(code, 96, 123)) ? 1 : 0; },
     scanToEnd(code) { return (inRange(code, 47, 58) || inRange(code, 64, 91) || inRange(code, 96, 123) || compareCode(code, 35, 36, 45, 95)) ? -1 : 0; }
 }, {
-    type: Types.str,
-    check(code, text) { return (code === 34) ? 1 : 0; },
-    scanToEnd(code) { return (code === 34) ? 1 : -1; }
+    type: Types.str, match:0,
+    check(code, text) {if (code === 34 || code === 39) {this.match = code; return 1 } return 0},
+    scanToEnd(code) { return (code === this.match) ? 1 : -1; }
 
 }, {
     type: Types.ws,
@@ -131,6 +131,7 @@ export class Lexer {
     sync(marker = this.p) {
 
         if (marker instanceof Lexer) {
+            if(marker.str !== this.str) throw new Error("Cannot sync Lexers with different strings!");
             this.type = marker.type;
             this.off = marker.off;
             this.tl = marker.tl;
@@ -138,6 +139,8 @@ export class Lexer {
             this.line = marker.line;
             this.END = marker.END;
         }
+
+        return this;
     }
 
     r() { return this.reset() }
@@ -150,6 +153,8 @@ export class Lexer {
         this.char = 0;
         this.line = 0;
         this.END = false;
+
+        return this;
     }
 
     n() { return this.next() }
@@ -227,7 +232,7 @@ export class Lexer {
         if (bool)
             this.next();
         else
-            throw new Error(`Expecting "${text}" got "${this.text}" at char:${this.char} line:${this.line}`)
+            throw new Error(`Expecting "${text}" got "${this.text}" at char:${this.char} line:${this.line} "${this.str.slice(0,this.pos) + "*==>" + this.str.slice(this.pos)}"`)
 
         return this;
     }
@@ -267,7 +272,7 @@ export class Lexer {
 
     s(start) { return this.slice(start) }
     slice(start) {
-
+        if(start instanceof Lexer) start = start.off;
         return this.str.slice(start, this.off)
     }
 

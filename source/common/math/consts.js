@@ -1,14 +1,6 @@
-const sqrt = Math.sqrt;
-const cos = Math.cos;
-const acos = Math.acos;
-const PI = Math.PI;
-const sin = Math.sin;
-
-export{
-	sqrt,
-	cos,
-	sin,
-	acos,
-	acos2,
-	PI
-}
+export const sqrt = Math.sqrt;
+export const cos = Math.cos;
+export const acos = Math.acos;
+export const PI = Math.PI;
+export const sin = Math.sin;
+export const pow = Math.pow;

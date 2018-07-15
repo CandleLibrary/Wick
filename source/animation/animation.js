@@ -1,13 +1,13 @@
 import {
 	StyleMappings
 } from "./style_mappings"
-import {Color} from "./color" 
 import {TransformTo} from "./transformto"
 
 
-export {TransformTo, Color}
+export {TransformTo}
 
 class StyleAnimBloc {
+	
 	constructor(style, to_val, duration, delay) {
 		this.style = style;
 		this.delay = delay;
@@ -24,17 +24,6 @@ class StyleAnimBloc {
 
 	step(step_multiplier) {
 
-	}
-}
-
-class StyleAnimBlocPercentage extends StyleAnimBloc {}
-class StyleAnimBlocPixel extends StyleAnimBloc {}
-class StyleAnimBlocEM extends StyleAnimBloc {}
-class StyleAnimBlocColor extends StyleAnimBloc {}
-
-class StyleKeyFramedAnimBloc extends StyleAnimBloc {
-	constructor(style, key_frames, delay) {
-		super()
 	}
 }
 

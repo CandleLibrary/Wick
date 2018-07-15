@@ -4,7 +4,7 @@ function CSSTESTS()  {
     	it("Parses well formed CSS and returns on Object graph of CSS rules", function(){
             let CSSParse = wick.core.css.parser
 
-            let og = CSSParse("a{color:white}");
+            let og = CSSParse("a{color:white; transition: color 2s ease-in, top 5s ease }");
 
             console.log(og)
 
