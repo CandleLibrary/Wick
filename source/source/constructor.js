@@ -8,6 +8,15 @@ import { CSSRootNode } from "../common/css/parser/tree/root"
 
 import * as AST from "./ast"
 
+import { Tap } from "./tap/tap"
+
+
+Object.freeze(Tap);
+
+const import_constructors = { Tap }
+
+Object.freeze(import_constructors);
+
 /**
  * This function's role is to construct a SourcePackage given a template, the global presets, and, optionally, a working HTMLElement to serve as a source of. 
  * This will return SourcePackage can be used to bind an HTMLElement and an optional Model to a set of new Sources. 
@@ -17,7 +26,7 @@ import * as AST from "./ast"
  * @param      {DOMElement} WORKING_DOM - Should include any other templates that need to be rolled in. 
  * @return     {SourcePackage}  SourcePackage can be used to bind an HTMLElement and an optional Model to a generated of Sources.
  */
-export function SourceConstructor(Template, Presets) {
+export function SourceConstructor(Template, Presets, WORKING_DOM) {
 
     let $package;
 
@@ -29,7 +38,7 @@ export function SourceConstructor(Template, Presets) {
 
     let element = document.importNode(Template, true);
 
-    $package = TemplateConstructor(element, Presets);
+    $package = TemplateConstructor(element, Presets, WORKING_DOM);
 
 
     if (!$package)
@@ -42,9 +51,7 @@ export function SourceConstructor(Template, Presets) {
     return $package;
 }
 
-
-
-function TemplateConstructor(element, presets) {
+function TemplateConstructor(element, presets, WORKING_DOM) {
 
     let attributes = [];
     let props = [];
@@ -58,7 +65,15 @@ function TemplateConstructor(element, presets) {
         let ele = document.createElement("span")
         ele.appendChild(element.content);
 
-        const imported_presets = {css:null, trs:{}};
+        const imported_presets = { css: null, trs: {}, templates: {}, tap: {}, pipe: {}, io: {} };
+
+        if (WORKING_DOM) {
+
+            let templates = WORKING_DOM.getElementsByTagName('template');
+
+            for (let i = 0, l = templates.length, t; i < l; i++)
+                (t = templates[i], imported_presets.templates[t.id] = t);
+        }
 
         imported_presets.css = CSS_OM;
 
@@ -78,7 +93,7 @@ function TemplateConstructor(element, presets) {
         for (let i = 0, l = children.length; i < l; i++) {
             let child = children[i];
             let $function = new Function("wick", "presets", child.innerHTML);
-            $function(wick, imported_presets);
+            $function(import_constructors, imported_presets);
             $package.scripts.push(child);
         }
 
@@ -93,7 +108,7 @@ function TemplateConstructor(element, presets) {
                 input = input.replace(/\&gt;/g, ">")
                 let lexer = new Lexer(input);
                 let root = new AST.Root();
-                ParseTag(lexer, root, presets);
+                ParseTag(lexer, root, presets, WORKING_DOM);
                 $package.skeletons.push(root.constructSkeleton(presets));
                 HAS_OUTPUT = true;
             } catch (e) {
@@ -165,24 +180,22 @@ function HandleTemplateImport(ele, presets) {
 
     let tagname = ele.tagname;
 
-    if (presets.templates[tagname]) {
+    let template = presets.templates[tagname] || presets.imported.templates[tagname];
 
-        let template = presets.templates[tagname];
+    if (template) {
 
-        if (template) {
+        let element = document.importNode(template, true);
 
-            let element = document.importNode(template, true);
+        let lexer = new Lexer(element.innerHTML);
 
-            let lexer = new Lexer(element.innerHTML);
+        while (lexer.tx && !lexer.END)
+            ParseTag(lexer, ele, presets);
 
-            while (lexer.tx && !lexer.END)
-                ParseTag(lexer, ele, presets);
+    } else {
 
-        } else {
-
-            //Networking setup here if element is undefined but the Node has network calls. 
-        }
+        //Networking setup here if element is undefined but the Node has network calls. 
     }
+
 }
 
 /**

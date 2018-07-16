@@ -93,7 +93,7 @@ export class PageView {
         for (var i = 0; i < this.eles.length; i++) {
             let element = this.eles[i];
             element.parent = this;
-            element.setTransformTo(transitions);
+            //element.setTransformTo(transitions);
             element.transitionIn();
         }        
     }

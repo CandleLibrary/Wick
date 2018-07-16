@@ -20,7 +20,9 @@ export class Source extends SourceBase {
 
         super(parent, data, presets, element)
 
-        if(data.wick_style)
+        if(data.model){
+            this.model = presets.models[data.model];
+        }
 
         this.USE_SECURE = presets.USE_HTTPS;
         this.named_elements = {};
@@ -183,68 +185,6 @@ export class Source extends SourceBase {
     update(data, changed_values) {
         if(this.ACTIVE)
             this.__down__(data, changed_values);
-    }
-
-    handleUrlUpdate(wurl) {
-        let query_data = null;
-        /* 
-            This part of the function will import data into the model that is obtained from the query string 
-        */
-        if (wurl && this.data.import) {
-            query_data = {};
-            if (this.data.import == "null") {
-                query_data = wurl.getClass();
-            } else {
-                var l = this.data.import.split(";")
-                for (var i = 0; i < l.length; i++) {
-                    let n = l[i].split(":");
-
-                    let class_name = n[0];
-                    let p = n[1].split("=>");
-                    var key_name = p[0];
-                    var import_name = p[1];
-                    if (class_name == "root") class_name = null;
-                    query_data[import_name] = wurl.get(class_name, key_name);
-                }
-            }
-        }
-
-        if (wurl && this.data.url) {
-
-            let query_data = {};
-            if (this.url_query) {
-                var l = this.url_query.split(";")
-                for (var i = 0; i < l.length; i++) {
-                    let n = l[i].split(":");
-                    let class_name = n[0];
-                    let p = n[1].split("=>");
-                    var key_name = p[0];
-                    var import_name = p[1];
-                    if (class_name == "root") class_name = null;
-                    query_data[import_name] = wurl.get(class_name, key_name);
-                }
-            }
-
-            this.____request____(query_data)
-        }
-
-        if (!this.model) {
-
-            this.model = new this.model_constructor();
-
-
-            if (this.getter)
-                this.getter.setModel(this.model);
-
-            this.model.addView(this);
-        }
-
-        if (query_data) {
-            if (!this.model.add(query_data)) {
-                this.update(this.model.get());
-            }
-        } else
-            this.update(this.model.get());
     }
 
     transitionIn(index = 0) {

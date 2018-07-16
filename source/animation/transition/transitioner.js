@@ -8,7 +8,7 @@ export class Transitioner {
         this.out_time = 0;
 
 
-        if (data.class && css) {
+        if (data && data.class && css) {
             let $class = data.class.split(" ")[0];
 
             if(trs[$class]) return trs[$class];

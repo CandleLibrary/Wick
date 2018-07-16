@@ -1,3 +1,4 @@
+import {Model} from "../model/model"
 /**
  * This Class is responsible for handling requests to the server. It can act as a controller to specifically pull data down from the server and push into data members.
  *

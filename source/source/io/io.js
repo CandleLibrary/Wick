@@ -27,9 +27,9 @@ export class IO extends PipeBase {
 
     down(data) {
 
-        if (data.v !== undefined) 
+        if (data[this.prop] !== undefined) 
 
-            this.ele.data = data.v;
+            this.ele.data = data[this.prop];
         
 
         //If an inner and outer element chain has been received, append the value node to the inner and assign the outer to t. 

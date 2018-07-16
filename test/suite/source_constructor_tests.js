@@ -93,7 +93,7 @@ function SOURCECONSTRUCTTESTS() {
             console.log(Any)
 
             it('Constructs an AST on properly formatted HTML', function() {
-                let constructucting_template = element.getElementsByTagName('template')[0];
+                let constructing_template = element.getElementsByTagName('template')[0];
 
                 let templates = element.getElementsByTagName('template');
 
@@ -104,7 +104,7 @@ function SOURCECONSTRUCTTESTS() {
                 for (let i = 0, l = templates.length, t; i < l; i++)
                     (t = templates[i], presets.templates[t.id] = t);
 
-                let $package = wick.core.source.SourceConstructor(constructucting_template, presets, element);
+                let $package = wick.core.source.SourceConstructor(constructing_template, presets, element);
 
                 if (!$package) debugger
                 for (let i = 0; i < 10; i++) {

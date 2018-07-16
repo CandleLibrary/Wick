@@ -28,6 +28,8 @@ export class SourceBase extends View {
         this.DESTROYED = false;
         this.ACTIVE = false;
 
+        this.IS_SOURCE = true;
+
         //Setting the transitioner
         this.trs = null//new Transitioner(this.ele);
 
@@ -128,8 +130,6 @@ export class SourceBase extends View {
         return out_object;
     }
 
-    handleUrlUpdate(wurl) {}
-
     finalizeTransitionOut() {
 
         for (let i = 0, l = this.children.length; i < l; i++)
@@ -210,8 +210,10 @@ export class SourceBase extends View {
 
         if (r_val)(data = r_val, IMPORTED = true);
 
-        for (let i = 0, l = this.children.length; i < l; i++)
-            this.children[i].__down__(data, changed_properties, IMPORTED);
+        for (let i = 0, l = this.children.length; i < l; i++){
+            let child = this.children[i]
+            child.__down__(data, changed_properties, (child.IS_SOURCE) ? true : IMPORTED);
+        }
     }
 
     down(data, changed_properties = null, IMPORTED) {}

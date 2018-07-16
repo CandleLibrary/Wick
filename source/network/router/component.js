@@ -1,5 +1,3 @@
-import { setLinks } from "./setlinks"
-
 import { TransformTo } from "../../animation/animation"
 
 import { SourceConstructor } from "../../source/constructor"
@@ -8,150 +6,200 @@ import { SourceBase } from "../../source/base"
 
 import { Transitioner } from "../../animation/transition/transitioner"
 
-/** @namespace Source */
+/** @namespace Component */
 
 /**
     Handles the transition of separate elements.
 */
-class BasicSource extends SourceBase {
-
+export class BasicComponent {
     constructor(element) {
-
-        super(null, element, {}, {});
-
+        this.ele = element;
         this.anchor = null;
         this.LOADED = false;
 
-        this.transitioneer = new Transitioner();
-        this.transitioneer.set(this.ele)
+        //this.transitioneer = new Transitioneer();
+        //this.transitioneer.set(this.ele)
     }
 
     getNamedElements(named_elements) {
-
         let children = this.ele.children;
 
         for (var i = 0; i < children.length; i++) {
             let child = children[i];
 
-            if (child.dataset.transition)
+            if (child.dataset.transition) {
                 named_elements[child.dataset.transition] = child;
+            }
         }
     }
+
+    handleUrlUpdate() {};
+
+    transitionIn() {};
+
+    transitionOut() {};
 }
 
 /**
     This is a fallback component if constructing a CustomSource or normal Source throws an error.
 */
 
-class FailedSource extends SourceBase {
-    constructor(error_message, presets) {
-
+export class FailedComponent {
+    constructor(element, error_message, presets) {
         var div = document.createElement("div");
         div.innerHTML = `<h3> This Wick component has failed!</h3> <h4>Error Message:</h4><p>${error_message.stack}</p><p>Please contact the website maintainers to address the problem.</p> <p>${presets.error_contact}</p>`;
-        super(null, div, {}, {});
 
-        this.transitioneer = new Transitioner();
-        this.transitioneer.set(this.ele)
+        this.ele = div;
+        //this.transitioneer = new Transitioneer();
+        //this.transitioneer.set(this.ele)
     }
+
+    handleUrlUpdate() {};
+
+    transitionIn() {};
+
+    transitionOut() {};
 }
 
-/** @namespace Component */
-
 /**
-    The main container of Sources. Represents an area of interest on the DOM.
-*/
+ * A Component handles a collection of Sources.  
+ *
+ * @class      Component (name)
+ */
 export class Component {
+
     /**
-     
+     * Constructs the object.
+     *
+     * @param      {<type>}  element  The element
      */
-    constructor(element) {
+    constructor(element, presets, app_components, component_constructors, model_constructors, WORKING_DOM) {
 
-        this.id = (element.classList) ? element.classList[0] : element.id;
-        this.components = [];
-        this.bubbled_elements = null;
-        this.wraps = [];
-
-        //The original element container.
-        //this.parent_element = parent_element;
-
-        //Content that is wrapped in an ele_wrap
         this.ele = element;
-    }
+        this.model = null;
+        this.sources = [];
 
+        // Set to true by Element when the Element is mounted in the DOM.
+        this.ACTIVE = false;
 
-    unloadComponents() {
+        // Set to true when the Component is ready to load its contents.
+        this.LOADED = false;
 
-        for (var i = 0; i < this.components.length; i++)
-            this.components[i].LOADED = false;
+        const id = element.classList[0];
+
+        if (app_components[id])
+            return app_components[id];
+
+        //** Some cached code paths for Asynch operation *//
+        const mount_package = ($package, model) => {
+            $package.mount(this.ele, model, presets.USE_SHADOW, this)
+
+            this.LOADED = true;
+
+            if (this.ACTIVE) {
+                this.transitionIn();
+                this.sources.forEach((s)=>{
+                    s.ACTIVE = true;
+                    if(s.model)
+                        s.update(s.model);
+                })
+            }
+        }
+
+        const load_in_doc = () => {
+
+            var templates = WORKING_DOM.getElementsByTagName("template");
+
+            for (let i = 0; i < templates.length; i++) {
+
+                let template = templates[i];
+
+                if (template.id == id) {
+
+                    let $package = SourceConstructor(template, presets, WORKING_DOM);
+
+                    mount_package($package);
+
+                    return;
+                }
+            }
+
+            //let comp =  new FailedComponent(this.ele);
+        }
+
+        if (component_constructors[id]) {
+            mount_package(component_constructors[id], component_constructors[id].model);
+        } else {
+
+            //We'll check to see if the component needs to be loaded from the network. 
+            let url = "";
+
+            if ((url = this.ele.getAttribute("src"))) {
+
+                //Attempt to retrieve component from network.
+                fetch(url, {
+                    credentials: "same-origin",
+                    method: "Get"
+                }).then((response) => {
+
+                    if (response.status !== 200) {
+                        load_in_doc();
+                    } else
+
+                        response.text().then((str) => {
+
+                            let element = document.createElement("div")
+
+                            element.innerHTML = str;
+
+                            let constructing_template = element.getElementsByTagName('template')[0];
+
+                            if (!constructing_template) throw new Error(`No template found for "${url}"`);
+
+                            let $package = SourceConstructor(constructing_template, presets, element);
+
+                            if ($package)
+                                mount_package($package);
+                            else
+                                load_in_doc();
+                        })
+                }).catch((e) => {
+                    //Fall back to local DOM if nothing is received
+                    console.error(e);
+                    load_in_doc();
+                })
+            } else {
+                load_in_doc();
+            }
+        }
+
+        app_components[id] = this;
     }
 
     transitionOut() {
 
+        if (!this.LOADED || !this.ACTIVE) {
+            this.ACTIVE = false;
+            return 0;
+        }
+
+        this.ACTIVE = false;
+
         let t = 0;
-
-        for (var i = 0; i < this.components.length; i++) {
-
-            let component = this.components[i];
-
-            if (!component.LOADED) {
-
-                component.parent = null;
-
-                t = Math.max(component.transitionOut(), t);
-            }
-        };
 
         return t;
     }
 
-    finalize() {
-
-        for (var i = 0; i < this.components.length; i++) {
-
-            let component = this.components[i];
-
-            if (!component.LOADED && component.parentElement) {
-                component.finalizeTransitionOut();
-                this.wraps[i].removeChild(component.ele);
-            }
-
-            component.LOADED = false;
-        }
-    }
-
-    loadComponents(wurl) {
-
-        for (let i = 0; i < this.components.length; i++) {
-
-            let component = this.components[i];
-
-            component.parent = this;
-
-            if (component.ele.parentElement)
-                component.ele.parentElement.removeChild(component.ele);
-
-            this.wraps[i].appendChild(component.ele);
-
-            component.handleUrlUpdate(wurl);
-
-            this.components[i].LOADED = true;
-        };
-    }
+    finalize() {}
 
     transitionIn() {
 
-        // This is to force a document repaint, which should cause all elements to report correct positioning hereafter
-
-        let t = this.ele.style.top;
-
-        this.ele.style.top = t;
-
-        for (let i = 0; i < this.components.length; i++) {
-
-            let component = this.components[i];
-
-            component.transitionIn();
+        if (!this.LOADED || this.ACTIVE) {
+            this.ACTIVE = true;
+            return 0;
         }
+
+        this.ACTIVE = true;
     }
 
     bubbleLink(link_url, child, trs_ele = {}) {
@@ -219,111 +267,66 @@ export class Component {
         }
     }
 
-    setComponents(App_Components, Model_Constructors, Component_Constructors, presets, DOM, wurl) {
-        //if there is a component inside the element, register that component if it has not already been registered
-        var components = Array.prototype.map.call(this.ele.getElementsByTagName("component"), (a) => a);
+    handleUrlUpdate(wurl) {
+        return;
+        let query_data = null;
+        /* 
+            This part of the function will import data into the model that is obtained from the query string 
+        */
+        if (wurl && this.data.import) {
+            query_data = {};
+            if (this.data.import == "null") {
+                query_data = wurl.getClass();
+            } else {
+                var l = this.data.import.split(";")
+                for (var i = 0; i < l.length; i++) {
+                    let n = l[i].split(":");
 
-        setLinks(this.ele, (href, e) => {
-            history.pushState({}, "ignored title", href);
-            window.onpopstate();
-            return true;
-        })
-
-        if (components.length < 1) {
-            //Create a wrapped component for the elements inside the <element>
-            let component = document.createElement("div");
-            component.classList.add("comp_wrap");
-
-            //Straight up string copy of the element's DOM.
-            component.innerHTML = this.ele.innerHTML;
+                    let class_name = n[0];
+                    let p = n[1].split("=>");
+                    var key_name = p[0];
+                    var import_name = p[1];
+                    if (class_name == "root") class_name = null;
+                    query_data[import_name] = wurl.get(class_name, key_name);
+                }
+            }
         }
 
-        var templates = DOM.getElementsByTagName("template");
+        if (wurl && this.data.url) {
 
-
-        for (var i = 0; i < components.length; i++) {
-            let app_case = null;
-            let component = components[i];
-
-            try {
-                /**
-                    Replace the component with a component wrapper to help preserve DOM arrangement
-                */
-
-                let comp_wrap = document.createElement("div");
-                comp_wrap.classList.add("comp_wrap");
-                this.wraps.push(comp_wrap);
-                component.parentElement.replaceChild(comp_wrap, component);
-
-                var id = component.classList[0],
-                    comp;
-                /**
-                  We must ensure that components act as template "landing spots". In order for that to happen we must check for:
-                  (1) The component has, as it's first class name, an id that (2) matches the id of a template. If either of these prove to be not true, we should reject the adoption of the component as a Wick
-                  component and instead treat it as a normal "pass through" element.
-                */
-                if (!id) {
-                    /*setLinks(component, (href, e) => {
-                        history.pushState({}, "ignored title", href);
-                        window.onpopstate();
-                        return true;
-                    })*/
-
-                    app_case = new BasicSource(component);
-
-                } else {
-
-                    if (!App_Components[id]) {
-                        if (comp = Component_Constructors[id]) {
-
-                            app_case = new comp.constructor(templates, presets, component, DOM);
-
-                            if (comp.model_name && Model_Constructors[comp.model_name]) {
-                                var model = Model_Constructors[comp.model_name];
-                                if (model.getter)
-                                    model.getter.get();
-                                model.addView(app_case);
-                            }
-
-                            app_case.id = id;
-
-                            App_Components[id] = app_case;
-                        } else {
-                            var template = templates[id];
-
-                            if (template) {
-                                app_case = SourceConstructor(template, presets, DOM)(); //new SourceComponent(template, presets, Model_Constructors, null, DOM);
-                            } else {
-                                let constructor = SourceConstructor(component, presets, DOM);
-
-                                if (!constructor)
-                                    constructor = SourceConstructor(component.children[0], presets, DOM);
-                                if (!constructor)
-                                    app_case = new BasicSource(component);
-                                else
-                                    app_case = constructor();
-                            }
-                        }
-
-                        if (!app_case) {
-                            console.warn("App Component not constructed");
-                            /** TODO: If there is a fallback <no-script> section use that instead. */
-                            app_case = new FailedSource();
-                        } else {
-                            App_Components[id] = app_case;
-                        }
-                    } else {
-                        app_case = App_Components[id];
-                    }
-
-                    app_case.handleUrlUpdate(wurl);
+            let query_data = {};
+            if (this.url_query) {
+                var l = this.url_query.split(";")
+                for (var i = 0; i < l.length; i++) {
+                    let n = l[i].split(":");
+                    let class_name = n[0];
+                    let p = n[1].split("=>");
+                    var key_name = p[0];
+                    var import_name = p[1];
+                    if (class_name == "root") class_name = null;
+                    query_data[import_name] = wurl.get(class_name, key_name);
                 }
-            } catch (e) {
-                console.log(e)
-                app_case = new FailedSource(e, presets);
             }
 
-            this.components.push(app_case);
+            this.____request____(query_data)
         }
+
+        if (!this.model) {
+
+            this.model = new this.model_constructor();
+
+
+            if (this.getter)
+                this.getter.setModel(this.model);
+
+            this.model.addView(this);
+        }
+
+        if (query_data) {
+            if (!this.model.add(query_data)) {
+                this.update(this.model.get());
+            }
+        } else
+            this.update(this.model.get());
     }
 }

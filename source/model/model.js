@@ -35,7 +35,7 @@ function CreateSchemedProperty(constructor, scheme, schema_name) {
         configurable: false,
         enumerable: true,
         get: function() {
-            return this[__shadow_name__].val;
+            return this[__shadow_name__];
         },
 
         set: function(value) {

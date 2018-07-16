@@ -8,6 +8,7 @@ export class PipeBase {
         this.parent = parent;
         this.data = data;
         this.children = [];
+        this.IS_SOURCE = false;
         if (this.parent) this.parent.children.push(this);
     }
 

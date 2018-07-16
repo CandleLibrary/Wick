@@ -136,12 +136,12 @@ export class GenericNode {
     replaceChild(child, new_child) {
         for (let i = 0; i < this.children.length; i++)
 
-        if (this.children[i] == child) {
-            this.children[i] = new_child;
-            new_child.parent = this;
-            child.parent = null;
-            return
-        }
+            if (this.children[i] == child) {
+                this.children[i] = new_child;
+                new_child.parent = this;
+                child.parent = null;
+                return
+            }
     }
 
     removeChild(child) {
@@ -191,7 +191,7 @@ export class GenericNode {
 
         let out = {};
 
-        for(let name in this.attributes){
+        for (let name in this.attributes) {
             out[name] = this.attributes[name];
         }
 
@@ -394,11 +394,11 @@ export class TemplateNode extends GenericNode {
 
 
         for (let i = 0, l = this.templates.length; i < l; i++) {
-            
+
             let template = this.templates[i];
 
             template.element = document.createElement("div");
-            
+
             template.element.innerHTML = template.html;
 
             template.constructSkeleton(skeleton.templates, presets);
@@ -454,7 +454,24 @@ export class TapNode extends GenericNode {
     }
 
     getConstructor(presets) {
+        let $class = this.attributes.w_class;
+
+        if ($class) {
+            let t = (presets.imported.tap[$class]);
+            if (Tap.isPrototypeOf(t))
+                return t;
+        }
+
         return Tap;
+    }
+
+    split(node, prop_name) {
+
+        if (this.attributes.w_class) {
+            if (node) this.addChild(node);
+        } else
+            super.split(node,prop_name);
+
     }
 }
 
@@ -530,6 +547,7 @@ export class IONode extends GenericNode {
         super("", null, parent);
         this.index = index;
         ctx.html += `<io prop="${prop_name}">##:${index} </io>`
+        this.prop_name = prop_name;
         this.CONSUMES_TAG = true;
     };
 

@@ -21,7 +21,7 @@ export class Tap extends PipeBase {
 
     load(data){
 
-        let out = { v: data[this.prop], i_el : null, o_el : null }
+        let out = { [this.prop]: data[this.prop], i_el : null, o_el : null }
 
         for (let i = 0, l = this.children.length; i < l; i++)
             this.children[i].__down__(out, out, false);
@@ -33,9 +33,9 @@ export class Tap extends PipeBase {
 
         if (changed_properties) {
             if ((prop = changed_properties[this.prop]) !== undefined)
-                return new TapResult(prop, data);
+                return { [this.prop]: data[this.prop], i_el : null, o_el : null }
         } else if ((prop = data[this.prop]) !== undefined)
-            return new TapResult(prop, data);
+            return { [this.prop]: data[this.prop], i_el : null, o_el : null }
     }
 
     /**

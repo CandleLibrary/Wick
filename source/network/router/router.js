@@ -4,7 +4,7 @@ import { AnyModel } from "../../model/model"
 
 import { PageView } from "./page"
 
-import { Component } from "./component"
+import { Element } from "./element"
 
 import { TurnDataIntoQuery } from "../../common/url/url"
 
@@ -77,9 +77,9 @@ export class Router {
         presets.router = this;
 
         this.pages = {};
-        this.components = {};
-        this.component_constructors = {};
-        this.models_constructors = {};
+        this.elements = {};
+        this.component_constructors = presets.custom_components;
+        this.models_constructors = presets.schemas;
         this.presets = presets;
         this.current_url = null;
         this.current_query;
@@ -286,7 +286,7 @@ export class Router {
 
     /**
         Pre-loads a custom constructor for an element with the specified id and provides a model to that constructor when it is called.
-        The constructor must have Component in its inheritance chain.
+        The constructor must have Element in its inheritance chain.
     */
     addStatic(element_id, constructor, model) {
 
@@ -297,10 +297,6 @@ export class Router {
 
     }
 
-    addModel(model_name, modelConstructor) {
-
-        this.models_constructors[model_name] = modelConstructor;
-    }
     /**
         Creates a new iframe object that acts as a modal that will sit ontop of everything else.
     */
@@ -315,10 +311,11 @@ export class Router {
         return this.pages[URL];
     }
     /**
-        Takes the DOM of another page and strips it, looking for component and app elements to use to integrate into the SPA system.
+        Takes the DOM of another page and strips it, looking for elements to use to integrate into the SPA system.
         If it is unable to find these elements, then it will pass the DOM to loadNonWickPage to handle wrapping the page body into a wick app element.
     */
     loadNewPage(URL, DOM, wurl) {
+
         //look for the app section.
 
         /**
@@ -385,32 +382,34 @@ export class Router {
 
                 let ele = elements[i],
                     equivilant_element_from_main_dom = ele,
-                    component;
+                    element;
 
 
                 let element_id = ele.id;
 
+                console.log(ele)
+
                 if (page.type !== "modal") {
 
-                    component = new Component(ele);
+                    element = new Element(ele);
 
                 } else {
 
-                    let element = document.createElement("div");
+                    let new_ele = document.createElement("div");
 
-                    element.innerHTML = ele.innerHTML;
+                    new_ele.innerHTML = ele.innerHTML;
 
-                    element.classList.add("ele_wrap");
+                    new_ele.classList.add("ele_wrap");
 
-                    component = new Component(ele);
+                    element = new Element(ele);
                 }
 
-                page.eles.push(component);
+                page.eles.push(element);
 
-                if (!this.components[element_id])
-                    this.components[element_id] = {};
+                if (!this.elements[element_id])
+                    this.elements[element_id] = {};
 
-                component.setComponents(this.components[element_id], this.models_constructors, this.component_constructors, this.presets, DOM, wurl);
+                element.setComponents(this.elements[element_id], this.models_constructors, this.component_constructors, this.presets, DOM, wurl);
             }
 
             if (document == DOM)

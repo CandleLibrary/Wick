@@ -24,12 +24,15 @@ export class SourcePackage {
     /**
 
     */
-    mount(element, model, USE_SHADOW_DOM) {
+    mount(element, model, USE_SHADOW_DOM, manager) {
 
-        let Manager = new SourceManager(),
+        let Manager = manager || new SourceManager(),
             sources = [],
             i = 0,
             l = 0;
+
+        if (!Manager.sources)
+            Manager.sources = [];
 
         if (USE_SHADOW_DOM) {
 
@@ -47,7 +50,7 @@ export class SourcePackage {
 
         for (i = 0, l = this.skeletons.length; i < l; i++) {
             let source = this.skeletons[i].flesh(model);
-            //source.addStyleOM();
+            Manager.sources.push(source);
             element.appendChild(source.ele);
         }
     }

@@ -144,9 +144,7 @@ export class ModelBase {
 
     scheduledUpdate(step) {
 
-        this.updateViews(this);
-
-        this.____changed_values____.length = 0;
+        this.updateViews();
     }
 
     /**
@@ -222,10 +220,5 @@ Object.defineProperty(ModelBase.prototype, "first_view", {
     enumerable: false,
 })
 
-Object.defineProperty(ModelBase.prototype, "____changed_values____", {
-    writable: true,
-    configurable: false,
-    enumerable: false,
-})
 
 Object.seal(ModelBase.prototype);

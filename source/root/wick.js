@@ -95,10 +95,10 @@ function startRouting(presets) {
         unsetModel
     */
 
-    if (presets.static) {
-        for (let component_name in presets.static) {
+    if (presets.custom_components) {
+        for (let component_name in presets.custom_components) {
 
-            let component = presets.static[component_name];
+            let component = presets.custom_components[component_name];
 
             let a = 0,
                 b = 0,
@@ -110,13 +110,13 @@ function startRouting(presets) {
                 (b = (component.prototype.transitionOut && component.prototype.transitionOut instanceof Function)) &&
                 (c = (component.prototype.setModel && component.prototype.setModel instanceof Function)) &&
                 (d = (component.prototype.unsetModel && component.prototype.unsetModel instanceof Function)))
-                this.addStatic(component_name, component);
+                {}//this.addStatic(component_name, component);
             else
                 console.warn(`Static component ${component_name} lacks correct component methods, \nHas transitionIn function:${a}\nHas transitionOut functon:${b}\nHas set model function:${c}\nHas unsetModel function:${d}`);
         }
     }
 
-    Object.freeze(presets.static);
+    Object.freeze(presets.custom_components);
 
     /** TODO
         @define PageParser
@@ -147,15 +147,25 @@ function startRouting(presets) {
     Object.freeze(presets.schemas);
 
     /**
+     *  presets USE_SHADOW
+     * 
+     *  If true will use shadowDOM API if available 
+     * 
+     */
+    presets.USE_SHADOW = (presets.USE_SHADOW) ? (document.head.createShadowRoot || document.head.attachShadow) : false;
+
+    /**
         Global Models defined here are available to the entire app.
     */
     if (presets.models) {
-
+        /* NO OP */
     } else {
         presets.models = {};
     }
 
     Object.freeze(presets.models);
+
+    presets.templates = presets.templates || {}
 
     if (DEBUGGER) console.log(presets)
 
@@ -163,11 +173,12 @@ function startRouting(presets) {
 
     presets.imports = null;
 
-    Object.freeze(presets);
 
     LINKER_LOADED = true;
 
     let router = new Router(presets);
+
+    //Object.freeze(presets);
 
     window.addEventListener("load", () => {
 
@@ -221,6 +232,7 @@ Object.freeze(schema);
 
 const core = {
     Common,
+    common : Common,
     Animation,
     view: { View },
     css: {
