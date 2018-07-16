@@ -1,6 +1,6 @@
 # WICK
 
-version: 0.2.3 Alpha
+version: 0.3.0 Alpha
 
 ## Boyah!
 
