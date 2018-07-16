@@ -1,16 +1,30 @@
+/**
+ * Used to call the Scheduler on every tick.
+ *
+ * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
+ * 
+ * @protected
+ */
 const caller = (window && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
     setTimeout(f, 1)
 };
-/** 
-    The Scheduler handles updating objects. It does this by splitting up update cycles, 
-    to respect the browser event model. 
 
-    If any object is scheduled to be updated, it will be blocked from scheduling more updates 
-    until its own update method is called.
-*/
-
+/**
+ * Scheduler
+ *
+ * The Scheduler handles updating objects. It does this by splitting up update cycles, 
+ * to respect the browser event model. 
+ *    
+ * If any object is scheduled to be updated, it will be blocked from scheduling more updates 
+ * until its own update method is called.
+ *    
+ * @type class instance
+ */
 const Scheduler = new(class {
-
+    
+    /**
+     * Constructs the object.
+     */
     constructor() {
 
         this.update_queue_a = new Array();
@@ -20,7 +34,6 @@ const Scheduler = new(class {
 
         this.queue_switch = 0;
 
-
         this.callback = () => this.update();
 
         this.frame_time = performance.now();
@@ -28,9 +41,17 @@ const Scheduler = new(class {
         this.____SCHEDULED____ = false;
     }
 
+    /**
+     * Given an object that has a ____SCHEDULED____ Boolean property, the Scheduler will queue the object and call its .update function 
+     * the following tick. If the object does not have a ____SCHEDULED____ property, the Scheduler will persuade the object to have such a property.
+     * 
+     * If there are currently no queued objects when this is called, then the Scheduler will user caller to schedule an update.
+     *
+     * @param      {Object}  object  The object to have updated.
+     */
     queueUpdate(object) {
 
-        if (object.____SCHEDULED____ || !object.update instanceof Function)
+        if (object.____SCHEDULED____ || !object.scheduledUpdate instanceof Function)
             if (this.____SCHEDULED____)
                 return;
             else
@@ -49,6 +70,9 @@ const Scheduler = new(class {
         caller(this.callback);
     }
 
+    /**
+     * Called by the caller function every tick. Calls .update on any object queued for an update. 
+     */
     update() {
 
         this.____SCHEDULED____ = false;
@@ -70,7 +94,7 @@ const Scheduler = new(class {
 
         for (let i = 0, l = uq.length, o = uq[0]; i < l; o = uq[++i]){
             o.____SCHEDULED____ = false;
-            o.update(step_ratio);
+            o.scheduledUpdate(step_ratio);
         }
 
         uq.length = 0;

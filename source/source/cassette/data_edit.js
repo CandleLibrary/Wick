@@ -30,9 +30,9 @@ class DataEdit extends Cassette{
 		this.parent.export();
 	}
 
-	dstr(){
+	destroy(){
 		this.ele.removeEventListener("click",this.event)	
-		super.dstr();
+		super.destroy();
 	}
 }
 

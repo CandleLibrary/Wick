@@ -1,11 +1,12 @@
 {
   "name": "wick",
-  "version": "0.2.2a",
+  "version": "0.2.4a",
   "description": "PWA Framework",
   "main": "build/wick-min-es.js",
   "scripts": {
     "test": "nyc mocha",
     "test-n-watch": "mocha -w --check-leaks -R min",
+    "build-css": "npx rollup --config ./build/build_config/css.config.js",
     "build-production": "npx rollup --config ./build/build_config/minibuild.config.js",
     "build-production-es": "npx rollup --config ./build/build_config/minibuild_es.config.js",
     "build-dev": "npx rollup --config ./build/build_config/browserdev.config.js",
@@ -37,7 +38,7 @@
   "private": true,
   "homepage": "https://gitlab.com/anthonycweathersby/wick#readme",
   "devDependencies": {
-    "jsdocs": "^1.0.0",
+    "jsdoc": "^3.5.5",
     "jsdom": "^11.11.0",
     "mocha": "^5.2.0",
     "nyc": "^12.0.2",

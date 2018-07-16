@@ -1,6 +1,6 @@
-import { Color } from "./color"
+import { Color } from "../common/design/color"
 
-import { CBezier } from "../common/common"
+import { CBezier } from "../common/math/cubic_bezier"
 
 import { Scheduler } from "../common/scheduler"
 
@@ -33,7 +33,7 @@ class TT_From {
 
     }
 
-    destructor() {
+    destroy() {
         this.ele = null;
         this.color = null;
     }
@@ -86,12 +86,12 @@ class TT_To extends TT_From {
 
     }
 
-    destructor() {
+    destroy() {
         this.end(); //Restore everything back to it's original type;
         this.from = null;
         this.s = Infinity;
         this.ele = null;
-        super.destructor();
+        super.destroy();
     }
 
     start() {
@@ -138,10 +138,10 @@ class TTPair {
         this.a = new TT_To(e_to, this.b);
 
         if (this.a.ele.__TT__)
-            this.a.ele.__TT__.destructor();
+            this.a.ele.__TT__.destroy();
 
         if (this.b.ele.__TT__)
-            this.b.ele.__TT__.destructor();
+            this.b.ele.__TT__.destroy();
 
         this.a.ele.__TT__ = this;
         this.b.ele.__TT__ = this;
@@ -151,13 +151,13 @@ class TTPair {
         this.start();
     }
 
-    destructor() {
+    destroy() {
         if (this.destroyed) return
         if (this.b.ele)
             this.b.ele.__TT__ = null;
         if (this.a.ele)
             this.a.ele.__TT__ = null;
-        this.a.destructor();
+        this.a.destroy();
         this.destroyed = true;
     }
 
@@ -182,7 +182,7 @@ const TransformRunner = new(class {
         Scheduler.queueUpdate(this);
     }
 
-    update(ratio) {
+    scheduledUpdate(ratio) {
         let rp = this.pairs;
 
         if (rp.length > 0)
@@ -191,7 +191,7 @@ const TransformRunner = new(class {
         for (var i = 0; i < rp.length; i++) {
             var _rp = rp[i];
             if (!_rp.step(ratio)) {
-                _rp.destructor();
+                _rp.destroy();
                 rp.splice(i, 1);
                 i--;
             };

@@ -60,12 +60,12 @@ class DataTemplate extends Controller {
         }
     }
 
-    destructor() {
+    destroy() {
         if (this.text_element) {
 
         }
         this.text_element = null;
-        super.destructor();
+        super.destroy();
     }
 }
 

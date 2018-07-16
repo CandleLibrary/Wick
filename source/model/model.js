@@ -10,13 +10,11 @@ import { BTreeModelContainer } from "./container/btree"
 
 import { SchemaConstructor } from "../schema/schemas"
 
-import { Scheduler } from "../common/scheduler"
-
 /** @namespace Model */
 
 /**
-    This is used by NModel to create custom property getter and setters 
-    on non-ModelContainerBase and non-Model properties of the NModel constructor.
+    This is used by Model to create custom property getter and setters 
+    on non-ModelContainerBase and non-Model properties of the Model constructor.
 */
 function CreateSchemedProperty(constructor, scheme, schema_name) {
 
@@ -37,7 +35,7 @@ function CreateSchemedProperty(constructor, scheme, schema_name) {
         configurable: false,
         enumerable: true,
         get: function() {
-            return this[__shadow_name__];
+            return this[__shadow_name__].val;
         },
 
         set: function(value) {
@@ -57,8 +55,8 @@ function CreateSchemedProperty(constructor, scheme, schema_name) {
 }
 
 /**
-    This is used by NModel to create custom property getter and setters 
-    on Schemed ModelContainerBase properties of the NModel constructor.
+    This is used by Model to create custom property getter and setters 
+    on Schemed ModelContainerBase properties of the Model constructor.
 */
 function CreateMCSchemedProperty(constructor, scheme, schema_name) {
 
@@ -114,8 +112,8 @@ function CreateMCSchemedProperty(constructor, scheme, schema_name) {
 }
 
 /**
-    This is used by NModel to create custom property getter and setters 
-    on Model properties of the NModel constructor.
+    This is used by Model to create custom property getter and setters 
+    on Model properties of the Model constructor.
 */
 function CreateModelProperty(constructor, scheme, schema_name) {
 
@@ -209,19 +207,19 @@ export class Model extends ModelBase {
     /**
         Removes all held references and calls unsetModel on all listening views.
     */
-    destructor() {
+    destroy() {
 
         this.schema = null;
 
         for (let a in this) {
             let prop = this[a];
-            if (typeof(prop) == "object" && prop.destructor instanceof Function)
-                prop.destructor();
+            if (typeof(prop) == "object" && prop.destroy instanceof Function)
+                prop.destroy();
             else
                 this[a] = null;
         }
 
-        super.destructor();
+        super.destroy();
         //debugger
     }
 
@@ -254,7 +252,7 @@ export class Model extends ModelBase {
         Returns a parsed value based on the key 
     */
     string(key) {
-        
+
         let out_data = {
             valid: true,
             reason: ""
@@ -331,7 +329,7 @@ function CreateGenericProperty(constructor, prop_val, prop_name, model) {
         writable: true,
         configurable: false,
         enumerable: false,
-        val: prop_val
+        val: { val: prop_val, changed: true }
     })
 
     Object.defineProperty(constructor.prototype, prop_name, {
@@ -353,7 +351,7 @@ function AnyModelProxySet(obj, prop, val) {
 
     if (prop in obj && obj[prop] == val)
         return true
-
+    
     obj[prop] = val;
 
     obj.scheduleUpdate(prop);
@@ -367,37 +365,38 @@ export class AnyModel extends ModelBase {
 
         super();
 
-        if (data) {
-            for (let prop_name in data)
-                this[prop_name] = data[prop_name];
-        }
+        if (data)
+            for (let prop_name in data){
+                if(data[prop_name] instanceof Array){
+                    let mc = new ArrayModelContainer({parser:null, model:AnyModel, identifier:null});
+                    mc.insert(data[prop_name]);
+                    this[prop_name] = mc.proxy();
+                }else
+                    this[prop_name] = data[prop_name];
+            }
 
         return new Proxy(this, {
             set: AnyModelProxySet
         })
     }
 
-    /**
-        Alias for destructor
-    */
-
-    destroy() {
-
-        this.destructor();
+    scheduledUpdate() {
+        super.scheduledUpdate()
     }
 
     /**
         Removes all held references and calls unsetModel on all listening views.
     */
-    destructor() {
+    destroy() {
 
-        super.destructor();
+        super.destroy();
     }
 
     add(data) {
 
-        for (var a in data)
+        for (var a in data) {
             this[a] = data[a];
+        }
     }
 
     get(data) {

@@ -3,15 +3,21 @@ import { View } from "../view/view"
 import { Scheduler } from "../common/scheduler"
 
 /** @namespace Model */
-
+/**
+    The base constructor for a Model object.
+*/
 export class ModelBase {
 
     constructor() {
 
         this.____changed_values____ = [];
+        this.views = [];
     };
 
-    destructor() {
+    /**
+        Should remove all references to any objects still held by this object.
+    */
+    destroy() {
 
         //inform views of the models demise
         var view = this.first_view;
@@ -31,11 +37,11 @@ export class ModelBase {
     }
 
     /**
-    	
+        
     */
     scheduleUpdate(changed_value) {
 
-        if (!this.first_view)
+        if (this.views.length == 0)
             return;
 
         this.____changed_values____.push(changed_value);
@@ -54,11 +60,16 @@ export class ModelBase {
     }
 
     /**
-    	Adds a view to the linked list of views on the model. argument view MUST be an instance of View. 
+        Adds a view to the linked list of views on the model. argument view MUST be an instance of View. 
     */
     addView(view) {
 
         if (view instanceof View) {
+
+            this.views.push(view);
+            view.model = this;
+            view.setModel(this);
+            return;
 
             if (view.model)
                 view.model.removeView(view);
@@ -76,13 +87,13 @@ export class ModelBase {
             this.first_view = view;
 
             view.setModel(this);
-            view.update(this.get());
+            //view.update(this.get());
         } else
             throw new Exception("Passed in view is not an instance of wick.View!");
     }
 
     /**
-    	Removes view from set of views if the passed in view is a member of model. 
+        Removes view from set of views if the passed in view is a member of model. 
     */
     removeView(view) {
 
@@ -113,7 +124,25 @@ export class ModelBase {
         }
     }
 
-    update(step) {
+
+
+    /**
+        Should return the value of the property if it is in the model and has been updated since the last cycle. Null otherwise.
+        This should be overridden by a more efficient version by inheriting objects
+    */
+    isUpdated(prop_name) {
+
+        let changed_properties = this.____changed_values____;
+
+        for (var i = 0, l = changed_properties.length; i < l; i++)
+            if (changed_properties[i] == prop_name)
+                if (this[prop_name] !== undefined)
+                    return this[prop_name]
+
+        return null;
+    }
+
+    scheduledUpdate(step) {
 
         this.updateViews(this);
 
@@ -121,25 +150,38 @@ export class ModelBase {
     }
 
     /**
-    	Calls update() on every view object, passing the current state of the Model.
+        Calls update() on every view object, passing the current state of the Model.
     */
     updateViews() {
 
+        let o = {};
+
+        for (let p = null, i = 0, l = this.____changed_values____.length; i < l; i++)
+            (p = this.____changed_values____[i], o[p] = this[p])
+
+        this.____changed_values____.length = 0;
+        
+        let views = this.views;
+        let l = views.length;
+
+        for(let i = 0; i < l; i++)
+            views[i].update(this, o);            
+
+        return;
         var view = this.first_view;
 
         while (view) {
 
-            view.update(this, this.____changed_values____);
+            view.update(this, o);
 
             view = view.next;
         }
 
-        this.____changed_values____.length = 0;
     }
 
     /**
-    	Updates views with a list of models that have been removed. 
-    	Primarily used in conjunction with container based views, such as SourceTemplates.
+        Updates views with a list of models that have been removed. 
+        Primarily used in conjunction with container based views, such as Templates.
     */
     updateViewsRemoved(data) {
 
@@ -154,8 +196,8 @@ export class ModelBase {
     }
 
     /**
-    	Updates views with a list of models that have been added. 
-    	Primarily used in conjunction with container based views, such as SourceTemplates.
+        Updates views with a list of models that have been added. 
+        Primarily used in conjunction with container based views, such as Templates.
     */
     updateViewsAdded(data) {
 

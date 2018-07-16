@@ -6,7 +6,7 @@ export class View{
 		this.model = null;
 	}
 
-	destructor(){
+	destroy(){
 
 		if(this.model)
 			this.model.removeView(this);

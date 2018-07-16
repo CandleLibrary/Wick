@@ -1,193 +1,123 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Starting with Wick</title>
-    <script src="/build/wick-dev.js" type="text/javascript"></script>
-    <link href="/build/wick.css" type="text/css" rel="stylesheet"/>
-  </head>
-  <body>
 
-    <app>
-      <!-- This element will synch with other elements id'd main in other documents. And represents the first part of creating a wick power app. -->
-      <element id="intro">
-        <h1>Getting Started with Wick</h1>
-        <p>Wick is a multi paradigm platform that can be used to create website. It is SPA forward, while respecting state of web</p>
+<head>
+	<title>Starting with Wick</title>
+	<script src="/build/wick-dev.js" type="text/javascript"></script>
+	<link href="/build/wick.css" type="text/css" rel="stylesheet" />
+</head>
 
-        <p>
-            Element data
-            data-model
-            data-class: type of cassette that the element users
-            data-schema: builds new model based on the schema
-            data-prop: the property key to extract from the model.
-            data-poll: how often to poll the data from API. is only a seggestion
-            data-url: the API location to pull form
-            data-iprop: import property
-            data-query: the value to watch for api
-        </p>
-      </element>
+<body>
+	<app>
+		<!-- This element will synch with other elements id'd main in other documents. And represents the first part of creating a wick power app. -->
+		<element id="intro">
+			<h1>Getting Started with Wick</h1>
+			<p>Wick is a multi paradigm platform that can be used to create website. It is SPA forward, while respecting state of web</p>
+			<p>
+				Element data data-model data-class: type of cassette that the element users data-schema: builds new model based on the schema data-prop: the property key to extract from the model. data-poll: how often to poll the data from API. is only a seggestion data-url: the API location to pull form data-iprop: import property data-query: the value to watch for api
+			</p>
+		</element>
+		<element id="source">
+			<h1> Forms and Input Elements </h1> One can construct a filtering system to handle multiple results with search filtering.
+			<component class="user_lookup"></component>
+		</element>
+		<element id="main">
+			<div data-transition="the" class="p">HI, this is the main page!</div>
+			<div data-transition="t" class="c">Currently Wick is operating on these pages!</div>
+		</element>
+	</app>
+	
+	<textarea data-prop="raw" data-export="id"></textarea>
 
-      <element id="source">
-        <h1> Forms and Input Elements </h1>
-        One can construct a filtering system to handle multiple results with search filtering.
+	<template id="user_lookup">
+		<w-s schema="any">
+			<w import>
+				<div id="test_core">[date][time]sd[page_count]Z[value]</div>
+				<w-red>
+					<div id="class" class="<w>[class]</w>"> [time][date][time][date][page_count]</div> Locovl [page_count]</w-red> of [page_count]</w>
+			<div id="style" style="<w>[style]</w>" name="<w>[name]</w>">
+				<w-input type="text" name="note">[page_number]</w-input>
+			</div>
+			<my-input></my-input>
+			<div>
+				<w-s id="user_list" model="users"> Doogy [data]((
+					<w-filter class="limit" value="2" import>[page_number]</w-filter>
+					<w-term>[start]</w-term>
+					<w-term>[end]</w-term>
+					<w-s trs model="any">
+						<w-a href="<w>[location]</w>">
+							<my-input></my-input>
+						</w-a>
+						Date:
+						<w>
+							<w_datetime>[value]
+								<w_reverse>
+									<w_color r="233">[time][date]</w_color>
+									<w_blue>date</w_blue>
+								</w_reverse>[time]</w_datetime>
+							<w>
+					</w-s>
+					))
+				</w-s>
+			</div>
+		</w-s>
+	</template>
 
-        <component class="user_lookup"></component>
-      </element>
-
-      <element id="main">
-        <div data-transition="the" class="p">HI, this is the main page!</div>
-        <div data-transition="t" class="c">Currently Wick is operating on these pages!</div>
-      </element>
-    </app>
-
-  <textarea data-prop="raw" data-export="id"></textarea>
-
-<template id="user_lookup">
-    <w-case schema="any">
-        <w import><w-red>page_number</w-red> of [page_count]</w>
-        
-        <w-input type="text" name="note">[page_number]</w-input>
-        
-        <w-case id="user_list" model="users">
-            [data]((
-                <w-filter class="limit" value="2" import>[page_number]</w-filter>
-                <w-term>[start]</w-term>
-                <w-term>[end]</w-term>
-
-                <w-case trs model="user">
-                    <w-a href="<w>[location]</w>">
-                        <my-input></my-input>
-                    </w-a>
-                        Date: <w_datetime><w>[value]</w><w_reverse><w_color r="233">[time][date]</w_color><w_blue>date</w_blue></w_reverse>[time]</w_datetime>
-                </w-case>
-            ))
-        </w-case>
-    </w-case>
-</template>
-
-<template id="my-input">
-    <w export>[name]</w>
-    <w-input type="text" export>[page]</w-input>
-    <w-input type="text" export><w_date>[page]<w_date></w-input>
-</template>
-
-  <template id="user_lookuper">
-
-    <case data-schema="any">
-
-      <span data-class="raw" data-import="page_count" data-prop="page_count"></span>
-
-      <input type="text" data-prop="page_number" name="note">
-
-      <span data-class="raw" data-import="name" data-prop="name"></span>
-      
-      <case data-schema="users" data-prop="data" data-trs="base">
-        
-        <casetemplate class="user_entry" data-prop="data">
-          
-          <filter data-class="limit" data-value="2" data-import="page_number" data-export="page_count"></filter>
-
-          <filter data-class="term" data-import="start" data-prop="start">1481785200000</filter>
-          <filter data-class="term" data-import="end" data-prop="end">1525154400000</filter>
-          
-          <case model="user" data-trs="base">
-            <a data-class="raw"  href="#" >
-              <div data-class="raw" data-export="name" data-prop="name"></div>
-              <input type="text"  data-prop="name" name ="note">
-              birthday
-              <input type="text"  data-prop="birthday" name ="note">
-            </a>
-          </case>
-        </casetemplate>
-
-      <textarea data-class="data_edit" data-model="true">
-        {
-          "data": [
-            {
-              "name" : "Tom Harrison",
-              "birthday": "Jul 01 2018"
-            },
-
-            {
-              "name" : "Deb McCacie",
-              "birthday": "May 01 2018"
-            },
-
-            {
-              "name" : "Tonada Yonoki",
-              "birthday": "Sep 15 2017"
-            },
-
-            {
-              "name" : "Umbadi Tinak",
-              "birthday": "Dec 15 2016"
-            }
-          ]
-        }
-      </textarea>
-        </case>
-        
-        <input type="text" data-prop="start" name="note">
-        <input type="text"  data-prop="end" name ="note">
-      
-      </case>
-  </template>
-
-  <template id="user_entry">
-    <case model="user">
-    </case>
-  </template>
-
-  </body>
-
-  <script type="text/javascript">
-    //Here we will load the Wick engine when the page completes its loading. Wick will automatically start when the page complets its loading.
-    let presets = {
-        schemas: {},
-        cassettes: {}
-    };
+	<template id="user_entry">
+		<case model="user">
+		</case>
+	</template>
+</body>
+<script type="text/javascript">
+//Here we will load the Wick engine when the page completes its loading. Wick will automatically start when the page complets its loading.
+let presets = {
+	schemas: {},
+	cassettes: {}
+};
 
 
-    class NM extends wick.Model {};
-    NM.schema = {
-        name: wick.schema.STRING,
-        birthday: wick.schema.DATE,
-        data:[new wick.ArrayModelContainer]
-    }
-    let n = {chocolate:"pudding!"}
-    let test = new NM({
-              "name" : "Umbadi Tinak",
-              "birthday": "Dec 15 2016"
-            });
+class NM extends wick.Model {};
+NM.schema = {
+	name: wick.schema.STRING,
+	birthday: wick.schema.DATE,
+	data: [new wick.ArrayModelContainer]
+}
+let n = { chocolate: "pudding!" }
+let test = new NM({
+	"name": "Umbadi Tinak",
+	"birthday": "Dec 15 2016"
+});
 
-    console.log(test.toJson())
+console.log(test.toJson())
 
-    //Create a new schema for Users and User container
-    class User extends wick.Model {};
+//Create a new schema for Users and User container
+class User extends wick.Model {};
 
-    User.schema = {
-        name: wick.schema.STRING,
-        birthday: wick.schema.DATE
-    }
+User.schema = {
+	name: wick.schema.STRING,
+	birthday: wick.schema.DATE
+}
 
-    class Users extends wick.Model {};
+class Users extends wick.Model {};
 
-    Users.schema = {
-        data: [{
-            container: wick.BTreeModelContainer,
-            schema: {
-                identifier: "birthday",
-                parser: wick.schema.DATE,
-                model: User,
-            }
-        }],
-    }
+Users.schema = {
+	data: [{
+		container: wick.BTreeModelContainer,
+		schema: {
+			identifier: "birthday",
+			parser: wick.schema.DATE,
+			model: User,
+		}
+	}],
+}
 
-    //
+//
 
-    presets.schemas.users = Users;
+presets.schemas.users = Users;
 
-    wick.light(presets);
+wick.light(presets);
 
-    new wick.Common.TouchScroller(document.body);
-  </script>
+new wick.Common.TouchScroller(document.body);
+</script>
+
 </html>

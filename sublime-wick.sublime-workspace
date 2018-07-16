@@ -4,19 +4,159 @@
 		"selected_items":
 		[
 			[
+				"CSS",
+				"CSS_OM"
+			],
+			[
+				"import",
+				"imported_presets"
+			],
+			[
+				"ine",
+				"innerHTML"
+			],
+			[
+				"ch",
+				"child"
+			],
+			[
+				"impo",
+				"imported_presets"
+			],
+			[
+				"ele",
+				"element"
+			],
+			[
+				"Sou",
+				"SourceManager"
+			],
+			[
+				"Sour",
+				"SourcePackage"
+			],
+			[
+				"tag",
+				"tagname"
+			],
+			[
+				"le",
+				"length"
+			],
+			[
+				"lex",
+				"lexer"
+			],
+			[
+				"s",
+				"style"
+			],
+			[
+				"sk",
+				"skeletons"
+			],
+			[
+				"bac",
+				"background-color\tproperty"
+			],
+			[
+				"t",
+				"type"
+			],
+			[
+				"prop",
+				"prototype"
+			],
+			[
+				"Css",
+				"CSSRootNode"
+			],
+			[
+				"get",
+				"getRule"
+			],
+			[
+				"is",
+				"isArray"
+			],
+			[
+				"lin",
+				"line_width"
+			],
+			[
+				"lin_",
+				"line_style"
+			],
+			[
+				"ne",
+				"need_group"
+			],
+			[
+				"v",
+				"virtual"
+			],
+			[
+				"back",
+				"background-color"
+			],
+			[
+				"rul",
+				"rule"
+			],
+			[
+				"par",
+				"parser"
+			],
+			[
+				"pars",
+				"parseRule"
+			],
+			[
+				"rule",
+				"rules"
+			],
+			[
+				"from",
+				"fromString"
+			],
+			[
+				"col",
+				"colorRule"
+			],
+			[
+				"term",
+				"term"
+			],
+			[
+				"new",
+				"new_term"
+			],
+			[
+				"te",
+				"term"
+			],
+			[
+				"pa",
+				"ParseNotation"
+			],
+			[
+				"ter",
+				"terms"
+			],
+			[
+				"pr",
+				"prop"
+			],
+			[
+				"p",
+				"properties"
+			],
+			[
 				"Mod",
 				"ModelContainerTests"
 			],
 			[
-				"p",
-				"phantomName"
-			],
-			[
 				"Prop",
-				"PropName"
-			],
-			[
-				"prop",
 				"PropName"
 			],
 			[
@@ -64,24 +204,12 @@
 				"ModelBase"
 			],
 			[
-				"par",
-				"parent_lvl"
-			],
-			[
 				"el",
 				"element_root"
 			],
 			[
-				"get",
-				"getElement"
-			],
-			[
 				"in",
 				"index"
-			],
-			[
-				"ch",
-				"children"
 			],
 			[
 				"da",
@@ -118,10 +246,6 @@
 			[
 				"re",
 				"result"
-			],
-			[
-				"new",
-				"new_items"
 			],
 			[
 				"ad",
@@ -202,10 +326,6 @@
 			[
 				"SK",
 				"SkeletonCase"
-			],
-			[
-				"s",
-				"skeleton"
 			],
 			[
 				"Cas",
@@ -376,118 +496,103 @@
 	"buffers":
 	[
 		{
-			"file": "source/case/case.js",
+			"file": "source/common/css/parser/tree/root.js",
 			"settings":
 			{
-				"buffer_size": 8985,
+				"buffer_size": 6696,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "source/case/case_constructor.js",
+			"file": "source/common/css/types/url.js",
 			"settings":
 			{
-				"buffer_size": 5511,
+				"buffer_size": 541,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "source/case/case_constructor_ast.js",
+			"file": "source/common/css/parser/parser.js",
 			"settings":
 			{
-				"buffer_size": 11449,
+				"buffer_size": 412,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "source/case/case_skeleton.js",
+			"file": "source/common/css/parser/properties/props_and_types.js",
 			"settings":
 			{
-				"buffer_size": 5723,
+				"buffer_size": 10068,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "source/case/case_template.js",
+			"contents": "import { SourceBase } from \"./base\"\n\nimport { ModelBase } from \"../model/base\"\n\nimport { Getter } from \"../network/getter\"\n\nimport { Cassette } from \"./cassette/cassette\"\n\nexport class Source extends SourceBase {\n\n    /**\n        Source constructor. Builds a Source object.\n        @params [DOMElement] element - A DOM <template> element that contains a <case> element.\n        @params [RouterPresets] presets\n        @params [Source] parent - The parent Source object, used internally to build Source's in a hierarchy\n        @params [Model] model - A model that can be passed to the case instead of having one created or pulled from presets. \n        @params [DOM]  WORKING_DOM - The DOM object that contains templates to be used to build the case objects. \n    */\n    constructor(parent = null, data, presets, element) {\n\n        super(parent, data, presets, element)\n\n        if(data.wick_style){\n            \n        }\n\n        this.USE_SECURE = presets.USE_HTTPS;\n        this.named_elements = {};\n        this.template = null;\n        this.prop = null;\n        this.url = null;\n        this.presets = presets;\n        this.receiver = null;\n        this.query = {};\n        this.REQUESTING = false;\n        this.exports = null;\n\n\n        this.filter_list = [];\n        this.templates = [];\n        this.filters = [];\n        this.is = 0;\n    }\n\n    destroy() {\n\n        this.parent = null;\n\n        if (this.receiver)\n            this.receiver.destroy();\n\n        for (let i = 0, l = this.templates.length; i < l; i++)\n            this.templates[i].destroy();\n\n        super.destroy();\n    }\n\n    /**\n        Sets up Model connection or creates a new Model from a schema.\n    */\n    load(model) {\n\n        this.ACTIVE = true;\n\n        if (this.data.url) {\n            //import query info from the wurl\n            let str = this.data.url;\n            let cassettes = str.split(\";\");\n            this.data.url = cassettes[0];\n\n            for (var i = 1; i < cassettes.length; i++) {\n                let cassette = cassettes[i];\n\n                switch (cassette[0]) {\n                    case \"p\":\n                        //TODO\n                        this.url_parent_import = cassette.slice(1)\n                        break;\n                    case \"q\":\n                        this.url_query = cassette.slice(1);\n                        break;\n                    case \"<\":\n                        this.url_return = cassette.slice(1);\n                }\n            }\n        }\n\n        this.prop = this.data.prop;\n\n        if (this.data.export) this.exports = this.data.export;\n\n        if (this.model) {\n            model = this.model;\n            this.model = null;\n        }\n\n        if (model && model instanceof ModelBase) {\n\n            if (this.schema) {\n                /* Opinionated Source - Only accepts Models that are of the same type as its schema.*/\n                if (model.constructor != this.schema) {\n                    //throw new Error(`Model Schema ${this.model.schema} does not match Source Schema ${presets.schemas[this.data.schema].schema}`)\n                } else\n                    this.schema = null;\n\n            }\n            this.model = null;\n        }\n\n        if (this.schema)\n            model = new this.schema();\n\n        model.addView(this);\n\n        if (this.model) {\n            if (this.data.url) {\n                this.receiver = new Getter(this.data.url, this.url_return);\n                this.receiver.setModel(model);\n                this.____request____();\n            }\n        } else\n            throw new Error(`No Model could be found for Source constructor! Source schema \"${this.data.schema}\", \"${this.presets.schemas[this.data.schema]}\"; Source model \"${this.data.model}\", \"${this.presets.models[this.data.model]}\";`);\n\n        for (var i = 0; i < this.children.length; i++)\n            this.children[i].load(this.model);\n\n\n    }\n\n    ____request____(query) {\n\n        this.receiver.get(query, null, this.USE_SECURE).then(() => {\n            this.REQUESTING = false;\n        });\n        this.REQUESTING = true;\n    }\n\n    export (exports) {\n\n        this.updateSubs(this.children, exports, true);\n\n        super.export(exports);\n    }\n\n    updateSubs(cassettes, data, IMPORT = false) {\n\n        for (var i = 0, l = cassettes.length; i < l; i++) {\n\n            let cassette = cassettes[i];\n\n            if (cassette instanceof Source)\n                cassette.update(data, true);\n            else {\n                let r_val;\n\n                if (IMPORT) {\n\n                    if (cassette.data.import && data[cassette.data.import]) {\n                        r_val = cassette.update(data, true);\n\n                        if (r_val) {\n                            this.updateSubs(cassette.children, r_val);\n                            continue;\n                        }\n                    }\n                } else {\n                    /** \n                        Overriding the model data happens when a cassette returns an object instead of undefined. This is assigned to the \"r_val\" variable\n                        Any child cassette of the returning cassette will be fed \"r_val\" instead of \"data\".\n                    */\n\n                    r_val = cassette.update(data, true);\n                }\n\n\n                this.updateSubs(cassette.children, r_val || data, IMPORT);\n            }\n        }\n    }\n\n    up(data) {\n        this.model.add(data);\n    }\n\n    update(data, changed_values) {\n        if(this.ACTIVE)\n            this.__down__(data, changed_values);\n    }\n\n    handleUrlUpdate(wurl) {\n        let query_data = null;\n        /* \n            This part of the function will import data into the model that is obtained from the query string \n        */\n        if (wurl && this.data.import) {\n            query_data = {};\n            if (this.data.import == \"null\") {\n                query_data = wurl.getClass();\n            } else {\n                var l = this.data.import.split(\";\")\n                for (var i = 0; i < l.length; i++) {\n                    let n = l[i].split(\":\");\n\n                    let class_name = n[0];\n                    let p = n[1].split(\"=>\");\n                    var key_name = p[0];\n                    var import_name = p[1];\n                    if (class_name == \"root\") class_name = null;\n                    query_data[import_name] = wurl.get(class_name, key_name);\n                }\n            }\n        }\n\n        if (wurl && this.data.url) {\n\n            let query_data = {};\n            if (this.url_query) {\n                var l = this.url_query.split(\";\")\n                for (var i = 0; i < l.length; i++) {\n                    let n = l[i].split(\":\");\n                    let class_name = n[0];\n                    let p = n[1].split(\"=>\");\n                    var key_name = p[0];\n                    var import_name = p[1];\n                    if (class_name == \"root\") class_name = null;\n                    query_data[import_name] = wurl.get(class_name, key_name);\n                }\n            }\n\n            this.____request____(query_data)\n        }\n\n        if (!this.model) {\n\n            this.model = new this.model_constructor();\n\n\n            if (this.getter)\n                this.getter.setModel(this.model);\n\n            this.model.addView(this);\n        }\n\n        if (query_data) {\n            if (!this.model.add(query_data)) {\n                this.update(this.model.get());\n            }\n        } else\n            this.update(this.model.get());\n    }\n\n    transitionIn(index = 0) {\n\n        super.transitionIn(index)\n        return\n\n        let transition_time = 0;\n\n        for (let i = 0, l = this.templates.length; i < l; i++)\n            transition_time = Math.max(transition_time, this.templates[i].transitionIn(index));\n\n        transition_time = Math.max(transition_time, super.transitionIn(index));\n\n        this.updateDimensions();\n\n        return transition_time;\n    }\n\n    /**\n        Takes as an input a list of transition objects that can be used\n    */\n    transitionOut(index = 0, DESTROY = false) {\n\n        let transition_time = 0;\n\n        for (let i = 0, l = this.templates.length; i < l; i++)\n            transition_time = Math.max(transition_time, this.templates[i].transitionOut(index));\n\n        transition_time = Math.max(transition_time, super.transitionOut(index, DESTROY));\n\n        return transition_time;\n    }\n\n    finalizeTransitionOut() {\n\n        for (let i = 0, l = this.templates.length; i < l; i++)\n            this.templates[i].finalizeTransitionOut();\n\n        super.finalizeTransitionOut();\n    }\n\n    setActivating() {\n        if (this.parent)\n            this.parent.setActivating();\n    }\n\n    getNamedElements(named_elements) {\n        for (let comp_name in this.named_elements)\n            named_elements[comp_name] = this.named_elements[comp_name];\n    }\n}\n\nexport class CustomSource extends Source {\n    constructor(element, data = {}, presets = {}) {\n        super(null, element, data, presets)\n    }\n}",
+			"file": "source/source/source.js",
+			"file_size": 9279,
+			"file_write_time": 131761523527195707,
 			"settings":
 			{
-				"buffer_size": 6250,
+				"buffer_size": 8999,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "source/case/cassette/epoch.js",
+			"file": "test/suite/source_constructor_tests.js",
 			"settings":
 			{
-				"buffer_size": 4390,
+				"buffer_size": 8081,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "source/case/rivet.js",
+			"file": "source/source/constructor.js",
 			"settings":
 			{
-				"buffer_size": 8381,
+				"buffer_size": 8768,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "source/linker/component.js",
+			"file": "source/common/css/types/color.js",
 			"settings":
 			{
-				"buffer_size": 1575,
+				"buffer_size": 10370,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "source/linker/element.js",
+			"file": "source/common/string_parsing/lexer.js",
 			"settings":
 			{
-				"buffer_size": 8743,
+				"buffer_size": 7443,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "source/linker/linker.js",
+			"file": "source/source/package.js",
 			"settings":
 			{
-				"buffer_size": 15464,
+				"buffer_size": 1308,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "source/model/model_base.js",
+			"file": "source/source/manager.js",
 			"settings":
 			{
-				"buffer_size": 3451,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/schema/time_type.js",
-			"settings":
-			{
-				"buffer_size": 845,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/wick.js",
-			"settings":
-			{
-				"buffer_size": 2703,
+				"buffer_size": 52,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -533,6 +638,72 @@
 	],
 	"file_history":
 	[
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/length.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/parser/properties/props_and_types.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/test/suite/css_tests.js",
+		"/D/Users/Anthony/Desktop/test.html",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/test/index.html",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/index.html",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/source/template.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/parser/tree/base.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/source/skeleton.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/parser/properties/properties.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/package.json",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/build_config/css.config.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/wick.css.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/build_config/browserdev.config.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/root/wick.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/animation/transformto.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/parser/parser.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/root/css.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/wick-css.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/build_config/minibuild.config.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/design/path.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/string.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/shape.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/percentage.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/number.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/id.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/color.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/cubic_bezier.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/url.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/math/cubic_bezier.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/README.md",
+		"/D/Users/Anthony/Paranoms/pytrucks/.git/modules/static/js/libraries/wick/COMMIT_EDITMSG",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/math/consts.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/math/quadratic_bezier.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/design/color.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/wick.node.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/root/wick_node.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/string_parsing/lexer.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/wick-min.js",
+		"/D/Users/Anthony/Desktop/jquery",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/parser/properties/types/type.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/parser/tree/root.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/animation/animation.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/source/constructor.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/test/test.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/parser/types/type.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/common.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/animation/color.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/schema/types/date.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/source/cassette/cassette.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/schema/constructor.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/test/suite/model_tests.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/wick.css",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/schema/time_type.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/linker/linker.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/linker/element.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/model/model_base.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/case/rivet.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/linker/component.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/case/cassette/epoch.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/case/case_template.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/case/case_constructor_ast.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/case/case.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/case/case_skeleton.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/case/case_constructor.js",
+		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/wick.js",
 		"/C/Users/aweathersby/Documents/general notes/Network Maintenance/2018/Jan/molecular_network_maintenance",
 		"/C/Users/aweathersby/Documents/general notes/Network Maintenance/2018/Jan/metro",
 		"/D/_$_$_$_/pytrucks/static/package.json",
@@ -594,77 +765,11 @@
 		"/D/_$_$_$_/wick/source/common.js",
 		"/D/_$_$_$_/wick/source/model/model.js",
 		"/D/_$_$_$_/wick/documents/api/ModelContainer.html",
-		"/D/_$_$_$_/wick/test.js",
-		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/source/model/array_container.js",
-		"/D/_$_$_$_/wick/package.json",
-		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/source/animation/transformto.js",
-		"/D/_$_$_$_/wick/package-lock.json",
-		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/package.json",
-		"/D/_$_$_$_/wick/tests/root.js",
-		"/D/_$_$_$_/pytrucks/static/webpack.config.js",
-		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/source/controller.js",
-		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/source/case/case_template.js",
-		"/D/_$_$_$_/wick/tests/model_container/base_tests.js",
-		"/C/Users/aweathersby/AppData/Roaming/Sublime Text 3/Packages/HTML-CSS-JS Prettify/HTMLPrettify.sublime-settings",
-		"/D/f",
-		"/D/_$_$_$_/pytrucks/static/css/app/element.css",
-		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/source/case/cassette/filter.js",
-		"/D/_$_$_$_/pytrucks/routes/callback_handling.py",
-		"/D/_$_$_$_/pytrucks/static/js/mvc/cases/calendar/month.js",
-		"/D/_$_$_$_/pytrucks/.gitmodules",
-		"/D/_$_$_$_/pytrucks/routes/api/booking.py",
-		"/D/_$_$_$_/pytrucks/routes/api/brewery_calendar.py",
-		"/D/_$_$_$_/pytrucks/routes/api/calendar.py",
-		"/D/_$_$_$_/pytrucks/pytrucks_flask.py",
-		"/D/_$_$_$_/pytrucks/routes/api/request.py",
-		"/D/_$_$_$_/pytrucks/routes/api/truck_calendar.py",
-		"/D/_$_$_$_/pytrucks/routes/api/vendors_in_range.py",
-		"/D/_$_$_$_/pytrucks/routes/api/venues_in_range.py",
-		"/D/_$_$_$_/pytrucks/routes/api/version.py",
-		"/D/_$_$_$_/pytrucks/routes/app/app_calendar.py",
-		"/D/_$_$_$_/pytrucks/routes/app/dashboard.py",
-		"/D/_$_$_$_/pytrucks/routes/app/full_calendar.py",
-		"/D/_$_$_$_/pytrucks/routes/app/view_booking.py",
-		"/D/_$_$_$_/pytrucks/routes/app/view_request.py",
-		"/D/_$_$_$_/pytrucks/routes/app/week_calendar.py",
-		"/D/_$_$_$_/pytrucks/routes/classic/account_setup.py",
-		"/D/_$_$_$_/pytrucks/routes/classic/booking.py",
-		"/D/_$_$_$_/pytrucks/routes/classic/breweries_new.py",
-		"/D/_$_$_$_/pytrucks/routes/classic/coverage.py",
-		"/D/_$_$_$_/pytrucks/routes/classic/profile.py",
-		"/D/_$_$_$_/pytrucks/routes/classic/requests.py",
-		"/D/_$_$_$_/pytrucks/routes/classic/reviews.py",
-		"/D/_$_$_$_/pytrucks/routes/classic/schedule_event.py",
-		"/D/_$_$_$_/pytrucks/routes/classic/squedule_event.py",
-		"/D/_$_$_$_/pytrucks/routes/classic/truck_browse_breweries.py",
-		"/D/_$_$_$_/pytrucks/routes/classic/truck_calendar_json.py",
-		"/D/_$_$_$_/pytrucks/routes/post/accept.py",
-		"/D/_$_$_$_/pytrucks/routes/post/cancel.py",
-		"/D/_$_$_$_/pytrucks/routes/post/deny.py",
-		"/D/_$_$_$_/pytrucks/routes/post/edit_coverage.py",
-		"/D/_$_$_$_/pytrucks/routes/post/register.py",
-		"/D/_$_$_$_/pytrucks/routes/post/request.py",
-		"/D/_$_$_$_/pytrucks/routes/post/update_coords.py",
-		"/D/_$_$_$_/pytrucks/server/pytrucks_test_functions.py",
-		"/D/_$_$_$_/pytrucks/pytrucks/static/js/mvc/models/global_date.js",
-		"/D/_$_$_$_/pytrucks/pytrucks/static/js/mvc/api/schemas.js",
-		"/D/_$_$_$_/pytrucks/pytrucks/README.md",
-		"/D/_$_$_$_/pytrucks/pytrucks/test.config.json",
-		"/D/_$_$_$_/pytrucks/pytrucks/static/js/mvc/cassettes/week_info.js",
-		"/D/_$_$_$_/pytrucks/pytrucks/static/app_manifest.json",
-		"/D/_$_$_$_/pytrucks/pytrucks/templates/common/head.html",
-		"/D/_$_$_$_/pytrucks/pytrucks/static/js/mvc/cases/calendar/calendar.js",
-		"/D/_$_$_$_/pytrucks/pytrucks/app_worker.js",
-		"/D/_$_$_$_/pytrucks/pytrucks/app.py",
-		"/D/_$_$_$_/pytrucks/pytrucks/design/design.afdesign",
-		"/D/_$_$_$_/pytrucks/pytrucks/static/js/mvc/models/coords.js",
-		"/D/_$_$_$_/pytrucks/pytrucks/static/wick/source/wick.js",
-		"/D/_$_$_$_/pytrucks/pytrucks/static/wick/source/model/model.js",
-		"/D/_$_$_$_/pytrucks/pytrucks/static/wick/source/model/schema_types.js"
+		"/D/_$_$_$_/wick/test.js"
 	],
 	"find":
 	{
-		"height": 52.0
+		"height": 47.0
 	},
 	"find_in_files":
 	{
@@ -679,16 +784,149 @@
 		"case_sensitive": true,
 		"find_history":
 		[
-			"./case",
-			"case_constructor",
-			"Case"
+			"lexer",
+			"getElementsByTagName",
+			"appendChild",
+			"document",
+			"skeletons",
+			"element.content",
+			"package",
+			"next",
+			"debugger",
+			"TemplateConstructor",
+			"Lexer",
+			"MiniParse",
+			"Lexer",
+			"Lex",
+			"skeleton",
+			"package",
+			"scripts",
+			"styles",
+			"SourcePackage",
+			"text",
+			"ComponentConstructor",
+			"p.",
+			".p",
+			"important",
+			"let",
+			"and_group",
+			"parseSelector",
+			"CSSRootNode",
+			"root",
+			"percentage",
+			"length",
+			"parseRule",
+			"CreateNotationParser",
+			"ParseNotation",
+			"setProp",
+			"this.sp(r.v)",
+			"shadow",
+			"-",
+			"<[\\w\\-]+>",
+			"single_transition",
+			"\\s",
+			"`{1}[^\\n]*`",
+			"-",
+			"’",
+			"‘",
+			"-",
+			"border_top_width",
+			"thin|medium|thick|<length>",
+			"width",
+			"widt",
+			":",
+			"CreateNotationParser",
+			"true",
+			"NEED",
+			"need",
+			"NEED",
+			"OR",
+			"or",
+			"OR",
+			"|",
+			"`",
+			"'",
+			"\"",
+			"-",
+			"image",
+			"repeat_style",
+			"-",
+			"length_percentage",
+			"basic_shape",
+			"-",
+			"let",
+			"parseRule",
+			"CreateNotationParser",
+			"props",
+			"CSS_Bezier",
+			"CBezier",
+			"}\n",
+			"Length",
+			"length",
+			"Length",
+			"\\s",
+			"\"{1}[^\\n]*\"{1}",
+			"\\s",
+			"`{1}[^\\n]*`{1}",
+			"\\-",
+			"<{1}[\\-\\w]+>{1}",
+			" ",
+			"`{1}[^\\n]*`{1}",
+			"`{1}",
+			"`",
+			"\\`",
+			"\\`{1}",
+			"\\`{1}.*\\`{1}",
+			"\\`{1}.+\\`{1}",
+			"\\`{1}.*\\`{1}",
+			" ",
+			"| hidden | scroll | auto | inherit',\n",
+			" ",
+			"\t",
+			" ",
+			"-",
+			"custom_ident",
+			"-",
+			"single_animation_fill_mode",
+			"-",
+			"single_animation_play_state",
+			"-",
+			",",
+			"-",
+			"time",
+			"length",
+			"frequency",
+			"length",
+			"URL",
+			"props",
+			"rules",
+			"rule",
+			"rules",
+			"-",
+			"<{1}[\\w\\-]*>{1}",
+			"-",
+			"<{1}[\\w\\-]*>{1}",
+			"<{1}\\w*>{1}",
+			"<{1}w*>{1}",
+			"<{1}W*>{1}",
+			"<{1}.*>{1}",
+			"<.+>{1}",
+			"<.+>"
 		],
 		"highlight": false,
 		"in_selection": false,
 		"preserve_case": false,
-		"regex": false,
+		"regex": true,
 		"replace_history":
 		[
+			"gebt",
+			"ac",
+			"dc",
+			"skls",
+			"_",
+			"",
+			"_",
+			"",
 			"./source",
 			"source_constructor",
 			"Source"
@@ -702,29 +940,30 @@
 	"groups":
 	[
 		{
-			"selected": 12,
+			"selected": 2,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "source/case/case.js",
+					"file": "source/common/css/parser/tree/root.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8985,
+						"buffer_size": 6696,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								225,
-								229
+								4129,
+								4129
 							]
 						],
 						"settings":
 						{
-							"markdonw_live_preview_last_run": 1531190431.54,
+							"history_list_is_closing": true,
+							"markdonw_live_preview_last_run": 1531674028.56,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
@@ -738,148 +977,24 @@
 				},
 				{
 					"buffer": 1,
-					"file": "source/case/case_constructor.js",
+					"file": "source/common/css/types/url.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5511,
+						"buffer_size": 541,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								453,
+								453
 							]
 						],
 						"settings":
 						{
-							"markdonw_live_preview_last_run": 1531190493.3,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "source/case/case_constructor_ast.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 11449,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"markdonw_live_preview_last_run": 1531190493.37,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "source/case/case_skeleton.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5723,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"markdonw_live_preview_last_run": 1531190493.37,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 11,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "source/case/case_template.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6250,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"markdonw_live_preview_last_run": 1531190493.37,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "source/case/cassette/epoch.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4390,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"markdonw_live_preview_last_run": 1531190493.37,
+							"markdonw_live_preview_last_run": 1531677453.45,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
@@ -892,25 +1007,86 @@
 					"type": "text"
 				},
 				{
-					"buffer": 6,
-					"file": "source/case/rivet.js",
+					"buffer": 2,
+					"file": "source/common/css/parser/parser.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8381,
+						"buffer_size": 412,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								49,
+								49
 							]
 						],
 						"settings":
 						{
-							"markdonw_live_preview_last_run": 1531190493.37,
+							"markdonw_live_preview_last_run": 1531674315.63,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 676.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "source/common/css/parser/properties/props_and_types.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10068,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2292,
+								2292
+							]
+						],
+						"settings":
+						{
+							"history_list_is_closing": true,
+							"markdonw_live_preview_last_run": 1531607278.11,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1525.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "source/source/source.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8999,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								804,
+								811
+							]
+						],
+						"settings":
+						{
+							"history_list_is_closing": true,
+							"markdonw_live_preview_last_run": 1531678723.17,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
@@ -921,27 +1097,65 @@
 					},
 					"stack_index": 9,
 					"type": "text"
-				},
+				}
+			]
+		},
+		{
+			"selected": 1,
+			"sheets":
+			[
 				{
-					"buffer": 7,
-					"file": "source/linker/component.js",
+					"buffer": 5,
+					"file": "test/suite/source_constructor_tests.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1575,
+						"buffer_size": 8081,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								1534,
+								1532
 							]
 						],
 						"settings":
 						{
-							"markdonw_live_preview_last_run": 1531190493.37,
+							"history_list_is_closing": true,
+							"markdonw_live_preview_last_run": 1531678036.4,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1350.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "source/source/constructor.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8768,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								165,
+								176
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531680591.58,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
@@ -950,29 +1164,30 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 8,
-					"file": "source/linker/element.js",
+					"buffer": 0,
+					"file": "source/common/css/parser/tree/root.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8743,
+						"buffer_size": 6696,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								239,
+								239
 							]
 						],
 						"settings":
 						{
-							"markdonw_live_preview_last_run": 1531190493.37,
+							"history_list_is_closing": true,
+							"markdonw_live_preview_last_run": 1531674028.56,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
@@ -985,56 +1200,148 @@
 					"type": "text"
 				},
 				{
-					"buffer": 9,
-					"file": "source/linker/linker.js",
+					"buffer": 3,
+					"file": "source/common/css/parser/properties/props_and_types.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 15464,
+						"buffer_size": 10068,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								6723,
+								6723
 							]
 						],
 						"settings":
 						{
-							"markdonw_live_preview_last_run": 1531190493.37,
+							"history_list_is_closing": true,
+							"markdonw_live_preview_last_run": 1531607278.11,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 4026.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "source/common/css/types/color.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10370,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1886,
+								1886
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531690244.99,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1275.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
-					"buffer": 10,
-					"file": "source/model/model_base.js",
+					"buffer": 8,
+					"file": "source/common/string_parsing/lexer.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3451,
+						"buffer_size": 7443,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								5554,
+								5554
 							]
 						],
 						"settings":
 						{
-							"markdonw_live_preview_last_run": 1531190493.37,
+							"markdonw_live_preview_last_run": 1531691523.06,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3075.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "source/source/package.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1308,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								387,
+								387
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531686453.53,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 600.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "source/source/manager.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 52,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								52,
+								52
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1531686542.08,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax"
 						},
 						"translation.x": 0.0,
@@ -1043,75 +1350,13 @@
 					},
 					"stack_index": 7,
 					"type": "text"
-				},
-				{
-					"buffer": 11,
-					"file": "source/schema/time_type.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 845,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"markdonw_live_preview_last_run": 1531190493.38,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 12,
-					"file": "source/wick.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2703,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1148,
-								1148
-							]
-						],
-						"settings":
-						{
-							"markdonw_live_preview_last_run": 1531190493.38,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1440.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
 				}
 			]
 		}
 	],
 	"incremental_find":
 	{
-		"height": 46.0
+		"height": 34.0
 	},
 	"input":
 	{
@@ -1126,11 +1371,18 @@
 				0,
 				1,
 				1
+			],
+			[
+				1,
+				0,
+				2,
+				1
 			]
 		],
 		"cols":
 		[
 			0.0,
+			0.107014551853,
 			1.0
 		],
 		"rows":
@@ -1152,7 +1404,7 @@
 	"project": "sublime-wick.sublime-project",
 	"replace":
 	{
-		"height": 88.0
+		"height": 85.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1161,6 +1413,202 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"lex",
+				"source\\common\\string_parsing\\lexer.js"
+			],
+			[
+				"cssroo",
+				"source\\common\\css\\parser\\tree\\root.js"
+			],
+			[
+				"colo",
+				"source\\common\\css\\types\\color.js"
+			],
+			[
+				"type",
+				"source\\common\\css\\parser\\properties\\props_and_types.js"
+			],
+			[
+				"skelet",
+				"source\\source\\skeleton.js"
+			],
+			[
+				"tein",
+				"test\\index.html"
+			],
+			[
+				"index",
+				"index.html"
+			],
+			[
+				"source",
+				"test\\suite\\source_constructor_tests.js"
+			],
+			[
+				"sourcecon",
+				"source\\source\\constructor.js"
+			],
+			[
+				"source_constructor",
+				"test\\suite\\source_constructor_tests.js"
+			],
+			[
+				"sourcecou",
+				"test\\suite\\source_constructor_tests.js"
+			],
+			[
+				"sourcetem",
+				"source\\source\\template.js"
+			],
+			[
+				"url",
+				"source\\common\\css\\types\\url.js"
+			],
+			[
+				"prope",
+				"source\\common\\css\\parser\\properties\\properties.js"
+			],
+			[
+				"csspa",
+				"source\\common\\css\\parser\\parser.js"
+			],
+			[
+				"pack",
+				"package.json"
+			],
+			[
+				"wick",
+				"source\\root\\wick.js"
+			],
+			[
+				"length",
+				"source\\common\\css\\types\\length.js"
+			],
+			[
+				"css_t",
+				"test\\suite\\css_tests.js"
+			],
+			[
+				"shap",
+				"source\\common\\css\\types\\shape.js"
+			],
+			[
+				"ccsb",
+				"source\\common\\css\\types\\cubic_bezier.js"
+			],
+			[
+				"bezier",
+				"source\\common\\math\\cubic_bezier.js"
+			],
+			[
+				"rea",
+				"README.md"
+			],
+			[
+				"pac",
+				"package.json"
+			],
+			[
+				"css_",
+				"test\\suite\\css_tests.js"
+			],
+			[
+				"col",
+				"source\\common\\design\\color.js"
+			],
+			[
+				"css url",
+				"source\\common\\css\\types\\url.js"
+			],
+			[
+				"cssb",
+				"source\\common\\css\\types\\cubic_bezier.js"
+			],
+			[
+				"q",
+				"source\\common\\math\\quadratic_bezier.js"
+			],
+			[
+				"trans",
+				"source\\animation\\transformto.js"
+			],
+			[
+				"wick.no",
+				"build\\wick.node.js"
+			],
+			[
+				"node",
+				"source\\root\\wick_node.js"
+			],
+			[
+				"prop",
+				"source\\common\\css\\parser\\properties\\properties.js"
+			],
+			[
+				"cub",
+				"source\\common\\math\\cubic_bezier.js"
+			],
+			[
+				"csstes",
+				"test\\suite\\css_tests.js"
+			],
+			[
+				"lexer",
+				"source\\common\\string_parsing\\lexer.js"
+			],
+			[
+				"tets",
+				"test\\suite\\css_tests.js"
+			],
+			[
+				"test",
+				"test\\test.js"
+			],
+			[
+				"skele",
+				"source\\source\\skeleton.js"
+			],
+			[
+				"date",
+				"source\\schema\\types\\date.js"
+			],
+			[
+				"cassett",
+				"source\\source\\cassette\\cassette.js"
+			],
+			[
+				"sourcon",
+				"source\\source\\constructor.js"
+			],
+			[
+				"sourconstr",
+				"source\\schema\\constructor.js"
+			],
+			[
+				"const",
+				"source\\schema\\constructor.js"
+			],
+			[
+				"comm",
+				"source\\common\\common.js"
+			],
+			[
+				"wick.node",
+				"build\\wick.node.js"
+			],
+			[
+				"root",
+				"source\\common\\css\\parser\\tree\\root.js"
+			],
+			[
+				"css/",
+				"source\\common\\css\\parser\\parser.js"
+			],
+			[
+				"css",
+				"build\\wick.css"
+			],
 			[
 				"case.js",
 				"source\\case\\case.js"
@@ -1183,10 +1631,6 @@
 			],
 			[
 				"wick.",
-				"static\\js\\libraries\\wick\\source\\wick.js"
-			],
-			[
-				"wick",
 				"static\\js\\libraries\\wick\\source\\wick.js"
 			],
 			[
@@ -1304,10 +1748,6 @@
 			[
 				"casete",
 				"source\\case\\case_template.js"
-			],
-			[
-				"comm",
-				"source\\common.js"
 			],
 			[
 				"array_",
@@ -1498,7 +1938,7 @@
 		],
 		"width": 0.0
 	},
-	"selected_group": 0,
+	"selected_group": 1,
 	"settings":
 	{
 	},

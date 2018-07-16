@@ -1,6 +1,4 @@
-import {
-    Point2D
-} from "./point2D"
+import { Point2D } from "./point2D"
 
 function curvePoint(curve, t) {
     var point = {
@@ -71,7 +69,7 @@ function curveIntersections(p1, p2, p3) {
     return intersections
 }
 
-class QBezier {
+export class QBezier {
     constructor(x1, y1, x2, y2, x3, y3) {
         this.x1 = 0;
         this.x2 = 0;
@@ -155,30 +153,30 @@ class QBezier {
         return splitCurve(this.toArray(), t);
     }
 
-    rootsX (){
-    	return this.roots(
-    		this.x1, 
-    		this.x2,
-    		this.x3
-    		)
-    	
+    rootsX() {
+        return this.roots(
+            this.x1,
+            this.x2,
+            this.x3
+        )
+
     }
 
     roots(p1, p2, p3) {
         var curve = this.toArray();
 
-        var c = p1 - (2*p2) + p3;
-        var b = 2*(p2 - p1);
+        var c = p1 - (2 * p2) + p3;
+        var b = 2 * (p2 - p1);
         var a = p1;
-        var a2 = a*2;
-        console.log(c ," c")
-        var sqrt = Math.sqrt(b*b - (a * 4 *c));
+        var a2 = a * 2;
+        console.log(c, " c")
+        var sqrt = Math.sqrt(b * b - (a * 4 * c));
         console.log(sqrt, b, a2, p3)
         var t1 = (-b + sqrt) / a2;
         var t2 = (-b - sqrt) / a2;
 
-        return [ t1 , t2 ];
-    } 
+        return [t1, t2];
+    }
 
     rootsa() {
         var curve = this.toArray();
@@ -203,7 +201,7 @@ class QBezier {
         var t1 = -bd1 / ad1;
         var t2 = -bd2 / ad2;
 
-        return [ t1 , t2 ];
+        return [t1, t2];
     }
 
     boundingBox() {
@@ -265,8 +263,4 @@ class QBezier {
             )
         }
     }
-}
-
-export {
-    QBezier
 }

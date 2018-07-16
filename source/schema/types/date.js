@@ -1,6 +1,6 @@
 import { NumberSchemaConstructor } from "./number.js"
 
-import { Lex } from "../../common/common"
+import { Lexer } from "../../common/common"
 
 let scape_date = new Date();
 scape_date.setHours(0);
@@ -12,12 +12,15 @@ class DateSchemaConstructor extends NumberSchemaConstructor {
 
     parse(value) {
 
+        if(!value)
+            return undefined;
+
         if (!isNaN(value))
             return parseInt(value);
 
-        let lex = Lex(value);
+        let lex = new Lexer(value);
 
-        let year = parseInt(lex.token.text)
+        let year = parseInt(lex.text)
 
         if (year) {
 
@@ -28,22 +31,22 @@ class DateSchemaConstructor extends NumberSchemaConstructor {
 
             lex.next();
             lex.next();
-            let month = parseInt(lex.token.text) - 1;
+            let month = parseInt(lex.text) - 1;
             lex.next();
             lex.next();
-            let day = parseInt(lex.token.text)
+            let day = parseInt(lex.text)
             scape_date.setFullYear(year);
             scape_date.setDate(day);
             scape_date.setMonth(month);
 
             lex.next()
 
-            if (lex.token) {
+            if (lex.pos > -1) {
 
-                let hours = parseInt(lex.token.text)
+                let hours = parseInt(lex.text)
                 lex.next()
                 lex.next()
-                let minutes = parseInt(lex.token.text)
+                let minutes = parseInt(lex.text)
 
                 scape_date.setHours(hours);
                 scape_date.setMinutes(minutes);
@@ -59,7 +62,7 @@ class DateSchemaConstructor extends NumberSchemaConstructor {
      */
     verify(value, result) {
 
-        this.parse(value);
+        value = this.parse(value);
 
         super.verify(value, result);
     }

@@ -1,10 +1,13 @@
 import {
 	StyleMappings
 } from "./style_mappings"
-import {Color} from "./color" 
 import {TransformTo} from "./transformto"
 
+
+export {TransformTo}
+
 class StyleAnimBloc {
+	
 	constructor(style, to_val, duration, delay) {
 		this.style = style;
 		this.delay = delay;
@@ -15,23 +18,12 @@ class StyleAnimBloc {
 		this.prev = null;
 	}
 
-	destructor() {
+	destroy() {
 
 	}
 
 	step(step_multiplier) {
 
-	}
-}
-
-class StyleAnimBlocPercentage extends StyleAnimBloc {}
-class StyleAnimBlocPixel extends StyleAnimBloc {}
-class StyleAnimBlocEM extends StyleAnimBloc {}
-class StyleAnimBlocColor extends StyleAnimBloc {}
-
-class StyleKeyFramedAnimBloc extends StyleAnimBloc {
-	constructor(style, key_frames, delay) {
-		super()
 	}
 }
 
@@ -58,7 +50,7 @@ class AnimBuddy {
 
 		while (bloc) {
 			if (bloc.style = ab.style) {
-				ab.destructor();
+				ab.destroy();
 				return;
 			}
 		}
@@ -83,7 +75,7 @@ class AnimBuddy {
 
 					let next = anim_bloc.next;
 
-					anim_bloc.destructor();
+					anim_bloc.destroy();
 
 					anim_bloc = next;
 				}
@@ -94,7 +86,7 @@ class AnimBuddy {
 		return false;
 	}
 
-	destructor() {
+	destroy() {
 
 	}
 
@@ -111,7 +103,7 @@ class AnimBuddy {
 	}
 }
 
-class AnimCore{
+export class AnimCore{
 	constructor() {
 		this.anim_group = {};
 		this.running_animations = [];
@@ -125,7 +117,7 @@ class AnimCore{
 				var ab = this.running_animations[i];
 
 				if (ab && !ab.step(step_multiplier)) {
-					ab.destructor();
+					ab.destroy();
 					this.running_animations[i] = null;
 				}
 			}
@@ -139,5 +131,3 @@ class AnimCore{
 		}
 	}
 }
-
-export {AnimCore, TransformTo, Color}

@@ -1,4 +1,4 @@
-var StyleMappings = {
+export var StyleMappings = {
 	mapping:[
 		"top",	
 		"left",
@@ -29,9 +29,4 @@ var StyleMappings = {
 	//Color Attributes
 	"background-color":{index:8,types:["rgb","#","rgba"]},
 	"color":{index:9,types:["rgb","#","rgba"]}
-}
-
-
-export {
-	StyleMappings
 }

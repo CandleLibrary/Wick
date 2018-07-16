@@ -11,7 +11,7 @@ class Getter {
         this.model = null;
     }
 
-    destructor() {
+    destroy() {
         this.model = null;
     }
 

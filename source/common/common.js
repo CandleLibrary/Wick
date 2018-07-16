@@ -1,5 +1,4 @@
 import {Lexer} from "./string_parsing/lexer"
-import {Tokenizer} from "./string_parsing/tokenizer"
 
 //Time
 import {months} from "./date_time/months"
@@ -13,24 +12,14 @@ import {CBezier} from "./math/cubic_bezier"
 import {TurnQueryIntoData, TurnDataIntoQuery} from "./url/url"
 import {TouchScroller} from "./event/touch_scroller"
 
+//CSS
+import {CSSParser} from "./css/parser/parser"
+
 
 /*********** String Parsing Basic Function ************************/
-/**
-	If a string object is passed, creates a lexer that tokenize the input string. 
-*/
-function Lex(string){
-	if(typeof(string) !== "string"){
-		console.warn("Cannot create a lexer on a non-string object!");
-		return null;
-	}
-
-	return new Lexer(new Tokenizer(string));
-}
 
 export {
-	Lex,
 	Lexer, 
-	Tokenizer,
 	months,
 	dow,
 	QBezier,
@@ -39,7 +28,8 @@ export {
 	TurnDataIntoQuery,
 	GetDayStartAndEnd,
 	TouchScroller,
-	float24to12ModTime
+	float24to12ModTime,
+	CSSParser
 };
 
 /****** Global Object Extenders *************/
