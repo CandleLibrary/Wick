@@ -15,4 +15,16 @@ export class CSS_Length extends Number {
         super(v);
         this.unit = u;
     }
+
+    toString(radix){
+        return super.toString(radix) + "" + this.unit;
+    }
+
+    toJSON(){
+        return super.toString() + "" + this.unit;
+    }
+
+    get str() {
+        return this.toString();
+    }
 }

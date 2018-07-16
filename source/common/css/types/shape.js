@@ -1,6 +1,8 @@
+/* https://www.w3.org/TR/css-shapes-1/#typedef-basic-shape */
+
 export class CSS_Shape extends Array {
     static parse(l, rule, r) {
-        if (l.tx == "url") {
+        if (l.tx == "inset" || l.tx == "circle" || l.tx == "ellipse" || l.tx == "polygon") {
             l.n().a("(");
             let v = "";
             if (l.ty == l.types.str) {

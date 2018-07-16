@@ -1,34 +1,55 @@
 function SOURCECONSTRUCTTESTS() {
     let element = document.createElement("div")
     element.innerHTML =
-`<template id="user_lookup">
-    <w-s schema="any">
-        <w import><div id="test_core">[date][time]sd[page_count]Z[value]</div><w-red><div id="class" class="<w>[class]</w>">  [time][date][time][date][page_count]</div> Locovl [page_count]</w-red> of [page_count]</w>
-        
-        <div id="style" style="<w>[style]</w>" name="<w>[name]</w>">
-            <w-input type="text" name="note">[page_number]</w-input>
-        </div>
+`
+<template id="user_lookup">    
+<w-s schema="any" class="style">
+    <w import><div id="test_core">[date][time]sd[page_count]Z[value]</div><w-red><div id="class" class="<w>[class]</w>">  [time][date][time][date][page_count]</div> Locovl [page_count]</w-red> of [page_count]</w>
+    
+    <div id="style" style="<w>[style]</w>" name="<w>[name]</w>">
+        <w-input type="text" name="note">[page_number]</w-input>
+    </div>
 
-        <my-input></my-input>
-        
-        <div>
-            <w-s id="user_list" schema="any"> Doogy
-                [user_list]((
+    <my-input></my-input>
+    
+    <div>
+        <w-s id="user_list" schema="any"> Doogy
+            [user_list]((
 
-                    <w-filter class="limit" value="2" import>[page_number]</w-filter>
-                    <w-term>[start]/[256]</w-term>
-                    <w-term>[end]</w-term>
+                <w-filter class="limit" value="2" import>[page_number]</w-filter>
+                <w-term>[start]/[256]</w-term>
+                <w-term>[end]</w-term>
 
-                    <w-s trs model="any">
-                        <a href="<w>[age]</w>">
-                            <my-input></my-input>
-                        </a>
-                            Date: <w><w_datetime>[name]<w_reverse><w_color r="233">[time][date]</w_color><w_blue>date</w_blue></w_reverse>[time]</w_datetime><w>
-                    </w-s>
-                ))
-            </w-s>
-        </div>
-    </w-s>
+                <w-s class="style" model="any">
+                    <a href="<w>[age]</w>">
+                        <my-input></my-input>
+                    </a>
+                        Date: <w><w_datetime>[name]<w_reverse><w_color r="233">[time][date]</w_color><w_blue>date</w_blue></w_reverse>[time]</w_datetime><w>
+                </w-s>
+            ))
+        </w-s>
+    </div>
+</w-s>
+
+<style>
+.style {
+    color : red;
+    background-color:  blue;
+    transition : opacity 38s;
+    opacity : 0;
+}
+
+.style[trs=in]{
+    transition : opacity 22s;
+    opacity: 1;
+}
+
+.style[trs=out]{
+    transition : opacity 22s;
+    opacity: 0;
+}
+
+</style>
 </template>
 
 <template id="my-input">
@@ -63,9 +84,9 @@ function SOURCECONSTRUCTTESTS() {
                 date: "Jun 19 998",
                 style: "color:red",
                 name: "schmoolie",
-                user_list : [
-                    {name:"doug", age:18},
-                    {name:"carly", age: 256}
+                user_list: [
+                    { name: "doug", age: 18 },
+                    { name: "carly", age: 256 }
                 ]
             });
 
@@ -83,14 +104,25 @@ function SOURCECONSTRUCTTESTS() {
                 for (let i = 0, l = templates.length, t; i < l; i++)
                     (t = templates[i], presets.templates[t.id] = t);
 
+                let $package = wick.core.source.SourceConstructor(constructucting_template, presets, element);
+
+                if (!$package) debugger
                 for (let i = 0; i < 10; i++) {
 
-                    let skeleton = wick.core.source.SourceConstructor(constructucting_template, presets, element);
+                    let element = document.createElement("div");
 
-                    Source = skeleton(Any);
+                    let manager = $package.mount(element, Any, true);
 
-                    document.body.appendChild(Source.ele);
+                    console.log(manager)
+
+                    document.body.appendChild(element);
                 }
+            })
+
+            it('Loads Cascading Style information into the local template scope', function() {
+                let style_element = document.getElementById("style");
+
+                if (style.style.color != "red") throw new Error("Document failed to append style information.");
             })
 
             it('Incorporates other templates based on tagname', function() {
@@ -139,7 +171,7 @@ function SOURCECONSTRUCTTESTS() {
                     name: "schmoolie2"
                 })
 
-                setTimeout(function(){
+                setTimeout(function() {
 
                     let style = style_element.attributes.getNamedItem("style").value;
                     let name = style_element.attributes.getNamedItem("name").value;

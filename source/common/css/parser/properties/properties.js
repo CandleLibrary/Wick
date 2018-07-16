@@ -1,8 +1,9 @@
 import { Lexer } from "../../../string_parsing/lexer"
 
-import { props, types } from "./props_and_types"
+import { props, virtual_props, types } from "./props_and_types"
 
 export function GetProperty(lexer, rules) {
+
     let rule = { name: "" };
 
     let name = lexer.tx.replace(/\-/g, "_");
@@ -13,18 +14,21 @@ export function GetProperty(lexer, rules) {
 
     while ((p.tx !== "}" && p.tx !== ";")) { p.n() }
 
-    let value = p.slice(lexer.pos);
+    const value = p.slice(lexer.pos);
 
-    let parser = parseRule(name);
-
-    if (parser)
-        for (let i = 0; i < rules.length; i++) {
-            let rule = rules[i];
-            if (!rule.props) rule.props = {};
-            parser.parse(value, rule.props);
-        }
-    else
-        console.warn(`Unable to get parser for css property ${name}`)
+    try {
+        const IS_VIRTUAL = { is: false }
+        const parser = getPropertyParser(name, IS_VIRTUAL);
+        if (parser && !IS_VIRTUAL.is)
+            for (let i = 0; i < rules.length; i++) {
+                let rule = rules[i];
+                if (!rule.props) rule.props = {};
+                parser.parse(value, rule.props);
+            } else
+                console.warn(`Unable to get parser for css property ${name}`)
+    } catch (e) {
+        console.log(e);
+    }
 
     lexer.sync();
 
@@ -33,14 +37,26 @@ export function GetProperty(lexer, rules) {
     return rule;
 }
 
-function parseRule(value) {
+function getPropertyParser(value, IS_VIRTUAL = { is: false }) {
 
     let prop = props[value];
 
     if (prop) {
 
         if (typeof(prop) == "string")
-            prop = props[value] = CreateNotationParser(prop, value);
+            prop = props[value] = CreatePropertyParser(prop, value);
+
+        return prop;
+    }
+
+    prop = virtual_props[value];
+
+    if (prop) {
+
+        IS_VIRTUAL.is = true;
+
+        if (typeof(prop) == "string")
+            prop = virtual_props[value] = CreatePropertyParser(prop, "");
 
         return prop;
     }
@@ -55,25 +71,35 @@ class NR { //Notation Rule
         this.r = [NaN, NaN];
         this.terms = [];
         this.prop = null;
+        this.virtual = false;
+    }
+
+    sp(value, rule) { //Set Property
+        if (this.prop)
+            if (value)
+                if (Array.isArray(value) && value.length === 1 && Array.isArray(value[0]))
+                    rule[this.prop] = value[0];
+                else
+                    rule[this.prop] = value;
     }
 
     isRepeating() {
-
         return !(isNaN(this.r[0]) && isNaN(this.r[1]));
     }
 
     parse(lx, rule, out_val) {
-
         if (typeof(lx) == "string")
             lx = new Lexer(lx);
 
         let r = out_val || { v: null },
-            bool = true;
+            start = isNaN(this.r[0]) ? 1 : this.r[0],
+            end = isNaN(this.r[1]) ? 1 : this.r[1];
 
-        let start = this.r[0] || 1;
+        return this.___(lx, rule, out_val, r, start, end)
+    }
 
-        let end = this.r[1] || 1;
-
+    ___(lx, rule, out_val, r, start, end) {
+        let bool = true;
         for (let j = 0; j < end && !lx.END; j++) {
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
@@ -82,31 +108,40 @@ class NR { //Notation Rule
             }
 
             if (!bool) {
-                if (j < start) {
-                    if (this.prop && r.v)
-                        rule[this.prop] = r.v;
+
+                this.sp(r.v, rule);
+
+                if (j < start)
                     return false;
-                }
+                else
+                    return true;
             }
         }
 
-        if (this.prop && r.v)
-            rule[this.prop] = r.v;
+        this.sp(r.v, rule);
+
         return true;
     }
 }
 
-class NEED extends NR {
-    parse(lx, rule, out_val) {
-        if (typeof(lx) == "string")
-            lx = new Lexer(lx);
+class AND extends NR {
+    ___(lx, rule, out_val, r, start, end) {
+        let bool = false;
+        outer:
+            for (let j = 0; j < end && !lx.END; j++) {
+                for (let i = 0, l = this.terms.length; i < l; i++)
+                    if (!this.terms[i].parse(lx, rule, r)) return false;
+            }
 
-        let r = out_val || { v: null },
-            bool = false;
+        this.sp(r.v, rule)
 
-        let start = this.r[0] || 1;
+        return true;
+    }
+}
 
-        let end = this.r[1] || 1;
+class OR extends NR {
+    ___(lx, rule, out_val, r, start, end) {
+        let bool = false;
 
         for (let j = 0; j < end && !lx.END; j++) {
             bool = false;
@@ -115,30 +150,20 @@ class NEED extends NR {
                 if (this.terms[i].parse(lx, rule, r)) bool = true;
 
             if (!bool && j < start) {
-                if (this.prop && r.v)
-                    rule[this.prop] = r.v;
+                this.sp(r.v, rule);
                 return false;
             }
         }
 
-        if (this.prop)
-            rule[this.prop] = r.v;
+        this.sp(r.v, rule);
 
         return true;
     }
 }
 
-class OR extends NR {
-    parse(lx, rule, out_val) {
-        if (typeof(lx) == "string")
-            lx = new Lexer(lx);
-
-        let r = out_val || { v: null },
-            bool = false;
-
-        let start = this.r[0] || 1;
-
-        let end = this.r[1] || 1;
+class ONE_OF extends NR {
+    ___(lx, rule, out_val, r, start, end) {
+        let bool = false;
 
         for (let j = 0; j < end && !lx.END; j++) {
             bool = false;
@@ -148,17 +173,14 @@ class OR extends NR {
                 if (bool) break;
             }
 
-            if (!bool) {
+            if (!bool)
                 if (j < start) {
-                    if (this.prop && r.v)
-                        rule[this.prop] = r.v;
+                    this.sp(r.v, rule);
                     return false;
                 }
-            }
         }
 
-        if (this.prop)
-            rule[this.prop] = r.v;
+        this.sp(r.v, rule);
 
         return true;
     }
@@ -168,14 +190,18 @@ class ValueTerm {
 
     constructor(value) {
         this.value = null;
-
+        const IS_VIRTUAL = { is: false }
         if (!(this.value = types[value]))
-            this.value = parseRule(value);
+            this.value = getPropertyParser(value, IS_VIRTUAL);
 
         this.prop = "";
 
         if (!this.value)
             return new LiteralTerm(value);
+
+        if (this.value instanceof NR && IS_VIRTUAL.is) {
+            this.virtual = true;
+        }
     }
 
     parse(l, rule, r) {
@@ -190,18 +216,18 @@ class ValueTerm {
             if (r)
                 if (r.v) {
                     if (Array.isArray(r.v)) {
-                        if (Array.isArray(rn.v))
+                        if (Array.isArray(rn.v) && !this.virtual)
                             r.v = r.v.concat(rn.v);
                         else
                             r.v.push(rn.v);
                     } else {
-                        if (Array.isArray(rn.v))
+                        if (Array.isArray(rn.v) && !this.virtual)
                             r.v = ([r.v]).concat(rn.v);
                         else
                             r.v = [r.v, rn.v];
                     }
                 } else
-                    r.v = rn.v;
+                    r.v = (this.virtual) ? [rn.v] : rn.v;
 
             if (this.prop)
                 rule[this.prop] = rn.v;
@@ -277,20 +303,22 @@ class SymbolTerm extends LiteralTerm {
     }
 };
 
-function CreateNotationParser(notation, name) {
-    let l = new Lexer(notation);
-
-    let n = ParseNotation(l);
+function CreatePropertyParser(notation, name) {
+    const l = new Lexer(notation);
+    const important = {is: false};
+    
+    let n = ParseGrammer(l);
 
     if (n instanceof NR && n.terms.length == 1)
         n = n.terms[0];
 
     n.prop = name;
+    n.IMP = important.is;
 
     return n;
 }
 
-function ParseNotation(l, super_term = false, group = false, need_group = false) {
+function ParseGrammer(l, super_term = false, group = false, need_group = false, and_group = false, important) {
     let term, nt;
 
     while (!l.END) {
@@ -300,9 +328,28 @@ function ParseNotation(l, super_term = false, group = false, need_group = false)
                 else throw new Error("Expected to have term before \"]\"");
             case "[":
                 if (term) return term;
-                term = ParseNotation(l.n());
+                term = ParseGrammer(l.n());
                 l.a("]");
                 break;
+            case "&":
+                if (l.pk.tx == "&") {
+                    if (and_group)
+                        return term;
+
+                    nt = new AND();
+
+                    nt.terms.push(term);
+
+                    l.sync().n();
+
+                    while (!l.END) {
+                        nt.terms.push(ParseGrammer(l, super_term, group, need_group, true, important));
+                        if (l.tx !== "&" || l.pk.tx !== "&") break;
+                        l.a("&").a("&");
+                    }
+
+                    return nt;
+                }
             case "|":
                 {
                     if (l.pk.tx == "|") {
@@ -310,14 +357,14 @@ function ParseNotation(l, super_term = false, group = false, need_group = false)
                         if (need_group)
                             return term;
 
-                        nt = new NEED();
+                        nt = new OR();
 
                         nt.terms.push(term);
 
                         l.sync().n();
 
                         while (!l.END) {
-                            nt.terms.push(ParseNotation(l, super_term, group, true));
+                            nt.terms.push(ParseGrammer(l, super_term, group, true, and_group, important));
                             if (l.tx !== "|" || l.pk.tx !== "|") break;
                             l.a("|").a("|");
                         }
@@ -329,14 +376,14 @@ function ParseNotation(l, super_term = false, group = false, need_group = false)
                             return term;
                         }
 
-                        nt = new OR();
+                        nt = new ONE_OF();
 
                         nt.terms.push(term);
 
                         l.n();
 
                         while (!l.END) {
-                            nt.terms.push(ParseNotation(l, super_term, true, need_group));
+                            nt.terms.push(ParseGrammer(l, super_term, true, need_group, and_group, important));
                             if (l.tx != "|") break;
                             l.a("|");
                         }
@@ -348,8 +395,17 @@ function ParseNotation(l, super_term = false, group = false, need_group = false)
             case "{":
                 term = Jux(term);
                 term.r[0] = parseInt(l.n().tx);
-                term.r[1] = parseInt(l.n().a(",").tx);
-                l.n().a("}");
+                if (l.n().tx == ",") {
+                    l.n();
+                    if (l.n().tx == "}")
+                        term.r[1] = Infinity;
+                    else {
+                        term.r[1] = parseInt(l.tx);
+                        l.n();
+                    }
+                } else
+                    term.r[1] = term.r[0];
+                l.a("}");
                 if (super_term) return term;
                 break
             case "*":
@@ -376,7 +432,7 @@ function ParseNotation(l, super_term = false, group = false, need_group = false)
             case "#":
                 term = Jux(term);
                 term.terms.push(new SymbolTerm(","));
-                term.r[0] = 0;
+                term.r[0] = 1;
                 term.r[1] = Infinity;
                 l.n();
                 if (l.tx == "{") {
@@ -391,7 +447,7 @@ function ParseNotation(l, super_term = false, group = false, need_group = false)
 
                 if (term) {
                     if (term instanceof NR && term.isRepeating()) term = Jux(new NR, term);
-                    let v = ParseNotation(l, true);
+                    let v = ParseGrammer(l, true);
                     term = Jux(term, v);
                 } else {
                     let v = new ValueTerm(l.n().tx);
@@ -399,10 +455,16 @@ function ParseNotation(l, super_term = false, group = false, need_group = false)
                     term = v;
                 }
                 break;
+             case "!":
+                /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
+                
+                l.n().a("important");
+                important.is = true;
+                break;
             default:
                 if (term) {
                     if (term instanceof NR && term.isRepeating()) term = Jux(new NR, term);
-                    let v = ParseNotation(l, true);
+                    let v = ParseGrammer(l, true);
                     term = Jux(term, v);
                 } else {
                     let v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx);

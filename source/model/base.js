@@ -142,7 +142,7 @@ export class ModelBase {
         return null;
     }
 
-    update(step) {
+    scheduledUpdate(step) {
 
         this.updateViews(this);
 

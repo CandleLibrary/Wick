@@ -16,7 +16,6 @@ export class CSS_Bezier extends CBezier {
 				out = new CSS_Bezier(v1, v2, v3, v4);
 				break;
 			case "ease":
-			debugger
 				l.n();
 				out = new CSS_Bezier(0.25, 0.1, 0.25, 1);
 				break;

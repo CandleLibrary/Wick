@@ -116,6 +116,8 @@ function startRouting(presets) {
         }
     }
 
+    Object.freeze(presets.static);
+
     /** TODO
         @define PageParser
 
@@ -126,6 +128,8 @@ function startRouting(presets) {
             let parser = presets.page_parser[parser_name];
         }
     }
+
+    Object.freeze(presets.parser);
 
     /**
         Schemas provide the constructors for Models
@@ -140,26 +144,35 @@ function startRouting(presets) {
         };
     }
 
+    Object.freeze(presets.schemas);
+
+    /**
+        Global Models defined here are available to the entire app.
+    */
     if (presets.models) {
 
     } else {
         presets.models = {};
     }
 
+    Object.freeze(presets.models);
+
     if (DEBUGGER) console.log(presets)
 
     if (LINKER_LOADED) return;
 
+    presets.imports = null;
+
+    Object.freeze(presets);
+
     LINKER_LOADED = true;
 
-    //Pass in the presets or a plain object if presets is undefined.
-
-    let link = new Router(presets || {});
+    let router = new Router(presets);
 
     window.addEventListener("load", () => {
 
-        link.loadPage(
-            link.loadNewPage(document.location.pathname, document),
+        router.loadPage(
+            router.loadNewPage(document.location.pathname, document),
             new WURL(document.location),
             false
         );

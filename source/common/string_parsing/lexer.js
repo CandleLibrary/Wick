@@ -210,6 +210,7 @@ export class Lexer {
 
         if (offset >= str.length) {
             this.END = true;
+            this.off = str.length;
             return null;
         };
 

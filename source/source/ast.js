@@ -135,12 +135,13 @@ export class GenericNode {
 
     replaceChild(child, new_child) {
         for (let i = 0; i < this.children.length; i++)
-            if (this.children[i] == child) {
-                this.children[i] = new_child;
-                new_child.parent = this;
-                child.parent = null;
-                return
-            }
+
+        if (this.children[i] == child) {
+            this.children[i] = new_child;
+            new_child.parent = this;
+            child.parent = null;
+            return
+        }
     }
 
     removeChild(child) {
@@ -189,6 +190,10 @@ export class GenericNode {
     parseAttributes() {
 
         let out = {};
+
+        for(let name in this.attributes){
+            out[name] = this.attributes[name];
+        }
 
         out.prop = this.prop_name;
 

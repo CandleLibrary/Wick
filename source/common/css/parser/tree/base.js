@@ -1,15 +1,22 @@
 /**
-	Base CSS node. 
+	CSS Rule node. 
 */
 export class CSSRule {
 
-    constructor(name) {
+    /**
+        Constructor
+
+        @param ()
+    */
+    constructor(name, selector) {
 
         this.name = name;
 
+        this.selector = selector;
+
         this.rules = null;
 
-        this.props = null;
+        this.props = {};
 
         this.sub_nodes = null;
 
@@ -18,6 +25,8 @@ export class CSSRule {
         this.pseudo_element = null;
 
         this.classes = null;
+
+        this.attributes = null;
 
         this.ids = null;
 
@@ -43,8 +52,6 @@ export class CSSRule {
     toString() {
 
     }
-
-
 }
 
 export class CSSValue {

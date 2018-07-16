@@ -12,6 +12,11 @@ export class SourceBase extends View {
 
         super();
 
+        if(element){
+            if(data.class)
+                element.classList.value = data.class;
+        }
+
         this.parent = parent;
         this.ele = element;
         this.children = [];
@@ -24,7 +29,7 @@ export class SourceBase extends View {
         this.ACTIVE = false;
 
         //Setting the transitioner
-        this.trs = new Transitioner(this.ele);
+        this.trs = null//new Transitioner(this.ele);
 
         this.addToParent();
     }
@@ -103,6 +108,7 @@ export class SourceBase extends View {
     }
 
     copy(element, index) {
+        debugger
 
         let out_object = {};
 
@@ -113,7 +119,7 @@ export class SourceBase extends View {
             out_object.ele = element.children[this.ele];
             out_object.children = new Array(this.children.length);
 
-            for (var i = 0, l = this.children.length; i < l; i++) {
+            for (let i = 0, l = this.children.length; i < l; i++) {
                 let child = this.children[i];
                 out_object.children[i] = child.copy(out_object.ele);
             }
@@ -147,13 +153,14 @@ export class SourceBase extends View {
 
         this.ACTIVE = true;
 
-        this.trs.set_in(this.ele, this.data);
+        if(this.ele)
+            this.ele.setAttribute("trs","in");
+
+        if(this.trs)
+            transition_time = this.trs.set_in(this.ele, this.data);
         /*
         for (let i = 0, l = this.children.length; i < l; i++)
             transition_time = Math.max(transition_time, this.children[i].transitionIn(index));
-
-        if (this.trs)
-            transition_time = Math.max(transition_time, this.trs.set_in(this.ele, this.data, index));
         */
         return transition_time;
     }
@@ -166,6 +173,9 @@ export class SourceBase extends View {
         let transition_time = 0;
 
         this.ACTIVE = false;
+
+        if(this.ele)
+            this.ele.setAttribute("trs","in");
 
         if (this.trs)
             transition_time = Math.max(transition_time, this.trs.set_out(this.ele, this.data, index));
@@ -203,6 +213,7 @@ export class SourceBase extends View {
         for (let i = 0, l = this.children.length; i < l; i++)
             this.children[i].__down__(data, changed_properties, IMPORTED);
     }
+
     down(data, changed_properties = null, IMPORTED) {}
 
     /**

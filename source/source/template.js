@@ -8,34 +8,58 @@ import { MCArray, ModelContainerBase } from "../model/container/base"
 
 import { MultiIndexedContainer } from "../model/container/multi"
 
+import { Scheduler } from "../common/scheduler"
+
+/**
+ * Class for template.
+ *
+ * @class      Template (name)
+ */
 export class Template extends Source {
 
     /**
-        Template constructor. Builds a Template object.
-    */
-
+     * Constructs the object.
+     *
+     * @param      {Source}  parent   The Source parent object.
+     * @param      {Object}  data     The data object hosting attribute properties from the HTML template. 
+     * @param      {Object}  presets  The global presets object.
+     * @param      {HTMLElement}  element  The element that the Source will bind to. 
+     */
     constructor(parent = null, data, presets, element) {
 
         super(parent, data, presets, element);
 
         this.cases = [];
         this.activeSources = [];
-
         this.templates = [];
         this.filters = [];
         this.terms = [];
-
         this.range = null;
-
         this.prop_elements = [];
+        this.____SCHEDULED____ = false;
     }
 
+    /**
+     * Called by Scheduler when a change is made to the Template HTML structure. 
+     * 
+     * @protected
+     */
+    scheduledUpdate() {
+        for (var i = 0; i < this.activeSources.length; i++)
+            this.activeSources[i].transitionIn(i);
+    }
+
+    /**
+     * Filters stored Sources with search terms and outputs the matching Sources to the DOM.
+     * 
+     * @protected
+     */
     filterUpdate() {
 
         let output = this.cases.slice();
 
         for (let l = this.filters.length, i = 0; i < l; i++) {
-          //  output = this.filters[i].filter(output);
+            //  output = this.filters[i].filter(output);
         }
 
         for (var i = 0; i < this.activeSources.length; i++) {
@@ -48,12 +72,18 @@ export class Template extends Source {
 
         this.ele.style.position = this.ele.style.position;
         
-        for (var i = 0; i < output.length; i++)
-            output[i].transitionIn(i);
+        Scheduler.queueUpdate(this);
 
         this.activeSources = output;
     }
 
+    /**
+     * Removes stored Sources that do not match the ModelContainer contents. 
+     *
+     * @param      {Array}  new_items  Array of Models that are currently stored in the ModelContainer. 
+     * 
+     * @protected
+     */
     cull(new_items) {
 
         if (new_items.length == 0) {
@@ -88,6 +118,11 @@ export class Template extends Source {
         }
     }
 
+    /**
+     * Called by the ModelContainer when Models have been removed from its set.
+     *
+     * @param      {Array}  items   An array of items no longer stored in the ModelContainer. 
+     */
     removed(items) {
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
@@ -106,6 +141,11 @@ export class Template extends Source {
         this.filterUpdate();
     }
 
+    /**
+     * Called by the ModelContainer when Models have been added to its set.
+     *
+     * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
+     */
     added(items) {
 
         for (let i = 0; i < items.length; i++) {
@@ -127,10 +167,10 @@ export class Template extends Source {
 
         let out_terms = [];
 
-        for (let i = 0, l = this.terms.length; i < l; i++){
+        for (let i = 0, l = this.terms.length; i < l; i++) {
             let term = this.terms[i].term
-            if(term) out_terms.push(term);
-            
+            if (term) out_terms.push(term);
+
         }
 
 

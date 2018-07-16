@@ -380,8 +380,8 @@ export class AnyModel extends ModelBase {
         })
     }
 
-    update() {
-        super.update()
+    scheduledUpdate() {
+        super.scheduledUpdate()
     }
 
     /**

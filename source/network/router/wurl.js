@@ -1,40 +1,37 @@
-import {
-    TurnQueryIntoData,
-    TurnDataIntoQuery,
-    QueryStringToQueryMap,
-    QueryMapToQueryString
-} from "../../common/url/url"
+import { TurnQueryIntoData, TurnDataIntoQuery, QueryStringToQueryMap, QueryMapToQueryString } from "../../common/url/url"
 
 class WURL {
-    constructor(location){
+    
+    constructor(location) {
         //parse the url into different sections
         this.path = location.pathname;
         this.host = location.hostname;
         this.query = QueryStringToQueryMap(location.search.slice(1));
     }
 
-    setPath(path){
+    setPath(path) {
         this.path = path;
         this.setLocation();
     }
 
-    setLocation(){
-        history.replaceState({},"replaced state",`${this}`);
+    setLocation() {
+        history.replaceState({}, "replaced state", `${this}`);
         window.onpopstate();
     }
 
-    toString(){
+    toString() {
         return `${this.path}?${QueryMapToQueryString(this.query)}`;
     }
 
-    getClass(class_name){
+    getClass(class_name) {
 
-        if(!class_name) class_name = null;
-        
-        let out = {}, class_;
+        if (!class_name) class_name = null;
 
-        if(class_ = this.query.get(class_name)){
-            for(let [key, val] of class_.entries()){
+        let out = {},
+            class_;
+
+        if (class_ = this.query.get(class_name)) {
+            for (let [key, val] of class_.entries()) {
                 out[key] = val;
             }
         }
@@ -42,11 +39,11 @@ class WURL {
         return out;
     }
 
-    set(class_name, key_name, value){
+    set(class_name, key_name, value) {
 
-        if(!class_name) class_name = null;
+        if (!class_name) class_name = null;
 
-        if(!this.query.has(class_name)) this.query.set(class_name, new Map());
+        if (!this.query.has(class_name)) this.query.set(class_name, new Map());
 
         let class_ = this.query.get(class_name);
 
@@ -55,15 +52,18 @@ class WURL {
         this.setLocation();
     }
 
-    get(class_name, key_name){
-        if(!class_name) class_name = null;
+    get(class_name, key_name) {
+        if (!class_name) class_name = null;
 
         let class_ = this.query.get(class_name);
 
 
-        return (class_) ? class_.get(key_name) : null;  
+        return (class_) ? class_.get(key_name) : null;
     }
 
+    fetch() {
+
+    }
 };
 
 export {

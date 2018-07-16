@@ -182,7 +182,7 @@ const TransformRunner = new(class {
         Scheduler.queueUpdate(this);
     }
 
-    update(ratio) {
+    scheduledUpdate(ratio) {
         let rp = this.pairs;
 
         if (rp.length > 0)

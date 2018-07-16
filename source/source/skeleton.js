@@ -1,10 +1,8 @@
 import { Lexer } from "../common/common"
 
+import { Transitioner } from "../animation/transition/transitioner"
 
-/** 
-    Collection of Objects used to create source trees. 
-    @module Source_Skeleton 
-*/
+import { SourceBase } from "./base"
 
 /**
     Pull index location of specially marked elements from an HTML string. 
@@ -33,7 +31,7 @@ class Indexer {
 
         while (true) {
 
-            if (lex.pos < 0) {
+            if (lex.pos < 0 || lex.END) {
                 if (REDO)
                     return null;
                 else
@@ -43,36 +41,31 @@ class Indexer {
             switch (lex.text) {
                 case "<":
                     if (lex.peek().text == "/") {
-                        lex.next(); // <
-                        lex.next(); // /
-                        lex.next(); // tagname
-                        lex.next(); // >
+                        lex.n( /* < */ ).n( /* / */ ).n( /* tagName */ ).n( /* > */ );
                         if (--this.sp < 0) return null;
                         this.stack.length = this.sp + 1;
                         this.stack[this.sp]++;
                     } else {
-                        lex.next(); // <
-                        lex.next(); // tagname
+                        lex.n().n(); // <
                         while (lex.text !== ">" && lex.text !== "/") {
-                            lex.next(); // attrib name
+                            lex.n(); // attrib name
                             if (lex.text == "=")
-                                (lex.next(), lex.next())
+                                lex.n().n()
                         }
                         if (lex.text == "/") {
-                            lex.next() // / 
-                            lex.next() // >
+                            lex.n( /* / */ ).n( /* > */ );
                             break;
                         }
-                        lex.next(); // >
+                        lex.n(); // >
 
                         (this.stack.push(0), this.sp++)
 
                         if (lex.text == "#") {
-                            lex.next();
+                            lex.n();
                             if (lex.text == "#") {
-                                lex.next();
-                                if (lex.text == ":") {  
-                                    lex.next();
+                                lex.n();
+                                if (lex.text == ":") {
+                                    lex.n();
                                     if (lex.type == lex.types.num) {
                                         let number = parseInt(lex.text);
                                         if (number == index) {
@@ -85,7 +78,7 @@ class Indexer {
                     }
                     break;
                 default:
-                    lex.next();
+                    lex.n();
             }
         }
     }
@@ -111,10 +104,17 @@ class Indexer {
     }
 }
 
+/** 
+    Collection of Objects used to create source trees. 
+    @module Source_Skeleton 
+*/
+
+
 /**   
     @class
     
-    Factory object for Source trees.  Encapsulates construction information derived from a HTML AST. 
+    Factory object for Source trees.  Encapsulates construction information derived from the HTML AST. 
+
 
 */
 export class Skeleton {
@@ -122,15 +122,15 @@ export class Skeleton {
         Constructor of Skeleton
     */
     constructor(element, constructor, data, presets, index) {
-        
+
         this.ele = element;
-        
+
         this.eli = (element) ? element.innerHTML : "";
 
         if (element)
 
-        this.ele.innerHTML = this.eli.replace(/\#\#\:\d*\s/g, "");
-         //Strip index marks.
+            this.ele.innerHTML = this.eli.replace(/\#\#\:\d*\s/g, "");
+        //Strip index marks.
 
         this.Constructor = constructor;
         this.children = [];
@@ -141,6 +141,11 @@ export class Skeleton {
         this.d = data;
         this.p = presets;
         this.i = index;
+        this.trs = null;
+
+        if (SourceBase.isPrototypeOf(constructor))
+            /* Create the Transitioner here */
+            this.trs = new Transitioner(data, presets.imported.css, presets.imported);
     }
 
     /**
@@ -191,7 +196,9 @@ export class Skeleton {
                 for (let i = 0, l = this.caches.length; i < l; i++)
                     elements.push(indexer.getElement(parent_element, this.caches[i]));
             else {
-                let cache = [], ele = null, i = 1;
+                let cache = [],
+                    ele = null,
+                    i = 1;
                 while (ele = indexer.get(i++, parent_element, cache)) {
                     elements.push(ele);
                     this.caches.push(cache);
@@ -199,11 +206,12 @@ export class Skeleton {
                 };
             }
 
-            if (element && element.parentElement){
+            if (element && element.parentElement) {
                 element.parentElement.replaceChild(parent_element, element);
             }
-                
-            element = parent_element; CLAIMED_ELEMENT = true;
+
+            element = parent_element;
+            CLAIMED_ELEMENT = true;
         }
 
         let out_object;

@@ -1,80 +1,131 @@
-import { Lexer } from "../common/common"
+import { Lexer } from "../common/string_parsing/lexer"
+
+import { SourcePackage } from "./package"
+
+import { CSSParser } from "../common/css/parser/parser"
+
+import { CSSRootNode } from "../common/css/parser/tree/root"
 
 import * as AST from "./ast"
 
-/*
-    This function's role is to construct a case skeleton given a template, a list of presets, and 
-    and optionally a working DOM. This will return Source Skeleton that can be cloned into a new Source object. 
-
-    @param {HTMLElement} Template
-    @param {Presets} presets 
-    @param {DOMElement} WORKING_DOM - Should include any other templates that need to be rolled in. 
-*/
+/**
+ * This function's role is to construct a SourcePackage given a template, the global presets, and, optionally, a working HTMLElement to serve as a source of. 
+ * This will return SourcePackage can be used to bind an HTMLElement and an optional Model to a set of new Sources. 
+ *    
+ * @param      {HTMLElement} Template  The template
+ * @param      {Presets} presets   The presets
+ * @param      {DOMElement} WORKING_DOM - Should include any other templates that need to be rolled in. 
+ * @return     {SourcePackage}  SourcePackage can be used to bind an HTMLElement and an optional Model to a generated of Sources.
+ */
 export function SourceConstructor(Template, Presets) {
 
-    let skeleton;
+    let $package;
 
     if (!Template)
         return null;
 
-    if (Template.skeleton)
-        return Template.skeleton;
+    if (Template.package)
+        return Template.package;
 
     let element = document.importNode(Template, true);
 
-    skeleton = ComponentConstructor(element, Presets);
+    $package = TemplateConstructor(element, Presets);
 
-    if (!skeleton)
+
+    if (!$package)
         return null;
 
-    Template.skeleton = ((skeleton) => (model) => skeleton.flesh(model))(skeleton);
+    $package.frz();
 
-    return Template.skeleton;
+    Template.package = $package;
+
+    return $package;
 }
 
 
-function ComponentConstructor(element, presets) {
+
+function TemplateConstructor(element, presets) {
 
     let attributes = [];
     let props = [];
 
     if (element.tagName === "TEMPLATE") {
+        let HAS_OUTPUT = false;
+        let $package = new SourcePackage();
+        let CSS_OM = new CSSRootNode;
         let component_name = element.id;
-        let input = element.innerHTML;
 
-        input = input.replace(/\&lt;/g, "<")
-        input = input.replace(/\&gt;/g, ">")
-        let lexer = new Lexer(input);
+        let ele = document.createElement("span")
+        ele.appendChild(element.content);
 
-        //Make sure we are starting with a case object. 
+        const imported_presets = {css:null, trs:{}};
 
-        if (lexer.text == "<") {
-            //off to a good start
-            let root = new AST.Root();
-            ParseTag(lexer, root, presets);
-            return root.constructSkeleton(presets);
+        imported_presets.css = CSS_OM;
+
+        presets.imported = imported_presets;
+
+
+        // CSS
+        let children = ele.getElementsByTagName("style");
+        for (let i = 0, l = children.length; i < l; i++) {
+            let child = children[i];
+            $package.styles.push(child);
+            CSSParser(child.innerHTML, CSS_OM);
         }
+
+        // Javascript
+        children = ele.getElementsByTagName("script");
+        for (let i = 0, l = children.length; i < l; i++) {
+            let child = children[i];
+            let $function = new Function("wick", "presets", child.innerHTML);
+            $function(wick, imported_presets);
+            $package.scripts.push(child);
+        }
+
+        // HTML
+        children = ele.getElementsByTagName("w-s");
+        for (let i = 0, l = children.length; i < l; i++) {
+            let child = children[i];
+            try {
+                let input = child.outerHTML;
+                /* Turn escaped symbols back into their original form. */
+                input = input.replace(/\&lt;/g, "<")
+                input = input.replace(/\&gt;/g, ">")
+                let lexer = new Lexer(input);
+                let root = new AST.Root();
+                ParseTag(lexer, root, presets);
+                $package.skeletons.push(root.constructSkeleton(presets));
+                HAS_OUTPUT = true;
+            } catch (e) {
+                console.error(e);
+            }
+            break;
+        }
+
+        if (HAS_OUTPUT)
+            return $package;
     }
     return null;
 }
 
 function MiniParse(string, root, presets) {
-    const lexer = Lex(string);
-    if (lexer.text == "<") {
+    const lexer = new Lexer(string);
+    if (lexer.tx == "<") {
         ParseTag(lexer, root, presets);
     }
 }
 
-
 /**
-    Handles the selection of AST nodes based on tagname;
-    
-    @param {Lexer} lexer - The lexical parser 
-    @param {String} tagname - The elements tagname
-    @param {Object} attributes - 
-    @param {Object} ctx
-    @param {CCAstNode} parent
-*/
+ * Handles the selection of AST nodes based on tagname;
+ *
+ * @class      Dispatch (name)
+ * @param      {Lexer}  lexer       The lexical parser
+ * @param      {String}  tagname     The elements tagname
+ * @param      {Object}  attributes  The attributes
+ * @param      {CCAstNode}  parent      The parent
+ * @param      {Object}  presets     The presets
+ * @return     {CCAstNode}     
+ */
 function Dispatch(lexer, tagname, attributes, parent, presets) {
     let ast;
     switch (tagname) {
@@ -121,9 +172,10 @@ function HandleTemplateImport(ele, presets) {
         if (template) {
 
             let element = document.importNode(template, true);
-            let lexer = Lex(element.innerHTML);
 
-            while (lexer.text)
+            let lexer = new Lexer(element.innerHTML);
+
+            while (lexer.tx && !lexer.END)
                 ParseTag(lexer, ele, presets);
 
         } else {
@@ -143,14 +195,14 @@ function ParseTag(lexer, parent, presets) {
     let begin = lexer.pos;
     let attributes = {};
 
-    lexer.assert("<")
+    lexer.a("<")
 
-    let tagname = lexer.text;
+    let tagname = lexer.tx;
 
-    if (lexer.type == lexer.types.id) {
+    if (lexer.ty == lexer.types.id) {
         lexer.next();
         GetAttributes(lexer, attributes);
-    } else throw new Error(`Expected tag-name identifier, got ${lexer.text}, lex: ${lexer.type}`);
+    } else throw new Error(`Expected tag-name identifier, got ${lexer.tx}, lex: ${lexer.ty}`);
 
     let ele = Dispatch(lexer, tagname, attributes, parent, presets);
 
@@ -162,12 +214,12 @@ function ParseTag(lexer, parent, presets) {
 
     while (true) {
 
-        if (!lexer.text)
+        if (!lexer.tx || lexer.END)
             throw new Error(`Unexpected end of output. Tag <${tagname}> at pos ${begin} has not been closed.`);
 
-        switch (lexer.text) {
+        switch (lexer.tx) {
             case "<":
-                if (lexer.peek().text == "/") {
+                if (lexer.pk.tx == "/") {
 
                     ele.html += lexer.slice(start);
 
@@ -180,8 +232,8 @@ function ParseTag(lexer, parent, presets) {
                     lexer.sync();
                     lexer.a("/");
 
-                    if (lexer.text !== tagname)
-                        throw new Error(`Unexpected closing Tag. Expected </${tagname}>  but got </${lexer.text}>.`);
+                    if (lexer.tx !== tagname)
+                        throw new Error(`Unexpected closing Tag. Expected </${tagname}>  but got </${lexer.tx}>.`);
 
                     lexer.n();
 

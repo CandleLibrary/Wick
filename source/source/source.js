@@ -20,6 +20,8 @@ export class Source extends SourceBase {
 
         super(parent, data, presets, element)
 
+        if(data.wick_style)
+
         this.USE_SECURE = presets.USE_HTTPS;
         this.named_elements = {};
         this.template = null;
