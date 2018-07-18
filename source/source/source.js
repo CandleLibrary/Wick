@@ -4,42 +4,48 @@ import { ModelBase } from "../model/base"
 
 import { Getter } from "../network/getter"
 
-import { Cassette } from "./cassette/cassette"
-
 export class Source extends SourceBase {
 
     /**
-        Source constructor. Builds a Source object.
-        @params [DOMElement] element - A DOM <template> element that contains a <case> element.
-        @params [RouterPresets] presets
-        @params [Source] parent - The parent Source object, used internally to build Source's in a hierarchy
-        @params [Model] model - A model that can be passed to the case instead of having one created or pulled from presets. 
-        @params [DOM]  WORKING_DOM - The DOM object that contains templates to be used to build the case objects. 
-    */
+     *   In the Wick dynamic template system, Sources serve as the primary access to Model data. They, along with {@link SourceTemplate}s, are the only types of objects the directly bind to a Model. When a Model is updated, the Source will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link SourceTemplate}s.
+     *   A Source will also bind to an HTML element. It has no methodes to update the element, but it's descendants, primarily instances of the {@link IO} class, can update attributes and values of then element and its sub-elements.
+     *   @param {Source} parent - The parent {@link Source}, used internally to build a hierarchy of Sources.
+     *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
+     *   @param {Presets} presets - An instance of the {@link Presets} object.
+     *   @param {external:HTMLElement} element - The HTMLElement the Source will bind to.
+     *   @memberof module:wick~internals.source
+     *   @alias Source
+     *   @extends SourceBase
+     */
     constructor(parent = null, data, presets, element) {
 
         super(parent, data, presets, element)
 
-        if(data.model){
-            this.model = presets.models[data.model];
-        }
-
+        /**
+         *@type {Boolean} 
+         *@protected
+         */
         this.USE_SECURE = presets.USE_HTTPS;
         this.named_elements = {};
         this.template = null;
         this.prop = null;
-        this.url = null;
         this.presets = presets;
         this.receiver = null;
         this.query = {};
         this.REQUESTING = false;
         this.exports = null;
+        this.schema = null;
+        this._m = null;
 
+        if (data.schema)
+            this.schema = presets.schemas[data.schema];
+        if (data._m)
+            this._m = presets.models[data._m]
 
         this.filter_list = [];
         this.templates = [];
         this.filters = [];
-        this.is = 0;
+
     }
 
     destroy() {
@@ -89,9 +95,9 @@ export class Source extends SourceBase {
 
         if (this.data.export) this.exports = this.data.export;
 
-        if (this.model) {
-            model = this.model;
-            this.model = null;
+        if (this._m) {
+            model = this._m;
+            this._m = null;
         }
 
         if (model && model instanceof ModelBase) {
@@ -99,12 +105,12 @@ export class Source extends SourceBase {
             if (this.schema) {
                 /* Opinionated Source - Only accepts Models that are of the same type as its schema.*/
                 if (model.constructor != this.schema) {
-                    //throw new Error(`Model Schema ${this.model.schema} does not match Source Schema ${presets.schemas[this.data.schema].schema}`)
+                    //throw new Error(`Model Schema ${this._m.schema} does not match Source Schema ${presets.schemas[this.data.schema].schema}`)
                 } else
                     this.schema = null;
 
             }
-            this.model = null;
+            this._m = null;
         }
 
         if (this.schema)
@@ -112,17 +118,17 @@ export class Source extends SourceBase {
 
         model.addView(this);
 
-        if (this.model) {
+        if (this._m) {
             if (this.data.url) {
                 this.receiver = new Getter(this.data.url, this.url_return);
                 this.receiver.setModel(model);
                 this.____request____();
             }
         } else
-            throw new Error(`No Model could be found for Source constructor! Source schema "${this.data.schema}", "${this.presets.schemas[this.data.schema]}"; Source model "${this.data.model}", "${this.presets.models[this.data.model]}";`);
+            throw new Error(`No Model could be found for Source constructor! Source schema "${this.data.schema}", "${this.presets.schemas[this.data.schema]}"; Source model "${this.data._m}", "${this.presets.models[this.data._m]}";`);
 
         for (var i = 0; i < this.children.length; i++)
-            this.children[i].load(this.model);
+            this.children[i].load(this._m);
 
 
     }
@@ -142,48 +148,12 @@ export class Source extends SourceBase {
         super.export(exports);
     }
 
-    updateSubs(cassettes, data, IMPORT = false) {
-
-        for (var i = 0, l = cassettes.length; i < l; i++) {
-
-            let cassette = cassettes[i];
-
-            if (cassette instanceof Source)
-                cassette.update(data, true);
-            else {
-                let r_val;
-
-                if (IMPORT) {
-
-                    if (cassette.data.import && data[cassette.data.import]) {
-                        r_val = cassette.update(data, true);
-
-                        if (r_val) {
-                            this.updateSubs(cassette.children, r_val);
-                            continue;
-                        }
-                    }
-                } else {
-                    /** 
-                        Overriding the model data happens when a cassette returns an object instead of undefined. This is assigned to the "r_val" variable
-                        Any child cassette of the returning cassette will be fed "r_val" instead of "data".
-                    */
-
-                    r_val = cassette.update(data, true);
-                }
-
-
-                this.updateSubs(cassette.children, r_val || data, IMPORT);
-            }
-        }
-    }
-
     up(data) {
-        this.model.add(data);
+        this._m.add(data);
     }
 
     update(data, changed_values) {
-        if(this.ACTIVE)
+        if (this.ACTIVE)
             this.__down__(data, changed_values);
     }
 
@@ -235,11 +205,5 @@ export class Source extends SourceBase {
     getNamedElements(named_elements) {
         for (let comp_name in this.named_elements)
             named_elements[comp_name] = this.named_elements[comp_name];
-    }
-}
-
-export class CustomSource extends Source {
-    constructor(element, data = {}, presets = {}) {
-        super(null, element, data, presets)
     }
 }

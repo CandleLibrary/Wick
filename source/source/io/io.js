@@ -2,16 +2,22 @@ import {
     PipeBase
 } from "../pipe/base"
 
-/** @namespace IO */
 
 /**
-    The IO is the last link in the Source chain. It is responsible for putting date into the DOM through it's connected element, and present it to the viewer. 
-    It is also responsible for responding to user input, though the base IO object does not provide any code for that. 
-*/
+ *   The IO is the last link in the Source chain. It is responsible for putting date into the DOM through the element it binds to.
+ *   @param {Source} parent - The parent {@link Source}, used internally to build a hierarchy of Sources.
+ *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
+ *   @param {Presets} presets - An instance of the {@link Presets} object.
+ *   @param {external:HTMLElement} element - The HTMLElement that the IO will bind to.
+ *   @memberof module:wick.core.source
+ *   @alias IO
+ *   @extends PipeBase
+ */
 export class IO extends PipeBase {
 
     constructor(parent, data, presets, element = null) {
 
+        if(element && element.tagName == "INPUT" && data.attrib == "value") return new InputIO(parent, data, presets, element);
         if (element && element.tagName !== "IO") return new AttribIO(parent, data, presets, element);
 
         super(parent, data, presets)
@@ -42,17 +48,17 @@ export class IO extends PipeBase {
     }
 }
 
-/** @namespace IO */
-
 /**
     This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
 */
 export class AttribIO extends PipeBase {
     constructor(parent, data, presets, element) {
 
-        const attrib = element.attributes.getNamedItem(data.prop);
+        const attrib = element.attributes.getNamedItem(data.attrib);
 
         super(parent, data, presets)
+
+        this.prop = data.prop;
 
         this.ele = attrib;
     }
@@ -61,6 +67,18 @@ export class AttribIO extends PipeBase {
         Puts data into the watched element's attribute. The default action is to simply update the attribute with data.value.  
     */
     down(data) {
-        this.ele.value = data.v;
+        if (data[this.prop] !== undefined) 
+            this.ele.value = data[this.prop];
+    }
+}
+
+export class InputIO extends AttribIO {
+    constructor(parent, data, presets, element) {
+
+        super(parent, data, presets, element)
+
+        element.addEventListener("input", (e)=>{
+            this.up({[this.prop]: e.target.value})
+        })
     }
 }

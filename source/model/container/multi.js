@@ -1,14 +1,12 @@
 import { ModelContainerBase, MCArray } from "./base"
 
-/** @namespace Model */
-
 export class MultiIndexedContainer extends ModelContainerBase {
 
     constructor(schema) {
 
         super({
             identifier: "indexed",
-            model: schema.model
+            model: schema._m
         });
 
         this.schema = schema;
@@ -130,10 +128,10 @@ export class MultiIndexedContainer extends ModelContainerBase {
 
 
     /**
-        Overrides Model container default __getIdentifier__ to force item to pass.
+        Overrides Model container default _gI_ to force item to pass.
         @private 
     */
-    __getIdentifier__(item, filters = null) {
+    _gI_(item, filters = null) {
         return true;
     }
 

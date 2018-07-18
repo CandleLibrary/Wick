@@ -39,7 +39,7 @@ export class ArrayModelContainer extends ModelContainerBase {
 
             var obj = this.data[i];
 
-            if (this.__getIdentifier__(obj) == identifier) {
+            if (this._gI_(obj) == identifier) {
 
                 obj.add(model);
 
@@ -76,7 +76,7 @@ export class ArrayModelContainer extends ModelContainerBase {
 
         for (let i = 0, l = this.data.length; i < l; i++) {
             let obj = this.data[i];
-            if (this.__getIdentifier__(obj, terms)) {
+            if (this._gI_(obj, terms)) {
                 return_data.push(obj);
             }
         }
@@ -106,7 +106,7 @@ export class ArrayModelContainer extends ModelContainerBase {
         for (var i = 0, l = this.data.length; i < l; i++) {
             var obj = this.data[i];
 
-            if (this.__getIdentifier__(obj, term)) {
+            if (this._gI_(obj, term)) {
 
                 result = true;
 

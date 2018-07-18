@@ -1,24 +1,21 @@
 /**
- * Used to call the Scheduler on every tick.
+ * Used to call the Scheduler after a JavaScript runtime tick.
  *
  * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
- * 
- * @protected
+ * @memberof module:wick~internals.router
+ * @private
  */
 const caller = (window && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
     setTimeout(f, 1)
 };
 
 /**
- * Scheduler
- *
- * The Scheduler handles updating objects. It does this by splitting up update cycles, 
- * to respect the browser event model. 
+ * Handles updating objects. It does this by splitting up update cycles, to respect the browser event model. 
  *    
- * If any object is scheduled to be updated, it will be blocked from scheduling more updates 
- * until its own update method is called.
- *    
- * @type class instance
+ * If any object is scheduled to be updated, it will be blocked from scheduling more updates the next JavaScript runtime tick.
+ * 
+ * @memberof module:wick~internals
+ * @alias Scheduler
  */
 const Scheduler = new(class {
     
@@ -38,12 +35,14 @@ const Scheduler = new(class {
 
         this.frame_time = performance.now();
 
-        this.____SCHEDULED____ = false;
+        this._SCHD_ = false;
+
+        
     }
 
     /**
-     * Given an object that has a ____SCHEDULED____ Boolean property, the Scheduler will queue the object and call its .update function 
-     * the following tick. If the object does not have a ____SCHEDULED____ property, the Scheduler will persuade the object to have such a property.
+     * Given an object that has a _SCHD_ Boolean property, the Scheduler will queue the object and call its .update function 
+     * the following tick. If the object does not have a _SCHD_ property, the Scheduler will persuade the object to have such a property.
      * 
      * If there are currently no queued objects when this is called, then the Scheduler will user caller to schedule an update.
      *
@@ -51,21 +50,21 @@ const Scheduler = new(class {
      */
     queueUpdate(object) {
 
-        if (object.____SCHEDULED____ || !object.scheduledUpdate instanceof Function)
-            if (this.____SCHEDULED____)
+        if (object._SCHD_ || !object.scheduledUpdate instanceof Function)
+            if (this._SCHD_)
                 return;
             else
                 return caller(this.callback);
 
-        object.____SCHEDULED____ = true;
+        object._SCHD_ = true;
 
         this.update_queue.push(object);
 
 
-        if (this.____SCHEDULED____)
+        if (this._SCHD_)
             return;
 
-        this.____SCHEDULED____ = true;
+        this._SCHD_ = true;
 
         caller(this.callback);
     }
@@ -75,7 +74,7 @@ const Scheduler = new(class {
      */
     update() {
 
-        this.____SCHEDULED____ = false;
+        this._SCHD_ = false;
 
         let uq = this.update_queue;
 
@@ -93,7 +92,7 @@ const Scheduler = new(class {
         let step_ratio = (diff * 0.06); //  step_ratio of 1 = 16.66666666 or 1000 / 60 for 60 FPS
 
         for (let i = 0, l = uq.length, o = uq[0]; i < l; o = uq[++i]){
-            o.____SCHEDULED____ = false;
+            o._SCHD_ = false;
             o.scheduledUpdate(step_ratio);
         }
 

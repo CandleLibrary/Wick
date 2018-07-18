@@ -5,7 +5,7 @@ function SCHEMATESTS()  {
 
 		describe(`${name}`, function(){
 			it(`Is an instance of SchemaType`, function(){
-				if(!schema instanceof wick.core.schema.SchemaConstructor)
+				if(!schema instanceof wick.schema.constr)
 					throw new Error("schema is not an instance of SchemaType");
 			})
 

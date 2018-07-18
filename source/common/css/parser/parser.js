@@ -5,8 +5,9 @@ import { CSSRootNode } from "./tree/root.js"
 /**
 	CSS Parser
 
-	Builds a CSS object graph that stores information pulled from a CSS formatted string. 
-
+	Builds a CSS object graph that stores information pulled from a CSS string. 
+    
+    @memberof module:wick~internals
 */
 export function CSSParser(css_string, root = null) {
 

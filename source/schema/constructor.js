@@ -1,7 +1,7 @@
 /**
 	Schema type. Handles the parsing, validation, and filtering of Model data properties. 
 */
-class SchemaConstructor {
+class SchemeConstructor {
 
     constructor() {
 
@@ -35,4 +35,4 @@ class SchemaConstructor {
     }
 }
 
-export { SchemaConstructor };
+export { SchemeConstructor };

@@ -1,52 +1,58 @@
 /**
-	CSS Rule node. 
-*/
-export class CSSRule {
+ * @param      {string}  selector        The raw selector string value
+ * @param      {array}  selector_array  The selector array
+ * @memberof module:wick~internals.css
+ * @alias CSSSelector
+ */
+class CSSSelector {
 
     /**
-        Constructor
+     * Constructs the object.
+     *
+     
+     */
+    constructor(selector, selector_array) {
 
-        @param ()
-    */
-    constructor(name, selector) {
+        /**
+         * The raw selector string value
+         */
+        this.v = "";
+        
+        this.v = selector;
 
-        this.name = name;
+        /**
+         * Array of separated selector strings in reverse order.
+         */
+        this.a = [];
 
-        this.selector = selector;
+        this.a = selector_array;
 
-        this.rules = null;
-
-        this.props = {};
-
-        this.sub_nodes = null;
-
-        this.pseudo_class = null;
-
-        this.pseudo_element = null;
-
-        this.classes = null;
-
-        this.attributes = null;
-
-        this.ids = null;
-
-        this.tags = null;
+        /**
+         * The CSSRule to bind to.
+         */
+        this.r = null;
     }
 
-    addProperty(prop){
-    	if(prop)
-    		this.props[prop.name] = prop.value;
+    toString() {
+
+    }
+}
+/**
+ * Holds a set of CSS propertios.
+ * @param      {string}  selector        The raw selector string value
+ * @param      {array}  selector_array  The selector array
+ * @memberof module:wick~internals.css
+ * @alias CSSRule
+ */
+class CSSRule {
+
+    constructor(selector, selector_array) {
+        this.props ={} ;
     }
 
-    comment(lexer) {
-        if (lexer.tx == "/") {
-            if (lexer.p().tx == "*") {
-                lexer.n().n();
-                while (lexer.n().tx && lexer.tx != "*") { /* NO OP */ }
-                lexer.a("*").a("/");
-            } else
-                throw new Error("Expecting a `*` ");
-        }
+    addProperty(prop) {
+        if (prop)
+            this.props[prop.name] = prop.value;
     }
 
     toString() {
@@ -54,8 +60,5 @@ export class CSSRule {
     }
 }
 
-export class CSSValue {
-    constructor() {
-        this.props = {};
-    }
-}
+export { CSSRule,CSSSelector }
+

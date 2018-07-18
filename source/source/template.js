@@ -1,9 +1,5 @@
 import { Source } from "./source"
 
-import { Filter } from "./cassette/filter"
-
-import { Term } from "./cassette/term"
-
 import { MCArray, ModelContainerBase } from "../model/container/base"
 
 import { MultiIndexedContainer } from "../model/container/multi"
@@ -13,20 +9,14 @@ import { Scheduler } from "../common/scheduler"
 /**
  * Class for template.
  *
- * @class      Template (name)
+ * @param      {Source}  parent   The Source parent object.
+ * @param      {Object}  data     The data object hosting attribute properties from the HTML template. 
+ * @param      {Object}  presets  The global presets object.
+ * @param      {external:HTMLElement}  element  The element that the Source will bind to. 
  */
-export class Template extends Source {
+export class SourceTemplate extends Source {
 
-    /**
-     * Constructs the object.
-     *
-     * @param      {Source}  parent   The Source parent object.
-     * @param      {Object}  data     The data object hosting attribute properties from the HTML template. 
-     * @param      {Object}  presets  The global presets object.
-     * @param      {HTMLElement}  element  The element that the Source will bind to. 
-     */
     constructor(parent = null, data, presets, element) {
-
         super(parent, data, presets, element);
 
         this.cases = [];
@@ -36,7 +26,7 @@ export class Template extends Source {
         this.terms = [];
         this.range = null;
         this.prop_elements = [];
-        this.____SCHEDULED____ = false;
+        this._SCHD_ = false;
     }
 
     /**
@@ -71,7 +61,7 @@ export class Template extends Source {
         }
 
         this.ele.style.position = this.ele.style.position;
-        
+
         Scheduler.queueUpdate(this);
 
         this.activeSources = output;
@@ -100,13 +90,13 @@ export class Template extends Source {
             var out = [];
 
             for (let i = 0, l = this.cases.length; i < l; i++)
-                if (!exists.has(this.cases[i].model)) {
+                if (!exists.has(this.cases[i]._m)) {
                     this.cases[i].destroy();
                     this.cases.splice(i, 1);
                     l--;
                     i--;
                 } else
-                    exists.set(this.cases[i].model, false);
+                    exists.set(this.cases[i]._m, false);
 
 
             exists.forEach((v, k, m) => {
@@ -130,7 +120,7 @@ export class Template extends Source {
             for (let j = 0; j < this.cases.length; j++) {
                 let Source = this.cases[j];
 
-                if (Source.model == item) {
+                if (Source._m == item) {
                     this.cases.splice(j, 1);
                     Source.dissolve();
                     break;
@@ -184,7 +174,7 @@ export class Template extends Source {
 
         let container = data[this.prop];
 
-        if (container && (container instanceof ModelContainerBase || container.____self____)) {
+        if (container && (container instanceof ModelContainerBase || container._slf_)) {
 
             this.cache = data;
 
@@ -197,7 +187,7 @@ export class Template extends Source {
             } else if (own_container instanceof MCArray) {
                 this.cull(own_container)
             } else {
-                own_container = data.____self____.data[this.prop]
+                own_container = data._slf_.data[this.prop]
                 if (own_container instanceof ModelContainerBase) {
                     own_container.addView(this);
                     this.cull(this.get())
@@ -207,7 +197,7 @@ export class Template extends Source {
     }
 
     get() {
-        if (this.model instanceof MultiIndexedContainer) {
+        if (this._m instanceof MultiIndexedContainer) {
             if (this.data.index) {
                 let index = this.data.index;
 
@@ -215,15 +205,15 @@ export class Template extends Source {
 
                 query[index] = this.getTerms();
 
-                return this.model.get(query)[index];
+                return this._m.get(query)[index];
             } else
                 console.warn("No index value provided for MultiIndexedContainer!")
         } else {
-            let source = this.model.source;
+            let source = this._m.source;
             let terms = this.getTerms();
 
             if (source) {
-                this.model.destroy();
+                this._m.destroy();
 
                 let model = source.get(terms, null);
 
@@ -231,7 +221,7 @@ export class Template extends Source {
                 model.addView(this);
             }
 
-            return this.model.get(terms);
+            return this._m.get(terms);
         }
         return [];
     }

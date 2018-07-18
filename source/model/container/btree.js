@@ -1,14 +1,12 @@
 import { ModelContainerBase, MCArray } from "./base"
 
-import { NumberSchemaConstructor } from "../../schema/schemas"
-
-/** @namespace Model */
+import { NumberSchemeConstructor } from "../../schema/schemas"
 
 export class BTreeModelContainer extends ModelContainerBase {
 
     constructor(schema) {
 
-        if(!schema || !(schema.parser) ||  !(schema.parser instanceof NumberSchemaConstructor))
+        if(!schema || !(schema.parser) ||  !(schema.parser instanceof NumberSchemeConstructor))
             throw new Error("BTreeModelContainer's MUST use a parser schema that is or inherits from NumberType schema and returns numerical values.");
         
         super(schema);

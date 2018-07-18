@@ -1,18 +1,41 @@
+/**
+ * Base class for an object that binds to and observes a Model.
+ *@alias View
+ *@memberof module:wick.core.view
+ */
 export class View{
 
 	constructor(){
-
-		this.next = null;
-		this.model = null;
+		/**
+		 * property
+		 */
+		this.nx = null;
+		this.pv = null;
+		this._m = null;
 	}
 
+	/**
+     * Unbinds the View from its Model and sets all properties to undefined. Should be called by any class extending View
+	 * ``` js
+	 * class ExtendingView extends wick.core.view.View{
+	 * 		destroy(){
+	 * 			//... do some stuff ...
+	 * 			super.destroy();
+	 * 		}
+	 * }
+	 * ```
+     * @protected
+     */
 	destroy(){
 
-		if(this.model)
-			this.model.removeView(this);
+		if(this._m)
+			this._m.removeView(this);
+	
+		this._m = undefined;
+		this.nx = undefined;
 	}	
 	/**
-		Called a Model when its data has changed.
+		Called by a Model when its data has changed.
 	*/
 	update(data){
 
@@ -38,7 +61,7 @@ export class View{
 	}
 	unsetModel(){
 
-		this.next = null;
-		this.model = null;
+		this.nx = null;
+		this._m = null;
 	}
 }

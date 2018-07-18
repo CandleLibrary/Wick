@@ -5,151 +5,95 @@
 		[
 			[
 				"CSS",
-				"CSS_OM"
+				"CSSParser"
 			],
 			[
-				"import",
-				"imported_presets"
+				"css",
+				"css_string"
 			],
 			[
-				"ine",
-				"innerHTML"
+				"Ac",
+				"ACTIVE"
 			],
 			[
-				"ch",
-				"child"
+				"tra",
+				"transitionIn"
 			],
 			[
-				"impo",
-				"imported_presets"
-			],
-			[
-				"ele",
+				"el",
 				"element"
 			],
 			[
-				"Sou",
-				"SourceManager"
+				"o",
+				"o_el"
 			],
 			[
-				"Sour",
-				"SourcePackage"
+				"e",
+				"i_el"
+			],
+			[
+				"view",
+				"views"
+			],
+			[
+				"set",
+				"setTimeout"
+			],
+			[
+				"my-",
+				"my-other-input"
+			],
+			[
+				"at",
+				"attrib_name"
+			],
+			[
+				"atr",
+				"attribute"
+			],
+			[
+				"prop",
+				"prop_name"
 			],
 			[
 				"tag",
 				"tagname"
 			],
 			[
-				"le",
-				"length"
+				"pre",
+				"parent_element"
 			],
 			[
-				"lex",
-				"lexer"
-			],
-			[
-				"s",
-				"style"
-			],
-			[
-				"sk",
-				"skeletons"
-			],
-			[
-				"bac",
-				"background-color\tproperty"
-			],
-			[
-				"t",
-				"type"
-			],
-			[
-				"prop",
-				"prototype"
-			],
-			[
-				"Css",
-				"CSSRootNode"
-			],
-			[
-				"get",
-				"getRule"
-			],
-			[
-				"is",
-				"isArray"
-			],
-			[
-				"lin",
-				"line_width"
-			],
-			[
-				"lin_",
-				"line_style"
-			],
-			[
-				"ne",
-				"need_group"
-			],
-			[
-				"v",
-				"virtual"
-			],
-			[
-				"back",
-				"background-color"
-			],
-			[
-				"rul",
-				"rule"
-			],
-			[
-				"par",
-				"parser"
-			],
-			[
-				"pars",
-				"parseRule"
-			],
-			[
-				"rule",
-				"rules"
-			],
-			[
-				"from",
-				"fromString"
-			],
-			[
-				"col",
-				"colorRule"
-			],
-			[
-				"term",
-				"term"
-			],
-			[
-				"new",
-				"new_term"
-			],
-			[
-				"te",
-				"term"
-			],
-			[
-				"pa",
-				"ParseNotation"
-			],
-			[
-				"ter",
-				"terms"
-			],
-			[
-				"pr",
-				"prop"
+				"att",
+				"attrib"
 			],
 			[
 				"p",
-				"properties"
+				"prop"
+			],
+			[
+				"ta",
+				"tag_index"
+			],
+			[
+				"in",
+				"innerHTML"
+			],
+			[
+				"ill",
+				"ill_element"
+			],
+			[
+				"Ca",
+				"CaseConstructor"
+			],
+			[
+				"ex",
+				"expected_error_message"
+			],
+			[
+				"HTML",
+				"HTML_text"
 			],
 			[
 				"Mod",
@@ -204,12 +148,16 @@
 				"ModelBase"
 			],
 			[
-				"el",
-				"element_root"
+				"par",
+				"parent_lvl"
 			],
 			[
-				"in",
-				"index"
+				"get",
+				"getElement"
+			],
+			[
+				"ch",
+				"children"
 			],
 			[
 				"da",
@@ -248,6 +196,10 @@
 				"result"
 			],
 			[
+				"new",
+				"new_items"
+			],
+			[
 				"ad",
 				"add_list"
 			],
@@ -264,24 +216,12 @@
 				"insert"
 			],
 			[
-				"e",
-				"e_item"
-			],
-			[
-				"ex",
-				"existing_items"
-			],
-			[
 				"id",
 				"identifier"
 			],
 			[
 				"__get",
 				"__getAll__"
-			],
-			[
-				"set",
-				"setBounds"
 			],
 			[
 				"retu",
@@ -326,6 +266,10 @@
 			[
 				"SK",
 				"SkeletonCase"
+			],
+			[
+				"s",
+				"skeleton"
 			],
 			[
 				"Cas",
@@ -496,105 +440,26 @@
 	"buffers":
 	[
 		{
-			"file": "source/common/css/parser/tree/root.js",
+			"contents": "/*\n    Boring Source stuff\n*/\nimport { Source } from \"./source\"\n\nimport { Template } from \"./template\"\n\nimport { Skeleton } from \"./skeleton\"\n/* \n    Cassettes\n*/\nimport { FilterLimit } from \"./cassette/filter_limit\"\n\nimport { Cassette, CloseCassette } from \"./cassette/cassette\"\n\nimport { Form } from \"./cassette/form\"\n\nimport { Input } from \"./cassette/input\"\n\nimport { Filter } from \"./cassette/filter\"\n\nimport { Term } from \"./cassette/term\"\n\nimport { Exporter } from \"./cassette/exporter\"\n\nimport { ImportQuery } from \"./cassette/import_query\"\n\nimport { DataEdit } from \"./cassette/data_edit\"\n\nimport { Exists, NotExists } from \"./cassette/exists\"\n\nimport {\n    EpochDay,\n    EpochTime,\n    EpochDate,\n    EpochMonth,\n    EpochYear,\n    EpochToDateTime\n} from \"./cassette/epoch\"\n\nlet PresetCassettes = {\n    raw: Cassette,\n    cassette: Cassette,\n    form: Form,\n    input: Input,\n    export: Exporter,\n    iquery: ImportQuery,\n    edt: EpochToDateTime,\n    etime: EpochTime,\n    eday: EpochDay,\n    edate: EpochDate,\n    eyear: EpochYear,\n    emonth: EpochMonth,\n    exists: Exists,\n    not_exists: NotExists,\n    data_edit: DataEdit,\n    term: Term,\n    limit: FilterLimit\n}\n\nimport { Tap } from \"./tap/tap\"\nimport { Pipe } from \"./pipe/pipe\"\nimport { IO } from \"./io/io\"\n\n/**\n * @modele Wick HTML AST\n * \n * When the SourceConstructor parses a template tag, it builds an abstract syntex tree , creating node for every tag it incounters.\n * This tree is then used to construct a SourceSkeleton tree, using parsed tag names, \n */\n\n/**\n * Class for root.\n *\n * @class      Root (name)\n */\nexport class Root {\n    constructor() {\n        this.html = \"\";\n        this.children = [];\n        this.tag_index = 1;\n    };\n\n    addChild(child) {\n        child.parent = this;\n        this.children.push(child);\n    }\n\n    constructSkeleton(presets) {\n        let element = document.createElement(\"div\")\n        element.innerHTML = this.html;\n        let root_skeleton = new Skeleton(element);\n        for (let i = 0, l = this.children.length; i < l; i++)\n            this.children[i].constructSkeleton(root_skeleton.children, presets);\n        return root_skeleton;\n    }\n\n    getIndex() {\n        return this.tag_index++;\n    }\n\n    toJSON() {\n        return {\n            children: this.children,\n            html: this.html\n        }\n    }\n\n    offset(increase = 0) {\n        let out = this.tag_count;\n        this.tag_count += increase;\n        return out;\n    }\n}\n\nexport class GenericNode {\n\n    constructor(tagname, attributes, parent, MiniParse, presets) {\n\n        this.parent = null;\n        this.tagname = tagname;\n        this.attributes = attributes || {};\n        this.element = null;\n        this.IS_NULL = false;\n        this.CONSUMES_TAG = true;\n        this.CONSUMES_SAME = false;\n        this.children = [];\n        this.prop_name = null;\n        this.html = \"\";\n        this.index_tag = \"\"\n        this.open_tag = \"\";\n        this.close_tag = \"\";\n        this.tag_index = 0;\n        this.index = 0;\n\n        if (parent)\n            parent.addChild(this);\n\n        if (MiniParse)\n            this.treeParseAttributes(MiniParse, presets);\n    };\n\n    finalize(ctx) {\n\n        ctx.html += this.open_tag + this.index_tag + this.html + this.close_tag;\n    }\n\n    replaceChild(child, new_child) {\n        for (let i = 0; i < this.children.length; i++)\n\n            if (this.children[i] == child) {\n                this.children[i] = new_child;\n                new_child.parent = this;\n                child.parent = null;\n                return\n            }\n    }\n\n    removeChild(child) {\n\n        for (let i = 0; i < this.children.length; i++)\n            if (this.children[i] == child)\n                return this.children.splice(i, 1);\n    }\n\n    addChild(child) {\n\n        if (child instanceof TapNode && !(this instanceof SourceNode))\n            return this.parent.addChild(child);\n\n        child.parent = this;\n        this.children.push(child);\n    }\n\n    setAttribProp(name) {\n\n        if (!this.prop_name) this.prop_name = name;\n\n        for (let i = 0; i < this.children.length; i++)\n            this.children[i].setAttribProp(name);\n    }\n\n    /**\n     *  Builds ASTs off of attributes. \n     *  \n     *  TODO: Parse more generic attribute structures, such as style=\"border_color=[color]\"\n     *\n     * @param      {Function}  MiniParse  The mini parse function\n     * @param      {Object}    presets    The global presets object. \n     */\n    treeParseAttributes(MiniParse, presets) {\n\n        let i = -1;\n\n        for (let n in this.attributes) {\n            let attrib = this.attributes[n];\n            if (attrib[0] == \"<\") {\n                let root = new SourceNode(\"\", null, null);\n                root.tag_index = (i < 0) ? (i = this.getIndex(), this.index_tag = `##:${i} `, this.index = i) : i;\n                MiniParse(attrib, root, presets);\n                root.children[0].setAttribProp(n);\n                this.addChild(root.children[0]);\n            }\n        }\n    }\n\n    getMissingAttribute(name){\n        \n        if(this.attributes[name])\n            return this.attributes[name];\n        if(this.parent && this.parent.getMissingAttribute)\n            return this.parent.getMissingAttribute(name);\n        return null;\n    }\n\n    parseAttributes() {\n\n        let out = {};\n\n        for (let name in this.attributes) {\n            if(!this.attributes[name] && this.parent && this.parent.getMissingAttribute)\n                out[name] = this.parent.getMissingAttribute(name);\n            else\n                out[name] = this.attributes[name];\n        }\n\n        out.prop = this.prop_name;\n\n        return out;\n    }\n\n    addProp(lexer, prop_name, parseFunction, presets) {\n\n        if (this.prop_name !== prop_name)\n            this.split(new IONode(prop_name, this.attributes, null, this, this.getIndex()), prop_name);\n        else\n            new IONode(prop_name, this.attributes, this, this, this.getIndex());\n    }\n\n    toJSON() {\n\n        return {\n            children: this.children,\n            tagname: this.tagname,\n            tag_count: this.tag_count,\n            tag: { open_tag: this.open_tag, close_tag: this.close_tag },\n            html: this.html,\n        }\n    }\n\n    split(node, prop_name) {\n\n        if (node) {\n\n            if (this.prop_name) {\n\n                if (prop_name == this.prop_name)\n                    this.addChild(node);\n                else {\n                    let r = new this.constructor(this.tagname, this.attributes, null);\n                    r.CONSUMES_SAME = (r.CONSUMES_TAG) ? (!(r.CONSUMES_TAG = !1)) : !1;\n                    r.prop_name = prop_name;\n                    r.addChild(node);\n                    return this.parent.split(r, prop_name);\n                }\n            } else {\n                this.addChild(node);\n                this.prop_name = prop_name;\n                this.parent.removeChild(this);\n                return this.parent.split(this, prop_name);\n            }\n        } else {\n\n            if (this.prop_name) {\n\n                if (prop_name == this.prop_name) { /* NO OP */ } else {\n\n                    let r = new this.constructor(this.tagname, this.attributes, null);\n                    r.prop_name = prop_name;\n                    return this.parent.split(r, prop_name);\n                }\n            } else {\n\n                this.parent.removeChild(this);\n                return this.parent.split(this, prop_name);\n            }\n        }\n\n        return -1;\n    }\n\n\n\n    getIndex() {\n\n        if (this.tag_index > 0) return this.tag_index++;\n\n        if (this.parent) this.index = this.parent.getIndex();\n\n        return this.index;\n    }\n\n    constructSkeleton(receiving_array, presets) {\n\n        let skeleton = this.createSkeletonConstructor(presets);\n\n        receiving_array.push(skeleton)\n\n        for (let i = 0; i < this.children.length; i++)\n            this.children[i].constructSkeleton(skeleton.children, presets);\n\n        return skeleton\n    }\n\n    createSkeletonConstructor(presets) {\n\n        let skeleton = new Skeleton(this.getElement(), this.getConstructor(presets), this.parseAttributes(), presets, this.index);\n\n        return skeleton;\n    }\n\n    getConstructor() {\n\n        return null;\n    }\n\n    getElement() {\n\n        return this.element;\n    }\n}\n\nexport class SourceNode extends GenericNode {\n\n    constructor(tagname, attributes, parent) {\n\n        super(tagname, attributes, parent);\n    };\n\n    finalize(ctx) {\n\n        ctx.html += this.html;\n    }\n\n    addProp(lexer, prop_name, parseFunction, presets) {\n\n        if (lexer.text == \"(\" && lexer.peek().text == \"(\") {\n\n            lexer.assert(\"(\");\n\n            lexer.assert(\"(\");\n\n            let template = new TemplateNode(\"list\", { prop: prop_name }, this, this);\n\n            template.parse(lexer, parseFunction, presets);\n\n            lexer.assert(\")\");\n\n            let out = lexer.pos + 1;\n\n            lexer.assert(\")\");\n\n            return out;\n        }\n    }\n\n    getConstructor() {\n\n        return Source;\n    }\n\n    split(node, prop_name) {\n\n        if (node) this.addChild(node);\n    }\n}\n\nexport class TemplateNode extends GenericNode {\n\n    constructor(tagname, attributes, parent, ctx) {\n        console.log(attributes)\n        super(tagname, attributes, parent);\n\n        this.prop_name = attributes.prop;\n\n        this.index = this.getIndex();\n        ctx.html += `<tmpl>##:${this.index} </tmpl>`\n        this.filters = [];\n        this.terms = [];\n        this.templates = [];\n    };\n\n    addChild(child) {\n\n        if (child instanceof FilterNode)\n            this.filters.push(child);\n        else if (child instanceof TermNode)\n            this.terms.push(child);\n        else if (child instanceof SourceNode) {\n\n            if (this.templates.length > 0) throw new Error(\"Only one Source allowed in a Template.\");\n\n            this.templates.push(child);\n\n            child.tag_index = 1;\n\n            this.html = child.html;\n\n        } else throw new Error(\"Templates only support Filter, Term or Source elements.\")\n    }\n\n    constructSkeleton(receiving_array, presets) {\n\n        let element = document.createElement(\"div\");\n\n        element.innerHTML = this.html;\n\n        let skeleton = new Skeleton(this.getElement(), Template, this.parseAttributes(), presets, this.index);\n\n        skeleton.filters = this.filters.map((filter) => filter.createSkeletonConstructor(presets))\n\n        skeleton.terms = this.terms.map((term) => term.createSkeletonConstructor(presets))\n\n\n        for (let i = 0, l = this.templates.length; i < l; i++) {\n\n            let template = this.templates[i];\n\n            template.element = document.createElement(\"div\");\n\n            template.element.innerHTML = template.html;\n\n            template.constructSkeleton(skeleton.templates, presets);\n        }\n\n        receiving_array.push(skeleton)\n    }\n\n    getElement() {\n\n        let div = document.createElement(\"list\");\n\n        return div;\n    }\n\n    addProp(lexer, prop_name, parseFunction, presets) {\n        //ctx.html += prop_name;\n    }\n\n    parse(lexer, parseFunction, presets) {\n\n        let ctx = { html: \"\" };\n\n        let root = new Root();\n\n        while (lexer.text !== \")\" && lexer.peek().text !== \")\") {\n\n            if (!lexer.text) throw new Error(\"Unexpected end of Output. Missing '))' \");\n\n            let out = parseFunction(lexer, this, presets);\n\n            if (out instanceof SourceNode)\n                this.html = out.html;\n        }\n    }\n\n    split(node, prop_name) {\n\n        if (node)\n            this.addChild(node);\n\n        return this.tag_count;\n    }\n}\n\nexport class TapNode extends GenericNode {\n    constructor(tagname, attributes, parent) {\n        super(tagname, attributes, parent);\n    };\n\n    finalize(ctx) {\n        ctx.html += this.html;\n    }\n\n    getConstructor(presets) {\n        let $class = this.attributes.w_class;\n\n        if ($class) {\n            let t = (presets.imported.tap[$class]);\n            if (Tap.isPrototypeOf(t))\n                return t;\n        }\n\n        return Tap;\n    }\n\n    split(node, prop_name) {\n\n        if (this.attributes.w_class) {\n            if (node) this.addChild(node);\n        } else\n            super.split(node,prop_name);\n\n    }\n}\n\n\nexport class FilterNode extends GenericNode {\n    constructor(tagname, attributes, parent) {\n        super(tagname, attributes, parent);\n        this.CONSUMES_TAG = false;\n    };\n\n    finalize(ctx) {}\n\n    getConstructor(presets) {\n        return Tap;\n    }\n\n    addProp(lexer, prop_name, parseFunction, presets) {\n        this.attributes.prop = prop_name;\n    }\n}\n\n\nexport class TermNode extends GenericNode {\n    constructor(tagname, attributes, parent) {\n        super(tagname, attributes, parent);\n    };\n\n    finalize(ctx) {}\n\n    getConstructor(presets) {\n        return Tap;\n    }\n\n    addProp(lexer, prop_name, parseFunction, presets) {\n        this.attributes.prop = prop_name;\n    }\n}\n\n\n\nexport class PipeNode extends GenericNode {\n\n    constructor(tagname, attributes, parent) {\n        super(tagname, attributes, parent);\n    };\n\n    finalize(ctx, presets) {\n        ctx.html += this.html;\n    }\n\n    getConstructor(presets, finalizing = false) {\n        let constructor = Pipe;\n        return constructor;\n    }\n\n    split(node, prop_name) {\n        if (!(this.parent instanceof PipeNode) &&\n            !(this.parent instanceof TapNode)\n        ) {\n            //Need a TapNode to complete the pipeline\n            let tap = new TapNode(\"\", {}, null)\n            this.prop_name = this.prop_name;\n            this.parent.replaceChild(this, tap);\n            tap.addChild(this);\n        }\n\n        super.split(node, prop_name);\n    }\n}\n\nexport class IONode extends GenericNode {\n    constructor(prop_name, attributes, parent, ctx, index) {\n        super(\"\", null, parent);\n        this.index = index;\n        ctx.html += `<io prop=\"${prop_name}\">##:${index} </io>`\n        this.prop_name = prop_name;\n        this.CONSUMES_TAG = true;\n    };\n\n    getConstructor(presets) {\n        return IO;\n    }\n}",
+			"file": "source/source/ast.js",
+			"file_size": 14316,
+			"file_write_time": 131763182562598152,
 			"settings":
 			{
-				"buffer_size": 6696,
+				"buffer_size": 14057,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "source/common/css/types/url.js",
+			"contents": "Package Control Messages\n========================\n\nDocBlockr with comments update\n------------------------------\n\n  DoxyDoxygen install\n  -------------------\n  \n  Thanks for installing this package\n  \n  It is highly recommended to restart Sublime Text before first use.\n  ------------------------------------------------------------------\n  \n  Simplified usage instructions\n  =============================\n  \n      - '/**' + 'Enter' to generate documentation of the following definition\n      - 'Alt' + 'Q' to generate documentation of the nearest definition\n      - 'Alt' + 'Q' to wrap and/or update existing documentation\n      - 'Eol' to goto next column\n      - 'Ctrl' + 'Space' to insert snippets\n      - 'Ctrl' + 'Shift' + '[' to fold comments\n      - 'Ctrl' + 'Shift' + ']' to unfold comments\n  \n  More commands and a short tutorial may be found from the palette.\n  \n  \n  Licensing\n  =========\n  \n  If you like DoxyDoxygen, please support development by buying a license. It doesn't cost much! :)\n  \n  \n  More information\n  ================\n  \n  For more information, troubleshooting, customizing settings and more, please visit https://github.com/20Tauri/DoxyDoxygen\n",
 			"settings":
 			{
-				"buffer_size": 541,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/common/css/parser/parser.js",
-			"settings":
-			{
-				"buffer_size": 412,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/common/css/parser/properties/props_and_types.js",
-			"settings":
-			{
-				"buffer_size": 10068,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"contents": "import { SourceBase } from \"./base\"\n\nimport { ModelBase } from \"../model/base\"\n\nimport { Getter } from \"../network/getter\"\n\nimport { Cassette } from \"./cassette/cassette\"\n\nexport class Source extends SourceBase {\n\n    /**\n        Source constructor. Builds a Source object.\n        @params [DOMElement] element - A DOM <template> element that contains a <case> element.\n        @params [RouterPresets] presets\n        @params [Source] parent - The parent Source object, used internally to build Source's in a hierarchy\n        @params [Model] model - A model that can be passed to the case instead of having one created or pulled from presets. \n        @params [DOM]  WORKING_DOM - The DOM object that contains templates to be used to build the case objects. \n    */\n    constructor(parent = null, data, presets, element) {\n\n        super(parent, data, presets, element)\n\n        if(data.wick_style){\n            \n        }\n\n        this.USE_SECURE = presets.USE_HTTPS;\n        this.named_elements = {};\n        this.template = null;\n        this.prop = null;\n        this.url = null;\n        this.presets = presets;\n        this.receiver = null;\n        this.query = {};\n        this.REQUESTING = false;\n        this.exports = null;\n\n\n        this.filter_list = [];\n        this.templates = [];\n        this.filters = [];\n        this.is = 0;\n    }\n\n    destroy() {\n\n        this.parent = null;\n\n        if (this.receiver)\n            this.receiver.destroy();\n\n        for (let i = 0, l = this.templates.length; i < l; i++)\n            this.templates[i].destroy();\n\n        super.destroy();\n    }\n\n    /**\n        Sets up Model connection or creates a new Model from a schema.\n    */\n    load(model) {\n\n        this.ACTIVE = true;\n\n        if (this.data.url) {\n            //import query info from the wurl\n            let str = this.data.url;\n            let cassettes = str.split(\";\");\n            this.data.url = cassettes[0];\n\n            for (var i = 1; i < cassettes.length; i++) {\n                let cassette = cassettes[i];\n\n                switch (cassette[0]) {\n                    case \"p\":\n                        //TODO\n                        this.url_parent_import = cassette.slice(1)\n                        break;\n                    case \"q\":\n                        this.url_query = cassette.slice(1);\n                        break;\n                    case \"<\":\n                        this.url_return = cassette.slice(1);\n                }\n            }\n        }\n\n        this.prop = this.data.prop;\n\n        if (this.data.export) this.exports = this.data.export;\n\n        if (this.model) {\n            model = this.model;\n            this.model = null;\n        }\n\n        if (model && model instanceof ModelBase) {\n\n            if (this.schema) {\n                /* Opinionated Source - Only accepts Models that are of the same type as its schema.*/\n                if (model.constructor != this.schema) {\n                    //throw new Error(`Model Schema ${this.model.schema} does not match Source Schema ${presets.schemas[this.data.schema].schema}`)\n                } else\n                    this.schema = null;\n\n            }\n            this.model = null;\n        }\n\n        if (this.schema)\n            model = new this.schema();\n\n        model.addView(this);\n\n        if (this.model) {\n            if (this.data.url) {\n                this.receiver = new Getter(this.data.url, this.url_return);\n                this.receiver.setModel(model);\n                this.____request____();\n            }\n        } else\n            throw new Error(`No Model could be found for Source constructor! Source schema \"${this.data.schema}\", \"${this.presets.schemas[this.data.schema]}\"; Source model \"${this.data.model}\", \"${this.presets.models[this.data.model]}\";`);\n\n        for (var i = 0; i < this.children.length; i++)\n            this.children[i].load(this.model);\n\n\n    }\n\n    ____request____(query) {\n\n        this.receiver.get(query, null, this.USE_SECURE).then(() => {\n            this.REQUESTING = false;\n        });\n        this.REQUESTING = true;\n    }\n\n    export (exports) {\n\n        this.updateSubs(this.children, exports, true);\n\n        super.export(exports);\n    }\n\n    updateSubs(cassettes, data, IMPORT = false) {\n\n        for (var i = 0, l = cassettes.length; i < l; i++) {\n\n            let cassette = cassettes[i];\n\n            if (cassette instanceof Source)\n                cassette.update(data, true);\n            else {\n                let r_val;\n\n                if (IMPORT) {\n\n                    if (cassette.data.import && data[cassette.data.import]) {\n                        r_val = cassette.update(data, true);\n\n                        if (r_val) {\n                            this.updateSubs(cassette.children, r_val);\n                            continue;\n                        }\n                    }\n                } else {\n                    /** \n                        Overriding the model data happens when a cassette returns an object instead of undefined. This is assigned to the \"r_val\" variable\n                        Any child cassette of the returning cassette will be fed \"r_val\" instead of \"data\".\n                    */\n\n                    r_val = cassette.update(data, true);\n                }\n\n\n                this.updateSubs(cassette.children, r_val || data, IMPORT);\n            }\n        }\n    }\n\n    up(data) {\n        this.model.add(data);\n    }\n\n    update(data, changed_values) {\n        if(this.ACTIVE)\n            this.__down__(data, changed_values);\n    }\n\n    handleUrlUpdate(wurl) {\n        let query_data = null;\n        /* \n            This part of the function will import data into the model that is obtained from the query string \n        */\n        if (wurl && this.data.import) {\n            query_data = {};\n            if (this.data.import == \"null\") {\n                query_data = wurl.getClass();\n            } else {\n                var l = this.data.import.split(\";\")\n                for (var i = 0; i < l.length; i++) {\n                    let n = l[i].split(\":\");\n\n                    let class_name = n[0];\n                    let p = n[1].split(\"=>\");\n                    var key_name = p[0];\n                    var import_name = p[1];\n                    if (class_name == \"root\") class_name = null;\n                    query_data[import_name] = wurl.get(class_name, key_name);\n                }\n            }\n        }\n\n        if (wurl && this.data.url) {\n\n            let query_data = {};\n            if (this.url_query) {\n                var l = this.url_query.split(\";\")\n                for (var i = 0; i < l.length; i++) {\n                    let n = l[i].split(\":\");\n                    let class_name = n[0];\n                    let p = n[1].split(\"=>\");\n                    var key_name = p[0];\n                    var import_name = p[1];\n                    if (class_name == \"root\") class_name = null;\n                    query_data[import_name] = wurl.get(class_name, key_name);\n                }\n            }\n\n            this.____request____(query_data)\n        }\n\n        if (!this.model) {\n\n            this.model = new this.model_constructor();\n\n\n            if (this.getter)\n                this.getter.setModel(this.model);\n\n            this.model.addView(this);\n        }\n\n        if (query_data) {\n            if (!this.model.add(query_data)) {\n                this.update(this.model.get());\n            }\n        } else\n            this.update(this.model.get());\n    }\n\n    transitionIn(index = 0) {\n\n        super.transitionIn(index)\n        return\n\n        let transition_time = 0;\n\n        for (let i = 0, l = this.templates.length; i < l; i++)\n            transition_time = Math.max(transition_time, this.templates[i].transitionIn(index));\n\n        transition_time = Math.max(transition_time, super.transitionIn(index));\n\n        this.updateDimensions();\n\n        return transition_time;\n    }\n\n    /**\n        Takes as an input a list of transition objects that can be used\n    */\n    transitionOut(index = 0, DESTROY = false) {\n\n        let transition_time = 0;\n\n        for (let i = 0, l = this.templates.length; i < l; i++)\n            transition_time = Math.max(transition_time, this.templates[i].transitionOut(index));\n\n        transition_time = Math.max(transition_time, super.transitionOut(index, DESTROY));\n\n        return transition_time;\n    }\n\n    finalizeTransitionOut() {\n\n        for (let i = 0, l = this.templates.length; i < l; i++)\n            this.templates[i].finalizeTransitionOut();\n\n        super.finalizeTransitionOut();\n    }\n\n    setActivating() {\n        if (this.parent)\n            this.parent.setActivating();\n    }\n\n    getNamedElements(named_elements) {\n        for (let comp_name in this.named_elements)\n            named_elements[comp_name] = this.named_elements[comp_name];\n    }\n}\n\nexport class CustomSource extends Source {\n    constructor(element, data = {}, presets = {}) {\n        super(null, element, data, presets)\n    }\n}",
-			"file": "source/source/source.js",
-			"file_size": 9279,
-			"file_write_time": 131761523527195707,
-			"settings":
-			{
-				"buffer_size": 8999,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "test/suite/source_constructor_tests.js",
-			"settings":
-			{
-				"buffer_size": 8081,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/source/constructor.js",
-			"settings":
-			{
-				"buffer_size": 8768,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/common/css/types/color.js",
-			"settings":
-			{
-				"buffer_size": 10370,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/common/string_parsing/lexer.js",
-			"settings":
-			{
-				"buffer_size": 7443,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/source/package.js",
-			"settings":
-			{
-				"buffer_size": 1308,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/source/manager.js",
-			"settings":
-			{
-				"buffer_size": 52,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
+				"buffer_size": 1175,
+				"line_ending": "Windows",
+				"name": "Package Control Messages",
+				"read_only": true,
+				"scratch": true
 			}
 		}
 	],
@@ -606,9 +471,21 @@
 	"command_palette":
 	{
 		"height": 392.0,
-		"last_filter": "pack",
+		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"live",
+				"MarkdownLivePreview: Edit Current File"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
 			[
 				"pack",
 				"Package Control: Install Package"
@@ -618,7 +495,7 @@
 	},
 	"console":
 	{
-		"height": 288.0,
+		"height": 217.0,
 		"history":
 		[
 		]
@@ -634,76 +511,104 @@
 	},
 	"expanded_folders":
 	[
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick"
+		"/D/_$_$_$_/wick"
 	],
 	"file_history":
 	[
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/length.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/parser/properties/props_and_types.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/test/suite/css_tests.js",
-		"/D/Users/Anthony/Desktop/test.html",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/test/index.html",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/index.html",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/source/template.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/parser/tree/base.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/source/skeleton.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/parser/properties/properties.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/package.json",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/build_config/css.config.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/wick.css.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/build_config/browserdev.config.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/root/wick.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/animation/transformto.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/parser/parser.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/root/css.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/wick-css.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/build_config/minibuild.config.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/design/path.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/string.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/shape.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/percentage.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/number.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/id.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/color.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/cubic_bezier.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/types/url.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/math/cubic_bezier.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/README.md",
-		"/D/Users/Anthony/Paranoms/pytrucks/.git/modules/static/js/libraries/wick/COMMIT_EDITMSG",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/math/consts.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/math/quadratic_bezier.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/design/color.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/wick.node.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/root/wick_node.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/string_parsing/lexer.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/wick-min.js",
-		"/D/Users/Anthony/Desktop/jquery",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/parser/properties/types/type.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/parser/tree/root.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/animation/animation.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/source/constructor.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/test/test.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/css/parser/types/type.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/common/common.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/animation/color.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/schema/types/date.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/source/cassette/cassette.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/schema/constructor.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/test/suite/model_tests.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/build/wick.css",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/schema/time_type.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/linker/linker.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/linker/element.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/model/model_base.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/case/rivet.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/linker/component.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/case/cassette/epoch.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/case/case_template.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/case/case_constructor_ast.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/case/case.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/case/case_skeleton.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/case/case_constructor.js",
-		"/D/Users/Anthony/Paranoms/pytrucks/static/js/libraries/wick/source/wick.js",
+		"/D/_$_$_$_/wick/roadmap.md",
+		"/D/_$_$_$_/wick/source/common/css/parser/tree/root.js",
+		"/D/_$_$_$_/wick_temp/wick/source/linker/wurl.js",
+		"/D/_$_$_$_/wick_temp/wick/source/linker/linker.js",
+		"/D/_$_$_$_/wick_temp/wick/source/case.js",
+		"/D/_$_$_$_/wick/package.json",
+		"/D/_$_$_$_/wick_temp/wick/source/cassette/filter.js",
+		"/D/_$_$_$_/wick_temp/wick/source/wick.js",
+		"/D/_$_$_$_/wick/source/common/css/parser/tree/base.js",
+		"/D/_$_$_$_/wick/source/source/source.js",
+		"/D/_$_$_$_/wick/source/source/base.js",
+		"/D/_$_$_$_/wick/source/common/scheduler.js",
+		"/D/_$_$_$_/wick/source/source/pipe/base.js",
+		"/D/_$_$_$_/wick/source/network/router/component.js",
+		"/D/_$_$_$_/wick/source/source/skeleton.js",
+		"/D/_$_$_$_/wick_temp/dif.txt",
+		"/D/_$_$_$_/wick_temp/wick/source/model/date_model_container.js",
+		"/D/_$_$_$_/wick_temp/wick/source/model/binary_container.js",
+		"/D/_$_$_$_/wick_temp/wick/source/model/schema_types.js",
+		"/D/_$_$_$_/wick_temp/wick/source/cassette/exists.js",
+		"/D/_$_$_$_/wick_temp/wick/source/cassette/epoch_to_dt.js",
+		"/D/_$_$_$_/wick_temp/wick/source/common/url/url.js",
+		"/D/_$_$_$_/wick_temp/wick/source/model/model.js",
+		"/D/_$_$_$_/wick/source/animation/transformto.js",
+		"/D/_$_$_$_/wick/source/animation/style_mappings.js",
+		"/D/_$_$_$_/wick/source/animation/style.js",
+		"/D/_$_$_$_/wick/source/animation/plue.js",
+		"/D/_$_$_$_/wick/source/animation/color.js",
+		"/D/_$_$_$_/wick/build/wick-dev.js",
+		"/D/_$_$_$_/wick/source/animation/animation.js",
+		"/D/_$_$_$_/wick/source/model/base.js",
+		"/D/_$_$_$_/wick/source/model/model.js",
+		"/D/_$_$_$_/wick/source/animation/transition/transitioner.js",
+		"/D/_$_$_$_/wick/build/wick-min.js",
+		"/D/_$_$_$_/wick/source/common/common.js",
+		"/D/_$_$_$_/wick/source/common/string_parsing/lexer.js",
+		"/D/_$_$_$_/wick/source/common/css/parser/parser.js",
+		"/D/_$_$_$_/wick/source/source/template.js",
+		"/D/_$_$_$_/wick/source/common/url/url.js",
+		"/D/_$_$_$_/wick/source/common/string_parsing/tokenizer.js",
+		"/D/_$_$_$_/wick/source/common/css/parser/ast/base.js",
+		"/D/_$_$_$_/wick/source/common/event/touch_scroller.js",
+		"/D/_$_$_$_/wick/documents/manual/source.md",
+		"/D/_$_$_$_/wick/build/build_config/node.config.js",
+		"/D/_$_$_$_/wick/source/model/container/btree.js",
+		"/D/_$_$_$_/wick/source/network/router/page.js",
+		"/D/_$_$_$_/wick/build/build_config/minibuild_es.config.js",
+		"/D/_$_$_$_/wick/build/build_config/minibuild.config.js",
+		"/D/_$_$_$_/wick/build/build_config/browserdev.config.js",
+		"/D/_$_$_$_/wick/source/source/constructor.js",
+		"/D/_$_$_$_/wick/source/source/ast.js",
+		"/D/_$_$_$_/wick/source/view/view.js",
+		"/D/_$_$_$_/wick/source/network/setter.js",
+		"/D/_$_$_$_/wick/source/network/router/data_template.js",
+		"/D/_$_$_$_/wick/source/network/getter.js",
+		"/D/_$_$_$_/wick/source/model/container/base.js",
+		"/D/_$_$_$_/wick/source/model/container/array.js",
+		"/D/_$_$_$_/wick/test/suite/source_constructor_tests.js",
+		"/D/_$_$_$_/wick/source/root/wick.js",
+		"/D/_$_$_$_/wick/source/source/cassette/form.js",
+		"/D/_$_$_$_/wick/source/source/tap/tap.js",
+		"/D/_$_$_$_/wick/source/source/io/io.js",
+		"/D/_$_$_$_/wick/source/source/cassette/exporter.js",
+		"/D/_$_$_$_/wick/source/source/cassette/data_edit.js",
+		"/D/_$_$_$_/wick/source/source/cassette/cassette.js",
+		"/D/_$_$_$_/wick/source/source/taps/tap.js",
+		"/D/_$_$_$_/wick/source/wick.js",
+		"/D/_$_$_$_/wick/README.md",
+		"/D/_$_$_$_/wick/source/source/source_constructor.js",
+		"/D/_$_$_$_/wick/source/source/pipes/pipe.js",
+		"/D/_$_$_$_/wick/source/source/pipe_base.js",
+		"/D/_$_$_$_/wick/source/source/source_constructor_parser.js",
+		"/D/_$_$_$_/wick/source/source/source_constructor_ast.js",
+		"/D/_$_$_$_/wick/documents/getting_started_with_wick.html",
+		"/D/_$_$_$_/wick/test/suite/mc_tests.js",
+		"/D/_$_$_$_/wick/build/build_config/jsdoc.json",
+		"/D/_$_$_$_/wick/source/schema/types/string.js",
+		"/D/_$_$_$_/wick/source/schema/types/bool.js",
+		"/C/Users/aweathersby/Documents/general notes/fpe_meeting_notes.md",
+		"/D/_$_$_$_/wick/documents/markdown/pipes_and_io.md",
+		"/D/_$_$_$_/wick/test/index.html",
+		"/D/_$_$_$_/wick/index.html",
+		"/C/Users/aweathersby/Documents/temp.txt",
+		"/D/_$_$_$_/wick/.gitignore",
+		"/D/_$_$_$_/wick/test/test.js",
+		"/D/_$_$_$_/wick/test/suite/schema_tests.js",
+		"/C/Users/aweathersby/AppData/Roaming/Sublime Text 3/Packages/Advanced CSV/AdvancedCSV.sublime-settings",
+		"/D/_$_$_$_/wick/source/source/source_skeleton.js",
+		"/C/Users/aweathersby/Downloads/users_7_10_2018 3_28_48 PM.csv",
+		"/D/_$_$_$_/wick/source/case/case_skeleton.js",
+		"/D/_$_$_$_/wick/source/case/case_constructor_ast.js",
+		"/D/_$_$_$_/wick/source/case/case.js",
+		"/D/_$_$_$_/wick/source/case/case_constructor.js",
+		"/D/_$_$_$_/wick/test/suite/caseconstructor_tests.js",
 		"/C/Users/aweathersby/Documents/general notes/Network Maintenance/2018/Jan/molecular_network_maintenance",
 		"/C/Users/aweathersby/Documents/general notes/Network Maintenance/2018/Jan/metro",
 		"/D/_$_$_$_/pytrucks/static/package.json",
@@ -737,46 +642,18 @@
 		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/source/case/case_constructor.js",
 		"/D/_$_$_$_/pytrucks/templates/app/dashboard.html",
 		"/D/_$_$_$_/pytrucks/static/js/mvc/api/formating_functions.js",
-		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/source/schema/bool_type.js",
-		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/source/schema/string_type.js",
-		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/source/linker/linker.js",
-		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/source/linker/component.js",
-		"/D/_$_$_$_/pytrucks/static/js/mvc/cases/calendar/calendar.js",
-		"/D/_$_$_$_/pytrucks/static/js/mvc/cases/nearby_trucks.js",
-		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/source/case/case.js",
-		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/documents/api/Linker.html",
-		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/documents/manual/case.md",
-		"/D/_$_$_$_/wick/source/schema/string_type.js",
-		"/D/_$_$_$_/wick/source/case.js",
-		"/D/_$_$_$_/wick/source/schema/schemas.js",
-		"/D/_$_$_$_/wick/source/cassette/input.js",
-		"/D/_$_$_$_/wick/source/schema/date_type.js",
-		"/D/_$_$_$_/wick/source/schema/schema_type.js",
-		"/C/Users/aweathersby/AppData/Local/Microsoft/Windows/INetCache/Content.Outlook/KACVNG8U/email.txt",
-		"/D/_$_$_$_/wick/source/animation/transformto.js",
-		"/D/_$_$_$_/pytrucks/app.py",
-		"/D/_$_$_$_/pytrucks/common.py",
-		"/D/_$_$_$_/wick/source/case/case_template.js",
-		"/D/_$_$_$_/wick/source/linker/wurl.js",
-		"/D/_$_$_$_/wick/source/model/array_container.js",
-		"/D/_$_$_$_/wick/source/model/model_container.js",
-		"/D/_$_$_$_/wick/source/model/model_base.js",
-		"/D/_$_$_$_/wick/source/view.js",
-		"/D/_$_$_$_/wick/source/common.js",
-		"/D/_$_$_$_/wick/source/model/model.js",
-		"/D/_$_$_$_/wick/documents/api/ModelContainer.html",
-		"/D/_$_$_$_/wick/test.js"
+		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/source/schema/bool_type.js"
 	],
 	"find":
 	{
-		"height": 47.0
+		"height": 40.0
 	},
 	"find_in_files":
 	{
 		"height": 430.0,
 		"where_history":
 		[
-			"D:\\Users\\Anthony\\Paranoms\\pytrucks\\static\\js\\libraries\\wick\\source"
+			"D:\\_$_$_$_\\wick\\source"
 		]
 	},
 	"find_state":
@@ -784,152 +661,91 @@
 		"case_sensitive": true,
 		"find_history":
 		[
-			"lexer",
-			"getElementsByTagName",
-			"appendChild",
-			"document",
 			"skeletons",
-			"element.content",
-			"package",
+			"Element",
+			"consumers",
+			"wick",
+			"Controller",
+			"Model",
+			"build",
+			"views",
+			"structure",
+			"content",
+			"window",
+			"commit",
+			"blockqoute",
+			"### ",
+			"Previous",
+			"9d9eb39",
+			"5c1730",
+			"9271ff",
+			"6becc8",
+			"Initial commit on branch\n    \n    - [x] Changing case structure so that reusable Case components are created when a template is parsed: WIP\n    \n    - [x] Moved structure of linker to use new Case components, elements build\n    them now: WIP\n    \n    - [ ] Need to complete the filter system so that itmes can be sorted and\n    presented on screen\n    \n    - [x] Need to allow Elements to include transition features for advanced\n    page transitions. Allow common components to be excluded from\n    transitioning.\n    \n    Broke Model/View code up into a seperate class named ModelBase.\n    Both Model and ModelContainer inherit from this. This allows Views to\n    attach to ModelContainers and receive updates on items added and removed\n    from containers. CaseTemplates use this to update their scope with new\n    Cases or remove Cases whenever a Model is added to the CaseTemplate's\n    ModelContainer.",
+			"myfootnote1",
+			"version",
+			"Lexer",
+			"element",
+			"load",
+			"Scheduler",
+			"SchemaConstructor",
+			"Scheduler",
+			"Transitioneer",
+			"PresetTransitioners",
+			"Transitioneer",
+			"destructor",
+			"dstr",
+			"./",
+			"Case",
+			"and",
+			"Cases",
+			"./",
+			"pipe",
+			"}\n",
+			"WORKING_DOM",
+			"ParseTag",
+			"HandleTemplateImport",
+			"ParseTag",
+			"HandleTemplateImport",
 			"next",
 			"debugger",
-			"TemplateConstructor",
-			"Lexer",
-			"MiniParse",
-			"Lexer",
-			"Lex",
-			"skeleton",
-			"package",
-			"scripts",
-			"styles",
-			"SourcePackage",
+			"case",
+			"Value",
+			"style",
+			"border",
+			"next",
+			"throw (",
+			".text",
+			"##:",
+			"chldr",
+			"a",
+			"index_tag",
+			"index",
+			"this.index",
+			"next",
 			"text",
-			"ComponentConstructor",
-			"p.",
-			".p",
-			"important",
-			"let",
-			"and_group",
-			"parseSelector",
-			"CSSRootNode",
-			"root",
-			"percentage",
-			"length",
-			"parseRule",
-			"CreateNotationParser",
-			"ParseNotation",
-			"setProp",
-			"this.sp(r.v)",
-			"shadow",
-			"-",
-			"<[\\w\\-]+>",
-			"single_transition",
-			"\\s",
-			"`{1}[^\\n]*`",
-			"-",
-			"’",
-			"‘",
-			"-",
-			"border_top_width",
-			"thin|medium|thick|<length>",
-			"width",
-			"widt",
-			":",
-			"CreateNotationParser",
-			"true",
-			"NEED",
-			"need",
-			"NEED",
-			"OR",
-			"or",
-			"OR",
-			"|",
-			"`",
-			"'",
-			"\"",
-			"-",
-			"image",
-			"repeat_style",
-			"-",
-			"length_percentage",
-			"basic_shape",
-			"-",
-			"let",
-			"parseRule",
-			"CreateNotationParser",
-			"props",
-			"CSS_Bezier",
-			"CBezier",
-			"}\n",
-			"Length",
-			"length",
-			"Length",
-			"\\s",
-			"\"{1}[^\\n]*\"{1}",
-			"\\s",
-			"`{1}[^\\n]*`{1}",
-			"\\-",
-			"<{1}[\\-\\w]+>{1}",
-			" ",
-			"`{1}[^\\n]*`{1}",
-			"`{1}",
-			"`",
-			"\\`",
-			"\\`{1}",
-			"\\`{1}.*\\`{1}",
-			"\\`{1}.+\\`{1}",
-			"\\`{1}.*\\`{1}",
-			" ",
-			"| hidden | scroll | auto | inherit',\n",
-			" ",
-			"\t",
-			" ",
-			"-",
-			"custom_ident",
-			"-",
-			"single_animation_fill_mode",
-			"-",
-			"single_animation_play_state",
-			"-",
+			"assert",
+			"children",
 			",",
-			"-",
-			"time",
-			"length",
-			"frequency",
-			"length",
-			"URL",
-			"props",
-			"rules",
-			"rule",
-			"rules",
-			"-",
-			"<{1}[\\w\\-]*>{1}",
-			"-",
-			"<{1}[\\w\\-]*>{1}",
-			"<{1}\\w*>{1}",
-			"<{1}w*>{1}",
-			"<{1}W*>{1}",
-			"<{1}.*>{1}",
-			"<.+>{1}",
-			"<.+>"
+			"StrongPasswordRequired",
+			"State",
+			"PreferredLanguage",
+			"PasswordNeverExpires",
+			"MobilePhone",
+			"BlockCredential",
+			"constructing_template",
+			"constructing_tempalte",
+			"conso",
+			"cons",
+			"console",
+			"console.log"
 		],
 		"highlight": false,
 		"in_selection": false,
 		"preserve_case": false,
-		"regex": true,
+		"regex": false,
 		"replace_history":
 		[
-			"gebt",
-			"ac",
-			"dc",
-			"skls",
-			"_",
-			"",
-			"_",
-			"",
-			"./source",
-			"source_constructor",
-			"Source"
+			"destroy"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -940,257 +756,62 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "source/common/css/parser/tree/root.js",
+					"file": "source/source/ast.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6696,
+						"buffer_size": 14057,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4129,
-								4129
+								932,
+								932
 							]
 						],
 						"settings":
 						{
-							"history_list_is_closing": true,
-							"markdonw_live_preview_last_run": 1531674028.56,
+							"markdonw_live_preview_last_run": 1531844505.16,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 12,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "source/common/css/types/url.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 541,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								453,
-								453
-							]
-						],
-						"settings":
-						{
-							"markdonw_live_preview_last_run": 1531677453.45,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 10,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "source/common/css/parser/parser.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 412,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								49,
-								49
-							]
-						],
-						"settings":
-						{
-							"markdonw_live_preview_last_run": 1531674315.63,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 676.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 8,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "source/common/css/parser/properties/props_and_types.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10068,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2292,
-								2292
-							]
-						],
-						"settings":
-						{
-							"history_list_is_closing": true,
-							"markdonw_live_preview_last_run": 1531607278.11,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 1525.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 11,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "source/source/source.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 8999,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								804,
-								811
-							]
-						],
-						"settings":
-						{
-							"history_list_is_closing": true,
-							"markdonw_live_preview_last_run": 1531678723.17,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 9,
-					"type": "text"
-				}
-			]
-		},
-		{
-			"selected": 1,
-			"sheets":
-			[
-				{
-					"buffer": 5,
-					"file": "test/suite/source_constructor_tests.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 8081,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1534,
-								1532
-							]
-						],
-						"settings":
-						{
-							"history_list_is_closing": true,
-							"markdonw_live_preview_last_run": 1531678036.4,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1350.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "source/source/constructor.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 8768,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								165,
-								176
-							]
-						],
-						"settings":
-						{
-							"markdonw_live_preview_last_run": 1531680591.58,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 648.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 0,
-					"file": "source/common/css/parser/tree/root.js",
+					"buffer": 1,
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6696,
+						"buffer_size": 1175,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								239,
-								239
+								657,
+								657
 							]
 						],
 						"settings":
 						{
-							"history_list_is_closing": true,
-							"markdonw_live_preview_last_run": 1531674028.56,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"auto_indent": false,
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"tab_width": 2,
+							"word_wrap": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -1198,165 +819,18 @@
 					},
 					"stack_index": 1,
 					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "source/common/css/parser/properties/props_and_types.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10068,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								6723,
-								6723
-							]
-						],
-						"settings":
-						{
-							"history_list_is_closing": true,
-							"markdonw_live_preview_last_run": 1531607278.11,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 4026.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "source/common/css/types/color.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10370,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1886,
-								1886
-							]
-						],
-						"settings":
-						{
-							"markdonw_live_preview_last_run": 1531690244.99,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1275.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 8,
-					"file": "source/common/string_parsing/lexer.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 7443,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								5554,
-								5554
-							]
-						],
-						"settings":
-						{
-							"markdonw_live_preview_last_run": 1531691523.06,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3075.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 9,
-					"file": "source/source/package.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1308,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								387,
-								387
-							]
-						],
-						"settings":
-						{
-							"markdonw_live_preview_last_run": 1531686453.53,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 600.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 10,
-					"file": "source/source/manager.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 52,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								52,
-								52
-							]
-						],
-						"settings":
-						{
-							"markdonw_live_preview_last_run": 1531686542.08,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 7,
-					"type": "text"
 				}
+			]
+		},
+		{
+			"sheets":
+			[
 			]
 		}
 	],
 	"incremental_find":
 	{
-		"height": 34.0
+		"height": 39.0
 	},
 	"input":
 	{
@@ -1382,7 +856,7 @@
 		"cols":
 		[
 			0.0,
-			0.107014551853,
+			0.958706991215,
 			1.0
 		],
 		"rows":
@@ -1394,17 +868,17 @@
 	"menu_visible": true,
 	"output.exec":
 	{
-		"height": 162.0
+		"height": 150.0
 	},
 	"output.find_results":
 	{
 		"height": 0.0
 	},
-	"pinned_build_system": "Packages/User/node.sublime-build",
+	"pinned_build_system": "mocha tests watch",
 	"project": "sublime-wick.sublime-project",
 	"replace":
 	{
-		"height": 85.0
+		"height": 50.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1414,204 +888,208 @@
 		"selected_items":
 		[
 			[
-				"lex",
-				"source\\common\\string_parsing\\lexer.js"
-			],
-			[
-				"cssroo",
-				"source\\common\\css\\parser\\tree\\root.js"
-			],
-			[
-				"colo",
-				"source\\common\\css\\types\\color.js"
-			],
-			[
-				"type",
-				"source\\common\\css\\parser\\properties\\props_and_types.js"
-			],
-			[
-				"skelet",
-				"source\\source\\skeleton.js"
-			],
-			[
-				"tein",
-				"test\\index.html"
-			],
-			[
-				"index",
-				"index.html"
-			],
-			[
-				"source",
-				"test\\suite\\source_constructor_tests.js"
-			],
-			[
-				"sourcecon",
-				"source\\source\\constructor.js"
-			],
-			[
-				"source_constructor",
-				"test\\suite\\source_constructor_tests.js"
-			],
-			[
-				"sourcecou",
-				"test\\suite\\source_constructor_tests.js"
-			],
-			[
-				"sourcetem",
-				"source\\source\\template.js"
-			],
-			[
-				"url",
-				"source\\common\\css\\types\\url.js"
-			],
-			[
-				"prope",
-				"source\\common\\css\\parser\\properties\\properties.js"
-			],
-			[
-				"csspa",
-				"source\\common\\css\\parser\\parser.js"
+				"roa",
+				"roadmap.md"
 			],
 			[
 				"pack",
 				"package.json"
 			],
 			[
-				"wick",
-				"source\\root\\wick.js"
+				"wi",
+				"wishlist.md"
 			],
 			[
-				"length",
-				"source\\common\\css\\types\\length.js"
+				"cssbas",
+				"source\\common\\css\\parser\\tree\\base.js"
 			],
 			[
-				"css_t",
-				"test\\suite\\css_tests.js"
-			],
-			[
-				"shap",
-				"source\\common\\css\\types\\shape.js"
-			],
-			[
-				"ccsb",
-				"source\\common\\css\\types\\cubic_bezier.js"
-			],
-			[
-				"bezier",
-				"source\\common\\math\\cubic_bezier.js"
-			],
-			[
-				"rea",
-				"README.md"
-			],
-			[
-				"pac",
-				"package.json"
-			],
-			[
-				"css_",
-				"test\\suite\\css_tests.js"
-			],
-			[
-				"col",
-				"source\\common\\design\\color.js"
-			],
-			[
-				"css url",
-				"source\\common\\css\\types\\url.js"
-			],
-			[
-				"cssb",
-				"source\\common\\css\\types\\cubic_bezier.js"
-			],
-			[
-				"q",
-				"source\\common\\math\\quadratic_bezier.js"
-			],
-			[
-				"trans",
-				"source\\animation\\transformto.js"
-			],
-			[
-				"wick.no",
-				"build\\wick.node.js"
-			],
-			[
-				"node",
-				"source\\root\\wick_node.js"
-			],
-			[
-				"prop",
-				"source\\common\\css\\parser\\properties\\properties.js"
-			],
-			[
-				"cub",
-				"source\\common\\math\\cubic_bezier.js"
-			],
-			[
-				"csstes",
-				"test\\suite\\css_tests.js"
-			],
-			[
-				"lexer",
+				"lex",
 				"source\\common\\string_parsing\\lexer.js"
 			],
 			[
-				"tets",
-				"test\\suite\\css_tests.js"
-			],
-			[
-				"test",
-				"test\\test.js"
-			],
-			[
-				"skele",
-				"source\\source\\skeleton.js"
-			],
-			[
-				"date",
-				"source\\schema\\types\\date.js"
-			],
-			[
-				"cassett",
-				"source\\source\\cassette\\cassette.js"
-			],
-			[
-				"sourcon",
-				"source\\source\\constructor.js"
-			],
-			[
-				"sourconstr",
-				"source\\schema\\constructor.js"
-			],
-			[
-				"const",
-				"source\\schema\\constructor.js"
+				"url",
+				"source\\common\\url\\url.js"
 			],
 			[
 				"comm",
 				"source\\common\\common.js"
 			],
 			[
-				"wick.node",
-				"build\\wick.node.js"
+				"sch",
+				"source\\common\\scheduler.js"
 			],
 			[
-				"root",
-				"source\\common\\css\\parser\\tree\\root.js"
+				"modba",
+				"source\\model\\base.js"
 			],
 			[
-				"css/",
-				"source\\common\\css\\parser\\parser.js"
+				"MOdel",
+				"source\\model\\model.js"
 			],
 			[
-				"css",
-				"build\\wick.css"
+				"pipeb",
+				"source\\source\\pipe\\base.js"
 			],
 			[
-				"case.js",
+				"comp",
+				"source\\network\\router\\component.js"
+			],
+			[
+				"ske",
+				"source\\source\\skeleton.js"
+			],
+			[
+				"sourcebase",
+				"source\\source\\base.js"
+			],
+			[
+				"sourceb",
+				"source\\model\\base.js"
+			],
+			[
+				"tran",
+				"source\\animation\\transition\\transitioneer.js"
+			],
+			[
+				"model",
+				"source\\model\\base.js"
+			],
+			[
+				"source",
+				"source\\source\\source.js"
+			],
+			[
+				"piba",
+				"source\\source\\pipe\\base.js"
+			],
+			[
+				"ast",
+				"source\\source\\ast.js"
+			],
+			[
+				"io",
+				"source\\source\\io\\io.js"
+			],
+			[
+				"pipeba",
+				"source\\source\\pipes\\base.js"
+			],
+			[
+				"tap",
+				"source\\source\\taps\\tap.js"
+			],
+			[
+				"compon",
+				"source\\network\\router\\component.js"
+			],
+			[
+				"wick",
+				"D:\\_$_$_$_\\wick\\source\\wick.js"
+			],
+			[
+				"templat",
+				"source\\source\\template.js"
+			],
+			[
+				"cas",
+				"documents\\manual\\case.md"
+			],
+			[
+				"sour",
+				"test\\suite\\source_constructor_tests.js"
+			],
+			[
+				"j",
+				"build\\build_config\\jsdoc.json"
+			],
+			[
+				"pac",
+				"package.json"
+			],
+			[
+				"pa",
+				"package.json"
+			],
+			[
+				"modelbas",
+				"source\\model\\base.js"
+			],
+			[
+				"sourcetest",
+				"test\\suite\\source_constructor_tests.js"
+			],
+			[
+				"inde",
+				"test\\index.html"
+			],
+			[
+				"getting",
+				"documents\\getting_started_with_wick.html"
+			],
+			[
+				"mc_",
+				"test\\suite\\mc_tests.js"
+			],
+			[
+				"string",
+				"source\\schema\\types\\string.js"
+			],
+			[
+				"bool",
+				"source\\schema\\types\\bool.js"
+			],
+			[
+				"schema",
+				"test\\suite\\schema_tests.js"
+			],
+			[
+				"testind",
+				"test\\index.html"
+			],
+			[
+				"tokeniz",
+				"source\\common\\string_parsing\\tokenizer.js"
+			],
+			[
+				"lexer",
+				"source\\common\\string_parsing\\lexer.js"
+			],
+			[
+				"skelet",
+				"source\\source\\source_skeleton.js"
+			],
+			[
+				"sourceast",
+				"source\\source\\source_constructor_ast.js"
+			],
+			[
+				"source_con",
+				"test\\suite\\source_constructor_tests.js"
+			],
+			[
+				"test",
+				"test\\test.js"
+			],
+			[
+				"case",
 				"source\\case\\case.js"
+			],
+			[
+				"cases",
+				"source\\case\\case_skeleton.js"
+			],
+			[
+				"casecont",
+				"source\\case\\case_constructor.js"
+			],
+			[
+				"casecon",
+				"source\\case\\case_constructor.js"
+			],
+			[
+				"casetest",
+				"test\\suite\\caseconstructor_tests.js"
 			],
 			[
 				"packa",
@@ -1646,16 +1124,8 @@
 				"static\\js\\libraries\\wick\\source\\schema\\schemas.js"
 			],
 			[
-				"schema",
-				"static\\js\\mvc\\api\\schemas.js"
-			],
-			[
 				"containm",
 				"static\\js\\libraries\\wick\\documents\\manual\\containers.md"
-			],
-			[
-				"model",
-				"static\\js\\libraries\\wick\\source\\model\\model.js"
 			],
 			[
 				"model_c",
@@ -1676,10 +1146,6 @@
 			[
 				"calendar date",
 				"static\\js\\mvc\\cassettes\\calendar\\calendar_date.js"
-			],
-			[
-				"getting",
-				"static\\js\\libraries\\wick\\documents\\getting_started_with_wick.html"
 			],
 			[
 				"case_con",
@@ -1720,10 +1186,6 @@
 			[
 				"case.md",
 				"static\\js\\libraries\\wick\\documents\\manual\\case.md"
-			],
-			[
-				"case",
-				"source\\case.js"
 			],
 			[
 				"input",
@@ -1768,10 +1230,6 @@
 			[
 				"case_te",
 				"source\\case\\case_template.js"
-			],
-			[
-				"cas",
-				"source\\case\\case_skeleton.js"
 			],
 			[
 				"linker.",
@@ -1938,11 +1396,11 @@
 		],
 		"width": 0.0
 	},
-	"selected_group": 1,
+	"selected_group": 0,
 	"settings":
 	{
 	},
-	"show_minimap": true,
+	"show_minimap": false,
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": false,

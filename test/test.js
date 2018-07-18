@@ -35,6 +35,8 @@ describe("Wick test suite.", function() {
 
         global.document = window.document;
 
+        global.HTMLElement = window.HTMLElement;
+
         performance = {
             now() {
                 return Date.now();
@@ -60,7 +62,7 @@ describe("Wick test suite.", function() {
 
     it("tests", function() {
         require("./suite/css_tests.js")()
-    	//require("./suite/source_constructor_tests.js")()
+    	require("./suite/source_constructor_tests.js")()
         //require("./suite/schema_tests.js")()
         //require("./suite/model_tests.js")()
         //describe("Model Container Tests", function() {

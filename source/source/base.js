@@ -1,11 +1,22 @@
 import { View } from "../view/view"
 
-import { AnyModel } from "../model/model"
+import { AnyModel } from "../model/any"
 
 /* Transitioners */
 
 import { Transitioner } from "../animation/transition/transitioner"
 
+
+/**
+ *   The base class {@link Source} and {@link SourceTemplate} extend.  
+ *   @param {Source} parent - The parent {@link Source}, used internally to build a hierarchy of Sources.
+ *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
+ *   @param {Presets} presets - An instance of the {@link Presets} object.
+ *   @memberof module:wick~internals.source
+ *   @interface
+ *   @alias SourceBase
+ *   @extends View
+ */
 export class SourceBase extends View {
 
     constructor(parent = null, data = {}, presets = {}, element = null) {
@@ -296,8 +307,8 @@ export class SourceBase extends View {
 
     import (data) {
 
-        if (this.model)
-            this.model.add(data);
+        if (this._m)
+            this._m.add(data);
 
         this.export(data);
     }
@@ -310,9 +321,9 @@ export class SourceBase extends View {
 
     add(value) {
 
-        if (this.model) {
-            this.model.add(value);
-            this.export(this.model);
+        if (this._m) {
+            this._m.add(value);
+            this.export(this._m);
         } else if (this.parent && this.parent.add)
             this.parent.add(value)
     }

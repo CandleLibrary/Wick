@@ -1,10 +1,10 @@
 import { WURL } from "./wurl"
 
-import { AnyModel } from "../../model/model"
+import { AnyModel } from "../../model/any"
 
-import { PageView } from "./page"
+import { PageView } from "../../page/page"
 
-import { Element } from "./element"
+import { Element } from "../../page/element"
 
 import { TurnDataIntoQuery } from "../../common/url/url"
 
@@ -12,7 +12,13 @@ const URL_HOST = { wurl: null };
 
 /** @namespace Router */
 
-const URL = (function() {
+/**
+ * WURL wrapper object for inter-module access.
+ *
+ * @return     {Object}  { description_of_the_return_value }
+ * @memberof module:wick~internals
+ */
+export const URL = (function() {
 
     return {
         /**
@@ -41,8 +47,9 @@ const URL = (function() {
     }
 })();
 
-export { URL };
-
+/**
+ * Returns the `<modal>` element from the document DOM, or creates and appends a new one to `<body>`.
+ */
 function getModalContainer() {
     let modal_container = document.getElementsByTagName("modals")[0];
 
@@ -61,24 +68,27 @@ function getModalContainer() {
     return modal_container
 }
 
-/** @namespace linker */
-
 /**
- *  This is responsible for loading pages dynamically, handling the transition of page components, and monitoring and reacting to URL changes
+ * Responsible for loading pages dynamically, handling the transition of page components, and monitoring and reacting to URL changes
+ *
+ * @memberof   module:wick~internal
+ * @param      {Presets}  presets  A {@link Presets} object.
+ * @package
+ * @alias Router
  */
 export class Router {
 
-    /*
-     *  @param {Object} presets - An object that will be used by Wick for handling custom components. Is validated according to the definition of a RouterPreset
+    /**
+     * Constructs the object.
+     *
      */
-
     constructor(presets) {
 
         presets.router = this;
 
         this.pages = {};
         this.elements = {};
-        this.component_constructors = presets.custom_components;
+        this.component_constructors = presets.custom_sources;
         this.models_constructors = presets.schemas;
         this.presets = presets;
         this.current_url = null;
@@ -164,8 +174,8 @@ export class Router {
     /**
         Loads pages from server, or from local cache, and sends it to the page parser.
 
-      @param {string} url - The URL id of the cached page to load.
-      @param {string} query -
+      @param {external:String} url - The URL id of the cached page to load.
+      @param {external:String} query -
       @param {Bool} IS_SAME_PAGE -
     */
     loadPage(page, wurl = new WURL(document.location), IS_SAME_PAGE) {
@@ -386,8 +396,6 @@ export class Router {
 
 
                 let element_id = ele.id;
-
-                console.log(ele)
 
                 if (page.type !== "modal") {
 

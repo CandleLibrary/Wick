@@ -1,4 +1,4 @@
-import { NumberSchemaConstructor } from "./number.js"
+import { NumberSchemeConstructor } from "./number.js"
 
 import { Lexer } from "../../common/common"
 
@@ -8,7 +8,7 @@ scape_date.setMilliseconds(0);
 scape_date.setSeconds(0);
 scape_date.setTime(0);
 
-class DateSchemaConstructor extends NumberSchemaConstructor {
+class DateSchemeConstructor extends NumberSchemeConstructor {
 
     parse(value) {
 
@@ -90,6 +90,6 @@ class DateSchemaConstructor extends NumberSchemaConstructor {
     }
 }
 
-let date = new DateSchemaConstructor()
+let date = new DateSchemeConstructor()
 
-export { date, DateSchemaConstructor }
+export { date, DateSchemeConstructor }

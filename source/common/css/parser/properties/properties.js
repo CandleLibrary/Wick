@@ -2,12 +2,10 @@ import { Lexer } from "../../../string_parsing/lexer"
 
 import { props, virtual_props, types } from "./props_and_types"
 
-export function GetProperty(lexer, rules) {
-
-    let rule = { name: "" };
+export function GetProperty(lexer, rule) {
 
     let name = lexer.tx.replace(/\-/g, "_");
-
+    
     lexer.n().a(":");
 
     let p = lexer.pk;
@@ -19,13 +17,11 @@ export function GetProperty(lexer, rules) {
     try {
         const IS_VIRTUAL = { is: false }
         const parser = getPropertyParser(name, IS_VIRTUAL);
-        if (parser && !IS_VIRTUAL.is)
-            for (let i = 0; i < rules.length; i++) {
-                let rule = rules[i];
-                if (!rule.props) rule.props = {};
-                parser.parse(value, rule.props);
-            } else
-                console.warn(`Unable to get parser for css property ${name}`)
+        if (parser && !IS_VIRTUAL.is) {
+            if (!rule.props) rule.props = {};
+            parser.parse(value, rule.props);
+        } //else
+            //console.warn(`Unable to get parser for css property ${name}`)
     } catch (e) {
         console.log(e);
     }
@@ -33,8 +29,6 @@ export function GetProperty(lexer, rules) {
     lexer.sync();
 
     if (lexer.tx == ";") lexer.n();
-
-    return rule;
 }
 
 function getPropertyParser(value, IS_VIRTUAL = { is: false }) {
@@ -305,8 +299,8 @@ class SymbolTerm extends LiteralTerm {
 
 function CreatePropertyParser(notation, name) {
     const l = new Lexer(notation);
-    const important = {is: false};
-    
+    const important = { is: false };
+
     let n = ParseGrammer(l);
 
     if (n instanceof NR && n.terms.length == 1)
@@ -455,9 +449,9 @@ function ParseGrammer(l, super_term = false, group = false, need_group = false, 
                     term = v;
                 }
                 break;
-             case "!":
+            case "!":
                 /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
-                
+
                 l.n().a("important");
                 important.is = true;
                 break;

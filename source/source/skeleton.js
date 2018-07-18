@@ -1,8 +1,14 @@
-import { Lexer } from "../common/common"
+import {
+    Lexer
+} from "../common/common"
 
-import { Transitioner } from "../animation/transition/transitioner"
+import {
+    Transitioner
+} from "../animation/transition/transitioner"
 
-import { SourceBase } from "./base"
+import {
+    SourceBase
+} from "./base"
 
 /**
     Pull index location of specially marked elements from an HTML string. 
@@ -41,24 +47,44 @@ class Indexer {
             switch (lex.text) {
                 case "<":
                     if (lex.peek().text == "/") {
-                        lex.n( /* < */ ).n( /* / */ ).n( /* tagName */ ).n( /* > */ );
+                        lex.sync( /* < */ ).n( /* / */ ).n( /* tagName */ ).n( /* > */ );
                         if (--this.sp < 0) return null;
                         this.stack.length = this.sp + 1;
                         this.stack[this.sp]++;
                     } else {
-                        lex.n().n(); // <
-                        while (lex.text !== ">" && lex.text !== "/") {
-                            lex.n(); // attrib name
-                            if (lex.text == "=")
-                                lex.n().n()
-                        }
-                        if (lex.text == "/") {
-                            lex.n( /* / */ ).n( /* > */ );
-                            break;
-                        }
-                        lex.n(); // >
+                        let ISCLOSING = false;
+                        if (lex.sync().tx == "input") {
 
-                        (this.stack.push(0), this.sp++)
+                            ISCLOSING = true;
+                            while (lex.text !== ">" && lex.text !== "/") {
+                                lex.n(); // attrib name
+                                if (lex.text == "=")
+                                    lex.n().n()
+                            }
+
+                            lex.a(">");
+
+                            (this.stack.push(0), this.sp++)
+
+                        } else {
+
+                            lex.n(); // <
+                            while (lex.text !== ">" && lex.text !== "/") {
+                                lex.n(); // attrib name
+                                if (lex.text == "=")
+                                    lex.n().n()
+                            }
+
+                            if (lex.text == "/") {
+                                lex.n( /* / */ ).n( /* > */ );
+                                break;
+                            }
+
+                            lex.n(); // >
+
+                            (this.stack.push(0), this.sp++)
+                        }
+
 
                         if (lex.text == "#") {
                             lex.n();
@@ -69,11 +95,23 @@ class Indexer {
                                     if (lex.type == lex.types.num) {
                                         let number = parseInt(lex.text);
                                         if (number == index) {
-                                            return this.getElement(parent_element, cache);
+                                            let out = this.getElement(parent_element, cache);
+                                            if (ISCLOSING) {
+                                                --this.sp;
+                                                this.stack.length = this.sp + 1;
+                                                this.stack[this.sp]++;
+                                            }
+                                            return out;
                                         }
                                     }
                                 }
                             }
+                        }
+
+                        if (ISCLOSING) {
+                            if (--this.sp < 0) return null;
+                            this.stack.length = this.sp + 1;
+                            this.stack[this.sp]++;
                         }
                     }
                     break;
@@ -103,20 +141,23 @@ class Indexer {
         return element;
     }
 }
-
-/** 
-    Collection of Objects used to create source trees. 
-    @module Source_Skeleton 
-*/
-
-
 /**   
     @class
     
-    Factory object for Source trees.  Encapsulates construction information derived from the HTML AST. 
+    
 
 
 */
+/**
+ * Factory object for Creating Source trees.  Encapsulates construction information derived from the HTML AST.  
+ * 
+ * @param      {external:HTMLElement}  element      The element
+ * @param      {Function}  constructor      The constructor for the object the Skeleton will create.
+ * @param      {Object}  data  Data pulled from a tags attributes
+ * @param      {Presets}  presets  The global Presets instance.
+ * @memberof module:wick~internals.source
+ * @alias Skeleton  
+ */
 export class Skeleton {
     /**
         Constructor of Skeleton
@@ -144,7 +185,7 @@ export class Skeleton {
         this.trs = null;
 
         if (SourceBase.isPrototypeOf(constructor))
-            /* Create the Transitioner here */
+        /* Create the Transitioner here */
             this.trs = new Transitioner(data, presets.imported.css, presets.imported);
     }
 

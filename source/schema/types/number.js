@@ -1,6 +1,6 @@
-import { SchemaConstructor } from "../constructor.js"
+import { SchemeConstructor } from "../constructor.js"
 
-class NumberSchemaConstructor extends SchemaConstructor {
+class NumberSchemeConstructor extends SchemeConstructor {
 
     constructor() {
 
@@ -34,6 +34,6 @@ class NumberSchemaConstructor extends SchemaConstructor {
     }
 }
 
-let number = new NumberSchemaConstructor()
+let number = new NumberSchemeConstructor()
 
-export { number, NumberSchemaConstructor };
+export { number, NumberSchemeConstructor };

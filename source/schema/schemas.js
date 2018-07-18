@@ -1,15 +1,25 @@
-import { SchemaConstructor } from "./constructor"
+import { OB } from "../common/short_names"
 
-import { date, DateSchemaConstructor } from "./types/date"
+import { SchemeConstructor } from "./constructor"
 
-import { time, TimeSchemaConstructor } from "./types/time"
+import { date, DateSchemeConstructor } from "./types/date"
 
-import { string, StringSchemaConstructor } from "./types/string"
+import { time, TimeSchemeConstructor } from "./types/time"
 
-import { number, NumberSchemaConstructor } from "./types/number"
+import { string, StringSchemeConstructor } from "./types/string"
 
-import { bool, BoolSchemaConstructor } from "./types/bool"
+import { number, NumberSchemeConstructor } from "./types/number"
 
-let schema = { date, string, number, bool, time }
+import { bool, BoolSchemeConstructor } from "./types/bool"
 
-export { SchemaConstructor, DateSchemaConstructor, TimeSchemaConstructor, StringSchemaConstructor, NumberSchemaConstructor, BoolSchemaConstructor, schema };
+let Schemes = { date, string, number, bool, time }
+
+
+/**
+ * Used by Models to ensure conformance to a predefined data structure. Becomes immutable once created.
+ * @param {Object} data - An Object of `key`:`value` pairs used to define the Scheme. `value`s must be instances of or SchemeConstructor or classes that extend SchemeConstructor.
+ * @readonly
+ */
+class Schema {}
+
+export { SchemeConstructor, DateSchemeConstructor, TimeSchemeConstructor, StringSchemeConstructor, NumberSchemeConstructor, BoolSchemeConstructor, Schemes };

@@ -1,0 +1,139 @@
+//Global names
+
+ /**
+    The built in string object.
+    @external String
+    @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String}
+*/
+
+/**
+    A JavaScript Object
+    @external Object
+    @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object}
+*/
+
+/** 
+    The `HTMLElement` interface represents any HTML element. Some elements directly implement this interface, others implement it via an interface that inherits it.
+    @external HTMLElement
+    @alias HTMLElement
+    @instance
+    @see {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement}
+*/
+
+/**
+ * The main module
+ * @module wick
+ */
+
+/**
+ * Classes, Methods, and Objects for animating.
+ * @namespace {Object} animation
+ * @memberof module:wick
+ */
+
+
+// These namespace definitions document how members of Wick are exposed to the global context.
+
+/**
+ *All public classes and Objects available in the Wick framework library.
+ *@namespace {Object} core
+ *@memberof  module:wick
+ */
+
+/**
+ * Models are the main data Objects that Wick apps rely on. They provide methods necessary to create dynamic data bindings in the DOM and in CSS.
+ * There are primarily two types of models available: 
+ * 
+ * - general Model Objects that map properties of Javascript Objects containing the native types `String`, `Number`, `Boolean`. 
+ * 
+ * - ModelContainers, which are used to store individual models in a collection.
+ *
+ * Sources bind to Models, and SourceTemplates bind to ModelContainers.
+ *@namespace {Object} model
+ *@memberof  module:wick.core
+ */
+
+/**
+ *Frequently used Classes and Objects used throughout the Wick framework library.
+ *@namespace {Object} common
+ *@memberof module:wick.core
+ */
+
+/**
+ * Objects used for connecting to network APIs and server endpoints. 
+ *@namespace {Object} network
+ *@memberof module:wick.core
+ */
+
+/**
+ *The primary objects for handling SPA/PWA pages. 
+ *@namespace {Object} router
+ *@memberof module:wick.core.network
+ */
+
+ /**
+ * The View object.
+ *@namespace {Object} view
+ *@memberof module:wick.core
+ */
+
+/**
+ *Page, Element, and Component classes.
+ *@namespace {Object} page
+ *@memberof module:wick.core
+ */
+
+/**
+ *Sources, Taps, Pipes, IOs.
+ *The primary mechanisms for dynamic templating. 
+ *@namespace {Object} source
+ *@memberof module:wick.core
+ */
+
+/**
+ * Objects not exposed by the Wick module
+ * @namespace internals
+ * @protected
+ */
+
+/**
+ * Model Functions and Objects not exposed by the Wick module
+ * @namespace model
+ * @memberof module:wick~internals
+ * @protected
+ */
+
+ /**
+ * Component Classes not exposed by the Wick module
+ * @namespace component
+ * @memberof module:wick~internals
+ * @protected
+ */
+
+ /**
+ * Source Functions and Objects not exposed by the Wick module
+ * @namespace source
+ * @memberof module:wick~internals
+ * @protected
+ */
+
+/**
+ * Lexer Functions and Objects not exposed by the Wick module
+ * @namespace lexer
+ * @memberof module:wick~internals
+ * @protected
+ */
+
+ /**
+ * CSS Functions and Objects not exposed by the Wick module
+ * @namespace css
+ * @memberof module:wick~internals
+ * @protected
+ */
+
+/**
+ * Functions and objects used to process `<template>` elements. 
+ * @namespace templateCompiler
+ * @memberof module:wick~internals
+ * @protected
+ */

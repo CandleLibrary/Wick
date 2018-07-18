@@ -1,8 +1,6 @@
 import { ModelBase } from "../base.js"
 
-import { SchemaConstructor } from "../../schema/constructor"
-
-/** @namespace Model */
+import { SchemeConstructor } from "../../schema/constructor"
 
 export class MCArray extends Array {
 
@@ -41,12 +39,6 @@ export class MCArray extends Array {
 let EmptyFunction = () => {};
 let EmptyArray = [];
 
-class ModelContainer extends Proxy {
-    constructor() {
-        super(this)
-    }
-}
-
 export class ModelContainerBase extends ModelBase {
 
     constructor(schema) {
@@ -68,10 +60,10 @@ export class ModelContainerBase extends ModelBase {
         this.schema = schema || this.constructor.schema || {identifier:"constructor"};
 
         //The parser will handle the evaluation of identifiers according to the criteria set by the __filters__ list. 
-        if (this.schema.parser && this.schema.parser instanceof SchemaConstructor)
+        if (this.schema.parser && this.schema.parser instanceof SchemeConstructor)
             this.parser = this.schema.parser;
         else
-            this.parser = new SchemaConstructor();
+            this.parser = new SchemeConstructor();
 
         this.id = "";
 
@@ -101,11 +93,11 @@ export class ModelContainerBase extends ModelBase {
     }
 
     setByIndex(index) {
-        /** NO OP **/
+        /* NO OP **/
     }
 
     getByIndex(index, value) {
-        /** NO OP **/
+        /* NO OP **/
     }
 
     destroy() {
@@ -122,7 +114,7 @@ export class ModelContainerBase extends ModelBase {
     }
 
     /**
-        Get the number of Models held in this ModelContainerBase
+        Get the number of Models held in this._mContainerBase
 
         @returns {Number}
     */
@@ -250,16 +242,16 @@ export class ModelContainerBase extends ModelBase {
 
         let model = item;
 
-        var identifier = this.__getIdentifier__(item);
+        var identifier = this._gI_(item);
 
         if (identifier != undefined) {
 
-            if (!(model instanceof this.schema.model) && !(model = model.____self____)) {
+            if (!(model instanceof this.schema.model) && !(model = model._slf_)) {
                 model = new this.schema.model();
                 model.add(item);
             }
 
-            identifier = this.__getIdentifier__(model, this.__filters__);
+            identifier = this._gI_(model, this.__filters__);
 
             if (identifier) {
                 out = this.__insert__(model, add_list, identifier)
@@ -359,6 +351,11 @@ export class ModelContainerBase extends ModelBase {
         }
     }
 
+    /**
+     * Remove items from linked ModelContainers according to the terms provided.
+     * @param      {Array}  terms   Array of terms.
+     * @private
+     */
     __linksRemove__(terms) {
         let a = this.first_link;
         while (a) {
@@ -367,6 +364,11 @@ export class ModelContainerBase extends ModelBase {
         }
     }
 
+    /**
+     * Add items to linked ModelContainers.
+     * @param      {Model}  item   Item to add.
+     * @private
+     */
     __linksInsert__(item) {
         let a = this.first_link;
         while (a) {
@@ -376,8 +378,7 @@ export class ModelContainerBase extends ModelBase {
     }
 
     /**
-        Removes any items in the model not included in the array "items", and adds any items in items not already in the ModelContainerBase.
-
+        Removes any items in the ModelConatiner not included in the array "items", and adds any item in `items` not already in the ModelContainerBase.
         @param {Array} items - An array of identifiable Models or objects. 
     */
     cull(items) {
@@ -389,7 +390,7 @@ export class ModelContainerBase extends ModelBase {
             if (item instanceof Array)
                 return item.forEach((e) => loadHash(e));
 
-            let identifier = this.__getIdentifier__(item);
+            let identifier = this._gI_(item);
 
             if (identifier)
                 hash_table[identifier] = item;
@@ -400,7 +401,7 @@ export class ModelContainerBase extends ModelBase {
 
         for (let i = 0; i < existing_items.lenth; i++) {
             let e_item = existing_items[i];
-            if (!existing_items[this.__getIdentifier__(e_item)])
+            if (!existing_items[this._gI_(e_item)])
                 this.__remove__(e_item);
         }
 
@@ -431,7 +432,7 @@ export class ModelContainerBase extends ModelBase {
         @param {(Object|Model)} item
         @param {Array} filters - An array of filter terms to test whether the identifier meets the criteria to be handled by the ModelContainerBase.
     */
-    __getIdentifier__(item, filters = null) {
+    _gI_(item, filters = null) {
 
         let identifier = null;
 

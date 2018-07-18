@@ -169,9 +169,7 @@ export class QBezier {
         var b = 2 * (p2 - p1);
         var a = p1;
         var a2 = a * 2;
-        console.log(c, " c")
         var sqrt = Math.sqrt(b * b - (a * 4 * c));
-        console.log(sqrt, b, a2, p3)
         var t1 = (-b + sqrt) / a2;
         var t2 = (-b - sqrt) / a2;
 

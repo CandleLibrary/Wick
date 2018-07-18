@@ -1,8 +1,8 @@
 import {
-    SchemaConstructor
+    SchemeConstructor
 } from "../constructor.js"
 
-class BoolSchemaConstructor extends SchemaConstructor {
+class BoolSchemeConstructor extends SchemeConstructor {
 
     constructor() {
 
@@ -38,9 +38,9 @@ class BoolSchemaConstructor extends SchemaConstructor {
     }
 }
 
-let bool = new BoolSchemaConstructor()
+let bool = new BoolSchemeConstructor()
 
 export {
     bool,
-    BoolSchemaConstructor
+    BoolSchemeConstructor
 };

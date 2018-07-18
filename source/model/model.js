@@ -8,13 +8,12 @@ import { ArrayModelContainer } from "./container/array"
 
 import { BTreeModelContainer } from "./container/btree"
 
-import { SchemaConstructor } from "../schema/schemas"
-
-/** @namespace Model */
+import { SchemeConstructor } from "../schema/schemas"
 
 /**
-    This is used by Model to create custom property getter and setters 
-    on non-ModelContainerBase and non-Model properties of the Model constructor.
+    This is used by Model to create custom property getter and setters on non-ModelContainerBase and non-Model properties of the Model constructor.
+    @protected
+    @memberof module:wick~internals.model
 */
 function CreateSchemedProperty(constructor, scheme, schema_name) {
 
@@ -55,8 +54,9 @@ function CreateSchemedProperty(constructor, scheme, schema_name) {
 }
 
 /**
-    This is used by Model to create custom property getter and setters 
-    on Schemed ModelContainerBase properties of the Model constructor.
+    This is used by Model to create custom property getter and setters on Schemed ModelContainerBase properties of the Model constructor.
+    @protected
+    @memberof module:wick~internals.model
 */
 function CreateMCSchemedProperty(constructor, scheme, schema_name) {
 
@@ -104,7 +104,6 @@ function CreateMCSchemedProperty(constructor, scheme, schema_name) {
                 this.scheduleUpdate(schema_name);
             } else if (value instanceof mc_constructor) {
                 this[__shadow_name__] = value;
-                console.log(schema_name)
                 this.scheduleUpdate(schema_name);
             }
         }
@@ -112,8 +111,9 @@ function CreateMCSchemedProperty(constructor, scheme, schema_name) {
 }
 
 /**
-    This is used by Model to create custom property getter and setters 
-    on Model properties of the Model constructor.
+    This is used by Model to create custom property getter and setters on Model properties of the Model constructor.
+    @protected
+    @memberof module:wick~internals.model
 */
 function CreateModelProperty(constructor, scheme, schema_name) {
 
@@ -139,65 +139,93 @@ function CreateModelProperty(constructor, scheme, schema_name) {
     })
 }
 
-export class Model extends ModelBase {
-    /**
-     
-     */
+/**
+ * @classdesc The Model class is a strict schema based data store for primitive values and ModelContainers. Models rely on a schema assigned to the constructor to ensure their property values adhere to a fixed standard. This allows models to self validate data. Any attempt to update a property on a Model that does not conform to its schema will be rejected. This helps prevent gotchas with user submitted data and unsure data conforms to server APIs.
+ * 
+ * An instance of a model will have getters and setters defined for each property of the schema. When a property is set, the Model will compare the new value against the requirements of the schema. If it is an incorrect value type or a non existent property, the set action will fail without warning. If the new value is acceptable according to the schema, then the value will be transformed into a value suitable for storage and transmission of the Model. 
+ * 
+ * In order to use the Model class, the user must extend the base class with their own model type:
+ * 
+ * ```javascript 
+ * class User extends wick.model {}
+ * ```
+ * And then assign a schema object to the `schema` property of the class constructor:
+ * ```
+ * User.schema = { name : wick.schema.string, birthday:  wick.schema.data }
+ * 
+ * let user = new User({
+ *      name : "Timitha Day",
+ *      birthday : ""
+ * })
+ * ```
+ * Since there is no schema defined on the base Model class, if `let model = new wick.model()`, an {@link module:wick.core.model.AnyModel} instance will be returned instead.
+ * 
+ * @see {Schema}
+ * @param {Object | Model | AnyModel}  data - An Object or Model from which to clone property names and property values.
+ * @memberof module:wick.core.model
+ * @alias Model
+ * @extends ModelBase
+ */
+class Model extends ModelBase {
+
     constructor(data) {
 
         super();
         //The schema is stored directly on the constructor. If it is not there, then consider this model type to "ANY"
-        let schema = this.constructor.schema;
+        if (!this.schema) {
+            
+            let schema = this.constructor.schema;
 
-        if (schema) {
-            let __FinalConstructor__ = schema.__FinalConstructor__;
+            if (schema) {
+                let __FinalConstructor__ = schema.__FinalConstructor__;
 
-            let constructor = this.constructor;
+                let constructor = this.constructor;
 
-            Object.defineProperty(constructor.prototype, "schema", {
-                writable: false,
-                enumerable: false,
-                configurable: false,
-                value: schema
-            })
-
-            if (!__FinalConstructor__) {
-                for (let schema_name in schema) {
-                    let scheme = schema[schema_name];
-
-                    if (scheme instanceof Array) {
-                        if (scheme[0] && scheme[0].container && scheme[0].schema) {
-                            CreateMCSchemedProperty(constructor, scheme[0], schema_name);
-                        } else if (scheme[0] instanceof ModelContainerBase) {
-                            CreateModelProperty(constructor, scheme[0].constructor, schema_name);
-                        }
-                    } else if (scheme instanceof Model)
-                        CreateModelProperty(constructor, scheme[0].constructor, schema_name);
-                    else if (scheme instanceof SchemaConstructor)
-                        CreateSchemedProperty(constructor, scheme, schema_name);
-                    else
-                        console.warn(`Could not create property ${schema_name}.`)
-
-                }
-
-                Object.seal(constructor);
-
-
-                Object.defineProperty(schema, "__FinalConstructor__", {
+                Object.defineProperty(constructor.prototype, "schema", {
                     writable: false,
                     enumerable: false,
                     configurable: false,
-                    value: constructor
+                    value: schema
                 })
-                //schema.__FinalConstructor__ = constructor;
+
+                if (!__FinalConstructor__) {
+                    for (let schema_name in schema) {
+                        let scheme = schema[schema_name];
+
+                        if (scheme instanceof Array) {
+                            if (scheme[0] && scheme[0].container && scheme[0].schema) {
+                                CreateMCSchemedProperty(constructor, scheme[0], schema_name);
+                            } else if (scheme[0] instanceof ModelContainerBase) {
+                                CreateModelProperty(constructor, scheme[0].constructor, schema_name);
+                            }
+                        } else if (scheme instanceof Model)
+                            CreateModelProperty(constructor, scheme[0].constructor, schema_name);
+                        else if (scheme instanceof SchemeConstructor)
+                            CreateSchemedProperty(constructor, scheme, schema_name);
+                        else
+                            console.warn(`Could not create property ${schema_name}.`)
+
+                    }
+
+                    Object.seal(constructor);
 
 
-                //Start the process over with a newly minted Model that has the properties defined in the Schema
-                return new constructor(data);
+                    Object.defineProperty(schema, "__FinalConstructor__", {
+                        writable: false,
+                        enumerable: false,
+                        configurable: false,
+                        value: constructor
+                    })
+                    //schema.__FinalConstructor__ = constructor;
+
+
+                    //Start the process over with a newly minted Model that has the properties defined in the Schema
+                    return new constructor(data);
+                }
+            } else {
+                /* This will be an ANY Model */
+                return new AnyModel(data);
             }
-        } else {
-            /* This will be an ANY Model */
-            return new AnyModel(data);
         }
 
         if (data)
@@ -205,8 +233,9 @@ export class Model extends ModelBase {
     }
 
     /**
-        Removes all held references and calls unsetModel on all listening views.
-    */
+     * Removes all held references and calls unsetModel on all bound Views.
+     * @protected
+     */
     destroy() {
 
         this.schema = null;
@@ -220,13 +249,16 @@ export class Model extends ModelBase {
         }
 
         super.destroy();
-        //debugger
     }
 
+
     /**
-        Given a key, returns an object that represents the status of the value contained, if it is valid or not, according to the schema for that property. 
-    */
-    verify(key) {
+     * Given a key, returns an object that represents the status of the value contained, if it is valid or not, according to the schema for that property. 
+     * @public
+     * @param   {external:String}  key - The property name to look up.
+     * @return  {Object} - Returns object with the properties `valid` and `reason`. `valid` will be set to `true` if the property value is a valid form according to the scheme for the property, `false` otherwise. If `verify().valid = false`, then `reason` will be a string giving a reason as to why the value is invalid.
+     */
+    verify(key, value) {
 
         let out_data = {
             valid: true,
@@ -248,9 +280,13 @@ export class Model extends ModelBase {
         return out_data
     }
 
+
     /**
-        Returns a parsed value based on the key 
-    */
+     * Returns string representation of the property value indexed by `key`.
+     * @public
+     * @param      {external:String}  key     The name of the property to get the string value of.
+     * @return     {external:String}  - the string representation of the property value.
+     */
     string(key) {
 
         let out_data = {
@@ -274,15 +310,21 @@ export class Model extends ModelBase {
     }
 
     /**
-        @param data : An object containing key value pairs to insert into the model. 
-    */
+     * Adds data to the model.
+     *  @public
+     *  @param      {Object}  data - An object containing properties to insert into the model. 
+     */
     add(data) {
-
         for (let a in data)
             if (a in this) this[a] = data[a];
     }
 
-
+    /**
+     * Retrieves data from the model.
+     *  @instance
+     *  @public
+     *  @param      {Object}  data - An object containing properties to insert into the model. 
+     */
     get(data) {
 
         var out_data = {};
@@ -295,7 +337,13 @@ export class Model extends ModelBase {
 
         return out_data;
     }
-
+    /**
+     *  Returns a JSON primitive form of the Model.
+     *  
+     *  @instance
+     *  @public
+     *  @return     {Object}  Returns an object representation of the model free of cyclical references which JSON.stringfy will be able to parse.
+     */
     toJSON() {
         let out = {};
 
@@ -312,140 +360,4 @@ export class Model extends ModelBase {
     }
 }
 
-/**
-    This is used by NModel to create custom property getter and setters 
-    on non-ModelContainerBase and non-Model properties of the NModel constructor.
-*/
-
-function CreateGenericProperty(constructor, prop_val, prop_name, model) {
-
-    if (constructor.prototype[prop_name])
-        return;
-
-    let __shadow_name__ = `__${prop_name}__`;
-
-
-    Object.defineProperty(constructor.prototype, __shadow_name__, {
-        writable: true,
-        configurable: false,
-        enumerable: false,
-        val: { val: prop_val, changed: true }
-    })
-
-    Object.defineProperty(constructor.prototype, prop_name, {
-        configurable: false,
-        enumerable: true,
-
-        get: function() {
-            return this[__shadow_name__];
-        },
-
-        set: function(value) {
-            if (result.valid && this[__shadow_name__] != val)
-                (this[__shadow_name__] = val, model.scheduleUpdate(prop_name));
-        }
-    })
-}
-
-function AnyModelProxySet(obj, prop, val) {
-
-    if (prop in obj && obj[prop] == val)
-        return true
-    
-    obj[prop] = val;
-
-    obj.scheduleUpdate(prop);
-
-    return true;
-}
-
-export class AnyModel extends ModelBase {
-
-    constructor(data) {
-
-        super();
-
-        if (data)
-            for (let prop_name in data){
-                if(data[prop_name] instanceof Array){
-                    let mc = new ArrayModelContainer({parser:null, model:AnyModel, identifier:null});
-                    mc.insert(data[prop_name]);
-                    this[prop_name] = mc.proxy();
-                }else
-                    this[prop_name] = data[prop_name];
-            }
-
-        return new Proxy(this, {
-            set: AnyModelProxySet
-        })
-    }
-
-    scheduledUpdate() {
-        super.scheduledUpdate()
-    }
-
-    /**
-        Removes all held references and calls unsetModel on all listening views.
-    */
-    destroy() {
-
-        super.destroy();
-    }
-
-    add(data) {
-
-        for (var a in data) {
-            this[a] = data[a];
-        }
-    }
-
-    get(data) {
-
-        var out_data = {};
-
-        if (!data) {
-            return this;
-        } else {
-            for (var a in data) {
-                let prop = this[a];
-                if (prop) {
-                    out_data[a] = prop;
-                }
-            }
-        }
-
-        return out_data;
-    }
-
-    /**
-        Removes items in containers based on matching index.
-    */
-
-    remove(data) {
-
-        return {};
-    }
-
-    toJSON() {
-
-        let out = {};
-
-
-        for (let prop in this) {
-
-            if (prop == "first_view" ||
-                prop == "changed_values" ||
-                prop == "____SCHEDULED____")
-                continue;
-
-            out[prop] = this[prop]
-        }
-
-        return out;
-    }
-
-    toJsonString() {
-
-        return this.data + "";
-    }
-}
+export { Model }

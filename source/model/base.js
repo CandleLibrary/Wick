@@ -2,49 +2,61 @@ import { View } from "../view/view"
 
 import { Scheduler } from "../common/scheduler"
 
-/** @namespace Model */
 /**
-    The base constructor for a Model object.
-*/
-export class ModelBase {
-
+ * The base class which all Model classes extend.
+ * @memberof module:wick~internal._m
+ * @alias ModelBase
+ */
+class ModelBase {
     constructor() {
+        /**
+         * An Array of the names of all changed properties since the last call to ModelBase#update
+         * @type {array}
+         * @instance
+         */
+        this._cv_ = [];
 
-        this.____changed_values____ = [];
-        this.views = [];
+        /**
+         * A reference to the first view bound to this model in a linked list.
+         * @type {Object}
+         * @instance
+         */
+        this.fv = null;
     };
 
     /**
-        Should remove all references to any objects still held by this object.
-    */
+     *   Remove all references to any objects still held by this object.
+     *   @protected
+     *   @instance
+     */
     destroy() {
 
         //inform views of the models demise
-        var view = this.first_view;
+        var view = this.fv;
 
         while (view) {
+            let nx = view.nx;
             view.unsetModel();
-            view = view.next;
+            view = nx;
         }
 
-        //this.first_view = null;
-
-        this.____changed_values____ = null;
+        this._cv_ = null;
     }
-
     get() {
         return this;
     }
 
     /**
-        
-    */
+     * Called by a class that extends ModelBase when on of its property values changes.
+     * @param      {string}  changed_value  The changed value
+     * @private
+     */
     scheduleUpdate(changed_value) {
 
-        if (this.views.length == 0)
+        if (!this.fv)
             return;
 
-        this.____changed_values____.push(changed_value);
+        this._cv_.push(changed_value);
 
         Scheduler.queueUpdate(this);
     }
@@ -52,75 +64,57 @@ export class ModelBase {
     getChanged(prop_name) {
 
 
-        for (let i = 0, l = this.____changed_values____.length; i < l; i++)
-            if (this.____changed_values____[i] == prop_name)
+        for (let i = 0, l = this._cv_.length; i < l; i++)
+            if (this._cv_[i] == prop_name)
                 return this[prop_name];
 
         return null;
     }
 
     /**
-        Adds a view to the linked list of views on the model. argument view MUST be an instance of View. 
-    */
+     * Adds a view to the linked list of views on the model. argument view MUST be an instance of View. 
+     * @param {View} view - The view to bind to the ModelBase
+     * @throws {Error} throws an error if the value of `view` is not an instance of {@link View}.
+     */
     addView(view) {
 
         if (view instanceof View) {
 
-            this.views.push(view);
-            view.model = this;
-            view.setModel(this);
-            return;
+            if (view._m)
+                if(view._m !== this)
+                    view._m.removeView(view);
+                else return;
 
-            if (view.model)
-                view.model.removeView(view);
+            if(this.fv) this.fv.pv = view;
+            view.nx = this.fv;
+            this.fv = view;
 
-            var child_view = this.first_view;
+            view.pv = null;
+            view._m = this;
 
-            while (child_view) {
+            view.update(this)
 
-                if (view == child_view) return;
-                child_view = child_view.next;
-            }
-
-            view.model = this;
-            view.next = this.first_view;
-            this.first_view = view;
-
-            view.setModel(this);
-            //view.update(this.get());
         } else
-            throw new Exception("Passed in view is not an instance of wick.View!");
+            throw new Exception("Passed in view is not an instance of wick.core.view.View.");
     }
 
     /**
-        Removes view from set of views if the passed in view is a member of model. 
-    */
+     * Removes view from set of views if the passed in view is a member of model. 
+     * @param {View} view - The view to unbind from ModelBase
+     */
     removeView(view) {
 
-        if (view instanceof View && view.model == this) {
+        if (view._m == this) {
+            if (view == this.fv)
+                if (view.nx) this.fv = view.nx;
 
-            var child_view = this.first_view;
-            var prev_child = null;
+            if(view.nx)
+                view.nx.pv = view.pv;
+            if(view.pv)
+                view.pv.nx = view.nx;
 
-            while (child_view) {
-
-                if (view == child_view) {
-
-                    if (prev_child) {
-                        prev_child.next = view.next;
-                    } else {
-                        this.first_view = view.next;
-                    }
-
-                    view.next = null
-                    view.model = null;
-                    view.reset();
-                    return;
-                };
-
-                prev_child = child_view;
-                child_view = child_view.next;
-            }
+            view.nx = null;
+            view.pv = null;
         }
     }
 
@@ -132,7 +126,7 @@ export class ModelBase {
     */
     isUpdated(prop_name) {
 
-        let changed_properties = this.____changed_values____;
+        let changed_properties = this._cv_;
 
         for (var i = 0, l = changed_properties.length; i < l; i++)
             if (changed_properties[i] == prop_name)
@@ -141,71 +135,69 @@ export class ModelBase {
 
         return null;
     }
-
+    /**
+     * Called by the {@link Scheduler} when if the ModelBase is scheduled for an update
+     * @param      {number}  step    The step
+     */
     scheduledUpdate(step) {
 
         this.updateViews();
     }
 
     /**
-        Calls update() on every view object, passing the current state of the Model.
-    */
+     * Calls View#update on every bound View, passing the current state of the ModelBase.
+     */
     updateViews() {
 
         let o = {};
 
-        for (let p = null, i = 0, l = this.____changed_values____.length; i < l; i++)
-            (p = this.____changed_values____[i], o[p] = this[p])
+        for (let p = null, i = 0, l = this._cv_.length; i < l; i++)
+            (p = this._cv_[i], o[p] = this[p])
 
-        this.____changed_values____.length = 0;
+        this._cv_.length = 0;
+
+        var view = this.fv;
         
-        let views = this.views;
-        let l = views.length;
-
-        for(let i = 0; i < l; i++)
-            views[i].update(this, o);            
-
-        return;
-        var view = this.first_view;
-
         while (view) {
 
             view.update(this, o);
-
-            view = view.next;
+            view = view.nx;
         }
 
+        return;
     }
 
     /**
-        Updates views with a list of models that have been removed. 
-        Primarily used in conjunction with container based views, such as Templates.
-    */
+     * Updates views with a list of models that have been removed. 
+     * Primarily used in conjunction with container based views, such as Templates.
+     * @private
+     */
     updateViewsRemoved(data) {
 
-        var view = this.first_view;
+        var view = this.fv;
 
         while (view) {
 
             view.removed(data);
 
-            view = view.next;
+            view = view.nx;
         }
     }
 
     /**
-        Updates views with a list of models that have been added. 
-        Primarily used in conjunction with container based views, such as Templates.
-    */
+     * Updates views with a list of models that have been added. 
+     * Primarily used in conjunction with container based views, such as Templates.
+     * @private
+     */
     updateViewsAdded(data) {
 
-        var view = this.first_view;
+        var view = this.fv;
 
         while (view) {
 
             view.added(data);
 
-            view = view.next;
+            view = view.nx;
         }
     }
 
@@ -214,11 +206,6 @@ export class ModelBase {
     }
 }
 
-Object.defineProperty(ModelBase.prototype, "first_view", {
-    writable: true,
-    configurable: false,
-    enumerable: false,
-})
+export { ModelBase }
 
-
-Object.seal(ModelBase.prototype);
+Object.freeze(ModelBase.prototype);

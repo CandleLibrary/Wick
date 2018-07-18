@@ -4,8 +4,8 @@
 
 ## Wick Versioning
 
-The versioning scheme of Wick is as follows: 
->{*Major*} **.** {*Feature***|***Breaking*} **.** {*Build***|***Bug Fix*} {**a**lpha**|****b**eta}
+The versioning scheme of Wick is as follows:
+>{*Major*} **.** {*Feature* **|** *Breaking*} **.** {*Build* **|** *Bug Fix*} {**a**lpha **|** **b**eta}
 
 1. **Major**  
     - This version number corresponds to a feature complete build state with all major bugs squashed. This version represents a freeze on API, and any version match that has both a matching {*Major*} and matching {*Feature***|***Breaking*} is guaranteed to have a stable API.
@@ -14,16 +14,16 @@ The versioning scheme of Wick is as follows:
     - This version number corresponds to the inclusion of new features, which may break existing API forms. If you are using a version of Wick that has a matching {*Major Version*} but a different {*Feature***|***Breaking*}, expect the need to rewrite code that relies on Wick. At the very least, review the version log to see if it introduced any breaking changes.
 
 3. **Build** | **Bug Fix**  
-    - This version marks the addressing of bugs, errata, and core configuration that does not change the fundamental API. If you are using a build of Wick that has {*Major*} . {*Feature***|***Breaking*} but an lower {*Build***|***Bug Fix*}, it is encouraged to update your Wick build to the latest {*Build***|***Bug Fix*}.
+    - This version marks the addressing of bugs, errata, and core configuration that does not change the fundamental API. If you are using a build of Wick that has {*Major*} . {*Feature* **|** *Breaking*} but an lower {*Build* **|** *Bug Fix*}, it is encouraged to update your Wick build to the latest {*Build* **|** *Bug Fix*}.
 
-4. **Alpha** | **Beta** 
+4. **Alpha** | **Beta**
     1. A version code with the symbol {**a**} appended to it indicates the build is in alpha status, and to expect both incomplete test coverage and unresolved bugs. Further, introduced features may have incomplete API implementation. Documentation is not a concern in this version.
     1. A version code with the symbol {**b**} is in beta status, and to the best of our abilities, test coverage should be complete for all new features and any changed code. Bugs may still be present, but major bugs should all be addressed. Documentation is a elevated concern in this version, and either a framework or a draft of documentation for new and changed features should be included with this version.
-    1. Version codes without a symbol appended to it are considered ***release*** builds. Documentation is a primary concern of this type of build, and all new features and changed API should be completely documented to warrant a beta version status. All concerns of beta and alpha are also concerns of this version. [^2]
+    1. Version codes without a symbol appended to it are considered ***release*** builds. Documentation is a primary concern of this type of build, and all new features and changed API should be completely documented to warrant a beta version status. All concerns of beta and alpha are also concerns of this version.<sup>[1](#Notes)</sup>
 
 # Wick Versions
 
-## %v1.0.0
+## v1.0.0
 
 ### Planned Features and Improvements
 - Full API Documentation
@@ -34,31 +34,33 @@ The versioning scheme of Wick is as follows:
 .
 .
 
-## %v0.5.*
+## v0.5.*
 
 ### Planned Features and Improvements
-- Getting Started Guide
 - Any container index matching.
 - Plugin system for client side page parsing, such as MarkDown
 
-## %v0.4.*
+## v0.4.*
 
 ### Planned Features and Improvements
-- ShadowDOM polyfill. 
-- CSS `<style>` **IO** binding. 
+- ShadowDOM polyfill.
+- CSS `<style>` **IO** binding.
 - API documentation for all major classes.
 - Complete test coverage for all major classes.
+- Helpful error hints to indicate a **Pipe**, **Tap**, **IO**, or some other component has failed.
 
-## v0.3.*
+## v0.3.* - In Active Development
 
 ### Planned Features and Improvements
-- Form input **IO** bindings. 
+- Getting Started Guide
+- Form input **IO** bindings.
+- [Lexer]("source/common/string_parsing/lexer") Optimization
 
 ### Features Introduced
-- Complex HTML templates.
-- Template network import.  
+- Complex HTML components.
+- Component network fetch.  
 
-### Major Changes 
+### Major Changes
 - New File names and Class names.
 
 ### v0.3.1a - *current* - Component routing.
@@ -66,39 +68,39 @@ The versioning scheme of Wick is as follows:
 
 Updating Element, Component, Router
 
-Added template importing code to Component. `<components>` can have a "src" attribute that point to an HTML file containing component info to merge into the current dock. This will fallback to a local rendering if the request fails.
+Added template importing code to Component. `<components>` can have a `src="*"` attribute that points to an HTML file containing component template info to build a component out of. This will fallback to a local component compiling if the request fails.
 
 
-### v0.3.0a - SourcePackage, HTML templates, CSS Transitions & Animations. 
+### v0.3.0a - SourcePackage, HTML templates, CSS Transitions & Animations.
 
 ##### commit: 27c37bb2b1088e643c6e96aff4dc949657a42a5d
 
 #### CSS
 
-Implement the first use of the CSS parser. **Transitioner** utilizes the parsed CSS data to get timing information from elements to determine how long a transition or animation will last before component can be unmounted. 
+Implement the first use of the CSS parser. **Transitioner** utilizes the parsed CSS data to get timing information from elements to determine how long a transition or animation will last before component can be unmounted.
 
 #### SourcePackage and SourceConstructor
 
-The **SourceConstructor** now has a different return value, **SourcePackage**. 
+The **SourceConstructor** now has a different return value, **SourcePackage**.
 
-The **SourcePackage** class combines multiple compiled SourceSkeletons along with CSS Object Graphs into one package that can build a more complex component when it is used to bind Model's to the DOM. Like the SourceSkeleton, its purpose is to provide a repository of pre-compiled Source, Tap, Pipe, and IO constructors to allow for quick creation of new components without having to re-parse a `<template>` element. SourcePackage has a `mount(element, model, USE_SHADOW_DOM, host_object)` function property that will bind constructed Sources to an `element` and (optional)`model` passed to the function. The `USE_SHADOW_DOM` boolean can be set to true to have the SourcePackage attempt to mount new elements to the passed in element's shadow root. The `host_object` argument 
+The **SourcePackage** class combines multiple compiled SourceSkeletons along with CSS Object Graphs into one package that can build a more complex component when it is used to bind Model's to the DOM. Like the SourceSkeleton, its purpose is to provide a repository of pre-compiled Source, Tap, Pipe, and IO constructors to allow for quick creation of new components without having to re-parse a `<template>` element. SourcePackage has a `mount(element, model, USE_SHADOW_DOM, host_object)` function property that will bind constructed Sources to an `element` and (optional)`model` passed to the function. The `USE_SHADOW_DOM` boolean can be set to true to have the SourcePackage attempt to mount new elements to the passed in element's shadow root. The `host_object` argument
 
-This change allows `<template>`s to store more than just a single `<w-source>` tag tree, as was previously allowed, or at least, just a single tag was parsed. Now multiple `<w-source>`, `<script>`, and `<style>` tags all allowed under one template element and are parsed by the SourceConstructor; any other tags in the `<template>` element are simply ignored. 
+This change allows `<template>`s to store more than just a single `<w-source>` tag tree, as was previously allowed, or at least, just a single tag was parsed. Now multiple `<w-source>`, `<script>`, and `<style>` tags all allowed under one template element and are parsed by the SourceConstructor; any other tags in the `<template>` element are simply ignored.
 
 ## v0.2.*
 
 ### Features Introduced
 - New API for objects exposed through `wick`.
-- Custom CSS parser. 
+- Custom CSS parser.
 
-### Major Changes 
+### Major Changes
 - New File names and Class names.
 
 ### v0.2.3a - Developing A CSS Rules and Syntax parser
 
 ##### commit: 1bcbaada5828dbf82661303f9af813f7f1c315e8
 
-The CSS Parser can read CSS rules and make appropriate syntax parsers to handle different property types. The rules parser component creates syntax parsers on demand. Syntax parsers created from the rule parser will only be created when a particular property needs to be read in a CSS string and a syntax parser does not exist. All CSS rule definitions are stored in [CSS_Rules](source/common/css/parser/properties/props_and_types.js). The rules list is not yet exhaustive, but adding new rules is as simple as copying a text string from a CSS specification document. 
+The CSS Parser can read CSS rules and make appropriate syntax parsers to handle different property types. The rules parser component creates syntax parsers on demand. Syntax parsers created from the rule parser will only be created when a particular property needs to be read in a CSS string and a syntax parser does not exist. All CSS rule definitions are stored in [CSS_Rules](source/common/css/parser/properties/props_and_types.js). The rules list is not yet exhaustive, but adding new rules is as simple as copying a text string from a CSS specification document.
 
 Created new CSS class types that wrap native types:
 - **CSS_Color** extends **Color** extends Float64Array;
@@ -111,7 +113,7 @@ Created new CSS class types that wrap native types:
 - **CSS_Number** extends `Number`;
 - **CSS_Bezier** extends **CBezier** extends Float64Array;
 
-### v0.2.2a - Attribute Control 
+### v0.2.2a - Attribute Control
 
 ##### commit: b9ec326358e7bdbbbb65cddd253636b8096a1676
 
@@ -131,14 +133,14 @@ Renamed Linker to Router for easier recognition of the class's usage.
 
 Changed `Wick.light` to `Wick.startRouting`.
 
-Reduced several names of different files, such as turning `model_base.js` into `base.js` [source/model/base.js](source/model/) and the same for `case_base.js`, now [source/source/base.js](source/source/). This makes it easier to distinguish the purpose of the file through its file name. 
+Reduced several names of different files, such as turning `model_base.js` into `base.js` [source/model/base.js](source/model/) and the same for `case_base.js`, now [source/source/base.js](source/source/). This makes it easier to distinguish the purpose of the file through its file name.
 
 #### Wick API
 
-Previous versions of Wick dumped nearly all classes into an object exposed as `wick`. 
+Previous versions of Wick dumped nearly all classes into an object exposed as `wick`.
 ```javascript
 /* Exposed objects as of commit 99e7afd6ebd5b928b71508b0e45aa2acdf84b672 */
-wick = { 
+wick = {
     URL, Animation, ArrayModelContainer,
     BTreeModelContainer, MultiIndexedContainer, Controller,
     CustomCase, Rivet, CaseConstructor,
@@ -272,14 +274,14 @@ is now  written as:
     </w-case>
 </template>
 ```
-In the architecture of Wick, the purpose of a Case instance is now defined as the binding point to a model. Defining a Case in a template is the only way to determine what data is available to the elements bounded by the case element, marked with tags `<w-c>` or `<w-case>`. 
+In the architecture of Wick, the purpose of a Case instance is now defined as the binding point to a model. Defining a Case in a template is the only way to determine what data is available to the elements bounded by the case element, marked with tags `<w-c>` or `<w-case>`.
 
 The Model that the Case binds to is selected by matching a value found in the tags `model` or `schema` attribute:
 
-- Using the `model` attribute, the Case will bind to any existing model that matches the `model` value. This Model must be present in the `presets.models` object for this to work. 
+- Using the `model` attribute, the Case will bind to any existing model that matches the `model` value. This Model must be present in the `presets.models` object for this to work.
 - Using the `schema` attribute, the Case will create new Model with a schema type matching the value of `schema`. A value of `"any"` will cause an AnyModel to be created.
 
-New classes have been created to provide a more apparent connection between Model data, data transformers, and HTMLElement connections. 
+New classes have been created to provide a more apparent connection between Model data, data transformers, and HTMLElement connections.
 
 - The **Tap** class represents a single property channel that is used to pull and push data from a Model attached to a Case.
 
@@ -293,7 +295,7 @@ New classes have been created to provide a more apparent connection between Mode
 
 ##### Native Properties
 
-Now a Model's properties can be changed directly instead of having to call `add({data:"to add"})`, and can be accessed without need to call `get()` or accessing the `Model.data` property. Properties will be automatically parsed using the the Models schema, which uses Object.defineProperty to create special watcher and getter properties on the Model's prototype. 
+Now a Model's properties can be changed directly instead of having to call `add({data:"to add"})`, and can be accessed without need to call `get()` or accessing the `Model.data` property. Properties will be automatically parsed using the the Models schema, which uses Object.defineProperty to create special watcher and getter properties on the Model's prototype.
 
 If no schema object is bound to a Model through `Model.schema`, then an AnyModel is returned, which uses a Proxy object to handle updates on the Model.
 
@@ -323,17 +325,17 @@ Rollup creates tight JavaScript packages the computational overhead introduced w
 
 *Major revision to structure and capabilities. Can be considered v0.0.4a*
 
-> The emphasis at this point is to cache and reuse as much compiled data as possible. With that in mind, the way a Case had been previously configured caused a full parse of a DOM tree and the selection and instantiation of constructors from JavaScript object "hash tables" every single time a Case was created. A `<component>` that could be considered reusable, such as one used to present multiple items of a list, would undergo this whole parsing process for every item in that list, doing more work then necessary. To remedy this, this commit included new "pre-compiled" components known as CaseSkeletons, which would process the DOM tree and create a chain of Case and Cassette constructors that could then later be used to create a Case Instance with all it's Cassettes.  No more parsing would need to occur after the initial parse of a `<component>`. This also allowed for a new type of Case, a CaseTemplate, that could be used to bind multiple Case's to the Models contained within a ModelContainer. 
+> The emphasis at this point is to cache and reuse as much compiled data as possible. With that in mind, the way a Case had been previously configured caused a full parse of a DOM tree and the selection and instantiation of constructors from JavaScript object "hash tables" every single time a Case was created. A `<component>` that could be considered reusable, such as one used to present multiple items of a list, would undergo this whole parsing process for every item in that list, doing more work then necessary. To remedy this, this commit included new "pre-compiled" components known as CaseSkeletons, which would process the DOM tree and create a chain of Case and Cassette constructors that could then later be used to create a Case Instance with all it's Cassettes.  No more parsing would need to occur after the initial parse of a `<component>`. This also allowed for a new type of Case, a CaseTemplate, that could be used to bind multiple Case's to the Models contained within a ModelContainer.
 >- Moved structure of linker to use new Case components, elements build
 them now: WIP
 >- Broke Model/View code up into a separate class named ModelBase. Both Model and ModelContainer inherit from this. This allows Views to attach to ModelContainers and receive updates on items added and removed from containers. CaseTemplates use this to update their scope with new Cases or remove Cases whenever a Model is added to the CaseTemplate's ModelContainer.
->##### Objects introduced
->- Added Term Cassette and revised Filter Cassette to handle search results in ModelContainers. The **Filter** Cassette is used a CaseTemplate to filter out Model members of a ModelContainer, and select only ones that match the criteria set by the Filter Cassette. 
+> ##### Objects introduced
+>- Added Term Cassette and revised Filter Cassette to handle search results in ModelContainers. The **Filter** Cassette is used a CaseTemplate to filter out Model members of a ModelContainer, and select only ones that match the criteria set by the Filter Cassette.
 >- Added **AnyModel** type to facility easier ad hoc creation of components.
->- **BTreeContainer** replacing as **BinaryModelContainer** as a correct implementation of a Binary Tree Container. 
+>- **BTreeContainer** replacing as **BinaryModelContainer** as a correct implementation of a Binary Tree Container.
 >- **CaseSkeletons** are used to store constructor trees that can be used to quickly create a Case instance with all it's Cassette dependents. It combines HTMLElements together with the JavaScript constructors, and will create new HTMLElements through cloning and bind them to then new Cases when it's `flesh`  method is called.
 >- **CaseTemplate** is an instance of Case that can attach to a ModelContainer and host child Cases that mount to all or a portion of the Models stored in the container. The HTMLElements these Cases bind to appended to the CaseTemplate's own HTMLElement.
->- **CaseConstructor** this function takes over the task of parsing DOM templates from the Case class. The CaseConstructor will create a CaseSkeleton graph once it parses the input DOM, attaching relevant HTMLElements to the CaseSkeletons to later be cloned into new DOM component elements. 
+>- **CaseConstructor** this function takes over the task of parsing DOM templates from the Case class. The CaseConstructor will create a CaseSkeleton graph once it parses the input DOM, attaching relevant HTMLElements to the CaseSkeletons to later be cloned into new DOM component elements.
 
 
 ##### commit: 5c1730fc8be2587283870aec90151903b1e4c822
@@ -357,7 +359,7 @@ them now: WIP
 >- Added JSDOCS and started using it to document API.
 >- **Linker** now supports "modals", pages that can be loaded on top of an existing page, instead of replacing it. Linker also supports the loading of content that does not have Wick integration. The SPA experience is still maintained.
 > ##### Objects introduce
-> - Added new Cassette types: EpochToDateTime, Exists, Filter. 
+> - Added new Cassette types: EpochToDateTime, Exists, Filter.
 - **WURL** (Wick URL) is a class that allows for the conversion of a Model or it's properties to a URL query string and also the reverse.
 - **Page** Represents an entire web page stored in a `<app>` element. Maintains a collection of Elements and is responsible for handling the transitions of Elements of different web pages whose `<element>` has matching CSS id attributes.
 
@@ -374,15 +376,13 @@ them now: WIP
 - **Cassettes** are classes that attach to HTMLELements and allow output of Model property data into user space through those elements and also connect element events to actions that change Model data.<sup>***This object is deprecated as of version v0.3.1a***</sup>
 - **Linker** is a singleton object that handles the loading of HTML pages and determines whether page content can be parsed by Wick to bind it to a current set of Model. It prevents User Agent reloading and instead intercepts document location changes, providing a means to load new content asynchronously and integrate new page fetches into a "single page" experience. It also provides a mechanism to transition page elements to give a more pleasant and seamless experience.  <sup>**This object is now called** ***Router***</sup>
 - *Other objects introduced, such as content in `./source/common/` and `./source/animation/`, provide various utilities to handle Model data, deal with page transitions and URL's, and provide animation capabilities.*
->- **Element** Element is created by the Linker to bind to `<element>` HTMLElements and control a set of Components. An `<element>` is considered a self contained UI section. 
->- **Component** is a class inheriting from Case that is created by the Linker to bind to a `<component>` HTMLElement. It build out the `<component>` with data from a Model through Cassette instances. It can take a template from anywhere in the DOM to build out the `<component>`, matching the first CSS `class` attribute with the `id` property of the template. 
-
-
+>- **Element** Element is created by the Linker to bind to `<element>` HTMLElements and control a set of Components. An `<element>` is considered a self contained UI section.
+>- **Component** is a class inheriting from Case that is created by the Linker to bind to a `<component>` HTMLElement. It build out the `<component>` with data from a Model through Cassette instances. It can take a template from anywhere in the DOM to build out the `<component>`, matching the first CSS `class` attribute with the `id` property of the template.
 
 
 ### Notes
 
 
-[^1]:  <sup>This document was created as of v0.3.1a. Previous versioning codes of Wick may not have been correctly set for the type of build that is created at a particular commit. It is our intention to ensure that versioning in commits following v0.3.1a adhere to the standard set within this document. </sup>
-
 Copyright 2018 Anthony Weathersby - All Rights Reserved
+
+[^1]: This document was created as of v0.3.1a. Previous versioning codes of Wick may not have been correctly set for the type of build that is created at a particular commit. It is our intention to ensure that versioning in commits following v0.3.1a adhere to the standard set within this document.

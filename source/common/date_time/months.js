@@ -1,3 +1,10 @@
+/**
+ * 12 Months of the year stored as objects in an array.
+ * 
+ * @property months
+ * @type       {Array}
+ * @memberof module:wick.core.common
+ */
 const months = [{
     name: "January",
     days: 31,

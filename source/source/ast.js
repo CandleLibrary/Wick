@@ -3,66 +3,22 @@
 */
 import { Source } from "./source"
 
-import { Template } from "./template"
+import { SourceTemplate } from "./template"
 
 import { Skeleton } from "./skeleton"
-/* 
-    Cassettes
-*/
-import { FilterLimit } from "./cassette/filter_limit"
-
-import { Cassette, CloseCassette } from "./cassette/cassette"
-
-import { Form } from "./cassette/form"
-
-import { Input } from "./cassette/input"
-
-import { Filter } from "./cassette/filter"
-
-import { Term } from "./cassette/term"
-
-import { Exporter } from "./cassette/exporter"
-
-import { ImportQuery } from "./cassette/import_query"
-
-import { DataEdit } from "./cassette/data_edit"
-
-import { Exists, NotExists } from "./cassette/exists"
-
-import {
-    EpochDay,
-    EpochTime,
-    EpochDate,
-    EpochMonth,
-    EpochYear,
-    EpochToDateTime
-} from "./cassette/epoch"
-
-let PresetCassettes = {
-    raw: Cassette,
-    cassette: Cassette,
-    form: Form,
-    input: Input,
-    export: Exporter,
-    iquery: ImportQuery,
-    edt: EpochToDateTime,
-    etime: EpochTime,
-    eday: EpochDay,
-    edate: EpochDate,
-    eyear: EpochYear,
-    emonth: EpochMonth,
-    exists: Exists,
-    not_exists: NotExists,
-    data_edit: DataEdit,
-    term: Term,
-    limit: FilterLimit
-}
 
 import { Tap } from "./tap/tap"
+
 import { Pipe } from "./pipe/pipe"
+
 import { IO } from "./io/io"
 
-export class Root {
+/**
+ * Class for root.
+ *
+ *@memberof module:wick~internals.templateCompiler
+ */
+class Root {
     constructor() {
         this.html = "";
         this.children = [];
@@ -101,7 +57,12 @@ export class Root {
     }
 }
 
-export class GenericNode {
+/**
+ * Class for GenericNode.
+ *
+ *@memberof module:wick~internals.templateCompiler
+ */
+class GenericNode {
 
     constructor(tagname, attributes, parent, MiniParse, presets) {
 
@@ -113,13 +74,15 @@ export class GenericNode {
         this.CONSUMES_TAG = true;
         this.CONSUMES_SAME = false;
         this.children = [];
-        this.prop_name = null;
+        this.prop_name = "";
+        this.attrib_name = "";
         this.html = "";
         this.index_tag = ""
         this.open_tag = "";
         this.close_tag = "";
         this.tag_index = 0;
         this.index = 0;
+        this.SPLITABLE = false;
 
         if (parent)
             parent.addChild(this);
@@ -153,7 +116,10 @@ export class GenericNode {
 
     addChild(child) {
 
-        if (child instanceof TapNode && !(this instanceof SourceNode))
+        if (child instanceof IONode && (!(this instanceof PipeNode) && !(this instanceof TapNode)))
+            return this.parent.addChild(child);
+
+        if (child instanceof TapNode)
             return this.parent.addChild(child);
 
         child.parent = this;
@@ -162,29 +128,45 @@ export class GenericNode {
 
     setAttribProp(name) {
 
-        if (!this.prop_name) this.prop_name = name;
+        if (!this.attrib_name) this.attrib_name = name;
 
         for (let i = 0; i < this.children.length; i++)
             this.children[i].setAttribProp(name);
     }
 
-    /** 
-        Builds ASTs off of attributes 
-    */
+    /**
+     *  Builds ASTs off of attributes. 
+     *  
+     *  TODO: Parse more generic attribute structures, such as style="border_color=[color]"
+     *
+     * @param      {Function}  MiniParse  The mini parse function
+     * @param      {Object}    presets    The global presets object. 
+     */
     treeParseAttributes(MiniParse, presets) {
 
         let i = -1;
 
         for (let n in this.attributes) {
             let attrib = this.attributes[n];
-            if (attrib[0] == "<") {
-                let root = new SourceNode("", null, null);
-                root.tag_index = (i < 0) ? (i = this.getIndex(), this.index_tag = `##:${i} `, this.index = i) : i;
-                MiniParse(attrib, root, presets);
+            //if (attrib[0] == "<") {
+            let root = new SourceNode("", null, null);
+            root.tag_index = (i < 0) ? (i = this.getIndex(), this.index_tag = `##:${i} `, this.index = i) : i;
+            MiniParse(attrib, root, presets);
+            if (root.children[0]) {
                 root.children[0].setAttribProp(n);
                 this.addChild(root.children[0]);
             }
+            //}
         }
+    }
+
+    getMissingAttribute(name) {
+
+        if (this.attributes[name])
+            return this.attributes[name];
+        if (this.parent && this.parent.getMissingAttribute)
+            return this.parent.getMissingAttribute(name);
+        return null;
     }
 
     parseAttributes() {
@@ -192,10 +174,14 @@ export class GenericNode {
         let out = {};
 
         for (let name in this.attributes) {
-            out[name] = this.attributes[name];
+            if (!this.attributes[name] && this.parent && this.parent.getMissingAttribute)
+                out[name] = this.parent.getMissingAttribute(name);
+            else
+                out[name] = this.attributes[name];
         }
 
         out.prop = this.prop_name;
+        out.attrib = this.attrib_name;
 
         return out;
     }
@@ -228,11 +214,15 @@ export class GenericNode {
                 if (prop_name == this.prop_name)
                     this.addChild(node);
                 else {
-                    let r = new this.constructor(this.tagname, this.attributes, null);
-                    r.CONSUMES_SAME = (r.CONSUMES_TAG) ? (!(r.CONSUMES_TAG = !1)) : !1;
-                    r.prop_name = prop_name;
-                    r.addChild(node);
-                    return this.parent.split(r, prop_name);
+                    if (this.SPLITABLE) {
+                        let r = new this.constructor(this.tagname, this.attributes, null);
+                        r.CONSUMES_SAME = (r.CONSUMES_TAG) ? (!(r.CONSUMES_TAG = !1)) : !1;
+                        r.prop_name = prop_name;
+                        r.addChild(node);
+                        return this.parent.split(node, prop_name);
+
+                    }
+                    return this.parent.split(node, prop_name);
                 }
             } else {
                 this.addChild(node);
@@ -301,7 +291,12 @@ export class GenericNode {
     }
 }
 
-export class SourceNode extends GenericNode {
+/**
+ * Class for SourceNode.
+ *
+ *@memberof module:wick~internals.templateCompiler
+ */
+class SourceNode extends GenericNode {
 
     constructor(tagname, attributes, parent) {
 
@@ -315,11 +310,9 @@ export class SourceNode extends GenericNode {
 
     addProp(lexer, prop_name, parseFunction, presets) {
 
-        if (lexer.text == "(" && lexer.peek().text == "(") {
+        if (lexer.tx == "(") {
 
-            lexer.assert("(");
-
-            lexer.assert("(");
+            lexer.n();
 
             let template = new TemplateNode("list", { prop: prop_name }, this, this);
 
@@ -332,7 +325,8 @@ export class SourceNode extends GenericNode {
             lexer.assert(")");
 
             return out;
-        }
+        } else
+            return super.addProp(lexer, prop_name, parseFunction, presets)
     }
 
     getConstructor() {
@@ -344,12 +338,51 @@ export class SourceNode extends GenericNode {
 
         if (node) this.addChild(node);
     }
+
+    addChild(node) {
+
+        if (node instanceof IONode || node instanceof PipeNode) {
+
+            let prop_name = node.prop_name;
+
+            if (prop_name)
+                for (let i = 0, l = this.children.length; i < l; i++) {
+                    let child = this.children[i];
+                    if (child instanceof TapNode && child.prop_name == prop_name)
+                        return child.addChild(node);
+                }
+
+            let tap = new TapNode("", node.attributes, this);
+            tap.prop_name = node.prop_name;
+            tap.addChild(node);
+            return;
+        }
+
+        if (node instanceof TapNode) {
+            let prop_name = node.prop_name;
+
+            if (prop_name)
+                for (let i = 0, l = this.children.length; i < l; i++) {
+                    let child = this.children[i];
+                    if (child instanceof TapNode && child.prop_name == prop_name)
+                        return child.merge(node);
+                }
+        }
+
+        node.parent = this;
+        this.children.push(node);
+    }
 }
 
-export class TemplateNode extends GenericNode {
+/**
+ * Class for TemplateNode.
+ *
+ *@memberof module:wick~internals.templateCompiler
+ */
+class TemplateNode extends GenericNode {
 
     constructor(tagname, attributes, parent, ctx) {
-        console.log(attributes)
+
         super(tagname, attributes, parent);
 
         this.prop_name = attributes.prop;
@@ -386,7 +419,7 @@ export class TemplateNode extends GenericNode {
 
         element.innerHTML = this.html;
 
-        let skeleton = new Skeleton(this.getElement(), Template, this.parseAttributes(), presets, this.index);
+        let skeleton = new Skeleton(this.getElement(), SourceTemplate, this.parseAttributes(), presets, this.index);
 
         skeleton.filters = this.filters.map((filter) => filter.createSkeletonConstructor(presets))
 
@@ -444,7 +477,13 @@ export class TemplateNode extends GenericNode {
     }
 }
 
-export class TapNode extends GenericNode {
+
+/**
+ * Class for TapNode.
+ *
+ *@memberof module:wick~internals.templateCompiler
+ */
+class TapNode extends GenericNode {
     constructor(tagname, attributes, parent) {
         super(tagname, attributes, parent);
     };
@@ -470,13 +509,20 @@ export class TapNode extends GenericNode {
         if (this.attributes.w_class) {
             if (node) this.addChild(node);
         } else
-            super.split(node,prop_name);
+            super.split(node, prop_name);
+    }
 
+    merge(other_tap) {
+        this.children = this.children.concat(other_tap.children);
     }
 }
 
-
-export class FilterNode extends GenericNode {
+/**
+ * Class for FilterNode.
+ *
+ *@memberof module:wick~internals.templateCompiler
+ */
+class FilterNode extends GenericNode {
     constructor(tagname, attributes, parent) {
         super(tagname, attributes, parent);
         this.CONSUMES_TAG = false;
@@ -493,10 +539,15 @@ export class FilterNode extends GenericNode {
     }
 }
 
-
-export class TermNode extends GenericNode {
+/**
+ * Class for TermNode.
+ *
+ *@memberof module:wick~internals.templateCompiler
+ */
+class TermNode extends GenericNode {
     constructor(tagname, attributes, parent) {
         super(tagname, attributes, parent);
+        this.SPLITABLE = true;
     };
 
     finalize(ctx) {}
@@ -511,11 +562,16 @@ export class TermNode extends GenericNode {
 }
 
 
-
-export class PipeNode extends GenericNode {
+/**
+ * Class for PipeNode.
+ *
+ *@memberof module:wick~internals.templateCompiler
+ */
+class PipeNode extends GenericNode {
 
     constructor(tagname, attributes, parent) {
         super(tagname, attributes, parent);
+        this.SPLITABLE = true;
     };
 
     finalize(ctx, presets) {
@@ -542,9 +598,18 @@ export class PipeNode extends GenericNode {
     }
 }
 
-export class IONode extends GenericNode {
+/**
+ * Class for IONode.
+ *
+ *@memberof module:wick~internals.templateCompiler
+ */
+class IONode extends GenericNode {
     constructor(prop_name, attributes, parent, ctx, index) {
+
+        if (prop_name == "namess") debugger
+
         super("", null, parent);
+
         this.index = index;
         ctx.html += `<io prop="${prop_name}">##:${index} </io>`
         this.prop_name = prop_name;
@@ -554,4 +619,16 @@ export class IONode extends GenericNode {
     getConstructor(presets) {
         return IO;
     }
+}
+
+export {
+    Root,
+    GenericNode,
+    SourceNode,
+    TemplateNode,
+    TapNode,
+    FilterNode,
+    TermNode,
+    PipeNode,
+    IONode
 }

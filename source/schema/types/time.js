@@ -1,6 +1,6 @@
-import { NumberSchemaConstructor } from "./number.js"
+import { NumberSchemeConstructor } from "./number.js"
 
-class TimeSchemaConstructor extends NumberSchemaConstructor {
+class TimeSchemeConstructor extends NumberSchemeConstructor {
 
     parse(value) {
         if (!isNaN(value))
@@ -32,6 +32,6 @@ class TimeSchemaConstructor extends NumberSchemaConstructor {
     }
 }
 
-let time = new TimeSchemaConstructor()
+let time = new TimeSchemeConstructor()
 
-export { time, TimeSchemaConstructor }
+export { time, TimeSchemeConstructor }
