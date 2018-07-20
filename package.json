@@ -1,19 +1,27 @@
 {
   "name": "wick",
-  "version": "0.3.1a",
+  "version": "0.3.2a",
   "description": "PWA Framework",
   "main": "build/wick-min-es.js",
+  "watch": {
+    "jsdocs": "source/**/*.js"
+  },
   "scripts": {
     "test": "nyc mocha",
-    "test-n-watch": "mocha -w --check-leaks -R min",
-    "build-css": "npx rollup --config ./build/build_config/css.config.js",
-    "build-production": "npx rollup --config ./build/build_config/minibuild.config.js",
-    "build-production-es": "npx rollup --config ./build/build_config/minibuild_es.config.js",
-    "build-dev": "npx rollup --config ./build/build_config/browserdev.config.js",
-    "build-node": "npx rollup --config ./build/build_config/node.config.js",
-    "watch": "npx rollup --config ./build/build_config/browserdev.config.js --watch",
-    "watch-node": "npx rollup --config ./build/build_config/node.config.js --watch",
-    "docs": "npx jsdoc ./source/ --destination ./documents/api --configure ./build/build_config/jsdoc.json "
+    "test.watch": "mocha -w --check-leaks -R min",
+    "build-css": "rollup --config ./build/config/css.config.js",
+    "build-production": "rollup --config ./build/config/minibuild.config.js",
+    "build-production-es": "rollup --config ./build/config/minibuild_es.config.js",
+    "build-dev": "rollup --config ./build/config/browserdev.config.js",
+    "build-node": "rollup --config ./build/config/node.config.js",
+    "watch": "npm-watch",
+    "build-dev.watch": "rollup --config ./build/config/browserdev.config.js --watch",
+    "build-node.watch": "rollup --config ./build/config/node.config.js --watch",
+    "jsdocs": "jsdoc ./source -r --configure ./build/config/jsdoc.json ",
+    "jsdocs:watch": "watch jsdoc ./source -r --configure ./build/config/jsdoc.json ",
+    "esdocs": "./node_modules/.bin/esdoc -c ./build/config/esdoc.json open ./docs/index.html ",
+    "yuidocs": "yuidoc --server -c ./build/config/yuidoc.json",
+    "docdocs": "documentation build --watch source/root/wick.js --output docs/api/ -f html"
   },
   "repository": {
     "type": "git",
@@ -30,6 +38,12 @@
     "REST",
     "APP"
   ],
+  "directories": {
+    "lib": "source",
+    "doc": "docs",
+    "man": "docs/guide",
+    "test": "test"
+  },
   "author": "Anthony Weathersby",
   "license": "copyright",
   "bugs": {
@@ -38,14 +52,20 @@
   "private": true,
   "homepage": "https://gitlab.com/anthonycweathersby/wick#readme",
   "devDependencies": {
+    "documentation": "^8.0.1",
     "jsdoc": "^3.5.5",
     "jsdom": "^11.11.0",
     "mocha": "^5.2.0",
+    "npm-watch": "^0.3.0",
     "nyc": "^12.0.2",
     "rollup": "^0.62.0",
     "rollup-plugin-gzip": "^1.4.0",
     "rollup-plugin-terser": "^1.0.1"
   },
   "optionalDependencies": {},
-  "dependencies": {}
+  "dependencies": {
+    "esdoc": "^1.1.0",
+    "esdoc-standard-plugin": "^1.0.0",
+    "save-dev": "^2.0.0"
+  }
 }

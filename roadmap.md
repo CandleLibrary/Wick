@@ -53,17 +53,34 @@ The versioning scheme of Wick is as follows:
 
 ### Planned Features and Improvements
 - Getting Started Guide
-- Form input **IO** bindings.
 - [Lexer]("source/common/string_parsing/lexer") Optimization
 
 ### Features Introduced
 - Complex HTML components.
+- Form input **IO** bindings.
 - Component network fetch.  
+- Started API Documentation, Guide.
+- CSS Selectors matched to HTMLElements.
 
 ### Major Changes
 - New File names and Class names.
 
-### v0.3.1a - *current* - Component routing.
+### v0.3.2b - *current* - Documentation Started.
+##### commit: 129785ca8e5d376fd17177da42e32d002b5c8861
+
+- Added Documentation using JSDocs, new `doc` branch.
+
+After spending several hours with inline documentation generators, decided to pick vanilla JSDOC3 as the generator for the API documentation. A good chunk of the main content in `./source` now has JSDOC comment blocks.
+
+Created a new branch `doc`, that will serve as the final staging for commits that end up in the master branch as full releases. 
+
+>The purpose of the `doc` branch is to have everything within the branch documented and tested. An ideal commit has all changes well documented and all new features configured with a test suite. `master` will pull from `doc` for all feature release versions.
+Any testing or experimental features from here on will be found within the `dev` branch. One can now look at `dev` as the branch were alpha builds are found, `doc` for beta, and `master` for release
+
+### Major Changes
+- New File names and Class names.
+
+### v0.3.1a - Component routing.
 ##### commit: 9f36ca68e3eb06b6a0623103ce5ce0fef398b8ac
 
 Updating Element, Component, Router
