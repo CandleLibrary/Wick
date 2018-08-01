@@ -12,11 +12,11 @@ export class ArrayModelContainer extends ModelContainerBase {
         this.data = [];
     }
 
-    destroy() {
+    _destroy_() {
 
         this.data = null;
 
-        super.destroy();
+        super._destroy_();
     }
 
     get length() {

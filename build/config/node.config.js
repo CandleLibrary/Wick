@@ -1,6 +1,6 @@
 
 export default {
-	input : "./source/root/wick",
+	input : "./source/root/client",
 	output: {
 		file : "./build/wick.node.js",	
 		format : "cjs"

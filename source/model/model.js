@@ -11,9 +11,9 @@ import { BTreeModelContainer } from "./container/btree"
 import { SchemeConstructor } from "../schema/schemas"
 
 /**
-    This is used by Model to create custom property getter and setters on non-ModelContainerBase and non-Model properties of the Model constructor.
-    @protected
-    @memberof module:wick~internals.model
+*   This is used by Model to create custom property getter and setters on non-ModelContainerBase and non-Model properties of the Model constructor.
+*   @protected
+*   @memberof module:wick~internals.model
 */
 function CreateSchemedProperty(constructor, scheme, schema_name) {
 
@@ -140,7 +140,7 @@ function CreateModelProperty(constructor, scheme, schema_name) {
 }
 
 /**
- * @classdesc The Model class is a strict schema based data store for primitive values and ModelContainers. Models rely on a schema assigned to the constructor to ensure their property values adhere to a fixed standard. This allows models to self validate data. Any attempt to update a property on a Model that does not conform to its schema will be rejected. This helps prevent gotchas with user submitted data and unsure data conforms to server APIs.
+ * @classdesc The Model class is a strict schema based data store for primitive values and ModelContainers. Models rely on a schema assigned to the constructor to ensure their property values adhere to a fixed standard. This allows models to self validate data. Any attempt to _update_ a property on a Model that does not conform to its schema will be rejected. This helps prevent gotchas with user submitted data and unsure data conforms to server APIs.
  * 
  * An instance of a model will have getters and setters defined for each property of the schema. When a property is set, the Model will compare the new value against the requirements of the schema. If it is an incorrect value type or a non existent property, the set action will fail without warning. If the new value is acceptable according to the schema, then the value will be transformed into a value suitable for storage and transmission of the Model. 
  * 
@@ -236,19 +236,19 @@ class Model extends ModelBase {
      * Removes all held references and calls unsetModel on all bound Views.
      * @protected
      */
-    destroy() {
+    _destroy_() {
 
         this.schema = null;
 
         for (let a in this) {
             let prop = this[a];
-            if (typeof(prop) == "object" && prop.destroy instanceof Function)
-                prop.destroy();
+            if (typeof(prop) == "object" && prop._destroy_ instanceof Function)
+                prop._destroy_();
             else
                 this[a] = null;
         }
 
-        super.destroy();
+        super._destroy_();
     }
 
 

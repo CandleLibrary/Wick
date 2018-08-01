@@ -1,10 +1,13 @@
-import { Source } from "./source"
+import { _createElement_, _instanceOf_ } from "../common/short_names";
 
-import { MCArray, ModelContainerBase } from "../model/container/base"
+import { MCArray, ModelContainerBase } from "../model/container/base";
 
-import { MultiIndexedContainer } from "../model/container/multi"
+import { MultiIndexedContainer } from "../model/container/multi";
 
-import { Scheduler } from "../common/scheduler"
+import { Scheduler } from "../common/scheduler";
+
+import { View } from "../view/view";
+
 
 /**
  * Class for template.
@@ -12,21 +15,52 @@ import { Scheduler } from "../common/scheduler"
  * @param      {Source}  parent   The Source parent object.
  * @param      {Object}  data     The data object hosting attribute properties from the HTML template. 
  * @param      {Object}  presets  The global presets object.
- * @param      {external:HTMLElement}  element  The element that the Source will bind to. 
+ * @param      {external:HTMLElement}  element  The element that the Source will _bind_ to. 
  */
-export class SourceTemplate extends Source {
+export class SourceTemplate extends View {
 
-    constructor(parent = null, data, presets, element) {
-        super(parent, data, presets, element);
+    constructor(parent, presets, element) {
 
-        this.cases = [];
+        super();
+
+        //super(parent, presets, element);
+        this.ele = element;
+        this.parent = null;
         this.activeSources = [];
-        this.templates = [];
-        this.filters = [];
+        this._filters_ = [];
+        this._ios_ = [];
         this.terms = [];
+        this.sources = [];
         this.range = null;
-        this.prop_elements = [];
         this._SCHD_ = false;
+        this._prop_ = null;
+        this._package_ = null;
+        this.transition_in = 0;
+
+        parent.addTemplate(this);
+    }
+
+    get data() {}
+    set data(v) {
+        //New data record from prop expression. Out with old, in with the new.
+        //debugger
+        let container = v;
+
+        if (container && (_instanceOf_(container, ModelContainerBase) || container._slf_)) {
+
+            this.cache = v;
+
+            let own_container = container.get(this.getTerms(), null);
+
+            if (_instanceOf_(own_container, ModelContainerBase)) {
+                own_container.pin();
+                own_container.addView(this);
+                this.cull(this.get());
+            } else if (_instanceOf_(own_container, MCArray)) {
+                this.cull(own_container);
+            }
+
+        }
     }
 
     /**
@@ -34,9 +68,10 @@ export class SourceTemplate extends Source {
      * 
      * @protected
      */
-    scheduledUpdate() {
-        for (var i = 0; i < this.activeSources.length; i++)
-            this.activeSources[i].transitionIn(i);
+    _scheduledUpdate_() {
+
+        for (let i = 0; i < this.activeSources.length; i++)
+            this.activeSources[i]._transitionIn_(i);
     }
 
     /**
@@ -46,25 +81,57 @@ export class SourceTemplate extends Source {
      */
     filterUpdate() {
 
-        let output = this.cases.slice();
+        let output = this.sources;
 
-        for (let l = this.filters.length, i = 0; i < l; i++) {
-            //  output = this.filters[i].filter(output);
+        for (let i = 0, l = this._filters_.length; i < l; i++) {
+            let filter = this._filters_[i];
+
+            if (filter._CAN_USE_) {
+
+                if (filter._CAN_FILTER_)
+                    output = output.filter(filter._filter_function_._filter_expression_);
+
+                if (filter._CAN_SORT_)
+                    output = output.filter(filter._sort_function_);
+            }
         }
 
-        for (var i = 0; i < this.activeSources.length; i++) {
-            this.ele.removeChild(this.activeSources[i].ele);
+        let j = 0,
+            ol = output.length;
+
+        for (let i = 0; i < ol; i++)
+            output[i].index = i;
+
+        for (let i = 0; i < this.activeSources.length; i++) {
+            let as = this.activeSources[i];
+            if (as.index > j) {
+                let ele = as.ele;
+                while (j < as.index && j < ol) {
+                    let os = output[j];
+                    os.index = -1;
+                    this.ele.insertBefore(os.ele, ele);
+                    j++;
+                }
+                j++;
+            } else if (as.index < 0) {
+                as._transitionOut_();
+            } else{
+                j++;
+            }
+            as.index = -1;
         }
 
-        for (var i = 0; i < output.length; i++) {
-            this.ele.appendChild(output[i].ele);
+        while (j < output.length) {
+            this.ele.appendChild(output[j].ele);
+            output[j].index = -1;
+            j++;
         }
 
         this.ele.style.position = this.ele.style.position;
 
-        Scheduler.queueUpdate(this);
-
         this.activeSources = output;
+
+        Scheduler.queueUpdate(this);
     }
 
     /**
@@ -78,10 +145,10 @@ export class SourceTemplate extends Source {
 
         if (new_items.length == 0) {
 
-            for (let i = 0, l = this.cases.length; i < l; i++)
-                this.cases[i].destroy();
+            for (let i = 0, l = this.sources.length; i < l; i++)
+                this.sources[i]._destroy_();
 
-            this.cases.length = 0;
+            this.sources.length = 0;
 
         } else {
 
@@ -89,14 +156,14 @@ export class SourceTemplate extends Source {
 
             var out = [];
 
-            for (let i = 0, l = this.cases.length; i < l; i++)
-                if (!exists.has(this.cases[i]._m)) {
-                    this.cases[i].destroy();
-                    this.cases.splice(i, 1);
+            for (let i = 0, l = this.sources.length; i < l; i++)
+                if (!exists.has(this.sources[i].model)) {
+                    this.sources[i]._destroy_();
+                    this.sources.splice(i, 1);
                     l--;
                     i--;
                 } else
-                    exists.set(this.cases[i]._m, false);
+                    exists.set(this.sources[i].model, false);
 
 
             exists.forEach((v, k, m) => {
@@ -114,14 +181,15 @@ export class SourceTemplate extends Source {
      * @param      {Array}  items   An array of items no longer stored in the ModelContainer. 
      */
     removed(items) {
+
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
 
-            for (let j = 0; j < this.cases.length; j++) {
-                let Source = this.cases[j];
+            for (let j = 0; j < this.sources.length; j++) {
+                let Source = this.sources[j];
 
                 if (Source._m == item) {
-                    this.cases.splice(j, 1);
+                    this.sources.splice(j, 1);
                     Source.dissolve();
                     break;
                 }
@@ -137,11 +205,14 @@ export class SourceTemplate extends Source {
      * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
      */
     added(items) {
-
         for (let i = 0; i < items.length; i++) {
-            let Source = this.templates[0].flesh(items[i]);
-            Source.parent = this;
-            this.cases.push(Source);
+            let ele = _createElement_("li");
+            let mgr = this._package_.mount(ele, items[i], false);
+            this.sources.push(mgr);
+        }
+
+        for (let i = 0; i < this.sources.length; i++) {
+            this.parent.addSource(this.sources[i]);
         }
 
         this.filterUpdate();
@@ -149,7 +220,7 @@ export class SourceTemplate extends Source {
 
     revise() {
         if (this.cache)
-            this.update(this.cache);
+            this._update_(this.cache);
     }
 
 
@@ -158,7 +229,7 @@ export class SourceTemplate extends Source {
         let out_terms = [];
 
         for (let i = 0, l = this.terms.length; i < l; i++) {
-            let term = this.terms[i].term
+            let term = this.terms[i].term;
             if (term) out_terms.push(term);
 
         }
@@ -168,32 +239,6 @@ export class SourceTemplate extends Source {
             return null;
 
         return out_terms;
-    }
-
-    update(data, IMPORT = false) {
-
-        let container = data[this.prop];
-
-        if (container && (container instanceof ModelContainerBase || container._slf_)) {
-
-            this.cache = data;
-
-            let own_container = container.get(this.getTerms(), null);
-
-            if (own_container instanceof ModelContainerBase) {
-                own_container.pin();
-                own_container.addView(this);
-                this.cull(this.get())
-            } else if (own_container instanceof MCArray) {
-                this.cull(own_container)
-            } else {
-                own_container = data._slf_.data[this.prop]
-                if (own_container instanceof ModelContainerBase) {
-                    own_container.addView(this);
-                    this.cull(this.get())
-                }
-            }
-        }
     }
 
     get() {
@@ -207,13 +252,13 @@ export class SourceTemplate extends Source {
 
                 return this._m.get(query)[index];
             } else
-                console.warn("No index value provided for MultiIndexedContainer!")
+                console.warn("No index value provided for MultiIndexedContainer!");
         } else {
             let source = this._m.source;
             let terms = this.getTerms();
 
             if (source) {
-                this._m.destroy();
+                this._m._destroy_();
 
                 let model = source.get(terms, null);
 
@@ -225,30 +270,4 @@ export class SourceTemplate extends Source {
         }
         return [];
     }
-
-    transitionIn(elements, wurl) {
-
-        let transition_time = 0;
-
-        for (let i = 0, l = this.templates.length; i < l; i++)
-            transition_time = Math.max(transition_time, this.templates[i].transitionIn(elements, wurl));
-
-        Math.max(transition_time, super.transitionIn());
-
-        return transition_time;
-    }
-
-    /**
-        Takes as an input a list of transition objects that can be used
-    */
-    transitionOut(transition_time = 0, DESTROY = false) {
-
-        for (let i = 0, l = this.templates.length; i < l; i++)
-            transition_time = Math.max(transition_time, this.templates[i].transitionOut());
-
-        Math.max(transition_time, super.transitionOut(transition_time, DESTROY));
-
-        return transition_time;
-    }
-
 }

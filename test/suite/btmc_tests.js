@@ -1,18 +1,18 @@
 function BTMCTESTS() {
 	
-    describe('wick.core.model.BTreeArrayContainer', function() {
+    describe('wick.model.container.btree', function() {
 
         //Load the ModelContainer test Suite
-        ModelContainerTests(wick.model.container.constr.btree, false);
+        ModelContainerTests(wick.model.container.btree, false);
 
-        let BTreeMC = wick.model.container.constr.btree;
+        let BTreeMC = wick.model.container.btree;
 
         it("Rejects non-numerical schemas", function() {
             let Constructor = class extends BTreeMC {};
 
             Constructor.schema = {
                 model: wick.model.any.constr,
-                parser: wick.schema.string,
+                parser: wick.scheme.string,
                 identifier: "birthday"
             }
 

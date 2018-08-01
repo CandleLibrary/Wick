@@ -7,7 +7,7 @@ import { Presets } from "../common/presets"
 
 //Schema
 
-import { SchemeConstructor, DateSchemeConstructor, TimeSchemeConstructor, StringSchemeConstructor, NumberSchemeConstructor, BoolSchemeConstructor, Schemes } from "../schema/schemas"
+import { SchemeConstructor, DateSchemeConstructor, TimeSchemeConstructor, StringSchemeConstructor, NumberSchemeConstructor, BoolSchemeConstructor, schemes } from "../schema/schemas"
 
 //Models
 
@@ -31,31 +31,45 @@ import { View } from "../view/view"
 
 import { SourceBase } from "../source/base"
 
-import { SourceConstructor } from "../source/constructor"
+import { SourcePackage } from "../source/package"
 
 //CSS
 
-import { CSSParser } from "../common/css/parser/parser"
+import { CSSParser } from "../common/css/root"
+
+//HTML
+
+import { HTMLParser } from "../common/html/root"
 
 //Network
 
 import { Getter } from "../network/getter"
 
 import { Setter } from "../network/setter"
-
+ 
 //Routing
 
-import { WURL } from "../network/router/wurl"
+import { WURL } from "../network/wurl"
 
-import { Router, URL } from "../network/router/router"
+import { Router } from "../network/router/router"
 
+
+
+var t = 0;
 //Other
+
+import { Lexer } from "../common/string_parsing/lexer"
+
+import { LexerBetaString } from "../common/string_parsing/lexer_beta_string"
+import { LexerBetaArray } from "../common/string_parsing/lexer_beta_array"
 
 import * as Animation from "../animation/animation"
 
 import * as Common from "../common/common"
+import { Scheduler } from "../common/scheduler"
 
 let LINKER_LOADED = false;
+
 let DEBUGGER = true;
 
 
@@ -68,10 +82,7 @@ let DEBUGGER = true;
  *    @method startRouting
  *    @param {Object | Presets} presets - An object of configuration data to pass to the Presets. {@link Presets}.
  */
-
 function startRouting(presets = {}) {
-
-    if (DEBUGGER) console.log(presets)
 
     if (LINKER_LOADED) return;
 
@@ -89,41 +100,51 @@ function startRouting(presets = {}) {
     })
 
     console.log(`${wick_vanity}Copyright 2018 Anthony C Weathersby\nhttps://gitlab.com/anthonycweathersby/wick`)
+
+    return presets;
 }
+
+
+
 /**
  * A proxy for {wick.core.model.Model} 
  *
  * @type  {Model}
  * @memberof module:wick
  */
-const model = Model;
 
+/**
+ * Model Factory Constructor
+ * Creates a new Model or AnyModel and returns the new object.
+ * If a `schema` is given as second argument, creates a new anonymous model constructor extending Model and returns an instance of the extended model.
+ *
+ * @param      {object | Model | AnyModel}    data    Data to add the new model.
+ * @param      {Object}    schema  an object of schemes to apply to the model.
+ * @param      {Function}  temp    For `internal` use only.
+ * @return     {Model | AnyModel}    If a `schema` is provided, returns the new Model based on the schema, otherwise returns an AnyMode.
+ * @memberof module:wick
+ */
+const model = (data, schema, temp = null) => (schema) ? (temp = (class extends Model {}), temp.schema = schema, new temp(data)) : new AnyModel(data);
+model.constr = Model;
 model.any = (data) => new AnyModel(data);
 model.any.constr = AnyModel;
 model.container = {
-    multi: (...args) => new MultiIndexedContainer(...args),
-    array: (...args) => new ArrayModelContainer(...args),
-    btree: (...args) => new BTreeModelContainer(...args),
+    multi: MultiIndexedContainer,
+    array: ArrayModelContainer,
+    btree: BTreeModelContainer,
     constr: ModelContainerBase
-}
-
-model.container.constr.multi = MultiIndexedContainer;
-model.container.constr.array = ArrayModelContainer;
-model.container.constr.btree = BTreeModelContainer;
-
-
-
+};
 //Construct Schema Exports
-const schema = Object.create(Schemes);
-schema.constr = SchemeConstructor;
-schema.constr.bool = BoolSchemeConstructor;
-schema.constr.number = NumberSchemeConstructor;
-schema.constr.string = StringSchemeConstructor;
-schema.constr.date = DateSchemeConstructor;
-schema.constr.time = TimeSchemeConstructor;
+const scheme = Object.create(schemes);
+scheme.constr = SchemeConstructor;
+scheme.constr.bool = BoolSchemeConstructor;
+scheme.constr.number = NumberSchemeConstructor;
+scheme.constr.string = StringSchemeConstructor;
+scheme.constr.date = DateSchemeConstructor;
+scheme.constr.time = TimeSchemeConstructor;
 
-Object.freeze(schema.constr);
-Object.freeze(schema);
+Object.freeze(scheme.constr);
+Object.freeze(scheme);
 Object.freeze(Presets);
 Object.freeze(model.container.constr);
 Object.freeze(model.container);
@@ -131,54 +152,47 @@ Object.freeze(model.any);
 Object.freeze(model);
 
 const core = {
-    Common,
+    presets: (...a) => new Presets(...a),
     common: Common,
-    animation:Animation,
-    view: { View },
-    css: {
-        parser: CSSParser
-    },
-    schema: {
-        instances: Schemes,
-        SchemeConstructor,
-        DateSchemeConstructor,
-        TimeSchemeConstructor,
-        StringSchemeConstructor,
-        NumberSchemeConstructor,
-        BoolSchemeConstructor
-    },
-    model: {
-        Model,
-        AnyModel,
-        ModelContainerBase,
-        MultiIndexedContainer,
-        ArrayModelContainer,
-        BTreeModelContainer
-    },
+    lexer: (string, INCLUDE_WHITE_SPACE_TOKENS) => new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS),
+    animation: Animation,
+    view: View,
+    css: CSSParser,
+    html:HTMLParser,
+    scheme: scheme,
+    model: model,
     network: {
-        router: {
-            WURL,
-            URL,
-            Router
-        },
-        Getter,
-        Setter,
+        url: WURL,
+        router: Router,
+        getter: Getter,
+        setter: Setter,
     },
-    source: {
-        SourceBase,
-        SourceConstructor
-    }
+    source: (...a) => new SourcePackage(...a)
+};
+
+let internals = {/* Empty if production */}
+
+if(DEBUGGER){
+    internals.lexer = Lexer;
+    internals.lexer_beta_string = LexerBetaString;
+    internals.lexer_beta_array = LexerBetaArray;
+    internals.scheduler = Scheduler;
+    console.log(Scheduler)
 }
 
+core.source.base = SourceBase
+core.source.package = SourcePackage
+
+Object.freeze(core.source);
 Object.freeze(core);
 
-const any = model.any;
+let source = core.source;
 
 export {
-    Presets,
-    core,
-    schema,
+    startRouting,
+    source,
+    scheme,
     model,
-    any,
-    startRouting
+    core,
+    internals
 }

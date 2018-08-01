@@ -1,5 +1,5 @@
 export class CSS_Id extends String {
-    static parse(l, rule, r) {
+    static _parse_(l, rule, r) {
         if (l.ty == l.types.id) {
             let tx = l.tx;
             l.n();

@@ -100,7 +100,7 @@ export class ModelContainerBase extends ModelBase {
         /* NO OP **/
     }
 
-    destroy() {
+    _destroy_() {
 
         this.schema = null;
 
@@ -110,7 +110,7 @@ export class ModelContainerBase extends ModelBase {
             this.source.__unlink__(this);
         }
 
-        super.destroy();
+        super._destroy_();
     }
 
     /**
@@ -214,7 +214,7 @@ export class ModelContainerBase extends ModelBase {
     */
     insert(item, __FROM_SOURCE__ = false) {
 
-        let add_list = (this.first_view) ? [] : null;
+        let add_list = (this.fv) ? [] : null;
 
         let out = false;
 

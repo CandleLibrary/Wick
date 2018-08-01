@@ -12,7 +12,7 @@ class Getter {
         this._m = null;
     }
 
-    destroy() {
+    _destroy_() {
         this._m = null;
     }
 
@@ -98,14 +98,14 @@ export {
 /**
  * Fetches text data from a network resource. URL must point to a resource located in the same domain as the page.
  *
- * @param      {external:String}   url     The URL of the network resource
+ * @param      {string}   url     The URL of the network resource
  * @return     {Promise}  { Promise for the returned data }
  */
-export function fetchLocalText(URL) {
-    let p = new Promise((res, rej) => {
+export function fetchLocalText(URL, m = "same-origin") {
+    return new Promise((res, rej) => {
         fetch(URL, {
-            mode: "same-origin",// CORs not allowed
-            credentials: "same-origin", 
+            mode: m,// CORs not allowed
+            credentials: m, 
             method: "Get"
         }).then(r => {
             if (r.status !== 200)
@@ -114,6 +114,4 @@ export function fetchLocalText(URL) {
                 r.text().then(str => res(str))
         }).catch(e => rej(e))
     });
-    
-    return p;
 }

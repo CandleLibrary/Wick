@@ -17,11 +17,11 @@ export class BTreeModelContainer extends ModelContainerBase {
         this.size = 0;
     }
 
-    destroy() {
+    _destroy_() {
         if (this.root)
-            this.root.destroy();
+            this.root._destroy_();
 
-        super.destroy();
+        super._destroy_();
     }
 
     get length() {
@@ -97,7 +97,7 @@ export class BTreeModelContainer extends ModelContainerBase {
 
     __removeAll__() {
         if (this.root)
-            this.root.destroy();
+            this.root._destroy_();
         this.root = null;
     }
 
@@ -121,14 +121,14 @@ class BtreeNode {
         this.items = 0;
     }
 
-    destroy() {
+    _destroy_() {
 
         this.nodes = null;
         this.keys = null;
 
         if (!this.LEAF) {
             for (let i = 0, l = this.nodes.length; i < l; i++)
-                this.nodes[i].destroy();
+                this.nodes[i]._destroy_();
         }
 
     }

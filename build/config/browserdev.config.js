@@ -1,9 +1,15 @@
 export default {
-	input : "./source/root/wick",
-	output: {
-		name: "wick",
-		file : "./build/wick-dev.js",	
-		format : "iife"
-	},
-	plugins: []
+    input: "./source/root/client",
+    inputOptions: {
+        treeshake: {
+            pureExternalModules: true,
+        },
+    },
+    output: {
+        name: "wick",
+        file: "./build/wick-dev.js",
+        format: "iife"
+    },
+
+    plugins: []
 }

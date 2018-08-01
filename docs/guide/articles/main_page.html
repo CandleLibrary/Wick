@@ -1,26 +1,16 @@
 <template>
-<w-s schema="any">
+    <w-s schema="any">
+        # ((input_2)) ## Welcome To the Wick Guide ### Inputs ```html parser.start{((time))}; ```
+        <h1>((input_1))</h1>
+        <input type="text" style="((input_1))" value="((input_1))">
+        <input type='number' value="((time))"> ((input_1))
+    </w-s>
+    
+    <script src="./sources/scripts/marked.js"></script>
+    
+    <script>
+    	presets.hooks.htmlParser = (html) => marked(html);
+    	presets.hooks.modelLoaded = (model) => {};
+    </script>
 
-# ((input_2))
-
-## Welcome To the Wick Guide
-
-### Inputs
-
-```html
-parser.start{((time))};
-```
-
-<h1>((input_1))</h1>
-
-<input type="text" style="((input_1))" value="((input_1))">
-<input type='number' value="((time))">
-((input_1))
-
-</w-s>
-<script src="./sources/scripts/marked.js"></script>
-<script>
-	presets.hooks.htmlParser = (html) => marked(html);
-	presets.hooks.modelLoaded = (model) => {};
-</script>
 </template>

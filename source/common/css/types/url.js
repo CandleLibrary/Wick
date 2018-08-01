@@ -1,5 +1,7 @@
-export class CSS_URL extends String {
-    static parse(l, rule, r) {
+import { WURL } from "../../../network/wurl"
+
+export class CSS_URL extends WURL {
+    static _parse_(l, rule, r) {
         if (l.tx == "url" || l.tx == "uri") {
             l.n().a("(");
             let v = "";
@@ -13,7 +15,12 @@ export class CSS_URL extends String {
                 l.sync().a(")");
             }
             return new CSS_URL(v);
+        } if (l.ty == l.types.str){
+            let v = l.tx.slice(1,-1);
+            l.n();
+            return new CSS_URL(v);
         }
+
         return null;
     }
 }

@@ -1,59 +1,62 @@
-import { PipeBase } from "../pipe/base"
+// Method Flags
+export const KEEP = 0;
+export const IMPORT = 1;
+export const EXPORT = 2;
+export const PUT = 4;
 
 /**
- *   An interest on a particular property or set of properties of a Model. A Tap exists as a child of a {@link Source} object, and will respond to Model update events that are passed down from its Source parent. It will only react to properties of the Model that match its internal `prop` property, which is the String name of the property to look for in the Model. If the data property it is interested in changes, it will pull the value of that property from the Model and pass it on to its children, which can be {@link Pipe}s and {@link IO}s.
- *   @param {Source} parent - The parent {@link Source}, used internally to build a hierarchy of Sources.
- *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
- *   @param {Presets} presets - An instance of the {@link Presets} object.
- *   @memberof module:wick.core.source
- *   @alias Tap
- *   @extends PipeBase
+ * Tap are the gates to the component and the model. 
+ * They allow data to flow bi-directionally and cross-directionally.
  */
-export class Tap extends PipeBase {
+export class Tap {
 
-    constructor(parent, data, presets) {
+    constructor(source, prop, modes = 0) {
+        this._source_ = source;
+        this._prop_ = prop;
+        this._modes_ = modes; // implies keep
+        this._ios_ = [];
+    }
 
-        super(parent, data, presets);
-
-        this.prop = data.prop;
-
+    _destroy_() {
+        for (let i = 0, l = this._ios_.length; i < l; i++)
+            this._ios_[i]._destroy_();
+        this._source_ = null;
+        this._prop_ = null;
+        this._modes_ = null;
+        this._ios_ = null;
     }
 
     load(data) {
+        this._down_(data);
+    }
+    
+    _down_(model, IMPORTED = false) {
+        if (IMPORTED) {
+            if (!(this._modes_ & IMPORT))
+                return;
+            if (this._modes_ & PUT)
+                this._source_._m[this._prop_] = model[this._prop_];
+        }
 
-        let out = {
-            [this.prop]: data[this.prop], i_el: null, o_el: null }
+        const value = model[this._prop_];
 
-        for (let i = 0, l = this.children.length; i < l; i++)
-            this.children[i].__down__(out, out, false);
+        if (typeof(value) !== "undefined") {
+            for (let i = 0, l = this._ios_.length; i < l; i++)
+                this._ios_[i]._down_(value);
+        }
     }
 
-    down(data, changed_properties = null, imported) {
+    _up_(value, meta) {
+        //console.log("message received on channel", this._prop_, value, meta, this);
 
-        let prop = null;
+        if (this._modes_ & PUT)
+            this._source_._m[this._prop_] = value;
 
-        if (changed_properties) {
-            if ((prop = changed_properties[this.prop]) !== undefined)
-                return {
-                    [this.prop]: data[this.prop], i_el: null, o_el: null }
-        } else if ((prop = data[this.prop]) !== undefined)
-            return {
-                [this.prop]: data[this.prop], i_el: null, o_el: null }
-    }
+        if (this._modes_ & EXPORT)
+            this._source_._up_(this, value, meta);
 
-    /**
-        See Definition in SourceBase 
-    */
-    __down__(data, changed_properties = null, IMPORTED = false) {
-
-        let r_val = this.down(data, changed_properties, IMPORTED);
-
-        if (r_val)
-            for (let i = 0, l = this.children.length; i < l; i++)
-                this.children[i].__down__(r_val, [this.prop], IMPORTED);
-    }
-
-    up(data) {
-        this.parent.up(data);
+        if (!(this._modes_ & (EXPORT | PUT)))
+            for (let i = 0, l = this._ios_.length; i < l; i++)
+                this._ios_[i]._down_(value, meta);
     }
 }
