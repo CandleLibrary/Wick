@@ -1,6 +1,6 @@
 import { TransformTo } from "../animation/animation"
 
-import { SourceConstructor } from "../source/constructor"
+import { SourcePackage } from "../source/package"
 
 import { SourceBase } from "../source/base"
 
@@ -28,7 +28,7 @@ class BaseComponent {
 
     /**
      * Returns a list of all elements that have a name attribute.
-     * @param      {Object}  named_elements  Object to bind named elements to.
+     * @param      {Object}  named_elements  Object to _bind_ named elements to.
      */
     getNamedElements(named_elements) {
         let children = this.ele.children;
@@ -125,11 +125,11 @@ class Component extends BaseComponent {
 
         if (app_components[id])
             return app_components[id];
-        if (presets.custom_sources[id]) {
-            presets.custom_sources[id].mount(this.ele, this)
-        } else {
-            SourceConstructor(this.ele, presets, WORKING_DOM).mount(this.ele, null, presets.USE_SHADOW, this)
-        }
+        if (presets.custom_sources[id])
+            presets.custom_sources[id].mount(this.ele, this);
+        else
+            (new SourcePackage(this.ele, presets, WORKING_DOM)).mount(this.ele, null, presets.USE_SHADOW, this);
+
 
         app_components[id] = this;
     }
@@ -301,10 +301,10 @@ class Component extends BaseComponent {
 
         if (query_data) {
             if (!this._m.add(query_data)) {
-                this.update(this._m.get());
+                this._update_(this._m.get());
             }
         } else
-            this.update(this._m.get());
+            this._update_(this._m.get());
     }
 }
 

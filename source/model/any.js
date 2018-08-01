@@ -51,16 +51,16 @@ class AnyModel extends ModelBase {
         })
     }
 
-    scheduledUpdate() {
-        super.scheduledUpdate()
+    _scheduledUpdate_() {
+        super._scheduledUpdate_()
     }
 
     /**
         Removes all held references and calls unsetModel on all listening views.
     */
-    destroy() {
+    _destroy_() {
 
-        super.destroy();
+        super._destroy_();
     }
 
     add(data) {

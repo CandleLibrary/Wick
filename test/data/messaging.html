@@ -1,0 +1,11 @@
+<unit>
+    <div>((chosen))</div>
+    <div onclick="((choose)('Rock'))">Rock</div>
+    <div onclick="((choose)('Paper'))">Paper</div>
+    <div onclick="((choose)('Scissors'))">Scissors</div>
+    <div>((choose))</div>
+
+	<script on=((choose))>
+		emit("chosen", `Your choice is: ${value}!`);
+	</script>
+</unit>

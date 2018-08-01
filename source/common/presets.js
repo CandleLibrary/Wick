@@ -18,6 +18,7 @@ class Presets {
     constructor(preset_options = {}) {
 
         //Declaring the properties upfront to give the VM a chance to build an appropriate virtual class.
+        this.components = {};
 
         /** 
          * Container of user defined CustomSourcePackage factories that can be used in place of the components built by the Wick templating system. Accepts any class extending the CustomComponent class. Adds these classes from preset_options.custom_sources or preset_options.components. 
@@ -54,17 +55,17 @@ class Presets {
          * ```javascript
          * class MyFavoriteModelType extends Model {};
          * preset_options.custom_componets = {
-         * 		my_favorite_model_type : MyFavoriteModelType
+         *      my_favorite_model_type : MyFavoriteModelType
          * }
          * ```
          * note: presets.schema.any is always assigned to the AnyModel class.
          * @instance
          * @readonly
          */
-        this.schemas = {any:AnyModel};
+        this.schemas = { any: AnyModel };
 
         /**
-         * { Object } Container of user defined Model instances that serve as global models, which are available to the whole application. Multiple Sources will be able to bind to the Models. `<w-source>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets._m whose property name matches the "model" attribute.
+         * { Object } Container of user defined Model instances that serve as global models, which are available to the whole application. Multiple Sources will be able to _bind_ to the Models. `<w-source>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets._m whose property name matches the "model" attribute.
          * 
          * Assign instances of Model or AnyModel or any class that extends these to preset_options.models to have them used by Wick.
          * 
@@ -72,7 +73,7 @@ class Presets {
          * ```javascript
          * const MyGlobalModel = new AnyModel({global_data: "This is global!"});
          * preset_options.custom_componets = {
-         * 		my_global_model : MyGlobalModel
+         *      my_global_model : MyGlobalModel
          * }
          * ```
          * @instance
@@ -92,12 +93,17 @@ class Presets {
          */
         this.templates = {};
 
-        let c = preset_options.custom_sources;
+        let c = preset_options.components;
+        if (c)
+            for (let cn in c)
+                this.components[cn] = c[cn];
+
+        c = preset_options.custom_sources;
         if (c)
             for (let cn in c)
                 if (cn instanceof CustomComponent)
                     this.custom_sources[cn] = c[cn];
-        
+
         c = preset_options.components;
         if (c)
             for (let cn in c)
@@ -125,9 +131,7 @@ class Presets {
 
 
         //Object.freeze(this);
-
-
     }
 }
 
-export { Presets }
+export { Presets };

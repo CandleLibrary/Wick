@@ -1,4 +1,4 @@
-import { WURL } from "./wurl"
+import { WURL } from "../wurl"
 
 import { AnyModel } from "../../model/any"
 
@@ -6,46 +6,9 @@ import { PageView } from "../../page/page"
 
 import { Element } from "../../page/element"
 
-import { TurnDataIntoQuery } from "../../common/url/url"
-
 const URL_HOST = { wurl: null };
 
 /** @namespace Router */
-
-/**
- * WURL wrapper object for inter-module access.
- *
- * @return     {Object}  { description_of_the_return_value }
- * @memberof module:wick~internals
- */
-export const URL = (function() {
-
-    return {
-        /**
-            Changes the URL to the one provided, prompts page update. overwrites current URL.
-        */
-        set: function(a, b, c) {
-            if (URL_HOST.wurl)
-                URL_HOST.wurl.set(a, b, c);
-        },
-        /**
-                    Returns a Query entry if it exists in the query string. 
-                */
-        get: function(a, b) {
-            if (URL_HOST.wurl)
-                return URL_HOST.wurl.set(a, b);
-            return null;
-        },
-        /**
-                    Changes the URL state to the one provided and prompts the Browser to respond o the change. 
-                */
-        goto: function(a, b) {
-            history.pushState({}, "ignored title", `${a}${ ((b) ? `?${TurnDataIntoQuery(b)}` : "") }`);
-
-            window.onpopstate();
-        }
-    }
-})();
 
 /**
  * Returns the `<modal>` element from the document DOM, or creates and appends a new one to `<body>`.

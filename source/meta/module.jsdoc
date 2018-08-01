@@ -25,13 +25,6 @@
  * @module wick
  */
 
-/**
- * Classes, Methods, and Objects for animating.
- * @namespace {Object} animation
- * @memberof module:wick
- */
-
-
 // These namespace definitions document how members of Wick are exposed to the global context.
 
 /**
@@ -41,14 +34,14 @@
  */
 
 /**
- * Models are the main data Objects that Wick apps rely on. They provide methods necessary to create dynamic data bindings in the DOM and in CSS.
+ * Models are the main data Objects that Wick apps rely on. They provide methods necessary to create dynamic data _bindings_ in the DOM and in CSS.
  * There are primarily two types of models available: 
  * 
  * - general Model Objects that map properties of Javascript Objects containing the native types `String`, `Number`, `Boolean`. 
  * 
  * - ModelContainers, which are used to store individual models in a collection.
  *
- * Sources bind to Models, and SourceTemplates bind to ModelContainers.
+ * Sources _bind_ to Models, and SourceTemplates _bind_ to ModelContainers.
  *@namespace {Object} model
  *@memberof  module:wick.core
  */
@@ -64,19 +57,6 @@
  *@namespace {Object} network
  *@memberof module:wick.core
  */
-
-/**
- *The primary objects for handling SPA/PWA pages. 
- *@namespace {Object} router
- *@memberof module:wick.core.network
- */
-
- /**
- * The View object.
- *@namespace {Object} view
- *@memberof module:wick.core
- */
-
 /**
  *Page, Element, and Component classes.
  *@namespace {Object} page
@@ -90,43 +70,55 @@
  *@memberof module:wick.core
  */
 
+// INTERNALS *****************************************************
+
 /**
- * Objects not exposed by the Wick module
+ * Objects not exposed by `wick`
  * @namespace internals
  * @protected
  */
 
 /**
- * Model Functions and Objects not exposed by the Wick module
+ * Model Functions and Objects not exposed by `wick`
  * @namespace model
  * @memberof module:wick~internals
  * @protected
  */
 
  /**
- * Component Classes not exposed by the Wick module
+ * Component Classes not exposed by `wick`
  * @namespace component
  * @memberof module:wick~internals
  * @protected
  */
 
  /**
- * Source Functions and Objects not exposed by the Wick module
+ * Source Functions and Objects not exposed by `wick`
  * @namespace source
  * @memberof module:wick~internals
  * @protected
  */
 
 /**
- * Lexer Functions and Objects not exposed by the Wick module
+ * Lexer Functions and Objects not exposed by `wick`.
+  * See {@link Lexer} for the accessible object.
  * @namespace lexer
  * @memberof module:wick~internals
  * @protected
  */
 
- /**
- * CSS Functions and Objects not exposed by the Wick module
+/**
+ * CSS Functions and Objects not exposed by `wick`
+ * See {@link css} for the accessible function.
  * @namespace css
+ * @memberof module:wick~internals
+ * @protected
+ */
+
+ /**
+ * CSS Functions and Objects not exposed by `wick`.
+ * See {@link html} for the accessible function.
+ * @namespace html
  * @memberof module:wick~internals
  * @protected
  */

@@ -1,5 +1,5 @@
 export class CSS_Length extends Number {
-    static parse(l, rule, r) {
+    static _parse_(l, rule, r) {
         let tx = l.tx;
         if(l.ty == l.types.num){
             if(l.pk.ty == l.types.id){
@@ -14,6 +14,15 @@ export class CSS_Length extends Number {
     constructor(v,u){
         super(v);
         this.unit = u;
+    }
+
+    get milliseconds(){
+        switch(this.unit){
+            case("s"):
+                return parseFloat(this) * 1000;
+        }
+
+        return parseFloat(this);
     }
 
     toString(radix){

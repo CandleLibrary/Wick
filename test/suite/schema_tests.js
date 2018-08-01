@@ -1,36 +1,35 @@
 function SCHEMATESTS()  {
 
-	function testSchema(schema, name){
+	function testSchema(scheme, name){
 
 
 		describe(`${name}`, function(){
 			it(`Is an instance of SchemaType`, function(){
-				if(!schema instanceof wick.schema.constr)
-					throw new Error("schema is not an instance of SchemaType");
+				if(!scheme instanceof wick.scheme.constr)
+					throw new Error("scheme is not an instance of SchemaType");
 			})
 
-			it(`Has a defined schema.start_value.`, function(){
-				if(typeof(schema.start_value) === "undefined")
-					throw new Error("schema does not have a valid start_value");
+			it(`Has a defined scheme.start_value.`, function(){
+				if(typeof(scheme.start_value) === "undefined")
+					throw new Error("scheme does not have a valid start_value");
 			})
 
-			it(`schema.parse always returns a value, or undefined. Never throws for any value.`, function(){
+			it(`scheme.parse always returns a value, or undefined. Never throws for any value.`, function(){
 				let test1 = "test";
 				let test2 = false;
 				let test3 = 1000550;
 
-				schema.parse(test1)
-				schema.parse(test2)
-				schema.parse(test3)
-
+				scheme.parse(test1)
+				scheme.parse(test2)
+				scheme.parse(test3)
 			})
 
-			it(`schema.verify gives valid reject reason.`, function(){
+			it(`scheme.verify gives valid reject reason.`, function(){
 				let result = {valid:false, reason: ""}
 
 				let t;
 
-				schema.verify(t, result);
+				scheme.verify(t, result);
 
 				if(result.valid)
 					throw new Error("result.valid is true on an undefined value.")
@@ -42,11 +41,12 @@ function SCHEMATESTS()  {
 		})
 	}
 
-    describe('wick.schema - Built-in Schemas', function() {
+    describe('wick.scheme - Built-in Schemes', function() {
         
-        for(let name in wick.core.schema.instances){
-        	let schema = wick.core.schema.instances[name];
-        	testSchema(schema, name)
+        for(let name in wick.scheme){
+        	if(name == "constr") continue; //Skip constructors 
+        	let scheme = wick.scheme[name];
+        	testSchema(scheme, name)
         }
 
     });

@@ -9,12 +9,7 @@ import {float24to12ModTime} from "./date_time/time.js"
 //Math
 import {QBezier} from "./math/quadratic_bezier"
 import {CBezier} from "./math/cubic_bezier"
-import {TurnQueryIntoData, TurnDataIntoQuery} from "./url/url"
 import {TouchScroller} from "./event/touch_scroller"
-
-//CSS
-import {CSSParser} from "./css/parser/parser"
-
 
 /*********** String Parsing Basic Function ************************/
 
@@ -24,12 +19,9 @@ export {
 	dow,
 	QBezier,
 	CBezier,
-	TurnQueryIntoData,
-	TurnDataIntoQuery,
 	GetDayStartAndEnd,
 	TouchScroller,
-	float24to12ModTime,
-	CSSParser
+	float24to12ModTime
 };
 
 /****** Global Object Extenders *************/
@@ -53,4 +45,38 @@ Element.prototype.getParentWindowLeft = function(bool = false){
 Element.prototype.getStyle = function(style_name){
 	return window.getComputedStyle(this,null).getPropertyValue(style_name);
 }
-//*/
+
+/**************** POLYFILLS ************************************/
+
+/**
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String}
+ */
+if (typeof Object.assign != 'function') {
+  // Must be writable: true, enumerable: false, configurable: true
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target, varArgs) { // .length of function is 2
+      'use strict';
+      if (target == null) { // TypeError if undefined or null
+        throw new TypeError('Cannot convert undefined or null to object');
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource != null) { // Skip over if undefined or null
+          for (var nextKey in nextSource) {
+            // Avoid bugs when hasOwnProperty is shadowed
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}

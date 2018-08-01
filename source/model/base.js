@@ -10,7 +10,7 @@ import { Scheduler } from "../common/scheduler"
 class ModelBase {
     constructor() {
         /**
-         * An Array of the names of all changed properties since the last call to ModelBase#update
+         * An Array of the names of all changed properties since the last call to ModelBase#_update_
          * @type {array}
          * @instance
          */
@@ -29,7 +29,7 @@ class ModelBase {
      *   @protected
      *   @instance
      */
-    destroy() {
+    _destroy_() {
 
         //inform views of the models demise
         var view = this.fv;
@@ -73,7 +73,7 @@ class ModelBase {
 
     /**
      * Adds a view to the linked list of views on the model. argument view MUST be an instance of View. 
-     * @param {View} view - The view to bind to the ModelBase
+     * @param {View} view - The view to _bind_ to the ModelBase
      * @throws {Error} throws an error if the value of `view` is not an instance of {@link View}.
      */
     addView(view) {
@@ -81,18 +81,18 @@ class ModelBase {
         if (view instanceof View) {
 
             if (view._m)
-                if(view._m !== this)
+                if (view._m !== this) {
                     view._m.removeView(view);
-                else return;
+                } else return;
 
-            if(this.fv) this.fv.pv = view;
+            if (this.fv) this.fv.pv = view;
             view.nx = this.fv;
             this.fv = view;
 
             view.pv = null;
             view._m = this;
 
-            view.update(this)
+            view._update_(this)
 
         } else
             throw new Exception("Passed in view is not an instance of wick.core.view.View.");
@@ -106,11 +106,11 @@ class ModelBase {
 
         if (view._m == this) {
             if (view == this.fv)
-                if (view.nx) this.fv = view.nx;
+                this.fv = view.nx;
 
-            if(view.nx)
+            if (view.nx)
                 view.nx.pv = view.pv;
-            if(view.pv)
+            if (view.pv)
                 view.pv.nx = view.nx;
 
             view.nx = null;
@@ -136,16 +136,16 @@ class ModelBase {
         return null;
     }
     /**
-     * Called by the {@link Scheduler} when if the ModelBase is scheduled for an update
+     * Called by the {@link Scheduler} when if the ModelBase is scheduled for an _update_
      * @param      {number}  step    The step
      */
-    scheduledUpdate(step) {
+    _scheduledUpdate_(step) {
 
         this.updateViews();
     }
 
     /**
-     * Calls View#update on every bound View, passing the current state of the ModelBase.
+     * Calls View#_update_ on every bound View, passing the current state of the ModelBase.
      */
     updateViews() {
 
@@ -157,10 +157,10 @@ class ModelBase {
         this._cv_.length = 0;
 
         var view = this.fv;
-        
+
         while (view) {
 
-            view.update(this, o);
+            view._update_(this, o);
             view = view.nx;
         }
 

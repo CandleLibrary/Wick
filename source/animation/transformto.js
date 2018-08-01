@@ -33,12 +33,12 @@ class TT_From {
 
     }
 
-    destroy() {
+    _destroy_() {
         this.ele = null;
         this.color = null;
     }
 
-    start() {
+    _start_() {
         this.ele.style.opacity = 0;
     }
 
@@ -65,7 +65,7 @@ class TT_To extends TT_From {
 
         var offset_x = parseFloat(window.getComputedStyle(element, null).getPropertyValue("left"));
         var offset_y = parseFloat(window.getComputedStyle(element, null).getPropertyValue("top"));
-        //And adjust start to respect the elements own parental offsets
+        //And adjust _start_ to respect the elements own parental offsets
         var diffx = this.left - this.from.left;
         this.left = offset_x;
         this.from.left = this.left - diffx;
@@ -86,15 +86,15 @@ class TT_To extends TT_From {
 
     }
 
-    destroy() {
+    _destroy_() {
         this.end(); //Restore everything back to it's original type;
         this.from = null;
         this.s = Infinity;
         this.ele = null;
-        super.destroy();
+        super._destroy_();
     }
 
-    start() {
+    _start_() {
         this.ele.style.opacity = 1;
         this.ele.style.top = this.from.top + "px";
         this.ele.style.left = this.from.left + "px";
@@ -102,7 +102,7 @@ class TT_To extends TT_From {
         this.ele.style.height = this.from.height + "px";
     }
 
-    step() {
+    _step_() {
         this.s++
 
             var t = this.s / this.time;
@@ -138,36 +138,36 @@ class TTPair {
         this.a = new TT_To(e_to, this.b);
 
         if (this.a.ele.__TT__)
-            this.a.ele.__TT__.destroy();
+            this.a.ele.__TT__._destroy_();
 
         if (this.b.ele.__TT__)
-            this.b.ele.__TT__.destroy();
+            this.b.ele.__TT__._destroy_();
 
         this.a.ele.__TT__ = this;
         this.b.ele.__TT__ = this;
 
         this.destroyed = false;
 
-        this.start();
+        this._start_();
     }
 
-    destroy() {
+    _destroy_() {
         if (this.destroyed) return
         if (this.b.ele)
             this.b.ele.__TT__ = null;
         if (this.a.ele)
             this.a.ele.__TT__ = null;
-        this.a.destroy();
+        this.a._destroy_();
         this.destroyed = true;
     }
 
-    start() {
-        this.b.start();
-        this.a.start();
+    _start_() {
+        this.b._start_();
+        this.a._start_();
     }
 
-    step() {
-        return this.a.step();
+    _step_() {
+        return this.a._step_();
     }
 }
 
@@ -177,12 +177,12 @@ const TransformRunner = new(class {
         this._SCHD_ = false;
     }
 
-    pushPair(pair) {
+    _pushPair_(pair) {
         this.pairs.push(pair);
         Scheduler.queueUpdate(this);
     }
 
-    scheduledUpdate(ratio) {
+    _scheduledUpdate_(ratio) {
         let rp = this.pairs;
 
         if (rp.length > 0)
@@ -190,8 +190,8 @@ const TransformRunner = new(class {
 
         for (var i = 0; i < rp.length; i++) {
             var _rp = rp[i];
-            if (!_rp.step(ratio)) {
-                _rp.destroy();
+            if (!_rp._step_(ratio)) {
+                _rp._destroy_();
                 rp.splice(i, 1);
                 i--;
             };
@@ -204,6 +204,7 @@ const TransformRunner = new(class {
 
 /**
     Transform one element from another back to itself
+    @alias module:wick~internals.TransformTo
 */
 export function TransformTo(element_from, element_to, HIDE_OTHER) {
 
@@ -212,7 +213,7 @@ export function TransformTo(element_from, element_to, HIDE_OTHER) {
 
         let a = (from) => (element_to, HIDE_OTHER) => {
             let pair = new TTPair(element_to, from);
-            TransformRunner.pushPair(pair);
+            TransformRunner._pushPair_(pair);
         }
 
         let b = a(new TT_From(element_from));
@@ -222,7 +223,7 @@ export function TransformTo(element_from, element_to, HIDE_OTHER) {
 
     var pair = new TTPair(element_to, element_from);
 
-    TransformRunner.pushPair(pair);
+    TransformRunner._pushPair_(pair);
 
-    pair.start();
+    pair._start_();
 }

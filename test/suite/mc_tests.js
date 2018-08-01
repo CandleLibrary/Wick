@@ -14,11 +14,11 @@ function MCTESTS() {
 
         let Container = new Constructor({
             identifier:"",
-            parser : wick.schema.number
+            parser : wick.scheme.number
         });
 
         it('Is instance of ModelContainer', function() {
-            if (!Container instanceof wick.core.model.Model)
+            if (!Container instanceof wick.model.container.constr)
                 throw new Error("Container is not an instance of ModelContainer")
         });
 
@@ -56,7 +56,7 @@ function MCTESTS() {
 
                 afterEach(function() {
                     //Destroy the container
-                    Container.destructor();
+                    Container._destroy_();
                     Container = null;
                 })
 
@@ -85,7 +85,7 @@ function MCTESTS() {
                     if (results.length < 1) throw new Error(`Not enough results returned, expected ${valid_count}, got ${results.length}`);
 
                     for (let i = 0; i < results.length; i++) {
-                        if (!results[i] instanceof wick.core.model.AnyModel)
+                        if (!results[i] instanceof wick.model.any.constr)
                             throw new Error(`Returned object is not an instance of AnyModel`)
                     }
 
@@ -97,7 +97,7 @@ function MCTESTS() {
 
                     let results = Container.get(filters);
 
-                    if (!results instanceof wick.core.model.ModelContainerBase) throw new Error(`Container.get(${filters}). Container did not return a linked ModelContainer.`);
+                    if (!results instanceof wick.model.container.constr) throw new Error(`Container.get(${filters}). Container did not return a linked ModelContainer.`);
 
                     if (!results.get(null, [])[0]) throw new Error(`Linked container is empty, it should contain ${models.reduce(e=>{ parser.filter(parser.parse(e[identifier]),filters.map(i => parser.parse(i)))? e.toJson() : "" })}`)
 
@@ -120,7 +120,7 @@ function MCTESTS() {
 
                 afterEach(function() {
                     //Destroy the container
-                    Container.destructor();
+                    Container._destroy_();
                     Container = null;
                 })
 
@@ -170,8 +170,8 @@ function MCTESTS() {
         //(SCHEMA_TYPE, MODEL_TYPE, identifier, models, extra_matching_models, filters, valid_count, filtered_count, reject_count)
         describe("Model Interactions", function() {
             handlesSchemaTypeAnyModel(
-                wick.schema.string,
-                wick.any.constr,
+                wick.scheme.string,
+                wick.model.any.constr,
                 "name", [
                     { name: "bob", birthday: "Jul 01 2018" }, { name: "sally", birthday: "May 01 2018" },
                     { name: "mary", birthday: "Sep 15 2017" }, { name: "bobby", birthday: "Sep 08 1981" },
@@ -184,8 +184,8 @@ function MCTESTS() {
             );
 
             handlesSchemaTypeAnyModel(
-                wick.schema.date,
-                wick.any.constr,
+                wick.scheme.date,
+                wick.model.any.constr,
                 "birthday", [
                     { name: "bob", birthday: "Jul 01 2018" }, { name: "sally", birthday: "May 01 2018" },
                     { name: "mary", birthday: "Sep 15 2017" }, { name: "bobby", birthday: "Sep 08 1981" },

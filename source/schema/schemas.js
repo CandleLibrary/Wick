@@ -12,7 +12,7 @@ import { number, NumberSchemeConstructor } from "./types/number"
 
 import { bool, BoolSchemeConstructor } from "./types/bool"
 
-let Schemes = { date, string, number, bool, time }
+let schemes = { date, string, number, bool, time }
 
 
 /**
@@ -22,4 +22,4 @@ let Schemes = { date, string, number, bool, time }
  */
 class Schema {}
 
-export { SchemeConstructor, DateSchemeConstructor, TimeSchemeConstructor, StringSchemeConstructor, NumberSchemeConstructor, BoolSchemeConstructor, Schemes };
+export { SchemeConstructor, DateSchemeConstructor, TimeSchemeConstructor, StringSchemeConstructor, NumberSchemeConstructor, BoolSchemeConstructor, schemes };

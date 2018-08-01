@@ -1,8 +1,8 @@
 function AMCTESTS()  {
 
-    describe('wick.core.model.ArrayModelContainer', function() {
+    describe('wick.model.container.array', function() {
         //Load the ModelContainer test Suite
-        ModelContainerTests(wick.core.model.ArrayModelContainer, true);
+        ModelContainerTests(wick.model.container.array, true);
     });
 }
 

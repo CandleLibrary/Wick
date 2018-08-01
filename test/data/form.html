@@ -1,0 +1,11 @@
+<w-s put="name age">
+    <form onsubmit="((form_submition)( {name:name} ))">
+        <input type="text" value="((name))">
+        <input type="number" value="((age))">
+        <input type="submit" value="(( name + age ))" >
+    </form>
+    
+    <script on="((form_submition))">
+    	//console.log(event.target, value.name);
+    </script>
+</w-s>

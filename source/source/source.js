@@ -1,64 +1,136 @@
-import { SourceBase } from "./base"
+import { ModelBase } from "../model/base";
 
-import { ModelBase } from "../model/base"
+import { Tap } from "./tap/tap";
 
-import { Getter } from "../network/getter"
+import { View } from "../view/view";
 
-export class Source extends SourceBase {
+
+export class Source extends View {
 
     /**
-     *   In the Wick dynamic template system, Sources serve as the primary access to Model data. They, along with {@link SourceTemplate}s, are the only types of objects the directly bind to a Model. When a Model is updated, the Source will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link SourceTemplate}s.
-     *   A Source will also bind to an HTML element. It has no methodes to update the element, but it's descendants, primarily instances of the {@link IO} class, can update attributes and values of then element and its sub-elements.
+     *   In the Wick dynamic template system, Sources serve as the primary access to Model data. They, along with {@link SourceTemplate}s, are the only types of objects the directly _bind_ to a Model. When a Model is updated, the Source will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link SourceTemplate}s.
+     *   A Source will also _bind_ to an HTML element. It has no methodes to _update_ the element, but it's descendants, primarily instances of the {@link IO} class, can _update_ attributes and values of then element and its sub-elements.
      *   @param {Source} parent - The parent {@link Source}, used internally to build a hierarchy of Sources.
      *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
      *   @param {Presets} presets - An instance of the {@link Presets} object.
-     *   @param {external:HTMLElement} element - The HTMLElement the Source will bind to.
+     *   @param {external:HTMLElement} element - The HTMLElement the Source will _bind_ to.
      *   @memberof module:wick~internals.source
      *   @alias Source
      *   @extends SourceBase
      */
-    constructor(parent = null, data, presets, element) {
+    constructor(parent, presets, element, ast) {
+        super();
 
-        super(parent, data, presets, element)
-
+        this.ast = ast;
         /**
          *@type {Boolean} 
          *@protected
          */
-        this.USE_SECURE = presets.USE_HTTPS;
-        this.named_elements = {};
-        this.template = null;
-        this.prop = null;
-        this.presets = presets;
-        this.receiver = null;
-        this.query = {};
+        this.ACTIVE = false;
+        this.DESTROYED = false;
         this.REQUESTING = false;
-        this.exports = null;
+
+        this.parent = parent;
+        this.ele = element;
+        this.presets = presets;
         this.schema = null;
         this._m = null;
 
-        if (data.schema)
-            this.schema = presets.schemas[data.schema];
-        if (data._m)
-            this._m = presets.models[data._m]
+        this.query = {};
+        this.named_elements = {};
+        this.taps = {};
+        this.children = [];
+        this.sources = [];
+        this._ios_ = [];
+        this._templates_ = [];
+        this.hooks = [];
 
-        this.filter_list = [];
-        this.templates = [];
-        this.filters = [];
-
+        this.addToParent();
     }
 
-    destroy() {
+    _destroy_() {
 
-        this.parent = null;
+        this.DESTROYED = true;
 
-        if (this.receiver)
-            this.receiver.destroy();
+        if (this.LOADED) {
 
-        for (let i = 0, l = this.templates.length; i < l; i++)
-            this.templates[i].destroy();
 
-        super.destroy();
+            let t = this.transitionOut();
+
+            for (let i = 0, l = this.children.length; i < l; i++) {
+                let child = this.children[i];
+
+                t = Math.max(t, child.transitionOut());
+            }
+
+            if (t > 0)
+                setTimeout(() => { this._destroy_(); }, t * 1000 + 5);
+
+
+        } else {
+            //this.finalizeTransitionOut();
+            this.children.forEach((c) => c._destroy_());
+            this.children.length = 0;
+            this.data = null;
+
+            if (this.ele && this.ele.parentElement)
+                this.ele.parentElement.removeChild(this.ele);
+
+            this.ele = null;
+
+            for (let i = 0, l = this.sources.length; i < l; i++)
+                this.sources[i]._destroy_();
+
+
+            super._destroy_();
+        }
+    }
+
+    addToParent() {
+        if (this.parent) {
+            debugger
+            this.parent.sources.push(this);
+        }
+    }
+
+    addTemplate(template) {
+        template.parent = this;
+        this._templates_.push(template);
+    }
+
+    addSource(source) {
+        if(source.parent == this)
+            return;
+        source.parent = this;
+        this.sources.push(source);
+    }
+
+    getTap(name) {
+        let tap = this.taps[name];
+        if (!tap)
+            tap = this.taps[name] = new Tap(this, name);
+        return tap;
+    }
+
+    /**
+     * Return an array of Tap objects that
+     * match the input array.
+     */
+
+    _linkTaps_(tap_list) {
+        let out_taps = [];
+        for (let i = 0, l = tap_list.length; i < l; i++) {
+            let tap = tap_list[i];
+            let name = tap.name;
+            if (this.taps[name])
+                out_taps.push(this.taps[name]);
+            else {
+                this.taps[name] = new Tap(this, name, tap._modes_);
+                out_taps.push(this.taps[name]);
+            }
+        }
+
+        return out_taps;
     }
 
     /**
@@ -67,33 +139,6 @@ export class Source extends SourceBase {
     load(model) {
 
         this.ACTIVE = true;
-
-        if (this.data.url) {
-            //import query info from the wurl
-            let str = this.data.url;
-            let cassettes = str.split(";");
-            this.data.url = cassettes[0];
-
-            for (var i = 1; i < cassettes.length; i++) {
-                let cassette = cassettes[i];
-
-                switch (cassette[0]) {
-                    case "p":
-                        //TODO
-                        this.url_parent_import = cassette.slice(1)
-                        break;
-                    case "q":
-                        this.url_query = cassette.slice(1);
-                        break;
-                    case "<":
-                        this.url_return = cassette.slice(1);
-                }
-            }
-        }
-
-        this.prop = this.data.prop;
-
-        if (this.data.export) this.exports = this.data.export;
 
         if (this._m) {
             model = this._m;
@@ -118,92 +163,36 @@ export class Source extends SourceBase {
 
         model.addView(this);
 
-        if (this._m) {
-            if (this.data.url) {
-                this.receiver = new Getter(this.data.url, this.url_return);
-                this.receiver.setModel(model);
-                this.____request____();
-            }
-        } else
-            throw new Error(`No Model could be found for Source constructor! Source schema "${this.data.schema}", "${this.presets.schemas[this.data.schema]}"; Source model "${this.data._m}", "${this.presets.models[this.data._m]}";`);
-
-        for (var i = 0; i < this.children.length; i++)
-            this.children[i].load(this._m);
-
-
+        for (let i in this.taps)
+            this.taps[i].load(this._m, false);
     }
 
-    ____request____(query) {
-
-        this.receiver.get(query, null, this.USE_SECURE).then(() => {
-            this.REQUESTING = false;
-        });
-        this.REQUESTING = true;
+    _down_(data, changed_values) {
+        this._update_(data, changed_values, true);
     }
 
-    export (exports) {
-
-        this.updateSubs(this.children, exports, true);
-
-        super.export(exports);
-    }
-
-    up(data) {
-        this._m.add(data);
-    }
-
-    update(data, changed_values) {
-        if (this.ACTIVE)
-            this.__down__(data, changed_values);
-    }
-
-    transitionIn(index = 0) {
-
-        super.transitionIn(index)
-        return
-
-        let transition_time = 0;
-
-        for (let i = 0, l = this.templates.length; i < l; i++)
-            transition_time = Math.max(transition_time, this.templates[i].transitionIn(index));
-
-        transition_time = Math.max(transition_time, super.transitionIn(index));
-
-        this.updateDimensions();
-
-        return transition_time;
-    }
-
-    /**
-        Takes as an input a list of transition objects that can be used
-    */
-    transitionOut(index = 0, DESTROY = false) {
-
-        let transition_time = 0;
-
-        for (let i = 0, l = this.templates.length; i < l; i++)
-            transition_time = Math.max(transition_time, this.templates[i].transitionOut(index));
-
-        transition_time = Math.max(transition_time, super.transitionOut(index, DESTROY));
-
-        return transition_time;
-    }
-
-    finalizeTransitionOut() {
-
-        for (let i = 0, l = this.templates.length; i < l; i++)
-            this.templates[i].finalizeTransitionOut();
-
-        super.finalizeTransitionOut();
-    }
-
-    setActivating() {
+    _up_(tap, data, meta) {
         if (this.parent)
-            this.parent.setActivating();
+            this.parent._upImport_(tap._prop_, data, meta);
     }
 
-    getNamedElements(named_elements) {
-        for (let comp_name in this.named_elements)
-            named_elements[comp_name] = this.named_elements[comp_name];
+    _upImport_(prop_name, data, meta) {
+        if (this.taps[prop_name])
+            this.taps[prop_name]._up_(data, meta);
+    }
+
+    _update_(data, changed_values, IMPORTED = false) {
+
+        if (this.ACTIVE)
+            if (changed_values) {
+                for (let name in changed_values)
+                    if (this.taps[name])
+                        this.taps[name]._down_(data, IMPORTED);
+            } else
+                for (let name in this.taps)
+                    this.taps[name]._down_(data, IMPORTED);
+
+        for (let i = 0, l = this.sources.length; i < l; i++)
+            this.sources[i]._down_(data, changed_values);
     }
 }

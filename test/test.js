@@ -1,3 +1,15 @@
+const fs = require("fs");
+const path = require("path")
+const chai = require("chai");
+chai.should();
+const assert = chai.assert;
+
+
+const config = {
+    PERFORMANCE: false,
+    BROWSER: false
+}
+
 describe("Wick test suite.", function() {
     let window;
     let DOM;
@@ -5,9 +17,34 @@ describe("Wick test suite.", function() {
 
     beforeEach(function() {
 
+        global.benchmark = require("benchmark");
+
+        /**
+         * Global `fetch` polyfill - basic support
+         */
+        global.fetch = (url, data) =>
+            new Promise((res, rej) => {
+                let p = path.resolve(process.cwd(), (url[0] == ".") ? url + "" : "." + url);
+                fs.readFile(p, "utf8", (err, data) => {
+                    if (err) {
+                        rej(err);
+                    } else {
+                        res({
+                            status: 200,
+                            text: () => {
+                                return {
+                                    then: (f) => f(data)
+                                }
+                            }
+                        });
+                    }
+                })
+            });
+
+
         /* 
-        	Forcefully delete the node.js require cache. 
-        	This is a lazy way to ensure all source files will load correctly when changed.
+            Forcefully delete the node.js "require" cache. 
+            This is a lazy way to ensure all source files will load correctly when changed.
         */
 
         delete require.cache;
@@ -17,19 +54,23 @@ describe("Wick test suite.", function() {
         /** Poly Fills **/
 
         DOM = new JSDOM(`
-		<!DOCTPE html>
-		
-		<head>
-		
-		</head>
-		
-		<body>
-			<app>
-			</app>
-		</body>
-	`);
+        <!DOCTPE html>
+        
+        <head test="123">
+        
+        </head>
+        
+        <body version="v3.14">
+            <app>
+            </app>
+        </body>
+
+        <script>
+        </script>
+    `);
 
         window = DOM.window;
+        window.screen.height = 20000;
 
         global.window = window;
 
@@ -61,14 +102,17 @@ describe("Wick test suite.", function() {
     })
 
     it("tests", function() {
+        require("./suite/lexer_tests.js")(config)
+        require("./suite/wurl_tests.js")()
         require("./suite/css_tests.js")()
-    	require("./suite/source_constructor_tests.js")()
-        //require("./suite/schema_tests.js")()
-        //require("./suite/model_tests.js")()
-        //describe("Model Container Tests", function() {
-        //    require("./suite/mc_tests.js")()
-        //    require("./suite/amc_tests.js")()
-        //    require("./suite/btmc_tests.js")()
-        //})
+        require("./suite/html_tests.js")(config)
+        require("./suite/source_package_tests.js")(config)
+        require("./suite/schema_tests.js")()
+        require("./suite/model_tests.js")()
+        describe("Model Container Tests", function() {
+            require("./suite/mc_tests.js")()
+            require("./suite/amc_tests.js")()
+            require("./suite/btmc_tests.js")()
+        })
     })
 })

@@ -1,16 +1,6 @@
-/** @lends model */
-
-//Compares code with argument list and returns true if match is found, otherwise false is returned
-function compareCode(code) {
-    var list = arguments;
-    for (var i = 1, l = list.length; i < l; i++) {
-        if (list[i] === code) return true;
-    }
-    return false;
-}
-
-//Returns true if code lies between the other two arguments
-function inRange(code, s, e) { return (code > s && code < e); }
+/** @lends module:wick~internals */
+//import { jump_table, num_id } from "./look_up_tables"
+import { SPACE, HORIZONTAL_TAB } from "./ascii_code_points";
 
 /**
  * The types object bound to Lexer#types
@@ -18,93 +8,65 @@ function inRange(code, s, e) { return (code > s && code < e); }
  * @alias module:wick~internals.lexer.Types
  * @see {@link module:wick.core.common.Lexer}
  */
-const Types = {
-    num: 1,
-    number: 1,
-    id: 2,
-    identifier: 2,
-    str: 4,
-    string: 4,
-    ws: 8,
-    white_space: 8,
-    ob: 16,
-    open_bracket: 16,
-    cb: 32,
-    close_bracket: 32,
-    op: 64,
-    operator: 64,
-    sym: 128,
-    symbol: 128,
-    nl: 256,
-    new_line: 256
-}
+const number = 1,
+    identifier = 2,
+    string = 4,
+    white_space = 8,
+    open_bracket = 16,
+    close_bracket = 32,
+    operator = 64,
+    symbol = 128,
+    new_line = 256,
+    white_space_new_line = (white_space | new_line),
+    Types = {
+        num: number,
+        number,
+        id: identifier,
+        identifier,
+        str: string,
+        string,
+        ws: white_space,
+        white_space,
+        ob: open_bracket,
+        open_bracket,
+        cb: close_bracket,
+        close_bracket,
+        op: operator,
+        operator,
+        sym: symbol,
+        symbol,
+        nl: new_line,
+        new_line
+    };
 
 /**
- * Array of functions used to process Lexer strings and identify tokens.
- * @type       {Array}
- * @alias module:wick~internals.lexer.TK
+ * Lexer Jump table reference 
+ * 0. NUMBER
+ * 1. IDENTIFIER
+ * 2. QUOTE STRING
+ * 3. SPACE SET
+ * 4. TAB SET
+ * 5. CARIAGE RETURN
+ * 6. LINEFEED
+ * 7. SYMBOL
+ * 8. OPERATOR
+ * 9. OPEN BRACKET
+ * 10. CLOSE BRACKET 
  */
-const TK = [{
-    type: Types.num,
-    //Initial check function. Return index offset to start for scan. If 0 is returned then the parser will move on to the next check function
-    check(code, text, offset) {
-        if (inRange(code, 47, 58)) {
-            code = text.charCodeAt(1 + offset);
-            if (compareCode(code, 66, 98, 88, 120, 79, 111)) {
-                return 2;
-            }
-            return 1;
-        } else if (code == 46) {
-            code = text.charCodeAt(1 + offset);
-            if (inRange(code, 47, 58)) {
-                return 2;
-            }
-        }
-        return 0;
-    },
-    // Scan for end of token. Return false if character not part of token
-    scanToEnd(code) { return (inRange(code, 47, 58) || code === 46) ? -1 : 0; }
-}, {
-    type: Types.id,
-    check(code) { return (inRange(code, 64, 91) || inRange(code, 96, 123)) ? 1 : 0; },
-    scanToEnd(code) { return (inRange(code, 47, 58) || inRange(code, 64, 91) || inRange(code, 96, 123) || compareCode(code, 36, 45, 95)) ? -1 : 0; }
-}, {
-    type: Types.str,
-    match: 0,
-    check(code, text) { if (code === 34 || code === 39) { this.match = code; return 1 } return 0 },
-    scanToEnd(code) { return (code === this.match) ? 1 : -1; }
+const jump_table = [7, 7, 7, 7, 7, 7, 7, 7, 7, 4, 6, 7, 7, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 8, 2, 7, 7, 8, 8, 2, 9, 10, 8, 8, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 7, 8, 8, 8, 7, 7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 7, 10, 7, 7, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 7, 10, 7, 7];
 
-}, {
-    type: Types.ws,
-    check(code) { return (code === 32 || code === 9) ? 1 : 0; },
-    scanToEnd(code) { return (code === 32 || code === 9) ? -1 : 0; }
-}, {
-    type: Types.nl,
-    check(code) { return (code === 10) ? 1 : 0; },
-    scanToEnd(code) { return 0; }
-}, {
-    type: Types.ob,
-    check(code) { return compareCode(code, 123, 40, 91) ? 1 : 0; },
-    scanToEnd(code) { return 0; }
-}, {
-    type: Types.cb,
-    check(code) { return compareCode(code, 125, 41, 93) ? 1 : 0; },
-    scanToEnd(code) { return 0; }
-}, {
-    type: Types.op,
-    check(code) { return compareCode(code, 42, 43, 60, 61, 62, 92, 38, 37, 33, 94, 124, 58) ? 1 : 0; },
-    scanToEnd(code) { return 0; }
-}, {
-    type: Types.sym, //Everything else should be generic symbols
-    check(code) { return 1; },
-    scanToEnd(code) { return 0; } //Generic will capture ANY remainder character sets.
-}];
-const TK_length = TK.length;
+/**
+ * LExer Number and Identifier jump table reference
+ * Number are masked by 12(4|8) and Identifiers are masked by 10(2|8)
+ * entries marked as `0` are not evaluated as either being in the number set or the identifier set.
+ * entries marked as `2` are in the identifier set but not the number set
+ * entries marked as `4` are in the number set but not the identifier set
+ * entries marked as `8` are in both number and identifier sets
+ */
+const num_id = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 0, 0, 0, 0, 2, 8, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 0, 0, 0, 0, 2, 0, 2, 8, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 0, 0, 0, 0, 0];
 
-var null_token = {
-    type: "",
-    text: ""
-};
+
+
 
 /**
  * @classdesc A simple Lexical tokenizer for use with text processing. 
@@ -113,7 +75,7 @@ var null_token = {
  *
  * There are 9 types of tokens that the Lexer will create:
  * 
- * > 1. **Identifier** - `types.identifier` or `types.id` 
+ * > 1. **Identifier** - `types.identifier` or `types.id`
  * >    - Any set of characters beginning with `_`|`a-z`|`A-Z`, and followed by `0-9`|`a-z`|`A-Z`|`-`|`_`|`#`|`$`.
  * > 2. **Number** - `types.number` or `types.num`
  * >    - Any set of characters beginning with `0-9`|`.`, and followed by `0-9`|`.`.
@@ -126,7 +88,7 @@ var null_token = {
  * > 7. **Operator**: 
  * >    - A single character from the set `*`|`+`|`<`|`=`|`>`|`\`|`&`|`%`|`!`|`|`|`^`|`:`.
  * > 8. **New Line**: 
- * >    - A single `newline` character.
+ * >    - A single `newline` (`LF` or `NL`) character. It may also be `LFCR` if the text is formated for Windows.
  * > 9. **White Space**: 
  * >    - An uninterrupted set of `tab` or `space` characters.
  * > 10. **Symbol**:
@@ -134,7 +96,7 @@ var null_token = {
  * 
  * Types are identified by a binary index value and are defined in Lexer.prototype.types. A token's type can be verified by with 
  * ```js
- * lexer.token.type === lexer.types.*`
+ * Lexer.token.type === Lexer.types.*`
  * ```
  * @alias Lexer
  * @memberof module:wick.core.common
@@ -144,48 +106,99 @@ var null_token = {
  */
 class Lexer {
 
-    constructor(string = "", IGNORE_WHITE_SPACE = true) {
+    constructor(string = "", IGNORE_WHITE_SPACE = true, PEEKING = false) {
 
         if (typeof(string) !== "string") throw new Error("String value must be passed to Lexer");
 
+        /**
+         * The string that the Lexer tokenizes.
+         */
         this.str = string;
 
+        /**
+         * Flag to ignore white spaced.
+         */
         this.IWS = IGNORE_WHITE_SPACE;
 
+        /**
+         * The type id of the current token.
+         */
         this.type = -1;
+
+        /**
+         * The offset in the string of the start of the current token.
+         */
         this.off = 0;
+
+        /**
+         * The length of the current token.
+         */
         this.tl = 0;
+
+        /**
+         * The character offset of the current token within a line.
+         */
         this.char = 0;
+
+        /**
+         * The line position of the current token.
+         */
         this.line = 0;
+
+        /**
+         * Flag set to true if the end of the string is met.
+         */
         this.END = false;
 
+        /**
+         * Reference to the peeking Lexer.
+         */
         this.p = null;
 
+        /**
+         * The length of the string being parsed
+         */
+        this.sl = string.length;
+
+        /**
+         * Reference to token id types.
+         */
         this.types = Types;
 
-        this.next();
+        if (!PEEKING) this.next();
+    }
+
+    /**
+     * Restricts max parse distance to the other Lexer's current position.
+     * @param      {Lexer}  Lexer   The Lexer to limit parse distance by.
+     */
+    fence(lexer = this) {
+        if (lexer.str !== this.str)
+            return;
+        this.sl = lexer.off;
+        return this;
     }
 
     /**
      * Copies the Lexer.
-     * @instance
-     * @return     {Lexer}  Returns a new Lexer instance with the same property values as this one.
+     * @return     {Lexer}  Returns a new Lexer instance with the same property values.
      */
     copy() {
-
-        let out = new Lexer(this.str, this.IWS);
+        let out = new Lexer(this.str, this.IWS, true);
         out.type = this.type;
         out.off = this.off;
         out.tl = this.tl;
         out.char = this.char;
         out.line = this.line;
+        out.sl = this.sl;
+        out.END = this.END;
         return out;
     }
 
     /**
      * Given another Lexer with the same `str` property value, it will copy the state of that Lexer.
-     * @instance
      * @param      {Lexer}  [marker=this.peek]  The Lexer to clone the state from. 
+     * @throws     {Error} Throws an error if the Lexers reference different strings.
      * @public
      */
     sync(marker = this.p) {
@@ -210,15 +223,20 @@ class Lexer {
      * @param {external:String} message - The error message.
      */
     throw (message) {
-        let t = ("________________________________________________")
-        throw new Error(`${message} at ${this.line}:${this.char} "\n${t}\n${this.str.slice(this.pos-30,this.pos) + " !---> " + this.str.slice(this.pos, this.pos+30)} \n${t}\n"`)
+        let t = ("________________________________________________"),
+            is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
+        this.IWS = false;
+        let pk = this.copy();
+        while (!pk.END && pk.ty !== Types.nl) { pk.n(); }
+        let end = pk.off;
+        throw new Error(`${message} at ${this.line}:${this.char} "\n${t}\n${this.str.slice(this.off-this.char,end)}\n${("").padStart(this.char - 2) + "^"}\n${t}${is_iws}"`);
     }
 
     /**
      * Proxy for Lexer.prototype.reset
      * @public
      */
-    r() { return this.reset() }
+    r() { return this.reset(); }
 
     /**
      * Restore the Lexer back to it's initial state.
@@ -234,13 +252,17 @@ class Lexer {
         this.line = 0;
         this.END = false;
 
+        this.n();
+
         return this;
     }
+
     /**
      * Proxy for Lexer.prototype.next
      * @public
      */
-    n() { return this.next() }
+    n() { return this.next(); }
+
     /**
      * Sets the internal state to point to the next token. Sets Lexer.prototype.END to `true` if the end of the string is hit.
      * @public
@@ -248,76 +270,134 @@ class Lexer {
      */
     next(marker = this) {
 
-        let offset = marker.off,
-            str = marker.str;
+        let str = marker.str;
 
-        if (str.length < 1) {
+        if (marker.sl < 1) {
             marker.off = -1;
             marker.type = -1;
             marker.tl = 0;
-            return;
-        };
+            marker.END = true;
+            return marker;
+        }
 
-        let char = marker.char,
-            line = marker.line,
-            type = -1,
-            token_length = marker.tl,
-            TK_function;
+        //Token builder
+        let length = marker.tl;
+        let off = marker.off + length;
+        let l = marker.sl;
+        let IWS = marker.IWS;
+        let type = symbol;
+        let char = marker.char + length;
+        let line = marker.line;
+        let base = off;
 
-        do {
+        if (off >= l) {
 
-            offset += token_length;
-            char += token_length;
+            marker.END = true;
+            length = 0;
+            base = l;
+            char -= base - off;
 
-            let code = str.charCodeAt(offset);
+            marker.type = type;
+            marker.off = base;
+            marker.tl = length;
+            marker.char = char;
+            marker.line = line;
 
-            type = -1;
+            return marker;
+        }
 
-            for (let i = 0; i < TK_length; i++) {
-                TK_function = TK[i];
-                let test_index = TK_function.check(code, str, offset);
-                if (test_index > 0) {
-                    type = TK_function.type;
-                    let e = 0,
-                        i = test_index;
-                    for (let l = str.length; i < l; i++) {
-                        e = TK_function.scanToEnd(str.charCodeAt(i + offset));
-                        if (e > -1) break;
-                        e = 0;
-                    }
-                    token_length = i + e;
-                    break;
+        while (true) {
+
+            base = off;
+
+            length = 1;
+
+            let code = str.charCodeAt(off);
+
+            if (code < 128) {
+
+                switch (jump_table[code]) {
+                    case 0: //NUMBER
+                        while (++off < l && (12 & num_id[str.charCodeAt(off)])) {}
+                        type = number;
+                        length = off - base;
+                        break;
+                    case 1: //IDENTIFIER
+                        while (++off < l && (10 & num_id[str.charCodeAt(off)])) {}
+                        type = identifier;
+                        length = off - base;
+                        break;
+                    case 2: //QUOTED STRING
+                        while (++off < l && str.charCodeAt(off) !== code) {}
+                        type = string;
+                        length = off - base + 1;
+                        break;
+                    case 3: //SPACE SET
+                        while (++off < l && str.charCodeAt(off) === SPACE) {}
+                        type = white_space;
+                        length = off - base;
+                        break;
+                    case 4: //TAB SET
+                        while (++off < l && str[off] === HORIZONTAL_TAB) {}
+                        type = white_space;
+                        length = off - base;
+                        break;
+                    case 5: //CARIAGE RETURN
+                        length = 2;
+                    case 6: //LINEFEED
+                        type = new_line;
+                        char = 0;
+                        line++;
+                        off += length;
+                        break;
+                    case 7: //SYMBOL
+                        type = symbol;
+                        break;
+                    case 8: //OPERATOR
+                        type = operator;
+                        break;
+                    case 9: //OPEN BRACKET
+                        type = open_bracket;
+                        break;
+                    case 10: //CLOSE BRACKET
+                        type = close_bracket;
+                        break;
                 }
             }
 
-            if (type < 0)
-                marker.off = -1;
+            if (IWS && (type & white_space_new_line)) {
+                if (off < l) {
+                    char += length;
+                    type = symbol;
+                    continue;
+                } else {
+                    length = 0;
+                    base = l;
+                    char -= base - off;
+                    marker.END = true;
+                }
+            }
 
-            if (type & Types.nl)(char = 0, line++);
-        } while (marker.IWS && (type & (Types.ws | Types.nl)))
-
-        if (offset >= str.length) {
-            this.END = true;
-            this.off = str.length;
-            return null;
-        };
+            break;
+        }
 
         marker.type = type;
-        marker.off = offset;
-        marker.tl = token_length;
+        marker.off = base;
+        marker.tl = length;
         marker.char = char;
         marker.line = line;
 
-        return this;
+        return marker;
     }
 
     /**
      * Proxy for Lexer.prototype.assert
      * @public
      */
-    a(text) { return this.assert(text) }
+    a(text) { return this.assert(text); }
+
     /**
-     * Compares the the string value of the current token to the value passed in. Advances to next token if the two are equal.
+     * Compares the string value of the current token to the value passed in. Advances to next token if the two are equal.
      * @public
      * @throws {Error} - `Expecting "${text}" got "${this.text}"`
      * @param {external:String} text - The string to compare.
@@ -326,12 +406,33 @@ class Lexer {
 
         if (this.off < 0) this.throw(`Expecting ${text} got null`);
 
-        var bool = this.text == text;
-
-        if (bool)
+        if (this.text == text)
             this.next();
         else
             this.throw(`Expecting "${text}" got "${this.text}"`);
+
+        return this;
+    }
+
+    /**
+     * Proxy for Lexer.prototype.assertChcatever
+     * @public
+     */
+    _appendChild_(text) { return this.assert(text); }
+    /**
+     * Compares the character value of the current token to the value passed in. Advances to next token if the two are equal.
+     * @public
+     * @throws {Error} - `Expecting "${text}" got "${this.text}"`
+     * @param {external:String} text - The string to compare.
+     */
+    assertCharacer(char) {
+
+        if (this.off < 0) this.throw(`Expecting ${text} got null`);
+
+        if (this.tx[this.off] == char)
+            this.next();
+        else
+            this.throw(`Expecting "${char}" got "${this.tx}"`);
 
         return this;
     }
@@ -342,7 +443,8 @@ class Lexer {
      * @readonly
      * @type {Lexer}
      */
-    get pk() { return this.peek() }
+    get pk() { return this.peek(); }
+
     /**
      * Returns the Lexer bound to Lexer.prototype.p, or creates and binds a new Lexer to Lexer.prototype.p. Advences the other Lexer to the token ahead of the calling Lexer.
      * @public
@@ -356,7 +458,7 @@ class Lexer {
         if (!peek_marker) {
             if (!marker) return null;
             if (!this.p) {
-                this.p = new Lexer(this.str, this.IWS);
+                this.p = new Lexer(this.str, this.IWS, true);
                 peek_marker = this.p;
             }
         }
@@ -376,7 +478,7 @@ class Lexer {
      * @type {external:String}
      * @readonly
      */
-    get tx() { return this.text }
+    get tx() { return this.text; }
     /**
      * The string value of the current token.
      * @type {external:String}
@@ -384,17 +486,16 @@ class Lexer {
      * @readonly
      */
     get text() {
-        if (this.off < 0) return null;
-        return this.str.slice(this.off, this.off + this.tl);
+        return (this.off < 0) ? "" : this.str.slice(this.off, this.off + this.tl);
     }
 
     /**
-     * The binary type id of the current token
+     * The type id of the current token.
      * @type {Number}
      * @public
      * @readonly
      */
-    get ty() { return this.type }
+    get ty() { return this.type; }
 
     /**
      * The current token's offset position from the start of the string.
@@ -410,16 +511,26 @@ class Lexer {
      * Proxy for Lexer.prototype.slice
      * @public
      */
-    s(start) { return this.slice(start) }
+    s(start) { return this.slice(start); }
+
     /**
      * Returns a slice of the parsed string beginning at `start` and ending at the current token.
-     * @param {Number | Lexer} start - The offset in this.str to begin the slice. If this value is a Lexer, sets the start point to the value of start.off.
+     * @param {Number | LexerBeta} start - The offset in this.str to begin the slice. If this value is a LexerBeta, sets the start point to the value of start.off.
      * @return {external:String} A substring of the parsed string.
      * @public
      */
     slice(start) {
-        if (start instanceof Lexer) start = start.off;
-        return this.str.slice(start, this.off)
+
+        if (typeof start === "number" || typeof start === "object") {
+            if (start instanceof Lexer) start = start.off;
+            return (this.END) ? this.str.slice(start, this.sl) : this.str.slice(start, this.off);
+        }
+
+        return this.str.slice(this.off, this.sl);
+    }
+
+    get ch() {
+        return this.str[this.off];
     }
 
     /**
@@ -439,24 +550,26 @@ class Lexer {
      */
     comment(ASSERT = false, marker = this) {
 
-        if(!(marker instanceof Lexer)) return marker;
-        
+        if (!(marker instanceof Lexer)) return marker;
+
         if (marker.tx == "/") {
             if (marker.pk.tx == "*") {
                 marker.sync();
                 while (!marker.END && (marker.n().tx != "*" || marker.pk.tx != "/")) { /* NO OP */ }
-                marker.a("*").a("/");
-            }if(marker.pk.tx == "/"){
+                marker.sync().a("/");
+            } else if (marker.pk.tx == "/") {
                 let IWS = marker.IWS;
                 while (marker.n().ty != types.new_line && !marker.END) { /* NO OP */ }
                 marker.IWS = IWS;
                 marker.n();
             } else
-                if(ASSERT) marker.throw("Expecting the start of a comment");
+            if (ASSERT) marker.throw("Expecting the start of a comment");
         }
 
         return marker;
     }
 }
 
-export { Lexer }
+Lexer.prototype.types = Types;
+
+export { Lexer };
