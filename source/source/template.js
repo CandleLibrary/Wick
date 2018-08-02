@@ -32,7 +32,7 @@ export class SourceTemplate extends View {
         this.terms = [];
         this.sources = [];
         this.range = null;
-        this._SCHD_ = false;
+        this._SCHD_ = 0;
         this._prop_ = null;
         this._package_ = null;
         this.transition_in = 0;

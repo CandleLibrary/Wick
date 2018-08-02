@@ -11,7 +11,7 @@ export class FilterIO extends IOBase {
         this._CAN_USE_ = false;
         this._CAN_FILTER_ = false;
         this._CAN_SORT_ = false;
-        this._SCHD_ = false;
+        this._SCHD_ = 0;
 
         if (activation && activation.binding)
             this._activation_function_ = activation.binding._bind_(source, errors, taps, this);

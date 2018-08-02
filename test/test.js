@@ -86,7 +86,7 @@ describe("Wick test suite.", function() {
 
         window.performance = performance;
 
-        function raf(f) { return setTimeout(f, 16); }
+        function raf(f) { return setTimeout(f, 30); }
 
         requestAnimationFrame = raf;
 

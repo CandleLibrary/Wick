@@ -122,7 +122,7 @@ export class TemplateString extends IOBase {
     constructor(source, errors, taps, element, binds) {
 
         super(source);
-        this._SCHD_ = false;
+        this._SCHD_ = 0;
         this.binds = [];
         this.ele = element;
         this._setBindings_(source, errors, taps, binds);
@@ -131,7 +131,7 @@ export class TemplateString extends IOBase {
     _destroy_() {
         for (var i = 0; i < this.binds.length; i++)
             this.binds[i]._destroy_();
-        this._SCHD_ = null;
+        this._SCHD_ = 0;
         this.binds = null;
         this.ele = null;
         super._destroy_();

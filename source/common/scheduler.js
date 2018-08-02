@@ -6,7 +6,7 @@
  * @private
  */
 const caller = (window && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
-    setTimeout(f, 1)
+    setTimeout(f, 1);
 };
 
 
@@ -25,8 +25,8 @@ class Scheduler {
      */
     constructor() {
 
-        this.update_queue_a = new Array();
-        this.update_queue_b = new Array();
+        this.update_queue_a = [];
+        this.update_queue_b = [];
 
         this.update_queue = this.update_queue_a;
 
@@ -49,18 +49,16 @@ class Scheduler {
      *
      * @param      {Object}  object  The object to have updated.
      */
-    queueUpdate(object) {
-
-        if (object._SCHD_)
+    queueUpdate(object, timestart = 1, timeend = 0) {
+        if (object._SCHD_ || object._SCHD_ > 0)
             if (this._SCHD_)
                 return;
             else
                 return caller(this.callback);
 
-        object._SCHD_ = true;
+        object._SCHD_ = (timestart | ((timestart + timeend) << 16));
 
         this.update_queue.push(object);
-
 
         if (this._SCHD_)
             return;
@@ -84,23 +82,34 @@ class Scheduler {
         else
             (this.update_queue = this.update_queue_a, this.queue_switch = 0);
 
-        let time = performance.now();
+        let time = performance.now() | 0;
 
-        let diff = time - this.frame_time;
+        let diff = Math.ceil(time - this.frame_time) | 1;
 
         this.frame_time = time;
 
         let step_ratio = (diff * 0.06); //  step_ratio of 1 = 16.66666666 or 1000 / 60 for 60 FPS
-        try {
 
-            for (let i = 0, l = uq.length, o = uq[0]; i < l; o = uq[++i]) {
-                o._SCHD_ = false;
-                o._scheduledUpdate_(step_ratio);
+
+        for (let i = 0, l = uq.length, o = uq[0]; i < l; o = uq[++i]) {
+            let timestart = ((o._SCHD_ & 65535)) - diff;
+            let timeend = ((o._SCHD_ >> 16) & 65535) - diff;
+
+
+            if (timestart > 0) {
+                o._SCHD_ = 0;
+                this.queueUpdate(o, timestart, timeend);
+                continue;
             }
-        }catch(e){
-            console.log(e)
-        }
 
+
+            if (timeend > 0) {
+                this.queueUpdate(o, timestart, timeend);
+                continue;
+            } else o._SCHD_ = 0;
+
+            o._scheduledUpdate_(step_ratio);
+        }
 
         uq.length = 0;
     }
@@ -110,4 +119,4 @@ const scheduler = new Scheduler();
 
 export {
     scheduler as Scheduler
-}
+};

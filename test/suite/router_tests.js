@@ -15,11 +15,13 @@ function ROUTERTESTS(config) {
             let JSDOM = require("jsdom").JSDOM;
             before((done) => {
                 (new wick.core.network.url("/test/data/page.html")).fetchText().then(string => {
+
                     let dom = new JSDOM(string, {
                         runScripts: "dangerously",
                         resources: "usable",
                         pretendToBeVisual: true
                     });
+                    dom.window.fetch = fetch;
                     dom.window.performance = { now() { return Date.now(); } };
                     dom.window.addEventListener("load", () => {
                         f_window = dom.window;
@@ -53,11 +55,12 @@ function ROUTERTESTS(config) {
                 let ele3 = app.children[2];
                 body.children.should.have.lengthOf(1);
                 app.children.should.have.lengthOf(3);
+                console.log(ele2.getElementsByTagName("component")[0].innerHTML)
                 ele2.getElementsByTagName("component")[0].children[0].tagName.should.equal("GAME");
                 ele1.getElementsByTagName("component")[0].children[0].innerHTML.should.equal("<div>Test Data One</div>");
                 //ele3.getElementsByTagName("component")[0].innerHTML.should.equal("<div>Test Data One</div>");
                 done();
-            }, 500);
+            }, 100);
         });
     });
 }

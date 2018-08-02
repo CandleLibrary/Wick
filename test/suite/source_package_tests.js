@@ -22,7 +22,7 @@ function SOURCEPACKAGETESTS(config) {
 
             let scheduler = wick.internals.scheduler;
 
-            let Any = wick.model.any({
+            var Any = wick.model.any({
                 page_count: 34500,
                 page_number: 0,
                 value: "Toco Mako!!",
@@ -45,6 +45,7 @@ function SOURCEPACKAGETESTS(config) {
                 .then(text => wick.source(text, {}, true).then(source => {
                     let ele = document.createElement("div");
                     source.mount(ele, Any, false);
+                    //appendToDocumentBody(ele);
                     ele.children.should.have.lengthOf(2);
                     source._HAVE_ERRORS_.should.equal(false);
                     Any.name = "Chesapeak McGee";
@@ -55,10 +56,14 @@ function SOURCEPACKAGETESTS(config) {
                     ele.children[1].innerHTML.should.equal("22");
                     Any.age = 44;
                     scheduler._update_();
+                    scheduler._update_();
+                    scheduler._update_();
+                    scheduler._update_();
+                    scheduler._update_();
                     ele.children[1].innerHTML.should.equal("44");
                     return true;
                 })));
-
+            
             it('Creates bindings based on JavaScript expressions.',
                 () => (new wick.core.network.url("/test/data/expression.html")).fetchText()
                 .then(text => wick.source(text, {}, true).then(source => {
@@ -161,9 +166,11 @@ function SOURCEPACKAGETESTS(config) {
                     manager.emit("filter", "Carly");
                     scheduler._update_();
                     scheduler._update_();
+                    scheduler._update_();
                     st.children.should.have.lengthOf(1);
                     st.children[0].innerHTML.should.equal("Carly is an old person whose age is 256.");
                     manager.emit("filter", "");
+                    scheduler._update_();
                     scheduler._update_();
                     scheduler._update_();
                     st.children.should.have.lengthOf(3);

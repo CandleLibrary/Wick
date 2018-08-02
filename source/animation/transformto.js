@@ -174,7 +174,7 @@ class TTPair {
 const TransformRunner = new(class {
     constructor() {
         this.pairs = [];
-        this._SCHD_ = false;
+        this._SCHD_ = 0;
     }
 
     _pushPair_(pair) {
