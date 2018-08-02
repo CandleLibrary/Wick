@@ -27,7 +27,7 @@ export class SourceNode extends RootNode {
     /******************************************* BUILD ****************************************************/
 
     _build_(element, source, presets, errors, model, taps) {
-        
+
         let data = {};
 
         let out_taps = [];
@@ -43,8 +43,11 @@ export class SourceNode extends RootNode {
             out_taps.push(me.taps[name]);
         }
 
+
+
         for (let i = 0, l = this._attributes_.length; i < l; i++) {
             let attr = this._attributes_[i];
+
             if (!attr.value) {
                 //let value = this.par.importAttrib()
                 //if(value) data[attr.name];
@@ -64,9 +67,32 @@ export class SourceNode extends RootNode {
 
     _endOfElementHook_() {}
 
+    /**
+     * Pulls Schema, Model, or tap method information from the attributes of the tag. 
+     * All other attributes are passed through without any other consideration.
+     * @param      {string}  name    The name
+     * @param      {Lexer}  lex     The lex
+     * @return     {Object}  Key value pair.
+     */
     _processAttributeHook_(name, lex) {
-        if (this._checkTapMethodGate_(name, lex))
-            return null;
+        switch (name[0]) {
+            case "m":
+                if (name == "model") {
+                    this.model = lex.slice();
+                    lex.n();
+                }
+                break;
+            case "s":
+                if (name == "schema") {
+                    this.schema = lex.slice();
+                    lex.n();
+                }
+                break;
+            default:
+                if (this._checkTapMethodGate_(name, lex))
+                    return null;
+        }
+
         return { name, value: lex.slice() };
     }
 }

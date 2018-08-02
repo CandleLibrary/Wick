@@ -1,10 +1,8 @@
-import { WURL } from "../wurl"
+import { WURL } from "../wurl";
 
-import { AnyModel } from "../../model/any"
+import { PageView } from "../../page/page";
 
-import { PageView } from "../../page/page"
-
-import { Element } from "../../page/element"
+import { Element } from "../../page/element";
 
 const URL_HOST = { wurl: null };
 
@@ -28,7 +26,7 @@ function getModalContainer() {
             document.body.appendChild(modal_container);
     }
 
-    return modal_container
+    return modal_container;
 }
 
 /**
@@ -55,7 +53,7 @@ export class Router {
         this.models_constructors = presets.schemas;
         this.presets = presets;
         this.current_url = null;
-        this.current_query;
+        this.current_query = null;
         this.current_view = null;
         this.finalizing_pages = [];
 
@@ -63,8 +61,8 @@ export class Router {
         this.modal_stack = [];
 
         window.onpopstate = () => {
-            this.parseURL(document.location)
-        }
+            this.parseURL(document.location);
+        };
     }
 
     /*
@@ -135,11 +133,10 @@ export class Router {
     }
 
     /**
-        Loads pages from server, or from local cache, and sends it to the page parser.
-
-      @param {external:String} url - The URL id of the cached page to load.
-      @param {external:String} query -
-      @param {Bool} IS_SAME_PAGE -
+    * Loads pages from server, or from local cache, and sends it to the page parser.
+    * @param {String} url - The URL id of the cached page to load.
+    * @param {String} query -
+    * @param {Bool} IS_SAME_PAGE -
     */
     loadPage(page, wurl = new WURL(document.location), IS_SAME_PAGE) {
 
@@ -212,7 +209,7 @@ export class Router {
 
                 modal.unload();
 
-                if (trs = modal.transitionOut()) {
+                if ((trs = modal.transitionOut())) {
                     transition_length = Math.max(trs, transition_length);
                     this.finalizing_pages.push(modal);
                 } else
@@ -221,9 +218,6 @@ export class Router {
             }
 
             this.modal_stack.length = 0;
-
-            let trs = 0;
-
 
             if (this.current_view && this.current_view != page) {
 
@@ -234,8 +228,8 @@ export class Router {
                 let t = this.current_view.transitionOut();
 
                 window.requestAnimationFrame(() => {
-                    page.transitionIn(transition_elements)
-                })
+                    page.transitionIn(transition_elements);
+                });
 
                 transition_length = Math.max(t, transition_length);
 
@@ -245,8 +239,8 @@ export class Router {
                 page.load(app_ele, wurl);
 
                 window.requestAnimationFrame(() => {
-                    page.transitionIn(transition_elements)
-                })
+                    page.transitionIn(transition_elements);
+                });
             }
 
             this.current_view = page;
@@ -280,7 +274,7 @@ export class Router {
         iframe.classList.add("modal", "comp_wrap");
         var page = new PageView(URL, iframe);
         page.type = "modal";
-        this.pages[URL] = page //new Modal(page, iframe, getModalContainer());
+        this.pages[URL] = page;//new Modal(page, iframe, getModalContainer());
         return this.pages[URL];
     }
     /**
@@ -288,6 +282,7 @@ export class Router {
         If it is unable to find these elements, then it will pass the DOM to loadNonWickPage to handle wrapping the page body into a wick app element.
     */
     loadNewPage(URL, DOM, wurl) {
+        debugger
 
         //look for the app section.
 
@@ -354,7 +349,6 @@ export class Router {
             for (var i = 0; i < elements.length; i++) {
 
                 let ele = elements[i],
-                    equivilant_element_from_main_dom = ele,
                     element;
 
 

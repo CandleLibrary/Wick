@@ -251,7 +251,7 @@ class CSSRootNode {
 
     /**
      * Retrieves the set of rules from all matching selectors for an element.
-     * @param      {external:HTMLElement}  element - An element to retrieve CSS rules.
+     * @param      {HTMLElement}  element - An element to retrieve CSS rules.
      * @public
      */
     getApplicableRules(element, rule = new R()) {

@@ -1,7 +1,7 @@
 /**
  *	Converts links into Javacript enabled buttons that will be handled within the current Active page.
  *
- * @param {external:HTMLElement} element - Parent Element that contains the <a> elements to be evaulated by function.
+ * @param {HTMLElement} element - Parent Element that contains the <a> elements to be evaulated by function.
  * @param {function} __function__ - A function the link will call when it is clicked by user. If it returns false, the link will act like a normal <a> element and cause the browser to navigate to the "href" value.
  *
  * If the <a> element has a data-ignore_link attribute set to a truthy value, then this function will not change the way that link operates.

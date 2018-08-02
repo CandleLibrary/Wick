@@ -20,10 +20,9 @@ function startRouting(presets = {}) {
 
     LINKER_LOADED = true;
 
-    let router = new wick_exports.core.network.Router(new Presets(presets));
+    let router = new core.network.router(core.presets(presets));
 
     window.addEventListener("load", () => {
-
         router.loadPage(
             router.loadNewPage(document.location.pathname, document),
             new WURL(document.location),
@@ -33,7 +32,7 @@ function startRouting(presets = {}) {
 
     console.log(`${wick_vanity}Copyright 2018 Anthony C Weathersby\nhttps://gitlab.com/anthonycweathersby/wick`);
 
-    return presets;
+    return {presets, router};
 }
 
 export {source};

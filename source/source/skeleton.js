@@ -1,7 +1,7 @@
 /**
  * Factory object for Creating Source trees.  Encapsulates construction information derived from the HTML AST.  
  * 
- * @param      {external:HTMLElement}  element      The element
+ * @param      {HTMLElement}  element      The element
  * @param      {Function}  constructor      The constructor for the object the Skeleton will create.
  * @param      {Object}  data  Data pulled from a tags attributes
  * @param      {Presets}  presets  The global Presets instance.

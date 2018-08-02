@@ -1,20 +1,17 @@
-import { EL, OB, DOC, _cloneNode_, _appendChild_ } from "../common/short_names";
+import { EL, OB, _cloneNode_, _appendChild_ } from "../common/short_names";
 import { SourceManager } from "./manager";
 import { CompileSource } from "./compiler/compiler";
-import { Presets } from "../common/presets";
 import { Lexer } from "../common/string_parsing/lexer";
 
 /**
- * SourcePackages stores compiled {@link SourceSkeleton}s and provide a way to _bind_ Model data to the DOM in a reusable manner. 
- * 
+ * SourcePackages stores compiled {@link SourceSkeleton}s and provide a way to _bind_ Model data to the DOM in a reusable manner. * 
  * @property    {Array}    _skeletons_        
  * @property    {Array}    styles       
  * @property    {Array}    scripts      
  * @property    {Array}    style_core    
- * 
  * @readonly
  * @callback   If `RETURN_PROMISE` is set to `true`, a new Promise is returned, which will asynchronously return a SourcePackage instance if compilation is successful.
- * @param      {external:HTMLElement}  element      The element
+ * @param      {HTMLElement}  element      The element
  * @param      {Presets}  presets      The global Presets object.
  * @param      {boolean}  [RETURN_PROMISE=false]  If `true` a Promise will be returned, otherwise the SourcePackage instance is returned. 
  * @return     {SourcePackage | Promise}  If a SourcePackage has already been constructed for the given element, that will be returned instead of new one being created. If 
@@ -56,11 +53,6 @@ class SourcePackage {
          * Flag to indicate SourcePackage was compiled with errors
          */
         this._HAVE_ERRORS_ = false;
-
-        /**
-         * An object graph of the component to render
-         */
-        this._og_ = null;
 
         //element must be an HTMLElement instance. 
         if (!(element instanceof EL) && typeof(element) !== "string" && !(element instanceof Lexer)) {
@@ -105,7 +97,7 @@ class SourcePackage {
     /**
      * Adds Error message to the errors array.
      *
-     * @param      {external:String}  error_message     the error message to add.
+     * @param      {String}  error_message     the error message to add.
      * 
      * @protected
      */
@@ -133,7 +125,7 @@ class SourcePackage {
     /**
      * Pushes pending mounts to the pms array.
      *
-     * @param      {external:HTMLElement}  element         The element
+     * @param      {HTMLElement}  element         The element
      * @param      {Model}  model           The model
      * @param      {Boolean}  USE_SHADOW_DOM  The use shadow dom
      * @param      {Object}  manager         The manager
@@ -155,7 +147,7 @@ class SourcePackage {
 
     /**
      * Generates new instance of component and appends it to the input element.
-     * @param  {external:HTMLElement} element         - The element
+     * @param  {HTMLElement} element         - The element
      * @param  {Model}   model           - The model
      * @param  {boolean} USE_SHADOW_DOM  - If `true`, appends the component to the element's ShadowDOM.
      * @param  {Object}  manager         - The manager

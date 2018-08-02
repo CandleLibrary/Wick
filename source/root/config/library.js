@@ -36,13 +36,9 @@ import { Router } from "../../network/router/router";
 
 //Other
 import { Lexer } from "../../common/string_parsing/lexer";
-import { Lexer as OldLexer } from "../../common/string_parsing/lexer_old";
-import { LexerBetaArray } from "../../common/string_parsing/lexer_beta_array";
 import * as Animation from "../../animation/animation";
 import * as Common from "../../common/common";
 import { Scheduler } from "../../common/scheduler";
-
-let LINKER_LOADED = false;
 
 const model = (data, schema, temp = null) => (schema) ? (temp = (class extends Model {}), temp.schema = schema, new temp(data)) : new AnyModel(data);
 model.constr = Model;
@@ -73,7 +69,7 @@ Object.freeze(model.any);
 Object.freeze(model);
 
 const core = {
-    presets: (...a) => new Presets(...a),
+    presets: a => new Presets(a),
     common: Common,
     lexer: (string, INCLUDE_WHITE_SPACE_TOKENS) => new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS),
     animation: Animation,
@@ -92,9 +88,7 @@ const core = {
 };
 
 let internals = {/* Empty if production */};
-internals.lexer = OldLexer;
-internals.lexer_beta_string = Lexer;
-internals.lexer_beta_array = LexerBetaArray;
+internals.lexer = Lexer;
 internals.scheduler = Scheduler;
 
 core.source.package = SourcePackage;

@@ -16,12 +16,17 @@ import { AnyModel } from "../model/any"
  */
 class Presets {
     constructor(preset_options = {}) {
+        
+        /**
+         * {Object} Store for optional parameters used in the app
+         */
+        this.options = {};
 
         //Declaring the properties upfront to give the VM a chance to build an appropriate virtual class.
         this.components = {};
 
         /** 
-         * Container of user defined CustomSourcePackage factories that can be used in place of the components built by the Wick templating system. Accepts any class extending the CustomComponent class. Adds these classes from preset_options.custom_sources or preset_options.components. 
+         * Store of user defined CustomSourcePackage factories that can be used in place of the components built by the Wick templating system. Accepts any class extending the CustomComponent class. Adds these classes from preset_options.custom_sources or preset_options.components. 
          * 
          * In routing mode, a HTML `<component>` tag whose first classname matches a property name of a member of presets.custom_sources will be assigned to an instance of that member.
          * 
@@ -47,7 +52,7 @@ class Presets {
         this.custom_sources = {};
 
         /**
-         * { Object } Container of user defined classes that extend the Model or AnyModel classes. `<w-source>` tags in templates that have a value set for the  `schema` attribute, e.g. `<w-s schema="my_favorite_model_type">...</w-s>`, will be bound to a new instance of the class in presets.schema whose property name matches the "schema" attribute.
+         * { Object } Store of user defined classes that extend the Model or AnyModel classes. `<w-source>` tags in templates that have a value set for the  `schema` attribute, e.g. `<w-s schema="my_favorite_model_type">...</w-s>`, will be bound to a new instance of the class in presets.schema whose property name matches the "schema" attribute.
          * 
          * Assign classes that extend Model or AnyModel to preset_options.schemas to have them available to Wick.
          * 
@@ -65,7 +70,7 @@ class Presets {
         this.schemas = { any: AnyModel };
 
         /**
-         * { Object } Container of user defined Model instances that serve as global models, which are available to the whole application. Multiple Sources will be able to _bind_ to the Models. `<w-source>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets._m whose property name matches the "model" attribute.
+         * { Object } Store of user defined Model instances that serve as global models, which are available to the whole application. Multiple Sources will be able to _bind_ to the Models. `<w-source>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets._m whose property name matches the "model" attribute.
          * 
          * Assign instances of Model or AnyModel or any class that extends these to preset_options.models to have them used by Wick.
          * 
@@ -93,7 +98,13 @@ class Presets {
          */
         this.templates = {};
 
-        let c = preset_options.components;
+        let c = preset_options.options;
+        if (c)
+            for (let cn in c)
+                this.options[cn] = c[cn];
+
+
+        c = preset_options.components;
         if (c)
             for (let cn in c)
                 this.components[cn] = c[cn];
@@ -124,6 +135,7 @@ class Presets {
 
         this.USE_SHADOW = (preset_options.USE_SHADOW) ? (DOC.head.createShadowRoot || DOC.head.attachShadow) : false;
 
+        Object.freeze(this.options);
         Object.freeze(this.custom_sources);
         Object.freeze(this.schemas);
         Object.freeze(this.models);

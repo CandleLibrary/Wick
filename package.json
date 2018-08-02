@@ -1,27 +1,21 @@
 {
   "name": "wick",
-  "version": "0.4.0a",
+  "version": "0.4.1a",
   "description": "PWA Framework",
   "main": "build/wick-min-es.js",
   "watch": {
     "jsdocs": "source/**/*.js"
   },
   "scripts": {
-
     "test": "nyc mocha",
     "test.watch": "mocha -w --check-leaks -R min",
-    
     "build-css": "rollup --config ./build/config/css.config.js",
-    "build-css": "rollup --config ./build/config/css.config.js",
-    
     "build-production": "rollup --config ./build/config/minibuild.config.js",
     "build-production-es": "rollup --config ./build/config/minibuild_es.config.js",
-    
     "build-dev": "rollup --config ./build/config/browserdev.config.js --environment  BUILD:pro",
     "build-dev.watch": "rollup --config ./build/config/browserdev.config.js --watch --environment  BUILD:dev",
     "build-node": "rollup --config ./build/config/node.config.js --environment  BUILD:dev",
     "build-node.watch": "rollup --config ./build/config/node.config.js --watch --environment  BUILD:dev",
-    
     "jsdocs": "jsdoc ./source -r --configure ./build/config/jsdoc.json ",
     "jsdocs.watch": "watch jsdoc ./source -r --configure ./build/config/jsdoc.json "
   },
@@ -67,8 +61,8 @@
     "rollup-plugin-gzip": "^1.4.0",
     "rollup-plugin-terser": "^1.0.1"
   },
-  "jshintConfig":{
-    "esversion":6,
+  "jshintConfig": {
+    "esversion": 6,
     "unused": true
   },
   "optionalDependencies": {},

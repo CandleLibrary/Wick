@@ -1,14 +1,10 @@
-import { TransformTo } from "../animation/animation"
+import { TransformTo } from "../animation/animation";
 
-import { SourcePackage } from "../source/package"
-
-import { SourceBase } from "../source/base"
-
-import { Transitioner } from "../animation/transition/transitioner"
+import { SourcePackage } from "../source/package";
 
 /**
  * The base class for all components
- * @param      {external:HTMLElement}  element  The DOM `<component>` element that the Component can append sub elements to. It may be replaced by a different type of element if necessary, is in the case with an ErrorComponent.
+ * @param      {HTMLElement}  element  The DOM `<component>` element that the Component can append sub elements to. It may be replaced by a different type of element if necessary, is in the case with an ErrorComponent.
  * @memberof module:wick~internals.component
  * @alias BaseComponent
  */
@@ -73,7 +69,7 @@ class CustomComponent extends BaseComponent {};
 
 /**
  * Component attaches an error message to the `<component>`.  It allows JS errors to show in client space.
- * @param      {external:HTMLElement}  element        Ignored by this class
+ * @param      {HTMLElement}  element        Ignored by this class
  * @param      {(string | Error)}  error_message  The error message or object to display.
  * @param      {Presets}  presets        The global Presets object. 
  * @alias FailedComponent
@@ -89,12 +85,12 @@ class FailedComponent extends BaseComponent {
 
 /**
  * Builds out a `<component>` trough the Wick templating system. 
- * @param      {external:HTMLElement}  element                 The element
+ * @param      {HTMLElement}  element                 The element
  * @param      {Presets}  presets                 The global Presets object
  * @param      {Object}  app_components          The application components
  * @param      {Object}  component_constructors  The component constructors
  * @param      {Object}  model_constructors      The model constructors
- * @param      {external:HTMLElement}  WORKING_DOM             The working dom
+ * @param      {HTMLElement}  WORKING_DOM             The working dom
  * @memberof module:wick~internals.component
  * @alias Component
  * @return     {Component}  If this object is already cached in app_components, returns the existing cached object. 

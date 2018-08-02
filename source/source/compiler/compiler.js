@@ -71,7 +71,7 @@ export function parseText(lex, SourcePackage, presets) {
  * Compiles an object graph based input into a SourcePackage.
  * @param      {SourcePackage}  SourcePackage     The source package
  * @param      {Presets}  presets           The global Presets instance
- * @param      {external:HTMLElement | Lexer | string}  element     The element
+ * @param      {HTMLElement | Lexer | string}  element     The element
  * @memberof module:wick~internals.templateCompiler
  * @alias CompileSource
  */

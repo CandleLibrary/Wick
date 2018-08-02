@@ -71,10 +71,12 @@ The versioning scheme of Wick is as follows:
 ## Major Changes
 - Objects exposed by `wick` have been changed
 - `HTMLParser` introduced
+- 
 
+### v0.4.1a - *current* - Updating router, element & component objects.
+See [changes]("./CHANGELOG.mg#v0.4.1a")
 
-### v0.4.0a - *current* - Exposed Objects Now Defined, CSS Improvements, Change log.
-
+### v0.4.0a - Exposed Objects Now Defined, CSS Improvements, Change log.
 See [changes]("./CHANGELOG.md#v0.4.0a").
 
 - Added `./docs/meta/CHANGELOG.md`

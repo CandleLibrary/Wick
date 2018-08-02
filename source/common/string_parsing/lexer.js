@@ -100,7 +100,7 @@ const num_id = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
  * ```
  * @alias Lexer
  * @memberof module:wick.core.common
- * @param {external:String} string - The string to parse. 
+ * @param {String} string - The string to parse. 
  * @param {Boolean} [IGNORE_WHITE_SPACE=true] - If set to true, the Lexer will not generate tokens for newline and whitespace characters, and instead skip to the next no whitespace/newline token. 
  * @throws     {Error} Throws "String value must be passed to Lexer" if a non-string value is passed as `string`.
  */
@@ -220,16 +220,17 @@ class Lexer {
      * Will throw a new Error, appending the parsed string line and position information to the the error message passed into the function.
      * @instance
      * @public
-     * @param {external:String} message - The error message.
+     * @param {String} message - The error message.
      */
     throw (message) {
         let t = ("________________________________________________"),
+            n = "\n",
             is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
         this.IWS = false;
         let pk = this.copy();
         while (!pk.END && pk.ty !== Types.nl) { pk.n(); }
         let end = pk.off;
-        throw new Error(`${message} at ${this.line}:${this.char} "\n${t}\n${this.str.slice(this.off-this.char,end)}\n${("").padStart(this.char - 2) + "^"}\n${t}${is_iws}"`);
+        throw new Error(message + "at " + this.line + ":" + this.char + n + t + n + this.str.slice(this.off - this.char, end) + n + ("").padStart(this.char - 2) + "^" + n + t + is_iws);
     }
 
     /**
@@ -394,13 +395,22 @@ class Lexer {
      * Proxy for Lexer.prototype.assert
      * @public
      */
-    a(text) { return this.assert(text); }
+    a(text) {
+        if (this.off < 0) this.throw(`Expecting ${text} got null`);
+
+        if (this.text == text)
+            this.next();
+        else
+            this.throw(`Expecting "${text}" got "${this.text}"`);
+
+        return this;
+    }
 
     /**
      * Compares the string value of the current token to the value passed in. Advances to next token if the two are equal.
      * @public
      * @throws {Error} - `Expecting "${text}" got "${this.text}"`
-     * @param {external:String} text - The string to compare.
+     * @param {String} text - The string to compare.
      */
     assert(text) {
 
@@ -423,7 +433,7 @@ class Lexer {
      * Compares the character value of the current token to the value passed in. Advances to next token if the two are equal.
      * @public
      * @throws {Error} - `Expecting "${text}" got "${this.text}"`
-     * @param {external:String} text - The string to compare.
+     * @param {String} text - The string to compare.
      */
     assertCharacer(char) {
 
@@ -475,13 +485,13 @@ class Lexer {
     /**
      * Proxy for Lexer.prototype.text
      * @public
-     * @type {external:String}
+     * @type {String}
      * @readonly
      */
     get tx() { return this.text; }
     /**
      * The string value of the current token.
-     * @type {external:String}
+     * @type {String}
      * @public
      * @readonly
      */
@@ -516,7 +526,7 @@ class Lexer {
     /**
      * Returns a slice of the parsed string beginning at `start` and ending at the current token.
      * @param {Number | LexerBeta} start - The offset in this.str to begin the slice. If this value is a LexerBeta, sets the start point to the value of start.off.
-     * @return {external:String} A substring of the parsed string.
+     * @return {String} A substring of the parsed string.
      * @public
      */
     slice(start) {

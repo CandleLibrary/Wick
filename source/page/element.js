@@ -1,8 +1,6 @@
-import { setLinks } from "../network/router/setlinks"
-
-import { TransformTo } from "../animation/animation"
-
-import { Component, BaseComponent, FailedComponent } from "./component"
+import { setLinks } from "../network/router/setlinks";
+import { TransformTo } from "../animation/animation";
+import { Component, FailedComponent } from "./component";
 
 /**
  * Class for element.
@@ -17,7 +15,7 @@ export class Element {
     /**
      * Constructs an Element.
      *
-     * @param      {external:HTMLElement}  element  The HTMLElement that this Element will be bound to. 
+     * @param      {HTMLElement}  element  The HTMLElement that this Element will be bound to. 
      */
     constructor(element) {
         this.id = (element.classList) ? element.classList[0] : element.id;
@@ -181,7 +179,7 @@ export class Element {
             history.pushState({}, "ignored title", href);
             window.onpopstate();
             return true;
-        })
+        });
 
         if (components.length < 1) {
             //Create a wrapped component for the elements inside the <element>

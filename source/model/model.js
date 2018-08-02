@@ -255,7 +255,7 @@ class Model extends ModelBase {
     /**
      * Given a key, returns an object that represents the status of the value contained, if it is valid or not, according to the schema for that property. 
      * @public
-     * @param   {external:String}  key - The property name to look up.
+     * @param   {String}  key - The property name to look up.
      * @return  {Object} - Returns object with the properties `valid` and `reason`. `valid` will be set to `true` if the property value is a valid form according to the scheme for the property, `false` otherwise. If `verify().valid = false`, then `reason` will be a string giving a reason as to why the value is invalid.
      */
     verify(key, value) {
@@ -284,8 +284,8 @@ class Model extends ModelBase {
     /**
      * Returns string representation of the property value indexed by `key`.
      * @public
-     * @param      {external:String}  key     The name of the property to get the string value of.
-     * @return     {external:String}  - the string representation of the property value.
+     * @param      {String}  key     The name of the property to get the string value of.
+     * @return     {String}  - the string representation of the property value.
      */
     string(key) {
 

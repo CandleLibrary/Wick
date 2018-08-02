@@ -15,7 +15,7 @@ import { View } from "../view/view";
  * @param      {Source}  parent   The Source parent object.
  * @param      {Object}  data     The data object hosting attribute properties from the HTML template. 
  * @param      {Object}  presets  The global presets object.
- * @param      {external:HTMLElement}  element  The element that the Source will _bind_ to. 
+ * @param      {HTMLElement}  element  The element that the Source will _bind_ to. 
  */
 export class SourceTemplate extends View {
 

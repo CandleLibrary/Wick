@@ -5,7 +5,7 @@ import { ArrayModelContainer } from "./container/array"
 /**
  * Function used by the AnyModel Proxy object to set property members and values. Calls {@link Model#scheduleUpdate} of the host AnyModel instance when a property value changes or a new poperty is added.
  * @param      {Object}   obj     The object to set the property of.
- * @param      {external:String}   prop    The property name to set.
+ * @param      {String}   prop    The property name to set.
  * @param      {String | Number | Boolean | Array | Object}   val     The value to set `obj[prop]` to.
  * @return     {boolean}  { description_of_the_return_value }
  * @protected

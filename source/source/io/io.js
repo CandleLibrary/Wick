@@ -21,7 +21,7 @@ export class IOBase {
  *   @param {Source} tap - The tap {@link Source}, used internally to build a hierarchy of Sources.
  *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
  *   @param {Presets} presets - An instance of the {@link Presets} object.
- *   @param {external:HTMLElement} element - The HTMLElement that the IO will _bind_ to.
+ *   @param {HTMLElement} element - The HTMLElement that the IO will _bind_ to.
  *   @memberof module:wick.core.source
  *   @alias IO
  *   @extends IOBase
