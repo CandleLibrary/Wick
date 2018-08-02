@@ -1,7 +1,6 @@
 import { ModelBase } from "../model/base";
-
+import { AnyModel } from "../model/any";
 import { Tap } from "./tap/tap";
-
 import { View } from "../view/view";
 
 
@@ -161,6 +160,13 @@ export class Source extends View {
         if (this.schema)
             model = new this.schema();
 
+
+
+        if(!model){
+            model = new AnyModel();
+            //throw("Model not defined for this source")
+        }
+        
         model.addView(this);
 
         for (let i in this.taps)

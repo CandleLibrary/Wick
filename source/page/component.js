@@ -1,5 +1,5 @@
 import { TransformTo } from "../animation/animation";
-
+import { WURL } from "../network/wurl"
 import { SourcePackage } from "../source/package";
 
 /**
@@ -42,20 +42,20 @@ class BaseComponent {
      * Called by the hosting Element when it is mounted to the active page. 
      * Allows the component to react to changes observed in the URL of the website. 
      */
-    handleUrlUpdate() {};
+    handleUrlUpdate() {}
 
     /**
      * Called by the hosting Element when it is mounted to the active page. 
      * Allows the component to apply a transition in effect. 
      */
-    transitionIn() {};
+    transitionIn() {}
 
     /**
      * Called by the hosting Element before it is unmounted from the active page. 
      * Allows the component to apply a transition out effect. 
      * @override
      */
-    transitionOut() {};
+    transitionOut() {}
 }
 
 /**
@@ -64,7 +64,7 @@ class BaseComponent {
  * @alias CustomComponent
  * @extends BaseComponent
  */
-class CustomComponent extends BaseComponent {};
+class CustomComponent extends BaseComponent {}
 
 
 /**
@@ -98,9 +98,9 @@ class FailedComponent extends BaseComponent {
  */
 class Component extends BaseComponent {
 
-    constructor(element, presets, app_components, WORKING_DOM) {
+    constructor(element, presets, DOM, app_components) {
 
-        super(element)
+        super(element);
 
         /**
          * The {@link Model} the 
@@ -123,8 +123,19 @@ class Component extends BaseComponent {
             return app_components[id];
         if (presets.custom_sources[id])
             presets.custom_sources[id].mount(this.ele, this);
-        else
-            (new SourcePackage(this.ele, presets, WORKING_DOM)).mount(this.ele, null, presets.USE_SHADOW, this);
+        else {
+            let template = DOM.getElementById(id);
+            let url = element.getAttribute("url");
+            if (template && template.tagName == "TEMPLATE") {
+                (new SourcePackage(template, presets)).mount(this.ele, null, presets.options.USE_SHADOW, this);
+            } else if (url) {
+                (new WURL(url))
+                .fetchText()
+                    .then(text => (
+                        new SourcePackage(text, presets)).mount(this.ele, null, presets.options.USE_SHADOW, this));
+            } else
+                (new SourcePackage(this.ele.innerHTML, presets)).mount(this.ele, null, presets.options.USE_SHADOW, this);
+        }
 
 
         app_components[id] = this;

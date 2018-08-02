@@ -105,7 +105,7 @@ class SourcePackage {
         this._HAVE_ERRORS_ = true;
         //Create error skeleton and push to _skeletons_
         this._errors_.push(error_message);
-        console.warn(error_message);
+        console.error(error_message);
     }
 
     /**

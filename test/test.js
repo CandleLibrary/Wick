@@ -1,5 +1,5 @@
 const fs = require("fs");
-const path = require("path")
+const path = require("path");
 const chai = require("chai");
 chai.should();
 const assert = chai.assert;
@@ -8,7 +8,7 @@ const assert = chai.assert;
 const config = {
     PERFORMANCE: false,
     BROWSER: false
-}
+};
 
 describe("Wick test suite.", function() {
     let window;
@@ -82,15 +82,13 @@ describe("Wick test suite.", function() {
             now() {
                 return Date.now();
             }
-        }
+        };
 
-        window.performance = performance
+        window.performance = performance;
 
-        function raf(f) {
-            return setTimeout(f, 1);
-        }
+        function raf(f) { return setTimeout(f, 16); }
 
-        requestAnimationFrame = raf
+        requestAnimationFrame = raf;
 
         window.requestAnimationFrame = raf;
 
@@ -99,20 +97,21 @@ describe("Wick test suite.", function() {
         wick = require("../build/wick.node.js");
 
         global.wick = wick;
-    })
+    });
 
     it("tests", function() {
-        require("./suite/lexer_tests.js")(config)
-        require("./suite/wurl_tests.js")()
-        require("./suite/css_tests.js")()
-        require("./suite/html_tests.js")(config)
-        require("./suite/source_package_tests.js")(config)
-        require("./suite/schema_tests.js")()
-        require("./suite/model_tests.js")()
-        describe("Model Container Tests", function() {
-            require("./suite/mc_tests.js")()
-            require("./suite/amc_tests.js")()
-            require("./suite/btmc_tests.js")()
-        })
-    })
-})
+        require("./suite/lexer_tests.js")(config);
+        require("./suite/wurl_tests.js")(config);
+        require("./suite/css_tests.js")(config);
+        require("./suite/html_tests.js")(config);
+        require("./suite/source_package_tests.js")(config);
+        require("./suite/schema_tests.js")(config);
+        require("./suite/model_tests.js")(config);
+        describe("Model Container Tests", function(config) {
+            require("./suite/mc_tests.js")(config);
+            require("./suite/amc_tests.js")(config);
+            require("./suite/btmc_tests.js")(config);
+        });
+        require("./suite/router_tests.js")(config);
+    });
+});

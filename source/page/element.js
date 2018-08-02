@@ -222,7 +222,7 @@ export class Element {
                 } else {
                 */
 
-                    app_component = new Component(component, presets, App_Components, Component_Constructors, Model_Constructors, DOM);
+                    app_component = new Component(component, presets, DOM, App_Components, Component_Constructors, Model_Constructors);
 
                     app_component.handleUrlUpdate(wurl);
                 //}

@@ -32,7 +32,7 @@ function WURLTESTS() {
                 url.query.should.equal("");
                 url.hash.should.equal("");
                 url.should.not.equal(WURL.G);
-            })
+            });
 
             let uri3 = "www.ttt.localhost.tld?tst=1258&more_good_toast=true";
             it(uri3, function() {
@@ -44,7 +44,7 @@ function WURLTESTS() {
                 url.query.should.equal("tst=1258&more_good_toast=true");
                 url.hash.should.equal("");
                 url.should.not.equal(WURL.G);
-            })
+            });
 
             let uri4 = "pop3://www.ttt.localhost.tld";
             it(uri4, function() {
@@ -56,7 +56,7 @@ function WURLTESTS() {
                 url.query.should.equal("");
                 url.hash.should.equal("");
                 url.should.not.equal(WURL.G);
-            })
+            });
 
             let uri5 = "/the/giver/of/toast#11235";
             it(uri5, function() {
@@ -68,7 +68,7 @@ function WURLTESTS() {
                 url.query.should.equal("");
                 url.hash.should.equal("11235");
                 url.should.not.equal(WURL.G);
-            })
+            });
 
             let uri6 = `Empty string, global WURL: new WURL("",true)`;
             it(uri6, function() {
@@ -81,8 +81,8 @@ function WURLTESTS() {
                 url.query.should.equal(location.search.slice(1));
                 url.hash.should.equal(location.hash.slice(1));
                 url.should.equal(WURL.R);
-            })
-        })
+            });
+        });
 
         describe('Fetches local resources', function() {
             it("Gets: /test/data/test.txt", function(done) {

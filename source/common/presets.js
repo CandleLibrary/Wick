@@ -1,7 +1,7 @@
 //import { CustomComponent } from "../page/component"
-import { DOC } from "./short_names"
-import { ModelBase } from "../model/base"
-import { AnyModel } from "../model/any"
+import { DOC } from "./short_names";
+import { ModelBase } from "../model/base";
+import { AnyModel } from "../model/any";
 
 /**
  * There are a number of configurable options and global objects that can be passed to wick to be used throughout the PWA. The instances of the Presets class are objects that hosts all these global properties. 
@@ -20,7 +20,10 @@ class Presets {
         /**
          * {Object} Store for optional parameters used in the app
          */
-        this.options = {};
+        this.options = {
+            USE_SECURE:true,
+            USE_SHADOW:false,
+        };
 
         //Declaring the properties upfront to give the VM a chance to build an appropriate virtual class.
         this.components = {};
@@ -133,13 +136,12 @@ class Presets {
                 if (ModelBase.isPrototypeOf(c[cn]))
                     this.schemas[cn] = c[cn];
 
-        this.USE_SHADOW = (preset_options.USE_SHADOW) ? (DOC.head.createShadowRoot || DOC.head.attachShadow) : false;
+        this.options.USE_SHADOW = (this.options.USE_SHADOW) ? (DOC.head.createShadowRoot || DOC.head.attachShadow) : false;
 
         Object.freeze(this.options);
         Object.freeze(this.custom_sources);
         Object.freeze(this.schemas);
         Object.freeze(this.models);
-        Object.freeze(this.USE_SHADOW);
 
 
         //Object.freeze(this);

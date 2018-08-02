@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<hmtl>
+
+    <head>
+    </head>
+
+    <body>
+        <app>
+            <element id="header">
+                <component class="test_data_one"></component>
+            </element>
+            <element id="main">
+                <component url="/test/data/page_data.html"></component>
+            </element>
+            <element id="truesdale">
+                <component>
+                	This is a plain text component
+                </component>
+            </element>
+        </app>
+    </body>
+    <template id="test_data_one">
+        <div> Test Data One </div>
+    </template>
+    <script src="/build/wick-dev.js"></script>
+    <script src="/node_modules/chai/chai.js"></script>
+    <script src="build/wick-dev.js"></script>
+    <script>
+    	if(typeof(chai) != "undefined") chai.should();
+    	wick.startRouting({});
+    </script>
+</hmtl>

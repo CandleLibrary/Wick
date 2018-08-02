@@ -138,7 +138,7 @@ export class Router {
     * @param {String} query -
     * @param {Bool} IS_SAME_PAGE -
     */
-    loadPage(page, wurl = new WURL(document.location), IS_SAME_PAGE) {
+    loadPage(wurl = new WURL(document.location),page, IS_SAME_PAGE) {
 
         URL_HOST.wurl = wurl;
 
@@ -282,7 +282,6 @@ export class Router {
         If it is unable to find these elements, then it will pass the DOM to loadNonWickPage to handle wrapping the page body into a wick app element.
     */
     loadNewPage(URL, DOM, wurl) {
-        debugger
 
         //look for the app section.
 

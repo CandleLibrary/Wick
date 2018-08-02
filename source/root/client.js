@@ -24,8 +24,8 @@ function startRouting(presets = {}) {
 
     window.addEventListener("load", () => {
         router.loadPage(
+            new core.network.url(document.location),
             router.loadNewPage(document.location.pathname, document),
-            new WURL(document.location),
             false
         );
     });

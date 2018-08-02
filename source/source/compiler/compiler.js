@@ -29,10 +29,8 @@ export function parseText(lex, SourcePackage, presets) {
 
     if (!lex.END) {
 
-        if (lex.pk.ty != lex.types.id){
-            console.log(lex.slice())
+        if (lex.pk.ty != lex.types.id)
             throw new Error("Expecting an Identifier after `<` character");
-        }
         
         let node = CreateHTMLNode(lex.p.tx);
         
@@ -53,17 +51,10 @@ export function parseText(lex, SourcePackage, presets) {
         }).catch((e) => {
             SourcePackage._addError_(e);
             SourcePackage._complete_();
-            console.warn(e);
-            throw e;
         });
     }
-    console.log(lex.slice());
-    let err = `Unexpected end of input. ${lex.slice(start)}`;
-
-    SourcePackage._addError_(err);
-    debugger
+    SourcePackage._addError_(new Error(`Unexpected end of input. ${lex.slice(start)}`));
     SourcePackage._complete_();
-    console.warn(err);
 }
 
 
@@ -92,7 +83,6 @@ function CompileSource(SourcePackage, presets, element) {
         let e = new Error("Cannot compile component");
         SourcePackage._addError_(e);
         SourcePackage._complete_();
-        throw e;
     }
     return parseText(lex, SourcePackage, presets);
 }

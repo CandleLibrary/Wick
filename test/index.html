@@ -31,7 +31,7 @@
     <script src="./suite/cassette_tests.js"></script>
     <script src="./suite/source_package_tests.js"></script>
     <script src="./suite/linker_tests.js"></script>
-    <script src="./suite/linker_tests.js"></script>
+    <script src="./suite/router_tests.js"></script>
     <script>
     window.benchmark = Benchmark;
     chai.should();
@@ -51,7 +51,7 @@
     MCTESTS(config);
     AMCTESTS(config);
     BTMCTESTS(config);
-    //ROUTERTESTS(config)
+    ROUTERTESTS(config);
     mocha.checkLeaks();
     mocha.run();
     </script>
