@@ -1,4 +1,4 @@
-import { RootNode } from "./root";
+import { RootNode, BindingCSSRoot } from "./root";
 import { Source } from "../../source";
 import { Tap } from "../../tap/tap";
 
@@ -9,15 +9,25 @@ import { Tap } from "../../tap/tap";
 export class SourceNode extends RootNode {
     constructor() {
         super();
+        this._model_name_ = "";
+        this._schema_name_ = "";
+        this.statics = {};
     }
 
     _delegateTapBinding_() {
         return null;
     }
 
-    _linkCSS_(css) {
-        for (let node = this.fch; node; node = this.getN(node))
-            node._linkCSS_(css);
+    _getCSS_() {
+
+        if (this.css)
+            return this.css;
+
+        this.css = new BindingCSSRoot();
+
+        this._setPendingCSS_(this.css);
+
+        return this.css;
     }
 
     _checkTapMethodGate_(name, lex) {
@@ -26,13 +36,16 @@ export class SourceNode extends RootNode {
 
     /******************************************* BUILD ****************************************************/
 
-    _build_(element, source, presets, errors, model, taps) {
+    _build_(element, source, presets, errors, taps = null, statics = null) {
 
         let data = {};
 
         let out_taps = [];
 
         let me = new Source(source, presets, element, this);
+
+        me._model_name_ = this._model_name_;
+        me._schema_name_ = this._schema_name_;
 
         let tap_list = this.tap_list;
 
@@ -42,8 +55,6 @@ export class SourceNode extends RootNode {
             me.taps[name] = new Tap(me, name, tap._modes_);
             out_taps.push(me.taps[name]);
         }
-
-
 
         for (let i = 0, l = this._attributes_.length; i < l; i++) {
             let attr = this._attributes_[i];
@@ -58,7 +69,13 @@ export class SourceNode extends RootNode {
         }
 
         for (let node = this.fch; node; node = this.getN(node))
-            node._build_(element, me, presets, errors, model, out_taps);
+            node._build_(element, me, presets, errors, out_taps);
+
+        if(statics){
+            me._statics_ = statics;
+            me._update_(statics);
+        }
+        
 
         return me;
     }
@@ -74,18 +91,29 @@ export class SourceNode extends RootNode {
      * @param      {Lexer}  lex     The lex
      * @return     {Object}  Key value pair.
      */
-    _processAttributeHook_(name, lex) {
+    _processAttributeHook_(name, lex, value) {
         switch (name[0]) {
+            case "#":
+                return null;
             case "m":
                 if (name == "model") {
-                    this.model = lex.slice();
+                    this._model_name_ = lex.slice();
                     lex.n();
                 }
                 break;
             case "s":
                 if (name == "schema") {
-                    this.schema = lex.slice();
+                    this._schema_name_ = lex.slice();
                     lex.n();
+                }
+                break;
+            case "c":
+                if (name == "component") {
+                    let component_name = lex.tx;
+                    let components = this._presets_.components;
+                    if (components)
+                        components[component_name] = this;
+                    return null;
                 }
                 break;
             default:

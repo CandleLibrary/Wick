@@ -52,7 +52,7 @@ export class Setter extends View {
         var request = response.target;
 
         //result(request);
-            if (this._m){
+            if (this ._model_){
 
             //should be able to pipe responses as objects created from well formulated data directly into the model.
                 this.set(this.parseJson(json));

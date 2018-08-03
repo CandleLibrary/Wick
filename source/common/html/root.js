@@ -127,12 +127,12 @@ class HTMLNode {
     }
 
     getAttribute(name) {
-        let attrib = this.getAttrib(name); 
+        let attrib = this.getAttrib(name);
         return (attrib) ? attrib.value : void 0;
     }
 
     getAttribute(name) {
-        let attrib = this.getAttrib(name); 
+        let attrib = this.getAttrib(name);
         return (attrib) ? attrib.value : void 0;
     }
 
@@ -372,17 +372,21 @@ class HTMLNode {
                 continue;
             }
 
-            //_parse_ attribute
-            if (lex.type !== lex.types.id)
-                lex.throw(`Expected an identifier. Got ${lex.type}:${lex.text}`);
-
-            let attrib_name = lex.text;
-            lex.next();
+            lex.IWS = false;
+            
+            let pk = lex.pk;
+            
+            while (!pk.END && !(pk.ty & (pk.types.ws | pk.types.str | pk.types.nl)) && pk.ch !== "=" && pk.ch !== ">") { pk.n(); }
+            
+            let attrib_name = pk.slice(lex);
+            
+            lex.sync(); 
+            
+            lex.IWS = true;
 
             let out_lex = lex.copy();
+            
             out_lex.sl = lex.off;
-
-
 
             if (lex.ch == "=") {
                 let pk = lex.pk;
@@ -485,7 +489,7 @@ class HTMLNode {
                     if (pk.ch == "!") {
                         /* DTD - Doctype and Comment tags*/
                         //This type of tag is dropped
-                        while(!lex.END && lex.n().ch !== ">"){};
+                        while (!lex.END && lex.n().ch !== ">") {};
                         lex.a(">");
                         continue;
                     }
@@ -512,9 +516,6 @@ class HTMLNode {
 
                             HAS_INNER_TEXT = IGNORE_TEXT_TILL_CLOSE_TAG = this._ignoreTillHook_(this.tag);
 
-                            if (this._selfClosingTagHook_(this.tag)) // Tags without matching end tags.
-                                return this;
-
                             if (URL) {
 
                                 //Need to block against ill advised URL fetches. 
@@ -524,11 +525,17 @@ class HTMLNode {
 
                                 if (prom instanceof Promise) {
                                     return prom.then(() => {
+                                        if (this._selfClosingTagHook_(this.tag)) {
+                                            return this;
+                                        } // Tags without matching end tags.
                                         return this._parseRunner_(lex, true, IGNORE_TEXT_TILL_CLOSE_TAG, this);
                                     });
                                 }
                             }
-                            //start = lex.pos;
+
+                            if (this._selfClosingTagHook_(this.tag)) // Tags without matching end tags.
+                                return this;
+
                             continue;
                         } else {
                             lex.IWS = false;
@@ -570,7 +577,7 @@ class HTMLNode {
         }
 
         if (OPENED && start < lex.off) {
-            console.log("OPEND TEXT IMPORT", lex.slice(start));
+            //console.log("OPEND TEXT IMPORT", lex.slice(start));
             //Got here from an network import, need produce a text node;
             this._createTextNode_(lex, start);
         }
@@ -615,7 +622,6 @@ class HTMLNode {
             case "input":
             case "br":
             case "img":
-            case "input":
                 return true;
         }
 

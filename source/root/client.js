@@ -12,27 +12,27 @@ let LINKER_LOADED = false;
  *
  *    Note: This function should only be called once. Any subsequent calls will not do anything.
  *    @method startRouting
- *    @param {Object | Presets} presets - An object of configuration data to pass to the Presets. {@link Presets}.
+ *    @param {Object} presets_options - An object of configuration data to pass to the Presets. {@link Presets}.
  */
-function startRouting(presets = {}) {
+function startRouting(preset_options = {}) {
 
     if (LINKER_LOADED) return;
 
     LINKER_LOADED = true;
 
-    let router = new core.network.router(core.presets(presets));
+    let router = new core.network.router(core.presets(preset_options));
 
     window.addEventListener("load", () => {
         router.loadPage(
-            new core.network.url(document.location),
             router.loadNewPage(document.location.pathname, document),
+            new core.network.url(document.location),
             false
         );
     });
 
     console.log(`${wick_vanity}Copyright 2018 Anthony C Weathersby\nhttps://gitlab.com/anthonycweathersby/wick`);
 
-    return {presets, router};
+    return {preset_options, router};
 }
 
 export {source};

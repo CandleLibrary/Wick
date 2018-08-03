@@ -10,7 +10,6 @@ export class ScriptNode extends VoidNode {
     }
 
     _processTextNodeHook_(lex) {
-        
         if (this._binding_)
             this._binding_.val = lex.slice();
     }
@@ -29,8 +28,9 @@ export class ScriptNode extends VoidNode {
 
         return { name, value: lex.slice() };
     }
-    _build_(element, source, presets, errors, model, taps) {
+    _build_(element, source, presets, errors, taps) {
         if (this._binding_)
             this._binding_._bind_(source, errors, taps, element);
+        
     }
 }

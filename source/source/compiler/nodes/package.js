@@ -30,7 +30,7 @@ export class PackageNode extends VoidNode {
 
         own_lex.sl = pk.off + pk.tl;
 
-        this.par._package_ = new this.SourcePackage(own_lex, this.presets, false);
+        this.par._package_ = new this.SourcePackage(own_lex, this._presets_, false);
     }
 
     _ignoreTillHook_() { return true; }

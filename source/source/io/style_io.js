@@ -1,10 +1,18 @@
 import { IOBase, BindIO, TemplateString } from "./io";
 import { Scheduler } from "../../common/scheduler";
 
+function replaceString(e){
+    return e[1].toUpperCase();
+}
+
+function toCamel(string){
+    let str = string.replace(/(?:[-_])([a-z])/g, replaceString);
+    return str
+}
 export class CSSRawValue {
 
     constructor(name, prop = null) {
-        this._name_ = name;
+        this._name_ = toCamel(name);
         this._value_ = "";
 
         if (Array.isArray(prop))
@@ -23,7 +31,7 @@ export class CSSRuleTemplateString {
         this._setBindings_(source, errors, taps, binds);
         this._ios_ = [];
         this._value_ = "";
-        this._name_ = name;
+        this._name_ = toCamel(name);
     }
 
     _destroy_() {
@@ -69,15 +77,11 @@ export class CSSRuleTemplateString {
 
     _scheduledUpdate_() {
 
-        let str = [this._name_, ":"];
+        let str = [];
 
         for (let i = 0; i < this.binds.length; i++)
             str.push(this.binds[i]._value_);
-
-        str.push(";");
-
         this._value_ = str.join(' ');
-
         for (let i = 0, l = this._ios_.length; i < l; i++)
             this._ios_[i]._updateRule_();
     }
@@ -151,6 +155,5 @@ export class StyleIO extends IOBase {
             let prop = this.props[i];
             this.ele.style[prop._name_] = prop._value_;
         }
-        return;
     }
 }

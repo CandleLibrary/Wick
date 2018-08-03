@@ -40,9 +40,9 @@ OutTemplate.prototype = {
 
     _bindings_: null,
 
-    _bind_: function(source, errors, taps, element) {
+    _bind_: function(source, errors, taps, element, attr) {
         if (this.method == ATTRIB || this.method == INPUT)
-            return new AttribTemplate(source, errors, taps, this.attr, element, this._bindings_);
+            return new AttribTemplate(source, errors, taps, attr, element, this._bindings_);
         return new TemplateString(source, errors, taps, element, this._bindings_);
     },
 
@@ -63,8 +63,13 @@ OutTemplate.prototype = {
 };
 
 
-export function StyleTemplate() {
-    return new OutStyleTemplate();
+export function StyleTemplate(lex) {
+
+    const style = new OutStyleTemplate();
+    if(lex){
+
+    }
+    return style;
 }
 
 class OutStyleTemplate {
@@ -126,9 +131,8 @@ class OutCSSRuleTemplate {
     set _wick_type_(v) {}
 
     _bind_(source, errors, taps, io) {
-        if (!this.binding)
-            this.binding = new CSSRuleTemplateString(source, errors, taps, this._bindings_, this.prop_name);
-        this.binding.addIO(io);
-        io.binds.push(this.binding);
+        let binding = new CSSRuleTemplateString(source, errors, taps, this._bindings_, this.prop_name);
+        binding.addIO(io);
+        return binding;
     }
 }

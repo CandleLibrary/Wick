@@ -188,7 +188,7 @@ export class SourceTemplate extends View {
             for (let j = 0; j < this.sources.length; j++) {
                 let Source = this.sources[j];
 
-                if (Source._m == item) {
+                if (Source ._model_ == item) {
                     this.sources.splice(j, 1);
                     Source.dissolve();
                     break;
@@ -242,7 +242,7 @@ export class SourceTemplate extends View {
     }
 
     get() {
-        if (this._m instanceof MultiIndexedContainer) {
+        if (this ._model_ instanceof MultiIndexedContainer) {
             if (this.data.index) {
                 let index = this.data.index;
 
@@ -250,15 +250,15 @@ export class SourceTemplate extends View {
 
                 query[index] = this.getTerms();
 
-                return this._m.get(query)[index];
+                return this ._model_.get(query)[index];
             } else
                 console.warn("No index value provided for MultiIndexedContainer!");
         } else {
-            let source = this._m.source;
+            let source = this ._model_.source;
             let terms = this.getTerms();
 
             if (source) {
-                this._m._destroy_();
+                this ._model_._destroy_();
 
                 let model = source.get(terms, null);
 
@@ -266,7 +266,7 @@ export class SourceTemplate extends View {
                 model.addView(this);
             }
 
-            return this._m.get(terms);
+            return this ._model_.get(terms);
         }
         return [];
     }

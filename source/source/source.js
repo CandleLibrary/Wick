@@ -25,24 +25,23 @@ export class Source extends View {
          *@type {Boolean} 
          *@protected
          */
-        this.ACTIVE = false;
         this.DESTROYED = false;
-        this.REQUESTING = false;
 
         this.parent = parent;
         this.ele = element;
-        this.presets = presets;
-        this.schema = null;
-        this._m = null;
+        this._presets_ = presets;
+        this._model_ = null;
+        this._statics_ = null;
 
-        this.query = {};
-        this.named_elements = {};
         this.taps = {};
         this.children = [];
         this.sources = [];
         this._ios_ = [];
         this._templates_ = [];
         this.hooks = [];
+
+        this._model_name_ = "";
+        this._schema_name_ = "";
 
         this.addToParent();
     }
@@ -86,10 +85,8 @@ export class Source extends View {
     }
 
     addToParent() {
-        if (this.parent) {
-            debugger
+        if (this.parent)
             this.parent.sources.push(this);
-        }
     }
 
     addTemplate(template) {
@@ -98,7 +95,7 @@ export class Source extends View {
     }
 
     addSource(source) {
-        if(source.parent == this)
+        if (source.parent == this)
             return;
         source.parent = this;
         this.sources.push(source);
@@ -137,40 +134,23 @@ export class Source extends View {
     */
     load(model) {
 
-        this.ACTIVE = true;
+        let m = this._presets_.models[this._model_name_];
+        let s = this._presets_.schemas[this._schema_name_];
 
-        if (this._m) {
-            model = this._m;
-            this._m = null;
-        }
+        if (m)
+            model = m;
+        else if (s)
+            model = new s(model);
+        else if (!model)
+            model = new AnyModel(model);
 
-        if (model && model instanceof ModelBase) {
+        for (let i = 0, l = this.sources.length; i < l; i++)
+            this.sources[i].load();
 
-            if (this.schema) {
-                /* Opinionated Source - Only accepts Models that are of the same type as its schema.*/
-                if (model.constructor != this.schema) {
-                    //throw new Error(`Model Schema ${this._m.schema} does not match Source Schema ${presets.schemas[this.data.schema].schema}`)
-                } else
-                    this.schema = null;
-
-            }
-            this._m = null;
-        }
-
-        if (this.schema)
-            model = new this.schema();
-
-
-
-        if(!model){
-            model = new AnyModel();
-            //throw("Model not defined for this source")
-        }
-        
         model.addView(this);
 
-        for (let i in this.taps)
-            this.taps[i].load(this._m, false);
+        for (let name in this.taps)
+            this.taps[name].load(this._model_, false);
     }
 
     _down_(data, changed_values) {
@@ -189,14 +169,13 @@ export class Source extends View {
 
     _update_(data, changed_values, IMPORTED = false) {
 
-        if (this.ACTIVE)
-            if (changed_values) {
-                for (let name in changed_values)
-                    if (this.taps[name])
-                        this.taps[name]._down_(data, IMPORTED);
-            } else
-                for (let name in this.taps)
+        if (changed_values) {
+            for (let name in changed_values)
+                if (this.taps[name])
                     this.taps[name]._down_(data, IMPORTED);
+        } else
+            for (let name in this.taps)
+                this.taps[name]._down_(data, IMPORTED);
 
         for (let i = 0, l = this.sources.length; i < l; i++)
             this.sources[i]._down_(data, changed_values);

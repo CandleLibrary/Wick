@@ -42,7 +42,7 @@ function SOURCEPACKAGETESTS(config) {
 
             it('Constructs a SourcePackage with Model bindings on properly formatted HTML',
                 () => (new wick.core.network.url("/test/data/package.html")).fetchText()
-                .then(text => wick.source(text, {}, true).then(source => {
+                .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
                     let ele = document.createElement("div");
                     source.mount(ele, Any, false);
                     //appendToDocumentBody(ele);
@@ -66,7 +66,7 @@ function SOURCEPACKAGETESTS(config) {
             
             it('Creates bindings based on JavaScript expressions.',
                 () => (new wick.core.network.url("/test/data/expression.html")).fetchText()
-                .then(text => wick.source(text, {}, true).then(source => {
+                .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
                     let ele = document.createElement("div");
                     source.mount(ele, Any, false);
                     ele.children.should.have.lengthOf(2);
@@ -88,7 +88,7 @@ function SOURCEPACKAGETESTS(config) {
 
             it('Creates bindings that can send messages.',
                 () => (new wick.core.network.url("/test/data/messaging.html")).fetchText()
-                .then(text => wick.source(text, {}, true).then(source => {
+                .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
                     let ele = document.createElement("div");
                     source.mount(ele, Any, false);
                     ele.children.should.have.lengthOf(1);
@@ -123,7 +123,7 @@ function SOURCEPACKAGETESTS(config) {
 
             it('Creates SourceTemplates that can bind to Models stored in containers.',
                 () => (new wick.core.network.url("/test/data/source_template.html")).fetchText()
-                .then(text => wick.source(text, {}, true).then(source => {
+                .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
                     let ele = document.createElement("div");
                     source.mount(ele, Any, false);
                     appendToDocumentBody(ele);
@@ -154,7 +154,7 @@ function SOURCEPACKAGETESTS(config) {
 
             it('Filters and sorts SourceTemplate elements.',
                 () => (new wick.core.network.url("/test/data/source_template_sort_and_filter.html")).fetchText()
-                .then(text => wick.source(text, {}, true).then(source => {
+                .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
                     let ele = document.createElement("div");
                     var manager = source.mount(ele, Any, false);
                     appendToDocumentBody(ele);
@@ -181,7 +181,7 @@ function SOURCEPACKAGETESTS(config) {
 
             let t = it('Adds transitions effects to SourceTemplate elements.',
                 () => (new wick.core.network.url("/test/data/source_template_transition.html")).fetchText()
-                .then(text => wick.source(text, {}, true).then(source => {
+                .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
                     t.slow(10000);
                     t.timeout(10000)
                     Any.users.push({
@@ -226,7 +226,7 @@ function SOURCEPACKAGETESTS(config) {
 
             it('Binds messaging to input elements.',
                 () => (new wick.core.network.url("/test/data/form.html")).fetchText()
-                .then(text => wick.source(text, {}, true).then(source => {
+                .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
                     let ele = document.createElement("div");
                     source.mount(ele, Any, false);
                     appendToDocumentBody(ele);
@@ -290,7 +290,7 @@ function SOURCEPACKAGETESTS(config) {
                         let count_down = number_of_elements;
                         let element1 = document.createElement("div");
                         for (var i = 0; i < number_of_elements; i++) {
-                            wick.source(constructing_template, {}, element, true).then((source) => {
+                            wick.source(constructing_template, wick.core.presets({}), element, true).then((source) => {
                                 let element = document.createElement("div");
                                 let manager = source.mount(element, Any, false);
                                 element1.appendChild(element);
@@ -306,7 +306,7 @@ function SOURCEPACKAGETESTS(config) {
                         let Any = wick.model.any({});
                         let constructing_template = element;
                         let element1 = document.createElement("div");
-                        wick.source(constructing_template, {}, element, true).then((source) => {
+                        wick.source(constructing_template, wick.core.presets({}), element, true).then((source) => {
                             for (var i = 0; i < number_of_elements; i++) {
                                 let element = document.createElement("div");
                                 let manager = source.mount(element, Any, false);

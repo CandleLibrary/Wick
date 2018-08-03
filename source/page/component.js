@@ -105,7 +105,7 @@ class Component extends BaseComponent {
         /**
          * The {@link Model} the 
          */
-        this._m = null;
+        this ._model_ = null;
 
         /**
          * All {@link Source}s bound to this component from a {@link SourcePackag}.
@@ -295,23 +295,23 @@ class Component extends BaseComponent {
             this.____request____(query_data)
         }
 
-        if (!this._m) {
+        if (!this ._model_) {
 
-            this._m = new this._m_constructor();
+            this ._model_ = new this._m_constructor();
 
 
             if (this.getter)
-                this.getter.setModel(this._m);
+                this.getter.setModel(this ._model_);
 
-            this._m.addView(this);
+            this ._model_.addView(this);
         }
 
         if (query_data) {
-            if (!this._m.add(query_data)) {
-                this._update_(this._m.get());
+            if (!this ._model_.add(query_data)) {
+                this._update_(this ._model_.get());
             }
         } else
-            this._update_(this._m.get());
+            this._update_(this ._model_.get());
     }
 }
 

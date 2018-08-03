@@ -51,7 +51,7 @@ export class Router {
         this.elements = {};
         this.component_constructors = presets.custom_sources;
         this.models_constructors = presets.schemas;
-        this.presets = presets;
+        this._presets_ = presets;
         this.current_url = null;
         this.current_query = null;
         this.current_view = null;
@@ -138,7 +138,7 @@ export class Router {
     * @param {String} query -
     * @param {Bool} IS_SAME_PAGE -
     */
-    loadPage(wurl = new WURL(document.location),page, IS_SAME_PAGE) {
+    loadPage(page, wurl = new WURL(document.location), IS_SAME_PAGE) {
 
         URL_HOST.wurl = wurl;
 
@@ -373,7 +373,7 @@ export class Router {
                 if (!this.elements[element_id])
                     this.elements[element_id] = {};
 
-                element.setComponents(this.elements[element_id], this.models_constructors, this.component_constructors, this.presets, DOM, wurl);
+                element.setComponents(this.elements[element_id], this.models_constructors, this.component_constructors, this._presets_, DOM, wurl);
             }
 
             if (document == DOM)

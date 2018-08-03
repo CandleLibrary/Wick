@@ -17,7 +17,7 @@ export class SourceTemplateNode extends RootNode {
         this._package_ = null;
     }
 
-    _build_(element, source, presets, errors, model, taps) {
+    _build_(element, source, presets, errors, taps) {
 
         source = source || new Source(null, presets, element, this);
 

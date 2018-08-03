@@ -50,6 +50,7 @@ export class IO extends IOBase {
 export class AttribIO extends IOBase {
     constructor(source, errors, tap, attr, element) {
         super(tap);
+
         this.attrib = attr;
         this.ele = element;
     }

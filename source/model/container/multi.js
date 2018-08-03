@@ -6,7 +6,7 @@ export class MultiIndexedContainer extends ModelContainerBase {
 
         super({
             identifier: "indexed",
-            model: schema._m
+            model: schema ._model_
         });
 
         this.schema = schema;

@@ -4,7 +4,7 @@ import { Scheduler } from "../common/scheduler"
 
 /**
  * The base class which all Model classes extend.
- * @memberof module:wick~internal._m
+ * @memberof module:wick~internal ._model_
  * @alias ModelBase
  */
 class ModelBase {
@@ -80,9 +80,9 @@ class ModelBase {
 
         if (view instanceof View) {
 
-            if (view._m)
-                if (view._m !== this) {
-                    view._m.removeView(view);
+            if (view ._model_)
+                if (view ._model_ !== this) {
+                    view ._model_.removeView(view);
                 } else return;
 
             if (this.fv) this.fv.pv = view;
@@ -90,7 +90,7 @@ class ModelBase {
             this.fv = view;
 
             view.pv = null;
-            view._m = this;
+            view ._model_ = this;
 
             view._update_(this)
 
@@ -104,7 +104,7 @@ class ModelBase {
      */
     removeView(view) {
 
-        if (view._m == this) {
+        if (view ._model_ == this) {
             if (view == this.fv)
                 this.fv = view.nx;
 

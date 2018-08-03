@@ -46,7 +46,7 @@ export class Tap {
             if (!(this._modes_ & IMPORT))
                 return;
             if (this._modes_ & PUT)
-                this._source_._m[this._prop_] = model[this._prop_];
+                this._source_ ._model_[this._prop_] = model[this._prop_];
         }
 
         const value = model[this._prop_];
@@ -66,7 +66,7 @@ export class Tap {
         }
 
         if (this._modes_ & PUT)
-            this._source_._m[this._prop_] = value;
+            this._source_ ._model_[this._prop_] = value;
 
         if (this._modes_ & EXPORT)
             this._source_._up_(this, value, meta);

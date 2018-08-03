@@ -1,13 +1,16 @@
 import { EL } from "../../common/short_names";
 import { Lexer } from "../../common/string_parsing/lexer";
-import { RootNode, CreateHTMLNode } from "./nodes/index";
+import { CreateHTMLNode } from "./nodes/index";
 import { Skeleton } from "../skeleton";
 
 
 
 function complete(lex, SourcePackage, presets, ast) {
-
-    if (ast.tag) { // Kludge to make sure ast actually has content
+    /*
+     * Only accept certain nodes for mounting to the DOM. 
+     * The custom element `import` is simply used to import extra HTML data from network for use with template system. It should not exist otherwise.
+     */
+    if (ast.tag && ast.tag !== "import" && ast.tag !== "template") {
         let skeleton = new Skeleton(ast, presets);
         SourcePackage._skeletons_.push(skeleton);
     }
@@ -23,30 +26,38 @@ function complete(lex, SourcePackage, presets, ast) {
     return SourcePackage;
 }
 
+
+function buildCSS(lex, SourcePackage, presets, ast, css_list, index) {
+    return css_list[index]._READY_().then(() => {
+        
+        if(++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index);
+
+        ast._linkCSS_();
+
+        return complete(lex, SourcePackage, presets, ast);
+    });
+
+    
+}
+
 export function parseText(lex, SourcePackage, presets) {
     let start = lex.off;
+
     while (!lex.END && lex.ch != "<") { lex.n(); }
 
     if (!lex.END) {
 
         if (lex.pk.ty != lex.types.id)
             throw new Error("Expecting an Identifier after `<` character");
-        
+
         let node = CreateHTMLNode(lex.p.tx);
-        
-        node.presets = presets;
+
+        node._presets_ = presets;
 
         return node._parse_(lex).then((ast) => {
-            if (ast.css) {
-
-                let css = ast.css;
-
-                return css._READY_().then((css) => {
-                    ast._linkCSS_(css);
-                    return complete(lex, SourcePackage, presets, ast);
-                });
-            }
-
+            if (ast.pending_css.length > 0) 
+                return buildCSS(lex, SourcePackage, presets, ast, ast.pending_css, 0);
+            
             return complete(lex, SourcePackage, presets, ast);
         }).catch((e) => {
             SourcePackage._addError_(e);

@@ -1,6 +1,6 @@
-import { NumberSchemeConstructor } from "./number.js"
+import { NumberSchemeConstructor } from "./number.js";
 
-import { Lexer } from "../../common/common"
+import { Lexer } from "../../common/common";
 
 let scape_date = new Date();
 scape_date.setHours(0);
@@ -20,7 +20,7 @@ class DateSchemeConstructor extends NumberSchemeConstructor {
 
         let lex = new Lexer(value);
 
-        let year = parseInt(lex.text)
+        let year = parseInt(lex.text);
 
         if (year) {
 
@@ -34,19 +34,19 @@ class DateSchemeConstructor extends NumberSchemeConstructor {
             let month = parseInt(lex.text) - 1;
             lex.next();
             lex.next();
-            let day = parseInt(lex.text)
+            let day = parseInt(lex.text);
             scape_date.setFullYear(year);
             scape_date.setDate(day);
             scape_date.setMonth(month);
 
-            lex.next()
+            lex.next();
 
             if (lex.pos > -1) {
 
-                let hours = parseInt(lex.text)
-                lex.next()
-                lex.next()
-                let minutes = parseInt(lex.text)
+                let hours = parseInt(lex.text);
+                lex.next();
+                lex.next();
+                let minutes = parseInt(lex.text);
 
                 scape_date.setHours(hours);
                 scape_date.setMinutes(minutes);
@@ -90,6 +90,6 @@ class DateSchemeConstructor extends NumberSchemeConstructor {
     }
 }
 
-let date = new DateSchemeConstructor()
+let date = new DateSchemeConstructor();
 
-export { date, DateSchemeConstructor }
+export { date, DateSchemeConstructor };
