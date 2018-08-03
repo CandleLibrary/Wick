@@ -337,50 +337,58 @@ export class RootNode extends HTMLNode {
 
         const out_statics = this.__statics__ || statics;
 
-        if (this._merged_) return this._merged_._build_(element, source, presets, errors, taps, out_statics);
-
-        source = source || new Source(null, presets, element, this);
-
-        if (this.HAS_TAPS)
-            taps = source._linkTaps_(this.tap_list);
-
-        let own_element = this._createElement_();
-
-        if (own_element) {
-            let hook = null;
-
-            if (this._bindings_.length > 0) {
-                hook = {
-                    attr: this.attributes,
-                    bindings: [],
-                    style: null,
-                    ele: own_element
-                };
-            }
-
-            source.hooks.push(hook);
-
-            for (let i = 0, l = this._bindings_.length; i < l; i++) {
-                let attr = this._bindings_[i];
-                let bind = attr.binding._bind_(source, errors, taps, own_element, attr.name);
-                if (hook) {
-                    if (attr.name == "style" || attr.name == "css")
-                        hook.style = bind;
-
-                    hook.bindings.push(bind);
-                }
-            }
-
-            for (let node = this.fch; node; node = this.getN(node))
-                node._build_(own_element, source, presets, errors, taps, out_statics);
-
-            _appendChild_(element, own_element);
+        if (this._merged_) {
+            
+            source = this._merged_._build_(element, source, presets, errors, taps, out_statics);
 
         } else {
-            for (let node = this.fch; node;
-                (node = this.getN(node))) {
-                node._build_(element, source, presets, errors, taps, out_statics);
+
+            source = source || new Source(null, presets, element, this);
+
+            if (this.HAS_TAPS)
+                taps = source._linkTaps_(this.tap_list);
+
+            let own_element = this._createElement_();
+
+            if (own_element) {
+                let hook = null;
+
+                if (this._bindings_.length > 0) {
+                    hook = {
+                        attr: this.attributes,
+                        bindings: [],
+                        style: null,
+                        ele: own_element
+                    };
+                }
+
+                source.hooks.push(hook);
+
+                for (let i = 0, l = this._bindings_.length; i < l; i++) {
+                    let attr = this._bindings_[i];
+                    let bind = attr.binding._bind_(source, errors, taps, own_element, attr.name);
+                    if (hook) {
+                        if (attr.name == "style" || attr.name == "css")
+                            hook.style = bind;
+
+                        hook.bindings.push(bind);
+                    }
+                }
+
+                for (let node = this.fch; node; node = this.getN(node))
+                    node._build_(own_element, source, presets, errors, taps, out_statics);
+
+                _appendChild_(element, own_element);
+
+                return source;
             }
+
+        }
+
+
+        for (let node = this.fch; node;
+            (node = this.getN(node))) {
+            node._build_(element, source, presets, errors, taps, out_statics);
         }
 
         return source;

@@ -1,14 +1,10 @@
-import { ModelBase } from "./base.js"
+import { ModelBase } from "./base.js";
 
-import { ModelContainerBase } from "./container/base"
+import {AnyModel} from "./any";
 
-import { MultiIndexedContainer } from "./container/multi"
+import { ModelContainerBase } from "./container/base";
 
-import { ArrayModelContainer } from "./container/array"
-
-import { BTreeModelContainer } from "./container/btree"
-
-import { SchemeConstructor } from "../schema/schemas"
+import { SchemeConstructor } from "../schema/schemas";
 
 /**
 *   This is used by Model to create custom property getter and setters on non-ModelContainerBase and non-Model properties of the Model constructor.
@@ -28,7 +24,7 @@ function CreateSchemedProperty(constructor, scheme, schema_name) {
         configurable: false,
         enumerable: false,
         value: scheme.start_value || undefined
-    })
+    });
 
     Object.defineProperty(constructor.prototype, schema_name, {
         configurable: false,
@@ -50,7 +46,7 @@ function CreateSchemedProperty(constructor, scheme, schema_name) {
             if (result.valid && this[__shadow_name__] != val)
                 (this[__shadow_name__] = val, this.scheduleUpdate(schema_name));
         }
-    })
+    });
 }
 
 /**
@@ -70,7 +66,7 @@ function CreateMCSchemedProperty(constructor, scheme, schema_name) {
         enumerable: false,
         writable: true,
         value: null
-    })
+    });
 
     Object.defineProperty(constructor.prototype, schema_name, {
         configurable: false,
@@ -78,7 +74,7 @@ function CreateMCSchemedProperty(constructor, scheme, schema_name) {
         get: function() {
 
             if (!this[__shadow_name__])
-                this[__shadow_name__] = new mc_constructor(scheme.schema)
+                this[__shadow_name__] = new mc_constructor(scheme.schema);
 
             return this[__shadow_name__];
         },
@@ -92,7 +88,7 @@ function CreateMCSchemedProperty(constructor, scheme, schema_name) {
                 try {
                     value = JSON.parse(value);
                 } catch (e) {
-                    console.log(e)
+                    console.log(e);
                     return;
                 }
 
@@ -100,14 +96,14 @@ function CreateMCSchemedProperty(constructor, scheme, schema_name) {
                 data = value;
                 MC = new mc_constructor(scheme.schema);
                 this[__shadow_name__] = MC;
-                MC.insert(data)
+                MC.insert(data);
                 this.scheduleUpdate(schema_name);
             } else if (value instanceof mc_constructor) {
                 this[__shadow_name__] = value;
                 this.scheduleUpdate(schema_name);
             }
         }
-    })
+    });
 }
 
 /**
@@ -131,12 +127,12 @@ function CreateModelProperty(constructor, scheme, schema_name) {
                 enumerable: true,
                 writable: false,
                 value: new scheme()
-            })
+            });
             return this[schema_name];
         },
 
         set: function(value) {}
-    })
+    });
 }
 
 /**
@@ -168,9 +164,12 @@ function CreateModelProperty(constructor, scheme, schema_name) {
  */
 class Model extends ModelBase {
 
-    constructor(data) {
+    constructor(data, prop_name = "") { //Prop_name is the key for this data. 
 
         super();
+
+        this._IMMUTABLE_ = false;
+
         //The schema is stored directly on the constructor. If it is not there, then consider this model type to "ANY"
         if (!this.schema) {
             
@@ -203,7 +202,7 @@ class Model extends ModelBase {
                         else if (scheme instanceof SchemeConstructor)
                             CreateSchemedProperty(constructor, scheme, schema_name);
                         else
-                            console.warn(`Could not create property ${schema_name}.`)
+                            console.warn(`Could not create property ${schema_name}.`);
 
                     }
 
@@ -215,7 +214,7 @@ class Model extends ModelBase {
                         enumerable: false,
                         configurable: false,
                         value: constructor
-                    })
+                    });
                     //schema.__FinalConstructor__ = constructor;
 
 
@@ -224,9 +223,11 @@ class Model extends ModelBase {
                 }
             } else {
                 /* This will be an ANY Model */
-                return new AnyModel(data);
+                return new AnyModel(data, prop_name);
             }
         }
+
+        this.prop_name = prop_name;
 
         if (data)
             this.add(data);
@@ -255,7 +256,7 @@ class Model extends ModelBase {
     /**
      * Given a key, returns an object that represents the status of the value contained, if it is valid or not, according to the schema for that property. 
      * @public
-     * @param   {String}  key - The property name to look up.
+     * @param   {external:String}  key - The property name to look up.
      * @return  {Object} - Returns object with the properties `valid` and `reason`. `valid` will be set to `true` if the property value is a valid form according to the scheme for the property, `false` otherwise. If `verify().valid = false`, then `reason` will be a string giving a reason as to why the value is invalid.
      */
     verify(key, value) {
@@ -284,8 +285,8 @@ class Model extends ModelBase {
     /**
      * Returns string representation of the property value indexed by `key`.
      * @public
-     * @param      {String}  key     The name of the property to get the string value of.
-     * @return     {String}  - the string representation of the property value.
+     * @param      {external:String}  key     The name of the property to get the string value of.
+     * @return     {external:String}  - the string representation of the property value.
      */
     string(key) {
 
@@ -353,11 +354,31 @@ class Model extends ModelBase {
 
             let scheme = schema[prop];
 
-            out[prop] = this[prop]
+            out[prop] = this[prop];
         }
 
         return out;
     }
+
+    /**
+     * Creates a new instance of the object with same properties than original.
+     */
+    clone(){
+        return new this.constructor(this);    
+    }
+
+    inform(property, data){
+        let next = this.clone();
+        next[property] = data;
+        if(this.par) this.par.inform(this.prop, this);
+    }
+}
+
+/**
+ * Stores imutable model updates
+ */
+class ModelStore{
+
 }
 
 export { Model }

@@ -15,6 +15,9 @@ class DateSchemeConstructor extends NumberSchemeConstructor {
         if(!value)
             return undefined;
 
+        if(value instanceof Date)
+            return value.valueOf();
+
         if (!isNaN(value))
             return parseInt(value);
 

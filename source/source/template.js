@@ -1,8 +1,8 @@
 import { _createElement_, _instanceOf_ } from "../common/short_names";
 
-import { MCArray, ModelContainerBase } from "../model/container/base";
+import { MCArray, ModelContainerBase } from "../model/container_revised/base";
 
-import { MultiIndexedContainer } from "../model/container/multi";
+import { MultiIndexedContainer } from "../model/container_revised/multi";
 
 import { Scheduler } from "../common/scheduler";
 
@@ -44,12 +44,14 @@ export class SourceTemplate extends View {
     set data(v) {
         //New data record from prop expression. Out with old, in with the new.
         //debugger
+        //
+        //
         let container = v;
 
-        if (container && (_instanceOf_(container, ModelContainerBase) || container._slf_)) {
+        if ((_instanceOf_(container, ModelContainerBase) || container._slf_)) {
 
             this.cache = v;
-
+            
             let own_container = container.get(this.getTerms(), null);
 
             if (_instanceOf_(own_container, ModelContainerBase)) {

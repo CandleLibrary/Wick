@@ -1,7 +1,9 @@
 import {
     ModelBase
 } from "../base.js";
-
+import {
+    _SealedProperty_
+} from "../../common/short_names";
 import {
     SchemeConstructor
 } from "../../schema/constructor";
@@ -30,62 +32,35 @@ export class MCArray extends Array {
 
     }
 
-    toJSON() {
-        return this;
-    }
+    toJSON() { return this; }
 
-    toJson() {
-        return JSON.stringify(this, null, '\t');
-    }
+    toJson() { return JSON.stringify(this, null, '\t'); }
 }
 
-// A "null" function
+// A no op function
 let EmptyFunction = () => {};
 let EmptyArray = [];
 
 export class ModelContainerBase extends ModelBase {
 
-    constructor(schema, root) {
+    constructor(root = null, address = []) {
 
-        super();
+        super(root, address);
 
-        Object.defineProperty(this, "source", { configurable: false, enumerable: false, value: null, writable: true });
-        Object.defineProperty(this, "first_link", { configurable: false, enumerable: false, value: null, writable: true });
-        Object.defineProperty(this, "next", { configurable: false, enumerable: false, value: null, writable: true });
-        Object.defineProperty(this, "pin", { configurable: false, enumerable: false, value: null, writable: true });
-        Object.defineProperty(this, "prev", { configurable: false, enumerable: false, value: null, writable: true });
-        Object.defineProperty(this, "_SEALED_", { configurable: false, enumerable: false, value: false, writable: true });
-        Object.defineProperty(this, "__filters__", { configurable: false, enumerable: false, value: null, writable: true });
-        Object.defineProperty(this, "schema", { configurable: false, enumerable: false, value: null, writable: true });
-        Object.defineProperty(this, "parser", { configurable: false, enumerable: false, value: null, writable: true });
+        _SealedProperty_(this, "source", null);
+        _SealedProperty_(this, "first_link", null);
 
-        this.root = root;
+        //For keeping the container from garbage collection.
+        _SealedProperty_(this, "pin", EmptyArray);
+
         //For Linking to original 
-        this.source = null;
-        this.first_link = null;
-        this.next = null;
-        this.prev = null;
-
-        //For keeping the container from automatic deletion.
-        this.pin = EmptyFunction;
+        _SealedProperty_(this, "next", null);
+        _SealedProperty_(this, "prev", null);
 
         //Filters are a series of strings or number selectors used to determine if a model should be inserted into or retrieved from the container.
-        this.__filters__ = EmptyArray;
+        _SealedProperty_(this, "__filters__", EmptyArray);
 
-        this.schema = schema || this.constructor.schema || {
-            identifier: "constructor"
-        };
-
-        //The parser will handle the evaluation of identifiers according to the criteria set by the __filters__ list. 
-        if (this.schema.parser && this.schema.parser instanceof SchemeConstructor)
-            this.parser = this.schema.parser;
-        else
-            this.parser = new SchemeConstructor();
-
-        this.id = "";
-
-        if (this.schema.identifier && typeof(this.schema.identifier) == "string")
-            this.id = this.schema.identifier;
+        this.validator = new SchemeConstructor();
 
         return this;
     }
@@ -96,7 +71,6 @@ export class ModelContainerBase extends ModelBase {
 
     _destroy_() {
 
-        this.schema = null;
 
         this.__filters__ = null;
 
@@ -112,13 +86,9 @@ export class ModelContainerBase extends ModelBase {
 
         @returns {Number}
     */
-    get length() {
-        return 0;
-    }
+    get length() { return 0; }
 
-    set length(e) {
-        //NULL function. Do Not Override!
-    }
+    set length(e) { /* NO OP */ }
 
     /** 
         Returns a ModelContainerBase type to store the results of a get().
@@ -126,7 +96,7 @@ export class ModelContainerBase extends ModelBase {
     __defaultReturn__(USE_ARRAY) {
         if (USE_ARRAY) return new MCArray;
 
-        let n = new this.constructor(this.schema);
+        let n = new this.constructor();
 
         this.__link__(n);
 
@@ -138,9 +108,7 @@ export class ModelContainerBase extends ModelBase {
 
         @returns The result of calling this.insert
     */
-    push(item) {
-        return this.insert(item, false, true);
-    }
+    push(item) { return this.insert(item, false, true); }
 
     /**
         Retrieves a list of items that match the term/terms. 
@@ -154,18 +122,13 @@ export class ModelContainerBase extends ModelBase {
 
         let out = null;
 
-        let USE_ARRAY = true;
+        let USE_ARRAY = (__return_data__ === null) ? false : true;
 
         if (term) {
-
-
 
             if (__return_data__) {
                 out = __return_data__;
             } else {
-
-                if (__return_data__ === null)
-                    USE_ARRAY = false;
 
                 if (!this.source)
                     USE_ARRAY = false;
@@ -186,8 +149,7 @@ export class ModelContainerBase extends ModelBase {
                 terms = [term];
 
             //Need to convert terms into a form that will work for the identifier type
-            terms = terms.map(t => this.parser.parse(t));
-
+            terms = terms.map(t => this.validator.parse(t));
 
             this.__get__(terms, out);
         }
@@ -245,8 +207,8 @@ export class ModelContainerBase extends ModelBase {
 
         if (identifier != undefined) {
 
-            if (!(model instanceof this.schema.model) && !(model = model._slf_)) {
-                model = new this.schema.model(item);
+            if (!(model instanceof this.model) && !(model = model._slf_)) {
+                model = new this.model(item);
                 model.MUTATION_ID = this.MUTATION_ID;
             }
 
@@ -287,7 +249,7 @@ export class ModelContainerBase extends ModelBase {
             }
 
             //Need to convert terms into a form that will work for the identifier type
-            terms = terms.map(t => this.parser.parse(t));
+            terms = terms.map(t => this.validator.parse(t));
 
             this.__remove__(terms, out_container);
         }
@@ -409,9 +371,9 @@ export class ModelContainerBase extends ModelBase {
 
     __setFilters__(term) {
         if (Array.isArray(term))
-            this.__filters__ = this.__filters__.concat(term.map(t => this.parser.parse(t)));
+            this.__filters__ = this.__filters__.concat(term.map(t => this.validator.parse(t)));
         else
-            this.__filters__.push(this.parser.parse(term));
+            this.__filters__.push(this.validator.parse(term));
 
     }
 
@@ -421,7 +383,7 @@ export class ModelContainerBase extends ModelBase {
     */
     __filterIdentifier__(identifier, filters) {
         if (filters.length > 0) {
-            return this.parser.filter(identifier, filters);
+            return this.validator.filter(identifier, filters);
         }
         return true;
     }
@@ -435,13 +397,13 @@ export class ModelContainerBase extends ModelBase {
 
         let identifier = null;
 
-        if (typeof(item) == "object" && this.schema.identifier)
-            identifier = item[this.schema.identifier];
+        if (typeof(item) == "object" && this.key)
+            identifier = item[this.key];
         else
             identifier = item;
 
-        if (identifier && this.parser)
-            identifier = this.parser.parse(identifier);
+        if (identifier && this.validator)
+            identifier = this.validator.parse(identifier);
 
         if (filters && identifier)
             return (this.__filterIdentifier__(identifier, filters)) ? identifier : undefined;
@@ -465,8 +427,19 @@ export class ModelContainerBase extends ModelBase {
 
     __remove__() { return []; }
 
-    clone() { return this; }
+    clone() {
+        let clone = super.clone();
+        clone.key = this.key;
+        clone.model = this.model;
+        clone.validator = this.validator;
+        clone.first_link = this.first_link;
+        return clone;
+    }
 
     // END OVERRIDE *************************************************************************
-
 }
+
+const proto = ModelContainerBase.prototype;
+_SealedProperty_(proto, "model", null);
+_SealedProperty_(proto, "key", "");
+_SealedProperty_(proto, "validator", null);

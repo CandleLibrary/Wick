@@ -69,7 +69,7 @@ export class SourceNode extends RootNode {
         }
 
         for (let node = this.fch; node; node = this.getN(node))
-            node._build_(element, me, presets, errors, out_taps);
+            node._build_(element, me, presets, errors, out_taps, statics);
 
         if(statics){
             me._statics_ = statics;

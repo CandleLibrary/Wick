@@ -1,5 +1,4 @@
-import { ModelBase } from "../model/base";
-import { AnyModel } from "../model/any";
+import { Model } from "../model/model_revised";
 import { Tap } from "./tap/tap";
 import { View } from "../view/view";
 
@@ -135,6 +134,7 @@ export class Source extends View {
     load(model) {
 
         let m = this._presets_.models[this._model_name_];
+        
         let s = this._presets_.schemas[this._schema_name_];
 
         if (m)
@@ -142,10 +142,10 @@ export class Source extends View {
         else if (s)
             model = new s(model);
         else if (!model)
-            model = new AnyModel(model);
+            model = new Model(model);
 
         for (let i = 0, l = this.sources.length; i < l; i++)
-            this.sources[i].load();
+            this.sources[i].load(model);
 
         model.addView(this);
 

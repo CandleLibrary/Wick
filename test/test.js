@@ -107,11 +107,11 @@ describe("Wick test suite.", function() {
         require("./suite/source_package_tests.js")(config);
         require("./suite/schema_tests.js")(config);
         require("./suite/model_tests.js")(config);
-        describe("Model Container Tests", function(config) {
-            require("./suite/mc_tests.js")(config);
-            require("./suite/amc_tests.js")(config);
-            require("./suite/btmc_tests.js")(config);
-        });
+        //describe("Model Container Tests", function(config) {
+        //    require("./suite/mc_tests.js")(config);
+        //    require("./suite/amc_tests.js")(config);
+        //    require("./suite/btmc_tests.js")(config);
+        //});
         require("./suite/router_tests.js")(config);
     });
 });

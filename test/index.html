@@ -3,16 +3,16 @@
 <head>
     <meta charset="utf-8">
     <title>Mocha Tests</title>
-    <link href="https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.css" rel="stylesheet" />
+    <link href="/node_modules/mocha/mocha.css" rel="stylesheet" />
 </head>
 
 <body>
     <div id="mocha"></div>
-    <script src="https://cdn.rawgit.com/jquery/jquery/2.1.4/dist/jquery.min.js"></script>
-    <script src="https://cdn.rawgit.com/Automattic/expect.js/0.3.1/index.js"></script>
-    <script src="https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/benchmark/2.1.4/benchmark.min.js"></script>
+    <script src="/node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="/node_modules/expect/build/index.js"></script>
+    <script src="/node_modules/mocha/mocha.js"></script>
+    <script src="/node_modules/lodash/lodash.min.js"></script>
+    <script src="/node_modules/benchmark/benchmark.js"></script>
     <script src="/node_modules/chai/chai.js"></script>
     <script>
         mocha.setup('bdd');
@@ -43,11 +43,11 @@
     //load the test modules
     LEXERTESTS(config);
     WURLTESTS(config);
+    SCHEMATESTS(config);
+    MODELTESTS(config);
     HTMLTESTS(config);
     CSSTESTS(config);
     SOURCEPACKAGETESTS(config);
-    SCHEMATESTS(config);
-    MODELTESTS(config);
     MCTESTS(config);
     AMCTESTS(config);
     BTMCTESTS(config);

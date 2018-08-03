@@ -7,13 +7,19 @@ import { Presets } from "../../common/presets";
 import { SchemeConstructor, DateSchemeConstructor, TimeSchemeConstructor, StringSchemeConstructor, NumberSchemeConstructor, BoolSchemeConstructor, schemes } from "../../schema/schemas";
 
 //Models
-import { Model } from "../../model/model";
+import { Store } from "../../model/store";
+import { SchemedModel } from "../../model/schemed";
+import { Model } from "../../model/model_revised";
+import { Model as OldModel } from "../../model/model";
 import { AnyModel } from "../../model/any";
-import { ModelContainerBase } from "../../model/container/base";
-import { MultiIndexedContainer } from "../../model/container/multi";
-import { BTreeModelContainer } from "../../model/container/btree";
-import { ArrayModelContainer } from "../../model/container/array";
-
+import { ModelContainerBase as OldModelContainerBase } from "../../model/container/base";
+import { MultiIndexedContainer as OldMultiIndexedContainer } from "../../model/container/multi";
+import { BTreeModelContainer as OldBTreeModelContainer } from "../../model/container/btree";
+import { ArrayModelContainer as OldArrayModelContainer } from "../../model/container/array";
+import { ModelContainerBase } from "../../model/container_revised/base";
+import { MultiIndexedContainer } from "../../model/container_revised/multi";
+import { BTreeModelContainer } from "../../model/container_revised/btree";
+import { ArrayModelContainer } from "../../model/container_revised/array";
 //Views
 import { View } from "../../view/view";
 
@@ -40,15 +46,29 @@ import * as Animation from "../../animation/animation";
 import * as Common from "../../common/common";
 import { Scheduler } from "../../common/scheduler";
 
-const model = (data, schema, temp = null) => (schema) ? (temp = (class extends Model {}), temp.schema = schema, new temp(data)) : new AnyModel(data);
-model.constr = Model;
-model.any = (data) => new AnyModel(data);
-model.any.constr = AnyModel;
+const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);
+model.scheme = function(schema, sm) { sm = class extends SchemedModel {};
+    sm.schema = schema; return sm; };
+model.constr = SchemedModel;
+model.any = (data) => new Model(data);
+model.any.constr = Model;
 model.container = {
     multi: MultiIndexedContainer,
     array: ArrayModelContainer,
     btree: BTreeModelContainer,
     constr: ModelContainerBase
+};
+model.store = (data) => new Store(data);
+
+const model_old = (data, schema, temp = null) => (schema) ? (temp = (class extends OldModel {}), temp.schema = schema, new temp(data)) : new AnyModel(data);
+model_old.constr = OldModel;
+model_old.any = (data) => new AnyModel(data);
+model_old.any.constr = AnyModel;
+model_old.container = {
+    multi: OldMultiIndexedContainer,
+    array: OldArrayModelContainer,
+    btree: OldBTreeModelContainer,
+    constr: OldModelContainerBase
 };
 
 //Construct Schema Exports
@@ -75,8 +95,9 @@ const core = {
     animation: Animation,
     view: View,
     css: CSSParser,
-    html:HTMLParser,
+    html: HTMLParser,
     scheme: scheme,
+    model_old: model_old,
     model: model,
     network: {
         url: WURL,
@@ -87,7 +108,7 @@ const core = {
     source: (...a) => new SourcePackage(...a)
 };
 
-let internals = {/* Empty if production */};
+let internals = { /* Empty if production */ };
 internals.lexer = Lexer;
 internals.scheduler = Scheduler;
 
@@ -98,9 +119,10 @@ Object.freeze(core);
 
 let source = core.source;
 
-export {    
+export {
     source,
     scheme,
+    model_old,
     model,
     core,
     internals

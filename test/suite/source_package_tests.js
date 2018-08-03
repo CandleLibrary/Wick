@@ -40,6 +40,8 @@ function SOURCEPACKAGETESTS(config) {
                 }]
             });
 
+            console.log(Any)
+
             it('Constructs a SourcePackage with Model bindings on properly formatted HTML',
                 () => (new wick.core.network.url("/test/data/package.html")).fetchText()
                 .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
@@ -49,7 +51,7 @@ function SOURCEPACKAGETESTS(config) {
                     ele.children.should.have.lengthOf(2);
                     source._HAVE_ERRORS_.should.equal(false);
                     Any.name = "Chesapeak McGee";
-                    Any.age = 22;
+                    Any.set({age:22});
                     //Need to wait for update cycle
                     scheduler._update_();
                     ele.children[0].innerHTML.should.equal("Chesapeak McGee");
@@ -140,7 +142,8 @@ function SOURCEPACKAGETESTS(config) {
                     childB.innerHTML.should.equal("Carly is an old person whose age is 256.");
                     scheduler._update_();
                     scheduler._update_();
-                    Any.users.push({
+                    
+                    Any.users.set({
                         name: "Chevy",
                         age: 13
                     });
@@ -186,15 +189,15 @@ function SOURCEPACKAGETESTS(config) {
                     t.timeout(10000)
                     Any.users.push({
                         name: "Mason",
-                        age: 13
+                        age: 98
                     });
                     Any.users.push({
                         name: "Drank",
-                        age: 13
+                        age: 27
                     });
                     Any.users.push({
                         name: "Caleb",
-                        age: 13
+                        age: 55
                     });
                     Any.users.push({
                         name: "Mable",

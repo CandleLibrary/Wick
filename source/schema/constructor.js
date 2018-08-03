@@ -1,5 +1,5 @@
 /**
-	Schema type. Handles the parsing, validation, and filtering of Model data properties. 
+    Schema type. Handles the parsing, validation, and filtering of Model data properties. 
 */
 class SchemeConstructor {
 
@@ -9,7 +9,7 @@ class SchemeConstructor {
     }
 
     /**
-    	Parses value returns an appropriate transformed value
+        Parses value returns an appropriate transformed value
     */
     parse(value) {
 
@@ -24,13 +24,14 @@ class SchemeConstructor {
         result.valid = true;
     }
 
-    filter() {
-
-        return true;
+    filter(id, filters) {
+        for (let i = 0, l = filters.length; i < l; i++)
+            if (id === filters[i]) return true;
+        return false;
     }
 
     string(value) {
-    	
+
         return value + "";
     }
 }

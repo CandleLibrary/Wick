@@ -1,6 +1,6 @@
-import { View } from "../view/view"
+import { Scheduler } from "../common/scheduler";
 
-import { Scheduler } from "../common/scheduler"
+import { _SealedProperty_, _FrozenProperty_ } from "../common/short_names";
 
 /**
  * The base class which all Model classes extend.
@@ -8,21 +8,15 @@ import { Scheduler } from "../common/scheduler"
  * @alias ModelBase
  */
 class ModelBase {
-    constructor() {
-        /**
-         * An Array of the names of all changed properties since the last call to ModelBase#_update_
-         * @type {array}
-         * @instance
-         */
-        this._cv_ = [];
+    constructor(root = null, address = []) {
+        _SealedProperty_(this, "_cv_", []);
+        _SealedProperty_(this, "fv", null);
+        _SealedProperty_(this, "par", null);
+        _SealedProperty_(this, "MUTATION_ID", 0);
+        _SealedProperty_(this, "address", address);
+        _SealedProperty_(this, "root", root || this);
+    }
 
-        /**
-         * A reference to the first view bound to this model in a linked list.
-         * @type {Object}
-         * @instance
-         */
-        this.fv = null;
-    };
 
     /**
      *   Remove all references to any objects still held by this object.
@@ -42,9 +36,11 @@ class ModelBase {
 
         this._cv_ = null;
     }
-    get() {
-        return this;
-    }
+
+    setHook(prop_name, data) { return data; }
+
+    getHook(prop_name, data) { return data; }
+
 
     /**
      * Called by a class that extends ModelBase when on of its property values changes.
@@ -52,14 +48,15 @@ class ModelBase {
      * @private
      */
     scheduleUpdate(changed_value) {
-
         if (!this.fv)
             return;
+
 
         this._cv_.push(changed_value);
 
         Scheduler.queueUpdate(this);
     }
+
 
     getChanged(prop_name) {
 
@@ -71,31 +68,29 @@ class ModelBase {
         return null;
     }
 
+    addListener(listener) {
+        return this.addView(listener);
+    }
+
+
     /**
      * Adds a view to the linked list of views on the model. argument view MUST be an instance of View. 
      * @param {View} view - The view to _bind_ to the ModelBase
      * @throws {Error} throws an error if the value of `view` is not an instance of {@link View}.
      */
     addView(view) {
+        if (view._model_)
+            if (view._model_ !== this) {
+                view._model_.removeView(view);
+            } else return;
 
-        if (view instanceof View) {
+        if (this.fv) this.fv.pv = view;
+        view.nx = this.fv;
+        this.fv = view;
 
-            if (view ._model_)
-                if (view ._model_ !== this) {
-                    view ._model_.removeView(view);
-                } else return;
-
-            if (this.fv) this.fv.pv = view;
-            view.nx = this.fv;
-            this.fv = view;
-
-            view.pv = null;
-            view ._model_ = this;
-
-            view._update_(this)
-
-        } else
-            throw new Exception("Passed in view is not an instance of wick.core.view.View.");
+        view.pv = null;
+        view._model_ = this;
+        view._update_(this);
     }
 
     /**
@@ -104,7 +99,7 @@ class ModelBase {
      */
     removeView(view) {
 
-        if (view ._model_ == this) {
+        if (view._model_ == this) {
             if (view == this.fv)
                 this.fv = view.nx;
 
@@ -119,7 +114,6 @@ class ModelBase {
     }
 
 
-
     /**
         Should return the value of the property if it is in the model and has been updated since the last cycle. Null otherwise.
         This should be overridden by a more efficient version by inheriting objects
@@ -131,18 +125,20 @@ class ModelBase {
         for (var i = 0, l = changed_properties.length; i < l; i++)
             if (changed_properties[i] == prop_name)
                 if (this[prop_name] !== undefined)
-                    return this[prop_name]
+                    return this[prop_name];
 
         return null;
     }
+
+
+
     /**
      * Called by the {@link Scheduler} when if the ModelBase is scheduled for an _update_
      * @param      {number}  step    The step
      */
-    _scheduledUpdate_(step) {
+    _scheduledUpdate_(step) { this.updateViews(); }
 
-        this.updateViews();
-    }
+
 
     /**
      * Calls View#_update_ on every bound View, passing the current state of the ModelBase.
@@ -152,7 +148,7 @@ class ModelBase {
         let o = {};
 
         for (let p = null, i = 0, l = this._cv_.length; i < l; i++)
-            (p = this._cv_[i], o[p] = this[p])
+            (p = this._cv_[i], o[p] = this[p]);
 
         this._cv_.length = 0;
 
@@ -166,6 +162,8 @@ class ModelBase {
 
         return;
     }
+
+
 
     /**
      * Updates views with a list of models that have been removed. 
@@ -182,6 +180,70 @@ class ModelBase {
 
             view = view.nx;
         }
+    }
+
+
+
+    /** MUTATION FUNCTIONS **************************************************************************************/
+
+
+
+    _deferUpdateToRoot_(data, MUTATION_ID = this.MUTATION_ID) {
+        return this.root._setThroughRoot_(data, this.address, 0, this.address.length, MUTATION_ID);
+    }
+
+
+
+    _setThroughRoot_(data, address, index, len, m_id) {
+
+        if (index >= len) {
+
+            if (m_id !== this.MUTATION_ID) {
+                let clone = this.clone().set(data, true);
+                clone.MUTATION_ID = (this.par) ? this.par.MUTATION_ID : this.MUTATION_ID + 1;
+                return clone;
+            }
+
+            return this.set(data, true);
+        }
+
+        let i = address[index++];
+
+        let model_prop = this.prop_array[i];
+
+        if (model_prop.MUTATION_ID !== this.MUTATION_ID) {
+
+            model_prop = model_prop.clone();
+
+            model_prop.MUTATION_ID = this.MUTATION_ID;
+        }
+
+        this.prop_array[i] = model_prop;
+
+        return model_prop._setThroughRoot_(data, address, index, len, model_prop.MUTATION_ID);
+    }
+
+    seal() {
+
+        let clone = this._deferUpdateToRoot_(null, this.MUTATION_ID + 1);
+
+        return clone;
+    }
+
+    clone() {
+
+        let clone = new this.constructor(this);
+
+        clone.prop_name = this.prop_name;
+        clone._cv_ = this._cv_;
+        clone.fv = this.fv;
+        clone.par = this.par;
+        clone.MUTATION_ID = this.MUTATION_ID;
+        clone.address = this.address;
+
+        clone.root = (this.root == this) ? clone : this.root;
+
+        return clone;
     }
 
     /**
@@ -201,11 +263,37 @@ class ModelBase {
         }
     }
 
-    toJson() {
-        return JSON.stringify(this, null, '\t');
+    toJson() { return JSON.stringify(this, null, '\t'); }
+
+
+    /**
+     * This will update the branch state of the data tree with a new branch if the MUTATION_ID is higher or lower than the current branch's parent level.
+     * In this case, the new branch will stem from the root node, and all ancestor nodes from the originating child will be cloned.
+     *
+     * @param      {Object}         child_obj    The child object
+     * @param      {(Object|number)}  MUTATION_ID  The mutation id
+     * @return     {Object}         { description_of_the_return_value }
+     */
+    setMutation(child_obj, MUTATION_ID = child_obj.MUTATION_ID) {
+        let clone = child_obj,
+            result = this;
+
+        if (MUTATION_ID == this.MUTATION_ID) return child_obj;
+
+        if (this.par)
+            result = this.par.setMutation(this, MUTATION_ID);
+
+        if (MUTATION_ID > this.MUTATION_ID) {
+            result = this.clone();
+            result.MUTATION_ID = this.MUTATION_ID + 1;
+        }
+
+        clone = child_obj.clone();
+        clone.MUTATION_ID = result.MUTATION_ID;
+        result[clone.prop_name] = clone;
+
+        return clone;
     }
 }
 
-export { ModelBase }
-
-Object.freeze(ModelBase.prototype);
+export { ModelBase };

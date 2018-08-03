@@ -130,3 +130,6 @@ export const _getElementByTag_ = (el, tag) => el.getElementsByTagName(tag);
  * @return     {boolean}  the result of `inst instanceof constr`
  */
 export const _instanceOf_ = (inst, constr) => inst instanceof constr;
+
+export const _SealedProperty_ = (object, name, value) => OB.defineProperty(object, name, {value, configurable: false, enumerable: false, writable: true});
+export const _FrozenProperty_ = (object, name, value) => OB.defineProperty(object, name, {value, configurable: false, enumerable: false, writable: false});

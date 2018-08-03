@@ -4,468 +4,48 @@
 		"selected_items":
 		[
 			[
-				"prop",
-				"props"
+				"propert",
+				"property"
 			],
 			[
-				"sou",
-				"source"
+				"proper",
+				"property"
 			],
 			[
-				"so",
-				"sources"
+				"changed",
+				"changed_values"
 			],
 			[
-				"_p",
-				"_parseRunner_"
-			],
-			[
-				"_P",
-				"_parseRunner_"
-			],
-			[
-				"sour",
-				"SourceManager"
-			],
-			[
-				"star",
-				"startRouting"
-			],
-			[
-				"ins",
-				"internals"
-			],
-			[
-				"wick",
-				"wick_exports"
-			],
-			[
-				"Fun",
-				"FunctionCache"
-			],
-			[
-				"IMPORT",
-				"IMPORTED"
-			],
-			[
-				"Exp",
-				"ExpressionIO"
-			],
-			[
-				"ex",
-				"extends"
-			],
-			[
-				"button",
-				"button_clicked"
-			],
-			[
-				"chi",
-				"children"
-			],
-			[
-				"comp",
-				"mergeComponent"
-			],
-			[
-				"tap",
-				"tap_list"
-			],
-			[
-				"com",
-				"components"
-			],
-			[
-				"pres",
-				"presets"
-			],
-			[
-				"pre",
-				"_presets_"
-			],
-			[
-				"pr",
-				"_presets_"
-			],
-			[
-				"lo",
-				"lengthOf"
-			],
-			[
-				"tmep",
-				"template"
-			],
-			[
-				"pa",
-				"parent"
-			],
-			[
-				"at",
-				"attrib"
-			],
-			[
-				"bar",
-				"barrier_b_start"
-			],
-			[
-				"s",
-				"space"
-			],
-			[
-				"fil",
-				"filter"
-			],
-			[
-				"Filter",
-				"FilterNode"
-			],
-			[
-				"Root",
-				"RootNode"
-			],
-			[
-				"INP",
-				"input"
-			],
-			[
-				"Ca",
-				"CAN_BE_ID"
-			],
-			[
-				"mode",
-				"model_arg_index"
-			],
-			[
-				"con",
-				"const"
-			],
-			[
-				"le",
-				"length"
-			],
-			[
-				"barr",
-				"barrier_a_start"
-			],
-			[
-				"J",
-				"JS_EXPRESSION_AST"
-			],
-			[
-				"ide",
-				"identifiers"
-			],
-			[
-				"out",
-				"output"
-			],
-			[
-				"fi",
-				"filter"
-			],
-			[
-				"_",
-				"_sort_function_"
-			],
-			[
-				"HTML",
-				"HTMLNode"
-			],
-			[
-				"S",
-				"Sfilter"
-			],
-			[
-				"_bind",
-				"_bind_"
-			],
-			[
-				"_s",
-				"_sort_function_"
-			],
-			[
-				"Source",
-				"SourceFilter"
-			],
-			[
-				"de",
-				"debugger"
-			],
-			[
-				"end",
-				"END"
-			],
-			[
-				"get",
-				"getRightNode"
-			],
-			[
-				"pack",
-				"_package_"
-			],
-			[
-				"inst",
-				"instance"
-			],
-			[
-				"Fe",
-				"FilterNode"
-			],
-			[
-				"qu",
-				"queueUpdate"
-			],
-			[
-				"err",
-				"error_message"
-			],
-			[
-				"_pro",
-				"_processTextNodeHook_"
-			],
-			[
-				"So",
-				"SourceNode"
-			],
-			[
-				"ba",
-				"barrier_c_start"
-			],
-			[
-				"setT",
-				"setIdentifier"
-			],
-			[
-				"chil",
-				"childB"
-			],
-			[
-				"sl",
-				"slice"
-			],
-			[
-				"barrier_a",
-				"barrier_a_end"
-			],
-			[
-				"HA",
-				"HAS_TAPS"
-			],
-			[
-				"_get",
-				"_getTap_"
-			],
-			[
-				"me",
-				"method"
-			],
-			[
-				"_getT",
-				"_delegateTapBinding_"
-			],
-			[
-				"tap_",
-				"tap_list"
-			],
-			[
-				"sys",
-				"sys_vals"
-			],
-			[
-				"coi",
-				"choiceA"
-			],
-			[
-				"cop",
-				"copy_lex"
-			],
-			[
-				"__",
-				"_ele_"
-			],
-			[
-				"template",
-				"template"
-			],
-			[
-				"back",
-				"background\tproperty"
-			],
-			[
-				"fun",
-				"funct"
-			],
-			[
-				"fu",
-				"funct"
+				"oup",
+				"outputs"
 			],
 			[
 				"_b",
-				"_binding_"
+				"_bindings_"
 			],
 			[
-				"bind",
-				"binding"
+				"tra",
+				"transition\tproperty"
 			],
 			[
-				"_pr",
-				"_processTapBinding_"
-			],
-			[
-				"Te",
-				"TEMPLATE_BINDING_ID"
-			],
-			[
-				"D",
-				"DYNAMIC_BINDING_ID"
-			],
-			[
-				"TE",
-				"TEXT_BINDING_ID"
-			],
-			[
-				"Sc",
-				"ScriptIO"
-			],
-			[
-				"_up",
-				"_upImport_"
-			],
-			[
-				"ta",
-				"taps"
-			],
-			[
-				"ev",
-				"event_bind"
-			],
-			[
-				"_e",
-				"_event_"
-			],
-			[
-				"eve",
-				"event_bind"
-			],
-			[
-				"expr",
-				"_expr_function_"
-			],
-			[
-				"ele",
-				"element"
-			],
-			[
-				"event",
-				"event_name"
+				"ou",
+				"output"
 			],
 			[
 				"el",
 				"element"
 			],
 			[
-				"IO",
-				"EventIO"
+				"attr",
+				"attrib_name"
 			],
 			[
-				"EV",
-				"EVENT"
+				"in",
+				"index"
 			],
 			[
-				"EVE",
-				"EVENT_BINDING_ID"
-			],
-			[
-				"function",
-				"function_string"
-			],
-			[
-				"start",
-				"barrier_a_start"
-			],
-			[
-				"va",
-				"value"
-			],
-			[
-				"exp",
-				"expression"
-			],
-			[
-				"sel",
-				"selector"
-			],
-			[
-				"sle",
-				"selector"
-			],
-			[
-				"bins",
-				"bindings"
-			],
-			[
-				"porp",
-				"prop_name"
-			],
-			[
-				"set",
-				"_setRules_"
-			],
-			[
-				"b",
-				"binding"
-			],
-			[
-				"val",
-				"value_lex"
-			],
-			[
-				"O",
-				"OutCSSRuleTemplate"
-			],
-			[
-				"bin",
-				"bindings"
-			],
-			[
-				"value",
-				"value_lex"
-			],
-			[
-				"const",
-				"constructor"
-			],
-			[
-				"rgb",
-				"rgba"
-			],
-			[
-				"STyl",
-				"StyleTemplate"
-			],
-			[
-				"bi",
-				"binds"
-			],
-			[
-				"proto",
-				"prototype"
-			],
-			[
-				"add",
-				"appendChild"
-			],
-			[
-				"templ",
-				"template_text"
-			],
-			[
-				"Temp",
-				"TemplateNode"
-			],
-			[
-				"Void",
-				"VoidNode"
+				"close",
+				"close_tag"
 			],
 			[
 				"CSS",
@@ -480,10 +60,6 @@
 				"ACTIVE"
 			],
 			[
-				"tra",
-				"transitionIn"
-			],
-			[
 				"o",
 				"o_el"
 			],
@@ -496,16 +72,32 @@
 				"views"
 			],
 			[
+				"set",
+				"setTimeout"
+			],
+			[
 				"my-",
 				"my-other-input"
+			],
+			[
+				"at",
+				"attrib_name"
 			],
 			[
 				"atr",
 				"attribute"
 			],
 			[
+				"prop",
+				"prop_name"
+			],
+			[
 				"tag",
 				"tagname"
+			],
+			[
+				"pre",
+				"parent_element"
 			],
 			[
 				"att",
@@ -514,92 +106,414 @@
 			[
 				"p",
 				"prop"
+			],
+			[
+				"ta",
+				"tag_index"
+			],
+			[
+				"ill",
+				"ill_element"
+			],
+			[
+				"Ca",
+				"CaseConstructor"
+			],
+			[
+				"ex",
+				"expected_error_message"
+			],
+			[
+				"HTML",
+				"HTML_text"
+			],
+			[
+				"Mod",
+				"ModelContainerTests"
+			],
+			[
+				"Prop",
+				"PropName"
+			],
+			[
+				"Sche",
+				"Scheduler"
+			],
+			[
+				"update",
+				"updateScheduleUpdate"
+			],
+			[
+				"Add",
+				"AddProp"
+			],
+			[
+				"__",
+				"__export_contructor__"
+			],
+			[
+				"__e",
+				"__export_constructor__"
+			],
+			[
+				"con",
+				"constructor"
+			],
+			[
+				"sch",
+				"schema"
+			],
+			[
+				"val",
+				"value"
+			],
+			[
+				"def",
+				"defineProperty"
+			],
+			[
+				"sc",
+				"schema"
+			],
+			[
+				"Mode",
+				"ModelBase"
+			],
+			[
+				"par",
+				"parent_lvl"
+			],
+			[
+				"get",
+				"getElement"
+			],
+			[
+				"ch",
+				"children"
+			],
+			[
+				"da",
+				"dataset"
+			],
+			[
+				"Impo",
+				"ImportDataFromDataSet"
+			],
+			[
+				"cont",
+				"continue"
+			],
+			[
+				"Bo",
+				"BOOL"
+			],
+			[
+				"va",
+				"value"
+			],
+			[
+				"case",
+				"cassette"
+			],
+			[
+				"pare",
+				"parent_element"
+			],
+			[
+				"parent",
+				"parentElement"
+			],
+			[
+				"re",
+				"result"
+			],
+			[
+				"new",
+				"new_items"
+			],
+			[
+				"ad",
+				"add_list"
+			],
+			[
+				"add",
+				"addView"
+			],
+			[
+				"_",
+				"__insert__"
+			],
+			[
+				"ins",
+				"insert"
+			],
+			[
+				"id",
+				"identifier"
+			],
+			[
+				"__get",
+				"__getAll__"
+			],
+			[
+				"retu",
+				"return_data"
+			],
+			[
+				"ret",
+				"return_data"
+			],
+			[
+				"Model",
+				"ModelContainer"
+			],
+			[
+				"fil",
+				"filterUpdate"
+			],
+			[
+				"it",
+				"item"
+			],
+			[
+				"upd",
+				"updateViewsRemoved"
+			],
+			[
+				"Sl",
+				"SkeletonCase"
+			],
+			[
+				"C",
+				"Constructor"
+			],
+			[
+				"c",
+				"constructor"
+			],
+			[
+				"Compon",
+				"ComponentConstructor"
+			],
+			[
+				"SK",
+				"SkeletonCase"
+			],
+			[
+				"s",
+				"skeleton"
+			],
+			[
+				"Cas",
+				"CaseConstuctor"
+			],
+			[
+				"W",
+				"WORKING_DOM"
+			],
+			[
+				"Skel",
+				"SkeletonCase"
+			],
+			[
+				"SL",
+				"SkeletonCase"
+			],
+			[
+				"Com",
+				"ComponentConstructor"
+			],
+			[
+				"Ske",
+				"SkeletonCase"
+			],
+			[
+				"child",
+				"children"
+			],
+			[
+				"expo",
+				"__export_data__"
+			],
+			[
+				"exp",
+				"export_data"
+			],
+			[
+				"Venue",
+				"VenuesModel"
+			],
+			[
+				"br",
+				"brewery_name"
+			],
+			[
+				"cale",
+				"calendar_button"
+			],
+			[
+				"parser",
+				"parser_name"
+			],
+			[
+				"pag",
+				"page_parser"
+			],
+			[
+				"anim",
+				"anim_bloc"
+			],
+			[
+				"de",
+				"destructor"
+			],
+			[
+				"step",
+				"step_multiplier"
+			],
+			[
+				"sTy",
+				"StyleAnimBloc"
+			],
+			[
+				"Sty",
+				"StyleAnimBlocPercentage"
+			],
+			[
+				"to",
+				"to_val"
+			],
+			[
+				"ste",
+				"step_multiplier"
+			],
+			[
+				"run",
+				"running_animations"
+			],
+			[
+				"Anim",
+				"AnimBloc"
+			],
+			[
+				"an",
+				"anim_bloc"
+			],
+			[
+				"remo",
+				"removeDataFromContainer"
+			],
+			[
+				"getData",
+				"getDataFromContainer"
+			],
+			[
+				"Event",
+				"EventModel"
+			],
+			[
+				"inser",
+				"insertItem"
+			],
+			[
+				"inse",
+				"insertIntoArray"
+			],
+			[
+				"pro",
+				"prototype"
+			],
+			[
+				"start",
+				"start_time"
+			],
+			[
+				"root",
+				"root1"
+			],
+			[
+				"d",
+				"draw"
+			],
+			[
+				"Rid",
+				"RidPair"
+			],
+			[
+				"len",
+				"length"
+			],
+			[
+				"leng",
+				"length2"
+			],
+			[
+				"out",
+				"out_deltas"
+			],
+			[
+				"ma",
+				"machine_id"
+			],
+			[
+				"sub",
+				"submitted"
+			],
+			[
+				"di",
+				"di_a"
+			],
+			[
+				"loc",
+				"local_viewer"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "source/source/compiler/nodes/script.js",
+			"file": "source/model/any.js",
 			"settings":
 			{
-				"buffer_size": 1027,
-				"line_ending": "Windows"
+				"buffer_size": 3668,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "source/source/compiler/template/template_bindings.js",
+			"file": "source/model/container/array.js",
 			"settings":
 			{
-				"buffer_size": 2919,
+				"buffer_size": 2532,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "source/model/container/base.js",
+			"settings":
+			{
+				"buffer_size": 13281,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "source/model/model.js",
+			"settings":
+			{
+				"buffer_size": 11954,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "test/suite/source_package_tests.js",
+			"contents": "Wick, templating and binding engine. \n\nImmutable Data store design implement for web app.\n\nData store\nr\nAPI connections.\n\nPage rebuilds:\n\tcalendar\t\n\trequest make\n\trequest/booking review\n\tprofile\n\tnews list\n\treview page\n\n\n\tComponents:\n\t\tComments / Comm fields\n\t\tReview\n\t\tratings\n\t\tweek calendar\n\n\n\tElements\n\n\n\n",
 			"settings":
 			{
-				"buffer_size": 14207,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"contents": "Searching 104 files for \"StyleTemplate\" (case sensitive)\n\nD:\\wick\\source\\source\\compiler\\nodes\\root.js:\n   21  import {\n   22      Template,\n   23:     StyleTemplate,\n   24      CSSRuleTemplate,\n   25      CSSRawValue\n   ..\n  149  \n  150              if (!HAVE_BINDING) {\n  151:                 let binding = new StyleTemplate();\n  152                  binding._addRule_(rule);\n  153                  let vals = {\n  ...\n  406              case \"s\":\n  407                  if (name == \"style\")\n  408:                     constr = StyleTemplate;\n  409                  break;\n  410  \n\nD:\\wick\\source\\source\\compiler\\template\\template_bindings.js:\n   64  \n   65  \n   66: export function StyleTemplate(lex) {\n   67:     return new OutStyleTemplate(lex);\n   68  }\n   69  \n   70: class OutStyleTemplate {\n   71  \n   72      constructor(lex) {\n\n6 matches across 2 files\n",
-			"settings":
-			{
-				"buffer_size": 863,
-				"line_ending": "Windows",
-				"name": "Find Results",
-				"scratch": true
-			}
-		},
-		{
-			"contents": "<div>\n\t<w-c>\n\t    ((users))\n\t        <w-s export=\"name\">\n\t        <div trs>\n\t            ((name)) is ((age > 75 ? \"an old\" : \"a young\")) person whose age is ((age)).\n\t        </div>\n\t        <style>\n\t      \t\tdiv{\n\t      \t\t\tcolor:red;\n\t      \t\t\topacity: 0;\n\t      \t\t\ttransition: all 1s;\n\t      \t\t\theight:0;\n\t      \t\t}\n\t      \t\tdiv[trs=in]{\n\t      \t\t\theight: auto;\n\t      \t\t\topacity: 1;\n\t      \t\t}  \t    \t\n\t        </style>\n\t        </w-s>\n\t</w-c>\n</div>",
-			"file": "test/data/source_template_transition.html",
-			"file_size": 473,
-			"file_write_time": 131775538164650713,
-			"settings":
-			{
-				"buffer_size": 452,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/source/io/style_io.js",
-			"settings":
-			{
-				"buffer_size": 3737,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/source/manager.js",
-			"settings":
-			{
-				"buffer_size": 1716,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/source/template.js",
-			"settings":
-			{
-				"buffer_size": 6945,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"contents": "<div>\n\t<input type=\"text\" value=\"((filter))\">\n\t((filter))\n\t<w-c>\n\t    ((users))\n\t    <f on=\"((update !== `don't show`))\" filter=\"(( m.name.includes(filter) ))\">\n\t    <!-- <f sort=\"(( m1.name > m2.name  ))\"> -->\n\t        <w-s export=\"name\">\n\t            ((name)) is ((age > 75 ? \"an old\" : \"a young\")) person whose age is ((age)).\n\t        </w-s>\n\t</w-c>\n</div>",
-			"file": "test/data/source_template_sort_and_filter.html",
-			"file_size": 371,
-			"file_write_time": 131774774372369574,
-			"settings":
-			{
-				"buffer_size": 360,
-				"line_ending": "Windows"
+				"buffer_size": 309,
+				"line_ending": "Unix",
+				"name": "Wick, templating and binding engine."
 			}
 		}
 	],
@@ -615,80 +529,20 @@
 		"selected_items":
 		[
 			[
-				"rem",
-				"Package Control: Remove Package"
-			],
-			[
-				"subl",
-				"Preferences: SublimeLinter Settings"
+				"ins",
+				"Package Control: Install Package"
 			],
 			[
 				"inst",
 				"Package Control: Install Package"
 			],
 			[
-				"remo",
-				"Package Control: Remove Package"
+				"live",
+				"MarkdownLivePreview: Edit Current File"
 			],
 			[
 				"instal",
-				"Install Package Control"
-			],
-			[
-				"jsh",
-				"JSHint"
-			],
-			[
-				"css colors",
-				"Colorsublime: Install Theme"
-			],
-			[
-				"kin",
-				"King: Decrease by 1"
-			],
-			[
-				"nu",
-				"King: Transform Numbers"
-			],
-			[
-				"pac",
-				"Package Control: List Packages"
-			],
-			[
-				"remov",
-				"Package Control: Remove Package"
-			],
-			[
-				"ins",
 				"Package Control: Install Package"
-			],
-			[
-				"number",
-				"King: Number Sequence"
-			],
-			[
-				"insta",
-				"King: Switch to Integer Mode (Round Nearest)"
-			],
-			[
-				"syes",
-				"Set Syntax: JavaScript"
-			],
-			[
-				"lexer",
-				"Set Syntax: Regular Expression"
-			],
-			[
-				"them",
-				"Theme Tweaker: Toggle Tweak Mode"
-			],
-			[
-				"The",
-				"Theme Tweaker: Toggle Tweak Mode"
-			],
-			[
-				"live",
-				"MarkdownLivePreview: Edit Current File"
 			],
 			[
 				"pack",
@@ -715,150 +569,149 @@
 	},
 	"expanded_folders":
 	[
-		"/D/wick"
+		"/home/galactrax/wick"
 	],
 	"file_history":
 	[
-		"/D/wick/source/source/compiler/nodes/root.js",
-		"/D/wick/test/data/source_template.html",
-		"/D/wick/source/source/manager.js",
-		"/D/wick/source/common/html/root.js",
-		"/D/wick/source/source/compiler/nodes/package.js",
-		"/D/wick/source/source/tap/tap.js",
-		"/D/wick/source/source/compiler/compiler.js",
-		"/D/wick/test/suite/source_package_tests.js",
-		"/D/wick/source/common/css/root.js",
-		"/D/wick/source/root/css.js",
-		"/D/wick/test/data/html_import.html",
-		"/D/wick/test/data/form.html",
-		"/D/wick/source/source/source.js",
-		"/D/wick/test/data/template3.html",
-		"/D/wick/test/data/template2.html",
-		"/D/wick/test/data/template.html",
-		"/D/wick/test/data/source_template_transition.html",
-		"/D/wick/test/data/input.html",
-		"/D/wick/test/data/rock_paper_scissors.html",
-		"/D/wick/test/data/performance.html",
-		"/D/wick/test/data/package.html",
-		"/D/wick/test/data/messaging.html",
-		"/D/wick/test/data/markopolo.html",
-		"/D/wick/source/source/template.js",
-		"/D/wick/source/common/css/nodes.js",
-		"/D/wick/source/common/css/properties/property_and_type_definitions.js",
-		"/D/wick/source/source/compiler/nodes/template.js",
-		"/D/wick/test/suite/lexer_tests.js",
-		"/D/wick/source/root/client.js",
-		"/D/wick/source/source/package.js",
-		"/D/wick/source/source/skeleton.js",
-		"/D/wick/source/source/io/script_io.js",
-		"/D/wick/source/source/io/io.js",
-		"/D/wick/source/source/io/expression_io.js",
-		"/D/wick/test/data/source_template_sort_and_filter.html",
-		"/D/wick/build/wick-dev.js",
-		"/D/wick/source/source/compiler/nodes/script.js",
-		"/D/wick/build/config/browserdev.config.js",
-		"/D/wick/source/root/config/library.js",
-		"/D/wick/source/source/compiler/nodes/source.js",
-		"/D/wick/source/root/config/dev_global.js",
-		"/D/wick/source/source/compiler/template/template_evaluator.js",
-		"/D/wick/test/suite/html_tests.js",
-		"/D/wick/source/source/compiler/template/basic_bindings.js",
-		"/D/wick/source/source/io/event_io.js",
-		"/D/wick/source/model/base.js",
-		"/D/wick/source/model/container/base.js",
-		"/D/wick/source/source/compiler/template/template_bindings.js",
-		"/D/wick/test/data/expression.html",
-		"/D/wick/docs/guide/TEMPLATE_PATTERNS.md",
-		"/D/wick/build/config/templates/jsdoc-template/tmpl/container.tmpl",
-		"/D/wick/source/common/presets.js",
-		"/D/wick/source/common/string_parsing/lexer.js",
-		"/D/wick/source/common/css/properties/parser.js",
-		"/D/wick/source/network/wurl.js",
-		"/D/wick/source/common/extends/ll.js",
-		"/D/wick/source/source/compiler/nodes/index.js",
-		"/D/wick/source/source/compiler/nodes/filter.js",
-		"/D/wick/source/source/compiler/nodes/void.js",
-		"/D/wick/source/source/compiler/nodes/style.js",
-		"/D/wick/source/common/js/root.js",
-		"/D/wick/test/index.html",
-		"/D/wick/test/data/import_script.js",
-		"/D/wick/source/source/base.js",
-		"/D/wick/source/root/html.js",
-		"/D/wick/source/source/compiler/nodes/nodes.js",
-		"/D/wick/source/common/short_names.js",
-		"/D/wick/source/source/compiler/template.js",
-		"/D/wick/test/data/test.txt",
-		"/D/wick/test/data/test.js",
-		"/D/wick/test/data/import.css",
-		"/D/wick/source/source/io/filter_io.js",
-		"/D/wick/build/wick-min.js",
-		"/D/wick/source/model/container/array.js",
-		"/D/wick/source/source/compiler/nodes/container.js",
-		"/D/wick/source/source/ast.js",
-		"/D/wick/source/source/compiler/template_evaluator.js",
-		"/D/wick/package.json",
-		"/C/Users/Anthony/AppData/Roaming/Sublime Text 3/Packages/JSHint/Base File.sublime-settings",
-		"/D/wick/source/common/css/types/color.js",
-		"/D/wick/source/source/io/style_io.js",
-		"/D/wick/source/common/css/types/cubic_bezier.js",
-		"/D/wick/source/common/math/cubic_bezier.js",
-		"/D/wick/source/source/compiler/hooks/attribute_hooks.js",
-		"/D/wick/source/common/design/color.js",
-		"/D/wick/source/common/string_parsing/ascii_code_points.js",
-		"/D/wick/source/source/compiler/nodes.js",
-		"/D/wick/build/config/minibuild_es.config.js",
-		"/D/wick/.git/COMMIT_EDITMSG",
-		"/D/wick/source/page/component.js",
-		"/D/wick/build/wick.node.js",
-		"/D/wick/test/suite/mc_tests.js",
-		"/D/wick/source/meta/module.jsdoc",
-		"/D/Users/Anthony/Paranoms/pytrucks/routes/api/calendar.py",
-		"/D/wick/test/suite/css_tests.js",
-		"/D/wick/docs/api/common_css_properties_property_and_type_definitions.js.html",
-		"/D/wick/sublime-wick.sublime-project",
-		"/D/wick/docs/api/CSSRootNode.html",
-		"/D/wick/source/animation/transition/transitioner.js",
-		"/D/wick/test/test.js",
-		"/D/wick/test/suite/amc_tests.js",
-		"/D/wick/source/common/string_parsing/lexer_old.js",
-		"/D/wick/source/root/wick.js",
-		"/D/wick/source/animation/animation.js",
-		"/D/wick/source/common/scheduler.js",
-		"/D/wick/source/animation/transformto.js",
-		"/D/wick/source/common/common.js",
-		"/D/wick/source/schema/constructor.js",
-		"/D/wick/source/common/url/url.js",
-		"/D/wick/source/common/string_parsing/lexer_beta_array.js",
-		"/D/wick/source/model/any.js",
-		"/D/wick/source/source/pipe/base.js",
-		"/D/wick/docs/api/source_package.js.html",
-		"/D/wick/docs/api/common_html_root.js.html",
-		"/D/wick/source/source/compiler/nodes2.js",
-		"/D/wick/docs/api/PipeBase.html",
-		"/D/wick/source/page/page.js",
-		"/D/wick/source/model/model.js",
-		"/D/wick/source/network/setter.js",
-		"/D/wick/source/network/getter.js",
-		"/D/wick/source/model/container/btree.js",
-		"/D/wick/source/common/event/touch_scroller.js",
-		"/D/wick/source/view/view.js",
-		"/D/start_wick.bat",
-		"/D/wick/source/common/string_parsing/lexer_beta_string.js",
-		"/D/wick/source/common/css/types/media.js",
-		"/D/wick/source/common/string_parsing/look_up_tables.js",
-		"/D/wick/source/common/string_parsing/lexer_beta.js"
+		"/home/galactrax/wick/test/data/source_template_transition.html",
+		"/home/galactrax/wick/source/source/compiler/nodes/root.js",
+		"/home/galactrax/wick/source/source/manager.js",
+		"/home/galactrax/wick/source/source/template.js",
+		"/home/galactrax/wick/source/source/source.js",
+		"/home/galactrax/wick/source/source/package.js",
+		"/home/galactrax/wick/source/source/compiler/nodes/template.js",
+		"/home/galactrax/wick/build/wick.node.js",
+		"/home/galactrax/wick/source/common/html/root.js",
+		"/home/galactrax/wick/source/common/css/root.js",
+		"/home/galactrax/wick/build/wick-dev.js",
+		"/home/galactrax/wick/source/source/io/filter_io.js",
+		"/home/galactrax/wick/source/source/compiler/nodes/package.js",
+		"/home/galactrax/wick/source/source/compiler/nodes/filter.js",
+		"/home/galactrax/wick/source/source/compiler/nodes/script.js",
+		"/home/galactrax/wick/source/source/compiler/nodes/source.js",
+		"/home/galactrax/wick/source/network/wurl.js",
+		"/home/galactrax/wick/source/source/io/io.js",
+		"/home/galactrax/wick/test/suite/source_package_tests.js",
+		"/home/galactrax/wick/source/source/compiler/nodes/index.js",
+		"/home/galactrax/wick/source/source/compiler/nodes/style.js",
+		"/home/galactrax/wick/source/source/compiler/nodes/void.js",
+		"/home/galactrax/wick/source/source/skeleton.js",
+		"/home/galactrax/wick/source/source/tap/tap.js",
+		"/home/galactrax/wick/test/test.js",
+		"/home/galactrax/wick/test/suite/source_constructor_tests.js",
+		"/home/galactrax/wick/source/source/pipe/base.js",
+		"/home/galactrax/wick/source/source/compiler.js",
+		"/home/galactrax/wick/source/source/ast.js",
+		"/D/_$_$_$_/wick/roadmap.md",
+		"/D/_$_$_$_/wick/source/common/css/parser/tree/root.js",
+		"/D/_$_$_$_/wick_temp/wick/source/linker/wurl.js",
+		"/D/_$_$_$_/wick_temp/wick/source/linker/linker.js",
+		"/D/_$_$_$_/wick_temp/wick/source/case.js",
+		"/D/_$_$_$_/wick/package.json",
+		"/D/_$_$_$_/wick_temp/wick/source/cassette/filter.js",
+		"/D/_$_$_$_/wick_temp/wick/source/wick.js",
+		"/D/_$_$_$_/wick/source/common/css/parser/tree/base.js",
+		"/D/_$_$_$_/wick/source/source/source.js",
+		"/D/_$_$_$_/wick/source/source/base.js",
+		"/D/_$_$_$_/wick/source/common/scheduler.js",
+		"/D/_$_$_$_/wick/source/source/pipe/base.js",
+		"/D/_$_$_$_/wick/source/network/router/component.js",
+		"/D/_$_$_$_/wick/source/source/skeleton.js",
+		"/D/_$_$_$_/wick_temp/dif.txt",
+		"/D/_$_$_$_/wick_temp/wick/source/model/date_model_container.js",
+		"/D/_$_$_$_/wick_temp/wick/source/model/binary_container.js",
+		"/D/_$_$_$_/wick_temp/wick/source/model/schema_types.js",
+		"/D/_$_$_$_/wick_temp/wick/source/cassette/exists.js",
+		"/D/_$_$_$_/wick_temp/wick/source/cassette/epoch_to_dt.js",
+		"/D/_$_$_$_/wick_temp/wick/source/common/url/url.js",
+		"/D/_$_$_$_/wick_temp/wick/source/model/model.js",
+		"/D/_$_$_$_/wick/source/animation/transformto.js",
+		"/D/_$_$_$_/wick/source/animation/style_mappings.js",
+		"/D/_$_$_$_/wick/source/animation/style.js",
+		"/D/_$_$_$_/wick/source/animation/plue.js",
+		"/D/_$_$_$_/wick/source/animation/color.js",
+		"/D/_$_$_$_/wick/build/wick-dev.js",
+		"/D/_$_$_$_/wick/source/animation/animation.js",
+		"/D/_$_$_$_/wick/source/model/base.js",
+		"/D/_$_$_$_/wick/source/model/model.js",
+		"/D/_$_$_$_/wick/source/animation/transition/transitioner.js",
+		"/D/_$_$_$_/wick/build/wick-min.js",
+		"/D/_$_$_$_/wick/source/common/common.js",
+		"/D/_$_$_$_/wick/source/common/string_parsing/lexer.js",
+		"/D/_$_$_$_/wick/source/common/css/parser/parser.js",
+		"/D/_$_$_$_/wick/source/source/template.js",
+		"/D/_$_$_$_/wick/source/common/url/url.js",
+		"/D/_$_$_$_/wick/source/common/string_parsing/tokenizer.js",
+		"/D/_$_$_$_/wick/source/common/css/parser/ast/base.js",
+		"/D/_$_$_$_/wick/source/common/event/touch_scroller.js",
+		"/D/_$_$_$_/wick/documents/manual/source.md",
+		"/D/_$_$_$_/wick/build/build_config/node.config.js",
+		"/D/_$_$_$_/wick/source/model/container/btree.js",
+		"/D/_$_$_$_/wick/source/network/router/page.js",
+		"/D/_$_$_$_/wick/build/build_config/minibuild_es.config.js",
+		"/D/_$_$_$_/wick/build/build_config/minibuild.config.js",
+		"/D/_$_$_$_/wick/build/build_config/browserdev.config.js",
+		"/D/_$_$_$_/wick/source/source/constructor.js",
+		"/D/_$_$_$_/wick/source/source/ast.js",
+		"/D/_$_$_$_/wick/source/view/view.js",
+		"/D/_$_$_$_/wick/source/network/setter.js",
+		"/D/_$_$_$_/wick/source/network/router/data_template.js",
+		"/D/_$_$_$_/wick/source/network/getter.js",
+		"/D/_$_$_$_/wick/source/model/container/base.js",
+		"/D/_$_$_$_/wick/source/model/container/array.js",
+		"/D/_$_$_$_/wick/test/suite/source_constructor_tests.js",
+		"/D/_$_$_$_/wick/source/root/wick.js",
+		"/D/_$_$_$_/wick/source/source/cassette/form.js",
+		"/D/_$_$_$_/wick/source/source/tap/tap.js",
+		"/D/_$_$_$_/wick/source/source/io/io.js",
+		"/D/_$_$_$_/wick/source/source/cassette/exporter.js",
+		"/D/_$_$_$_/wick/source/source/cassette/data_edit.js",
+		"/D/_$_$_$_/wick/source/source/cassette/cassette.js",
+		"/D/_$_$_$_/wick/source/source/taps/tap.js",
+		"/D/_$_$_$_/wick/source/wick.js",
+		"/D/_$_$_$_/wick/README.md",
+		"/D/_$_$_$_/wick/source/source/source_constructor.js",
+		"/D/_$_$_$_/wick/source/source/pipes/pipe.js",
+		"/D/_$_$_$_/wick/source/source/pipe_base.js",
+		"/D/_$_$_$_/wick/source/source/source_constructor_parser.js",
+		"/D/_$_$_$_/wick/source/source/source_constructor_ast.js",
+		"/D/_$_$_$_/wick/documents/getting_started_with_wick.html",
+		"/D/_$_$_$_/wick/test/suite/mc_tests.js",
+		"/D/_$_$_$_/wick/build/build_config/jsdoc.json",
+		"/D/_$_$_$_/wick/source/schema/types/string.js",
+		"/D/_$_$_$_/wick/source/schema/types/bool.js",
+		"/C/Users/aweathersby/Documents/general notes/fpe_meeting_notes.md",
+		"/D/_$_$_$_/wick/documents/markdown/pipes_and_io.md",
+		"/D/_$_$_$_/wick/test/index.html",
+		"/D/_$_$_$_/wick/index.html",
+		"/C/Users/aweathersby/Documents/temp.txt",
+		"/D/_$_$_$_/wick/.gitignore",
+		"/D/_$_$_$_/wick/test/test.js",
+		"/D/_$_$_$_/wick/test/suite/schema_tests.js",
+		"/C/Users/aweathersby/AppData/Roaming/Sublime Text 3/Packages/Advanced CSV/AdvancedCSV.sublime-settings",
+		"/D/_$_$_$_/wick/source/source/source_skeleton.js",
+		"/C/Users/aweathersby/Downloads/users_7_10_2018 3_28_48 PM.csv",
+		"/D/_$_$_$_/wick/source/case/case_skeleton.js",
+		"/D/_$_$_$_/wick/source/case/case_constructor_ast.js",
+		"/D/_$_$_$_/wick/source/case/case.js",
+		"/D/_$_$_$_/wick/source/case/case_constructor.js",
+		"/D/_$_$_$_/wick/test/suite/caseconstructor_tests.js",
+		"/C/Users/aweathersby/Documents/general notes/Network Maintenance/2018/Jan/molecular_network_maintenance",
+		"/C/Users/aweathersby/Documents/general notes/Network Maintenance/2018/Jan/metro",
+		"/D/_$_$_$_/pytrucks/static/package.json",
+		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/test/suite/btmc_tests.js",
+		"/D/_$_$_$_/pytrucks/static/js/libraries/wick/node_modules/buffer/index.js"
 	],
 	"find":
 	{
-		"height": 40.0
+		"height": 38.0
 	},
 	"find_in_files":
 	{
-		"height": 426.0,
+		"height": 430.0,
 		"where_history":
 		[
-			"D:\\wick\\source\\",
-			"D:\\_$_$_$_\\wick\\source\\",
+			"/home/galactrax/wick/source/source",
 			"D:\\_$_$_$_\\wick\\source"
 		]
 	},
@@ -867,134 +720,107 @@
 		"case_sensitive": true,
 		"find_history":
 		[
-			"StyleTemplate",
-			"rule",
-			".name",
-			"prop_name",
-			"binds",
-			"rules",
-			"_rules_",
-			"false",
-			"element",
-			"finalizeTransitionOut",
-			"finalizeTranisitionOut",
-			"color",
-			"message",
-			"channel",
-			"UL",
-			"st",
-			"_parse_",
-			"_parseRunner_",
-			"_parse_",
-			"res",
-			"Doug",
-			"Lexer$1",
-			"class Lexer",
-			"class LexerBetaArray",
-			"LexerBetaArray",
-			"class Lexer",
-			"pureExternalModules",
-			"class Lexer",
-			"Represents",
-			"../",
-			"barrier_b_end",
-			"ExpressionBinding",
-			"template",
-			"deug",
-			"first_view",
-			"class",
-			"processExpression",
-			"console.log",
-			"cons",
-			"processExpression",
-			"unit",
-			"Horray",
-			"div",
-			"The_Answer",
-			"message_from_event",
-			"message_from_some_other_element",
-			"Start",
-			"filter",
-			"length",
-			"RootText",
-			"console.log",
-			"evaluate",
-			".END",
-			"_processTextNodeHook_",
-			"TextNode",
-			"****************************************************/",
-			"'",
-			"og",
-			"function",
-			"og",
-			"lengthOf",
-			"have",
-			"some_template",
-			"HOOKS",
-			"WORKING",
-			"{}, null,",
-			"presets, null,",
-			"/**",
-			"this",
-			"tap_list",
-			"{}",
-			"import",
-			"LexerBetaString",
-			"import",
-			"SourceBase",
-			"_processFetchHook_",
-			"console",
-			"recived",
-			"createASTNode",
-			"CreateHTMLNode",
-			"style",
-			"root",
-			"BindingCSSRoot",
-			"Root",
-			"SourceContainerNode",
-			"Root",
-			"SourceContainerNode",
-			"BindingCSSRoot",
-			"component",
-			"/i",
-			"evaluate",
-			"processExpression",
-			"evaluate",
-			"evalue",
-			"RawValueBinding",
-			"export class",
-			"class",
-			"TEXT",
-			"evaluate",
-			"switch",
-			"VALUE",
+			"finalizeTranistionOut",
+			"finaliz",
+			"Source",
+			"bindings",
+			"_attributes_",
 			"value",
+			"activation.value",
+			"_bindings_",
+			"_attributes_",
+			"attribute",
+			"_attributes_",
+			"value",
+			"return",
+			"_bindings_",
+			"getAttribute",
+			"transitionOut",
+			"transitionIn",
+			"Source",
+			"up",
+			"console.log",
+			"parseAttributes",
+			"finalize",
+			"debugger",
+			"addChild",
+			"skeletons",
+			"Element",
+			"consumers",
+			"wick",
+			"Controller",
+			"Model",
+			"build",
+			"views",
+			"structure",
+			"content",
+			"window",
+			"commit",
+			"blockqoute",
+			"### ",
+			"Previous",
+			"9d9eb39",
+			"5c1730",
+			"9271ff",
+			"6becc8",
+			"Initial commit on branch\n    \n    - [x] Changing case structure so that reusable Case components are created when a template is parsed: WIP\n    \n    - [x] Moved structure of linker to use new Case components, elements build\n    them now: WIP\n    \n    - [ ] Need to complete the filter system so that itmes can be sorted and\n    presented on screen\n    \n    - [x] Need to allow Elements to include transition features for advanced\n    page transitions. Allow common components to be excluded from\n    transitioning.\n    \n    Broke Model/View code up into a seperate class named ModelBase.\n    Both Model and ModelContainer inherit from this. This allows Views to\n    attach to ModelContainers and receive updates on items added and removed\n    from containers. CaseTemplates use this to update their scope with new\n    Cases or remove Cases whenever a Model is added to the CaseTemplate's\n    ModelContainer.",
+			"myfootnote1",
+			"version",
+			"Lexer",
 			"element",
-			"choose",
-			"barrier_c_end",
-			"barrier_c_start",
-			"barrier_b_end",
-			"barrier_b_start",
-			"FORM",
-			"COMPONENT",
+			"load",
+			"Scheduler",
+			"SchemaConstructor",
+			"Scheduler",
+			"Transitioneer",
+			"PresetTransitioners",
+			"Transitioneer",
+			"destructor",
+			"dstr",
+			"./",
+			"Case",
+			"and",
+			"Cases",
+			"./",
+			"pipe",
+			"}\n",
+			"WORKING_DOM",
+			"ParseTag",
+			"HandleTemplateImport",
+			"ParseTag",
+			"HandleTemplateImport",
+			"next",
+			"debugger",
+			"case",
+			"Value",
+			"style",
+			"border",
+			"next",
+			"throw (",
+			".text",
+			"##:",
+			"chldr",
+			"a",
+			"index_tag",
+			"index",
+			"this.index",
+			"next",
 			"text",
-			"handleEvent",
-			"'",
-			"handleEvent",
-			"name_query",
-			"((",
-			"model",
-			"sym",
-			"func",
-			"before",
-			"Object",
-			"JS_EXPRESSION_AST",
-			"true",
-			"ast._identifiers_",
-			".identifiers",
-			"identifiers",
-			"sym",
-			"call"
+			"assert",
+			"children",
+			",",
+			"StrongPasswordRequired",
+			"State",
+			"PreferredLanguage",
+			"PasswordNeverExpires",
+			"MobilePhone",
+			"BlockCredential",
+			"constructing_template",
+			"constructing_tempalte",
+			"conso",
+			"cons",
+			"console",
+			"console.log"
 		],
 		"highlight": false,
 		"in_selection": false,
@@ -1002,28 +828,6 @@
 		"regex": false,
 		"replace_history":
 		[
-			"barrier_b_end",
-			"barrier_b_start",
-			"_pushPendingMount_",
-			"_complete_",
-			"_addError_",
-			"_getElementByTag_",
-			"_createElement_",
-			"_appendChild_",
-			"_cloneNode_",
-			"._ios_",
-			"5",
-			"4",
-			"RAW_VALUE_BINDING_ID",
-			"RawValueBinding",
-			"_linkTaps_",
-			"._ele_",
-			"_bindings_",
-			"_appendText_",
-			"_scheduledUpdate_",
-			"_bind_",
-			"_update_",
-			"_destroy_",
 			"destroy"
 		],
 		"reverse": false,
@@ -1035,392 +839,163 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 4,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "source/source/compiler/nodes/script.js",
+					"file": "source/model/any.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1027,
+						"buffer_size": 3668,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								2631,
+								2631
 							]
 						],
 						"settings":
 						{
-							"SL.1321.region_keys":
-							[
-							],
+							"auto_complete": false,
+							"markdonw_live_preview_last_run": 1533339005.2,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 8,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "source/source/compiler/template/template_bindings.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2919,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1487,
-								1487
-							]
-						],
-						"settings":
-						{
-							"SL.1317.region_keys":
-							[
-								"sublime_linter.protected_regions",
-								"SL.jshint.Highlights.|1e0ca3574204dae1309f0f140a0233b5c268252c595aa04730b6f0c030992c21|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|f4eb8881e695b32e2ba96dfa35026191cf418528184a262c9e1fd6e6f011fdc0|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|ec026266b9fb528db249fb8db099b6ea2e02f39671cee42816b399de4627d886|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|97389051c3b98649e36b5fc9e4f038ca28eebce2737b404e09413073e02888da|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|d79b3382080f52a6b6e1e07a7a2c43e204afcd108dd28b282e74f95f33d9317f|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot",
-								"SL.jshint.Highlights.|59cc9f8a4a84dd26deb5e7f241975eec43a7f4ddf1235295d244db5f9a34c354|region.yellowish markup.warning.sublime_linter|32"
-							],
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1197.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "test/suite/source_package_tests.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 14207,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								8265,
-								8291
-							]
-						],
-						"settings":
-						{
-							"SL.1334.region_keys":
-							[
-								"SL.jshint.Highlights.|a774b9469f96244b00bb4cbd3a207e5f5611c728170f1f11ca333e5a7defce4b|region.yellowish markup.warning.sublime_linter|32",
-								"sublime_linter.protected_regions",
-								"SL.jshint.Highlights.|598eeed1a0fd11c787abc85ab8aea2cc0c117dfa08db9123da6d4127c9e46baf|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|b76ec217c011e06c3018d19fef1e8e9f4bb12ace5594371c2cc6cb8697dff4f9|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|f789c060cb9d68a76061a55c252bf1a7bf9cc7edcd94609ce34c11bf9fbe8ae1|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|c194c0022e371f4e080a0c5738e4d60e146ae13721c7615b3b17c0f4ace9edf0|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|f7d4f8a4e1ffe51d3cf0905019da5477c493976d68e7e4104752ef67fa743d3e|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|f72753d448c263470bff0a946d0c29a42b38a05b9ad9b89e69ec5327fc282197|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|826717edd52ba53014c4e928db1e833a8e287daf9f38ee8a6778d369c92b62c6|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|b9c6a749287a155e01f478176fb0cd66f72150ab94fbdb908c441761ca9c64a3|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|744fb7ff35679044164f0835e6fded6e3a51f3089ff16bcb2814631440b91fd3|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot",
-								"SL.jshint.Highlights.|5c6bbd7ef69ca2cba99a12797aef09b15dcb10733343ffbd4ad18c68152f2281|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|2fd0d6d585f3d9c5a181238e8543e35ef36d8fdc33787895abad4953e5c623e9|region.yellowish markup.warning.sublime_linter|32"
-							],
-							"history_list_is_closing": true,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 2793.0,
+						"translation.y": 702.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
+					"buffer": 1,
+					"file": "source/model/container/array.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 863,
+						"buffer_size": 2532,
 						"regions":
 						{
-							"match":
-							{
-								"flags": 112,
-								"regions":
-								[
-									[
-										152,
-										165
-									],
-									[
-										313,
-										326
-									],
-									[
-										529,
-										542
-									],
-									[
-										684,
-										697
-									],
-									[
-										730,
-										743
-									],
-									[
-										783,
-										796
-									]
-								],
-								"scope": ""
-							}
 						},
 						"selection":
 						[
 							[
-								319,
-								319
+								2488,
+								2488
 							]
 						],
 						"settings":
 						{
-							"detect_indentation": false,
-							"line_numbers": false,
-							"output_tag": 1,
-							"result_base_dir": "",
-							"result_file_regex": "^([^ \t].*):$",
-							"result_line_regex": "^ +([0-9]+):",
-							"scroll_past_end": true,
-							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
+							"auto_complete": false,
+							"markdonw_live_preview_last_run": 1533339851.1,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 234.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 2,
 					"type": "text"
-				}
-			]
-		},
-		{
-			"selected": 0,
-			"sheets":
-			[
+				},
 				{
-					"buffer": 4,
-					"file": "test/data/source_template_transition.html",
+					"buffer": 2,
+					"file": "source/model/container/base.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 452,
+						"buffer_size": 13281,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								445,
-								445
+								13177,
+								13177
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/HTML/HTML.sublime-syntax",
-							"translate_tabs_to_spaces": false
+							"auto_complete": false,
+							"markdonw_live_preview_last_run": 1533339885.11,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 4433.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 3,
 					"type": "text"
 				},
 				{
-					"buffer": 5,
-					"file": "source/source/io/style_io.js",
+					"buffer": 3,
+					"file": "source/model/model.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3737,
+						"buffer_size": 11954,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2726,
-								2726
+								11371,
+								11371
 							]
 						],
 						"settings":
 						{
-							"SL.1298.region_keys":
-							[
-								"sublime_linter.protected_regions",
-								"SL.jshint.Highlights.|346f29ab1ede7f24e3bdf72a8f9d85fdb92995e2b04457d2bcc63bc279f83bbe|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|ee0cc35efe28baf55c107d8846a2744dc79d9c1b29ce6f9e84d31e53da78b7a9|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|7e5e6cc8d91f2ed17ba4e8f5849d0b8f08cca26744ae0cba6849b139c030dc2e|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|c171b473315746feac3927e28289fd06e647f6c5b63449d3fe10b003bfaf2647|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|7dab671305463ade3b0ab740b093a2b38ec5e8f051523e76b2caee6b89eee8fd|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|6311252952006fbf12f075cbf959c4fce4c03155575a5ce5725c1e4dcd9e6428|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|af4d00e475c99dc574053d5f760e8aa85a6c5bbbf5cee47dfc6a204be074c206|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|1e24d8953bfc52b6bb0d40eb06b46e79d94d2217e516d2ce94e1456c954063f3|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|80b9d4b01da019aec9e67cdff3d4322c4564a9c68b036a47a7c05a80a8996f22|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot"
-							],
+							"auto_complete": false,
+							"markdonw_live_preview_last_run": 1533337986.97,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 855.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "source/source/manager.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1716,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								117,
-								117
-							]
-						],
-						"settings":
-						{
-							"SL.1206.region_keys":
-							[
-								"sublime_linter.protected_regions",
-								"SL.jshint.Highlights.|92b6e960965dd919f77817cf242bd3a47dc9998e88213905475d3684c19115f8|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|77eb1f0652dabbeffec676e35669f3385429dbb919e6c1523429fb476f7b725b|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot"
-							],
-							"SL.1236.region_keys":
-							[
-								"sublime_linter.protected_regions",
-								"SL.jshint.Highlights.|dd0f16c7e8744551b6de32864675f598bd05213cc6ffb0c1705a886fa484215a|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|f5782a135775413be7fa9062f42ee64f3f20b5bff1318709050db2ef1b876f8a|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot",
-								"SL.jshint.Highlights.|f984eef83f09fa12d8e4ff99b0f1b6f9999a25b392f40acf9d025d5f3ec8e4f0|region.yellowish markup.warning.sublime_linter|32"
-							],
-							"SL.1290.region_keys":
-							[
-								"sublime_linter.protected_regions",
-								"SL.jshint.Highlights.|92b6e960965dd919f77817cf242bd3a47dc9998e88213905475d3684c19115f8|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|77eb1f0652dabbeffec676e35669f3385429dbb919e6c1523429fb476f7b725b|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot"
-							],
-							"history_list_is_closing": true,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 171.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 7,
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "source/source/template.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6945,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2139,
-								2139
-							]
-						],
-						"settings":
-						{
-							"SL.1293.region_keys":
-							[
-								"sublime_linter.protected_regions",
-								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot",
-								"SL.jshint.Highlights.|567d405dce2c9816f39600cf171f2875d1853981d6a3246c3c142e3e33699a5f|region.yellowish markup.warning.sublime_linter|32"
-							],
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 969.0,
+						"translation.y": 2379.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 4,
 					"type": "text"
 				},
 				{
-					"buffer": 8,
-					"file": "test/data/source_template_sort_and_filter.html",
+					"buffer": 4,
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 360,
+						"buffer_size": 309,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								79,
-								79
+								103,
+								103
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/HTML/HTML.sublime-syntax",
-							"translate_tabs_to_spaces": false
+							"auto_name": "Wick, templating and binding engine.",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 0,
 					"type": "text"
 				}
 			]
@@ -1428,11 +1003,11 @@
 	],
 	"incremental_find":
 	{
-		"height": 40.0
+		"height": 22.0
 	},
 	"input":
 	{
-		"height": 46.0
+		"height": 0.0
 	},
 	"layout":
 	{
@@ -1443,18 +1018,11 @@
 				0,
 				1,
 				1
-			],
-			[
-				1,
-				0,
-				2,
-				1
 			]
 		],
 		"cols":
 		[
 			0.0,
-			0.546481876333,
 			1.0
 		],
 		"rows":
@@ -1464,10 +1032,6 @@
 		]
 	},
 	"menu_visible": true,
-	"output.SublimeLinter":
-	{
-		"height": 0.0
-	},
 	"output.exec":
 	{
 		"height": 150.0
@@ -1480,7 +1044,7 @@
 	"project": "sublime-wick.sublime-project",
 	"replace":
 	{
-		"height": 72.0
+		"height": 68.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1490,516 +1054,516 @@
 		"selected_items":
 		[
 			[
-				"sourcetemp",
-				"source\\source\\template.js"
+				"container",
+				"source/model/container/base.js"
+			],
+			[
+				"array",
+				"source/model/container/array.js"
+			],
+			[
+				"any",
+				"source/model/any.js"
+			],
+			[
+				"model",
+				"test/suite/model_tests.js"
+			],
+			[
+				"mo",
+				"source/model/model.js"
 			],
 			[
 				"source",
-				"test\\data\\source_template.html"
+				"source/source/source.js"
 			],
 			[
-				"sourttr",
-				"test\\data\\source_template_transition.html"
+				"nodetem",
+				"source/source/compiler/nodes/template.js"
 			],
 			[
-				"sourcepac",
-				"test\\suite\\source_package_tests.js"
+				"wick",
+				"build/wick-dev.js"
 			],
 			[
-				"templateb",
-				"source\\source\\compiler\\template\\template_bindings.js"
+				"wickno",
+				"build/wick.node.js"
 			],
 			[
-				"nodesroo",
-				"source\\source\\compiler\\nodes\\root.js"
-			],
-			[
-				"nodescss",
-				"source\\source\\compiler\\nodes\\script.js"
-			],
-			[
-				"template_bin",
-				"source\\source\\compiler\\template\\template_bindings.js"
-			],
-			[
-				"sourcetemplate",
-				"source\\source\\template.js"
-			],
-			[
-				"style",
-				"source\\source\\io\\style_io.js"
-			],
-			[
-				"sourcetem",
-				"source\\source\\template.js"
-			],
-			[
-				"man",
-				"source\\source\\manager.js"
-			],
-			[
-				"tra",
-				"test\\data\\source_template_transition.html"
-			],
-			[
-				"sou",
-				"test\\suite\\source_package_tests.js"
-			],
-			[
-				"for",
-				"test\\data\\form.html"
-			],
-			[
-				"cssprop",
-				"source\\common\\css\\properties\\property_and_type_definitions.js"
-			],
-			[
-				"cssroot",
-				"source\\common\\css\\root.js"
-			],
-			[
-				"root html",
-				"source\\common\\html\\root.js"
-			],
-			[
-				"rootcss",
-				"source\\root\\css.js"
-			],
-			[
-				"trans",
-				"test\\data\\source_template_transition.html"
-			],
-			[
-				"sour",
-				"source\\source\\source.js"
-			],
-			[
-				"ma",
-				"source\\source\\manager.js"
-			],
-			[
-				"sourtem",
-				"source\\source\\template.js"
-			],
-			[
-				"tap",
-				"source\\source\\tap\\tap.js"
-			],
-			[
-				"expre",
-				"source\\source\\io\\expression_io.js"
-			],
-			[
-				"scriptio",
-				"source\\source\\io\\script_io.js"
-			],
-			[
-				"scrip",
-				"source\\source\\compiler\\nodes\\script.js"
-			],
-			[
-				"pakc",
-				"source\\source\\package.js"
-			],
-			[
-				"ske",
-				"source\\source\\skeleton.js"
-			],
-			[
-				"io",
-				"source\\source\\io\\io.js"
-			],
-			[
-				"packtest",
-				"test\\suite\\source_package_tests.js"
-			],
-			[
-				"pack",
-				"source\\source\\compiler\\nodes\\package.js"
-			],
-			[
-				"comp",
-				"source\\source\\compiler\\compiler.js"
-			],
-			[
-				"hmlt",
-				"test\\suite\\html_tests.js"
-			],
-			[
-				"htmlroot",
-				"source\\common\\html\\root.js"
-			],
-			[
-				"sourceMa",
-				"source\\source\\manager.js"
-			],
-			[
-				"config",
-				"build\\config\\browserdev.config.js"
-			],
-			[
-				"lexer",
-				"test\\suite\\lexer_tests.js"
-			],
-			[
-				"client",
-				"source\\root\\client.js"
-			],
-			[
-				"template",
-				"source\\source\\compiler\\nodes\\template.js"
-			],
-			[
-				"nodroo",
-				"source\\source\\compiler\\nodes\\root.js"
-			],
-			[
-				"sourtemjs",
-				"source\\source\\template.js"
-			],
-			[
-				"event",
-				"source\\source\\io\\event_io.js"
-			],
-			[
-				"exp",
-				"source\\source\\io\\expression_io.js"
-			],
-			[
-				"basib",
-				"source\\source\\compiler\\template\\basic_bindings.js"
-			],
-			[
-				"package",
-				"source\\source\\package.js"
-			],
-			[
-				"packa",
-				"source\\source\\package.js"
-			],
-			[
-				"sourtempljs",
-				"source\\source\\template.js"
-			],
-			[
-				"sourtempl",
-				"test\\data\\source_template.html"
-			],
-			[
-				"soutempl",
-				"test\\data\\source_template.html"
-			],
-			[
-				"modlbase",
-				"source\\model\\base.js"
-			],
-			[
-				"mcbas",
-				"source\\model\\container\\base.js"
-			],
-			[
-				"templa",
-				"source\\source\\template.js"
-			],
-			[
-				"modelconbase",
-				"source\\model\\container\\base.js"
-			],
-			[
-				"basic",
-				"source\\source\\compiler\\template\\basic_bindings.js"
-			],
-			[
-				"templatete",
-				"source\\source\\compiler\\template\\template_bindings.js"
-			],
-			[
-				"exr",
-				"source\\source\\io\\expression_io.js"
-			],
-			[
-				"noderoo",
-				"source\\source\\compiler\\nodes\\root.js"
-			],
-			[
-				"script",
-				"source\\source\\io\\script_io.js"
-			],
-			[
-				"Source",
-				"source\\source\\source.js"
-			],
-			[
-				"eval",
-				"source\\source\\compiler\\template\\template_evaluator.js"
-			],
-			[
-				"scripio",
-				"source\\source\\io\\script_io.js"
-			],
-			[
-				"evnetio",
-				"source\\source\\io\\event_io.js"
-			],
-			[
-				"containe",
-				"build\\config\\templates\\jsdoc-template\\tmpl\\container.tmpl"
-			],
-			[
-				"tempal",
-				"test\\data\\template2.html"
-			],
-			[
-				"noroo",
-				"source\\source\\compiler\\nodes\\root.js"
-			],
-			[
-				"htmlroo",
-				"source\\common\\html\\root.js"
-			],
-			[
-				"eva",
-				"source\\source\\compiler\\template\\template_evaluator.js"
-			],
-			[
-				"nodesourc",
-				"source\\source\\compiler\\nodes\\source.js"
-			],
-			[
-				"jsroot",
-				"source\\common\\js\\root.js"
-			],
-			[
-				"noderoot",
-				"source\\source\\compiler\\nodes\\root.js"
-			],
-			[
-				"wickde",
-				"build\\wick-dev.js"
-			],
-			[
-				"wu",
-				"source\\network\\wurl.js"
-			],
-			[
-				"wickd",
-				"build\\wick-dev.js"
-			],
-			[
-				"cssroo",
-				"source\\common\\css\\root.js"
-			],
-			[
-				"lex",
-				"test\\suite\\lexer_tests.js"
-			],
-			[
-				"ht",
-				"test\\suite\\html_tests.js"
-			],
-			[
-				"index",
-				"test\\index.html"
-			],
-			[
-				"PRes",
-				"source\\common\\presets.js"
-			],
-			[
-				"SourceTem",
-				"source\\source\\template.js"
-			],
-			[
-				"void",
-				"source\\source\\compiler\\nodes\\void.js"
-			],
-			[
-				"packag",
-				"source\\source\\package.js"
-			],
-			[
-				"preset",
-				"source\\common\\presets.js"
-			],
-			[
-				"compile",
-				"source\\source\\compiler\\compiler.js"
-			],
-			[
-				"nodsor",
-				"source\\source\\compiler\\nodes\\source.js"
-			],
-			[
-				"rot",
-				"source\\common\\html\\root.js"
-			],
-			[
-				"nodes roo",
-				"source\\source\\compiler\\nodes\\root.js"
-			],
-			[
-				"roothtml",
-				"source\\root\\html.js"
-			],
-			[
-				"temp",
-				"test\\data\\template.html"
-			],
-			[
-				"from ",
-				"test\\data\\form.html"
-			],
-			[
-				"nodesour",
-				"source\\source\\compiler\\nodes\\source.js"
-			],
-			[
-				"form.",
-				"test\\data\\form.html"
-			],
-			[
-				"nodes",
-				"source\\source\\compiler\\nodes\\nodes.js"
-			],
-			[
-				"html roo",
-				"source\\root\\html.js"
-			],
-			[
-				"Tap",
-				"source\\source\\tap\\tap.js"
-			],
-			[
-				"ios",
-				"source\\source\\io\\script_io.js"
-			],
-			[
-				"jsroo",
-				"source\\common\\js\\root.js"
-			],
-			[
-				"filter",
-				"source\\source\\io\\filter_io.js"
-			],
-			[
-				"wick-dev",
-				"build\\wick-dev.js"
-			],
-			[
-				"templ",
-				"source\\source\\template.js"
-			],
-			[
-				"pac",
-				"test\\data\\package.html"
-			],
-			[
-				"conta",
-				"source\\source\\compiler\\nodes\\container.js"
-			],
-			[
-				"container",
-				"source\\model\\container\\base.js"
-			],
-			[
-				"short",
-				"source\\common\\short_names.js"
+				"sourcpack",
+				"source/source/package.js"
 			],
 			[
 				"sourcetempl",
-				"source\\source\\template.js"
+				"source/source/template.js"
 			],
 			[
-				"ModelConta",
-				"source\\model\\container\\array.js"
+				"mana",
+				"source/source/manager.js"
 			],
 			[
-				"Sourcepak",
-				"source\\source\\package.js"
+				"man",
+				"source/source/manager.js"
 			],
 			[
-				"sourcetest",
-				"test\\suite\\source_package_tests.js"
+				"htmlroo",
+				"source/common/html/root.js"
+			],
+			[
+				"nroo",
+				"source/source/compiler/nodes/root.js"
+			],
+			[
+				"cssoot",
+				"source/common/css/root.js"
+			],
+			[
+				"tra",
+				"test/data/source_template_transition.html"
+			],
+			[
+				"noderoot",
+				"source/source/compiler/nodes/root.js"
+			],
+			[
+				"root",
+				"source/common/css/root.js"
+			],
+			[
+				"package",
+				"test/suite/source_package_tests.js"
+			],
+			[
+				"CSSROO",
+				"source/common/css/root.js"
+			],
+			[
+				"io",
+				"source/source/io/io.js"
+			],
+			[
+				"templa",
+				"source/source/template.js"
+			],
+			[
+				"pack",
+				"source/source/package.js"
+			],
+			[
+				"wurl",
+				"source/network/wurl.js"
+			],
+			[
+				"sourcetemplate",
+				"source/source/template.js"
+			],
+			[
+				"sour",
+				"test/suite/source_package_tests.js"
+			],
+			[
+				"tap",
+				"source/source/tap/tap.js"
+			],
+			[
+				"pipbas",
+				"source/source/pipe/base.js"
+			],
+			[
+				"skel",
+				"source/source/skeleton.js"
+			],
+			[
+				"ske",
+				"source/source/skeleton.js"
+			],
+			[
+				"sourctest",
+				"test/suite/source_constructor_tests.js"
+			],
+			[
+				"comp",
+				"source/source/compiler.js"
+			],
+			[
+				"roa",
+				"roadmap.md"
+			],
+			[
+				"wi",
+				"wishlist.md"
+			],
+			[
+				"cssbas",
+				"source\\common\\css\\parser\\tree\\base.js"
+			],
+			[
+				"lex",
+				"source\\common\\string_parsing\\lexer.js"
+			],
+			[
+				"url",
+				"source\\common\\url\\url.js"
+			],
+			[
+				"comm",
+				"source\\common\\common.js"
+			],
+			[
+				"sch",
+				"source\\common\\scheduler.js"
+			],
+			[
+				"modba",
+				"source\\model\\base.js"
+			],
+			[
+				"MOdel",
+				"source\\model\\model.js"
+			],
+			[
+				"pipeb",
+				"source\\source\\pipe\\base.js"
 			],
 			[
 				"sourcebase",
 				"source\\source\\base.js"
 			],
 			[
-				"evel",
-				"source\\source\\compiler\\template_evaluator.js"
+				"sourceb",
+				"source\\model\\base.js"
 			],
 			[
-				"sourcebas",
-				"source\\source\\base.js"
+				"tran",
+				"source\\animation\\transition\\transitioneer.js"
 			],
 			[
-				"csscol",
-				"source\\common\\css\\types\\color.js"
+				"piba",
+				"source\\source\\pipe\\base.js"
 			],
 			[
-				"shr",
-				"source\\common\\short_names.js"
+				"ast",
+				"source\\source\\ast.js"
 			],
 			[
-				"souretempla",
+				"pipeba",
+				"source\\source\\pipes\\base.js"
+			],
+			[
+				"compon",
+				"source\\network\\router\\component.js"
+			],
+			[
+				"templat",
 				"source\\source\\template.js"
 			],
 			[
-				"skel",
-				"source\\source\\skeleton.js"
+				"cas",
+				"documents\\manual\\case.md"
 			],
 			[
-				"testin",
-				"test\\index.html"
+				"j",
+				"build\\build_config\\jsdoc.json"
 			],
 			[
-				"wick-",
-				"build\\wick-dev.js"
+				"pac",
+				"package.json"
 			],
 			[
-				"w",
-				"build\\wick-dev.js"
+				"pa",
+				"package.json"
 			],
 			[
-				"cubi",
-				"source\\common\\math\\cubic_bezier.js"
+				"modelbas",
+				"source\\model\\base.js"
 			],
 			[
-				"css bez",
-				"source\\common\\css\\types\\cubic_bezier.js"
-			],
-			[
-				"dev",
-				"build\\wick-dev.js"
+				"sourcetest",
+				"test\\suite\\source_constructor_tests.js"
 			],
 			[
 				"inde",
 				"test\\index.html"
 			],
 			[
-				"root",
-				"source\\common\\html\\root.js"
+				"getting",
+				"documents\\getting_started_with_wick.html"
 			],
 			[
-				"wick",
-				"build\\wick-dev.js"
+				"mc_",
+				"test\\suite\\mc_tests.js"
 			],
 			[
-				"asci",
-				"source\\common\\string_parsing\\ascii_code_points.js"
+				"string",
+				"source\\schema\\types\\string.js"
 			],
 			[
-				"color",
-				"source\\common\\design\\color.js"
+				"bool",
+				"source\\schema\\types\\bool.js"
 			],
 			[
-				"c",
-				"source\\root\\client.js"
+				"schema",
+				"test\\suite\\schema_tests.js"
 			],
 			[
-				"build",
-				"build\\config\\minibuild_es.config.js"
+				"testind",
+				"test\\index.html"
+			],
+			[
+				"tokeniz",
+				"source\\common\\string_parsing\\tokenizer.js"
+			],
+			[
+				"lexer",
+				"source\\common\\string_parsing\\lexer.js"
+			],
+			[
+				"skelet",
+				"source\\source\\source_skeleton.js"
+			],
+			[
+				"sourceast",
+				"source\\source\\source_constructor_ast.js"
+			],
+			[
+				"source_con",
+				"test\\suite\\source_constructor_tests.js"
+			],
+			[
+				"test",
+				"test\\test.js"
+			],
+			[
+				"case",
+				"source\\case\\case.js"
+			],
+			[
+				"cases",
+				"source\\case\\case_skeleton.js"
+			],
+			[
+				"casecont",
+				"source\\case\\case_constructor.js"
+			],
+			[
+				"casecon",
+				"source\\case\\case_constructor.js"
+			],
+			[
+				"casetest",
+				"test\\suite\\caseconstructor_tests.js"
+			],
+			[
+				"packa",
+				"static\\package.json"
+			],
+			[
+				"quadr",
+				"static\\js\\libraries\\wick\\source\\common\\math\\quadratic_bezier.js"
+			],
+			[
+				"date_type",
+				"static\\js\\libraries\\wick\\source\\schema\\date_type.js"
+			],
+			[
+				"",
+				"static\\js\\libraries\\wick\\test\\suite\\btmc_tests.js"
+			],
+			[
+				"wick.",
+				"static\\js\\libraries\\wick\\source\\wick.js"
+			],
+			[
+				"modelb",
+				"static\\js\\libraries\\wick\\source\\model\\model_base.js"
+			],
+			[
+				"pyrucks",
+				"pytruck_functions.py"
+			],
+			[
+				"wickschema",
+				"static\\js\\libraries\\wick\\source\\schema\\schemas.js"
+			],
+			[
+				"containm",
+				"static\\js\\libraries\\wick\\documents\\manual\\containers.md"
+			],
+			[
+				"model_c",
+				"static\\js\\libraries\\wick\\source\\model\\model_container.js"
+			],
+			[
+				"modelcon",
+				"static\\js\\libraries\\wick\\source\\model\\model_container.js"
+			],
+			[
+				"calendad",
+				"static\\js\\mvc\\cassettes\\calendar\\calendar_date.js"
+			],
+			[
+				"casesk",
+				"static\\js\\libraries\\wick\\source\\case\\case_skeleton.js"
+			],
+			[
+				"calendar date",
+				"static\\js\\mvc\\cassettes\\calendar\\calendar_date.js"
+			],
+			[
+				"case_con",
+				"static\\js\\libraries\\wick\\source\\case\\case_constructor.js"
+			],
+			[
+				"appclhtm",
+				"templates\\app\\calendar\\full.html"
+			],
+			[
+				"pyt",
+				"pytruck_functions.py"
+			],
+			[
+				"schemas",
+				"static\\js\\mvc\\api\\schemas.js"
+			],
+			[
+				"linker",
+				"static\\js\\libraries\\wick\\source\\linker\\linker.js"
+			],
+			[
+				"wickcompon.js",
+				"static\\js\\libraries\\wick\\source\\linker\\component.js"
+			],
+			[
+				"wick.js",
+				"static\\js\\libraries\\wick\\source\\wick.js"
+			],
+			[
+				"calendar",
+				"static\\js\\mvc\\cases\\calendar\\calendar.js"
+			],
+			[
+				"nearby",
+				"static\\js\\mvc\\cases\\nearby_trucks.js"
+			],
+			[
+				"case.md",
+				"static\\js\\libraries\\wick\\documents\\manual\\case.md"
+			],
+			[
+				"input",
+				"source\\cassette\\input.js"
+			],
+			[
+				"transfro",
+				"source\\animation\\transformto.js"
+			],
+			[
+				"mode",
+				"source\\model\\model.js"
+			],
+			[
+				"view",
+				"source\\view.js"
+			],
+			[
+				"casete",
+				"source\\case\\case_template.js"
+			],
+			[
+				"array_",
+				"source\\model\\array_container.js"
+			],
+			[
+				"transform",
+				"source\\animation\\transformto.js"
+			],
+			[
+				"arra",
+				"source\\model\\array_container.js"
+			],
+			[
+				"case_te",
+				"source\\case\\case_template.js"
+			],
+			[
+				"linker.",
+				"pytrucks\\static\\js\\libraries\\wick\\source\\linker\\linker.js"
+			],
+			[
+				"component",
+				"pytrucks\\static\\js\\libraries\\wick\\source\\linker\\component.js"
+			],
+			[
+				"element",
+				"pytrucks\\static\\js\\libraries\\wick\\source\\linker\\element.js"
+			],
+			[
+				"elemen",
+				"pytrucks\\static\\css\\app\\element.css"
+			],
+			[
+				"cassette",
+				"pytrucks\\static\\js\\libraries\\wick\\source\\cassette\\cassette.js"
+			],
+			[
+				"rivet",
+				"pytrucks\\static\\js\\libraries\\wick\\source\\rivet.js"
+			],
+			[
+				"month",
+				"pytrucks\\static\\js\\mvc\\cases\\calendar\\month.js"
+			],
+			[
+				"calnedjs",
+				"pytrucks\\static\\js\\mvc\\cases\\calendar\\calendar.js"
+			],
+			[
+				"linker.js",
+				"pytrucks\\static\\js\\libraries\\wick\\source\\linker\\linker.js"
+			],
+			[
+				"riv",
+				"pytrucks\\static\\js\\libraries\\wick\\source\\rivet.js"
+			],
+			[
+				"com",
+				"pytrucks\\common.py"
+			],
+			[
+				"callba",
+				"pytrucks\\routes\\callback_handling.py"
+			],
+			[
+				"calendar.js",
+				"static\\js\\mvc\\cases\\calendar\\calendar.js"
+			],
+			[
+				"r",
+				"README.md"
+			],
+			[
+				"app",
+				"app.py"
+			],
+			[
+				"week",
+				"static\\js\\mvc\\cassettes\\week_info.js"
+			],
+			[
+				"head",
+				"templates\\common\\head.html"
+			],
+			[
+				"apischem",
+				"static\\js\\mvc\\api\\schemas.js"
+			],
+			[
+				"exp",
+				"static\\wick\\source\\cassette\\exporter.js"
+			],
+			[
+				"vendors",
+				"static\\js\\mvc\\models\\vendor.js"
 			]
 		],
 		"width": 0.0
@@ -2022,7 +1586,7 @@
 		],
 		"width": 0.0
 	},
-	"selected_group": 1,
+	"selected_group": 0,
 	"settings":
 	{
 	},
