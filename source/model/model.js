@@ -24,7 +24,7 @@ class Model extends ModelBase {
 
     }
 
-    get proxy() { return new Proxy(this, { set: AnyModelProxySet }); }
+    get proxy() { return this }
 
     set(data, FROM_ROOT = false) {
 
@@ -69,53 +69,76 @@ class Model extends ModelBase {
 
         this.look_up[name] = index;
 
-        if (typeof(value) == "object") {
+        var address = this.address.slice();
+        address.push(index);
 
-            let address = this.address.slice();
-            address.push(index);
+        switch (typeof(value)) {
 
-            if (Array.isArray(value)) {
-                let child_model = new ArrayModelContainer(value, this.root, address);
-                this.prop_array.push(child_model);
-
-            } else {
-                value.address = address;
-                this.prop_array.push(value);
-            }
-
-            Object.defineProperty(this, name, {
-
-                configurable: false,
-
-                enumerable: true,
-
-                get: function() { return this.getHook(name, this.prop_array[index]); },
-
-                set: (v) => {}
-            });
-
-        } else {
-
-            this.prop_array.push(value);
-
-            Object.defineProperty(this, name, {
-
-                configurable: false,
-
-                enumerable: true,
-
-                get: function() { return this.getHook(name, this.prop_array[index]); },
-
-                set: function(value) {
-
-                    let val = this.prop_array[index];
-
-                    if (val !== value) {
-                        this.prop_array[index] = this.setHook(name, value);
-                        this.scheduleUpdate(name);
-                    }
+            case "object":
+                if (Array.isArray(value))
+                    this.prop_array.push(new ArrayModelContainer(value, this.root, address));
+                else {
+                    if (value instanceof ModelBase) {
+                        value.address = address;
+                        this.prop_array.push(value);
+                    } else
+                        this.prop_array.push(new Model(value, this.root, address));
                 }
-            });
+
+
+                Object.defineProperty(this, name, {
+
+                    configurable: false,
+
+                    enumerable: true,
+
+                    get: function() { return this.getHook(name, this.prop_array[index]); },
+
+                    set: (v) => {}
+                });
+
+                break;
+
+            case "function":
+
+                let object = new value(null, this.root, address);
+
+                this.prop_array.push(object);
+
+                Object.defineProperty(this, name, {
+
+                    configurable: false,
+
+                    enumerable: true,
+
+                    get: function() { return this.getHook(name, this.prop_array[index]); },
+
+                    set: (v) => {}
+                });
+
+                break;
+
+            default:
+                this.prop_array.push(value);
+
+                Object.defineProperty(this, name, {
+
+                    configurable: false,
+
+                    enumerable: true,
+
+                    get: function() { return this.getHook(name, this.prop_array[index]); },
+
+                    set: function(value) {
+
+                        let val = this.prop_array[index];
+
+                        if (val !== value) {
+                            this.prop_array[index] = this.setHook(name, value);
+                            this.scheduleUpdate(name);
+                        }
+                    }
+                });
         }
 
         this.scheduleUpdate(name);

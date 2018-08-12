@@ -11,6 +11,7 @@
     "test.watch": "mocha -w --check-leaks -R min",
     "build-css": "rollup --config ./build/config/css.config.js",
     "build-production": "rollup --config ./build/config/minibuild.config.js",
+    "build-production.watch": "rollup --config ./build/config/minibuild.config.js --watch --environment BUILD:pro",
     "build-production-es": "rollup --config ./build/config/minibuild_es.config.js",
     "build-dev": "rollup --config ./build/config/browserdev.config.js --environment  BUILD:pro",
     "build-dev.watch": "rollup --config ./build/config/browserdev.config.js --watch --environment  BUILD:dev",

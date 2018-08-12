@@ -39,8 +39,7 @@ function SOURCEPACKAGETESTS(config) {
                     age: 256
                 }]
             });
-
-            console.log(Any)
+            
 
             it('Constructs a SourcePackage with Model bindings on properly formatted HTML',
                 () => (new wick.core.network.url("/test/data/package.html")).fetchText()

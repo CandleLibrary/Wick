@@ -1,18 +1,18 @@
-import { OB } from "../common/short_names"
+import { OB } from "../common/short_names";
 
-import { SchemeConstructor } from "./constructor"
+import { SchemeConstructor } from "./constructor";
 
-import { date, DateSchemeConstructor } from "./types/date"
+import { date, DateSchemeConstructor } from "./types/date";
 
-import { time, TimeSchemeConstructor } from "./types/time"
+import { time, TimeSchemeConstructor } from "./types/time";
 
-import { string, StringSchemeConstructor } from "./types/string"
+import { string, StringSchemeConstructor } from "./types/string";
 
-import { number, NumberSchemeConstructor } from "./types/number"
+import { number, NumberSchemeConstructor } from "./types/number";
 
-import { bool, BoolSchemeConstructor } from "./types/bool"
+import { bool, BoolSchemeConstructor } from "./types/bool";
 
-let schemes = { date, string, number, bool, time }
+let schemes = { date, string, number, bool, time };
 
 
 /**

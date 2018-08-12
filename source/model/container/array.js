@@ -1,8 +1,10 @@
-import {
-    ModelContainerBase,
-    MCArray
-} from "./base";
+import { ModelContainerBase, MCArray } from "./base";
 
+import { MultiIndexedContainer } from "./multi";
+
+import { BTreeModelContainer } from "./btree";
+
+import { NumberSchemeConstructor, SchemeConstructor } from "../../schema/schemas";
 
 const ArrayContainerProxySettings = {
 
@@ -50,7 +52,32 @@ export class ArrayModelContainer extends ModelContainerBase {
         super(root, address);
 
         if (data[0] && data[0].key) {
-            this.key = data[0].key;
+
+            let key = data[0].key;
+
+            /* Custom selection of container types happens here. 
+             * If there are multiple keys present, then a MultiIndexedContainer is used.
+             * If the value of the key is a Numerical type, then a BtreeModelContainer is used.
+             **/
+            if (typeof(key) == "object") {
+
+                if (Array.isArray(key))
+                    return new MultiIndexedContainer(data, root, address);
+
+                if (key.type) {
+                    if (key.type instanceof NumberSchemeConstructor)
+                        return new BTreeModelContainer(data, root, address);
+                    this.validator = (key.type instanceof SchemeConstructor) ? key.type : this.validator;
+                }
+
+                if (key.name)
+                    this.key = key.name;
+            } else
+                this.key = key;
+
+            if (data[0].model)
+                this.model = data[0].model;
+
             data = data.slice(1);
         }
 
@@ -213,5 +240,7 @@ export class ArrayModelContainer extends ModelContainerBase {
         return clone;
     }
 }
+
+MultiIndexedContainer.array = ArrayModelContainer;
 
 Object.freeze(ArrayModelContainer);

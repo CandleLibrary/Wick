@@ -54,16 +54,17 @@ function MODELTESTS(config) {
         });
 
         it("Allows Composition of multiple models", function(done) {
+
             let modelA = wick.model({
-                name: "deniki",
-                nationality: "Zimbabwe"
+                name: "Munesu",
+                nationality: "Zimbabwean"
             });
+
             let modelB = wick.model({
                 user: modelA
             });
 
-            //let store = wick.store(modelB);
-
+            
             modelB.set({
                 user: {
                     nationality: "Japanese"
@@ -199,6 +200,41 @@ function MODELTESTS(config) {
             user.addView(view);
 
             let name = user.name;
+        });
+
+        it("Creates complex data hierarchies from basic Javascript object descriptions", function() {
+            
+            let User = wick.model.scheme({
+                name: wick.scheme.string,
+                age: wick.scheme.number,
+                birthdate: wick.scheme.date
+            });
+
+            let Users = wick.model.scheme({
+                self: [{
+                    key: [
+                        { name: "name" },
+                        { name: "age", type: wick.scheme.number }
+                    ],
+                    model : User
+                }]
+            });
+
+            let Store = wick.model.store({
+                users : Users
+            });
+
+            Store.current.set({
+                users : [
+                    {name:"Charles Dogo", age:57, birthdate:"November 18, 1968"},
+                    {name:"Allator Lehtinen", age:22, birthdate:"January 22, 1996"},
+                ]
+            });
+
+
+            Store.current.users.length.should.equal(2);
+            Store.current.users.get({name:"Charles Dogo"})[0].age.should.equal(57);
+            Store.current.users.get({age:22})[0].name.should.equal("Allator Lehtinen");
         });
     });
 }

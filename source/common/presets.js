@@ -2,6 +2,7 @@
 import { DOC } from "./short_names";
 import { ModelBase } from "../model/base";
 import { Model } from "../model/model";
+import { Store } from "../model/store";
 
 /**
  * There are a number of configurable options and global objects that can be passed to wick to be used throughout the PWA. The instances of the Presets class are objects that hosts all these global properties. 
@@ -16,6 +17,8 @@ import { Model } from "../model/model";
  */
 class Presets {
     constructor(preset_options = {}) {
+
+        this.store = (preset_options.store instanceof Store) ? preset_options.store : null;
         
         /**
          * {Object} Store for optional parameters used in the app

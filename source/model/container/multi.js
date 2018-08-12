@@ -1,61 +1,65 @@
-import { ModelContainerBase, MCArray } from "./base"
+import { ModelContainerBase } from "./base";
 
 export class MultiIndexedContainer extends ModelContainerBase {
 
-    constructor(schema) {
+    constructor(data = [], root = null, address = []) {
 
-        super({
-            identifier: "indexed",
-            model: schema ._model_
-        });
+        super(root, address);
 
-        this.schema = schema;
         this.indexes = {};
         this.first_index = null;
 
-        this.addIndex(schema.index);
+        if (data[0] && data[0].key) {
+
+            let key = data[0].key;
+
+            if (data[0].model)
+                this.model = data[0].model;
+
+            if (Array.isArray(key))
+                key.forEach((k) => (this.addKey(k)));
+
+            data = data.slice(1);
+        }
+
+        if (Array.isArray(data) && data.length > 0)
+            this.insert(data);
     }
 
     /**
         Returns the length of the first index in this container. 
     */
-    get length() {
-        return this.first_index.length;
-    }
+    get length() { return this.first_index.length; }
 
     /**
-        Insert a new ModelContainerBase into the index through the schema.  
+        Insert a new ModelContainerBase into the index through the key.  
     */
-    addIndex(index_schema) {
+    addKey(key) {
+        let name = key.name;
 
-        for (let name in index_schema) {
-            let scheme = index_schema[name];
+        let container = new MultiIndexedContainer.array([{ key, model: this.model }]);
 
-            if (scheme.container && !this.indexes[name]) {
-                this.indexes[name] = new scheme.container(scheme.schema);
+        this.indexes[name] = container;
+        if (this.first_index) {
 
-                if (this.first_index)
-                    this.indexes[name].insert(this.first_index.__getAll__());
-                else
-                    this.first_index = this.indexes[name];
-            }
-        }
+            this.indexes[name].insert(this.first_index.__getAll__());
+        } else
+            this.first_index = this.indexes[name];
     }
 
     get(item, __return_data__) {
 
-        let out = {};
+        let out = __return_data__ || new MultiIndexedContainer.array();
 
         if (item) {
             for (let name in item)
                 if (this.indexes[name])
-                    out[name] = this.indexes[name].get(item[name], __return_data__);
+                    this.indexes[name].get(item[name], out);
         } else
+            this.first_index.get(null, out);
 
-            out = this.first_index.get(null);
 
-
-        return out;
+        return out.proxy;
     }
 
     remove(item) {
@@ -81,7 +85,7 @@ export class MultiIndexedContainer extends ModelContainerBase {
 
     __insert__(model, add_list, identifier) {
 
-        let out = false
+        let out = false;
 
         for (let name in this.indexes) {
 
@@ -136,6 +140,13 @@ export class MultiIndexedContainer extends ModelContainerBase {
     }
 
     toJSON() {
-        return "[]";
+        return this.first_index.toJSON();
+    }
+
+    clone() {
+        let clone = super.clone();
+        clone.indexes = this.indexes;
+        clone.first_index = this.first_index;
+        return clone;
     }
 }

@@ -2,6 +2,7 @@ import { Model } from "./model";
 
 class Store {
     constructor(data) {
+
         this.history = [{ model: new Model(data, this), actions: [{ d: data, a: null }] }];
         this.MUTATION_ID = 0;
     }
@@ -13,6 +14,14 @@ class Store {
     get current() { return this.history[this.history.length - 1].model; }
 
     set current(v) {}
+
+    get(data){
+        return this.current.get(data);
+    }
+
+    set(data){
+        return this.current.set(data);
+    }
 
     _getParentMutationID_() { return this.MUTATION_ID; }
 
@@ -37,7 +46,7 @@ class Store {
         if (data)
             this.history[this.history.length - 1].actions.push({ d: data, a: address });
 
-        return model_prop._setThroughRoot_(data, address, index, len_minus_1);
+        return model_prop._setThroughRoot_(data, address, index, len_minus_1, this.MUTATION_ID);
     }
 }
 

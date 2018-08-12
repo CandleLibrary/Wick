@@ -1,3 +1,5 @@
+import { ArrayModelContainer } from "./container/array";
+
 import { ModelContainerBase } from "./container/base";
 
 import { SchemeConstructor } from "../schema/schemas";
@@ -21,8 +23,8 @@ function CreateSchemedProperty(object, scheme, schema_name, index) {
     Object.defineProperty(object, schema_name, {
         configurable: false,
         enumerable: true,
-        get: function() { 
-            return this.getHook(schema_name, this.prop_array[index]); 
+        get: function() {
+            return this.getHook(schema_name, this.prop_array[index]);
         },
         set: function(value) {
 
@@ -32,8 +34,8 @@ function CreateSchemedProperty(object, scheme, schema_name, index) {
 
             scheme.verify(val, result);
 
-            if (result.valid && this.prop_array[index] != val){
-                this.prop_array[index] = this.setHook(schema_name, val);            
+            if (result.valid && this.prop_array[index] != val) {
+                this.prop_array[index] = this.setHook(schema_name, val);
                 this.scheduleUpdate(schema_name);
             }
         }
@@ -100,6 +102,10 @@ class SchemedModel extends ModelBase {
                     for (let schema_name in schema) {
                         let scheme = schema[schema_name];
 
+                        if (schema_name == "self" && Array.isArray(scheme)) {
+                            return new ArrayModelContainer(scheme);
+                        } else
+
                         if (typeof(schema) == "object") {
                             if (Array.isArray(scheme)) {
                                 if (scheme[0] && scheme[0].container && scheme[0].schema)
@@ -140,11 +146,11 @@ class SchemedModel extends ModelBase {
 
         Object.defineProperty(this, "prop_array", { value: new Array(this.prop_offset), enumerable: false, configurable: false, writable: true });
 
-        if(data)
+        if (data)
             this.set(data);
     }
 
-     set(data, FROM_ROOT = false) {
+    set(data, FROM_ROOT = false) {
 
         if (!FROM_ROOT)
             return this._deferUpdateToRoot_(data);
@@ -172,9 +178,9 @@ class SchemedModel extends ModelBase {
 
                     prop.set(data_prop, true);
 
-                } else 
+                } else
                     this[prop_name] = data_prop;
-            } 
+            }
         }
 
         return this;

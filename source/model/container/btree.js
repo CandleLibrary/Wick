@@ -1,20 +1,44 @@
-import { ModelContainerBase, MCArray } from "./base"
+import { ModelContainerBase, MCArray } from "./base";
 
-import { NumberSchemeConstructor } from "../../schema/schemas"
+import { MultiIndexedContainer } from "./multi";
+
+import { NumberSchemeConstructor, schemes } from "../../schema/schemas";
 
 export class BTreeModelContainer extends ModelContainerBase {
 
-    constructor(schema) {
+    constructor(data = [], root = null, address = []) {
 
-        if(!schema || !(schema.parser) ||  !(schema.parser instanceof NumberSchemeConstructor))
-            throw new Error("BTreeModelContainer's MUST use a parser schema that is or inherits from NumberType schema and returns numerical values.");
-        
-        super(schema);
+        super(root, address);
+
+        this.validator = schemes.number;
+
+        if (data[0] && data[0].key) {
+
+            let key = data[0].key;
+
+            if (typeof key == "object") {
+
+                if (key.type)
+                    this.validator = (key.type instanceof NumberSchemeConstructor) ? key.type : this.validator;
+
+                if (key.name)
+                    this.key = key.name;
+            }else
+                this.key = key;
+
+            if (data[0].model)
+                this.model = data[0].model;
+
+            data = data.slice(1);
+        }
 
         this.root = null;
         this.min = 10;
         this.max = 20;
         this.size = 0;
+
+        if (Array.isArray(data) && data.length > 0)
+            this.insert(data);
     }
 
     _destroy_() {
@@ -391,10 +415,10 @@ class BtreeNode {
                 let key = this.keys[i];
 
                 if (start <= key)
-                    this.nodes[i].get(start, end, out_container)
+                    this.nodes[i].get(start, end, out_container);
             }
 
-            this.nodes[i].get(start, end, out_container, )
+            this.nodes[i].get(start, end, out_container);
 
         } else {
 
@@ -410,4 +434,4 @@ class BtreeNode {
     }
 }
 
-Object.freeze(BTreeModelContainer);
+MultiIndexedContainer.btree = BTreeModelContainer;

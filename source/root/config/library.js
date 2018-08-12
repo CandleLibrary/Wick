@@ -41,8 +41,8 @@ import * as Common from "../../common/common";
 import { Scheduler } from "../../common/scheduler";
 
 const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);
-model.scheme = function(schema, sm) { sm = class extends SchemedModel {};
-    sm.schema = schema; return sm; };
+model.scheme = (schema, sm) => (sm = class extends SchemedModel {}, sm.schema = schema, sm);
+
 model.constr = SchemedModel;
 model.any = (data) => new Model(data);
 model.any.constr = Model;
@@ -83,9 +83,10 @@ const core = {
     model: model,
     network: {
         url: WURL,
-        router: Router/*,
-        getter: Getter,
-        setter: Setter,*/
+        router: Router
+        /*,
+                getter: Getter,
+                setter: Setter,*/
     },
     source: (...a) => new SourcePackage(...a)
 };
