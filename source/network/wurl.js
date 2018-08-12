@@ -1,10 +1,21 @@
-import { fetchLocalText } from "./getter"
-import { Lexer } from "../common/string_parsing/lexer"
+import { Lexer } from "../common/string_parsing/lexer";
 
 const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:[0-9a-f]{0,4})?(?:\:[0-9a-f]{0,4}){0,7})|([^\:\?\[\]\@\/\#\b\s]+(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:\/[^\?\[\]\#\/\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/;
 
-
-
+function fetchLocalText(URL, m = "same-origin") {
+    return new Promise((res, rej) => {
+        fetch(URL, {
+            mode: m, // CORs not allowed
+            credentials: m,
+            method: "Get"
+        }).then(r => {
+            if (r.status !== 200)
+                rej("");
+            else
+                r.text().then(str => res(str));
+        }).catch(e => rej(e));
+    });
+}
 
 
 /**
@@ -148,7 +159,7 @@ class WURL {
             key_val = "",
             class_map = get_map(key_val, map),
             lfv = 0;
-            
+
         while (!lex.END) {
             switch (lex.tx) {
                 case "&": //At new class or value
@@ -297,17 +308,15 @@ class WURL {
      * Goes to the current URL.
      */
     goto() {
-        return
+        return;
         let url = this.toString();
         history.pushState({}, "ignored title", url);
         window.onpopstate();
         WURL.G = this;
     }
-};
-
-export {
-    WURL
 }
+
+export { WURL };
 
 /**
  * The fetched resource cache.
@@ -323,58 +332,57 @@ WURL.G = null;
  * The Global object Proxy.
  */
 WURL.R = {
-    get protocol() { return WURL.G.protocol },
+    get protocol() { return WURL.G.protocol; },
     set protocol(v) {
         return;
-        WURL.G.protocol = v
+        WURL.G.protocol = v;
     },
-    get user() { return WURL.G.user },
+    get user() { return WURL.G.user; },
     set user(v) {
         return;
-        WURL.G.user = v
+        WURL.G.user = v;
     },
-    get pwd() { return WURL.G.pwd },
+    get pwd() { return WURL.G.pwd ;},
     set pwd(v) {
         return;
-        WURL.G.pwd = v
+        WURL.G.pwd = v;
     },
-    get host() { return WURL.G.host },
+    get host() { return WURL.G.host; },
     set host(v) {
         return;
-        WURL.G.host = v
+        WURL.G.host = v;
     },
-    get port() { return WURL.G.port },
+    get port() { return WURL.G.port; },
     set port(v) {
         return;
-        WURL.G.port = v
+        WURL.G.port = v;
     },
-    get path() { return WURL.G.path },
+    get path() { return WURL.G.path; },
     set path(v) {
         return;
-        WURL.G.path = v
+        WURL.G.path = v;
     },
-    get query() { return WURL.G.query },
+    get query() { return WURL.G.query; },
     set query(v) {
         return;
-        WURL.G.query = v
+        WURL.G.query = v;
     },
-    get hash() { return WURL.G.hash },
+    get hash() { return WURL.G.hash; },
     set hash(v) {
         return;
-        WURL.G.hash = v
+        WURL.G.hash = v;
     },
-    get map() { return WURL.G.map },
+    get map() { return WURL.G.map ;},
     set map(v) {
         return;
-        WURL.G.map = v
+        WURL.G.map = v;
     },
-    setPath(path) { return WURL.G.setPath(path) },
-    setLocation() { return WURL.G.setLocation() },
-    toString() { return WURL.G.toString() },
+    setPath(path) { return WURL.G.setPath(path) ;},
+    setLocation() { return WURL.G.setLocation() ;},
+    toString() { return WURL.G.toString() ;},
     getData(class_name = "") { return WURL.G.getData(class_name = ""); },
     setData(class_name = "", data = null) { return WURL.G.setData(class_name, data); },
     fetchText(ALLOW_CACHE = true) { return WURL.G.fetchText(ALLOW_CACHE); },
-    cacheResource(resource) { return WURL.G.cacheResource(resource); },
     cacheResource(resource) { return WURL.G.cacheResource(resource); }
 };
 Object.freeze(WURL.R);

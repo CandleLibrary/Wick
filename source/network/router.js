@@ -1,8 +1,8 @@
-import { WURL } from "../wurl";
+import { WURL } from "./wurl";
 
-import { PageView } from "../../page/page";
+import { PageView } from "../page/page";
 
-import { Element } from "../../page/element";
+import { Element } from "../page/element";
 
 const URL_HOST = { wurl: null };
 

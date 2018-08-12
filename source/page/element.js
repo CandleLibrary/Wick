@@ -1,4 +1,4 @@
-import { setLinks } from "../network/router/setlinks";
+import { setLinks } from "../network/setlinks";
 import { TransformTo } from "../animation/animation";
 import { Component, FailedComponent } from "./component";
 

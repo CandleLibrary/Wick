@@ -27,12 +27,12 @@ import { CSSParser } from "../../common/css/root";
 import { HTMLParser } from "../../common/html/root";
 
 //Network
-import { Getter } from "../../network/getter";
-import { Setter } from "../../network/setter";
+//import { Getter } from "../../network/getter";
+//import { Setter } from "../../network/setter";
 
 //Routing
 import { WURL } from "../../network/wurl";
-import { Router } from "../../network/router/router";
+import { Router } from "../../network/router";
 
 //Other
 import { Lexer } from "../../common/string_parsing/lexer";
@@ -83,9 +83,9 @@ const core = {
     model: model,
     network: {
         url: WURL,
-        router: Router,
+        router: Router/*,
         getter: Getter,
-        setter: Setter,
+        setter: Setter,*/
     },
     source: (...a) => new SourcePackage(...a)
 };

@@ -75,14 +75,14 @@ The versioning scheme of Wick is as follows:
 
 ### v0.4.2a - *current* - Revision to Model and ModelContainer objects.
 #### commit: 5a06470af1da93f36611ad38e4e522a745d2f6d2
-See [changes]("./CHANGELOG.md#v0.4.2a")
+See [changes]("./CHANGELOG.md#v042a")
 
 ### v0.4.1a - *current* - Updating router, element & component objects.
 #### commit: cb0b9013b515fc83ed634351071231b5eab53fab
-See [changes]("./CHANGELOG.md#v0.4.1a")
+See [changes]("./CHANGELOG.md#v041a")
 
 ### v0.4.0a - Exposed Objects Now Defined, CSS Improvements, Changelog.
-See [changes]("./CHANGELOG.md#v0.4.0a").
+See [changes]("./CHANGELOG.md#v040a").
 
 - Added `./docs/meta/CHANGELOG.md`
 > Changes are now documented in a separate document to keep ROADMAP.md clean. No plans as of yet to retro actively move entries in ROADMAP to CHANGELOG, but all new changes will be documented there, and ROADMAP will link to relevant entries.
