@@ -1,8 +1,8 @@
-import { ModelContainerBase } from "./container_revised/base";
+import { ModelContainerBase } from "./container/base";
 
 import { SchemeConstructor } from "../schema/schemas";
 
-import { Model } from "./model_revised.js";
+import { Model } from "./model.js";
 
 import { ModelBase } from "./base.js";
 

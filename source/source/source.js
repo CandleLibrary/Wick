@@ -1,4 +1,4 @@
-import { Model } from "../model/model_revised";
+import { Model } from "../model/model";
 import { Tap } from "./tap/tap";
 import { View } from "../view/view";
 

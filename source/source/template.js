@@ -1,8 +1,8 @@
 import { _createElement_, _instanceOf_ } from "../common/short_names";
 
-import { MCArray, ModelContainerBase } from "../model/container_revised/base";
+import { MCArray, ModelContainerBase } from "../model/container/base";
 
-import { MultiIndexedContainer } from "../model/container_revised/multi";
+import { MultiIndexedContainer } from "../model/container/multi";
 
 import { Scheduler } from "../common/scheduler";
 

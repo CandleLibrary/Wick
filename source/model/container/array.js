@@ -1,7 +1,7 @@
 import {
     ModelContainerBase,
     MCArray
-} from "./base"
+} from "./base";
 
 
 const ArrayContainerProxySettings = {
@@ -9,7 +9,7 @@ const ArrayContainerProxySettings = {
     set: function(obj, prop, val) {
 
         if (prop in obj && obj[prop] == val)
-            return true
+            return true;
 
         let property = obj[prop];
 
@@ -32,9 +32,10 @@ const ArrayContainerProxySettings = {
             return obj.data[prop];
 
         let term = {};
-        term[obj.schema.identifier] = prop;
 
-        return obj.get(prop)[0];
+        term[obj.key] = prop;
+
+        return obj.get(prop, [])[0];
     }
 };
 
@@ -44,26 +45,19 @@ const ArrayContainerProxySettings = {
 
 export class ArrayModelContainer extends ModelContainerBase {
 
-    constructor(data = [], schema = {}, prop_name = "", root = null, address = []) {
+    constructor(data = [], root = null, address = []) {
 
-        if (data[0] && data[0].id) {
-            schema.identifier = data[0].id;
+        super(root, address);
+
+        if (data[0] && data[0].key) {
+            this.key = data[0].key;
             data = data.slice(1);
         }
 
-        super(schema, root);
-
-        this.prop_name = prop_name;
-
         this.data = [];
-
-        this.address = address;
 
         if (Array.isArray(data) && data.length > 0)
             this.insert(data);
-
-
-        //return new Proxy(this, ArrayContainerProxySettings);
     }
 
     _destroy_() {
@@ -79,10 +73,14 @@ export class ArrayModelContainer extends ModelContainerBase {
 
     get length() { return this.data.length; }
 
-    __defaultReturn__() {
-        if (1 || this.source) return new MCArray();
+    __defaultReturn__(USE_ARRAY) {
 
-        let n = new ArrayModelContainer([], this.schema);
+        if (USE_ARRAY) return new MCArray();
+
+        let n = new ArrayModelContainer();
+
+        n.key = this.key;
+        n.validator = this.validator;
 
         this.__link__(n);
 
@@ -102,7 +100,7 @@ export class ArrayModelContainer extends ModelContainerBase {
                     obj.MUTATION_ID = this.MUTATION_ID;
                 }
 
-                obj.set(model, true)
+                obj.set(model, true);
 
                 this.data[i] = obj;
 
@@ -115,7 +113,6 @@ export class ArrayModelContainer extends ModelContainerBase {
         model.address = this.address.slice();
         model.address.push(this.data.length - 1);
 
-        console.log(this.address, model.address)
         model.root = this.root;
 
         if (add_list) add_list.push(model);
@@ -184,7 +181,7 @@ export class ArrayModelContainer extends ModelContainerBase {
 
         this.data[i] = model_prop;
 
-        return model_prop._setThroughRoot_(data, address, index, len,  model_prop.MUTATION_ID);
+        return model_prop._setThroughRoot_(data, address, index, len, model_prop.MUTATION_ID);
     }
 
     __remove__(term, out_container) {
@@ -208,18 +205,11 @@ export class ArrayModelContainer extends ModelContainerBase {
         return result;
     }
 
-    toJSON() {
-
-        return this.data;
-    }
+    toJSON() { return this.data; }
 
     clone() {
-        let clone = new this.constructor();
+        let clone = super.clone();
         clone.data = this.data.slice();
-        clone.schema = this.schema;
-        clone.prop_name = this.prop_name;
-        clone.MUTATION_ID = this.MUTATION_ID;
-        clone.address = this.address;
         return clone;
     }
 }

@@ -1,4 +1,4 @@
-import { Model } from "./model_revised";
+import { Model } from "./model";
 
 class Store {
     constructor(data) {

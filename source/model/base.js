@@ -1,6 +1,6 @@
 import { Scheduler } from "../common/scheduler";
 
-import { _SealedProperty_, _FrozenProperty_ } from "../common/short_names";
+import { _SealedProperty_ } from "../common/short_names";
 
 /**
  * The base class which all Model classes extend.

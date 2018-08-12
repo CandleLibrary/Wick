@@ -1,7 +1,7 @@
 //import { CustomComponent } from "../page/component"
 import { DOC } from "./short_names";
 import { ModelBase } from "../model/base";
-import { AnyModel } from "../model/any";
+import { Model } from "../model/model";
 
 /**
  * There are a number of configurable options and global objects that can be passed to wick to be used throughout the PWA. The instances of the Presets class are objects that hosts all these global properties. 
@@ -55,9 +55,9 @@ class Presets {
         this.custom_sources = {};
 
         /**
-         * { Object } Store of user defined classes that extend the Model or AnyModel classes. `<w-source>` tags in templates that have a value set for the  `schema` attribute, e.g. `<w-s schema="my_favorite_model_type">...</w-s>`, will be bound to a new instance of the class in presets.schema whose property name matches the "schema" attribute.
+         * { Object } Store of user defined classes that extend the Model or Model classes. `<w-source>` tags in templates that have a value set for the  `schema` attribute, e.g. `<w-s schema="my_favorite_model_type">...</w-s>`, will be bound to a new instance of the class in presets.schema whose property name matches the "schema" attribute.
          * 
-         * Assign classes that extend Model or AnyModel to preset_options.schemas to have them available to Wick.
+         * Assign classes that extend Model or SchemedModel to preset_options.schemas to have them available to Wick.
          * 
          * In JavaScript:
          * ```javascript
@@ -66,20 +66,20 @@ class Presets {
          *      my_favorite_model_type : MyFavoriteModelType
          * }
          * ```
-         * note: presets.schema.any is always assigned to the AnyModel class.
+         * note: presets.schema.any is always assigned to the Model class.
          * @instance
          * @readonly
          */
-        this.schemas = { any: AnyModel };
+        this.schemas = { any: Model };
 
         /**
          * { Object } Store of user defined Model instances that serve as global models, which are available to the whole application. Multiple Sources will be able to _bind_ to the Models. `<w-source>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets ._model_ whose property name matches the "model" attribute.
          * 
-         * Assign instances of Model or AnyModel or any class that extends these to preset_options.models to have them used by Wick.
+         * Assign instances of Model or Model or any class that extends these to preset_options.models to have them used by Wick.
          * 
          * In JavaScript:
          * ```javascript
-         * const MyGlobalModel = new AnyModel({global_data: "This is global!"});
+         * const MyGlobalModel = new Model({global_data: "This is global!"});
          * preset_options.custom_componets = {
          *      my_global_model : MyGlobalModel
          * }
