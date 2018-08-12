@@ -1,6 +1,6 @@
 # WICK
 ## Dynamic Component Templating Framework
-v0.4.0a
+v0.4.2a
 
 ### This is a draft outline
 

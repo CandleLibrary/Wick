@@ -1,5 +1,36 @@
 #### Wick Change Log
 
+## v0.4.2a
+
+### 8/11/2018
+
+1. Revised how data is stored and accessed in Models and ModelContainers. 
+> Models now have better support for adhoc creation of data structures from basic Javascript object. Models can be versioned and sealed to create Immutable data structures. 
+> 
+> A Store object has been added to allow model histories to be tracked.
+> 
+> Renamed objects in library:
+> Model has been renamed to SchemedModel, and AnyModel has been renamed to Model.
+> 
+> New objects exposed by `wick`:
+> - #### Model
+>   - `wick.model.scheme` - **SchemedModel Constructor** *object constructor factory*
+>   > This is a function that takes as input an object that serves as the schema for a SchemedModel, and returns a SchemedModel constructor based on that schema. 
+>   - `wick.model.store` - **Store** *object factory*
+
+2. Added new tests for Models.
+
+## v0.4.1a
+
+### 8/2/2018
+
+1. Modified routing, component, and element objects to work with changes to other portions of Wick. 
+
+2. Changed dynamic and static CSS scoping in templates to scope to <w-s> elements. 
+
+3. Added timing functions to Scheduler. 
+> - `Scheduler.queueUpdate(object, timestart, timeend)` can be called with millisecond values for `timestart` and `timeend` arguments. A value of 0 or more for `timestart` will cause the Scheduler to delay calling `_update_` on the requesting object until a period of time equal to `timestart` elapses. A value of 1 or more for `timeend` will cause the Scheduler to repeatedly call `_update_` on the requesting object for a period of time equal to `timeend`
+
 ## v0.4.0a
 
 ### 7/31/2018

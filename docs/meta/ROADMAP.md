@@ -53,13 +53,14 @@ The versioning scheme of Wick is as follows:
 - Simplify, Optimize code base.
 - Getting Started Guide
 - Dynamic string templating
-- CSS templating
 - Server side JSON API tooling
 - Simplify, Optimize code base
 - Form Validation using Schemes
 - Define, design, and document data flow. Determine allowed and not allowed patterns, e.i. single direction, bi-directional, cross-component, cross-page (URL mapping), cross-instance (URL mapping), server-client.
 
 ## Features Introduced
+- Model Store
+- CSS templating
 - Templating system designed and implemented.
 - [Lexer]("./source/common/string_parsing/lexer") Optimization
 - Deferred template rendering; allow a template to be "pre-compiled" and ready to plugin to any number of other templates.
@@ -71,12 +72,16 @@ The versioning scheme of Wick is as follows:
 ## Major Changes
 - Objects exposed by `wick` have been changed
 - `HTMLParser` introduced
-- 
+
+### v0.4.2a - *current* - Revision to Model and ModelContainer objects.
+#### commit: 5a06470af1da93f36611ad38e4e522a745d2f6d2
+See [changes]("./CHANGELOG.md#v0.4.2a")
 
 ### v0.4.1a - *current* - Updating router, element & component objects.
-See [changes]("./CHANGELOG.mg#v0.4.1a")
+#### commit: cb0b9013b515fc83ed634351071231b5eab53fab
+See [changes]("./CHANGELOG.md#v0.4.1a")
 
-### v0.4.0a - Exposed Objects Now Defined, CSS Improvements, Change log.
+### v0.4.0a - Exposed Objects Now Defined, CSS Improvements, Changelog.
 See [changes]("./CHANGELOG.md#v0.4.0a").
 
 - Added `./docs/meta/CHANGELOG.md`
