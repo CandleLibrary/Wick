@@ -1,5 +1,5 @@
 import { TransformTo } from "../animation/animation";
-import { WURL } from "../network/wurl"
+import { WURL } from "../network/wurl";
 import { SourcePackage } from "../source/package";
 
 /**
@@ -262,7 +262,7 @@ class Component extends BaseComponent {
             if (this.data.import == "null") {
                 query_data = wurl.getClass();
             } else {
-                var l = this.data.import.split(";")
+                var l = this.data.import.split(";");
                 for (var i = 0; i < l.length; i++) {
                     let n = l[i].split(":");
 

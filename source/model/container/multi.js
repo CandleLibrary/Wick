@@ -49,6 +49,8 @@ export class MultiIndexedContainer extends ModelContainerBase {
 
     get(item, __return_data__) {
 
+        item = this.getHook("query", item);
+
         let out = __return_data__ || new MultiIndexedContainer.array();
 
         if (item) {

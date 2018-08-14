@@ -36,8 +36,6 @@ function buildCSS(lex, SourcePackage, presets, ast, css_list, index) {
 
         return complete(lex, SourcePackage, presets, ast);
     });
-
-    
 }
 
 export function parseText(lex, SourcePackage, presets) {
@@ -64,7 +62,7 @@ export function parseText(lex, SourcePackage, presets) {
             SourcePackage._complete_();
         });
     }
-    SourcePackage._addError_(new Error(`Unexpected end of input. ${lex.slice(start)}`));
+    SourcePackage._addError_(new Error(`Unexpected end of input. ${lex.slice(start)}, ${lex.str}`));
     SourcePackage._complete_();
 }
 

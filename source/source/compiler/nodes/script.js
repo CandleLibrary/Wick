@@ -31,6 +31,5 @@ export class ScriptNode extends VoidNode {
     _build_(element, source, presets, errors, taps) {
         if (this._binding_)
             this._binding_._bind_(source, errors, taps, element);
-        
     }
 }

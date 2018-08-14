@@ -190,8 +190,10 @@ export class ModelContainerBase extends ModelBase {
             out_data = this.__insertSub__(item, out_data, add_list);
 
 
-        if (add_list && add_list.length > 0)
+        if (add_list && add_list.length > 0){
             this.updateViewsAdded(add_list);
+            this.scheduleUpdate();
+        }
 
         return this;
     }

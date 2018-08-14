@@ -1,6 +1,6 @@
 import { RootNode, BindingCSSRoot } from "./root";
 import { Source } from "../../source";
-import { Tap } from "../../tap/tap";
+import { Tap, UpdateTap } from "../../tap/tap";
 
 /**
  * Source nodes are used to hook into specific Models, and respond to `update` events from that model.
@@ -52,8 +52,16 @@ export class SourceNode extends RootNode {
         for (let i = 0, l = tap_list.length; i < l; i++) {
             let tap = tap_list[i],
                 name = tap.name;
-            me.taps[name] = new Tap(me, name, tap._modes_);
+
+            let bool = name == "update";
+
+            me.taps[name] = bool ? new UpdateTap(me, name, tap._modes_) : new Tap(me, name, tap._modes_);
+
+            if(bool)
+                me.update_tap = me.taps[name];
+            
             out_taps.push(me.taps[name]);
+
         }
 
         for (let i = 0, l = this._attributes_.length; i < l; i++) {
@@ -71,11 +79,11 @@ export class SourceNode extends RootNode {
         for (let node = this.fch; node; node = this.getN(node))
             node._build_(element, me, presets, errors, out_taps, statics);
 
-        if(statics){
+        if (statics) {
             me._statics_ = statics;
             me._update_(statics);
         }
-        
+
 
         return me;
     }

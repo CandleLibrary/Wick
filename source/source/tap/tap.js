@@ -74,3 +74,11 @@ export class Tap {
 
     }
 }
+
+export class UpdateTap extends Tap{
+    _down_(model){
+        for (let i = 0, l = this._ios_.length; i < l; i++)
+                this._ios_[i]._down_(model);
+    }
+    _up_(){}
+}

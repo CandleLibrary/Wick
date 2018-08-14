@@ -9,7 +9,7 @@ export class ScriptIO extends IOBase {
             if (binding._func_) {
                 func = binding._func_;
             } else {
-                func = Function("value", "event", "model", "emit", "presets", "static", binding.val);
+                func = Function("value", "event", "model", "emit", "presets", "static", "src", binding.val);
                 binding._func_ = func;
             }
         } catch (e) {
@@ -39,7 +39,7 @@ export class ScriptIO extends IOBase {
     _down_(value, meta = {event:null}) {
         this.meta = meta;
         const src = this._source_;
-        this._func_(value, meta.event, src._model_, this._bound_emit_function_, src._presets_, src._statics_);
+        this._func_(value, meta.event, src._model_, this._bound_emit_function_, src._presets_, src._statics_, src);
     }
 
     _emit_(name, value) {

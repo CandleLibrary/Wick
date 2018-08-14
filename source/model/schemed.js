@@ -92,7 +92,6 @@ class SchemedModel extends ModelBase {
                 let constructor = this.constructor;
                 let prototype = constructor.prototype;
 
-
                 _FrozenProperty_(prototype, "schema", schema);
 
                 if (!__FinalConstructor__) {
@@ -102,9 +101,18 @@ class SchemedModel extends ModelBase {
                     for (let schema_name in schema) {
                         let scheme = schema[schema_name];
 
-                        if (schema_name == "self" && Array.isArray(scheme)) {
-                            return new ArrayModelContainer(scheme);
-                        } else
+                        if (schema_name == "self" && Array.isArray(scheme))
+                            return CreateSchemedContainer(schema, root, address);
+
+                        if (schema_name == "getHook") {
+                            prototype.getHook = scheme;
+                            continue;
+                        }
+
+                        if (schema_name == "setHook") {
+                            prototype.setHook = scheme;
+                            continue;
+                        }
 
                         if (typeof(schema) == "object") {
                             if (Array.isArray(scheme)) {
@@ -189,6 +197,18 @@ class SchemedModel extends ModelBase {
     _destroy_() { this.root = null; }
 
     _createProp_() {}
+}
+
+function CreateSchemedContainer(schema, root, address) {
+    let data = schema.self;
+
+    let out = new ArrayModelContainer(data, root, address);
+
+    if(schema.proto)
+        for(let name in schema.proto)
+            _SealedProperty_(out, name, schema.proto[name]);
+
+    return out;
 }
 
 export { SchemedModel };

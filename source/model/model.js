@@ -16,8 +16,6 @@ class Model extends ModelBase {
         _SealedProperty_(this, "prop_offset", 0);
         _SealedProperty_(this, "look_up", {});
 
-        this.address = [];
-
         if (data)
             for (let name in data)
                 this._createProp_(name, data[name]);
@@ -71,7 +69,7 @@ class Model extends ModelBase {
 
         var address = this.address.slice();
         address.push(index);
-
+        
         switch (typeof(value)) {
 
             case "object":

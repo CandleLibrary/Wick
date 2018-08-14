@@ -1,5 +1,5 @@
 import { Model } from "../model/model";
-import { Tap } from "./tap/tap";
+import { Tap, UpdateTap } from "./tap/tap";
 import { View } from "../view/view";
 
 
@@ -24,7 +24,7 @@ export class Source extends View {
          *@type {Boolean} 
          *@protected
          */
-        this.DESTROYED = false;
+
 
         this.parent = parent;
         this.ele = element;
@@ -33,6 +33,7 @@ export class Source extends View {
         this._statics_ = null;
 
         this.taps = {};
+        this.update_tap = null;
         this.children = [];
         this.sources = [];
         this._ios_ = [];
@@ -41,6 +42,9 @@ export class Source extends View {
 
         this._model_name_ = "";
         this._schema_name_ = "";
+
+        this.DESTROYED = false;
+        this.LOADED = false;
 
         this.addToParent();
     }
@@ -102,8 +106,13 @@ export class Source extends View {
 
     getTap(name) {
         let tap = this.taps[name];
-        if (!tap)
-            tap = this.taps[name] = new Tap(this, name);
+
+        if (!tap) {
+            if (name == "update")
+                this.update_tap = new UpdateTap(this, name);
+            else
+                tap = this.taps[name] = new Tap(this, name);
+        }
         return tap;
     }
 
@@ -120,7 +129,13 @@ export class Source extends View {
             if (this.taps[name])
                 out_taps.push(this.taps[name]);
             else {
-                this.taps[name] = new Tap(this, name, tap._modes_);
+                let bool = name == "update";
+                let t = bool ? new UpdateTap(this, name, tap._modes_) : new Tap(this, name, tap._modes_);
+
+                if (bool) 
+                    this.update_tap = t;
+                
+                this.taps[name] = t;
                 out_taps.push(this.taps[name]);
             }
         }
@@ -134,7 +149,7 @@ export class Source extends View {
     load(model) {
 
         let m = this._presets_.models[this._model_name_];
-        
+
         let s = this._presets_.schemas[this._schema_name_];
 
         if (m)
@@ -143,6 +158,9 @@ export class Source extends View {
             model = new s(model);
         else if (!model)
             model = new Model(model);
+        
+        this.LOADED = true;
+
 
         for (let i = 0, l = this.sources.length; i < l; i++)
             this.sources[i].load(model);
@@ -151,6 +169,7 @@ export class Source extends View {
 
         for (let name in this.taps)
             this.taps[name].load(this._model_, false);
+
     }
 
     _down_(data, changed_values) {
@@ -168,6 +187,12 @@ export class Source extends View {
     }
 
     _update_(data, changed_values, IMPORTED = false) {
+
+       // if(!this.LOADED) return;
+
+        if (this.update_tap) 
+            this.update_tap._down_(data, IMPORTED);
+        
 
         if (changed_values) {
             for (let name in changed_values)

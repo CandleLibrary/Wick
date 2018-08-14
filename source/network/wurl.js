@@ -17,6 +17,22 @@ function fetchLocalText(URL, m = "same-origin") {
     });
 }
 
+function fetchLocalJSON(URL, m = "same-origin") {
+    return new Promise((res, rej) => {
+        fetch(URL, {
+            mode: m, // CORs not allowed
+            credentials: m,
+            method: "Get"
+        }).then(r => {
+            if (r.status !== 200)
+                rej("");
+            else
+                r.json().then(obj => res(obj));
+        }).catch(e => rej(e));
+    });
+}
+
+
 
 /**
  * Used for processing URLs, handling `document.location`, and fetching data.
@@ -195,7 +211,24 @@ class WURL {
     }
 
     toString() {
-        return this.query;
+        let str = [];
+
+        if(this.protocol && this.host)
+            str.push(`${this.protocol}://`);
+
+        if(this.host)
+            str.push(`${this.host}`);
+
+        if(this.port)
+            str.push(`:${this.port}`);            
+        
+        if(this.path)
+            str.push(`${this.path[0] == "/" ? "" : "/"}${this.path}`);      
+
+        if(this.query)      
+            str.push(this.query);
+
+        return str.join("");
     }
 
     /**
@@ -210,7 +243,7 @@ class WURL {
             if (_c) {
                 for (let [key, val] of _c.entries())
                     out[key] = val;
-                return out
+                return out;
             }
         }
         return null;
@@ -285,10 +318,33 @@ class WURL {
             if (resource)
                 return new Promise((res) => {
                     res(resource);
-                })
+                });
         }
 
         return fetchLocalText(this.path).then(res => (WURL.RC.set(this.path, res), res));
+    }
+
+    /**
+     * Fetch a JSON value of the remote resource. 
+     * Just uses path component of WURL. Must be from the same origin.
+     * @param      {boolean}  [ALLOW_CACHE=true]  If `true`, the return string will be cached. If it is already cached, that will be returned instead. If `false`, a network fetch will always occur , and the result will not be cached.
+     * @return     {Promise}  A promise object that resolves to a string of the fetched value.
+     */
+    fetchJSON(ALLOW_CACHE = true) {
+
+        let string_url = this.toString();
+
+        if (ALLOW_CACHE) {
+
+            let resource = WURL.RC.get(string_url);
+
+            if (resource)
+                return new Promise((res) => {
+                    res(resource);
+                });
+        }
+
+        return fetchLocalJSON(string_url).then(res => (WURL.RC.set(this.path, res), res));
     }
 
     /**
@@ -300,7 +356,7 @@ class WURL {
 
         let occupied = WURL.RC.has(this.path);
 
-        WURL.RC.set(this.path, resource)
+        WURL.RC.set(this.path, resource);
 
         return occupied;
     }
@@ -342,7 +398,7 @@ WURL.R = {
         return;
         WURL.G.user = v;
     },
-    get pwd() { return WURL.G.pwd ;},
+    get pwd() { return WURL.G.pwd; },
     set pwd(v) {
         return;
         WURL.G.pwd = v;
@@ -372,14 +428,14 @@ WURL.R = {
         return;
         WURL.G.hash = v;
     },
-    get map() { return WURL.G.map ;},
+    get map() { return WURL.G.map; },
     set map(v) {
         return;
         WURL.G.map = v;
     },
-    setPath(path) { return WURL.G.setPath(path) ;},
-    setLocation() { return WURL.G.setLocation() ;},
-    toString() { return WURL.G.toString() ;},
+    setPath(path) { return WURL.G.setPath(path); },
+    setLocation() { return WURL.G.setLocation(); },
+    toString() { return WURL.G.toString(); },
     getData(class_name = "") { return WURL.G.getData(class_name = ""); },
     setData(class_name = "", data = null) { return WURL.G.setData(class_name, data); },
     fetchText(ALLOW_CACHE = true) { return WURL.G.fetchText(ALLOW_CACHE); },

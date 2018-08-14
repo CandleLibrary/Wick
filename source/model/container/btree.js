@@ -253,11 +253,13 @@ class BtreeNode {
 
         } else {
 
+            
+            
             for (let i = 0, l = this.keys.length; i < l; i++) {
                 let key = this.keys[i];
 
-                if (identifier == key) {
-                    this.nodes[i].add(key);
+                if (false && identifier == key) {
+                    this.nodes[i] = model;
 
                     result.added = false;
 

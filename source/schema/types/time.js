@@ -8,7 +8,10 @@ class TimeSchemeConstructor extends NumberSchemeConstructor {
         try {
             var hour = parseInt(value.split(":")[0]);
             var min = parseInt(value.split(":")[1].split(" ")[0]);
-            var half = (value.split(":")[1].split(" ")[1].toLowerSource() == "pm");
+            if (value.split(":")[1].split(" ")[1])
+                half = (value.split(":")[1].split(" ")[1].toLowerCase() == "pm");
+            else
+                half = 0
         } catch (e) {
             var hour = 0;
             var min = 0;
