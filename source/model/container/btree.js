@@ -1,3 +1,5 @@
+import { ModelBase } from "../base";
+
 import { ModelContainerBase, MCArray } from "./base";
 
 import { MultiIndexedContainer } from "./multi";
@@ -23,7 +25,10 @@ export class BTreeModelContainer extends ModelContainerBase {
 
                 if (key.name)
                     this.key = key.name;
-            }else
+
+                if (key.unique_key)
+                    this.unique_key = key.unique_key;
+            } else
                 this.key = key;
 
             if (data[0].model)
@@ -61,61 +66,103 @@ export class BTreeModelContainer extends ModelContainerBase {
         if (!this.root)
             this.root = new BtreeNode(true);
 
-        this.root = this.root.insert(identifier, model, this.max, true, result).newnode;
+        this.root = this.root.insert(identifier, model, this.unique_key, this.max, true, result).newnode;
 
         if (add_list) add_list.push(model);
 
-        if (result.added)
+        if (result.added) {
             this.size++;
+            this.__updateLinks__();
+        }
 
         return result.added;
     }
 
     __get__(terms, __return_data__) {
 
-        if (this.root && terms.length > 0) {
-            if (terms.length == 1) {
-                this.root.get(parseFloat(terms[0]), parseFloat(terms[0]), __return_data__);
-            } else if (terms.length < 3) {
-                this.root.get(parseFloat(terms[0]), parseFloat(terms[1]), __return_data__);
-            } else {
-                for (let i = 0, l = terms.length - 1; i > l; i += 2)
-                    this.root.get(parseFloat(terms[i]), parseFloat(terms[i + 1]), __return_data__);
+        if(__return_data__ instanceof BTreeModelContainer)
+            return __return_data__;
+
+        if (this.__filters__) {
+            if (this.root && terms.length > 0) {
+                if (terms.length == 1 && this.__gI__(terms[0])) {
+                    this.root.get(parseFloat(terms[0]), parseFloat(terms[0]), __return_data__);
+                } else {
+                    for (let i = 0, l = terms.length; i < l; i += 2) {
+                        let term1 = this._gI_(terms[0]);
+                        let term2 = this._gI_(terms[1]);
+                        if (term1 && term2)
+                            this.root.get(term1, term2, __return_data__);
+                        this.root.get(parseFloat(terms[i]), parseFloat(terms[i + 1]), __return_data__);
+                    }
+                }
+            }
+        } else {
+            if (this.root && terms.length > 0) {
+                if (terms.length == 1) {
+                    this.root.get(parseFloat(terms[0]), parseFloat(terms[0]), __return_data__);
+                } else {
+                    for (let i = 0, l = terms.length; i < l; i += 2)
+                        this.root.get(parseFloat(terms[i]), parseFloat(terms[i + 1]), __return_data__);
+                }
             }
         }
 
         return __return_data__;
     }
 
-    __remove__(terms, out_container) {
+    __remove__(term, out_container = []) {
         let result = 0;
 
-        if (this.root && terms.length > 0) {
-            if (terms.length == 1) {
-                let o = this.root.remove(terms[0], terms[0], true, this.min, out_container);
-                result = o.out;
-                this.root = o.out_node;
-            } else if (terms.length < 3) {
-                let o = this.root.remove(terms[0], terms[1], true, this.min, out_container);
-                result = o.out;
-                this.root = o.out_node;
-            } else {
-                for (let i = 0, l = terms.length - 1; i > l; i += 2) {
-                    let o = this.root.remove(terms[i], terms[i + 1], true, this.min, out_container);
+        if (term instanceof ModelBase) {
+            let v = this._gI_(term);
+            let o = this.root.remove(v, v, this.unique_key, this.unique_key ? term[this.unique_key] : "", true, this.min, out_container);
+            result = o.out;
+            this.root = o.out_node;
+        } else {
+            if (this.root && term.length > 0) {
+                if (term.length == 1) {
+                    let o = this.root.remove(term[0], term[0], unique, "", true, this.min, out_container);
                     result = o.out;
                     this.root = o.out_node;
+                } else if (term.length < 3) {
+                    let o = this.root.remove(term[0], term[1], unique, "", true, this.min, out_container);
+                    result = o.out;
+                    this.root = o.out_node;
+                } else {
+                    for (let i = 0, l = term.length - 1; i > l; i += 2) {
+                        let o = this.root.remove(term[i], term[i + 1], "", true, this.min, out_container);
+                        result = o.out;
+                        this.root = o.out_node;
+                    }
                 }
             }
         }
 
-        this.size -= result;
+        if (result > 0) {
+            this.__updateLinks__();
+            this.size -= result;
+        }
+
 
         return result !== 0;
     }
 
+    __updateLinks__() {
+        let a = this.first_link;
+        while (a) {
+            a.root = this.root;
+            a = a.next;
+        }
+    }
+
     __getAll__(__return_data__) {
-        if (this.root)
+
+        if (this.__filters__) {
+            this.__get__(this.__filters__, __return_data__);
+        } else if (this.root)
             this.root.get(-Infinity, Infinity, __return_data__);
+
         return __return_data__;
     }
 
@@ -130,10 +177,16 @@ export class BTreeModelContainer extends ModelContainerBase {
 
         if (this.root) {
 
-            this.root.get(-Infinity, Infinity, out_data);
+            this.root.get(this.min, this.max, out_data);
         }
 
         return out_data;
+    }
+
+    clone() {
+        let clone = super.clone();
+        clone.root = this.root;
+        return clone;
     }
 }
 
@@ -195,7 +248,7 @@ class BtreeNode {
             return {
                 newnode: newnode,
                 key: key
-            }
+            };
         }
 
         return {
@@ -207,7 +260,7 @@ class BtreeNode {
     /**
         Inserts model into the tree, sorted by identifier. 
     */
-    insert(identifier, model, max_size, IS_ROOT = false, result) {
+    insert(identifier, model, unique_key, max_size, IS_ROOT = false, result) {
 
         let l = this.keys.length;
 
@@ -220,7 +273,7 @@ class BtreeNode {
                 if (identifier < key) {
                     let node = this.nodes[i];
 
-                    let o = node.insert(identifier, model, max_size, false, result);
+                    let o = node.insert(identifier, model, unique_key, max_size, false, result);
                     let keyr = o.key;
                     let newnode = o.newnode;
 
@@ -240,7 +293,7 @@ class BtreeNode {
             let {
                 newnode,
                 key
-            } = node.insert(identifier, model, max_size, false, result);
+            } = node.insert(identifier, model, unique_key, max_size, false, result);
 
             if (key == undefined) debugger
 
@@ -253,13 +306,15 @@ class BtreeNode {
 
         } else {
 
-            
-            
             for (let i = 0, l = this.keys.length; i < l; i++) {
                 let key = this.keys[i];
 
-                if (false && identifier == key) {
-                    this.nodes[i] = model;
+                if (identifier == key) {
+
+                    if (unique_key) {
+                        if (this.nodes[i][unique_key] !== model[unique_key]) { continue; }
+                    } else
+                        this.nodes[i] = model;
 
                     result.added = false;
 
@@ -354,7 +409,7 @@ class BtreeNode {
 
     }
 
-    remove(start, end, IS_ROOT = false, min_size, out_container) {
+    remove(start, end, unique_key, unique_id, IS_ROOT = false, min_size, out_container) {
         let l = this.keys.length,
             out = 0,
             out_node = this;
@@ -366,18 +421,18 @@ class BtreeNode {
                 let key = this.keys[i];
 
                 if (start <= key)
-                    out += this.nodes[i].remove(start, end, false, min_size, out_container).out;
+                    out += this.nodes[i].remove(start, end, unique_key, unique_id, false, min_size, out_container).out;
             }
 
-            out += this.nodes[i].remove(start, end, false, min_size, out_container).out;
+            out += this.nodes[i].remove(start, end, unique_key, unique_id, false, min_size, out_container).out;
 
             for (var i = 0; i < this.nodes.length; i++) {
                 if (this.nodes[i].keys.length < min_size) {
                     if (this.balanceRemove(i, min_size)) {
                         l--;
                         i--;
-                    };
-                };
+                    }
+                }
             }
 
             if (this.nodes.length == 1)
@@ -389,9 +444,10 @@ class BtreeNode {
                 let key = this.keys[i];
 
                 if (key <= end && key >= start) {
-                    out_container.push(this.nodes[i])
+                    if (unique_key, unique_id && this.nodes[i][unique_key] !== unique_id) continue;
+                    out_container.push(this.nodes[i]);
                     out++;
-                    this.keys.splice(i, 1)
+                    this.keys.splice(i, 1);
                     this.nodes.splice(i, 1);
                     l--;
                     i--;

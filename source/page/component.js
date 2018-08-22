@@ -105,7 +105,7 @@ class Component extends BaseComponent {
         /**
          * The {@link Model} the 
          */
-        this ._model_ = null;
+        this._model_ = null;
 
         /**
          * All {@link Source}s bound to this component from a {@link SourcePackag}.
@@ -131,10 +131,12 @@ class Component extends BaseComponent {
             } else if (url) {
                 (new WURL(url))
                 .fetchText()
-                    .then(text => (
-                        new SourcePackage(text, presets)).mount(this.ele, null, presets.options.USE_SHADOW, this));
-            } else
+                    .then(text => {
+                        (new SourcePackage(text, presets)).mount(this.ele, null, presets.options.USE_SHADOW, this);
+                    });
+            } else {
                 (new SourcePackage(this.ele.innerHTML, presets)).mount(this.ele, null, presets.options.USE_SHADOW, this);
+            }
         }
 
 
@@ -242,76 +244,23 @@ class Component extends BaseComponent {
             }
         }
 
-        for (var i = 0; i < this.components.length; i++) {
-            let component = this.components[i];
-            component.getNamedElements(named_elements);
+        for (var i = 0; i < this.sources.length; i++) {
+            // let component = this.components[i];
+            // component.getNamedElements(named_elements);
         }
     }
+
+    sourceLoaded() { this.handleUrlUpdate(); }
 
     /**
      * @override
      */
-    handleUrlUpdate(wurl) {
-        return;
-        let query_data = null;
-        /* 
-            This part of the function will import data into the model that is obtained from the query string 
-        */
-        if (wurl && this.data.import) {
-            query_data = {};
-            if (this.data.import == "null") {
-                query_data = wurl.getClass();
-            } else {
-                var l = this.data.import.split(";");
-                for (var i = 0; i < l.length; i++) {
-                    let n = l[i].split(":");
+    handleUrlUpdate(wurl = new WURL("", true)) {
 
-                    let class_name = n[0];
-                    let p = n[1].split("=>");
-                    var key_name = p[0];
-                    var import_name = p[1];
-                    if (class_name == "root") class_name = null;
-                    query_data[import_name] = wurl.get(class_name, key_name);
-                }
-            }
-        }
+        let query_data = wurl.getData();
 
-        if (wurl && this.data.url) {
-
-            let query_data = {};
-            if (this.url_query) {
-                var l = this.url_query.split(";")
-                for (var i = 0; i < l.length; i++) {
-                    let n = l[i].split(":");
-                    let class_name = n[0];
-                    let p = n[1].split("=>");
-                    var key_name = p[0];
-                    var import_name = p[1];
-                    if (class_name == "root") class_name = null;
-                    query_data[import_name] = wurl.get(class_name, key_name);
-                }
-            }
-
-            this.____request____(query_data)
-        }
-
-        if (!this ._model_) {
-
-            this ._model_ = new this._m_constructor();
-
-
-            if (this.getter)
-                this.getter.setModel(this ._model_);
-
-            this ._model_.addView(this);
-        }
-
-        if (query_data) {
-            if (!this ._model_.add(query_data)) {
-                this._update_(this ._model_.get());
-            }
-        } else
-            this._update_(this ._model_.get());
+        for (let i = 0, l = this.sources.length; i < l; i++)
+            this.sources[i]._update_(query_data, null, true);
     }
 }
 

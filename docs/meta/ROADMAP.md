@@ -56,6 +56,7 @@ The versioning scheme of Wick is as follows:
 - Server side JSON API tooling
 - Simplify, Optimize code base
 - Form Validation using Schemes
+- Tween Binding
 - Define, design, and document data flow. Determine allowed and not allowed patterns, e.i. single direction, bi-directional, cross-component, cross-page (URL mapping), cross-instance (URL mapping), server-client.
 
 ## Features Introduced

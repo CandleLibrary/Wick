@@ -1,4 +1,3 @@
-import { setLinks } from "../network/setlinks";
 import { TransformTo } from "../animation/animation";
 import { Component, FailedComponent } from "./component";
 
@@ -50,7 +49,7 @@ export class Element {
 
                 t = Math.max(component.transitionOut(), t);
             }
-        };
+        }
 
         return t;
     }
@@ -175,16 +174,11 @@ export class Element {
 
         var components = Array.prototype.map.call(this.ele.getElementsByTagName("component"), (a) => a);
 
-        setLinks(this.ele, (href, e) => {
-            history.pushState({}, "ignored title", href);
-            window.onpopstate();
-            return true;
-        });
 
         if (components.length < 1) {
             //Create a wrapped component for the elements inside the <element>
             let component = document.createElement("div");
-            
+
             component.classList.add("comp_wrap");
 
             //Straight up string copy of the element's DOM.
@@ -196,7 +190,7 @@ export class Element {
             let component = components[i];
 
             try {
-                
+
                 /**
                     Replace the component with a component wrapper to help preserve DOM arrangement
                 */
@@ -207,30 +201,35 @@ export class Element {
                 component.parentElement.replaceChild(comp_wrap, component);
                 //*/
 
-                var id = component.classList[0],
+                var id = component.dataset.class,
                     comp;
                 /**
                   We must ensure that components act as template "landing spots". In order for that to happen we must check for:
                   (1) The component has, as it's first class name, an id that (2) matches the id of a template. If either of these prove to be not true, we should reject the adoption of the component as a Wick
                   component and instead treat it as a normal "pass through" element.
                 */
-                /*
+
                 if (!id) {
-
-                    app_component = new BaseComponent(component);
-
-                } else {
-                */
-                
                     app_component = new Component(component, presets, DOM, App_Components, Component_Constructors, Model_Constructors);
 
                     app_component.handleUrlUpdate(wurl);
-                //}
+                } else {
+
+                    let custom_component = presets.custom_components[id];
+
+                    if (custom_component)
+                        app_component = new custom_component(component, presets, DOM);
+
+
+                }
             } catch (e) {
                 console.log(e)
 
                 app_component = new FailedComponent(component, e, presets);
             }
+
+            if (!app_component)
+                app_component = new FailedComponent(component, e, presets);
 
             this.components.push(app_component);
         }

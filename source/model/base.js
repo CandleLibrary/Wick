@@ -98,6 +98,7 @@ class ModelBase {
      * @param {View} view - The view to unbind from ModelBase
      */
     removeView(view) {
+        
 
         if (view._model_ == this) {
             if (view == this.fv)
@@ -189,7 +190,8 @@ class ModelBase {
 
 
     _deferUpdateToRoot_(data, MUTATION_ID = this.MUTATION_ID) {
-        return this.root._setThroughRoot_(data, this.address, 0, this.address.length, MUTATION_ID);
+        let model =  this.root._setThroughRoot_(data, this.address, 0, this.address.length, MUTATION_ID);
+        return model;
     }
 
 
@@ -199,12 +201,12 @@ class ModelBase {
         if (index >= len) {
 
             if (m_id !== this.MUTATION_ID) {
-                let clone = this.clone().set(data, true);
+                let clone = this.clone();
                 clone.MUTATION_ID = (this.par) ? this.par.MUTATION_ID : this.MUTATION_ID + 1;
                 return clone;
             }
 
-            return this.set(data, true);
+            return this;
         }
 
         let i = address[index++];

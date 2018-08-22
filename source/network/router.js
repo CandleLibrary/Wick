@@ -6,6 +6,7 @@ import { Element } from "../page/element";
 
 const URL_HOST = { wurl: null };
 
+
 /** @namespace Router */
 
 /**
@@ -44,6 +45,7 @@ export class Router {
      *
      */
     constructor(presets) {
+        console.log(presets)
 
         presets.router = this;
 
@@ -56,6 +58,16 @@ export class Router {
         this.current_query = null;
         this.current_view = null;
         this.finalizing_pages = [];
+
+        presets.processLink = (temp) => {
+            if (!temp.onclick) temp.onclick = (e) => {
+                let link = e.target;
+                if (link.origin !== location.origin) return;
+                e.preventDefault();
+                history.pushState({}, "ignored title", link.href);
+                window.onpopstate();
+            };
+        };
 
         /* */
         this.modal_stack = [];
@@ -133,11 +145,11 @@ export class Router {
     }
 
     /**
-    * Loads pages from server, or from local cache, and sends it to the page parser.
-    * @param {String} url - The URL id of the cached page to load.
-    * @param {String} query -
-    * @param {Bool} IS_SAME_PAGE -
-    */
+     * Loads pages from server, or from local cache, and sends it to the page parser.
+     * @param {String} url - The URL id of the cached page to load.
+     * @param {String} query -
+     * @param {Bool} IS_SAME_PAGE -
+     */
     loadPage(page, wurl = new WURL(document.location), IS_SAME_PAGE) {
 
         URL_HOST.wurl = wurl;
@@ -274,16 +286,17 @@ export class Router {
         iframe.classList.add("modal", "comp_wrap");
         var page = new PageView(URL, iframe);
         page.type = "modal";
-        this.pages[URL] = page;//new Modal(page, iframe, getModalContainer());
+        this.pages[URL] = page; //new Modal(page, iframe, getModalContainer());
         return this.pages[URL];
     }
     /**
         Takes the DOM of another page and strips it, looking for elements to use to integrate into the SPA system.
         If it is unable to find these elements, then it will pass the DOM to loadNonWickPage to handle wrapping the page body into a wick app element.
     */
-    loadNewPage(URL, DOM, wurl) {
+    loadNewPage(URL, DOM, wurl = new WURL("", true)) {
 
         //look for the app section.
+
 
         /**
             If the page should not be reused, as in cases where the server does all the rendering for a dynamic page and we're just presenting the results,
@@ -319,6 +332,7 @@ export class Router {
         var dom_app = document.getElementsByTagName("app")[0];
 
         var page = new PageView(URL, app_page);
+
 
         if (app_source) {
 

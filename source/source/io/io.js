@@ -98,7 +98,7 @@ export class BindIO extends IOBase {
 
     constructor(source, errors, tap) {
         super(tap);
-        this._value_ = "";
+        this._value_ = null;
         this.child = null;
     }
 

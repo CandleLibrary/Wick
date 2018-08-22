@@ -35,11 +35,12 @@ export class SourceTemplateNode extends RootNode {
 
             for (let node = this.fch; node; node = this.getN(node)) {
                 //All filter nodes here
+                
                 let on = node.getAttrib("on");
                 let sort = node.getAttrib("sort");
                 let filter = node.getAttrib("filter");
 
-                if (sort || filter) //Only create Filter node is it has a sorting bind or a filter bind
+                if (sort || filter) //Only create Filter node if it has a sorting bind or a filter bind
                     me._filters_.push(new FilterIO(source, errors, taps, me, on, sort, filter));
             }
         }

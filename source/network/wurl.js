@@ -45,6 +45,7 @@ function fetchLocalJSON(URL, m = "same-origin") {
 class WURL {
 
     constructor(url = "", USE_LOCATION = false) {
+        
         let IS_STRING = true;
 
         let location = document.location;

@@ -21,7 +21,7 @@ import { Lexer } from "../common/string_parsing/lexer";
 class SourcePackage {
 
     constructor(element, presets, RETURN_PROMISE = false) {
-        
+
         //If a package exists for the element already, it will be bound to __wick__package__. That will be returned.
         if (element.__wick__package__) {
             if (RETURN_PROMISE)
@@ -54,8 +54,11 @@ class SourcePackage {
          */
         this._HAVE_ERRORS_ = false;
 
-        //element must be an HTMLElement instance. 
-        if (!(element instanceof EL) && typeof(element) !== "string" && !(element instanceof Lexer)) {
+        if (element instanceof Promise) {
+            element.then((data) => CompileSource(this, presets, data));
+            if (RETURN_PROMISE) return element;
+            return this;
+        } else if (!(element instanceof EL) && typeof(element) !== "string" && !(element instanceof Lexer)) {
             let err = new Error("Could not create package. element is not an HTMLElement");
             this._addError_(err);
             this._complete_();
@@ -143,6 +146,8 @@ class SourcePackage {
             usd: USE_SHADOW_DOM,
             mgr: manager
         });
+
+        return manager;
     }
 
     /**
@@ -163,7 +168,7 @@ class SourcePackage {
             //Process
             console.warn("TODO - Package has errors, pop an error widget on this element!");
         }
-         let   i = 0,
+        let i = 0,
             l = 0;
 
         if (!manager.sources)
@@ -187,6 +192,8 @@ class SourcePackage {
             let source = this._skeletons_[i].flesh(element, model);
             manager.sources.push(source);
         }
+
+        if (manager.sourceLoaded) manager.sourceLoaded();
 
         return manager;
     }

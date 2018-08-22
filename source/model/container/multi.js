@@ -6,8 +6,9 @@ export class MultiIndexedContainer extends ModelContainerBase {
 
         super(root, address);
 
-        this.indexes = {};
-        this.first_index = null;
+        this.secondary_indexes = {};
+        this.primary_index = null;
+        this.primary_key = "";
 
         if (data[0] && data[0].key) {
 
@@ -29,7 +30,7 @@ export class MultiIndexedContainer extends ModelContainerBase {
     /**
         Returns the length of the first index in this container. 
     */
-    get length() { return this.first_index.length; }
+    get length() { return this.primary_index.length; }
 
     /**
         Insert a new ModelContainerBase into the index through the key.  
@@ -39,82 +40,72 @@ export class MultiIndexedContainer extends ModelContainerBase {
 
         let container = new MultiIndexedContainer.array([{ key, model: this.model }]);
 
-        this.indexes[name] = container;
-        if (this.first_index) {
-
-            this.indexes[name].insert(this.first_index.__getAll__());
-        } else
-            this.first_index = this.indexes[name];
+        if (this.primary_index) {
+            this.secondary_indexes[name] = container;
+            this.secondary_indexes[name].insert(this.primary_index.__getAll__());
+        } else {
+            this.primary_key = name;
+            this.primary_index = container;
+        }
     }
 
     get(item, __return_data__) {
 
         item = this.getHook("query", item);
 
-        let out = __return_data__ || new MultiIndexedContainer.array();
-
         if (item) {
-            for (let name in item)
-                if (this.indexes[name])
-                    this.indexes[name].get(item[name], out);
+            for (let name in item) {
+                if (name == this.primary_key)
+                    return this.primary_index.get(item[name], __return_data__);
+
+                else if (this.secondary_indexes[name])
+                    return this.secondary_indexes[name].get(item[name], __return_data__);
+
+            }
         } else
-            this.first_index.get(null, out);
-
-
-        return out.proxy;
-    }
-
-    remove(item) {
-
-        var out = [];
-
-        for (let a in item)
-            if (this.indexes[a])
-                out = out.concat(this.indexes[a].remove(item[a]));
-
-        /* Replay items against indexes to insure all items have been removed from all indexes */
-
-        for (var j = 0; j < this.indexes.length; j++)
-            for (var i = 0; i < out.length; i++)
-                this.indexes[j].remove(out[i]);
-
-        //Update all views
-        if (out.length > 0)
-            this.updateViewsRemoved(out);
-
-        return out;
+            return this.primary_index.get(null, __return_data__);
     }
 
     __insert__(model, add_list, identifier) {
 
         let out = false;
 
-        for (let name in this.indexes) {
+        model.par = this;
 
-            let index = this.indexes[name];
+        if ((out = this.primary_index.insert(model))) {
+            for (let name in this.secondary_indexes) {
 
-            if (index.insert(model))
-                out = true;
-            //else
-            //    console.warn(`Indexed container ${a} ${index} failed to insert:`, model);
+                let index = this.secondary_indexes[name];
+
+                index.insert(model);
+            }
         }
 
         if (out)
-            this.updateViews(this.first_index.get());
+            this.updateViews(this.primary_index.get());
 
         return out;
     }
     /**
         @private 
     */
-    __remove__(item) {
+    __remove__(term, out_container) {
 
         let out = false;
 
-        for (let name in this.indexes) {
-            let index = this.indexes[name];
-            if (index.remove(item))
-                out = true;
+        if ((out = this.primary_index.__remove__(term, out_container))) {
+
+            for (let i = 0; i < out_container.length; i++) {
+
+                let model = out_container[i];
+
+                for (let name in this.secondary_indexes) {
+
+                    let index = this.secondary_indexes[name];
+
+                    index.__remove__(model);
+                }
+            }
         }
 
         return out;
@@ -124,8 +115,13 @@ export class MultiIndexedContainer extends ModelContainerBase {
 
         let out = false;
 
-        for (let name in this.indexes) {
-            if (index.__removeAll__())
+        out = this.primary_index.__removeAll__(term, out_container);
+
+        for (let name in this.secondary_indexes) {
+
+            let index = this.secondary_indexes[name];
+
+            if (index.__removeAll__(model))
                 out = true;
         }
 
@@ -142,13 +138,13 @@ export class MultiIndexedContainer extends ModelContainerBase {
     }
 
     toJSON() {
-        return this.first_index.toJSON();
+        return this.primary_index.toJSON();
     }
 
     clone() {
         let clone = super.clone();
-        clone.indexes = this.indexes;
-        clone.first_index = this.first_index;
+        clone.secondary_indexes = this.secondary_indexes;
+        clone.primary_index = this.primary_index;
         return clone;
     }
 }

@@ -1,7 +1,7 @@
 import { JSExpressionIdentifiers } from "../../../common/js/root";
 import { RawValueBinding, EventBinding, ExpressionBinding, DynamicBinding, } from "./basic_bindings";
 import {barrier_a_start,barrier_a_end,barrier_b_start,barrier_b_end } from "../../../root/config/global"
-const BannedIdentifiers = { "true": true, "false": 1, "class": 1, "function": 1,  "return": 1, "for" : 1 };
+const BannedIdentifiers = { "true": true, "false": 1, "class": 1, "function": 1,  "return": 1, "for" : 1, "new" : 1, "let" : 1, "var" : 1, "const" : 1, "Date": 1};
 
 function setIdentifier(id, store, cache) {
     if (!cache[id] && !BannedIdentifiers[id]) {
@@ -37,13 +37,11 @@ function processExpression(lex, binds) {
     for (let i = 0, l = args.length; i < l; i++)
         setIdentifier(args[i], bind_ids, existing_names);
     bind_ids.push(`return ${function_string}`);
-
-
     let funct = (Function).apply(null, bind_ids);
 
     const bindings = [];
 
-    for (let i = 0, l = bind_ids.length; i < l; i++) {
+    for (let i = 0, l = bind_ids.length - 1; i < l; i++) {
         let binding = new DynamicBinding();
         binding.tap_name = bind_ids[i];
         bindings.push(binding);
@@ -94,7 +92,7 @@ export function evaluate(lex, EVENT = false) {
                     let pk = lex.pk;
 
 
-                    while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end && pk.p.ch !== barrier_a_start))) { pk.n(); }
+                    while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end && pk.p.ch !== barrier_a_start) || (pk.p.n().ch === barrier_a_end))) { pk.n(); }
 
 
                     if (lex.tl < pk.off - lex.off - 1) {

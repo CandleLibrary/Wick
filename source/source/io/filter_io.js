@@ -13,8 +13,11 @@ export class FilterIO extends IOBase {
         this._CAN_SORT_ = false;
         this._SCHD_ = 0;
 
-        if (activation && activation.binding)
+        if (activation && activation.binding){
             this._activation_function_ = activation.binding._bind_(source, errors, taps, this);
+        } else{
+            this._CAN_USE_ = true;
+        }
 
         if (sort && sort.binding) {
             /** See {@link ExpressionBinding} **/

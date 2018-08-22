@@ -12,6 +12,7 @@ export function JSExpressionIdentifiers(lex) {
     let IN_OBJ = false,
         CAN_BE_ID = true;
     while (!lex.END) {
+        
         switch (lex.ty) {
             case lex.types.id:
                 if (!IN_OBJ || CAN_BE_ID) {
@@ -20,7 +21,7 @@ export function JSExpressionIdentifiers(lex) {
                         _identifiers_.push(lex.tx);
                         model_cache[id] = true;
                     }
-                }
+                }   
                 break;
             case lex.types.op:
             case lex.types.sym:
@@ -35,15 +36,18 @@ export function JSExpressionIdentifiers(lex) {
                     case "-":
                         CAN_BE_ID = true;
                         break;
-                    case "{":
                     case "[":
+                        IN_OBJ = false;
+                        CAN_BE_ID = true;
+                        break;
+                    case "{":
                     case ".": //Property Getters
                         CAN_BE_ID = false;
                         IN_OBJ = true;
                         break;
+                    case "]":
                     case ";":
                     case "=":
-                    case "]":
                     case "}":
                     case "(":
                         IN_OBJ = false;

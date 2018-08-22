@@ -37,6 +37,7 @@ function CreateSchemedProperty(object, scheme, schema_name, index) {
             if (result.valid && this.prop_array[index] != val) {
                 this.prop_array[index] = this.setHook(schema_name, val);
                 this.scheduleUpdate(schema_name);
+                this._changed_ = true;
             }
         }
     });
@@ -61,6 +62,7 @@ function CreateModelProperty(object, model, schema_name, index) {
                 address.push(index);
                 m = new model(null, this.root, address);
                 m.par = this;
+                m.prop_name = schema_name;
                 m.MUTATION_ID = this.MUTATION_ID;
                 this.prop_array[index] = m;
             }
@@ -73,6 +75,7 @@ function CreateModelProperty(object, model, schema_name, index) {
 class SchemedModel extends ModelBase {
 
     constructor(data, root = null, address = [], _schema_ = null) {
+
 
         super(root, address);
 
@@ -114,6 +117,12 @@ class SchemedModel extends ModelBase {
                             continue;
                         }
 
+                        if (schema_name == "proto") {
+                            for (let name in schema.proto)
+                                    prototype[name] = schema.proto[name];
+                            continue;
+                        }
+
                         if (typeof(schema) == "object") {
                             if (Array.isArray(scheme)) {
                                 if (scheme[0] && scheme[0].container && scheme[0].schema)
@@ -138,8 +147,11 @@ class SchemedModel extends ModelBase {
                         count++;
                     }
 
+
+
                     _SealedProperty_(prototype, "prop_offset", count);
                     _SealedProperty_(prototype, "look_up", look_up);
+                    _SealedProperty_(prototype, "changed", false);
 
                     Object.seal(constructor);
 
@@ -155,17 +167,19 @@ class SchemedModel extends ModelBase {
         Object.defineProperty(this, "prop_array", { value: new Array(this.prop_offset), enumerable: false, configurable: false, writable: true });
 
         if (data)
-            this.set(data);
+            this.set(data, true);
     }
 
     set(data, FROM_ROOT = false) {
 
         if (!FROM_ROOT)
-            return this._deferUpdateToRoot_(data);
+            return this._deferUpdateToRoot_(data).set(data, true);
 
         if (!data)
-            return this;
+            return false;
 
+        this._changed_ = false;
+        
         for (let prop_name in data) {
 
             let data_prop = data[prop_name];
@@ -184,14 +198,16 @@ class SchemedModel extends ModelBase {
                         this.prop_array[index] = prop;
                     }
 
-                    prop.set(data_prop, true);
+                    if (prop.set(data_prop, true))
+                        this.scheduleUpdate(prop_name);
 
-                } else
+                } else {
                     this[prop_name] = data_prop;
+                }
             }
         }
 
-        return this;
+        return this._changed_;
     }
 
     _destroy_() { this.root = null; }
@@ -204,8 +220,8 @@ function CreateSchemedContainer(schema, root, address) {
 
     let out = new ArrayModelContainer(data, root, address);
 
-    if(schema.proto)
-        for(let name in schema.proto)
+    if (schema.proto)
+        for (let name in schema.proto)
             _SealedProperty_(out, name, schema.proto[name]);
 
     return out;

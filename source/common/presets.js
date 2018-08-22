@@ -31,6 +31,8 @@ class Presets {
         //Declaring the properties upfront to give the VM a chance to build an appropriate virtual class.
         this.components = {};
 
+        this.custom_components = {};
+
         /** 
          * Store of user defined CustomSourcePackage factories that can be used in place of the components built by the Wick templating system. Accepts any class extending the CustomComponent class. Adds these classes from preset_options.custom_sources or preset_options.components. 
          * 
@@ -126,13 +128,13 @@ class Presets {
                 if (cn instanceof CustomComponent)
                     this.custom_sources[cn] = c[cn];
 
-        c = preset_options.components;
+        c = preset_options.custom_components;
         if (c)
             for (let cn in c)
-                if (CustomComponent.isPrototypeOf(c[cn]))
-                    this.custom_sources[cn] = c[cn];
+                    this.custom_components[cn] = c[cn];
 
         c = preset_options.models;
+        
         if (c)
             for (let cn in c)
                 if (c[cn] instanceof ModelBase)
@@ -154,6 +156,8 @@ class Presets {
 
         //Object.freeze(this);
     }
+
+    processLink(link){}
 }
 
 export { Presets };

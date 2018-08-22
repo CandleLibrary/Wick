@@ -22,15 +22,15 @@ class Model extends ModelBase {
 
     }
 
-    get proxy() { return this }
+    get proxy() { return this;}
 
     set(data, FROM_ROOT = false) {
 
         if (!FROM_ROOT)
-            return this._deferUpdateToRoot_(data);
+            return this._deferUpdateToRoot_(data).set(data, true);
 
         if (!data)
-            return this;
+            return false;
 
         for (let prop_name in data) {
 
@@ -48,28 +48,26 @@ class Model extends ModelBase {
                         this.prop_array[index] = prop;
                     }
 
-                    prop.set(data[prop_name], true);
+                    if (prop.set(data[prop_name], true))
+                        this.scheduleUpdate(prop_name);
 
-                    this.scheduleUpdate(prop_name);
-
-                } else if (prop !== data[prop_name])
+                } else if (prop !== data[prop_name]) {
                     this.prop_array[index] = data[prop_name];
+                } else return false;
             } else
                 this._createProp_(prop_name, data[prop_name]);
         }
 
-        return this;
+        return true;
     }
-
     _createProp_(name, value) {
 
         let index = this.prop_offset++;
 
         this.look_up[name] = index;
-
         var address = this.address.slice();
         address.push(index);
-        
+
         switch (typeof(value)) {
 
             case "object":
@@ -83,6 +81,8 @@ class Model extends ModelBase {
                         this.prop_array.push(new Model(value, this.root, address));
                 }
 
+                this.prop_array[index].prop_name = name;
+                this.prop_array[index].par = this;
 
                 Object.defineProperty(this, name, {
 
@@ -100,6 +100,9 @@ class Model extends ModelBase {
             case "function":
 
                 let object = new value(null, this.root, address);
+
+                object.par = this;
+                object.prop_name = name;
 
                 this.prop_array.push(object);
 

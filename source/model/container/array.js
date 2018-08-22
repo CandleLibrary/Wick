@@ -1,3 +1,5 @@
+import { ModelBase } from "../base";
+
 import { ModelContainerBase, MCArray } from "./base";
 
 import { MultiIndexedContainer } from "./multi";
@@ -104,10 +106,7 @@ export class ArrayModelContainer extends ModelContainerBase {
 
         if (USE_ARRAY) return new MCArray();
 
-        let n = new ArrayModelContainer();
-
-        n.key = this.key;
-        n.validator = this.validator;
+        let n = this.clone();
 
         this.__link__(n);
 
@@ -195,7 +194,7 @@ export class ArrayModelContainer extends ModelContainerBase {
     _setThroughRoot_(data, address, index, len, m_id) {
 
         if (index >= len)
-            return this.set(data, true);
+            return this;
 
         let i = address[index++];
 
@@ -212,7 +211,12 @@ export class ArrayModelContainer extends ModelContainerBase {
     }
 
     __remove__(term, out_container) {
+        
         let result = false;
+
+        if(term instanceof ModelBase)
+            term = this._gI_(term);
+        
         for (var i = 0, l = this.data.length; i < l; i++) {
             var obj = this.data[i];
 
@@ -226,6 +230,8 @@ export class ArrayModelContainer extends ModelContainerBase {
                 i--;
 
                 out_container.push(obj);
+
+                break;
             }
         }
 

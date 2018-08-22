@@ -36,7 +36,7 @@ export class MCArray extends Array {
 
     toJson() { return JSON.stringify(this, null, '\t'); }
 }
-
+var zz = 0;
 // A no op function
 let EmptyFunction = () => {};
 let EmptyArray = [];
@@ -58,7 +58,7 @@ export class ModelContainerBase extends ModelBase {
         _SealedProperty_(this, "prev", null);
 
         //Filters are a series of strings or number selectors used to determine if a model should be inserted into or retrieved from the container.
-        _SealedProperty_(this, "__filters__", EmptyArray);
+        _SealedProperty_(this, "__filters__", null);
 
         this.validator = new SchemeConstructor();
 
@@ -98,6 +98,10 @@ export class ModelContainerBase extends ModelBase {
 
         let n = new this.constructor();
 
+        n.key = this.key;
+        n.validator = this.validator;
+        n.model = this.model;
+
         this.__link__(n);
 
         return n;
@@ -121,6 +125,8 @@ export class ModelContainerBase extends ModelBase {
     get(term, __return_data__) {
 
         let out = null;
+
+        term = this.getHook("term", term);
 
         let USE_ARRAY = (__return_data__ === null) ? false : true;
 
@@ -158,9 +164,10 @@ export class ModelContainerBase extends ModelBase {
     }
 
     set(item, from_root = false) {
-        if (from_root)
-            return this.insert(item);
-        return this._deferUpdateToRoot_(item);
+        if (!from_root)
+            return this._deferUpdateToRoot_(item).insert(item);
+        else
+            this.insert(item);
     }
 
     /**
@@ -182,6 +189,7 @@ export class ModelContainerBase extends ModelBase {
         if (!__FROM_SOURCE__ && this.source)
             return this.source.insert(item);
 
+
         if (item instanceof Array) {
             for (var i = 0; i < item.length; i++)
                 if (this.__insertSub__(item[i], out_data, add_list))
@@ -190,12 +198,18 @@ export class ModelContainerBase extends ModelBase {
             out_data = this.__insertSub__(item, out_data, add_list);
 
 
-        if (add_list && add_list.length > 0){
-            this.updateViewsAdded(add_list);
-            this.scheduleUpdate();
+        if (out_data) {
+            if (this.par)
+                this.par.scheduleUpdate(this.prop_name);
+
+
+            if (add_list && add_list.length > 0) {
+                this.updateViewsAdded(add_list);
+                this.scheduleUpdate();
+            }
         }
 
-        return this;
+        return out_data;
     }
 
     /**
@@ -209,7 +223,7 @@ export class ModelContainerBase extends ModelBase {
 
         if (identifier != undefined) {
 
-            if (!(model instanceof this.model) && !(model = model._slf_)) {
+            if (!(model instanceof ModelBase)) {
                 model = new this.model(item);
                 model.MUTATION_ID = this.MUTATION_ID;
             }
@@ -225,6 +239,12 @@ export class ModelContainerBase extends ModelBase {
         return out;
     }
 
+     delete(term, from_root = false) {
+        if (!from_root)
+            return this._deferUpdateToRoot_(term).remove(term);
+        else
+            this.remove(term);
+    }
 
     /**
         Removes an item from the container. 
@@ -246,17 +266,12 @@ export class ModelContainerBase extends ModelBase {
         if (!term)
             this.__removeAll__();
         else {
-            if (!term instanceof Array) {
-                terms = [term];
-            }
-
-            //Need to convert terms into a form that will work for the identifier type
-            terms = terms.map(t => this.validator.parse(t));
-
-            this.__remove__(terms, out_container);
+            if (Array.isArray(term))
+                for (let i = 0; i < terms.length; i++)
+                    this.__remove__(terms[i], out_container);
+            else
+                this.__remove__(term, out_container);
         }
-
-        this.__linksRemove__(terms);
 
         return out_container;
     }
@@ -334,10 +349,17 @@ export class ModelContainerBase extends ModelBase {
      */
     __linksInsert__(item) {
         let a = this.first_link;
+        if(a) console.log(zz++);
+        let aa = 0;
         while (a) {
-            a.insert(item, true);
+            if(a._gI_(item, a.__filters__))
+                a.scheduleUpdate();
+            //a.insert(item, true);
             a = a.next;
+            aa++
         }
+        if(aa > 1000) debugger;
+            console.log(aa)
     }
 
     /**
@@ -372,6 +394,9 @@ export class ModelContainerBase extends ModelBase {
     }
 
     __setFilters__(term) {
+
+        if (!this.__filters__) this.__filters__ = [];
+
         if (Array.isArray(term))
             this.__filters__ = this.__filters__.concat(term.map(t => this.validator.parse(t)));
         else

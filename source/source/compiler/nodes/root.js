@@ -348,7 +348,7 @@ export class RootNode extends HTMLNode {
             if (this.HAS_TAPS)
                 taps = source._linkTaps_(this.tap_list);
 
-            let own_element = this._createElement_();
+            let own_element = this._createElement_(presets);
 
             if (own_element) {
                 let hook = null;

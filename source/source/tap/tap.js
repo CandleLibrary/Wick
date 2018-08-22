@@ -26,11 +26,17 @@ export class Tap {
         this._prop_ = prop;
         this._modes_ = modes; // 0 implies keep
         this._ios_ = [];
+
+        if (modes & IMPORT && source.parent)
+            source.parent.getTap(prop)._ios_.push(this);
+
     }
 
     _destroy_() {
+
         for (let i = 0, l = this._ios_.length; i < l; i++)
             this._ios_[i]._destroy_();
+
         this._ios_ = null;
         this._source_ = null;
         this._prop_ = null;
@@ -38,10 +44,15 @@ export class Tap {
     }
 
     load(data) {
-        this._down_(data);
+        this._downS_(data);
     }
 
-    _down_(model, IMPORTED = false) {
+    _down_(value, meta) {
+        for (let i = 0, l = this._ios_.length; i < l; i++)
+            this._ios_[i]._down_(value, meta);
+    }
+
+    _downS_(model, IMPORTED = false) {
         if (IMPORTED) {
             if (!(this._modes_ & IMPORT))
                 return;
@@ -51,34 +62,31 @@ export class Tap {
 
         const value = model[this._prop_];
 
-        if (typeof(value) !== "undefined") {
-            for (let i = 0, l = this._ios_.length; i < l; i++)
-                this._ios_[i]._down_(value);
-        }
+        if (typeof(value) !== "undefined") 
+            this._down_(value);
     }
 
     _up_(value, meta) {
 
-        if (!(this._modes_ & (EXPORT | PUT))) {
-            for (let i = 0, l = this._ios_.length; i < l; i++)
-                this._ios_[i]._down_(value, meta);
-            return;
-        }
+        if (!(this._modes_ & (EXPORT | PUT))) 
+            this._down_(value, meta);
 
-        if (this._modes_ & PUT)
-            this._source_ ._model_[this._prop_] = value;
+        if (this._modes_ & PUT){
+            this._source_._model_[this._prop_] = value;
+        }
 
         if (this._modes_ & EXPORT)
             this._source_._up_(this, value, meta);
 
 
+
     }
 }
 
-export class UpdateTap extends Tap{
-    _down_(model){
+export class UpdateTap extends Tap {
+    _downS_(model) {
         for (let i = 0, l = this._ios_.length; i < l; i++)
-                this._ios_[i]._down_(model);
+            this._ios_[i]._down_(model);
     }
-    _up_(){}
+    _up_() {}
 }

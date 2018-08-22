@@ -54,37 +54,39 @@ export class Source extends View {
         this.DESTROYED = true;
 
         if (this.LOADED) {
+            this.LOADED = false;
 
 
-            let t = this.transitionOut();
-
+            let t = 0; //this.transitionOut();
+            /*
             for (let i = 0, l = this.children.length; i < l; i++) {
                 let child = this.children[i];
 
                 t = Math.max(t, child.transitionOut());
             }
-
+            */
             if (t > 0)
-                setTimeout(() => { this._destroy_(); }, t * 1000 + 5);
-
-
-        } else {
-            //this.finalizeTransitionOut();
-            this.children.forEach((c) => c._destroy_());
-            this.children.length = 0;
-            this.data = null;
-
-            if (this.ele && this.ele.parentElement)
-                this.ele.parentElement.removeChild(this.ele);
-
-            this.ele = null;
-
-            for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i]._destroy_();
-
-
-            super._destroy_();
+                return setTimeout(() => { this._destroy_(); }, t * 1000 + 5);
         }
+
+        if(this.parent)
+            this.parent.removeSource(this);
+        //this.finalizeTransitionOut();
+        this.children.forEach((c) => c._destroy_());
+        this.children.length = 0;
+        this.data = null;
+
+        if (this.ele && this.ele.parentElement)
+            this.ele.parentElement.removeChild(this.ele);
+
+        this.ele = null;
+
+        for (let i = 0, l = this.sources.length; i < l; i++)
+            this.sources[i]._destroy_();
+
+
+        super._destroy_();
+
     }
 
     addToParent() {
@@ -104,6 +106,15 @@ export class Source extends View {
         this.sources.push(source);
     }
 
+    removeSource(source) {
+        if (source.parent !== this)
+            return;
+
+        for(let i = 0; i < this.sources.length; i++)
+            if(this.sources[i] == source)
+                return (this.sources.splice(i,1), source.parent = null);
+    }
+    
     getTap(name) {
         let tap = this.taps[name];
 
@@ -132,9 +143,9 @@ export class Source extends View {
                 let bool = name == "update";
                 let t = bool ? new UpdateTap(this, name, tap._modes_) : new Tap(this, name, tap._modes_);
 
-                if (bool) 
+                if (bool)
                     this.update_tap = t;
-                
+
                 this.taps[name] = t;
                 out_taps.push(this.taps[name]);
             }
@@ -150,6 +161,7 @@ export class Source extends View {
 
         let m = this._presets_.models[this._model_name_];
 
+
         let s = this._presets_.schemas[this._schema_name_];
 
         if (m)
@@ -158,7 +170,7 @@ export class Source extends View {
             model = new s(model);
         else if (!model)
             model = new Model(model);
-        
+
         this.LOADED = true;
 
 
@@ -179,28 +191,32 @@ export class Source extends View {
     _up_(tap, data, meta) {
         if (this.parent)
             this.parent._upImport_(tap._prop_, data, meta);
+       //else
+         //   tap._up_(data, null, true);
+
     }
 
     _upImport_(prop_name, data, meta) {
         if (this.taps[prop_name])
             this.taps[prop_name]._up_(data, meta);
+
     }
 
     _update_(data, changed_values, IMPORTED = false) {
 
-       // if(!this.LOADED) return;
+        // if(!this.LOADED) return;
 
-        if (this.update_tap) 
-            this.update_tap._down_(data, IMPORTED);
-        
+        if (this.update_tap)
+            this.update_tap._downS_(data, IMPORTED);
+
 
         if (changed_values) {
             for (let name in changed_values)
                 if (this.taps[name])
-                    this.taps[name]._down_(data, IMPORTED);
+                    this.taps[name]._downS_(data, IMPORTED);
         } else
             for (let name in this.taps)
-                this.taps[name]._down_(data, IMPORTED);
+                this.taps[name]._downS_(data, IMPORTED);
 
         for (let i = 0, l = this.sources.length; i < l; i++)
             this.sources[i]._down_(data, changed_values);

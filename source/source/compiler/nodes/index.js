@@ -1,6 +1,7 @@
 import { RootNode } from "./root";
 import { ScriptNode } from "./script";
 import { SourceNode } from "./source";
+import { LinkNode } from "./link";
 import { SourceTemplateNode } from "./template";
 import { StyleNode } from "./style";
 import { VoidNode } from "./void";
@@ -19,6 +20,8 @@ function CreateHTMLNode(tag) {
             break;
         default:
             switch (tag) {
+                case "a":
+                    return new LinkNode();
                 /** void elements **/
                 case "template":
                     return new VoidNode();
@@ -26,6 +29,7 @@ function CreateHTMLNode(tag) {
                     return new StyleNode();
                 case "script":
                     return new ScriptNode();
+                
             }
     }
 

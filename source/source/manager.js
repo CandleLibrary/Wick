@@ -50,6 +50,7 @@ export class SourceManager {
             for (let i = 0, l = hooks.length; i < l; i++) {
 
                 let hook = hooks[i];
+                if(!hook) continue;
                 let ele = hook.ele;
 
                 if (ele.getAttribute("trs") == "in") continue;
@@ -91,6 +92,8 @@ export class SourceManager {
             for (let i = 0, l = hooks.length; i < l; i++) {
 
                 let hook = hooks[i];
+
+                if(!hook) continue;
                 let ele = hook.ele;
 
                 if (ele.getAttribute("trs") == "out") continue;
