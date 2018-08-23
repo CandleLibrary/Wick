@@ -211,11 +211,10 @@ export class ArrayModelContainer extends ModelContainerBase {
     }
 
     __remove__(term, out_container) {
-        
+
         let result = false;
 
-        if(term instanceof ModelBase)
-            term = this._gI_(term);
+        term = term.map(t => (t instanceof ModelBase) ? this._gI_(t) : t);
         
         for (var i = 0, l = this.data.length; i < l; i++) {
             var obj = this.data[i];

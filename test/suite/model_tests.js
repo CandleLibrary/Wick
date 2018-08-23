@@ -184,6 +184,8 @@ function MODELTESTS(config) {
                 return data;
             };
 
+
+
             let view = new wick.core.view();
 
             view._update_ = function(data) {
@@ -201,6 +203,65 @@ function MODELTESTS(config) {
 
             let name = user.name;
         });
+
+        it.only("Creates containers that can store multiple models", function() {
+            let User = wick.model.scheme({
+                name: wick.scheme.string,
+                age: wick.scheme.number,
+                birthday: wick.scheme.date,
+            });
+
+            let Users = wick.model.scheme({
+                self: [{
+                    key:{ name: "name", type: wick.scheme.string },
+                    model: User
+                }]
+            })
+
+            let Users2 = wick.model.scheme({
+                self: [{
+                    key:{ name: "birthday", type: wick.scheme.date, unique_key : "name" },
+                    model: User
+                }]
+            })
+
+            let users = new Users;
+            let users2 = new Users2;
+
+            let user_list = [
+                {name:"tom", age: 34, birthday:  "August 1, 2015"},
+                {name:"greg", age: 34, birthday:  "August 2, 2015"},
+                {name:"charly", age: 34, birthday:  "August 3, 2015"},
+                {name:"herbert", age: 34, birthday:  "August 4, 2015"},
+                {name:"fran", age: 34, birthday:  "August 5, 2015"},
+                {name:"gloria", age: 34, birthday:  "August 6, 2015"},
+                {name:"silvia", age: 34, birthday:  "August 7, 2015"},
+            ]
+
+            users.set(user_list);
+            users2.set(user_list);
+            console.log(users, users2)
+
+
+            users.remove("greg")
+            users2.remove(["August 5, 2015"])
+
+            users.length.should.equal(6);
+            users.get("tom", [])[0].age.should.equal(34);
+
+            users2.length.should.equal(6);
+            users2.get(["August 1, 2015", "August 7, 2015"], []).length.should.equal(6);
+
+            users.set([
+                {name:"flora", age:15},
+                {name:"tom", age:32}
+            ])
+
+            users.length.should.equal(7);
+            users.get("tom", [])[0].age.should.equal(32);
+
+            console.log(users)
+        })
 
         it("Creates complex data hierarchies from basic Javascript object descriptions", function() {
             

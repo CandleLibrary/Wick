@@ -36,7 +36,7 @@ export class MCArray extends Array {
 
     toJson() { return JSON.stringify(this, null, '\t'); }
 }
-var zz = 0;
+
 // A no op function
 let EmptyFunction = () => {};
 let EmptyArray = [];
@@ -251,7 +251,7 @@ export class ModelContainerBase extends ModelBase {
     */
     remove(term, __FROM_SOURCE__ = false) {
 
-        let terms = term;
+        term = this.getHook("term", term);
 
         if (!__FROM_SOURCE__ && this.source) {
 
@@ -265,12 +265,15 @@ export class ModelContainerBase extends ModelBase {
 
         if (!term)
             this.__removeAll__();
+
         else {
-            if (Array.isArray(term))
-                for (let i = 0; i < terms.length; i++)
-                    this.__remove__(terms[i], out_container);
-            else
-                this.__remove__(term, out_container);
+
+            let terms = (Array.isArray(term)) ? term : [term];
+
+            //Need to convert terms into a form that will work for the identifier type
+            terms = terms.map(t => (t instanceof ModelBase) ? t : this.validator.parse(t));
+
+            this.__remove__(terms, out_container);
         }
 
         return out_container;
@@ -349,17 +352,12 @@ export class ModelContainerBase extends ModelBase {
      */
     __linksInsert__(item) {
         let a = this.first_link;
-        if(a) console.log(zz++);
-        let aa = 0;
         while (a) {
             if(a._gI_(item, a.__filters__))
                 a.scheduleUpdate();
             //a.insert(item, true);
             a = a.next;
-            aa++
         }
-        if(aa > 1000) debugger;
-            console.log(aa)
     }
 
     /**
@@ -413,6 +411,10 @@ export class ModelContainerBase extends ModelBase {
             return this.validator.filter(identifier, filters);
         }
         return true;
+    }
+
+    _gIf_(item, term){
+        let t = this._gI_(item, this.filters);
     }
 
     /**

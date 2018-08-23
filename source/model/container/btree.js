@@ -37,18 +37,18 @@ export class BTreeModelContainer extends ModelContainerBase {
             data = data.slice(1);
         }
 
-        this.root = null;
         this.min = 10;
         this.max = 20;
         this.size = 0;
+        this.btree = null;
 
         if (Array.isArray(data) && data.length > 0)
             this.insert(data);
     }
 
     _destroy_() {
-        if (this.root)
-            this.root._destroy_();
+        if (this.btree)
+            this.btree._destroy_();
 
         super._destroy_();
     }
@@ -63,10 +63,10 @@ export class BTreeModelContainer extends ModelContainerBase {
             added: false
         };
 
-        if (!this.root)
-            this.root = new BtreeNode(true);
+        if (!this.btree)
+            this.btree = new BtreeNode(true);
 
-        this.root = this.root.insert(identifier, model, this.unique_key, this.max, true, result).newnode;
+        this.btree = this.btree.insert(identifier, model, this.unique_key, this.max, true, result).newnode;
 
         if (add_list) add_list.push(model);
 
@@ -84,26 +84,26 @@ export class BTreeModelContainer extends ModelContainerBase {
             return __return_data__;
 
         if (this.__filters__) {
-            if (this.root && terms.length > 0) {
+            if (this.btree && terms.length > 0) {
                 if (terms.length == 1 && this.__gI__(terms[0])) {
-                    this.root.get(parseFloat(terms[0]), parseFloat(terms[0]), __return_data__);
+                    this.btree.get(parseFloat(terms[0]), parseFloat(terms[0]), __return_data__);
                 } else {
                     for (let i = 0, l = terms.length; i < l; i += 2) {
                         let term1 = this._gI_(terms[0]);
                         let term2 = this._gI_(terms[1]);
                         if (term1 && term2)
-                            this.root.get(term1, term2, __return_data__);
-                        this.root.get(parseFloat(terms[i]), parseFloat(terms[i + 1]), __return_data__);
+                            this.btree.get(term1, term2, __return_data__);
+                        this.btree.get(parseFloat(terms[i]), parseFloat(terms[i + 1]), __return_data__);
                     }
                 }
             }
         } else {
-            if (this.root && terms.length > 0) {
+            if (this.btree && terms.length > 0) {
                 if (terms.length == 1) {
-                    this.root.get(parseFloat(terms[0]), parseFloat(terms[0]), __return_data__);
+                    this.btree.get(parseFloat(terms[0]), parseFloat(terms[0]), __return_data__);
                 } else {
                     for (let i = 0, l = terms.length; i < l; i += 2)
-                        this.root.get(parseFloat(terms[i]), parseFloat(terms[i + 1]), __return_data__);
+                        this.btree.get(parseFloat(terms[i]), parseFloat(terms[i + 1]), __return_data__);
                 }
             }
         }
@@ -116,24 +116,24 @@ export class BTreeModelContainer extends ModelContainerBase {
 
         if (term instanceof ModelBase) {
             let v = this._gI_(term);
-            let o = this.root.remove(v, v, this.unique_key, this.unique_key ? term[this.unique_key] : "", true, this.min, out_container);
+            let o = this.btree.remove(v, v, this.unique_key, this.unique_key ? term[this.unique_key] : "", true, this.min, out_container);
             result = o.out;
-            this.root = o.out_node;
+            this.btree = o.out_node;
         } else {
-            if (this.root && term.length > 0) {
+            if (this.btree && term.length > 0) {
                 if (term.length == 1) {
-                    let o = this.root.remove(term[0], term[0], unique, "", true, this.min, out_container);
+                    let o = this.btree.remove(term[0], term[0], null, "", true, this.min, out_container);
                     result = o.out;
-                    this.root = o.out_node;
+                    this.btree = o.out_node;
                 } else if (term.length < 3) {
-                    let o = this.root.remove(term[0], term[1], unique, "", true, this.min, out_container);
+                    let o = this.btree.remove(term[0], term[1], null, "", true, this.min, out_container);
                     result = o.out;
-                    this.root = o.out_node;
+                    this.btree = o.out_node;
                 } else {
                     for (let i = 0, l = term.length - 1; i > l; i += 2) {
-                        let o = this.root.remove(term[i], term[i + 1], "", true, this.min, out_container);
+                        let o = this.btree.remove(term[i], term[i + 1], null, "", true, this.min, out_container);
                         result = o.out;
-                        this.root = o.out_node;
+                        this.btree = o.out_node;
                     }
                 }
             }
@@ -151,7 +151,7 @@ export class BTreeModelContainer extends ModelContainerBase {
     __updateLinks__() {
         let a = this.first_link;
         while (a) {
-            a.root = this.root;
+            a.btree = this.btree;
             a = a.next;
         }
     }
@@ -160,24 +160,24 @@ export class BTreeModelContainer extends ModelContainerBase {
 
         if (this.__filters__) {
             this.__get__(this.__filters__, __return_data__);
-        } else if (this.root)
-            this.root.get(-Infinity, Infinity, __return_data__);
+        } else if (this.btree)
+            this.btree.get(-Infinity, Infinity, __return_data__);
 
         return __return_data__;
     }
 
     __removeAll__() {
-        if (this.root)
-            this.root._destroy_();
-        this.root = null;
+        if (this.btree)
+            this.btree._destroy_();
+        this.btree = null;
     }
 
     toJSON() {
         let out_data = [];
 
-        if (this.root) {
+        if (this.btree) {
 
-            this.root.get(this.min, this.max, out_data);
+            this.btree.get(this.min, this.max, out_data);
         }
 
         return out_data;
@@ -185,7 +185,7 @@ export class BTreeModelContainer extends ModelContainerBase {
 
     clone() {
         let clone = super.clone();
-        clone.root = this.root;
+        clone.btree = this.btree;
         return clone;
     }
 }
