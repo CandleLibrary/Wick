@@ -60,8 +60,9 @@ export class Router {
         this.finalizing_pages = [];
 
         presets.processLink = (temp) => {
+
             if (!temp.onclick) temp.onclick = (e) => {
-                let link = e.target;
+                let link = e.currentTarget;
                 if (link.origin !== location.origin) return;
                 e.preventDefault();
                 history.pushState({}, "ignored title", link.href);
@@ -86,7 +87,7 @@ export class Router {
 
         let IS_SAME_PAGE = (this.current_url == url),
             page = null,
-            wurl = new WURL(location);
+            wurl = new WURL(location.href);
 
         this.current_url = url;
 
@@ -150,7 +151,7 @@ export class Router {
      * @param {String} query -
      * @param {Bool} IS_SAME_PAGE -
      */
-    loadPage(page, wurl = new WURL(document.location), IS_SAME_PAGE) {
+    loadPage(page, wurl = new WURL(document.location.href), IS_SAME_PAGE) {
 
         URL_HOST.wurl = wurl;
 

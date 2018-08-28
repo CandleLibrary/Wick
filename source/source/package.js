@@ -2,6 +2,8 @@ import { EL, OB, _cloneNode_, _appendChild_ } from "../common/short_names";
 import { SourceManager } from "./manager";
 import { CompileSource } from "./compiler/compiler";
 import { Lexer } from "../common/string_parsing/lexer";
+import { Skeleton } from "./skeleton";
+import { RootNode } from "./compiler/nodes/root";
 
 /**
  * SourcePackages stores compiled {@link SourceSkeleton}s and provide a way to _bind_ Model data to the DOM in a reusable manner. * 
@@ -28,6 +30,7 @@ class SourcePackage {
                 return new Promise((res) => res(element.__wick__package__));
             return element.__wick__package__;
         }
+
 
         /**
          * When set to true indicates that the package is ready to be mounted to the DOM.
@@ -58,6 +61,11 @@ class SourcePackage {
             element.then((data) => CompileSource(this, presets, data));
             if (RETURN_PROMISE) return element;
             return this;
+        } else if (element instanceof RootNode) {
+            //already a HTMLtree, just package into a skeleton and return.
+            this._skeletons_.push(new Skeleton(element, presets));
+            this._complete_();
+            return;
         } else if (!(element instanceof EL) && typeof(element) !== "string" && !(element instanceof Lexer)) {
             let err = new Error("Could not create package. element is not an HTMLElement");
             this._addError_(err);
@@ -91,6 +99,7 @@ class SourcePackage {
 
         for (let m, i = 0, l = this.pms.length; i < l; i++)
             (m = this.pms[i], this.mount(m.e, m.m, m.usd, m.mgr));
+
 
         this.pms.length = 0;
 

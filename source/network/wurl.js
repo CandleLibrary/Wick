@@ -131,11 +131,11 @@ class WURL {
             this.path = location.pathname;
             this.hash = location.hash.slice(1);
             this.query = location.search.slice(1);
-            this._gQ_(this.query);
+            this._getQuery_(this.query);
 
             return WURL.R;
         }
-        this._gQ_(this.query);
+        this._getQuery_(this.query);
     }
 
 
@@ -165,7 +165,7 @@ class WURL {
      * Pulls query string info into this.map
      * @private
      */
-    _gQ_() {
+    _getQuery_() {
         let map = (this.map) ? this.map : (this.map = new Map());
 
         let lex = new Lexer(this.query);

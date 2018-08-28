@@ -378,7 +378,7 @@ export class RootNode extends HTMLNode {
                 for (let node = this.fch; node; node = this.getN(node))
                     node._build_(own_element, source, presets, errors, taps, out_statics);
 
-                _appendChild_(element, own_element);
+                if(element)_appendChild_(element, own_element);
 
                 return source;
             }

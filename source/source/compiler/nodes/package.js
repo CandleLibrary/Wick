@@ -1,4 +1,4 @@
-import {VoidNode} from "./void";
+import { VoidNode } from "./void";
 
 export class PackageNode extends VoidNode {
 
@@ -8,7 +8,7 @@ export class PackageNode extends VoidNode {
     }
 
     /******************************************* HOOKS ****************************************************/
-    
+
     /**
      * Binds new laxer to boundaries starting from open tag to close tag. Applies Lexer to new SourcePackage.
      * @param      {Lexer}  lex     The lex
@@ -34,4 +34,16 @@ export class PackageNode extends VoidNode {
     }
 
     _ignoreTillHook_() { return true; }
+
+    _endOfElementHook_() {
+        if (!this.fch)
+            this._mergeComponent_();
+    }
+
+    _mergeComponent_() {
+        let component = this._presets_.components[this.tag];
+
+        if (component)
+            this.par._package_ = new this.SourcePackage(component, this._presets_, false);
+    }
 }

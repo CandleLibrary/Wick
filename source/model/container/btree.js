@@ -80,68 +80,74 @@ export class BTreeModelContainer extends ModelContainerBase {
 
     __get__(terms, __return_data__) {
 
-        if(__return_data__ instanceof BTreeModelContainer)
+        if(!this.btree) return __return_data__;
+
+        if (__return_data__ instanceof BTreeModelContainer)
             return __return_data__;
 
-        if (this.__filters__) {
-            if (this.btree && terms.length > 0) {
-                if (terms.length == 1 && this.__gI__(terms[0])) {
-                    this.btree.get(parseFloat(terms[0]), parseFloat(terms[0]), __return_data__);
-                } else {
-                    for (let i = 0, l = terms.length; i < l; i += 2) {
-                        let term1 = this._gI_(terms[0]);
-                        let term2 = this._gI_(terms[1]);
-                        if (term1 && term2)
-                            this.btree.get(term1, term2, __return_data__);
-                        this.btree.get(parseFloat(terms[i]), parseFloat(terms[i + 1]), __return_data__);
-                    }
-                }
-            }
-        } else {
-            if (this.btree && terms.length > 0) {
-                if (terms.length == 1) {
-                    this.btree.get(parseFloat(terms[0]), parseFloat(terms[0]), __return_data__);
-                } else {
-                    for (let i = 0, l = terms.length; i < l; i += 2)
-                        this.btree.get(parseFloat(terms[i]), parseFloat(terms[i + 1]), __return_data__);
-                }
-            }
+        let out = [];
+
+        for (let i = 0, l = terms.length; i < l; i++) {
+            let b, a = terms[i];
+
+            if (a instanceof ModelBase)
+                continue;
+
+            if (i < l-1 && !(terms[i + 1] instanceof ModelBase)) {
+                b = terms[++i];
+            } else
+                b = a;
+
+            this.btree.get(a, b, out);
         }
+
+        if (this.__filters__) {
+            for (let i = 0, l = out.length; i < l; i++) {
+                let model = out[i];
+
+                if (this._gI_(model, this.__filters__))
+                    __return_data__.push(model);
+            }
+        } else
+            for (let i = 0, l = out.length; i < l; i++)
+                __return_data__.push(out[i]);
+
+
 
         return __return_data__;
     }
 
-    __remove__(term, out_container = []) {
+    __remove__(terms, out_container = []) {
+
+        if(!this.btree) return false;
+
         let result = 0;
 
-        if (term instanceof ModelBase) {
-            let v = this._gI_(term);
-            let o = this.btree.remove(v, v, this.unique_key, this.unique_key ? term[this.unique_key] : "", true, this.min, out_container);
-            result = o.out;
-            this.btree = o.out_node;
-        } else {
-            if (this.btree && term.length > 0) {
-                if (term.length == 1) {
-                    let o = this.btree.remove(term[0], term[0], null, "", true, this.min, out_container);
-                    result = o.out;
-                    this.btree = o.out_node;
-                } else if (term.length < 3) {
-                    let o = this.btree.remove(term[0], term[1], null, "", true, this.min, out_container);
-                    result = o.out;
-                    this.btree = o.out_node;
-                } else {
-                    for (let i = 0, l = term.length - 1; i > l; i += 2) {
-                        let o = this.btree.remove(term[i], term[i + 1], null, "", true, this.min, out_container);
-                        result = o.out;
-                        this.btree = o.out_node;
-                    }
-                }
+        for (let i = 0, l = terms.length; i < l; i++) {
+            let b, a = terms[i];
+
+            if ((a instanceof ModelBase)) {
+                let v = this._gI_(a);
+                let o = this.btree.remove(v, v, this.unique_key, this.unique_key ? a[this.unique_key] : "", true, this.min, out_container);
+                result += o.out;
+                this.btree = o.out_node;
+                continue;
             }
+
+            if (i < l-1 && !(terms[i + 1] instanceof ModelBase)) {
+                b = terms[++i];
+            } else
+                b = a;
+
+            let o = this.btree.remove(a, b, "", "", true, this.min, out_container);
+            result += o.out;
+            this.btree = o.out_node;
         }
 
         if (result > 0) {
-            this.__updateLinks__();
             this.size -= result;
+            this.__updateLinks__();
+            this.__linksRemove__(out_container);
         }
 
 
@@ -402,7 +408,7 @@ class BtreeNode {
                 if (left.LEAF)
                     for (let i = 0; i < left.keys.length; i++)
                         if (left.keys[i] != left.nodes[i].id)
-                            debugger;
+                            {/*debugger*/};
 
                 return true;
             }

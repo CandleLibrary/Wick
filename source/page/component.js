@@ -119,7 +119,9 @@ class Component extends BaseComponent {
 
         const id = element.classList[0];
 
-        if (app_components[id])
+
+
+        if (id && app_components[id])
             return app_components[id];
         if (presets.custom_sources[id])
             presets.custom_sources[id].mount(this.ele, this);
@@ -208,7 +210,6 @@ class Component extends BaseComponent {
             let own_elements = {};
 
             this.getNamedElements(own_elements);
-
 
             for (let name in own_elements) {
                 let to, from = transitions[name];

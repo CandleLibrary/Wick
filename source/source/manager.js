@@ -1,5 +1,5 @@
 export class SourceManager {
-    
+
     constructor(model, element) {
         this.sources = [];
         this.model = model;
@@ -29,14 +29,14 @@ export class SourceManager {
     }
 
     _removeFromDOM_() {
-        if(this._APPEND_STATE_ == true) return;
-        
+        if (this._APPEND_STATE_ == true) return;
+
         if (this.ele.parentElement)
             this.ele.parentElement.removeChild(this.ele);
     }
 
     _transitionIn_() {
-        if(this._TRANSITION_STATE_ === true) return;
+        if (this._TRANSITION_STATE_ === true) return;
         this._TRANSITION_STATE_ = true;
         this._APPEND_STATE_ = true;
         for (let i = 0, l = this.sources.length; i < l; i++) {
@@ -50,11 +50,11 @@ export class SourceManager {
             for (let i = 0, l = hooks.length; i < l; i++) {
 
                 let hook = hooks[i];
-                if(!hook) continue;
+                if (!hook) continue;
                 let ele = hook.ele;
 
                 if (ele.getAttribute("trs") == "in") continue;
-                
+
                 ele.setAttribute("trs", "in");
 
                 if (css) {
@@ -73,8 +73,11 @@ export class SourceManager {
     }
 
     _transitionOut_(DESTROY_ON_REMOVE) {
-
-        if(this._TRANSITION_STATE_ === false) return;
+        if (this._TRANSITION_STATE_ === false) {
+            if (DESTROY_ON_REMOVE) this._destroy_();
+            return;
+        };
+        
         this._TRANSITION_STATE_ = false;
 
         this._APPEND_STATE_ = false;
@@ -93,7 +96,7 @@ export class SourceManager {
 
                 let hook = hooks[i];
 
-                if(!hook) continue;
+                if (!hook) continue;
                 let ele = hook.ele;
 
                 if (ele.getAttribute("trs") == "out") continue;
@@ -120,10 +123,12 @@ export class SourceManager {
             }
         }
 
-        if (transition_time > 0) 
-            setTimeout(()=>this._removeFromDOM_(), transition_time + 32);
-        else
+        if (transition_time > 0)
+            setTimeout(() => { this._removeFromDOM_(); if (DESTROY_ON_REMOVE) this._destroy_(); }, transition_time + 32);
+        else {
             this._removeFromDOM_();
+            if (DESTROY_ON_REMOVE) this._destroy_();
+        }
 
         return transition_time;
     }

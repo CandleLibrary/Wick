@@ -1,32 +1,42 @@
-function BTMCTESTS() {
-	
+function BTREE_CONTAINER_TESTS(config) {
+    let scheduler = wick.internals.scheduler;
+    
     describe('wick.model.container.btree', function() {
+        
+        let btree = new (wick.model.scheme({
+                self: [{
+                    key:{ name: "num", type: wick.scheme.number, unique_key : "id" },
+                    model: wick.model.any.constr
+                }]
+            }))();
 
-        //Load the ModelContainer test Suite
-        ModelContainerTests(wick.model.container.btree, false);
+        it("Adding Models", function() {
+            let i = 0;
+            
+            btree.set([
+                {num:i++, id: "id"+i},
+                {num:i++, id: "id"+i},
+                {num:i++, id: "id"+i},
+                {num:i++, id: "id"+i},
+                {num:i++, id: "id"+i},
+                {num:i++, id: "id"+i},
+                {num:i++, id: "id"+i},
+                {num:i++, id: "id"+i},
+                {num:i++, id: "id"+i}
+            ]);
 
-        let BTreeMC = wick.model.container.btree;
+            btree.length.should.equal(9);
+        });
 
-        it("Rejects non-numerical schemas", function() {
-            let Constructor = class extends BTreeMC {};
+        it("Getting Models", function() {
+            let i = 0;
+            
+            btree.get(2, [])[0].id.should.equal("id3");
+            btree.get([2,3,4,5], [])[1].id.should.equal("id4");
+        });
 
-            Constructor.schema = {
-                model: wick.model.any.constr,
-                parser: wick.scheme.string,
-                identifier: "birthday"
-            }
-
-            try {
-                new Contructor();
-            } catch (e) {
-                //Error Thrown, Good Job
-            }
-        })
-
-
-        //Btree Functional tests
 
     });
 }
 
-if (typeof module !== "undefined") module.exports = BTMCTESTS;
+if (typeof module !== "undefined") module.exports = BTREE_CONTAINER_TESTS;

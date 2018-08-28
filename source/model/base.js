@@ -15,6 +15,7 @@ class ModelBase {
         _SealedProperty_(this, "MUTATION_ID", 0);
         _SealedProperty_(this, "address", address);
         _SealedProperty_(this, "root", root || this);
+        _SealedProperty_(this, "prop_name", "");
     }
 
 
@@ -190,8 +191,7 @@ class ModelBase {
 
 
     _deferUpdateToRoot_(data, MUTATION_ID = this.MUTATION_ID) {
-        let model =  this.root._setThroughRoot_(data, this.address, 0, this.address.length, MUTATION_ID);
-        return model;
+        return this.root._setThroughRoot_(data, this.address, 0, this.address.length, MUTATION_ID);
     }
 
 
@@ -202,10 +202,12 @@ class ModelBase {
 
             if (m_id !== this.MUTATION_ID) {
                 let clone = this.clone();
+                clone.set(data, true);
                 clone.MUTATION_ID = (this.par) ? this.par.MUTATION_ID : this.MUTATION_ID + 1;
                 return clone;
             }
 
+            this.set(data, true);
             return this;
         }
 
@@ -242,6 +244,7 @@ class ModelBase {
         clone.par = this.par;
         clone.MUTATION_ID = this.MUTATION_ID;
         clone.address = this.address;
+        clone.prop_name = this.prop_name;
 
         clone.root = (this.root == this) ? clone : this.root;
 

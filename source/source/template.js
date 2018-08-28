@@ -10,7 +10,7 @@ import { View } from "../view/view";
 
 
 /**
- * Class for template.
+ * SourceTemplate provide the mechanisms for dealing with lists and sets of components. 
  *
  * @param      {Source}  parent   The Source parent object.
  * @param      {Object}  data     The data object hosting attribute properties from the HTML template. 
@@ -58,7 +58,7 @@ export class SourceTemplate extends View {
             if (Array.isArray(container))
                 this.cull(container);
             else
-                this.cull(container.data)
+                this.cull(container.data);
         }
     }
 
@@ -220,7 +220,7 @@ export class SourceTemplate extends View {
             let ele = _createElement_("li");
             let mgr = this._package_.mount(ele, items[i], false);
 
-            mgr.sources.forEach((s) => { s.parent = this.parent })
+            mgr.sources.forEach((s) => { s.parent = this.parent;});
 
             this.sources.push(mgr);
         }

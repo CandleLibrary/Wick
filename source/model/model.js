@@ -32,6 +32,8 @@ class Model extends ModelBase {
         if (!data)
             return false;
 
+        let out = false;
+
         for (let prop_name in data) {
 
             let index = this.look_up[prop_name];
@@ -48,17 +50,23 @@ class Model extends ModelBase {
                         this.prop_array[index] = prop;
                     }
 
-                    if (prop.set(data[prop_name], true))
+                    if (prop.set(data[prop_name], true)){
                         this.scheduleUpdate(prop_name);
+                        out = true;
+                    }
 
                 } else if (prop !== data[prop_name]) {
                     this.prop_array[index] = data[prop_name];
-                } else return false;
-            } else
+                     this.scheduleUpdate(prop_name);
+                     out = true;
+                }
+            } else{
                 this._createProp_(prop_name, data[prop_name]);
+                out = true;
+            }
         }
 
-        return true;
+        return out;
     }
     _createProp_(name, value) {
 

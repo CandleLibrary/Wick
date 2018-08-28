@@ -173,7 +173,6 @@ export class Source extends View {
 
         this.LOADED = true;
 
-
         for (let i = 0, l = this.sources.length; i < l; i++)
             this.sources[i].load(model);
 

@@ -15,6 +15,8 @@ export class PageView {
         this.ele = app_page;
         this.ele_backer = null;
         this.LOADED = false;
+
+        console.log(this)
     }
 
     _destroy_() {

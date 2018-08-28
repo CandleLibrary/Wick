@@ -204,7 +204,7 @@ function MODELTESTS(config) {
             let name = user.name;
         });
 
-        it.only("Creates containers that can store multiple models", function() {
+        it("Creates containers that can store multiple models", function() {
             let User = wick.model.scheme({
                 name: wick.scheme.string,
                 age: wick.scheme.number,

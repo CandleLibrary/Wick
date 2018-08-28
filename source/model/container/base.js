@@ -239,7 +239,7 @@ export class ModelContainerBase extends ModelBase {
         return out;
     }
 
-     delete(term, from_root = false) {
+    delete(term, from_root = false) {
         if (!from_root)
             return this._deferUpdateToRoot_(term).remove(term);
         else
@@ -251,7 +251,7 @@ export class ModelContainerBase extends ModelBase {
     */
     remove(term, __FROM_SOURCE__ = false) {
 
-        term = this.getHook("term", term);
+        //term = this.getHook("term", term);
 
         if (!__FROM_SOURCE__ && this.source) {
 
@@ -337,10 +337,15 @@ export class ModelContainerBase extends ModelBase {
      * @param      {Array}  terms   Array of terms.
      * @private
      */
-    __linksRemove__(terms) {
+    __linksRemove__(item) {
         let a = this.first_link;
         while (a) {
-            a.remove(terms, true);
+            for (let i = 0; i < item.length; i++)
+                if (a._gI_(item[i], a.__filters__)) {
+                    a.scheduleUpdate();
+                    break;
+                }
+
             a = a.next;
         }
     }
@@ -353,9 +358,8 @@ export class ModelContainerBase extends ModelBase {
     __linksInsert__(item) {
         let a = this.first_link;
         while (a) {
-            if(a._gI_(item, a.__filters__))
+            if (a._gI_(item, a.__filters__))
                 a.scheduleUpdate();
-            //a.insert(item, true);
             a = a.next;
         }
     }
@@ -413,7 +417,7 @@ export class ModelContainerBase extends ModelBase {
         return true;
     }
 
-    _gIf_(item, term){
+    _gIf_(item, term) {
         let t = this._gI_(item, this.filters);
     }
 

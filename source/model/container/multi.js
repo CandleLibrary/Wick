@@ -95,16 +95,11 @@ export class MultiIndexedContainer extends ModelContainerBase {
 
         if ((out = this.primary_index.__remove__(term, out_container))) {
 
-            for (let i = 0; i < out_container.length; i++) {
+            for (let name in this.secondary_indexes) {
 
-                let model = out_container[i];
+                let index = this.secondary_indexes[name];
 
-                for (let name in this.secondary_indexes) {
-
-                    let index = this.secondary_indexes[name];
-
-                    index.__remove__(model);
-                }
+                index.__remove__(out_container);
             }
         }
 
