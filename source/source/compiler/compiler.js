@@ -10,7 +10,7 @@ function complete(lex, SourcePackage, presets, ast) {
      * Only accept certain nodes for mounting to the DOM. 
      * The custom element `import` is simply used to import extra HTML data from network for use with template system. It should not exist otherwise.
      */
-    if (ast.tag && ast.tag !== "import" && ast.tag !== "template") {
+    if (ast.tag && (ast.tag !== "import" && ast.tag !== "link") && ast.tag !== "template") {
         let skeleton = new Skeleton(ast, presets);
         SourcePackage._skeletons_.push(skeleton);
     }
@@ -87,7 +87,7 @@ function CompileSource(SourcePackage, presets, element) {
             temp.appendChild(element.content);
             element = temp;
         }
-        lex = new Lexer(element.outerHTML);
+        lex = new Lexer(element.innerHTML);
     } else {
         let e = new Error("Cannot compile component");
         SourcePackage._addError_(e);

@@ -9,4 +9,16 @@ export class CSS_Percentage extends Number {
         }
         return null;
     }
+
+    toJSON(){
+        return super.toString() + "%";
+    }
+
+    toString(radix){
+        return super.toString(radix) + "%";
+    }
+
+    get str() {
+        return this.toString();
+    }
 }

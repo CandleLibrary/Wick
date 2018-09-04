@@ -53,25 +53,30 @@ export class Tap {
     }
 
     _downS_(model, IMPORTED = false) {
-        if (IMPORTED) {
-            if (!(this._modes_ & IMPORT))
-                return;
-            if (this._modes_ & PUT)
-                this._source_._model_[this._prop_] = model[this._prop_];
-        }
-
         const value = model[this._prop_];
 
-        if (typeof(value) !== "undefined") 
+        if (typeof(value) !== "undefined" && typeof(value) !== "function") {
+
+            if (IMPORTED) {
+                if (!(this._modes_ & IMPORT))
+                    return;
+
+                if (this._modes_ & PUT) 
+                    this._source_._model_[this._prop_] = value;
+                    
+            }
+
+
             this._down_(value);
+        }
     }
 
     _up_(value, meta) {
 
-        if (!(this._modes_ & (EXPORT | PUT))) 
+        if (!(this._modes_ & (EXPORT | PUT)))
             this._down_(value, meta);
 
-        if (this._modes_ & PUT){
+        if ((this._modes_ & PUT) && typeof(value) !== "undefined") {
             this._source_._model_[this._prop_] = value;
         }
 

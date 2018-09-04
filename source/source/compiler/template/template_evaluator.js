@@ -1,7 +1,7 @@
 import { JSExpressionIdentifiers } from "../../../common/js/root";
 import { RawValueBinding, EventBinding, ExpressionBinding, DynamicBinding, } from "./basic_bindings";
 import {barrier_a_start,barrier_a_end,barrier_b_start,barrier_b_end } from "../../../root/config/global"
-const BannedIdentifiers = { "true": true, "false": 1, "class": 1, "function": 1,  "return": 1, "for" : 1, "new" : 1, "let" : 1, "var" : 1, "const" : 1, "Date": 1};
+const BannedIdentifiers = { "true": true, "false": 1, "class": 1, "function": 1,  "return": 1, "for" : 1, "new" : 1, "let" : 1, "var" : 1, "const" : 1, "Date": 1, "null": 1};
 
 function setIdentifier(id, store, cache) {
     if (!cache[id] && !BannedIdentifiers[id]) {

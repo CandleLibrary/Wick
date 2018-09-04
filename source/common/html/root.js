@@ -131,12 +131,6 @@ class HTMLNode {
         return (attrib) ? attrib.value : void 0;
     }
 
-    getAttribute(name) {
-        let attrib = this.getAttrib(name);
-        return (attrib) ? attrib.value : void 0;
-    }
-
-
     get parentElement() {
         return this.par;
     }
@@ -330,6 +324,7 @@ class HTMLNode {
         } else if (start < lex.off) {
             let other_lex = lex.copy();
             other_lex.off = start;
+            other_lex.END = false;
             other_lex.tl = 0;
             other_lex.fence(lex);
             other_lex.IWS = false;

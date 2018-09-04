@@ -86,7 +86,7 @@ export class ArrayModelContainer extends ModelContainerBase {
         this.data = [];
 
         if (Array.isArray(data) && data.length > 0)
-            this.insert(data);
+            this.insert(data, true);
     }
 
     _destroy_() {

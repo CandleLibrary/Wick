@@ -1,5 +1,6 @@
 import { RootNode, BindingCSSRoot } from "./root";
 import { Source } from "../../source";
+import { _appendChild_, _createElement_ } from "../../../common/short_names";
 import { Tap, UpdateTap } from "../../tap/tap";
 
 /**
@@ -37,12 +38,44 @@ export class SourceNode extends RootNode {
     /******************************************* BUILD ****************************************************/
 
     _build_(element, source, presets, errors, taps = null, statics = null) {
-
         let data = {};
 
         let out_taps = [];
 
         let me = new Source(source, presets, element, this);
+        /**
+         * To keep the layout of the output HTML predictable, Wick requires that an "real" HTML be defined before a source object is created. 
+         * If this is not the case, then a new element, defined by the "element" attribute of the source virtual tag, or defaulted to a "div", 
+         * will be created to allow the source object to bind to an actual HTMLElement. 
+         */
+        if (!element || this.getAttribute("element")) {
+
+            let ele = _createElement_(this.getAttribute("element") || "div");
+
+            this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
+
+            if (this.getAttribute("id"))
+                ele.id = this.getAttribute("id");
+
+            me.ele = ele;
+
+            if (element)
+                _appendChild_(element, ele);
+
+            element = ele;
+
+            if (this.transition_name)
+                me.trs_ele[this.transition_name] = element;
+
+            let hook = {
+                attr: this.attributes,
+                bindings: [],
+                style: null,
+                ele: element
+            };
+
+            me.hooks.push(hook);
+        }
 
         me._model_name_ = this._model_name_;
         me._schema_name_ = this._schema_name_;
@@ -57,9 +90,9 @@ export class SourceNode extends RootNode {
 
             me.taps[name] = bool ? new UpdateTap(me, name, tap._modes_) : new Tap(me, name, tap._modes_);
 
-            if(bool)
+            if (bool)
                 me.update_tap = me.taps[name];
-            
+
             out_taps.push(me.taps[name]);
 
         }
@@ -123,6 +156,10 @@ export class SourceNode extends RootNode {
                         components[component_name] = this;
                     return null;
                 }
+                break;
+            case "t":
+                if (name == "transition")
+                    this.transition_name = lex.tx;
                 break;
             default:
                 if (this._checkTapMethodGate_(name, lex))

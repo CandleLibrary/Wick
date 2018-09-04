@@ -26,17 +26,7 @@ class BaseComponent {
      * Returns a list of all elements that have a name attribute.
      * @param      {Object}  named_elements  Object to _bind_ named elements to.
      */
-    getNamedElements(named_elements) {
-        let children = this.ele.children;
-
-        for (var i = 0; i < children.length; i++) {
-            let child = children[i];
-
-            if (child.dataset.transition) {
-                named_elements[child.dataset.transition] = child;
-            }
-        }
-    }
+    getNamedElements(named_elements) {}
 
     /**
      * Called by the hosting Element when it is mounted to the active page. 
@@ -102,6 +92,7 @@ class Component extends BaseComponent {
 
         super(element);
 
+
         /**
          * The {@link Model} the 
          */
@@ -134,17 +125,16 @@ class Component extends BaseComponent {
                 (new WURL(url))
                 .fetchText()
                     .then(text => {
-                        (new SourcePackage(text, presets)).mount(this.ele, null, presets.options.USE_SHADOW, this);
+                        (new SourcePackage(text, presets)).mount(null, null, presets.options.USE_SHADOW, this);
                     });
             } else {
-                (new SourcePackage(this.ele.innerHTML, presets)).mount(this.ele, null, presets.options.USE_SHADOW, this);
+                (new SourcePackage(this.ele.innerHTML, presets)).mount(null, null, presets.options.USE_SHADOW, this);
             }
         }
 
 
         app_components[id] = this;
     }
-
     /**
      * @override
      */
@@ -224,34 +214,30 @@ class Component extends BaseComponent {
      * @override
      */
     getNamedElements(named_elements) {
-        if (this.bubbled_elements) {
-            let t = this.bubbled_elements;
+        for (let i = 0; i < this.sources.length; i++) {
+            let eles = this.sources[i].trs_ele;
 
-            for (let t in this.bubbled_elements)
-                named_elements[t] = this.bubbled_elements[t];
-
-            //this.bubbled_elements = null;
-
-            return;
-        }
-
-        let children = this.ele.children;
-
-        for (var i = 0; i < children.length; i++) {
-            let child = children[i];
-
-            if (child.dataset.transition) {
-                named_elements[child.dataset.transition] = child;
-            }
-        }
-
-        for (var i = 0; i < this.sources.length; i++) {
-            // let component = this.components[i];
-            // component.getNamedElements(named_elements);
+            for (let a in eles)
+                named_elements[a] = eles[a];
         }
     }
 
-    sourceLoaded() { this.handleUrlUpdate(); }
+    sourceLoaded() {
+        if (this.sources.length > 0) {
+
+
+            let ele = this.sources[0].ele;
+
+            if (ele !== this.ele) {
+                this.ele.parentElement.insertBefore(ele, this.ele);
+                this.ele.parentElement.removeChild(this.ele);
+                this.ele = ele;
+            }
+
+        }
+
+        this.handleUrlUpdate();
+    }
 
     /**
      * @override
@@ -262,6 +248,16 @@ class Component extends BaseComponent {
 
         for (let i = 0, l = this.sources.length; i < l; i++)
             this.sources[i]._update_(query_data, null, true);
+        
+
+        if(this.wurl_store){
+            let wurl = this.wurl_store;
+            this.wurl_store = null;
+            this.handleUrlUpdate(wurl);
+        }
+
+        if(this.sources.length == 0)
+            this.wurl_store = wurl;
     }
 }
 

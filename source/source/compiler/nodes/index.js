@@ -29,7 +29,6 @@ function CreateHTMLNode(tag) {
                     return new StyleNode();
                 case "script":
                     return new ScriptNode();
-                
             }
     }
 

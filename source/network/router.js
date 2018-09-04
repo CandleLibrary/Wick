@@ -22,9 +22,15 @@ function getModalContainer() {
         var dom_app = document.getElementsByTagName("app")[0];
 
         if (dom_app)
-            dom_app.parentElement.insertBefore(modal_container, dom_app);
+            dom_app.appendChild(modal_container, dom_app);
         else
             document.body.appendChild(modal_container);
+
+        modal_container.addEventListener("click",(e)=>{
+            if(e.target == modal_container){
+                wick.router.closeModal();
+            }
+        });
     }
 
     return modal_container;
@@ -45,7 +51,6 @@ export class Router {
      *
      */
     constructor(presets) {
-        console.log(presets)
 
         presets.router = this;
 
@@ -59,11 +64,11 @@ export class Router {
         this.current_view = null;
         this.finalizing_pages = [];
 
-        presets.processLink = (temp) => {
-
+        presets.processLink = (temp, source) => {
             if (!temp.onclick) temp.onclick = (e) => {
                 let link = e.currentTarget;
                 if (link.origin !== location.origin) return;
+                source.setTransitionElements();
                 e.preventDefault();
                 history.pushState({}, "ignored title", link.href);
                 window.onpopstate();
@@ -78,53 +83,7 @@ export class Router {
         };
     }
 
-    /*
-        This function will parse a URL and determine what Page needs to be loaded into the current view.
-    */
-    parseURL(location) {
 
-        let url = location.pathname;
-
-        let IS_SAME_PAGE = (this.current_url == url),
-            page = null,
-            wurl = new WURL(location.href);
-
-        this.current_url = url;
-
-        if ((page = this.pages[url])) {
-
-            if (IS_SAME_PAGE) {
-
-                URL_HOST.wurl = wurl;
-
-                return page.transitionIn(
-                    (page.type == "modal") ? getModalContainer() : document.getElementsByTagName("app")[0],
-                    null, wurl, IS_SAME_PAGE);
-            }
-
-            return this.loadPage(page, wurl, IS_SAME_PAGE);
-        }
-
-        if (location)
-            fetch(location.href, {
-                credentials: "same-origin", // Sends cookies back to server with request
-                method: 'GET'
-            }).then((response) => {
-
-                (response.text().then((html) => {
-
-                    var DOM = (new DOMParser()).parseFromString(html, "text/html")
-
-                    this.loadPage(
-                        this.loadNewPage(url, DOM, wurl),
-                        wurl,
-                        IS_SAME_PAGE
-                    );
-                }));
-            }).catch((error) => {
-                console.warn(`Unable to process response for request made to: ${this.url}. Response: ${error}. Error Received: ${error}`);
-            })
-    }
 
     finalizePages() {
 
@@ -151,16 +110,13 @@ export class Router {
      * @param {String} query -
      * @param {Bool} IS_SAME_PAGE -
      */
-    loadPage(page, wurl = new WURL(document.location.href), IS_SAME_PAGE) {
+    loadPage(page, wurl = new WURL(document.location.href), IS_SAME_PAGE = false) {
 
         URL_HOST.wurl = wurl;
 
         let transition_length = 0;
 
         let app_ele = document.getElementsByTagName("app")[0];
-
-        //Finalize any existing page transitions;
-        // this.finalizePages();
 
         let transition_elements = {};
 
@@ -264,6 +220,77 @@ export class Router {
         }, (transition_length * 1000) + 1);
     }
 
+
+    closeModal(data = {}) {
+        for (var i = 0, l = this.modal_stack.length; i < l; i++) {
+            let modal = this.modal_stack[i];
+            if (modal.reply)
+                modal.reply(data);
+            modal.reply = null;
+        }
+
+        this.parseURL(this.current_view.url);
+    }
+
+    loadModal(URL, query_data) {
+        return new Promise((res) => {
+            let wurl = new WURL(URL);
+            wurl.setData(query_data);
+            this.parseURL(wurl, wurl, res);
+        });
+    }
+
+    /*
+        This function will parse a URL and determine what Page needs to be loaded into the current view.
+    */
+    parseURL(location, wurl = new WURL(location.href), pending_modal_reply = null) {
+
+        let url = location;
+
+        if (location.pathname)
+            url = location.pathname;
+
+        let IS_SAME_PAGE = (this.current_url == url),
+            page = null;
+
+        this.current_url = url;
+
+        if ((page = this.pages[url])) {
+
+            page.reply = pending_modal_reply;
+            
+            if (IS_SAME_PAGE) {
+
+                URL_HOST.wurl = wurl;
+
+
+                return page.transitionIn(
+                    (page.type == "modal" || pending_modal_reply) ? getModalContainer() : document.getElementsByTagName("app")[0],
+                    null, wurl, IS_SAME_PAGE);
+            }
+
+            return this.loadPage(page, wurl, IS_SAME_PAGE);
+        }
+
+        if (location)
+            fetch(location.href, {
+                credentials: "same-origin", // Sends cookies back to server with request
+                method: 'GET'
+            }).then((response) => {
+                (response.text().then((html) => {
+
+                    var DOM = (new DOMParser()).parseFromString(html, "text/html");
+
+                    this.loadPage(
+                        this.loadNewPage(url, DOM, wurl, pending_modal_reply),
+                        wurl,
+                        IS_SAME_PAGE
+                    );
+                }));
+            }).catch((error) => {
+                console.warn(`Unable to process response for request made to: ${this.url}. Response: ${error}. Error Received: ${error}`);
+            });
+    }
     /**
         Pre-loads a custom constructor for an element with the specified id and provides a model to that constructor when it is called.
         The constructor must have Element in its inheritance chain.
@@ -294,7 +321,7 @@ export class Router {
         Takes the DOM of another page and strips it, looking for elements to use to integrate into the SPA system.
         If it is unable to find these elements, then it will pass the DOM to loadNonWickPage to handle wrapping the page body into a wick app element.
     */
-    loadNewPage(URL, DOM, wurl = new WURL("", true)) {
+    loadNewPage(URL, DOM, wurl = new WURL("", true), pending_modal_reply = null) {
 
         //look for the app section.
 
@@ -337,13 +364,15 @@ export class Router {
 
         if (app_source) {
 
-            if (app_source.dataset.modal == "true") {
+            if (app_source.dataset.modal == "true" || pending_modal_reply) {
 
                 page.setType("modal");
                 let modal = document.createElement("modal");
                 modal.innerHTML = app.innerHTML;
                 app.innerHTML = "";
                 app = modal;
+
+                page.reply = pending_modal_reply;
 
                 /*
                     If the DOM is the same element as the actual document, then we shall rebuild the existing <app> element, clearing it of it's contents.

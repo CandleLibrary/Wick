@@ -20,7 +20,9 @@ function startRouting(preset_options = {}) {
 
     LINKER_LOADED = true;
 
-    let router = new core.network.router(core.presets(preset_options));
+    let presets = core.presets(preset_options);
+
+    let router = new core.network.router(presets);
 
     window.addEventListener("load", () => {
         router.loadPage(
@@ -32,7 +34,9 @@ function startRouting(preset_options = {}) {
 
     console.log(`${wick_vanity}Copyright 2018 Anthony C Weathersby\nhttps://gitlab.com/anthonycweathersby/wick`);
 
-    return {preset_options, router};
+    wick.router = router;
+
+    return {presets, router};
 }
 
 export {source};

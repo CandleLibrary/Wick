@@ -11,12 +11,9 @@ export class PageView {
         this.eles = [];
         this.finalizing_view = null;
         this.type = "normal";
-        if (!app_page) debugger
         this.ele = app_page;
         this.ele_backer = null;
         this.LOADED = false;
-
-        console.log(this)
     }
 
     _destroy_() {
@@ -33,7 +30,7 @@ export class PageView {
     unload(transitions) {
 
         this.LOADED = false;
-        
+
         for (var i = 0; i < this.eles.length; i++) {
             let element = this.eles[i];
             element.getTransformTo(transitions);
@@ -41,20 +38,21 @@ export class PageView {
         }
     }
 
-    transitionOut(transitions) {
+    load(app_element, wurl) {
 
-        let time = 0;
+        this.LOADED = true;
 
-        for (var i = 0; i < this.eles.length; i++) 
-            time = Math.max(time, this.eles[i].transitionOut(transitions));
-        
+        app_element.appendChild(this.ele);
 
-        return time;
+        for (var i = 0; i < this.eles.length; i++) {
+            let element = this.eles[i];
+            element.loadComponents(wurl);
+        }
     }
 
     finalize() {
 
-        if(this.LOADED) return;
+        if (this.LOADED) return;
 
         for (var i = 0; i < this.eles.length; i++) {
             let element = this.eles[i];
@@ -65,41 +63,30 @@ export class PageView {
             this.ele.parentElement.removeChild(this.ele);
     }
 
-    load(app_element, wurl) {
+    transitionOut(transitions) {
 
-        this.LOADED = true;
-        
-        for (var i = 0; i < this.eles.length; i++) {
-            let element = this.eles[i];
-            element.loadComponents(wurl);
-        }
+        let time = 0;
 
-        app_element.appendChild(this.ele);
+        for (var i = 0; i < this.eles.length; i++)
+            time = Math.max(time, this.eles[i].transitionOut(transitions));
 
-        var t = this.ele.style.opacity;
+
+        return time;
     }
 
     transitionIn(transitions) {
 
-        let final_time = 0;
-
         if (this.type == "modal") {
-            if (!this.ele_backer) {
-                this.ele_backer = document.createElement("div");
-                this.ele_backer.classList.add("modal_backer")
-                this.ele.appendChild(this.ele_backer)
-            }
             setTimeout(() => {
                 this.ele.style.opacity = 1;
-            }, 50)
+            }, 50);
         }
 
         for (var i = 0; i < this.eles.length; i++) {
             let element = this.eles[i];
             element.parent = this;
-            //element.setTransformTo(transitions);
-            element.transitionIn();
-        }        
+            element.transitionIn(transitions);
+        }
     }
 
     getNamedElements(named_elements) {
@@ -116,5 +103,19 @@ export class PageView {
 
     setType(type) {
         this.type = type || "normal";
+
+        if (type == "modal") {
+            if (!this.ele_backer) {
+                this.ele_backer = document.createElement("div");
+                this.ele_backer.classList.add("modal_backer");
+                this.ele.insertBefore(this.ele_backer, this.ele.firstChild);
+
+                this.ele_backer.addEventListener("click", (e) => {
+                    if (e.target == this.ele_backer) {
+                        wick.router.closeModal();
+                    }
+                });
+            }
+        }
     }
 }

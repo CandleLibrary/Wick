@@ -36,6 +36,7 @@ export class Source extends View {
         this.update_tap = null;
         this.children = [];
         this.sources = [];
+        this.trs_ele = {};
         this._ios_ = [];
         this._templates_ = [];
         this.hooks = [];
@@ -47,6 +48,14 @@ export class Source extends View {
         this.LOADED = false;
 
         this.addToParent();
+    }
+
+    setTransitionElements(child) {
+        if (child)
+            for (let i in child.trs_ele)
+                this.trs_ele[i] = child.trs_ele[i];
+
+        if (this.parent) this.parent.setTransitionElements(this);
     }
 
     _destroy_() {
@@ -69,7 +78,7 @@ export class Source extends View {
                 return setTimeout(() => { this._destroy_(); }, t * 1000 + 5);
         }
 
-        if(this.parent)
+        if (this.parent)
             this.parent.removeSource(this);
         //this.finalizeTransitionOut();
         this.children.forEach((c) => c._destroy_());
@@ -110,11 +119,11 @@ export class Source extends View {
         if (source.parent !== this)
             return;
 
-        for(let i = 0; i < this.sources.length; i++)
-            if(this.sources[i] == source)
-                return (this.sources.splice(i,1), source.parent = null);
+        for (let i = 0; i < this.sources.length; i++)
+            if (this.sources[i] == source)
+                return (this.sources.splice(i, 1), source.parent = null);
     }
-    
+
     getTap(name) {
         let tap = this.taps[name];
 
@@ -158,7 +167,7 @@ export class Source extends View {
         Sets up Model connection or creates a new Model from a schema.
     */
     load(model) {
-
+        
         let m = this._presets_.models[this._model_name_];
 
 
@@ -166,21 +175,22 @@ export class Source extends View {
 
         if (m)
             model = m;
-        else if (s)
-            model = new s(model);
-        else if (!model)
+        else if (s) {
+            model = new s();
+        } else if (!model)
             model = new Model(model);
 
         this.LOADED = true;
 
-        for (let i = 0, l = this.sources.length; i < l; i++)
+        for (let i = 0, l = this.sources.length; i < l; i++) {
             this.sources[i].load(model);
+            this.setTransitionElements(this.sources[i]);
+        }
 
         model.addView(this);
 
         for (let name in this.taps)
             this.taps[name].load(this._model_, false);
-
     }
 
     _down_(data, changed_values) {
@@ -190,8 +200,8 @@ export class Source extends View {
     _up_(tap, data, meta) {
         if (this.parent)
             this.parent._upImport_(tap._prop_, data, meta);
-       //else
-         //   tap._up_(data, null, true);
+        //else
+        //   tap._up_(data, null, true);
 
     }
 
@@ -203,11 +213,8 @@ export class Source extends View {
 
     _update_(data, changed_values, IMPORTED = false) {
 
-        // if(!this.LOADED) return;
-
         if (this.update_tap)
             this.update_tap._downS_(data, IMPORTED);
-
 
         if (changed_values) {
             for (let name in changed_values)

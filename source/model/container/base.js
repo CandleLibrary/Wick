@@ -165,9 +165,9 @@ export class ModelContainerBase extends ModelBase {
 
     set(item, from_root = false) {
         if (!from_root)
-            return this._deferUpdateToRoot_(item).insert(item);
+            return this._deferUpdateToRoot_(item).insert(item, true);
         else
-            this.insert(item);
+            this.insert(item, true);
     }
 
     /**
@@ -180,7 +180,10 @@ export class ModelContainerBase extends ModelBase {
 
         @returns {Boolean} Returns true if an insertion into the ModelContainerBase occurred, false otherwise.
     */
-    insert(item, __FROM_SOURCE__ = false) {
+    insert(item, from_root = false, __FROM_SOURCE__ = false) {
+        
+        if (!from_root)
+            return this._deferUpdateToRoot_(item).insert(item, true);
 
         let add_list = (this.fv) ? [] : null;
 
@@ -249,7 +252,10 @@ export class ModelContainerBase extends ModelBase {
     /**
         Removes an item from the container. 
     */
-    remove(term, __FROM_SOURCE__ = false) {
+    remove(term, from_root = false, __FROM_SOURCE__ = false) {
+
+        if (!from_root)
+            return this._deferUpdateToRoot_(term).remove(term, true);
 
         //term = this.getHook("term", term);
 
@@ -275,6 +281,10 @@ export class ModelContainerBase extends ModelBase {
 
             this.__remove__(terms, out_container);
         }
+
+        if(out_container.length > 0)
+           this.scheduleUpdate();
+        
 
         return out_container;
     }
@@ -343,6 +353,7 @@ export class ModelContainerBase extends ModelBase {
             for (let i = 0; i < item.length; i++)
                 if (a._gI_(item[i], a.__filters__)) {
                     a.scheduleUpdate();
+                    a.__linksRemove__(item);
                     break;
                 }
 

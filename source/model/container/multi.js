@@ -50,7 +50,7 @@ export class MultiIndexedContainer extends ModelContainerBase {
     }
 
     get(item, __return_data__) {
-
+        
         item = this.getHook("query", item);
 
         if (item) {
