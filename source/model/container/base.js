@@ -51,7 +51,7 @@ export class ModelContainerBase extends ModelBase {
         _SealedProperty_(this, "first_link", null);
 
         //For keeping the container from garbage collection.
-        _SealedProperty_(this, "pin", EmptyArray);
+        _SealedProperty_(this, "pin", EmptyFunction);
 
         //For Linking to original 
         _SealedProperty_(this, "next", null);
@@ -125,7 +125,7 @@ export class ModelContainerBase extends ModelBase {
     get(term, __return_data__) {
 
         let out = null;
-
+        
         term = this.getHook("term", term);
 
         let USE_ARRAY = (__return_data__ === null) ? false : true;
@@ -216,7 +216,7 @@ export class ModelContainerBase extends ModelBase {
     }
 
     /**
-        A subset of the insert function. Handles the test of identifier, the conversion of an Object into a Model, and the calling of the internal __insert__ function.
+        A subset of the insert function. Handles the testing of presence of an identifier value, the conversion of an Object into a Model, and the calling of the implementation specific __insert__ function.
     */
     __insertSub__(item, out, add_list) {
 
@@ -224,7 +224,7 @@ export class ModelContainerBase extends ModelBase {
 
         var identifier = this._gI_(item);
 
-        if (identifier != undefined) {
+        if (identifier !== undefined) {
 
             if (!(model instanceof ModelBase)) {
                 model = new this.model(item);
@@ -233,7 +233,7 @@ export class ModelContainerBase extends ModelBase {
 
             identifier = this._gI_(model, this.__filters__);
 
-            if (identifier) {
+            if (identifier !== undefined) {
                 out = this.__insert__(model, add_list, identifier);
                 this.__linksInsert__(model);
             }
@@ -390,7 +390,7 @@ export class ModelContainerBase extends ModelBase {
 
             let identifier = this._gI_(item);
 
-            if (identifier)
+            if (identifier !== undefined)
                 hash_table[identifier] = item;
 
         };
@@ -439,7 +439,7 @@ export class ModelContainerBase extends ModelBase {
     */
     _gI_(item, filters = null) {
 
-        let identifier = null;
+        let identifier;
 
         if (typeof(item) == "object" && this.key)
             identifier = item[this.key];

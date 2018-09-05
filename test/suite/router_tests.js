@@ -56,8 +56,8 @@ function ROUTERTESTS(config) {
                 let ele3 = app.children[2];
                 body.children.should.have.lengthOf(1);
                 app.children.should.have.lengthOf(3);
-                ele2.getElementsByTagName("component")[0].children[0].tagName.should.equal("GAME");
-                ele1.getElementsByTagName("component")[0].children[0].innerHTML.should.equal("<div>Test Data One</div>");
+                ele2.getElementsByTagName("game")[0].tagName.should.equal("GAME");
+                ele1.getElementsByTagName("component")[0].innerHTML.should.equal("<div>Test Data One</div>");
                 //ele3.getElementsByTagName("component")[0].innerHTML.should.equal("<div>Test Data One</div>");
                 done();
             }, 20);
