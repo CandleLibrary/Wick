@@ -4,38 +4,6 @@
 		"selected_items":
 		[
 			[
-				"pa",
-				"pathDataToArray"
-			],
-			[
-				"pro",
-				"prop_name"
-			],
-			[
-				"An",
-				"AnimArray"
-			],
-			[
-				"temp",
-				"temp_array"
-			],
-			[
-				"lex",
-				"Lexer"
-			],
-			[
-				"for",
-				"forEach"
-			],
-			[
-				"type",
-				"typeof"
-			],
-			[
-				"len",
-				"length"
-			],
-			[
 				"prop",
 				"prop_array"
 			],
@@ -110,6 +78,10 @@
 			[
 				"upd",
 				"update_tap"
+			],
+			[
+				"pro",
+				"protocol"
 			],
 			[
 				"fetc",
@@ -292,6 +264,178 @@
 				"property"
 			],
 			[
+				"pro",
+				"prop_name"
+			],
+			[
+				"An",
+				"AnimArray"
+			],
+			[
+				"temp",
+				"temp_array"
+			],
+			[
+				"lex",
+				"Lexer"
+			],
+			[
+				"for",
+				"forEach"
+			],
+			[
+				"type",
+				"typeof"
+			],
+			[
+				"len",
+				"length"
+			],
+			[
+				"prop",
+				"prop_array"
+			],
+			[
+				"trs",
+				"trs_ele"
+			],
+			[
+				"set",
+				"setExportTransitionElements"
+			],
+			[
+				"nam",
+				"transition_name"
+			],
+			[
+				"tran",
+				"transition_name"
+			],
+			[
+				"e",
+				"e_ele"
+			],
+			[
+				"pare",
+				"parent"
+			],
+			[
+				"my-",
+				"my-other-input"
+			],
+			[
+				"sch",
+				"schema_name"
+			],
+			[
+				"add",
+				"address"
+			],
+			[
+				"tag",
+				"tagname"
+			],
+			[
+				"__f",
+				"__filters__"
+			],
+			[
+				"Wur",
+				"WURL"
+			],
+			[
+				"ta",
+				"tag_index"
+			],
+			[
+				"fetc",
+				"fetchLocalJSON"
+			],
+			[
+				"sh",
+				"schema"
+			],
+			[
+				"prot",
+				"proto\tPrototype"
+			],
+			[
+				"Arra",
+				"ArrayModelContainer"
+			],
+			[
+				"Prop",
+				"PropName"
+			],
+			[
+				"update",
+				"updateScheduleUpdate"
+			],
+			[
+				"Mode",
+				"ModelContainerBase"
+			],
+			[
+				"Bas",
+				"ModelContainerBase"
+			],
+			[
+				"to",
+				"toJSON"
+			],
+			[
+				"firs",
+				"first_index"
+			],
+			[
+				"def",
+				"defineProperty"
+			],
+			[
+				"par",
+				"parent_lvl"
+			],
+			[
+				"da",
+				"dataset"
+			],
+			[
+				"ma",
+				"macaroon"
+			],
+			[
+				"Bo",
+				"BOOL"
+			],
+			[
+				"Model",
+				"ModelContainerBase"
+			],
+			[
+				"Sche",
+				"SchemedModel"
+			],
+			[
+				"parent",
+				"parentElement"
+			],
+			[
+				"new",
+				"new_items"
+			],
+			[
+				"view",
+				"view"
+			],
+			[
+				"ins",
+				"insert"
+			],
+			[
+				"propert",
+				"property"
+			],
+			[
 				"proper",
 				"property"
 			],
@@ -304,24 +448,16 @@
 				"outputs"
 			],
 			[
-				"_b",
-				"_bindings_"
-			],
-			[
-				"tra",
-				"transition\tproperty"
+				"fil",
+				"filterUpdate"
 			],
 			[
 				"ou",
 				"output"
 			],
 			[
-				"el",
-				"element"
-			],
-			[
-				"attr",
-				"attrib_name"
+				"Sl",
+				"SkeletonCase"
 			],
 			[
 				"in",
@@ -380,140 +516,8 @@
 				"ill_element"
 			],
 			[
-				"Ca",
-				"CaseConstructor"
-			],
-			[
-				"ex",
-				"expected_error_message"
-			],
-			[
-				"HTML",
-				"HTML_text"
-			],
-			[
-				"Prop",
-				"PropName"
-			],
-			[
-				"update",
-				"updateScheduleUpdate"
-			],
-			[
-				"Add",
-				"AddProp"
-			],
-			[
-				"__",
-				"__export_contructor__"
-			],
-			[
-				"__e",
-				"__export_constructor__"
-			],
-			[
-				"con",
-				"constructor"
-			],
-			[
-				"def",
-				"defineProperty"
-			],
-			[
-				"par",
-				"parent_lvl"
-			],
-			[
-				"da",
-				"dataset"
-			],
-			[
-				"Impo",
-				"ImportDataFromDataSet"
-			],
-			[
-				"Bo",
-				"BOOL"
-			],
-			[
-				"va",
-				"value"
-			],
-			[
-				"case",
-				"cassette"
-			],
-			[
-				"parent",
-				"parentElement"
-			],
-			[
-				"new",
-				"new_items"
-			],
-			[
-				"ad",
-				"add_list"
-			],
-			[
-				"ins",
-				"insert"
-			],
-			[
-				"id",
-				"identifier"
-			],
-			[
-				"__get",
-				"__getAll__"
-			],
-			[
-				"retu",
-				"return_data"
-			],
-			[
-				"ret",
-				"return_data"
-			],
-			[
-				"fil",
-				"filterUpdate"
-			],
-			[
-				"it",
-				"item"
-			],
-			[
-				"Sl",
-				"SkeletonCase"
-			],
-			[
-				"C",
-				"Constructor"
-			],
-			[
-				"c",
-				"constructor"
-			],
-			[
-				"Compon",
-				"ComponentConstructor"
-			],
-			[
-				"SK",
-				"SkeletonCase"
-			],
-			[
-				"s",
-				"skeleton"
-			],
-			[
-				"Cas",
-				"CaseConstuctor"
-			],
-			[
-				"W",
-				"WORKING_DOM"
+				"exp",
+				"export_data"
 			]
 		]
 	},
@@ -523,7 +527,7 @@
 			"file": "test/suite/router_tests.js",
 			"settings":
 			{
-				"buffer_size": 2894,
+				"buffer_size": 2775,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -534,57 +538,6 @@
 			{
 				"buffer_size": 1221,
 				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/animation/animation.js",
-			"settings":
-			{
-				"buffer_size": 11483,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "/D/pytrucks/static/js/app/cases/scroll_calendar/day.js",
-			"settings":
-			{
-				"buffer_size": 12779,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/common/event/touch_scroller.js",
-			"settings":
-			{
-				"buffer_size": 3684,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"contents": "96.87.53.197\n\"C:\\Program Files\\Dell SonicWALL\\Global VPN Client\\SWGVC.exe\" /E \"Boedecker\"\n\nNewday15\n\nsdiede\nitstime15\n\n35 Minutes\n\n3 MBps up \n0.5 down\n\n2:20\n",
-			"settings":
-			{
-				"buffer_size": 157,
-				"line_ending": "Windows",
-				"name": "96.87.53.197"
-			}
-		},
-		{
-			"file": "source/common/string_parsing/lexer.js",
-			"settings":
-			{
-				"buffer_size": 18013,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/animation/transformto.js",
-			"settings":
-			{
-				"buffer_size": 2852,
 				"line_ending": "Windows"
 			}
 		},
@@ -600,8 +553,16 @@
 			"file": "source/model/container/base.js",
 			"settings":
 			{
-				"buffer_size": 13641,
+				"buffer_size": 13601,
 				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "build/wick.node.js",
+			"settings":
+			{
+				"buffer_size": 340272,
 				"line_ending": "Windows"
 			}
 		},
@@ -617,7 +578,7 @@
 			"file": "source/source/template.js",
 			"settings":
 			{
-				"buffer_size": 9094,
+				"buffer_size": 7960,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -626,7 +587,16 @@
 			"file": "test/data/page.html",
 			"settings":
 			{
-				"buffer_size": 933,
+				"buffer_size": 858,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "test/data/page_data.html",
+			"settings":
+			{
+				"buffer_size": 2315,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		}
@@ -683,12 +653,10 @@
 	},
 	"expanded_folders":
 	[
-		"/D/wick"
+		"/D/pytrucks/static/js/libraries/wick"
 	],
 	"file_history":
 	[
-		"/D/wick/test/data/page_data.html",
-		"/D/wick/build/wick.node.js",
 		"/D/pytrucks/.git/modules/static/wick/COMMIT_EDITMSG",
 		"/D/pytrucks/static/js/libraries/wick/source/network/setlinks.js",
 		"/D/pytrucks/static/js/libraries/wick/source/source/compiler/nodes/root.js",
@@ -814,7 +782,9 @@
 		"/D/_$_$_$_/wick/source/animation/style.js",
 		"/D/_$_$_$_/wick/source/animation/plue.js",
 		"/D/_$_$_$_/wick/source/animation/color.js",
-		"/D/_$_$_$_/wick/build/wick-dev.js"
+		"/D/_$_$_$_/wick/build/wick-dev.js",
+		"/D/_$_$_$_/wick/source/animation/animation.js",
+		"/D/_$_$_$_/wick/source/model/base.js"
 	],
 	"find":
 	{
@@ -835,8 +805,6 @@
 		"case_sensitive": false,
 		"find_history":
 		[
-			"SVG",
-			"scheduler",
 			"(ide",
 			"(undefined",
 			"(undefine",
@@ -962,7 +930,9 @@
 			"source",
 			"__filters__",
 			"_FixedProp_",
-			"source"
+			"source",
+			"__filters__",
+			"_SEALED_"
 		],
 		"highlight": false,
 		"in_selection": false,
@@ -982,7 +952,7 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -991,15 +961,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2894,
+						"buffer_size": 2775,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								2338,
+								2338
 							]
 						],
 						"settings":
@@ -1019,7 +989,7 @@
 						"translation.y": 1082.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
@@ -1035,8 +1005,8 @@
 						"selection":
 						[
 							[
-								286,
-								286
+								922,
+								922
 							]
 						],
 						"settings":
@@ -1057,188 +1027,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "source/animation/animation.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 11483,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1105,
-								1105
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 588.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "/D/pytrucks/static/js/app/cases/scroll_calendar/day.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 12779,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1395,
-								1395
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 540.0,
-						"zoom_level": 1.0
-					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
-					"file": "source/common/event/touch_scroller.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3684,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 157,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								156,
-								156
-							]
-						],
-						"settings":
-						{
-							"auto_name": "96.87.53.197",
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "source/common/string_parsing/lexer.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 18013,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 4590.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "source/animation/transformto.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2852,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 973.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 8,
+					"buffer": 2,
 					"file": "source/model/container/btree.js",
 					"semi_transient": false,
 					"settings":
@@ -1282,24 +1075,24 @@
 						"translation.y": 7590.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 9,
+					"buffer": 3,
 					"file": "source/model/container/base.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 13641,
+						"buffer_size": 13601,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								10884,
+								10884
 							]
 						],
 						"settings":
@@ -1322,14 +1115,99 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 8821.0,
+						"translation.y": 9167.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
-					"buffer": 10,
+					"buffer": 4,
+					"file": "build/wick.node.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 340272,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"SL.139.region_keys":
+							[
+								"SL.jshint.Highlights.|fd1d57da47ae9fc0c4dd2e7152c424e583da36199bb558222fe231bfdeedcfd5|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|6076101698c28dfc4972cde11c7d1699966ecc574be2e73db9e7e77fc535a2b6|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|facb5876861c94274727ca89c0a9c748bbc4f2035773e037afecf14016c6f948|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|dc69327f1bf3ee2bf0dbd274f1faef9f77b67534d3b8c024407864ce6048456a|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|c48686234781837b3fb1d622063dfab25e64b6b51d5842623585a57e225359b7|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|30887031a5ec3403910c0b183609c7bfbf3c1723cc21b8b6af4f30f028f8ce5c|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|89dc95071843d0c87e354366c84005b23f3102b7e4bc1e9f661ee9da8141f3a7|region.redish markup.error.sublime_linter|32",
+								"SL.jshint.Highlights.|3a151b4e5e6a849982df12f616057cbe33ef264e00e6d34361886253b27c1f1f|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|55da150811a39238b0ee7ea1bda00104d6008e5dd1298bba6ef0ea2990001d14|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot",
+								"SL.jshint.Highlights.|eccdb82684ad4e6920357ebab1a66205dfcab4cd16c15bb32ae7f882a04a108a|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|a177a1a7c031dc7ec9879a6ec591e9a6807af0c78685419aaccea75abcc25b75|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|4b06340e7bb339d04999168774965d66f08d965e4cfa73c8438f4475980c5b94|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|61c0cdd112351174afba3b09d18f2488f70fd07706b1170100b6c3473f471515|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|f4efd20e400c0e83439861bc90155d6f10e6b3f15a01f6baaf68518696c8df3f|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|2281cde904c3791ba98f307aadec5fc529456aabbd787bd0ee4958dd09547e15|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|871a7937f5ba3d88bcdf2fca9ca852ca046963d0b55f945c324c150755c3afc3|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|b2c38c8f7aeb47d71f920ba6f4dd6337624a6b1aff47a5364d74225195eac86c|region.redish markup.error.sublime_linter|32",
+								"SL.jshint.Highlights.|523935473ec14095ce0ff1f47b010185662be59eedab7dd6cdc7a70cdf651cc7|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|f14a531e5230fbf8cbedfe7151a8b1b3d66a954370a73c9b381683d1ccb77f44|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|681261b96acb37cebcee055a464c3d1a23bea639dd232aef12e074187ad11f82|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|0fd4d82951a50981836a6257f804e31c158442fe21322cbbfed2eb311b8c6d73|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|2deac184e92d827b506cc6fe41bb837cb5b315f063e84eafc64762ffbb5ac41b|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|f77ebfd481f4dbc4bdaaf9f835471cef09d769cdafcfa270dab0c0e54c71ef63|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|70373aa325b9f7c8f55fe4ef1ea0849cd0547df36cd2cf1d84f76abea417eb10|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|c50b053a68037b7ec821566a5c46ed6a0085fefa21aba9086c18024bbd19a2ec|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|0f7eac744be9328fd1fadde71ac00fbb1c32820582b27a30a9777c26d6531f43|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|df187e4d43f8d90de25cc1eec1c4d6d24b4d8ba565b454b82f7d4322d72bdbe3|region.redish markup.error.sublime_linter|32",
+								"SL.jshint.Highlights.|5dd7de70d5684dcf6f21657c406df5b128d9b0941d9a972d788a74963f2817ee|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|b80482ef87f43737d7d665222d1bf8466ddc3f12a80385797aa944728252a6d5|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|c4200c9595767264ba1f7b23befd0133f1477213f21fb58511c57dd736175faf|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|a70528beb23eb835d7d8cb749910fd39244146673b478cd2662309c18f99a4ce|region.yellowish markup.warning.sublime_linter|32",
+								"sublime_linter.protected_regions",
+								"SL.jshint.Highlights.|185d8fa279ce029a37f6855035fb852391b9d6b007ce4c8021d38496550ea827|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|5407b59592e1a4bedd484250940aeb8cabdb4fbefde677f9eb1afa1a5fbb17f7|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|c0ceb37344384c8f17c3fe6e16c31d0efee92721ed7a012735d3eeff4725e108|region.redish markup.error.sublime_linter|32",
+								"SL.jshint.Highlights.|7cbf845c301e4354efbc79ae39e64eb8e82f52d17f5a83068513315ed39bf8e1|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|dab41673e44b7505ca80b7725178c346e9b0afc5237f99dbb29ee60111679ac2|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|1d8338b0a16619381b3d4755136493e51e28d2d9fb5adc6ff7b8bd295b3491cf|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|67f52d7750edc63929a1139a300d74b785521709950cbb63ef5fcfc6382c0b2f|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|3582f82176c386a6c50f585ec0712f112d040e58ef53c7c45bceeaecabfde904|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|d2de6a9873e17f6dca223dbc83819f40ac52e9e9bb1d7977bfc7c8f3ca2d9ae7|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|c44be5ccd949b6e3240c0002587d98111383bca4b3de20599ed754585f7931c6|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|b8b142bb565cc0c2c67a44d1bc0b233ce771128dc79fb3d9e51ba39be6d17da0|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|b6cf78d36fad1ed81ad0e56d4253a1a818d1d5d1d5934b106615c2ae9a49b987|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|dab02c4a7f292c9e756a27ba7411c045e55f1c0c62cf15bf137134f127484812|region.redish markup.error.sublime_linter|32",
+								"SL.jshint.Highlights.|50fe0d32f42cf50f0e9ec8c68c26519aa5c49ab00adeb87c8b304ca375aec886|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|af24e94344139185b896c1bfb0861a2f6204d41c67eee0b1409cfe0d5cb8658c|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|b4ea8e3c6f53295512fd23a94a22a268d548bba8f0ff93952f7a0d6db7579d8b|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|bb8e33cdd6dedf218291560dbebeab7e96db3da813c739bf4349f3bafa05ca65|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|ddf4e49f384d700898ba31115b52e3632d78ac67a7f32c931a04ca20c0c750f6|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Gutter.|region.redish markup.error.sublime_linter|dot"
+							],
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 226679.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
 					"file": "test/data/source_template.html",
 					"semi_transient": false,
 					"settings":
@@ -1353,24 +1231,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
-					"buffer": 11,
+					"buffer": 6,
 					"file": "source/source/template.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 9094,
+						"buffer_size": 7960,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								1338,
+								1282
 							]
 						],
 						"settings":
@@ -1392,24 +1270,24 @@
 						"translation.y": 690.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
-					"buffer": 12,
+					"buffer": 7,
 					"file": "test/data/page.html",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 933,
+						"buffer_size": 858,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								23,
+								23
 							]
 						],
 						"settings":
@@ -1425,7 +1303,40 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 12,
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "test/data/page_data.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2315,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"SL.125.region_keys":
+							[
+							],
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
 					"type": "text"
 				}
 			]
@@ -1464,7 +1375,7 @@
 		"cols":
 		[
 			0.0,
-			0.935222593503,
+			0.792365450646,
 			1.0
 		],
 		"rows":
@@ -1499,22 +1410,6 @@
 		"last_filter": "",
 		"selected_items":
 		[
-			[
-				"month",
-				"source\\common\\event\\touch_scroller.js"
-			],
-			[
-				"lex",
-				"source\\common\\string_parsing\\lexer.js"
-			],
-			[
-				"tra",
-				"source\\animation\\transformto.js"
-			],
-			[
-				"anim",
-				"source\\animation\\animation.js"
-			],
 			[
 				"sourtemp",
 				"source\\source\\template.js"
@@ -2010,6 +1905,22 @@
 			[
 				"wick",
 				"build/wick-dev.js"
+			],
+			[
+				"wickno",
+				"build/wick.node.js"
+			],
+			[
+				"sourcpack",
+				"source/source/package.js"
+			],
+			[
+				"sourcetempl",
+				"source/source/template.js"
+			],
+			[
+				"mana",
+				"source/source/manager.js"
 			]
 		],
 		"width": 0.0
