@@ -89,6 +89,7 @@ class SchemedModel extends ModelBase {
             this.constructor.schema = schema;
 
             if (schema) {
+                console.log(schema)
 
                 let __FinalConstructor__ = schema.__FinalConstructor__;
 
@@ -119,11 +120,16 @@ class SchemedModel extends ModelBase {
 
                         if (schema_name == "proto") {
                             for (let name in schema.proto)
-                                    _SealedProperty_(prototype, name, schema.proto[name]);
+                                _SealedProperty_(prototype, name, schema.proto[name]);
+                            continue;
+                        }
+                        
+                        if (typeof(scheme) == "function"){
+                            CreateModelProperty(prototype, scheme, schema_name, count);
                             continue;
                         }
 
-                        if (typeof(schema) == "object") {
+                        if (typeof(scheme) == "object") {
                             if (Array.isArray(scheme)) {
                                 if (scheme[0] && scheme[0].container && scheme[0].schema)
                                     CreateModelProperty(prototype, scheme[0], schema_name, count);
@@ -134,7 +140,6 @@ class SchemedModel extends ModelBase {
                             } else if (scheme instanceof SchemeConstructor)
                                 CreateSchemedProperty(prototype, scheme, schema_name, count);
                             else {
-
                                 CreateModelProperty(prototype, scheme.constructor, schema_name, count);
                             }
                         } else {
@@ -179,7 +184,7 @@ class SchemedModel extends ModelBase {
             return false;
 
         this._changed_ = false;
-        
+
         for (let prop_name in data) {
 
             let data_prop = data[prop_name];

@@ -51,12 +51,33 @@ function submitForm(URL, form_data, m = "same-origin") {
             body: form,
         }).then(r => {
             if (r.status !== 200)
-                rej("");
+                rej(r);
             else
                 r.json().then(obj => res(obj));
         }).catch(e => rej(e));
     });
 }
+
+function submitJSON(URL, json_data, m = "same-origin") {
+    return new Promise((res, rej) => {
+        fetch(URL, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            mode: m, // CORs not allowed
+            credentials: m,
+            method: "POST",
+            body: JSON.stringify(json_data),
+        }).then(r => {
+            if (r.status !== 200)
+                rej(r);
+            else
+                r.json().then(obj => res(obj));
+        }).catch(e => rej(e));
+    });
+}
+
 
 
 
@@ -294,7 +315,7 @@ class WURL {
             //If the data is a falsy value, delete the association.
 
             for (let n in data) {
-                if (data[n] && typeof data[n] !== "object")
+                if (data[n] !== undefined && typeof data[n] !== "object")
                     store.set(n, data[n]);
                 else
                     store.delete(n);
@@ -312,7 +333,8 @@ class WURL {
             }
 
             for (let [key, class_] of map.entries()) {
-                if (key == "") continue;
+                if (key === "") 
+                    continue;
                 if (class_.size > 0) {
                     str += `&${key}`
                     for (let [key, val] of class_.entries())
@@ -326,6 +348,8 @@ class WURL {
 
             if (WURL.G == this)
                 this.goto();
+        }else{
+            this.query = "";
         }
 
         return this;
@@ -392,6 +416,11 @@ class WURL {
 
     submitForm(form_data) {
         return submitForm(this.toString(), form_data);
+    }
+
+    submitJSON(json_data) {
+        console.log(json_data)
+        return submitJSON(this.toString(), json_data);
     }
     /**
      * Goes to the current URL.

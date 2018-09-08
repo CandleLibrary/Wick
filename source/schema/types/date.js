@@ -21,6 +21,10 @@ class DateSchemeConstructor extends NumberSchemeConstructor {
         if (!isNaN(value))
             return parseInt(value);
 
+        let date = (new Date(value)).valueOf();
+
+        if(date) return date;
+
         let lex = new Lexer(value);
 
         let year = parseInt(lex.text);
@@ -56,8 +60,7 @@ class DateSchemeConstructor extends NumberSchemeConstructor {
             }
 
             return scape_date.valueOf();
-        } else
-            return (new Date(value)).valueOf();
+        } 
     }
 
     /**

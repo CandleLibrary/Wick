@@ -181,6 +181,8 @@ export class ModelContainerBase extends ModelBase {
         @returns {Boolean} Returns true if an insertion into the ModelContainerBase occurred, false otherwise.
     */
     insert(item, from_root = false, __FROM_SOURCE__ = false) {
+
+        item = this.setHook("", item);
         
         if (!from_root)
             return this._deferUpdateToRoot_(item).insert(item, true);
