@@ -160,8 +160,8 @@ export class SourceNode extends RootNode {
                     return null;
                 }
                 break;
-            case "t":
-                if (name == "transition")
+            case "b":
+                if (name == "badge")
                     this._badge_name_ = lex.tx;
                 break;
             default:

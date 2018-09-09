@@ -121,7 +121,7 @@ const Animation = (function anim() {
 						let s = key.ease.getYatX(x);
 						val_out = val_start.lerp(val_end, s);
 					}
-				} else{
+				} else {
 					val_out = val_end;
 				}
 			}
@@ -150,6 +150,7 @@ const Animation = (function anim() {
 			this.type = setType(obj);
 			this.obj = null;
 			this.DESTROYED = false;
+			this.events = {};
 
 			switch (this.type) {
 				case CSS_STYLE:
@@ -168,7 +169,8 @@ const Animation = (function anim() {
 
 		_destroy_() {
 			for (let name in this.props)
-				this.props[name]._destroy_();
+				if (this.props[name])
+					this.props[name]._destroy_();
 			this.DESTROYED = true;
 			this.duration = 0;
 			this.obj = null;
@@ -176,6 +178,25 @@ const Animation = (function anim() {
 			this.time = 0;
 		}
 
+		/**
+		 * Removes AnimProps based on object of keys that should be removed from this sequence.
+		 */
+		removeProps(props) {
+			if (props instanceof AnimSequence)
+				props = props.props;
+
+			for (let name in props) {
+				if (this.props[name])
+					this.props[name] = null;
+			}
+		}
+
+
+		/**
+		 * Sets the properties.
+		 *
+		 * @param      {<type>}  props   The properties
+		 */
 		setProps(props) {
 			for (let name in this.props)
 				this.props[name]._destroy_();
@@ -200,7 +221,8 @@ const Animation = (function anim() {
 		run(i) {
 			for (let n in this.props) {
 				let prop = this.props[n];
-				prop.run(this.obj, n, i, this.type);
+				if (prop)
+					prop.run(this.obj, n, i, this.type);
 			}
 
 			if (i >= this.duration)
@@ -212,12 +234,42 @@ const Animation = (function anim() {
 		_scheduledUpdate_(a, t) {
 			if (this.run(this.time += t))
 				Scheduler.queueUpdate(this);
+			else
+				this.issueEvent("stopped");
 		}
 
 
 		play(from = 0) {
 			this.time = from;
 			Scheduler.queueUpdate(this);
+			this.issueEvent("started");
+		}
+
+		addEventListener(event, listener) {
+			if (typeof(listener) === "function") {
+				if (!this.events[event])
+					this.events[event] = [];
+				this.events[event].push(listener);
+			}
+		}
+
+		removeEventListener(event, listener) {
+			if (typeof(listener) === "function") {
+				let events = this.events[event];
+				if (events) {
+					for (let i = 0; i < events.length; i++)
+						if (events[i] === listener)
+							return e(vents.splice(i, 1), true);
+				}
+			}
+			return false;
+		}
+
+		issueEvent(event) {
+			let events = this.events[event];
+
+			if (events)
+				events.forEach(e => e(this));
 		}
 	}
 
@@ -281,6 +333,7 @@ const Animation = (function anim() {
 		},
 
 		easing: {
+			linear: Linear,
 			ease: new CBezier(0.25, 0.1, 0.25, 1),
 			ease_in: new CBezier(0.42, 0, 1, 1),
 			ease_out: new CBezier(0, 0, 0.58, 1),

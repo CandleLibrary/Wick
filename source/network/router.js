@@ -245,7 +245,7 @@ export class Router {
 
                 URL_HOST.wurl = wurl;
 
-                console.log("missing same page resolution")
+                console.log("missing same page resolution");
                 return;
             }
 
