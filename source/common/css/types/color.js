@@ -15,11 +15,12 @@ import { Color } from "../../design/color";
 
 export class CSS_Color extends Color {
 
-    constructor(r,g,b,a){
-        if(typeof(r) == "string")
-            return CSS_Color._fs_(r);
+    constructor(r, g, b, a) {
+        super(r, g, b, a);
 
-        super(r,g,b,a);
+        if (typeof(r) == "string")
+            this.set(CSS_Color._fs_(r) || {r:255,g:255,b:255,a:0});
+
     }
 
     static _parse_(l, rule, r) {
@@ -38,9 +39,9 @@ export class CSS_Color extends Color {
 
         return null;
     }
-    static _verify_(l){
+    static _verify_(l) {
         let c = CSS_Color._fs_(l, true);
-        if(c)
+        if (c)
             return true;
         return false;
     }
@@ -63,11 +64,12 @@ export class CSS_Color extends Color {
             case "r":
                 let tx = l.tx;
                 if (tx == "rgba") {
+                    out = { r: 0, g: 0, b: 0, a: 1 };
                     l.n(); // (
                     out.r = parseInt(l.n().tx);
                     l.n(); // ,
                     out.g = parseInt(l.n().tx);
-                    l.n();// ,
+                    l.n(); // ,
                     out.b = parseInt(l.n().tx);
                     l.n(); // ,
                     out.a = parseFloat(l.n().tx);
@@ -76,6 +78,7 @@ export class CSS_Color extends Color {
                     c.set(out);
                     break;
                 } else if (tx == "rgb") {
+                    out = { r: 0, g: 0, b: 0, a: 1 };
                     l.n(); // (
                     out.r = parseInt(l.n().tx);
                     l.n(); // ,
@@ -92,19 +95,9 @@ export class CSS_Color extends Color {
                     string = string.slice(1, -1);
 
                 out = CSS_Color.colors[string.toLowerCase()];
-
-                if (!out) return null;
-
-                c = new CSS_Color();
-                c.set(out);
         }
 
-        if (!c && !v)
-            c = new CSS_Color();
-        if(v && !c)
-            return null;
-
-        return c;
+        return out;
     }
 } {
     let _$ = (r = 0, g = 0, b = 0, a = 1) => ({ r, g, b, a });

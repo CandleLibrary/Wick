@@ -46,23 +46,32 @@ export class SourceManager {
     }
 
     _transitionIn_(transition) {
-        let data = {trs_in:(typeof(transition) == "function") ? transition : transition.in}
-        for (let i = 0, l = this.sources.length; i < l; i++)
-            this.sources[i]._transitionIn_(data);
+        if (transition) {
+            let data = { trs_in: (typeof(transition) == "function") ? transition : transition.in };
+            for (let i = 0, l = this.sources.length; i < l; i++)
+                this.sources[i]._transitionIn_(data);
+        }
+        this._TRANSITION_STATE_ = true;
     }
 
     _transitionOut_(transition, DESTROY_ON_REMOVE) {
-        if (transition) {
-            let data = {trs_out:(typeof(transition) == "function") ? transition : transition.put}
-            for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i]._transitionOut_(data);
-          }
-
         if (this._TRANSITION_STATE_ === false) {
-            console.log("AAAZZZZ");
             // if (DESTROY_ON_REMOVE && !this._DESTROYED_) this._destroy_();
             return;
         }
+
+        let transition_time = 0;
+
+        if (transition) {
+            let data = { trs_out: (typeof(transition) == "function") ? transition : transition.out };
+
+            for (let i = 0, l = this.sources.length; i < l; i++)
+                this.sources[i]._transitionOut_(data);
+
+            transition_time = transition.out_duration;
+        }
+
+
 
         this._TRANSITION_STATE_ = false;
 

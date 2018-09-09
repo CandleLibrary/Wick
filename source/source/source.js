@@ -90,11 +90,11 @@ export class Source extends View {
 
     }
 
-    getBadges(par) {
-        for (let a in this.badges) {
-            if (!par.badges[a])
+    getBadges(par){
+        for(let a in this.badges){
+            if(!par.badges[a])
                 par.badges[a] = this.badges[a];
-        }
+        }            
     }
 
     addToParent() {
@@ -185,7 +185,7 @@ export class Source extends View {
             this.sources[i].load(model);
             this.sources[i].getBadges(this);
         }
-
+        
         model.addView(this);
 
         for (let name in this.taps)
@@ -263,7 +263,7 @@ export class Source extends View {
     }
 
     _transitionIn_(transition){  
-        
+
         if(this.taps.trs_in)
             this.taps.trs_in._downS_(transition);
 
