@@ -1,4 +1,3 @@
-import { TransformTo } from "../animation/animation";
 import { WURL } from "../network/wurl";
 import { SourcePackage } from "../source/package";
 
@@ -88,10 +87,9 @@ class FailedComponent extends BaseComponent {
  */
 class Component extends BaseComponent {
 
-    constructor(element, presets, DOM, app_components) {
+    constructor(element, presets, DOM, app_components, resolve_pending) {
 
         super(element);
-
 
         /**
          * The {@link Model} the 
@@ -108,15 +106,18 @@ class Component extends BaseComponent {
          */
         this.ACTIVE = false;
 
+        this._resolve_pending_ = resolve_pending;
+
         const id = element.classList[0];
 
-
-
-        if (id && app_components[id])
+        if (id && app_components[id]) {
+            this.resolve();
             return app_components[id];
-        if (presets.custom_sources[id])
+        }
+        if (presets.custom_sources[id]) {
             presets.custom_sources[id].mount(this.ele, this);
-        else {
+            this.resolve();
+        } else {
             let template = DOM.getElementById(id);
             let url = element.getAttribute("url");
             if (template && template.tagName == "TEMPLATE") {
@@ -132,13 +133,22 @@ class Component extends BaseComponent {
             }
         }
 
-
         app_components[id] = this;
     }
+
+    resolve() {
+        if (this._resolve_pending_)
+            this._resolve_pending_();
+        this._resolve_pending_ = null;
+    }
+
     /**
      * @override
      */
-    transitionOut() {
+    transitionOut(transitioneer) {
+
+        for (let i = 0, l = this.sources.length; i < l; i++)
+            this.sources[i]._transitionOut_({trs_out:transitioneer});
 
         if (!this.LOADED || !this.ACTIVE) {
             this.ACTIVE = false;
@@ -155,7 +165,11 @@ class Component extends BaseComponent {
     /**
      * @override
      */
-    transitionIn() {
+    transitionIn(transitioneer) {
+
+        for (let i = 0, l = this.sources.length; i < l; i++)
+            this.sources[i]._transitionIn_({trs_in:transitioneer});
+
 
         if (!this.LOADED || this.ACTIVE) {
             this.ACTIVE = true;
@@ -177,51 +191,6 @@ class Component extends BaseComponent {
         window.onpopstate();
     }
 
-    /**
-     * @override
-     */
-    getTransformTo(transitions) {
-        if (transitions) {
-            let own_elements = {};
-
-            this.getNamedElements(own_elements);
-
-            for (let name in own_elements) {
-                transitions[name] = TransformTo(own_elements[name]);
-            }
-        }
-    }
-
-    /**
-     * @override
-     */
-    setTransformTo(transitions) {
-        if (transitions) {
-            let own_elements = {};
-
-            this.getNamedElements(own_elements);
-
-            for (let name in own_elements) {
-                let to, from = transitions[name];
-                if ((to = own_elements[name]) && from) {
-                    from(to, false);
-                }
-            }
-        }
-    }
-
-    /**
-     * @override
-     */
-    getNamedElements(named_elements) {
-        for (let i = 0; i < this.sources.length; i++) {
-            let eles = this.sources[i].trs_ele;
-
-            for (let a in eles)
-                named_elements[a] = eles[a];
-        }
-    }
-
     sourceLoaded() {
         if (this.sources.length > 0) {
 
@@ -229,12 +198,18 @@ class Component extends BaseComponent {
             let ele = this.sources[0].ele;
 
             if (ele !== this.ele) {
-                this.ele.parentElement.insertBefore(ele, this.ele);
-                this.ele.parentElement.removeChild(this.ele);
+                if (this.ele.parentElement) {
+
+                    this.ele.parentElement.insertBefore(ele, this.ele);
+                    this.ele.parentElement.removeChild(this.ele);
+                }
                 this.ele = ele;
             }
-
         }
+
+        this._resolve_pending_();
+
+        this._resolve_pending_ = null;
 
         this.handleUrlUpdate();
     }
@@ -248,17 +223,17 @@ class Component extends BaseComponent {
 
         for (let i = 0, l = this.sources.length; i < l; i++)
             this.sources[i]._update_(query_data, null, true);
-        
 
-        if(this.wurl_store){
+
+        if (this.wurl_store) {
             let wurl = this.wurl_store;
             this.wurl_store = null;
             this.handleUrlUpdate(wurl);
         }
 
-        if(this.sources.length == 0)
+        if (this.sources.length == 0)
             this.wurl_store = wurl;
     }
 }
 
-export { BaseComponent, CustomComponent, FailedComponent, Component }
+export { BaseComponent, CustomComponent, FailedComponent, Component };

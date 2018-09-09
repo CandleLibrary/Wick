@@ -1,0 +1,103 @@
+<w-s>
+	<div class="data_a" badge="mom">MMOOMM</div>
+	<a href="/test/data/page.html">Test Ear</a>
+	<br>
+	<br>
+	<a onclick="((click)(true))" href="#">Test Ear</a>
+	<script on="((click))">
+		model.set({
+			data: [{ app: "A" }]
+		});
+	</script>
+	<w-c>
+		((data))
+		<w-s element="li">
+			<h1 badge="mom" class="mom">((app))</h1>
+			<script on="((arrange))">
+				let easing = wick.anim.easing.ease;
+				arrange.trs({
+					obj: src.badges.mom,
+					left: [
+						{ value: 20 + 20 * arrange.index + "px", duration: 500, delay: 5 * arrange.index, easing }
+					],
+					top: [
+						{ value: "20px", duration: 0, delay: 0 * arrange.index, easing },
+					],
+				}, 200);
+			</script>
+			<script on="((trs_in))">
+				let easing = wick.anim.easing.ease;
+				trs_in({
+					obj: src.badges.mom,
+					opacity: [
+						{ value: 0 },
+						{ value: 1, duration: 800 }
+					],
+					width: [
+						{ value: "0px", duration: 200, easing },
+						{ value: "400px", duration: 800, easing },
+						{ value: "100px", duration: 800, easing }
+					],
+					height: [
+						{ value: "0px", duration: 0, easing },
+						{ value: "30px", duration: 600, delay: 600, easing },
+						{ value: "10px", duration: 1400, easing }
+					],
+				}, 200);
+			</script>
+			<script on="((trs_out))">
+				let easing = wick.anim.easing.ease;
+				trs_out({
+					obj: src.badges.mom,
+					left: [
+						{ value: "0px", duration: 500, delay: 5, easing }
+					],
+					width: [
+						{ value: "0px", duration: 200, easing },
+						{ value: "400px", duration: 800, easing },
+						{ value: "100px", duration: 800, easing }
+					],
+					height: [
+						{ value: "0px", duration: 0, easing },
+						{ value: "30px", duration: 600, delay: 600, easing },
+						{ value: "10px", duration: 1400, easing }
+					],
+				}, 200);
+			</script>
+		</w-s>
+	</w-c>
+	<script on="((trs_in))">
+		let easing = wick.anim.easing.ease;
+		trs_in({
+			obj: src.badges.mom,
+			color: [
+				{ value: "red", duration: 800 },
+				{ value: "green", duration: 800 },
+				{ value: "red", duration: 800 }
+			],
+			width: [
+				{ value: "100px", duration: 200, easing },
+				{ value: "400px", duration: 800, easing },
+				{ value: "100px", duration: 800, easing }
+			],
+			height: [
+				{ value: "10px", duration: 200, easing },
+				{ value: "30px", duration: 200, easing },
+				{ value: "10px", duration: 1400, easing }
+			],
+		}, 200);
+	</script>
+	<script on="((trs_out))">
+		trs_out({
+			obj: src.badges.mom,
+			color: [
+				{ value: "blue", duration: 6000 },
+				{ value: "green", duration: 200 },
+				{ value: "red", duration: 200 }
+			],
+			width: [
+				{ value: "0px", duration: 2000 },
+			]
+		}, 1200);
+	</script>
+</w-s>

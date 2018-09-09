@@ -1,5 +1,5 @@
-import { Lexer } from "../../string_parsing/lexer"
-import { Color } from "../../design/color"
+import { Lexer } from "../../string_parsing/lexer";
+import { Color } from "../../design/color";
 
 /*
     BODY {color: black; background: white }
@@ -15,6 +15,13 @@ import { Color } from "../../design/color"
 
 export class CSS_Color extends Color {
 
+    constructor(r,g,b,a){
+        if(typeof(r) == "string")
+            return CSS_Color._fs_(r);
+
+        super(r,g,b,a);
+    }
+
     static _parse_(l, rule, r) {
 
         let c = CSS_Color._fs_(l);
@@ -24,12 +31,21 @@ export class CSS_Color extends Color {
 
             return c;
         }
+
         return null;
+    }
+    static _verify_(l){
+        let c = CSS_Color._fs_(l, true);
+        if(c)
+            return true;
+        return false;
     }
     /**
         Creates a new Color from a string or a Lexer.
     */
-    static _fs_(l, c) {
+    static _fs_(l, v = false) {
+
+        let c;
 
         if (!(l instanceof Lexer))
             l = new Lexer(l);
@@ -43,23 +59,23 @@ export class CSS_Color extends Color {
             case "r":
                 let tx = l.tx;
                 if (tx == "rgba") {
-                    l.n() // (
-                    out.r = parseInt(l.n().tx)
-                    l.n() // ,
-                    out.g = parseInt(l.n().tx)
-                    l.n() // ,
-                    out.b = parseInt(l.n().tx)
-                    l.n() // ,
-                    out.a = parseFloat(l.n().tx)
+                    l.n(); // (
+                    out.r = parseInt(l.n().tx);
+                    l.n(); // ,
+                    out.g = parseInt(l.n().tx);
+                    l.n();// ,
+                    out.b = parseInt(l.n().tx);
+                    l.n(); // ,
+                    out.a = parseFloat(l.n().tx);
                     l.n().n();
                     break;
                 } else if (tx == "rgb") {
-                    l.n() // (
-                    out.r = parseInt(l.n().tx)
-                    l.n() // ,
-                    out.g = parseInt(l.n().tx)
-                    l.n() // ,
-                    out.b = parseInt(l.n().tx)
+                    l.n(); // (
+                    out.r = parseInt(l.n().tx);
+                    l.n(); // ,
+                    out.g = parseInt(l.n().tx);
+                    l.n(); // ,
+                    out.b = parseInt(l.n().tx);
                     l.n();
                     break;
                 }
@@ -72,12 +88,15 @@ export class CSS_Color extends Color {
                 out = CSS_Color.colors[string.toLowerCase()];
 
                 if (!out) return null;
+
+                c = new CSS_Color();
+                c.set(out);
         }
 
-        if (!c)
+        if (!c && !v)
             c = new CSS_Color();
-
-        c.set(out);
+        if(v && !c)
+            return null;
 
         return c;
     }
@@ -228,5 +247,5 @@ export class CSS_Color extends Color {
         "white": _$(255, 255, 255),
         "yellow green": _$(154, 205, 50),
         "yellow": _$(255, 255)
-    }
+    };
 }

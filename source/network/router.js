@@ -4,6 +4,8 @@ import { PageView } from "../page/page";
 
 import { Element } from "../page/element";
 
+import { Transitioneer } from "../animation/transitioneer";
+
 const URL_HOST = { wurl: null };
 
 
@@ -26,8 +28,8 @@ function getModalContainer() {
         else
             document.body.appendChild(modal_container);
 
-        modal_container.addEventListener("click",(e)=>{
-            if(e.target == modal_container){
+        modal_container.addEventListener("click", (e) => {
+            if (e.target == modal_container) {
                 wick.router.closeModal();
             }
         });
@@ -48,7 +50,6 @@ export class Router {
 
     /**
      * Constructs the object.
-     *
      */
     constructor(presets) {
 
@@ -68,7 +69,6 @@ export class Router {
             if (!temp.onclick) temp.onclick = (e) => {
                 let link = e.currentTarget;
                 if (link.origin !== location.origin) return;
-                source.setTransitionElements();
                 e.preventDefault();
                 history.pushState({}, "ignored title", link.href);
                 window.onpopstate();
@@ -85,7 +85,7 @@ export class Router {
 
 
 
-    finalizePages() {
+    finalizePages(pages = this.finalizing_pages) {
 
         if (this.armed) {
 
@@ -94,9 +94,9 @@ export class Router {
             this.armed = null;
         }
 
-        for (var i = 0, l = this.finalizing_pages.length; i < l; i++) {
+        for (var i = 0, l = pages.length; i < l; i++) {
 
-            var page = this.finalizing_pages[i];
+            var page = pages[i];
 
             page.finalize();
         }
@@ -114,18 +114,20 @@ export class Router {
 
         URL_HOST.wurl = wurl;
 
-        let transition_length = 0;
+        let transition = Transitioneer.createTransition();
 
         let app_ele = document.getElementsByTagName("app")[0];
 
         let transition_elements = {};
+
+        let finalizing_pages = [];
 
         if (page.type == "modal") {
 
             //trace modal stack and see if the modal already exists
             if (IS_SAME_PAGE) {
 
-                page.transitionIn();
+                //page.transitionIn();
 
                 return;
             }
@@ -142,30 +144,21 @@ export class Router {
                         UNWIND = i + 1;
 
                 } else {
-
-                    let trs = 0;
-
                     modal.unload();
-
-                    if (trs = modal.transitionOut()) {
-
-                        transition_length = Math.max(trs, transition_length);
-
-                        this.finalizing_pages.push(modal);
-                    } else
-                        modal.finalize();
+                    finalizing_pages.push(modal);
+                    modal.transitionOut(transition.out);
                 }
             }
 
             if (UNWIND > 0) {
                 this.modal_stack.length = UNWIND;
-                page.load(getModalContainer(), wurl);
-                page.transitionIn();
+                page.mount(getModalContainer(), wurl);
+                page.transitionIn(transition.in);
             } else {
                 //create new modal
                 this.modal_stack.push(page);
-                page.load(getModalContainer(), wurl);
-                page.transitionIn();
+                page.mount(getModalContainer(), wurl);
+                page.transitionIn(transition.in);
             }
 
         } else {
@@ -174,16 +167,11 @@ export class Router {
 
                 let modal = this.modal_stack[i];
 
-                let trs = 0;
-
                 modal.unload();
 
-                if ((trs = modal.transitionOut())) {
-                    transition_length = Math.max(trs, transition_length);
-                    this.finalizing_pages.push(modal);
-                } else
-                    modal.finalize();
+                modal.transitionOut(transition.out);
 
+                finalizing_pages.push(modal);
             }
 
             this.modal_stack.length = 0;
@@ -192,32 +180,26 @@ export class Router {
 
                 this.current_view.unload(transition_elements);
 
-                page.load(app_ele, wurl);
+                page.mount(app_ele, wurl);
 
-                let t = this.current_view.transitionOut();
+                this.current_view.transitionOut(transition.out);
 
-                window.requestAnimationFrame(() => {
-                    page.transitionIn(transition_elements);
-                });
+                finalizing_pages.push(this.current_view);
 
-                transition_length = Math.max(t, transition_length);
-
-                this.finalizing_pages.push(this.current_view);
             } else if (!this.current_view) {
 
-                page.load(app_ele, wurl);
+                page.mount(app_ele, wurl);
 
-                window.requestAnimationFrame(() => {
-                    page.transitionIn(transition_elements);
-                });
+                this.current_view = page;
             }
 
             this.current_view = page;
         }
 
-        setTimeout(() => {
-            this.finalizePages();
-        }, (transition_length * 1000) + 1);
+
+        page.transitionIn(transition.in);
+
+        transition.start().then(() => { this.finalizePages(finalizing_pages); });
     }
 
 
@@ -258,15 +240,13 @@ export class Router {
         if ((page = this.pages[url])) {
 
             page.reply = pending_modal_reply;
-            
+
             if (IS_SAME_PAGE) {
 
                 URL_HOST.wurl = wurl;
 
-
-                return page.transitionIn(
-                    (page.type == "modal" || pending_modal_reply) ? getModalContainer() : document.getElementsByTagName("app")[0],
-                    null, wurl, IS_SAME_PAGE);
+                console.log("missing same page resolution")
+                return;
             }
 
             return this.loadPage(page, wurl, IS_SAME_PAGE);
@@ -281,11 +261,10 @@ export class Router {
 
                     var DOM = (new DOMParser()).parseFromString(html, "text/html");
 
-                    this.loadPage(
-                        this.loadNewPage(url, DOM, wurl, pending_modal_reply),
-                        wurl,
-                        IS_SAME_PAGE
+                    this.loadNewPage(url, DOM, wurl, pending_modal_reply).then(page =>
+                        this.loadPage(page, wurl, IS_SAME_PAGE)
                     );
+
                 }));
             }).catch((error) => {
                 console.warn(`Unable to process response for request made to: ${this.url}. Response: ${error}. Error Received: ${error}`);
@@ -340,7 +319,7 @@ export class Router {
         if (app_list.length > 1)
             console.warn(`Wick is designed to work with just one <app> element in a page. There are ${app_list.length} apps elements in ${url}. Wick will proceed with the first <app> element in the DOM. Unexpected behavior may occur.`)
 
-        let app_source = app_list[0]
+        let app_source = app_list[0];
 
         /**
           If there is no <app> element within the DOM, then we must handle this case carefully. This likely indicates a page delivered from the same origin that has not been converted to work with the Wick system.
@@ -360,7 +339,6 @@ export class Router {
         var dom_app = document.getElementsByTagName("app")[0];
 
         var page = new PageView(URL, app_page);
-
 
         if (app_source) {
 
@@ -414,20 +392,21 @@ export class Router {
 
                 page.eles.push(element);
 
+
                 if (!this.elements[element_id])
                     this.elements[element_id] = {};
 
-                element.setComponents(this.elements[element_id], this.models_constructors, this.component_constructors, this._presets_, DOM, wurl);
+                element.common_components = this.elements[element_id];
             }
+
+            let promise = page.load(this.models_constructors, this.component_constructors, this._presets_, DOM, wurl);
 
             if (document == DOM)
                 dom_app.innerHTML = "";
 
-            let result = page;
+            if (!NO_BUFFER) this.pages[URL] = page;
 
-            if (!NO_BUFFER) this.pages[URL] = result;
-
-            return result;
+            return promise;
         }
     }
 }

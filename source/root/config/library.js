@@ -26,20 +26,17 @@ import { CSSParser } from "../../common/css/root";
 //HTML
 import { HTMLParser } from "../../common/html/root";
 
-//Network
-//import { Getter } from "../../network/getter";
-//import { Setter } from "../../network/setter";
-
 //Routing
 import { WURL } from "../../network/wurl";
 import { Router } from "../../network/router";
 
 //Other
 import { Lexer } from "../../common/string_parsing/lexer";
-import * as Animation from "../../animation/animation";
+import { Animation } from "../../animation/animation";
 import * as Common from "../../common/common";
 import { Scheduler } from "../../common/scheduler";
 
+const anim = Animation;
 const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);
 model.scheme = (schema, sm) => (sm = class extends SchemedModel {}, sm.schema = schema, sm);
 
@@ -106,6 +103,7 @@ export {
     source,
     scheme,
     model,
+    anim,
     core,
     internals
 };

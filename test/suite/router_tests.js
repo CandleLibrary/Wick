@@ -62,6 +62,10 @@ function ROUTERTESTS(config) {
                 done();
             }, 20);
         });
+
+        it("Handles page transitions and inter-component animations", function(done){
+            done();
+        });
     });
 }
 

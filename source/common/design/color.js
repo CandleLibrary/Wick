@@ -1,7 +1,7 @@
 export class Color extends Float64Array {
 
     constructor(r, g, b, a = 0) {
-        super(4)
+        super(4);
 
         this.r = 0;
         this.g = 0;
@@ -9,10 +9,10 @@ export class Color extends Float64Array {
         this.a = 1;
 
         if (r) {
-            this.r = r //Math.max(Math.min(Math.round(r),255),-255);
-            this.g = g //Math.max(Math.min(Math.round(g),255),-255);
-            this.b = b //Math.max(Math.min(Math.round(b),255),-255);
-            this.a = a //Math.max(Math.min(a,1),-1);
+            this.r = r; //Math.max(Math.min(Math.round(r),255),-255);
+            this.g = g; //Math.max(Math.min(Math.round(g),255),-255);
+            this.b = b; //Math.max(Math.min(Math.round(b),255),-255);
+            this.a = a; //Math.max(Math.min(a,1),-1);
         }
     }
 
@@ -61,7 +61,7 @@ export class Color extends Float64Array {
             color.g + this.g,
             color.b + this.b,
             color.a + this.a
-        )
+        );
     }
 
     mult(color) {
@@ -71,14 +71,14 @@ export class Color extends Float64Array {
                 this.g * color,
                 this.b * color,
                 this.a * color
-            )
+            );
         } else {
             return new Color(
                 this.r * color.r,
                 this.g * color.g,
                 this.b * color.b,
                 this.a * color.a
-            )
+            );
         }
     }
 
@@ -88,7 +88,11 @@ export class Color extends Float64Array {
             this.g - color.g,
             this.b - color.b,
             this.a - color.a
-        )
+        );
+    }
+
+    lerp(to, l){
+        return this.add(to.sub(this).mult(l));
     }
 
     toString() {

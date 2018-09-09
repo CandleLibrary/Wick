@@ -30,8 +30,8 @@ export class SourceTemplateNode extends RootNode {
             
             this.class.split(" ").map(c=> c ? ele.classList.add(c):{});
 
-            if(this.transition_name)
-                source.trs_ele[this.transition_name] = ele;
+            if(this._badge_name_)
+                source.badges[this._badge_name_] = ele;
 
             let me = new SourceTemplate(source, presets, ele);
             me._package_ = this._package_;

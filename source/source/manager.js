@@ -10,8 +10,8 @@ export class SourceManager {
         this._DESTROYED_ = false;
     }
 
-    get element(){
-        if(!this.ele)
+    get element() {
+        if (!this.ele)
             this.ele = this.sources[0].ele;
         return this.ele;
     }
@@ -43,53 +43,25 @@ export class SourceManager {
             this.ele.parentElement.removeChild(this.ele);
     }
 
-    _transitionIn_() {
-        if (this._TRANSITION_STATE_ === true || this._DESTROYED_){ 
-            return
-        };
-
-        this._TRANSITION_STATE_ = true;
-        this._APPEND_STATE_ = true;
-        for (let i = 0, l = this.sources.length; i < l; i++) {
-
-            let ast = this.sources[i].ast;
-
-            let css = ast.css;
-
-            let hooks = this.sources[i].hooks;
-
-            for (let i = 0, l = hooks.length; i < l; i++) {
-
-                let hook = hooks[i];
-                if (!hook) continue;
-                let ele = hook.ele;
-
-                if (ele.getAttribute("trs") == "in") continue;
-
-                ele.setAttribute("trs", "in");
-
-                if (css) {
-
-                    let rule = css.getApplicableRules(ele);
-
-                    if (hook.style) {
-                        hook.style._setRule_(rule);
-                    } else {
-                        ele.style = rule + "";
-                    }
-                    //debugger
-                }
-            }
-        }
+    _transitionIn_(transition) {
+        let data = {trs_in:(typeof(transition) == "function") ? transition : transition.in}
+        for (let i = 0, l = this.sources.length; i < l; i++)
+            this.sources[i]._transitionIn_(data);
     }
 
-    _transitionOut_(DESTROY_ON_REMOVE) {
+    _transitionOut_(transition, DESTROY_ON_REMOVE) {
+        if (transition) {
+            let data = {trs_out:(typeof(transition) == "function") ? transition : transition.put}
+            for (let i = 0, l = this.sources.length; i < l; i++)
+                this.sources[i]._transitionOut_(data);
+          }
+
         if (this._TRANSITION_STATE_ === false) {
-            console.log("AAAZZZZ")
-           // if (DESTROY_ON_REMOVE && !this._DESTROYED_) this._destroy_();
+            console.log("AAAZZZZ");
+            // if (DESTROY_ON_REMOVE && !this._DESTROYED_) this._destroy_();
             return;
-        };
-        
+        }
+
         this._TRANSITION_STATE_ = false;
 
         this._APPEND_STATE_ = false;

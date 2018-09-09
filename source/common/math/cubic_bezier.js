@@ -1,5 +1,5 @@
-import {Point2D} from "./point2D"
-import {sqrt,cos,acos,PI, pow} from "./consts"
+import {Point2D} from "./point2D";
+import {sqrt,cos,acos,PI, pow} from "./consts";
 
 // A helper function to filter for values in the [0,1] interval:
 function accept(t) {
@@ -152,7 +152,7 @@ export class CBezier extends Float64Array{
 			u1 = q2 < 0 ? cuberoot(-q2) : -cuberoot(q2);
 			root1 = 2 * u1 - a / 3;
 			root2 = -u1 - a / 3;
-			return [root2, root1]
+			return [root2, root1];
 		}
 
 		// one real root, two complex roots
@@ -160,15 +160,15 @@ export class CBezier extends Float64Array{
 		u1 = cuberoot(sd - q2);
 		v1 = cuberoot(sd + q2);
 		root1 = u1 - v1 - a / 3;
-		return [root1]
+		return [root1];
 	}
 
 	rootsY() {
-		return this.roots(this[1],this[3],this[5],this[7])
+		return this.roots(this[1],this[3],this[5],this[7]);
 	}
 
 	rootsX() {
-		return this.roots(this[0],this[2],this[4],this[6])
+		return this.roots(this[0],this[2],this[4],this[6]);
 	}
 	
 	getYatX(x){
@@ -218,12 +218,12 @@ export class CBezier extends Float64Array{
 	*/
 	draw(ctx, s = 1){
 		ctx.beginPath();
-		ctx.moveTo(this[0]*s, this[1]*s)
+		ctx.moveTo(this[0]*s, this[1]*s);
 		ctx.bezierCurveTo(
 			this[2]*s, this[3]*s,
 			this[4]*s, this[5]*s,
 			this[6]*s, this[7]*s
-			)
-		ctx.stroke()
+			);
+		ctx.stroke();
 	}
 }

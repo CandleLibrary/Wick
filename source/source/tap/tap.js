@@ -55,13 +55,13 @@ export class Tap {
     _downS_(model, IMPORTED = false) {
         const value = model[this._prop_];
 
-        if (typeof(value) !== "undefined" && typeof(value) !== "function") {
+        if (typeof(value) !== "undefined") {
 
             if (IMPORTED) {
                 if (!(this._modes_ & IMPORT))
                     return;
 
-                if (this._modes_ & PUT) 
+                if ((this._modes_ & PUT)  && typeof(value) !== "function") 
                     this._source_._model_[this._prop_] = value;
                     
             }

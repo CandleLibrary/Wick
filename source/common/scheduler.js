@@ -63,6 +63,8 @@ class Scheduler {
         if (this._SCHD_)
             return;
 
+        this.frame_time = performance.now() | 0;
+
         this._SCHD_ = true;
 
         caller(this.callback);
@@ -90,7 +92,6 @@ class Scheduler {
 
         let step_ratio = (diff * 0.06); //  step_ratio of 1 = 16.66666666 or 1000 / 60 for 60 FPS
 
-
         for (let i = 0, l = uq.length, o = uq[0]; i < l; o = uq[++i]) {
             let timestart = ((o._SCHD_ & 65535)) - diff;
             let timeend = ((o._SCHD_ >> 16) & 65535) - diff;
@@ -108,7 +109,7 @@ class Scheduler {
                 continue;
             } else o._SCHD_ = 0;
 
-            o._scheduledUpdate_(step_ratio);
+            o._scheduledUpdate_(step_ratio, diff);
         }
 
         uq.length = 0;

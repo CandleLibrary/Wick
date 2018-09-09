@@ -57,6 +57,9 @@ export class SourceNode extends RootNode {
             if (this.getAttribute("id"))
                 ele.id = this.getAttribute("id");
 
+            if (this.getAttribute("style"))
+                ele.id = this.getAttribute("style");
+
             me.ele = ele;
 
             if (element)
@@ -64,8 +67,8 @@ export class SourceNode extends RootNode {
 
             element = ele;
 
-            if (this.transition_name)
-                me.trs_ele[this.transition_name] = element;
+            if (this._badge_name_)
+                me.badges[this._badge_name_] = element;
 
             let hook = {
                 attr: this.attributes,
@@ -159,7 +162,7 @@ export class SourceNode extends RootNode {
                 break;
             case "t":
                 if (name == "transition")
-                    this.transition_name = lex.tx;
+                    this._badge_name_ = lex.tx;
                 break;
             default:
                 if (this._checkTapMethodGate_(name, lex))

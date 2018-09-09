@@ -1,4 +1,3 @@
-import { TransformTo } from "../animation/animation";
 import { Component, FailedComponent } from "./component";
 
 /**
@@ -35,9 +34,7 @@ export class Element {
             this.components[i].LOADED = false;
     }
 
-    transitionOut() {
-
-        let t = 0;
+    transitionOut(transitioneer) {
 
         for (var i = 0; i < this.components.length; i++) {
 
@@ -47,11 +44,9 @@ export class Element {
 
                 component.parent = null;
 
-                t = Math.max(component.transitionOut(), t);
+                component.transitionOut(transitioneer);
             }
         }
-
-        return t;
     }
 
     finalize() {
@@ -89,7 +84,7 @@ export class Element {
         }
     }
 
-    transitionIn() {
+    transitionIn(transitioneer) {
 
         // This is to force a document repaint, which should cause all elements to report correct positioning hereafter
 
@@ -99,8 +94,7 @@ export class Element {
         for (let i = 0; i < this.components.length; i++) {
             let component = this.components[i];
 
-            component.transitionIn();
-
+            component.transitionIn(transitioneer);
         }
     }
 
@@ -113,47 +107,10 @@ export class Element {
         window.onpopstate();
     }
 
-    getTransformTo(transitions) {
-        if (transitions) {
-            let own_elements = {};
-
-            this.getNamedElements(own_elements);
-
-            for (let name in own_elements) {
-                transitions[name] = TransformTo(own_elements[name]);
-            }
-        }
-    }
-
-    setTransformTo(transitions) {
-        if (transitions) {
-            let own_elements = {};
-
-            this.getNamedElements(own_elements);
-
-
-            for (let name in own_elements) {
-                let to, from = transitions[name];
-                if ((to = own_elements[name]) && from) {
-                    from(to, false);
-                }
-            }
-        }
-    }
-
-    getNamedElements(named_elements) {
-
-        for (var i = 0; i < this.components.length; i++) {
-            let component = this.components[i];
-            component.getNamedElements(named_elements);
-        }
-    }
-
-    setComponents(App_Components, Model_Constructors, Component_Constructors, presets, DOM, wurl) {
+    setComponents(Model_Constructors, Component_Constructors, presets, DOM, wurl, add_pending, res_pending) {
         //if there is a component inside the element, register that component if it has not already been registered
 
         var components = Array.prototype.map.call(this.ele.getElementsByTagName("component"), (a) => a);
-
 
         if (components.length < 1) {
             //Create a wrapped component for the elements inside the <element>
@@ -166,8 +123,11 @@ export class Element {
         }
 
         for (var i = 0; i < components.length; i++) {
-            let app_component = null;
-            let component = components[i];
+            let app_component = null,
+                component = components[i],
+                e;
+
+            add_pending(1);
 
             try {
 
@@ -181,8 +141,7 @@ export class Element {
                 component.parentElement.replaceChild(comp_wrap, component);
                 //*/
 
-                var id = component.dataset.class,
-                    comp;
+                var id = component.dataset.class;
                 /**
                   We must ensure that components act as template "landing spots". In order for that to happen we must check for:
                   (1) The component has, as it's first class name, an id that (2) matches the id of a template. If either of these prove to be not true, we should reject the adoption of the component as a Wick
@@ -190,26 +149,24 @@ export class Element {
                 */
 
                 if (!id) {
-                    app_component = new Component(component, presets, DOM, App_Components, Component_Constructors, Model_Constructors);
+
+                    app_component = new Component(component, presets, DOM, this.common_components, res_pending);
 
                     app_component.handleUrlUpdate(wurl);
+                    
                 } else {
 
                     let custom_component = presets.custom_components[id];
 
                     if (custom_component)
-                        app_component = new custom_component(component, presets, DOM);
-
-
+                        app_component = new custom_component(component, presets, DOM, res_pending);
                 }
-            } catch (e) {
-                console.log(e)
+            } catch (error) { e = error; }
 
+            if (!app_component) {
                 app_component = new FailedComponent(component, e, presets);
+                res_pending();
             }
-
-            if (!app_component)
-                app_component = new FailedComponent(component, e, presets);
 
             this.components.push(app_component);
         }

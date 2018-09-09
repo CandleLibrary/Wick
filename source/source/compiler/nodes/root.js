@@ -89,7 +89,7 @@ export class RootNode extends HTMLNode {
         this.css = null;
         this._merged_ = false;
 
-        this.transition_name = "";
+        this._badge_name_ = "";
 
         this.__presets__ = null;
         this.__statics__ = null;
@@ -350,8 +350,8 @@ export class RootNode extends HTMLNode {
 
                 if(!source.ele) source.ele = own_element;
                 
-                if(this.transition_name)
-                    source.trs_ele[this.transition_name] = own_element;
+                if(this._badge_name_)
+                    source.badges[this._badge_name_] = own_element;
                 
                 let hook = null;
 
@@ -479,9 +479,9 @@ export class RootNode extends HTMLNode {
                     return null;
                 }
                 break;
-            case "t":
-                if(name == "transition")
-                    this.transition_name = lex.tx;
+            case "b":
+                if(name == "badge")
+                    this._badge_name_ = lex.tx;
         }
 
         if (this._checkTapMethodGate_(name, lex))

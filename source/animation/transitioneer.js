@@ -1,0 +1,147 @@
+import { Animation } from "./animation";
+import { TransformTo } from "./transformto";
+import { Scheduler } from "../common/scheduler";
+
+const Transitioneer = (function() {
+
+    let obj_map = new Map();
+
+    class Transition {
+        constructor() {
+            this.in_duration = 0;
+            this.out_duration = 0;
+
+            this.time = 0;
+
+            // If set to zero transitions for out and in will happen simultaneously.
+            this.in_delay = 0;
+
+            this.in_seq = [];
+            this.out_seq = [];
+
+            this.TT = {};
+            //Final transition time is given by max(start_len+in_delay, end_len);
+        }
+
+        _destroy_(){
+            let removeProps = function(seq){
+                if(!seq.DESTROYED)
+                    obj_map.delete(seq.obj);
+                seq._destroy_();
+            };
+            this.in_seq.forEach(removeProps);
+            this.out_seq.forEach(removeProps);
+            this.in_seq = null;
+            this.out_seq = null;
+            this.res = null;
+        }
+
+        get in() {
+            return (anim_data_or_duration = 0, delay = 0) => {
+                if (typeof(anim_data_or_duration) == "object") {
+                    if (anim_data_or_duration.match && this.TT[anim_data_or_duration.match]) {
+                        this.TT[anim_data_or_duration.match](anim_data_or_duration.obj);
+                        this.in_duration = 1000;
+                    } else {
+                        //Parse the object and convert into animation props. 
+                        let seq = Animation.createSequence(anim_data_or_duration);
+                        if (seq) {
+                            this.in_seq.push(seq);
+                            this.in_duration = Math.max(this.in_duration, seq.duration);
+
+                            if(obj_map.get(seq.obj)){
+                                let other_seq = obj_map.get(seq.obj);
+                                other_seq._destroy_();
+                            }
+
+                            obj_map.set(seq.obj, seq);
+                        }
+
+                    }
+                } else
+                    this.in_duration = Math.max(this.in_duration, parseInt(delay) + parseInt(anim_data_or_duration));
+            };
+        }
+
+
+        get out() {
+            //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
+
+            //The highest in_delay value will determine how much time is afforded before the animation for the in portion are a started
+            return (anim_data_or_duration = 0, delay = 0, in_delay = 0) => {
+                if (typeof(anim_data_or_duration) == "object") {
+                    if (anim_data_or_duration.match) {
+                        this.TT[anim_data_or_duration.match] = TransformTo(anim_data_or_duration.obj);
+                    } else {
+                        let seq = Animation.createSequence(anim_data_or_duration);
+                        if (seq) {
+                            this.out_seq.push(seq);
+                            this.out_duration = Math.max(this.out_duration, seq.duration);
+
+                            if(obj_map.get(seq.obj)){
+                                let other_seq = obj_map.get(seq.obj);
+                                other_seq._destroy_();
+                            }
+                            
+                            obj_map.set(seq.obj, seq);
+                        }
+                        this.in_delay = Math.max(this.in_delay, parseInt(delay));
+                    }
+                } else {
+                    this.out_duration = Math.max(this.out_duration, parseInt(delay) + parseInt(anim_data_or_duration));
+                    this.in_delay = Math.max(this.in_delay, parseInt(in_delay));
+                }
+            };
+        }
+
+        start() {
+            this.duration = this.in_duration + this.in_delay + this.out_duration;
+
+            if (this.duration > 0)
+                this._scheduledUpdate_(0, 0);
+
+            return new Promise((res, rej) => {
+                if (this.duration < 1)
+                    return res();
+                this.res = res;
+            });
+        }
+
+        _scheduledUpdate_(step, time) {
+            this.time += time;
+
+            for (let i = 0; i < this.out_seq.length; i++) {
+                let seq = this.out_seq[i];
+                seq.run(this.time);
+            }
+
+            if (this.time >= this.in_delay) {
+                let t = this.time - this.in_delay;
+                for (let i = 0; i < this.in_seq.length; i++) {
+                    let seq = this.in_seq[i];
+                    seq.run(t);
+                }
+            }
+
+            if (this.time >= this.out_seq && this.res) {
+                this.res();
+                this.res = null;
+            }
+
+            if (this.time < this.duration)
+                return Scheduler.queueUpdate(this);
+            else
+            if (this.res)
+                this.res();
+            this._destroy_();
+        }
+    }
+
+    return {
+        createTransition: function() {
+            return new Transition();
+        }
+    };
+})();
+
+export { Transitioneer };

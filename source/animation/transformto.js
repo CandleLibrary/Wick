@@ -1,15 +1,15 @@
-import { Color } from "../common/design/color"
+import { Color } from "../common/design/color";
 
-import { CBezier } from "../common/math/cubic_bezier"
+import { CBezier } from "../common/math/cubic_bezier";
 
-import { Scheduler } from "../common/scheduler"
+import { Scheduler } from "../common/scheduler";
 
 const ease_out = new CBezier(0.5, 0.2, 0, 1);
 
 if (!requestAnimationFrame)
     requestAnimationFrame = (e) => {
         setTimeout(e, 1000);
-    }
+    };
 
 class TT_From {
     constructor(element) {
@@ -194,12 +194,12 @@ const TransformRunner = new(class {
                 _rp._destroy_();
                 rp.splice(i, 1);
                 i--;
-            };
+            }
         }
 
 
     }
-})()
+})();
 
 
 /**
@@ -214,7 +214,7 @@ export function TransformTo(element_from, element_to, HIDE_OTHER) {
         let a = (from) => (element_to, HIDE_OTHER) => {
             let pair = new TTPair(element_to, from);
             TransformRunner._pushPair_(pair);
-        }
+        };
 
         let b = a(new TT_From(element_from));
 

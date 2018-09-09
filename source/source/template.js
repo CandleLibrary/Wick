@@ -1,12 +1,12 @@
-import { _createElement_, _instanceOf_ } from "../common/short_names";
-
-import { MCArray, ModelContainerBase } from "../model/container/base";
+import { ModelContainerBase } from "../model/container/base";
 
 import { MultiIndexedContainer } from "../model/container/multi";
 
 import { Scheduler } from "../common/scheduler";
 
 import { View } from "../view/view";
+
+import { Transitioneer } from "../animation/transitioneer";
 
 
 /**
@@ -98,6 +98,10 @@ export class SourceTemplate extends View {
 
         if (output.length < 1) return;
 
+        let transition = Transitioneer.createTransition();
+        let trs_in = transition.in;
+        let trs_out = transition.out;
+
         for (let i = 0, l = this._filters_.length; i < l; i++) {
             let filter = this._filters_[i];
 
@@ -125,13 +129,15 @@ export class SourceTemplate extends View {
                     let os = output[j];
                     os.index = -1;
                     this.ele.insertBefore(os.element, ele);
-                    os._update_({mount:true});
+                    os._transitionIn_(trs_in);
+                    os._update_({arrange:{index:j, trs: trs_in}});
                     j++;
                 }
                 j++;
             } else if (as.index < 0) {
-                as._transitionOut_();
+                as._transitionOut_(trs_out);
             } else {
+                as._update_({arrange:{index:j, trs: trs_in}});
                 j++;
             }
             as.index = -1;
@@ -140,7 +146,8 @@ export class SourceTemplate extends View {
         while (j < output.length) {
             this.ele.appendChild(output[j].element);
             output[j].index = -1;
-            output[j]._update_({mount:true});
+            output[j]._transitionIn_(trs_in);
+            output[j]._update_({arrange:{index:j, trs: trs_in}});
             j++;
         }
 
@@ -151,6 +158,8 @@ export class SourceTemplate extends View {
         this.parent._upImport_("t_limit", output.length);
 
         Scheduler.queueUpdate(this);
+
+        transition.start();
     }
 
     /**
@@ -296,5 +305,17 @@ export class SourceTemplate extends View {
             return this._model_.get(terms);
         }
         return [];
+    }
+
+    _transitionIn_(transition){        
+        for (let i = 0, l = this.activeSources.length; i < l; i++){
+            this.activeSources[i]._transitionIn_(transition.trs_in);
+            this.activeSources[i]._update_({arrange:{index:i, trs: transition.trs_in}});
+        }
+    }
+
+    _transitionOut_(transition){
+        for (let i = 0, l = this.activeSources.length; i < l; i++)
+            this.activeSources[i]._transitionOut_(transition.trs_out);
     }
 }

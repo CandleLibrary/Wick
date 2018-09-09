@@ -27,20 +27,20 @@ export class PageView {
         this.ele = null;
     }
 
-    unload(transitions) {
+    unload() {
 
         this.LOADED = false;
 
         for (var i = 0; i < this.eles.length; i++) {
             let element = this.eles[i];
-            element.getTransformTo(transitions);
             element.unloadComponents();
         }
     }
 
-    load(app_element, wurl) {
-
+    mount(app_element, wurl) {
+        
         this.LOADED = true;
+        
 
         app_element.appendChild(this.ele);
 
@@ -63,37 +63,63 @@ export class PageView {
             this.ele.parentElement.removeChild(this.ele);
     }
 
-    transitionOut(transitions) {
+    /**
+     * Loads elements from HTML and JS data provided by router. Returns Promise that resolves when components are fully constructed. Allows for asynchronous network bound component construction.
+     *
+     * @param      {<type>}   model_constructors      The model constructors
+     * @param      {<type>}   component_constructors  The component constructors
+     * @param      {<type>}   presets                 The presets
+     * @param      {<type>}   DOM                     The dom
+     * @param      {<type>}   wurl                    The wurl
+     * @return     {Promise}  { description_of_the_return_value }
+     */
+    load(model_constructors, component_constructors, presets, DOM, wurl) {
+        return new Promise((res, rej) => {
+            let unresolved_count = 1;
 
-        let time = 0;
+            const resolution = () => {
+                unresolved_count--;
+                if (unresolved_count == 0)
+                    res(this);
+            };
 
-        for (var i = 0; i < this.eles.length; i++)
-            time = Math.max(time, this.eles[i].transitionOut(transitions));
+            const unresolved = (count = 1) => unresolved_count += count;
 
+            for (var i = 0; i < this.eles.length; i++) {
+                let element = this.eles[i];
+                element.setComponents(model_constructors, component_constructors, presets, DOM, wurl, unresolved, resolution);
+            }
 
-        return time;
+            resolution();
+        });
     }
 
-    transitionIn(transitions) {
+    transitionOut(transitioneer) {
+        for (var i = 0; i < this.eles.length; i++)
+            this.eles[i].transitionOut(transitioneer);
+    }
+
+    transitionIn(transitioneer) {
+        /*
+        transitioneer({
+            obj: this.ele,
+            prop: "style.opacity",
+            key: [0, 1],
+            duration: 50,
+            delay: 0
+        });
 
         if (this.type == "modal") {
             setTimeout(() => {
                 this.ele.style.opacity = 1;
             }, 50);
         }
+        */
 
         for (var i = 0; i < this.eles.length; i++) {
             let element = this.eles[i];
             element.parent = this;
-            element.transitionIn(transitions);
-        }
-    }
-
-    getNamedElements(named_elements) {
-
-        for (var i = 0; i < this.eles.length; i++) {
-            let element = this.eles[i];
-            element.getNamedElements(named_elements);
+            element.transitionIn(transitioneer);
         }
     }
 

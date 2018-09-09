@@ -1,4 +1,4 @@
-import {source, scheme, model, core, internals} from "./config/library";
+import { source, scheme, model, core, internals, anim } from "./config/library";
 
 const wick_vanity = "\ \(\ \ \(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \)\n\ \)\\\)\)\(\ \ \ \'\ \(\ \ \ \ \ \ \ \ \ \ \(\ \/\(\n\(\(\_\)\(\)\\\ \)\ \ \)\\\ \ \ \ \(\ \ \ \ \)\\\(\)\)\n\_\(\(\)\)\\\_\)\(\)\(\(\_\)\ \ \ \)\\\ \ \(\(\_\)\\\n\\\ \\\(\(\_\)\/\ \/\ \(\_\)\ \ \(\(\_\)\ \|\ \|\(\_\)\n\ \\\ \\\/\\\/\ \/\ \ \|\ \|\ \/\ \_\|\ \ \|\ \/\ \/\n\ \ \\\_\/\\\_\/\ \ \ \|\_\|\ \\\_\_\|\ \ \|\_\\\_\\\n";
 
@@ -25,23 +25,29 @@ function startRouting(preset_options = {}) {
     let router = new core.network.router(presets);
 
     window.addEventListener("load", () => {
-        router.loadPage(
+        //router.parseURL(document.location)
+        router.loadNewPage(document.location.pathname, document, new core.network.url(document.location), false).then(page =>
+            router.loadPage(page, new core.network.url(document.location), true)
+        );
+        /*
             router.loadNewPage(document.location.pathname, document),
             new core.network.url(document.location),
             false
         );
+        */
     });
 
     console.log(`${wick_vanity}Copyright 2018 Anthony C Weathersby\nhttps://gitlab.com/anthonycweathersby/wick`);
 
     wick.router = router;
 
-    return {presets, router};
+    return { presets, router };
 }
 
-export {source};
-export {scheme};
-export {model};
-export {core};
-export {internals};
+export { anim };
+export { source };
+export { scheme };
+export { model };
+export { core };
+export { internals };
 export { startRouting };

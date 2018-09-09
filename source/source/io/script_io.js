@@ -9,7 +9,7 @@ export class ScriptIO extends IOBase {
             if (binding._func_) {
                 func = binding._func_;
             } else {
-                func = Function("value", "event", "model", "emit", "presets", "static", "src", binding.val);
+                func = Function(binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val);
                 binding._func_ = func;
             }
         } catch (e) {
