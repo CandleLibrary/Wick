@@ -38,8 +38,9 @@ export class PageView {
     }
 
     mount(app_element, wurl) {
-
+        
         this.LOADED = true;
+        
 
 
         if (app_element.firstChild)

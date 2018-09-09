@@ -8,7 +8,7 @@ export class Color extends Float64Array {
         this.b = 0;
         this.a = 1;
 
-        if (typeof(r) === "number") {
+        if (r) {
             this.r = r; //Math.max(Math.min(Math.round(r),255),-255);
             this.g = g; //Math.max(Math.min(Math.round(g),255),-255);
             this.b = b; //Math.max(Math.min(Math.round(b),255),-255);

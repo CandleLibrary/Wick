@@ -69,7 +69,6 @@ export class Router {
             if (!temp.onclick) temp.onclick = (e) => {
                 let link = e.currentTarget;
                 if (link.origin !== location.origin) return;
-                source._bubbleLink_();
                 e.preventDefault();
                 history.pushState({}, "ignored title", link.href);
                 window.onpopstate();
@@ -245,7 +244,7 @@ export class Router {
 
                 URL_HOST.wurl = wurl;
 
-                console.log("missing same page resolution");
+                console.log("missing same page resolution")
                 return;
             }
 

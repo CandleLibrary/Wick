@@ -101,6 +101,9 @@ export class SourceTemplate extends View {
 
         if (output.length < 1) return;
 
+        let transition = Transitioneer.createTransition();
+        let trs_in = transition.in;
+        let trs_out = transition.out;
 
         for (let i = 0, l = this._filters_.length; i < l; i++) {
             let filter = this._filters_[i];
@@ -132,18 +135,15 @@ export class SourceTemplate extends View {
                     let os = output[j];
                     os.index = -1;
                     this.ele.insertBefore(os.element, ele);
-                    as._update_({ trs_in_t: { index: j, trs: transition.in } });
-                    as._transitionIn_();
+                    os._transitionIn_(trs_in);
+                    os._update_({arrange:{index:j, trs: trs_in}});
                     j++;
                 }
                 j++;
             } else if (as.index < 0) {
-                as._transitionOut_(transition);
+                as._transitionOut_(trs_out);
             } else {
-                if (i !== j) {
-                    console.log(i, j)
-                    as._update_({ arrange: { index: j, trs: transition.in } });
-                }
+                as._update_({arrange:{index:j, trs: trs_in}});
                 j++;
             }
             as.index = -1;
@@ -152,8 +152,8 @@ export class SourceTemplate extends View {
         while (j < output.length) {
             this.ele.appendChild(output[j].element);
             output[j].index = -1;
-            output[j]._update_({ trs_in_t: { index: j, trs: transition.in } });
-            output[j]._transitionIn_();
+            output[j]._transitionIn_(trs_in);
+            output[j]._update_({arrange:{index:j, trs: trs_in}});
             j++;
         }
 
@@ -338,23 +338,15 @@ export class SourceTemplate extends View {
         return [];
     }
 
-    _down_(data, changed_values) {
-        for (let i = 0, l = this.activeSources.length; i < l; i++)
-            this.activeSources[i]._down_(data, changed_values);
-    }
-
-    _transitionIn_(transition) {
-        return;
-        for (let i = 0, l = this.activeSources.length; i < l; i++) {
-            this.ele.appendChild(this.activeSources[i].element);
-            this.activeSources[i]._transitionIn_(transition);
-            this.activeSources[i]._update_({ arrange: { index: i, trs: transition.trs_in } });
+    _transitionIn_(transition){        
+        for (let i = 0, l = this.activeSources.length; i < l; i++){
+            this.activeSources[i]._transitionIn_(transition.trs_in);
+            this.activeSources[i]._update_({arrange:{index:i, trs: transition.trs_in}});
         }
     }
 
-    _transitionOut_(transition) {
-        return;
+    _transitionOut_(transition){
         for (let i = 0, l = this.activeSources.length; i < l; i++)
-            this.activeSources[i]._transitionOut_(transition);
+            this.activeSources[i]._transitionOut_(transition.trs_out);
     }
 }

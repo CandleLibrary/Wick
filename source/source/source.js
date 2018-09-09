@@ -211,7 +211,7 @@ export class Source extends View {
     }
 
     _update_(data, changed_values, IMPORTED = false) {
-
+        
         if (this.update_tap)
             this.update_tap._downS_(data, IMPORTED);
 
@@ -260,5 +260,28 @@ export class Source extends View {
                 this.badges[a] = child.badges[a];
         if (this.parent)
             this.parent._bubbleLink_(this);
+    }
+
+    _transitionIn_(transition){  
+        
+        if(this.taps.trs_in)
+            this.taps.trs_in._downS_(transition);
+
+        for (let i = 0, l = this.sources.length; i < l; i++)
+            this.sources[i]._transitionIn_(transition);
+
+        for (let i = 0, l = this._templates_.length; i < l; i++)
+            this._templates_[i]._transitionIn_(transition);
+    }
+
+    _transitionOut_(transition){
+        if(this.taps.trs_out)
+            this.taps.trs_out._downS_(transition);
+
+        for (let i = 0, l = this.sources.length; i < l; i++)
+            this.sources[i]._transitionOut_(transition);
+
+        for (let i = 0, l = this._templates_.length; i < l; i++)
+            this._templates_[i]._transitionOut_(transition);
     }
 }
