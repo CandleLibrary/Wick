@@ -101,7 +101,7 @@ const Animation = (function anim() {
             return temp_array;
         }
     }
-    const transfer_array = new AnimArray;
+    //const transfer_array = new AnimArray;
     /**
      * Store animation data for a single property on a single object. 
      * @class      AnimProp (name)
