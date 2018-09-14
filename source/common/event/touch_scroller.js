@@ -13,13 +13,15 @@ class TouchScroller {
         this.velocity_x = 0;
         this.velocity_y = 0;
         this.GO = true;
-        this.drag = (drag > 0) ? drag : 0.02;
+        this.drag = (drag > 0) ? drag : 0.05;
         this.ele = element;
 
         if (!touchid instanceof Number)
             touchid = 0;
 
         let time_old = 0;
+
+        let READY = true;
 
         let frame = (dx, dy, steps, ratio = 1) => {
 
@@ -43,17 +45,18 @@ class TouchScroller {
             for (var i = 0, l = this.listeners.length; i < l; i++) {
 
                 if (this.listeners[i]({
-                        dx,
-                        dy,
+                        dx|0,
+                        dy|0,
                         end
                     })) {
                     this.GO = false;
                 } 
             }
+
+            READY = true;
         };
 
         this.event_b = (e) => {
-
             time_old = performance.now();
 
             var touch = e.touches[touchid];
@@ -61,10 +64,14 @@ class TouchScroller {
             this.velocity_x = this.origin_x - touch.clientX;
             this.velocity_y = this.origin_y - touch.clientY;
 
-            this.origin_x = touch.clientX;
-            this.origin_y = touch.clientY;
-
-            frame(this.velocity_x, this.velocity_y, 0, 0);
+            if(READY){
+                this.origin_x = touch.clientX;
+                this.origin_y = touch.clientY;
+                requestAnimationFrame(() => {
+                    frame(this.velocity_x, this.velocity_y, 0, 0);
+                });
+                READY = false;
+            }
         };
 
         this.event_c = (e) => {
@@ -89,7 +96,7 @@ class TouchScroller {
         this.event_a = (e) => {
 
             if(!this.GO){
-                e.preventDefualt();
+                e.preventDefault();
                 e.stopPropagation();
                 return false;
             }

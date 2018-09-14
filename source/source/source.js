@@ -70,7 +70,7 @@ export class Source extends View {
                 return setTimeout(() => { this._destroy_(); }, t * 1000 + 5);
         }
 
-        if (this.parent)
+        if (this.parent && this.parent.removeSource)
             this.parent.removeSource(this);
         //this.finalizeTransitionOut();
         this.children.forEach((c) => c._destroy_());
@@ -90,11 +90,11 @@ export class Source extends View {
 
     }
 
-    getBadges(par){
-        for(let a in this.badges){
-            if(!par.badges[a])
+    getBadges(par) {
+        for (let a in this.badges) {
+            if (!par.badges[a])
                 par.badges[a] = this.badges[a];
-        }            
+        }
     }
 
     addToParent() {
@@ -166,7 +166,7 @@ export class Source extends View {
         Sets up Model connection or creates a new Model from a schema.
     */
     load(model) {
-        
+
         let m = this._presets_.models[this._model_name_];
 
 
@@ -185,7 +185,7 @@ export class Source extends View {
             this.sources[i].load(model);
             this.sources[i].getBadges(this);
         }
-        
+
         model.addView(this);
 
         for (let name in this.taps)
@@ -211,7 +211,7 @@ export class Source extends View {
     }
 
     _update_(data, changed_values, IMPORTED = false) {
-        
+
         if (this.update_tap)
             this.update_tap._downS_(data, IMPORTED);
 
@@ -225,11 +225,14 @@ export class Source extends View {
 
         for (let i = 0, l = this.sources.length; i < l; i++)
             this.sources[i]._down_(data, changed_values);
+
+        for (let i = 0, l = this._templates_.length; i < l; i++)
+            this._templates_[i]._down_(data, changed_values);
     }
 
-    _transitionIn_(transition){  
+    _transitionIn_(transition) {
 
-        if(this.taps.trs_in)
+        if (this.taps.trs_in)
             this.taps.trs_in._downS_(transition);
 
         for (let i = 0, l = this.sources.length; i < l; i++)
@@ -239,14 +242,23 @@ export class Source extends View {
             this._templates_[i]._transitionIn_(transition);
     }
 
-    _transitionOut_(transition){
-        if(this.taps.trs_out)
+    _transitionOut_(transition) {
+        if (this.taps.trs_out)
             this.taps.trs_out._downS_(transition);
 
         for (let i = 0, l = this.sources.length; i < l; i++)
             this.sources[i]._transitionOut_(transition);
 
+
         for (let i = 0, l = this._templates_.length; i < l; i++)
             this._templates_[i]._transitionOut_(transition);
+    }
+
+    _bubbleLink_(child) {
+        if (child)
+            for (let a in child.badges)
+                this.badges[a] = child.badges[a];
+        if (this.parent)
+            this.parent._bubbleLink_(this);
     }
 }

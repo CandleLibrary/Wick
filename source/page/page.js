@@ -38,11 +38,14 @@ export class PageView {
     }
 
     mount(app_element, wurl) {
-        
-        this.LOADED = true;
-        
 
-        app_element.appendChild(this.ele);
+        this.LOADED = true;
+
+
+        if (app_element.firstChild)
+            app_element.insertBefore(this.ele, app_element.firstChild);
+        else
+            app_element.appendChild(this.ele);
 
         for (var i = 0; i < this.eles.length; i++) {
             let element = this.eles[i];

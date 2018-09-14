@@ -336,8 +336,9 @@ const Animation = (function anim() {
 			linear: Linear,
 			ease: new CBezier(0.25, 0.1, 0.25, 1),
 			ease_in: new CBezier(0.42, 0, 1, 1),
-			ease_out: new CBezier(0, 0, 0.58, 1),
-			ease_in_out: new CBezier(0.42, 0, 0.58, 1)
+			ease_out: new CBezier(0.2, .8, .3, 0.99),
+			ease_in_out: new CBezier(0.42, 0, 0.58, 1),
+			overshoot: new CBezier(0.2, 1.5, .2, 0.8)
 		}
 	};
 })();

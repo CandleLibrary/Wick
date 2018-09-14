@@ -199,6 +199,7 @@ class SourcePackage {
 
         for (i = 0, l = this._skeletons_.length; i < l; i++) {
             let source = this._skeletons_[i].flesh(element, model);
+            source.parent = manager;
             manager.sources.push(source);
         }
 

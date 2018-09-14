@@ -5,6 +5,7 @@ import { LinkNode } from "./link";
 import { SourceTemplateNode } from "./template";
 import { StyleNode } from "./style";
 import { VoidNode } from "./void";
+import { SVGNode } from "./svg";
 
 //Since all nodes extend the RootNode, this needs to be declared here to prevent module cycles. 
 function CreateHTMLNode(tag) {
@@ -29,6 +30,9 @@ function CreateHTMLNode(tag) {
                     return new StyleNode();
                 case "script":
                     return new ScriptNode();
+                case "svg":
+                case "path":
+                    return new SVGNode();
             }
     }
 

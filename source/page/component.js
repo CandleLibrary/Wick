@@ -234,6 +234,10 @@ class Component extends BaseComponent {
         if (this.sources.length == 0)
             this.wurl_store = wurl;
     }
+
+    _bubbleLink_(){
+        
+    }
 }
 
 export { BaseComponent, CustomComponent, FailedComponent, Component };

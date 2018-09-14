@@ -1,17 +1,22 @@
 import { Animation } from "./animation";
 
 function setTo(to, seq, duration, easing){
+
     let cs = window.getComputedStyle(to, null);
     
     var rect = to.getBoundingClientRect();
     let to_width = cs.getPropertyValue("width");
     let to_height = cs.getPropertyValue("height");
+    let margin_left = parseFloat(cs.getPropertyValue("margin-left"));
     let to_bgc = cs.getPropertyValue("background-color");
 
-    let left = seq.props.left;
-    let left_diff = left.keys[0].val - rect.left;
-    left.keys[0].val = new left.type(to.offsetLeft + left_diff, "px");
-    left.keys[1].val = new left.type(to.offsetLeft,"px");
+    let left = seq.props.left, offl = to.offsetLeft - margin_left;
+    let left_diff = (left.keys[0].val) - (rect.left);
+    console.log(offl)
+
+    left.keys[0].val = new left.type(offl + left_diff, "px");
+    left.keys[1].val = new left.type(offl,"px");
+
     left.keys[1].dur = duration;
     left.keys[1].len = duration;
     left.keys[1].ease = easing;
@@ -58,6 +63,8 @@ function setTo(to, seq, duration, easing){
 */
 export function TransformTo(element_from, element_to, duration = 500, easing = Animation.easing.linear, HIDE_OTHER) {
     let rect = element_from.getBoundingClientRect();
+    let cs = window.getComputedStyle(element_from, null);
+    let margin_left = parseFloat(cs.getPropertyValue("margin"));
 
     let seq = Animation.createSequence({
         obj: element_from,

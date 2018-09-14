@@ -8,6 +8,7 @@ export class SourceManager {
         this._APPEND_STATE_ = false;
         this._TRANSITION_STATE_ = false;
         this._DESTROYED_ = false;
+        this.parent = null;
     }
 
     get element() {
@@ -23,6 +24,7 @@ export class SourceManager {
         this.model = null;
         this.ele = null;
         this._DESTROYED_ = true;
+        this.parent = null;
     }
 
     emit(name, value) {
@@ -108,8 +110,9 @@ export class SourceManager {
 
                     if (hook.style)
                         hook.style._setRule_(rule);
-                    else
-                        ele.style = rule + "";
+                    else{
+                        //ele.style = rule + "";
+                    }
                 }
             }
         }
@@ -132,5 +135,12 @@ export class SourceManager {
     _update_(data, changed_values) {
         for (let i = 0, l = this.sources.length; i < l; i++)
             this.sources[i]._update_(data, changed_values);
+    }
+
+    _bubbleLink_(){
+        if(this.parent && this.parent._bubbleLink_)
+            this.parent._bubbleLink_(this);
+        else
+            debugger
     }
 }
