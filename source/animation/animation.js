@@ -359,7 +359,6 @@ const Animation = (function anim() {
             ease_in_out: new CBezier(0.42, 0, 0.58, 1)
         }
     };
->>>>>>> cd4d2259fe317e0ae066f6b3ae91633af75d1c49
 })();
 export {
     Animation
