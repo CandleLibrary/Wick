@@ -69,6 +69,7 @@ export class Router {
             if (!temp.onclick) temp.onclick = (e) => {
                 let link = e.currentTarget;
                 if (link.origin !== location.origin) return;
+                source._bubbleLink_();
                 e.preventDefault();
                 history.pushState({}, "ignored title", link.href);
                 window.onpopstate();

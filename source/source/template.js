@@ -95,7 +95,7 @@ export class SourceTemplate extends View {
      * 
      * @protected
      */
-    filterUpdate(transition) {        
+    filterUpdate(transition = Transitioneer.createTransition()) {
 
         let output = this.sources.slice();
 
@@ -132,15 +132,18 @@ export class SourceTemplate extends View {
                     let os = output[j];
                     os.index = -1;
                     this.ele.insertBefore(os.element, ele);
-                    os._transitionIn_(transition);
-                    os._update_({arrange:{index:j, trs: transition.in}});
+                    as._update_({ trs_in_t: { index: j, trs: transition.in } });
+                    as._transitionIn_();
                     j++;
                 }
                 j++;
             } else if (as.index < 0) {
                 as._transitionOut_(transition);
             } else {
-                as._update_({arrange:{index:j, trs: transition.in}});
+                if (i !== j) {
+                    console.log(i, j)
+                    as._update_({ arrange: { index: j, trs: transition.in } });
+                }
                 j++;
             }
             as.index = -1;
@@ -149,8 +152,8 @@ export class SourceTemplate extends View {
         while (j < output.length) {
             this.ele.appendChild(output[j].element);
             output[j].index = -1;
-            output[j]._transitionIn_(transition);
-            output[j]._update_({arrange:{index:j, trs: transition.in}});
+            output[j]._update_({ trs_in_t: { index: j, trs: transition.in } });
+            output[j]._transitionIn_();
             j++;
         }
 
@@ -181,12 +184,15 @@ export class SourceTemplate extends View {
         let transition = Transitioneer.createTransition();
 
         if (new_items.length == 0) {
-            for (let i = 0, l = this.sources.length; i < l; i++)
+            let sl = this.sources.length;
+
+            for (let i = 0; i < sl; i++)
                 this.sources[i]._transitionOut_(transition, true);
 
             this.sources.length = 0;
 
-            this.parent._upImport_("t_limit", 0);
+            if(sl > 0)
+                this.parent._upImport_("template_empty", { template: this, ele: this.ele, trs: transition.out });
 
             transition.start();
         } else {
@@ -196,13 +202,12 @@ export class SourceTemplate extends View {
             var out = [];
 
             for (let i = 0, l = this.activeSources.length; i < l; i++)
-                if (exists.has(this.activeSources[i].model)){
+                if (exists.has(this.activeSources[i].model)) {
                     exists.set(this.activeSources[i].model, false);
                 }
 
             for (let i = 0, l = this.sources.length; i < l; i++)
                 if (!exists.has(this.sources[i].model)) {
-                    console.log("ZZ")
                     this.sources[i]._transitionOut_(transition, true);
                     this.sources[i].index = -1;
                     this.sources.splice(i, 1);
@@ -213,10 +218,20 @@ export class SourceTemplate extends View {
 
             exists.forEach((v, k, m) => { if (v) out.push(k); });
 
-            if (out.length > 0)
+            if (out.length > 0) {
                 this.added(out, transition);
-            else
+            } else {
+                for (let i = 0, j = 0, l = this.activeSources.length; i < l; i++, j++) {
+                    if (this.activeSources[i]._TRANSITION_STATE_) {
+                        if (j !== i) {
+                            console.log(j, i)
+                            this.activeSources[i]._update_({ arrange: { index: i, trs: transition.in } });
+                        }
+                    } else
+                        this.activeSources.splice(i, 1), i--, l--;
+                }
                 transition.start();
+            }
 
         }
     }
@@ -227,6 +242,7 @@ export class SourceTemplate extends View {
      * @param      {Array}  items   An array of items no longer stored in the ModelContainer. 
      */
     removed(items, transition = Transitioneer.createTransition()) {
+
 
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
@@ -251,6 +267,7 @@ export class SourceTemplate extends View {
      * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
      */
     added(items, transition = Transitioneer.createTransition()) {
+
 
         for (let i = 0; i < items.length; i++) {
 
@@ -321,14 +338,22 @@ export class SourceTemplate extends View {
         return [];
     }
 
-    _transitionIn_(transition){        
-        for (let i = 0, l = this.activeSources.length; i < l; i++){
+    _down_(data, changed_values) {
+        for (let i = 0, l = this.activeSources.length; i < l; i++)
+            this.activeSources[i]._down_(data, changed_values);
+    }
+
+    _transitionIn_(transition) {
+        return;
+        for (let i = 0, l = this.activeSources.length; i < l; i++) {
+            this.ele.appendChild(this.activeSources[i].element);
             this.activeSources[i]._transitionIn_(transition);
-            this.activeSources[i]._update_({arrange:{index:i, trs: transition.trs_in}});
+            this.activeSources[i]._update_({ arrange: { index: i, trs: transition.trs_in } });
         }
     }
 
-    _transitionOut_(transition){
+    _transitionOut_(transition) {
+        return;
         for (let i = 0, l = this.activeSources.length; i < l; i++)
             this.activeSources[i]._transitionOut_(transition);
     }

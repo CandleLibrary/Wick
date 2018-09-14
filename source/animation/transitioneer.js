@@ -67,6 +67,8 @@ const Transitioneer = (function() {
 
                 } else
                     that.in_duration = Math.max(that.in_duration, parseInt(delay) + parseInt(anim_data_or_duration));
+
+                return that.in;
             }
 
 
@@ -92,6 +94,7 @@ const Transitioneer = (function() {
                         obj_map.set(seq.obj, seq);
                     }
                     that.in_delay = Math.max(that.in_delay, parseInt(delay));
+                    console.log(that.in_delay)
                 }
             } else {
                 that.out_duration = Math.max(that.out_duration, parseInt(delay) + parseInt(anim_data_or_duration));
