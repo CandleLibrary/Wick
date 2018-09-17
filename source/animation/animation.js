@@ -72,8 +72,20 @@ const Animation = (function anim() {
 
 		getValue(obj, prop_name, type) {
 			if (type == CSS_STYLE) {
+				let name = prop_name.replace(/[A-Z]/g, (match) => "-" + match.toLowerCase());
 				let cs = window.getComputedStyle(obj);
-				this.current_val = new this.type(cs.getPropertyValue(prop_name.replace(/[A-Z]/g, (match) => "-" + match.toLowerCase())));
+				let value = cs.getPropertyValue(name);
+				
+				if(this.type == CSS_Percentage){
+					if(obj.parentElement){
+						let pcs = window.getComputedStyle(obj.parentElement);
+						let pvalue = pcs.getPropertyValue(name);
+						let ratio = parseFloat(value) / parseFloat(pvalue);
+						value = (ratio * 100);
+					}
+				}
+
+				this.current_val = new this.type(value);
 			} else {
 				this.current_val = new this.type(obj[prop_name]);
 			}
@@ -93,10 +105,10 @@ const Animation = (function anim() {
 
 		addKey(key) {
 			let own_key = {
-				val: new this.type(key.value) || 0,
-				dur: key.duration || 0,
-				del: key.delay || 0,
-				ease: key.easing || Linear,
+				val: ((key.value !== undefined) ? new this.type(key.value) : new this.type(key.v)) || 0,
+				dur: key.duration || key.dur || 0,
+				del: key.delay || key.del || 0,
+				ease: key.easing || key.e || Linear,
 				len: 0
 			};
 
@@ -144,6 +156,7 @@ const Animation = (function anim() {
 		}
 
 		setProp(obj, prop_name, value, type) {
+			
 			if (type == CSS_STYLE)
 				obj.style[prop_name] = value;
 			else
@@ -348,9 +361,9 @@ const Animation = (function anim() {
 			linear: Linear,
 			ease: new CBezier(0.25, 0.1, 0.25, 1),
 			ease_in: new CBezier(0.42, 0, 1, 1),
-			ease_out: new CBezier(0.2, .8, .3, 0.99),
+			ease_out: new CBezier(0.2, 0.8, 0.3, 0.99),
 			ease_in_out: new CBezier(0.42, 0, 0.58, 1),
-			overshoot: new CBezier(0.2, 1.5, .2, 0.8)
+			overshoot: new CBezier(0.2, 1.5, 0.2, 0.8)
 		}
 	};
 })();

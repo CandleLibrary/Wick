@@ -50,13 +50,14 @@ class Scheduler {
      * @param      {Object}  object  The object to have updated.
      */
     queueUpdate(object, timestart = 1, timeend = 0) {
-        if (object._SCHD_ || object._SCHD_ > 0)
+        if (object._SCHD_ || object._SCHD_ > 0) {
             if (this._SCHD_)
                 return;
             else
                 return caller(this.callback);
+        }
 
-        object._SCHD_ = (timestart | ((timestart + timeend) << 16));
+        object._SCHD_ = (timestart | ((timeend) << 16));
 
         this.update_queue.push(object);
 
@@ -94,8 +95,7 @@ class Scheduler {
 
         for (let i = 0, l = uq.length, o = uq[0]; i < l; o = uq[++i]) {
             let timestart = ((o._SCHD_ & 65535)) - diff;
-            let timeend = ((o._SCHD_ >> 16) & 65535) - diff;
-
+            let timeend = ((o._SCHD_ >> 16) & 65535);
 
             if (timestart > 0) {
                 o._SCHD_ = 0;
@@ -103,13 +103,16 @@ class Scheduler {
                 continue;
             }
 
-
             if (timeend > 0) {
-                this.queueUpdate(o, timestart, timeend);
+                this.queueUpdate(o, timestart, timeend  - diff);
                 continue;
             } else o._SCHD_ = 0;
 
-            o._scheduledUpdate_(step_ratio, diff);
+            try {
+                o._scheduledUpdate_(step_ratio, diff);
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         uq.length = 0;

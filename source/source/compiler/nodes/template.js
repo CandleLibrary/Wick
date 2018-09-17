@@ -23,7 +23,6 @@ export class SourceTemplateNode extends RootNode {
 
         if (this.HAS_TAPS)
             taps = source._linkTaps_(this.tap_list);
-
         if (this._property_bind_ && this._package_) {
 
             let ele = _createElement_(this.getAttribute("element") || "ul");
@@ -50,6 +49,8 @@ export class SourceTemplateNode extends RootNode {
                 if (sort || filter) //Only create Filter node if it has a sorting bind or a filter bind
                     me._filters_.push(new FilterIO(source, errors, taps, me, on, sort, filter));
             }
+        }else{
+            errors.push(new Error(`Missing source for template bound to "${this._property_bind_._bindings_[0].tap_name}"`));
         }
 
         return source;

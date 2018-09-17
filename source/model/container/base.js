@@ -284,9 +284,16 @@ export class ModelContainerBase extends ModelBase {
             this.__remove__(terms, out_container);
         }
 
-        if(out_container.length > 0)
-           this.scheduleUpdate();
-        
+        if (out_container.length > 0) {
+            if (this.par)
+                this.par.scheduleUpdate(this.prop_name);
+
+
+            if (out_container && out_container.length > 0) {
+                this.updateViewsRemoved(out_container);
+                this.scheduleUpdate();
+            }
+        }        
 
         return out_container;
     }

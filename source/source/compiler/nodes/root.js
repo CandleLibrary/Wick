@@ -480,8 +480,10 @@ export class RootNode extends HTMLNode {
                 }
                 break;
             case "b":
-                if(name == "badge")
+                if(name == "badge"){
                     this._badge_name_ = lex.tx;
+                    return null;
+                }
         }
 
         if (this._checkTapMethodGate_(name, lex))

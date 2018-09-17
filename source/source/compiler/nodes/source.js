@@ -58,12 +58,13 @@ export class SourceNode extends RootNode {
                 ele.id = this.getAttribute("id");
 
             if (this.getAttribute("style"))
-                ele.id = this.getAttribute("style");
+                ele.style = this.getAttribute("style");
 
             me.ele = ele;
 
-            if (element)
+            if (element){
                 _appendChild_(element, ele);
+            }
 
             element = ele;
 
@@ -76,6 +77,18 @@ export class SourceNode extends RootNode {
                 style: null,
                 ele: element
             };
+
+            for (let i = 0, l = this._bindings_.length; i < l; i++) {
+                let attr = this._bindings_[i];
+                let bind = attr.binding._bind_(me, errors, taps, element, attr.name);
+                console.log(attr)
+                if (hook) {
+                    if (attr.name == "style" || attr.name == "css")
+                        hook.style = bind;
+
+                    hook.bindings.push(bind);
+                }
+            }
 
             me.hooks.push(hook);
         }
@@ -168,6 +181,8 @@ export class SourceNode extends RootNode {
                 if (this._checkTapMethodGate_(name, lex))
                     return null;
         }
+
+        //return super._processAttributeHook_(name, lex, value);
 
         return { name, value: lex.slice() };
     }

@@ -9,10 +9,10 @@ function fetchLocalText(URL, m = "same-origin") {
             credentials: m,
             method: "Get"
         }).then(r => {
-            if (r.status !== 200)
-                rej("");
+            if (r.status < 200 || r.status > 299)
+                r.text().then(rej);
             else
-                r.text().then(str => res(str));
+                r.text().then(res);
         }).catch(e => rej(e));
     });
 }
@@ -24,10 +24,10 @@ function fetchLocalJSON(URL, m = "same-origin") {
             credentials: m,
             method: "Get"
         }).then(r => {
-            if (r.status !== 200)
-                rej("");
+            if (r.status < 200 || r.status > 299)
+                r.json().then(rej);
             else
-                r.json().then(obj => res(obj));
+                r.json().then(res).catch(rej);
         }).catch(e => rej(e));
     });
 }
@@ -50,11 +50,11 @@ function submitForm(URL, form_data, m = "same-origin") {
             method: "POST",
             body: form,
         }).then(r => {
-            if (r.status !== 200)
-                rej(r);
+            if (r.status < 200 || r.status > 299)
+                r.text().then(rej);
             else
-                r.json().then(obj => res(obj));
-        }).catch(e => rej(e));
+                r.json().then(res);
+        }).catch(e => e.text().then(rej));
     });
 }
 
@@ -70,11 +70,11 @@ function submitJSON(URL, json_data, m = "same-origin") {
             method: "POST",
             body: JSON.stringify(json_data),
         }).then(r => {
-            if (r.status !== 200)
-                rej(r);
+            if (r.status < 200 || r.status > 299)
+                r.json().then(rej);
             else
-                r.json().then(obj => res(obj));
-        }).catch(e => rej(e));
+                r.json().then(res);
+        }).catch(e => e.text().then(rej));
     });
 }
 
@@ -306,9 +306,7 @@ class WURL {
 
         if (data) {
 
-
-
-            let map = (this.map) ? this.map : (this.map = new Map());
+            let map = this.map = new Map();
 
             let store = (map.has(class_name)) ? map.get(class_name) : (map.set(class_name, new Map()).get(class_name));
 
@@ -333,7 +331,7 @@ class WURL {
             }
 
             for (let [key, class_] of map.entries()) {
-                if (key === "") 
+                if (key === "")
                     continue;
                 if (class_.size > 0) {
                     str += `&${key}`
@@ -348,7 +346,7 @@ class WURL {
 
             if (WURL.G == this)
                 this.goto();
-        }else{
+        } else {
             this.query = "";
         }
 
@@ -419,7 +417,6 @@ class WURL {
     }
 
     submitJSON(json_data) {
-        console.log(json_data)
         return submitJSON(this.toString(), json_data);
     }
     /**
@@ -433,11 +430,11 @@ class WURL {
         WURL.G = this;
     }
 
-    get pathname(){
+    get pathname() {
         return this.path;
     }
 
-    get href(){
+    get href() {
         return this.toString();
     }
 }

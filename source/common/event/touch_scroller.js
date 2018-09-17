@@ -45,8 +45,8 @@ class TouchScroller {
             for (var i = 0, l = this.listeners.length; i < l; i++) {
 
                 if (this.listeners[i]({
-                        dx|0,
-                        dy|0,
+                        dx:dx|0,
+                        dy:dy|0,
                         end
                     })) {
                     this.GO = false;
