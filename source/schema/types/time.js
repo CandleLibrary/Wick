@@ -4,7 +4,7 @@ class TimeSchemeConstructor extends NumberSchemeConstructor {
 
     parse(value) {
         if (!isNaN(value))
-            return parseInt(value);
+            return parseFloat(value);
         try {
             var hour = parseInt(value.split(":")[0]);
             var min = parseInt(value.split(":")[1].split(" ")[0]);
@@ -17,7 +17,7 @@ class TimeSchemeConstructor extends NumberSchemeConstructor {
             var min = 0;
             var half = 0;
         }
-
+        
         return parseFloat((hour + ((half) ? 12 : 0) + (min / 60)));
     }
 

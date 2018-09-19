@@ -171,7 +171,7 @@ class SourcePackage {
         if (!this._READY_)
             return this._pushPendingMount_(element, model, USE_SHADOW_DOM, manager);
 
-        if (!(element instanceof EL)) return null;
+        //if (!(element instanceof EL)) return null;
 
         if (this._HAVE_ERRORS_) {
             //Process

@@ -7,6 +7,13 @@ export class SourceManager {
         this.index = -1;
         this._APPEND_STATE_ = false;
         this._TRANSITION_STATE_ = false;
+        this._DESTROYED_ = false;
+    }
+
+    get element(){
+        if(!this.ele)
+            this.ele = this.sources[0].ele;
+        return this.ele;
     }
 
     _destroy_() {
@@ -15,6 +22,7 @@ export class SourceManager {
         this.source = null;
         this.model = null;
         this.ele = null;
+        this._DESTROYED_ = true;
     }
 
     emit(name, value) {
@@ -36,7 +44,10 @@ export class SourceManager {
     }
 
     _transitionIn_() {
-        if (this._TRANSITION_STATE_ === true) return;
+        if (this._TRANSITION_STATE_ === true || this._DESTROYED_){ 
+            return
+        };
+
         this._TRANSITION_STATE_ = true;
         this._APPEND_STATE_ = true;
         for (let i = 0, l = this.sources.length; i < l; i++) {
@@ -74,7 +85,8 @@ export class SourceManager {
 
     _transitionOut_(DESTROY_ON_REMOVE) {
         if (this._TRANSITION_STATE_ === false) {
-            if (DESTROY_ON_REMOVE) this._destroy_();
+            console.log("AAAZZZZ")
+           // if (DESTROY_ON_REMOVE && !this._DESTROYED_) this._destroy_();
             return;
         };
         
@@ -103,7 +115,6 @@ export class SourceManager {
                 ele.setAttribute("trs", "out");
 
                 if (css) {
-
                     let rule = css.getApplicableRules(ele);
 
                     for (let name in rule.props)
@@ -136,5 +147,10 @@ export class SourceManager {
     _down_(data, changed_values) {
         for (let i = 0, l = this.sources.length; i < l; i++)
             this.sources[i]._down_(data, changed_values);
+    }
+
+    _update_(data, changed_values) {
+        for (let i = 0, l = this.sources.length; i < l; i++)
+            this.sources[i]._update_(data, changed_values);
     }
 }

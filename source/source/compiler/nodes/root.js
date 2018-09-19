@@ -89,6 +89,8 @@ export class RootNode extends HTMLNode {
         this.css = null;
         this._merged_ = false;
 
+        this.transition_name = "";
+
         this.__presets__ = null;
         this.__statics__ = null;
     }
@@ -126,6 +128,7 @@ export class RootNode extends HTMLNode {
 
 
     _mergeComponent_() {
+        
         let component = this._presets_.components[this.tag];
 
         if (component)
@@ -271,8 +274,6 @@ export class RootNode extends HTMLNode {
         }
     }
 
-
-
     _checkTapMethodGate_(name, lex) {
 
         if (!this.par)
@@ -280,14 +281,10 @@ export class RootNode extends HTMLNode {
         return false;
     }
 
-
-
     _linkTapBinding_(binding) {
 
         binding.tap_id = this._getTap_(binding.tap_name).id;
     }
-
-
 
     _delegateTapBinding_(binding, tap_mode) {
 
@@ -296,8 +293,6 @@ export class RootNode extends HTMLNode {
 
         return null;
     }
-
-
 
     _processTapBinding_(binding, tap_mode = 0) {
 
@@ -345,12 +340,19 @@ export class RootNode extends HTMLNode {
 
             source = source || new Source(null, presets, element, this);
 
+
             if (this.HAS_TAPS)
                 taps = source._linkTaps_(this.tap_list);
 
-            let own_element = this._createElement_(presets);
+            let own_element = this._createElement_(presets, source);
 
             if (own_element) {
+
+                if(!source.ele) source.ele = own_element;
+                
+                if(this.transition_name)
+                    source.trs_ele[this.transition_name] = own_element;
+                
                 let hook = null;
 
                 if (this._bindings_.length > 0) {
@@ -362,7 +364,7 @@ export class RootNode extends HTMLNode {
                     };
                 }
 
-                source.hooks.push(hook);
+               if(hook) source.hooks.push(hook);
 
                 for (let i = 0, l = this._bindings_.length; i < l; i++) {
                     let attr = this._bindings_[i];
@@ -408,6 +410,7 @@ export class RootNode extends HTMLNode {
             case "br":
             case "img":
             case "import":
+            case "link":
                 return true;
         }
 
@@ -475,7 +478,10 @@ export class RootNode extends HTMLNode {
                         components[component_name] = this;
                     return null;
                 }
-
+                break;
+            case "t":
+                if(name == "transition")
+                    this.transition_name = lex.tx;
         }
 
         if (this._checkTapMethodGate_(name, lex))

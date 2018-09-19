@@ -67,7 +67,7 @@ export const property_definitions = {
     background_image: `<bg_image>#`,
     background_repeat: `<repeat_style>#`,
     background_attachment: `scroll|fixed|local`,
-    background_position: `[(<percentage>)|<length>]{1,2}|[top|center|bottom]||[left|center|right]`,
+    background_position: `[<percentage>|<length>]{1,2}|[top|center|bottom]||[left|center|right]`,
     background_clip: `<box>#`,
     background_origin: `<box>#`,
     background_size: `<bg_size>#`,
@@ -84,7 +84,7 @@ export const property_definitions = {
     font_style: ``,
 
     /*CSS Clipping https://www.w3.org/TR/css-masking-1/#clipping `normal|italic|oblique`, */
-    font_size: `<absolute_size>|<relative_size>|<length>|(<percentage>)`,
+    font_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
     absolute_size: `xx_small|x_small|small|medium|large|x_large|xx_large`,
     relative_size: `larger|smaller`,
     font_wight: `normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900`,
@@ -93,24 +93,24 @@ export const property_definitions = {
     word_spacing: `normal|<length>`,
     letter_spacing: `normal|<length>`,
     text_decoration: `none|[underline||overline||line-through||blink]`,
-    vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|(<percentage>)`,
+    vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|<percentage>`,
     text_transform: `capitalize|uppercase|lowercase|none`,
     text_align: `left|right|center|justify`,
-    text_indent: `<length>|(<percentage>)`,
-    line_height: `normal|<length>|(<percentage>)|<number>`,
+    text_indent: `<length>|<percentage>`,
+    line_height: `normal|<length>|<percentage>|<number>`,
 
     /* Box */
-    margin: `[<length>|(<percentage>)|auto]{1,4}`,
-    margin_top: `<length>|(<percentage>)|auto`,
-    margin_right: `<length>|(<percentage>)|auto`,
-    margin_bottom: `<length>|(<percentage>)|auto`,
-    margin_left: `<length>|(<percentage>)|auto`,
+    margin: `[<length>|<percentage>|auto]{1,4}`,
+    margin_top: `<length>|<percentage>|auto`,
+    margin_right: `<length>|<percentage>|auto`,
+    margin_bottom: `<length>|<percentage>|auto`,
+    margin_left: `<length>|<percentage>|auto`,
 
-    padding: `[<length>|(<percentage>)|auto]{1,4}`,
-    padding_top: `<length>|(<percentage>)|auto`,
-    padding_right: `<length>|(<percentage>)|auto`,
-    padding_bottom: `<length>|(<percentage>)|auto`,
-    padding_left: `<length>|(<percentage>)|auto`,
+    padding: `[<length>|<percentage>|auto]{1,4}`,
+    padding_top: `<length>|<percentage>|auto`,
+    padding_right: `<length>|<percentage>|auto`,
+    padding_bottom: `<length>|<percentage>|auto`,
+    padding_left: `<length>|<percentage>|auto`,
 
     /* Border  https://www.w3.org/TR/css-backgrounds-3 */
     border_color: `<color>{1,4}`,
@@ -144,7 +144,7 @@ export const property_definitions = {
 
     border_image: `<border_image_source>||<border_image_slice>[/<border_image_width>|/<border_image_width>?/<border_image_outset>]?||<border_image_repeat>`,
     border_image_source: `none|<image>`,
-    border_image_slice: `[<number>|(<percentage>)]{1,4}&&fill?`,
+    border_image_slice: `[<number>|<percentage>]{1,4}&&fill?`,
     border_image_width: `[<length_percentage>|<number>|auto]{1,4}`,
     border_image_outset: `[<length>|<number>]{1,4}`,
     border_image_repeat: `[stretch|repeat|round|space]{1,2}`,
@@ -153,8 +153,8 @@ export const property_definitions = {
 
     border: `<line_width>||<line_style>||<color>`,
 
-    width: `<length>|(<percentage>)|auto|inherit`,
-    height: `<length>|(<percentage>)|auto|inherit`,
+    width: `<length>|<percentage>|auto|inherit`,
+    height: `<length>|<percentage>|auto|inherit`,
     float: `left|right|none`,
     clear: `left|right|both`,
 
@@ -170,10 +170,10 @@ export const property_definitions = {
     //CSS2 Properties
 
     /* Box */
-    min_width: `<length>|(<percentage>)|inherit`,
-    max_width: `<length>|(<percentage>)|none|inherit`,
-    line_height: `normal|<number>|<length>|(<percentage>)|inherit`,
-    vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|(<percentage>)|<length>|inherit`,
+    min_width: `<length>|<percentage>|inherit`,
+    max_width: `<length>|<percentage>|none|inherit`,
+    line_height: `normal|<number>|<length>|<percentage>|inherit`,
+    vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|<percentage>|<length>|inherit`,
     overflow: 'visible|hidden|scroll|auto|inherit',
 
     clip: '<shape>|auto|inherit',
@@ -260,11 +260,11 @@ export const virtual_property_definitions = {
     keyframes_name: `<string>`,
 
     /* CSS3 Stuff */
-    length_percentage: `<length>|(<percentage>)`,
-    frequency_percentage: `<frequency>|(<percentage>)`,
-    angle_percentage: `<angle>|(<percentage>)`,
-    time_percentage: `<time>|(<percentage>)`,
-    number_percentage: `<number>|(<percentage>)`,
+    length_percentage: `<length>|<percentage>`,
+    frequency_percentage: `<frequency>|<percentage>`,
+    angle_percentage: `<angle>|<percentage>`,
+    time_percentage: `<time>|<percentage>`,
+    number_percentage: `<number>|<percentage>`,
 
     /*CSS Clipping https://www.w3.org/TR/css-masking-1/#clipping */
     clip_path: `<clip_source>|[<basic_shape>||<geometry_box>]|none`,

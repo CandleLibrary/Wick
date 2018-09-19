@@ -12,7 +12,7 @@ export class EventIO {
         source._ios_.push(this);
 
         this._ele_ = element;
-        this._event_bind_ = new IOBase(taps[event_bind.tap_id]);
+        this._event_bind_ = new IOBase(source.getTap(event_bind.tap_name));
         this._event_ = event.replace("on","");
         this._msg_ = null;
         this.data = null;

@@ -35,7 +35,7 @@ class TouchScroller {
             if (!end) {
                 requestAnimationFrame(() => {
                     frame(dx, dy, 1);
-                })
+                });
             }
 
             end = end && steps != 0;
@@ -50,7 +50,7 @@ class TouchScroller {
                     this.GO = false;
                 } 
             }
-        }
+        };
 
         this.event_b = (e) => {
 
@@ -65,7 +65,7 @@ class TouchScroller {
             this.origin_y = touch.clientY;
 
             frame(this.velocity_x, this.velocity_y, 0, 0);
-        }
+        };
 
         this.event_c = (e) => {
 
@@ -84,7 +84,7 @@ class TouchScroller {
 
             window.removeEventListener("touchmove", this.event_b);
             window.removeEventListener("touchend", this.event_c);
-        }
+        };
 
         this.event_a = (e) => {
 
@@ -108,7 +108,7 @@ class TouchScroller {
 
             window.addEventListener("touchmove", this.event_b);
             window.addEventListener("touchend", this.event_c);
-        }
+        };
 
         this.ele.addEventListener("touchstart", this.event_a);
 

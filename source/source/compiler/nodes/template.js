@@ -26,7 +26,13 @@ export class SourceTemplateNode extends RootNode {
 
         if (this._property_bind_ && this._package_) {
 
-            let ele = _createElement_("ul");
+            let ele = _createElement_(this.getAttribute("element") || "ul");
+            
+            this.class.split(" ").map(c=> c ? ele.classList.add(c):{});
+
+            if(this.transition_name)
+                source.trs_ele[this.transition_name] = ele;
+
             let me = new SourceTemplate(source, presets, ele);
             me._package_ = this._package_;
             me.prop = this._property_bind_._bind_(source, errors, taps, me);

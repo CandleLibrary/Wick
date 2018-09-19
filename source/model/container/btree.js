@@ -82,8 +82,10 @@ export class BTreeModelContainer extends ModelContainerBase {
 
         if(!this.btree) return __return_data__;
 
-        if (__return_data__ instanceof BTreeModelContainer)
+        if (__return_data__ instanceof BTreeModelContainer){
+            __return_data__.btree = this.btree;
             return __return_data__;
+        }
 
         let out = [];
 

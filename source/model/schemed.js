@@ -119,7 +119,7 @@ class SchemedModel extends ModelBase {
 
                         if (schema_name == "proto") {
                             for (let name in schema.proto)
-                                    prototype[name] = schema.proto[name];
+                                    _SealedProperty_(prototype, name, schema.proto[name]);
                             continue;
                         }
 

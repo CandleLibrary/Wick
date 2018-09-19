@@ -32,6 +32,32 @@ function fetchLocalJSON(URL, m = "same-origin") {
     });
 }
 
+function submitForm(URL, form_data, m = "same-origin") {
+    return new Promise((res, rej) => {
+        var form;
+
+        if (form_data instanceof FormData)
+            form = form_data;
+        else {
+            form = new FormData();
+            for (let name in form_data)
+                form.append(name, form_data[name] + "");
+        }
+
+        fetch(URL, {
+            mode: m, // CORs not allowed
+            credentials: m,
+            method: "POST",
+            body: form,
+        }).then(r => {
+            if (r.status !== 200)
+                rej("");
+            else
+                r.json().then(obj => res(obj));
+        }).catch(e => rej(e));
+    });
+}
+
 
 
 /**
@@ -45,7 +71,7 @@ function fetchLocalJSON(URL, m = "same-origin") {
 class WURL {
 
     constructor(url = "", USE_LOCATION = false) {
-        
+
         let IS_STRING = true;
 
         let location = document.location;
@@ -214,19 +240,19 @@ class WURL {
     toString() {
         let str = [];
 
-        if(this.protocol && this.host)
+        if (this.protocol && this.host)
             str.push(`${this.protocol}://`);
 
-        if(this.host)
+        if (this.host)
             str.push(`${this.host}`);
 
-        if(this.port)
-            str.push(`:${this.port}`);            
-        
-        if(this.path)
-            str.push(`${this.path[0] == "/" ? "" : "/"}${this.path}`);      
+        if (this.port)
+            str.push(`:${this.port}`);
 
-        if(this.query)      
+        if (this.path)
+            str.push(`${this.path[0] == "/" ? "" : "/"}${this.path}`);
+
+        if (this.query)
             str.push(this.query);
 
         return str.join("");
@@ -302,6 +328,8 @@ class WURL {
                 this.goto();
         }
 
+        return this;
+
     }
 
     /**
@@ -361,6 +389,10 @@ class WURL {
 
         return occupied;
     }
+
+    submitForm(form_data) {
+        return submitForm(this.toString(), form_data);
+    }
     /**
      * Goes to the current URL.
      */
@@ -370,6 +402,14 @@ class WURL {
         history.pushState({}, "ignored title", url);
         window.onpopstate();
         WURL.G = this;
+    }
+
+    get pathname(){
+        return this.path;
+    }
+
+    get href(){
+        return this.toString();
     }
 }
 

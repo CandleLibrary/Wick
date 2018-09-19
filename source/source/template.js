@@ -43,23 +43,39 @@ export class SourceTemplate extends View {
     get data() {}
     set data(container) {
 
-        if (container.length > 0) {
-            if (Array.isArray(container))
-                this.cull(container);
-            else
-                this.cull(container.data);
+        if (container instanceof ModelContainerBase) {
+            container.pin();
+            container.addView(this);
+            //this._update_(container);
+            return;
         }
+
+
+        if (!container) return;
+
+        //if (container.length > 0) {
+        if (Array.isArray(container))
+            this.cull(container);
+        else
+            this.cull(container.data);
+        //}
+
     }
 
     _update_(container) {
 
+        if (container instanceof ModelContainerBase)
+            container = container.get();
+        
+        if (!container) return;
+
         //let results = container.get(this.getTerms());
-        if (container.length > 0) {
-            if (Array.isArray(container))
-                this.cull(container);
-            else
-                this.cull(container.data);
-        }
+        // if (container.length > 0) {
+        if (Array.isArray(container))
+            this.cull(container);
+        else
+            this.cull(container.data);
+        // }
     }
 
     /**
@@ -78,10 +94,9 @@ export class SourceTemplate extends View {
      * @protected
      */
     filterUpdate() {
-
         let output = this.sources.slice();
 
-        if(output.length < 1) return;
+        if (output.length < 1) return;
 
         for (let i = 0, l = this._filters_.length; i < l; i++) {
             let filter = this._filters_[i];
@@ -89,7 +104,7 @@ export class SourceTemplate extends View {
             if (filter._CAN_USE_) {
 
                 if (filter._CAN_FILTER_)
-                    output = output.filter(filter._filter_function_._filter_expression_);                
+                    output = output.filter(filter._filter_function_._filter_expression_);
 
                 if (filter._CAN_SORT_)
                     output = output.filter(filter._sort_function_);
@@ -105,11 +120,12 @@ export class SourceTemplate extends View {
         for (let i = 0; i < this.activeSources.length; i++) {
             let as = this.activeSources[i];
             if (as.index > j) {
-                let ele = as.ele;
+                let ele = as.element;
                 while (j < as.index && j < ol) {
                     let os = output[j];
                     os.index = -1;
-                    this.ele.insertBefore(os.ele, ele);
+                    this.ele.insertBefore(os.element, ele);
+                    os._update_({mount:true});
                     j++;
                 }
                 j++;
@@ -122,14 +138,17 @@ export class SourceTemplate extends View {
         }
 
         while (j < output.length) {
-            this.ele.appendChild(output[j].ele);
+            this.ele.appendChild(output[j].element);
             output[j].index = -1;
+            output[j]._update_({mount:true});
             j++;
         }
 
         this.ele.style.position = this.ele.style.position;
 
         this.activeSources = output;
+
+        this.parent._upImport_("t_limit", output.length);
 
         Scheduler.queueUpdate(this);
     }
@@ -143,15 +162,15 @@ export class SourceTemplate extends View {
      */
     cull(new_items) {
 
-        if(!new_items) return;
+        if (!new_items) return;
 
         if (new_items.length == 0) {
-
             for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i]._destroy_();
+                this.sources[i]._transitionOut_(true);
 
             this.sources.length = 0;
 
+            this.parent._upImport_("t_limit", 0);
         } else {
 
             let exists = new Map(new_items.map(e => [e, true]));
@@ -159,29 +178,23 @@ export class SourceTemplate extends View {
             var out = [];
 
             for (let i = 0, l = this.activeSources.length; i < l; i++)
-                if (!exists.has(this.activeSources[i].model)) {
-                    this.activeSources[i]._transitionOut_();
-                    this.activeSources.splice(i, 1);
-                    l--;
-                    i--;
-                } else
+                if (exists.has(this.activeSources[i].model))
                     exists.set(this.activeSources[i].model, false);
-
 
             for (let i = 0, l = this.sources.length; i < l; i++)
                 if (!exists.has(this.sources[i].model)) {
-                    this.sources[i]._destroy_();
+                    this.sources[i]._transitionOut_(true);
                     this.sources.splice(i, 1);
                     l--;
                     i--;
                 } else
                     exists.set(this.sources[i].model, false);
 
-
             exists.forEach((v, k, m) => { if (v) out.push(k); });
 
             if (out.length > 0)
                 this.added(out);
+
         }
     }
 
@@ -217,10 +230,10 @@ export class SourceTemplate extends View {
     added(items) {
 
         for (let i = 0; i < items.length; i++) {
-            let ele = _createElement_("li");
-            let mgr = this._package_.mount(ele, items[i], false);
 
-            mgr.sources.forEach((s) => { s.parent = this.parent;});
+            let mgr = this._package_.mount(null, items[i], false);
+
+            mgr.sources.forEach((s) => { s.parent = this.parent; });
 
             this.sources.push(mgr);
         }

@@ -86,7 +86,7 @@ export class Element {
             component.handleUrlUpdate(wurl);
 
             this.components[i].LOADED = true;
-        };
+        }
     }
 
     transitionIn() {
@@ -142,26 +142,6 @@ export class Element {
     }
 
     getNamedElements(named_elements) {
-        if (this.bubbled_elements) {
-            let t = this.bubbled_elements;
-
-            for (let t in this.bubbled_elements)
-                named_elements[t] = this.bubbled_elements[t];
-
-            //this.bubbled_elements = null;
-
-            return;
-        }
-
-        let children = this.ele.children;
-
-        for (var i = 0; i < children.length; i++) {
-            let child = children[i];
-
-            if (child.dataset.transition) {
-                named_elements[child.dataset.transition] = child;
-            }
-        }
 
         for (var i = 0; i < this.components.length; i++) {
             let component = this.components[i];

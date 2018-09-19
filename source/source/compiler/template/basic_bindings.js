@@ -87,7 +87,7 @@ export class DynamicBinding {
     }
 
     _bind_(source, errors, taps, element) {
-        let tap = taps[this.tap_id];
+        let tap = source.getTap(this.tap_name) //taps[this.tap_id];
         switch (this.method) {
             case INPUT:
                 return new InputIO(source, errors, tap, element);
