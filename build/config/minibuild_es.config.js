@@ -5,7 +5,7 @@ import gzip from "rollup-plugin-gzip";
 export default {
     input: "./source/root/client",
     output: {
-        file: "./build/wick-min.js",
+        file: "./build/wick-min-es.js",
         format: "es"
     },
     plugins: [
