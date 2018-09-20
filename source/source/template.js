@@ -60,7 +60,6 @@ export class SourceTemplate extends View {
     }
 
     _update_(container) {
-
         if (container instanceof ModelContainerBase)
             container = container.get();
 
@@ -129,11 +128,12 @@ export class SourceTemplate extends View {
 
         for (let i = 0; i < al; i++) {
             let as = this.activeSources[i];
+
             if (as.index > j) {
                 let ele = as.element;
                 while (j < as.index && j < ol) {
                     let os = output[j];
-                    os.index = -1;
+                    os.index = j;
                     os._appendToDOM_(this.ele, ele);
                     os._update_({ trs_in_t: { index: j, trs: transition.in } });
                     os._transitionIn_();
@@ -146,14 +146,14 @@ export class SourceTemplate extends View {
                 as._update_({ arrange: { index: j, trs: transition.in } });
                 j++;
             }
-            as.index = -1;
+            as.index = j;
         }
 
         while (j < output.length) {
 
             output[j]._appendToDOM_(this.ele);
             //this.ele.appendChild(output[j].element);
-            output[j].index = -1;
+            output[j].index = j;
             output[j]._update_({ trs_in_t: { index: j, trs: transition.in } });
             output[j]._transitionIn_();
             j++;
@@ -341,6 +341,7 @@ export class SourceTemplate extends View {
     }
 
     _down_(data, changed_values) {
+        console.log(data)
         for (let i = 0, l = this.activeSources.length; i < l; i++)
             this.activeSources[i]._down_(data, changed_values);
     }

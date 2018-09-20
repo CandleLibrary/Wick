@@ -333,7 +333,6 @@ export class RootNode extends HTMLNode {
         const out_statics = this.__statics__ || statics;
 
         if (this._merged_) {
-            
             source = this._merged_._build_(element, source, presets, errors, taps, out_statics);
 
         } else {
@@ -442,8 +441,6 @@ export class RootNode extends HTMLNode {
         let bind_method = ATTRIB,
             FOR_EVENT = false;
 
-        let constr = Template;
-
         switch (name[0]) {
 
             case "#": //Static values
@@ -490,7 +487,7 @@ export class RootNode extends HTMLNode {
             return null;
 
         if ((lex.sl - lex.off) > 0) {
-            let binding = constr(lex, FOR_EVENT);
+            let binding = Template(lex, FOR_EVENT);
             if (!binding) {
                 return {
                     name,

@@ -210,7 +210,7 @@ export class Source extends View {
     }
 
     _update_(data, changed_values, IMPORTED = false) {
-
+        
         if (this.update_tap)
             this.update_tap._downS_(data, IMPORTED);
 
