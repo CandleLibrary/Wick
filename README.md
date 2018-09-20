@@ -38,6 +38,72 @@ filter - allows sorting and filtering actions to be applied to w-c source's
 
 Animation, Routing, Components, Sources, Models, Schemes, Presets, CSS parsing, HTML parsing.
 
+## The Wick Component
+
+Wick components are built from HTML files containing traditional markup and special wick specific attributes and tags. Combined with templating data binding and inline javascript expressions, Wick provides powerful ways to create dynamic HTML components that can be integrated into existing pages. Wick also provides ways to define data flow between components and link components from different files to create complex component structures that can handle more advanced application interfaces. 
+
+### Shockwave
+
+Wick, by default, uses properties and expressions bound in double parenthasis `(( ** ))` *shockwave* containers to create dynamic behaviour. The double parenthasis style of shockwave binding is used in part to avoid conflicting with other the popular "handlebar" or "mustache" `{{ ** }}` styles used in other templating libraries. 
+
+The shockwaves can be used in many ways to add dynamic behavior to HTML markup. First and foremost, using a shockwave in the text area of an element will allow property values of JavaScript objects to be injected into the DOM. The following example illustrates this process.
+
+> ```JavaScript
+> let component = wick.source(`<div>((name))</div>`) // "wick.source" will create a compiled component based on the input data, which can be a string or a <template> HTMLElement 
+> let manager = component.mount(document.body) //Compiled components are used as constructors for actual HTML markup, and must be "mounted" to an existing DOM node. When this is done, a component manager is created, allowing data to be passed to the now fully constructed component.
+> 
+> manager.update({name:"Ingrid"})
+> //--> <body><div>Ingrid</div></body>
+> 
+> manager.update({name:"Nelson"})
+> //--> <body><div>Nelson</div></body>
+> ``` 
+
+
+Shockwaves can be used in many places to provide dynamic behaviour.
+```HTML
+<div id="((id_name))" class="((contents.length > 0 ? class_name : 'no_contents')) ((clicked ? "active" : "inactive"))" onclick="((clicked)(true))">((contents))</div>
+```
+Notice how the the second shockwave uses a JS expression to define it's behavior. Wick allows any shockwave that produces a change in the markup to be defined with an expression instead of just a property identifier. Wick will automatically handle the access of multiple data properties in the expression. 
+
+When the above markup is turned into a compiled component and update with a data object like this one
+```js
+ let data = {id_name:"first_comment", class_name:"comment", contents:""}
+ ```
+ This kind of markup is produced
+ ```HTML
+ <div id="first_comment" class="no_contents inactive"></div>
+ ```
+ Updating the component with an new object that has `"This is my first comment"` set as the value for the `contents` property will produce 
+ ```HTML
+ <div id="first_comment" class="comment inactive">This is my first comment</div>
+ ```
+
+You've probably noticed the different form of the third shockwave expression defined for the `onclick` attribute of the div.  This style is used with `on*` event attributes to emit messages based on events. It takes the form ** ``((`` *event_name* ``)(`` * event_value * ``))``** . Instead of binding to properties of a data object, an event shockwave will instead emit it's own data object that other shockwaves in the component can bind to. If a user was to click or tap the on the div element of the component, the markup will change to
+ ```HTML
+ <div id="first_comment" class="comment active">This is my first comment</div>
+ ```
+
+ Shockwaves bound to certain attributes take on additional functions that round out their usefulness. When a shockwave s\is bound to the Wick specific `on` attribute of a script tag, it provide means to use Javascript to react to property changes 
+ 
+ ```HTML
+<script on="((clicked))">
+    alert(clicked);
+</script>
+ ```
+A script defined this way will be activated when the property it's bound to changes. It receives the value of that property as an argument as with the same name as the property. There are additional arguments these script receive, which we'll go into detail later. 
+
+Finaly, a shockwave bound to an input elements `value` attribute will provide two way binding for that element. User updates to the input will cause event messages to be created and sent through the component, and Javascript property updates will cause the of the input to change. 
+
+
+### Source of Truth
+
+Using shockwaves provides a familar, easy, and powerful way to create components with dynamic data binding, but to really take advantage of what Wick has to offer the use of two types of tags 
+### Messaging
+
+### Dealing with Data
+
+
 ## Building Wick
 
 Wick is available through NPM. 
@@ -65,10 +131,10 @@ Wick is a self contained library and has no runtime dependancies, but it does re
 - Terser.js - Minifier
 
 ### Testing:
-- mocha.js - The testing framework used by wick. 
+- mocha.js - Testing Framework
 - chai.js - Assertion Library
-- jsdom.js - Javascript DOM implementation for testing browser interaction with Node.js.
-- instanbul.js - Test coverage tool.
+- jsdom.js - Javascript DOM implementation for testing browser interaction with Node.js
+- nyc- Test coverage tool
 
 ### Documenation:
-- JSdocs - Documentation generator.
+- JSdocs - Documentation generator
