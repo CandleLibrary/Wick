@@ -27,7 +27,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/anthonycweathersby/wick.git"
+    "url": "git+https://github.com/galactrax/wick.git"
   },
   "keywords": [
     "SPA",
@@ -47,12 +47,12 @@
     "test": "test"
   },
   "author": "Anthony Weathersby",
-  "license": "copyright",
+  "license": "MIT",
   "bugs": {
-    "url": "https://gitlab.com/anthonycweathersby/wick/issues"
+    "url": "https://github.com/galactrax/wick/issues"
   },
-  "private": true,
-  "homepage": "https://gitlab.com/anthonycweathersby/wick#readme",
+  "private": false,
+  "homepage": "https://github.com/galactrax/wick#readme",
   "devDependencies": {
     "benchmark": "^2.1.4",
     "chai": "^4.1.2",
@@ -63,7 +63,6 @@
     "mocha": "^5.2.0",
     "mocha-logger": "^1.0.6",
     "node-fetch": "^2.2.0",
-    "npm-watch": "^0.3.0",
     "nyc": "^12.0.2",
     "rollup": "^0.62.0",
     "rollup-plugin-gzip": "^1.4.0",
