@@ -44,16 +44,97 @@ Wick components are built from HTML files containing traditional markup and spec
 
 ### Componetization
 
+Creating a component with Wick begins with passing an HTMLElement or string containing HTML markup to the `wick.source` function, as in this example
+
+```JavaScript
+
+let RETURN_PROMISE = false; //If true, wick.source will return a promise that resolves to a componentFactory. This is optional
+let presets = {}, // An object of compilation options can be passed to wick.source. This is also optional
+let componentFactory = wick.source(
+                          `<div>Hello Component</div>`,
+                          presets,
+                          RETURN_PROMISE)
+
+```
+
+What is returned is a compiled `SourcePackage` that contains objects and code needed to render the component to the DOM. Its `mount` method takes an existing HTMLElement and inserts a copy of the component into the Element's DOM tree. The `mount` method also returns a `SourceManager` that can be used to update the component with new data and create special effects like transitions.  
+
+<sup>Additional options can be provided to `wick.source` in the form of the `presets` object. More information can be found in the guide.</sup>
+
+> #### Ok, what's up with this source talk?
+> The term source stems from the idea of a "single source of truth" and relates to the concept that a component will always take on a single form given the state of the data that it binds to. Though it has yet to be discussed, data binding is one of the primary functions of Wick and the "Source" object represents the single connection point between data and components.  
+
+Wick provides several ways to define a component. In addition to using a string of DOM markup, an HTMLElement ``<template>`` object can be passed to the `wick.source` function.
+
+```HTML
+...
+<body>
+  <template id="template">
+    This will only show up in the component.
+    <span>Hello World</span>
+  </template>
+  <div id="div">This will end up in the component and in the document</div>
+</body>
+<script>
+  let SourcePackageA = wick.source(document.getElementById("template"))
+  let SourcePackageB = wick.source(document.getElementById("div"))
+</script>
+...
+```
+This method takes advantage of the ``<template>`` behavior of containing markup within an HTML document that is not rendered until it inserted through a script. `wick.source` will also accept any other HTMLElement as input for the component and will simply extract the inner HTML of that element to compile into a `SourcePackage`.
+
+#### Asynchronous
+
+Wick component compilation is an asynchronous process that supports cross file compilation of components. The `componentFactory` object return by `wick.source` will not actually create any components until after compilation is completed, which can be some time after the `wick.source` returns. This allows component definitions to be in multiple files which can then be loaded and parsed asynchronously before the component compilation is complete.
+
+In this example document `A.html` contains part of a component
+```HTML
+<!-- A.html -->
+<div id="main_component" element="my-component">
+  <div url="/B.html"></div>
+</div>
+```
+The `element` attribute allows component to be defined by tag value, as in this case the component can be referred to as an `<my-element>` tag.
+
+File `B.html` contains the rest of the component.
+
+```HTML
+<!-- B.html -->
+<a href="https://wick.example.com">Hello From Wick</a>
+```
+Within a script this component can be constructed through
+```JavaScript
+let component = wick.source("<link url='/A.html'> <my-component></my-component>")
+```
+Within a component declaration, the `<link>` tag is used to pull in data from other HTML files without actually placing the contents of that file into the component. If the `url`* attribute is defined on other tags, as in `<div url="/B.html">...`, the data from that URL resource is automatically inserted into the inner HTML of the tag.
+
+In the above example the component will be rendered as
+``` HTML
+<div id="main_component">
+  <a href="https://wick.example.com">Hello From Wick</a>
+</div>
+```
+
+This method is also useful when defining Script and CSS tags within a component.
+
+```HTML
+<div element="my-component">
+  <script url="/script.js"></script>
+  <style url="/style.css"></style>
+</div>
+```
+
+*<sub>Currently only absolute paths from the domain are supported using the `url` attribute. </sub>
 
 ### Shockwave
 
-Wick, by default, uses properties and expressions bound in double parenthasis `(( ** ))` *shockwave* containers to create dynamic behaviour. The double parenthasis style of shockwave binding is used in part to avoid conflicting with other the popular "handlebar" or "mustache" `{{ ** }}` styles used in other templating libraries.
+Wick components bind data to properties and expressions defined in double parenthasis `(( ** ))` *shockwave* containers to create dynamic behavior. The double parenthasis style of shockwave binding is used in part to avoid conflicting with other the popular "handlebar" `{{ ** }}` styles used in other templating libraries, allowing these libraries to be used alongside Wick.
 
 The shockwaves can be used in many ways to add dynamic behavior to HTML markup. First and foremost, using a shockwave in the text area of an element will allow property values of JavaScript objects to be injected into the DOM. The following example illustrates this process.
 
 > ```JavaScript
-> let component = wick.source(`<div>((name))</div>`) // "wick.source" will create a compiled component based on the input data, which can be a string or a <template> HTMLElement
-> let manager = component.mount(document.body) //Compiled components are used as constructors for actual HTML markup, and must be "mounted" to an existing DOM node. When this is done, a component manager is created, allowing data to be passed to the now fully constructed component.
+> let componentFactory = wick.source(`<div>((name))</div>`)
+> let manager = componentFactory.mount(document.body) //Compiled components are used as constructors for actual HTML markup, and must be "mounted" to an existing DOM node. When this is done, a component manager is created, allowing data to be passed to the now fully constructed component.
 >
 > manager.update({name:"Ingrid"})
 > //--> <body><div>Ingrid</div></body>
@@ -61,9 +142,10 @@ The shockwaves can be used in many ways to add dynamic behavior to HTML markup. 
 > manager.update({name:"Nelson"})
 > //--> <body><div>Nelson</div></body>
 > ```
+Shockwave in this context create TextNode elements in the final markup to avoid issues with client side malicious bahivore. Any HTML markup found within a property value will simply be appended as text to the DOM without it actually being parsed as HTML.
 
 
-Shockwaves can be used in many places to provide dynamic behaviour.
+Shockwaves can be used in many places to provide dynamic behavior.
 ```HTML
 <div id="((id_name))" class="((contents.length > 0 ? class_name : 'no_contents')) ((clicked ? "active" : "inactive"))" onclick="((clicked)(true))">((contents))</div>
 ```
@@ -82,7 +164,7 @@ When the above markup is turned into a compiled component and update with a data
  <div id="first_comment" class="comment inactive">This is my first comment</div>
  ```
 
-You've probably noticed the different form of the third shockwave expression defined for the `onclick` attribute of the div.  This style is used with `on*` event attributes to emit messages based on events. It takes the form ** ``((`` *event_name* ``)(`` * event_value * ``))``** . Instead of binding to properties of a data object, an event shockwave will instead emit it's own data object that other shockwaves in the component can bind to. If a user was to click or tap the on the div element of the component, the markup will change to
+You've probably noticed the differing form of the third shockwave expression defined for the `onclick` attribute of the div.  This style is used with `on*` event attributes to emit messages based on events. It takes the form ** ``((`` *event_name* ``)(`` * event_value * ``))``** . Instead of binding to properties of a data object, an event shockwave will instead emit it's own data object that other shockwaves in the component can bind to. If a user was to click or tap the on the div element of the component, the markup will change to
  ```HTML
  <div id="first_comment" class="comment active">This is my first comment</div>
  ```

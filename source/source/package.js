@@ -6,19 +6,19 @@ import { Skeleton } from "./skeleton";
 import { RootNode } from "./compiler/nodes/root";
 
 /**
- * SourcePackages stores compiled {@link SourceSkeleton}s and provide a way to _bind_ Model data to the DOM in a reusable manner. * 
- * @property    {Array}    _skeletons_        
- * @property    {Array}    styles       
- * @property    {Array}    scripts      
- * @property    {Array}    style_core    
+ * SourcePackages stores compiled {@link SourceSkeleton}s and provide a way to _bind_ Model data to the DOM in a reusable manner. *
+ * @property    {Array}    _skeletons_
+ * @property    {Array}    styles
+ * @property    {Array}    scripts
+ * @property    {Array}    style_core
  * @readonly
  * @callback   If `RETURN_PROMISE` is set to `true`, a new Promise is returned, which will asynchronously return a SourcePackage instance if compilation is successful.
  * @param      {HTMLElement}  element      The element
  * @param      {Presets}  presets      The global Presets object.
- * @param      {boolean}  [RETURN_PROMISE=false]  If `true` a Promise will be returned, otherwise the SourcePackage instance is returned. 
- * @return     {SourcePackage | Promise}  If a SourcePackage has already been constructed for the given element, that will be returned instead of new one being created. If 
+ * @param      {boolean}  [RETURN_PROMISE=false]  If `true` a Promise will be returned, otherwise the SourcePackage instance is returned.
+ * @return     {SourcePackage | Promise}  If a SourcePackage has already been constructed for the given element, that will be returned instead of new one being created. If
  * @memberof module:wick.core.source
- * @alias SourcePackage  
+ * @alias SourcePackage
  */
 class SourcePackage {
 
@@ -88,10 +88,10 @@ class SourcePackage {
     }
 
     /**
-     * Called when template compilation completes. 
-     * 
+     * Called when template compilation completes.
+     *
      * Sets SourcePackage#_READY_ to true, send the pending mounts back through SourcePackage#mount, and freezes itself.
-     * 
+     *
      * @protected
      */
     _complete_() {
@@ -110,7 +110,7 @@ class SourcePackage {
      * Adds Error message to the errors array.
      *
      * @param      {String}  error_message     the error message to add.
-     * 
+     *
      * @protected
      */
     _addError_(error_message) {
@@ -122,7 +122,7 @@ class SourcePackage {
 
     /**
      * Freezes properties.
-     * @protected 
+     * @protected
      */
     _fz_() {
         return;
@@ -141,7 +141,7 @@ class SourcePackage {
      * @param      {Model}  model           The model
      * @param      {Boolean}  USE_SHADOW_DOM  The use shadow dom
      * @param      {Object}  manager         The manager
-     * 
+     *
      * @protected
      */
     _pushPendingMount_(element, model, USE_SHADOW_DOM, manager) {
@@ -160,11 +160,12 @@ class SourcePackage {
     }
 
     /**
-     * Generates new instance of component and appends it to the input element.
+     * Generates new instance of component and appends it to the input element. If the compilation of the component is not complete by the time this method is called,
+     the arguments are stored in a temporary buffer and later run through this method again when compilation is completed.
      * @param  {HTMLElement} element         - The element
-     * @param  {Model}   model           - The model
+     * @param  {Model}   model           - The model the source component will bind to. Binding only occurs if `model` or `schema` attributes are undefined in the component decleration, the `schema` attribute type matches the model type, or `schema` is set to "any".
      * @param  {boolean} USE_SHADOW_DOM  - If `true`, appends the component to the element's ShadowDOM.
-     * @param  {Object}  manager         - The manager
+     * @param  {Object}  manager         - A custom manager that stores built source components. If not defined then a SourceManager is created and returned.
      */
     mount(element, model, USE_SHADOW_DOM = false, manager = new SourceManager(model, element)) {
 
