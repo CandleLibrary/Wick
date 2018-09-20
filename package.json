@@ -1,12 +1,18 @@
 {
   "name": "wick",
+  
   "version": "0.4.2a",
+
   "description": "PWA Framework",
+
   "main": "build/wick-min-es.js",
+
   "watch": {
     "jsdocs": "source/**/*.js"
   },
+
   "scripts": {
+
     "test": "nyc mocha",
     "test.watch": "mocha -w --check-leaks -R min",
     "build-css": "rollup --config ./build/config/css.config.js",
@@ -20,7 +26,7 @@
     "build-dev.watch": "rollup --config ./build/config/browserdev.config.js --watch --environment  BUILD:dev",
     "build-node": "rollup --config ./build/config/node.config.js --environment  BUILD:dev",
     "build-node.watch": "rollup --config ./build/config/node.config.js --watch --environment  BUILD:dev",
-    
+
 
     "jsdocs": "jsdoc ./source -r --configure ./build/config/jsdoc.json ",
     "jsdocs.watch": "watch jsdoc ./source -r --configure ./build/config/jsdoc.json "
