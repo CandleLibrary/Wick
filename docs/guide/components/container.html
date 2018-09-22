@@ -1,70 +1,67 @@
-<w-s model="models" element="div" >
-		
+<w-s model="models" element="div" style="position: absolute; left:300px; width:100px; overflow:hidden; height:70px">
 	((offset))((limit_))
 	<button onclick="((click2)(true))">left</button>
 	<button onclick="((click)(true))">right</button>
-	
 	<div onpointerdown="((pointer)(0))">
-	<w-c>
-		((users.get(null,[])))
-		
-		<f limit="((limit_))">
-		<f offset="((offset))">
-		<f scrub="((scrub))">
-
-		<w-s badge="me" style="position: absolute;">
-			((name))
-
-			<script on="((trs_out_dn))">
-				trs_out_dn({
-					obj:src.badges.me,
-					left:{value:"-100px",duration:200}
-				})
-			</script>
-
-			<script on="((trs_in_up))">
-				trs_in_up.trs({
-					obj:src.badges.me,
-					left:[{value:"100px"},{value:"0px",duration:200}]
-				})
-			</script>
-
-			<script on="((trs_out_up))">
-				trs_out_up({
-					obj:src.badges.me,
-					left:{value:"100px",duration:200}
-				})
-			</script>
-
-			<script on="((trs_in_dn))">
-				trs_in_dn.trs({
-					obj:src.badges.me,
-					left:[{value:"-100px"},{value:"0px",duration:200}]
-				})
-			</script>			
-		</w-s>
-	</w-c>
+		<w-c>
+			((users.get(null,[])))
+			<f limit="((limit_))">
+				<f offset="((offset))">
+					<f scrub="((scrub))">
+						<w-s badge="me" style="position: absolute;">
+							((name))
+							<script on="((trs_out_dn))">
+								trs_out_dn({
+									obj: src.badges.me,
+									left: [{ value: "0px" }, { value: "-100px", duration: 200 }]
+								});
+							</script>
+							<script on="((trs_in_up))">
+								trs_in_up.trs({
+									obj: src.badges.me,
+									left: [{ value: "100px" }, { value: "0px", duration: 200 }]
+								});
+							</script>
+							<script on="((trs_out_up))">
+								trs_out_up({
+									obj: src.badges.me,
+									left: [{ value: "0px" }, { value: "100px", duration: 200 }]
+								});
+							</script>
+							<script on="((trs_in_dn))">
+								trs_in_dn.trs({
+									obj: src.badges.me,
+									left: [{ value: "-100px" }, { value: "0px", duration: 200 }]
+								});
+							</script>
+						</w-s>
+		</w-c>
 	</div>
-
 	<script on="((pointer))">
-		if(!src.scrub)
+		if (!src.scrub)
 			src.scrub = 0;
 
-		emit("scrub",++src.scrub);
-	</script>
+		let start = event.clientX;
+		let a = (e) => {
+			let offset = start - e.clientX;
+			emit("scrub", offset / 100);
+		};
 
+		let b = (e) => {
+			emit("scrub", Infinity);
+			window.removeEventListener("pointerup", b);
+			window.removeEventListener("pointermove", a);
+		};
+
+		window.addEventListener("pointermove", a);
+		window.addEventListener("pointerup", b);
+	</script>
 	<script on="((click))">
-		if(!src.d)
-			src.d = 0;
-		emit("offset", ++src.d)
-		emit("limit_", 2);
-	</script>
-
-	<script on="((click2))">
-		if(!src.d)
-			src.d = 0;
-		emit("offset", --src.d)
+		emit("offset", src._templates_[0].offset + 1)
 		emit("limit_", 1);
 	</script>
-
+	<script on="((click2))">
+		emit("offset", src._templates_[0].offset - 1)
+		emit("limit_", 1);
+	</script>
 </w-s>

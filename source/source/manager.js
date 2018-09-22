@@ -69,7 +69,7 @@ export class SourceManager {
             
             data[transition_name] = (typeof(transition) == "function") ? transition : transition.out;
             
-            this._update_(data)
+            this._update_(data);
 
             transition_time = transition.out_duration;
         }
@@ -119,7 +119,7 @@ export class SourceManager {
                 }
             }
         }
-
+        
         if (transition_time > 0)
             setTimeout(() => { this._removeFromDOM_(); if (DESTROY_ON_REMOVE) this._destroy_(); }, transition_time + 2);
         else {

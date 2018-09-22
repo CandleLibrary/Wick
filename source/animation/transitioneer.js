@@ -83,6 +83,8 @@ const Transitioneer = (function() {
             this.in_duration = 0;
             this.out_duration = 0;
 
+            this.reverse = false;
+
             this.time = 0;
 
             // If set to zero transitions for out and in will happen simultaneously.
@@ -121,7 +123,14 @@ const Transitioneer = (function() {
         }
 
 
-        start() {
+        start(time = 0, speed = 1, reverse = false) {
+
+            this.time = time;
+            this.speed = Math.abs(speed);
+            this.reverse = reverse;
+
+            if (this.reverse)
+                this.speed = -this.speed;
 
             this.duration = this.in_duration + this.in_delay + this.out_duration;
 
@@ -136,8 +145,9 @@ const Transitioneer = (function() {
         }
 
         play(t) {
-            let time = this.duration * t;
+            let time = (this.in_duration + this.in_delay) * t;
             this.step(time);
+            return time;
         }
 
         step(t) {
@@ -148,28 +158,26 @@ const Transitioneer = (function() {
             }
 
             //if (t >= this.in_delay) {
-                t = Math.max(t - this.in_delay, 0);
+            t = Math.max(t - this.in_delay, 0);
 
-                for (let i = 0; i < this.in_seq.length; i++) {
-                    let seq = this.in_seq[i];
-                    seq.run(t);
-                }
+            for (let i = 0; i < this.in_seq.length; i++) {
+                let seq = this.in_seq[i];
+                seq.run(t);
+            }
             //}
         }
 
         _scheduledUpdate_(step, time) {
-            this.time += time;
-            
+            this.time += time * this.speed;
+
             this.step(this.time);
 
-
-            if (this.time < this.duration)
-                return Scheduler.queueUpdate(this);
-
-
-            if (this.time >= this.out_duration && this.res) {
-                this.res();
-                this.res = null;
+            if (this.reverse) {
+                if (this.time > 0)
+                    return Scheduler.queueUpdate(this);
+            } else {
+                if (this.time < this.duration)
+                    return Scheduler.queueUpdate(this);
             }
 
             if (this.res) this.res();

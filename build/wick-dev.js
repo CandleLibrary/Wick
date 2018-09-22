@@ -4219,7 +4219,7 @@ var wick = (function (exports) {
                     }
                 }
             }
-
+            
             if (transition_time > 0)
                 setTimeout(() => { this._removeFromDOM_(); if (DESTROY_ON_REMOVE) this._destroy_(); }, transition_time + 2);
             else {
@@ -10583,6 +10583,8 @@ var wick = (function (exports) {
                 this.in_duration = 0;
                 this.out_duration = 0;
 
+                this.reverse = false;
+
                 this.time = 0;
 
                 // If set to zero transitions for out and in will happen simultaneously.
@@ -10619,7 +10621,14 @@ var wick = (function (exports) {
             }
 
 
-            start() {
+            start(time = 0, speed = 1, reverse = false) {
+
+                this.time = time;
+                this.speed = Math.abs(speed);
+                this.reverse = reverse;
+
+                if (this.reverse)
+                    this.speed = -this.speed;
 
                 this.duration = this.in_duration + this.in_delay + this.out_duration;
 
@@ -10634,8 +10643,9 @@ var wick = (function (exports) {
             }
 
             play(t) {
-                let time = this.duration * t;
+                let time = (this.in_duration + this.in_delay) * t;
                 this.step(time);
+                return time;
             }
 
             step(t) {
@@ -10646,28 +10656,26 @@ var wick = (function (exports) {
                 }
 
                 //if (t >= this.in_delay) {
-                    t = Math.max(t - this.in_delay, 0);
+                t = Math.max(t - this.in_delay, 0);
 
-                    for (let i = 0; i < this.in_seq.length; i++) {
-                        let seq = this.in_seq[i];
-                        seq.run(t);
-                    }
+                for (let i = 0; i < this.in_seq.length; i++) {
+                    let seq = this.in_seq[i];
+                    seq.run(t);
+                }
                 //}
             }
 
             _scheduledUpdate_(step, time) {
-                this.time += time;
-                
+                this.time += time * this.speed;
+
                 this.step(this.time);
 
-
-                if (this.time < this.duration)
-                    return scheduler.queueUpdate(this);
-
-
-                if (this.time >= this.out_duration && this.res) {
-                    this.res();
-                    this.res = null;
+                if (this.reverse) {
+                    if (this.time > 0)
+                        return scheduler.queueUpdate(this);
+                } else {
+                    if (this.time < this.duration)
+                        return scheduler.queueUpdate(this);
                 }
 
                 if (this.res) this.res();
@@ -10691,11 +10699,11 @@ var wick = (function (exports) {
      * @param      {HTMLElement}  element  The element that the Source will _bind_ to. 
      */
     class SourceTemplate extends View {
-        
+
         constructor(parent, presets, element) {
-            
+
             super();
-            
+
             this.ele = element;
             this.parent = null;
             this.activeSources = [];
@@ -10709,12 +10717,17 @@ var wick = (function (exports) {
             this._prop_ = null;
             this._package_ = null;
             this.transition_in = 0;
-            this.offset = 50;
+            this.offset = 0;
+            this.limit = 0;
             this.dom_dn = [];
             this.dom_up = [];
             this.trs_up = null;
             this.trs_dn = null;
+            this.scrub_v = 0;
+            this.old_scrub = 0;
+            this.scrub_offset = 0;
             this.UPDATE_FILTER = false;
+            this.time = 0;
             parent.addTemplate(this);
         }
 
@@ -10747,42 +10760,96 @@ var wick = (function (exports) {
          * @protected
          */
         _scheduledUpdate_() {
-            if(this.UPDATE_FILTER)
+            if (this.SCRUBBING) {
+                if (Math.abs(this.sscr) > 0.001) {
+                    this.ssoc += this.sscr;
+                    this.scrub(this.ssoc);
+                    this.sscr = this.sscr - this.sscr * 0.08;
+                    scheduler.queueUpdate(this);
+                } else {
+                    this.scrub_v = 0;
+                    this.scrub(Infinity);
+                    this.old_scrub = 0;
+                    this.SCRUBBING = false;
+                }
+            } else if (this.UPDATE_FILTER)
                 this.filterUpdate();
             else
                 this.limitUpdate();
         }
 
-        scrub(s){
-            if(s > 0){
+        scrub(scrub_amount) {
+            if (scrub_amount !== Infinity) {
+                let s = scrub_amount - this.scrub_offset;
 
-                for(let i = 0; i < this.dom_up.length; i++)
-                    this.dom_up[i]._appendToDOM_(this.ele, this.dom_sources[0].ele);
-                
-                
+                if (s > 1) {
+                    this.scrub_offset++;
+                    s = scrub_amount - this.scrub_offset;
+                    this.render(null, this.activeSources, this.limit, this.offset + 1, true);
+                } else if (s < -1) {
+                    this.scrub_offset--;
+                    s = scrub_amount - this.scrub_offset;
+                    this.render(null, this.activeSources, this.limit, this.offset - 1, true);
+                }
+
+                this.scrub_v = s - this.old_scrub;
+                this.old_scrub = s;
+
+                if (s > 0) {
+                    for (let i = 0; i < this.dom_up.length; i++)
+                        this.dom_up[i]._appendToDOM_(this.ele, this.dom_sources[0].ele);
+                    this.time = this.trs_up.play(s);
+
+                } else  {
+
+                    for (let i = 0; i < this.dom_dn.length; i++)
+                        this.dom_dn[i]._appendToDOM_(this.ele);
+                    this.time = this.trs_dn.play(-s);
+
+                }
+            } else {
+                let pos = Math.round(this.old_scrub);
+
+                if (Math.abs(this.scrub_v) > 0.01) {
+                    console.log("ZZ");
+                    this.sscr = this.scrub_v;
+                    this.ssoc = this.old_scrub;
+                    this.SCRUBBING = true;
+                    scheduler.queueUpdate(this);
+                } else {
+                    console.log("ZZ2");
+                    this.scrub_offset = 0;
+                    let reverse = false;
+
+                    {
+                        if (this.old_scrub > 0) {
+                            if(this.old_scrub < 0.5) reverse = true;
+                            this.trs_up.start(this.time,1,reverse).then(() => {
+                                this.render(null, this.activeSources, this.limit, this.offset + pos, true);
+                            });
+                        } else {
+                            if(this.old_scrub > -0.5) reverse = true;
+                            this.trs_dn.start(this.time,1,reverse).then(() => {
+                                this.render(null, this.activeSources, this.limit, this.offset + pos, true);
+                            });
+                        }
+                    }
+                }
             }
         }
 
-        limitUpdate(transition, output = this.activeSources) {
+        render(transition, output = this.activeSources, limit = this.limit, offset = this.offset, NO_TRANSITION = false) {
+            let j = 0,
+                ol = output.length,
+                al = this.dom_sources.length;
+
+            let direction = true;
 
             let OWN_TRANSITION = false;
 
             if (!transition) transition = Transitioneer.createTransition(), OWN_TRANSITION = true;
 
-            let j = 0,
-                ol = output.length,
-                al = this.dom_sources.length,
-                limit = 0,
-                offset = 0;
-            for (let i = 0, l = this._filters_.length; i < l; i++) {
-                let filter = this._filters_[i];
-                if (filter._CAN_USE_) {
-                    if (filter._CAN_LIMIT_) limit = filter._value_;
-                    if (filter._CAN_OFFSET_) offset = filter._value_;
-                }
-            }
-
-            let direction = true;
+            offset = Math.max(0, offset);
 
             if (limit > 0) {
                 direction = this.offset < offset;
@@ -10797,26 +10864,36 @@ var wick = (function (exports) {
                 this.dom_up.length = 0;
 
                 let i = 0;
+
                 while (i < off - limit) output[i++].index = -2;
+
                 while (i < off) {
                     this.dom_dn.push(output[i]);
-                    output[i]._update_({trs_in_up: {index: 0, trs:this.trs_up.in}});
+                    output[i]._update_({ trs_in_dn: { index: 0, trs: this.trs_dn.in } });
                     output[i++].index = -2;
                 }
-                while (i < off + limit && i < ol){
-                    output[i]._update_({trs_out_up: this.trs_up.out});
-                    output[i]._update_({trs_out_dn: this.trs_dn.out});
-                    output[i].index = 0, ein.push(output[i++]);  
-                } 
+
+                while (i < off + limit && i < ol) {
+                    output[i]._update_({ trs_out_dn: this.trs_up.out });
+                    output[i]._update_({ trs_out_up: this.trs_dn.out });
+                    output[i].index = 0, ein.push(output[i++]);
+                }
+
                 while (i < off + limit * 2 && i < ol) {
                     this.dom_up.push(output[i]);
-                    output[i]._update_({trs_in_dn: {index: 0, trs:this.trs_dn.in}});
+                    output[i]._update_({ trs_in_up: { index: 0, trs: this.trs_up.in } });
                     output[i++].index = -3;
                 }
+
                 while (i < ol) output[i++].index = -3;
+
                 output = ein;
+
                 ol = ein.length;
-            }
+
+                this.limit = limit;
+            } else
+                this.limit = 0;
 
             for (let i = 0; i < ol; i++) output[i].index = i;
 
@@ -10828,24 +10905,28 @@ var wick = (function (exports) {
                         let os = output[j];
                         os.index = j;
                         os._appendToDOM_(this.ele, ele);
-                        if(direction)
-                            os._update_({trs_in_up: {index: j,trs: transition.in}});
+                        if (direction)
+                            os._update_({ trs_in_up: { index: j, trs: transition.in } });
                         else
-                            os._update_({trs_in_dn: {index: j,trs: transition.in}});
-                        
+                            os._update_({ trs_in_dn: { index: j, trs: transition.in } });
+
                         os._transitionIn_();
                         j++;
                     }
                 } else if (as.index < 0) {
-                    switch(as.index){
-                        case -2:
-                        case -3:
-                            as._transitionOut_(transition, (direction) ? "trs_out_dn" : "trs_out_up");
-                            break;
-                        default:
-                            as._transitionOut_(transition);
+                    if (!NO_TRANSITION) {
+
+                        switch (as.index) {
+                            case -2:
+                            case -3:
+                                as._transitionOut_(transition, (direction) ? "trs_out_dn" : "trs_out_up");
+                                break;
+                            default:
+                                as._transitionOut_(transition);
+                        }
+                    } else {
+                        as._transitionOut_();
                     }
-                        
                 } else {
                     //if (i !== j) 
                     as._update_({
@@ -10860,40 +10941,60 @@ var wick = (function (exports) {
             }
 
             while (j < output.length) {
-                
+
                 output[j]._appendToDOM_(this.ele);
 
                 output[j].index = j;
 
-                if(direction)
-                    output[j]._update_({trs_in_up: {index: j,trs: transition.in}});
+                if (direction)
+                    output[j]._update_({ trs_in_up: { index: j, trs: transition.in } });
                 else
-                    output[j]._update_({trs_in_dn: {index: j,trs: transition.in}});
-                
+                    output[j]._update_({ trs_in_dn: { index: j, trs: transition.in } });
+
                 output[j]._transitionIn_();
                 j++;
             }
 
             this.ele.style.position = this.ele.style.position;
-            
+
             this.dom_sources = output;
-            
+
             if (al < 1) this.parent._upImport_("template_has_sources", {
                 template: this,
                 ele: this.ele,
                 trs: transition.in,
                 count: ol
             });
-            
+
             else this.parent._upImport_("template_count_changed", {
                 count: ol,
                 ele: this.ele,
                 template: this,
                 trs: transition.in
             });
-            //Scheduler.queueUpdate(this);
-            
-            if (OWN_TRANSITION) transition.start();
+
+            if (OWN_TRANSITION) {
+                if (!NO_TRANSITION)
+                    transition.start();
+            }
+        }
+
+        limitUpdate(transition, output) {
+
+            let limit = 0,
+                offset = 0;
+
+            for (let i = 0, l = this._filters_.length; i < l; i++) {
+                let filter = this._filters_[i];
+                if (filter._CAN_USE_) {
+                    if (filter._CAN_LIMIT_) limit = filter._value_;
+                    if (filter._CAN_OFFSET_) offset = filter._value_;
+                }
+            }
+
+            this.SCRUBBING = false;
+
+            this.render(transition, output, limit, offset);
         }
         /**
          * Filters stored Sources with search terms and outputs the matching Sources to the DOM.
@@ -10942,7 +11043,7 @@ var wick = (function (exports) {
                     }
                 for (let i = 0, l = this.sources.length; i < l; i++)
                     if (!exists.has(this.sources[i].model)) {
-                        this.sources[i]._transitionOut_(transition,"", true);
+                        this.sources[i]._transitionOut_(transition, "", true);
                         this.sources[i].index = -1;
                         this.sources.splice(i, 1);
                         l--;
@@ -10983,7 +11084,7 @@ var wick = (function (exports) {
                     let Source = this.sources[j];
                     if (Source._model_ == item) {
                         this.sources.splice(j, 1);
-                        Source._transitionOut_(transition,"", true);
+                        Source._transitionOut_(transition, "", true);
                         break;
                     }
                 }
