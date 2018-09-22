@@ -1,0 +1,17 @@
+<w-s model="models" element="div">
+	<button onclick="((click)(true))">test</button>
+	<w-c>
+		((users.get(null,[])))
+		<f limit="((limit_))">
+		<w-s>
+			((name))
+		</w-s>
+	</w-c>
+
+	<script on="((click))">
+		if(!src.d)
+			src.d = 0;
+		console.log(src.d)
+		emit("limit_", src.d++);
+	</script>
+</w-s>

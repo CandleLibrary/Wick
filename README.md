@@ -211,7 +211,7 @@ It may be useful to have a component exchange messages between themselves. For e
 
 The `import` attribute defines channels which the source will accept as truth from outside its scope. If a child component needs to know the value of a parent components `name` property, the attribute `import="name"` can be defined to allow the component to accept updates of that property channel from the parent context.
 
-`export` allows for child components to push messages from their internal context into their parent scope. In the above button scenario, the whole process would look like
+`export` allows for child components to push messages from their internal context into their parent scope. In the above button scenario, the whole process would look like,
 
 ```HTML
 <!-- bigbutton.html -->
@@ -233,7 +233,7 @@ Has the button been clicked?
 
 ### A Container of Truth
 
-Wick provides the container tag, `<w-c>` or `<w-container>`, as  a way to produce lists and groups components from an array of related data. The container system works by placing inside of a `<w-c>` tag a mic which listens for messages that have arrays as values. A component tag or a `<w-s>` must also be declared inside the `<w-c>` to serve as the blueprint for components that will be created when the channel receives array data.
+Wick provides the container tag, `<w-c>` or `<w-container>`, as a way to produce lists and groups of components from an array of related data. The container system works by placing inside of a `<w-c>` tag a mic which listens for messages that have arrays as values. A component tag or a `<w-s>` must also be declared inside the `<w-c>` to serve as the blueprint for components that will be created when the channel receives array data.
 ```HTML
 <w-c>
   ((array))
@@ -242,12 +242,13 @@ Wick provides the container tag, `<w-c>` or `<w-container>`, as  a way to produc
   </w-s>
 </w-c>
 ```
+WIth both of these set, when the mic listening on the channel for "array" receives a message, if that message has an array as a value, Wick will create a component for each item in the array and append it to the `<w-c>` tag. By default, when a `<w-c>` tag is rendered, it will be converted into a `<ul>` tag. All components will also be wrapped into a `<li>`tag.
 
-If the above component fragment receives this type of data
+If the previous component fragment receives this type of data,
 ```JavaScript
 {array:[{name:"Paul"},{name:"Ruth"}]}
 ```
-Then this markup will be rendered
+then this markup will be rendered.
 ```HTML
 <ul>
   <li>Paul</li>

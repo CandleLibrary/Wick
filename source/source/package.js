@@ -62,7 +62,7 @@ class SourcePackage {
             if (RETURN_PROMISE) return element;
             return this;
         } else if (element instanceof RootNode) {
-            //already a HTMLtree, just package into a skeleton and return.
+            //already an HTMLtree, just package into a skeleton and return.
             this._skeletons_.push(new Skeleton(element, presets));
             this._complete_();
             return;
