@@ -4159,7 +4159,7 @@ var wick = (function (exports) {
             this._TRANSITION_STATE_ = true;
         }
 
-        _transitionOut_(transition, DESTROY_ON_REMOVE = false, transition_name = "trs_out") {
+        _transitionOut_(transition, transition_name = "trs_out", DESTROY_ON_REMOVE = false) {
             if (this._TRANSITION_STATE_ === false) {
                 // if (DESTROY_ON_REMOVE && !this._DESTROYED_) this._destroy_();
                 return;
@@ -4170,7 +4170,7 @@ var wick = (function (exports) {
             if (transition) {
                 let data = {};
                 
-                data[transition_name] = (typeof(transition) == "function") ? transition : transition.out ;
+                data[transition_name] = (typeof(transition) == "function") ? transition : transition.out;
                 
                 this._update_(data);
 
@@ -10293,6 +10293,7 @@ var wick = (function (exports) {
     		}
 
     		run(i) {
+    			
     			for (let n in this.props) {
     				let prop = this.props[n];
     				if (prop)
@@ -10511,10 +10512,74 @@ var wick = (function (exports) {
     const Transitioneer = (function() {
 
         let obj_map = new Map();
-        let ActiveTransition = null;
+
+        function $in(anim_data_or_duration = 0, delay = 0) {
+
+            let seq;
+
+            if (typeof(anim_data_or_duration) == "object") {
+                if (anim_data_or_duration.match && this.TT[anim_data_or_duration.match]) {
+                    let duration = anim_data_or_duration.duration;
+                    let easing = anim_data_or_duration.easing;
+                    seq = this.TT[anim_data_or_duration.match](anim_data_or_duration.obj, duration, easing);
+                } else
+                    seq = Animation.createSequence(anim_data_or_duration);
+
+                //Parse the object and convert into animation props. 
+                if (seq) {
+                    this.in_seq.push(seq);
+                    this.in_duration = Math.max(this.in_duration, seq.duration);
+                    if (this.OVERRIDE) {
+
+                        if (obj_map.get(seq.obj)) {
+                            let other_seq = obj_map.get(seq.obj);
+                            other_seq.removeProps(seq);
+                        }
+
+                        obj_map.set(seq.obj, seq);
+                    }
+                }
+
+            } else
+                this.in_duration = Math.max(this.in_duration, parseInt(delay) + parseInt(anim_data_or_duration));
+
+            return this.in;
+        }
+
+
+        function $out(anim_data_or_duration = 0, delay = 0, in_delay = 0) {
+            //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
+            //The highest in_delay value will determine how much time is afforded before the animation for the in portion are a started
+
+            if (typeof(anim_data_or_duration) == "object") {
+                if (anim_data_or_duration.match) {
+                    this.TT[anim_data_or_duration.match] = TransformTo(anim_data_or_duration.obj);
+                } else {
+                    let seq = Animation.createSequence(anim_data_or_duration);
+                    if (seq) {
+                        this.out_seq.push(seq);
+                        this.out_duration = Math.max(this.out_duration, seq.duration);
+                        if (this.OVERRIDE) {
+
+                            if (obj_map.get(seq.obj)) {
+                                let other_seq = obj_map.get(seq.obj);
+                                other_seq.removeProps(seq);
+                            }
+
+                            obj_map.set(seq.obj, seq);
+                        }
+                    }
+                    this.in_delay = Math.max(this.in_delay, parseInt(delay));
+                }
+            } else {
+                this.out_duration = Math.max(this.out_duration, parseInt(delay) + parseInt(anim_data_or_duration));
+                this.in_delay = Math.max(this.in_delay, parseInt(in_delay));
+            }
+        }
+
 
         class Transition {
-            constructor() {
+            constructor(override = true) {
                 this.in_duration = 0;
                 this.out_duration = 0;
 
@@ -10527,88 +10592,30 @@ var wick = (function (exports) {
                 this.out_seq = [];
 
                 this.TT = {};
-                //Final transition time is given by max(start_len+in_delay, end_len);\
-                ActiveTransition = this;
+
+                this.out = $out.bind(this);
+                this.in = $in.bind(this);
+
+                this.OVERRIDE = override;
             }
 
             _destroy_() {
-                    let removeProps = function(seq) {
-                        
-                        if (!seq.DESTROYED){
-                            if(obj_map.get(seq.obj) == seq)
-                                obj_map.delete(seq.obj);
-                        }
+                let removeProps = function(seq) {
 
-                        seq._destroy_();
-                    };
-                    this.in_seq.forEach(removeProps);
-                    this.out_seq.forEach(removeProps);
-                    this.in_seq = null;
-                    this.out_seq = null;
-                    this.res = null;
-                }
-
-                in (anim_data_or_duration = 0, delay = 0) {
-
-                    let that = ActiveTransition,
-                        seq;
-
-                    if (typeof(anim_data_or_duration) == "object") {
-                        if (anim_data_or_duration.match && that.TT[anim_data_or_duration.match]) {
-                            let duration = anim_data_or_duration.duration;
-                            let easing = anim_data_or_duration.easing;
-                            seq = that.TT[anim_data_or_duration.match](anim_data_or_duration.obj, duration, easing);
-                        } else
-                            seq = Animation.createSequence(anim_data_or_duration);
-
-                        //Parse the object and convert into animation props. 
-                        if (seq) {
-                            that.in_seq.push(seq);
-                            that.in_duration = Math.max(that.in_duration, seq.duration);
-
-                            if (obj_map.get(seq.obj)) {
-                                let other_seq = obj_map.get(seq.obj);
-                                other_seq.removeProps(seq);
-                            }
-
-                            obj_map.set(seq.obj, seq);
-                        }
-
-
-                    } else
-                        that.in_duration = Math.max(that.in_duration, parseInt(delay) + parseInt(anim_data_or_duration));
-
-                    return that.in;
-                }
-
-
-            out(anim_data_or_duration = 0, delay = 0, in_delay = 0) {
-                //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
-                let that = ActiveTransition;
-                //The highest in_delay value will determine how much time is afforded before the animation for the in portion are a started
-
-                if (typeof(anim_data_or_duration) == "object") {
-                    if (anim_data_or_duration.match) {
-                        that.TT[anim_data_or_duration.match] = TransformTo(anim_data_or_duration.obj);
-                    } else {
-                        let seq = Animation.createSequence(anim_data_or_duration);
-                        if (seq) {
-                            that.out_seq.push(seq);
-                            that.out_duration = Math.max(that.out_duration, seq.duration);
-
-                            if (obj_map.get(seq.obj)) {
-                                let other_seq = obj_map.get(seq.obj);
-                                other_seq.removeProps(seq);
-                            }
-
-                            obj_map.set(seq.obj, seq);
-                        }
-                        that.in_delay = Math.max(that.in_delay, parseInt(delay));
+                    if (!seq.DESTROYED) {
+                        if (obj_map.get(seq.obj) == seq)
+                            obj_map.delete(seq.obj);
                     }
-                } else {
-                    that.out_duration = Math.max(that.out_duration, parseInt(delay) + parseInt(anim_data_or_duration));
-                    that.in_delay = Math.max(that.in_delay, parseInt(in_delay));
-                }
+
+                    seq._destroy_();
+                };
+                this.in_seq.forEach(removeProps);
+                this.out_seq.forEach(removeProps);
+                this.in_seq = null;
+                this.out_seq = null;
+                this.res = null;
+                this.out = null;
+                this.in = null;
             }
 
 
@@ -10626,29 +10633,42 @@ var wick = (function (exports) {
                 });
             }
 
-            _scheduledUpdate_(step, time) {
-                this.time += time;
+            play(t) {
+                let time = this.duration * t;
+                this.step(time);
+            }
+
+            step(t) {
 
                 for (let i = 0; i < this.out_seq.length; i++) {
                     let seq = this.out_seq[i];
-                    seq.run(this.time);
+                    seq.run(t);
                 }
 
-                if (this.time >= this.in_delay) {
-                    let t = this.time - this.in_delay;
+                //if (t >= this.in_delay) {
+                    t = Math.max(t - this.in_delay, 0);
+
                     for (let i = 0; i < this.in_seq.length; i++) {
                         let seq = this.in_seq[i];
                         seq.run(t);
                     }
-                }
+                //}
+            }
+
+            _scheduledUpdate_(step, time) {
+                this.time += time;
+                
+                this.step(this.time);
+
+
+                if (this.time < this.duration)
+                    return scheduler.queueUpdate(this);
+
 
                 if (this.time >= this.out_duration && this.res) {
                     this.res();
                     this.res = null;
                 }
-
-                if (this.time < this.duration)
-                    return scheduler.queueUpdate(this);
 
                 if (this.res) this.res();
                 this._destroy_();
@@ -10656,8 +10676,8 @@ var wick = (function (exports) {
         }
 
         return {
-            createTransition: function() {
-                return new Transition();
+            createTransition: function(OVERRIDE) {
+                return new Transition(OVERRIDE);
             }
         };
     })();
@@ -10671,9 +10691,11 @@ var wick = (function (exports) {
      * @param      {HTMLElement}  element  The element that the Source will _bind_ to. 
      */
     class SourceTemplate extends View {
+        
         constructor(parent, presets, element) {
+            
             super();
-            //super(parent, presets, element);
+            
             this.ele = element;
             this.parent = null;
             this.activeSources = [];
@@ -10687,10 +10709,15 @@ var wick = (function (exports) {
             this._prop_ = null;
             this._package_ = null;
             this.transition_in = 0;
-            this.limit = 2;
             this.offset = 50;
+            this.dom_dn = [];
+            this.dom_up = [];
+            this.trs_up = null;
+            this.trs_dn = null;
+            this.UPDATE_FILTER = false;
             parent.addTemplate(this);
         }
+
         get data() {}
         set data(container) {
             if (container instanceof ModelContainerBase) {
@@ -10702,6 +10729,7 @@ var wick = (function (exports) {
             if (Array.isArray(container)) this.cull(container);
             else this.cull(container.data);
         }
+
         _update_(container) {
             if (container instanceof ModelContainerBase) container = container.get();
             if (!container) return;
@@ -10711,21 +10739,36 @@ var wick = (function (exports) {
             else this.cull(container.data);
             // }
         }
+
+
         /**
          * Called by Scheduler when a change is made to the Template HTML structure. 
          * 
          * @protected
          */
         _scheduledUpdate_() {
-            let transition = Transitioneer.createTransition();
-            for (let i = 0; i < this.dom_sources.length; i++) {
-                //this.activeSources[i]._update_({ trs_in_t: { index: i, trs: transition.in } });
-                this.dom_sources[i]._transitionIn_();
+            if(this.UPDATE_FILTER)
+                this.filterUpdate();
+            else
+                this.limitUpdate();
+        }
+
+        scrub(s){
+            if(s > 0){
+
+                for(let i = 0; i < this.dom_up.length; i++)
+                    this.dom_up[i]._appendToDOM_(this.ele, this.dom_sources[0].ele);
+                
+                
             }
         }
+
         limitUpdate(transition, output = this.activeSources) {
+
             let OWN_TRANSITION = false;
+
             if (!transition) transition = Transitioneer.createTransition(), OWN_TRANSITION = true;
+
             let j = 0,
                 ol = output.length,
                 al = this.dom_sources.length,
@@ -10738,24 +10781,45 @@ var wick = (function (exports) {
                     if (filter._CAN_OFFSET_) offset = filter._value_;
                 }
             }
+
+            let direction = true;
+
             if (limit > 0) {
-                let direction = this.limit > limit;
-                this.limit = limit;
+                direction = this.offset < offset;
+                this.offset = offset;
                 let ein = [];
                 let pages = Math.ceil(ol / limit);
                 let off = Math.max(0, Math.min(pages - 1, offset)) * limit;
-                //elements above current page should be moved out stage right 
-                //elements below current page should be moved out stage left
+
+                this.trs_up = Transitioneer.createTransition(false);
+                this.trs_dn = Transitioneer.createTransition(false);
+                this.dom_dn.length = 0;
+                this.dom_up.length = 0;
+
                 let i = 0;
-                while (i < off - limit) output[i++].index = -1;
-                while (i < off) output[i++].index = -2;
-                while (i < off + limit && i < ol) output[i].index = 0, ein.push(output[i++]);
-                while (i < off + limit * 2 && i < ol) output[i++].index = -3;
-                while (i < ol) output[i++].index = -1;
+                while (i < off - limit) output[i++].index = -2;
+                while (i < off) {
+                    this.dom_dn.push(output[i]);
+                    output[i]._update_({trs_in_up: {index: 0, trs:this.trs_up.in}});
+                    output[i++].index = -2;
+                }
+                while (i < off + limit && i < ol){
+                    output[i]._update_({trs_out_up: this.trs_up.out});
+                    output[i]._update_({trs_out_dn: this.trs_dn.out});
+                    output[i].index = 0, ein.push(output[i++]);  
+                } 
+                while (i < off + limit * 2 && i < ol) {
+                    this.dom_up.push(output[i]);
+                    output[i]._update_({trs_in_dn: {index: 0, trs:this.trs_dn.in}});
+                    output[i++].index = -3;
+                }
+                while (i < ol) output[i++].index = -3;
                 output = ein;
                 ol = ein.length;
             }
+
             for (let i = 0; i < ol; i++) output[i].index = i;
+
             for (let i = 0; i < al; i++) {
                 let as = this.dom_sources[i];
                 if (as.index > j) {
@@ -10764,22 +10828,19 @@ var wick = (function (exports) {
                         let os = output[j];
                         os.index = j;
                         os._appendToDOM_(this.ele, ele);
-                        os._update_({
-                            trs_in_t: {
-                                index: j,
-                                trs: transition.in
-                            }
-                        });
+                        if(direction)
+                            os._update_({trs_in_up: {index: j,trs: transition.in}});
+                        else
+                            os._update_({trs_in_dn: {index: j,trs: transition.in}});
+                        
                         os._transitionIn_();
                         j++;
                     }
                 } else if (as.index < 0) {
                     switch(as.index){
                         case -2:
-                            as._transitionOut_(transition);
-                            break;
                         case -3:
-                            as._transitionOut_(transition);
+                            as._transitionOut_(transition, (direction) ? "trs_out_dn" : "trs_out_up");
                             break;
                         default:
                             as._transitionOut_(transition);
@@ -10797,34 +10858,41 @@ var wick = (function (exports) {
                 }
                 as.index = j;
             }
+
             while (j < output.length) {
+                
                 output[j]._appendToDOM_(this.ele);
-                //this.ele.appendChild(output[j].element);
+
                 output[j].index = j;
-                output[j]._update_({
-                    trs_in_t: {
-                        index: j,
-                        trs: transition.in
-                    }
-                });
+
+                if(direction)
+                    output[j]._update_({trs_in_up: {index: j,trs: transition.in}});
+                else
+                    output[j]._update_({trs_in_dn: {index: j,trs: transition.in}});
+                
                 output[j]._transitionIn_();
                 j++;
             }
+
             this.ele.style.position = this.ele.style.position;
+            
             this.dom_sources = output;
+            
             if (al < 1) this.parent._upImport_("template_has_sources", {
                 template: this,
                 ele: this.ele,
                 trs: transition.in,
                 count: ol
             });
+            
             else this.parent._upImport_("template_count_changed", {
                 count: ol,
                 ele: this.ele,
                 template: this,
                 trs: transition.in
             });
-            scheduler.queueUpdate(this);
+            //Scheduler.queueUpdate(this);
+            
             if (OWN_TRANSITION) transition.start();
         }
         /**
@@ -10844,6 +10912,7 @@ var wick = (function (exports) {
             }
             this.activeSources = output;
             this.limitUpdate(transition, output);
+            this.UPDATE_FILTER = false;
         }
         /**
          * Removes stored Sources that do not match the ModelContainer contents. 
@@ -10857,7 +10926,7 @@ var wick = (function (exports) {
             let transition = Transitioneer.createTransition();
             if (new_items.length == 0) {
                 let sl = this.sources.length;
-                for (let i = 0; i < sl; i++) this.sources[i]._transitionOut_(transition, true);
+                for (let i = 0; i < sl; i++) this.sources[i]._transitionOut_(transition, "", true);
                 this.sources.length = 0;
                 if (sl > 0) this.parent._upImport_("template_empty", {
                     template: this,
@@ -10873,7 +10942,7 @@ var wick = (function (exports) {
                     }
                 for (let i = 0, l = this.sources.length; i < l; i++)
                     if (!exists.has(this.sources[i].model)) {
-                        this.sources[i]._transitionOut_(transition, true);
+                        this.sources[i]._transitionOut_(transition,"", true);
                         this.sources[i].index = -1;
                         this.sources.splice(i, 1);
                         l--;
@@ -10914,7 +10983,7 @@ var wick = (function (exports) {
                     let Source = this.sources[j];
                     if (Source._model_ == item) {
                         this.sources.splice(j, 1);
-                        Source._transitionOut_(transition, true);
+                        Source._transitionOut_(transition,"", true);
                         break;
                     }
                 }
@@ -11001,7 +11070,7 @@ var wick = (function (exports) {
 
 
     class FilterIO extends IOBase {
-        constructor(source, errors, taps, template, activation, sort, filter, limit, offset) {
+        constructor(source, errors, taps, template, activation, sort, filter, limit, offset, scrub) {
             super(template, errors);
             this.template = template;
             this._activation_function_ = null;
@@ -11047,23 +11116,24 @@ var wick = (function (exports) {
 
             if (offset && offset.binding) {
                 let expr = offset.binding;
-                if (expr_check(expr)){
+                    expr.method = (expr.method == 1) ? -1 : expr.method;
                     this._offset_function_ = expr._bind_(source, errors, taps, this);
+                    ///this._limit_function_._IS_A_FILTER_ = true;
                     this._CAN_OFFSET_ = true;  
-                } 
+            }
+
+            if (scrub && scrub.binding) {
+                let expr = scrub.binding;
+                    expr.method = (expr.method == 1) ? -1 : expr.method;
+                    this._scrub_function_ = expr._bind_(source, errors, taps, this);
+                    ///this._limit_function_._IS_A_FILTER_ = true;
+                    this._CAN_SCRUB_ = true;  
             }
         }
 
-        _scheduledUpdate_() {
-            if(this._CAN_SORT_ || this._CAN_FILTER_)
-                this.template.filterUpdate();
-            else
-                this.template.limitUpdate();
-        }
+        _scheduledUpdate_() {}
         
-        update(){
-            scheduler.queueUpdate(this);
-        }
+        update(){}
 
         _destroy_() {
             if (this._sort_function_)
@@ -11084,8 +11154,15 @@ var wick = (function (exports) {
             this._CAN_USE_ = false;
             if (v) this._CAN_USE_ = true;
             this._value_ = v;
-            //if(cache !== this._CAN_USE_)
-                this.update();
+
+            if(this._CAN_SCRUB_)
+                return this.template.scrub(this._value_);
+            
+
+            if(this._CAN_SORT_ || this._CAN_FILTER_)
+                this.template.UPDATE_FILTER = true;
+            
+            scheduler.queueUpdate(this.template);
         }
     }
 
@@ -11190,11 +11267,10 @@ var wick = (function (exports) {
                     let filter = node.getAttrib("filter");
                     let limit = node.getAttrib("limit");
                     let offset = node.getAttrib("offset");
+                    let scrub = node.getAttrib("scrub");
 
-                    console.log(limit);
-
-                    if (sort || filter || limit || offset) //Only create Filter node if it has a sorting bind or a filter bind
-                        me._filters_.push(new FilterIO(source, errors, taps, me, on, sort, filter, limit, offset));
+                    if (sort || filter || limit || offset || scrub) //Only create Filter node if it has a sorting bind or a filter bind
+                        me._filters_.push(new FilterIO(source, errors, taps, me, on, sort, filter, limit, offset, scrub));
                 }
             }else{
                 errors.push(new Error(`Missing source for template bound to "${this._property_bind_._bindings_[0].tap_name}"`));

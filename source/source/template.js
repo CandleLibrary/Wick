@@ -22,9 +22,11 @@ import {
  * @param      {HTMLElement}  element  The element that the Source will _bind_ to. 
  */
 export class SourceTemplate extends View {
+    
     constructor(parent, presets, element) {
+        
         super();
-        //super(parent, presets, element);
+        
         this.ele = element;
         this.parent = null;
         this.activeSources = [];
@@ -38,10 +40,15 @@ export class SourceTemplate extends View {
         this._prop_ = null;
         this._package_ = null;
         this.transition_in = 0;
-        this.limit = 2;
         this.offset = 50;
+        this.dom_dn = [];
+        this.dom_up = [];
+        this.trs_up = null;
+        this.trs_dn = null;
+        this.UPDATE_FILTER = false;
         parent.addTemplate(this);
     }
+
     get data() {}
     set data(container) {
         if (container instanceof ModelContainerBase) {
@@ -53,6 +60,7 @@ export class SourceTemplate extends View {
         if (Array.isArray(container)) this.cull(container);
         else this.cull(container.data);
     }
+
     _update_(container) {
         if (container instanceof ModelContainerBase) container = container.get();
         if (!container) return;
@@ -62,21 +70,38 @@ export class SourceTemplate extends View {
         else this.cull(container.data);
         // }
     }
+
+
     /**
      * Called by Scheduler when a change is made to the Template HTML structure. 
      * 
      * @protected
      */
     _scheduledUpdate_() {
-        let transition = Transitioneer.createTransition();
-        for (let i = 0; i < this.dom_sources.length; i++) {
-            //this.activeSources[i]._update_({ trs_in_t: { index: i, trs: transition.in } });
-            this.dom_sources[i]._transitionIn_();
+        if(this.UPDATE_FILTER)
+            this.filterUpdate();
+        else
+            this.limitUpdate();
+    }
+
+    scrub(s){
+        if(s > 0){
+
+            for(let i = 0; i < this.dom_up.length; i++)
+                this.dom_up[i]._appendToDOM_(this.ele, this.dom_sources[0].ele);
+            
+            this.trs_up.
+        }else if( s< 0){
+
         }
     }
+
     limitUpdate(transition, output = this.activeSources) {
+
         let OWN_TRANSITION = false;
+
         if (!transition) transition = Transitioneer.createTransition(), OWN_TRANSITION = true;
+
         let j = 0,
             ol = output.length,
             al = this.dom_sources.length,
@@ -89,24 +114,45 @@ export class SourceTemplate extends View {
                 if (filter._CAN_OFFSET_) offset = filter._value_;
             }
         }
+
+        let direction = true;
+
         if (limit > 0) {
-            let direction = this.limit > limit;
-            this.limit = limit;
+            direction = this.offset < offset;
+            this.offset = offset;
             let ein = [];
             let pages = Math.ceil(ol / limit);
             let off = Math.max(0, Math.min(pages - 1, offset)) * limit;
-            //elements above current page should be moved out stage right 
-            //elements below current page should be moved out stage left
+
+            this.trs_up = Transitioneer.createTransition(false);
+            this.trs_dn = Transitioneer.createTransition(false);
+            this.dom_dn.length = 0;
+            this.dom_up.length = 0;
+
             let i = 0;
-            while (i < off - limit) output[i++].index = -1;
-            while (i < off) output[i++].index = -2;
-            while (i < off + limit && i < ol) output[i].index = 0, ein.push(output[i++]);
-            while (i < off + limit * 2 && i < ol) output[i++].index = -3;
-            while (i < ol) output[i++].index = -1;
+            while (i < off - limit) output[i++].index = -2;
+            while (i < off) {
+                this.dom_dn.push(output[i]);
+                output[i]._update_({trs_in_up: {index: 0, trs:this.trs_up.in}});
+                output[i++].index = -2;
+            }
+            while (i < off + limit && i < ol){
+                output[i]._update_({trs_out_up: this.trs_up.out});
+                output[i]._update_({trs_out_dn: this.trs_dn.out});
+                output[i].index = 0, ein.push(output[i++]);  
+            } 
+            while (i < off + limit * 2 && i < ol) {
+                this.dom_up.push(output[i]);
+                output[i]._update_({trs_in_dn: {index: 0, trs:this.trs_dn.in}});
+                output[i++].index = -3;
+            }
+            while (i < ol) output[i++].index = -3;
             output = ein;
             ol = ein.length;
         }
+
         for (let i = 0; i < ol; i++) output[i].index = i;
+
         for (let i = 0; i < al; i++) {
             let as = this.dom_sources[i];
             if (as.index > j) {
@@ -115,22 +161,19 @@ export class SourceTemplate extends View {
                     let os = output[j];
                     os.index = j;
                     os._appendToDOM_(this.ele, ele);
-                    os._update_({
-                        trs_in_t: {
-                            index: j,
-                            trs: transition.in
-                        }
-                    });
+                    if(direction)
+                        os._update_({trs_in_up: {index: j,trs: transition.in}});
+                    else
+                        os._update_({trs_in_dn: {index: j,trs: transition.in}});
+                    
                     os._transitionIn_();
                     j++;
                 }
             } else if (as.index < 0) {
                 switch(as.index){
                     case -2:
-                        as._transitionOut_(transition);
-                        break;
                     case -3:
-                        as._transitionOut_(transition);
+                        as._transitionOut_(transition, (direction) ? "trs_out_dn" : "trs_out_up");
                         break;
                     default:
                         as._transitionOut_(transition);
@@ -148,34 +191,41 @@ export class SourceTemplate extends View {
             }
             as.index = j;
         }
+
         while (j < output.length) {
+            
             output[j]._appendToDOM_(this.ele);
-            //this.ele.appendChild(output[j].element);
+
             output[j].index = j;
-            output[j]._update_({
-                trs_in_t: {
-                    index: j,
-                    trs: transition.in
-                }
-            });
+
+            if(direction)
+                output[j]._update_({trs_in_up: {index: j,trs: transition.in}});
+            else
+                output[j]._update_({trs_in_dn: {index: j,trs: transition.in}});
+            
             output[j]._transitionIn_();
             j++;
         }
+
         this.ele.style.position = this.ele.style.position;
+        
         this.dom_sources = output;
+        
         if (al < 1) this.parent._upImport_("template_has_sources", {
             template: this,
             ele: this.ele,
             trs: transition.in,
             count: ol
         });
+        
         else this.parent._upImport_("template_count_changed", {
             count: ol,
             ele: this.ele,
             template: this,
             trs: transition.in
         });
-        Scheduler.queueUpdate(this);
+        //Scheduler.queueUpdate(this);
+        
         if (OWN_TRANSITION) transition.start();
     }
     /**
@@ -195,6 +245,7 @@ export class SourceTemplate extends View {
         }
         this.activeSources = output;
         this.limitUpdate(transition, output);
+        this.UPDATE_FILTER = false;
     }
     /**
      * Removes stored Sources that do not match the ModelContainer contents. 
@@ -208,7 +259,7 @@ export class SourceTemplate extends View {
         let transition = Transitioneer.createTransition();
         if (new_items.length == 0) {
             let sl = this.sources.length;
-            for (let i = 0; i < sl; i++) this.sources[i]._transitionOut_(transition, true);
+            for (let i = 0; i < sl; i++) this.sources[i]._transitionOut_(transition, "", true);
             this.sources.length = 0;
             if (sl > 0) this.parent._upImport_("template_empty", {
                 template: this,
@@ -224,7 +275,7 @@ export class SourceTemplate extends View {
                 }
             for (let i = 0, l = this.sources.length; i < l; i++)
                 if (!exists.has(this.sources[i].model)) {
-                    this.sources[i]._transitionOut_(transition, true);
+                    this.sources[i]._transitionOut_(transition,"", true);
                     this.sources[i].index = -1;
                     this.sources.splice(i, 1);
                     l--;
@@ -265,7 +316,7 @@ export class SourceTemplate extends View {
                 let Source = this.sources[j];
                 if (Source._model_ == item) {
                     this.sources.splice(j, 1);
-                    Source._transitionOut_(transition, true);
+                    Source._transitionOut_(transition,"", true);
                     break;
                 }
             }

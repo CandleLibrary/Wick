@@ -1,17 +1,70 @@
-<w-s model="models" element="div">
-	<button onclick="((click)(true))">test</button>
+<w-s model="models" element="div" >
+		
+	((offset))((limit_))
+	<button onclick="((click2)(true))">left</button>
+	<button onclick="((click)(true))">right</button>
+	
+	<div onpointerdown="((pointer)(0))">
 	<w-c>
 		((users.get(null,[])))
+		
 		<f limit="((limit_))">
-		<w-s>
+		<f offset="((offset))">
+		<f scrub="((scrub))">
+
+		<w-s badge="me" style="position: absolute;">
 			((name))
+
+			<script on="((trs_out_dn))">
+				trs_out_dn({
+					obj:src.badges.me,
+					left:{value:"-100px",duration:200}
+				})
+			</script>
+
+			<script on="((trs_in_up))">
+				trs_in_up.trs({
+					obj:src.badges.me,
+					left:[{value:"100px"},{value:"0px",duration:200}]
+				})
+			</script>
+
+			<script on="((trs_out_up))">
+				trs_out_up({
+					obj:src.badges.me,
+					left:{value:"100px",duration:200}
+				})
+			</script>
+
+			<script on="((trs_in_dn))">
+				trs_in_dn.trs({
+					obj:src.badges.me,
+					left:[{value:"-100px"},{value:"0px",duration:200}]
+				})
+			</script>			
 		</w-s>
 	</w-c>
+	</div>
+
+	<script on="((pointer))">
+		if(!src.scrub)
+			src.scrub = 0;
+
+		emit("scrub",++src.scrub);
+	</script>
 
 	<script on="((click))">
 		if(!src.d)
 			src.d = 0;
-		console.log(src.d)
-		emit("limit_", src.d++);
+		emit("offset", ++src.d)
+		emit("limit_", 2);
 	</script>
+
+	<script on="((click2))">
+		if(!src.d)
+			src.d = 0;
+		emit("offset", --src.d)
+		emit("limit_", 1);
+	</script>
+
 </w-s>

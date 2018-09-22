@@ -56,7 +56,7 @@ export class SourceManager {
         this._TRANSITION_STATE_ = true;
     }
 
-    _transitionOut_(transition, DESTROY_ON_REMOVE = false, transition_name = "trs_out") {
+    _transitionOut_(transition, transition_name = "trs_out", DESTROY_ON_REMOVE = false) {
         if (this._TRANSITION_STATE_ === false) {
             // if (DESTROY_ON_REMOVE && !this._DESTROYED_) this._destroy_();
             return;
@@ -67,7 +67,7 @@ export class SourceManager {
         if (transition) {
             let data = {};
             
-            data[transition_name] = (typeof(transition) == "function") ? transition : transition.out ;
+            data[transition_name] = (typeof(transition) == "function") ? transition : transition.out;
             
             this._update_(data)
 

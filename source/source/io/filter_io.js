@@ -7,7 +7,7 @@ let expr_check = (expr)=>{
 
 
 export class FilterIO extends IOBase {
-    constructor(source, errors, taps, template, activation, sort, filter, limit, offset) {
+    constructor(source, errors, taps, template, activation, sort, filter, limit, offset, scrub) {
         super(template, errors);
         this.template = template;
         this._activation_function_ = null;
@@ -53,23 +53,24 @@ export class FilterIO extends IOBase {
 
         if (offset && offset.binding) {
             let expr = offset.binding;
-            if (expr_check(expr)){
+                expr.method = (expr.method == 1) ? -1 : expr.method;
                 this._offset_function_ = expr._bind_(source, errors, taps, this);
+                ///this._limit_function_._IS_A_FILTER_ = true;
                 this._CAN_OFFSET_ = true;  
-            } 
+        }
+
+        if (scrub && scrub.binding) {
+            let expr = scrub.binding;
+                expr.method = (expr.method == 1) ? -1 : expr.method;
+                this._scrub_function_ = expr._bind_(source, errors, taps, this);
+                ///this._limit_function_._IS_A_FILTER_ = true;
+                this._CAN_SCRUB_ = true;  
         }
     }
 
-    _scheduledUpdate_() {
-        if(this._CAN_SORT_ || this._CAN_FILTER_)
-            this.template.filterUpdate();
-        else
-            this.template.limitUpdate();
-    }
+    _scheduledUpdate_() {}
     
-    update(){
-        Scheduler.queueUpdate(this);
-    }
+    update(){}
 
     _destroy_() {
         if (this._sort_function_)
@@ -90,7 +91,14 @@ export class FilterIO extends IOBase {
         this._CAN_USE_ = false;
         if (v) this._CAN_USE_ = true;
         this._value_ = v;
-        //if(cache !== this._CAN_USE_)
-            this.update();
+
+        if(this._CAN_SCRUB_)
+            return this.template.scrub(this._value_);
+        
+
+        if(this._CAN_SORT_ || this._CAN_FILTER_)
+            this.template.UPDATE_FILTER = true;
+        
+        Scheduler.queueUpdate(this.template);
     }
 }
