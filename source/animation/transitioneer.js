@@ -78,10 +78,12 @@ const Transitioneer = (function() {
     }
 
 
+
     class Transition {
         constructor(override = true) {
             this.in_duration = 0;
             this.out_duration = 0;
+            this.PLAY = true;
 
             this.reverse = false;
 
@@ -100,6 +102,12 @@ const Transitioneer = (function() {
             this.out = $out.bind(this);
             this.in = $in.bind(this);
 
+            Object.defineProperty(this.out, "out_duration", {
+                get: () => {
+                    return this.out_duration
+                }
+            })
+
             this.OVERRIDE = override;
         }
 
@@ -115,11 +123,15 @@ const Transitioneer = (function() {
             };
             this.in_seq.forEach(removeProps);
             this.out_seq.forEach(removeProps);
-            this.in_seq = null;
-            this.out_seq = null;
+            this.in_seq.length = 0;
+            this.out_seq.length = 0;
             this.res = null;
             this.out = null;
             this.in = null;
+        }
+
+        get duration() {
+            return Math.max(this.in_duration + this.in_delay, this.out_duration);
         }
 
 
@@ -132,8 +144,6 @@ const Transitioneer = (function() {
             if (this.reverse)
                 this.speed = -this.speed;
 
-            this.duration = this.in_duration + this.in_delay + this.out_duration;
-
             if (this.duration > 0)
                 this._scheduledUpdate_(0, 0);
 
@@ -145,9 +155,14 @@ const Transitioneer = (function() {
         }
 
         play(t) {
+            this.PLAY = true;
             let time = (this.in_duration + this.in_delay) * t;
             this.step(time);
             return time;
+        }
+
+        stop() {
+            this.PLAY = false;
         }
 
         step(t) {
@@ -171,6 +186,8 @@ const Transitioneer = (function() {
             this.time += time * this.speed;
 
             this.step(this.time);
+
+            if (!this.PLAY) return;
 
             if (this.reverse) {
                 if (this.time > 0)

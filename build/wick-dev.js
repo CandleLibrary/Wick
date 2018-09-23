@@ -4132,7 +4132,9 @@ var wick = (function (exports) {
 
         emit(name, value) {
             for (let i = 0; i < this.sources.length; i++)
-                this.sources[i]._upImport_(name, value, { event: {} });
+                this.sources[i]._upImport_(name, value, {
+                    event: {}
+                });
         }
 
         _appendToDOM_(element, before_element) {
@@ -4144,24 +4146,33 @@ var wick = (function (exports) {
         }
 
         _removeFromDOM_() {
+
             if (this._APPEND_STATE_ == true) return;
 
             if (this.ele && this.ele.parentElement)
                 this.ele.parentElement.removeChild(this.ele);
         }
 
-        _transitionIn_(transition) {
+        _transitionIn_(transition, transition_name = "trs_in") {
+
             if (transition) {
-                let data = { trs_in: (typeof(transition) == "function") ? transition : transition.in };
-                for (let i = 0, l = this.sources.length; i < l; i++)
-                    this.sources[i]._transitionIn_(data);
+                let data = {};
+
+                data[transition_name] = transition;
+
+                this._update_(data);
             }
+
             this._TRANSITION_STATE_ = true;
         }
 
         _transitionOut_(transition, transition_name = "trs_out", DESTROY_ON_REMOVE = false) {
+
+            this._APPEND_STATE_ = false;
+
             if (this._TRANSITION_STATE_ === false) {
                 // if (DESTROY_ON_REMOVE && !this._DESTROYED_) this._destroy_();
+                this._removeFromDOM_();
                 return;
             }
 
@@ -4169,21 +4180,22 @@ var wick = (function (exports) {
 
             if (transition) {
                 let data = {};
-                
-                data[transition_name] = (typeof(transition) == "function") ? transition : transition.out;
-                
+
+                data[transition_name] = transition;
+
                 this._update_(data);
 
-                transition_time = transition.out_duration;
+                if (transition.trs)
+                    transition_time = transition.trs.out_duration;
+                else
+                    transition_time = transition.out_duration;
             }
-
 
 
             this._TRANSITION_STATE_ = false;
 
-            this._APPEND_STATE_ = false;
 
-
+            /*
             for (let i = 0, l = this.sources.length; i < l; i++) {
 
                 let ast = this.sources[i].ast;
@@ -4216,12 +4228,18 @@ var wick = (function (exports) {
 
                         if (hook.style)
                             hook.style._setRule_(rule);
+                        else {
+                            //ele.style = rule + "";
+                        }
                     }
                 }
-            }
-            
+            }*/
+
             if (transition_time > 0)
-                setTimeout(() => { this._removeFromDOM_(); if (DESTROY_ON_REMOVE) this._destroy_(); }, transition_time + 2);
+                setTimeout(() => {
+                    this._removeFromDOM_();
+                    if (DESTROY_ON_REMOVE) this._destroy_();
+                }, transition_time + 2);
             else {
                 this._removeFromDOM_();
                 if (DESTROY_ON_REMOVE) this._destroy_();
@@ -10578,10 +10596,12 @@ var wick = (function (exports) {
         }
 
 
+
         class Transition {
             constructor(override = true) {
                 this.in_duration = 0;
                 this.out_duration = 0;
+                this.PLAY = true;
 
                 this.reverse = false;
 
@@ -10598,6 +10618,12 @@ var wick = (function (exports) {
                 this.out = $out.bind(this);
                 this.in = $in.bind(this);
 
+                Object.defineProperty(this.out, "out_duration", {
+                    get: () => {
+                        return this.out_duration
+                    }
+                });
+
                 this.OVERRIDE = override;
             }
 
@@ -10613,11 +10639,15 @@ var wick = (function (exports) {
                 };
                 this.in_seq.forEach(removeProps);
                 this.out_seq.forEach(removeProps);
-                this.in_seq = null;
-                this.out_seq = null;
+                this.in_seq.length = 0;
+                this.out_seq.length = 0;
                 this.res = null;
                 this.out = null;
                 this.in = null;
+            }
+
+            get duration() {
+                return Math.max(this.in_duration + this.in_delay, this.out_duration);
             }
 
 
@@ -10630,8 +10660,6 @@ var wick = (function (exports) {
                 if (this.reverse)
                     this.speed = -this.speed;
 
-                this.duration = this.in_duration + this.in_delay + this.out_duration;
-
                 if (this.duration > 0)
                     this._scheduledUpdate_(0, 0);
 
@@ -10643,9 +10671,14 @@ var wick = (function (exports) {
             }
 
             play(t) {
+                this.PLAY = true;
                 let time = (this.in_duration + this.in_delay) * t;
                 this.step(time);
                 return time;
+            }
+
+            stop() {
+                this.PLAY = false;
             }
 
             step(t) {
@@ -10669,6 +10702,8 @@ var wick = (function (exports) {
                 this.time += time * this.speed;
 
                 this.step(this.time);
+
+                if (!this.PLAY) return;
 
                 if (this.reverse) {
                     if (this.time > 0)
@@ -10728,6 +10763,8 @@ var wick = (function (exports) {
             this.scrub_offset = 0;
             this.UPDATE_FILTER = false;
             this.time = 0;
+            this.dom_up_appended = false;
+            this.dom_dn_appended = false;
             parent.addTemplate(this);
         }
 
@@ -10778,8 +10815,23 @@ var wick = (function (exports) {
                 this.limitUpdate();
         }
 
-        scrub(scrub_amount) {
+        /**
+         * Scrub provides a mechanism to scroll through pages of a container that has been limited through the limit function.
+         * @param  {Number} scrub_amount [description]
+         */
+        scrub(scrub_amount, SCRUBBING = true) {
+
+            if (this.SCRUBBING && !SCRUBBING) {
+                this.scrub_offset = 0;
+                this.scrub_v = 0;
+                this.old_scrub = scrub_amount;
+                this.SCRUBBING = false;
+            }
+
             if (scrub_amount !== Infinity) {
+                this.trs_up.stop();
+                this.trs_dn.stop();
+
                 let s = scrub_amount - this.scrub_offset;
 
                 if (s > 1) {
@@ -10792,45 +10844,64 @@ var wick = (function (exports) {
                     this.render(null, this.activeSources, this.limit, this.offset - 1, true);
                 }
 
-                this.scrub_v = s - this.old_scrub;
-                this.old_scrub = s;
+                this.scrub_v = scrub_amount - this.old_scrub;
+                this.old_scrub = scrub_amount;
 
                 if (s > 0) {
-                    for (let i = 0; i < this.dom_up.length; i++)
-                        this.dom_up[i]._appendToDOM_(this.ele, this.dom_sources[0].ele);
+                    if (!this.dom_up_appended) {
+
+                        for (let i = 0; i < this.dom_up.length; i++) {
+                            this.dom_up[i]._appendToDOM_(this.ele);
+                            this.dom_up[i].index = -1;
+                            this.dom_sources.push(this.dom_up[i]);
+                        }
+                        this.dom_up_appended = true;
+                    }
+
                     this.time = this.trs_up.play(s);
 
-                } else  {
+                } else {
 
-                    for (let i = 0; i < this.dom_dn.length; i++)
-                        this.dom_dn[i]._appendToDOM_(this.ele);
+                    if (!this.dom_dn_appended) {
+
+                        for (let i = 0; i < this.dom_dn.length; i++) {
+                            this.dom_dn[i]._appendToDOM_(this.ele, this.dom_sources[0].ele);
+                            this.dom_dn[i].index = -1;
+                        }
+
+                        this.dom_sources = this.dom_dn.concat(this.dom_sources);
+
+
+                        this.dom_dn_appended = true;
+                    }
+
                     this.time = this.trs_dn.play(-s);
 
                 }
             } else {
-                let pos = Math.round(this.old_scrub);
-
                 if (Math.abs(this.scrub_v) > 0.01) {
-                    console.log("ZZ");
                     this.sscr = this.scrub_v;
                     this.ssoc = this.old_scrub;
                     this.SCRUBBING = true;
                     scheduler.queueUpdate(this);
                 } else {
-                    console.log("ZZ2");
+                    let pos = Math.round(this.old_scrub);
                     this.scrub_offset = 0;
+                    this.SCRUBBING = false;
                     let reverse = false;
 
                     {
+                        let off = this.offset + pos;
                         if (this.old_scrub > 0) {
-                            if(this.old_scrub < 0.5) reverse = true;
-                            this.trs_up.start(this.time,1,reverse).then(() => {
-                                this.render(null, this.activeSources, this.limit, this.offset + pos, true);
+                            if (this.old_scrub < 0.5) reverse = true;
+                            this.trs_up.start(this.time, 0.15, reverse).then(() => {
+                                this.render(null, this.activeSources, this.limit, off, true);
                             });
                         } else {
-                            if(this.old_scrub > -0.5) reverse = true;
-                            this.trs_dn.start(this.time,1,reverse).then(() => {
-                                this.render(null, this.activeSources, this.limit, this.offset + pos, true);
+                            if (this.old_scrub > -0.5) reverse = true;
+
+                            this.trs_dn.start(this.time, 0.15, reverse).then(() => {
+                                this.render(null, this.activeSources, this.limit, off, true);
                             });
                         }
                     }
@@ -10852,16 +10923,20 @@ var wick = (function (exports) {
             offset = Math.max(0, offset);
 
             if (limit > 0) {
+
                 direction = this.offset < offset;
-                this.offset = offset;
                 let ein = [];
                 let pages = Math.ceil(ol / limit);
-                let off = Math.max(0, Math.min(pages - 1, offset)) * limit;
+                this.max = pages - 1; 
+                this.offset = Math.max(0, Math.min(pages - 1, offset));
+                let off = this.offset * limit;
 
                 this.trs_up = Transitioneer.createTransition(false);
                 this.trs_dn = Transitioneer.createTransition(false);
                 this.dom_dn.length = 0;
                 this.dom_up.length = 0;
+                this.dom_up_appended = false;
+                this.dom_dn_appended = false;
 
                 let i = 0;
 
@@ -10869,19 +10944,39 @@ var wick = (function (exports) {
 
                 while (i < off) {
                     this.dom_dn.push(output[i]);
-                    output[i]._update_({ trs_in_dn: { index: 0, trs: this.trs_dn.in } });
+                    output[i]._update_({
+                        trs_in_dn: {
+                            index: 0,
+                            trs: this.trs_dn.in
+                        }
+                    });
                     output[i++].index = -2;
                 }
 
                 while (i < off + limit && i < ol) {
-                    output[i]._update_({ trs_out_dn: this.trs_up.out });
-                    output[i]._update_({ trs_out_up: this.trs_dn.out });
+                    output[i]._update_({
+                        trs_out_dn: {
+                            trs: this.trs_up.out,
+                            index: 0
+                        }
+                    });
+                    output[i]._update_({
+                        trs_out_up: {
+                            trs: this.trs_dn.out,
+                            index: 0
+                        }
+                    });
                     output[i].index = 0, ein.push(output[i++]);
                 }
 
                 while (i < off + limit * 2 && i < ol) {
                     this.dom_up.push(output[i]);
-                    output[i]._update_({ trs_in_up: { index: 0, trs: this.trs_up.in } });
+                    output[i]._update_({
+                        trs_in_up: {
+                            index: 0,
+                            trs: this.trs_up.in
+                        }
+                    });
                     output[i++].index = -3;
                 }
 
@@ -10895,6 +10990,16 @@ var wick = (function (exports) {
             } else
                 this.limit = 0;
 
+            let trs_in = {
+                trs: transition.in,
+                index: 0
+            };
+            let trs_out = {
+                trs: transition.out,
+                index: 0
+            };
+
+
             for (let i = 0; i < ol; i++) output[i].index = i;
 
             for (let i = 0; i < al; i++) {
@@ -10905,12 +11010,8 @@ var wick = (function (exports) {
                         let os = output[j];
                         os.index = j;
                         os._appendToDOM_(this.ele, ele);
-                        if (direction)
-                            os._update_({ trs_in_up: { index: j, trs: transition.in } });
-                        else
-                            os._update_({ trs_in_dn: { index: j, trs: transition.in } });
-
-                        os._transitionIn_();
+                        trs_in.index = j;
+                        os._transitionIn_(trs_in, (direction) ? "trs_in_up" : "trs_in_dn");
                         j++;
                     }
                 } else if (as.index < 0) {
@@ -10919,39 +11020,31 @@ var wick = (function (exports) {
                         switch (as.index) {
                             case -2:
                             case -3:
-                                as._transitionOut_(transition, (direction) ? "trs_out_dn" : "trs_out_up");
+                                as._transitionOut_(trs_out, (direction) ? "trs_out_dn" : "trs_out_up");
                                 break;
                             default:
-                                as._transitionOut_(transition);
+                                as._transitionOut_(trs_out);
                         }
                     } else {
                         as._transitionOut_();
                     }
                 } else {
                     //if (i !== j) 
+                    trs_in.index = j;
                     as._update_({
-                        arrange: {
-                            index: j,
-                            trs: transition.in
-                        }
+                        arrange: trs_in
                     });
+                    as._TRANSITION_STATE_ = true;
                     j++;
                 }
                 as.index = j;
             }
 
             while (j < output.length) {
-
                 output[j]._appendToDOM_(this.ele);
-
                 output[j].index = j;
-
-                if (direction)
-                    output[j]._update_({ trs_in_up: { index: j, trs: transition.in } });
-                else
-                    output[j]._update_({ trs_in_dn: { index: j, trs: transition.in } });
-
-                output[j]._transitionIn_();
+                trs_in.index = j;
+                output[j]._transitionIn_(trs_in, (direction) ? "trs_in_up" : "trs_in_dn");
                 j++;
             }
 
@@ -10973,129 +11066,136 @@ var wick = (function (exports) {
                 trs: transition.in
             });
 
-            if (OWN_TRANSITION) {
-                if (!NO_TRANSITION)
+            if (OWN_TRANSITION)
+                if (NO_TRANSITION) {
+                    transition.play(transition.duration);
+                    transition._destroy_();
+                } else
                     transition.start();
-            }
+
+
+
         }
 
         limitUpdate(transition, output) {
 
-            let limit = 0,
-                offset = 0;
+                let limit = 0,
+                    offset = 0;
 
-            for (let i = 0, l = this._filters_.length; i < l; i++) {
-                let filter = this._filters_[i];
-                if (filter._CAN_USE_) {
-                    if (filter._CAN_LIMIT_) limit = filter._value_;
-                    if (filter._CAN_OFFSET_) offset = filter._value_;
+                for (let i = 0, l = this._filters_.length; i < l; i++) {
+                    let filter = this._filters_[i];
+                    if (filter._CAN_USE_) {
+                        if (filter._CAN_LIMIT_) limit = filter._value_;
+                        if (filter._CAN_OFFSET_) offset = filter._value_;
+                    }
                 }
+
+                this.SCRUBBING = false;
+                this.scrub_offset = 0;
+                this.scrub_v = 0;
+
+                this.render(transition, output, limit, offset);
             }
-
-            this.SCRUBBING = false;
-
-            this.render(transition, output, limit, offset);
-        }
-        /**
-         * Filters stored Sources with search terms and outputs the matching Sources to the DOM.
-         * 
-         * @protected
-         */
+            /**
+             * Filters stored Sources with search terms and outputs the matching Sources to the DOM.
+             * 
+             * @protected
+             */
         filterUpdate(transition) {
-            let output = this.sources.slice();
-            if (output.length < 1) return;
-            for (let i = 0, l = this._filters_.length; i < l; i++) {
-                let filter = this._filters_[i];
-                if (filter._CAN_USE_) {
-                    if (filter._CAN_FILTER_) output = output.filter(filter._filter_function_._filter_expression_);
-                    if (filter._CAN_SORT_) output = output.sort(filter._sort_function_);
+                let output = this.sources.slice();
+                if (output.length < 1) return;
+                for (let i = 0, l = this._filters_.length; i < l; i++) {
+                    let filter = this._filters_[i];
+                    if (filter._CAN_USE_) {
+                        if (filter._CAN_FILTER_) output = output.filter(filter._filter_function_._filter_expression_);
+                        if (filter._CAN_SORT_) output = output.sort(filter._sort_function_);
+                    }
                 }
+                this.activeSources = output;
+                this.limitUpdate(transition, output);
+                this.UPDATE_FILTER = false;
             }
-            this.activeSources = output;
-            this.limitUpdate(transition, output);
-            this.UPDATE_FILTER = false;
-        }
-        /**
-         * Removes stored Sources that do not match the ModelContainer contents. 
-         *
-         * @param      {Array}  new_items  Array of Models that are currently stored in the ModelContainer. 
-         * 
-         * @protected
-         */
+            /**
+             * Removes stored Sources that do not match the ModelContainer contents. 
+             *
+             * @param      {Array}  new_items  Array of Models that are currently stored in the ModelContainer. 
+             * 
+             * @protected
+             */
         cull(new_items) {
-            if (!new_items) new_items = [];
-            let transition = Transitioneer.createTransition();
-            if (new_items.length == 0) {
-                let sl = this.sources.length;
-                for (let i = 0; i < sl; i++) this.sources[i]._transitionOut_(transition, "", true);
-                this.sources.length = 0;
-                if (sl > 0) this.parent._upImport_("template_empty", {
-                    template: this,
-                    ele: this.ele,
-                    trs: transition.out
-                });
-            } else {
-                let exists = new Map(new_items.map(e => [e, true]));
-                var out = [];
-                for (let i = 0, l = this.activeSources.length; i < l; i++)
-                    if (exists.has(this.activeSources[i].model)) {
-                        exists.set(this.activeSources[i].model, false);
-                    }
-                for (let i = 0, l = this.sources.length; i < l; i++)
-                    if (!exists.has(this.sources[i].model)) {
-                        this.sources[i]._transitionOut_(transition, "", true);
-                        this.sources[i].index = -1;
-                        this.sources.splice(i, 1);
-                        l--;
-                        i--;
-                    } else exists.set(this.sources[i].model, false);
-                exists.forEach((v, k, m) => {
-                    if (v) out.push(k);
-                });
-                if (out.length > 0) {
-                    this.added(out, transition);
+                if (!new_items) new_items = [];
+                let transition = Transitioneer.createTransition();
+                if (new_items.length == 0) {
+                    let sl = this.sources.length;
+                    for (let i = 0; i < sl; i++) this.sources[i]._transitionOut_(transition, "", true);
+                    this.sources.length = 0;
+                    if (sl > 0) this.parent._upImport_("template_empty", {
+                        template: this,
+                        ele: this.ele,
+                        trs: transition.out
+                    });
                 } else {
-                    for (let i = 0, j = 0, l = this.activeSources.length; i < l; i++, j++) {
-                        if (this.activeSources[i]._TRANSITION_STATE_) {
-                            if (j !== i) {
-                                this.activeSources[i]._update_({
-                                    arrange: {
-                                        index: i,
-                                        trs: transition.in
-                                    }
-                                });
-                            }
-                        } else this.activeSources.splice(i, 1), i--, l--;
+                    let exists = new Map(new_items.map(e => [e, true]));
+                    var out = [];
+                    for (let i = 0, l = this.activeSources.length; i < l; i++)
+                        if (exists.has(this.activeSources[i].model)) {
+                            exists.set(this.activeSources[i].model, false);
+                        }
+                    for (let i = 0, l = this.sources.length; i < l; i++)
+                        if (!exists.has(this.sources[i].model)) {
+                            this.sources[i]._transitionOut_(transition, "", true);
+                            this.sources[i].index = -1;
+                            this.sources.splice(i, 1);
+                            l--;
+                            i--;
+                        } else exists.set(this.sources[i].model, false);
+                    exists.forEach((v, k, m) => {
+                        if (v) out.push(k);
+                    });
+                    if (out.length > 0) {
+                        this.added(out, transition);
+                    } else {
+                        for (let i = 0, j = 0, l = this.activeSources.length; i < l; i++, j++) {
+                            if (this.activeSources[i]._TRANSITION_STATE_) {
+                                if (j !== i) {
+                                    this.activeSources[i]._update_({
+                                        arrange: {
+                                            index: i,
+                                            trs: transition.in
+                                        }
+                                    });
+                                }
+                            } else this.activeSources.splice(i, 1), i--, l--;
+                        }
                     }
                 }
+                transition.start();
             }
-            transition.start();
-        }
-        /**
-         * Called by the ModelContainer when Models have been removed from its set.
-         *
-         * @param      {Array}  items   An array of items no longer stored in the ModelContainer. 
-         */
+            /**
+             * Called by the ModelContainer when Models have been removed from its set.
+             *
+             * @param      {Array}  items   An array of items no longer stored in the ModelContainer. 
+             */
         removed(items, transition = Transitioneer.createTransition()) {
-            debugger
-            for (let i = 0; i < items.length; i++) {
-                let item = items[i];
-                for (let j = 0; j < this.sources.length; j++) {
-                    let Source = this.sources[j];
-                    if (Source._model_ == item) {
-                        this.sources.splice(j, 1);
-                        Source._transitionOut_(transition, "", true);
-                        break;
+                debugger
+                for (let i = 0; i < items.length; i++) {
+                    let item = items[i];
+                    for (let j = 0; j < this.sources.length; j++) {
+                        let Source = this.sources[j];
+                        if (Source._model_ == item) {
+                            this.sources.splice(j, 1);
+                            Source._transitionOut_(transition, "", true);
+                            break;
+                        }
                     }
                 }
+                this.filterUpdate(transition);
             }
-            this.filterUpdate(transition);
-        }
-        /**
-         * Called by the ModelContainer when Models have been added to its set.
-         *
-         * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
-         */
+            /**
+             * Called by the ModelContainer when Models have been added to its set.
+             *
+             * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
+             */
         added(items, transition = Transitioneer.createTransition()) {
             for (let i = 0; i < items.length; i++) {
                 let mgr = this._package_.mount(null, items[i], false);
@@ -11257,9 +11357,8 @@ var wick = (function (exports) {
             this._value_ = v;
 
             if(this._CAN_SCRUB_)
-                return this.template.scrub(this._value_);
+                return this.template.scrub(this._value_, false);
             
-
             if(this._CAN_SORT_ || this._CAN_FILTER_)
                 this.template.UPDATE_FILTER = true;
             

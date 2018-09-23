@@ -1,7 +1,7 @@
 <w-s model="models" element="div" style="position: absolute; left:300px; width:100px; overflow:hidden; height:70px">
 	((offset))((limit_))
-	<button onclick="((click2)(true))">left</button>
-	<button onclick="((click)(true))">right</button>
+	<button onclick="((click2)(true))" style="display:((dn))">left</button>
+	<button onclick="((click)(true))" style="display:((up))">right</button>
 	<div onpointerdown="((pointer)(0))">
 		<w-c>
 			((users.get(null,[])))
@@ -11,7 +11,7 @@
 						<w-s badge="me" style="position: absolute;">
 							((name))
 							<script on="((trs_out_dn))">
-								trs_out_dn({
+								trs_out_dn.trs({
 									obj: src.badges.me,
 									left: [{ value: "0px" }, { value: "-100px", duration: 200 }]
 								});
@@ -23,7 +23,7 @@
 								});
 							</script>
 							<script on="((trs_out_up))">
-								trs_out_up({
+								trs_out_up.trs({
 									obj: src.badges.me,
 									left: [{ value: "0px" }, { value: "100px", duration: 200 }]
 								});
@@ -57,11 +57,18 @@
 		window.addEventListener("pointerup", b);
 	</script>
 	<script on="((click))">
-		emit("offset", src._templates_[0].offset + 1)
+		let v = src._templates_[0].offset + 1;
+		if(v >= src._templates_[0].max)
+			emit("up","none")
+		emit("dn","inline-block")
+		emit("offset", v)
 		emit("limit_", 1);
 	</script>
 	<script on="((click2))">
-		emit("offset", src._templates_[0].offset - 1)
+		let v = src._templates_[0].offset - 1;
+		if(v <= 0) emit("dn","none")
+		emit("up","inline-block")
+		emit("offset", v)
 		emit("limit_", 1);
 	</script>
 </w-s>

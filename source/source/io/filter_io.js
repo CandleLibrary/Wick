@@ -93,9 +93,8 @@ export class FilterIO extends IOBase {
         this._value_ = v;
 
         if(this._CAN_SCRUB_)
-            return this.template.scrub(this._value_);
+            return this.template.scrub(this._value_, false);
         
-
         if(this._CAN_SORT_ || this._CAN_FILTER_)
             this.template.UPDATE_FILTER = true;
         

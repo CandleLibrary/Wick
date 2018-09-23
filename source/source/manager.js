@@ -29,7 +29,9 @@ export class SourceManager {
 
     emit(name, value) {
         for (let i = 0; i < this.sources.length; i++)
-            this.sources[i]._upImport_(name, value, { event: {} });
+            this.sources[i]._upImport_(name, value, {
+                event: {}
+            });
     }
 
     _appendToDOM_(element, before_element) {
@@ -41,24 +43,33 @@ export class SourceManager {
     }
 
     _removeFromDOM_() {
+
         if (this._APPEND_STATE_ == true) return;
 
         if (this.ele && this.ele.parentElement)
             this.ele.parentElement.removeChild(this.ele);
     }
 
-    _transitionIn_(transition) {
+    _transitionIn_(transition, transition_name = "trs_in") {
+
         if (transition) {
-            let data = { trs_in: (typeof(transition) == "function") ? transition : transition.in };
-            for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i]._transitionIn_(data);
+            let data = {};
+
+            data[transition_name] = transition;
+
+            this._update_(data);
         }
+
         this._TRANSITION_STATE_ = true;
     }
 
     _transitionOut_(transition, transition_name = "trs_out", DESTROY_ON_REMOVE = false) {
+
+        this._APPEND_STATE_ = false;
+
         if (this._TRANSITION_STATE_ === false) {
             // if (DESTROY_ON_REMOVE && !this._DESTROYED_) this._destroy_();
+            this._removeFromDOM_();
             return;
         }
 
@@ -66,21 +77,22 @@ export class SourceManager {
 
         if (transition) {
             let data = {};
-            
-            data[transition_name] = (typeof(transition) == "function") ? transition : transition.out;
-            
+
+            data[transition_name] = transition;
+
             this._update_(data);
 
-            transition_time = transition.out_duration;
+            if (transition.trs)
+                transition_time = transition.trs.out_duration;
+            else
+                transition_time = transition.out_duration;
         }
-
 
 
         this._TRANSITION_STATE_ = false;
 
-        this._APPEND_STATE_ = false;
 
-
+        /*
         for (let i = 0, l = this.sources.length; i < l; i++) {
 
             let ast = this.sources[i].ast;
@@ -118,10 +130,13 @@ export class SourceManager {
                     }
                 }
             }
-        }
-        
+        }*/
+
         if (transition_time > 0)
-            setTimeout(() => { this._removeFromDOM_(); if (DESTROY_ON_REMOVE) this._destroy_(); }, transition_time + 2);
+            setTimeout(() => {
+                this._removeFromDOM_();
+                if (DESTROY_ON_REMOVE) this._destroy_();
+            }, transition_time + 2);
         else {
             this._removeFromDOM_();
             if (DESTROY_ON_REMOVE) this._destroy_();
