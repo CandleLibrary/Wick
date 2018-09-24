@@ -53,6 +53,7 @@ export class SourceTemplate extends View {
         this.time = 0;
         this.dom_up_appended = false;
         this.dom_dn_appended = false;
+        this.root = 0;
         parent.addTemplate(this);
     }
 
@@ -110,7 +111,10 @@ export class SourceTemplate extends View {
     scrub(scrub_amount, SCRUBBING = true) {
 
         if (this.SCRUBBING && !SCRUBBING) {
+            this.trs_up.stop();
+            this.trs_dn.stop();
             this.scrub_offset = 0;
+            this.root = this.offset;
             this.scrub_v = 0;
             this.old_scrub = scrub_amount;
             this.SCRUBBING = false;
@@ -147,7 +151,6 @@ export class SourceTemplate extends View {
                 }
 
                 this.time = this.trs_up.play(s);
-
             } else {
 
                 if (!this.dom_dn_appended) {
@@ -164,7 +167,6 @@ export class SourceTemplate extends View {
                 }
 
                 this.time = this.trs_dn.play(-s);
-
             }
         } else {
             if (Math.abs(this.scrub_v) > 0.01) {
@@ -173,28 +175,20 @@ export class SourceTemplate extends View {
                 this.SCRUBBING = true;
                 Scheduler.queueUpdate(this);
             } else {
-                let pos = Math.round(this.old_scrub);
-                this.scrub_offset = 0;
+                let pos = Math.round(this.old_scrub - this.scrub_offset);
+                let off = pos - this.scrub_offset + this.root;
+
                 this.SCRUBBING = false;
                 let reverse = false;
 
-                if (true) {
-                    let off = this.offset + pos;
-                    if (this.old_scrub > 0) {
-                        if (this.old_scrub < 0.5) reverse = true;
-                        this.trs_up.start(this.time, 0.15, reverse).then(() => {
-                            this.render(null, this.activeSources, this.limit, off, true);
-                        });
-                    } else {
-                        if (this.old_scrub > -0.5) reverse = true;
-
-                        this.trs_dn.start(this.time, 0.15, reverse).then(() => {
-                            this.render(null, this.activeSources, this.limit, off, true);
-                        });
-                    }
+                if (pos > 0) {
+                    this.trs_up.play(pos);
+                    this.render(null, this.activeSources, this.limit, this.offset + pos, true);
                 } else {
-                    this.render(null, this.activeSources, this.limit, this.offset + pos);
+                    this.trs_dn.play(-pos)
+                    this.render(null, this.activeSources, this.limit, this.offset + pos, true);
                 }
+                this.scrub_offset = 0;
             }
         }
     }
@@ -219,6 +213,7 @@ export class SourceTemplate extends View {
             let pages = Math.ceil(ol / limit);
             this.max = pages - 1; 
             this.offset = Math.max(0, Math.min(pages - 1, offset));
+            this.root = this.offset;
             let off = this.offset * limit;
 
             this.trs_up = Transitioneer.createTransition(false);
@@ -358,13 +353,11 @@ export class SourceTemplate extends View {
 
         if (OWN_TRANSITION)
             if (NO_TRANSITION) {
-                transition.play(transition.duration);
-                transition._destroy_();
+                return transition;
             } else
                 transition.start();
 
-
-
+        return transition;
     }
 
     limitUpdate(transition, output) {

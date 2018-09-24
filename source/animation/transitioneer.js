@@ -156,7 +156,7 @@ const Transitioneer = (function() {
 
         play(t) {
             this.PLAY = true;
-            let time = (this.in_duration + this.in_delay) * t;
+            let time = this.duration * t;
             this.step(time);
             return time;
         }
@@ -183,11 +183,12 @@ const Transitioneer = (function() {
         }
 
         _scheduledUpdate_(step, time) {
+            if (!this.PLAY) return;
+
             this.time += time * this.speed;
 
             this.step(this.time);
 
-            if (!this.PLAY) return;
 
             if (this.reverse) {
                 if (this.time > 0)
