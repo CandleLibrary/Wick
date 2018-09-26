@@ -10837,14 +10837,13 @@ var wick = (function (exports) {
         }
 
         /**
-         * Scrub provides a mechanism to scroll through pages of a container that has been limited through the limit function.
+         * Scrub provides a mechanism to scroll through pages of a container that has been limited through the limit filter.
          * @param  {Number} scrub_amount [description]
          */
         scrub(scrub_amount, SCRUBBING = true) {
             this.SCRUBBING = true;
 
-            if (this.AUTO_SCRUB && !SCRUBBING) {
-                //this.scrub_offset = 0;
+            if (this.AUTO_SCRUB && !SCRUBBING && scrub_amount!=Infinity) {
                 this.root = this.offset;
                 this.sco = this.old_scrub;
                 this.old_scrub = scrub_amount;
@@ -10857,10 +10856,13 @@ var wick = (function (exports) {
                 let s = scrub_amount - this.scrub_offset;
 
                 if (s > 1) {
+                    //Make Sure the the transition animation is completed before moving on to new animation sequences.
+                    this.trs_up.play(1);
                     this.scrub_offset++;
                     s = scrub_amount - this.scrub_offset;
                     this.render(null, this.activeSources, this.limit, this.offset + 1, true);
                 } else if (s < -1) {
+                    this.trs_dn.play(1);
                     this.scrub_offset--;
                     s = scrub_amount - this.scrub_offset;
                     this.render(null, this.activeSources, this.limit, this.offset - 1, true);
@@ -10870,6 +10872,12 @@ var wick = (function (exports) {
                 this.old_scrub = scrub_amount;
 
                 if (s > 0) {
+
+                    if(this.offset >= this.max){
+                        if(s > 0) s = 0;
+                    }
+
+
                     if (!this.dom_up_appended) {
 
                         for (let i = 0; i < this.dom_up.length; i++) {
@@ -10882,6 +10890,11 @@ var wick = (function (exports) {
 
                     this.time = this.trs_up.play(s);
                 } else {
+
+                    if(this.offset < 1 && s < 0){ 
+                        s = 0;
+                        this.scrub_v = 0;
+                    }
 
                     if (!this.dom_dn_appended) {
 
@@ -10900,18 +10913,25 @@ var wick = (function (exports) {
                 }
             } else {
                 this.sco = 0;
-                if (Math.abs(this.scrub_v) > 0.0001) {
+                if (Math.abs(this.scrub_v) > 0.000001) {
+                    if(Math.abs(this.scrub_v) < 0.02) this.scrub_v = 0.02 * Math.sign(this.scrub_v);
+                    if(Math.abs(this.scrub_v) > 0.3) this.scrub_v = 0.3 * Math.sign(this.scrub_v);
 
                     this.AUTO_SCRUB = true;
+
                     //Determine the distance traveled and normal drag decay of 0.5
-                    let dist = this.scrub_v * (1/(-0.5+1));
+                    let dist = this.scrub_v * (1/(-0.9+1));
+
                     //get the distance to nearest page given the distance traveled
                     let nearest = (this.root+this.old_scrub+dist-this.scrub_offset);
-                    nearest = (this.scrub_v > 0) ? Math.ceil(nearest) : Math.max(0,Math.floor(nearest));
-                    //get the ratio to the nearest from current position
+                    
+                    nearest = (this.scrub_v > 0) ? Math.min(this.max,Math.ceil(nearest)) : Math.max(0,Math.floor(nearest));
+                    
+                    //get the ratio of the distance from the current position and distance to the nearest 
                     let nearest_dist = nearest - (this.root+this.old_scrub-this.scrub_offset);
                     let ratio = nearest_dist / this.scrub_v;
-                    let drag = 1 - (1/ ratio);
+                    let drag = Math.abs(1 - (1/ ratio));
+
                     this.drag = drag;
                     this.sscr = this.scrub_v;
                     this.ssoc = this.old_scrub;
@@ -13047,7 +13067,7 @@ var wick = (function (exports) {
             */
         });
 
-        console.log(`${wick_vanity}Copyright 2018 Anthony C Weathersby\nhttps://gitlab.com/anthonycweathersby/wick`);
+        console.log(`${wick_vanity}Copyright 2018 Anthony C Weathersby\nhttps://github.com/galactrax/wick`);
 
         wick.router = router;
 

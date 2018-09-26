@@ -37,7 +37,7 @@ function startRouting(preset_options = {}) {
         */
     });
 
-    console.log(`${wick_vanity}Copyright 2018 Anthony C Weathersby\nhttps://gitlab.com/anthonycweathersby/wick`);
+    console.log(`${wick_vanity}Copyright 2018 Anthony C Weathersby\nhttps://github.com/galactrax/wick`);
 
     wick.router = router;
 
