@@ -1,5 +1,5 @@
 /**
-	JavaScript implementation of a touch scrolling interface using touch events
+    JavaScript implementation of a touch scrolling interface using touch events
 */
 class TouchScroller {
     /** 
@@ -7,7 +7,7 @@ class TouchScroller {
         this addEventListener method.
     */
     constructor(element, drag = 0.02, touchid = 0) {
-        
+
         this.origin_x = 0;
         this.origin_y = 0;
         this.velocity_x = 0;
@@ -15,6 +15,9 @@ class TouchScroller {
         this.GO = true;
         this.drag = (drag > 0) ? drag : 0.05;
         this.ele = element;
+
+
+        this.listeners = [];
 
         if (!touchid instanceof Number)
             touchid = 0;
@@ -45,12 +48,12 @@ class TouchScroller {
             for (var i = 0, l = this.listeners.length; i < l; i++) {
 
                 if (this.listeners[i]({
-                        dx:dx|0,
-                        dy:dy|0,
+                        dx: dx | 0,
+                        dy: dy | 0,
                         end
                     })) {
                     this.GO = false;
-                } 
+                }
             }
 
             READY = true;
@@ -59,12 +62,20 @@ class TouchScroller {
         this.event_b = (e) => {
             time_old = performance.now();
 
-            var touch = e.touches[touchid];
+            var touch = e//.touches[touchid];
 
             this.velocity_x = this.origin_x - touch.clientX;
             this.velocity_y = this.origin_y - touch.clientY;
 
-            if(READY){
+            if (Math.abs(this.velocity_x) > 0.01) {
+                console.log(this.velocity_x)
+                //window.removeEventListener("pointermove", this.event_b);
+                //window.removeEventListener("pointerend", this.event_c);
+                //this.GO = true;
+                //return false;
+            }
+
+            if (READY) {
                 this.origin_x = touch.clientX;
                 this.origin_y = touch.clientY;
                 requestAnimationFrame(() => {
@@ -75,6 +86,8 @@ class TouchScroller {
         };
 
         this.event_c = (e) => {
+
+            console.log("!!!")
 
             let time_new = performance.now();
 
@@ -89,13 +102,14 @@ class TouchScroller {
             this.velocity_x = 0;
             this.velocity_y = 0;
 
-            window.removeEventListener("touchmove", this.event_b);
-            window.removeEventListener("touchend", this.event_c);
+            window.removeEventListener("pointermove", this.event_b);
+            window.removeEventListener("pointerup", this.event_c);
         };
 
         this.event_a = (e) => {
+            console.log("!!!")
 
-            if(!this.GO){
+            if (!this.GO) {
                 e.preventDefault();
                 e.stopPropagation();
                 return false;
@@ -105,7 +119,7 @@ class TouchScroller {
 
             this.GO = false;
 
-            var touch = e.touches[touchid];
+            var touch = e//.touches[touchid];
 
             if (!touch)
                 return;
@@ -113,19 +127,16 @@ class TouchScroller {
             this.origin_y = touch.clientY;
             this.origin_x = touch.clientX;
 
-            window.addEventListener("touchmove", this.event_b);
-            window.addEventListener("touchend", this.event_c);
+            window.addEventListener("pointermove", this.event_b);
+            window.addEventListener("pointerup", this.event_c);
         };
 
-        this.ele.addEventListener("touchstart", this.event_a);
-
-        this.listeners = [];
-
+        this.ele.addEventListener("pointerdown", this.event_a);
     }
 
     _destroy_() {
         this.listeners = null;
-        this.ele.removeEventListener("touchstart", this.event_a);
+        this.ele.removeEventListener("pointerdown", this.event_a);
     }
 
 

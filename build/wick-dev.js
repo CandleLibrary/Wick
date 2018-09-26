@@ -2293,7 +2293,7 @@ var wick = (function (exports) {
     }
 
     /**
-    	JavaScript implementation of a touch scrolling interface using touch events
+        JavaScript implementation of a touch scrolling interface using touch events
     */
     class TouchScroller {
         /** 
@@ -2301,7 +2301,7 @@ var wick = (function (exports) {
             this addEventListener method.
         */
         constructor(element, drag = 0.02, touchid = 0) {
-            
+
             this.origin_x = 0;
             this.origin_y = 0;
             this.velocity_x = 0;
@@ -2309,6 +2309,9 @@ var wick = (function (exports) {
             this.GO = true;
             this.drag = (drag > 0) ? drag : 0.05;
             this.ele = element;
+
+
+            this.listeners = [];
 
             if (!touchid instanceof Number)
                 touchid = 0;
@@ -2339,12 +2342,12 @@ var wick = (function (exports) {
                 for (var i = 0, l = this.listeners.length; i < l; i++) {
 
                     if (this.listeners[i]({
-                            dx:dx|0,
-                            dy:dy|0,
+                            dx: dx | 0,
+                            dy: dy | 0,
                             end
                         })) {
                         this.GO = false;
-                    } 
+                    }
                 }
 
                 READY = true;
@@ -2353,12 +2356,20 @@ var wick = (function (exports) {
             this.event_b = (e) => {
                 time_old = performance.now();
 
-                var touch = e.touches[touchid];
+                var touch = e;//.touches[touchid];
 
                 this.velocity_x = this.origin_x - touch.clientX;
                 this.velocity_y = this.origin_y - touch.clientY;
 
-                if(READY){
+                if (Math.abs(this.velocity_x) > 0.01) {
+                    console.log(this.velocity_x);
+                    //window.removeEventListener("pointermove", this.event_b);
+                    //window.removeEventListener("pointerend", this.event_c);
+                    //this.GO = true;
+                    //return false;
+                }
+
+                if (READY) {
                     this.origin_x = touch.clientX;
                     this.origin_y = touch.clientY;
                     requestAnimationFrame(() => {
@@ -2369,6 +2380,8 @@ var wick = (function (exports) {
             };
 
             this.event_c = (e) => {
+
+                console.log("!!!");
 
                 let time_new = performance.now();
 
@@ -2383,13 +2396,14 @@ var wick = (function (exports) {
                 this.velocity_x = 0;
                 this.velocity_y = 0;
 
-                window.removeEventListener("touchmove", this.event_b);
-                window.removeEventListener("touchend", this.event_c);
+                window.removeEventListener("pointermove", this.event_b);
+                window.removeEventListener("pointerup", this.event_c);
             };
 
             this.event_a = (e) => {
+                console.log("!!!");
 
-                if(!this.GO){
+                if (!this.GO) {
                     e.preventDefault();
                     e.stopPropagation();
                     return false;
@@ -2399,7 +2413,7 @@ var wick = (function (exports) {
 
                 this.GO = false;
 
-                var touch = e.touches[touchid];
+                var touch = e;//.touches[touchid];
 
                 if (!touch)
                     return;
@@ -2407,19 +2421,16 @@ var wick = (function (exports) {
                 this.origin_y = touch.clientY;
                 this.origin_x = touch.clientX;
 
-                window.addEventListener("touchmove", this.event_b);
-                window.addEventListener("touchend", this.event_c);
+                window.addEventListener("pointermove", this.event_b);
+                window.addEventListener("pointerup", this.event_c);
             };
 
-            this.ele.addEventListener("touchstart", this.event_a);
-
-            this.listeners = [];
-
+            this.ele.addEventListener("pointerdown", this.event_a);
         }
 
         _destroy_() {
             this.listeners = null;
-            this.ele.removeEventListener("touchstart", this.event_a);
+            this.ele.removeEventListener("pointerdown", this.event_a);
         }
 
 
@@ -8728,6 +8739,7 @@ var wick = (function (exports) {
         _handleEvent_(e) {
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
             this._event_bind_._up_(this.data, { event: e });
             return false;
         }
@@ -10767,6 +10779,8 @@ var wick = (function (exports) {
             this.dom_up_appended = false;
             this.dom_dn_appended = false;
             this.root = 0;
+            this.sco = 0;
+            this.AUTO_SCRUB = false;
             parent.addTemplate(this);
         }
 
@@ -10800,10 +10814,15 @@ var wick = (function (exports) {
          */
         _scheduledUpdate_() {
             if (this.SCRUBBING) {
-                if (Math.abs(this.sscr) > 0.001) {
+                if(!this.AUTO_SCRUB) {
+                    this.SCRUBBING = false;
+                    return;
+                }
+
+                if (Math.abs(this.sscr) > 0.0001) {
                     this.ssoc += this.sscr;
                     this.scrub(this.ssoc);
-                    this.sscr = this.sscr - this.sscr * 0.08;
+                    this.sscr *= (this.drag);
                     scheduler.queueUpdate(this);
                 } else {
                     this.scrub_v = 0;
@@ -10822,21 +10841,19 @@ var wick = (function (exports) {
          * @param  {Number} scrub_amount [description]
          */
         scrub(scrub_amount, SCRUBBING = true) {
+            this.SCRUBBING = true;
 
-            if (this.SCRUBBING && !SCRUBBING) {
-                this.trs_up.stop();
-                this.trs_dn.stop();
-                this.scrub_offset = 0;
+            if (this.AUTO_SCRUB && !SCRUBBING) {
+                //this.scrub_offset = 0;
                 this.root = this.offset;
-                this.scrub_v = 0;
+                this.sco = this.old_scrub;
                 this.old_scrub = scrub_amount;
-                this.SCRUBBING = false;
+                this.AUTO_SCRUB = false;
             }
 
-            if (scrub_amount !== Infinity) {
-                this.trs_up.stop();
-                this.trs_dn.stop();
+            scrub_amount += this.sco;
 
+            if (scrub_amount !== Infinity) {
                 let s = scrub_amount - this.scrub_offset;
 
                 if (s > 1) {
@@ -10882,7 +10899,20 @@ var wick = (function (exports) {
                     this.time = this.trs_dn.play(-s);
                 }
             } else {
-                if (Math.abs(this.scrub_v) > 0.01) {
+                this.sco = 0;
+                if (Math.abs(this.scrub_v) > 0.0001) {
+
+                    this.AUTO_SCRUB = true;
+                    //Determine the distance traveled and normal drag decay of 0.5
+                    let dist = this.scrub_v * (1/(-0.5+1));
+                    //get the distance to nearest page given the distance traveled
+                    let nearest = (this.root+this.old_scrub+dist-this.scrub_offset);
+                    nearest = (this.scrub_v > 0) ? Math.ceil(nearest) : Math.max(0,Math.floor(nearest));
+                    //get the ratio to the nearest from current position
+                    let nearest_dist = nearest - (this.root+this.old_scrub-this.scrub_offset);
+                    let ratio = nearest_dist / this.scrub_v;
+                    let drag = 1 - (1/ ratio);
+                    this.drag = drag;
                     this.sscr = this.scrub_v;
                     this.ssoc = this.old_scrub;
                     this.SCRUBBING = true;
@@ -10891,7 +10921,9 @@ var wick = (function (exports) {
                     let pos = Math.round(this.old_scrub - this.scrub_offset);
                     let off = pos - this.scrub_offset + this.root;
 
+                    this.sco = 0;
                     this.SCRUBBING = false;
+                    this.AUTO_SCRUB = false;
 
                     if (pos > 0) {
                         this.trs_up.play(pos);

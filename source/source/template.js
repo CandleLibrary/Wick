@@ -54,6 +54,8 @@ export class SourceTemplate extends View {
         this.dom_up_appended = false;
         this.dom_dn_appended = false;
         this.root = 0;
+        this.sco = 0;
+        this.AUTO_SCRUB = false;
         parent.addTemplate(this);
     }
 
@@ -87,10 +89,15 @@ export class SourceTemplate extends View {
      */
     _scheduledUpdate_() {
         if (this.SCRUBBING) {
-            if (Math.abs(this.sscr) > 0.001) {
+            if(!this.AUTO_SCRUB) {
+                this.SCRUBBING = false;
+                return;
+            }
+
+            if (Math.abs(this.sscr) > 0.0001) {
                 this.ssoc += this.sscr
                 this.scrub(this.ssoc);
-                this.sscr = this.sscr - this.sscr * 0.08;
+                this.sscr *= (this.drag);
                 Scheduler.queueUpdate(this);
             } else {
                 this.scrub_v = 0;
@@ -109,21 +116,19 @@ export class SourceTemplate extends View {
      * @param  {Number} scrub_amount [description]
      */
     scrub(scrub_amount, SCRUBBING = true) {
+        this.SCRUBBING = true;
 
-        if (this.SCRUBBING && !SCRUBBING) {
-            this.trs_up.stop();
-            this.trs_dn.stop();
-            this.scrub_offset = 0;
+        if (this.AUTO_SCRUB && !SCRUBBING) {
+            //this.scrub_offset = 0;
             this.root = this.offset;
-            this.scrub_v = 0;
+            this.sco = this.old_scrub;
             this.old_scrub = scrub_amount;
-            this.SCRUBBING = false;
+            this.AUTO_SCRUB = false;
         }
 
-        if (scrub_amount !== Infinity) {
-            this.trs_up.stop();
-            this.trs_dn.stop();
+        scrub_amount += this.sco;
 
+        if (scrub_amount !== Infinity) {
             let s = scrub_amount - this.scrub_offset;
 
             if (s > 1) {
@@ -169,7 +174,20 @@ export class SourceTemplate extends View {
                 this.time = this.trs_dn.play(-s);
             }
         } else {
-            if (Math.abs(this.scrub_v) > 0.01) {
+            this.sco = 0;
+            if (Math.abs(this.scrub_v) > 0.0001) {
+
+                this.AUTO_SCRUB = true;
+                //Determine the distance traveled and normal drag decay of 0.5
+                let dist = this.scrub_v * (1/(-0.5+1));
+                //get the distance to nearest page given the distance traveled
+                let nearest = (this.root+this.old_scrub+dist-this.scrub_offset);
+                nearest = (this.scrub_v > 0) ? Math.ceil(nearest) : Math.max(0,Math.floor(nearest));
+                //get the ratio to the nearest from current position
+                let nearest_dist = nearest - (this.root+this.old_scrub-this.scrub_offset);
+                let ratio = nearest_dist / this.scrub_v;
+                let drag = 1 - (1/ ratio);
+                this.drag = drag;
                 this.sscr = this.scrub_v;
                 this.ssoc = this.old_scrub;
                 this.SCRUBBING = true;
@@ -178,14 +196,16 @@ export class SourceTemplate extends View {
                 let pos = Math.round(this.old_scrub - this.scrub_offset);
                 let off = pos - this.scrub_offset + this.root;
 
+                this.sco = 0;
                 this.SCRUBBING = false;
+                this.AUTO_SCRUB = false;
                 let reverse = false;
 
                 if (pos > 0) {
                     this.trs_up.play(pos);
                     this.render(null, this.activeSources, this.limit, this.offset + pos, true);
                 } else {
-                    this.trs_dn.play(-pos)
+                    this.trs_dn.play(-pos);
                     this.render(null, this.activeSources, this.limit, this.offset + pos, true);
                 }
                 this.scrub_offset = 0;
