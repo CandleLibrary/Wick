@@ -10844,15 +10844,20 @@ var wick = (function (exports) {
             this.SCRUBBING = true;
 
             if (this.AUTO_SCRUB && !SCRUBBING && scrub_amount!=Infinity) {
+                console.log("_____________INTERUPT______________");
                 this.root = this.offset;
                 this.sco = this.old_scrub;
-                this.old_scrub = scrub_amount;
+                this.old_scrub += scrub_amount;
                 this.AUTO_SCRUB = false;
             }
 
-            scrub_amount += this.sco;
+
+                console.log("a",{scrub_amount,offset:this.scrub_offset,os:this.old_scrub, sco:this.sco, v:this.scrub_v});
+
 
             if (scrub_amount !== Infinity) {
+                scrub_amount += this.sco;
+
                 let s = scrub_amount - this.scrub_offset;
 
                 if (s > 1) {
@@ -10911,11 +10916,15 @@ var wick = (function (exports) {
 
                     this.time = this.trs_dn.play(-s);
                 }
+
+                console.log("b",{scrub_amount,offset:this.scrub_offset, v:this.scrub_v});
             } else {
                 this.sco = 0;
                 if (Math.abs(this.scrub_v) > 0.000001) {
+                    console.log({v:this.scrub_v});
                     if(Math.abs(this.scrub_v) < 0.02) this.scrub_v = 0.02 * Math.sign(this.scrub_v);
                     if(Math.abs(this.scrub_v) > 0.3) this.scrub_v = 0.3 * Math.sign(this.scrub_v);
+
 
                     this.AUTO_SCRUB = true;
 
@@ -10942,6 +10951,7 @@ var wick = (function (exports) {
                     let off = pos - this.scrub_offset + this.root;
 
                     this.sco = 0;
+                    this.old_scrub = 0;
                     this.SCRUBBING = false;
                     this.AUTO_SCRUB = false;
 
