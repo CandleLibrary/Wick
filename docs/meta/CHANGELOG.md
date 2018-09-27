@@ -2,6 +2,12 @@
 
 ## v0.4.2a
 
+### 8/29/2018
+
+1. Updated model container code. setup new tests for btree containers.
+
+2. Numerous tweaks and changes to improve stability. 
+
 ### 8/11/2018
 
 1. Revised how data is stored and accessed in Models and ModelContainers. 

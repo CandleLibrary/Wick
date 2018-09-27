@@ -87,9 +87,11 @@ class FailedComponent extends BaseComponent {
  */
 class Component extends BaseComponent {
 
-    constructor(element, presets, DOM, app_components, resolve_pending) {
+    constructor(element, presets, DOM, app_components, resolve_pending, wick_ele) {
 
         super(element);
+
+        this.element = wick_ele;
 
         /**
          * The {@link Model} the 
@@ -148,7 +150,7 @@ class Component extends BaseComponent {
     transitionOut(transitioneer) {
 
         for (let i = 0, l = this.sources.length; i < l; i++)
-            this.sources[i]._transitionOut_({trs_out:transitioneer});
+            this.sources[i]._transitionOut_({ trs_out: transitioneer });
 
         if (!this.LOADED || !this.ACTIVE) {
             this.ACTIVE = false;
@@ -168,7 +170,7 @@ class Component extends BaseComponent {
     transitionIn(transitioneer) {
 
         for (let i = 0, l = this.sources.length; i < l; i++)
-            this.sources[i]._transitionIn_({trs_in:transitioneer});
+            this.sources[i]._transitionIn_({ trs_in: transitioneer });
 
 
         if (!this.LOADED || this.ACTIVE) {
@@ -235,8 +237,19 @@ class Component extends BaseComponent {
             this.wurl_store = wurl;
     }
 
-    _bubbleLink_(){
-        
+    _bubbleLink_() {
+
+    }
+
+    _upImport_(prop_name, data, meta, src) {
+        let d = {};
+        d[prop_name] = data;
+        this.element.up(d, src);
+    }
+
+    down(data, src) {
+        for (let i = 0, l = this.sources.length; i < l; i++)
+            if (src !== this.sources[i]) this.sources[i]._down_(data);
     }
 }
 

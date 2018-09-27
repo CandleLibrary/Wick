@@ -198,7 +198,7 @@ export class Source extends View {
 
     _up_(tap, data, meta) {
         if (this.parent)
-            this.parent._upImport_(tap._prop_, data, meta);
+            this.parent._upImport_(tap._prop_, data, meta, this);
         //else
         //   tap._up_(data, null, true);
 
@@ -207,11 +207,10 @@ export class Source extends View {
     _upImport_(prop_name, data, meta) {
         if (this.taps[prop_name])
             this.taps[prop_name]._up_(data, meta);
-
     }
 
     _update_(data, changed_values, IMPORTED = false) {
-
+        
         if (this.update_tap)
             this.update_tap._downS_(data, IMPORTED);
 

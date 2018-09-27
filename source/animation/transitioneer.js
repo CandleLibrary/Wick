@@ -27,8 +27,12 @@ const Transitioneer = (function() {
 
         _destroy_() {
                 let removeProps = function(seq) {
-                    if (!seq.DESTROYED)
-                        obj_map.delete(seq.obj);
+                    
+                    if (!seq.DESTROYED){
+                        if(obj_map.get(seq.obj) == seq)
+                            obj_map.delete(seq.obj);
+                    }
+
                     seq._destroy_();
                 };
                 this.in_seq.forEach(removeProps);
@@ -94,7 +98,6 @@ const Transitioneer = (function() {
                         obj_map.set(seq.obj, seq);
                     }
                     that.in_delay = Math.max(that.in_delay, parseInt(delay));
-                    console.log(that.in_delay)
                 }
             } else {
                 that.out_duration = Math.max(that.out_duration, parseInt(delay) + parseInt(anim_data_or_duration));

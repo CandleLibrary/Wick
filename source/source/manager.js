@@ -32,10 +32,12 @@ export class SourceManager {
             this.sources[i]._upImport_(name, value, { event: {} });
     }
 
-    _appendToDOM_(element) {
+    _appendToDOM_(element, before_element) {
         this._APPEND_STATE_ = true;
-        if (!this.ele.parentElement || (this.ele.parentElement != element))
-            element.appendChild(this.ele);
+        if (before_element)
+            element.insertBefore(this.element, before_element);
+        else
+            element.appendChild(this.element);
     }
 
     _removeFromDOM_() {
@@ -110,7 +112,7 @@ export class SourceManager {
 
                     if (hook.style)
                         hook.style._setRule_(rule);
-                    else{
+                    else {
                         //ele.style = rule + "";
                     }
                 }
@@ -127,6 +129,11 @@ export class SourceManager {
         return transition_time;
     }
 
+    _upImport_(prop_name, data, meta) {
+        if (this.parent)
+            this.parent._up_(prop_name, data, meta, this);
+    }
+
     _down_(data, changed_values) {
         for (let i = 0, l = this.sources.length; i < l; i++)
             this.sources[i]._down_(data, changed_values);
@@ -137,8 +144,8 @@ export class SourceManager {
             this.sources[i]._update_(data, changed_values);
     }
 
-    _bubbleLink_(){
-        if(this.parent && this.parent._bubbleLink_)
+    _bubbleLink_() {
+        if (this.parent && this.parent._bubbleLink_)
             this.parent._bubbleLink_(this);
         else
             debugger

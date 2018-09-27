@@ -33,10 +33,12 @@ import { Router } from "../../network/router";
 //Other
 import { Lexer } from "../../common/string_parsing/lexer";
 import { Animation } from "../../animation/animation";
+import { Transitioneer } from "../../animation/transitioneer";
 import * as Common from "../../common/common";
 import { Scheduler } from "../../common/scheduler";
 
 const anim = Animation;
+anim.createTransition = () => Transitioneer.createTransition();
 const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);
 model.scheme = (schema, sm) => (sm = class extends SchemedModel {}, sm.schema = schema, sm);
 
@@ -70,6 +72,7 @@ Object.freeze(model);
 
 const core = {
     presets: a => new Presets(a),
+    scheduler: Scheduler,
     common: Common,
     lexer: (string, INCLUDE_WHITE_SPACE_TOKENS) => new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS),
     animation: Animation,

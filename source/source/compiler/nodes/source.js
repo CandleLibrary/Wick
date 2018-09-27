@@ -2,7 +2,8 @@ import { RootNode, BindingCSSRoot } from "./root";
 import { Source } from "../../source";
 import { _appendChild_, _createElement_ } from "../../../common/short_names";
 import { Tap, UpdateTap } from "../../tap/tap";
-
+import { Template } from "../template/template_bindings";
+import { ATTRIB } from "../template/basic_bindings";
 /**
  * Source nodes are used to hook into specific Models, and respond to `update` events from that model.
  * @class      SourceNode (name)
@@ -58,12 +59,13 @@ export class SourceNode extends RootNode {
                 ele.id = this.getAttribute("id");
 
             if (this.getAttribute("style"))
-                ele.id = this.getAttribute("style");
+                ele.style = this.getAttribute("style");
 
             me.ele = ele;
 
-            if (element)
+            if (element) {
                 _appendChild_(element, ele);
+            }
 
             element = ele;
 
@@ -76,6 +78,17 @@ export class SourceNode extends RootNode {
                 style: null,
                 ele: element
             };
+
+            for (let i = 0, l = this._bindings_.length; i < l; i++) {
+                let attr = this._bindings_[i];
+                let bind = attr.binding._bind_(me, errors, taps, element, attr.name);
+                if (hook) {
+                    if (attr.name == "style" || attr.name == "css")
+                        hook.style = bind;
+
+                    hook.bindings.push(bind);
+                }
+            }
 
             me.hooks.push(hook);
         }
@@ -97,7 +110,6 @@ export class SourceNode extends RootNode {
                 me.update_tap = me.taps[name];
 
             out_taps.push(me.taps[name]);
-
         }
 
         for (let i = 0, l = this._attributes_.length; i < l; i++) {
@@ -136,6 +148,8 @@ export class SourceNode extends RootNode {
      * @return     {Object}  Key value pair.
      */
     _processAttributeHook_(name, lex, value) {
+        let start = lex.off;
+
         switch (name[0]) {
             case "#":
                 return null;
@@ -169,6 +183,31 @@ export class SourceNode extends RootNode {
                     return null;
         }
 
-        return { name, value: lex.slice() };
+        //return { name, value: lex.slice() };
+        //return super._processAttributeHook_(name, lex, value);
+        if ( (lex.sl - lex.off) > 0) {
+            let binding = Template(lex, true);
+            if (!binding) {
+                return {
+                    name,
+                    value: lex.slice(start)
+                };
+            }
+            binding.val = name;
+            binding.method = ATTRIB;
+            let attr = {
+                name,
+                value: (start < lex.off) ? lex.slice(start) : true,
+                binding: this._processTapBinding_(binding)
+            };
+            this._bindings_.push(attr);
+            return attr;
+        }
+
+        return {
+            name,
+            value: lex.slice(start)
+        };
+
     }
 }

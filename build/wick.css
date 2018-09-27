@@ -29,7 +29,7 @@ case a {
 /* Component Wrapper */
 /* Used to wrap component elements that are not part of a case */
 .comp_wrap {
-    transition: all 0.25s;
+    display: contents;
 }
 
 /* Component Wrapper */

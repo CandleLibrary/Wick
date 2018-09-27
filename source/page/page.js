@@ -90,11 +90,17 @@ export class PageView {
 
             for (var i = 0; i < this.eles.length; i++) {
                 let element = this.eles[i];
+                element.page = this;
                 element.setComponents(model_constructors, component_constructors, presets, DOM, wurl, unresolved, resolution);
             }
 
             resolution();
         });
+    }
+
+    up(data, src){
+        for (var i = 0; i < this.eles.length; i++)
+            this.eles[i].down(data, src);
     }
 
     transitionOut(transitioneer) {

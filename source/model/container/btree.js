@@ -322,7 +322,8 @@ class BtreeNode {
                     if (unique_key) {
                         if (this.nodes[i][unique_key] !== model[unique_key]) { continue; }
                     } else
-                        this.nodes[i] = model;
+                        this.nodes[i].set(model);
+                    
 
                     result.added = false;
 

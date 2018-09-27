@@ -16,7 +16,6 @@ import { _SealedProperty_, _FrozenProperty_ } from "../common/short_names";
  *   @memberof module:wick~internals.model
  */
 function CreateSchemedProperty(object, scheme, schema_name, index) {
-
     if (object[schema_name])
         return;
 
@@ -89,14 +88,11 @@ class SchemedModel extends ModelBase {
             this.constructor.schema = schema;
 
             if (schema) {
-                console.log(schema)
 
                 let __FinalConstructor__ = schema.__FinalConstructor__;
 
                 let constructor = this.constructor;
                 let prototype = constructor.prototype;
-
-                _FrozenProperty_(prototype, "schema", schema);
 
                 if (!__FinalConstructor__) {
                     let count = 0;
@@ -105,8 +101,9 @@ class SchemedModel extends ModelBase {
                     for (let schema_name in schema) {
                         let scheme = schema[schema_name];
 
-                        if (schema_name == "self" && Array.isArray(scheme))
-                            return CreateSchemedContainer(schema, root, address);
+                        if (schema_name == "self" && Array.isArray(scheme)) 
+                            return new SchemedContainer(schema, root, address);
+                        
 
                         if (schema_name == "getHook") {
                             prototype.getHook = scheme;
@@ -123,8 +120,8 @@ class SchemedModel extends ModelBase {
                                 _SealedProperty_(prototype, name, schema.proto[name]);
                             continue;
                         }
-                        
-                        if (typeof(scheme) == "function"){
+
+                        if (typeof(scheme) == "function") {
                             CreateModelProperty(prototype, scheme, schema_name, count);
                             continue;
                         }
@@ -160,11 +157,14 @@ class SchemedModel extends ModelBase {
 
                     Object.seal(constructor);
 
-                    _FrozenProperty_(schema, "__FinalConstructor__", constructor);
+                    schema.__FinalConstructor__ = constructor;
+                    //_FrozenProperty_(schema, "__FinalConstructor__", constructor);
 
                     //Start the process over with a newly minted Model that has the properties defined in the Schema
                     return new schema.__FinalConstructor__(data, root, address);
                 }
+
+                _FrozenProperty_(prototype, "schema", schema);
             } else
                 return new Model(data, root, address);
         }
@@ -220,16 +220,16 @@ class SchemedModel extends ModelBase {
     _createProp_() {}
 }
 
-function CreateSchemedContainer(schema, root, address) {
-    let data = schema.self;
+class SchemedContainer extends ArrayModelContainer {
+    
+    constructor(schema, root, address) {
 
-    let out = new ArrayModelContainer(data, root, address);
+        super(schema.self, root, address);
 
-    if (schema.proto)
-        for (let name in schema.proto)
-            _SealedProperty_(out, name, schema.proto[name]);
-
-    return out;
+        if (schema.proto)
+            for (let name in schema.proto)
+                _SealedProperty_(this, name, schema.proto[name]);
+    }
 }
 
 export { SchemedModel };

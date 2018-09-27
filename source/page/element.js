@@ -15,11 +15,12 @@ export class Element {
      *
      * @param      {HTMLElement}  element  The HTMLElement that this Element will be bound to. 
      */
-    constructor(element) {
+    constructor(element, page) {
         this.id = (element.classList) ? element.classList[0] : element.id;
         this.components = [];
         this.bubbled_elements = null;
         this.wraps = [];
+        this.page = page;
 
         //The original element container.
         //this.parent_element = parent_element;
@@ -62,6 +63,15 @@ export class Element {
 
             component.LOADED = false;
         }
+    }
+
+    up(data, src){
+        this.page.up(data, src);
+    }
+
+    down(data, src){
+        for (var i = 0; i < this.components.length; i++)
+            this.components[i].down(data, src);
     }
 
     loadComponents(wurl) {
@@ -150,7 +160,7 @@ export class Element {
 
                 if (!id) {
 
-                    app_component = new Component(component, presets, DOM, this.common_components, res_pending);
+                    app_component = new Component(component, presets, DOM, this.common_components, res_pending, this);
 
                     app_component.handleUrlUpdate(wurl);
                     
