@@ -91,8 +91,8 @@ export class Color extends Float64Array {
         );
     }
 
-    lerp(to, l){
-        return this.add(to.sub(this).mult(l));
+    lerp(to, t){
+        return this.add(to.sub(this).mult(t));
     }
 
     toString() {

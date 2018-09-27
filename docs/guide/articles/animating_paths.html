@@ -1,0 +1,26 @@
+<html>
+	<head>
+		<script src="/build/wick-dev.js"></script>
+	</head>
+
+	<body>
+		<app>
+			<element>
+				<component>
+				</component>
+			</element>
+		</app>
+
+		<script>
+			console.log(wick)
+			window.wpath = wick.core.common.Path
+	        let router = wick.startRouting({
+				models: wick.model({
+					models:{	
+						users: [{name:"Julian"},{name:"Paul"},{name:"Gilbert"},{name:"Ashley"},{name:"May"}]
+					}
+				})
+			})
+    	</script>
+	</body>
+</html>

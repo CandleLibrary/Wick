@@ -5,7 +5,12 @@ import {Lexer} from "./string_parsing/lexer";
 //Math
 import {QBezier} from "./math/quadratic_bezier";
 import {CBezier} from "./math/cubic_bezier";
+
+//Touch
 import {TouchScroller} from "./event/touch_scroller";
+
+//Path
+import {Path} from "./design/path";
 
 /*********** String Parsing Basic Function ************************/
 
@@ -13,7 +18,8 @@ export {
 	Lexer,
 	QBezier,
 	CBezier,
-	TouchScroller
+	TouchScroller,
+  Path
 };
 
 /****** Global Object Extenders *************/
