@@ -49,6 +49,11 @@ export class SourceTemplateNode extends RootNode {
                 let offset = node.getAttrib("offset");
                 let scrub = node.getAttrib("scrub");
 
+                if(limit && limit.binding.type == 1){
+                    me.limit = parseInt(limit.value);
+                    limit = null;
+                }
+
                 if (sort || filter || limit || offset || scrub) //Only create Filter node if it has a sorting bind or a filter bind
                     me._filters_.push(new FilterIO(source, errors, taps, me, on, sort, filter, limit, offset, scrub));
             }

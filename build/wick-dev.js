@@ -2361,14 +2361,6 @@ var wick = (function (exports) {
                 this.velocity_x = this.origin_x - touch.clientX;
                 this.velocity_y = this.origin_y - touch.clientY;
 
-                if (Math.abs(this.velocity_x) > 0.01) {
-                    console.log(this.velocity_x);
-                    //window.removeEventListener("pointermove", this.event_b);
-                    //window.removeEventListener("pointerend", this.event_c);
-                    //this.GO = true;
-                    //return false;
-                }
-
                 if (READY) {
                     this.origin_x = touch.clientX;
                     this.origin_y = touch.clientY;
@@ -2380,9 +2372,6 @@ var wick = (function (exports) {
             };
 
             this.event_c = (e) => {
-
-                console.log("!!!");
-
                 let time_new = performance.now();
 
                 let diff = time_new - time_old;
@@ -2401,7 +2390,6 @@ var wick = (function (exports) {
             };
 
             this.event_a = (e) => {
-                console.log("!!!");
 
                 if (!this.GO) {
                     e.preventDefault();
@@ -10813,16 +10801,26 @@ var wick = (function (exports) {
          * @protected
          */
         _scheduledUpdate_() {
+
             if (this.SCRUBBING) {
-                if(!this.AUTO_SCRUB) {
+                if (!this.AUTO_SCRUB) {
                     this.SCRUBBING = false;
                     return;
                 }
 
-                if (Math.abs(this.sscr) > 0.0001) {
+                if (
+                    Math.abs(this.sscr) > 0.0001
+                ) {
                     this.ssoc += this.sscr;
                     this.scrub(this.ssoc);
                     this.sscr *= (this.drag);
+
+                    let pos = this.old_scrub - this.scrub_offset + this.offset;
+
+                    if (!((this.sscr < 0 || pos < this.max) &&
+                            (this.sscr > 0 || pos > 0))) {
+                        this.sscr = 0;
+                    }
                     scheduler.queueUpdate(this);
                 } else {
                     this.scrub_v = 0;
@@ -10830,10 +10828,13 @@ var wick = (function (exports) {
                     this.old_scrub = 0;
                     this.SCRUBBING = false;
                 }
-            } else if (this.UPDATE_FILTER)
+            } else if (this.UPDATE_FILTER) {
+                console.log(1);
                 this.filterUpdate();
-            else
+            } else {
+                console.log(2);
                 this.limitUpdate();
+            }
         }
 
         /**
@@ -10843,17 +10844,12 @@ var wick = (function (exports) {
         scrub(scrub_amount, SCRUBBING = true) {
             this.SCRUBBING = true;
 
-            if (this.AUTO_SCRUB && !SCRUBBING && scrub_amount!=Infinity) {
-                console.log("_____________INTERUPT______________");
+            if (this.AUTO_SCRUB && !SCRUBBING && scrub_amount != Infinity) {
                 this.root = this.offset;
                 this.sco = this.old_scrub;
                 this.old_scrub += scrub_amount;
                 this.AUTO_SCRUB = false;
             }
-
-
-                console.log("a",{scrub_amount,offset:this.scrub_offset,os:this.old_scrub, sco:this.sco, v:this.scrub_v});
-
 
             if (scrub_amount !== Infinity) {
                 scrub_amount += this.sco;
@@ -10878,8 +10874,8 @@ var wick = (function (exports) {
 
                 if (s > 0) {
 
-                    if(this.offset >= this.max){
-                        if(s > 0) s = 0;
+                    if (this.offset >= this.max) {
+                        if (s > 0) s = 0;
                     }
 
 
@@ -10896,7 +10892,7 @@ var wick = (function (exports) {
                     this.time = this.trs_up.play(s);
                 } else {
 
-                    if(this.offset < 1 && s < 0){ 
+                    if (this.offset < 1 && s < 0) {
                         s = 0;
                         this.scrub_v = 0;
                     }
@@ -10916,30 +10912,28 @@ var wick = (function (exports) {
 
                     this.time = this.trs_dn.play(-s);
                 }
-
-                console.log("b",{scrub_amount,offset:this.scrub_offset, v:this.scrub_v});
             } else {
                 this.sco = 0;
-                if (Math.abs(this.scrub_v) > 0.000001) {
-                    console.log({v:this.scrub_v});
-                    if(Math.abs(this.scrub_v) < 0.02) this.scrub_v = 0.02 * Math.sign(this.scrub_v);
-                    if(Math.abs(this.scrub_v) > 0.3) this.scrub_v = 0.3 * Math.sign(this.scrub_v);
 
+                if (Math.abs(this.scrub_v) > 0.000001) {
+
+                    if (Math.abs(this.scrub_v) < 0.05) this.scrub_v = 0.05 * Math.sign(this.scrub_v);
+                    if (Math.abs(this.scrub_v) > 0.2) this.scrub_v = 0.2 * Math.sign(this.scrub_v);
 
                     this.AUTO_SCRUB = true;
 
                     //Determine the distance traveled and normal drag decay of 0.5
-                    let dist = this.scrub_v * (1/(-0.9+1));
+                    let dist = this.scrub_v * (1 / (-0.5 + 1));
 
                     //get the distance to nearest page given the distance traveled
-                    let nearest = (this.root+this.old_scrub+dist-this.scrub_offset);
-                    
-                    nearest = (this.scrub_v > 0) ? Math.min(this.max,Math.ceil(nearest)) : Math.max(0,Math.floor(nearest));
-                    
+                    let nearest = (this.root + this.old_scrub + dist - this.scrub_offset);
+
+                    nearest = (this.scrub_v > 0) ? Math.min(this.max, Math.ceil(nearest)) : Math.max(0, Math.floor(nearest));
+
                     //get the ratio of the distance from the current position and distance to the nearest 
-                    let nearest_dist = nearest - (this.root+this.old_scrub-this.scrub_offset);
+                    let nearest_dist = nearest - (this.root + this.old_scrub - this.scrub_offset);
                     let ratio = nearest_dist / this.scrub_v;
-                    let drag = Math.abs(1 - (1/ ratio));
+                    let drag = Math.abs(1 - (1 / ratio));
 
                     this.drag = drag;
                     this.sscr = this.scrub_v;
@@ -10947,21 +10941,8 @@ var wick = (function (exports) {
                     this.SCRUBBING = true;
                     scheduler.queueUpdate(this);
                 } else {
-                    let pos = Math.round(this.old_scrub - this.scrub_offset);
-                    let off = pos - this.scrub_offset + this.root;
-
-                    this.sco = 0;
-                    this.old_scrub = 0;
-                    this.SCRUBBING = false;
-                    this.AUTO_SCRUB = false;
-
-                    if (pos > 0) {
-                        this.trs_up.play(pos);
-                        this.render(null, this.activeSources, this.limit, this.offset + pos, true);
-                    } else {
-                        this.trs_dn.play(-pos);
-                        this.render(null, this.activeSources, this.limit, this.offset + pos, true);
-                    }
+                    let pos = Math.round(this.old_scrub - this.scrub_offset + this.offset);
+                    this.render(null, this.activeSources, this.limit, pos, true).play(1);
                     this.scrub_offset = 0;
                 }
             }
@@ -10985,7 +10966,7 @@ var wick = (function (exports) {
                 direction = this.offset < offset;
                 let ein = [];
                 let pages = Math.ceil(ol / limit);
-                this.max = pages - 1; 
+                this.max = pages - 1;
                 this.offset = Math.max(0, Math.min(pages - 1, offset));
                 this.root = this.offset;
                 let off = this.offset * limit;
@@ -11053,12 +11034,14 @@ var wick = (function (exports) {
                 trs: transition.in,
                 index: 0
             };
+
             let trs_out = {
                 trs: transition.out,
                 index: 0
             };
 
 
+            for (let i = 0; i < ol; i++) output[i].index = i;
             for (let i = 0; i < ol; i++) output[i].index = i;
 
             for (let i = 0; i < al; i++) {
@@ -11070,12 +11053,12 @@ var wick = (function (exports) {
                         os.index = j;
                         os._appendToDOM_(this.ele, ele);
                         trs_in.index = j;
+                        os.index = -1;
                         os._transitionIn_(trs_in, (direction) ? "trs_in_up" : "trs_in_dn");
                         j++;
                     }
                 } else if (as.index < 0) {
                     if (!NO_TRANSITION) {
-
                         switch (as.index) {
                             case -2:
                             case -3:
@@ -11096,12 +11079,12 @@ var wick = (function (exports) {
                     as._TRANSITION_STATE_ = true;
                     j++;
                 }
-                as.index = j;
+                as.index = -1;
             }
 
             while (j < output.length) {
                 output[j]._appendToDOM_(this.ele);
-                output[j].index = j;
+                output[j].index = -1;
                 trs_in.index = j;
                 output[j]._transitionIn_(trs_in, (direction) ? "trs_in_up" : "trs_in_dn");
                 j++;
@@ -11128,131 +11111,134 @@ var wick = (function (exports) {
             if (OWN_TRANSITION)
                 if (NO_TRANSITION) {
                     return transition;
-                } else
+                } else {
                     transition.start();
+                }
 
             return transition;
         }
 
         limitUpdate(transition, output) {
 
-                let limit = 0,
-                    offset = 0;
+            let limit = this.limit,
+                offset = 0;
 
-                for (let i = 0, l = this._filters_.length; i < l; i++) {
-                    let filter = this._filters_[i];
-                    if (filter._CAN_USE_) {
-                        if (filter._CAN_LIMIT_) limit = filter._value_;
-                        if (filter._CAN_OFFSET_) offset = filter._value_;
-                    }
+            for (let i = 0, l = this._filters_.length; i < l; i++) {
+                let filter = this._filters_[i];
+                if (filter._CAN_USE_) {
+                    if (filter._CAN_LIMIT_) limit = filter._value_;
+                    if (filter._CAN_OFFSET_) offset = filter._value_;
                 }
-
-                this.SCRUBBING = false;
-                this.scrub_offset = 0;
-                this.scrub_v = 0;
-
-                this.render(transition, output, limit, offset);
             }
-            /**
-             * Filters stored Sources with search terms and outputs the matching Sources to the DOM.
-             * 
-             * @protected
-             */
+
+            this.SCRUBBING = false;
+            this.scrub_offset = 0;
+            this.scrub_v = 0;
+
+            this.render(transition, output, limit, offset);
+        }
+        /**
+         * Filters stored Sources with search terms and outputs the matching Sources to the DOM.
+         * 
+         * @protected
+         */
         filterUpdate(transition) {
-                let output = this.sources.slice();
-                if (output.length < 1) return;
-                for (let i = 0, l = this._filters_.length; i < l; i++) {
-                    let filter = this._filters_[i];
-                    if (filter._CAN_USE_) {
-                        if (filter._CAN_FILTER_) output = output.filter(filter._filter_function_._filter_expression_);
-                        if (filter._CAN_SORT_) output = output.sort(filter._sort_function_);
-                    }
+            let output = this.sources.slice();
+            if (output.length < 1) return;
+            for (let i = 0, l = this._filters_.length; i < l; i++) {
+                let filter = this._filters_[i];
+                if (filter._CAN_USE_) {
+                    if (filter._CAN_FILTER_) output = output.filter(filter._filter_function_._filter_expression_);
+                    if (filter._CAN_SORT_) output = output.sort(filter._sort_function_);
                 }
-                this.activeSources = output;
-                this.limitUpdate(transition, output);
-                this.UPDATE_FILTER = false;
             }
-            /**
-             * Removes stored Sources that do not match the ModelContainer contents. 
-             *
-             * @param      {Array}  new_items  Array of Models that are currently stored in the ModelContainer. 
-             * 
-             * @protected
-             */
+            this.activeSources = output;
+            this.limitUpdate(transition, output);
+            this.UPDATE_FILTER = false;
+        }
+        /**
+         * Removes stored Sources that do not match the ModelContainer contents. 
+         *
+         * @param      {Array}  new_items  Array of Models that are currently stored in the ModelContainer. 
+         * 
+         * @protected
+         */
         cull(new_items) {
-                if (!new_items) new_items = [];
-                let transition = Transitioneer.createTransition();
-                if (new_items.length == 0) {
-                    let sl = this.sources.length;
-                    for (let i = 0; i < sl; i++) this.sources[i]._transitionOut_(transition, "", true);
-                    this.sources.length = 0;
-                    if (sl > 0) this.parent._upImport_("template_empty", {
-                        template: this,
-                        ele: this.ele,
-                        trs: transition.out
-                    });
+            if (!new_items) new_items = [];
+            let transition = Transitioneer.createTransition();
+            if (new_items.length == 0) {
+                let sl = this.sources.length;
+                for (let i = 0; i < sl; i++) this.sources[i]._transitionOut_(transition, "", true);
+                this.sources.length = 0;
+                if (sl > 0) this.parent._upImport_("template_empty", {
+                    template: this,
+                    ele: this.ele,
+                    trs: transition.out
+                });
+            } else {
+                let exists = new Map(new_items.map(e => [e, true]));
+                var out = [];
+                for (let i = 0, l = this.activeSources.length; i < l; i++)
+                    if (exists.has(this.activeSources[i].model)) {
+                        exists.set(this.activeSources[i].model, false);
+                    }
+                for (let i = 0, l = this.sources.length; i < l; i++)
+                    if (!exists.has(this.sources[i].model)) {
+                        this.sources[i]._transitionOut_(transition, "", true);
+                        this.sources[i].index = -1;
+                        this.sources.splice(i, 1);
+                        l--;
+                        i--;
+                    } else exists.set(this.sources[i].model, false);
+                exists.forEach((v, k, m) => {
+                    if (v) out.push(k);
+                });
+                if (out.length > 0) {
+                    this.added(out, transition);
                 } else {
-                    let exists = new Map(new_items.map(e => [e, true]));
-                    var out = [];
-                    for (let i = 0, l = this.activeSources.length; i < l; i++)
-                        if (exists.has(this.activeSources[i].model)) {
-                            exists.set(this.activeSources[i].model, false);
-                        }
-                    for (let i = 0, l = this.sources.length; i < l; i++)
-                        if (!exists.has(this.sources[i].model)) {
-                            this.sources[i]._transitionOut_(transition, "", true);
-                            this.sources[i].index = -1;
-                            this.sources.splice(i, 1);
-                            l--;
-                            i--;
-                        } else exists.set(this.sources[i].model, false);
-                    exists.forEach((v, k, m) => {
-                        if (v) out.push(k);
-                    });
-                    if (out.length > 0) {
-                        this.added(out, transition);
-                    } else {
-                        for (let i = 0, j = 0, l = this.activeSources.length; i < l; i++, j++) {
-                            if (this.activeSources[i]._TRANSITION_STATE_) {
-                                if (j !== i) {
-                                    this.activeSources[i]._update_({
-                                        arrange: {
-                                            index: i,
-                                            trs: transition.in
-                                        }
-                                    });
-                                }
-                            } else this.activeSources.splice(i, 1), i--, l--;
-                        }
+                    for (let i = 0, j = 0, l = this.activeSources.length; i < l; i++, j++) {
+                        if (this.activeSources[i]._TRANSITION_STATE_) {
+                            if (j !== i) {
+                                this.activeSources[i]._update_({
+                                    arrange: {
+                                        index: i,
+                                        trs: transition.in
+                                    }
+                                });
+                            }
+                        } else this.activeSources.splice(i, 1), i--, l--;
                     }
+
+                    this.filterUpdate(transition);
                 }
-                transition.start();
             }
-            /**
-             * Called by the ModelContainer when Models have been removed from its set.
-             *
-             * @param      {Array}  items   An array of items no longer stored in the ModelContainer. 
-             */
+            transition.start();
+        }
+        /**
+         * Called by the ModelContainer when Models have been removed from its set.
+         *
+         * @param      {Array}  items   An array of items no longer stored in the ModelContainer. 
+         */
         removed(items, transition = Transitioneer.createTransition()) {
-                debugger
-                for (let i = 0; i < items.length; i++) {
-                    let item = items[i];
-                    for (let j = 0; j < this.sources.length; j++) {
-                        let Source = this.sources[j];
-                        if (Source._model_ == item) {
-                            this.sources.splice(j, 1);
-                            Source._transitionOut_(transition, "", true);
-                            break;
-                        }
+            debugger
+            for (let i = 0; i < items.length; i++) {
+                let item = items[i];
+                for (let j = 0; j < this.sources.length; j++) {
+                    let Source = this.sources[j];
+                    if (Source._model_ == item) {
+                        this.sources.splice(j, 1);
+                        Source._transitionOut_(transition, "", true);
+                        break;
                     }
                 }
-                this.filterUpdate(transition);
             }
-            /**
-             * Called by the ModelContainer when Models have been added to its set.
-             *
-             * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
-             */
+            this.filterUpdate(transition);
+        }
+        /**
+         * Called by the ModelContainer when Models have been added to its set.
+         *
+         * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
+         */
         added(items, transition = Transitioneer.createTransition()) {
             for (let i = 0; i < items.length; i++) {
                 let mgr = this._package_.mount(null, items[i], false);
@@ -11330,6 +11316,7 @@ var wick = (function (exports) {
     class FilterIO extends IOBase {
         constructor(source, errors, taps, template, activation, sort, filter, limit, offset, scrub) {
             super(template, errors);
+
             this.template = template;
             this._activation_function_ = null;
             this._sort_function_ = null;
@@ -11391,7 +11378,12 @@ var wick = (function (exports) {
 
         _scheduledUpdate_() {}
         
-        update(){}
+        update(){
+            if(this._CAN_SORT_ || this._CAN_FILTER_){
+                this.template.UPDATE_FILTER = true;
+                 scheduler.queueUpdate(this.template);
+            }
+        }
 
         _destroy_() {
             if (this._sort_function_)
@@ -11408,7 +11400,7 @@ var wick = (function (exports) {
 
         get data() {}
         set data(v) {
-            let cache = this._CAN_USE_;
+
             this._CAN_USE_ = false;
             if (v) this._CAN_USE_ = true;
             this._value_ = v;
@@ -11525,6 +11517,11 @@ var wick = (function (exports) {
                     let limit = node.getAttrib("limit");
                     let offset = node.getAttrib("offset");
                     let scrub = node.getAttrib("scrub");
+
+                    if(limit && limit.binding.type == 1){
+                        me.limit = parseInt(limit.value);
+                        limit = null;
+                    }
 
                     if (sort || filter || limit || offset || scrub) //Only create Filter node if it has a sorting bind or a filter bind
                         me._filters_.push(new FilterIO(source, errors, taps, me, on, sort, filter, limit, offset, scrub));

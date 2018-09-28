@@ -67,14 +67,6 @@ class TouchScroller {
             this.velocity_x = this.origin_x - touch.clientX;
             this.velocity_y = this.origin_y - touch.clientY;
 
-            if (Math.abs(this.velocity_x) > 0.01) {
-                console.log(this.velocity_x)
-                //window.removeEventListener("pointermove", this.event_b);
-                //window.removeEventListener("pointerend", this.event_c);
-                //this.GO = true;
-                //return false;
-            }
-
             if (READY) {
                 this.origin_x = touch.clientX;
                 this.origin_y = touch.clientY;
@@ -86,9 +78,6 @@ class TouchScroller {
         };
 
         this.event_c = (e) => {
-
-            console.log("!!!")
-
             let time_new = performance.now();
 
             let diff = time_new - time_old;
@@ -107,7 +96,6 @@ class TouchScroller {
         };
 
         this.event_a = (e) => {
-            console.log("!!!")
 
             if (!this.GO) {
                 e.preventDefault();

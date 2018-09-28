@@ -2,13 +2,14 @@ import { IOBase } from "./io";
 import { Scheduler } from "../../common/scheduler";
 let expr_check = (expr)=>{
     return (expr.type == 2 && typeof(expr.func) == "function");
-}
+};
 
 
 
 export class FilterIO extends IOBase {
     constructor(source, errors, taps, template, activation, sort, filter, limit, offset, scrub) {
         super(template, errors);
+
         this.template = template;
         this._activation_function_ = null;
         this._sort_function_ = null;
@@ -70,7 +71,12 @@ export class FilterIO extends IOBase {
 
     _scheduledUpdate_() {}
     
-    update(){}
+    update(){
+        if(this._CAN_SORT_ || this._CAN_FILTER_){
+            this.template.UPDATE_FILTER = true;
+             Scheduler.queueUpdate(this.template);
+        }
+    }
 
     _destroy_() {
         if (this._sort_function_)
@@ -87,7 +93,7 @@ export class FilterIO extends IOBase {
 
     get data() {}
     set data(v) {
-        let cache = this._CAN_USE_;
+
         this._CAN_USE_ = false;
         if (v) this._CAN_USE_ = true;
         this._value_ = v;
