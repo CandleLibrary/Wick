@@ -17,7 +17,7 @@ export class IOBase {
 }
 
 /**
- *   The IO is the last link in the Source chain. It is responsible for putting date into the DOM through the element it binds to.
+ *   The IO is the last link in the Source chain. It is responsible for putting date into the DOM through the element it binds to. Alternativly, in derived versions of `IO`, it is responsible for retriving values from user inputs from input elements and events.
  *   @param {Source} tap - The tap {@link Source}, used internally to build a hierarchy of Sources.
  *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
  *   @param {Presets} presets - An instance of the {@link Presets} object.

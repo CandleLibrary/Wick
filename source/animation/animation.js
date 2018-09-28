@@ -19,8 +19,13 @@ import {
 import {
     Path
 } from "../common/design/path";
+import {
+    Transform2D
+} from "../common/math/transform";
+
 
 const Animation = (function anim() {
+	var USE_TRANSFORM = false;
 	const
 		CSS_STYLE = 0,
 		JS_OBJECT = 1,
@@ -54,15 +59,18 @@ const Animation = (function anim() {
 			this.keys = [];
 			this.current_val = null;
 
-			this.type = null;
+			let IS_ARRAY = Array.isArray(keys);
 
-			if (Array.isArray(keys)) {
-				this.type = this.getType(keys[0].value);
+			if(prop_name == "transform")
+				this.type = Transform2D;
+			else
+				this.type = (IS_ARRAY) ? this.getType(keys[0].value) : this.getType(keys.value);
+			
+			if (IS_ARRAY) 
 				keys.forEach(k => this.addKey(k));
-			} else {
-				this.type = this.getType(keys.value);
-				this.addKey(keys);
-			}
+			 else 				
+			 	this.addKey(keys);
+			
 
 			this.getValue(obj, prop_name, type);
 		}
@@ -107,11 +115,14 @@ const Animation = (function anim() {
 		}
 
 		addKey(key) {
+			let l = this.keys.length;
+			let pkey = this.keys[l-1];
+			let v = (key.value !== undefined) ? key.value : key.v
 			let own_key = {
-				val: ((key.value !== undefined) ? new this.type(key.value) : new this.type(key.v)) || 0,
+				val: (pkey) ? pkey.val.copy(v) : new this.type(v) || 0,
 				dur: key.duration || key.dur || 0,
 				del: key.delay || key.del || 0,
-				ease: key.easing || key.e || Linear,
+				ease: key.easing || key.e || ((pkey) ? pkey.ease : Linear),
 				len: 0
 			};
 
@@ -160,8 +171,9 @@ const Animation = (function anim() {
 
 		setProp(obj, prop_name, value, type) {
 			
-			if (type == CSS_STYLE)
+			if (type == CSS_STYLE){
 				obj.style[prop_name] = value;
+			}
 			else
 				obj[prop_name] = value;
 		}
@@ -260,6 +272,7 @@ const Animation = (function anim() {
 		}
 
 		_scheduledUpdate_(a, t) {
+
 			if (this.run(this.time += t))
 				Scheduler.queueUpdate(this);
 			else
@@ -360,6 +373,8 @@ const Animation = (function anim() {
 			return group;
 		},
 
+		set USE_TRANSFORM(v){USE_TRANSFORM = !!v},
+		get USE_TRANSFORM(){return USE_TRANSFORM},
 		easing: {
 			linear: Linear,
 			ease: new CBezier(0.25, 0.1, 0.25, 1),

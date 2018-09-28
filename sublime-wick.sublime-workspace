@@ -541,7 +541,7 @@
 			"file": "source/animation/animation.js",
 			"settings":
 			{
-				"buffer_size": 11483,
+				"buffer_size": 7584,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -550,7 +550,7 @@
 			"file": "/D/pytrucks/static/js/app/cases/scroll_calendar/day.js",
 			"settings":
 			{
-				"buffer_size": 12779,
+				"buffer_size": 12771,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -559,17 +559,26 @@
 			"file": "source/common/event/touch_scroller.js",
 			"settings":
 			{
-				"buffer_size": 3684,
+				"buffer_size": 3896,
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"contents": "96.87.53.197\n\"C:\\Program Files\\Dell SonicWALL\\Global VPN Client\\SWGVC.exe\" /E \"Boedecker\"\n\nNewday15\n\nsdiede\nitstime15\n\n35 Minutes\n\n3 MBps up \n0.5 down\n\n2:20\n",
+			"contents": "96.87.53.197\n\"C:\\Program Files\\Dell SonicWALL\\Global VPN Client\\SWGVC.exe\" /E \"Boedecker\"\n\nNewday15\n\nsdiede\nitstime15\n\n35 Minutes\n\n3 MBps up \n0.5 down\n\n2:20\n\n!Newjob9\n",
 			"settings":
 			{
-				"buffer_size": 157,
+				"buffer_size": 167,
 				"line_ending": "Windows",
 				"name": "96.87.53.197"
+			}
+		},
+		{
+			"contents": "Need a quote for a Dell D6000 dock and two Display port adaptors:\nhttps://www.amazon.com/Dell-452-BCYT-D6000-Universal-Black/dp/B071YTQBXM\nhttps://www.amazon.com/CableDeconn-Multi-Function-Displayport-Adapter-Converter/dp/B0192Y9XSE",
+			"settings":
+			{
+				"buffer_size": 232,
+				"line_ending": "Windows",
+				"name": "Need a quote for a Dell D6000 dock and two Display"
 			}
 		},
 		{
@@ -584,7 +593,7 @@
 			"file": "source/animation/transformto.js",
 			"settings":
 			{
-				"buffer_size": 2852,
+				"buffer_size": 3092,
 				"line_ending": "Windows"
 			}
 		},
@@ -592,7 +601,7 @@
 			"file": "source/model/container/btree.js",
 			"settings":
 			{
-				"buffer_size": 12809,
+				"buffer_size": 12833,
 				"line_ending": "Windows"
 			}
 		},
@@ -600,7 +609,7 @@
 			"file": "source/model/container/base.js",
 			"settings":
 			{
-				"buffer_size": 13641,
+				"buffer_size": 13874,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -617,7 +626,7 @@
 			"file": "source/source/template.js",
 			"settings":
 			{
-				"buffer_size": 9094,
+				"buffer_size": 10454,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -818,7 +827,7 @@
 	],
 	"find":
 	{
-		"height": 46.0
+		"height": 24.0
 	},
 	"find_in_files":
 	{
@@ -982,7 +991,7 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 6,
 			"sheets":
 			[
 				{
@@ -1016,10 +1025,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1082.0,
+						"translation.y": 574.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
@@ -1035,8 +1044,8 @@
 						"selection":
 						[
 							[
-								286,
-								286
+								226,
+								226
 							]
 						],
 						"settings":
@@ -1066,15 +1075,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 11483,
+						"buffer_size": 7584,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1105,
-								1105
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1083,10 +1092,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 588.0,
+						"translation.y": 5161.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
@@ -1095,15 +1104,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 12779,
+						"buffer_size": 12771,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1395,
-								1395
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1116,7 +1125,7 @@
 						"translation.y": 540.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
@@ -1125,7 +1134,7 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3684,
+						"buffer_size": 3896,
 						"regions":
 						{
 						},
@@ -1146,7 +1155,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -1154,15 +1163,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 157,
+						"buffer_size": 167,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								156,
-								156
+								167,
+								167
 							]
 						],
 						"settings":
@@ -1174,11 +1183,39 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
 					"buffer": 6,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 232,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								232,
+								232
+							]
+						],
+						"settings":
+						{
+							"auto_name": "Need a quote for a Dell D6000 dock and two Display",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
 					"file": "source/common/string_parsing/lexer.js",
 					"semi_transient": false,
 					"settings":
@@ -1204,16 +1241,16 @@
 						"translation.y": 4590.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 8,
 					"file": "source/animation/transformto.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2852,
+						"buffer_size": 3092,
 						"regions":
 						{
 						},
@@ -1231,27 +1268,27 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 973.0,
+						"translation.y": 225.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 9,
 					"file": "source/model/container/btree.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 12809,
+						"buffer_size": 12833,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								8435,
-								8435
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1279,19 +1316,19 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 7590.0,
+						"translation.y": 7054.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
-					"buffer": 9,
+					"buffer": 10,
 					"file": "source/model/container/base.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 13641,
+						"buffer_size": 13874,
 						"regions":
 						{
 						},
@@ -1322,14 +1359,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 8821.0,
+						"translation.y": 7456.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
-					"buffer": 10,
+					"buffer": 11,
 					"file": "test/data/source_template.html",
 					"semi_transient": false,
 					"settings":
@@ -1353,16 +1390,16 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
-					"buffer": 11,
+					"buffer": 12,
 					"file": "source/source/template.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 9094,
+						"buffer_size": 10454,
 						"regions":
 						{
 						},
@@ -1392,11 +1429,11 @@
 						"translation.y": 690.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 11,
 					"type": "text"
 				},
 				{
-					"buffer": 12,
+					"buffer": 13,
 					"file": "test/data/page.html",
 					"semi_transient": false,
 					"settings":
@@ -1425,7 +1462,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 12,
+					"stack_index": 10,
 					"type": "text"
 				}
 			]
@@ -1438,7 +1475,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 60.0
+		"height": 24.0
 	},
 	"input":
 	{
@@ -1490,7 +1527,7 @@
 	"project": "sublime-wick.sublime-project",
 	"replace":
 	{
-		"height": 116.0
+		"height": 44.0
 	},
 	"save_all_on_build": true,
 	"select_file":

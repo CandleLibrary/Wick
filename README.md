@@ -124,7 +124,7 @@ This method is also useful when defining Script and CSS tags within a component.
 </div>
 ```
 
-*<sub>Currently only absolute paths from the domain are supported using the `url` attribute. </sub>
+\*<sub>Currently only absolute paths from the domain are supported using the `url` attribute. </sub>
 
 ### Shockwave
 
@@ -197,7 +197,7 @@ The `<w-s>` element, along with its alias `<w-source>`, allows the component to 
 
 The `model` is used to specify a particalur model that a component will bind to. This is accomposhid by matching the name of a model to the models defined in `presets.models`. If such a match is found, the component will bind to that model and pull all data from it.
 
-The 'schema` attribute allows a component to create it's data once it's mounted. This allows user input to turned into a fresh data structure and useful when dealing with forms.
+The `schema` attribute allows a component to create it's data once it's mounted. This allows user input to turned into a fresh data structure and useful when dealing with forms.
 
 ##### Data Flow
 The `<w-s>` element also provides ways for components to exchange data. Normally, data flow in a Wick component is exclusive to that component. If it is a child or parent of another component, any changes to the data seen by those components are not seen by its relatives.

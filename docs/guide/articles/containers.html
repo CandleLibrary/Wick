@@ -1,0 +1,25 @@
+<html>
+	<head>
+		<script src="/build/wick-dev.js"></script>
+	</head>
+
+	<body>
+		<app>
+			<element>
+				<component>
+					<page url="/docs/guide/components/container.html"></page>
+				</component>
+			</element>
+		</app>
+
+		<script>
+	        let router = wick.startRouting({
+				models: wick.model({
+					models:{	
+						users: [{name:"Julian"},{name:"Paul"},{name:"Gilbert"},{name:"Ashley"},{name:"May"}]
+					}
+				})
+			})
+    	</script>
+	</body>
+</html>

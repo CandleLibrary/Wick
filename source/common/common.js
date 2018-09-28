@@ -5,6 +5,7 @@ import {Lexer} from "./string_parsing/lexer";
 //Math
 import {QBezier} from "./math/quadratic_bezier";
 import {CBezier} from "./math/cubic_bezier";
+import {Transform2D} from "./math/transform";
 
 //Touch
 import {TouchScroller} from "./event/touch_scroller";
@@ -19,6 +20,7 @@ export {
 	QBezier,
 	CBezier,
 	TouchScroller,
+  Transform2D,
   Path
 };
 
