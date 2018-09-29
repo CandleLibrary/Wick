@@ -95,8 +95,9 @@ const Animation = (function anim() {
 						value = (ratio * 100);
 					}
 				}
-
+				console.log(value)
 				this.current_val = new this.type(value);
+				console.log(this.current_val +  "")
 			} else {
 				this.current_val = new this.type(obj[prop_name]);
 			}
@@ -117,7 +118,7 @@ const Animation = (function anim() {
 		addKey(key) {
 			let l = this.keys.length;
 			let pkey = this.keys[l-1];
-			let v = (key.value !== undefined) ? key.value : key.v
+			let v = (key.value !== undefined) ? key.value : key.v;
 			let own_key = {
 				val: (pkey) ? pkey.val.copy(v) : new this.type(v) || 0,
 				dur: key.duration || key.dur || 0,
@@ -280,7 +281,6 @@ const Animation = (function anim() {
 				this.issueEvent("stopped");
 		}
 
-
 		play(from = 0) {
 			this.time = from;
 			Scheduler.queueUpdate(this);
@@ -349,7 +349,6 @@ const Animation = (function anim() {
 				Scheduler.queueUpdate(this);
 		}
 
-
 		play(from = 0) {
 			this.time = 0;
 			Scheduler.queueUpdate(this);
@@ -374,8 +373,8 @@ const Animation = (function anim() {
 			return group;
 		},
 
-		set USE_TRANSFORM(v){USE_TRANSFORM = !!v},
-		get USE_TRANSFORM(){return USE_TRANSFORM},
+		set USE_TRANSFORM(v){USE_TRANSFORM = !!v;},
+		get USE_TRANSFORM(){return USE_TRANSFORM;},
 		easing: {
 			linear: Linear,
 			ease: new CBezier(0.25, 0.1, 0.25, 1),

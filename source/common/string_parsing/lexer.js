@@ -63,7 +63,7 @@ const jump_table = [7, 7, 7, 7, 7, 7, 7, 7, 7, 4, 6, 7, 7, 5, 7, 7, 7, 7, 7, 7, 
  * entries marked as `4` are in the number set but not the identifier set
  * entries marked as `8` are in both number and identifier sets
  */
-const num_id = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 0, 0, 0, 0, 2, 8, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 0, 0, 0, 0, 2, 0, 2, 8, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 0, 0, 0, 0, 0];
+const num_id = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 0, 0, 0, 0, 2, 8, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 0, 0, 0, 0, 2, 0, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 0, 0, 0, 0, 0];
 
 
 
@@ -320,8 +320,20 @@ class Lexer {
                 switch (jump_table[code]) {
                     case 0: //NUMBER
                         while (++off < l && (12 & num_id[str.charCodeAt(off)])) {}
+                        
+                        if (str[off] == "e" || str[off] == "E") {
+                            off++;
+                            if (str[off] == "-") off++;
+                            marker.off = off;
+                            marker.tl = 0;
+                            marker.n();
+                            off = marker.off + marker.tl;
+                            //Add e to the number string
+                        }
+
                         type = number;
                         length = off - base;
+
                         break;
                     case 1: //IDENTIFIER
                         while (++off < l && (10 & num_id[str.charCodeAt(off)])) {}

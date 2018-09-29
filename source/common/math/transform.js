@@ -3,38 +3,68 @@ import {
 } from "../string_parsing/lexer";
 
 function getValue(lex, attribute) {
-    let v = parseInt(lex.tx);
+    let v = lex.tx,
+        mult = 1;
+
+    if (v == "-")
+        v = lex.n().tx, mult = -1;
+
+    let n = parseFloat(v) * mult;
+
     lex.n();
+
     if (lex.ch !== ")" && lex.ch !== ",") {
         switch (lex.tx) {
             case "%":
                 break;
             case "deg":
-                v *=  Math.PI / 180;
+                n *= Math.PI / 180;
+                break;
+            case "turn":
+                n *= Math.PI * 2;
+                break;
+            case "px":
+                break;
+            case "em":
                 break;
         }
         lex.n();
     }
-    return v;
+    return n;
 }
 
 function ParseString(string, transform) {
     var lex = new Lexer(string);
     while (!lex.END) {
-    	let tx = lex.tx;
-    	lex.n();
+        let tx = lex.tx;
+        lex.n();
         switch (tx) {
             case "matrix":
-            	let a = getValue(lex.a("("));
-            	let b = getValue(lex.a(","));
-            	let c = getValue(lex.a(","));
-            	let d = getValue(lex.a(","));
+            
+                let a = getValue(lex.a("(")),
+                    b = getValue(lex.a(",")),
+                    c = getValue(lex.a(",")),
+                    d = getValue(lex.a(",")),
+                    r = -Math.atan2(b, a),
+                    sx1 = (a / Math.cos(r)) || 0,
+                    sx2 = (b / -Math.sin(r)) || 0,
+                    sy1 = (c / Math.sin(r)) || 0,
+                    sy2 = (d / Math.cos(r)) || 0;
+                
+                if(sx2 !== 0)
+                    transform.sx = (sx1 + sx2) * 0.5;
+                else
+                    transform.sx = sx1;
 
-            	let cos = Math.acos(a);
+                if(sy1 !== 0)
+                    transform.sy = (sy1 + sy2) * 0.5;
+                else
+                    transform.sy = sy2;
 
-            	transform[0] = getValue(lex.a(","));
-            	transform[1] = getValue(lex.a(","));
-            	lex.a(")")
+                transform.px = getValue(lex.a(","));
+                transform.py = getValue(lex.a(","));
+                transform.r = r;
+                lex.a(")");
                 break;
             case "matrix3d":
                 break;
@@ -99,36 +129,36 @@ export class Transform2D extends Float64Array {
             py = pos[1];
             sx = pos[2];
             sy = pos[3];
-            r = pos[4]
+            r = pos[4];
         } else {
             px = pos[0];
             py = pos[1];
             sx = scl[0];
             sy = scl[1];
-            r = rot
+            r = rot;
         }
         let cos = Math.cos(r);
         let sin = Math.sin(r);
         return `matrix(${cos * sx}, ${-sin * sx}, ${sy * sin}, ${sy * cos}, ${px}, ${py})`
     }
     constructor(px, py, sx, sy, r) {
-        super(5)
+        super(5);
         this.sx = 1;
         this.sy = 1;
         if (px) {
             if (px instanceof Transform2D) {
-            	this[0] = px[0]
-            	this[1] = px[1]
-            	this[2] = px[2]
-            	this[3] = px[3]
-            	this[4] = px[4]
+                this[0] = px[0];
+                this[1] = px[1];
+                this[2] = px[2];
+                this[3] = px[3];
+                this[4] = px[4];
             } else if (typeof(px) == "string") ParseString(px, this);
             else {
-            	this[0] = px;
-            	this[1] = py;
-            	this[2] = sx;
-            	this[3] = sy;
-            	this[4] = r;
+                this[0] = px;
+                this[1] = py;
+                this[2] = sx;
+                this[3] = sy;
+                this[4] = r;
             }
         }
     }
@@ -171,13 +201,13 @@ export class Transform2D extends Float64Array {
         return Transform2D.ToString(this);
     }
 
-    copy(v){
-    	let copy = new Transform2D(this);
+    copy(v) {
+        let copy = new Transform2D(this);
 
-    	
-    	if(typeof(v) == "string")
-    		ParseString(v, copy)
-    	
-    	return copy;
+
+        if (typeof(v) == "string")
+            ParseString(v, copy)
+
+        return copy;
     }
 }
