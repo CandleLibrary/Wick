@@ -116,10 +116,8 @@ export class SourceTemplate extends View {
                 this.SCRUBBING = false;
             }
         } else if (this.UPDATE_FILTER) {
-            console.log(1)
             this.filterUpdate();
         } else {
-            console.log(2)
             this.limitUpdate();
         }
     }
@@ -247,7 +245,7 @@ export class SourceTemplate extends View {
         if (!transition) transition = Transitioneer.createTransition(), OWN_TRANSITION = true;
 
         offset = Math.max(0, offset);
-
+        
         if (limit > 0) {
 
             direction = this.offset < offset;
@@ -314,8 +312,10 @@ export class SourceTemplate extends View {
             ol = ein.length;
 
             this.limit = limit;
-        } else
+        } else{
+            this.max = 0;
             this.limit = 0;
+        }
 
         let trs_in = {
             trs: transition.in,
@@ -381,26 +381,22 @@ export class SourceTemplate extends View {
 
         this.dom_sources = output;
 
-        if (al < 1) this.parent._upImport_("template_has_sources", {
-            template: this,
-            ele: this.ele,
-            trs: transition.in,
-            count: ol
-        });
-
-        else this.parent._upImport_("template_count_changed", {
-            count: ol,
-            ele: this.ele,
-            template: this,
-            trs: transition.in
-        });
-
         if (OWN_TRANSITION)
             if (NO_TRANSITION) {
                 return transition;
             } else {
                 transition.start();
             }
+
+        this.parent._upImport_("template_count_changed", {
+            displayed: ol,
+            count: this.activeSources.length,
+            pages: this.max,
+            ele: this.ele,
+            template: this,
+            trs: transition.in
+        });
+
 
         return transition;
     }

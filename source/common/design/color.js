@@ -102,4 +102,9 @@ export class Color extends Float64Array {
     toJSON() {
         return `rgba(${this.r|0},${this.g|0},${this.b|0},${this.a})`;
     }
+
+    copy(other){
+        let out = new Color(other);
+        return out;
+    }
 }

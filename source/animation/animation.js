@@ -45,7 +45,7 @@ const Animation = (function anim() {
 	/**
 	 * Class to linearly interpolate number.
 	 */
-	class lerpNumber extends Number { lerp(to, t) { return this + (to - this) * t; } }
+	class lerpNumber extends Number { lerp(to, t) { return this + (to - this) * t; } copy(val){return new lerpNumber(val);} }
 
 	/**
 	 * Store animation data for a single property on a single object. 
@@ -95,9 +95,9 @@ const Animation = (function anim() {
 						value = (ratio * 100);
 					}
 				}
-				console.log(value)
+
 				this.current_val = new this.type(value);
-				console.log(this.current_val +  "")
+
 			} else {
 				this.current_val = new this.type(obj[prop_name]);
 			}

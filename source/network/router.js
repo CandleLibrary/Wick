@@ -88,13 +88,6 @@ export class Router {
 
     finalizePages(pages = this.finalizing_pages) {
 
-        if (this.armed) {
-
-            let a = this.armed;
-            //  a.p.transitionIn(a.e, this.current_view, a.wurl, a.SP, a.te);
-            this.armed = null;
-        }
-
         for (var i = 0, l = pages.length; i < l; i++) {
 
             var page = pages[i];
@@ -181,24 +174,25 @@ export class Router {
 
                 this.current_view.unload(transition_elements);
 
-                page.mount(app_ele, wurl);
+                page.mount(app_ele, wurl, this.current_view);
 
                 this.current_view.transitionOut(transition.out);
 
                 finalizing_pages.push(this.current_view);
+
+                page.transitionIn(transition.in);
 
             } else if (!this.current_view) {
 
                 page.mount(app_ele, wurl);
 
                 this.current_view = page;
+
+                page.transitionIn(transition.in);
             }
 
             this.current_view = page;
         }
-
-
-        page.transitionIn(transition.in);
 
         transition.start().then(() => { this.finalizePages(finalizing_pages); });
     }
@@ -392,7 +386,7 @@ export class Router {
 
                 page.eles.push(element);
 
-                
+
                 if (!this.elements[element_id])
                     this.elements[element_id] = {};
 

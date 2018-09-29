@@ -13,7 +13,7 @@ class TouchScroller {
         this.velocity_x = 0;
         this.velocity_y = 0;
         this.GO = true;
-        this.drag = (drag > 0) ? drag : 0.05;
+        this.drag = (drag > 0) ? drag : 0.1;
         this.ele = element;
 
 

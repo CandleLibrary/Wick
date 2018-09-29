@@ -45,6 +45,18 @@ class BaseComponent {
      * @override
      */
     transitionOut() {}
+
+    finalizeMount(parent) {
+        if (this.LOADED == false && this.ele.parentElement)
+            this.ele.parentElement.removeChild(this.ele);
+    }
+
+    pendMount(obj, wrap_index, wurl) {
+        this.LOADED = true;
+        this.parent = obj;
+        this.parent.wraps[wrap_index].appendChild(this.ele);
+        this.handleUrlUpdate(wurl);
+    }
 }
 
 /**
@@ -134,7 +146,7 @@ class Component extends BaseComponent {
                 (new SourcePackage(this.ele.innerHTML, presets)).mount(null, null, presets.options.USE_SHADOW, this);
             }
         }
-        if(app_components)
+        if (app_components)
             app_components[id] = this;
     }
 

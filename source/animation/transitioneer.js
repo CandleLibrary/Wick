@@ -103,10 +103,8 @@ const Transitioneer = (function() {
             this.in = $in.bind(this);
 
             Object.defineProperty(this.out, "out_duration", {
-                get: () => {
-                    return this.out_duration
-                }
-            })
+                get: () => this.out_duration
+            });
 
             this.OVERRIDE = override;
         }
@@ -144,10 +142,9 @@ const Transitioneer = (function() {
             if (this.reverse)
                 this.speed = -this.speed;
 
-            if (this.duration > 0)
-                this._scheduledUpdate_(0, 0);
-
             return new Promise((res, rej) => {
+                if (this.duration > 0)
+                    this._scheduledUpdate_(0, 0);
                 if (this.duration < 1)
                     return res();
                 this.res = res;
@@ -166,20 +163,18 @@ const Transitioneer = (function() {
         }
 
         step(t) {
-
             for (let i = 0; i < this.out_seq.length; i++) {
                 let seq = this.out_seq[i];
                 seq.run(t);
             }
 
-            //if (t >= this.in_delay) {
-            t = Math.max(t - this.in_delay, 0);
+                t = Math.max(t - this.in_delay, 0);
 
-            for (let i = 0; i < this.in_seq.length; i++) {
-                let seq = this.in_seq[i];
-                seq.run(t);
-            }
-            //}
+                for (let i = 0; i < this.in_seq.length; i++) {
+                    let seq = this.in_seq[i];
+                    seq.run(t);
+                }
+            
         }
 
         _scheduledUpdate_(step, time) {
@@ -190,6 +185,11 @@ const Transitioneer = (function() {
             this.step(this.time);
 
 
+            if (this.res && this.time >= this.in_delay) {
+                this.res();
+                this.res = null;
+            }
+
             if (this.reverse) {
                 if (this.time > 0)
                     return Scheduler.queueUpdate(this);
@@ -198,16 +198,14 @@ const Transitioneer = (function() {
                     return Scheduler.queueUpdate(this);
             }
 
-            if (this.res) this.res();
+            if (this.res)
+                this.res();
+
             this._destroy_();
         }
     }
 
-    return {
-        createTransition: function(OVERRIDE) {
-            return new Transition(OVERRIDE);
-        }
-    };
+    return { createTransition: (OVERRIDE) => new Transition(OVERRIDE) };
 })();
 
 export {

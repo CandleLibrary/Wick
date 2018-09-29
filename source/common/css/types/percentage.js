@@ -55,4 +55,8 @@ export class CSS_Percentage extends Number {
     lerp(to, t) {
         return new CSS_Percentage(this + (to - this) * t);
     }
+
+    copy(other){
+        return new CSS_Percentage(other);
+    }
 }

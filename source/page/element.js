@@ -30,12 +30,10 @@ export class Element {
         //Content that is wrapped in an ele_wrap
         this.ele = element;
 
-        if(element.dataset.unique)
+        if (element.dataset.unique)
             this.unique = !!element.dataset.unique;
         else
             this.unique = false;
-
-        console.log(this.unique)
     }
 
 
@@ -44,62 +42,54 @@ export class Element {
             this.components[i].LOADED = false;
     }
 
+
+    up(data, src) {
+        this.page.up(data, src);
+    }
+
+    down(data, src) {
+        for (var i = 0; i < this.components.length; i++)
+            this.components[i].down(data, src);
+    }
+
+    finalize() {
+        for (var i = 0; i < this.components.length; i++)
+            this.components[i].finalizeMount(this);
+    }
+
+    loadComponents(wurl, contemporary) {
+
+        for (let i = 0; i < this.components.length; i++) {
+            this.components[i].pendMount(this, i, wurl);
+        }
+
+        let before = this.ele.firstChild;
+
+        if (contemporary) {
+            for (let i = 0; i < contemporary.components.length; i++) {
+                let component = contemporary.components[i];
+
+                if (component.LOADED) {
+
+                    before = component.ele.parentElement;
+
+                } else {
+                    this.ele.insertBefore(component.ele, (before) ? before.nextSibling : null);
+                }
+            }
+        }
+
+
+    }
+
     transitionOut(transitioneer) {
 
         for (var i = 0; i < this.components.length; i++) {
 
             let component = this.components[i];
 
-            if (!component.LOADED) {
-
-                component.parent = null;
-
+            if (!component.LOADED)
                 component.transitionOut(transitioneer);
-            }
-        }
-    }
-
-    finalize() {
-
-        for (var i = 0; i < this.components.length; i++) {
-
-            let component = this.components[i];
-
-            if (!component.LOADED && component.parentElement) {
-                component.finalizeTransitionOut();
-                this.wraps[i].removeChild(component.ele);
-            }
-
-            component.LOADED = false;
-        }
-    }
-
-    up(data, src){
-        this.page.up(data, src);
-    }
-
-    down(data, src){
-        for (var i = 0; i < this.components.length; i++)
-            this.components[i].down(data, src);
-    }
-
-    loadComponents(wurl) {
-
-
-        for (let i = 0; i < this.components.length; i++) {
-
-            let component = this.components[i];
-
-            component.parent = this;
-
-            if (component.ele.parentElement)
-                component.ele.parentElement.removeChild(component.ele);
-
-            this.wraps[i].appendChild(component.ele);
-
-            component.handleUrlUpdate(wurl);
-
-            this.components[i].LOADED = true;
         }
     }
 
@@ -143,8 +133,7 @@ export class Element {
 
         for (var i = 0; i < components.length; i++) {
             let app_component = null,
-                component = components[i],
-                e;
+                component = components[i];
 
             add_pending(1);
 
@@ -172,7 +161,7 @@ export class Element {
                     app_component = new Component(component, presets, DOM, (this.unique) ? null : this.common_components, res_pending, this);
 
                     app_component.handleUrlUpdate(wurl);
-                    
+
                 } else {
 
                     let custom_component = presets.custom_components[id];
@@ -180,7 +169,7 @@ export class Element {
                     if (custom_component)
                         app_component = new custom_component(component, presets, DOM, res_pending);
                 }
-            } catch (error) { 
+            } catch (error) {
                 app_component = new FailedComponent(component, error, presets);
                 res_pending();
             }

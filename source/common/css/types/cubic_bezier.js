@@ -1,4 +1,4 @@
-import { CBezier } from "../../math/cubic_bezier"
+import { CBezier } from "../../math/cubic_bezier";
 
 export class CSS_Bezier extends CBezier {
 	static _parse_(l, rule, r) {

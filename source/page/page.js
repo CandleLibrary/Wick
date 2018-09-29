@@ -37,10 +37,13 @@ export class PageView {
         }
     }
 
-    mount(app_element, wurl) {
+    getElement(id) {
+        return this.eles.find((e) => e.ele.id == id);
+    }
+
+    mount(app_element, wurl, prev_page) {
 
         this.LOADED = true;
-
 
         if (app_element.firstChild)
             app_element.insertBefore(this.ele, app_element.firstChild);
@@ -49,7 +52,8 @@ export class PageView {
 
         for (var i = 0; i < this.eles.length; i++) {
             let element = this.eles[i];
-            element.loadComponents(wurl);
+            let contemporary = (prev_page && element.ele.id) ? prev_page.getElement(element.ele.id) : null;
+            element.loadComponents(wurl, contemporary);
         }
     }
 
@@ -98,7 +102,7 @@ export class PageView {
         });
     }
 
-    up(data, src){
+    up(data, src) {
         for (var i = 0; i < this.eles.length; i++)
             this.eles[i].down(data, src);
     }

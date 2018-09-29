@@ -66,4 +66,8 @@ export class CSS_Length extends Number {
     lerp(to, t) {
         return new CSS_Length(this + (to - this) * t, this.unit);
     }
+
+    copy(other){
+        return new CSS_Length(other);
+    }
 }

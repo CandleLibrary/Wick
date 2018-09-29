@@ -17,6 +17,11 @@ function getValue(lex, attribute) {
         switch (lex.tx) {
             case "%":
                 break;
+
+            /* Rotational Values */
+            case "grad":
+                n *= Math.PI / 200;
+                break;
             case "deg":
                 n *= Math.PI / 180;
                 break;
@@ -40,7 +45,7 @@ function ParseString(string, transform) {
         lex.n();
         switch (tx) {
             case "matrix":
-            
+
                 let a = getValue(lex.a("(")),
                     b = getValue(lex.a(",")),
                     c = getValue(lex.a(",")),
@@ -123,7 +128,7 @@ export class Transform2D extends Float64Array {
             py = 0,
             sx = 1,
             sy = 1,
-            r = 0;
+            r = 0, cos = 1, sin = 0;
         if (pos.length == 5) {
             px = pos[0];
             py = pos[1];
@@ -137,9 +142,13 @@ export class Transform2D extends Float64Array {
             sy = scl[1];
             r = rot;
         }
-        let cos = Math.cos(r);
-        let sin = Math.sin(r);
-        return `matrix(${cos * sx}, ${-sin * sx}, ${sy * sin}, ${sy * cos}, ${px}, ${py})`
+        
+        if(r !== 0){
+            cos = Math.cos(r);
+            sin = Math.sin(r);
+        }
+
+        return `matrix(${cos * sx}, ${-sin * sx}, ${sy * sin}, ${sy * cos}, ${px}, ${py})`;
     }
     constructor(px, py, sx, sy, r) {
         super(5);
