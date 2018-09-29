@@ -54,6 +54,8 @@ export class Source extends View {
 
         this.DESTROYED = true;
 
+        this._update_({destroyed:true});
+
         if (this.LOADED) {
             this.LOADED = false;
 
@@ -190,6 +192,8 @@ export class Source extends View {
 
         for (let name in this.taps)
             this.taps[name].load(this._model_, false);
+
+        this._update_({created:true});
     }
 
     _down_(data, changed_values) {
