@@ -259,6 +259,7 @@ const Animation = (function anim() {
 		}
 
 		run(i) {
+			
 			for (let n in this.props) {
 				let prop = this.props[n];
 				if (prop)

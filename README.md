@@ -1,46 +1,32 @@
 # WICK
 v0.4.2a
 
-## Dynamic Component Templating Framework
+## Dynamic Component Template Framework
 
 ## What do we have here?
 
-Wick is a tool for building component based webpages and web apps using HTML, CSS, and Javascript. It acts a runtime manager that handles the compiling of webpages from individual files, the rendering of webpage content with effects and transitions, routing based on resource URI's, and binding of data to UI with responsive updating.
+Wick is a tool for building component based web pages and web apps using HTML, CSS, and JavaScript. It acts a runtime manager that handles the compiling of webpages from individual files, the rendering of web page content with effects and transitions, routing based on resource URI's, and binding of data to UI with responsive updating.
 
-Wick achieves this through a combination of small libraries that can be used individually for expressed purposes. All together Wick is a framework for building modern webpages, but it can be used in part to provide other useful features, such as CSS and HTML parsing and rendering, animation tools, and data containers for observable based UI updating. Overall, Wick is a sum of many individual parts that are designed to work both independantly and in unison to a deliver a versatile framework library.
+Wick is organized as a collection of semi-independent libraries that can be used individually or as whole through the `wick` entry point. All together Wick is a framework for building modern webpages, but it can be used in part to provide other useful features, such as CSS and HTML parsing and rendering, animation tools, and data containers for observable based UI updating. Overall, Wick is a sum of many individual parts that are designed to work both independently and in unison to a deliver a versatile framework library.
 
-## The parts of Wick.
+## The parts of Wick
 
-The core of Wick is a templating system that that can be used to create HTML components that can be inserted into the DOM.
+Component
+    Template
+        CSS Parser
+        HTML Parser
+    Source
+    Container
 
-```
-<div id="((my_id))" class="base_class ((dynamic_class_name))">
-    <input type="text" value="((output_value))">
-</div>
-```
-Using ```wick.source``` the above code will be turned into a component that can be integrated into the DOM.
+Models & Model Container
 
-Wick uses a bracket based syntax for most of it's component definitions to keep things simple. There a few nonstandard attributes that can be used to further customize components:
-- url - used with any element to append data from another file
-- on - used with `<script>` tags to bind a JS script to a particular message.
-- badge - can be used to identifier speceific elements
-- element - Defines the element type a w-s or w-c will take. By default, a w-s will be bound to a `<div>` element (unless the source is in a w-c, then it will default to `<li>` element), and a w-c will bind to a `<ul>` element.
-- import - Allows a source to accept messages originating from outside the local source of truth.
-- export - Outputs messages to parent scope.
-- put - Messages received will also update the state of the model.
+Animation and Transition
 
-There are two elements native to wick that provide advanced functionality
-Custom elements:
-w-s / w-source - Determines data flow and model binding
-w-c / w-container - Used to create lists of components from data found in arrays and other containers.
-filter - allows sorting and filtering actions to be applied to w-c source's
-
-
-Animation, Routing, Components, Sources, Models, Schemes, Presets, CSS parsing, HTML parsing.
+Router
 
 ## The Wick Component
 
-Wick components are built from HTML files containing traditional markup and special wick specific attributes and tags. Combined with templating data binding and inline javascript expressions, Wick provides powerful ways to create dynamic HTML components that can be integrated into existing pages. Wick also provides ways to define data flow between components and link components from different files to create complex component structures that can handle more advanced application interfaces.
+Wick components are built from HTML files containing traditional markup and special wick specific attributes and tags. Combined with templating data binding and inline JavaScript expressions, Wick provides powerful ways to create dynamic HTML components that can be integrated into existing pages. Wick also provides ways to define data flow between components and link components from different files to create complex component structures that can handle more advanced application interfaces.
 
 ### Componetization
 
@@ -48,16 +34,16 @@ Creating a component with Wick begins with passing an HTMLElement or string cont
 
 ```JavaScript
 
-let RETURN_PROMISE = false; //If true, wick.source will return a promise that resolves to a componentFactory. This is optional
+let RETURN_PROMISE = false; //If true, wick.source will return a promise that resolves to a `SourcePackage`. This is optional
 let presets = {}, // An object of compilation options can be passed to wick.source. This is also optional
-let componentFactory = wick.source(
+let SourcePackage = wick.source(
                           `<div>Hello Component</div>`,
                           presets,
                           RETURN_PROMISE)
 
 ```
 
-What is returned is a compiled `SourcePackage` that contains objects and code needed to render the component to the DOM. Its `mount` method takes an existing HTMLElement and inserts a copy of the component into the Element's DOM tree. The `mount` method also returns a `SourceManager` that can be used to update the component with new data and create special effects like transitions.  
+The return value is a compiled `SourcePackage` that contains objects and code needed to render the component to the DOM. Its `mount` method takes an existing HTMLElement and inserts a copy of the component into the Element's DOM tree. The `mount` method also returns a `SourceManager` that can be used to update the component with new data and create special effects like transitions.  
 
 <sup>Additional options can be provided to `wick.source` in the form of the `presets` object. More information can be found in the guide.</sup>
 
@@ -85,16 +71,16 @@ This method takes advantage of the ``<template>`` behavior of containing markup 
 
 #### Asynchronous
 
-Wick component compilation is an asynchronous process that supports cross file compilation of components. The `componentFactory` object return by `wick.source` will not actually create any components until after compilation is completed, which can be some time after the `wick.source` returns. This allows component definitions to be in multiple files which can then be loaded and parsed asynchronously before the component compilation is complete.
+Wick component compilation is an asynchronous process that supports cross file compilation of components. The `SourcePackage` object return by `wick.source` will not actually create any components until after compilation is completed, which can be some time after the `wick.source` returns. This allows component definitions to be placed in multiple files which then can be loaded and parsed asynchronously. Once compilation is complete, calls to `SourcePackage.mount` will work actually create live components.
 
 In this example document `A.html` contains part of a component
 ```HTML
 <!-- A.html -->
-<div id="main_component" element="my-component">
+<div id="main_component" component="my-component">
   <div url="/B.html"></div>
 </div>
 ```
-The `element` attribute allows component to be defined by tag value, as in this case the component can be referred to as an `<my-element>` tag.
+The `component` attribute allows a component to be declared by tag value, as in this case the component can now be referred to as the `<my-element>` tag in other components. Once a `component` is defined this way and compiled into a `SourcePackage`, its tag can be used in any other component
 
 File `B.html` contains the rest of the component.
 
@@ -102,11 +88,10 @@ File `B.html` contains the rest of the component.
 <!-- B.html -->
 <a href="https://wick.example.com">Hello From Wick</a>
 ```
-Within a script this component can be constructed through
+This component can now be constructed by linking in `A.html` in an HTML string.
 ```JavaScript
-let component = wick.source("<link url='/A.html'> <my-component></my-component>")
+let SourcePackage = wick.source("<link url='/A.html'> <my-component></my-component>")
 ```
-Within a component declaration, the `<link>` tag is used to pull in data from other HTML files without actually placing the contents of that file into the component. If the `url`* attribute is defined on other tags, as in `<div url="/B.html">...`, the data from that URL resource is automatically inserted into the inner HTML of the tag.
 
 In the above example the component will be rendered as
 ``` HTML
@@ -115,41 +100,62 @@ In the above example the component will be rendered as
 </div>
 ```
 
-This method is also useful when defining Script and CSS tags within a component.
-
-```HTML
-<div element="my-component">
-  <script url="/script.js"></script>
-  <style url="/style.css"></style>
-</div>
-```
-
-\*<sub>Currently only absolute paths from the domain are supported using the `url` attribute. </sub>
-
-### Shockwave
-
-Wick components bind data to properties and expressions defined in double parenthasis `(( ** ))` *shockwave* containers to create dynamic behavior. The double parenthasis style of shockwave binding is used in part to avoid conflicting with other the popular "handlebar" `{{ ** }}` styles used in other templating libraries, allowing these libraries to be used alongside Wick.
-
-The shockwaves can be used in many ways to add dynamic behavior to HTML markup. First and foremost, using a shockwave in the text area of an element will allow property values of JavaScript objects to be injected into the DOM. The following example illustrates this process.
-
-> ```JavaScript
-> let componentFactory = wick.source(`<div>((name))</div>`)
-> let manager = componentFactory.mount(document.body) //Compiled components are used as constructors for actual HTML markup, and must be "mounted" to an existing DOM node. When this is done, a component manager is created, allowing data to be passed to the now fully constructed component.
+> #### Link tag
+> Within a component declaration, the `<link>` tag is used to pull in data from other HTML files without actually placing the contents of that file into the component. This allows the importation of libraries that contain multiple components that are bound to tags through the `component` attribute.
 >
-> manager.update({name:"Ingrid"})
-> //--> <body><div>Ingrid</div></body>
->
-> manager.update({name:"Nelson"})
-> //--> <body><div>Nelson</div></body>
+> ```html
+> <!-- library.html -->
+> <button class="buttonA" component="button-a">Click Me!</button>
+> <button class="buttonB" component="button-b">No Click Me!</button>
+> <button class="buttonC" component="button-c">My Click is the Best Click</button>
 > ```
-Shockwave in this context create TextNode elements in the final markup to avoid issues with client side malicious bahivore. Any HTML markup found within a property value will simply be appended as text to the DOM without it actually being parsed as HTML.
+>
+> Once a file like this is linked into another component through `<link url="/library.html">` the tags `<button-a>`, `<button-b>`, and `<button-c>` are made available to use in that component and any other subsequent component.
+
+> #### URL attribute
+> If the `url`* attribute is defined on other tags, as in `<div url="/B.html">...`, the data from that URL resource is automatically inserted into the inner HTML of the tag.
+> This method is also useful when defining Script and CSS tags within a component.
+>
+> ```HTML
+> <div element="my-component">
+>   <script url="/script.js"></script>
+>   <style url="/style.css"></style>
+> </div>
+> ```
+>  <sub>Currently only absolute paths from the domain are supported using the `url` attribute. </sub>
+
+### Mics
+>>>>>>> dev
+
+Wick components bind data to properties and expressions defined in double parenthesis `(( * ))` *mic* containers to create dynamic behavior. The term *mic* is anagolous to microphones listing for sounds. In Wick terms, a mic will listen for messages on a certain channel and respond when a message is received. The channel generally corresponds to properties of data objects passed to the component. The double parenthesis style of mic bindings is used in part to avoid conflicting with other the popular curly bracket `{{ * }}` styles used in other templating libraries, allowing these libraries to be used alongside Wick
+
+The mic can be used in many ways to add dynamic behavior to HTML markup. First and foremost, using a mic in the text area of an element will allow property values of JavaScript objects to be injected into the DOM. When a property changes, a message with the name of the property is dispatched to all mics. Any mic listening for that particular message name, the channel, will process the value of that message, The following example illustrates this process.
+
+ ```JavaScript
+ let sourcePackage = wick.source(`<div>((name))</div>`)
+ let manager = sourcePackage.mount(document.body)
+
+ manager.update({name:"Ingrid"})
+ ```
+ ```HTML
+ ...<body><div>Ingrid</div></body>...
+ ```
+```JavaScript
+ manager.update({name:"Nelson"}
+ ```
+ ```HTML
+ ...<body><div>Nelson</div></body>...
+ ```
+
+> ###### Text Nodes
+Mics create TextNode elements in the final markup to avoid issues with client side malicious behavior. Any HTML markup found within a property value will simply be appended as text to the DOM without it actually being parsed as HTML.
 
 
-Shockwaves can be used in many places to provide dynamic behavior.
+Mics can be used in many different to provide dynamic behavior.
 ```HTML
 <div id="((id_name))" class="((contents.length > 0 ? class_name : 'no_contents')) ((clicked ? "active" : "inactive"))" onclick="((clicked)(true))">((contents))</div>
 ```
-Notice how the the second shockwave uses a JS expression to define it's behavior. Wick allows any shockwave that produces a change in the markup to be defined with an expression instead of just a property identifier. Wick will automatically handle the access of multiple data properties in the expression.
+Notice how the second mic uses a JS expression to define its behavior. Wick allows any mic that produces a change in the markup to be defined with an expression instead of just a property identifier. This way, a single mic can listen to multiple channels, and combine the results to into complex expression. Wick will automatically handle the access of multiple data properties in the expression.
 
 When the above markup is turned into a compiled component and update with a data object like this one
 ```js
@@ -163,22 +169,22 @@ When the above markup is turned into a compiled component and update with a data
  ```HTML
  <div id="first_comment" class="comment inactive">This is my first comment</div>
  ```
+> #### Events
+> You've probably noticed the differing form of the third mic expression defined for the `onclick` attribute of the div. As a point of anology, this style of binding can be thought of as a "megaphone" which anounces new messages when an event occurs.  This style is used with `on*` event attributes to emit messages from the user. It takes the form ** ``((`` *channel_name* ``)(`` * message_value * ``))``** . Instead of binding to properties of a data object, an megaphone will instead emit it's own messages  that other mics listening on the same channel will respond to. If a user was to click or tap the on the div element of the component, the markup will change to
+>  ```HTML
+>  <div id="first_comment" class="comment active">This is my first comment</div>
+>  ```
 
-You've probably noticed the differing form of the third shockwave expression defined for the `onclick` attribute of the div.  This style is used with `on*` event attributes to emit messages based on events. It takes the form ** ``((`` *event_name* ``)(`` * event_value * ``))``** . Instead of binding to properties of a data object, an event shockwave will instead emit it's own data object that other shockwaves in the component can bind to. If a user was to click or tap the on the div element of the component, the markup will change to
- ```HTML
- <div id="first_comment" class="comment active">This is my first comment</div>
- ```
-
- Shockwaves bound to certain attributes take on additional functions that round out their usefulness. When a shockwave s\is bound to the Wick specific `on` attribute of a script tag, it provide means to use Javascript to react to property changes
+ Mics bound to certain attributes take on additional functions that round out their usefulness. When a mic is bound to the Wick specific `on` attribute of a script tag, it provide means to respond to messages with JavaScript.
 
  ```HTML
 <script on="((clicked))">
     alert(clicked);
 </script>
  ```
-A script defined this way will be activated when the property it's bound to changes. It receives the value of that property as an argument as with the same name as the property. There are additional arguments these script receive, which we'll go into detail later.
+A script like this defined in a componet will be activated when the channel it's bound to receives a message. It receives the value of that message as an argument as with the same name as the channel. There are additional arguments these script receive, which we'll go into detail later.
 
-Finaly, a shockwave bound to an input elements `value` attribute will provide two way binding for that element. User updates to the input will cause event messages to be created and sent through the component, and Javascript property updates will cause the of the input to change.
+Finally, a mic bound to an input elements `value` attribute will provide two way binding for that element. User updates to the input will cause event messages to be created and sent through the component, and JavaScript property updates will cause the of the input to change.
 
 ```HTML
 <input type="text" value="((name))">
@@ -188,61 +194,90 @@ Finaly, a shockwave bound to an input elements `value` attribute will provide tw
 
 ### Source of Truth
 
-Using shockwaves provides a familiar, easy, and powerful way to create components with dynamic data binding. Combined with the Wick source system, incredibly dynamic, expressive, and modular components system can be used. A source in wick refer's to the idea that within a certain context, a component, there is a single source of truth that defines the behavior and appearence of a component. If the truth changes, then the component will be updated to accuratly represent the form of the source. This source of truth is the data that a component binds to.
+Using mics provides a familiar, easy, and powerful way to create components with dynamic data binding. Combined with the Wick source system, incredibly dynamic, expressive, and modular components system can be used. A source in Wick refers to the idea that within a certain context, a component, there is a single source of truth that defines the behavior and appearance of a component. If the truth changes, then the component will be updated to accurately represent the form of the source. This source of truth is the data that a component binds to.
 
-By default, the data that the component sees is the one provided by the `update` function of the SourceManager. What ever data goes into that is reflected by the state of the component. This provides a convienent way to control the state of components, and allows for easy integration into existing projects. But, to get the most out of the component state system, Wick provides a special element that controls what data the component see's and works with.
+By default, the data that the component sees is the one provided by the `update` function of the `SourceManager`. What ever data goes into that is reflected by the state of the component. This provides a convenient way to control the state of components, and allows for easy integration into existing projects. But, to get the most out of the component state system, Wick provides a special element that controls what data the component sees and works with.
 
 #### The source element
-The `<w-s>` element, along with its alias `<w-source>`, allows the component to be to specific JS object at the component level, as apposed to control the data outside of the component through `manager.update`. These tags have two unique attributes, `schema` and `model`, that provide a way for a component to bind to specific data, even when the component is a child of another component several layers deep.
+The `<w-s>` element, along with its alias tag `<w-source>`, allows the component to be bound to a specific JS object at the component level, as apposed to controlling the data binding outside of the component through `manager.update`. These tags have two unique attributes, `schema` and `model`, that provide a way for a component to bind to specific data, even when the component is a child of another component several layers deep.
 
-The `model` is used to specify a particalur model that a component will bind to. This is accomposhid by matching the name of a model to the models defined in `presets.models`. If such a match is found, the component will bind to that model and pull all data from it.
+The `model` attribute is used to specify the name of a particular model that a component will bind to. The model is picked from `presets.models` that was passed into `wick.source(..., presets, ...)`. If a match is found, the component will bind to that model and pull all data from it.
 
-The `schema` attribute allows a component to create it's data once it's mounted. This allows user input to turned into a fresh data structure and useful when dealing with forms.
+The `schema` attribute allows a component to create it's data model once it's mounted. This allows user input to turned into a fresh data structure and useful when dealing with forms.
+
 
 ##### Data Flow
-The `<w-s>` element also provides ways for components to exchange data. Normally, data flow in a Wick component is exclusive to that component. If it is a child or parent of another component, any changes to the data seen by those components are not seen by its relatives.
+The `<w-s>` element also provides ways for components to exchange data. Normally, data flow in a Wick component is exclusive to that component. Any changes to the data a component is observing only seen by that component. If the component is a child or parent of another component, any changes to the data seen by the component is not seen by its relatives.
 
-It may be useful to have a component exchange data updates between themselves. For example, if there is a self contained button component that needs to alert it's container component that its been tapped, the containing component should have way to listen on that event. The solution for this scenarior is within the attributes `import` and `export`.
+It may be useful to have a component exchange messages between themselves. For example, if there is a self contained button component that needs to alert it's container component that its been clicked, the containing component should have a way to listen for that message. The solution for this scenario is within the `<w-s>` attributes `import` and `export`.
 
-The `import` attribute defines properties which the source will accept as truth from outside its scope. If a child component needs to know the value of a parent components `name` property, the attribute `import="name"` can be defined to allow the component to accept updates of that property from the parent context.
+The `import` attribute defines channels which the source will accept as truth from outside its scope. If a child component needs to know the value of a parent components `name` property, the attribute `import="name"` can be defined to allow the component to accept updates of that property channel from the parent context.
 
-`export` allows for child components to push messages from their internal context into the parent scope. In the above button scenario, the whole process would look clicked
+`export` allows for child components to push messages from their internal context into their parent scope. In the above button scenario, the whole process would look like,
+
 ```HTML
-
-
-<w-s>
+<!-- bigbutton.html -->
+<w-s component="big-button" export="clicked">
   <div class="big_button" component="button" onclick="((clicked)(true))"></div>
 </w-s>
 ```
 
+```HTML
+<link url="/bigbutton.html">
+
+<w-s import="clicked">
+Has the button been clicked? 
+(( clicked ? "yes" : "no")).
+
+<big-button></big-button>
+</w-s>
+```
+
+### A Container of Truth
+
+Wick provides the container tag, `<w-c>` or `<w-container>`, as a way to produce lists and groups of components from an array of related data. The container system works by placing inside of a `<w-c>` tag a mic which listens for messages that have arrays as values. A component tag or a `<w-s>` must also be declared inside the `<w-c>` to serve as the blueprint for components that will be created when the channel receives array data.
+```HTML
+<w-c>
+  ((array))
+  <w-s>
+    ((name))
+  </w-s>
+</w-c>
+```
+WIth both of these set, when the mic listening on the channel for "array" receives a message, if that message has an array as a value, Wick will create a component for each item in the array and append it to the `<w-c>` tag. By default, when a `<w-c>` tag is rendered, it will be converted into a `<ul>` tag. All components will also be wrapped into a `<li>`tag.
+
+If the previous component fragment receives this type of data,
+```JavaScript
+{array:[{name:"Paul"},{name:"Ruth"}]}
+```
+then this markup will be rendered.
+```HTML
+<ul>
+  <li>Paul</li>
+  <li>Ruth</li>
+</ul>
+```
+> <ul>  <li>Paul</li>  <li>Ruth</li></ul>
 
 
-### Messaging
-
-### Dealing with Data
+## Dealing with Data
 
 
 ## Building Wick
 
-Wick is available through NPM.
-
 ```
 npm install
-npm install build-production
+npm run build-production
 ```
-
-## The data model
-
-Wick's templating system works by treating data as messages that are passed between components and subcomponents.
 
 
 ## What to see.
 
 Checkout the roadmap and changelog
 
-## Dependancies
+## Dependencies
 
-Wick is a self contained library and has no runtime dependancies, but it does rely on a number of tools for building and testing the library.
+Wick is a self contained library and has no runtime dependencies, but it does rely on a number of tools for building and testing the library.
 
 ### Building:
 - Rollup.js - Javascript bundler
@@ -254,5 +289,29 @@ Wick is a self contained library and has no runtime dependancies, but it does re
 - jsdom.js - Javascript DOM implementation for testing browser interaction with Node.js
 - nyc- Test coverage tool
 
-### Documenation:
+### Documentation:
 - JSdocs - Documentation generator
+
+# Copyright
+
+MIT License
+
+Copyright (c) 2018 Anthony Weathersby
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

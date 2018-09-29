@@ -22,11 +22,20 @@ export class Element {
         this.wraps = [];
         this.page = page;
 
+
+
         //The original element container.
         //this.parent_element = parent_element;
 
         //Content that is wrapped in an ele_wrap
         this.ele = element;
+
+        if(element.dataset.unique)
+            this.unique = !!element.dataset.unique;
+        else
+            this.unique = false;
+
+        console.log(this.unique)
     }
 
 
@@ -160,7 +169,7 @@ export class Element {
 
                 if (!id) {
 
-                    app_component = new Component(component, presets, DOM, this.common_components, res_pending, this);
+                    app_component = new Component(component, presets, DOM, (this.unique) ? null : this.common_components, res_pending, this);
 
                     app_component.handleUrlUpdate(wurl);
                     
@@ -171,10 +180,13 @@ export class Element {
                     if (custom_component)
                         app_component = new custom_component(component, presets, DOM, res_pending);
                 }
-            } catch (error) { e = error; }
+            } catch (error) { 
+                app_component = new FailedComponent(component, error, presets);
+                res_pending();
+            }
 
             if (!app_component) {
-                app_component = new FailedComponent(component, e, presets);
+                app_component = new FailedComponent(component, new Error("Could not create new component, no suitable build data found."), presets);
                 res_pending();
             }
 

@@ -392,7 +392,7 @@ export class Router {
 
                 page.eles.push(element);
 
-
+                
                 if (!this.elements[element_id])
                     this.elements[element_id] = {};
 

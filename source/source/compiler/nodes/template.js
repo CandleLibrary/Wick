@@ -45,9 +45,17 @@ export class SourceTemplateNode extends RootNode {
                 let on = node.getAttrib("on");
                 let sort = node.getAttrib("sort");
                 let filter = node.getAttrib("filter");
+                let limit = node.getAttrib("limit");
+                let offset = node.getAttrib("offset");
+                let scrub = node.getAttrib("scrub");
 
-                if (sort || filter) //Only create Filter node if it has a sorting bind or a filter bind
-                    me._filters_.push(new FilterIO(source, errors, taps, me, on, sort, filter));
+                if(limit && limit.binding.type == 1){
+                    me.limit = parseInt(limit.value);
+                    limit = null;
+                }
+
+                if (sort || filter || limit || offset || scrub) //Only create Filter node if it has a sorting bind or a filter bind
+                    me._filters_.push(new FilterIO(source, errors, taps, me, on, sort, filter, limit, offset, scrub));
             }
         }else{
             errors.push(new Error(`Missing source for template bound to "${this._property_bind_._bindings_[0].tap_name}"`));

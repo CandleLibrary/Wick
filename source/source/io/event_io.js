@@ -57,6 +57,7 @@ export class EventIO {
     _handleEvent_(e) {
         e.preventDefault();
         e.stopPropagation();
+        e.stopImmediatePropagation();
         this._event_bind_._up_(this.data, { event: e });
         return false;
     }

@@ -520,65 +520,12 @@
 	"buffers":
 	[
 		{
-			"file": "test/suite/router_tests.js",
+			"file": "source/source/compiler/nodes/template.js",
 			"settings":
 			{
-				"buffer_size": 2894,
+				"buffer_size": 3216,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "test/suite/btmc_tests.js",
-			"settings":
-			{
-				"buffer_size": 1221,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/animation/animation.js",
-			"settings":
-			{
-				"buffer_size": 7584,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "/D/pytrucks/static/js/app/cases/scroll_calendar/day.js",
-			"settings":
-			{
-				"buffer_size": 12771,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/common/event/touch_scroller.js",
-			"settings":
-			{
-				"buffer_size": 3896,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"contents": "96.87.53.197\n\"C:\\Program Files\\Dell SonicWALL\\Global VPN Client\\SWGVC.exe\" /E \"Boedecker\"\n\nNewday15\n\nsdiede\nitstime15\n\n35 Minutes\n\n3 MBps up \n0.5 down\n\n2:20\n\n!Newjob9\n",
-			"settings":
-			{
-				"buffer_size": 167,
-				"line_ending": "Windows",
-				"name": "96.87.53.197"
-			}
-		},
-		{
-			"contents": "Need a quote for a Dell D6000 dock and two Display port adaptors:\nhttps://www.amazon.com/Dell-452-BCYT-D6000-Universal-Black/dp/B071YTQBXM\nhttps://www.amazon.com/CableDeconn-Multi-Function-Displayport-Adapter-Converter/dp/B0192Y9XSE",
-			"settings":
-			{
-				"buffer_size": 232,
-				"line_ending": "Windows",
-				"name": "Need a quote for a Dell D6000 dock and two Display"
 			}
 		},
 		{
@@ -586,56 +533,6 @@
 			"settings":
 			{
 				"buffer_size": 18013,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/animation/transformto.js",
-			"settings":
-			{
-				"buffer_size": 3092,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/model/container/btree.js",
-			"settings":
-			{
-				"buffer_size": 12833,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/model/container/base.js",
-			"settings":
-			{
-				"buffer_size": 13874,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "test/data/source_template.html",
-			"settings":
-			{
-				"buffer_size": 216,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "source/source/template.js",
-			"settings":
-			{
-				"buffer_size": 10454,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "test/data/page.html",
-			"settings":
-			{
-				"buffer_size": 933,
 				"line_ending": "Windows"
 			}
 		}
@@ -696,6 +593,19 @@
 	],
 	"file_history":
 	[
+		"/D/wick/test/data/page.html",
+		"/D/wick/source/source/template.js",
+		"/D/wick/test/data/source_template.html",
+		"/D/wick/source/model/container/base.js",
+		"/D/wick/source/model/container/btree.js",
+		"/D/wick/source/animation/transformto.js",
+		"/D/wick/test/suite/router_tests.js",
+		"/D/wick/test/suite/btmc_tests.js",
+		"/D/wick/source/animation/animation.js",
+		"/D/pytrucks/static/js/app/cases/scroll_calendar/day.js",
+		"/D/wick/source/source/compiler/template/template_bindings.js",
+		"/D/wick/source/common/event/touch_scroller.js",
+		"/D/wick/source/source/compiler/template/basic_bindings.js",
 		"/D/wick/test/data/page_data.html",
 		"/D/wick/build/wick.node.js",
 		"/D/pytrucks/.git/modules/static/wick/COMMIT_EDITMSG",
@@ -810,24 +720,11 @@
 		"/D/_$_$_$_/wick/source/source/pipe/base.js",
 		"/D/_$_$_$_/wick/source/network/router/component.js",
 		"/D/_$_$_$_/wick/source/source/skeleton.js",
-		"/D/_$_$_$_/wick_temp/dif.txt",
-		"/D/_$_$_$_/wick_temp/wick/source/model/date_model_container.js",
-		"/D/_$_$_$_/wick_temp/wick/source/model/binary_container.js",
-		"/D/_$_$_$_/wick_temp/wick/source/model/schema_types.js",
-		"/D/_$_$_$_/wick_temp/wick/source/cassette/exists.js",
-		"/D/_$_$_$_/wick_temp/wick/source/cassette/epoch_to_dt.js",
-		"/D/_$_$_$_/wick_temp/wick/source/common/url/url.js",
-		"/D/_$_$_$_/wick_temp/wick/source/model/model.js",
-		"/D/_$_$_$_/wick/source/animation/transformto.js",
-		"/D/_$_$_$_/wick/source/animation/style_mappings.js",
-		"/D/_$_$_$_/wick/source/animation/style.js",
-		"/D/_$_$_$_/wick/source/animation/plue.js",
-		"/D/_$_$_$_/wick/source/animation/color.js",
-		"/D/_$_$_$_/wick/build/wick-dev.js"
+		"/D/_$_$_$_/wick_temp/dif.txt"
 	],
 	"find":
 	{
-		"height": 24.0
+		"height": 23.0
 	},
 	"find_in_files":
 	{
@@ -844,6 +741,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"filter",
 			"SVG",
 			"scheduler",
 			"(ide",
@@ -970,8 +868,7 @@
 			"root",
 			"source",
 			"__filters__",
-			"_FixedProp_",
-			"source"
+			"_FixedProp_"
 		],
 		"highlight": false,
 		"in_selection": false,
@@ -991,120 +888,16 @@
 	"groups":
 	[
 		{
-			"selected": 6,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "test/suite/router_tests.js",
+					"file": "source/source/compiler/nodes/template.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2894,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"SL.119.region_keys":
-							[
-								"sublime_linter.protected_regions",
-								"SL.jshint.Highlights.|6c3e08fe55f0c3a85e86fe9ea1cf6e2fbf4c8a35f9d48ea6a2254b50e0c96510|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot",
-								"SL.jshint.Highlights.|7849e6313545213c4c2397832ab34fef7465fa441ffa3dc895a4d10dd806bb77|region.yellowish markup.warning.sublime_linter|32"
-							],
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 574.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "test/suite/btmc_tests.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1221,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								226,
-								226
-							]
-						],
-						"settings":
-						{
-							"SL.127.region_keys":
-							[
-								"SL.jshint.Highlights.|67afe38610427bbdb2114b745cad39587b3d7ffdc52737cf04399fb6a55fefa4|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|04a42395055d6cf681ff7c4c510e98bde1c80a07e3827221a352873cf3fbd4d9|region.yellowish markup.warning.sublime_linter|32",
-								"sublime_linter.protected_regions",
-								"SL.jshint.Highlights.|49a601918069888430b167be1d967b43c2e5f23c66765f6674ada33e15cbf76f|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot"
-							],
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "source/animation/animation.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 7584,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 5161.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 12,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "/D/pytrucks/static/js/app/cases/scroll_calendar/day.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 12771,
+						"buffer_size": 3216,
 						"regions":
 						{
 						},
@@ -1120,92 +913,6 @@
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 540.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "source/common/event/touch_scroller.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3896,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 167,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								167,
-								167
-							]
-						],
-						"settings":
-						{
-							"auto_name": "96.87.53.197",
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 232,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								232,
-								232
-							]
-						],
-						"settings":
-						{
-							"auto_name": "Need a quote for a Dell D6000 dock and two Display",
-							"syntax": "Packages/Text/Plain text.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -1215,7 +922,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 1,
 					"file": "source/common/string_parsing/lexer.js",
 					"semi_transient": false,
 					"settings":
@@ -1241,228 +948,7 @@
 						"translation.y": 4590.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 8,
-					"file": "source/animation/transformto.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3092,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 225.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 7,
-					"type": "text"
-				},
-				{
-					"buffer": 9,
-					"file": "source/model/container/btree.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 12833,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"SL.128.region_keys":
-							[
-								"SL.jshint.Highlights.|3b292a1d9ef9ed9b3a5c9e22452284b50e3ea4f858b965bb11b2944a834a9572|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|dab212618bb58d2cbeec286ec4cf0f4bcb1be2e767b98ed9494d32508b2b4861|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|b471aeebab83341200ecde563b2bf5439ff97d1143ee29db30dd1fba8ba1bf33|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|b85cfbcc598782735ef1c2ffd575a396043f8bcff1658b30c17214caac572285|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|178d0ac1f5e56da44092d3d68dc6af42027a67e00b6653e70b81e56f2dc19513|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|c9fa3e67ba737468d3ed4e42d11b985f537c3a8c885d1e826985981a4e40df62|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|23ef070cd0d36f75b484dfc79cbb22043733b7c9372bc67b1298feaba5d5cf60|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|6fa87229b27e9a6d2d0a3133f501f207a625887897e5f1734c8eb732e3e59b9f|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|9b6a747b29b0fe4c5e999b969ea71861cd7931eba977330a16926fa495aac730|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|b0edfbbff42eb7b0a2908a5789137db07a264ae1c55321f30b0e205863349360|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|2125a1bceb9776dcb79cce61985bdd1ac497dbb4df714d3be7b77499502f6c0c|region.yellowish markup.warning.sublime_linter|32",
-								"sublime_linter.protected_regions",
-								"SL.jshint.Highlights.|2ab52d115a47c79cc95177dc8fbdc0f99dd9f756b555d9e92fd9829ff1957f34|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|2a80e1c68f58356110e0e625980c9121c541b333cb23f87145ba846a7990b6d2|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot"
-							],
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 7054.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 8,
-					"type": "text"
-				},
-				{
-					"buffer": 10,
-					"file": "source/model/container/base.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 13874,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"SL.136.region_keys":
-							[
-								"SL.jshint.Highlights.|7d61e2ef0e09b6fdf277c43271a8abfbbcb93b8f3c2ccb1263c1db1acac322db|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|8eef229cf72879234d3ca51742279908893bf4913481338d8250537ccee516a0|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|7e5fd9700e5c2f0f04c738b77a92e591bb91e9c033fbd9b7ca301def6da2153d|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|fb5f7f840df1c746da2ceb65bde606432526c0a4169528a3c8ac030c8d39bd2a|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|5bc2d8ec82a7ec13d8611cd52a17b8c9563b1acd12ca4efc4ad6b513d053cf4b|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|5b5d66a4b75cc2ade43bbb3b5b62cea37cd67c966a4be561ebedbf67ce4410f4|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|ea95eaa1765d44f841098726273d10f8daf52e0cbf6bdd9ec630dd42b07dfc84|region.yellowish markup.warning.sublime_linter|32",
-								"sublime_linter.protected_regions",
-								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot",
-								"SL.jshint.Highlights.|862180fdb44fdcbf525e4a2cbdf90c2764bcbd430d6e0b52e7e4068d59d26366|region.yellowish markup.warning.sublime_linter|32"
-							],
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 7456.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 13,
-					"type": "text"
-				},
-				{
-					"buffer": 11,
-					"file": "test/data/source_template.html",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 216,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/HTML/HTML.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 9,
-					"type": "text"
-				},
-				{
-					"buffer": 12,
-					"file": "source/source/template.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10454,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"SL.146.region_keys":
-							[
-								"SL.jshint.Highlights.|a3bde048381b2160de298acdf67125522a1db8e61eeb1ddebe0c91fa1a02bf20|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Highlights.|7dab7044deab343c2f141d9b17b28ce74b036f025cb1b507168a72cc0484401c|region.yellowish markup.warning.sublime_linter|32",
-								"sublime_linter.protected_regions",
-								"SL.jshint.Highlights.|94869ad744902941ce0647b3bd92b1464b2735092def0070946b97bdf299676b|region.yellowish markup.warning.sublime_linter|32",
-								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot",
-								"SL.jshint.Highlights.|4070d3b2c98d8821c8754e1da45beab97d7473e3599743fe06c19b5776318b7d|region.yellowish markup.warning.sublime_linter|32"
-							],
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 690.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 11,
-					"type": "text"
-				},
-				{
-					"buffer": 13,
-					"file": "test/data/page.html",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 933,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"SL.123.region_keys":
-							[
-							],
-							"syntax": "Packages/HTML/HTML.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 10,
+					"stack_index": 1,
 					"type": "text"
 				}
 			]
@@ -1475,7 +961,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 24.0
+		"height": 22.0
 	},
 	"input":
 	{
@@ -1527,7 +1013,7 @@
 	"project": "sublime-wick.sublime-project",
 	"replace":
 	{
-		"height": 44.0
+		"height": 42.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1536,6 +1022,18 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"basb",
+				"source\\source\\compiler\\template\\basic_bindings.js"
+			],
+			[
+				"nodetempl",
+				"source\\source\\compiler\\nodes\\template.js"
+			],
+			[
+				"bind",
+				"source\\source\\compiler\\template\\template_bindings.js"
+			],
 			[
 				"month",
 				"source\\common\\event\\touch_scroller.js"
@@ -2035,18 +1533,6 @@
 			[
 				"mo",
 				"source/model/model.js"
-			],
-			[
-				"source",
-				"source/source/source.js"
-			],
-			[
-				"nodetem",
-				"source/source/compiler/nodes/template.js"
-			],
-			[
-				"wick",
-				"build/wick-dev.js"
 			]
 		],
 		"width": 0.0
