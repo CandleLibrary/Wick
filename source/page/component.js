@@ -112,7 +112,7 @@ class Component extends BaseComponent {
 
         const id = element.classList[0];
 
-        if (id && app_components[id]) {
+        if (id && app_components && app_components[id]) {
             this.resolve();
             return app_components[id];
         }
@@ -134,8 +134,8 @@ class Component extends BaseComponent {
                 (new SourcePackage(this.ele.innerHTML, presets)).mount(null, null, presets.options.USE_SHADOW, this);
             }
         }
-
-        app_components[id] = this;
+        if(app_components)
+            app_components[id] = this;
     }
 
     resolve() {
