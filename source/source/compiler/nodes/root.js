@@ -128,7 +128,7 @@ export class RootNode extends HTMLNode {
 
 
     _mergeComponent_() {
-        
+
         let component = this._presets_.components[this.tag];
 
         if (component)
@@ -328,69 +328,74 @@ export class RootNode extends HTMLNode {
      * @param      {null}  model    The model
      * @return     {null}  { description_of_the_return_value }
      */
-    _build_(element, source, presets, errors, taps, statics) {
+    _build_(element, source, presets, errors, taps, statics, out_ele) {
 
         const out_statics = this.__statics__ || statics;
+        let own_out_ele;
 
         if (this._merged_) {
-            source = this._merged_._build_(element, source, presets, errors, taps, out_statics);
+            own_out_ele = {
+                ele: null
+            };
 
+            this._merged_._build_(element, source, presets, errors, taps, out_statics, own_out_ele);
+        }
+
+        source = source || new Source(null, presets, element, this);
+
+        if (this.HAS_TAPS)
+            taps = source._linkTaps_(this.tap_list);
+
+        let own_element;
+
+        if (own_out_ele) {
+            own_element = own_out_ele.ele;
         } else {
+            own_element = this._createElement_(presets, source);
+            if (element) _appendChild_(element, own_element);
+            if (out_ele)
+                out_ele.ele = own_element;
+        }
 
-            source = source || new Source(null, presets, element, this);
+        if (own_element) {
 
+            if (!source.ele) source.ele = own_element;
 
-            if (this.HAS_TAPS)
-                taps = source._linkTaps_(this.tap_list);
+            if (this._badge_name_)
+                source.badges[this._badge_name_] = own_element;
 
-            let own_element = this._createElement_(presets, source);
+            let hook = null;
 
-            if (own_element) {
-
-                if(!source.ele) source.ele = own_element;
-                
-                if(this._badge_name_)
-                    source.badges[this._badge_name_] = own_element;
-                
-                let hook = null;
-
-                if (this._bindings_.length > 0) {
-                    hook = {
-                        attr: this.attributes,
-                        bindings: [],
-                        style: null,
-                        ele: own_element
-                    };
-                }
-
-               if(hook) source.hooks.push(hook);
-
-                for (let i = 0, l = this._bindings_.length; i < l; i++) {
-                    let attr = this._bindings_[i];
-                    let bind = attr.binding._bind_(source, errors, taps, own_element, attr.name);
-                    if (hook) {
-                        if (attr.name == "style" || attr.name == "css")
-                            hook.style = bind;
-
-                        hook.bindings.push(bind);
-                    }
-                }
-
-                for (let node = this.fch; node; node = this.getN(node))
-                    node._build_(own_element, source, presets, errors, taps, out_statics);
-
-                if(element)_appendChild_(element, own_element);
-
-                return source;
+            if (this._bindings_.length > 0) {
+                hook = {
+                    attr: this.attributes,
+                    bindings: [],
+                    style: null,
+                    ele: own_element
+                };
             }
 
+            if (hook) source.hooks.push(hook);
+
+            for (let i = 0, l = this._bindings_.length; i < l; i++) {
+                let attr = this._bindings_[i];
+                let bind = attr.binding._bind_(source, errors, taps, own_element, attr.name);
+                if (hook) {
+                    if (attr.name == "style" || attr.name == "css")
+                        hook.style = bind;
+
+                    hook.bindings.push(bind);
+                }
+            }
+            for (let node = this.fch; node; node = this.getN(node))
+                node._build_(own_element, source, presets, errors, taps, out_statics);
+
+        } else {
+            for (let node = this.fch; node; node = this.getN(node))
+                node._build_(element, source, presets, errors, taps, out_statics);
+
         }
 
-
-        for (let node = this.fch; node;
-            (node = this.getN(node))) {
-            node._build_(element, source, presets, errors, taps, out_statics);
-        }
 
         return source;
     }
@@ -477,7 +482,7 @@ export class RootNode extends HTMLNode {
                 }
                 break;
             case "b":
-                if(name == "badge"){
+                if (name == "badge") {
                     this._badge_name_ = lex.tx;
                     return null;
                 }

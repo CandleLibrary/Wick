@@ -90,12 +90,18 @@ export function evaluate(lex, EVENT = false) {
                     lex.sync().n();
                     lex.IWS = true; // Do not produce white space tokens during this portion.
                     let pk = lex.pk;
+                    let Message= false;
 
 
-                    while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end && pk.p.ch !== barrier_a_start) || (pk.p.n().ch === barrier_a_end))) { pk.n(); }
+                    while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end && pk.p.ch !== barrier_a_start) || (pk.p.n().ch === barrier_a_end))) { 
+                        let prev = pk.ch;
+                        pk.n(); 
+                        if(pk.ch == barrier_a_start && prev == barrier_a_end)
+                            Message =true;
+                    }
 
 
-                    if (lex.tl < pk.off - lex.off - 1) {
+                    if (lex.tl < pk.off - lex.off - 1 && !Message) {
                         /***** Start Expression *******/
 
                         const elex = lex.copy(); //The expression Lexer

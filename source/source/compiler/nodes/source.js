@@ -38,15 +38,35 @@ export class SourceNode extends RootNode {
 
     /******************************************* BUILD ****************************************************/
 
-    _build_(element, source, presets, errors, taps = null, statics = null) {
+    _build_(element, source, presets, errors, taps = null, statics = null, out_ele = null) {
         let data = {};
 
         let out_taps = [];
 
         let me = new Source(source, presets, element, this);
+
+        me._model_name_ = this._model_name_;
+        me._schema_name_ = this._schema_name_;
+
+        let tap_list = this.tap_list;
+
+        for (let i = 0, l = tap_list.length; i < l; i++) {
+            let tap = tap_list[i],
+                name = tap.name;
+
+            let bool = name == "update";
+
+            me.taps[name] = bool ? new UpdateTap(me, name, tap._modes_) : new Tap(me, name, tap._modes_);
+
+            if (bool)
+                me.update_tap = me.taps[name];
+
+            out_taps.push(me.taps[name]);
+        }
+
         /**
-         * To keep the layout of the output HTML predictable, Wick requires that an "real" HTML be defined before a source object is created. 
-         * If this is not the case, then a new element, defined by the "element" attribute of the source virtual tag, or defaulted to a "div", 
+         * To keep the layout of the output HTML predictable, Wick requires that a "real" HTMLElement be defined before a source object is created. 
+         * If this is not the case, then a new element, defined by the "element" attribute of the source virtual tag (defaulted to a "div"), 
          * will be created to allow the source object to bind to an actual HTMLElement. 
          */
         if (!element || this.getAttribute("element")) {
@@ -69,6 +89,9 @@ export class SourceNode extends RootNode {
 
             element = ele;
 
+            if(out_ele)
+                out_ele.ele = element;
+
             if (this._badge_name_)
                 me.badges[this._badge_name_] = element;
 
@@ -81,7 +104,8 @@ export class SourceNode extends RootNode {
 
             for (let i = 0, l = this._bindings_.length; i < l; i++) {
                 let attr = this._bindings_[i];
-                let bind = attr.binding._bind_(me, errors, taps, element, attr.name);
+                let bind = attr.binding._bind_(me, errors, out_taps, element, attr.name);
+
                 if (hook) {
                     if (attr.name == "style" || attr.name == "css")
                         hook.style = bind;
@@ -91,25 +115,6 @@ export class SourceNode extends RootNode {
             }
 
             me.hooks.push(hook);
-        }
-
-        me._model_name_ = this._model_name_;
-        me._schema_name_ = this._schema_name_;
-
-        let tap_list = this.tap_list;
-
-        for (let i = 0, l = tap_list.length; i < l; i++) {
-            let tap = tap_list[i],
-                name = tap.name;
-
-            let bool = name == "update";
-
-            me.taps[name] = bool ? new UpdateTap(me, name, tap._modes_) : new Tap(me, name, tap._modes_);
-
-            if (bool)
-                me.update_tap = me.taps[name];
-
-            out_taps.push(me.taps[name]);
         }
 
         for (let i = 0, l = this._attributes_.length; i < l; i++) {
@@ -157,12 +162,14 @@ export class SourceNode extends RootNode {
                 if (name == "model") {
                     this._model_name_ = lex.slice();
                     lex.n();
+                return null;
                 }
                 break;
             case "s":
                 if (name == "schema") {
                     this._schema_name_ = lex.slice();
                     lex.n();
+                return null;
                 }
                 break;
             case "c":
@@ -175,8 +182,10 @@ export class SourceNode extends RootNode {
                 }
                 break;
             case "b":
-                if (name == "badge")
+                if (name == "badge"){
                     this._badge_name_ = lex.tx;
+                    return null;
+                }
                 break;
             default:
                 if (this._checkTapMethodGate_(name, lex))
