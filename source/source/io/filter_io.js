@@ -7,7 +7,7 @@ let expr_check = (expr)=>{
 
 
 export class FilterIO extends IOBase {
-    constructor(source, errors, taps, template, activation, sort, filter, limit, offset, scrub) {
+    constructor(source, errors, taps, template, activation, sort, filter, limit, offset, scrub, shift) {
         super(template, errors);
 
         this.template = template;
@@ -58,7 +58,7 @@ export class FilterIO extends IOBase {
                 this._offset_function_ = expr._bind_(source, errors, taps, this);
                 ///this._limit_function_._IS_A_FILTER_ = true;
                 this._CAN_OFFSET_ = true;  
-        }
+        }else
 
         if (scrub && scrub.binding) {
             let expr = scrub.binding;
@@ -66,6 +66,14 @@ export class FilterIO extends IOBase {
                 this._scrub_function_ = expr._bind_(source, errors, taps, this);
                 ///this._limit_function_._IS_A_FILTER_ = true;
                 this._CAN_SCRUB_ = true;  
+        }else
+
+        if (shift && shift.binding) {
+            let expr = shift.binding;
+                expr.method = (expr.method == 1) ? -1 : expr.method;
+                this._page_function_ = expr._bind_(source, errors, taps, this);
+                ///this._limit_function_._IS_A_FILTER_ = true;
+                this._CAN_SHIFT_ = true;  
         }
     }
 
@@ -74,7 +82,7 @@ export class FilterIO extends IOBase {
     update(){
         if(this._CAN_SORT_ || this._CAN_FILTER_){
             this.template.UPDATE_FILTER = true;
-             Scheduler.queueUpdate(this.template);
+            Scheduler.queueUpdate(this.template);
         }
     }
 
@@ -101,7 +109,7 @@ export class FilterIO extends IOBase {
         if(this._CAN_SCRUB_)
             return this.template.scrub(this._value_, false);
         
-        if(this._CAN_SORT_ || this._CAN_FILTER_)
+        if(this._CAN_SORT_ || this._CAN_FILTER_ || this._CAN_SHIFT_)
             this.template.UPDATE_FILTER = true;
         
         Scheduler.queueUpdate(this.template);

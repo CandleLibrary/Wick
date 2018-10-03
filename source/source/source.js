@@ -226,8 +226,8 @@ export class Source extends View {
             for (let name in this.taps)
                 this.taps[name]._downS_(data, IMPORTED);
 
-        for (let i = 0, l = this.sources.length; i < l; i++)
-            this.sources[i]._down_(data, changed_values);
+//        for (let i = 0, l = this.sources.length; i < l; i++)
+//            this.sources[i]._down_(data, changed_values);
 
         for (let i = 0, l = this._templates_.length; i < l; i++)
             this._templates_[i]._down_(data, changed_values);

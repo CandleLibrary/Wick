@@ -89,8 +89,11 @@ function ParseString(string, transform) {
                 continue;
             case "scale":
                 transform.sx = getValue(lex.a("("), "left");
-                lex.a(",");
-                transform.sy = getValue(lex, "left");
+                if(lex.ch ==","){
+                    lex.a(",");
+                    transform.sy = getValue(lex, "left");
+                }
+                else transform.sy = transform.sx;
                 lex.a(")");
                 continue;
             case "scaleX":

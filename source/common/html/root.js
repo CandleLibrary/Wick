@@ -476,7 +476,7 @@ class HTMLNode {
                         lex.IWS = false;
                         lex.a(">");
 
-                        this._endOfElementHook_();
+                        this._endOfElementHook_(lex);
 
                         return this;
                     }

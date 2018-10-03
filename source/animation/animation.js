@@ -66,13 +66,15 @@ const Animation = (function anim() {
 			else
 				this.type = (IS_ARRAY) ? this.getType(keys[0].value) : this.getType(keys.value);
 			
-			if (IS_ARRAY) 
-				keys.forEach(k => this.addKey(k));
-			 else 				
-			 	this.addKey(keys);
-			
-
 			this.getValue(obj, prop_name, type);
+
+			let p = this.current_val;
+			
+			if (IS_ARRAY) {	
+				keys.forEach(k => p = this.addKey(k, p));
+			}
+			 else 				
+			 	this.addKey(keys, p);
 		}
 
 		_destroy_() {
@@ -115,12 +117,12 @@ const Animation = (function anim() {
 			return lerpNumber;
 		}
 
-		addKey(key) {
+		addKey(key, prev) {
 			let l = this.keys.length;
 			let pkey = this.keys[l-1];
 			let v = (key.value !== undefined) ? key.value : key.v;
 			let own_key = {
-				val: (pkey) ? pkey.val.copy(v) : new this.type(v) || 0,
+				val: (prev) ? prev.copy(v) : new this.type(v) || 0,
 				dur: key.duration || key.dur || 0,
 				del: key.delay || key.del || 0,
 				ease: key.easing || key.e || ((pkey) ? pkey.ease : Linear),
@@ -132,6 +134,8 @@ const Animation = (function anim() {
 			this.keys.push(own_key);
 
 			this.duration += own_key.len;
+
+			return own_key.val;
 		}
 
 		run(obj, prop_name, time, type) {

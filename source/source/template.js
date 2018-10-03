@@ -42,6 +42,7 @@ export class SourceTemplate extends View {
         this.transition_in = 0;
         this.offset = 0;
         this.limit = 0;
+        this.shift = 1;
         this.dom_dn = [];
         this.dom_up = [];
         this.trs_up = null;
@@ -88,7 +89,7 @@ export class SourceTemplate extends View {
      * @protected
      */
     _scheduledUpdate_() {
-
+        
         if (this.SCRUBBING) {
             if (!this.AUTO_SCRUB) {
                 this.SCRUBBING = false;
@@ -249,12 +250,15 @@ export class SourceTemplate extends View {
         if (limit > 0) {
 
             direction = this.offset < offset;
+            this.shift = Math.max(1, Math.min(limit, this.shift));
             let ein = [];
             let pages = Math.ceil(ol / limit);
+            let shift_points = Math.ceil(ol / this.shift);
+            console.log(shift_points, this.shift)
             this.max = pages - 1;
-            this.offset = Math.max(0, Math.min(pages - 1, offset));
+            this.offset = Math.max(0, Math.min(shift_points - 1, offset));
             this.root = this.offset;
-            let off = this.offset * limit;
+            let off = this.offset * this.shift;
 
             this.trs_up = Transitioneer.createTransition(false);
             this.trs_dn = Transitioneer.createTransition(false);
@@ -263,7 +267,7 @@ export class SourceTemplate extends View {
             this.dom_up_appended = false;
             this.dom_dn_appended = false;
 
-            let i = 0;
+            let i = 0, ip = 0, ia = 0;
 
             while (i < off - limit) output[i++].index = -2;
 
@@ -271,34 +275,35 @@ export class SourceTemplate extends View {
                 this.dom_dn.push(output[i]);
                 output[i]._update_({
                     trs_in_dn: {
-                        index: 0,
+                        index: ip++,
                         trs: this.trs_dn.in
                     }
                 });
                 output[i++].index = -2;
             }
 
+            ip = 0;
+
             while (i < off + limit && i < ol) {
                 output[i]._update_({
                     trs_out_dn: {
                         trs: this.trs_up.out,
-                        index: 0
+                        index: ip
                     }
                 });
                 output[i]._update_({
                     trs_out_up: {
                         trs: this.trs_dn.out,
-                        index: 0
+                        index: ip++
                     }
                 });
                 output[i].index = 0, ein.push(output[i++]);
             }
-
             while (i < off + limit * 2 && i < ol) {
                 this.dom_up.push(output[i]);
                 output[i]._update_({
                     trs_in_up: {
-                        index: 0,
+                        index: ia++,
                         trs: this.trs_up.in
                     }
                 });
@@ -390,6 +395,7 @@ export class SourceTemplate extends View {
 
         this.parent._upImport_("template_count_changed", {
             displayed: ol,
+            offset: offset,
             count: this.activeSources.length,
             pages: this.max,
             ele: this.ele,
@@ -411,6 +417,7 @@ export class SourceTemplate extends View {
             if (filter._CAN_USE_) {
                 if (filter._CAN_LIMIT_) limit = filter._value_;
                 if (filter._CAN_OFFSET_) offset = filter._value_;
+                if (filter._CAN_SHIFT_) this.shift = filter._value_;
             }
         }
 
