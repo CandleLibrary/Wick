@@ -341,12 +341,10 @@ export class RootNode extends HTMLNode {
             let out_source = this._merged_._build_(element, source, presets, errors, taps, out_statics, own_out_ele);
 
             if(!source)
-                source = out_source;
-            
+                source = out_source;            
         }else{
             source = source || new Source(null, presets, element, this);
         }
-
 
         if (this.HAS_TAPS)
             taps = source._linkTaps_(this.tap_list);

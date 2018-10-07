@@ -77,7 +77,7 @@ export class SourceTemplateNode extends RootNode {
     _ignoreTillHook_() {}
 
     _createHTMLNodeHook_(tag, start) {
-        console.log(tag)
+        
         switch (tag) {
             case "f":
                 return new FilterNode(); //This node is used to 
