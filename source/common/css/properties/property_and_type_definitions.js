@@ -167,6 +167,8 @@ export const property_definitions = {
     list_style_position: `inside|outside`,
     list_style: `[disc|circle|square|decimal|lower-roman|upper-roman|lower-alpha|upper-alpha|none]||[inside|outside]||[<url>|none]`,
 
+    /* Layout https://www.w3.org/TR/css-position-3 */ 
+    position: "static|relative|absolute|sticky|fixed",
     //CSS2 Properties
 
     /* Box */

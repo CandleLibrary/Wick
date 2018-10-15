@@ -85,20 +85,8 @@ class CSSRule {
 
     merge(rule) {
         if (rule.props) {
-            for (let n in rule.props) {
-                ((n) => {
-                    Object.defineProperty(this.props, n, {
-                        enumerable:true,
-                        get: () => {
-                            console.log(rule.props[n],n)
-                            return rule.props[n];
-                        },
-                        set: (v) => {
-                            rule.props[n] = v;
-                        }
-                    });
-                })(n);
-            }
+            for (let n in rule.props) 
+                this.props[n] = rule.props[n];
             this.LOADED = true;
         }
     }

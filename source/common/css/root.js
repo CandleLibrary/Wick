@@ -4,6 +4,8 @@ import { CSSRule as R, CSSSelector as S } from "./nodes";
 import { _getPropertyParser_ } from "./properties/parser";
 import { property_definitions, media_feature_definitions, types } from "./properties/property_and_type_definitions";
 
+export {R as CSSRule, S as CSSSelector}
+
 /**
  * The empty CSSRule instance
  * @alias module:wick~internals.css.empty_rule

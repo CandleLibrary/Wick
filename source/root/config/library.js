@@ -27,7 +27,7 @@ import { RootNode, RootText } from "../../source/compiler/nodes/root";
 import { StyleNode } from "../../source/compiler/nodes/style";
 
 //CSS
-import { CSSParser, CSSRootNode } from "../../common/css/root";
+import { CSSParser, CSSRootNode, CSSSelector, CSSRule } from "../../common/css/root";
 
 //HTML
 import { HTMLParser } from "../../common/html/root";
@@ -77,6 +77,8 @@ Object.freeze(model.any);
 Object.freeze(model);
 
 CSSParser.root = CSSRootNode;
+CSSParser.prop = CSSRule;
+CSSParser.rule = CSSSelector;
 
 const core = {
     presets: a => new Presets(a),
