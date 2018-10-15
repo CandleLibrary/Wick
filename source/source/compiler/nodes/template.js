@@ -1,5 +1,5 @@
 import { RootNode } from "./root";
-import { _appendChild_, _createElement_ } from "../../../common/short_names";
+import { _appendChild_, createElement } from "../../../common/short_names";
 import { Source } from "../../source";
 import { SourceTemplate } from "../../template";
 import { Template } from "../template/template_bindings";
@@ -25,7 +25,7 @@ export class SourceTemplateNode extends RootNode {
             taps = source._linkTaps_(this.tap_list);
         if (this._property_bind_ && this._package_) {
 
-            let ele = _createElement_(this.getAttribute("element") || "ul");
+            let ele = createElement(this.getAttribute("element") || "ul");
             
             this.class.split(" ").map(c=> c ? ele.classList.add(c):{});
 

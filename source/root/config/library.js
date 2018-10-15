@@ -19,9 +19,15 @@ import { View } from "../../view/view";
 
 //Source
 import { SourcePackage } from "../../source/package";
+import { Source } from "../../source/source";
+
+//SourceCompiler
+import { CompileSource as Compiler  } from "../../source/compiler/compiler";
+import { RootNode, RootText } from "../../source/compiler/nodes/root";
+import { StyleNode } from "../../source/compiler/nodes/style";
 
 //CSS
-import { CSSParser } from "../../common/css/root";
+import { CSSParser, CSSRootNode } from "../../common/css/root";
 
 //HTML
 import { HTMLParser } from "../../common/html/root";
@@ -70,6 +76,8 @@ Object.freeze(model.container);
 Object.freeze(model.any);
 Object.freeze(model);
 
+CSSParser.root = CSSRootNode;
+
 const core = {
     presets: a => new Presets(a),
     scheduler: Scheduler,
@@ -91,11 +99,19 @@ const core = {
     source: (...a) => new SourcePackage(...a)
 };
 
+core.source.compiler = Compiler;
+Compiler.nodes = {
+    root : RootNode,
+    style : StyleNode,
+    text : RootText
+};
+
 let internals = { /* Empty if production */ };
 internals.lexer = Lexer;
 internals.scheduler = Scheduler;
 
 core.source.package = SourcePackage;
+core.source.constructor = Source;
 
 Object.freeze(core.source);
 Object.freeze(core);

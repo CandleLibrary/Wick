@@ -74,19 +74,31 @@ class CSSRule {
         let str = [];
 
         for (let a in this.props) {
-            if(Array.isArray(this.props[a]))
+            if (Array.isArray(this.props[a]))
                 str.push(a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";");
             else
                 str.push(a.replace(/\_/g, "-"), ":", this.props[a].toString(), ";");
         }
-        
+
         return str.join("") //JSON.stringify(this.props).replace(/\"/g, "").replace(/\_/g, "-");
     }
 
     merge(rule) {
         if (rule.props) {
-            for (let n in rule.props)
-                this.props[n] = rule.props[n];
+            for (let n in rule.props) {
+                ((n) => {
+                    Object.defineProperty(this.props, n, {
+                        enumerable:true,
+                        get: () => {
+                            console.log(rule.props[n],n)
+                            return rule.props[n];
+                        },
+                        set: (v) => {
+                            rule.props[n] = v;
+                        }
+                    });
+                })(n);
+            }
             this.LOADED = true;
         }
     }

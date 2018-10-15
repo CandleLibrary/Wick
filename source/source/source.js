@@ -19,7 +19,10 @@ export class Source extends View {
     constructor(parent, presets, element, ast) {
         super();
 
-        this.ast = ast;
+        this.ast = null;
+
+        ast.setSource(this);
+        
         /**
          *@type {Boolean} 
          *@protected
@@ -125,6 +128,12 @@ export class Source extends View {
                 return (this.sources.splice(i, 1), source.parent = null);
     }
 
+    removeIO(io) {
+        for (let i = 0; i < this._ios_.length; i++)
+            if (this._ios_[i] == io)
+                return (this._ios_.splice(i, 1), io.parent = null);
+    }
+
     getTap(name) {
         let tap = this.taps[name];
 
@@ -203,9 +212,6 @@ export class Source extends View {
     _up_(tap, data, meta) {
         if (this.parent)
             this.parent._upImport_(tap._prop_, data, meta, this);
-        //else
-        //   tap._up_(data, null, true);
-
     }
 
     _upImport_(prop_name, data, meta) {

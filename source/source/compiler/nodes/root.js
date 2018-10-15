@@ -1,6 +1,6 @@
 import {
     _appendChild_,
-    _createElement_
+    createElement
 } from "../../../common/short_names";
 import {
     Source
@@ -31,10 +31,13 @@ import {
     DYNAMIC_BINDING_ID,
     TEMPLATE_BINDING_ID
 } from "../template/basic_bindings";
+
+
 import {
     barrier_a_start,
     barrier_b_start
 } from "../../../root/config/global";
+
 
 export class BindingCSSRoot extends CSSRootNode {
     _getPropertyHook_(value_lex, prop_name, rule) {
@@ -54,7 +57,7 @@ export class BindingCSSRoot extends CSSRootNode {
     }
 }
 
-class RootText extends TextNode {
+export class RootText extends TextNode {
     constructor(binding) {
         super("");
         binding.method = TEXT;
@@ -128,7 +131,7 @@ export class RootNode extends HTMLNode {
 
 
     _mergeComponent_() {
-        
+
         let component = this._presets_.components[this.tag];
 
         if (component)
@@ -176,6 +179,8 @@ export class RootNode extends HTMLNode {
                     this._bindings_.push(vals);
                 }
             }
+
+            this.css = css;
         }
 
         for (let node = this.fch; node; node = this.getN(node))
@@ -316,7 +321,9 @@ export class RootNode extends HTMLNode {
 
     /******************************************* BUILD ****************************************************/
 
-
+    setSource(source) {
+        source.ast = this;
+    }
 
     /**
      * Builds Source Tree and Dom Tree.
@@ -333,53 +340,54 @@ export class RootNode extends HTMLNode {
         const out_statics = this.__statics__ || statics;
 
         if (this._merged_) {
+
+
             source = this._merged_._build_(element, source, presets, errors, taps, out_statics);
 
         } else {
+            let own_element = this.createElement(presets, source);
 
-            source = source || new Source(null, presets, element, this);
-
+            source = source || new Source(null, presets, own_element, this);
 
             if (this.HAS_TAPS)
                 taps = source._linkTaps_(this.tap_list);
 
-            let own_element = this._createElement_(presets, source);
-
             if (own_element) {
 
-                if(!source.ele) source.ele = own_element;
-                
-                if(this._badge_name_)
-                    source.badges[this._badge_name_] = own_element;
-                
-                let hook = null;
+                if (!source.ele) source.ele = own_element;
 
-                if (this._bindings_.length > 0) {
+                if (this._badge_name_)
+                    source.badges[this._badge_name_] = own_element;
+
+                //let hook = null;
+
+                /*if (this._bindings_.length > 0) {
                     hook = {
                         attr: this.attributes,
                         bindings: [],
                         style: null,
                         ele: own_element
                     };
-                }
+                }*/
 
-               if(hook) source.hooks.push(hook);
+                //if(hook) source.hooks.push(hook);
 
                 for (let i = 0, l = this._bindings_.length; i < l; i++) {
                     let attr = this._bindings_[i];
                     let bind = attr.binding._bind_(source, errors, taps, own_element, attr.name);
-                    if (hook) {
-                        if (attr.name == "style" || attr.name == "css")
+                    /*if (hook) {
+                        if (attr.name == "style" || attr.name == "css") {
                             hook.style = bind;
+                        }
 
                         hook.bindings.push(bind);
-                    }
+                    }*/
                 }
 
                 for (let node = this.fch; node; node = this.getN(node))
                     node._build_(own_element, source, presets, errors, taps, out_statics);
 
-                if(element)_appendChild_(element, own_element);
+                if (element) _appendChild_(element, own_element);
 
                 return source;
             }
@@ -387,10 +395,9 @@ export class RootNode extends HTMLNode {
         }
 
 
-        for (let node = this.fch; node;
-            (node = this.getN(node))) {
+        for (let node = this.fch; node; node = this.getN(node))
             node._build_(element, source, presets, errors, taps, out_statics);
-        }
+
 
         return source;
     }
@@ -416,8 +423,8 @@ export class RootNode extends HTMLNode {
         return false;
     }
 
-    _createElement_() {
-        return _createElement_(this.tag);
+    createElement() {
+        return createElement(this.tag);
     }
 
     _endOfElementHook_() {
@@ -477,7 +484,7 @@ export class RootNode extends HTMLNode {
                 }
                 break;
             case "b":
-                if(name == "badge"){
+                if (name == "badge") {
                     this._badge_name_ = lex.tx;
                     return null;
                 }

@@ -6,7 +6,7 @@ import { RootNode } from "./root";
  */
 export class VoidNode extends RootNode {
 
-    _createElement_() { return null; }
+    createElement() { return null; }
 
     /******************************************* HOOKS ****************************************************/
 

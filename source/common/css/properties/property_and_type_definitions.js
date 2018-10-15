@@ -176,6 +176,11 @@ export const property_definitions = {
     vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|<percentage>|<length>|inherit`,
     overflow: 'visible|hidden|scroll|auto|inherit',
 
+    top: `<length>|<percentage>|auto|inherit`,
+    left: `<length>|<percentage>|auto|inherit`,
+    bottom: `<length>|<percentage>|auto|inherit`,
+    right: `<length>|<percentage>|auto|inherit`,
+
     clip: '<shape>|auto|inherit',
 
     /* Visual Effects */
@@ -197,10 +202,6 @@ export const property_definitions = {
     animation_delayed: `<time>#`,
     animation_fill_mode: `<single_animation_fill_mode>#`,
 
-
-
-
-
     /* https://drafts.csswg.org/css-transitions-1/ */
 
     transition: `<single_transition>#`,
@@ -208,7 +209,7 @@ export const property_definitions = {
     transition_duration: `<time>#`,
     transition_timing_function: `<timing_function>#`,
     transition_delay: `<time>#`,
-}
+};
 
 /* Properties that are not directly accessible by CSS prop creator */
 

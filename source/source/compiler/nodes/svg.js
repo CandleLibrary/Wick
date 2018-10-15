@@ -5,7 +5,7 @@ import { RootNode } from "./root";
  * @class      SVGNode (name)
  */
 export class SVGNode extends RootNode {
-    _createElement_(presets, source){
+    createElement(presets, source){
         return document.createElementNS("http://www.w3.org/2000/svg", this.tag);
     }
 }

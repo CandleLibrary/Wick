@@ -7,7 +7,7 @@ function replaceString(e){
 
 function toCamel(string){
     let str = string.replace(/(?:[-_])([a-z])/g, replaceString);
-    return str
+    return str;
 }
 export class CSSRawValue {
 

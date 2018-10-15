@@ -1,6 +1,6 @@
 import { RootNode, BindingCSSRoot } from "./root";
 import { Source } from "../../source";
-import { _appendChild_, _createElement_ } from "../../../common/short_names";
+import { _appendChild_, createElement } from "../../../common/short_names";
 import { Tap, UpdateTap } from "../../tap/tap";
 import { Template } from "../template/template_bindings";
 import { ATTRIB } from "../template/basic_bindings";
@@ -51,7 +51,7 @@ export class SourceNode extends RootNode {
          */
         if (!element || this.getAttribute("element")) {
 
-            let ele = _createElement_(this.getAttribute("element") || "div");
+            let ele = createElement(this.getAttribute("element") || "div");
 
             this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
 
