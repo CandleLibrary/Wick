@@ -7,7 +7,7 @@
  */
 class CSSSelector {
 
-    constructor(selector /* string */ , selector_array /* array */ ) {
+    constructor(selector /* string */ , selector_array /* array */) {
 
         /**
          * The raw selector string value
@@ -39,12 +39,9 @@ class CSSSelector {
     toString() {
         let str = `${this.v} {`
 
-        if (this.r) {
-            let rule = this.r;
-            for (let n in this.r) {
-                str += this.r.toString() + ";";
-            }
-        }
+        if (this.r) 
+            str += this.r.toString();
+        
         return str + "}";
     }
 
@@ -56,16 +53,17 @@ class CSSSelector {
  * @alias CSSRule
  */
 class CSSRule {
-    constructor() {
+    constructor(root) {
         /**
          * Collection of properties held by this rule.
          * @public
          */
         this.props = {};
         this.LOADED = false;
+        this.root = root;
     }
 
-    addProperty(prop) {
+    addProperty(prop, rule) {
         if (prop)
             this.props[prop.name] = prop.value;
     }
@@ -80,7 +78,7 @@ class CSSRule {
                 str.push(a.replace(/\_/g, "-"), ":", this.props[a].toString(), ";");
         }
 
-        return str.join("") //JSON.stringify(this.props).replace(/\"/g, "").replace(/\_/g, "-");
+        return str.join("");//JSON.stringify(this.props).replace(/\"/g, "").replace(/\_/g, "-");
     }
 
     merge(rule) {

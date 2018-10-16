@@ -68,6 +68,6 @@ export class CSS_Length extends Number {
     }
 
     copy(other){
-        return new CSS_Length(other);
+        return new CSS_Length(other, this.unit);
     }
 }

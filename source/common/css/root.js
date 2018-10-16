@@ -4,7 +4,7 @@ import { CSSRule as R, CSSSelector as S } from "./nodes";
 import { _getPropertyParser_ } from "./properties/parser";
 import { property_definitions, media_feature_definitions, types } from "./properties/property_and_type_definitions";
 
-export {R as CSSRule, S as CSSSelector}
+export {R as CSSRule, S as CSSSelector};
 
 /**
  * The empty CSSRule instance
@@ -67,6 +67,8 @@ class CSSRootNode {
 
         this.resolves = [];
         this.res = null;
+
+        this.observer = null;
 
 
         this.pending_build = 0;
@@ -430,7 +432,7 @@ class CSSRootNode {
                         return;
                     case "{":
 
-                        let rule = new R();
+                        let rule = new R(this);
 
                         this._applyProperties_(lexer.n(), rule);
 
@@ -503,7 +505,7 @@ class CSSRootNode {
                     lexer.n();
                 case "{":
                     selector_array.unshift(sel);
-                    return new S(lexer.s(start).trim(), selector_array);
+                    return new S(lexer.s(start).trim(), selector_array, this);
                 case "[":
                     let p = lexer.pk;
                     while (!p.END && p.n().tx !== "]") {};
@@ -575,6 +577,21 @@ class CSSRootNode {
         }
 
         return null;
+    }
+
+    toString(){
+        let str = "";
+
+        for(let i = 0; i < this._sel_a_.length; i++){
+            str += this._sel_a_[i] + "";
+        }
+
+        return str;
+    }
+
+    updated(){
+        if(this.observer)
+            this.observer.updatedCSS();
     }
 }
 
