@@ -102,7 +102,6 @@ class OutStyleTemplate {
             else 
                 this._css_props_.push(new CSSRawValue(name, prop));
         }
-
     }
 
     _bind_(source, errors, taps, element) {

@@ -71,6 +71,10 @@ export class RootText extends TextNode {
     }
 
     _linkCSS_() {}
+
+    toString() {
+        return `${this.binding.txt}`;
+    }
 }
 
 
@@ -88,8 +92,8 @@ export class RootNode extends HTMLNode {
         this.tap_list = [];
         this._bindings_ = [];
 
-        this.pending_css = [];
         this.css = null;
+
         this._merged_ = false;
 
         this._badge_name_ = "";
@@ -99,8 +103,6 @@ export class RootNode extends HTMLNode {
     }
 
     /******************************************* STATICS ****************************************************/
-
-
 
     get _statics_() {
         if (this.__statics__) return this.__statics__;
@@ -128,18 +130,15 @@ export class RootNode extends HTMLNode {
 
     /****************************************** COMPONENTIZATION *****************************************/
 
-
-
     _mergeComponent_() {
 
         let component = this._presets_.components[this.tag];
 
-        if (component)
+        if (component) {
             this._merged_ = component;
+        }
 
     }
-
-
 
     /******************************************* CSS ****************************************************/
 
@@ -150,12 +149,15 @@ export class RootNode extends HTMLNode {
         if (this.css)
             css = this.css;
 
-        //parse rules and createBindings.
         if (css) {
 
-            let rule = css.getApplicableRules(this);
+            let rule;
 
-            if (rule.LOADED) {
+            for (let i = 0; i < css.length; i++)
+                rule = css[i].getApplicableRules(this, rule);
+
+            //parse rules and createBindings.
+            if (rule && rule.LOADED) {
 
                 //Link into the binding for style. if there is no binding, create one. 
                 //Link in the rule properties to the tap system. 
@@ -177,10 +179,11 @@ export class RootNode extends HTMLNode {
                         binding
                     };
                     this._bindings_.push(vals);
-                }
-            }
 
-            this.css = css;
+                }
+
+                this.css = css;
+            }
         }
 
         for (let node = this.fch; node; node = this.getN(node))
@@ -190,23 +193,22 @@ export class RootNode extends HTMLNode {
     _setPendingCSS_(css) {
         if (this.par)
             this.par._setPendingCSS_(css);
-        else
-            this.pending_css.push(css);
+        else{
+            if(!this.css)
+                this.css = [];
+            this.css.push(css);
+        }
+
+
     }
 
     _getCSS_() {
 
-        if (this.par)
-            return this.par._getCSS_();
+        let css = new BindingCSSRoot();
 
-        if (this.css)
-            return this.css;
+        this._setPendingCSS_(css);
 
-        this.css = new BindingCSSRoot();
-
-        this._setPendingCSS_(this.css);
-
-        return this.css;
+        return css;
     }
 
     get classList() {
@@ -340,7 +342,6 @@ export class RootNode extends HTMLNode {
         const out_statics = this.__statics__ || statics;
 
         if (this._merged_) {
-
 
             source = this._merged_._build_(element, source, presets, errors, taps, out_statics);
 

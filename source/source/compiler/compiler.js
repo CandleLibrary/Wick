@@ -53,8 +53,8 @@ export function parseText(lex, SourcePackage, presets) {
         node._presets_ = presets;
 
         return node._parse_(lex).then((ast) => {
-            if (ast.pending_css.length > 0) 
-                return buildCSS(lex, SourcePackage, presets, ast, ast.pending_css, 0);
+            if (ast.css.length > 0) 
+                return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0);
             
             return complete(lex, SourcePackage, presets, ast);
         }).catch((e) => {

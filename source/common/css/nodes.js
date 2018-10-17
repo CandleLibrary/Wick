@@ -37,7 +37,7 @@ class CSSSelector {
      * @return     {string}  String representation of the object.
      */
     toString() {
-        let str = `${this.v} {`
+        let str = `${this.v} {`;
 
         if (this.r) 
             str += this.r.toString();

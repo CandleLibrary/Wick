@@ -4,7 +4,7 @@ import { CSSRule as R, CSSSelector as S } from "./nodes";
 import { _getPropertyParser_ } from "./properties/parser";
 import { property_definitions, media_feature_definitions, types } from "./properties/property_and_type_definitions";
 
-export {R as CSSRule, S as CSSSelector};
+export { R as CSSRule, S as CSSSelector };
 
 /**
  * The empty CSSRule instance
@@ -68,7 +68,7 @@ class CSSRootNode {
         this.resolves = [];
         this.res = null;
 
-        this.observer = null;
+        this.observers = [];
 
 
         this.pending_build = 0;
@@ -153,9 +153,7 @@ class CSSRootNode {
      * @param      {<type>}   rule           The rule
      * @return     {boolean}  The property hook.
      */
-    _getPropertyHook_(value_lexer, property_name, rule) {
-        return false;
-    }
+    _getPropertyHook_(value_lexer, property_name, rule) { return false; }
 
     /**
      * Parses properties
@@ -222,15 +220,15 @@ class CSSRootNode {
                 let ss = criteria.ss[i];
                 switch (ss.t) {
                     case "attribute":
-                    
+
                         let lex = new Lexer(ss.v);
-                        if(lex.ch=="[" && lex.pk.ty == lex.types.id){
+                        if (lex.ch == "[" && lex.pk.ty == lex.types.id) {
                             let id = lex.sync().tx;
                             let attrib = ele.getAttribute(id);
-                            if(!attrib) return;
-                            if(lex.n().ch == "="){
+                            if (!attrib) return;
+                            if (lex.n().ch == "=") {
                                 let value = lex.n().tx;
-                                if(attrib !== value) return false;
+                                if (attrib !== value) return false;
                             }
                         }
                         break;
@@ -320,6 +318,7 @@ class CSSRootNode {
      * @private
      */
     _parse_(lexer, root, res = null, rej = null) {
+        
         return new Promise((res, rej) => {
 
             if (!root && root !== null) {
@@ -483,6 +482,7 @@ class CSSRootNode {
 
     */
     __parseSelector__(lexer) {
+
         let rule = this,
             id = "",
             selector_array = [];
@@ -579,19 +579,29 @@ class CSSRootNode {
         return null;
     }
 
-    toString(){
+    toString() {
         let str = "";
 
-        for(let i = 0; i < this._sel_a_.length; i++){
+        for (let i = 0; i < this._sel_a_.length; i++) {
             str += this._sel_a_[i] + "";
         }
 
         return str;
     }
 
-    updated(){
-        if(this.observer)
-            this.observer.updatedCSS();
+    addObserver(observer) {
+        this.observers.push(observer);
+    }
+
+    removeObserver(observer) {
+        for (let i = 0; i < this.observers.length; i++)
+            if (this.observers[i] == observer) return this.observers.splice(i, 1);
+    }
+
+    updated() {
+        if (this.observers.length > 0)
+            for (let i = 0; i < this.observers.length; i++)
+                this.observers[i].updatedCSS(this);
     }
 }
 
