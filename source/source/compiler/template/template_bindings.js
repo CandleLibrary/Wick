@@ -90,6 +90,10 @@ class OutStyleTemplate {
     }
     set type(v) {}
 
+    clear(){
+        this._css_props_ = [];
+    }
+
     _addRule_(rule) {
 
         let props = rule.props;

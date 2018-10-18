@@ -5,6 +5,7 @@ import { LinkedList } from "../../common/extends/ll";
 /** NODE TYPE IDENTIFIERS **/
 const HTML = 0;
 const TEXT = 1;
+const offset = "    ";
 
 
 /**
@@ -34,8 +35,8 @@ class TextNode {
      * @param      {string}  str     Optional string passed down from calling method.
      * @return     {string}  String representation of the object.
      */
-    toString() {
-        return `${this.txt}`;
+    toString(off = 0) {
+        return `${offset.repeat(off)} ${this.txt}\n`;
     }
 
     /**
@@ -276,8 +277,10 @@ class HTMLNode {
      * @return     {string}  String representation of the object.
      * @public
      */
-    toString() {
-        let str = `<${this.tag}`,
+    toString(off = 0) {
+        let o = offset.repeat(off);
+
+        let str = `${o}<${this.tag}`,
             atr = this._attributes_,
             i = -1,
             l = atr.length;
@@ -287,15 +290,14 @@ class HTMLNode {
             str += ` ${attr.name}="${attr.value}"`;
         }
 
-        str += ">";
+        str += ">\n";
 
         for (let node = this.fch; node;
             (node = this.getN(node))) {
-            str += node.toString();
+            str += node.toString(off+1);
         }
 
-
-        return str + `</${this.tag}>`;
+        return str + `${o}</${this.tag}>\n`;
     }
 
 

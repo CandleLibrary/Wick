@@ -7,23 +7,21 @@
  */
 class CSSSelector {
 
-    constructor(selector /* string */ , selector_array /* array */) {
+    constructor(selectors /* string */ , selectors_arrays /* array */) {
 
         /**
          * The raw selector string value
          * @package
          */
-        this.v = "";
 
-        this.v = selector;
+        this.v = selectors;
 
         /**
          * Array of separated selector strings in reverse order.
          * @package
          */
-        this.a = [];
 
-        this.a = selector_array;
+        this.a = selectors_arrays;
 
         /**
          * The CSSRule to _bind_ to.
@@ -32,17 +30,22 @@ class CSSSelector {
         this.r = null;
     }
 
+    get id(){
+        return this.v.join("");
+    }
     /**
      * Returns a string representation of the object.
      * @return     {string}  String representation of the object.
      */
-    toString() {
-        let str = `${this.v} {`;
+    toString(off = 0) {
+        let offset = ("    ").repeat(off);
+        
+        let str = `${offset}${this.v.join(", ")} {\n`;
 
         if (this.r) 
-            str += this.r.toString();
+            str += this.r.toString(off+1);
         
-        return str + "}";
+        return str + `${offset}}\n`;
     }
 
 }
@@ -68,14 +71,14 @@ class CSSRule {
             this.props[prop.name] = prop.value;
     }
 
-    toString() {
-        let str = [];
+    toString(off = 0) {
+        let str = [], offset = ("    ").repeat(off);
 
         for (let a in this.props) {
             if (Array.isArray(this.props[a]))
-                str.push(a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";");
+                str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
             else
-                str.push(a.replace(/\_/g, "-"), ":", this.props[a].toString(), ";");
+                str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].toString(), ";\n");
         }
 
         return str.join("");//JSON.stringify(this.props).replace(/\"/g, "").replace(/\_/g, "-");

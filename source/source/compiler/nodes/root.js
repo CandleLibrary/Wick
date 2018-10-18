@@ -72,8 +72,8 @@ export class RootText extends TextNode {
 
     _linkCSS_() {}
 
-    toString() {
-        return `${this.binding.txt}`;
+    toString(off = 0) {
+        return `${("    ").repeat(off)}${this.binding.txt}\n`;
     }
 }
 
@@ -153,8 +153,10 @@ export class RootNode extends HTMLNode {
 
             let rule;
 
+            
             for (let i = 0; i < css.length; i++)
                 rule = css[i].getApplicableRules(this, rule);
+
 
             //parse rules and createBindings.
             if (rule && rule.LOADED) {
@@ -163,12 +165,19 @@ export class RootNode extends HTMLNode {
                 //Link in the rule properties to the tap system. 
                 let HAVE_BINDING = false;
 
-                for (let i = 0, l = this._attributes_.length; i < l; i++) {
-                    let binding = this._attributes_[i];
+                for (let i = 0, l = this._bindings_.length; i < l; i++) {
+                    let binding = this._bindings_[i];
 
-                    if (binding.name == "css")
+                    if (binding.name == "css"){
+                        binding.binding.clear();
                         HAVE_BINDING = (binding.binding._addRule_(rule), true);
+                    }
                 }
+
+                if(this.tagName == "DIV") {
+                    console.log(rule.props.left, HAVE_BINDING)
+            }
+
 
                 if (!HAVE_BINDING) {
                     let binding = StyleTemplate();
