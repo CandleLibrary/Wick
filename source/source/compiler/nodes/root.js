@@ -174,11 +174,6 @@ export class RootNode extends HTMLNode {
                     }
                 }
 
-                if(this.tagName == "DIV") {
-                    console.log(rule.props.left, HAVE_BINDING)
-            }
-
-
                 if (!HAVE_BINDING) {
                     let binding = StyleTemplate();
                     binding._addRule_(rule);
