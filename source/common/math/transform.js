@@ -150,6 +150,8 @@ export class Transform2D extends Float64Array {
 
         return `matrix(${cos * sx}, ${-sin * sx}, ${sy * sin}, ${sy * cos}, ${px}, ${py})`;
     }
+
+
     constructor(px, py, sx, sy, r) {
         super(5);
         this.sx = 1;
@@ -223,5 +225,25 @@ export class Transform2D extends Float64Array {
             ParseString(v, copy)
 
         return copy;
+    }
+
+    /**
+     * Sets the transform value of a canvas 2D context;
+     */
+    setCTX(ctx){       
+        let cos = 1, sin = 0;
+        if(this[4] != 0){
+            cos = Math.cos(this[4]);
+            sin = Math.sin(this[4]);
+        }
+        ctx.transform(cos * this[2], -sin * this[2], this[3] * sin, this[3] * cos, this[0], this[1]);
+    }
+
+    getLocalX(X){
+        return (X - this.px) / this.sx;
+    }
+
+    getLocalY(Y){
+        return (Y - this.py) / this.sy;
     }
 }

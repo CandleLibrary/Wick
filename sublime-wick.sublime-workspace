@@ -4,6 +4,26 @@
 		"selected_items":
 		[
 			[
+				"_set",
+				"_setPendingCSS_"
+			],
+			[
+				"ob",
+				"observer"
+			],
+			[
+				"le",
+				"length"
+			],
+			[
+				"sel",
+				"_sel_a_"
+			],
+			[
+				"CSS",
+				"CSSRootNode"
+			],
+			[
 				"pa",
 				"pathDataToArray"
 			],
@@ -494,45 +514,75 @@
 			[
 				"close",
 				"close_tag"
-			],
-			[
-				"CSS",
-				"CSSParser"
-			],
-			[
-				"css",
-				"css_string"
-			],
-			[
-				"Ac",
-				"ACTIVE"
-			],
-			[
-				"o",
-				"o_el"
-			],
-			[
-				"W",
-				"WORKING_DOM"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "source/source/compiler/nodes/template.js",
+			"file": "source/common/css/root.js",
 			"settings":
 			{
-				"buffer_size": 3216,
+				"buffer_size": 20677,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "source/common/string_parsing/lexer.js",
+			"file": "/D/Users/Anthony/Desktop/test.html",
 			"settings":
 			{
-				"buffer_size": 18013,
+				"buffer_size": 2409,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/source/io/style_io.js",
+			"settings":
+			{
+				"buffer_size": 4345,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/common/html/root.js",
+			"settings":
+			{
+				"buffer_size": 24709,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/source/compiler/nodes/root.js",
+			"settings":
+			{
+				"buffer_size": 14029,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/source/compiler/nodes/style.js",
+			"settings":
+			{
+				"buffer_size": 334,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/source/compiler/template/template_bindings.js",
+			"settings":
+			{
+				"buffer_size": 2952,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/source/compiler/compiler.js",
+			"settings":
+			{
+				"buffer_size": 3144,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		}
@@ -593,6 +643,34 @@
 	],
 	"file_history":
 	[
+		"/D/wick/source/source/compiler/static/static_root.js",
+		"/D/wick/source/common/css/nodes.js",
+		"/D/wick/source/common/css/types/length.js",
+		"/D/Users/Anthony/Desktop/test (2).html",
+		"/D/wick/source/root/config/library.js",
+		"/D/wick/source/source/compiler/nodes/source.js",
+		"/D/wick/source/source/compiler/compiler.js",
+		"/D/wick/test/test.js",
+		"/D/wick/source/source/io/io.js",
+		"/D/wick/source/source/io/style_io.js",
+		"/D/wick/source/common/css/properties/property_and_type_definitions.js",
+		"/D/wick/source/common/css/properties/productions.js",
+		"/D/wick/source/source/compiler/nodes/root.js",
+		"/D/wick/source/source/source.js",
+		"/D/wick/source/source/compiler/nodes/void.js",
+		"/D/wick/source/common/css/root.js",
+		"/D/wick/sublime-wick.sublime-project",
+		"/D/wick/source/source/compiler/nodes/style.js",
+		"/D/wick/source/common/short_names.js",
+		"/D/wick/source/source/compiler/nodes/link.js",
+		"/D/wick/source/source/compiler/nodes/svg.js",
+		"/D/wick/source/source/compiler/nodes/template.js",
+		"/D/wick/source/common/js/root.js",
+		"/D/wick/source/common/string_parsing/lexer.js",
+		"/D/wick/source/source/package.js",
+		"/D/wick/source/root/client.js",
+		"/D/wick/package.json",
+		"/D/wick/source/common/math/transform.js",
 		"/D/wick/test/data/page.html",
 		"/D/wick/source/source/template.js",
 		"/D/wick/test/data/source_template.html",
@@ -692,45 +770,18 @@
 		"/home/galactrax/wick/source/source/compiler/nodes/filter.js",
 		"/home/galactrax/wick/source/source/compiler/nodes/script.js",
 		"/home/galactrax/wick/source/source/compiler/nodes/source.js",
-		"/home/galactrax/wick/source/network/wurl.js",
-		"/home/galactrax/wick/source/source/io/io.js",
-		"/home/galactrax/wick/test/suite/source_package_tests.js",
-		"/home/galactrax/wick/source/source/compiler/nodes/index.js",
-		"/home/galactrax/wick/source/source/compiler/nodes/style.js",
-		"/home/galactrax/wick/source/source/compiler/nodes/void.js",
-		"/home/galactrax/wick/source/source/skeleton.js",
-		"/home/galactrax/wick/source/source/tap/tap.js",
-		"/home/galactrax/wick/test/test.js",
-		"/home/galactrax/wick/test/suite/source_constructor_tests.js",
-		"/home/galactrax/wick/source/source/pipe/base.js",
-		"/home/galactrax/wick/source/source/compiler.js",
-		"/home/galactrax/wick/source/source/ast.js",
-		"/D/_$_$_$_/wick/roadmap.md",
-		"/D/_$_$_$_/wick/source/common/css/parser/tree/root.js",
-		"/D/_$_$_$_/wick_temp/wick/source/linker/wurl.js",
-		"/D/_$_$_$_/wick_temp/wick/source/linker/linker.js",
-		"/D/_$_$_$_/wick_temp/wick/source/case.js",
-		"/D/_$_$_$_/wick/package.json",
-		"/D/_$_$_$_/wick_temp/wick/source/cassette/filter.js",
-		"/D/_$_$_$_/wick_temp/wick/source/wick.js",
-		"/D/_$_$_$_/wick/source/common/css/parser/tree/base.js",
-		"/D/_$_$_$_/wick/source/source/source.js",
-		"/D/_$_$_$_/wick/source/source/base.js",
-		"/D/_$_$_$_/wick/source/common/scheduler.js",
-		"/D/_$_$_$_/wick/source/source/pipe/base.js",
-		"/D/_$_$_$_/wick/source/network/router/component.js",
-		"/D/_$_$_$_/wick/source/source/skeleton.js",
-		"/D/_$_$_$_/wick_temp/dif.txt"
+		"/home/galactrax/wick/source/network/wurl.js"
 	],
 	"find":
 	{
-		"height": 23.0
+		"height": 25.0
 	},
 	"find_in_files":
 	{
 		"height": 430.0,
 		"where_history":
 		[
+			"D:\\wick\\source",
 			"D:\\pytrucks\\static\\js\\libraries\\wick\\source",
 			"/home/galactrax/wick/source/source",
 			"D:\\_$_$_$_\\wick\\source"
@@ -741,6 +792,41 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"observers",
+			"RootText",
+			"this.css",
+			"_getCSS_",
+			"null",
+			"_getCSS_",
+			"BindingCSSRoot",
+			"buildCSS",
+			"css_list",
+			"_setPendingCSS_",
+			"_getCSS_",
+			"linkCSS",
+			"_linkCSS",
+			"debugg",
+			"_linkCSS_",
+			"getCSS",
+			"_merged_",
+			"_process_fetch_hook",
+			"url",
+			"_mergeComponent_",
+			"observers",
+			"addProperty",
+			"addPropertyu",
+			"S",
+			"_selectorPart_",
+			"__parseSelector__",
+			"selector",
+			"selectors",
+			"new",
+			"deb",
+			"css",
+			"attr",
+			"sources",
+			"setSource",
+			"_createElement_",
 			"filter",
 			"SVG",
 			"scheduler",
@@ -833,42 +919,7 @@
 			"container_revised",
 			"but",
 			"pick",
-			"//",
-			"proxy",
-			"__defaultReturn__",
-			"debugger",
-			"debugger'",
-			"debugger",
-			"container",
-			"cull",
-			"added",
-			"filterUpdate",
-			"{",
-			"AnyMod",
-			"ModelBase",
-			"schema",
-			"container",
-			"OldArrayModelContainer",
-			"model_old",
-			"model",
-			"model_revised",
-			"model",
-			"this",
-			"data",
-			"look_up",
-			"_wick_model_identifier",
-			"ModelContainerBase",
-			".data",
-			"deletion",
-			"automatic",
-			"_ImutableProperty_",
-			"_FixedProperty_",
-			"null",
-			"__filters__",
-			"root",
-			"source",
-			"__filters__",
-			"_FixedProp_"
+			"//"
 		],
 		"highlight": false,
 		"in_selection": false,
@@ -876,6 +927,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			"createElement",
 			"Model",
 			"destroy"
 		],
@@ -888,29 +940,132 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "source/source/compiler/nodes/template.js",
+					"file": "source/common/css/root.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3216,
+						"buffer_size": 20677,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								19823,
+								19404
 							]
 						],
 						"settings":
 						{
+							"SL.167.region_keys":
+							[
+								"SL.jshint.Highlights.|5c78ed4cf47e352ac8f350fdec7c100a88d69eb1d7f28527173b5f2863120654|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|636dab216416d506307cfb3e2129ee7168d9de4ad056669ee65681419058537b|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|0fb21dda6cfcf143f8cbaede40622a4e4f9e307ec37b8aa7772d7fdd13afb188|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|9071c52f94f9ed8cbf75676d6289525c686a1b2933fac1fce691e09b46e76201|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|06c7b872dca67e25e6b46a64a16849a912d41a879edeb0a964fa587996d243ad|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|de3f3e8e3189413afa2b20b0ecf2eab9040b93773282e34d774c325d4b159b17|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|3866cf44a927a023eb2e8a4fcbcc8093f5d4f37e9cb8f7f4b326469f034dded1|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|9e8598ba6d97f57daaab4f8a7936237016602587a479885b9294f5fc611c9833|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|fe236f99dedad1e5c68e8bad6a90bb552be9c8426bfc7360d2d79d99013324aa|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot",
+								"sublime_linter.protected_regions",
+								"SL.jshint.Highlights.|c3fe0ec69512ebfbef567f8bc36aad12f481208404505bf3cb7dbe7b2c3fe076|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|243c3fbccb1b6dad774d88f4b7e8db9812c11b0fdb35c9e757cb5e420cb2bdcf|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|4a810d1e4e2d057c6c295f363ed13a1e9ea09ac74aa9971214c2554672df638a|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|662bec980243d73ffcc0a391383453f139b2805a28b762162d32c1808092ff36|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|8f9cc7a6380916ae9c9d3d7df25e7430a55a316bf08d7a7513daaf358236654f|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|2e0f9cff2d159de2025a2ac8ed6b13b90db5958c1481fc2a9802cb36a89a406a|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|14352081beb8f591033b0fd2e59a912c6a7d9f3f21e939a549457af09923921f|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|ae0b6bb31e336497d5f0d71223d40afe3e66832f885bba3ff5b47f2d59e4664a|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|888da000af66e391aa4c6c7eb0db1bbd096c90159726b3a05074fe98498bc2d9|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|38abe980c23948000bc18902afb072f7d9c9b865a8c4a713fbfad67899708638|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|5ac897144da9978deccf2f8bb7da08d2248886bd54bc5653a5cb0be0a2ae7895|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|f1ae3d183e135e905412e74a1ef663a5f2f2ec0ccdabb1c709f846800dead144|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|04586e9656f4b834e7593c518861572cb62bbd787c8291add7961169bb5cb74c|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|b2954227632fd757ca2cc0bc2452527f0338b87321b0c0c91ddb4813279bdd85|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|362b3306c180fe5207034ade00de1868be19ab11bc8cc2856312be57efc0f858|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|57102f9651088fddb70eee1098bd76bd02e7e4d7f360c44f3d03f7097bc8d1cf|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|21aa1f566b3237dc7689c1dd3f89752c52443e356378ae94024575206718148b|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|716c4b5558bae357a9a844fd9a27287373ee1ebcb93f609f658524e65a0c3a79|region.yellowish markup.warning.sublime_linter|32"
+							],
+							"SL.66.region_keys":
+							[
+								"SL.jshint.Highlights.|2534e5505074bf0f3adfb705f935fdd3c13d2f12c60cfc5161ee4678d154397b|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|d831463646d54ece7737c4c8534c857e760a2e28e96d2919fdf24c70761fc5be|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|4b2a7ae72e468f36cec213d0fdcd3ff71cc5850302ec0b63368c25f3ab0dd171|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|f3155d5e00cc6f654757d7da335434eb47265ec0a445a93e3986281d83614e69|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|9d276ace7a34b6b5dcb29a13821d308c12d86d79d3e09c05113373e8604b497b|region.yellowish markup.warning.sublime_linter|32",
+								"sublime_linter.protected_regions",
+								"SL.jshint.Highlights.|fc8718024797a1b43e1b836986c293ac881895b41c5c92c8bba2061cc9ee3937|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|71da302e35d28cd34ffd5945d565cffd88c16cb25358eeeb39c0eba484f57db9|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|a284d2a38edf30f304858f25a6b4d1ae8c7eb0c69965df7446a5718c094770d5|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|f62f128fde853ca557a53c14c0aef76941f7db49b67ad570e5e828b14d7cdf98|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|eff37f7976942e7868cd0df97813c528a3706a5c573c020f9826369453327402|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|3dae69d0a464f7c42dc88ed9bd9d9f7265b0c2e7e40b1eacdcb701a695f1ae8f|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|bf5c88ac151869f0e2519b108460a5b076a432eb428a21fabbe2f5736e6d57ea|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|f92d9cdfc6d62fc812f576a695771b487916906be1c39a3645fbc3f67d18aa02|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|ac2c0134970657fa1e7bb3b9969df2131c1ffe715c4f7cb9f9deaad1e68d42d5|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|daef50195e3b409f3d0a25de6ee61945fa502c9080d20a51c5129d85289bfa13|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|e41f3767446c0032466d3e955c3f2ce4e22402321e1f1aa6db9691792cf87a94|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|8ec083e7609a394fd12c35f92b941bc47e83153606a02a5441e5310f73833033|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|b4194705d8f2274ab68eb9ffba14257967136ecd09e44840d29108c1ddaee6aa|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|b3748106cf7a0690d9a6b608c018476f4c9c1e7ec67c6d71bdf497d85ee9c2b6|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|be772ac83c8ecf1f3482bc7574102b9e70657445c66975ffe8c34d1ce687c6f9|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|5d8dc2d436c7bcd3d9e236553a70146b663df386865e2b15bbddf38f3b5c4b0f|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|6bfd3cee9b14616fdf7e3dd3b5c4dba964d42304baf70f14accef4a611f34828|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|bb268c21047bd77a15f48cb42c38f946fd72acd2eb079a8537d0ab1b71713dd3|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|59aa6903826aad1934be8189855ae8207e360e699fcc0b722471201d53050dc0|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|8a3352e320873cf68c3ec84c7b93bacd17a7bdba40a5afdbfeabdc88f2281df9|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|c09e47e2d9023e77543ea4ef28659c8fc2f3abb18cd5bdfd37024d52dc2581b9|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|6dbe8d9f135bce34c06099302e9a8601a7b33613b4a395ee2d4d79dc8c268705|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|9d9a9fe27a75092a8b954be0172a7d603f0ab270de03e469a8b466913cf3d2d4|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot",
+								"SL.jshint.Highlights.|f754c1087005fa3b3d7320120abf6a2ba54066a15ca43baf94ad2d92fec50f5f|region.yellowish markup.warning.sublime_linter|32"
+							],
+							"git_savvy.repo_path": "D:\\wick",
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 8577.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/D/Users/Anthony/Desktop/test.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2409,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2243,
+								2243
+							]
+						],
+						"settings":
+						{
+							"SL.14.region_keys":
+							[
+							],
+							"SL.245.region_keys":
+							[
+							],
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
@@ -922,46 +1077,240 @@
 					"type": "text"
 				},
 				{
-					"buffer": 1,
-					"file": "source/common/string_parsing/lexer.js",
+					"buffer": 2,
+					"file": "source/source/io/style_io.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 18013,
+						"buffer_size": 4345,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								3335,
+								3335
 							]
 						],
 						"settings":
 						{
+							"SL.215.region_keys":
+							[
+								"SL.jshint.Highlights.|fa91af7bd1458d0cf276b32ecb7018a484f7adda7fedd0f7d30ea5e0ce3872a2|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|65547a63620b9b401e7790b888db816b0ec9138d5356ef2edea208a57170bfb6|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|597bbf92e762817363e8040cefaccf9b7ceb9185de84738acd18985d357d3e51|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|032eeacb2600ad53458bdffabefc79c9f3b943f059f19d0b0d6f75238e7c3e99|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|80b9d4b01da019aec9e67cdff3d4322c4564a9c68b036a47a7c05a80a8996f22|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot",
+								"sublime_linter.protected_regions"
+							],
+							"git_savvy.repo_path": "D:\\wick",
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 4590.0,
+						"translation.y": 1681.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "source/common/html/root.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 24709,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6775,
+								6775
+							]
+						],
+						"settings":
+						{
+							"SL.167.region_keys":
+							[
+								"SL.jshint.Highlights.|fc7194b787ed186f912b29a6a9be01a8f5dd9d582e2e29a7f428a8221e04f1ab|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|b0c10801852f4a19065049dc3b3446928acced79c3f8bd91d3d64e84e6eb2155|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|017bba81fcad214cf024c11e969099c490ab5e9cbfe3e99f5976043980335855|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|cc5d1cf02a9adf9a1fc93c6bd0de5e9c37ba9dc7352e13f12a3400196015f90c|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|7eb4b5d1554b10eb843c001d960b62ede28c5807b22bf0ba3f5ba00c9499421c|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot",
+								"SL.jshint.Highlights.|b77c9f7cf3e1cdb0d46151c687ba8dbbf9a92cfd7fec1469443d0b1809195a57|region.yellowish markup.warning.sublime_linter|32",
+								"sublime_linter.protected_regions"
+							],
+							"git_savvy.repo_path": "D:\\wick",
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 11553.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "source/source/compiler/nodes/root.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 14029,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								575,
+								575
+							]
+						],
+						"settings":
+						{
+							"SL.163.region_keys":
+							[
+								"SL.jshint.Highlights.|c48244bdf9778d0eba29668be3a8a2e7aff447f438885dc32c4f0d0082310395|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot",
+								"sublime_linter.protected_regions"
+							],
+							"git_savvy.repo_path": "D:\\wick",
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 6241.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "source/source/compiler/nodes/style.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 334,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								155,
+								155
+							]
+						],
+						"settings":
+						{
+							"SL.232.region_keys":
+							[
+								"sublime_linter.protected_regions"
+							],
+							"git_savvy.repo_path": "D:\\wick",
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "source/source/compiler/template/template_bindings.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2952,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1515,
+								1515
+							]
+						],
+						"settings":
+						{
+							"SL.216.region_keys":
+							[
+								"SL.jshint.Highlights.|99c67854b455bc5e1d302a32f070bd1c58145f36ec29b887b6c54490e64abd45|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|bd6a38d4d88c5ee898a0b0f83195063d55bc164e61df3715ea8c2c65bd1725e9|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Highlights.|b206e2970f6f3c5643e56727b3aa5e4223deeda07ddbefb7be23d234eeaf76c4|region.yellowish markup.warning.sublime_linter|32",
+								"SL.jshint.Gutter.|region.yellowish markup.warning.sublime_linter|dot",
+								"SL.jshint.Highlights.|59cc9f8a4a84dd26deb5e7f241975eec43a7f4ddf1235295d244db5f9a34c354|region.yellowish markup.warning.sublime_linter|32",
+								"sublime_linter.protected_regions"
+							],
+							"git_savvy.repo_path": "D:\\wick",
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1008.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "source/source/compiler/compiler.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3144,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1655,
+								1655
+							]
+						],
+						"settings":
+						{
+							"SL.210.region_keys":
+							[
+							],
+							"git_savvy.repo_path": "D:\\wick",
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 288.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
 					"type": "text"
 				}
-			]
-		},
-		{
-			"sheets":
-			[
 			]
 		}
 	],
 	"incremental_find":
 	{
-		"height": 22.0
+		"height": 25.0
 	},
 	"input":
 	{
@@ -976,18 +1325,11 @@
 				0,
 				1,
 				1
-			],
-			[
-				1,
-				0,
-				2,
-				1
 			]
 		],
 		"cols":
 		[
 			0.0,
-			0.935222593503,
 			1.0
 		],
 		"rows":
@@ -1013,7 +1355,7 @@
 	"project": "sublime-wick.sublime-project",
 	"replace":
 	{
-		"height": 42.0
+		"height": 46.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1022,6 +1364,130 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"cssroot",
+				"source\\common\\css\\root.js"
+			],
+			[
+				"cssio",
+				"source\\source\\io\\style_io.js"
+			],
+			[
+				"sourcecomp",
+				"source\\source\\compiler\\compiler.js"
+			],
+			[
+				"soucompil",
+				"source\\source\\compiler\\compiler.js"
+			],
+			[
+				"compiler",
+				"source\\source\\compiler\\nodes\\source.js"
+			],
+			[
+				"compilersour",
+				"source\\source\\compiler\\nodes\\source.js"
+			],
+			[
+				"cssnode",
+				"source\\common\\css\\nodes.js"
+			],
+			[
+				"libr",
+				"source\\root\\config\\library.js"
+			],
+			[
+				"htmlroot",
+				"source\\common\\html\\root.js"
+			],
+			[
+				"compiroot",
+				"source\\source\\compiler\\nodes\\root.js"
+			],
+			[
+				"test",
+				"test\\test.js"
+			],
+			[
+				"ccssl",
+				"source\\common\\css\\types\\length.js"
+			],
+			[
+				"nodes",
+				"source\\common\\css\\nodes.js"
+			],
+			[
+				"cssroo",
+				"source\\common\\css\\root.js"
+			],
+			[
+				"css",
+				"source\\common\\css\\root.js"
+			],
+			[
+				"nodesource",
+				"source\\source\\compiler\\nodes\\source.js"
+			],
+			[
+				"styleio",
+				"source\\source\\io\\style_io.js"
+			],
+			[
+				"sourcesour",
+				"source\\source\\source.js"
+			],
+			[
+				"io",
+				"source\\source\\io\\io.js"
+			],
+			[
+				"librar",
+				"source\\root\\config\\library.js"
+			],
+			[
+				"root",
+				"source\\common\\js\\root.js"
+			],
+			[
+				"sourcesoure",
+				"source\\source\\source.js"
+			],
+			[
+				"lib",
+				"source\\root\\config\\library.js"
+			],
+			[
+				"css root",
+				"source\\common\\css\\root.js"
+			],
+			[
+				"nodroot",
+				"source\\source\\compiler\\nodes\\root.js"
+			],
+			[
+				"sourcenodero",
+				"source\\source\\compiler\\nodes\\root.js"
+			],
+			[
+				"li",
+				"source\\root\\config\\library.js"
+			],
+			[
+				"pac",
+				"source\\source\\package.js"
+			],
+			[
+				"cl",
+				"source\\root\\client.js"
+			],
+			[
+				"pca",
+				"package.json"
+			],
+			[
+				"transfor",
+				"source\\common\\math\\transform.js"
+			],
 			[
 				"basb",
 				"source\\source\\compiler\\template\\basic_bindings.js"
@@ -1113,10 +1579,6 @@
 			[
 				"noderoot",
 				"source\\source\\compiler\\nodes\\root.js"
-			],
-			[
-				"io",
-				"source\\source\\io\\io.js"
 			],
 			[
 				"conbase",
@@ -1211,10 +1673,6 @@
 				"source\\page\\element.js"
 			],
 			[
-				"nodes",
-				"source\\common\\css\\nodes.js"
-			],
-			[
 				"sourcesk",
 				"source\\source\\skeleton.js"
 			],
@@ -1245,10 +1703,6 @@
 			[
 				"mode",
 				"source\\model\\model.js"
-			],
-			[
-				"nodesource",
-				"source\\source\\compiler\\nodes\\source.js"
 			],
 			[
 				"sourcesou",
@@ -1347,10 +1801,6 @@
 				"package.json"
 			],
 			[
-				"libr",
-				"source\\root\\config\\library.js"
-			],
-			[
 				"Sche",
 				"source\\common\\scheduler.js"
 			],
@@ -1359,24 +1809,12 @@
 				"README.md"
 			],
 			[
-				"pac",
-				"package.json"
-			],
-			[
 				"model_",
 				"test\\suite\\model_tests.js"
 			],
 			[
 				"cli",
 				"source\\root\\client.js"
-			],
-			[
-				"lib",
-				"source\\root\\config\\library.js"
-			],
-			[
-				"test",
-				"test\\test.js"
 			],
 			[
 				"tests",
@@ -1437,102 +1875,6 @@
 			[
 				"pactest",
 				"test\\suite\\source_package_tests.js"
-			],
-			[
-				"htmltest",
-				"test\\suite\\html_tests.js"
-			],
-			[
-				"clien",
-				"source\\root\\client.js"
-			],
-			[
-				"librar",
-				"source\\root\\config\\library.js"
-			],
-			[
-				"modre",
-				"source\\model\\model_revised.js"
-			],
-			[
-				"modelba",
-				"source\\model\\base.js"
-			],
-			[
-				"short",
-				"source\\common\\short_names.js"
-			],
-			[
-				"conrearr",
-				"source\\model\\container_revised\\array.js"
-			],
-			[
-				"modelbas",
-				"source\\model\\base.js"
-			],
-			[
-				"conreba",
-				"source\\model\\container_revised\\base.js"
-			],
-			[
-				"contabase",
-				"source\\model\\container\\base.js"
-			],
-			[
-				"li",
-				"source\\root\\config\\library.js"
-			],
-			[
-				"stor",
-				"source\\model\\store.js"
-			],
-			[
-				"testind",
-				"test\\index.html"
-			],
-			[
-				"lexertest",
-				"test\\suite\\lexer_tests.js"
-			],
-			[
-				"view",
-				"source\\view\\view.js"
-			],
-			[
-				"libra",
-				"source\\root\\config\\library.js"
-			],
-			[
-				"lexer",
-				"test\\suite\\lexer_tests.js"
-			],
-			[
-				"modelre",
-				"source\\model\\model_revised.js"
-			],
-			[
-				"mod",
-				"test\\suite\\model_tests.js"
-			],
-			[
-				"schema co",
-				"source\\schema\\constructor.js"
-			],
-			[
-				"modebas",
-				"source\\model\\base.js"
-			],
-			[
-				"modeltet",
-				"test\\suite\\model_tests.js"
-			],
-			[
-				"any",
-				"source/model/any.js"
-			],
-			[
-				"mo",
-				"source/model/model.js"
 			]
 		],
 		"width": 0.0
