@@ -1,3 +1,13 @@
+import {
+    Lexer
+} from "../string_parsing/lexer";
+
+import {
+    property_definitions,
+    media_feature_definitions,
+    types
+} from "./properties/property_and_type_definitions";
+
 /**
  * Used to _bind_ a rule to a CSS selector.
  * @param      {string}  selector        The raw selector string value
@@ -46,6 +56,15 @@ class CSSSelector {
             str += this.r.toString(off+1);
         
         return str + `${offset}}\n`;
+    }
+
+    addProp(string){
+        let root = this.r.root;
+        if(root){
+            let lex = new Lexer(string);
+            while(!lex.END)
+                root.parseProperty(lex, this.r, property_definitions);
+        }
     }
 
 }

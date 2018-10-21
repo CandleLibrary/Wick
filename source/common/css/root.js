@@ -84,69 +84,69 @@ class CSSRootNode {
         }
     }
     _READY_() {
-        if (!this.res) this.res = this._resolveReady_.bind(this);
-        return new Promise(this.res);
-    }
-    /**
-     * Creates a new instance of the object with same properties as the original.
-     * @return     {CSSRootNode}  Copy of this object.
-     * @public
-     */
+            if (!this.res) this.res = this._resolveReady_.bind(this);
+            return new Promise(this.res);
+        }
+        /**
+         * Creates a new instance of the object with same properties as the original.
+         * @return     {CSSRootNode}  Copy of this object.
+         * @public
+         */
     clone() {
-        let rn = new this.constructor();
-        rn._selectors_ = this._selectors_;
-        rn._sel_a_ = this._sel_a_;
-        rn._media_ = this._media_;
-        return rn;
-    }
-    /**
-     * Gets the media.
-     * @return     {Object}  The media.
-     * @public
-     */
+            let rn = new this.constructor();
+            rn._selectors_ = this._selectors_;
+            rn._sel_a_ = this._sel_a_;
+            rn._media_ = this._media_;
+            return rn;
+        }
+        /**
+         * Gets the media.
+         * @return     {Object}  The media.
+         * @public
+         */
     getMedia() {
-        let start = this;
-        this._media_.forEach((m) => {
-            if (m._med_) {
-                let accept = true;
-                for (let i = 0, l = m._med_.length; i < l; i++) {
-                    let ms = m._med_[i];
-                    if (ms.props) {
-                        for (let n in ms.props) {
-                            if (!ms.props[n]()) accept = false;
+            let start = this;
+            this._media_.forEach((m) => {
+                if (m._med_) {
+                    let accept = true;
+                    for (let i = 0, l = m._med_.length; i < l; i++) {
+                        let ms = m._med_[i];
+                        if (ms.props) {
+                            for (let n in ms.props) {
+                                if (!ms.props[n]()) accept = false;
+                            }
                         }
+                        //if(not)
+                        //    accept = !accept;
+                        if (accept)
+                            (m._next_ = start, start = m);
                     }
-                    //if(not)
-                    //    accept = !accept;
-                    if (accept)
-                        (m._next_ = start, start = m);
                 }
-            }
-        });
-        return start;
-    }
-    /**
-     * Hook method for hijacking the property parsing function. Return true if default property parsing should not take place
-     * @param      {Lexer}   value_lexer    The value lexer
-     * @param      {<type>}   property_name  The property name
-     * @param      {<type>}   rule           The rule
-     * @return     {boolean}  The property hook.
-     */
+            });
+            return start;
+        }
+        /**
+         * Hook method for hijacking the property parsing function. Return true if default property parsing should not take place
+         * @param      {Lexer}   value_lexer    The value lexer
+         * @param      {<type>}   property_name  The property name
+         * @param      {<type>}   rule           The rule
+         * @return     {boolean}  The property hook.
+         */
     _getPropertyHook_(value_lexer, property_name, rule) {
-        return false;
-    }
-    /**
-     * Parses properties
-     * @param      {Lexer}  lexer        The lexer
-     * @param      {<type>}  rule         The rule
-     * @param      {<type>}  definitions  The definitions
-     */
-    _GetProperty_(lexer, rule, definitions) {
+            return false;
+        }
+        /**
+         * Parses properties
+         * @param      {Lexer}  lexer        The lexer
+         * @param      {<type>}  rule         The rule
+         * @param      {<type>}  definitions  The definitions
+         */
+    parseProperty(lexer, rule, definitions) {
         const name = lexer.tx.replace(/\-/g, "_");
         lexer.n().a(":");
         //allow for short circuit < | > | =
         const p = lexer.pk;
-        while ((p.ch !== "}" && p.ch !== ";")) {
+        while ((p.ch !== "}" && p.ch !== ";") && !p.END) {
             //look for 
             p.n();
         }
@@ -163,7 +163,7 @@ class CSSRootNode {
                     if (!rule.props) rule.props = {};
                     parser._parse_(out_lex, rule.props);
                 } else
-                    //Need to know what properties have not been defined
+                //Need to know what properties have not been defined
                     console.warn(`Unable to get parser for css property ${name}`);
             } catch (e) {
                 console.log(e);
@@ -172,110 +172,110 @@ class CSSRootNode {
         if (lexer.ch == ";") lexer.n();
     }
     _applyProperties_(lexer, rule) {
-        while (!lexer.END && lexer.tx !== "}") this._GetProperty_(lexer, rule, property_definitions);
-        lexer.n();
-    }
-    /**
-     * Used to match selectors to elements
-     * @param      {ele}   ele       The ele
-     * @param      {string}   criteria  The criteria
-     * @return     {boolean}  { description_of_the_return_value }
-     * @private
-     */
+            while (!lexer.END && lexer.tx !== "}") this.parseProperty(lexer, rule, property_definitions);
+            lexer.n();
+        }
+        /**
+         * Used to match selectors to elements
+         * @param      {ele}   ele       The ele
+         * @param      {string}   criteria  The criteria
+         * @return     {boolean}  { description_of_the_return_value }
+         * @private
+         */
     _matchCriteria_(ele, criteria) {
-        if (criteria.e && ele.tagName !== criteria.e.toUpperCase()) return false;
-        outer: for (let i = 0, l = criteria.ss.length; i < l; i++) {
-            let ss = criteria.ss[i];
-            switch (ss.t) {
-                case "attribute":
-                    let lex = new Lexer(ss.v);
-                    if (lex.ch == "[" && lex.pk.ty == lex.types.id) {
-                        let id = lex.sync().tx;
-                        let attrib = ele.getAttribute(id);
-                        if (!attrib) return;
-                        if (lex.n().ch == "=") {
-                            let value = lex.n().tx;
-                            if (attrib !== value) return false;
+            if (criteria.e && ele.tagName !== criteria.e.toUpperCase()) return false;
+            outer: for (let i = 0, l = criteria.ss.length; i < l; i++) {
+                let ss = criteria.ss[i];
+                switch (ss.t) {
+                    case "attribute":
+                        let lex = new Lexer(ss.v);
+                        if (lex.ch == "[" && lex.pk.ty == lex.types.id) {
+                            let id = lex.sync().tx;
+                            let attrib = ele.getAttribute(id);
+                            if (!attrib) return;
+                            if (lex.n().ch == "=") {
+                                let value = lex.n().tx;
+                                if (attrib !== value) return false;
+                            }
+                        }
+                        break;
+                    case "pseudo":
+                        debugger;
+                        break;
+                    case "class":
+                        let class_list = ele.classList;
+                        for (let j = 0, jl = class_list.length; j < jl; j++) {
+                            if (class_list[j] == ss.v) continue outer;
+                        }
+                        return false;
+                    case "id":
+                        if (ele.id !== ss.v) return false;
+                }
+            }
+            return true;
+        } * getApplicableSelectors(element) {
+            for (let j = 0, jl = this._sel_a_.length; j < jl; j++) {
+                let ancestor = element;
+                let selector = this._sel_a_[j];
+                let sn = selector.a;
+                let criteria = null;
+                outer: for (let x = 0; x < sn.length; x++) {
+
+                    let sa = sn[x];
+
+                    inner: for (let i = 0, l = sa.length; i < l; i++) {
+                        criteria = sa[i];
+                        switch (criteria.c) {
+                            case "child":
+                                if (!(ancestor = ancestor.parentElement) || !this._matchCriteria_(ancestor, criteria)) continue outer;
+                                break;
+                            case "preceded":
+                                while ((ancestor = ancestor.previousElementSibling))
+                                    if (this._matchCriteria_(ancestor, criteria)) continue inner;
+                                continue outer;
+                            case "immediately preceded":
+                                if (!(ancestor = ancestor.previousElementSibling) || !this._matchCriteria_(ancestor, criteria)) continue outer;
+                                break;
+                            case "descendant":
+                                while ((ancestor = ancestor.parentElement))
+                                    if (this._matchCriteria_(ancestor, criteria)) continue inner;
+                                continue outer;
+                            default:
+                                if (!this._matchCriteria_(ancestor, criteria)) continue outer;
                         }
                     }
-                    break;
-                case "pseudo":
-                    debugger;
-                    break;
-                case "class":
-                    let class_list = ele.classList;
-                    for (let j = 0, jl = class_list.length; j < jl; j++) {
-                        if (class_list[j] == ss.v) continue outer;
-                    }
-                    return false;
-                case "id":
-                    if (ele.id !== ss.v) return false;
-            }
-        }
-        return true;
-    }* getApplicableSelectors(element) {
-         for (let j = 0, jl = this._sel_a_.length; j < jl; j++) {
-            let ancestor = element;
-            let selector = this._sel_a_[j];
-            let sn = selector.a;
-            let criteria = null;
-        outer:    for (let x = 0; x < sn.length; x++) {
-                
-                let sa = sn[x];
-
-                inner: for (let i = 0, l = sa.length; i < l; i++) {
-                    criteria = sa[i];
-                    switch (criteria.c) {
-                        case "child":
-                            if (!(ancestor = ancestor.parentElement) || !this._matchCriteria_(ancestor, criteria)) continue outer;
-                            break;
-                        case "preceded":
-                            while ((ancestor = ancestor.previousElementSibling))
-                                if (this._matchCriteria_(ancestor, criteria)) continue inner;
-                            continue outer;
-                        case "immediately preceded":
-                            if (!(ancestor = ancestor.previousElementSibling) || !this._matchCriteria_(ancestor, criteria)) continue outer;
-                            break;
-                        case "descendant":
-                            while ((ancestor = ancestor.parentElement))
-                                if (this._matchCriteria_(ancestor, criteria)) continue inner;
-                            continue outer;
-                        default:
-                            if (!this._matchCriteria_(ancestor, criteria)) continue outer;
-                    }
+                    yield selector;
                 }
-                yield selector;
             }
         }
-    }
-    /**
-     * Retrieves the set of rules from all matching selectors for an element.
-     * @param      {HTMLElement}  element - An element to retrieve CSS rules.
-     * @public
-     */
+        /**
+         * Retrieves the set of rules from all matching selectors for an element.
+         * @param      {HTMLElement}  element - An element to retrieve CSS rules.
+         * @public
+         */
     getApplicableRules(element, rule = new R()) {
-        let gen = this.getApplicableSelectors(element),
-            sel = null;
-        while (sel = gen.next().value) rule.merge(sel.r);
-        return (this._next_) ? this._next_.getApplicableRules(element, rule) : rule;
-    }
-    /**
-     * Gets the rule matching the selector
-     * @param      {string}  string  The string
-     * @return     {CSSRule}  The combined set of rules that match the selector.
-     */
+            let gen = this.getApplicableSelectors(element),
+                sel = null;
+            while (sel = gen.next().value) rule.merge(sel.r);
+            return (this._next_) ? this._next_.getApplicableRules(element, rule) : rule;
+        }
+        /**
+         * Gets the rule matching the selector
+         * @param      {string}  string  The string
+         * @return     {CSSRule}  The combined set of rules that match the selector.
+         */
     getRule(string) {
-        let selector = this._selectors_[string];
-        if (selector) return selector.r;
-        return er;
-    }
-    /**
-     * Parses CSS string
-     * @param      {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}
-     * @param      {(Array|CSSRootNode|Object|_mediaSelectorPart_)}  root    The root
-     * @return     {Promise}  A promise which will resolve to a CSSRootNode
-     * @private
-     */
+            let selector = this._selectors_[string];
+            if (selector) return selector.r;
+            return er;
+        }
+        /**
+         * Parses CSS string
+         * @param      {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}
+         * @param      {(Array|CSSRootNode|Object|_mediaSelectorPart_)}  root    The root
+         * @return     {Promise}  A promise which will resolve to a CSSRootNode
+         * @private
+         */
     _parse_(lexer, root, res = null, rej = null) {
         return new Promise((res, rej) => {
             if (!root && root !== null) {
@@ -304,7 +304,7 @@ class CSSRootNode {
                                         out_lex.off = start;
                                         out_lex.tl = 0;
                                         out_lex.n().fence(lexer);
-                                        this._GetProperty_(out_lex, sel, media_feature_definitions);
+                                        this.parseProperty(out_lex, sel, media_feature_definitions);
                                         if (lexer.pk.tx.toLowerCase() == "and") lexer.sync();
                                     } else {
                                         let id = lexer.tx.toLowerCase(),
@@ -382,6 +382,21 @@ class CSSRootNode {
             return this;
         });
     }
+
+    createSelector(selector_value) {
+        let selector = this.__parseSelector__(new Lexer(selector_value));
+
+        if (selector)
+            if (!this._selectors_[selector.id]) {
+                this._selectors_[selector.id] = selector;
+                this._sel_a_.push(selector);
+                selector.r = new R(this);
+            } else
+                selector = this._selectors_[selector.id]
+
+        return selector;
+    }
+
     /** 
     Parses a selector up to a token '{', creating or accessing necessary rules as it progresses. 
 
@@ -414,7 +429,6 @@ class CSSRootNode {
                     selectors_array.push(selector_array);
                     selector_array = [];
                     selectors.push(lexer.s(start).trim().slice(0));
-                    console.log(lexer.s(start).trim())
                     sel = new _selectorPart_();
                     if (RETURN) return new S(selectors, selectors_array, this);
                     lexer.n();
@@ -489,7 +503,10 @@ class CSSRootNode {
                     break;
             }
         }
-        return null;
+        selector_array.unshift(sel);
+        selectors_array.push(selector_array);
+        selectors.push(lexer.s(start).trim().slice(0));
+        return new S(selectors, selectors_array, this);
     }
     toString(off = 0) {
         let str = "";
