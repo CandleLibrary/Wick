@@ -59,6 +59,13 @@ OutTemplate.prototype = {
     set type(v) {},
     get type() {
         return TEMPLATE_BINDING_ID;
+    },
+
+    toString(){
+        let str = ""
+        for(let i = 0; i < this._bindings_.length; i++)
+            str += this._bindings_[i];
+        return str;
     }
 };
 

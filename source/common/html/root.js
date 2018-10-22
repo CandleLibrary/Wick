@@ -100,6 +100,11 @@ class HTMLNode {
          */
         this.DTD = false;
 
+        /**
+         * True if the element is a single tag element. 
+         */
+        this.single = false;
+
     }
 
 
@@ -291,6 +296,9 @@ class HTMLNode {
         }
 
         str += ">\n";
+        
+        if(this.single)
+            return str;
 
         for (let node = this.fch; node;
             (node = this.getN(node))) {
@@ -530,8 +538,11 @@ class HTMLNode {
                                 }
                             }
 
-                            if (this._selfClosingTagHook_(this.tag)) // Tags without matching end tags.
+                            if (this._selfClosingTagHook_(this.tag)){
+                                 // Tags without matching end tags.
+                                this.single = true;
                                 return this;
+                            }
 
                             continue;
                         } else {

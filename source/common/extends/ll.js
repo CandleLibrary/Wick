@@ -131,7 +131,7 @@ export const LinkedList = {
                 if (node.par)
                     node.par.remove(node);
                 if (this.par)
-                    this.par.add(node, this.pre)
+                    this.par.addC(node, this.pre)
                 else
                     LinkedList.methods.defaults.insertBefore.call(this, node);
             },

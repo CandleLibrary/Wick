@@ -73,7 +73,7 @@ export class RootText extends TextNode {
     _linkCSS_() {}
 
     toString(off = 0) {
-        return `${("    ").repeat(off)}${this.binding.txt}\n`;
+        return `${("    ").repeat(off)}${this.binding}\n`;
     }
 }
 

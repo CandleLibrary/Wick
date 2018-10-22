@@ -23,7 +23,8 @@ import { Source } from "../../source/source";
 
 //SourceCompiler
 import { CompileSource as Compiler  } from "../../source/compiler/compiler";
-import { RootNode, RootText } from "../../source/compiler/nodes/root";
+import { RootText } from "../../source/compiler/nodes/root";
+import {RootNode} from "../../source/compiler/nodes/index";
 import { StyleNode } from "../../source/compiler/nodes/style";
 
 //CSS

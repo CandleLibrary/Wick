@@ -104,6 +104,8 @@ export class DynamicBinding {
         return DYNAMIC_BINDING_ID;
     }
     set type(v) {}
+
+    toString(){return `((${this.tap_name}))`}
 }
 
 export class RawValueBinding {
@@ -126,4 +128,5 @@ export class RawValueBinding {
     set _value_(v) {}
     get type() { return RAW_VALUE_BINDING_ID; }
     set type(v) {}
+    toString(){return this.txt}
 }
