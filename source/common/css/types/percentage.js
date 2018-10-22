@@ -30,7 +30,7 @@ export class CSS_Percentage extends Number {
             if (val) 
                 return val;
         }
-
+        
         super(v);
     }
 

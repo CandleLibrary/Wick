@@ -34,7 +34,7 @@ class CSSSelector {
         this.a = selectors_arrays;
 
         /**
-         * The CSSRule to _bind_ to.
+         * The CSSRule.
          * @package
          */
         this.r = null;

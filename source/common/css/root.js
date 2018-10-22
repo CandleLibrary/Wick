@@ -552,3 +552,4 @@ function _eID_(lexer) {
  * @alias css
  */
 export const CSSParser = (css_string, root = null) => (root = (!root || !(root instanceof CSSRootNode)) ? new CSSRootNode() : root, root._parse_(new Lexer(css_string, true)));
+CSSParser.types = types;

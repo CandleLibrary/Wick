@@ -7,7 +7,6 @@ import { CSS_Id } from "../types/id";
 import { CSS_Shape } from "../types/shape";
 import { CSS_Number } from "../types/number";
 import { CSS_Bezier } from "../types/cubic_bezier";
-
 import { CSS_Media_handle } from "../types/media";
 
 /**
@@ -73,8 +72,6 @@ export const property_definitions = {
     background_size: `<bg_size>#`,
     background: `<bg_layer>#,<final_bg_layer>`,
 
-
-
     /* Font */
     font_family: `[[<family_name>|<generic_family>],]*[<family_name>|<generic_family>]`,
     family_name: `<id>||<string>`,
@@ -99,18 +96,6 @@ export const property_definitions = {
     text_indent: `<length>|<percentage>`,
     line_height: `normal|<length>|<percentage>|<number>`,
 
-    /* Box */
-    margin: `[<length>|<percentage>|auto]{1,4}`,
-    margin_top: `<length>|<percentage>|auto`,
-    margin_right: `<length>|<percentage>|auto`,
-    margin_bottom: `<length>|<percentage>|auto`,
-    margin_left: `<length>|<percentage>|auto`,
-
-    padding: `[<length>|<percentage>|auto]{1,4}`,
-    padding_top: `<length>|<percentage>|auto`,
-    padding_right: `<length>|<percentage>|auto`,
-    padding_bottom: `<length>|<percentage>|auto`,
-    padding_left: `<length>|<percentage>|auto`,
 
     /* Border  https://www.w3.org/TR/css-backgrounds-3 */
     border_color: `<color>{1,4}`,
@@ -166,16 +151,31 @@ export const property_definitions = {
     list_style_image: `<url>|none`,
     list_style_position: `inside|outside`,
     list_style: `[disc|circle|square|decimal|lower-roman|upper-roman|lower-alpha|upper-alpha|none]||[inside|outside]||[<url>|none]`,
+    vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|<percentage>|<length>|inherit`,
 
     /* Layout https://www.w3.org/TR/css-position-3 */ 
     position: "static|relative|absolute|sticky|fixed",
     //CSS2 Properties
 
-    /* Box */
+    
+    /* Box Model */
+    margin: `[<length>|<percentage>|auto]{1,4}`,
+    margin_top: `<length>|<percentage>|auto`,
+    margin_right: `<length>|<percentage>|auto`,
+    margin_bottom: `<length>|<percentage>|auto`,
+    margin_left: `<length>|<percentage>|auto`,
+
+    padding: `[<length>|<percentage>|auto]{1,4}`,
+    padding_top: `<length>|<percentage>|auto`,
+    padding_right: `<length>|<percentage>|auto`,
+    padding_bottom: `<length>|<percentage>|auto`,
+    padding_left: `<length>|<percentage>|auto`,
+
     min_width: `<length>|<percentage>|inherit`,
     max_width: `<length>|<percentage>|none|inherit`,
+    min_height: `<length>|<percentage>|inherit`,
+    max_height: `<length>|<percentage>|none|inherit`,
     line_height: `normal|<number>|<length>|<percentage>|inherit`,
-    vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|<percentage>|<length>|inherit`,
     overflow: 'visible|hidden|scroll|auto|inherit',
 
     top: `<length>|<percentage>|auto|inherit`,
@@ -183,9 +183,10 @@ export const property_definitions = {
     bottom: `<length>|<percentage>|auto|inherit`,
     right: `<length>|<percentage>|auto|inherit`,
 
-    clip: '<shape>|auto|inherit',
+    box_sizing: `content-box | border-box`,
 
     /* Visual Effects */
+    clip: '<shape>|auto|inherit',
     visibility: `visible|hidden|collapse|inherit`,
     content: `normal|none|[<string>|<uri>|<counter>|attr(<identifier>)|open-quote|close-quote|no-open-quote|no-close-quote]+|inherit`,
     quotas: `[<string><string>]+|none|inherit`,
