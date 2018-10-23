@@ -90,11 +90,9 @@ export const property_definitions = {
     word_spacing: `normal|<length>`,
     letter_spacing: `normal|<length>`,
     text_decoration: `none|[underline||overline||line-through||blink]`,
-    vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|<percentage>`,
     text_transform: `capitalize|uppercase|lowercase|none`,
     text_align: `left|right|center|justify`,
     text_indent: `<length>|<percentage>`,
-    line_height: `normal|<length>|<percentage>|<number>`,
 
 
     /* Border  https://www.w3.org/TR/css-backgrounds-3 */
@@ -155,10 +153,13 @@ export const property_definitions = {
 
     /* Layout https://www.w3.org/TR/css-position-3 */ 
     position: "static|relative|absolute|sticky|fixed",
-    //CSS2 Properties
+    top: `<length>|<percentage>|auto|inherit`,
+    left: `<length>|<percentage>|auto|inherit`,
+    bottom: `<length>|<percentage>|auto|inherit`,
+    right: `<length>|<percentage>|auto|inherit`,
 
     
-    /* Box Model */
+    /* Box Model https://www.w3.org/TR/css-box-3 */
     margin: `[<length>|<percentage>|auto]{1,4}`,
     margin_top: `<length>|<percentage>|auto`,
     margin_right: `<length>|<percentage>|auto`,
@@ -178,10 +179,6 @@ export const property_definitions = {
     line_height: `normal|<number>|<length>|<percentage>|inherit`,
     overflow: 'visible|hidden|scroll|auto|inherit',
 
-    top: `<length>|<percentage>|auto|inherit`,
-    left: `<length>|<percentage>|auto|inherit`,
-    bottom: `<length>|<percentage>|auto|inherit`,
-    right: `<length>|<percentage>|auto|inherit`,
 
     box_sizing: `content-box | border-box`,
 
@@ -277,7 +274,7 @@ export const virtual_property_definitions = {
     geometry_box: `<shape_box>|fill-box|stroke-box|view-box`,
     basic_shape: `<CSS_Shape>`,
     ratio: `<integer>/<integer>`
-}
+};
 
 export const media_feature_definitions = {
     width: "<m_width>",
@@ -305,4 +302,4 @@ export const media_feature_definitions = {
     min_color_index: "<integer>",
     max_color_index: "<integer>",
 
-}
+};
