@@ -135,15 +135,15 @@ class Component extends BaseComponent {
             let template = DOM.getElementById(id);
             let url = element.getAttribute("url");
             if (template && template.tagName == "TEMPLATE") {
-                (new SourcePackage(template, presets)).mount(this.ele, null, presets.options.USE_SHADOW, this);
+                (new SourcePackage(template, presets, false, url)).mount(this.ele, null, presets.options.USE_SHADOW, this);
             } else if (url) {
                 (new WURL(url))
                 .fetchText()
                     .then(text => {
-                        (new SourcePackage(text, presets)).mount(null, null, presets.options.USE_SHADOW, this);
+                        (new SourcePackage(text, presets, false, url)).mount(null, null, presets.options.USE_SHADOW, this);
                     });
             } else {
-                (new SourcePackage(this.ele.innerHTML, presets)).mount(null, null, presets.options.USE_SHADOW, this);
+                (new SourcePackage(this.ele.innerHTML, presets, false, url)).mount(null, null, presets.options.USE_SHADOW, this);
             }
         }
         if (app_components)

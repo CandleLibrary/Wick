@@ -14,7 +14,7 @@ export class ScriptIO extends IOBase {
             }
         } catch (e) {
             errors.push(e);
-            return;
+            func = ()=>{}
         }
 
         super(tap);

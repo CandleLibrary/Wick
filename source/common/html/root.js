@@ -357,7 +357,7 @@ class HTMLNode {
      * @param {Object} attribs - An object which will receive the attribute keys and values. 
      * @private
      */
-    _parseOpenTag_(lex, DTD) {
+    _parseOpenTag_(lex, DTD, old_wurl) {
         let HAS_URL = false;
 
         while (!lex.END && lex.text !== ">" && lex.text !== "/") {
@@ -425,7 +425,7 @@ class HTMLNode {
             }
 
             if (attrib_name == "url") {
-                this.url = new WURL(out_lex.slice());
+                this.url = WURL.resolveRelative(old_wurl, out_lex.slice());
                 HAS_URL = true;
             }
 
@@ -441,7 +441,7 @@ class HTMLNode {
         return HAS_URL;
     }
 
-    _parseRunner_(lex = null, OPENED = false, IGNORE_TEXT_TILL_CLOSE_TAG = false, parent = null) {
+    _parseRunner_(lex = null, OPENED = false, IGNORE_TEXT_TILL_CLOSE_TAG = false, parent = null, old_wurl = null) {
         let start = lex.pos;
         let end = lex.pos;
         let HAS_INNER_TEXT = false;
@@ -510,7 +510,7 @@ class HTMLNode {
                             this.tag = lex.n().tx.toLowerCase();
 
 
-                            URL = this._parseOpenTag_(lex.n());
+                            URL = this._parseOpenTag_(lex.n(), false, old_wurl);
                             start = lex.pos + 1;
                             lex.IWS = false;
                             if (lex.ch == "/") lex.n();
@@ -533,7 +533,7 @@ class HTMLNode {
                                         if (this._selfClosingTagHook_(this.tag)) {
                                             return this;
                                         } // Tags without matching end tags.
-                                        return this._parseRunner_(lex, true, IGNORE_TEXT_TILL_CLOSE_TAG, this);
+                                        return this._parseRunner_(lex, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, old_wurl);
                                     });
                                 }
                             }
@@ -561,9 +561,9 @@ class HTMLNode {
 
                             this.addC(node);
 
-                            return node._parse_(lex, false, false, this).then(child => {
+                            return node._parse_(lex, false, false, this, this.url || old_wurl).then(child => {
                                 if (child.DTD) node.remC(child);
-                                return this._parseRunner_(lex, OPENED, false, this);
+                                return this._parseRunner_(lex, OPENED, false, this, old_wurl);
                             });
                         }
                         //}
@@ -601,10 +601,10 @@ class HTMLNode {
      * @return     {Promise}  
      * @private
      */
-    _parse_(lex = null, OPENED = false, IGNORE_TEXT_TILL_CLOSE_TAG = false, parent = null) {
+    _parse_(lex = null, OPENED = false, IGNORE_TEXT_TILL_CLOSE_TAG = false, parent = null, url = new WURL(0, !!1)) {
         lex.IWS = false;
         return new Promise((res, rej) => {
-            res(this._parseRunner_(lex, OPENED, IGNORE_TEXT_TILL_CLOSE_TAG, parent, res, rej));
+            res(this._parseRunner_(lex, OPENED, IGNORE_TEXT_TILL_CLOSE_TAG, parent, url));
         });
     }
 
@@ -695,7 +695,7 @@ class HTMLNode {
         if (CAN_FETCH) {
             return this.url.fetchText().then((text) => {
                 let lexer = new L(text);
-                return this._parseRunner_(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this);
+                return this._parseRunner_(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
             }).catch((e) => {
                 console.log(e);
             });
@@ -797,6 +797,6 @@ LinkedList.setGettersAndSetters(HTMLNode.prototype);
  * @memberof module:wick.core
  * @alias html
  */
-const HTMLParser = (html_string, root = null) => (root = (!root || !(root instanceof HTMLNode)) ? new HTMLNode() : root, root._parse_(new L(html_string.replace(/\&lt;/g, "<").replace(/\&gt;/g, ">"), true)));
+const HTMLParser = (html_string, root = null, url) => (root = (!root || !(root instanceof HTMLNode)) ? new HTMLNode() : root, root._parse_(new L(html_string.replace(/\&lt;/g, "<").replace(/\&gt;/g, ">"), true, false, null, url)));
 
 export { HTMLNode, HTMLParser, TextNode };

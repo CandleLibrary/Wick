@@ -5,7 +5,7 @@ import { Skeleton } from "../skeleton";
 
 
 
-function complete(lex, SourcePackage, presets, ast) {
+function complete(lex, SourcePackage, presets, ast, url) {
     /*
      * Only accept certain nodes for mounting to the DOM. 
      * The custom element `import` is simply used to import extra HTML data from network for use with template system. It should not exist otherwise.
@@ -19,7 +19,7 @@ function complete(lex, SourcePackage, presets, ast) {
 
     while (!lex.END && lex.ch != "<") { lex.n(); }
     if (!lex.END)
-        return parseText(lex, SourcePackage, presets);
+        return parseText(lex, SourcePackage, presets, url);
 
     SourcePackage._complete_();
 
@@ -27,18 +27,18 @@ function complete(lex, SourcePackage, presets, ast) {
 }
 
 
-function buildCSS(lex, SourcePackage, presets, ast, css_list, index) {
+function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url) {
     return css_list[index]._READY_().then(() => {
         
-        if(++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index);
+        if(++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url);
 
         ast._linkCSS_();
 
-        return complete(lex, SourcePackage, presets, ast);
+        return complete(lex, SourcePackage, presets, ast, url);
     });
 }
 
-export function parseText(lex, SourcePackage, presets) {
+export function parseText(lex, SourcePackage, presets, url) {
     let start = lex.off;
 
     while (!lex.END && lex.ch != "<") { lex.n(); }
@@ -52,16 +52,18 @@ export function parseText(lex, SourcePackage, presets) {
 
         node._presets_ = presets;
 
-        return node._parse_(lex).then((ast) => {
-            if (ast.css.length > 0) 
-                return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0);
+        return node._parse_(lex, false, false, null, url).then((ast) => {
+            if (ast.css && ast.css.length > 0) 
+                return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url);
             
-            return complete(lex, SourcePackage, presets, ast);
+            return complete(lex, SourcePackage, presets, ast, url);
         }).catch((e) => {
             SourcePackage._addError_(e);
             SourcePackage._complete_();
         });
     }
+
+    debugger;
     SourcePackage._addError_(new Error(`Unexpected end of input. ${lex.slice(start)}, ${lex.str}`));
     SourcePackage._complete_();
 }
@@ -75,7 +77,7 @@ export function parseText(lex, SourcePackage, presets) {
  * @memberof module:wick~internals.templateCompiler
  * @alias CompileSource
  */
-function CompileSource(SourcePackage, presets, element) {
+function CompileSource(SourcePackage, presets, element, url) {
     let lex;
     if (element instanceof Lexer) {
         lex = element;
@@ -93,7 +95,7 @@ function CompileSource(SourcePackage, presets, element) {
         SourcePackage._addError_(e);
         SourcePackage._complete_();
     }
-    return parseText(lex, SourcePackage, presets);
+    return parseText(lex, SourcePackage, presets, url);
 }
 
 export { CompileSource };

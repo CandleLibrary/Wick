@@ -1,6 +1,6 @@
 import { Lexer } from "../common/string_parsing/lexer";
 
-const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:[0-9a-f]{0,4})?(?:\:[0-9a-f]{0,4}){0,7})|([^\:\?\[\]\@\/\#\b\s]+(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:\/[^\?\[\]\#\/\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/;
+const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
 
 function fetchLocalText(URL, m = "same-origin") {
     return new Promise((res, rej) => {
@@ -90,6 +90,31 @@ function submitJSON(URL, json_data, m = "same-origin") {
  * @memberof module:wick.core.network
  */
 class WURL {
+
+    static resolveRelative(wurl_or_url_original, wurl_or_url_new){
+        let wurl_old = (wurl_or_url_original instanceof WURL) ? wurl_or_url_original : new WURL(wurl_or_url_original);
+        let wurl_new = (wurl_or_url_new instanceof WURL) ? wurl_or_url_new : new WURL(wurl_or_url_new);
+
+        let a = wurl_old.path.split("/");
+        let b = wurl_new.path.split("/");
+
+        for(let i = 0; i < b.length; i++){
+            switch(b[i]){
+                case "..":
+                case ".":
+                a.splice(a.length-1,1);
+                break;
+                default:
+                a.push(b[i]);
+            }
+        }
+
+        let new_path = a.join("/");
+        
+        wurl_new.path = new_path;
+        
+        return wurl_new;
+    }
 
     constructor(url = "", USE_LOCATION = false) {
 

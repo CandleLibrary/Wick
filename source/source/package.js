@@ -22,7 +22,7 @@ import { RootNode } from "./compiler/nodes/root";
  */
 class SourcePackage {
 
-    constructor(element, presets, RETURN_PROMISE = false) {
+    constructor(element, presets, RETURN_PROMISE = false, url) {
 
         //If a package exists for the element already, it will be bound to __wick__package__. That will be returned.
         if (element.__wick__package__) {
@@ -58,7 +58,7 @@ class SourcePackage {
         this._HAVE_ERRORS_ = false;
 
         if (element instanceof Promise) {
-            element.then((data) => CompileSource(this, presets, data));
+            element.then((data) => CompileSource(this, presets, data, url));
             if (RETURN_PROMISE) return element;
             return this;
         } else if (element instanceof RootNode) {
@@ -76,7 +76,7 @@ class SourcePackage {
         }
 
         //Start the compiling of the component.
-        let promise = CompileSource(this, presets, element);
+        let promise = CompileSource(this, presets, element, url);
 
         OB.seal(this);
 
