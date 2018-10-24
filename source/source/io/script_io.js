@@ -18,6 +18,7 @@ export class ScriptIO extends IOBase {
         }
 
         super(tap);
+        this.function = binding.val;
         this._func_ = func;
         this._source_ = source;
         this._bound_emit_function_ = this._emit_.bind(this);
@@ -39,7 +40,12 @@ export class ScriptIO extends IOBase {
     _down_(value, meta = {event:null}) {
         this.meta = meta;
         const src = this._source_;
-        this._func_(value, meta.event, src._model_, this._bound_emit_function_, src._presets_, src._statics_, src);
+        try{
+            this._func_(value, meta.event, src._model_, this._bound_emit_function_, src._presets_, src._statics_, src);
+        }catch(e){
+            console.warn(this.function);
+            console.error(e)
+        }
     }
 
     _emit_(name, value) {

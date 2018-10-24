@@ -36,62 +36,19 @@ export class SourceNode extends RootNode {
         return this._checkTapMethod_(name, lex);
     }
 
-    /******************************************* BUILD ****************************************************/
 
-    _build_(element, source, presets, errors, taps = null, statics = null) {
+
+    /******************************************* BUILD ****************************************************/
+    createElement() {
+        return createElement(this.getAttribute("element") || "div");
+    }
+    
+    _build_(element, source, presets, errors, taps = null, statics = null, out_ele = null) {
         let data = {};
 
         let out_taps = [];
 
         let me = new Source(source, presets, element, this);
-        /**
-         * To keep the layout of the output HTML predictable, Wick requires that an "real" HTML be defined before a source object is created. 
-         * If this is not the case, then a new element, defined by the "element" attribute of the source virtual tag, or defaulted to a "div", 
-         * will be created to allow the source object to bind to an actual HTMLElement. 
-         */
-        if (!element || this.getAttribute("element")) {
-
-            let ele = createElement(this.getAttribute("element") || "div");
-
-            this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
-
-            if (this.getAttribute("id"))
-                ele.id = this.getAttribute("id");
-
-            if (this.getAttribute("style"))
-                ele.style = this.getAttribute("style");
-
-            me.ele = ele;
-
-            if (element) {
-                _appendChild_(element, ele);
-            }
-
-            element = ele;
-
-            if (this._badge_name_)
-                me.badges[this._badge_name_] = element;
-
-            let hook = {
-                attr: this.attributes,
-                bindings: [],
-                style: null,
-                ele: element
-            };
-
-            for (let i = 0, l = this._bindings_.length; i < l; i++) {
-                let attr = this._bindings_[i];
-                let bind = attr.binding._bind_(me, errors, taps, element, attr.name);
-                if (hook) {
-                    if (attr.name == "style" || attr.name == "css")
-                        hook.style = bind;
-
-                    hook.bindings.push(bind);
-                }
-            }
-
-            me.hooks.push(hook);
-        }
 
         me._model_name_ = this._model_name_;
         me._schema_name_ = this._schema_name_;
@@ -110,6 +67,59 @@ export class SourceNode extends RootNode {
                 me.update_tap = me.taps[name];
 
             out_taps.push(me.taps[name]);
+        }
+
+        /**
+         * To keep the layout of the output HTML predictable, Wick requires that a "real" HTMLElement be defined before a source object is created. 
+         * If this is not the case, then a new element, defined by the "element" attribute of the source virtual tag (defaulted to a "div"), 
+         * will be created to allow the source object to bind to an actual HTMLElement. 
+         */
+        if (!element || this.getAttribute("element")) {
+
+            let ele = this.createElement();
+
+            this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
+
+            if (this.getAttribute("id"))
+                ele.id = this.getAttribute("id");
+
+            if (this.getAttribute("style"))
+                ele.style = this.getAttribute("style");
+
+            me.ele = ele;
+
+            if (element) {
+                _appendChild_(element, ele);
+            }
+
+            element = ele;
+
+            if (out_ele)
+                out_ele.ele = element;
+
+            if (this._badge_name_)
+                me.badges[this._badge_name_] = element;
+
+            let hook = {
+                attr: this.attributes,
+                bindings: [],
+                style: null,
+                ele: element
+            };
+
+            for (let i = 0, l = this._bindings_.length; i < l; i++) {
+                let attr = this._bindings_[i];
+                let bind = attr.binding._bind_(me, errors, out_taps, element, attr.name);
+
+                if (hook) {
+                    if (attr.name == "style" || attr.name == "css")
+                        hook.style = bind;
+
+                    hook.bindings.push(bind);
+                }
+            }
+
+            me.hooks.push(hook);
         }
 
         for (let i = 0, l = this._attributes_.length; i < l; i++) {
@@ -157,12 +167,14 @@ export class SourceNode extends RootNode {
                 if (name == "model") {
                     this._model_name_ = lex.slice();
                     lex.n();
+                    return null;
                 }
                 break;
             case "s":
                 if (name == "schema") {
                     this._schema_name_ = lex.slice();
                     lex.n();
+                    return null;
                 }
                 break;
             case "c":
@@ -175,8 +187,10 @@ export class SourceNode extends RootNode {
                 }
                 break;
             case "b":
-                if (name == "badge")
+                if (name == "badge") {
                     this._badge_name_ = lex.tx;
+                    return null;
+                }
                 break;
             default:
                 if (this._checkTapMethodGate_(name, lex))
@@ -185,7 +199,7 @@ export class SourceNode extends RootNode {
 
         //return { name, value: lex.slice() };
         //return super._processAttributeHook_(name, lex, value);
-        if ( (lex.sl - lex.off) > 0) {
+        if ((lex.sl - lex.off) > 0) {
             let binding = Template(lex, true);
             if (!binding) {
                 return {

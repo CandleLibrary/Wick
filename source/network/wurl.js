@@ -91,28 +91,29 @@ function submitJSON(URL, json_data, m = "same-origin") {
  */
 class WURL {
 
-    static resolveRelative(wurl_or_url_original, wurl_or_url_new){
+    static resolveRelative(wurl_or_url_original, wurl_or_url_new) {
         let wurl_old = (wurl_or_url_original instanceof WURL) ? wurl_or_url_original : new WURL(wurl_or_url_original);
         let wurl_new = (wurl_or_url_new instanceof WURL) ? wurl_or_url_new : new WURL(wurl_or_url_new);
 
         let a = wurl_old.path.split("/");
         let b = wurl_new.path.split("/");
 
-        for(let i = 0; i < b.length; i++){
-            switch(b[i]){
+        if (b[0] == "..") a.splice(a.length - 1, 1);
+        for (let i = 0; i < b.length; i++) {
+            switch (b[i]) {
                 case "..":
                 case ".":
-                a.splice(a.length-1,1);
-                break;
+                    a.splice(a.length - 1, 1);
+                    break;
                 default:
-                a.push(b[i]);
+                    a.push(b[i]);
             }
         }
 
         let new_path = a.join("/");
-        
+
         wurl_new.path = new_path;
-        
+
         return wurl_new;
     }
 

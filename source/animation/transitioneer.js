@@ -49,9 +49,10 @@ const Transitioneer = (function() {
 
     function $out(anim_data_or_duration = 0, delay = 0, in_delay = 0) {
         //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
-        //The highest in_delay value will determine how much time is afforded before the animation for the in portion are a started
+        //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
 
         if (typeof(anim_data_or_duration) == "object") {
+            
             if (anim_data_or_duration.match) {
                 this.TT[anim_data_or_duration.match] = TransformTo(anim_data_or_duration.obj);
             } else {

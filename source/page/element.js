@@ -59,27 +59,22 @@ export class Element {
 
     loadComponents(wurl, contemporary) {
 
-        for (let i = 0; i < this.components.length; i++) {
+        for (let i = 0; i < this.components.length; i++)
             this.components[i].pendMount(this, i, wurl);
-        }
 
         let before = this.ele.firstChild;
 
         if (contemporary) {
+            
             for (let i = 0; i < contemporary.components.length; i++) {
                 let component = contemporary.components[i];
 
-                if (component.LOADED) {
-
+                if (component.LOADED)
                     before = component.ele.parentElement;
-
-                } else {
+                else
                     this.ele.insertBefore(component.ele, (before) ? before.nextSibling : null);
-                }
             }
         }
-
-
     }
 
     transitionOut(transitioneer) {
@@ -88,8 +83,9 @@ export class Element {
 
             let component = this.components[i];
 
-            if (!component.LOADED)
+            if (!component.LOADED){
                 component.transitionOut(transitioneer);
+            }
         }
     }
 

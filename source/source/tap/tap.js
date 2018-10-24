@@ -48,8 +48,9 @@ export class Tap {
     }
 
     _down_(value, meta) {
-        for (let i = 0, l = this._ios_.length; i < l; i++)
+        for (let i = 0, l = this._ios_.length; i < l; i++) {
             this._ios_[i]._down_(value, meta);
+        }
     }
 
     _downS_(model, IMPORTED = false) {
@@ -61,13 +62,18 @@ export class Tap {
                 if (!(this._modes_ & IMPORT))
                     return;
 
-                if ((this._modes_ & PUT)  && typeof(value) !== "function") 
+                if ((this._modes_ & PUT) && typeof(value) !== "function") {
                     this._source_._model_[this._prop_] = value;
-                    
+                }
+
             }
 
-
-            this._down_(value);
+            for (let i = 0, l = this._ios_.length; i < l; i++) {
+                if (this._ios_[i] instanceof Tap) {
+                    this._ios_[i]._downS_(model, true);
+                } else
+                    this._ios_[i]._down_(value);
+            }
         }
     }
 

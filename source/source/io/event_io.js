@@ -3,10 +3,7 @@ import {  IOBase } from "./io";
 export class EventIO {
     constructor(source, errors, taps, element, event, event_bind, msg) {
 
-        if (typeof element[event] == "undefined") {
-            errors.push(new Error(`Can not bind event ${event} to element ${element}`));
-            return;
-        }
+        let Attrib_Watch = !!(typeof element[event] == "undefined");        
 
         this.parent = source;
         source._ios_.push(this);
@@ -33,8 +30,23 @@ export class EventIO {
                     break;
             }
         }
-        this._event_handle_ = (e) => this._handleEvent_(e);
-        this._ele_.addEventListener(this._event_, this._event_handle_ );
+
+
+        if(Attrib_Watch){
+            this._event_handle_ = new MutationObserver((ml)=>{
+                ml.forEach((m)=>{
+                    if(m.type == "attributes"){
+                        if(m.attributeName == event){
+                            this._handleAttribUpdate_(m);
+                        }
+                    }
+                })
+            })
+            this._event_handle_.observe(this._ele_, {attributes:true})
+        }else{
+            this._event_handle_ = (e) => this._handleEvent_(e);
+            this._ele_.addEventListener(this._event_, this._event_handle_ );           
+        }
     }
 
     /**
@@ -44,6 +56,7 @@ export class EventIO {
     _destroy_() {
         if (this._msg_)
             this._msg_._destroy_();
+        this._event_handle_ = null;
         this._event_bind_._destroy_();
         this._msg_ = null;
         this._ele_.removeEventListener(this._event_, this._event_handle_ );
@@ -60,5 +73,9 @@ export class EventIO {
         e.stopImmediatePropagation();
         this._event_bind_._up_(this.data, { event: e });
         return false;
+    }
+
+    _handleAttribUpdate_(e) {
+        this._event_bind_._up_(e.target.getAttribute(e.attributeName) , { mutation: e});
     }
 }

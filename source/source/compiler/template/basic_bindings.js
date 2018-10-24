@@ -120,8 +120,12 @@ export class RawValueBinding {
             case TEXT:
                 element.data = this.txt;
                 break;
-            case ATTRIB:
-                element.setAttribute(prop, this.txt);
+            case ATTRIB:{
+                if(prop == "class"){
+                    element.classList.add.apply(element.classList, this.txt.split(" "));
+                }else
+                    element.setAttribute(prop, this.txt);
+            }
         }
     }
     get _value_() { return this.txt; }

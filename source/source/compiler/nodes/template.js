@@ -48,14 +48,20 @@ export class SourceTemplateNode extends RootNode {
                 let limit = node.getAttrib("limit");
                 let offset = node.getAttrib("offset");
                 let scrub = node.getAttrib("scrub");
+                let shift = node.getAttrib("shift");
 
                 if(limit && limit.binding.type == 1){
                     me.limit = parseInt(limit.value);
                     limit = null;
                 }
 
-                if (sort || filter || limit || offset || scrub) //Only create Filter node if it has a sorting bind or a filter bind
-                    me._filters_.push(new FilterIO(source, errors, taps, me, on, sort, filter, limit, offset, scrub));
+                if(shift && shift.binding.type == 1){
+                    me.shift = parseInt(shift.value);
+                    shift = null;
+                }
+
+                if (sort || filter || limit || offset || scrub || shift) //Only create Filter node if it has a sorting bind or a filter bind
+                    me._filters_.push(new FilterIO(source, errors, taps, me, on, sort, filter, limit, offset, scrub, shift));
             }
         }else{
             errors.push(new Error(`Missing source for template bound to "${this._property_bind_._bindings_[0].tap_name}"`));
@@ -71,6 +77,7 @@ export class SourceTemplateNode extends RootNode {
     _ignoreTillHook_() {}
 
     _createHTMLNodeHook_(tag, start) {
+        
         switch (tag) {
             case "f":
                 return new FilterNode(); //This node is used to 

@@ -57,7 +57,7 @@ export class Source extends View {
 
         this.DESTROYED = true;
 
-        this._update_({destroyed:true});
+        this._update_({ destroyed: true });
 
         if (this.LOADED) {
             this.LOADED = false;
@@ -202,7 +202,7 @@ export class Source extends View {
         for (let name in this.taps)
             this.taps[name].load(this._model_, false);
 
-        this._update_({created:true});
+        this._update_({ created: true });
     }
 
     _down_(data, changed_values) {
@@ -220,11 +220,12 @@ export class Source extends View {
     }
 
     _update_(data, changed_values, IMPORTED = false) {
-        
+
         if (this.update_tap)
             this.update_tap._downS_(data, IMPORTED);
 
         if (changed_values) {
+
             for (let name in changed_values)
                 if (this.taps[name])
                     this.taps[name]._downS_(data, IMPORTED);
@@ -232,8 +233,8 @@ export class Source extends View {
             for (let name in this.taps)
                 this.taps[name]._downS_(data, IMPORTED);
 
-        for (let i = 0, l = this.sources.length; i < l; i++)
-            this.sources[i]._down_(data, changed_values);
+        //        for (let i = 0, l = this.sources.length; i < l; i++)
+        //            this.sources[i]._down_(data, changed_values);
 
         for (let i = 0, l = this._templates_.length; i < l; i++)
             this._templates_[i]._down_(data, changed_values);

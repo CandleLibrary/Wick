@@ -238,7 +238,6 @@ class Component extends BaseComponent {
         for (let i = 0, l = this.sources.length; i < l; i++)
             this.sources[i]._update_(query_data, null, true);
 
-
         if (this.wurl_store) {
             let wurl = this.wurl_store;
             this.wurl_store = null;
