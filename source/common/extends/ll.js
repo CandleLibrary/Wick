@@ -127,6 +127,23 @@ export const LinkedList = {
                 this.addC(node, (this.fch) ? this.fch.pre : null);
             },
 
+            replace(old_node, new_node){
+                if(old_node.par == this && old_node !== new_node){
+                    if(new_node.par) new_node.par.remove(new_node);
+
+                    if(this.fch == old_node) this.fch = new_node;
+                    new_node.par = this;
+                    new_node.prv = old_node.prv;
+                    new_node.nxt = old_node.nxt;
+                    old_node.nxt.prv = new_node;
+                    old_node.prv.nxt =new_node;
+
+                    old_node.par = null;
+                    old_node.prv = null;
+                    old_node.nxt = null;
+                }
+            },
+
             insertBefore: function(node) {
                 if (node.par)
                     node.par.remove(node);

@@ -44,6 +44,7 @@ export class SourceNode extends RootNode {
     }
     
     _build_(element, source, presets, errors, taps = null, statics = null, out_ele = null) {
+
         let data = {};
 
         let out_taps = [];

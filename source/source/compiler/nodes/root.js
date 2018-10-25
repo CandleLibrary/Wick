@@ -345,9 +345,9 @@ export class RootNode extends HTMLNode {
 
         const out_statics = this.__statics__ || statics;
         let own_out_ele;
+        
         if (this._merged_) {
-
-         console.log(this.tag)
+            
             own_out_ele = {
                 ele: null
             };
@@ -356,24 +356,28 @@ export class RootNode extends HTMLNode {
 
             if(!source)
                 source = out_source;            
-        }else{
-            source = source || new Source(null, presets, element, this);
         }
-
-        if (this.HAS_TAPS)
-            taps = source._linkTaps_(this.tap_list);
 
         let own_element;
 
         if (own_out_ele) {
             own_element = own_out_ele.ele;
         } else {
-           
-            own_element = this.createElement(presets, source);
+            if(!source){
+                source = new Source(null, presets, own_element, this);
+                own_element = this.createElement(presets, source);
+                source.ele = own_element;
+            }else
+                own_element = this.createElement(presets, source);
+
             if (element) _appendChild_(element, own_element);
+
             if (out_ele)
                 out_ele.ele = own_element;
         }
+
+        if (this.HAS_TAPS)
+            taps = source._linkTaps_(this.tap_list);
 
         if (own_element) {
 
@@ -382,29 +386,11 @@ export class RootNode extends HTMLNode {
             if (this._badge_name_)
                 source.badges[this._badge_name_] = own_element;
 
-            /*let hook = null;
-
-            if (this._bindings_.length > 0) {
-                hook = {
-                    attr: this.attributes,
-                    bindings: [],
-                    style: null,
-                    ele: own_element
-                };
-            }
-
-            if (hook) source.hooks.push(hook);*/
-
             if (element) _appendChild_(element, own_element);
 
             for (let i = 0, l = this._bindings_.length; i < l; i++) {
                 let attr = this._bindings_[i];
-                let bind = attr.binding._bind_(source, errors, taps, own_element, attr.name);
-                /*if (hook) {
-                    if (attr.name == "style" || attr.name == "css")
-                        hook.style = bind;
-                    hook.bindings.push(bind);
-                }*/
+                attr.binding._bind_(source, errors, taps, own_element, attr.name);
             }
 
             for (let node = this.fch; node; node = this.getN(node))

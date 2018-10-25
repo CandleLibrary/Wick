@@ -22,10 +22,14 @@ import { SourcePackage } from "../../source/package";
 import { Source } from "../../source/source";
 
 //SourceCompiler
-import { CompileSource as Compiler  } from "../../source/compiler/compiler";
+import { CompileSource as Compiler } from "../../source/compiler/compiler";
 import { RootText } from "../../source/compiler/nodes/root";
-import {RootNode} from "../../source/compiler/nodes/index";
+import { RootNode } from "../../source/compiler/nodes/index";
 import { StyleNode } from "../../source/compiler/nodes/style";
+import { ScriptNode } from "../../source/compiler/nodes/script";
+import { SourceNode } from "../../source/compiler/nodes/source";
+import { PackageNode } from "../../source/compiler/nodes/package";
+import { SourceTemplateNode } from "../../source/compiler/nodes/template";
 
 //CSS
 import { CSSParser, CSSRootNode, CSSSelector, CSSRule } from "../../common/css/root";
@@ -104,9 +108,14 @@ const core = {
 
 core.source.compiler = Compiler;
 Compiler.nodes = {
-    root : RootNode,
-    style : StyleNode,
-    text : RootText
+    root: RootNode,
+    style: StyleNode,
+    script: ScriptNode,
+    text: RootText,
+    source: SourceNode,
+    package: PackageNode,
+    template: SourceTemplateNode,
+
 };
 
 let internals = { /* Empty if production */ };
