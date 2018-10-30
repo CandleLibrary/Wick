@@ -75,7 +75,6 @@ class SchemedModel extends ModelBase {
 
     constructor(data, root = null, address = [], _schema_ = null) {
 
-
         super(root, address);
 
         if (this.constructor === SchemedModel)
@@ -118,11 +117,13 @@ class SchemedModel extends ModelBase {
                         if (schema_name == "proto") {
                             for (let name in schema.proto)
                                 _SealedProperty_(prototype, name, schema.proto[name]);
+                            count++;
                             continue;
                         }
 
                         if (typeof(scheme) == "function") {
                             CreateModelProperty(prototype, scheme, schema_name, count);
+                            count++;
                             continue;
                         }
 

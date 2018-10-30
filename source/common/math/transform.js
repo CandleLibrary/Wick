@@ -211,6 +211,11 @@ export class Transform2D extends Float64Array {
         this.sx = s;
         this.sy = s;
     }
+
+    get scale(){
+        return this.sx;
+    }
+    
     lerp(to, t) {
         let out = new Transform2D();
         for (let i = 0; i < 5; i++) out[i] = this[i] + (to[i] - this[i]) * t;

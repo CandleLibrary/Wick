@@ -14,6 +14,8 @@ export class EventIO {
         this._msg_ = null;
         this.data = null;
 
+        console.log(this._event_)
+
         if (msg) {
             switch (msg.type) {
                 case 0: //DYNAMIC_BINDING_ID

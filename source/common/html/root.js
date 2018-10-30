@@ -608,11 +608,7 @@ class HTMLNode {
         });
     }
 
-
-
     /******************************************* HOOKS ******************************************************************************************************************/
-
-
 
     /**
      * Override this to act on the finished node, right before the parse function completes and returns.

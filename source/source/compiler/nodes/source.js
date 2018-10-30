@@ -163,6 +163,15 @@ export class SourceNode extends RootNode {
 
         switch (name[0]) {
             case "#":
+                let key = name.slice(1);
+
+                if (key.length > 0) {
+                    if (lex.tl == lex.sl - lex.off && lex.ty == lex.types.num)
+                        this._statics_[key] = parseFloat(lex.slice());
+                    else
+                        this._statics_[key] = lex.slice();
+                }
+
                 return null;
             case "m":
                 if (name == "model") {
