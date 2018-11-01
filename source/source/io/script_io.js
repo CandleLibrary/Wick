@@ -13,6 +13,7 @@ export class ScriptIO extends IOBase {
                 binding._func_ = func;
             }
         } catch (e) {
+            console.log(binding.val)
             errors.push(e);
             func = ()=>{}
         }

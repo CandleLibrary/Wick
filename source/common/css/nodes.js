@@ -94,10 +94,12 @@ class CSSRule {
         let str = [], offset = ("    ").repeat(off);
 
         for (let a in this.props) {
-            if (Array.isArray(this.props[a]))
-                str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
-            else
-                str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].toString(), ";\n");
+            if(a !== null){  
+                if (Array.isArray(this.props[a]))
+                    str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
+                else
+                    str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].toString(), ";\n");
+            }
         }
 
         return str.join("");//JSON.stringify(this.props).replace(/\"/g, "").replace(/\_/g, "-");
