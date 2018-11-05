@@ -7,6 +7,7 @@ import { CSS_Id } from "../types/id";
 import { CSS_Shape } from "../types/shape";
 import { CSS_Number } from "../types/number";
 import { CSS_Bezier } from "../types/cubic_bezier";
+import { CSS_Gradient } from "../types/gradient";
 import { CSS_Media_handle } from "../types/media";
 
 /**
@@ -31,6 +32,7 @@ export const types = {
     shape: CSS_Shape,
     cubic_bezier: CSS_Bezier,
     integer: CSS_Number,
+    gradient: CSS_Gradient,
 
     /* Media parsers */
     m_width: CSS_Media_handle("w", 0),
@@ -223,7 +225,7 @@ export const virtual_property_definitions = {
 
     bg_layer: `<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
     final_bg_layer: `<background_color>||<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
-    bg_image: `<url>|none`,
+    bg_image: `<url>|<gradient>|none`,
     repeat_style: `repeat-x|repeat-y|[repeat|space|round|no-repeat]{1,2}`,
     background_attachment: `<attachment>#`,
     bg_size: `<length_percentage>|auto]{1,2}|cover|contain`,

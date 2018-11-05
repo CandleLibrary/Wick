@@ -108,6 +108,8 @@ class OutStyleTemplate {
         for (let name in props) {
             let prop = props[name];
 
+            if(prop == null) continue;
+
             if (prop._wick_type_ > 0)
                 this._css_props_.push(prop);
             else 
