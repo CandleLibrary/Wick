@@ -30,7 +30,7 @@ export class FilterIO extends IOBase {
         if (sort && sort.binding) {
             let expr = sort.binding;
             if (expr_check(expr)){
-                this._sort_function_ = expr.func;
+                this._sort_function_ = (m1, m2) => expr.func(m1.model, m2.model);
                 this._CAN_SORT_ = true;
             } 
         }else

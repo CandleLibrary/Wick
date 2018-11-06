@@ -145,19 +145,15 @@ export const LinkedList = {
             },
 
             insertBefore: function(node) {
-                if (node.par)
-                    node.par.remove(node);
                 if (this.par)
-                    this.par.addC(node, this.pre)
+                    this.par.addC(node, this.pre);
                 else
                     LinkedList.methods.defaults.insertBefore.call(this, node);
             },
 
             insertAfter: function(node) {
-                if (node.par)
-                    node.par.remove(node);
                 if (this.par)
-                    this.par.add(node, this)
+                    this.par.addC(node, this);
                 else 
                 	LinkedList.methods.defaults.insertAfter.call(this, node);
             },
@@ -171,10 +167,10 @@ export const LinkedList = {
 
                 if (prev && prev.par && prev.par == this) {
                     if (child == prev) return;
-                    child.prv = prev.prv;
-                    prev.prv.nxt = child;
-                    child.nxt = prev;
-                    prev.prv = child;
+                    child.prv = prev;
+                    prev.nxt.prv = child;
+                    child.nxt = prev.nxt;
+                    prev.nxt = child;
                 } else if (this.fch) {
                     child.prv = this.fch.prv;
                     this.fch.prv.nxt = child;
