@@ -20,7 +20,7 @@ export class SourceNode extends RootNode {
         return null;
     }
 
-    _getCSS_() {
+    getCSS() {
 
         if (this.css)
             return this.css;

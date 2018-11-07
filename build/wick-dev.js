@@ -10012,10 +10012,10 @@ var wick = (function (exports) {
                 this.pending_css.push(css);
         }
 
-        _getCSS_() {
+        getCSS() {
 
             if (this.par)
-                return this.par._getCSS_();
+                return this.par.getCSS();
 
             if (this.css)
                 return this.css;
@@ -10437,7 +10437,7 @@ var wick = (function (exports) {
             return null;
         }
 
-        _getCSS_() {
+        getCSS() {
 
             if (this.css)
                 return this.css;
@@ -12190,7 +12190,7 @@ var wick = (function (exports) {
     class StyleNode extends VoidNode {
         _processTextNodeHook_(lex) {
             //Feed the lexer to a new CSS Builder
-            let css = this._getCSS_();
+            let css = this.getCSS();
             lex.IWS = true;
             lex.tl = 0;
             lex.n();

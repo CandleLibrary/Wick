@@ -206,7 +206,7 @@ export class RootNode extends HTMLNode {
 
     }
 
-    _getCSS_() {
+    getCSS() {
 
         let css = new BindingCSSRoot();
 

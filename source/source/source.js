@@ -41,7 +41,7 @@ export class Source extends View {
         this.sources = [];
         this.badges = {};
         this._ios_ = [];
-        this._templates_ = [];
+        this.templates = [];
         this.hooks = [];
 
         this._model_name_ = "";
@@ -109,7 +109,7 @@ export class Source extends View {
 
     addTemplate(template) {
         template.parent = this;
-        this._templates_.push(template);
+        this.templates.push(template);
     }
 
     addSource(source) {
@@ -236,8 +236,8 @@ export class Source extends View {
         //        for (let i = 0, l = this.sources.length; i < l; i++)
         //            this.sources[i]._down_(data, changed_values);
 
-        for (let i = 0, l = this._templates_.length; i < l; i++)
-            this._templates_[i]._down_(data, changed_values);
+        for (let i = 0, l = this.templates.length; i < l; i++)
+            this.templates[i]._down_(data, changed_values);
     }
 
     _transitionIn_(transition) {
@@ -248,8 +248,8 @@ export class Source extends View {
         for (let i = 0, l = this.sources.length; i < l; i++)
             this.sources[i]._transitionIn_(transition);
 
-        for (let i = 0, l = this._templates_.length; i < l; i++)
-            this._templates_[i]._transitionIn_(transition);
+        for (let i = 0, l = this.templates.length; i < l; i++)
+            this.templates[i]._transitionIn_(transition);
     }
 
     _transitionOut_(transition) {
@@ -260,8 +260,8 @@ export class Source extends View {
             this.sources[i]._transitionOut_(transition);
 
 
-        for (let i = 0, l = this._templates_.length; i < l; i++)
-            this._templates_[i]._transitionOut_(transition);
+        for (let i = 0, l = this.templates.length; i < l; i++)
+            this.templates[i]._transitionOut_(transition);
     }
 
     _bubbleLink_(child) {

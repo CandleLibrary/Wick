@@ -106,15 +106,15 @@ export const LinkedList = {
              *  Returns eve. 
              * @return     {<type>}  { description_of_the_return_value }
              */
-            root(){
+            root() {
                 return this.eve();
             },
             /**
              * Returns the root node. 
              * @return     {Object}  return the very first node in the linked list graph.
              */
-            eve(){
-                if(this.par)
+            eve() {
+                if (this.par)
                     return this.par.eve();
                 return this;
             },
@@ -127,16 +127,23 @@ export const LinkedList = {
                 this.addC(node, (this.fch) ? this.fch.pre : null);
             },
 
-            replace(old_node, new_node){
-                if(old_node.par == this && old_node !== new_node){
-                    if(new_node.par) new_node.par.remove(new_node);
+            replace(old_node, new_node) {
+                if (old_node.par == this && old_node !== new_node) {
+                    if (new_node.par) new_node.par.remove(new_node);
 
-                    if(this.fch == old_node) this.fch = new_node;
+                    if (this.fch == old_node) this.fch = new_node;
                     new_node.par = this;
-                    new_node.prv = old_node.prv;
-                    new_node.nxt = old_node.nxt;
-                    old_node.nxt.prv = new_node;
-                    old_node.prv.nxt =new_node;
+
+
+                    if (old_node.nxt == old_node) {
+                        new_node.nxt = new_node;
+                        new_node.prv = new_node;
+                    } else {
+                        new_node.prv = old_node.prv;
+                        new_node.nxt = old_node.nxt;
+                        old_node.nxt.prv = new_node;
+                        old_node.prv.nxt = new_node;
+                    }
 
                     old_node.par = null;
                     old_node.prv = null;
@@ -154,8 +161,8 @@ export const LinkedList = {
             insertAfter: function(node) {
                 if (this.par)
                     this.par.addC(node, this);
-                else 
-                	LinkedList.methods.defaults.insertAfter.call(this, node);
+                else
+                    LinkedList.methods.defaults.insertAfter.call(this, node);
             },
 
             addC: function(child = null, prev = null) {
@@ -197,9 +204,8 @@ export const LinkedList = {
                     child.nxt.prv = child.prv;
 
                     if (child.prv == child || child.nxt == child) {
-                        if (this.fch !== child)
-                            debugger
-                        this.fch = null;
+                        if (this.fch == child)
+                            this.fch = null;
                     } else if (this.fch == child)
                         this.fch = child.nxt;
 
@@ -217,7 +223,7 @@ export const LinkedList = {
              * @return {HTMLNode | TextNode | undefined}
              */
             getN: function(node = this.fch) {
-                if (node && node.nxt != this.fch)
+                if (node && node.nxt != this.fch && this.fch)
                     return node.nxt;
                 return null;
             },

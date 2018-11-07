@@ -62,6 +62,7 @@ export class SourceTemplate extends View {
 
     get data() {}
     set data(container) {
+
         if (container instanceof ModelContainerBase) {
             container.pin();
             container.addView(this);
@@ -352,7 +353,6 @@ export class SourceTemplate extends View {
         let trs_out = { trs: transition.out, index: 0 };
 
         for (let i = 0; i < ol; i++) output[i].index = i;
-        for (let i = 0; i < ol; i++) output[i].index = i;
 
         for (let i = 0; i < al; i++) {
             let as = this.dom_sources[i];
@@ -364,7 +364,7 @@ export class SourceTemplate extends View {
                     os.index = j;
                     os._appendToDOM_(this.ele, ele);
                     trs_in.index = j;
-                    os.index = -1;
+                    //os.index = -1;
                     os._transitionIn_(trs_in, (direction) ? "trs_in_up" : "trs_in_dn");
                     j++;
                 }
@@ -522,7 +522,9 @@ export class SourceTemplate extends View {
                                 }
                             });
                         }
-                    } else this.activeSources.splice(i, 1), i--, l--;
+                    } else {
+                        this.activeSources.splice(i, 1), i--, l--;
+                    }
                 }
 
                 this.filterUpdate(transition);

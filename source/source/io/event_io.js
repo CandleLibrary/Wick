@@ -1,21 +1,21 @@
-import {  IOBase } from "./io";
+import { IOBase } from "./io";
 
 export class EventIO {
     constructor(source, errors, taps, element, event, event_bind, msg) {
 
-        let Attrib_Watch = !!(typeof element[event] == "undefined");        
+        let Attrib_Watch = (typeof element[event] == "undefined");
 
         this.parent = source;
         source._ios_.push(this);
 
         this._ele_ = element;
         this._event_bind_ = new IOBase(source.getTap(event_bind.tap_name));
-        this._event_ = event.replace("on","");
+        this._event_ = event.replace("on", "");
+
+        this.prevent_defaults = true;
+        if (this._event_ == "dragstart") this.prevent_defaults = false;
         this._msg_ = null;
         this.data = null;
-
-        console.log(this._event_)
-
         if (msg) {
             switch (msg.type) {
                 case 0: //DYNAMIC_BINDING_ID
@@ -34,20 +34,20 @@ export class EventIO {
         }
 
 
-        if(Attrib_Watch){
-            this._event_handle_ = new MutationObserver((ml)=>{
-                ml.forEach((m)=>{
-                    if(m.type == "attributes"){
-                        if(m.attributeName == event){
+        if (Attrib_Watch) {
+            this._event_handle_ = new MutationObserver((ml) => {
+                ml.forEach((m) => {
+                    if (m.type == "attributes") {
+                        if (m.attributeName == event) {
                             this._handleAttribUpdate_(m);
                         }
                     }
-                })
-            })
-            this._event_handle_.observe(this._ele_, {attributes:true})
-        }else{
+                });
+            });
+            this._event_handle_.observe(this._ele_, { attributes: true });
+        } else {
             this._event_handle_ = (e) => this._handleEvent_(e);
-            this._ele_.addEventListener(this._event_, this._event_handle_ );           
+            this._ele_.addEventListener(this._event_, this._event_handle_);
         }
     }
 
@@ -61,7 +61,7 @@ export class EventIO {
         this._event_handle_ = null;
         this._event_bind_._destroy_();
         this._msg_ = null;
-        this._ele_.removeEventListener(this._event_, this._event_handle_ );
+        this._ele_.removeEventListener(this._event_, this._event_handle_);
         this._ele_ = null;
         this._event_ = null;
         this.parent.removeIO(this);
@@ -70,14 +70,17 @@ export class EventIO {
     }
 
     _handleEvent_(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
         this._event_bind_._up_(this.data, { event: e });
-        return false;
+
+        if (this.prevent_defaults) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            return false;
+        }
     }
 
     _handleAttribUpdate_(e) {
-        this._event_bind_._up_(e.target.getAttribute(e.attributeName) , { mutation: e});
+        this._event_bind_._up_(e.target.getAttribute(e.attributeName), { mutation: e });
     }
 }
