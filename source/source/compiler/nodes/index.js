@@ -39,6 +39,6 @@ function CreateHTMLNode(tag) {
     return new RootNode();
 }
 
-RootNode.prototype._createHTMLNodeHook_ = CreateHTMLNode;
+RootNode.prototype.createHTMLNodeHook = CreateHTMLNode;
 
 export { RootNode, CreateHTMLNode };

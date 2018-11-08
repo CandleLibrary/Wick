@@ -29,6 +29,7 @@ import { StyleNode } from "../../source/compiler/nodes/style";
 import { ScriptNode } from "../../source/compiler/nodes/script";
 import { SourceNode } from "../../source/compiler/nodes/source";
 import { PackageNode } from "../../source/compiler/nodes/package";
+import { SVGNode } from "../../source/compiler/nodes/svg";
 import { SourceTemplateNode } from "../../source/compiler/nodes/template";
 
 //CSS
@@ -115,7 +116,7 @@ Compiler.nodes = {
     source: SourceNode,
     package: PackageNode,
     template: SourceTemplateNode,
-
+    svg:SVGNode
 };
 
 let internals = { /* Empty if production */ };

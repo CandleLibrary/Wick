@@ -445,7 +445,7 @@ class HTMLNode {
         let start = lex.pos;
         let end = lex.pos;
         let HAS_INNER_TEXT = false;
-
+        main_loop:
         while (!lex.END) {
 
             switch (lex.ch) {
@@ -462,7 +462,9 @@ class HTMLNode {
                     let pk = lex.pk;
 
                     if (pk.ch == "/") {
-                        if (IGNORE_TEXT_TILL_CLOSE_TAG && pk.pk.tx !== this.tag) break;
+                        if (pk.pk.tx !== this.tag){
+                             break main_loop;   
+                        }
 
                         if (HAS_INNER_TEXT) {
                             if (IGNORE_TEXT_TILL_CLOSE_TAG)
@@ -557,7 +559,8 @@ class HTMLNode {
                             }
 
                             //New Child node found
-                            let node = this._createHTMLNodeHook_(lex.pk.tx, lex.off);
+                            let node = this.
+createHTMLNodeHook(lex.pk.tx, lex.off);
 
                             this.addC(node);
 
@@ -626,6 +629,8 @@ class HTMLNode {
             case "input":
             case "br":
             case "img":
+            //svg
+            case "rect":
                 return true;
         }
 
@@ -658,7 +663,8 @@ class HTMLNode {
      * @return     {HTMLNode}  returns a new HTMLNode.
      * @public
      */
-    _createHTMLNodeHook_(tag, start) { return new HTMLNode(tag); }
+    
+createHTMLNodeHook(tag, start) { return new HTMLNode(tag); }
 
 
 

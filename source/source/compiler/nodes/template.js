@@ -76,7 +76,8 @@ export class SourceTemplateNode extends RootNode {
 
     _ignoreTillHook_() {}
 
-    _createHTMLNodeHook_(tag, start) {
+    
+createHTMLNodeHook(tag, start) {
         
         switch (tag) {
             case "f":
