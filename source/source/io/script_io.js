@@ -2,7 +2,7 @@ import { IOBase } from "./io";
 
 export class ScriptIO extends IOBase {
     constructor(source, errors, tap, binding) {
-        
+
         let func;
 
         try {
@@ -15,14 +15,14 @@ export class ScriptIO extends IOBase {
         } catch (e) {
             console.log(binding.val)
             errors.push(e);
-            func = ()=>{}
+            func = () => {}
         }
 
         super(tap);
         this.function = binding.val;
         this._func_ = func;
         this._source_ = source;
-        this._bound_emit_function_ = this._emit_.bind(this);
+        this._bound_emit_function_ = new Proxy(this._emit_.bind(this), { set: (obj, name, value) => { obj(name, value); } });
         this.meta = null;
     }
 
@@ -38,12 +38,12 @@ export class ScriptIO extends IOBase {
 
     }
 
-    _down_(value, meta = {event:null}) {
+    _down_(value, meta = { event: null }) {
         this.meta = meta;
         const src = this._source_;
-        try{
+        try {
             this._func_(value, meta.event, src._model_, this._bound_emit_function_, src._presets_, src._statics_, src);
-        }catch(e){
+        } catch (e) {
             console.warn(this.function);
             console.error(e)
         }
