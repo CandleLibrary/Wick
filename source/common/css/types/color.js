@@ -10,9 +10,6 @@ import { Color } from "../../design/color";
     EM { color: rgb(255,0,0) }      // integer range 0 - 255 //
     EM { color: rgb(100%, 0%, 0%) } // float range 0.0% - 100.0% //
 */
-
-
-
 export class CSS_Color extends Color {
 
     constructor(r, g, b, a) {
@@ -60,6 +57,26 @@ export class CSS_Color extends Color {
         switch (l.ch) {
             case "#":
                 var value = l.n().tx;
+                let num = parseInt(value,16);
+                
+                out = { r: 0, g: 0, b: 0, a: 1 };
+                if(value.length == 3){
+                    out.r = (num >> 8) & 0xF;
+                    out.g = (num >> 4) & 0xF;
+                    out.b = (num) & 0xF;
+                }else{
+                    if(value.length == 6){
+                        out.r = (num >> 16) & 0xFF;
+                        out.g = (num >> 8) & 0xFF;
+                        out.b = (num) & 0xFF;
+                    }if(value.length == 8){
+                        out.r = (num >> 24) & 0xFF;
+                        out.g = (num >> 16) & 0xFF;
+                        out.b = (num >> 8) & 0xFF;
+                        out.a = ((num) & 0xFF);
+                    }
+                }
+                l.n();
                 break;
             case "r":
                 let tx = l.tx;

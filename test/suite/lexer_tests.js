@@ -48,12 +48,13 @@ function suite(lexer_name, lexer_constructor) {
             lex.n().ty.should.equal(types.symbol);
             lex.n().END.should.equal(true);
         });
-
+        /*
         it("Identifies \' in a abbreviation as part of the word.", function() {
             let lex = new constr(`We're always glad to be of service. Let's never forget why we're here.`);
             lex.a("We're").a("always").a("glad").a("to").a("be").a("of").a("service").a(".").
             lex.a("Let's").a("never").a("forget").a("why").a("we're").a("here").a(".");
         });
+        */
 
         it.skip("Allows peeking and chaining.", function() {
 

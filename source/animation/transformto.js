@@ -12,7 +12,6 @@ function setTo(to, seq, duration, easing){
 
     let left = seq.props.left, offl = to.offsetLeft - margin_left;
     let left_diff = (left.keys[0].val) - (rect.left);
-    console.log(offl)
 
     left.keys[0].val = new left.type(offl + left_diff, "px");
     left.keys[1].val = new left.type(offl,"px");

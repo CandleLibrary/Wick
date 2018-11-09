@@ -165,6 +165,7 @@ class Lexer {
          */
         this.types = Types;
 
+
         if (!PEEKING) this.next();
     }
 
@@ -336,7 +337,7 @@ class Lexer {
 
                         break;
                     case 1: //IDENTIFIER
-                        while (++off < l && (10 & num_id[str.charCodeAt(off)])) {}
+                        while (++off < l && ((10 & num_id[str.charCodeAt(off)])) ) {}
                         type = identifier;
                         length = off - base;
                         break;

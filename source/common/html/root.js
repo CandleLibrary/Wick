@@ -559,8 +559,7 @@ class HTMLNode {
                             }
 
                             //New Child node found
-                            let node = this.
-createHTMLNodeHook(lex.pk.tx, lex.off);
+                            let node = this.createHTMLNodeHook(lex.pk.tx, lex.off);
 
                             this.addC(node);
 

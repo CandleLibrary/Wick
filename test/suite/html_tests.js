@@ -76,11 +76,11 @@ function HTMLTESTS(config) {
                     </body>
                 </html>
                 `).then((og) => {
-                    og.toString().should.equal(`<html type="truetype"><head screen="true"><style>\n                            a{color:red}\n                        </style></head><script> sthis </script><body>thisis some of my text<app>sdfsaf<template>this is my inner template.</template></app></body></html>`);
+                    og.toString().should.equal(`<html type="truetype">\n    <head screen="true">\n        <style>\n             \n                            a{color:red}\n                        \n        </style>\n    </head>\n    <script>\n          sthis \n    </script>\n    <body>\n         thisis some of my text\n        <app>\n             sdfsaf\n            <template>\n                 this is my inner template.\n            </template>\n        </app>\n    </body>\n</html>\n`);
                 })
             );
 
-            it("Creates real DOM", () =>
+            it("Creates a tree of HTMLElements", () =>
                 wick.core.html(`<!DOCTYPE html><div type="truetype">
                     <head screen="true">
                         <!-- test -->
@@ -106,6 +106,31 @@ function HTMLTESTS(config) {
                     head.children.should.have.lengthOf(1);
                     element.lastChild.tagName.should.equal("BODY");
                 }));
+
+            it("Properly handles unmatched non-void tags", ()=>
+                wick.core.html(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                    <link>
+                    <body>
+                    </html>
+                `).then((tree)=>{
+                    tree.toString().should.equal(
+`<html>
+    <head>
+        <link>
+            <body>
+                                     
+            </body>
+        </link>
+    </head>
+</html>
+`) 
+                })
+
+
+            )
         });
 
 
