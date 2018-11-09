@@ -181,7 +181,7 @@ function SOURCEPACKAGETESTS(config) {
                 }))
             );
 
-            let t = it('Adds transitions effects to SourceTemplate elements.',
+            it.skip('Adds transitions effects to SourceTemplate elements.',
                 () => (new wick.core.network.url("/test/data/source_template_transition.html")).fetchText()
                 .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
                     t.slow(10000);

@@ -1,4 +1,6 @@
-import { Lexer } from "../common/string_parsing/lexer";
+import {
+    Lexer
+} from "../common/string_parsing/lexer";
 
 const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
 
@@ -80,7 +82,6 @@ function submitJSON(URL, json_data, m = "same-origin") {
 
 
 
-
 /**
  * Used for processing URLs, handling `document.location`, and fetching data.
  * @param      {string}   url           The URL string to wrap.
@@ -92,27 +93,31 @@ function submitJSON(URL, json_data, m = "same-origin") {
 class WURL {
 
     static resolveRelative(wurl_or_url_original, wurl_or_url_new) {
+        
         let wurl_old = (wurl_or_url_original instanceof WURL) ? wurl_or_url_original : new WURL(wurl_or_url_original);
         let wurl_new = (wurl_or_url_new instanceof WURL) ? wurl_or_url_new : new WURL(wurl_or_url_new);
 
-        let a = wurl_old.path.split("/");
-        let b = wurl_new.path.split("/");
+        let new_path = "";
+        if (wurl_new.path[0] != "/") {
 
-        if (b[0] == "..") a.splice(a.length - 1, 1);
-        for (let i = 0; i < b.length; i++) {
-            switch (b[i]) {
-                case "..":
-                case ".":
-                    a.splice(a.length - 1, 1);
-                    break;
-                default:
-                    a.push(b[i]);
+            let a = wurl_old.path.split("/");
+            let b = wurl_new.path.split("/");
+
+
+            if (b[0] == "..") a.splice(a.length - 1, 1);
+            for (let i = 0; i < b.length; i++) {
+                switch (b[i]) {
+                    case "..":
+                    case ".":
+                        a.splice(a.length - 1, 1);
+                        break;
+                    default:
+                        a.push(b[i]);
+                }
             }
+            wurl_new.path = a.join("/");
         }
 
-        let new_path = a.join("/");
-
-        wurl_new.path = new_path;
 
         return wurl_new;
     }
@@ -443,11 +448,11 @@ class WURL {
     }
 
     submitJSON(json_data) {
-        return submitJSON(this.toString(), json_data);
-    }
-    /**
-     * Goes to the current URL.
-     */
+            return submitJSON(this.toString(), json_data);
+        }
+        /**
+         * Goes to the current URL.
+         */
     goto() {
         return;
         let url = this.toString();
@@ -465,7 +470,9 @@ class WURL {
     }
 }
 
-export { WURL };
+export {
+    WURL
+};
 
 /**
  * The fetched resource cache.
@@ -481,58 +488,90 @@ WURL.G = null;
  * The Global object Proxy.
  */
 WURL.R = {
-    get protocol() { return WURL.G.protocol; },
+    get protocol() {
+        return WURL.G.protocol;
+    },
     set protocol(v) {
         return;
         WURL.G.protocol = v;
     },
-    get user() { return WURL.G.user; },
+    get user() {
+        return WURL.G.user;
+    },
     set user(v) {
         return;
         WURL.G.user = v;
     },
-    get pwd() { return WURL.G.pwd; },
+    get pwd() {
+        return WURL.G.pwd;
+    },
     set pwd(v) {
         return;
         WURL.G.pwd = v;
     },
-    get host() { return WURL.G.host; },
+    get host() {
+        return WURL.G.host;
+    },
     set host(v) {
         return;
         WURL.G.host = v;
     },
-    get port() { return WURL.G.port; },
+    get port() {
+        return WURL.G.port;
+    },
     set port(v) {
         return;
         WURL.G.port = v;
     },
-    get path() { return WURL.G.path; },
+    get path() {
+        return WURL.G.path;
+    },
     set path(v) {
         return;
         WURL.G.path = v;
     },
-    get query() { return WURL.G.query; },
+    get query() {
+        return WURL.G.query;
+    },
     set query(v) {
         return;
         WURL.G.query = v;
     },
-    get hash() { return WURL.G.hash; },
+    get hash() {
+        return WURL.G.hash;
+    },
     set hash(v) {
         return;
         WURL.G.hash = v;
     },
-    get map() { return WURL.G.map; },
+    get map() {
+        return WURL.G.map;
+    },
     set map(v) {
         return;
         WURL.G.map = v;
     },
-    setPath(path) { return WURL.G.setPath(path); },
-    setLocation() { return WURL.G.setLocation(); },
-    toString() { return WURL.G.toString(); },
-    getData(class_name = "") { return WURL.G.getData(class_name = ""); },
-    setData(class_name = "", data = null) { return WURL.G.setData(class_name, data); },
-    fetchText(ALLOW_CACHE = true) { return WURL.G.fetchText(ALLOW_CACHE); },
-    cacheResource(resource) { return WURL.G.cacheResource(resource); }
+    setPath(path) {
+        return WURL.G.setPath(path);
+    },
+    setLocation() {
+        return WURL.G.setLocation();
+    },
+    toString() {
+        return WURL.G.toString();
+    },
+    getData(class_name = "") {
+        return WURL.G.getData(class_name = "");
+    },
+    setData(class_name = "", data = null) {
+        return WURL.G.setData(class_name, data);
+    },
+    fetchText(ALLOW_CACHE = true) {
+        return WURL.G.fetchText(ALLOW_CACHE);
+    },
+    cacheResource(resource) {
+        return WURL.G.cacheResource(resource);
+    }
 };
 Object.freeze(WURL.R);
 Object.freeze(WURL.RC);

@@ -240,8 +240,6 @@ function MODELTESTS(config) {
 
             users.set(user_list);
             users2.set(user_list);
-            console.log(users, users2)
-
 
             users.remove("greg")
             users2.remove(["August 5, 2015"])
@@ -260,7 +258,6 @@ function MODELTESTS(config) {
             users.length.should.equal(7);
             users.get("tom", [])[0].age.should.equal(32);
 
-            console.log(users)
         })
 
         it("Creates complex data hierarchies from basic Javascript object descriptions", function() {
@@ -294,8 +291,8 @@ function MODELTESTS(config) {
 
 
             Store.current.users.length.should.equal(2);
-            Store.current.users.get({name:"Charles Dogo"})[0].age.should.equal(57);
-            Store.current.users.get({age:22})[0].name.should.equal("Allator Lehtinen");
+            Store.current.users.get({name:"Charles Dogo"},[])[0].age.should.equal(57);
+            Store.current.users.get({age:22},[])[0].name.should.equal("Allator Lehtinen");
         });
     });
 }
