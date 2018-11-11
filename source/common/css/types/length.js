@@ -2,6 +2,8 @@ import {
     Lexer
 } from "../../string_parsing/lexer";
 
+import {CSS_Percentage} from "./percentage";
+
 export class CSS_Length extends Number {
     static _parse_(l, rule, r) {
         let tx = l.tx,
@@ -59,6 +61,8 @@ export class CSS_Length extends Number {
 
                 //Deg
                 case "deg": return new DEGLength(v);
+
+                case "%" : return new CSS_Percentage(v);
             }
         }
 

@@ -439,8 +439,8 @@ export class RootNode extends HTMLNode {
 
     /**
      * This will create TAP binding references and methods, binding points, and regular attribute nodes.
-     * @param      {<type>}  name    The name
-     * @param      {Lexer}  lex     The lex
+     * @param      {<type>}  name    The Attribute name
+     * @param      {Lexer}  lex     The lexer containing the attribute value.
      * @return     {Object}  `null` or an object to store in this nodes attributes
      * @private
      */

@@ -94,7 +94,7 @@ class CSSRule {
         let str = [], offset = ("    ").repeat(off);
 
         for (let a in this.props) {
-            if(a !== null){  
+            if(this.props[a] !== null){  
                 if (Array.isArray(this.props[a]))
                     str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
                 else

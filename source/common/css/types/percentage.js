@@ -59,4 +59,8 @@ export class CSS_Percentage extends Number {
     copy(other){
         return new CSS_Percentage(other);
     }
+
+    get type(){
+        return "%";
+    }
 }

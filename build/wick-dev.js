@@ -7972,7 +7972,7 @@ var wick = (function (exports) {
             let str = [], offset = ("    ").repeat(off);
 
             for (let a in this.props) {
-                if(a !== null){  
+                if(this.props[a] !== null){  
                     if (Array.isArray(this.props[a]))
                         str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
                     else
@@ -10531,8 +10531,8 @@ var wick = (function (exports) {
 
         /**
          * This will create TAP binding references and methods, binding points, and regular attribute nodes.
-         * @param      {<type>}  name    The name
-         * @param      {Lexer}  lex     The lex
+         * @param      {<type>}  name    The Attribute name
+         * @param      {Lexer}  lex     The lexer containing the attribute value.
          * @return     {Object}  `null` or an object to store in this nodes attributes
          * @private
          */

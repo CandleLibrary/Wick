@@ -4,6 +4,22 @@
 		"selected_items":
 		[
 			[
+				"new",
+				"new_path"
+			],
+			[
+				"ne",
+				"new_path"
+			],
+			[
+				"wu",
+				"wurl_or_url_new"
+			],
+			[
+				"wurl",
+				"wurl_or_url_original〔variable〕"
+			],
+			[
 				"_set",
 				"_setPendingCSS_"
 			],
@@ -468,10 +484,6 @@
 				"parentElement"
 			],
 			[
-				"new",
-				"new_items"
-			],
-			[
 				"view",
 				"view"
 			],
@@ -502,18 +514,6 @@
 			[
 				"ou",
 				"output"
-			],
-			[
-				"Sl",
-				"SkeletonCase"
-			],
-			[
-				"in",
-				"index"
-			],
-			[
-				"close",
-				"close_tag"
 			]
 		]
 	},
@@ -541,7 +541,126 @@
 			"file": "source/common/html/root.js",
 			"settings":
 			{
-				"buffer_size": 25164,
+				"buffer_size": 25257,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "test/suite/html_tests.js",
+			"settings":
+			{
+				"buffer_size": 11342,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "test/data/template.html",
+			"settings":
+			{
+				"buffer_size": 105,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "source/network/wurl.js",
+			"settings":
+			{
+				"buffer_size": 15527,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "test/data/source_template_transition.html",
+			"settings":
+			{
+				"buffer_size": 770,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "test/suite/source_tests.js",
+			"settings":
+			{
+				"buffer_size": 0,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "test/suite/source_package_tests.js",
+			"settings":
+			{
+				"buffer_size": 15978,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "test/suite/model_tests.js",
+			"settings":
+			{
+				"buffer_size": 9459,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "test/suite/router_tests.js",
+			"settings":
+			{
+				"buffer_size": 2938,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "test/data/page.html",
+			"settings":
+			{
+				"buffer_size": 933,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "test/data/page_data_1.html",
+			"settings":
+			{
+				"buffer_size": 403,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "test/data/page_data_2.html",
+			"settings":
+			{
+				"buffer_size": 763,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/galactrax/Paranoms/pytrucks/static/js/app/models/bookings.js",
+			"settings":
+			{
+				"buffer_size": 10095,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "test/data/source_template_sort_and_filter.html",
+			"settings":
+			{
+				"buffer_size": 360,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "test/data/template2.html",
+			"settings":
+			{
+				"buffer_size": 189,
 				"line_ending": "Unix"
 			}
 		},
@@ -549,7 +668,7 @@
 			"file": "source/source/compiler/nodes/root.js",
 			"settings":
 			{
-				"buffer_size": 13918,
+				"buffer_size": 13916,
 				"line_ending": "Unix"
 			}
 		},
@@ -557,15 +676,15 @@
 			"file": "source/source/compiler/nodes/style.js",
 			"settings":
 			{
-				"buffer_size": 334,
-				"line_ending": "Windows"
+				"buffer_size": 332,
+				"line_ending": "Unix"
 			}
 		},
 		{
 			"file": "source/source/compiler/template/template_bindings.js",
 			"settings":
 			{
-				"buffer_size": 3112,
+				"buffer_size": 3152,
 				"line_ending": "Unix"
 			}
 		},
@@ -635,6 +754,7 @@
 	],
 	"file_history":
 	[
+		"/home/galactrax/Paranoms/pytrucks/static/js/app/models/party.js",
 		"/D/Users/Anthony/Desktop/test.html",
 		"/D/wick/source/source/compiler/static/static_root.js",
 		"/D/wick/source/common/css/nodes.js",
@@ -761,12 +881,11 @@
 		"/home/galactrax/wick/source/source/io/filter_io.js",
 		"/home/galactrax/wick/source/source/compiler/nodes/package.js",
 		"/home/galactrax/wick/source/source/compiler/nodes/filter.js",
-		"/home/galactrax/wick/source/source/compiler/nodes/script.js",
-		"/home/galactrax/wick/source/source/compiler/nodes/source.js"
+		"/home/galactrax/wick/source/source/compiler/nodes/script.js"
 	],
 	"find":
 	{
-		"height": 27.0
+		"height": 38.0
 	},
 	"find_in_files":
 	{
@@ -784,6 +903,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"console",
 			"observers",
 			"RootText",
 			"this.css",
@@ -910,8 +1030,7 @@
 			"model_revised",
 			"container_revised",
 			"but",
-			"pick",
-			"//"
+			"pick"
 		],
 		"highlight": false,
 		"in_selection": false,
@@ -932,7 +1051,7 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 5,
 			"sheets":
 			[
 				{
@@ -1022,16 +1141,16 @@
 							],
 							"auto_complete": false,
 							"git_savvy.repo_path": "D:\\wick",
-							"markdonw_live_preview_last_run": 1540075132.63,
+							"markdonw_live_preview_last_run": 1541740429.56,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 9271.0,
+						"translation.y": 5025.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
@@ -1064,7 +1183,7 @@
 								"sublime_linter.protected_regions"
 							],
 							"git_savvy.repo_path": "D:\\wick",
-							"markdonw_live_preview_last_run": 1540075132.63,
+							"markdonw_live_preview_last_run": 1541740429.56,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
@@ -1073,7 +1192,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
@@ -1082,15 +1201,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 25164,
+						"buffer_size": 25257,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6775,
-								6775
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1108,33 +1227,463 @@
 							],
 							"auto_complete": false,
 							"git_savvy.repo_path": "D:\\wick",
-							"markdonw_live_preview_last_run": 1540075132.63,
+							"markdonw_live_preview_last_run": 1541740429.56,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 11325.0,
+						"translation.y": 8633.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
 					"buffer": 3,
-					"file": "source/source/compiler/nodes/root.js",
+					"file": "test/suite/html_tests.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 13918,
+						"buffer_size": 11342,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1139,
-								1139
+								1520,
+								1520
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"markdonw_live_preview_last_run": 1541740487.4,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 117.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 12,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "test/data/template.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 105,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5,
+								5
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"markdonw_live_preview_last_run": 1541740563.84,
+							"syntax": "Packages/HTML/HTML.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "source/network/wurl.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 15527,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2606,
+								2606
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"markdonw_live_preview_last_run": 1541740592.92,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 741.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "test/data/source_template_transition.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 770,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1541740935.98,
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "test/suite/source_tests.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 0,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1541740949.21,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "test/suite/source_package_tests.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 15978,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								9086,
+								9086
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"markdonw_live_preview_last_run": 1541741276.25,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2106.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "test/suite/model_tests.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 9459,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								8177,
+								8177
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"markdonw_live_preview_last_run": 1541741333.88,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2913.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "test/suite/router_tests.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2938,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1751,
+								1751
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"markdonw_live_preview_last_run": 1541741901.68,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "test/data/page.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 933,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								714,
+								714
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1541742272.13,
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "test/data/page_data_1.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 403,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1541742103.3,
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"file": "test/data/page_data_2.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 763,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1541742292.7,
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "/home/galactrax/Paranoms/pytrucks/static/js/app/models/bookings.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10095,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1541741413.62,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1677.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
+					"type": "text"
+				},
+				{
+					"buffer": 15,
+					"file": "test/data/source_template_sort_and_filter.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 360,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1541740961.62,
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 20,
+					"type": "text"
+				},
+				{
+					"buffer": 16,
+					"file": "test/data/template2.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 189,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								116,
+								116
+							]
+						],
+						"settings":
+						{
+							"markdonw_live_preview_last_run": 1541740540.83,
+							"syntax": "Packages/HTML/HTML.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 13,
+					"type": "text"
+				},
+				{
+					"buffer": 17,
+					"file": "source/source/compiler/nodes/root.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 13916,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1147,33 +1696,33 @@
 							],
 							"auto_complete": false,
 							"git_savvy.repo_path": "D:\\wick",
-							"markdonw_live_preview_last_run": 1540075132.63,
+							"markdonw_live_preview_last_run": 1541740429.55,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1242.0,
+						"translation.y": 546.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 18,
 					"file": "source/source/compiler/nodes/style.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 334,
+						"buffer_size": 332,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								32,
-								32
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1183,7 +1732,7 @@
 								"sublime_linter.protected_regions"
 							],
 							"git_savvy.repo_path": "D:\\wick",
-							"markdonw_live_preview_last_run": 1540075132.64,
+							"markdonw_live_preview_last_run": 1541740429.56,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
@@ -1192,24 +1741,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 17,
 					"type": "text"
 				},
 				{
-					"buffer": 5,
+					"buffer": 19,
 					"file": "source/source/compiler/template/template_bindings.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3112,
+						"buffer_size": 3152,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1515,
-								1515
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1225,20 +1774,20 @@
 							],
 							"auto_complete": false,
 							"git_savvy.repo_path": "D:\\wick",
-							"markdonw_live_preview_last_run": 1540075132.64,
+							"markdonw_live_preview_last_run": 1541740429.56,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 723.0,
+						"translation.y": 393.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 19,
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 20,
 					"file": "source/source/compiler/compiler.js",
 					"semi_transient": false,
 					"settings":
@@ -1261,16 +1810,16 @@
 							],
 							"auto_complete": false,
 							"git_savvy.repo_path": "D:\\wick",
-							"markdonw_live_preview_last_run": 1540075132.64,
+							"markdonw_live_preview_last_run": 1541740429.56,
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 342.0,
+						"translation.y": 188.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 18,
 					"type": "text"
 				}
 			]
@@ -1278,7 +1827,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 27.0
+		"height": 23.0
 	},
 	"input":
 	{
@@ -1323,7 +1872,7 @@
 	"project": "sublime-wick.sublime-project",
 	"replace":
 	{
-		"height": 50.0
+		"height": 42.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1332,6 +1881,50 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"page.",
+				"test/data/page.html"
+			],
+			[
+				"paged",
+				"test/data/page_data_1.html"
+			],
+			[
+				"route",
+				"test/suite/router_tests.js"
+			],
+			[
+				"model",
+				"test/suite/model_tests.js"
+			],
+			[
+				"sout",
+				"test/suite/source_tests.js"
+			],
+			[
+				"templates",
+				"test/data/source_template_sort_and_filter.html"
+			],
+			[
+				"sourtes",
+				"test/suite/source_tests.js"
+			],
+			[
+				"sourcetempl",
+				"test/data/source_template_transition.html"
+			],
+			[
+				"wurl",
+				"source/network/wurl.js"
+			],
+			[
+				"templ",
+				"test/data/template.html"
+			],
+			[
+				"htmltest",
+				"test/suite/html_tests.js"
+			],
 			[
 				"cssroot",
 				"source\\common\\css\\root.js"
@@ -1513,20 +2106,12 @@
 				"test\\data\\page_data.html"
 			],
 			[
-				"page.",
-				"test\\data\\page.html"
-			],
-			[
 				"router",
 				"test\\suite\\router_tests.js"
 			],
 			[
 				"array",
 				"source\\model\\container\\array.js"
-			],
-			[
-				"model",
-				"source\\model\\model.js"
 			],
 			[
 				"containerbase",
@@ -1611,10 +2196,6 @@
 			[
 				"sousou",
 				"source\\source\\source.js"
-			],
-			[
-				"wurl",
-				"source\\network\\wurl.js"
 			],
 			[
 				"component",
@@ -1811,38 +2392,6 @@
 			[
 				"modcrev",
 				"source\\model\\container_revised\\array.js"
-			],
-			[
-				"index",
-				"test\\index.html"
-			],
-			[
-				"revarr",
-				"source\\model\\container_revised\\array.js"
-			],
-			[
-				"modelrevba",
-				"source\\model\\container_revised\\base.js"
-			],
-			[
-				"an",
-				"source\\model\\any.js"
-			],
-			[
-				"taps",
-				"source\\source\\tap\\tap.js"
-			],
-			[
-				"packagete",
-				"test\\suite\\source_package_tests.js"
-			],
-			[
-				"inde",
-				"test\\index.html"
-			],
-			[
-				"pactest",
-				"test\\suite\\source_package_tests.js"
 			]
 		],
 		"width": 0.0
