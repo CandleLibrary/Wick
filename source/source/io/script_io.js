@@ -9,13 +9,12 @@ export class ScriptIO extends IOBase {
             if (binding._func_) {
                 func = binding._func_;
             } else {
-                func = Function(binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val);
+                func = Function(binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val).bind(source);
                 binding._func_ = func;
             }
         } catch (e) {
-            console.trace(binding.val)
             errors.push(e);
-            func = () => {}
+            func = () => {};
         }
 
         super(tap);

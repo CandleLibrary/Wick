@@ -392,7 +392,7 @@ class CSSRootNode {
                 this._sel_a_.push(selector);
                 selector.r = new R(this);
             } else
-                selector = this._selectors_[selector.id]
+                selector = this._selectors_[selector.id];
 
         return selector;
     }
