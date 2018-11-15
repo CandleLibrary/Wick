@@ -245,7 +245,6 @@ class Lexer {
      * @public
      */
     reset() {
-
         this.p = null;
         this.type = -1;
         this.off = 0;
@@ -253,9 +252,7 @@ class Lexer {
         this.char = 0;
         this.line = 0;
         this.END = false;
-
         this.n();
-
         return this;
     }
 

@@ -74,13 +74,18 @@ export const property_definitions = {
     background_size: `<bg_size>#`,
     background: `<bg_layer>#,<final_bg_layer>`,
 
-    /* Font */
+    /* Font https://www.w3.org/TR/css-fonts-4*/
     font_family: `[[<family_name>|<generic_family>],]*[<family_name>|<generic_family>]`,
     family_name: `<id>||<string>`,
     generic_name: `serif|sans_serif|cursive|fantasy|monospace`,
     font: `[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>`,
     font_variant: `normal|small_caps`,
-    font_style: ``,
+    font_style: `normal | italic | oblique <angle>?`,
+    font_kerning: ` auto | normal | none`,
+    font_variant_ligatures:`normal|none|[<common-lig-values>||<discretionary-lig-values>||<historical-lig-values>||<contextual-alt-values> ]`,
+    font_variant_position:`normal|sub|super`,
+    font_variant_caps:`normal|small-caps|all-small-caps|petite-caps|all-petite-caps|unicase|titling-caps`,
+
 
     /*CSS Clipping https://www.w3.org/TR/css-masking-1/#clipping `normal|italic|oblique`, */
     font_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
@@ -275,7 +280,13 @@ export const virtual_property_definitions = {
     shape_box: `<box>|margin-box`,
     geometry_box: `<shape_box>|fill-box|stroke-box|view-box`,
     basic_shape: `<CSS_Shape>`,
-    ratio: `<integer>/<integer>`
+    ratio: `<integer>/<integer>`,
+
+    /* https://www.w3.org/TR/css-fonts-3/*/
+    common_lig_values        : `[ common-ligatures | no-common-ligatures ]`,
+    discretionary_lig_values : `[ discretionary-ligatures | no-discretionary-ligatures ]`,
+    historical_lig_values    : `[ historical-ligatures | no-historical-ligatures ]`,
+    contextual_alt_values    : `[ contextual | no-contextual ]`,
 };
 
 export const media_feature_definitions = {

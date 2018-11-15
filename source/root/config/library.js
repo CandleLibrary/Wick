@@ -108,6 +108,7 @@ const core = {
 };
 
 core.source.compiler = Compiler;
+core.lexer.constr = Lexer;
 Compiler.nodes = {
     root: RootNode,
     style: StyleNode,
