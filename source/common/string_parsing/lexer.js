@@ -116,9 +116,9 @@ class Lexer {
         this.str = string;
 
         /**
-         * Flag to ignore white spaced.
+         * Reference to the peeking Lexer.
          */
-        this.IWS = IGNORE_WHITE_SPACE;
+        this.p = null;
 
         /**
          * The type id of the current token.
@@ -146,25 +146,25 @@ class Lexer {
         this.line = 0;
 
         /**
+         * The length of the string being parsed
+         */
+        this.sl = string.length;
+
+
+        /**
+         * Flag to ignore white spaced.
+         */
+        this.IWS = IGNORE_WHITE_SPACE;
+
+        /**
          * Flag set to true if the end of the string is met.
          */
         this.END = false;
 
         /**
-         * Reference to the peeking Lexer.
+         * Flag to force the lexer to parse string contents
          */
-        this.p = null;
-
-        /**
-         * The length of the string being parsed
-         */
-        this.sl = string.length;
-
-        /**
-         * Reference to token id types.
-         */
-        this.types = Types;
-
+         this.PARSE_STRING = false;
 
         if (!PEEKING) this.next();
     }
@@ -178,6 +178,13 @@ class Lexer {
             return;
         this.sl = lexer.off;
         return this;
+    }
+
+    /**
+     * Reference to token id types.
+     */
+    get types() {
+        return Types;
     }
 
     /**
@@ -256,6 +263,15 @@ class Lexer {
         return this;
     }
 
+    resetHead() {
+        this.off = 0;
+        this.tl = 0;
+        this.char = 0;
+        this.line = 0;
+        this.END = false;
+        this.type = -1;
+    }
+
     /**
      * Proxy for Lexer.prototype.next
      * @public
@@ -318,7 +334,7 @@ class Lexer {
                 switch (jump_table[code]) {
                     case 0: //NUMBER
                         while (++off < l && (12 & num_id[str.charCodeAt(off)])) {}
-                        
+
                         if (str[off] == "e" || str[off] == "E") {
                             off++;
                             if (str[off] == "-") off++;
@@ -334,14 +350,18 @@ class Lexer {
 
                         break;
                     case 1: //IDENTIFIER
-                        while (++off < l && ((10 & num_id[str.charCodeAt(off)])) ) {}
+                        while (++off < l && ((10 & num_id[str.charCodeAt(off)]))) {}
                         type = identifier;
                         length = off - base;
                         break;
                     case 2: //QUOTED STRING
-                        while (++off < l && str.charCodeAt(off) !== code) {}
-                        type = string;
-                        length = off - base + 1;
+                        if (this.PARSE_STRING) {
+                            type = symbol;
+                        } else {
+                            while (++off < l && str.charCodeAt(off) !== code) {}
+                            type = string;
+                            length = off - base + 1;
+                        }
                         break;
                     case 3: //SPACE SET
                         while (++off < l && str.charCodeAt(off) === SPACE) {}
@@ -588,8 +608,16 @@ class Lexer {
 
         return marker;
     }
-}
 
-Lexer.prototype.types = Types;
+    get string() {
+        return this.str.slice(0, this.sl);
+    }
+
+    setString(string, reset = true) {
+        this.str = string;
+        this.sl = string.length;
+        if (reset) this.resetHead();
+    }
+}
 
 export { Lexer };

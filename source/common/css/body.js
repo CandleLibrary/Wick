@@ -379,7 +379,10 @@ export class CSSRuleBody {
                                 else {
                                     let media_root = new this.constructor();
                                     media_root.media_selector = _med_;
-                                    return media_root._parse_(lex, root).then(() => this._parse_(lex, root));
+                                    return media_root._parse_(lexer, root).then(b => {
+                                        let body = new this.constructor();
+                                        return body._parse_(lexer, root);
+                                    });
                                 }
                                 continue;
                             case "import":
@@ -413,7 +416,7 @@ export class CSSRuleBody {
                         break;
                     case "}":
                         lexer.n();
-                        return;
+                        return res(this);
                     case "{":
                         let rule = new R(this);
                         this._applyProperties_(lexer.n(), rule);
@@ -435,9 +438,7 @@ export class CSSRuleBody {
                 }
             }
 
-            res(this);
-
-            return this;
+            return res(this);
         });
     }
 
@@ -501,13 +502,21 @@ export class CSSRuleBody {
      */
     getApplicableRules(element, rule = new R(), win = window) {
 
-        if(this.media_selector){
-            debugger;
+        if (this.media_selector) {
+            for(let i = 0; i < this.media_selector.length; i++){
+                let m = this.media_selector[i];
+                   let props = m.props;
+                for (let a in props) {
+                    let prop = props[a];
+                    if (!prop(win))
+                        return;
+                }
+            };
         }
 
         let gen = this.getApplicableSelectors(element),
             sel = null;
-        
+
         while (sel = gen.next().value) rule.merge(sel.r);
     }
 }

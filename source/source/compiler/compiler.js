@@ -5,7 +5,7 @@ import { Skeleton } from "../skeleton";
 
 
 
-function complete(lex, SourcePackage, presets, ast, url) {
+function complete(lex, SourcePackage, presets, ast, url, win) {
     /*
      * Only accept certain nodes for mounting to the DOM. 
      * The custom element `import` is simply used to import extra HTML data from network for use with template system. It should not exist otherwise.
@@ -19,7 +19,7 @@ function complete(lex, SourcePackage, presets, ast, url) {
 
     while (!lex.END && lex.ch != "<") { lex.n(); }
     if (!lex.END)
-        return parseText(lex, SourcePackage, presets, url);
+        return parseText(lex, SourcePackage, presets, url, win);
 
     SourcePackage._complete_();
 
@@ -27,18 +27,18 @@ function complete(lex, SourcePackage, presets, ast, url) {
 }
 
 
-function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url) {
+function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win) {
     return css_list[index]._READY_().then(() => {
         
-        if(++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url);
+        if(++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
 
-        ast._linkCSS_();
+        ast._linkCSS_(null, win);
 
-        return complete(lex, SourcePackage, presets, ast, url);
+        return complete(lex, SourcePackage, presets, ast, url, win);
     });
 }
 
-export function parseText(lex, SourcePackage, presets, url) {
+export function parseText(lex, SourcePackage, presets, url, win) {
     let start = lex.off;
 
     while (!lex.END && lex.ch != "<") { lex.n(); }
@@ -54,9 +54,9 @@ export function parseText(lex, SourcePackage, presets, url) {
 
         return node._parse_(lex, false, false, null, url).then((ast) => {
             if (ast.css && ast.css.length > 0) 
-                return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url);
+                return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url, win);
             
-            return complete(lex, SourcePackage, presets, ast, url);
+            return complete(lex, SourcePackage, presets, ast, url, win);
         }).catch((e) => {
             SourcePackage._addError_(e);
             SourcePackage._complete_();
@@ -77,7 +77,7 @@ export function parseText(lex, SourcePackage, presets, url) {
  * @memberof module:wick~internals.templateCompiler
  * @alias CompileSource
  */
-function CompileSource(SourcePackage, presets, element, url) {
+function CompileSource(SourcePackage, presets, element, url, win = window) {
     let lex;
     if (element instanceof Lexer) {
         lex = element;
@@ -95,7 +95,7 @@ function CompileSource(SourcePackage, presets, element, url) {
         SourcePackage._addError_(e);
         SourcePackage._complete_();
     }
-    return parseText(lex, SourcePackage, presets, url);
+    return parseText(lex, SourcePackage, presets, url, win);
 }
 
 export { CompileSource };

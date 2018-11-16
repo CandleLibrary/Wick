@@ -144,7 +144,7 @@ export class RootNode extends HTMLNode {
 
     _setCSS_() {}
 
-    _linkCSS_(css) {
+    _linkCSS_(css, win = window) {
 
         if (this.css)
             css = this.css;
@@ -155,7 +155,7 @@ export class RootNode extends HTMLNode {
 
             
             for (let i = 0; i < css.length; i++)
-                rule = css[i].getApplicableRules(this, rule);
+                rule = css[i].getApplicableRules(this, rule, win);
 
 
             //parse rules and createBindings.
@@ -191,7 +191,7 @@ export class RootNode extends HTMLNode {
         }
 
         for (let node = this.fch; node; node = this.getN(node))
-            node._linkCSS_(css);
+            node._linkCSS_(css, win);
     }
 
     _setPendingCSS_(css) {

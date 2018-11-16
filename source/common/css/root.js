@@ -4,9 +4,7 @@ import { CSSRule as R, CSSSelector as S } from "./nodes";
 import { types } from "./properties/property_and_type_definitions";
 import { CSSRuleBody } from "./body";
 
-export {
-    R as CSSRule, S as CSSSelector
-};
+export { R as CSSRule, S as CSSSelector };
 
 
 /**
@@ -25,6 +23,8 @@ class CSSRootNode {
         this.resolves = [];
         this.res = null;
         this.observers = [];
+        
+        this.addC(new CSSRuleBody());
     }
 
     _resolveReady_(res, rej) {
@@ -59,11 +59,11 @@ class CSSRootNode {
 
     * getApplicableSelectors(element, win = window) {
 
-        for (let node = this.fch; node; node = this.getN(node)){
-            
-            let gen =  node.getApplicableSelectors(element, win);
+        for (let node = this.fch; node; node = this.getN(node)) {
+
+            let gen = node.getApplicableSelectors(element, win);
             let v = null;
-            while(v = gen.next().value)
+            while (v = gen.next().value)
                 yield v;
         }
     }
@@ -85,7 +85,7 @@ class CSSRootNode {
      * @return     {CSSRule}  The combined set of rules that match the selector.
      */
     getRule(string) {
-        let r =  null;
+        let r = null;
         for (let node = this.fch; node; node = this.getN(node))
             r = node.getRule(string, r);
         return r;
@@ -114,15 +114,13 @@ class CSSRootNode {
 
     _parse_(lex, root) {
         if (lex.sl > 0) {
-            
+
             if (!root && root !== null) {
                 root = this;
                 this.pending_build++;
             }
 
-            let body = new CSSRuleBody();
-
-            return body._parse_(lex, this).then(e=>{
+            return this.fch._parse_(lex, this).then(e => {
                 this._setREADY_();
                 return this;
             });
