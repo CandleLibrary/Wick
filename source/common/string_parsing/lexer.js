@@ -17,6 +17,8 @@ const number = 1,
     operator = 64,
     symbol = 128,
     new_line = 256,
+    data_link = 512,
+    alpha_numeric = (identifier | number),
     white_space_new_line = (white_space | new_line),
     Types = {
         num: number,
@@ -36,7 +38,11 @@ const number = 1,
         sym: symbol,
         symbol,
         nl: new_line,
-        new_line
+        new_line,
+        dl: data_link,
+        data_link,
+        alpha_numeric,
+        white_space_new_line,
     };
 
 /**
@@ -52,8 +58,9 @@ const number = 1,
  * 8. OPERATOR
  * 9. OPEN BRACKET
  * 10. CLOSE BRACKET 
+ * 11. DATA_LINK
  */
-const jump_table = [7, 7, 7, 7, 7, 7, 7, 7, 7, 4, 6, 7, 7, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 8, 2, 7, 7, 8, 8, 2, 9, 10, 8, 8, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 7, 8, 8, 8, 7, 7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 7, 10, 7, 7, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 7, 10, 7, 7];
+const jump_table = [7, 7, 7, 7, 7, 7, 7, 7, 7, 4, 6, 7, 7, 5, 7, 11, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 8, 2, 7, 7, 8, 8, 2, 9, 10, 8, 8, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 7, 8, 8, 8, 7, 7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 7, 10, 7, 7, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 7, 10, 7, 7];
 
 /**
  * LExer Number and Identifier jump table reference
@@ -269,6 +276,7 @@ class Lexer {
         this.char = 0;
         this.line = 0;
         this.END = false;
+        this.p = null;
         this.type = -1;
     }
 
@@ -386,12 +394,17 @@ class Lexer {
                         break;
                     case 8: //OPERATOR
                         type = operator;
+
                         break;
                     case 9: //OPEN BRACKET
                         type = open_bracket;
                         break;
                     case 10: //CLOSE BRACKET
                         type = close_bracket;
+                        break;
+                    case 11: //Data Link Escape
+                        type = data_link;
+                        length = 4; //Stores two UTF16 values and a data link sentinel
                         break;
                 }
             }
@@ -420,6 +433,7 @@ class Lexer {
 
         return marker;
     }
+    
 
     /**
      * Proxy for Lexer.prototype.assert
@@ -575,7 +589,7 @@ class Lexer {
 
     /**
      * The current token in the form of a new Lexer with the current state.
-     * Proxy property for Lexer.prototyp.copy
+     * Proxy property for Lexer.prototype.copy
      * @type {Lexer}
      * @public
      * @readonly
@@ -617,6 +631,10 @@ class Lexer {
         this.str = string;
         this.sl = string.length;
         if (reset) this.resetHead();
+    }
+
+    toString(){
+        return this.slice();
     }
 }
 

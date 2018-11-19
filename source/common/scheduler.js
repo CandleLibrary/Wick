@@ -1,3 +1,5 @@
+import { WIN } from "./short_names";
+
 /**
  * Used to call the Scheduler after a JavaScript runtime tick.
  *
@@ -5,9 +7,12 @@
  * @memberof Scheduler
  * @private
  */
-const caller = (window && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
+const caller = (WIN && WIN.requestAnimationFrame) ? WIN.requestAnimationFrame : (f) => {
     setTimeout(f, 1);
 };
+
+
+const perf = (typeof(performance) == "undefined") ? { now: () => Date.now() } : performance;
 
 
 
@@ -34,7 +39,7 @@ class Scheduler {
 
         this.callback = () => this._update_();
 
-        this.frame_time = performance.now();
+        this.frame_time = perf.now();
 
         this._SCHD_ = false;
 
@@ -64,7 +69,7 @@ class Scheduler {
         if (this._SCHD_)
             return;
 
-        this.frame_time = performance.now() | 0;
+        this.frame_time = perf.now() | 0;
 
         this._SCHD_ = true;
 
@@ -85,7 +90,7 @@ class Scheduler {
         else
             (this.update_queue = this.update_queue_a, this.queue_switch = 0);
 
-        let time = performance.now() | 0;
+        let time = perf.now() | 0;
 
         let diff = Math.ceil(time - this.frame_time) | 1;
 
@@ -104,7 +109,7 @@ class Scheduler {
             }
 
             if (timeend > 0) {
-                this.queueUpdate(o, timestart, timeend  - diff);
+                this.queueUpdate(o, timestart, timeend - diff);
                 continue;
             } else o._SCHD_ = 0;
 

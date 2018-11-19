@@ -5,7 +5,7 @@
  * @memberof module:wick~internals
  * @type 	{Document}
  */
-export const DOC = document;
+export const DOC = (typeof(document) !== "undefined") ? document : ()=>{};
 
 /**
  * Global Window Instance short name
@@ -14,7 +14,7 @@ export const DOC = document;
  * @memberof module:wick~internals
  * @type 	{Window}
  */
-export const WIN = window;
+export const WIN = (typeof(window) !== "undefined") ? window : ()=>{};
 
 /**
  * Global HTMLElement class short name
@@ -23,7 +23,7 @@ export const WIN = window;
  * @memberof module:wick~internals
  * @type 	{HTMLElement}
  */
-export const EL = HTMLElement;
+export const EL = (typeof(HTMLElement) !== "undefined") ? HTMLElement : ()=>{};
 
 /**
  * Global Object class short name

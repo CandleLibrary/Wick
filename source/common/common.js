@@ -13,6 +13,8 @@ import {TouchScroller} from "./event/touch_scroller";
 //Path
 import {Path} from "./design/path";
 
+import {EL} from "./short_names";
+
 /*********** String Parsing Basic Function ************************/
 
 export {
@@ -25,24 +27,25 @@ export {
 };
 
 /****** Global Object Extenders *************/
-//*
-Element.prototype.getWindowTop = function(){
+if(!EL.prototype) EL.prototype = {};
+
+EL.prototype.getWindowTop = function(){
     return (this.offsetTop + ((this.parentElement) ? this.parentElement.getWindowTop() : 0));
 };
 
-Element.prototype.getWindowLeft = function(){
+EL.prototype.getWindowLeft = function(){
     return (this.offsetLeft + ((this.parentElement) ? this.parentElement.getWindowLeft() : 0));
 };
 
-Element.prototype.getParentWindowTop = function(bool = false){
+EL.prototype.getParentWindowTop = function(bool = false){
     return (((bool ? this.offsetTop : 0))+((this.parentElement) ? this.parentElement.getParentWindowTop(true) : 0));
 };
 
-Element.prototype.getParentWindowLeft = function(bool = false){
+EL.prototype.getParentWindowLeft = function(bool = false){
     return (((bool ? this.offsetLeft : 0))+((this.parentElement) ? this.parentElement.getWindowLeft(true) : 0));
 };
 
-Element.prototype.getStyle = function(style_name){
+EL.prototype.getStyle = function(style_name){
 	return window.getComputedStyle(this,null).getPropertyValue(style_name);
 };
 
