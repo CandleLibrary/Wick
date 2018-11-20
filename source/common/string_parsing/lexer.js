@@ -579,7 +579,6 @@ class Lexer {
             if (start instanceof Lexer) start = start.off;
             return (this.END) ? this.str.slice(start, this.sl) : this.str.slice(start, this.off);
         }
-
         return this.str.slice(this.off, this.sl);
     }
 
@@ -624,7 +623,7 @@ class Lexer {
     }
 
     get string() {
-        return this.str.slice(0, this.sl);
+        return this.str;
     }
 
     setString(string, reset = true) {

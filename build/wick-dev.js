@@ -8,7 +8,7 @@ var wick = (function (exports) {
      * @memberof module:wick~internals
      * @type 	{Document}
      */
-    const DOC = document;
+    const DOC = (typeof(document) !== "undefined") ? document : ()=>{};
 
     /**
      * Global Window Instance short name
@@ -17,7 +17,7 @@ var wick = (function (exports) {
      * @memberof module:wick~internals
      * @type 	{Window}
      */
-    const WIN = window;
+    const WIN = (typeof(window) !== "undefined") ? window : ()=>{};
 
     /**
      * Global HTMLElement class short name
@@ -26,7 +26,7 @@ var wick = (function (exports) {
      * @memberof module:wick~internals
      * @type 	{HTMLElement}
      */
-    const EL = HTMLElement;
+    const EL = (typeof(HTMLElement) !== "undefined") ? HTMLElement : ()=>{};
 
     /**
      * Global Object class short name
@@ -79,9 +79,12 @@ var wick = (function (exports) {
      * @memberof Scheduler
      * @private
      */
-    const caller = (window && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
+    const caller = (WIN && WIN.requestAnimationFrame) ? WIN.requestAnimationFrame : (f) => {
         setTimeout(f, 1);
     };
+
+
+    const perf = (typeof(performance) == "undefined") ? { now: () => Date.now() } : performance;
 
 
 
@@ -108,7 +111,7 @@ var wick = (function (exports) {
 
             this.callback = () => this._update_();
 
-            this.frame_time = performance.now();
+            this.frame_time = perf.now();
 
             this._SCHD_ = false;
 
@@ -138,7 +141,7 @@ var wick = (function (exports) {
             if (this._SCHD_)
                 return;
 
-            this.frame_time = performance.now() | 0;
+            this.frame_time = perf.now() | 0;
 
             this._SCHD_ = true;
 
@@ -159,7 +162,7 @@ var wick = (function (exports) {
             else
                 (this.update_queue = this.update_queue_a, this.queue_switch = 0);
 
-            let time = performance.now() | 0;
+            let time = perf.now() | 0;
 
             let diff = Math.ceil(time - this.frame_time) | 1;
 
@@ -178,7 +181,7 @@ var wick = (function (exports) {
                 }
 
                 if (timeend > 0) {
-                    this.queueUpdate(o, timestart, timeend  - diff);
+                    this.queueUpdate(o, timestart, timeend - diff);
                     continue;
                 } else o._SCHD_ = 0;
 
@@ -1215,6 +1218,8 @@ var wick = (function (exports) {
         operator = 64,
         symbol = 128,
         new_line = 256,
+        data_link = 512,
+        alpha_numeric = (identifier | number$1),
         white_space_new_line = (white_space | new_line),
         Types = {
             num: number$1,
@@ -1234,7 +1239,11 @@ var wick = (function (exports) {
             sym: symbol,
             symbol,
             nl: new_line,
-            new_line
+            new_line,
+            dl: data_link,
+            data_link,
+            alpha_numeric,
+            white_space_new_line,
         };
 
     /**
@@ -1250,8 +1259,9 @@ var wick = (function (exports) {
      * 8. OPERATOR
      * 9. OPEN BRACKET
      * 10. CLOSE BRACKET 
+     * 11. DATA_LINK
      */
-    const jump_table = [7, 7, 7, 7, 7, 7, 7, 7, 7, 4, 6, 7, 7, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 8, 2, 7, 7, 8, 8, 2, 9, 10, 8, 8, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 7, 8, 8, 8, 7, 7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 7, 10, 7, 7, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 7, 10, 7, 7];
+    const jump_table = [7, 7, 7, 7, 7, 7, 7, 7, 7, 4, 6, 7, 7, 5, 7, 11, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 8, 2, 7, 7, 8, 8, 2, 9, 10, 8, 8, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 7, 8, 8, 8, 7, 7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 7, 10, 7, 7, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 7, 10, 7, 7];
 
     /**
      * LExer Number and Identifier jump table reference
@@ -1314,9 +1324,9 @@ var wick = (function (exports) {
             this.str = string;
 
             /**
-             * Flag to ignore white spaced.
+             * Reference to the peeking Lexer.
              */
-            this.IWS = IGNORE_WHITE_SPACE;
+            this.p = null;
 
             /**
              * The type id of the current token.
@@ -1344,25 +1354,25 @@ var wick = (function (exports) {
             this.line = 0;
 
             /**
+             * The length of the string being parsed
+             */
+            this.sl = string.length;
+
+
+            /**
+             * Flag to ignore white spaced.
+             */
+            this.IWS = IGNORE_WHITE_SPACE;
+
+            /**
              * Flag set to true if the end of the string is met.
              */
             this.END = false;
 
             /**
-             * Reference to the peeking Lexer.
+             * Flag to force the lexer to parse string contents
              */
-            this.p = null;
-
-            /**
-             * The length of the string being parsed
-             */
-            this.sl = string.length;
-
-            /**
-             * Reference to token id types.
-             */
-            this.types = Types;
-
+             this.PARSE_STRING = false;
 
             if (!PEEKING) this.next();
         }
@@ -1376,6 +1386,13 @@ var wick = (function (exports) {
                 return;
             this.sl = lexer.off;
             return this;
+        }
+
+        /**
+         * Reference to token id types.
+         */
+        get types() {
+            return Types;
         }
 
         /**
@@ -1443,7 +1460,6 @@ var wick = (function (exports) {
          * @public
          */
         reset() {
-
             this.p = null;
             this.type = -1;
             this.off = 0;
@@ -1451,10 +1467,18 @@ var wick = (function (exports) {
             this.char = 0;
             this.line = 0;
             this.END = false;
-
             this.n();
-
             return this;
+        }
+
+        resetHead() {
+            this.off = 0;
+            this.tl = 0;
+            this.char = 0;
+            this.line = 0;
+            this.END = false;
+            this.p = null;
+            this.type = -1;
         }
 
         /**
@@ -1519,7 +1543,7 @@ var wick = (function (exports) {
                     switch (jump_table[code]) {
                         case 0: //NUMBER
                             while (++off < l$$1 && (12 & num_id[str.charCodeAt(off)])) {}
-                            
+
                             if (str[off] == "e" || str[off] == "E") {
                                 off++;
                                 if (str[off] == "-") off++;
@@ -1535,14 +1559,18 @@ var wick = (function (exports) {
 
                             break;
                         case 1: //IDENTIFIER
-                            while (++off < l$$1 && ((10 & num_id[str.charCodeAt(off)])) ) {}
+                            while (++off < l$$1 && ((10 & num_id[str.charCodeAt(off)]))) {}
                             type = identifier;
                             length = off - base;
                             break;
                         case 2: //QUOTED STRING
-                            while (++off < l$$1 && str.charCodeAt(off) !== code) {}
-                            type = string;
-                            length = off - base + 1;
+                            if (this.PARSE_STRING) {
+                                type = symbol;
+                            } else {
+                                while (++off < l$$1 && str.charCodeAt(off) !== code) {}
+                                type = string;
+                                length = off - base + 1;
+                            }
                             break;
                         case 3: //SPACE SET
                             while (++off < l$$1 && str.charCodeAt(off) === SPACE) {}
@@ -1567,12 +1595,17 @@ var wick = (function (exports) {
                             break;
                         case 8: //OPERATOR
                             type = operator;
+
                             break;
                         case 9: //OPEN BRACKET
                             type = open_bracket;
                             break;
                         case 10: //CLOSE BRACKET
                             type = close_bracket;
+                            break;
+                        case 11: //Data Link Escape
+                            type = data_link;
+                            length = 4; //Stores two UTF16 values and a data link sentinel
                             break;
                     }
                 }
@@ -1601,6 +1634,7 @@ var wick = (function (exports) {
 
             return marker;
         }
+        
 
         /**
          * Proxy for Lexer.prototype.assert
@@ -1746,7 +1780,6 @@ var wick = (function (exports) {
                 if (start instanceof Lexer) start = start.off;
                 return (this.END) ? this.str.slice(start, this.sl) : this.str.slice(start, this.off);
             }
-
             return this.str.slice(this.off, this.sl);
         }
 
@@ -1756,7 +1789,7 @@ var wick = (function (exports) {
 
         /**
          * The current token in the form of a new Lexer with the current state.
-         * Proxy property for Lexer.prototyp.copy
+         * Proxy property for Lexer.prototype.copy
          * @type {Lexer}
          * @public
          * @readonly
@@ -1789,9 +1822,21 @@ var wick = (function (exports) {
 
             return marker;
         }
-    }
 
-    Lexer.prototype.types = Types;
+        get string() {
+            return this.str.slice(0, this.sl);
+        }
+
+        setString(string, reset = true) {
+            this.str = string;
+            this.sl = string.length;
+            if (reset) this.resetHead();
+        }
+
+        toString(){
+            return this.slice();
+        }
+    }
 
     class Point2D extends Float64Array{
     	
@@ -2959,24 +3004,25 @@ var wick = (function (exports) {
     }
 
     /****** Global Object Extenders *************/
-    //*
-    Element.prototype.getWindowTop = function(){
+    if(!EL.prototype) EL.prototype = {};
+
+    EL.prototype.getWindowTop = function(){
         return (this.offsetTop + ((this.parentElement) ? this.parentElement.getWindowTop() : 0));
     };
 
-    Element.prototype.getWindowLeft = function(){
+    EL.prototype.getWindowLeft = function(){
         return (this.offsetLeft + ((this.parentElement) ? this.parentElement.getWindowLeft() : 0));
     };
 
-    Element.prototype.getParentWindowTop = function(bool = false){
+    EL.prototype.getParentWindowTop = function(bool = false){
         return (((bool ? this.offsetTop : 0))+((this.parentElement) ? this.parentElement.getParentWindowTop(true) : 0));
     };
 
-    Element.prototype.getParentWindowLeft = function(bool = false){
+    EL.prototype.getParentWindowLeft = function(bool = false){
         return (((bool ? this.offsetLeft : 0))+((this.parentElement) ? this.parentElement.getWindowLeft(true) : 0));
     };
 
-    Element.prototype.getStyle = function(style_name){
+    EL.prototype.getStyle = function(style_name){
     	return window.getComputedStyle(this,null).getPropertyValue(style_name);
     };
 
@@ -7165,6 +7211,72 @@ var wick = (function (exports) {
         };
     }
 
+    class CSS_Percentage extends Number {
+        
+        static _parse_(l, rule, r) {
+            let tx = l.tx,
+                pky = l.pk.ty;
+
+            if (l.ty == l.types.num || tx == "-" && pky == l.types.num) {
+                let mult = 1;
+
+                if (l.ch == "-") {
+                    mult = -1;
+                    tx = l.p.tx;
+                    l.p.n();
+                }
+
+                if (l.p.ch == "%") {
+                    l.sync().n();
+                    return new CSS_Percentage(parseFloat(tx) * mult);
+                }
+            }
+            return null;
+        }
+
+        constructor(v) {
+
+            if (typeof(v) == "string") {
+                let lex = new Lexer(v);
+                let val = CSS_Percentage._parse_(lex);
+                if (val) 
+                    return val;
+            }
+            
+            super(v);
+        }
+
+        static _verify_(l) {
+            if(typeof(l) == "string" &&  !isNaN(parseInt(l)) && l.includes("%"))
+                return true;
+            return false;
+        }
+
+        toJSON() {
+            return super.toString() + "%";
+        }
+
+        toString(radix) {
+            return super.toString(radix) + "%";
+        }
+
+        get str() {
+            return this.toString();
+        }
+
+        lerp(to, t) {
+            return new CSS_Percentage(this + (to - this) * t);
+        }
+
+        copy(other){
+            return new CSS_Percentage(other);
+        }
+
+        get type(){
+            return "%";
+        }
+    }
+
     class CSS_Length extends Number {
         static _parse_(l, rule, r) {
             let tx = l.tx,
@@ -7222,6 +7334,8 @@ var wick = (function (exports) {
 
                     //Deg
                     case "deg": return new DEGLength(v);
+
+                    case "%" : return new CSS_Percentage(v);
                 }
             }
 
@@ -7304,68 +7418,6 @@ var wick = (function (exports) {
     }
     class DEGLength extends CSS_Length {
         get unit(){return "deg";}
-    }
-
-    class CSS_Percentage extends Number {
-        
-        static _parse_(l, rule, r) {
-            let tx = l.tx,
-                pky = l.pk.ty;
-
-            if (l.ty == l.types.num || tx == "-" && pky == l.types.num) {
-                let mult = 1;
-
-                if (l.ch == "-") {
-                    mult = -1;
-                    tx = l.p.tx;
-                    l.p.n();
-                }
-
-                if (l.p.ch == "%") {
-                    l.sync().n();
-                    return new CSS_Percentage(parseFloat(tx) * mult);
-                }
-            }
-            return null;
-        }
-
-        constructor(v) {
-
-            if (typeof(v) == "string") {
-                let lex = new Lexer(v);
-                let val = CSS_Percentage._parse_(lex);
-                if (val) 
-                    return val;
-            }
-            
-            super(v);
-        }
-
-        static _verify_(l) {
-            if(typeof(l) == "string" &&  !isNaN(parseInt(l)) && l.includes("%"))
-                return true;
-            return false;
-        }
-
-        toJSON() {
-            return super.toString() + "%";
-        }
-
-        toString(radix) {
-            return super.toString(radix) + "%";
-        }
-
-        get str() {
-            return this.toString();
-        }
-
-        lerp(to, t) {
-            return new CSS_Percentage(this + (to - this) * t);
-        }
-
-        copy(other){
-            return new CSS_Percentage(other);
-        }
     }
 
     class CSS_URL extends WURL {
@@ -7566,13 +7618,13 @@ var wick = (function (exports) {
     }
 
     const $medh = (prefix) => ({
-        _parse_: (l, r, a, n = 0) => (n = CSS_Length._parse_(l, r, a), (prefix > 0) ? ((prefix > 1) ? () => WIN.screen.height <= n : () => WIN.screen.height >= n) : () => WIN.screen.height == n)
+        _parse_: (l, r, a, n = 0) => (n = CSS_Length._parse_(l, r, a), (prefix > 0) ? ((prefix > 1) ? (win) => win.screen.height <= n : (win) => win.screen.height >= n) : (win) => win.screen.height == n)
     });
 
 
     const $medw = (prefix) => ({
         _parse_: (l, r, a, n = 0) => 
-            (n = CSS_Length._parse_(l, r, a), (prefix > 0) ? ((prefix > 1) ? () => WIN.screen.width <= n : () => WIN.screen.width >= n) : () => WIN.screen.width == n)
+            (n = CSS_Length._parse_(l, r, a), (prefix > 0) ? ((prefix > 1) ? (win) => win.innerWidth >= n : (win) => win.innerWidth <= n) : (win) => win.screen.width == n)
     });
 
     function CSS_Media_handle(type, prefix) {
@@ -7587,7 +7639,7 @@ var wick = (function (exports) {
             _parse_: function(a, b, c) {
                 debugger;
             }
-        }
+        };
     }
 
     /**
@@ -7654,13 +7706,18 @@ var wick = (function (exports) {
         background_size: `<bg_size>#`,
         background: `<bg_layer>#,<final_bg_layer>`,
 
-        /* Font */
+        /* Font https://www.w3.org/TR/css-fonts-4*/
         font_family: `[[<family_name>|<generic_family>],]*[<family_name>|<generic_family>]`,
         family_name: `<id>||<string>`,
         generic_name: `serif|sans_serif|cursive|fantasy|monospace`,
         font: `[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>`,
         font_variant: `normal|small_caps`,
-        font_style: ``,
+        font_style: `normal | italic | oblique <angle>?`,
+        font_kerning: ` auto | normal | none`,
+        font_variant_ligatures:`normal|none|[<common-lig-values>||<discretionary-lig-values>||<historical-lig-values>||<contextual-alt-values> ]`,
+        font_variant_position:`normal|sub|super`,
+        font_variant_caps:`normal|small-caps|all-small-caps|petite-caps|all-petite-caps|unicase|titling-caps`,
+
 
         /*CSS Clipping https://www.w3.org/TR/css-masking-1/#clipping `normal|italic|oblique`, */
         font_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
@@ -7855,7 +7912,13 @@ var wick = (function (exports) {
         shape_box: `<box>|margin-box`,
         geometry_box: `<shape_box>|fill-box|stroke-box|view-box`,
         basic_shape: `<CSS_Shape>`,
-        ratio: `<integer>/<integer>`
+        ratio: `<integer>/<integer>`,
+
+        /* https://www.w3.org/TR/css-fonts-3/*/
+        common_lig_values        : `[ common-ligatures | no-common-ligatures ]`,
+        discretionary_lig_values : `[ discretionary-ligatures | no-discretionary-ligatures ]`,
+        historical_lig_values    : `[ historical-ligatures | no-historical-ligatures ]`,
+        contextual_alt_values    : `[ contextual | no-contextual ]`,
     };
 
     const media_feature_definitions = {
@@ -8459,10 +8522,20 @@ var wick = (function (exports) {
     }
 
     /**
+     * Checks to make sure token is an Identifier.
+     * @param      {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}.
+     * @alias module:wick~internals.css.elementIsIdentifier
+     */
+    function _eID_(lexer) {
+        if (lexer.ty != lexer.types.id) lexer.throw(_err_);
+    }
+
+    /**
      * The empty CSSRule instance
      * @alias module:wick~internals.css.empty_rule
      */
     const er = OB.freeze(new CSSRule());
+
     class _selectorPart_ {
         constructor() {
             this.e = "";
@@ -8477,19 +8550,10 @@ var wick = (function (exports) {
             this.c = "";
         }
     }
-    /**
-     * Container for all rules found in a CSS string or strings.
-     *
-     * @memberof module:wick~internals.css
-     * @alias CSSRootNode
-     */
-    class CSSRootNode {
-        constructor(_med_ = []) {
-            this.promise = null;
-            /**
-             * Media query selector
-             */
-            this._med_ = _med_;
+
+    class CSSRuleBody {
+        constructor() {
+            this.media_selector = null;
             /**
              * All selectors indexed by their value
              */
@@ -8498,95 +8562,132 @@ var wick = (function (exports) {
              * All selectors in order of appearance
              */
             this._sel_a_ = [];
-            /**
-             * rules falling under different media, these are stored as addition CSSRootNodes
-             */
-            this._media_ = [];
-            /**
-             * The next set of CSS rules to lookup.
-             */
-            this._next_ = null;
-            this.resolves = [];
-            this.res = null;
-            this.observers = [];
-            this.pending_build = 0;
         }
-        _resolveReady_(res, rej) {
-            if (this.pending_build > 0) this.resolves.push(res);
-            res(this);
+
+        _applyProperties_(lexer, rule) {
+            while (!lexer.END && lexer.tx !== "}") this.parseProperty(lexer, rule, property_definitions);
+            lexer.n();
         }
-        _setREADY_() {
-            if (this.pending_build < 1) {
-                for (let i = 0, l = this.resolves; i < l; i++) this.resolves[i](this);
-                this.resolves.length = 0;
-                this.res = null;
-            }
+
+        /**
+         * Gets the last rule matching the selector
+         * @param      {string}  string  The string
+         * @return     {CSSRule}  The combined set of rules that match the selector.
+         */
+        getRule(string, r) {
+            let selector = this._selectors_[string];
+            if (selector) return selector.r;
+            return r;
         }
-        _READY_() {
-                if (!this.res) this.res = this._resolveReady_.bind(this);
-                return new Promise(this.res);
-            }
-            /**
-             * Creates a new instance of the object with same properties as the original.
-             * @return     {CSSRootNode}  Copy of this object.
-             * @public
-             */
-        clone() {
-                let rn = new this.constructor();
-                rn._selectors_ = this._selectors_;
-                rn._sel_a_ = this._sel_a_;
-                rn._media_ = this._media_;
-                return rn;
-            }
-            /**
-             * Gets the media.
-             * @return     {Object}  The media.
-             * @public
-             */
-        getMedia() {
-                let start = this;
-                this._media_.forEach((m) => {
-                    if (m._med_) {
-                        let accept = true;
-                        for (let i = 0, l = m._med_.length; i < l; i++) {
-                            let ms = m._med_[i];
-                            if (ms.props) {
-                                for (let n in ms.props) {
-                                    if (!ms.props[n]()) accept = false;
-                                }
+
+
+        /**
+         * Hook method for hijacking the property parsing function. Return true if default property parsing should not take place
+         * @param      {Lexer}   value_lexer    The value lexer
+         * @param      {<type>}   property_name  The property name
+         * @param      {<type>}   rule           The rule
+         * @return     {boolean}  The property hook.
+         */
+        _getPropertyHook_(value_lexer, property_name, rule) {
+            return false;
+        }
+
+        /**
+         * Used to match selectors to elements
+         * @param      {ele}   ele       The ele
+         * @param      {string}   criteria  The criteria
+         * @return     {boolean}  { description_of_the_return_value }
+         * @private
+         */
+        matchCriteria(ele, criteria) {
+            if (criteria.e && ele.tagName !== criteria.e.toUpperCase()) return false;
+            outer: for (let i = 0, l = criteria.ss.length; i < l; i++) {
+                let ss = criteria.ss[i];
+                switch (ss.t) {
+                    case "attribute":
+                        let lex = new Lexer(ss.v);
+                        if (lex.ch == "[" && lex.pk.ty == lex.types.id) {
+                            let id = lex.sync().tx;
+                            let attrib = ele.getAttribute(id);
+                            if (!attrib) return;
+                            if (lex.n().ch == "=") {
+                                let value = lex.n().tx;
+                                if (attrib !== value) return false;
                             }
-                            //if(not)
-                            //    accept = !accept;
-                            if (accept)
-                                (m._next_ = start, start = m);
+                        }
+                        break;
+                    case "pseudo":
+                        debugger;
+                        break;
+                    case "class":
+                        let class_list = ele.classList;
+                        for (let j = 0, jl = class_list.length; j < jl; j++) {
+                            if (class_list[j] == ss.v) continue outer;
+                        }
+                        return false;
+                    case "id":
+                        if (ele.id !== ss.v) return false;
+                }
+            }
+            return true;
+        }
+
+        * getApplicableSelectors(element) {
+            for (let j = 0, jl = this._sel_a_.length; j < jl; j++) {
+                let ancestor = element;
+                let selector = this._sel_a_[j];
+                let sn = selector.a;
+                let criteria = null;
+                outer: for (let x = 0; x < sn.length; x++) {
+
+                    let sa = sn[x];
+
+                    inner: for (let i = 0, l = sa.length; i < l; i++) {
+                        criteria = sa[i];
+                        switch (criteria.c) {
+                            case "child":
+                                if (!(ancestor = ancestor.parentElement) || !this.matchCriteria(ancestor, criteria)) continue outer;
+                                break;
+                            case "preceded":
+                                while ((ancestor = ancestor.previousElementSibling))
+                                    if (this.matchCriteria(ancestor, criteria)) continue inner;
+                                continue outer;
+                            case "immediately preceded":
+                                if (!(ancestor = ancestor.previousElementSibling) || !this.matchCriteria(ancestor, criteria)) continue outer;
+                                break;
+                            case "descendant":
+                                while ((ancestor = ancestor.parentElement))
+                                    if (this.matchCriteria(ancestor, criteria)) continue inner;
+                                continue outer;
+                            default:
+                                if (!this.matchCriteria(ancestor, criteria)) continue outer;
                         }
                     }
-                });
-                return start;
+                    yield selector;
+                }
             }
-            /**
-             * Hook method for hijacking the property parsing function. Return true if default property parsing should not take place
-             * @param      {Lexer}   value_lexer    The value lexer
-             * @param      {<type>}   property_name  The property name
-             * @param      {<type>}   rule           The rule
-             * @return     {boolean}  The property hook.
-             */
-        _getPropertyHook_(value_lexer, property_name, rule) {
-                return false;
-            }
-            /**
-             * Parses properties
-             * @param      {Lexer}  lexer        The lexer
-             * @param      {<type>}  rule         The rule
-             * @param      {<type>}  definitions  The definitions
-             */
+        }
+
+        /**
+         * Parses properties
+         * @param      {Lexer}  lexer        The lexer
+         * @param      {<type>}  rule         The rule
+         * @param      {<type>}  definitions  The definitions
+         */
         parseProperty(lexer, rule, definitions) {
             const name = lexer.tx.replace(/\-/g, "_");
+
+            //Catch any comments
+            if (lexer.ch == "/") {
+                lexer.comment(true);
+                return this.parseProperty(lexer, rule, definitions);
+            }
+
             lexer.n().a(":");
             //allow for short circuit < | > | =
             const p = lexer.pk;
             while ((p.ch !== "}" && p.ch !== ";") && !p.END) {
-                //look for 
+                //look for end of property;
                 p.n();
             }
             const out_lex = lexer.copy();
@@ -8602,237 +8703,13 @@ var wick = (function (exports) {
                         if (!rule.props) rule.props = {};
                         parser._parse_(out_lex, rule.props);
                     } else
-                    //Need to know what properties have not been defined
+                        //Need to know what properties have not been defined
                         console.warn(`Unable to get parser for css property ${name}`);
                 } catch (e) {
                     console.log(e);
                 }
             }
             if (lexer.ch == ";") lexer.n();
-        }
-        _applyProperties_(lexer, rule) {
-                while (!lexer.END && lexer.tx !== "}") this.parseProperty(lexer, rule, property_definitions);
-                lexer.n();
-            }
-            /**
-             * Used to match selectors to elements
-             * @param      {ele}   ele       The ele
-             * @param      {string}   criteria  The criteria
-             * @return     {boolean}  { description_of_the_return_value }
-             * @private
-             */
-        _matchCriteria_(ele, criteria) {
-                if (criteria.e && ele.tagName !== criteria.e.toUpperCase()) return false;
-                outer: for (let i = 0, l = criteria.ss.length; i < l; i++) {
-                    let ss = criteria.ss[i];
-                    switch (ss.t) {
-                        case "attribute":
-                            let lex = new Lexer(ss.v);
-                            if (lex.ch == "[" && lex.pk.ty == lex.types.id) {
-                                let id = lex.sync().tx;
-                                let attrib = ele.getAttribute(id);
-                                if (!attrib) return;
-                                if (lex.n().ch == "=") {
-                                    let value = lex.n().tx;
-                                    if (attrib !== value) return false;
-                                }
-                            }
-                            break;
-                        case "pseudo":
-                            debugger;
-                            break;
-                        case "class":
-                            let class_list = ele.classList;
-                            for (let j = 0, jl = class_list.length; j < jl; j++) {
-                                if (class_list[j] == ss.v) continue outer;
-                            }
-                            return false;
-                        case "id":
-                            if (ele.id !== ss.v) return false;
-                    }
-                }
-                return true;
-            } * getApplicableSelectors(element) {
-                for (let j = 0, jl = this._sel_a_.length; j < jl; j++) {
-                    let ancestor = element;
-                    let selector = this._sel_a_[j];
-                    let sn = selector.a;
-                    let criteria = null;
-                    outer: for (let x = 0; x < sn.length; x++) {
-
-                        let sa = sn[x];
-
-                        inner: for (let i = 0, l = sa.length; i < l; i++) {
-                            criteria = sa[i];
-                            switch (criteria.c) {
-                                case "child":
-                                    if (!(ancestor = ancestor.parentElement) || !this._matchCriteria_(ancestor, criteria)) continue outer;
-                                    break;
-                                case "preceded":
-                                    while ((ancestor = ancestor.previousElementSibling))
-                                        if (this._matchCriteria_(ancestor, criteria)) continue inner;
-                                    continue outer;
-                                case "immediately preceded":
-                                    if (!(ancestor = ancestor.previousElementSibling) || !this._matchCriteria_(ancestor, criteria)) continue outer;
-                                    break;
-                                case "descendant":
-                                    while ((ancestor = ancestor.parentElement))
-                                        if (this._matchCriteria_(ancestor, criteria)) continue inner;
-                                    continue outer;
-                                default:
-                                    if (!this._matchCriteria_(ancestor, criteria)) continue outer;
-                            }
-                        }
-                        yield selector;
-                    }
-                }
-            }
-            /**
-             * Retrieves the set of rules from all matching selectors for an element.
-             * @param      {HTMLElement}  element - An element to retrieve CSS rules.
-             * @public
-             */
-        getApplicableRules(element, rule = new CSSRule()) {
-                let gen = this.getApplicableSelectors(element),
-                    sel = null;
-                while (sel = gen.next().value) rule.merge(sel.r);
-                return (this._next_) ? this._next_.getApplicableRules(element, rule) : rule;
-            }
-            /**
-             * Gets the rule matching the selector
-             * @param      {string}  string  The string
-             * @return     {CSSRule}  The combined set of rules that match the selector.
-             */
-        getRule(string) {
-                let selector = this._selectors_[string];
-                if (selector) return selector.r;
-                return er;
-            }
-            /**
-             * Parses CSS string
-             * @param      {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}
-             * @param      {(Array|CSSRootNode|Object|_mediaSelectorPart_)}  root    The root
-             * @return     {Promise}  A promise which will resolve to a CSSRootNode
-             * @private
-             */
-        _parse_(lexer, root, res = null, rej = null) {
-            return new Promise((res, rej) => {
-                if (!root && root !== null) {
-                    root = this;
-                    this.pending_build++;
-                }
-                let selectors = [],
-                    l = 0;
-                while (!lexer.END) {
-                    switch (lexer.ch) {
-                        case "@":
-                            lexer.n();
-                            switch (lexer.tx) {
-                                case "media": //Ignored at this iteration /* https://drafts.csswg.org/mediaqueries/ */
-                                    //create media query selectors
-                                    let _med_ = [],
-                                        sel = null,
-                                        media_root = null;
-                                    while (!lexer.END && lexer.n().ch !== "{") {
-                                        if (!sel) sel = new _mediaSelectorPart_();
-                                        if (lexer.ch == ",") _med_.push(sel), sel = null;
-                                        else if (lexer.ch == "(") {
-                                            let start = lexer.n().off;
-                                            while (!lexer.END && lexer.ch !== ")") lexer.n();
-                                            let out_lex = lexer.copy();
-                                            out_lex.off = start;
-                                            out_lex.tl = 0;
-                                            out_lex.n().fence(lexer);
-                                            this.parseProperty(out_lex, sel, media_feature_definitions);
-                                            if (lexer.pk.tx.toLowerCase() == "and") lexer.sync();
-                                        } else {
-                                            let id = lexer.tx.toLowerCase(),
-                                                condition = "";
-                                            if (id === "only" || id === "not")
-                                                (condition = id, id = lexer.n().tx);
-                                            sel.c = condition;
-                                            sel.id = id;
-                                            if (lexer.pk.tx.toLowerCase() == "and") lexer.sync();
-                                        }
-                                    }
-                                    //debugger
-                                    lexer.a("{");
-                                    if (sel) _med_.push(sel);
-                                    if (_med_.length == 0) this._parse_(lexer, null); // discard results
-                                    else {
-                                        this._parse_(lexer, (media_root = new this.constructor(_med_)));
-                                        this._media_.push(media_root);
-                                    }
-                                    continue;
-                                case "import":
-                                    /* https://drafts.csswg.org/css-cascade/#at-ruledef-import */
-                                    let type;
-                                    if (type = types$1.url._parse_(lexer.n())) {
-                                        lexer.a(";");
-                                        /**
-                                         * The {@link CSS_URL} incorporates a fetch mechanism that returns a Promise instance.
-                                         * We use that promise to hook into the existing promise returned by CSSRoot#_parse_,
-                                         * executing a new _parse_ sequence on the fetched string data using the existing CSSRoot instance,
-                                         * and then resume the current _parse_ sequence.
-                                         * @todo Conform to CSS spec and only _parse_ if @import is at the top of the CSS string.
-                                         */
-                                        return type.fetchText().then((str) =>
-                                            //Successfully fetched content, proceed to _parse_ in the current root.
-                                            //let import_lexer = ;
-                                            res(this._parse_(new Lexer(str, true), this).then((r) => this._parse_(lexer, r)))
-                                            //_Parse_ returns Promise. 
-                                            // return;
-                                        ).catch((e) => res(this._parse_(lexer)));
-                                    } else {
-                                        //Failed to fetch resource, attempt to find the end to of the import clause.
-                                        while (!lexer.END && lexer.n().tx !== ";") {}                                    lexer.n();
-                                    }
-                            }
-                            break;
-                        case "/":
-                            lexer.comment(true);
-                            break;
-                        case "}":
-                            lexer.n();
-                            return;
-                        case "{":
-                            let rule = new CSSRule(this);
-                            this._applyProperties_(lexer.n(), rule);
-                            for (let i = -1, sel = null; sel = selectors[++i];)
-                                if (sel.r) sel.r.merge(rule);
-                                else sel.r = rule;
-                            selectors.length = l = 0;
-                            continue;
-                    }
-                    if (root) {
-                        let selector = this.__parseSelector__(lexer, this);
-                        if (selector) {
-                            if (!root._selectors_[selector.id]) {
-                                l = selectors.push(selector);
-                                root._selectors_[selector.id] = selector;
-                                root._sel_a_.push(selector);
-                            } else l = selectors.push(root._selectors_[selector.id]);
-                        }
-                    }
-                }
-                res(this);
-                this._setREADY_();
-                return this;
-            });
-        }
-
-        createSelector(selector_value) {
-            let selector = this.__parseSelector__(new Lexer(selector_value));
-
-            if (selector)
-                if (!this._selectors_[selector.id]) {
-                    this._selectors_[selector.id] = selector;
-                    this._sel_a_.push(selector);
-                    selector.r = new CSSRule(this);
-                } else
-                    selector = this._selectors_[selector.id];
-
-            return selector;
         }
 
         /** 
@@ -8847,7 +8724,7 @@ var wick = (function (exports) {
         @protected
 
         */
-        __parseSelector__(lexer) {
+        parseSelector(lexer) {
             let selector_array = [],
                 selectors_array = [];
             let start = lexer.pos;
@@ -8942,6 +8819,155 @@ var wick = (function (exports) {
             selectors.push(lexer.s(start).trim().slice(0));
             return new CSSSelector(selectors, selectors_array, this);
         }
+
+        /**
+         * Parses CSS string
+         * @param      {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}
+         * @param      {(Array|CSSRuleBody|Object|_mediaSelectorPart_)}  root    The root
+         * @return     {Promise}  A promise which will resolve to a CSSRuleBody
+         * @private
+         */
+        _parse_(lexer, root, res = null, rej = null) {
+
+            if (root && !this.par) root.push(this);
+
+            return new Promise((res, rej) => {
+                let selectors = [],
+                    l = 0;
+                while (!lexer.END) {
+                    switch (lexer.ch) {
+                        case "@":
+                            lexer.n();
+                            switch (lexer.tx) {
+                                case "media": //Ignored at this iteration /* https://drafts.csswg.org/mediaqueries/ */
+                                    //create media query selectors
+                                    let _med_ = [],
+                                        sel = null;
+                                    while (!lexer.END && lexer.n().ch !== "{") {
+                                        if (!sel) sel = new _mediaSelectorPart_();
+                                        if (lexer.ch == ",") _med_.push(sel), sel = null;
+                                        else if (lexer.ch == "(") {
+                                            let start = lexer.n().off;
+                                            while (!lexer.END && lexer.ch !== ")") lexer.n();
+                                            let out_lex = lexer.copy();
+                                            out_lex.off = start;
+                                            out_lex.tl = 0;
+                                            out_lex.n().fence(lexer);
+                                            this.parseProperty(out_lex, sel, media_feature_definitions);
+                                            if (lexer.pk.tx.toLowerCase() == "and") lexer.sync();
+                                        } else {
+                                            let id = lexer.tx.toLowerCase(),
+                                                condition = "";
+                                            if (id === "only" || id === "not")
+                                                (condition = id, id = lexer.n().tx);
+                                            sel.c = condition;
+                                            sel.id = id;
+                                            if (lexer.pk.tx.toLowerCase() == "and") lexer.sync();
+                                        }
+                                    }
+                                    //debugger
+                                    lexer.a("{");
+                                    if (sel)
+                                        _med_.push(sel);
+
+                                    if (_med_.length == 0)
+                                        this._parse_(lexer, null); // discard results
+                                    else {
+                                        let media_root = new this.constructor();
+                                        media_root.media_selector = _med_;
+                                        return media_root._parse_(lexer, root).then(b => {
+                                            let body = new this.constructor();
+                                            return body._parse_(lexer, root);
+                                        });
+                                    }
+                                    continue;
+                                case "import":
+                                    /* https://drafts.csswg.org/css-cascade/#at-ruledef-import */
+                                    let type;
+                                    if (type = types$1.url._parse_(lexer.n())) {
+                                        lexer.a(";");
+                                        /**
+                                         * The {@link CSS_URL} incorporates a fetch mechanism that returns a Promise instance.
+                                         * We use that promise to hook into the existing promise returned by CSSRoot#_parse_,
+                                         * executing a new _parse_ sequence on the fetched string data using the existing CSSRoot instance,
+                                         * and then resume the current _parse_ sequence.
+                                         * @todo Conform to CSS spec and only _parse_ if @import is at the top of the CSS string.
+                                         */
+                                        return type.fetchText().then((str) =>
+                                            //Successfully fetched content, proceed to _parse_ in the current root.
+                                            //let import_lexer = ;
+                                            res(this._parse_(new Lexer(str, true), this).then((r) => this._parse_(lexer, r)))
+                                            //_Parse_ returns Promise. 
+                                            // return;
+                                        ).catch((e) => res(this._parse_(lexer)));
+                                    } else {
+                                        //Failed to fetch resource, attempt to find the end to of the import clause.
+                                        while (!lexer.END && lexer.n().tx !== ";") {}                                    lexer.n();
+                                    }
+                            }
+                            break;
+                        case "/":
+                            lexer.comment(true);
+                            break;
+                        case "}":
+                            lexer.n();
+                            return res(this);
+                        case "{":
+                            let rule = new CSSRule(this);
+                            this._applyProperties_(lexer.n(), rule);
+                            for (let i = -1, sel = null; sel = selectors[++i];)
+                                if (sel.r) sel.r.merge(rule);
+                                else sel.r = rule;
+                            selectors.length = l = 0;
+                            continue;
+                    }
+
+                    let selector = this.parseSelector(lexer, this);
+
+                    if (selector) {
+                        if (!this._selectors_[selector.id]) {
+                            l = selectors.push(selector);
+                            this._selectors_[selector.id] = selector;
+                            this._sel_a_.push(selector);
+                        } else l = selectors.push(this._selectors_[selector.id]);
+                    }
+                }
+
+                return res(this);
+            });
+        }
+
+        /**
+         * Gets the media.
+         * @return     {Object}  The media.
+         * @public
+         */
+        getMedia(win = window) {
+            let start = this;
+            this._media_.forEach((m) => {
+                if (m._med_) {
+                    let accept = true;
+                    for (let i = 0, l = m._med_.length; i < l; i++) {
+                        let ms = m._med_[i];
+                        if (ms.props) {
+                            for (let n in ms.props) {
+                                if (!ms.props[n](win)) accept = false;
+                            }
+                        }
+                        //if(not)
+                        //    accept = !accept;
+                        if (accept)
+                            (m._next_ = start, start = m);
+                    }
+                }
+            });
+            return start;
+        }
+
+        updated() {
+            this.par.updated();
+        }
+
         toString(off = 0) {
             let str = "";
             for (let i = 0; i < this._sel_a_.length; i++) {
@@ -8949,30 +8975,185 @@ var wick = (function (exports) {
             }
             return str;
         }
+
+        createSelector(selector_value) {
+            let selector = this.parseSelector(new Lexer(selector_value));
+
+            if (selector)
+                if (!this._selectors_[selector.id]) {
+                    this._selectors_[selector.id] = selector;
+                    this._sel_a_.push(selector);
+                    selector.r = new CSSRule(this);
+                } else
+                    selector = this._selectors_[selector.id];
+
+            return selector;
+        }
+
+        /**
+         * Retrieves the set of rules from all matching selectors for an element.
+         * @param      {HTMLElement}  element - An element to retrieve CSS rules.
+         * @public
+         */
+        getApplicableRules(element, rule = new CSSRule(), win = window) {
+
+            if (this.media_selector) {
+                for(let i = 0; i < this.media_selector.length; i++){
+                    let m = this.media_selector[i];
+                       let props = m.props;
+                    for (let a in props) {
+                        let prop = props[a];
+                        if (!prop(win))
+                            return;
+                    }
+                }        }
+
+            let gen = this.getApplicableSelectors(element),
+                sel = null;
+
+            while (sel = gen.next().value) rule.merge(sel.r);
+        }
+    }
+
+    /**
+     * CSSRuleBody implements all of LinkedList
+     * @extends LinkedList
+     * @memberof  module:wick~internals.html.CSSRuleBody
+     * @private
+     */
+    Object.assign(CSSRuleBody.prototype, LinkedList.props.defaults, LinkedList.props.children, LinkedList.props.parent, LinkedList.methods.defaults, LinkedList.methods.parent_child);
+    LinkedList.setGettersAndSetters(CSSRuleBody.prototype);
+
+    /**
+     * Container for all rules found in a CSS string or strings.
+     *
+     * @memberof module:wick~internals.css
+     * @alias CSSRootNode
+     */
+    class CSSRootNode {
+        constructor() {
+            this.promise = null;
+            /**
+             * Media query selector
+             */
+            this.pending_build = 0;
+            this.resolves = [];
+            this.res = null;
+            this.observers = [];
+            
+            this.addC(new CSSRuleBody());
+        }
+
+        _resolveReady_(res, rej) {
+            if (this.pending_build > 0) this.resolves.push(res);
+            res(this);
+        }
+
+        _setREADY_() {
+            if (this.pending_build < 1) {
+                for (let i = 0, l = this.resolves; i < l; i++) this.resolves[i](this);
+                this.resolves.length = 0;
+                this.res = null;
+            }
+        }
+
+        _READY_() {
+            if (!this.res) this.res = this._resolveReady_.bind(this);
+            return new Promise(this.res);
+        }
+        /**
+         * Creates a new instance of the object with same properties as the original.
+         * @return     {CSSRootNode}  Copy of this object.
+         * @public
+         */
+        clone() {
+            let rn = new this.constructor();
+            rn._selectors_ = this._selectors_;
+            rn._sel_a_ = this._sel_a_;
+            rn._media_ = this._media_;
+            return rn;
+        }
+
+        * getApplicableSelectors(element, win = window) {
+
+            for (let node = this.fch; node; node = this.getN(node)) {
+
+                let gen = node.getApplicableSelectors(element, win);
+                let v = null;
+                while (v = gen.next().value)
+                    yield v;
+            }
+        }
+
+        /**
+         * Retrieves the set of rules from all matching selectors for an element.
+         * @param      {HTMLElement}  element - An element to retrieve CSS rules.
+         * @public
+         */
+        getApplicableRules(element, rule = new CSSRule(), win = window) {
+            for (let node = this.fch; node; node = this.getN(node))
+                node.getApplicableRules(element, rule, win);
+            return rule;
+        }
+
+        /**
+         * Gets the last rule matching the selector
+         * @param      {string}  string  The string
+         * @return     {CSSRule}  The combined set of rules that match the selector.
+         */
+        getRule(string) {
+            let r = null;
+            for (let node = this.fch; node; node = this.getN(node))
+                r = node.getRule(string, r);
+            return r;
+        }
+
+        toString(off = 0) {
+            let str = "";
+            for (let node = this.fch; node; node = this.getN(node))
+                str += node.toString(off);
+            return str;
+        }
+
         addObserver(observer) {
             this.observers.push(observer);
         }
+
         removeObserver(observer) {
             for (let i = 0; i < this.observers.length; i++)
                 if (this.observers[i] == observer) return this.observers.splice(i, 1);
         }
+
         updated() {
             if (this.observers.length > 0)
                 for (let i = 0; i < this.observers.length; i++) this.observers[i].updatedCSS(this);
         }
+
+        _parse_(lex, root) {
+            if (lex.sl > 0) {
+
+                if (!root && root !== null) {
+                    root = this;
+                    this.pending_build++;
+                }
+
+                return this.fch._parse_(lex, this).then(e => {
+                    this._setREADY_();
+                    return this;
+                });
+            }
+        }
     }
-    /*
-     * Expecting ID error check.
-     */
-    const _err_ = "Expecting Identifier";
+
     /**
-     * Checks to make sure token is an Identifier.
-     * @param      {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}.
-     * @alias module:wick~internals.css.elementIsIdentifier
+     * CSSRootNode implements all of LinkedList
+     * @extends LinkedList
+     * @memberof  module:wick~internals.html.CSSRootNode
+     * @private
      */
-    function _eID_(lexer) {
-        if (lexer.ty != lexer.types.id) lexer.throw(_err_);
-    }
+    Object.assign(CSSRootNode.prototype, LinkedList.props.defaults, LinkedList.props.children, LinkedList.props.parent, LinkedList.methods.defaults, LinkedList.methods.parent_child);
+    LinkedList.setGettersAndSetters(CSSRootNode.prototype);
+
     /**
      * Builds a CSS object graph that stores `selectors` and `rules` pulled from a CSS string. 
      * @function
@@ -9524,16 +9705,16 @@ var wick = (function (exports) {
                 if (binding._func_) {
                     func = binding._func_;
                 } else {
-                    func = Function(binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val);
+                    func = Function(binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val).bind(source);
                     binding._func_ = func;
                 }
             } catch (e) {
-                console.log(binding.val);
                 errors.push(e);
                 func = () => {};
             }
 
             super(tap);
+
             this.function = binding.val;
             this._func_ = func;
             this._source_ = source;
@@ -9782,7 +9963,7 @@ var wick = (function (exports) {
     const barrier_b_start = "|";
     const barrier_b_end = "|";
 
-    const BannedIdentifiers = { "true": true, "false": 1, "class": 1, "function": 1,  "return": 1, "for" : 1, "new" : 1, "let" : 1, "var" : 1, "const" : 1, "Date": 1, "null": 1};
+    const BannedIdentifiers = { "true": true, "false": 1, "class": 1, "function": 1,  "return": 1, "for" : 1, "new" : 1, "let" : 1, "var" : 1, "const" : 1, "Date": 1, "null": 1, "parseFloat":1, "parseInt":1};
 
     function setIdentifier(id, store, cache) {
         if (!cache[id] && !BannedIdentifiers[id]) {
@@ -10236,7 +10417,7 @@ var wick = (function (exports) {
 
         _setCSS_() {}
 
-        _linkCSS_(css) {
+        _linkCSS_(css, win = window) {
 
             if (this.css)
                 css = this.css;
@@ -10247,7 +10428,7 @@ var wick = (function (exports) {
 
                 
                 for (let i = 0; i < css.length; i++)
-                    rule = css[i].getApplicableRules(this, rule);
+                    rule = css[i].getApplicableRules(this, rule, win);
 
 
                 //parse rules and createBindings.
@@ -10283,7 +10464,7 @@ var wick = (function (exports) {
             }
 
             for (let node = this.fch; node; node = this.getN(node))
-                node._linkCSS_(css);
+                node._linkCSS_(css, win);
         }
 
         _setPendingCSS_(css) {
@@ -12636,7 +12817,7 @@ var wick = (function (exports) {
         }
     }
 
-    function complete(lex, SourcePackage, presets, ast, url) {
+    function complete(lex, SourcePackage, presets, ast, url, win) {
         /*
          * Only accept certain nodes for mounting to the DOM. 
          * The custom element `import` is simply used to import extra HTML data from network for use with template system. It should not exist otherwise.
@@ -12650,7 +12831,7 @@ var wick = (function (exports) {
 
         while (!lex.END && lex.ch != "<") { lex.n(); }
         if (!lex.END)
-            return parseText(lex, SourcePackage, presets, url);
+            return parseText(lex, SourcePackage, presets, url, win);
 
         SourcePackage._complete_();
 
@@ -12658,18 +12839,18 @@ var wick = (function (exports) {
     }
 
 
-    function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url) {
+    function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win) {
         return css_list[index]._READY_().then(() => {
             
-            if(++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url);
+            if(++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
 
-            ast._linkCSS_();
+            ast._linkCSS_(null, win);
 
-            return complete(lex, SourcePackage, presets, ast, url);
+            return complete(lex, SourcePackage, presets, ast, url, win);
         });
     }
 
-    function parseText(lex, SourcePackage, presets, url) {
+    function parseText(lex, SourcePackage, presets, url, win) {
         let start = lex.off;
 
         while (!lex.END && lex.ch != "<") { lex.n(); }
@@ -12685,9 +12866,9 @@ var wick = (function (exports) {
 
             return node._parse_(lex, false, false, null, url).then((ast) => {
                 if (ast.css && ast.css.length > 0) 
-                    return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url);
+                    return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url, win);
                 
-                return complete(lex, SourcePackage, presets, ast, url);
+                return complete(lex, SourcePackage, presets, ast, url, win);
             }).catch((e) => {
                 SourcePackage._addError_(e);
                 SourcePackage._complete_();
@@ -12708,7 +12889,7 @@ var wick = (function (exports) {
      * @memberof module:wick~internals.templateCompiler
      * @alias CompileSource
      */
-    function CompileSource(SourcePackage, presets, element, url) {
+    function CompileSource(SourcePackage, presets, element, url, win = window) {
         let lex;
         if (element instanceof Lexer) {
             lex = element;
@@ -12726,7 +12907,7 @@ var wick = (function (exports) {
             SourcePackage._addError_(e);
             SourcePackage._complete_();
         }
-        return parseText(lex, SourcePackage, presets, url);
+        return parseText(lex, SourcePackage, presets, url, win);
     }
 
     /**
@@ -12746,7 +12927,7 @@ var wick = (function (exports) {
      */
     class SourcePackage {
 
-        constructor(element, presets, RETURN_PROMISE = false, url) {
+        constructor(element, presets, RETURN_PROMISE = false, url = "", win = window) {
 
             //If a package exists for the element already, it will be bound to __wick__package__. That will be returned.
             if (element.__wick__package__) {
@@ -12782,7 +12963,7 @@ var wick = (function (exports) {
             this._HAVE_ERRORS_ = false;
 
             if (element instanceof Promise) {
-                element.then((data) => CompileSource(this, presets, data, url));
+                element.then((data) => CompileSource(this, presets, data, url, win));
                 if (RETURN_PROMISE) return element;
                 return this;
             } else if (element instanceof RootNode) {
@@ -12800,7 +12981,7 @@ var wick = (function (exports) {
             }
 
             //Start the compiling of the component.
-            let promise = CompileSource(this, presets, element, url);
+            let promise = CompileSource(this, presets, element, url, win);
 
             OB.seal(this);
 
@@ -13361,7 +13542,7 @@ var wick = (function (exports) {
      * If two pages share the same element name, then the will remain mounted on the page as it transitions to the next. 
      * Elements are used to determine how one page transitions into another. 
      */
-    class Element$1 {
+    class Element {
         /**
          * Constructs an Element.
          *
@@ -13890,7 +14071,7 @@ var wick = (function (exports) {
 
                     if (page.type !== "modal") {
 
-                        element = new Element$1(ele);
+                        element = new Element(ele);
 
                     } else {
 
@@ -13900,7 +14081,7 @@ var wick = (function (exports) {
 
                         new_ele.classList.add("ele_wrap");
 
-                        element = new Element$1(ele);
+                        element = new Element(ele);
                     }
 
                     page.eles.push(element);
@@ -13985,6 +14166,7 @@ var wick = (function (exports) {
     };
 
     core.source.compiler = CompileSource;
+    core.lexer.constr = Lexer;
     CompileSource.nodes = {
         root: RootNode,
         style: StyleNode$1,
