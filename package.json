@@ -1,13 +1,13 @@
 {
   "name": "@galactrax/wick",
-  "version": "0.4.4a",
+  "version": "0.4.7a",
   "description": "PWA Framework",
   "main": "./build/wick-cjs.js",
   "watch": {
     "jsdocs": "source/**/*.js"
   },
   "scripts": {
-    "prepare ": "npm build",
+    "prepare": "npm run build",
     "test": "nyc mocha",
     "test.watch": "mocha -w --check-leaks -R min",
     "build-css": "rollup --config ./build/config/css.config.js",

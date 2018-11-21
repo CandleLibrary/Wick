@@ -51,3 +51,12 @@ export { model };
 export { core };
 export { internals };
 export { startRouting };
+export default {
+    anim,
+    source,
+    scheme,
+    model,
+    core,
+    internals,
+    startRouting
+};
