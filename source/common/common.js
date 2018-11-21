@@ -1,6 +1,4 @@
-import {Lexer} from "./string_parsing/lexer";
-
-
+import * as Lexer from "whind";
 
 //Math
 import {QBezier} from "./math/quadratic_bezier";

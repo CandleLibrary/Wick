@@ -1,7 +1,5 @@
 import { NumberSchemeConstructor } from "./number.js";
 
-import { Lexer } from "../../common/common";
-
 let scape_date = new Date();
 scape_date.setHours(0);
 scape_date.setMilliseconds(0);
@@ -25,7 +23,7 @@ class DateSchemeConstructor extends NumberSchemeConstructor {
 
         if(date) return date;
 
-        let lex = new Lexer(value);
+        let lex = whind(value);
 
         let year = parseInt(lex.text);
 

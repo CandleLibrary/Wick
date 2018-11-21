@@ -100,7 +100,6 @@ describe("Wick test suite.", function() {
     });
 
     it("tests", function() {
-        require("./suite/lexer_tests.js")(config);
         require("./suite/wurl_tests.js")(config);
         require("./suite/css_tests.js")(config);
         require("./suite/html_tests.js")(config);

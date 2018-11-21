@@ -1,4 +1,4 @@
-import { Lexer } from "../../string_parsing/lexer";
+import whind from "whind";
 import { Color } from "../../design/color";
 
 /*
@@ -49,8 +49,8 @@ export class CSS_Color extends Color {
 
         let c;
 
-        if (!(l instanceof Lexer))
-            l = new Lexer(l);
+        if (!(l instanceof whind.constructor))
+            l = whind(l);
 
         let out = null;
 

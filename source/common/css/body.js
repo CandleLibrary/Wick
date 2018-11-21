@@ -7,9 +7,7 @@ import {
 import {
     OB
 } from "../short_names";
-import {
-    Lexer
-} from "../string_parsing/lexer";
+import whind from "whind";
 import {
     CSSRule as R,
     CSSSelector as S
@@ -106,7 +104,7 @@ export class CSSRuleBody {
             let ss = criteria.ss[i];
             switch (ss.t) {
                 case "attribute":
-                    let lex = new Lexer(ss.v);
+                    let lex = whind(ss.v);
                     if (lex.ch == "[" && lex.pk.ty == lex.types.id) {
                         let id = lex.sync().tx;
                         let attrib = ele.getAttribute(id);
@@ -400,7 +398,7 @@ export class CSSRuleBody {
                                     return type.fetchText().then((str) =>
                                         //Successfully fetched content, proceed to _parse_ in the current root.
                                         //let import_lexer = ;
-                                        res(this._parse_(new Lexer(str, true), this).then((r) => this._parse_(lexer, r)))
+                                        res(this._parse_(whind(str, true), this).then((r) => this._parse_(lexer, r)))
                                         //_Parse_ returns Promise. 
                                         // return;
                                     ).catch((e) => res(this._parse_(lexer)));
@@ -482,7 +480,7 @@ export class CSSRuleBody {
     }
 
     createSelector(selector_value) {
-        let selector = this.parseSelector(new Lexer(selector_value));
+        let selector = this.parseSelector(whind(selector_value));
 
         if (selector)
             if (!this._selectors_[selector.id]) {

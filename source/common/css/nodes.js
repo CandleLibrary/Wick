@@ -1,12 +1,6 @@
-import {
-    Lexer
-} from "../string_parsing/lexer";
+import whind from "whind";
 
-import {
-    property_definitions,
-    media_feature_definitions,
-    types
-} from "./properties/property_and_type_definitions";
+import { property_definitions } from "./properties/property_and_type_definitions";
 
 /**
  * Used to _bind_ a rule to a CSS selector.
@@ -17,7 +11,7 @@ import {
  */
 class CSSSelector {
 
-    constructor(selectors /* string */ , selectors_arrays /* array */) {
+    constructor(selectors /* string */ , selectors_arrays /* array */ ) {
 
         /**
          * The raw selector string value
@@ -40,7 +34,7 @@ class CSSSelector {
         this.r = null;
     }
 
-    get id(){
+    get id() {
         return this.v.join("");
     }
     /**
@@ -49,20 +43,20 @@ class CSSSelector {
      */
     toString(off = 0) {
         let offset = ("    ").repeat(off);
-        
+
         let str = `${offset}${this.v.join(", ")} {\n`;
 
-        if (this.r) 
-            str += this.r.toString(off+1);
-        
+        if (this.r)
+            str += this.r.toString(off + 1);
+
         return str + `${offset}}\n`;
     }
 
-    addProp(string){
+    addProp(string) {
         let root = this.r.root;
-        if(root){
-            let lex = new Lexer(string);
-            while(!lex.END)
+        if (root) {
+            let lex = whind(string);
+            while (!lex.END)
                 root.parseProperty(lex, this.r, property_definitions);
         }
     }
@@ -91,10 +85,11 @@ class CSSRule {
     }
 
     toString(off = 0) {
-        let str = [], offset = ("    ").repeat(off);
+        let str = [],
+            offset = ("    ").repeat(off);
 
         for (let a in this.props) {
-            if(this.props[a] !== null){  
+            if (this.props[a] !== null) {
                 if (Array.isArray(this.props[a]))
                     str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
                 else
@@ -102,12 +97,12 @@ class CSSRule {
             }
         }
 
-        return str.join("");//JSON.stringify(this.props).replace(/\"/g, "").replace(/\_/g, "-");
+        return str.join(""); //JSON.stringify(this.props).replace(/\"/g, "").replace(/\_/g, "-");
     }
 
     merge(rule) {
         if (rule.props) {
-            for (let n in rule.props) 
+            for (let n in rule.props)
                 this.props[n] = rule.props[n];
             this.LOADED = true;
         }

@@ -1,7 +1,3 @@
-import {
-    Lexer
-} from "../string_parsing/lexer";
-
 function getValue(lex, attribute) {
     let v = lex.tx,
         mult = 1;
@@ -39,7 +35,7 @@ function getValue(lex, attribute) {
 }
 
 function ParseString(string, transform) {
-    var lex = new Lexer(string);
+    var lex = whind(string);
     while (!lex.END) {
         let tx = lex.tx;
         lex.n();

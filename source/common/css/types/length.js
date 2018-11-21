@@ -1,7 +1,3 @@
-import {
-    Lexer
-} from "../../string_parsing/lexer";
-
 import {CSS_Percentage} from "./percentage";
 
 export class CSS_Length extends Number {
@@ -32,7 +28,7 @@ export class CSS_Length extends Number {
     constructor(v, u = "") {
         
         if (typeof(v) == "string") {
-            let lex = new Lexer(v);
+            let lex = whind(v);
             let val = CSS_Length._parse_(lex);
             if (val) return val;
         }

@@ -1,4 +1,4 @@
-import { Lexer } from "../../string_parsing/lexer";
+import whind from "whind";
 import { NR, AND, OR, ONE_OF } from "./productions";
 import { LiteralTerm, ValueTerm, SymbolTerm } from "./terms";
 import {  virtual_property_definitions } from "./property_and_type_definitions";
@@ -33,7 +33,7 @@ export function _getPropertyParser_(property_name, IS_VIRTUAL = { is: false }, d
 
 function _CreatePropertyParser_(notation, name, definitions) {
 
-    const l = new Lexer(notation);
+    const l = whind(notation);
 
     const important = { is: false };
 

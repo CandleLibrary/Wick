@@ -1,8 +1,4 @@
 import {
-    Lexer
-} from "../../string_parsing/lexer";
-
-import {
 	CSS_Color 
 } from "./color";
 

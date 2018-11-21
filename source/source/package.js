@@ -1,7 +1,7 @@
 import { EL, OB, _cloneNode_, _appendChild_ } from "../common/short_names";
 import { SourceManager } from "./manager";
 import { CompileSource } from "./compiler/compiler";
-import { Lexer } from "../common/string_parsing/lexer";
+import whind from "whind";
 import { Skeleton } from "./skeleton";
 import { RootNode } from "./compiler/nodes/root";
 
@@ -66,7 +66,7 @@ class SourcePackage {
             this._skeletons_.push(new Skeleton(element, presets));
             this._complete_();
             return;
-        } else if (!(element instanceof EL) && typeof(element) !== "string" && !(element instanceof Lexer)) {
+        } else if (!(element instanceof EL) && typeof(element) !== "string" && !(element instanceof whind.constructor)) {
             let err = new Error("Could not create package. element is not an HTMLElement");
             this._addError_(err);
             this._complete_();

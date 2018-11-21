@@ -1,4 +1,4 @@
-import { Lexer } from "../../string_parsing/lexer";
+import whind from "whind";
 
 /**
  * wick internals.
@@ -30,7 +30,7 @@ class NR { //Notation Rule
 
     _parse_(lx, rule, out_val) {
         if (typeof(lx) == "string")
-            lx = new Lexer(lx);
+            lx = whind(lx);
 
         let r = out_val || { v: null },
             start = isNaN(this.r[0]) ? 1 : this.r[0],

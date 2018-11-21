@@ -1,17 +1,13 @@
 {
   "name": "wick",
-  
   "version": "0.4.2a",
-
   "description": "PWA Framework",
-
   "main": "./build/wick.node.js",
-
   "watch": {
     "jsdocs": "source/**/*.js"
   },
-
   "scripts": {
+    "prepare ": "npm build",
     "test": "nyc mocha",
     "test.watch": "mocha -w --check-leaks -R min",
     "build-css": "rollup --config ./build/config/css.config.js",
@@ -24,16 +20,14 @@
     "build-dev.watch": "rollup --config ./build/config/browserdev.config.js --watch --environment  BUILD:dev",
     "build-node": "rollup --config ./build/config/node.config.js --environment  BUILD:dev",
     "build-node.watch": "rollup --config ./build/config/node.config.js --watch --environment  BUILD:dev",
+    "build": "rollup --config ./build/config/config.js",
     "jsdocs": "jsdoc ./source -r --configure ./build/config/jsdoc.json ",
-    "jsdocs.watch": "watch jsdoc ./source -r --configure ./build/config/jsdoc.json ",
-    "postinstall":"npm run build-node"
+    "jsdocs.watch": "watch jsdoc ./source -r --configure ./build/config/jsdoc.json "
   },
-
   "repository": {
     "type": "git",
     "url": "git+https://github.com/galactrax/wick.git"
   },
-
   "keywords": [
     "SPA",
     "PWA",
@@ -45,26 +39,19 @@
     "REST",
     "APP"
   ],
-
   "directories": {
     "lib": "source",
     "doc": "docs",
     "man": "docs/guide",
     "test": "test"
   },
-
   "author": "Anthony Weathersby",
-
   "license": "MIT",
-
   "bugs": {
     "url": "https://github.com/galactrax/wick/issues"
   },
-
-  "private": false,
-
+  "private": true,
   "homepage": "https://github.com/galactrax/wick#readme",
-
   "devDependencies": {
     "benchmark": "^2.1.4",
     "chai": "^4.1.2",
@@ -76,17 +63,18 @@
     "mocha-logger": "^1.0.6",
     "node-fetch": "^2.2.0",
     "nyc": "^12.0.2",
-    "rollup-plugin-gzip": "^1.4.0",
     "rollup": "^0.62.0",
-    "rollup-plugin-terser": "^1.0.1"
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-gzip": "^1.4.0",
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-resolve": "0.0.1-predev.1",
+    "rollup-plugin-terser": "^1.0.1",
+    "whind": "0.0.1"
   },
-
   "jshintConfig": {
     "esversion": 6,
     "unused": true
   },
-
   "optionalDependencies": {},
-  
   "dependencies": {}
 }

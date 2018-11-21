@@ -1,5 +1,5 @@
+import whind from "whind";
 import { EL } from "../../common/short_names";
-import { Lexer } from "../../common/string_parsing/lexer";
 import { CreateHTMLNode } from "./nodes/index";
 import { Skeleton } from "../skeleton";
 
@@ -79,17 +79,17 @@ export function parseText(lex, SourcePackage, presets, url, win) {
  */
 function CompileSource(SourcePackage, presets, element, url, win = window) {
     let lex;
-    if (element instanceof Lexer) {
+    if (element instanceof whind.constructor) {
         lex = element;
     } else if (typeof(element) == "string")
-        lex = new Lexer(element);
+        lex = whind(element);
     else if (element instanceof EL) {
         if (element.tagName == "TEMPLATE") {
             let temp = document.createElement("div");
             temp.appendChild(element.content);
             element = temp;
         }
-        lex = new Lexer(element.innerHTML);
+        lex = whind(element.innerHTML);
     } else {
         let e = new Error("Cannot compile component");
         SourcePackage._addError_(e);

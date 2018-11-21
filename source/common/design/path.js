@@ -1,6 +1,3 @@
-import {
-    Lexer
-} from "../string_parsing/lexer";
 /**
  * @brief Path Info
  * @details Path syntax information for reference
@@ -67,7 +64,7 @@ function parseNumberPairs(lex, array) {
  */
 export class Path extends Array {
     static FromString(string, array) {
-        let lex = new Lexer(string);
+        let lex = whind(string);
         while (!lex.END) {
             let relative = false,
                 x = 0,

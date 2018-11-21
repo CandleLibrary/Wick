@@ -14,9 +14,6 @@ import {
     Scheduler
 } from "../common/scheduler";
 import {
-    Lexer
-} from "../common/string_parsing/lexer";
-import {
     Path
 } from "../common/design/path";
 import {

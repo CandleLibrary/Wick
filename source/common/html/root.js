@@ -1,4 +1,4 @@
-import { Lexer as L } from "../string_parsing/lexer";
+import whind from "whind";
 import { WURL } from "../../network/wurl";
 import { LinkedList } from "../../common/extends/ll";
 
@@ -695,7 +695,7 @@ createHTMLNodeHook(tag, start) { return new HTMLNode(tag); }
 
         if (CAN_FETCH) {
             return this.url.fetchText().then((text) => {
-                let lexer = new L(text);
+                let lexer = whind(text);
                 return this._parseRunner_(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
             }).catch((e) => {
                 console.log(e);
@@ -798,6 +798,6 @@ LinkedList.setGettersAndSetters(HTMLNode.prototype);
  * @memberof module:wick.core
  * @alias html
  */
-const HTMLParser = (html_string, root = null, url) => (root = (!root || !(root instanceof HTMLNode)) ? new HTMLNode() : root, root._parse_(new L(html_string.replace(/\&lt;/g, "<").replace(/\&gt;/g, ">"), true, false, null, url)));
+const HTMLParser = (html_string, root = null, url) => (root = (!root || !(root instanceof HTMLNode)) ? new HTMLNode() : root, root._parse_(whind(html_string.replace(/\&lt;/g, "<").replace(/\&gt;/g, ">"), true, false, null, url)));
 
 export { HTMLNode, HTMLParser, TextNode };

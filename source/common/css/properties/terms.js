@@ -1,8 +1,8 @@
-import { Lexer } from "../../string_parsing/lexer"
+import whind from "whind";
 
-import { NR, AND, OR, ONE_OF } from "./productions"
+import { NR } from "./productions";
 
-import { property_definitions, virtual_property_definitions, types } from "./property_and_type_definitions"
+import { types } from "./property_and_type_definitions";
 
 class ValueTerm {
 
@@ -26,11 +26,11 @@ class ValueTerm {
 
     _parse_(l, rule, r) {
         if (typeof(l) == "string")
-            l = new Lexer(l);
+            l = whind(l);
 
         let rn = { v: null };
 
-        let v = this._value_._parse_(l, rule, rn)
+        let v = this._value_._parse_(l, rule, rn);
 
         if (rn.v) {
             if (r)
@@ -83,7 +83,7 @@ class LiteralTerm {
     _parse_(l, rule, r) {
 
         if (typeof(l) == "string")
-            l = new Lexer(l);
+            l = whind(l);
 
         let v = l.tx;
         if (v == this._value_) {
@@ -112,7 +112,7 @@ class LiteralTerm {
 class SymbolTerm extends LiteralTerm {
     _parse_(l, rule, r) {
         if (typeof(l) == "string")
-            l = new Lexer(l);
+            l = whind(l);
 
         if (l.tx == this._value_) {
             l.n();

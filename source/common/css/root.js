@@ -1,5 +1,4 @@
 import { LinkedList } from "../extends/ll";
-import { Lexer } from "../string_parsing/lexer";
 import { CSSRule as R, CSSSelector as S } from "./nodes";
 import { types } from "./properties/property_and_type_definitions";
 import { CSSRuleBody } from "./body";
@@ -152,5 +151,5 @@ const _err_ = "Expecting Identifier";
  * @memberof module:wick.core
  * @alias css
  */
-export const CSSParser = (css_string, root = null) => (root = (!root || !(root instanceof CSSRootNode)) ? new CSSRootNode() : root, root._parse_(new Lexer(css_string, true)));
+export const CSSParser = (css_string, root = null) => (root = (!root || !(root instanceof CSSRootNode)) ? new CSSRootNode() : root, root._parse_(whind(css_string, true)));
 CSSParser.types = types;

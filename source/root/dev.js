@@ -53,9 +53,6 @@ import { WURL } from "../network/wurl"
 
 import { Router } from "../network/router/router"
 
-//Other
-
-import { Lexer } from "../common/string_parsing/lexer"
 
 //import { LexerBetaString } from "../common/string_parsing/lexer_beta_string"
 //import { LexerBetaArray } from "../common/string_parsing/lexer_beta_array"
@@ -150,7 +147,7 @@ Object.freeze(model);
 const core = {
     presets: (...a) => new Presets(...a),
     common: Common,
-    lexer: (string, INCLUDE_WHITE_SPACE_TOKENS) => new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS),
+    lexer: (string, INCLUDE_WHITE_SPACE_TOKENS) => whind(string, INCLUDE_WHITE_SPACE_TOKENS),
     animation: Animation,
     view: View,
     css: CSSParser,

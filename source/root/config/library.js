@@ -43,7 +43,7 @@ import { WURL } from "../../network/wurl";
 import { Router } from "../../network/router";
 
 //Other
-import { Lexer } from "../../common/string_parsing/lexer";
+import whind from "whind";
 import { Animation } from "../../animation/animation";
 import { Transitioneer } from "../../animation/transitioneer";
 import * as Common from "../../common/common";
@@ -90,7 +90,7 @@ const core = {
     presets: a => new Presets(a),
     scheduler: Scheduler,
     common: Common,
-    lexer: (string, INCLUDE_WHITE_SPACE_TOKENS) => new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS),
+    lexer: whind,
     animation: Animation,
     view: View,
     css: CSSParser,
@@ -108,7 +108,7 @@ const core = {
 };
 
 core.source.compiler = Compiler;
-core.lexer.constr = Lexer;
+core.lexer.constr = whind.constructor;
 Compiler.nodes = {
     root: RootNode,
     style: StyleNode,
@@ -121,7 +121,7 @@ Compiler.nodes = {
 };
 
 let internals = { /* Empty if production */ };
-internals.lexer = Lexer;
+internals.lexer = whind.constructor;
 internals.scheduler = Scheduler;
 
 core.source.package = SourcePackage;
