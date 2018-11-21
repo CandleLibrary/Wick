@@ -1,8 +1,8 @@
 {
-  "name": "wick",
-  "version": "0.4.2a",
+  "name": "@galactrax/wick",
+  "version": "0.4.3a",
   "description": "PWA Framework",
-  "main": "./build/wick.node.js",
+  "main": "./build/wick-cjs.js",
   "watch": {
     "jsdocs": "source/**/*.js"
   },
@@ -50,7 +50,7 @@
   "bugs": {
     "url": "https://github.com/galactrax/wick/issues"
   },
-  "private": true,
+
   "homepage": "https://github.com/galactrax/wick#readme",
   "devDependencies": {
     "benchmark": "^2.1.4",
