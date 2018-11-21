@@ -1,8 +1,8 @@
 {
   "name": "@galactrax/wick",
-  "version": "0.4.7a",
+  "version": "0.4.8a",
   "description": "PWA Framework",
-  "main": "./build/wick-cjs.js",
+  "main": "./build/wick-es.js",
   "watch": {
     "jsdocs": "source/**/*.js"
   },
@@ -17,10 +17,11 @@
     "build-production.watch": "rollup --config ./build/config/minibuild.config.js --watch --environment BUILD:pro",
     "build-production-es": "rollup --config ./build/config/minibuild_es.config.js",
     "build-dev": "rollup --config ./build/config/browserdev.config.js --environment  BUILD:pro",
-    "build-dev.watch": "rollup --config ./build/config/browserdev.config.js --watch --environment  BUILD:dev",
-    "build-node": "rollup --config ./build/config/node.config.js --environment  BUILD:dev",
+    "build-dev.watch": "rollup --config ./build/config/config.js --watch --environment  BUILD:dev",
+    "build-node": "rollup --config ./build/config/config.js --environment  BUILD:dev",
     "build-node.watch": "rollup --config ./build/config/node.config.js --watch --environment  BUILD:dev",
     "build": "rollup --config ./build/config/config.js",
+    "build.watch": "rollup --config  ./build/config/config.js --watch",
     "jsdocs": "jsdoc ./source -r --configure ./build/config/jsdoc.json ",
     "jsdocs.watch": "watch jsdoc ./source -r --configure ./build/config/jsdoc.json "
   },
@@ -50,7 +51,6 @@
   "bugs": {
     "url": "https://github.com/galactrax/wick/issues"
   },
-
   "homepage": "https://github.com/galactrax/wick#readme",
   "devDependencies": {
     "benchmark": "^2.1.4",

@@ -87,7 +87,7 @@ export class DynamicBinding {
     }
 
     _bind_(source, errors, taps, element) {
-        let tap = source.getTap(this.tap_name) //taps[this.tap_id];
+        let tap = source.getTap(this.tap_name); //taps[this.tap_id];
         switch (this.method) {
             case INPUT:
                 return new InputIO(source, errors, tap, element);
@@ -105,7 +105,7 @@ export class DynamicBinding {
     }
     set type(v) {}
 
-    toString(){return `((${this.tap_name}))`}
+    toString(){return `((${this.tap_name}))`;}
 }
 
 export class RawValueBinding {
@@ -132,5 +132,5 @@ export class RawValueBinding {
     set _value_(v) {}
     get type() { return RAW_VALUE_BINDING_ID; }
     set type(v) {}
-    toString(){return this.txt}
+    toString(){return this.txt;}
 }

@@ -167,17 +167,17 @@ export const property_definitions = {
 
     
     /* Box Model https://www.w3.org/TR/css-box-3 */
-    margin: `[<length>|<percentage>|auto]{1,4}`,
+    margin: `[<length>|<percentage>|0|auto]{1,4}`,
     margin_top: `<length>|<percentage>|auto`,
     margin_right: `<length>|<percentage>|auto`,
     margin_bottom: `<length>|<percentage>|auto`,
     margin_left: `<length>|<percentage>|auto`,
 
-    padding: `[<length>|<percentage>|auto]{1,4}`,
-    padding_top: `<length>|<percentage>|auto`,
-    padding_right: `<length>|<percentage>|auto`,
-    padding_bottom: `<length>|<percentage>|auto`,
-    padding_left: `<length>|<percentage>|auto`,
+    padding: `[<length>|<percentage>|0|auto]{1,4}`,
+    padding_top: `<length>|<percentage>|0|auto`,
+    padding_right: `<length>|<percentage>|0|auto`,
+    padding_bottom: `<length>|<percentage>|0|auto`,
+    padding_left: `<length>|<percentage>|0|auto`,
 
     min_width: `<length>|<percentage>|inherit`,
     max_width: `<length>|<percentage>|none|inherit`,

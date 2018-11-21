@@ -1,5 +1,7 @@
-var wick = (function (exports) {
+var wick = (function (exports,whind$1) {
     'use strict';
+
+    var whind$1__default = 'default' in whind$1 ? whind$1['default'] : whind$1;
 
     /**
      * Global Document instance short name
@@ -1198,1877 +1200,6 @@ var wick = (function (exports) {
 
     let number = new NumberSchemeConstructor();
 
-    const HORIZONTAL_TAB = 9;
-    const SPACE = 32;
-
-    /** @lends module:wick~internals */
-
-    /**
-     * The types object bound to Lexer#types
-     * @type       {Object}
-     * @alias module:wick~internals.lexer.Types
-     * @see {@link module:wick.core.common.Lexer}
-     */
-    const number$1 = 1,
-        identifier = 2,
-        string = 4,
-        white_space = 8,
-        open_bracket = 16,
-        close_bracket = 32,
-        operator = 64,
-        symbol = 128,
-        new_line = 256,
-        data_link = 512,
-        alpha_numeric = (identifier | number$1),
-        white_space_new_line = (white_space | new_line),
-        Types = {
-            num: number$1,
-            number: number$1,
-            id: identifier,
-            identifier,
-            str: string,
-            string,
-            ws: white_space,
-            white_space,
-            ob: open_bracket,
-            open_bracket,
-            cb: close_bracket,
-            close_bracket,
-            op: operator,
-            operator,
-            sym: symbol,
-            symbol,
-            nl: new_line,
-            new_line,
-            dl: data_link,
-            data_link,
-            alpha_numeric,
-            white_space_new_line,
-        };
-
-    /**
-     * Lexer Jump table reference 
-     * 0. NUMBER
-     * 1. IDENTIFIER
-     * 2. QUOTE STRING
-     * 3. SPACE SET
-     * 4. TAB SET
-     * 5. CARIAGE RETURN
-     * 6. LINEFEED
-     * 7. SYMBOL
-     * 8. OPERATOR
-     * 9. OPEN BRACKET
-     * 10. CLOSE BRACKET 
-     * 11. DATA_LINK
-     */
-    const jump_table = [7, 7, 7, 7, 7, 7, 7, 7, 7, 4, 6, 7, 7, 5, 7, 11, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 8, 2, 7, 7, 8, 8, 2, 9, 10, 8, 8, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 7, 8, 8, 8, 7, 7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 7, 10, 7, 7, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 7, 10, 7, 7];
-
-    /**
-     * LExer Number and Identifier jump table reference
-     * Number are masked by 12(4|8) and Identifiers are masked by 10(2|8)
-     * entries marked as `0` are not evaluated as either being in the number set or the identifier set.
-     * entries marked as `2` are in the identifier set but not the number set
-     * entries marked as `4` are in the number set but not the identifier set
-     * entries marked as `8` are in both number and identifier sets
-     */
-    const num_id = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 0, 0, 0, 0, 2, 8, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 0, 0, 0, 0, 2, 0, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 0, 0, 0, 0, 0];
-
-
-
-
-    /**
-     * @classdesc A simple Lexical tokenizer for use with text processing. 
-     * 
-     * The Lexer parses an input string and yield lexical tokens.  It also provides methods for looking ahead and asserting token values. 
-     *
-     * There are 9 types of tokens that the Lexer will create:
-     * 
-     * > 1. **Identifier** - `types.identifier` or `types.id`
-     * >    - Any set of characters beginning with `_`|`a-z`|`A-Z`, and followed by `0-9`|`a-z`|`A-Z`|`-`|`_`|`#`|`$`.
-     * > 2. **Number** - `types.number` or `types.num`
-     * >    - Any set of characters beginning with `0-9`|`.`, and followed by `0-9`|`.`.
-     * > 3. **String**: 2 - `types.string` or `types.str`
-     * >    - A set of characters beginning with either `'` or `"` and ending with a matching `'` or `"`.
-     * > 4. **Open Bracket** - `types.open_bracket` or `types.ob`
-     * >    - A single character from the set `<`|`(`|`{`|`[`.
-     * > 5. **Close Bracket** - `types.close_bracket` or `types.cb`
-     * >    - A single character from the set `>`|`)`|`}`|`]`.
-     * > 7. **Operator**: 
-     * >    - A single character from the set `*`|`+`|`<`|`=`|`>`|`\`|`&`|`%`|`!`|`|`|`^`|`:`.
-     * > 8. **New Line**: 
-     * >    - A single `newline` (`LF` or `NL`) character. It may also be `LFCR` if the text is formated for Windows.
-     * > 9. **White Space**: 
-     * >    - An uninterrupted set of `tab` or `space` characters.
-     * > 10. **Symbol**:
-     * >        - All other characters not defined by the the above, with each symbol token being comprised of one character.
-     * 
-     * Types are identified by a binary index value and are defined in Lexer.prototype.types. A token's type can be verified by with 
-     * ```js
-     * Lexer.token.type === Lexer.types.*`
-     * ```
-     * @alias Lexer
-     * @memberof module:wick.core.common
-     * @param {String} string - The string to parse. 
-     * @param {Boolean} [IGNORE_WHITE_SPACE=true] - If set to true, the Lexer will not generate tokens for newline and whitespace characters, and instead skip to the next no whitespace/newline token. 
-     * @throws     {Error} Throws "String value must be passed to Lexer" if a non-string value is passed as `string`.
-     */
-    class Lexer {
-
-        constructor(string = "", IGNORE_WHITE_SPACE = true, PEEKING = false) {
-
-            if (typeof(string) !== "string") throw new Error("String value must be passed to Lexer");
-
-            /**
-             * The string that the Lexer tokenizes.
-             */
-            this.str = string;
-
-            /**
-             * Reference to the peeking Lexer.
-             */
-            this.p = null;
-
-            /**
-             * The type id of the current token.
-             */
-            this.type = -1;
-
-            /**
-             * The offset in the string of the start of the current token.
-             */
-            this.off = 0;
-
-            /**
-             * The length of the current token.
-             */
-            this.tl = 0;
-
-            /**
-             * The character offset of the current token within a line.
-             */
-            this.char = 0;
-
-            /**
-             * The line position of the current token.
-             */
-            this.line = 0;
-
-            /**
-             * The length of the string being parsed
-             */
-            this.sl = string.length;
-
-
-            /**
-             * Flag to ignore white spaced.
-             */
-            this.IWS = IGNORE_WHITE_SPACE;
-
-            /**
-             * Flag set to true if the end of the string is met.
-             */
-            this.END = false;
-
-            /**
-             * Flag to force the lexer to parse string contents
-             */
-             this.PARSE_STRING = false;
-
-            if (!PEEKING) this.next();
-        }
-
-        /**
-         * Restricts max parse distance to the other Lexer's current position.
-         * @param      {Lexer}  Lexer   The Lexer to limit parse distance by.
-         */
-        fence(lexer = this) {
-            if (lexer.str !== this.str)
-                return;
-            this.sl = lexer.off;
-            return this;
-        }
-
-        /**
-         * Reference to token id types.
-         */
-        get types() {
-            return Types;
-        }
-
-        /**
-         * Copies the Lexer.
-         * @return     {Lexer}  Returns a new Lexer instance with the same property values.
-         */
-        copy() {
-            let out = new Lexer(this.str, this.IWS, true);
-            out.type = this.type;
-            out.off = this.off;
-            out.tl = this.tl;
-            out.char = this.char;
-            out.line = this.line;
-            out.sl = this.sl;
-            out.END = this.END;
-            return out;
-        }
-
-        /**
-         * Given another Lexer with the same `str` property value, it will copy the state of that Lexer.
-         * @param      {Lexer}  [marker=this.peek]  The Lexer to clone the state from. 
-         * @throws     {Error} Throws an error if the Lexers reference different strings.
-         * @public
-         */
-        sync(marker = this.p) {
-
-            if (marker instanceof Lexer) {
-                if (marker.str !== this.str) throw new Error("Cannot sync Lexers with different strings!");
-                this.type = marker.type;
-                this.off = marker.off;
-                this.tl = marker.tl;
-                this.char = marker.char;
-                this.line = marker.line;
-                this.END = marker.END;
-            }
-
-            return this;
-        }
-
-        /**
-         * Will throw a new Error, appending the parsed string line and position information to the the error message passed into the function.
-         * @instance
-         * @public
-         * @param {String} message - The error message.
-         */
-        throw (message) {
-            let t$$1 = ("________________________________________________"),
-                n$$1 = "\n",
-                is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
-            this.IWS = false;
-            let pk = this.copy();
-            while (!pk.END && pk.ty !== Types.nl) { pk.n(); }
-            let end = pk.off;
-            throw new Error(message + "at " + this.line + ":" + this.char + n$$1 + t$$1 + n$$1 + this.str.slice(this.off - this.char, end) + n$$1 + ("").padStart(this.char - 2) + "^" + n$$1 + t$$1 + is_iws);
-        }
-
-        /**
-         * Proxy for Lexer.prototype.reset
-         * @public
-         */
-        r() { return this.reset(); }
-
-        /**
-         * Restore the Lexer back to it's initial state.
-         * @public
-         */
-        reset() {
-            this.p = null;
-            this.type = -1;
-            this.off = 0;
-            this.tl = 0;
-            this.char = 0;
-            this.line = 0;
-            this.END = false;
-            this.n();
-            return this;
-        }
-
-        resetHead() {
-            this.off = 0;
-            this.tl = 0;
-            this.char = 0;
-            this.line = 0;
-            this.END = false;
-            this.p = null;
-            this.type = -1;
-        }
-
-        /**
-         * Proxy for Lexer.prototype.next
-         * @public
-         */
-        n() { return this.next(); }
-
-        /**
-         * Sets the internal state to point to the next token. Sets Lexer.prototype.END to `true` if the end of the string is hit.
-         * @public
-         * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
-         */
-        next(marker = this) {
-
-            let str = marker.str;
-
-            if (marker.sl < 1) {
-                marker.off = -1;
-                marker.type = -1;
-                marker.tl = 0;
-                marker.END = true;
-                return marker;
-            }
-
-            //Token builder
-            let length = marker.tl;
-            let off = marker.off + length;
-            let l$$1 = marker.sl;
-            let IWS = marker.IWS;
-            let type = symbol;
-            let char = marker.char + length;
-            let line = marker.line;
-            let base = off;
-
-            if (off >= l$$1) {
-
-                marker.END = true;
-                length = 0;
-                base = l$$1;
-                char -= base - off;
-
-                marker.type = type;
-                marker.off = base;
-                marker.tl = length;
-                marker.char = char;
-                marker.line = line;
-
-                return marker;
-            }
-
-            while (true) {
-
-                base = off;
-
-                length = 1;
-
-                let code = str.charCodeAt(off);
-
-                if (code < 128) {
-
-                    switch (jump_table[code]) {
-                        case 0: //NUMBER
-                            while (++off < l$$1 && (12 & num_id[str.charCodeAt(off)])) {}
-
-                            if (str[off] == "e" || str[off] == "E") {
-                                off++;
-                                if (str[off] == "-") off++;
-                                marker.off = off;
-                                marker.tl = 0;
-                                marker.n();
-                                off = marker.off + marker.tl;
-                                //Add e to the number string
-                            }
-
-                            type = number$1;
-                            length = off - base;
-
-                            break;
-                        case 1: //IDENTIFIER
-                            while (++off < l$$1 && ((10 & num_id[str.charCodeAt(off)]))) {}
-                            type = identifier;
-                            length = off - base;
-                            break;
-                        case 2: //QUOTED STRING
-                            if (this.PARSE_STRING) {
-                                type = symbol;
-                            } else {
-                                while (++off < l$$1 && str.charCodeAt(off) !== code) {}
-                                type = string;
-                                length = off - base + 1;
-                            }
-                            break;
-                        case 3: //SPACE SET
-                            while (++off < l$$1 && str.charCodeAt(off) === SPACE) {}
-                            type = white_space;
-                            length = off - base;
-                            break;
-                        case 4: //TAB SET
-                            while (++off < l$$1 && str[off] === HORIZONTAL_TAB) {}
-                            type = white_space;
-                            length = off - base;
-                            break;
-                        case 5: //CARIAGE RETURN
-                            length = 2;
-                        case 6: //LINEFEED
-                            type = new_line;
-                            char = 0;
-                            line++;
-                            off += length;
-                            break;
-                        case 7: //SYMBOL
-                            type = symbol;
-                            break;
-                        case 8: //OPERATOR
-                            type = operator;
-
-                            break;
-                        case 9: //OPEN BRACKET
-                            type = open_bracket;
-                            break;
-                        case 10: //CLOSE BRACKET
-                            type = close_bracket;
-                            break;
-                        case 11: //Data Link Escape
-                            type = data_link;
-                            length = 4; //Stores two UTF16 values and a data link sentinel
-                            break;
-                    }
-                }
-
-                if (IWS && (type & white_space_new_line)) {
-                    if (off < l$$1) {
-                        char += length;
-                        type = symbol;
-                        continue;
-                    } else {
-                        length = 0;
-                        base = l$$1;
-                        char -= base - off;
-                        marker.END = true;
-                    }
-                }
-
-                break;
-            }
-
-            marker.type = type;
-            marker.off = base;
-            marker.tl = length;
-            marker.char = char;
-            marker.line = line;
-
-            return marker;
-        }
-        
-
-        /**
-         * Proxy for Lexer.prototype.assert
-         * @public
-         */
-        a(text) {
-            if (this.off < 0) this.throw(`Expecting ${text} got null`);
-
-            if (this.text == text)
-                this.next();
-            else
-                this.throw(`Expecting "${text}" got "${this.text}"`);
-
-            return this;
-        }
-
-        /**
-         * Compares the string value of the current token to the value passed in. Advances to next token if the two are equal.
-         * @public
-         * @throws {Error} - `Expecting "${text}" got "${this.text}"`
-         * @param {String} text - The string to compare.
-         */
-        assert(text) {
-
-            if (this.off < 0) this.throw(`Expecting ${text} got null`);
-
-            if (this.text == text)
-                this.next();
-            else
-                this.throw(`Expecting "${text}" got "${this.text}"`);
-
-            return this;
-        }
-
-        /**
-         * Proxy for Lexer.prototype.assertChcatever
-         * @public
-         */
-        _appendChild_(text) { return this.assert(text); }
-        /**
-         * Compares the character value of the current token to the value passed in. Advances to next token if the two are equal.
-         * @public
-         * @throws {Error} - `Expecting "${text}" got "${this.text}"`
-         * @param {String} text - The string to compare.
-         */
-        assertCharacer(char) {
-
-            if (this.off < 0) this.throw(`Expecting ${text} got null`);
-
-            if (this.tx[this.off] == char)
-                this.next();
-            else
-                this.throw(`Expecting "${char}" got "${this.tx}"`);
-
-            return this;
-        }
-
-        /**
-         * Proxy for Lexer.prototype.peek
-         * @public
-         * @readonly
-         * @type {Lexer}
-         */
-        get pk() { return this.peek(); }
-
-        /**
-         * Returns the Lexer bound to Lexer.prototype.p, or creates and binds a new Lexer to Lexer.prototype.p. Advences the other Lexer to the token ahead of the calling Lexer.
-         * @public
-         * @type {Lexer}
-         * @param {Lexer} [marker=this] - The marker to originate the peek from. 
-         * @param {Lexer} [peek_marker=this.p] - The Lexer to set to the next token state.
-         * @return {Lexer} - The Lexer that contains the peeked at token.
-         */
-        peek(marker = this, peek_marker = this.p) {
-
-            if (!peek_marker) {
-                if (!marker) return null;
-                if (!this.p) {
-                    this.p = new Lexer(this.str, this.IWS, true);
-                    peek_marker = this.p;
-                }
-            }
-
-            peek_marker.type = marker.type;
-            peek_marker.off = marker.off;
-            peek_marker.tl = marker.tl;
-            peek_marker.char = marker.char;
-            peek_marker.line = marker.line;
-            this.next(peek_marker);
-            return peek_marker;
-        }
-
-        /**
-         * Proxy for Lexer.prototype.text
-         * @public
-         * @type {String}
-         * @readonly
-         */
-        get tx() { return this.text; }
-        /**
-         * The string value of the current token.
-         * @type {String}
-         * @public
-         * @readonly
-         */
-        get text() {
-            return (this.off < 0) ? "" : this.str.slice(this.off, this.off + this.tl);
-        }
-
-        /**
-         * The type id of the current token.
-         * @type {Number}
-         * @public
-         * @readonly
-         */
-        get ty() { return this.type; }
-
-        /**
-         * The current token's offset position from the start of the string.
-         * @type {Number}
-         * @public
-         * @readonly
-         */
-        get pos() {
-            return this.off;
-        }
-
-        /**
-         * Proxy for Lexer.prototype.slice
-         * @public
-         */
-        s(start) { return this.slice(start); }
-
-        /**
-         * Returns a slice of the parsed string beginning at `start` and ending at the current token.
-         * @param {Number | LexerBeta} start - The offset in this.str to begin the slice. If this value is a LexerBeta, sets the start point to the value of start.off.
-         * @return {String} A substring of the parsed string.
-         * @public
-         */
-        slice(start) {
-
-            if (typeof start === "number" || typeof start === "object") {
-                if (start instanceof Lexer) start = start.off;
-                return (this.END) ? this.str.slice(start, this.sl) : this.str.slice(start, this.off);
-            }
-            return this.str.slice(this.off, this.sl);
-        }
-
-        get ch() {
-            return this.str[this.off];
-        }
-
-        /**
-         * The current token in the form of a new Lexer with the current state.
-         * Proxy property for Lexer.prototype.copy
-         * @type {Lexer}
-         * @public
-         * @readonly
-         */
-        get token() {
-            return this.copy();
-        }
-        /**
-         * Skips to the end of a comment section
-         * @param {boolean} ASSERT - If set to true, will through an error if there is not a comment line or block to skip.
-         * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
-         */
-        comment(ASSERT = false, marker = this) {
-
-            if (!(marker instanceof Lexer)) return marker;
-
-            if (marker.tx == "/") {
-                if (marker.pk.tx == "*") {
-                    marker.sync();
-                    while (!marker.END && (marker.n().tx != "*" || marker.pk.tx != "/")) { /* NO OP */ }
-                    marker.sync().a("/");
-                } else if (marker.pk.tx == "/") {
-                    let IWS = marker.IWS;
-                    while (marker.n().ty != types.new_line && !marker.END) { /* NO OP */ }
-                    marker.IWS = IWS;
-                    marker.n();
-                } else
-                if (ASSERT) marker.throw("Expecting the start of a comment");
-            }
-
-            return marker;
-        }
-
-        get string() {
-            return this.str.slice(0, this.sl);
-        }
-
-        setString(string, reset = true) {
-            this.str = string;
-            this.sl = string.length;
-            if (reset) this.resetHead();
-        }
-
-        toString(){
-            return this.slice();
-        }
-    }
-
-    class Point2D extends Float64Array{
-    	
-    	constructor(x, y) {
-    		super(2);
-
-    		if (typeof(x) == "number") {
-    			this[0] = x;
-    			this[1] = y;
-    			return;
-    		}
-
-    		if (x instanceof Array) {
-    			this[0] = x[0];
-    			this[1] = x[1];
-    		}
-    	}
-
-    	draw(ctx, s = 1){
-    		ctx.beginPath();
-    		ctx.moveTo(this.x*s,this.y*s);
-    		ctx.arc(this.x*s, this.y*s, s*0.01, 0, 2*Math.PI);
-    		ctx.stroke();
-    	}
-
-    	get x (){ return this[0]}
-    	set x (v){if(typeof(v) !== "number") return; this[0] = v;}
-
-    	get y (){ return this[1]}
-    	set y (v){if(typeof(v) !== "number") return; this[1] = v;}
-    }
-
-    function posOnCurve(t, p1, p2, p3) {
-        var ti = 1 - t;
-        return ti * ti * p1 + 2 * ti * t * p2 + t * t * p3;
-    }
-
-    function splitCurve(bp, t) {
-        var left = [];
-        var right = [];
-
-        function drawCurve(bp, t) {
-            if (bp.length == 2) {
-                left.push(bp[0], bp[1]);
-                right.push(bp[0], bp[1]);
-            } else {
-                var new_bp = []; //bp.slice(0,-2);
-                for (var i = 0; i < bp.length - 2; i += 2) {
-                    if (i == 0) {
-                        left.push(bp[i], bp[i + 1]);
-                    }
-                    if (i == bp.length - 4) {
-                        right.push(bp[i + 2], bp[i + 3]);
-                    }
-                    new_bp.push((1 - t) * bp[i] + t * bp[i + 2]);
-                    new_bp.push((1 - t) * bp[i + 1] + t * bp[i + 3]);
-                }
-                drawCurve(new_bp, t);
-            }
-        }
-
-        drawCurve(bp, t);
-
-        return {
-            x: new QBezier(right),
-            y: new QBezier(left)
-        };
-    }
-
-    function curveIntersections(p1, p2, p3) {
-        var intersections = {
-            a: Infinity,
-            b: Infinity
-        };
-
-        var a = p1 - 2 * p2 + p3;
-
-        var b = 2 * (p2 - p1);
-
-        var c = p1;
-
-        if (b == 0) ; else if (Math.abs(a) < 0.00000000005) {
-            intersections.a = (-c / b); //c / b;
-        } else {
-
-            intersections.a = ((-b - Math.sqrt((b * b) - 4 * a * c)) / (2 * a));
-            intersections.b = ((-b + Math.sqrt((b * b) - 4 * a * c)) / (2 * a));
-        }
-        return intersections
-    }
-
-    class QBezier {
-        constructor(x1, y1, x2, y2, x3, y3) {
-            this.x1 = 0;
-            this.x2 = 0;
-            this.x3 = 0;
-            this.y1 = 0;
-            this.y2 = 0;
-            this.y3 = 0;
-
-            if (typeof(x1) == "number") {
-                this.x1 = x1;
-                this.x2 = x2;
-                this.x3 = x3;
-                this.y1 = y1;
-                this.y2 = y2;
-                this.y3 = y3;
-                return;
-            }
-
-            if (x1 instanceof QBezier) {
-                this.x1 = x1.x1;
-                this.x2 = x1.x2;
-                this.x3 = x1.x3;
-                this.y1 = x1.y1;
-                this.y2 = x1.y2;
-                this.y3 = x1.y3;
-                return;
-            }
-
-            if (x1 instanceof Array) {
-                this.x1 = x1[0];
-                this.y1 = x1[1];
-                this.x2 = x1[2];
-                this.y2 = x1[3];
-                this.x3 = x1[4];
-                this.y3 = x1[5];
-                return;
-            }
-        }
-
-        reverse() {
-            return new QBezier(
-                this.x3,
-                this.y3,
-                this.x2,
-                this.y2,
-                this.x1,
-                this.y1
-            )
-        }
-
-        point(t) {
-            return new Point2D(
-                posOnCurve(t, this.x1, this.x2, this.x3),
-                posOnCurve(t, this.y1, this.y2, this.y3))
-
-        }
-
-        tangent(t) {
-            var tan = {
-                x: 0,
-                y: 0
-            };
-
-            var px1 = this.x2 - this.x1;
-            var py1 = this.y2 - this.y1;
-
-            var px2 = this.x3 - this.x2;
-            var py2 = this.y3 - this.y2;
-
-            tan.x = (1 - t) * px1 + t * px2;
-            tan.y = (1 - t) * py1 + t * py2;
-
-            return tan;
-        }
-
-        toArray() {
-            return [this.x1, this.y1, this.x2, this.y2, this.x3, this.y3];
-        }
-
-        split(t) {
-            return splitCurve(this.toArray(), t);
-        }
-
-        rootsX() {
-            return this.roots(
-                this.x1,
-                this.x2,
-                this.x3
-            )
-
-        }
-
-        roots(p1, p2, p3) {
-            var curve = this.toArray();
-
-            var c = p1 - (2 * p2) + p3;
-            var b = 2 * (p2 - p1);
-            var a = p1;
-            var a2 = a * 2;
-            var sqrt = Math.sqrt(b * b - (a * 4 * c));
-            var t1 = (-b + sqrt) / a2;
-            var t2 = (-b - sqrt) / a2;
-
-            return [t1, t2];
-        }
-
-        rootsa() {
-            var curve = this.toArray();
-
-            var p1 = curve[1];
-            var p2 = curve[3];
-            var p3 = curve[5];
-            var x1 = curve[0];
-            var x2 = curve[2];
-            var x3 = curve[4];
-
-            var py1d = 2 * (p2 - p1);
-            var py2d = 2 * (p3 - p2);
-            var ad1 = -py1d + py2d;
-            var bd1 = py1d;
-
-            var px1d = 2 * (x2 - x1);
-            var px2d = 2 * (x3 - x2);
-            var ad2 = -px1d + px2d;
-            var bd2 = px1d;
-
-            var t1 = -bd1 / ad1;
-            var t2 = -bd2 / ad2;
-
-            return [t1, t2];
-        }
-
-        boundingBox() {
-            var x1 = curve[0];
-            var y1 = curve[1];
-            var x2 = curve[2];
-            var y2 = curve[3];
-            var x3 = curve[4];
-            var y3 = curve[5];
-            var roots = getRootsClamped(curve);
-            var min_x = Math.min(x1, x2, x3, roots.y[0] || Infinity, roots.x[0] || Infinity);
-            var min_y = Math.min(y1, y2, y3, roots.y[1] || Infinity, roots.x[1] || Infinity);
-            var max_x = Math.max(x1, x2, x3, roots.y[0] || -Infinity, roots.x[0] || -Infinity);
-            var max_y = Math.max(y1, y2, y3, roots.y[1] || -Infinity, roots.x[1] || -Infinity);
-
-            return {
-                min: {
-                    x: min_x,
-                    y: min_y
-                },
-                max: {
-                    x: max_x,
-                    y: max_y
-                }
-            };
-        }
-
-        rotate(angle, offset) {
-            angle = (angle / 180) * Math.PI;
-
-            var new_curve = this.toArray();
-
-            for (var i = 0; i < 6; i += 2) {
-                var x = curve[i] - offset.x;
-                var y = curve[i + 1] - offset.y;
-                new_curve[i] = ((x * Math.cos(angle) - y * Math.sin(angle))) + offset.x;
-                new_curve[i + 1] = ((x * Math.sin(angle) + y * Math.cos(angle))) + offset.y;
-            }
-
-            return new QBezier(new_curve);
-        }
-
-        intersects() {
-            return {
-                x: curveIntersections(this.x1, this.x2, this.x3),
-                y: curveIntersections(this.y1, this.y2, this.y3)
-            }
-        }
-
-        add(x, y) {
-            if (typeof(x) == "number") {
-                return new QBezier(
-                    this.x1 + x,
-                    this.y1 + y,
-                    this.x2 + x,
-                    this.y2 + y,
-                    this.x3 + x,
-                    this.y3 + y,
-                )
-            }
-        }
-    }
-
-    const sqrt = Math.sqrt;
-    const cos = Math.cos;
-    const acos = Math.acos;
-    const PI = Math.PI;
-    const pow = Math.pow;
-
-    // A real-cuberoots-only function:
-    function cuberoot(v) {
-      if(v<0) return -pow(-v,1/3);
-      return pow(v,1/3);
-    }
-
-
-
-    function point(t, p1, p2, p3, p4) {
-    	var ti = 1 - t;
-    	var ti2 = ti * ti;
-    	var t2 = t * t;
-
-    	return ti * ti2 * p1 + 3 * ti2 * t * p2 + t2 * 3 * ti * p3 + t2 * t * p4;
-    }
-
-
-    class CBezier extends Float64Array{
-    	constructor(x1, y1, x2, y2, x3, y3, x4, y4) {
-    		super(8);
-
-    		//Map P1 and P2 to {0,0,1,1} if only four arguments are provided; for use with animations
-    		if(arguments.length == 4){
-    			this[0] = 0;
-    			this[1] = 0;
-    			this[2] = x1;
-    			this[3] = y1;
-    			this[4] = x2;
-    			this[5] = y2;
-    			this[6] = 1;
-    			this[7] = 1;
-    			return;
-    		}
-    		
-    		if (typeof(x1) == "number") {
-    			this[0] = x1;
-    			this[1] = y1;
-    			this[2] = x2;
-    			this[3] = y2;
-    			this[4] = x3;
-    			this[5] = y3;
-    			this[6] = x4;
-    			this[7] = y4;
-    			return;
-    		}
-
-    		if (x1 instanceof Array) {
-    			this[0] = x1[0];
-    			this[1] = x1[1];
-    			this[2] = x1[2];
-    			this[3] = x1[3];
-    			this[4] = x1[4];
-    			this[5] = x1[5];
-    			this[6] = x1[6];
-    			this[7] = x1[4];
-    			return;
-    		}
-    	}
-
-    	get x1 (){ return this[0]}
-    	set x1 (v){this[0] = v;}
-    	get x2 (){ return this[2]}
-    	set x2 (v){this[2] = v;}
-    	get x3 (){ return this[4]}
-    	set x3 (v){this[4] = v;}
-    	get x4 (){ return this[6]}
-    	set x4 (v){this[6] = v;}
-    	get y1 (){ return this[1]}
-    	set y1 (v){this[1] = v;}
-    	get y2 (){ return this[3]}
-    	set y2 (v){this[3] = v;}
-    	get y3 (){ return this[5]}
-    	set y3 (v){this[5] = v;}
-    	get y4 (){ return this[7]}
-    	set y4 (v){this[7] = v;}
-
-    	add(x,y = 0){
-    		return new CCurve(
-    			this[0] + x,
-    			this[1] + y,
-    			this[2] + x,
-    			this[3] + y,
-    			this[4] + x,
-    			this[5] + y,
-    			this[6] + x,
-    			this[7] + y
-    		)
-    	}
-
-    	valY(t){
-    		return point(t, this[1], this[3], this[5], this[7]);
-    	}
-
-    	valX(t){
-    		return point(t, this[0], this[2], this[4], this[6]);
-    	}
-
-    	point(t) {
-    		return new Point2D(
-    			point(t, this[0], this[2], this[4], this[6]),
-    			point(t, this[1], this[3], this[5], this[7])
-    		)
-    	}
-    	
-    	/** 
-    		Acquired from : https://pomax.github.io/bezierinfo/
-    		Author:  Mike "Pomax" Kamermans
-    		GitHub: https://github.com/Pomax/
-    	*/
-
-    	roots(p1,p2,p3,p4) {
-    		var d = (-p1 + 3 * p2 - 3 * p3 + p4),
-    			a = (3 * p1 - 6 * p2 + 3 * p3) / d,
-    			b = (-3 * p1 + 3 * p2) / d,
-    			c = p1 / d;
-
-    		var p = (3 * b - a * a) / 3,
-    			p3 = p / 3,
-    			q = (2 * a * a * a - 9 * a * b + 27 * c) / 27,
-    			q2 = q / 2,
-    			discriminant = q2 * q2 + p3 * p3 * p3;
-
-    		// and some variables we're going to use later on:
-    		var u1, v1, root1, root2, root3;
-
-    		// three possible real roots:
-    		if (discriminant < 0) {
-    			var mp3 = -p / 3,
-    				mp33 = mp3 * mp3 * mp3,
-    				r = sqrt(mp33),
-    				t = -q / (2 * r),
-    				cosphi = t < -1 ? -1 : t > 1 ? 1 : t,
-    				phi = acos(cosphi),
-    				crtr = cuberoot(r),
-    				t1 = 2 * crtr;
-    			root1 = t1 * cos(phi / 3) - a / 3;
-    			root2 = t1 * cos((phi + 2 * PI) / 3) - a / 3;
-    			root3 = t1 * cos((phi + 4 * PI) / 3) - a / 3;
-    			return [root3, root1, root2]
-    		}
-
-    		// three real roots, but two of them are equal:
-    		if (discriminant === 0) {
-    			u1 = q2 < 0 ? cuberoot(-q2) : -cuberoot(q2);
-    			root1 = 2 * u1 - a / 3;
-    			root2 = -u1 - a / 3;
-    			return [root2, root1];
-    		}
-
-    		// one real root, two complex roots
-    		var sd = sqrt(discriminant);
-    		u1 = cuberoot(sd - q2);
-    		v1 = cuberoot(sd + q2);
-    		root1 = u1 - v1 - a / 3;
-    		return [root1];
-    	}
-
-    	rootsY() {
-    		return this.roots(this[1],this[3],this[5],this[7]);
-    	}
-
-    	rootsX() {
-    		return this.roots(this[0],this[2],this[4],this[6]);
-    	}
-    	
-    	getYatX(x){
-    		var x1 = this[0] - x, x2 = this[2] - x, x3 = this[4] - x, x4 = this[6] - x,
-    			x2_3 = x2 * 3, x1_3 = x1 *3, x3_3 = x3 * 3,
-    			d = (-x1 + x2_3 - x3_3 + x4), di = 1/d, i3 = 1/3,
-    			a = (x1_3 - 6 * x2 + x3_3) * di,
-    			b = (-x1_3 + x2_3) * di,
-    			c = x1 * di,
-    			p = (3 * b - a * a) * i3,
-    			p3 = p * i3,
-    			q = (2 * a * a * a - 9 * a * b + 27 * c) * (1/27),
-    			q2 = q * 0.5,
-    			discriminant = q2 * q2 + p3 * p3 * p3;
-
-    		// and some variables we're going to use later on:
-    		var u1, v1, root;
-
-    		//Three real roots can never happen if p1(0,0) and p4(1,1);
-
-    		// three real roots, but two of them are equal:
-    		if (discriminant < 0) {
-    			var mp3 = -p / 3,
-    				mp33 = mp3 * mp3 * mp3,
-    				r = sqrt(mp33),
-    				t = -q / (2 * r),
-    				cosphi = t < -1 ? -1 : t > 1 ? 1 : t,
-    				phi = acos(cosphi),
-    				crtr = cuberoot(r),
-    				t1 = 2 * crtr;
-    			root = t1 * cos((phi + 4 * PI) / 3) - a / 3;
-    		}else if (discriminant === 0) {
-    			u1 = q2 < 0 ? cuberoot(-q2) : -cuberoot(q2);
-    			root = -u1 - a * i3;
-    		}else{
-    			var sd = sqrt(discriminant);
-    			// one real root, two complex roots
-    			u1 = cuberoot(sd - q2);
-    			v1 = cuberoot(sd + q2);
-    			root = u1 - v1 - a * i3;	
-    		}
-
-    		return point(root, this[1], this[3], this[5], this[7]);
-    	}
-    	/**
-    		Given a Canvas 2D context object and scale value, strokes a cubic bezier curve.
-    	*/
-    	draw(ctx, s = 1){
-    		ctx.beginPath();
-    		ctx.moveTo(this[0]*s, this[1]*s);
-    		ctx.bezierCurveTo(
-    			this[2]*s, this[3]*s,
-    			this[4]*s, this[5]*s,
-    			this[6]*s, this[7]*s
-    			);
-    		ctx.stroke();
-    	}
-    }
-
-    function getValue(lex, attribute) {
-        let v = lex.tx,
-            mult = 1;
-
-        if (v == "-")
-            v = lex.n().tx, mult = -1;
-
-        let n = parseFloat(v) * mult;
-
-        lex.n();
-
-        if (lex.ch !== ")" && lex.ch !== ",") {
-            switch (lex.tx) {
-                case "%":
-                    break;
-
-                /* Rotational Values */
-                case "grad":
-                    n *= Math.PI / 200;
-                    break;
-                case "deg":
-                    n *= Math.PI / 180;
-                    break;
-                case "turn":
-                    n *= Math.PI * 2;
-                    break;
-                case "px":
-                    break;
-                case "em":
-                    break;
-            }
-            lex.n();
-        }
-        return n;
-    }
-
-    function ParseString(string, transform) {
-        var lex = new Lexer(string);
-        while (!lex.END) {
-            let tx = lex.tx;
-            lex.n();
-            switch (tx) {
-                case "matrix":
-
-                    let a = getValue(lex.a("(")),
-                        b = getValue(lex.a(",")),
-                        c = getValue(lex.a(",")),
-                        d = getValue(lex.a(",")),
-                        r = -Math.atan2(b, a),
-                        sx1 = (a / Math.cos(r)) || 0,
-                        sx2 = (b / -Math.sin(r)) || 0,
-                        sy1 = (c / Math.sin(r)) || 0,
-                        sy2 = (d / Math.cos(r)) || 0;
-                    
-                    if(sx2 !== 0)
-                        transform.sx = (sx1 + sx2) * 0.5;
-                    else
-                        transform.sx = sx1;
-
-                    if(sy1 !== 0)
-                        transform.sy = (sy1 + sy2) * 0.5;
-                    else
-                        transform.sy = sy2;
-
-                    transform.px = getValue(lex.a(","));
-                    transform.py = getValue(lex.a(","));
-                    transform.r = r;
-                    lex.a(")");
-                    break;
-                case "matrix3d":
-                    break;
-                case "translate":
-                    transform.px = getValue(lex.a("("), "left");
-                    lex.a(",");
-                    transform.py = getValue(lex, "left");
-                    lex.a(")");
-                    continue;
-                case "translateX":
-                    transform.px = getValue(lex.a("("), "left");
-                    lex.a(")");
-                    continue;
-                case "translateY":
-                    transform.py = getValue(lex.a("("), "left");
-                    lex.a(")");
-                    continue;
-                case "scale":
-                    transform.sx = getValue(lex.a("("), "left");
-                    if(lex.ch ==","){
-                        lex.a(",");
-                        transform.sy = getValue(lex, "left");
-                    }
-                    else transform.sy = transform.sx;
-                    lex.a(")");
-                    continue;
-                case "scaleX":
-                    transform.sx = getValue(lex.a("("), "left");
-                    lex.a(")");
-                    continue;
-                case "scaleY":
-                    transform.sy = getValue(lex.a("("), "left");
-                    lex.a(")");
-                    continue;
-                case "scaleZ":
-                    break;
-                case "rotate":
-                    transform.r = getValue(lex.a("("));
-                    lex.a(")");
-                    continue;
-                case "rotateX":
-                    break;
-                case "rotateY":
-                    break;
-                case "rotateZ":
-                    break;
-                case "rotate3d":
-                    break;
-                case "perspective":
-                    break;
-            }
-            lex.n();
-        }
-    }
-    // A 2D transform compisition of 2D position, 2D scale, and 1D rotation.
-    class Transform2D extends Float64Array {
-        static ToString(pos = [0, 0], scl = [1, 1], rot = 0) {
-            var px = 0,
-                py = 0,
-                sx = 1,
-                sy = 1,
-                r = 0, cos = 1, sin = 0;
-            if (pos.length == 5) {
-                px = pos[0];
-                py = pos[1];
-                sx = pos[2];
-                sy = pos[3];
-                r = pos[4];
-            } else {
-                px = pos[0];
-                py = pos[1];
-                sx = scl[0];
-                sy = scl[1];
-                r = rot;
-            }
-            
-            if(r !== 0){
-                cos = Math.cos(r);
-                sin = Math.sin(r);
-            }
-
-            return `matrix(${cos * sx}, ${-sin * sx}, ${sy * sin}, ${sy * cos}, ${px}, ${py})`;
-        }
-
-
-        constructor(px, py, sx, sy, r) {
-            super(5);
-            this.sx = 1;
-            this.sy = 1;
-            if (px) {
-                if (px instanceof Transform2D) {
-                    this[0] = px[0];
-                    this[1] = px[1];
-                    this[2] = px[2];
-                    this[3] = px[3];
-                    this[4] = px[4];
-                } else if (typeof(px) == "string") ParseString(px, this);
-                else {
-                    this[0] = px;
-                    this[1] = py;
-                    this[2] = sx;
-                    this[3] = sy;
-                    this[4] = r;
-                }
-            }
-        }
-        get px() {
-            return this[0];
-        }
-        set px(v) {
-            this[0] = v;
-        }
-        get py() {
-            return this[1];
-        }
-        set py(v) {
-            this[1] = v;
-        }
-        get sx() {
-            return this[2];
-        }
-        set sx(v) {
-            this[2] = v;
-        }
-        get sy() {
-            return this[3];
-        }
-        set sy(v) {
-            this[3] = v;
-        }
-        get r() {
-            return this[4];
-        }
-        set r(v) {
-            this[4] = v;
-        }
-
-        set scale(s){
-            this.sx = s;
-            this.sy = s;
-        }
-
-        get scale(){
-            return this.sx;
-        }
-        
-        lerp(to, t) {
-            let out = new Transform2D();
-            for (let i = 0; i < 5; i++) out[i] = this[i] + (to[i] - this[i]) * t;
-            return out;
-        }
-        toString() {
-            return Transform2D.ToString(this);
-        }
-
-        copy(v) {
-            let copy = new Transform2D(this);
-
-
-            if (typeof(v) == "string")
-                ParseString(v, copy);
-
-            return copy;
-        }
-
-        /**
-         * Sets the transform value of a canvas 2D context;
-         */
-        setCTX(ctx){       
-            let cos = 1, sin = 0;
-            if(this[4] != 0){
-                cos = Math.cos(this[4]);
-                sin = Math.sin(this[4]);
-            }
-            ctx.transform(cos * this[2], -sin * this[2], this[3] * sin, this[3] * cos, this[0], this[1]);
-        }
-
-        getLocalX(X){
-            return (X - this.px) / this.sx;
-        }
-
-        getLocalY(Y){
-            return (Y - this.py) / this.sy;
-        }
-    }
-
-    /**
-        JavaScript implementation of a touch scrolling interface using touch events
-    */
-    class TouchScroller {
-        /** 
-            Constructs a touch object around a given dom element. Functions listeners can be bound to this object using
-            this addEventListener method.
-        */
-        constructor(element, drag = 0.02, touchid = 0) {
-
-            this.origin_x = 0;
-            this.origin_y = 0;
-            this.velocity_x = 0;
-            this.velocity_y = 0;
-            this.GO = true;
-            this.drag = (drag > 0) ? drag : 0.1;
-            this.ele = element;
-
-
-            this.listeners = [];
-
-            if (!touchid instanceof Number)
-                touchid = 0;
-
-            let time_old = 0;
-
-            let READY = true;
-
-            let frame = (dx, dy, steps, ratio = 1) => {
-
-                let drag_val = this.drag;
-
-                dx -= dx * drag_val * steps * ratio;
-                dy -= dy * drag_val * steps * ratio;
-
-                let dm = Math.max(Math.abs(dy), Math.abs(dy));
-
-                let end = !(steps > 0 && dm > 0.1 && this.GO);
-
-                if (!end) {
-                    requestAnimationFrame(() => {
-                        frame(dx, dy, 1);
-                    });
-                }
-
-                end = end && steps != 0;
-
-                for (var i = 0, l = this.listeners.length; i < l; i++) {
-
-                    if (this.listeners[i]({
-                            dx: dx | 0,
-                            dy: dy | 0,
-                            end
-                        })) {
-                        this.GO = false;
-                    }
-                }
-
-                READY = true;
-            };
-
-            this.event_b = (e) => {
-                time_old = performance.now();
-
-                var touch = e;//.touches[touchid];
-
-                this.velocity_x = this.origin_x - touch.clientX;
-                this.velocity_y = this.origin_y - touch.clientY;
-
-                if (READY) {
-                    this.origin_x = touch.clientX;
-                    this.origin_y = touch.clientY;
-                    requestAnimationFrame(() => {
-                        frame(this.velocity_x, this.velocity_y, 0, 0);
-                    });
-                    READY = false;
-                }
-            };
-
-            this.event_c = (e) => {
-                let time_new = performance.now();
-
-                let diff = time_new - time_old;
-
-                let steps = Math.min(diff / 8.6666666, 1 / this.drag); // 60 FPS
-
-                this.GO = true;
-
-                frame(this.velocity_x, this.velocity_y, steps);
-
-                this.velocity_x = 0;
-                this.velocity_y = 0;
-
-                window.removeEventListener("pointermove", this.event_b);
-                window.removeEventListener("pointerup", this.event_c);
-            };
-
-            this.event_a = (e) => {
-
-                if (!this.GO) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
-                }
-
-                time_old = performance.now();
-
-                this.GO = false;
-
-                var touch = e;//.touches[touchid];
-
-                if (!touch)
-                    return;
-
-                this.origin_y = touch.clientY;
-                this.origin_x = touch.clientX;
-
-                window.addEventListener("pointermove", this.event_b);
-                window.addEventListener("pointerup", this.event_c);
-            };
-
-            this.ele.addEventListener("pointerdown", this.event_a);
-        }
-
-        _destroy_() {
-            this.listeners = null;
-            this.ele.removeEventListener("pointerdown", this.event_a);
-        }
-
-
-
-        addEventListener(callback) {
-            if (callback instanceof Function) {
-
-                for (var i = 0; i < this.listeners.length; i++) {
-                    if (this.listeners[i] == callback) return
-                }
-
-                this.listeners.push(callback);
-            }
-        }
-
-        removeEventListener(callback) {
-            for (var i = 0; i < this.listeners.length; i++) {
-                if (this.listeners[i] == callback) {
-                    this.listeners.splice(i, 1);
-                    return;
-                }
-            }
-        }
-    }
-
-    /**
-     * @brief Path Info
-     * @details Path syntax information for reference
-     * 
-     * MoveTo: M, m
-     * LineTo: L, l, H, h, V, v
-     * Cubic Bézier Curve: C, c, S, s
-     * Quadratic Bézier Curve: Q, q, T, t
-     * Elliptical Arc Curve: A, a
-     * ClosePath: Z, z
-     * 
-     * Capital symbols represent absolute positioning, lowercase is relative
-     */
-    const PathSym = {
-        M: 0,
-        m: 1,
-        L: 2,
-        l: 3,
-        h: 4,
-        H: 5,
-        V: 6,
-        v: 7,
-        C: 8,
-        c: 9,
-        S: 10,
-        s: 11,
-        Q: 12,
-        q: 13,
-        T: 14,
-        t: 15,
-        A: 16,
-        a: 17,
-        Z: 18,
-        z: 19,
-        pairs: 20
-    };
-
-    function getSignedNumber(lex) {
-        let mult = 1,
-            tx = lex.tx;
-        if (tx == "-") {
-            mult = -1;
-            tx = lex.n().tx;
-        }
-        lex.n();
-        return parseFloat(tx) * mult;
-    }
-
-    function getNumberPair(lex, array) {
-        let x = getSignedNumber(lex);
-        if (lex.ch == ',') lex.n();
-        let y = getSignedNumber(lex);
-        array.push(x, y);
-    }
-
-    function parseNumberPairs(lex, array) {
-        while ((lex.ty == lex.types.num || lex.ch == "-") && !lex.END) {    	
-        	array.push(PathSym.pairs);
-            getNumberPair(lex, array);
-        }
-    }
-    /**
-     * @brief An array store of path data in numerical form
-     */
-    class Path extends Array {
-        static FromString(string, array) {
-            let lex = new Lexer(string);
-            while (!lex.END) {
-                let relative = false,
-                    x = 0,
-                    y = 0;
-                switch (lex.ch) {
-                    //Move to
-                    case "m":
-                        relative = true;
-                    case "M":
-                        lex.n(); //
-                        array.push((relative) ? PathSym.m : PathSym.M);
-                        getNumberPair(lex, array);
-                        parseNumberPairs(lex, array);
-                        continue;
-                        //Line to
-                    case "h":
-                        relative = true;
-                    case "H":
-                        lex.n();
-                        x = getSignedNumber(lex);
-                        array.push((relative) ? PathSym.h : PathSym.H, x);
-                        continue;
-                    case "v":
-                        relative = true;
-                    case "V":
-                        lex.n();
-                        y = getSignedNumber(lex);
-                        array.push((relative) ? PathSym.v : PathSym.V, y);
-                        continue;
-                    case "l":
-                        relative = true;
-                    case "L":
-                        lex.n();
-                        array.push((relative) ? PathSym.l : PathSym.L);
-                        getNumberPair(lex, array);
-                        parseNumberPairs(lex, array);
-                        continue;
-                        //Cubic Curve
-                    case "c":
-                        relative = true;
-                    case "C":
-                        array.push((relative) ? PathSym.c : PathSym.C);
-                        getNumberPair(lex, array);
-                        getNumberPair(lex, array);
-                        getNumberPair(lex, array);
-                        parseNumberPairs(lex, array);
-                        continue;
-                    case "s":
-                        relative = true;
-                    case "S":
-                        array.push((relative) ? PathSym.s : PathSym.S);
-                        getNumberPair(lex, array);
-                        getNumberPair(lex, array);
-                        parseNumberPairs(lex, array);
-                        continue;
-                        //Quadratic Curve0
-                    case "q":
-                        relative = true;
-                    case "Q":
-                        array.push((relative) ? PathSym.q : PathSym.Q);
-                        getNumberPair(lex, array);
-                        getNumberPair(lex, array);
-                        parseNumberPairs(lex, array);
-                        continue;
-                    case "t":
-                        relative = true;
-                    case "T":
-                        array.push((relative) ? PathSym.t : PathSym.T);
-                        getNumberPair(lex, array);
-                        parseNumberPairs(lex, array);
-                        continue;
-                        //Elliptical Arc
-                        //Close path:
-                    case "z":
-                        relative = true;
-                    case "Z":
-                        array.push((relative) ? PathSym.z : PathSym.Z);
-                }
-                lex.n();
-            }
-        }
-
-        static ToString(array) {
-        	let string = [], l = array.length, i = 0;
-        	while(i < l){
-        		switch(array[i++]){
-        			case PathSym.M:
-        				string.push("M", array[i++], array[i++]);
-        				break;
-    			    case PathSym.m:
-    			    	string.push("m", array[i++], array[i++]);
-    			    	break;
-    			    case PathSym.L:
-    			    	string.push("L", array[i++], array[i++]);
-    			    	break;
-    			    case PathSym.l:
-    			    	string.push("l", array[i++], array[i++]);
-    			    	break;
-    			    case PathSym.h:
-    			    	string.push("h", array[i++]);
-    			    	break;
-    			    case PathSym.H:
-    			    	string.push("H", array[i++]);
-    			    	break;
-    			    case PathSym.V:
-    			    	string.push("V", array[i++]);
-    			    	break;
-    			    case PathSym.v:
-    			    	string.push("v", array[i++]);
-    			    	break;
-    			    case PathSym.C:
-    			    	string.push("C", array[i++], array[i++], array[i++], array[i++], array[i++], array[i++]);
-    			    	break;
-    			    case PathSym.c:
-    			    	string.push("c", array[i++], array[i++], array[i++], array[i++], array[i++], array[i++]);
-    			    	break;
-    			    case PathSym.S:
-    			    	string.push("S", array[i++], array[i++], array[i++], array[i++]);
-    			    	break;
-    			    case PathSym.s:
-    			    	string.push("s", array[i++], array[i++], array[i++], array[i++]);
-    			    	break;
-    			    case PathSym.Q:
-    			    	string.push("Q", array[i++], array[i++], array[i++], array[i++]);
-    			    	break;
-    			    case PathSym.q:
-    			    	string.push("q", array[i++], array[i++], array[i++], array[i++]);
-    			    	break;
-    			    case PathSym.T:
-    			    	string.push("T", array[i++], array[i++]);
-    			    	break;
-    			    case PathSym.t:
-    			    	string.push("t", array[i++], array[i++]);
-    			    	break;
-    			    case PathSym.Z:
-    			    	string.push("Z");
-    			    	break;
-    			    case PathSym.z:
-    			    	string.push("z");
-    			    	break;
-    			    case PathSym.pairs:
-    			    	string.push(array[i++], array[i++]);
-    			    	break;
-    			 	case PathSym.A:
-    			    case PathSym.a:
-    			    default:
-    			    	i++;
-        		}
-        	}
-
-        	return string.join(" ");
-        }
-
-        
-        constructor(data) {
-            super();	
-
-        	if(typeof(data) == "string"){
-        		Path.FromString(data, this);
-        	}else if(Array.isArray(data)){
-        		for(let i = 0; i < data.length;i++){
-        			this.push(parseFloat(data[i]));
-        		}
-        	}
-        }
-
-        toString(){
-        	return Path.ToString(this);
-        }
-
-        lerp(to, t, array = new Path){
-        	let l = Math.min(this.length, to.length);
-
-        	for(let i = 0; i < l; i++)
-        		array[i] = this[i] + (to[i] - this[i]) * t;
-
-        	return array;
-        }	
-    }
-
-    /****** Global Object Extenders *************/
-    if(!EL.prototype) EL.prototype = {};
-
-    EL.prototype.getWindowTop = function(){
-        return (this.offsetTop + ((this.parentElement) ? this.parentElement.getWindowTop() : 0));
-    };
-
-    EL.prototype.getWindowLeft = function(){
-        return (this.offsetLeft + ((this.parentElement) ? this.parentElement.getWindowLeft() : 0));
-    };
-
-    EL.prototype.getParentWindowTop = function(bool = false){
-        return (((bool ? this.offsetTop : 0))+((this.parentElement) ? this.parentElement.getParentWindowTop(true) : 0));
-    };
-
-    EL.prototype.getParentWindowLeft = function(bool = false){
-        return (((bool ? this.offsetLeft : 0))+((this.parentElement) ? this.parentElement.getWindowLeft(true) : 0));
-    };
-
-    EL.prototype.getStyle = function(style_name){
-    	return window.getComputedStyle(this,null).getPropertyValue(style_name);
-    };
-
-    /**************** POLYFILLS ************************************/
-
-    /**
-     * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String}
-     */
-    if (typeof Object.assign != 'function') {
-      // Must be writable: true, enumerable: false, configurable: true
-      Object.defineProperty(Object, "assign", {
-        value: function assign(target, varArgs) { // .length of function is 2
-          if (target == null) { // TypeError if undefined or null
-            throw new TypeError('Cannot convert undefined or null to object');
-          }
-
-          var to = Object(target);
-
-          for (var index = 1; index < arguments.length; index++) {
-            var nextSource = arguments[index];
-
-            if (nextSource != null) { // Skip over if undefined or null
-              for (var nextKey in nextSource) {
-                // Avoid bugs when hasOwnProperty is shadowed
-                if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-                  to[nextKey] = nextSource[nextKey];
-                }
-              }
-            }
-          }
-          return to;
-        },
-        writable: true,
-        configurable: true
-      });
-    }
-
-    var Common = /*#__PURE__*/Object.freeze({
-        Lexer: Lexer,
-        QBezier: QBezier,
-        CBezier: CBezier,
-        TouchScroller: TouchScroller,
-        Transform2D: Transform2D,
-        Path: Path
-    });
-
     let scape_date = new Date();
     scape_date.setHours(0);
     scape_date.setMilliseconds(0);
@@ -3092,7 +1223,7 @@ var wick = (function (exports) {
 
             if(date) return date;
 
-            let lex = new Lexer(value);
+            let lex = whind(value);
 
             let year = parseInt(lex.text);
 
@@ -3239,7 +1370,7 @@ var wick = (function (exports) {
         }
     }
 
-    let string$1 = new StringSchemeConstructor();
+    let string = new StringSchemeConstructor();
 
     class BoolSchemeConstructor extends SchemeConstructor {
 
@@ -3279,7 +1410,7 @@ var wick = (function (exports) {
 
     let bool = new BoolSchemeConstructor();
 
-    let schemes = { date, string: string$1, number, bool, time };
+    let schemes = { date, string, number, bool, time };
 
     class BTreeModelContainer extends ModelContainerBase {
 
@@ -5439,7 +3570,7 @@ var wick = (function (exports) {
         _getQuery_() {
             let map = (this.map) ? this.map : (this.map = new Map());
 
-            let lex = new Lexer(this.query);
+            let lex = whind$1__default(this.query);
 
             const get_map = (k, m) => (m.has(k)) ? m.get(k) : m.set(k, new Map).get(k);
 
@@ -6730,7 +4861,7 @@ var wick = (function (exports) {
 
             if (CAN_FETCH) {
                 return this.url.fetchText().then((text) => {
-                    let lexer = new Lexer(text);
+                    let lexer = whind$1__default(text);
                     return this._parseRunner_(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
                 }).catch((e) => {
                     console.log(e);
@@ -6833,7 +4964,7 @@ var wick = (function (exports) {
      * @memberof module:wick.core
      * @alias html
      */
-    const HTMLParser = (html_string, root = null, url) => (root = (!root || !(root instanceof HTMLNode)) ? new HTMLNode() : root, root._parse_(new Lexer(html_string.replace(/\&lt;/g, "<").replace(/\&gt;/g, ">"), true, false, null, url)));
+    const HTMLParser = (html_string, root = null, url) => (root = (!root || !(root instanceof HTMLNode)) ? new HTMLNode() : root, root._parse_(whind$1__default(html_string.replace(/\&lt;/g, "<").replace(/\&gt;/g, ">"), true, false, null, url)));
 
     class Color extends Float64Array {
 
@@ -6994,8 +5125,8 @@ var wick = (function (exports) {
 
             let c;
 
-            if (!(l instanceof Lexer))
-                l = new Lexer(l);
+            if (!(l instanceof whind$1__default.constructor))
+                l = whind$1__default(l);
 
             let out = null;
 
@@ -7237,7 +5368,7 @@ var wick = (function (exports) {
         constructor(v) {
 
             if (typeof(v) == "string") {
-                let lex = new Lexer(v);
+                let lex = whind(v);
                 let val = CSS_Percentage._parse_(lex);
                 if (val) 
                     return val;
@@ -7305,7 +5436,7 @@ var wick = (function (exports) {
         constructor(v, u = "") {
             
             if (typeof(v) == "string") {
-                let lex = new Lexer(v);
+                let lex = whind(v);
                 let val = CSS_Length._parse_(lex);
                 if (val) return val;
             }
@@ -7500,6 +5631,265 @@ var wick = (function (exports) {
         }
     }
 
+    class Point2D extends Float64Array{
+    	
+    	constructor(x, y) {
+    		super(2);
+
+    		if (typeof(x) == "number") {
+    			this[0] = x;
+    			this[1] = y;
+    			return;
+    		}
+
+    		if (x instanceof Array) {
+    			this[0] = x[0];
+    			this[1] = x[1];
+    		}
+    	}
+
+    	draw(ctx, s = 1){
+    		ctx.beginPath();
+    		ctx.moveTo(this.x*s,this.y*s);
+    		ctx.arc(this.x*s, this.y*s, s*0.01, 0, 2*Math.PI);
+    		ctx.stroke();
+    	}
+
+    	get x (){ return this[0]}
+    	set x (v){if(typeof(v) !== "number") return; this[0] = v;}
+
+    	get y (){ return this[1]}
+    	set y (v){if(typeof(v) !== "number") return; this[1] = v;}
+    }
+
+    const sqrt = Math.sqrt;
+    const cos = Math.cos;
+    const acos = Math.acos;
+    const PI = Math.PI;
+    const pow = Math.pow;
+
+    // A real-cuberoots-only function:
+    function cuberoot(v) {
+      if(v<0) return -pow(-v,1/3);
+      return pow(v,1/3);
+    }
+
+
+
+    function point(t, p1, p2, p3, p4) {
+    	var ti = 1 - t;
+    	var ti2 = ti * ti;
+    	var t2 = t * t;
+
+    	return ti * ti2 * p1 + 3 * ti2 * t * p2 + t2 * 3 * ti * p3 + t2 * t * p4;
+    }
+
+
+    class CBezier extends Float64Array{
+    	constructor(x1, y1, x2, y2, x3, y3, x4, y4) {
+    		super(8);
+
+    		//Map P1 and P2 to {0,0,1,1} if only four arguments are provided; for use with animations
+    		if(arguments.length == 4){
+    			this[0] = 0;
+    			this[1] = 0;
+    			this[2] = x1;
+    			this[3] = y1;
+    			this[4] = x2;
+    			this[5] = y2;
+    			this[6] = 1;
+    			this[7] = 1;
+    			return;
+    		}
+    		
+    		if (typeof(x1) == "number") {
+    			this[0] = x1;
+    			this[1] = y1;
+    			this[2] = x2;
+    			this[3] = y2;
+    			this[4] = x3;
+    			this[5] = y3;
+    			this[6] = x4;
+    			this[7] = y4;
+    			return;
+    		}
+
+    		if (x1 instanceof Array) {
+    			this[0] = x1[0];
+    			this[1] = x1[1];
+    			this[2] = x1[2];
+    			this[3] = x1[3];
+    			this[4] = x1[4];
+    			this[5] = x1[5];
+    			this[6] = x1[6];
+    			this[7] = x1[4];
+    			return;
+    		}
+    	}
+
+    	get x1 (){ return this[0]}
+    	set x1 (v){this[0] = v;}
+    	get x2 (){ return this[2]}
+    	set x2 (v){this[2] = v;}
+    	get x3 (){ return this[4]}
+    	set x3 (v){this[4] = v;}
+    	get x4 (){ return this[6]}
+    	set x4 (v){this[6] = v;}
+    	get y1 (){ return this[1]}
+    	set y1 (v){this[1] = v;}
+    	get y2 (){ return this[3]}
+    	set y2 (v){this[3] = v;}
+    	get y3 (){ return this[5]}
+    	set y3 (v){this[5] = v;}
+    	get y4 (){ return this[7]}
+    	set y4 (v){this[7] = v;}
+
+    	add(x,y = 0){
+    		return new CCurve(
+    			this[0] + x,
+    			this[1] + y,
+    			this[2] + x,
+    			this[3] + y,
+    			this[4] + x,
+    			this[5] + y,
+    			this[6] + x,
+    			this[7] + y
+    		)
+    	}
+
+    	valY(t){
+    		return point(t, this[1], this[3], this[5], this[7]);
+    	}
+
+    	valX(t){
+    		return point(t, this[0], this[2], this[4], this[6]);
+    	}
+
+    	point(t) {
+    		return new Point2D(
+    			point(t, this[0], this[2], this[4], this[6]),
+    			point(t, this[1], this[3], this[5], this[7])
+    		)
+    	}
+    	
+    	/** 
+    		Acquired from : https://pomax.github.io/bezierinfo/
+    		Author:  Mike "Pomax" Kamermans
+    		GitHub: https://github.com/Pomax/
+    	*/
+
+    	roots(p1,p2,p3,p4) {
+    		var d = (-p1 + 3 * p2 - 3 * p3 + p4),
+    			a = (3 * p1 - 6 * p2 + 3 * p3) / d,
+    			b = (-3 * p1 + 3 * p2) / d,
+    			c = p1 / d;
+
+    		var p = (3 * b - a * a) / 3,
+    			p3 = p / 3,
+    			q = (2 * a * a * a - 9 * a * b + 27 * c) / 27,
+    			q2 = q / 2,
+    			discriminant = q2 * q2 + p3 * p3 * p3;
+
+    		// and some variables we're going to use later on:
+    		var u1, v1, root1, root2, root3;
+
+    		// three possible real roots:
+    		if (discriminant < 0) {
+    			var mp3 = -p / 3,
+    				mp33 = mp3 * mp3 * mp3,
+    				r = sqrt(mp33),
+    				t = -q / (2 * r),
+    				cosphi = t < -1 ? -1 : t > 1 ? 1 : t,
+    				phi = acos(cosphi),
+    				crtr = cuberoot(r),
+    				t1 = 2 * crtr;
+    			root1 = t1 * cos(phi / 3) - a / 3;
+    			root2 = t1 * cos((phi + 2 * PI) / 3) - a / 3;
+    			root3 = t1 * cos((phi + 4 * PI) / 3) - a / 3;
+    			return [root3, root1, root2]
+    		}
+
+    		// three real roots, but two of them are equal:
+    		if (discriminant === 0) {
+    			u1 = q2 < 0 ? cuberoot(-q2) : -cuberoot(q2);
+    			root1 = 2 * u1 - a / 3;
+    			root2 = -u1 - a / 3;
+    			return [root2, root1];
+    		}
+
+    		// one real root, two complex roots
+    		var sd = sqrt(discriminant);
+    		u1 = cuberoot(sd - q2);
+    		v1 = cuberoot(sd + q2);
+    		root1 = u1 - v1 - a / 3;
+    		return [root1];
+    	}
+
+    	rootsY() {
+    		return this.roots(this[1],this[3],this[5],this[7]);
+    	}
+
+    	rootsX() {
+    		return this.roots(this[0],this[2],this[4],this[6]);
+    	}
+    	
+    	getYatX(x){
+    		var x1 = this[0] - x, x2 = this[2] - x, x3 = this[4] - x, x4 = this[6] - x,
+    			x2_3 = x2 * 3, x1_3 = x1 *3, x3_3 = x3 * 3,
+    			d = (-x1 + x2_3 - x3_3 + x4), di = 1/d, i3 = 1/3,
+    			a = (x1_3 - 6 * x2 + x3_3) * di,
+    			b = (-x1_3 + x2_3) * di,
+    			c = x1 * di,
+    			p = (3 * b - a * a) * i3,
+    			p3 = p * i3,
+    			q = (2 * a * a * a - 9 * a * b + 27 * c) * (1/27),
+    			q2 = q * 0.5,
+    			discriminant = q2 * q2 + p3 * p3 * p3;
+
+    		// and some variables we're going to use later on:
+    		var u1, v1, root;
+
+    		//Three real roots can never happen if p1(0,0) and p4(1,1);
+
+    		// three real roots, but two of them are equal:
+    		if (discriminant < 0) {
+    			var mp3 = -p / 3,
+    				mp33 = mp3 * mp3 * mp3,
+    				r = sqrt(mp33),
+    				t = -q / (2 * r),
+    				cosphi = t < -1 ? -1 : t > 1 ? 1 : t,
+    				phi = acos(cosphi),
+    				crtr = cuberoot(r),
+    				t1 = 2 * crtr;
+    			root = t1 * cos((phi + 4 * PI) / 3) - a / 3;
+    		}else if (discriminant === 0) {
+    			u1 = q2 < 0 ? cuberoot(-q2) : -cuberoot(q2);
+    			root = -u1 - a * i3;
+    		}else{
+    			var sd = sqrt(discriminant);
+    			// one real root, two complex roots
+    			u1 = cuberoot(sd - q2);
+    			v1 = cuberoot(sd + q2);
+    			root = u1 - v1 - a * i3;	
+    		}
+
+    		return point(root, this[1], this[3], this[5], this[7]);
+    	}
+    	/**
+    		Given a Canvas 2D context object and scale value, strokes a cubic bezier curve.
+    	*/
+    	draw(ctx, s = 1){
+    		ctx.beginPath();
+    		ctx.moveTo(this[0]*s, this[1]*s);
+    		ctx.bezierCurveTo(
+    			this[2]*s, this[3]*s,
+    			this[4]*s, this[5]*s,
+    			this[6]*s, this[7]*s
+    			);
+    		ctx.stroke();
+    	}
+    }
+
     class CSS_Bezier extends CBezier {
     	static _parse_(l, rule, r) {
 
@@ -7647,7 +6037,7 @@ var wick = (function (exports) {
      * @alias module:wick~internals.css.types.
      * @enum {object}
      */
-    const types$1 = {
+    const types = {
         color: CSS_Color,
         length: CSS_Length,
         time: CSS_Length,
@@ -7958,7 +6348,7 @@ var wick = (function (exports) {
      */
     class CSSSelector {
 
-        constructor(selectors /* string */ , selectors_arrays /* array */) {
+        constructor(selectors /* string */ , selectors_arrays /* array */ ) {
 
             /**
              * The raw selector string value
@@ -7981,7 +6371,7 @@ var wick = (function (exports) {
             this.r = null;
         }
 
-        get id(){
+        get id() {
             return this.v.join("");
         }
         /**
@@ -7990,20 +6380,20 @@ var wick = (function (exports) {
          */
         toString(off = 0) {
             let offset = ("    ").repeat(off);
-            
+
             let str = `${offset}${this.v.join(", ")} {\n`;
 
-            if (this.r) 
-                str += this.r.toString(off+1);
-            
+            if (this.r)
+                str += this.r.toString(off + 1);
+
             return str + `${offset}}\n`;
         }
 
-        addProp(string){
+        addProp(string) {
             let root = this.r.root;
-            if(root){
-                let lex = new Lexer(string);
-                while(!lex.END)
+            if (root) {
+                let lex = whind$1__default(string);
+                while (!lex.END)
                     root.parseProperty(lex, this.r, property_definitions);
             }
         }
@@ -8032,10 +6422,11 @@ var wick = (function (exports) {
         }
 
         toString(off = 0) {
-            let str = [], offset = ("    ").repeat(off);
+            let str = [],
+                offset = ("    ").repeat(off);
 
             for (let a in this.props) {
-                if(this.props[a] !== null){  
+                if (this.props[a] !== null) {
                     if (Array.isArray(this.props[a]))
                         str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
                     else
@@ -8043,12 +6434,12 @@ var wick = (function (exports) {
                 }
             }
 
-            return str.join("");//JSON.stringify(this.props).replace(/\"/g, "").replace(/\_/g, "-");
+            return str.join(""); //JSON.stringify(this.props).replace(/\"/g, "").replace(/\_/g, "-");
         }
 
         merge(rule) {
             if (rule.props) {
-                for (let n in rule.props) 
+                for (let n in rule.props)
                     this.props[n] = rule.props[n];
                 this.LOADED = true;
             }
@@ -8089,7 +6480,7 @@ var wick = (function (exports) {
 
         _parse_(lx, rule, out_val) {
             if (typeof(lx) == "string")
-                lx = new Lexer(lx);
+                lx = whind$1__default(lx);
 
             let r = out_val || { v: null },
                 start = isNaN(this.r[0]) ? 1 : this.r[0],
@@ -8194,7 +6585,7 @@ var wick = (function (exports) {
 
             const IS_VIRTUAL = { is: false };
 
-            if (!(this._value_ = types$1[value]))
+            if (!(this._value_ = types[value]))
                 this._value_ = getPropertyParser(value, IS_VIRTUAL, definitions);
 
             this._prop_ = "";
@@ -8208,7 +6599,7 @@ var wick = (function (exports) {
 
         _parse_(l, rule, r) {
             if (typeof(l) == "string")
-                l = new Lexer(l);
+                l = whind$1__default(l);
 
             let rn = { v: null };
 
@@ -8265,7 +6656,7 @@ var wick = (function (exports) {
         _parse_(l, rule, r) {
 
             if (typeof(l) == "string")
-                l = new Lexer(l);
+                l = whind$1__default(l);
 
             let v = l.tx;
             if (v == this._value_) {
@@ -8294,7 +6685,7 @@ var wick = (function (exports) {
     class SymbolTerm extends LiteralTerm {
         _parse_(l, rule, r) {
             if (typeof(l) == "string")
-                l = new Lexer(l);
+                l = whind$1__default(l);
 
             if (l.tx == this._value_) {
                 l.n();
@@ -8335,7 +6726,7 @@ var wick = (function (exports) {
 
     function _CreatePropertyParser_(notation, name, definitions) {
 
-        const l = new Lexer(notation);
+        const l = whind$1__default(notation);
 
         const important = { is: false };
 
@@ -8605,7 +6996,7 @@ var wick = (function (exports) {
                 let ss = criteria.ss[i];
                 switch (ss.t) {
                     case "attribute":
-                        let lex = new Lexer(ss.v);
+                        let lex = whind$1__default(ss.v);
                         if (lex.ch == "[" && lex.pk.ty == lex.types.id) {
                             let id = lex.sync().tx;
                             let attrib = ele.getAttribute(id);
@@ -8884,7 +7275,7 @@ var wick = (function (exports) {
                                 case "import":
                                     /* https://drafts.csswg.org/css-cascade/#at-ruledef-import */
                                     let type;
-                                    if (type = types$1.url._parse_(lexer.n())) {
+                                    if (type = types.url._parse_(lexer.n())) {
                                         lexer.a(";");
                                         /**
                                          * The {@link CSS_URL} incorporates a fetch mechanism that returns a Promise instance.
@@ -8896,7 +7287,7 @@ var wick = (function (exports) {
                                         return type.fetchText().then((str) =>
                                             //Successfully fetched content, proceed to _parse_ in the current root.
                                             //let import_lexer = ;
-                                            res(this._parse_(new Lexer(str, true), this).then((r) => this._parse_(lexer, r)))
+                                            res(this._parse_(whind$1__default(str, true), this).then((r) => this._parse_(lexer, r)))
                                             //_Parse_ returns Promise. 
                                             // return;
                                         ).catch((e) => res(this._parse_(lexer)));
@@ -8977,7 +7368,7 @@ var wick = (function (exports) {
         }
 
         createSelector(selector_value) {
-            let selector = this.parseSelector(new Lexer(selector_value));
+            let selector = this.parseSelector(whind$1__default(selector_value));
 
             if (selector)
                 if (!this._selectors_[selector.id]) {
@@ -9163,8 +7554,8 @@ var wick = (function (exports) {
      * @memberof module:wick.core
      * @alias css
      */
-    const CSSParser = (css_string, root = null) => (root = (!root || !(root instanceof CSSRootNode)) ? new CSSRootNode() : root, root._parse_(new Lexer(css_string, true)));
-    CSSParser.types = types$1;
+    const CSSParser = (css_string, root = null) => (root = (!root || !(root instanceof CSSRootNode)) ? new CSSRootNode() : root, root._parse_(whind(css_string, true)));
+    CSSParser.types = types;
 
     class IOBase {
 
@@ -11110,6 +9501,507 @@ var wick = (function (exports) {
         }
     }
 
+    /**
+     * @brief Path Info
+     * @details Path syntax information for reference
+     * 
+     * MoveTo: M, m
+     * LineTo: L, l, H, h, V, v
+     * Cubic Bézier Curve: C, c, S, s
+     * Quadratic Bézier Curve: Q, q, T, t
+     * Elliptical Arc Curve: A, a
+     * ClosePath: Z, z
+     * 
+     * Capital symbols represent absolute positioning, lowercase is relative
+     */
+    const PathSym = {
+        M: 0,
+        m: 1,
+        L: 2,
+        l: 3,
+        h: 4,
+        H: 5,
+        V: 6,
+        v: 7,
+        C: 8,
+        c: 9,
+        S: 10,
+        s: 11,
+        Q: 12,
+        q: 13,
+        T: 14,
+        t: 15,
+        A: 16,
+        a: 17,
+        Z: 18,
+        z: 19,
+        pairs: 20
+    };
+
+    function getSignedNumber(lex) {
+        let mult = 1,
+            tx = lex.tx;
+        if (tx == "-") {
+            mult = -1;
+            tx = lex.n().tx;
+        }
+        lex.n();
+        return parseFloat(tx) * mult;
+    }
+
+    function getNumberPair(lex, array) {
+        let x = getSignedNumber(lex);
+        if (lex.ch == ',') lex.n();
+        let y = getSignedNumber(lex);
+        array.push(x, y);
+    }
+
+    function parseNumberPairs(lex, array) {
+        while ((lex.ty == lex.types.num || lex.ch == "-") && !lex.END) {    	
+        	array.push(PathSym.pairs);
+            getNumberPair(lex, array);
+        }
+    }
+    /**
+     * @brief An array store of path data in numerical form
+     */
+    class Path extends Array {
+        static FromString(string, array) {
+            let lex = whind(string);
+            while (!lex.END) {
+                let relative = false,
+                    x = 0,
+                    y = 0;
+                switch (lex.ch) {
+                    //Move to
+                    case "m":
+                        relative = true;
+                    case "M":
+                        lex.n(); //
+                        array.push((relative) ? PathSym.m : PathSym.M);
+                        getNumberPair(lex, array);
+                        parseNumberPairs(lex, array);
+                        continue;
+                        //Line to
+                    case "h":
+                        relative = true;
+                    case "H":
+                        lex.n();
+                        x = getSignedNumber(lex);
+                        array.push((relative) ? PathSym.h : PathSym.H, x);
+                        continue;
+                    case "v":
+                        relative = true;
+                    case "V":
+                        lex.n();
+                        y = getSignedNumber(lex);
+                        array.push((relative) ? PathSym.v : PathSym.V, y);
+                        continue;
+                    case "l":
+                        relative = true;
+                    case "L":
+                        lex.n();
+                        array.push((relative) ? PathSym.l : PathSym.L);
+                        getNumberPair(lex, array);
+                        parseNumberPairs(lex, array);
+                        continue;
+                        //Cubic Curve
+                    case "c":
+                        relative = true;
+                    case "C":
+                        array.push((relative) ? PathSym.c : PathSym.C);
+                        getNumberPair(lex, array);
+                        getNumberPair(lex, array);
+                        getNumberPair(lex, array);
+                        parseNumberPairs(lex, array);
+                        continue;
+                    case "s":
+                        relative = true;
+                    case "S":
+                        array.push((relative) ? PathSym.s : PathSym.S);
+                        getNumberPair(lex, array);
+                        getNumberPair(lex, array);
+                        parseNumberPairs(lex, array);
+                        continue;
+                        //Quadratic Curve0
+                    case "q":
+                        relative = true;
+                    case "Q":
+                        array.push((relative) ? PathSym.q : PathSym.Q);
+                        getNumberPair(lex, array);
+                        getNumberPair(lex, array);
+                        parseNumberPairs(lex, array);
+                        continue;
+                    case "t":
+                        relative = true;
+                    case "T":
+                        array.push((relative) ? PathSym.t : PathSym.T);
+                        getNumberPair(lex, array);
+                        parseNumberPairs(lex, array);
+                        continue;
+                        //Elliptical Arc
+                        //Close path:
+                    case "z":
+                        relative = true;
+                    case "Z":
+                        array.push((relative) ? PathSym.z : PathSym.Z);
+                }
+                lex.n();
+            }
+        }
+
+        static ToString(array) {
+        	let string = [], l = array.length, i = 0;
+        	while(i < l){
+        		switch(array[i++]){
+        			case PathSym.M:
+        				string.push("M", array[i++], array[i++]);
+        				break;
+    			    case PathSym.m:
+    			    	string.push("m", array[i++], array[i++]);
+    			    	break;
+    			    case PathSym.L:
+    			    	string.push("L", array[i++], array[i++]);
+    			    	break;
+    			    case PathSym.l:
+    			    	string.push("l", array[i++], array[i++]);
+    			    	break;
+    			    case PathSym.h:
+    			    	string.push("h", array[i++]);
+    			    	break;
+    			    case PathSym.H:
+    			    	string.push("H", array[i++]);
+    			    	break;
+    			    case PathSym.V:
+    			    	string.push("V", array[i++]);
+    			    	break;
+    			    case PathSym.v:
+    			    	string.push("v", array[i++]);
+    			    	break;
+    			    case PathSym.C:
+    			    	string.push("C", array[i++], array[i++], array[i++], array[i++], array[i++], array[i++]);
+    			    	break;
+    			    case PathSym.c:
+    			    	string.push("c", array[i++], array[i++], array[i++], array[i++], array[i++], array[i++]);
+    			    	break;
+    			    case PathSym.S:
+    			    	string.push("S", array[i++], array[i++], array[i++], array[i++]);
+    			    	break;
+    			    case PathSym.s:
+    			    	string.push("s", array[i++], array[i++], array[i++], array[i++]);
+    			    	break;
+    			    case PathSym.Q:
+    			    	string.push("Q", array[i++], array[i++], array[i++], array[i++]);
+    			    	break;
+    			    case PathSym.q:
+    			    	string.push("q", array[i++], array[i++], array[i++], array[i++]);
+    			    	break;
+    			    case PathSym.T:
+    			    	string.push("T", array[i++], array[i++]);
+    			    	break;
+    			    case PathSym.t:
+    			    	string.push("t", array[i++], array[i++]);
+    			    	break;
+    			    case PathSym.Z:
+    			    	string.push("Z");
+    			    	break;
+    			    case PathSym.z:
+    			    	string.push("z");
+    			    	break;
+    			    case PathSym.pairs:
+    			    	string.push(array[i++], array[i++]);
+    			    	break;
+    			 	case PathSym.A:
+    			    case PathSym.a:
+    			    default:
+    			    	i++;
+        		}
+        	}
+
+        	return string.join(" ");
+        }
+
+        
+        constructor(data) {
+            super();	
+
+        	if(typeof(data) == "string"){
+        		Path.FromString(data, this);
+        	}else if(Array.isArray(data)){
+        		for(let i = 0; i < data.length;i++){
+        			this.push(parseFloat(data[i]));
+        		}
+        	}
+        }
+
+        toString(){
+        	return Path.ToString(this);
+        }
+
+        lerp(to, t, array = new Path){
+        	let l = Math.min(this.length, to.length);
+
+        	for(let i = 0; i < l; i++)
+        		array[i] = this[i] + (to[i] - this[i]) * t;
+
+        	return array;
+        }	
+    }
+
+    function getValue(lex, attribute) {
+        let v = lex.tx,
+            mult = 1;
+
+        if (v == "-")
+            v = lex.n().tx, mult = -1;
+
+        let n = parseFloat(v) * mult;
+
+        lex.n();
+
+        if (lex.ch !== ")" && lex.ch !== ",") {
+            switch (lex.tx) {
+                case "%":
+                    break;
+
+                /* Rotational Values */
+                case "grad":
+                    n *= Math.PI / 200;
+                    break;
+                case "deg":
+                    n *= Math.PI / 180;
+                    break;
+                case "turn":
+                    n *= Math.PI * 2;
+                    break;
+                case "px":
+                    break;
+                case "em":
+                    break;
+            }
+            lex.n();
+        }
+        return n;
+    }
+
+    function ParseString(string, transform) {
+        var lex = whind(string);
+        while (!lex.END) {
+            let tx = lex.tx;
+            lex.n();
+            switch (tx) {
+                case "matrix":
+
+                    let a = getValue(lex.a("(")),
+                        b = getValue(lex.a(",")),
+                        c = getValue(lex.a(",")),
+                        d = getValue(lex.a(",")),
+                        r = -Math.atan2(b, a),
+                        sx1 = (a / Math.cos(r)) || 0,
+                        sx2 = (b / -Math.sin(r)) || 0,
+                        sy1 = (c / Math.sin(r)) || 0,
+                        sy2 = (d / Math.cos(r)) || 0;
+                    
+                    if(sx2 !== 0)
+                        transform.sx = (sx1 + sx2) * 0.5;
+                    else
+                        transform.sx = sx1;
+
+                    if(sy1 !== 0)
+                        transform.sy = (sy1 + sy2) * 0.5;
+                    else
+                        transform.sy = sy2;
+
+                    transform.px = getValue(lex.a(","));
+                    transform.py = getValue(lex.a(","));
+                    transform.r = r;
+                    lex.a(")");
+                    break;
+                case "matrix3d":
+                    break;
+                case "translate":
+                    transform.px = getValue(lex.a("("), "left");
+                    lex.a(",");
+                    transform.py = getValue(lex, "left");
+                    lex.a(")");
+                    continue;
+                case "translateX":
+                    transform.px = getValue(lex.a("("), "left");
+                    lex.a(")");
+                    continue;
+                case "translateY":
+                    transform.py = getValue(lex.a("("), "left");
+                    lex.a(")");
+                    continue;
+                case "scale":
+                    transform.sx = getValue(lex.a("("), "left");
+                    if(lex.ch ==","){
+                        lex.a(",");
+                        transform.sy = getValue(lex, "left");
+                    }
+                    else transform.sy = transform.sx;
+                    lex.a(")");
+                    continue;
+                case "scaleX":
+                    transform.sx = getValue(lex.a("("), "left");
+                    lex.a(")");
+                    continue;
+                case "scaleY":
+                    transform.sy = getValue(lex.a("("), "left");
+                    lex.a(")");
+                    continue;
+                case "scaleZ":
+                    break;
+                case "rotate":
+                    transform.r = getValue(lex.a("("));
+                    lex.a(")");
+                    continue;
+                case "rotateX":
+                    break;
+                case "rotateY":
+                    break;
+                case "rotateZ":
+                    break;
+                case "rotate3d":
+                    break;
+                case "perspective":
+                    break;
+            }
+            lex.n();
+        }
+    }
+    // A 2D transform compisition of 2D position, 2D scale, and 1D rotation.
+    class Transform2D extends Float64Array {
+        static ToString(pos = [0, 0], scl = [1, 1], rot = 0) {
+            var px = 0,
+                py = 0,
+                sx = 1,
+                sy = 1,
+                r = 0, cos = 1, sin = 0;
+            if (pos.length == 5) {
+                px = pos[0];
+                py = pos[1];
+                sx = pos[2];
+                sy = pos[3];
+                r = pos[4];
+            } else {
+                px = pos[0];
+                py = pos[1];
+                sx = scl[0];
+                sy = scl[1];
+                r = rot;
+            }
+            
+            if(r !== 0){
+                cos = Math.cos(r);
+                sin = Math.sin(r);
+            }
+
+            return `matrix(${cos * sx}, ${-sin * sx}, ${sy * sin}, ${sy * cos}, ${px}, ${py})`;
+        }
+
+
+        constructor(px, py, sx, sy, r) {
+            super(5);
+            this.sx = 1;
+            this.sy = 1;
+            if (px) {
+                if (px instanceof Transform2D) {
+                    this[0] = px[0];
+                    this[1] = px[1];
+                    this[2] = px[2];
+                    this[3] = px[3];
+                    this[4] = px[4];
+                } else if (typeof(px) == "string") ParseString(px, this);
+                else {
+                    this[0] = px;
+                    this[1] = py;
+                    this[2] = sx;
+                    this[3] = sy;
+                    this[4] = r;
+                }
+            }
+        }
+        get px() {
+            return this[0];
+        }
+        set px(v) {
+            this[0] = v;
+        }
+        get py() {
+            return this[1];
+        }
+        set py(v) {
+            this[1] = v;
+        }
+        get sx() {
+            return this[2];
+        }
+        set sx(v) {
+            this[2] = v;
+        }
+        get sy() {
+            return this[3];
+        }
+        set sy(v) {
+            this[3] = v;
+        }
+        get r() {
+            return this[4];
+        }
+        set r(v) {
+            this[4] = v;
+        }
+
+        set scale(s){
+            this.sx = s;
+            this.sy = s;
+        }
+
+        get scale(){
+            return this.sx;
+        }
+        
+        lerp(to, t) {
+            let out = new Transform2D();
+            for (let i = 0; i < 5; i++) out[i] = this[i] + (to[i] - this[i]) * t;
+            return out;
+        }
+        toString() {
+            return Transform2D.ToString(this);
+        }
+
+        copy(v) {
+            let copy = new Transform2D(this);
+
+
+            if (typeof(v) == "string")
+                ParseString(v, copy);
+
+            return copy;
+        }
+
+        /**
+         * Sets the transform value of a canvas 2D context;
+         */
+        setCTX(ctx){       
+            let cos = 1, sin = 0;
+            if(this[4] != 0){
+                cos = Math.cos(this[4]);
+                sin = Math.sin(this[4]);
+            }
+            ctx.transform(cos * this[2], -sin * this[2], this[3] * sin, this[3] * cos, this[0], this[1]);
+        }
+
+        getLocalX(X){
+            return (X - this.px) / this.sx;
+        }
+
+        getLocalY(Y){
+            return (Y - this.py) / this.sy;
+        }
+    }
+
     const Animation = (function anim() {
         var USE_TRANSFORM = false;
         const
@@ -12891,17 +11783,17 @@ var wick = (function (exports) {
      */
     function CompileSource(SourcePackage, presets, element, url, win = window) {
         let lex;
-        if (element instanceof Lexer) {
+        if (element instanceof whind$1__default.constructor) {
             lex = element;
         } else if (typeof(element) == "string")
-            lex = new Lexer(element);
+            lex = whind$1__default(element);
         else if (element instanceof EL) {
             if (element.tagName == "TEMPLATE") {
                 let temp = document.createElement("div");
                 temp.appendChild(element.content);
                 element = temp;
             }
-            lex = new Lexer(element.innerHTML);
+            lex = whind$1__default(element.innerHTML);
         } else {
             let e = new Error("Cannot compile component");
             SourcePackage._addError_(e);
@@ -12971,7 +11863,7 @@ var wick = (function (exports) {
                 this._skeletons_.push(new Skeleton(element, presets));
                 this._complete_();
                 return;
-            } else if (!(element instanceof EL) && typeof(element) !== "string" && !(element instanceof Lexer)) {
+            } else if (!(element instanceof EL) && typeof(element) !== "string" && !(element instanceof whind$1__default.constructor)) {
                 let err = new Error("Could not create package. element is not an HTMLElement");
                 this._addError_(err);
                 this._complete_();
@@ -14105,6 +12997,477 @@ var wick = (function (exports) {
         }
     }
 
+    function posOnCurve(t, p1, p2, p3) {
+        var ti = 1 - t;
+        return ti * ti * p1 + 2 * ti * t * p2 + t * t * p3;
+    }
+
+    function splitCurve(bp, t) {
+        var left = [];
+        var right = [];
+
+        function drawCurve(bp, t) {
+            if (bp.length == 2) {
+                left.push(bp[0], bp[1]);
+                right.push(bp[0], bp[1]);
+            } else {
+                var new_bp = []; //bp.slice(0,-2);
+                for (var i = 0; i < bp.length - 2; i += 2) {
+                    if (i == 0) {
+                        left.push(bp[i], bp[i + 1]);
+                    }
+                    if (i == bp.length - 4) {
+                        right.push(bp[i + 2], bp[i + 3]);
+                    }
+                    new_bp.push((1 - t) * bp[i] + t * bp[i + 2]);
+                    new_bp.push((1 - t) * bp[i + 1] + t * bp[i + 3]);
+                }
+                drawCurve(new_bp, t);
+            }
+        }
+
+        drawCurve(bp, t);
+
+        return {
+            x: new QBezier(right),
+            y: new QBezier(left)
+        };
+    }
+
+    function curveIntersections(p1, p2, p3) {
+        var intersections = {
+            a: Infinity,
+            b: Infinity
+        };
+
+        var a = p1 - 2 * p2 + p3;
+
+        var b = 2 * (p2 - p1);
+
+        var c = p1;
+
+        if (b == 0) ; else if (Math.abs(a) < 0.00000000005) {
+            intersections.a = (-c / b); //c / b;
+        } else {
+
+            intersections.a = ((-b - Math.sqrt((b * b) - 4 * a * c)) / (2 * a));
+            intersections.b = ((-b + Math.sqrt((b * b) - 4 * a * c)) / (2 * a));
+        }
+        return intersections
+    }
+
+    class QBezier {
+        constructor(x1, y1, x2, y2, x3, y3) {
+            this.x1 = 0;
+            this.x2 = 0;
+            this.x3 = 0;
+            this.y1 = 0;
+            this.y2 = 0;
+            this.y3 = 0;
+
+            if (typeof(x1) == "number") {
+                this.x1 = x1;
+                this.x2 = x2;
+                this.x3 = x3;
+                this.y1 = y1;
+                this.y2 = y2;
+                this.y3 = y3;
+                return;
+            }
+
+            if (x1 instanceof QBezier) {
+                this.x1 = x1.x1;
+                this.x2 = x1.x2;
+                this.x3 = x1.x3;
+                this.y1 = x1.y1;
+                this.y2 = x1.y2;
+                this.y3 = x1.y3;
+                return;
+            }
+
+            if (x1 instanceof Array) {
+                this.x1 = x1[0];
+                this.y1 = x1[1];
+                this.x2 = x1[2];
+                this.y2 = x1[3];
+                this.x3 = x1[4];
+                this.y3 = x1[5];
+                return;
+            }
+        }
+
+        reverse() {
+            return new QBezier(
+                this.x3,
+                this.y3,
+                this.x2,
+                this.y2,
+                this.x1,
+                this.y1
+            )
+        }
+
+        point(t) {
+            return new Point2D(
+                posOnCurve(t, this.x1, this.x2, this.x3),
+                posOnCurve(t, this.y1, this.y2, this.y3))
+
+        }
+
+        tangent(t) {
+            var tan = {
+                x: 0,
+                y: 0
+            };
+
+            var px1 = this.x2 - this.x1;
+            var py1 = this.y2 - this.y1;
+
+            var px2 = this.x3 - this.x2;
+            var py2 = this.y3 - this.y2;
+
+            tan.x = (1 - t) * px1 + t * px2;
+            tan.y = (1 - t) * py1 + t * py2;
+
+            return tan;
+        }
+
+        toArray() {
+            return [this.x1, this.y1, this.x2, this.y2, this.x3, this.y3];
+        }
+
+        split(t) {
+            return splitCurve(this.toArray(), t);
+        }
+
+        rootsX() {
+            return this.roots(
+                this.x1,
+                this.x2,
+                this.x3
+            )
+
+        }
+
+        roots(p1, p2, p3) {
+            var curve = this.toArray();
+
+            var c = p1 - (2 * p2) + p3;
+            var b = 2 * (p2 - p1);
+            var a = p1;
+            var a2 = a * 2;
+            var sqrt = Math.sqrt(b * b - (a * 4 * c));
+            var t1 = (-b + sqrt) / a2;
+            var t2 = (-b - sqrt) / a2;
+
+            return [t1, t2];
+        }
+
+        rootsa() {
+            var curve = this.toArray();
+
+            var p1 = curve[1];
+            var p2 = curve[3];
+            var p3 = curve[5];
+            var x1 = curve[0];
+            var x2 = curve[2];
+            var x3 = curve[4];
+
+            var py1d = 2 * (p2 - p1);
+            var py2d = 2 * (p3 - p2);
+            var ad1 = -py1d + py2d;
+            var bd1 = py1d;
+
+            var px1d = 2 * (x2 - x1);
+            var px2d = 2 * (x3 - x2);
+            var ad2 = -px1d + px2d;
+            var bd2 = px1d;
+
+            var t1 = -bd1 / ad1;
+            var t2 = -bd2 / ad2;
+
+            return [t1, t2];
+        }
+
+        boundingBox() {
+            var x1 = curve[0];
+            var y1 = curve[1];
+            var x2 = curve[2];
+            var y2 = curve[3];
+            var x3 = curve[4];
+            var y3 = curve[5];
+            var roots = getRootsClamped(curve);
+            var min_x = Math.min(x1, x2, x3, roots.y[0] || Infinity, roots.x[0] || Infinity);
+            var min_y = Math.min(y1, y2, y3, roots.y[1] || Infinity, roots.x[1] || Infinity);
+            var max_x = Math.max(x1, x2, x3, roots.y[0] || -Infinity, roots.x[0] || -Infinity);
+            var max_y = Math.max(y1, y2, y3, roots.y[1] || -Infinity, roots.x[1] || -Infinity);
+
+            return {
+                min: {
+                    x: min_x,
+                    y: min_y
+                },
+                max: {
+                    x: max_x,
+                    y: max_y
+                }
+            };
+        }
+
+        rotate(angle, offset) {
+            angle = (angle / 180) * Math.PI;
+
+            var new_curve = this.toArray();
+
+            for (var i = 0; i < 6; i += 2) {
+                var x = curve[i] - offset.x;
+                var y = curve[i + 1] - offset.y;
+                new_curve[i] = ((x * Math.cos(angle) - y * Math.sin(angle))) + offset.x;
+                new_curve[i + 1] = ((x * Math.sin(angle) + y * Math.cos(angle))) + offset.y;
+            }
+
+            return new QBezier(new_curve);
+        }
+
+        intersects() {
+            return {
+                x: curveIntersections(this.x1, this.x2, this.x3),
+                y: curveIntersections(this.y1, this.y2, this.y3)
+            }
+        }
+
+        add(x, y) {
+            if (typeof(x) == "number") {
+                return new QBezier(
+                    this.x1 + x,
+                    this.y1 + y,
+                    this.x2 + x,
+                    this.y2 + y,
+                    this.x3 + x,
+                    this.y3 + y,
+                )
+            }
+        }
+    }
+
+    /**
+        JavaScript implementation of a touch scrolling interface using touch events
+    */
+    class TouchScroller {
+        /** 
+            Constructs a touch object around a given dom element. Functions listeners can be bound to this object using
+            this addEventListener method.
+        */
+        constructor(element, drag = 0.02, touchid = 0) {
+
+            this.origin_x = 0;
+            this.origin_y = 0;
+            this.velocity_x = 0;
+            this.velocity_y = 0;
+            this.GO = true;
+            this.drag = (drag > 0) ? drag : 0.1;
+            this.ele = element;
+
+
+            this.listeners = [];
+
+            if (!touchid instanceof Number)
+                touchid = 0;
+
+            let time_old = 0;
+
+            let READY = true;
+
+            let frame = (dx, dy, steps, ratio = 1) => {
+
+                let drag_val = this.drag;
+
+                dx -= dx * drag_val * steps * ratio;
+                dy -= dy * drag_val * steps * ratio;
+
+                let dm = Math.max(Math.abs(dy), Math.abs(dy));
+
+                let end = !(steps > 0 && dm > 0.1 && this.GO);
+
+                if (!end) {
+                    requestAnimationFrame(() => {
+                        frame(dx, dy, 1);
+                    });
+                }
+
+                end = end && steps != 0;
+
+                for (var i = 0, l = this.listeners.length; i < l; i++) {
+
+                    if (this.listeners[i]({
+                            dx: dx | 0,
+                            dy: dy | 0,
+                            end
+                        })) {
+                        this.GO = false;
+                    }
+                }
+
+                READY = true;
+            };
+
+            this.event_b = (e) => {
+                time_old = performance.now();
+
+                var touch = e;//.touches[touchid];
+
+                this.velocity_x = this.origin_x - touch.clientX;
+                this.velocity_y = this.origin_y - touch.clientY;
+
+                if (READY) {
+                    this.origin_x = touch.clientX;
+                    this.origin_y = touch.clientY;
+                    requestAnimationFrame(() => {
+                        frame(this.velocity_x, this.velocity_y, 0, 0);
+                    });
+                    READY = false;
+                }
+            };
+
+            this.event_c = (e) => {
+                let time_new = performance.now();
+
+                let diff = time_new - time_old;
+
+                let steps = Math.min(diff / 8.6666666, 1 / this.drag); // 60 FPS
+
+                this.GO = true;
+
+                frame(this.velocity_x, this.velocity_y, steps);
+
+                this.velocity_x = 0;
+                this.velocity_y = 0;
+
+                window.removeEventListener("pointermove", this.event_b);
+                window.removeEventListener("pointerup", this.event_c);
+            };
+
+            this.event_a = (e) => {
+
+                if (!this.GO) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+
+                time_old = performance.now();
+
+                this.GO = false;
+
+                var touch = e;//.touches[touchid];
+
+                if (!touch)
+                    return;
+
+                this.origin_y = touch.clientY;
+                this.origin_x = touch.clientX;
+
+                window.addEventListener("pointermove", this.event_b);
+                window.addEventListener("pointerup", this.event_c);
+            };
+
+            this.ele.addEventListener("pointerdown", this.event_a);
+        }
+
+        _destroy_() {
+            this.listeners = null;
+            this.ele.removeEventListener("pointerdown", this.event_a);
+        }
+
+
+
+        addEventListener(callback) {
+            if (callback instanceof Function) {
+
+                for (var i = 0; i < this.listeners.length; i++) {
+                    if (this.listeners[i] == callback) return
+                }
+
+                this.listeners.push(callback);
+            }
+        }
+
+        removeEventListener(callback) {
+            for (var i = 0; i < this.listeners.length; i++) {
+                if (this.listeners[i] == callback) {
+                    this.listeners.splice(i, 1);
+                    return;
+                }
+            }
+        }
+    }
+
+    /****** Global Object Extenders *************/
+    if(!EL.prototype) EL.prototype = {};
+
+    EL.prototype.getWindowTop = function(){
+        return (this.offsetTop + ((this.parentElement) ? this.parentElement.getWindowTop() : 0));
+    };
+
+    EL.prototype.getWindowLeft = function(){
+        return (this.offsetLeft + ((this.parentElement) ? this.parentElement.getWindowLeft() : 0));
+    };
+
+    EL.prototype.getParentWindowTop = function(bool = false){
+        return (((bool ? this.offsetTop : 0))+((this.parentElement) ? this.parentElement.getParentWindowTop(true) : 0));
+    };
+
+    EL.prototype.getParentWindowLeft = function(bool = false){
+        return (((bool ? this.offsetLeft : 0))+((this.parentElement) ? this.parentElement.getWindowLeft(true) : 0));
+    };
+
+    EL.prototype.getStyle = function(style_name){
+    	return window.getComputedStyle(this,null).getPropertyValue(style_name);
+    };
+
+    /**************** POLYFILLS ************************************/
+
+    /**
+     * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String}
+     */
+    if (typeof Object.assign != 'function') {
+      // Must be writable: true, enumerable: false, configurable: true
+      Object.defineProperty(Object, "assign", {
+        value: function assign(target, varArgs) { // .length of function is 2
+          if (target == null) { // TypeError if undefined or null
+            throw new TypeError('Cannot convert undefined or null to object');
+          }
+
+          var to = Object(target);
+
+          for (var index = 1; index < arguments.length; index++) {
+            var nextSource = arguments[index];
+
+            if (nextSource != null) { // Skip over if undefined or null
+              for (var nextKey in nextSource) {
+                // Avoid bugs when hasOwnProperty is shadowed
+                if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                  to[nextKey] = nextSource[nextKey];
+                }
+              }
+            }
+          }
+          return to;
+        },
+        writable: true,
+        configurable: true
+      });
+    }
+
+    var Common = /*#__PURE__*/Object.freeze({
+        Lexer: whind$1,
+        QBezier: QBezier,
+        CBezier: CBezier,
+        TouchScroller: TouchScroller,
+        Transform2D: Transform2D,
+        Path: Path
+    });
+
     /** This is the entire object structure of Wick, minus the platform specific outputs found in /source/root/ */
 
     const anim = Animation;
@@ -14148,7 +13511,7 @@ var wick = (function (exports) {
         presets: a => new Presets(a),
         scheduler: scheduler,
         common: Common,
-        lexer: (string, INCLUDE_WHITE_SPACE_TOKENS) => new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS),
+        lexer: whind$1__default,
         animation: Animation,
         view: View,
         css: CSSParser,
@@ -14166,7 +13529,7 @@ var wick = (function (exports) {
     };
 
     core.source.compiler = CompileSource;
-    core.lexer.constr = Lexer;
+    core.lexer.constr = whind$1__default.constructor;
     CompileSource.nodes = {
         root: RootNode,
         style: StyleNode$1,
@@ -14179,7 +13542,7 @@ var wick = (function (exports) {
     };
 
     let internals = { /* Empty if production */ };
-    internals.lexer = Lexer;
+    internals.lexer = whind$1__default.constructor;
     internals.scheduler = scheduler;
 
     core.source.package = SourcePackage;
@@ -14233,6 +13596,15 @@ var wick = (function (exports) {
 
         return { presets, router };
     }
+    var client = {
+        anim,
+        source,
+        scheme,
+        model: model$1,
+        core,
+        internals,
+        startRouting
+    };
 
     exports.anim = anim;
     exports.source = source;
@@ -14241,7 +13613,8 @@ var wick = (function (exports) {
     exports.core = core;
     exports.internals = internals;
     exports.startRouting = startRouting;
+    exports.default = client;
 
     return exports;
 
-}({}));
+}({},whind$1));

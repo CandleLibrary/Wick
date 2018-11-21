@@ -520,10 +520,19 @@
 	"buffers":
 	[
 		{
-			"file": "wick.sublime-project",
+			"file": "build/config/config.js",
 			"settings":
 			{
-				"buffer_size": 496,
+				"buffer_size": 630,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "package.json",
+			"settings":
+			{
+				"buffer_size": 2630,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		}
@@ -564,7 +573,7 @@
 	},
 	"console":
 	{
-		"height": 416.0,
+		"height": 217.0,
 		"history":
 		[
 		]
@@ -584,65 +593,27 @@
 	],
 	"file_history":
 	[
-		"/D/Work/wick/source/root/client.js",
-		"/D/Work/wick/build/config/config.js",
-		"/D/Work/flame/package.json",
-		"/D/Work/wick/source/network/wurl.js",
-		"/D/Work/wick/package.json",
-		"/D/work/wick/source/root/dev.js",
-		"/D/work/wick/source/schema/types/date.js",
-		"/D/Work/wick/source/source/package.js",
-		"/D/Work/wick/source/common/html/root.js",
-		"/D/Work/wick/.gitignore",
-		"/D/Work/wick/.git/COMMIT_EDITMSG",
-		"/D/Work/js.blend/package.json",
-		"/D/work/wick/source/common/math/transform.js",
-		"/D/work/wick/source/common/css/types/color.js",
-		"/D/work/wick/source/common/css/types/gradient.js",
-		"/D/work/wick/source/common/css/types/length.js",
-		"/D/work/wick/source/common/css/types/percentage.js",
-		"/D/work/wick/source/common/design/path.js",
-		"/D/work/wick/source/common/html/root.js",
-		"/D/work/wick/source/network/wurl.js",
-		"/D/work/wick/source/root/config/library.js",
-		"/D/work/wick/source/source/compiler/compiler.js",
-		"/D/work/wick/source/source/package.js",
-		"/D/work/wick/source/common/css/root.js",
-		"/D/work/wick/source/common/common.js",
-		"/D/work/wick/source/common/css/body.js",
-		"/D/work/wick/source/common/css/nodes.js",
-		"/D/work/wick/source/common/css/properties/terms.js",
-		"/D/work/wick/source/common/css/properties/parser.js",
-		"/D/work/wick/source/common/css/properties/productions.js",
-		"/D/Work/wick/source/common/css/root.js",
-		"/D/Work/wick/source/source/io/style_io.js",
-		"/D/Work/wick/test/suite/lexer_tests.js",
-		"/D/Work/wick/test/data/template.html",
-		"/D/Work/wick/test/test.js",
-		"/D/Work/wick/test/index.html",
-		"/D/Work/wick/test/suite/html_tests.js",
-		"/D/Work/wick/source/root/config/library.js",
+		"/D/Work/wick/wick.sublime-project",
 		"/D/Work/wick/source/source/compiler/compiler.js",
 		"/D/Work/wick/source/source/compiler/template/template_bindings.js",
 		"/D/Work/wick/source/source/compiler/nodes/style.js",
 		"/D/Work/wick/source/source/compiler/nodes/root.js",
 		"/D/Work/wick/test/data/template2.html",
 		"/D/Work/wick/test/data/source_template_sort_and_filter.html",
-		"/D/Work/whind/.gitignore",
 		"/D/Work/wick/test/data/page_data_2.html",
 		"/D/Work/wick/test/data/page_data_1.html",
 		"/D/Work/wick/test/data/page.html",
 		"/D/Work/wick/test/suite/router_tests.js",
+		"/D/Work/wick/source/common/css/root.js",
 		"/D/Work/wick/test/suite/model_tests.js",
 		"/D/Work/wick/test/suite/source_package_tests.js",
 		"/D/Work/wick/test/suite/source_tests.js",
 		"/D/Work/wick/test/data/source_template_transition.html",
-		"/D/Work/wick/build/config/browserdev.config.js",
-		"/D/work/wick/source/animation/animation.js",
-		"/D/Work/wick/source/common/string_parsing/lexer.js",
-		"/D/Work/wick/source/common/string_parsing/look_up_tables.js",
-		"/D/Work/wick/source/common/string_parsing/parser.js",
-		"/D/Work/wick/source/common/string_parsing/ascii_code_points.js",
+		"/D/Work/wick/source/network/wurl.js",
+		"/D/Work/wick/source/source/io/style_io.js",
+		"/D/Work/wick/test/data/template.html",
+		"/D/Work/wick/test/suite/html_tests.js",
+		"/D/Work/wick/source/common/html/root.js",
 		"/home/galactrax/Paranoms/pytrucks/static/js/app/models/bookings.js",
 		"/home/galactrax/Paranoms/pytrucks/static/js/app/models/party.js",
 		"/D/Users/Anthony/Desktop/test.html",
@@ -711,18 +682,55 @@
 		"/D/pytrucks/static/js/libraries/wick/source/model/container/array.js",
 		"/D/pytrucks/static/js/libraries/wick/source/model/schemed.js",
 		"/D/pytrucks/static/js/libraries/wick/test/data/source_template.html",
-		"/D/pytrucks/static/js/libraries/wick/source/model/base.js"
+		"/D/pytrucks/static/js/libraries/wick/source/model/base.js",
+		"/D/pytrucks/static/js/libraries/wick/source/source/compiler/nodes/link.js",
+		"/D/pytrucks/static/js/libraries/wick/source/source/io/event_io.js",
+		"/D/pytrucks/static/js/libraries/wick/test/suite/model_tests.js",
+		"/D/pytrucks/static/js/libraries/wick/source/source/compiler/nodes/index.js",
+		"/D/pytrucks/static/js/libraries/wick/source/network/wurl.js",
+		"/D/pytrucks/static/js/libraries/wick/source/common/presets.js",
+		"/D/pytrucks/static/js/libraries/wick/source/source/compiler/template/template_evaluator.js",
+		"/D/pytrucks/static/js/libraries/wick/docs/meta/ROADMAP.md",
+		"/D/pytrucks/static/js/libraries/wick/source/source/compiler/nodes/style.js",
+		"/D/pytrucks/static/js/libraries/wick/source/source/tap/tap.js",
+		"/D/pytrucks/static/js/libraries/wick/source/source/compiler/nodes/template.js",
+		"/D/pytrucks/static/js/libraries/wick/source/source/io/script_io.js",
+		"/D/pytrucks/static/js/libraries/wick/source/source/compiler/nodes/script.js",
+		"/D/pytrucks/static/js/libraries/wick/source/source/compiler/compiler.js",
+		"/D/pytrucks/static/js/libraries/wick/source/source/compiler/nodes/source.js",
+		"/D/pytrucks/static/js/libraries/wick/source/source/skeleton.js",
+		"/D/pytrucks/static/js/libraries/wick/source/common/css/nodes.js",
+		"/D/pytrucks/.git/COMMIT_EDITMSG",
+		"/D/pytrucks/static/js/libraries/wick/source/common/common.js",
+		"/D/pytrucks/static/js/libraries/wick/test/suite/source_package_tests.js",
+		"/D/pytrucks/static/js/libraries/wick/source/schema/schemas.js",
+		"/D/pytrucks/static/js/libraries/wick/test/suite/schema_tests.js",
+		"/D/pytrucks/static/js/libraries/wick/package.json",
+		"/D/pytrucks/static/js/libraries/wick/build/config/minibuild_es.config.js",
+		"/D/pytrucks/static/js/libraries/wick/build/config/minibuild.config.js",
+		"/D/pytrucks/static/js/libraries/wick/build/config/browserdev.config.js",
+		"/D/pytrucks/static/js/libraries/wick/build/wick-min.js",
+		"/D/pytrucks/static/js/libraries/wick/source/root/client.js",
+		"/D/pytrucks/static/js/libraries/wick/build/wick-dev.js",
+		"/D/pytrucks/static/js/libraries/wick/source/common/scheduler.js",
+		"/D/pytrucks/static/js/libraries/wick/docs/meta/CHANGELOG.md",
+		"/D/pytrucks/static/js/libraries/wick/README.md",
+		"/D/pytrucks/static/js/libraries/wick/source/model/container_revised/base.js",
+		"/D/pytrucks/static/js/libraries/wick/source/model/container_revised/array.js",
+		"/D/pytrucks/.git/modules/static/wick/rebase-merge/git-rebase-todo",
+		"/D/pytrucks/static/js/libraries/wick/source/model/model_revised.js",
+		"/D/pytrucks/static/js/libraries/wick/test/index.html",
+		"/D/pytrucks/static/js/libraries/wick/test/suite/html_tests.js"
 	],
 	"find":
 	{
-		"height": 40.0
+		"height": 38.0
 	},
 	"find_in_files":
 	{
-		"height": 622.0,
+		"height": 430.0,
 		"where_history":
 		[
-			"D:\\work\\wick\\source",
 			"D:\\wick\\source",
 			"D:\\pytrucks\\static\\js\\libraries\\wick\\source",
 			"/home/galactrax/wick/source/source",
@@ -731,26 +739,9 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": true,
+		"case_sensitive": false,
 		"find_history":
 		[
-			"whind",
-			"Lexer",
-			"L",
-			"Lexer",
-			"new Lexer",
-			"Lexer",
-			"new Lexer",
-			"Lexer",
-			"whind",
-			"Lexer",
-			"whind",
-			"Lexer",
-			"string_parsing",
-			"get ch",
-			".ch",
-			"setString",
-			"setStromg",
 			"console",
 			"observers",
 			"RootText",
@@ -861,7 +852,24 @@
 			"debugger",
 			"addIndex",
 			"this.sc",
-			"schemas"
+			"schemas",
+			"value",
+			"MultiIndexModelContainer",
+			"BtreeModelContainer",
+			"objects",
+			"ModelContainerBase",
+			"console",
+			"fetchLocalText",
+			"getter",
+			"objects",
+			"class Model",
+			"containers",
+			"mg",
+			"AnyModel",
+			"model_revised",
+			"container_revised",
+			"but",
+			"pick"
 		],
 		"highlight": false,
 		"in_selection": false,
@@ -869,7 +877,6 @@
 		"regex": false,
 		"replace_history":
 		[
-			"whind",
 			"createElement",
 			"Model",
 			"destroy"
@@ -877,37 +884,75 @@
 		"reverse": false,
 		"show_context": true,
 		"use_buffer2": true,
-		"whole_word": true,
+		"whole_word": false,
 		"wrap": true
 	},
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "wick.sublime-project",
+					"file": "build/config/config.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 496,
+						"buffer_size": 630,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								179,
-								179
+								169,
+								169
 							]
 						],
 						"settings":
 						{
+							"SL.707.region_keys":
+							[
+							],
+							"git_savvy.repo_path": "D:\\Work\\wick",
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "package.json",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2630,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1147,
+								1147
+							]
+						],
+						"settings":
+						{
+							"SL.709.region_keys":
+							[
+							],
 							"git_savvy.repo_path": "D:\\Work\\wick",
 							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
-							"translate_tabs_to_spaces": false
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -963,7 +1008,7 @@
 		"height": 0.0
 	},
 	"pinned_build_system": "mocha tests watch",
-	"project": "sublime-wick.sublime-project",
+	"project": "wick.sublime-project",
 	"replace":
 	{
 		"height": 50.0
@@ -976,64 +1021,12 @@
 		"selected_items":
 		[
 			[
-				"html",
-				"source\\common\\html\\root.js"
-			],
-			[
-				"wurl",
-				"source\\network\\wurl.js"
-			],
-			[
-				"cline",
-				"source\\root\\client.js"
-			],
-			[
-				"config",
-				"build\\config\\config.js"
-			],
-			[
-				"pac",
-				"package.json"
-			],
-			[
-				"git ",
-				".gitignore"
-			],
-			[
-				"pa",
-				"package.json"
-			],
-			[
-				"coni",
-				"build\\config\\config.js"
-			],
-			[
 				"pack",
 				"package.json"
 			],
 			[
-				"testhtml",
-				"test\\index.html"
-			],
-			[
-				"testhtm",
-				"test\\suite\\html_tests.js"
-			],
-			[
-				"tes",
-				"test\\test.js"
-			],
-			[
-				"lex",
-				"test\\suite\\lexer_tests.js"
-			],
-			[
-				"libr",
-				"source\\root\\config\\library.js"
-			],
-			[
-				"asc",
-				"source\\common\\string_parsing\\ascii_code_points.js"
+				"confi",
+				"build\\config\\config.js"
 			],
 			[
 				"page.",
@@ -1066,6 +1059,10 @@
 			[
 				"sourcetempl",
 				"test/data/source_template_transition.html"
+			],
+			[
+				"wurl",
+				"source/network/wurl.js"
 			],
 			[
 				"templ",
@@ -1102,6 +1099,10 @@
 			[
 				"cssnode",
 				"source\\common\\css\\nodes.js"
+			],
+			[
+				"libr",
+				"source\\root\\config\\library.js"
 			],
 			[
 				"htmlroot",
@@ -1180,6 +1181,10 @@
 				"source\\root\\config\\library.js"
 			],
 			[
+				"pac",
+				"source\\source\\package.js"
+			],
+			[
 				"cl",
 				"source\\root\\client.js"
 			],
@@ -1206,6 +1211,10 @@
 			[
 				"month",
 				"source\\common\\event\\touch_scroller.js"
+			],
+			[
+				"lex",
+				"source\\common\\string_parsing\\lexer.js"
 			],
 			[
 				"tra",
@@ -1468,10 +1477,6 @@
 				"test\\suite\\model_tests.js"
 			],
 			[
-				"confi",
-				"build\\config\\browserdev.config.js"
-			],
-			[
 				"arra",
 				"source\\model\\container\\array.js"
 			],
@@ -1486,6 +1491,46 @@
 			[
 				"Sche",
 				"source\\common\\scheduler.js"
+			],
+			[
+				"read",
+				"README.md"
+			],
+			[
+				"model_",
+				"test\\suite\\model_tests.js"
+			],
+			[
+				"cli",
+				"source\\root\\client.js"
+			],
+			[
+				"tests",
+				"test\\suite\\model_tests.js"
+			],
+			[
+				"templat",
+				"source\\source\\template.js"
+			],
+			[
+				"sourtempl",
+				"test\\data\\source_template.html"
+			],
+			[
+				"mcr",
+				"source\\model\\container_revised\\base.js"
+			],
+			[
+				"source_pakc",
+				"test\\suite\\source_package_tests.js"
+			],
+			[
+				"modcrb",
+				"source\\model\\container_revised\\base.js"
+			],
+			[
+				"modcrev",
+				"source\\model\\container_revised\\array.js"
 			]
 		],
 		"width": 0.0

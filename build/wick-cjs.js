@@ -4471,7 +4471,7 @@ class WURL {
     _getQuery_() {
         let map = (this.map) ? this.map : (this.map = new Map());
 
-        let lex = whind(this.query);
+        let lex = whind$1(this.query);
 
         const get_map = (k, m) => (m.has(k)) ? m.get(k) : m.set(k, new Map).get(k);
 
@@ -7090,17 +7090,17 @@ const property_definitions = {
 
     
     /* Box Model https://www.w3.org/TR/css-box-3 */
-    margin: `[<length>|<percentage>|auto]{1,4}`,
+    margin: `[<length>|<percentage>|0|auto]{1,4}`,
     margin_top: `<length>|<percentage>|auto`,
     margin_right: `<length>|<percentage>|auto`,
     margin_bottom: `<length>|<percentage>|auto`,
     margin_left: `<length>|<percentage>|auto`,
 
-    padding: `[<length>|<percentage>|auto]{1,4}`,
-    padding_top: `<length>|<percentage>|auto`,
-    padding_right: `<length>|<percentage>|auto`,
-    padding_bottom: `<length>|<percentage>|auto`,
-    padding_left: `<length>|<percentage>|auto`,
+    padding: `[<length>|<percentage>|0|auto]{1,4}`,
+    padding_top: `<length>|<percentage>|0|auto`,
+    padding_right: `<length>|<percentage>|0|auto`,
+    padding_bottom: `<length>|<percentage>|0|auto`,
+    padding_left: `<length>|<percentage>|0|auto`,
 
     min_width: `<length>|<percentage>|inherit`,
     max_width: `<length>|<percentage>|none|inherit`,
@@ -8915,7 +8915,7 @@ class EventIO {
         this._event_bind_ = new IOBase(source.getTap(event_bind.tap_name));
         this._event_ = event.replace("on", "");
 
-        this.prevent_defaults = true;
+        this.prevent_defaults = false;
         if (this._event_ == "dragstart") this.prevent_defaults = false;
         this._msg_ = null;
         this.data = null;
@@ -9146,7 +9146,7 @@ class DynamicBinding {
     }
     set type(v) {}
 
-    toString(){return `((${this.tap_name}))`}
+    toString(){return `((${this.tap_name}))`;}
 }
 
 class RawValueBinding {
@@ -9173,7 +9173,7 @@ class RawValueBinding {
     set _value_(v) {}
     get type() { return RAW_VALUE_BINDING_ID; }
     set type(v) {}
-    toString(){return this.txt}
+    toString(){return this.txt;}
 }
 
 /**
@@ -14497,6 +14497,15 @@ function startRouting(preset_options = {}) {
 
     return { presets, router };
 }
+var client = {
+    anim,
+    source,
+    scheme,
+    model: model$1,
+    core,
+    internals,
+    startRouting
+};
 
 exports.anim = anim;
 exports.source = source;
@@ -14505,3 +14514,4 @@ exports.model = model$1;
 exports.core = core;
 exports.internals = internals;
 exports.startRouting = startRouting;
+exports.default = client;

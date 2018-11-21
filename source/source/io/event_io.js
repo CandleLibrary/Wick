@@ -12,7 +12,7 @@ export class EventIO {
         this._event_bind_ = new IOBase(source.getTap(event_bind.tap_name));
         this._event_ = event.replace("on", "");
 
-        this.prevent_defaults = true;
+        this.prevent_defaults = false;
         if (this._event_ == "dragstart") this.prevent_defaults = false;
         this._msg_ = null;
         this.data = null;

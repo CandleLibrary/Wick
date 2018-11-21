@@ -3574,7 +3574,7 @@ class WURL {
     _getQuery_() {
         let map = (this.map) ? this.map : (this.map = new Map());
 
-        let lex = whind(this.query);
+        let lex = whind$1__default(this.query);
 
         const get_map = (k, m) => (m.has(k)) ? m.get(k) : m.set(k, new Map).get(k);
 
@@ -13600,6 +13600,15 @@ function startRouting(preset_options = {}) {
 
     return { presets, router };
 }
+var client = {
+    anim,
+    source,
+    scheme,
+    model: model$1,
+    core,
+    internals,
+    startRouting
+};
 
 exports.anim = anim;
 exports.source = source;
@@ -13608,3 +13617,4 @@ exports.model = model$1;
 exports.core = core;
 exports.internals = internals;
 exports.startRouting = startRouting;
+exports.default = client;
