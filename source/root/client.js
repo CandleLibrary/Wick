@@ -44,13 +44,38 @@ function startRouting(preset_options = {}) {
     return { presets, router };
 }
 
-export { anim };
-export { source };
-export { scheme };
-export { model };
-export { core };
-export { internals };
-export { startRouting };
+
+
+import { Presets } from "../common/presets";
+import { SchemeConstructor, DateSchemeConstructor, TimeSchemeConstructor, StringSchemeConstructor, NumberSchemeConstructor, BoolSchemeConstructor, schemes } from "../schema/schemas";
+import { Store } from "../model/store";
+import { SchemedModel } from "../model/schemed";
+import { Model } from "../model/model";
+import { ModelContainerBase } from "../model/container/base";
+import { MultiIndexedContainer } from "../model/container/multi";
+import { BTreeModelContainer } from "../model/container/btree";
+import { ArrayModelContainer } from "../model/container/array";
+import { View } from "../view/view";
+import { SourcePackage } from "../source/package";
+import { Source } from "../source/source";
+import { CompileSource as Compiler } from "../source/compiler/compiler";
+import { RootText } from "../source/compiler/nodes/root";
+import { RootNode } from "../source/compiler/nodes/index";
+import { StyleNode } from "../source/compiler/nodes/style";
+import { ScriptNode } from "../source/compiler/nodes/script";
+import { SourceNode } from "../source/compiler/nodes/source";
+import { PackageNode } from "../source/compiler/nodes/package";
+import { SVGNode } from "../source/compiler/nodes/svg";
+import { SourceTemplateNode } from "../source/compiler/nodes/template";
+import { CSSParser, CSSRootNode, CSSSelector, CSSRule } from "../common/css/root";
+import { HTMLParser } from "../common/html/root";
+import { WURL } from "../network/wurl";
+import { Router } from "../network/router";
+import { Animation } from "../animation/animation";
+import { Transitioneer } from "../animation/transitioneer";
+import * as Common from "../common/common";
+import { Scheduler } from "../common/scheduler";
+
 export default {
     anim,
     source,
@@ -58,5 +83,52 @@ export default {
     model,
     core,
     internals,
-    startRouting
+    startRouting,
+}
+
+export { anim,
+ source ,
+ scheme ,
+ model ,
+ core ,
+ internals ,
+ startRouting ,
+    Presets,
+    Store,
+    SchemedModel,
+    Model,
+    ModelContainerBase,
+    MultiIndexedContainer,
+    BTreeModelContainer,
+    ArrayModelContainer,
+    View,
+    SourcePackage,
+    Source,
+    CompileSource,
+    RootText,
+    RootNode,
+    StyleNode,
+    ScriptNode,
+    SourceNode,
+    PackageNode,
+    SourceTemplateNode,
+    SVGNode,
+    SchemeConstructor, 
+    DateSchemeConstructor, 
+    TimeSchemeConstructor, 
+    StringSchemeConstructor, 
+    NumberSchemeConstructor, 
+    BoolSchemeConstructor, 
+    schemes,
+    CSSParser, 
+    CSSRootNode, 
+    CSSSelector, 
+    CSSRule,
+    HTMLParser,
+    WURL,
+    Router,
+    Animation,
+Transitioneer,
+Scheduler,
+Common
 };

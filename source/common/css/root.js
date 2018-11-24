@@ -60,10 +60,12 @@ class CSSRootNode {
 
         for (let node = this.fch; node; node = this.getN(node)) {
 
-            let gen = node.getApplicableSelectors(element, win);
-            let v = null;
-            while (v = gen.next().value)
-                yield v;
+            if(node.matchMedia(win)){
+                let gen = node.getApplicableSelectors(element, win);
+                let v = null;
+                while (v = gen.next().value)
+                    yield v;
+            }
         }
     }
 

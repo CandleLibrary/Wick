@@ -131,6 +131,37 @@ export class CSSRuleBody {
         return true;
     }
 
+    matchMedia(win = window){
+        if (this.media_selector) {
+            for(let i = 0; i < this.media_selector.length; i++){
+                let m = this.media_selector[i];
+                   let props = m.props;
+                for (let a in props) {
+                    let prop = props[a];
+                    if (!prop(win))
+                        return false;
+                }
+            };
+        }
+
+        return true;
+    }
+
+        /**
+     * Retrieves the set of rules from all matching selectors for an element.
+     * @param      {HTMLElement}  element - An element to retrieve CSS rules.
+     * @public
+     */
+    getApplicableRules(element, rule = new R(), win = window) {
+
+        if(!this.matchMedia(win)) return;
+
+        let gen = this.getApplicableSelectors(element),
+            sel = null;
+
+        while (sel = gen.next().value) rule.merge(sel.r);
+    }
+
     * getApplicableSelectors(element) {
         for (let j = 0, jl = this._sel_a_.length; j < jl; j++) {
             let ancestor = element;
@@ -491,31 +522,6 @@ export class CSSRuleBody {
                 selector = this._selectors_[selector.id];
 
         return selector;
-    }
-
-    /**
-     * Retrieves the set of rules from all matching selectors for an element.
-     * @param      {HTMLElement}  element - An element to retrieve CSS rules.
-     * @public
-     */
-    getApplicableRules(element, rule = new R(), win = window) {
-
-        if (this.media_selector) {
-            for(let i = 0; i < this.media_selector.length; i++){
-                let m = this.media_selector[i];
-                   let props = m.props;
-                for (let a in props) {
-                    let prop = props[a];
-                    if (!prop(win))
-                        return;
-                }
-            };
-        }
-
-        let gen = this.getApplicableSelectors(element),
-            sel = null;
-
-        while (sel = gen.next().value) rule.merge(sel.r);
     }
 }
 

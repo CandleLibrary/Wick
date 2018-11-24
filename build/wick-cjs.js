@@ -7073,7 +7073,7 @@ const property_definitions = {
 
     /* Classification */
 
-    display: `block|inline|list-item|none`,
+    display: `[ <display_outside> || <display_inside> ] | <display_listitem> | <display_internal> | <display_box> | <display_legacy>`,
     white_space: `normal|pre|nowrap`,
     list_style_type: `disc|circle|square|decimal|decimal-leading-zero|lower-roman|upper-roman|lower-greek|lower-latin|upper-latin|armenian|georgian|lower-alpha|upper-alpha|none|inherit`,
     list_style_image: `<url>|none`,
@@ -7091,10 +7091,10 @@ const property_definitions = {
     
     /* Box Model https://www.w3.org/TR/css-box-3 */
     margin: `[<length>|<percentage>|0|auto]{1,4}`,
-    margin_top: `<length>|<percentage>|auto`,
-    margin_right: `<length>|<percentage>|auto`,
-    margin_bottom: `<length>|<percentage>|auto`,
-    margin_left: `<length>|<percentage>|auto`,
+    margin_top: `<length>|<percentage>|0|auto`,
+    margin_right: `<length>|<percentage>|0|auto`,
+    margin_bottom: `<length>|<percentage>|0|auto`,
+    margin_left: `<length>|<percentage>|0|auto`,
 
     padding: `[<length>|<percentage>|0|auto]{1,4}`,
     padding_top: `<length>|<percentage>|0|auto`,
@@ -7210,6 +7210,14 @@ const virtual_property_definitions = {
     discretionary_lig_values : `[ discretionary-ligatures | no-discretionary-ligatures ]`,
     historical_lig_values    : `[ historical-ligatures | no-historical-ligatures ]`,
     contextual_alt_values    : `[ contextual | no-contextual ]`,
+
+    //Display
+    display_outside  : `block | inline | run-in`,
+    display_inside   : `flow | flow-root | table | flex | grid | ruby`,
+    display_listitem : `<display-outside>? && [ flow | flow-root ]? && list-item`,
+    display_internal : `table-row-group | table-header-group | table-footer-group | table-row | table-cell | table-column-group | table-column | table-caption | ruby-base | ruby-text | ruby-base-container | ruby-text-container`,
+    display_box      : `contents | none`,
+    display_legacy   : `inline-block | inline-table | inline-flex | inline-grid`,
 };
 
 const media_feature_definitions = {
@@ -7924,6 +7932,36 @@ class CSSRuleBody {
         return true;
     }
 
+    matchMedia(win = window){
+        if (this.media_selector) {
+            for(let i = 0; i < this.media_selector.length; i++){
+                let m = this.media_selector[i];
+                   let props = m.props;
+                for (let a in props) {
+                    let prop = props[a];
+                    if (!prop(win))
+                        return false;
+                }
+            }        }
+
+        return true;
+    }
+
+        /**
+     * Retrieves the set of rules from all matching selectors for an element.
+     * @param      {HTMLElement}  element - An element to retrieve CSS rules.
+     * @public
+     */
+    getApplicableRules(element, rule = new CSSRule(), win = window) {
+
+        if(!this.matchMedia(win)) return;
+
+        let gen = this.getApplicableSelectors(element),
+            sel = null;
+
+        while (sel = gen.next().value) rule.merge(sel.r);
+    }
+
     * getApplicableSelectors(element) {
         for (let j = 0, jl = this._sel_a_.length; j < jl; j++) {
             let ancestor = element;
@@ -8281,30 +8319,6 @@ class CSSRuleBody {
 
         return selector;
     }
-
-    /**
-     * Retrieves the set of rules from all matching selectors for an element.
-     * @param      {HTMLElement}  element - An element to retrieve CSS rules.
-     * @public
-     */
-    getApplicableRules(element, rule = new CSSRule(), win = window) {
-
-        if (this.media_selector) {
-            for(let i = 0; i < this.media_selector.length; i++){
-                let m = this.media_selector[i];
-                   let props = m.props;
-                for (let a in props) {
-                    let prop = props[a];
-                    if (!prop(win))
-                        return;
-                }
-            }        }
-
-        let gen = this.getApplicableSelectors(element),
-            sel = null;
-
-        while (sel = gen.next().value) rule.merge(sel.r);
-    }
 }
 
 /**
@@ -8370,10 +8384,12 @@ class CSSRootNode {
 
         for (let node = this.fch; node; node = this.getN(node)) {
 
-            let gen = node.getApplicableSelectors(element, win);
-            let v = null;
-            while (v = gen.next().value)
-                yield v;
+            if(node.matchMedia(win)){
+                let gen = node.getApplicableSelectors(element, win);
+                let v = null;
+                while (v = gen.next().value)
+                    yield v;
+            }
         }
     }
 
@@ -9725,6 +9741,7 @@ class RootNode extends HTMLNode {
 
             //parse rules and createBindings.
             if (rule && rule.LOADED) {
+
 
                 //Link into the binding for style. if there is no binding, create one. 
                 //Link in the rule properties to the tap system. 
@@ -12682,7 +12699,7 @@ function parseText(lex, SourcePackage, presets, url, win) {
  * @memberof module:wick~internals.templateCompiler
  * @alias CompileSource
  */
-function CompileSource(SourcePackage, presets, element, url, win = window) {
+function CompileSource$1(SourcePackage, presets, element, url, win = window) {
     let lex;
     if (element instanceof whind$1.constructor) {
         lex = element;
@@ -12756,7 +12773,7 @@ class SourcePackage {
         this._HAVE_ERRORS_ = false;
 
         if (element instanceof Promise) {
-            element.then((data) => CompileSource(this, presets, data, url, win));
+            element.then((data) => CompileSource$1(this, presets, data, url, win));
             if (RETURN_PROMISE) return element;
             return this;
         } else if (element instanceof RootNode) {
@@ -12774,7 +12791,7 @@ class SourcePackage {
         }
 
         //Start the compiling of the component.
-        let promise = CompileSource(this, presets, element, url, win);
+        let promise = CompileSource$1(this, presets, element, url, win);
 
         OB.seal(this);
 
@@ -14429,9 +14446,9 @@ const core = {
     source: (...a) => new SourcePackage(...a)
 };
 
-core.source.compiler = CompileSource;
+core.source.compiler = CompileSource$1;
 core.lexer.constr = whind$1.constructor;
-CompileSource.nodes = {
+CompileSource$1.nodes = {
     root: RootNode,
     style: StyleNode$1,
     script: ScriptNode$1,
@@ -14497,6 +14514,7 @@ function startRouting(preset_options = {}) {
 
     return { presets, router };
 }
+
 var client = {
     anim,
     source,
@@ -14504,9 +14522,10 @@ var client = {
     model: model$1,
     core,
     internals,
-    startRouting
+    startRouting,
 };
 
+exports.default = client;
 exports.anim = anim;
 exports.source = source;
 exports.scheme = scheme;
@@ -14514,4 +14533,41 @@ exports.model = model$1;
 exports.core = core;
 exports.internals = internals;
 exports.startRouting = startRouting;
-exports.default = client;
+exports.Presets = Presets;
+exports.Store = Store;
+exports.SchemedModel = SchemedModel;
+exports.Model = Model;
+exports.ModelContainerBase = ModelContainerBase;
+exports.MultiIndexedContainer = MultiIndexedContainer;
+exports.BTreeModelContainer = BTreeModelContainer;
+exports.ArrayModelContainer = ArrayModelContainer;
+exports.View = View;
+exports.SourcePackage = SourcePackage;
+exports.Source = Source;
+exports.CompileSource = CompileSource;
+exports.RootText = RootText;
+exports.RootNode = RootNode;
+exports.StyleNode = StyleNode$1;
+exports.ScriptNode = ScriptNode$1;
+exports.SourceNode = SourceNode$1;
+exports.PackageNode = PackageNode;
+exports.SourceTemplateNode = SourceTemplateNode$1;
+exports.SVGNode = SVGNode;
+exports.SchemeConstructor = SchemeConstructor;
+exports.DateSchemeConstructor = DateSchemeConstructor;
+exports.TimeSchemeConstructor = TimeSchemeConstructor;
+exports.StringSchemeConstructor = StringSchemeConstructor;
+exports.NumberSchemeConstructor = NumberSchemeConstructor;
+exports.BoolSchemeConstructor = BoolSchemeConstructor;
+exports.schemes = schemes;
+exports.CSSParser = CSSParser;
+exports.CSSRootNode = CSSRootNode;
+exports.CSSSelector = CSSSelector;
+exports.CSSRule = CSSRule;
+exports.HTMLParser = HTMLParser;
+exports.WURL = WURL;
+exports.Router = Router;
+exports.Animation = Animation;
+exports.Transitioneer = Transitioneer;
+exports.Scheduler = scheduler;
+exports.Common = Common;

@@ -150,7 +150,7 @@ export const property_definitions = {
 
     /* Classification */
 
-    display: `block|inline|list-item|none`,
+    display: `[ <display_outside> || <display_inside> ] | <display_listitem> | <display_internal> | <display_box> | <display_legacy>`,
     white_space: `normal|pre|nowrap`,
     list_style_type: `disc|circle|square|decimal|decimal-leading-zero|lower-roman|upper-roman|lower-greek|lower-latin|upper-latin|armenian|georgian|lower-alpha|upper-alpha|none|inherit`,
     list_style_image: `<url>|none`,
@@ -168,10 +168,10 @@ export const property_definitions = {
     
     /* Box Model https://www.w3.org/TR/css-box-3 */
     margin: `[<length>|<percentage>|0|auto]{1,4}`,
-    margin_top: `<length>|<percentage>|auto`,
-    margin_right: `<length>|<percentage>|auto`,
-    margin_bottom: `<length>|<percentage>|auto`,
-    margin_left: `<length>|<percentage>|auto`,
+    margin_top: `<length>|<percentage>|0|auto`,
+    margin_right: `<length>|<percentage>|0|auto`,
+    margin_bottom: `<length>|<percentage>|0|auto`,
+    margin_left: `<length>|<percentage>|0|auto`,
 
     padding: `[<length>|<percentage>|0|auto]{1,4}`,
     padding_top: `<length>|<percentage>|0|auto`,
@@ -287,6 +287,14 @@ export const virtual_property_definitions = {
     discretionary_lig_values : `[ discretionary-ligatures | no-discretionary-ligatures ]`,
     historical_lig_values    : `[ historical-ligatures | no-historical-ligatures ]`,
     contextual_alt_values    : `[ contextual | no-contextual ]`,
+
+    //Display
+    display_outside  : `block | inline | run-in`,
+    display_inside   : `flow | flow-root | table | flex | grid | ruby`,
+    display_listitem : `<display-outside>? && [ flow | flow-root ]? && list-item`,
+    display_internal : `table-row-group | table-header-group | table-footer-group | table-row | table-cell | table-column-group | table-column | table-caption | ruby-base | ruby-text | ruby-base-container | ruby-text-container`,
+    display_box      : `contents | none`,
+    display_legacy   : `inline-block | inline-table | inline-flex | inline-grid`,
 };
 
 export const media_feature_definitions = {

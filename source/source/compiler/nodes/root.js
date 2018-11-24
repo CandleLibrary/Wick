@@ -161,6 +161,7 @@ export class RootNode extends HTMLNode {
             //parse rules and createBindings.
             if (rule && rule.LOADED) {
 
+
                 //Link into the binding for style. if there is no binding, create one. 
                 //Link in the rule properties to the tap system. 
                 let HAVE_BINDING = false;
