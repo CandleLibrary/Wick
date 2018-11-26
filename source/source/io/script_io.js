@@ -28,9 +28,9 @@ export class ScriptIO extends IOBase {
 
     /**
      * Removes all references to other objects.
-     * Calls _destroy_ on any child objects.
+     * Calls destroy on any child objects.
      */
-    _destroy_() {
+    destroy() {
         this._func_ = null;
         this._source_ = null;
         this._bound_emit_function_ = null;
@@ -38,11 +38,11 @@ export class ScriptIO extends IOBase {
 
     }
 
-    _down_(value, meta = { event: null }) {
+    down(value, meta = { event: null }) {
         this.meta = meta;
         const src = this._source_;
         try {
-            this._func_(value, meta.event, src._model_, this._bound_emit_function_, src._presets_, src._statics_, src);
+            this._func_(value, meta.event, src.model, this._bound_emit_function_, src.presets, src.statics, src);
         } catch (e) {
             console.warn(this.function);
             console.error(e)

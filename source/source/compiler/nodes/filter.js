@@ -4,12 +4,12 @@ export class FilterNode extends VoidNode {
 
     /******************************************* HOOKS ****************************************************/
 
-    _endOfElementHook_() {}
+    endOfElementHook() {}
 
     /**
      * This node only needs to assess attribute values. InnerHTML will be ignored. 
      * @return     {boolean}  { description_of_the_return_value }
      */
-    _selfClosingTagHook_() { return true; }
+    selfClosingTagHook() { return true; }
 
 }

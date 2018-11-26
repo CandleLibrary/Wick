@@ -7,7 +7,7 @@ import {
 import {
     OB
 } from "../short_names";
-import whind from "whind";
+import whind from "@candlefw/whind";
 import {
     CSSRule as R,
     CSSSelector as S
@@ -65,7 +65,7 @@ export class CSSRuleBody {
 
     _applyProperties_(lexer, rule) {
         while (!lexer.END && lexer.tx !== "}") this.parseProperty(lexer, rule, property_definitions);
-        lexer.n();
+        lexer.n;
     }
 
     /**
@@ -87,7 +87,7 @@ export class CSSRuleBody {
      * @param      {<type>}   rule           The rule
      * @return     {boolean}  The property hook.
      */
-    _getPropertyHook_(value_lexer, property_name, rule) {
+    getPropertyHook(value_lexer, property_name, rule) {
         return false;
     }
 
@@ -109,8 +109,8 @@ export class CSSRuleBody {
                         let id = lex.sync().tx;
                         let attrib = ele.getAttribute(id);
                         if (!attrib) return;
-                        if (lex.n().ch == "=") {
-                            let value = lex.n().tx;
+                        if (lex.n.ch == "=") {
+                            let value = lex.n.tx;
                             if (attrib !== value) return false;
                         }
                     }
@@ -213,17 +213,17 @@ export class CSSRuleBody {
             return this.parseProperty(lexer, rule, definitions);
         }
 
-        lexer.n().a(":");
+        lexer.n.a(":");
         //allow for short circuit < | > | =
         const p = lexer.pk;
         while ((p.ch !== "}" && p.ch !== ";") && !p.END) {
             //look for end of property;
-            p.n();
+            p.n;
         }
         const out_lex = lexer.copy();
         lexer.sync();
         out_lex.fence(p);
-        if (!this._getPropertyHook_(out_lex, name, rule)) {
+        if (!this.getPropertyHook(out_lex, name, rule)) {
             try {
                 const IS_VIRTUAL = {
                     is: false
@@ -231,7 +231,7 @@ export class CSSRuleBody {
                 const parser = _getPropertyParser_(name, IS_VIRTUAL, definitions);
                 if (parser && !IS_VIRTUAL.is) {
                     if (!rule.props) rule.props = {};
-                    parser._parse_(out_lex, rule.props);
+                    parser.parse(out_lex, rule.props);
                 } else
                     //Need to know what properties have not been defined
                     console.warn(`Unable to get parser for css property ${name}`);
@@ -239,7 +239,7 @@ export class CSSRuleBody {
                 console.log(e);
             }
         }
-        if (lexer.ch == ";") lexer.n();
+        if (lexer.ch == ";") lexer.n;
     }
 
     /** 
@@ -275,12 +275,12 @@ export class CSSRuleBody {
                     selectors.push(lexer.s(start).trim().slice(0));
                     sel = new _selectorPart_();
                     if (RETURN) return new S(selectors, selectors_array, this);
-                    lexer.n();
+                    lexer.n;
                     start = lexer.pos;
                     break;
                 case "[":
                     let p = lexer.pk;
-                    while (!p.END && p.n().tx !== "]") {};
+                    while (!p.END && p.n.tx !== "]") {};
                     p.a("]");
                     if (p.END) throw new _Error_("Unexpected end of input.");
                     sel.ss.push({
@@ -292,47 +292,47 @@ export class CSSRuleBody {
                 case ":":
                     sel.ss.push({
                         t: "pseudo",
-                        v: lexer.n().tx
+                        v: lexer.n.tx
                     });
                     _eID_(lexer);
-                    lexer.n();
+                    lexer.n;
                     break;
                 case ".":
                     sel.ss.push({
                         t: "class",
-                        v: lexer.n().tx
+                        v: lexer.n.tx
                     });
                     _eID_(lexer);
-                    lexer.n();
+                    lexer.n;
                     break;
                 case "#":
                     sel.ss.push({
                         t: "id",
-                        v: lexer.n().tx
+                        v: lexer.n.tx
                     });
                     _eID_(lexer);
-                    lexer.n();
+                    lexer.n;
                     break;
                 case "*":
-                    lexer.n();
+                    lexer.n;
                     break;
                 case ">":
                     sel.c = "child";
                     selector_array.unshift(sel);
                     sel = null;
-                    lexer.n();
+                    lexer.n;
                     break;
                 case "~":
                     sel.c = "preceded";
                     selector_array.unshift(sel);
                     sel = null;
-                    lexer.n();
+                    lexer.n;
                     break;
                 case "+":
                     sel.c = "immediately preceded";
                     selector_array.unshift(sel);
                     sel = null;
-                    lexer.n();
+                    lexer.n;
                     break;
                 default:
                     if (sel.e) {
@@ -342,7 +342,7 @@ export class CSSRuleBody {
                     } else {
                         sel.e = lexer.tx;
                         _eID_(lexer);
-                        lexer.n();
+                        lexer.n;
                     }
                     break;
             }
@@ -360,7 +360,7 @@ export class CSSRuleBody {
      * @return     {Promise}  A promise which will resolve to a CSSRuleBody
      * @private
      */
-    _parse_(lexer, root, res = null, rej = null) {
+    parse(lexer, root, res = null, rej = null) {
 
         if (root && !this.par) root.push(this);
 
@@ -370,29 +370,29 @@ export class CSSRuleBody {
             while (!lexer.END) {
                 switch (lexer.ch) {
                     case "@":
-                        lexer.n();
+                        lexer.n;
                         switch (lexer.tx) {
                             case "media": //Ignored at this iteration /* https://drafts.csswg.org/mediaqueries/ */
                                 //create media query selectors
                                 let _med_ = [],
                                     sel = null;
-                                while (!lexer.END && lexer.n().ch !== "{") {
+                                while (!lexer.END && lexer.n.ch !== "{") {
                                     if (!sel) sel = new _mediaSelectorPart_();
                                     if (lexer.ch == ",") _med_.push(sel), sel = null;
                                     else if (lexer.ch == "(") {
-                                        let start = lexer.n().off;
-                                        while (!lexer.END && lexer.ch !== ")") lexer.n();
+                                        let start = lexer.n.off;
+                                        while (!lexer.END && lexer.ch !== ")") lexer.n;
                                         let out_lex = lexer.copy();
                                         out_lex.off = start;
                                         out_lex.tl = 0;
-                                        out_lex.n().fence(lexer);
+                                        out_lex.n.fence(lexer);
                                         this.parseProperty(out_lex, sel, media_feature_definitions);
                                         if (lexer.pk.tx.toLowerCase() == "and") lexer.sync();
                                     } else {
                                         let id = lexer.tx.toLowerCase(),
                                             condition = "";
                                         if (id === "only" || id === "not")
-                                            (condition = id, id = lexer.n().tx);
+                                            (condition = id, id = lexer.n.tx);
                                         sel.c = condition;
                                         sel.id = id;
                                         if (lexer.pk.tx.toLowerCase() == "and") lexer.sync();
@@ -404,39 +404,39 @@ export class CSSRuleBody {
                                     _med_.push(sel);
 
                                 if (_med_.length == 0)
-                                    this._parse_(lexer, null); // discard results
+                                    this.parse(lexer, null); // discard results
                                 else {
                                     let media_root = new this.constructor();
                                     media_root.media_selector = _med_;
-                                    return media_root._parse_(lexer, root).then(b => {
+                                    return media_root.parse(lexer, root).then(b => {
                                         let body = new this.constructor();
-                                        return body._parse_(lexer, root);
+                                        return body.parse(lexer, root);
                                     });
                                 }
                                 continue;
                             case "import":
                                 /* https://drafts.csswg.org/css-cascade/#at-ruledef-import */
                                 let type;
-                                if (type = types.url._parse_(lexer.n())) {
+                                if (type = types.url.parse(lexer.n)) {
                                     lexer.a(";");
                                     /**
                                      * The {@link CSS_URL} incorporates a fetch mechanism that returns a Promise instance.
-                                     * We use that promise to hook into the existing promise returned by CSSRoot#_parse_,
-                                     * executing a new _parse_ sequence on the fetched string data using the existing CSSRoot instance,
-                                     * and then resume the current _parse_ sequence.
-                                     * @todo Conform to CSS spec and only _parse_ if @import is at the top of the CSS string.
+                                     * We use that promise to hook into the existing promise returned by CSSRoot#parse,
+                                     * executing a new parse sequence on the fetched string data using the existing CSSRoot instance,
+                                     * and then resume the current parse sequence.
+                                     * @todo Conform to CSS spec and only parse if @import is at the top of the CSS string.
                                      */
                                     return type.fetchText().then((str) =>
-                                        //Successfully fetched content, proceed to _parse_ in the current root.
+                                        //Successfully fetched content, proceed to parse in the current root.
                                         //let import_lexer = ;
-                                        res(this._parse_(whind(str, true), this).then((r) => this._parse_(lexer, r)))
+                                        res(this.parse(whind(str, true), this).then((r) => this.parse(lexer, r)))
                                         //_Parse_ returns Promise. 
                                         // return;
-                                    ).catch((e) => res(this._parse_(lexer)));
+                                    ).catch((e) => res(this.parse(lexer)));
                                 } else {
                                     //Failed to fetch resource, attempt to find the end to of the import clause.
-                                    while (!lexer.END && lexer.n().tx !== ";") {};
-                                    lexer.n();
+                                    while (!lexer.END && lexer.n.tx !== ";") {};
+                                    lexer.n;
                                 }
                         }
                         break;
@@ -444,11 +444,11 @@ export class CSSRuleBody {
                         lexer.comment(true);
                         break;
                     case "}":
-                        lexer.n();
+                        lexer.n;
                         return res(this);
                     case "{":
                         let rule = new R(this);
-                        this._applyProperties_(lexer.n(), rule);
+                        this._applyProperties_(lexer.n, rule);
                         for (let i = -1, sel = null; sel = selectors[++i];)
                             if (sel.r) sel.r.merge(rule);
                             else sel.r = rule;
@@ -484,7 +484,7 @@ export class CSSRuleBody {
     }
 
     merge(inCSSRuleBody){
-        this._parse_(whind(inCSSRuleBody + ""));
+        this.parse(whind(inCSSRuleBody + ""));
     }
 
     /**

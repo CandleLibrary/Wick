@@ -19,7 +19,7 @@ RootNode.prototype._buildStatic_ = function(
 	element_string += `${own_element} = dce("`${this.tag}`");`
 	if(parent_element_var) element_string  += `${parent_element_var}.appendChild(${own_element})`;
 
-	for (let node = this.fch; node; node = this.getN(node))
+	for (let node = this.fch; node; node = this.getNextChild(node))
         node._buildStatic_();
 }
 

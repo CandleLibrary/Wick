@@ -73,7 +73,7 @@ const Animation = (function anim() {
                 this.addKey(keys, p);
         }
 
-        _destroy_() {
+        destroy() {
             this.keys = null;
             this.type = null;
             this.current_val = null;
@@ -207,10 +207,10 @@ const Animation = (function anim() {
             this.setProps(props);
         }
 
-        _destroy_() {
+        destroy() {
             for (let name in this.props)
                 if (this.props[name])
-                    this.props[name]._destroy_();
+                    this.props[name].destroy();
             this.DESTROYED = true;
             this.duration = 0;
             this.obj = null;
@@ -239,7 +239,7 @@ const Animation = (function anim() {
          */
         setProps(props) {
             for (let name in this.props)
-                this.props[name]._destroy_();
+                this.props[name].destroy();
 
             this.props = {};
 
@@ -272,7 +272,7 @@ const Animation = (function anim() {
             return true;
         }
 
-        _scheduledUpdate_(a, t) {
+        scheduledUpdate(a, t) {
 
             if (this.run(this.time += t))
                 Scheduler.queueUpdate(this);
@@ -321,8 +321,8 @@ const Animation = (function anim() {
             this.duration = 0;
         }
 
-        _destroy_() {
-            this.seq.forEach(seq => seq._destroy_());
+        destroy() {
+            this.seq.forEach(seq => seq.destroy());
             this.seq = null;
         }
 
@@ -343,7 +343,7 @@ const Animation = (function anim() {
             return true;
         }
 
-        _scheduledUpdate_(a, t) {
+        scheduledUpdate(a, t) {
         	this.time += t
             if (this.run(this.time))
                 Scheduler.queueUpdate(this);

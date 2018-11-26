@@ -40,15 +40,15 @@ function getSignedNumber(lex) {
         tx = lex.tx;
     if (tx == "-") {
         mult = -1;
-        tx = lex.n().tx;
+        tx = lex.n.tx;
     }
-    lex.n();
+    lex.n;
     return parseFloat(tx) * mult;
 }
 
 function getNumberPair(lex, array) {
     let x = getSignedNumber(lex);
-    if (lex.ch == ',') lex.n();
+    if (lex.ch == ',') lex.n;
     let y = getSignedNumber(lex);
     array.push(x, y);
 }
@@ -74,7 +74,7 @@ export class Path extends Array {
                 case "m":
                     relative = true;
                 case "M":
-                    lex.n(); //
+                    lex.n; //
                     array.push((relative) ? PathSym.m : PathSym.M);
                     getNumberPair(lex, array);
                     parseNumberPairs(lex, array);
@@ -83,21 +83,21 @@ export class Path extends Array {
                 case "h":
                     relative = true;
                 case "H":
-                    lex.n();
+                    lex.n;
                     x = getSignedNumber(lex);
                     array.push((relative) ? PathSym.h : PathSym.H, x);
                     continue;
                 case "v":
                     relative = true;
                 case "V":
-                    lex.n();
+                    lex.n;
                     y = getSignedNumber(lex);
                     array.push((relative) ? PathSym.v : PathSym.V, y);
                     continue;
                 case "l":
                     relative = true;
                 case "L":
-                    lex.n();
+                    lex.n;
                     array.push((relative) ? PathSym.l : PathSym.L);
                     getNumberPair(lex, array);
                     parseNumberPairs(lex, array);
@@ -143,7 +143,7 @@ export class Path extends Array {
                 case "Z":
                     array.push((relative) ? PathSym.z : PathSym.Z);
             }
-            lex.n();
+            lex.n;
         }
     }
 

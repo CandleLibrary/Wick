@@ -89,7 +89,7 @@ var wick = (function (exports) {
 
 
     /**
-     * Handles updating objects. It does this by splitting up _update_ cycles, to respect the browser event model. 
+     * Handles updating objects. It does this by splitting up update cycles, to respect the browser event model. 
      *    
      * If any object is scheduled to be updated, it will be blocked from scheduling more updates the next JavaScript runtime tick.
      * 
@@ -109,7 +109,7 @@ var wick = (function (exports) {
 
             this.queue_switch = 0;
 
-            this.callback = () => this._update_();
+            this.callback = () => this.update();
 
             this.frame_time = perf.now();
 
@@ -119,10 +119,10 @@ var wick = (function (exports) {
         }
 
         /**
-         * Given an object that has a _SCHD_ Boolean property, the Scheduler will queue the object and call its ._update_ function 
+         * Given an object that has a _SCHD_ Boolean property, the Scheduler will queue the object and call its .update function 
          * the following tick. If the object does not have a _SCHD_ property, the Scheduler will persuade the object to have such a property.
          * 
-         * If there are currently no queued objects when this is called, then the Scheduler will user caller to schedule an _update_.
+         * If there are currently no queued objects when this is called, then the Scheduler will user caller to schedule an update.
          *
          * @param      {Object}  object  The object to have updated.
          */
@@ -149,9 +149,9 @@ var wick = (function (exports) {
         }
 
         /**
-         * Called by the caller function every tick. Calls ._update_ on any object queued for an _update_. 
+         * Called by the caller function every tick. Calls .update on any object queued for an update. 
          */
-        _update_() {
+        update() {
 
             this._SCHD_ = false;
 
@@ -186,7 +186,7 @@ var wick = (function (exports) {
                 } else o._SCHD_ = 0;
 
                 try {
-                    o._scheduledUpdate_(step_ratio, diff);
+                    o.scheduledUpdate(step_ratio, diff);
                 } catch (e) {
                     console.error(e);
                 }
@@ -200,7 +200,7 @@ var wick = (function (exports) {
 
     /**
      * The base class which all Model classes extend.
-     * @memberof module:wick~internal ._model_
+     * @memberof module:wick~internal .model
      * @alias ModelBase
      */
     class ModelBase {
@@ -220,7 +220,7 @@ var wick = (function (exports) {
          *   @protected
          *   @instance
          */
-        _destroy_() {
+        destroy() {
 
             //inform views of the models demise
             var view = this.fv;
@@ -276,9 +276,9 @@ var wick = (function (exports) {
          * @throws {Error} throws an error if the value of `view` is not an instance of {@link View}.
          */
         addView(view) {
-            if (view._model_)
-                if (view._model_ !== this) {
-                    view._model_.removeView(view);
+            if (view.model)
+                if (view.model !== this) {
+                    view.model.removeView(view);
                 } else return;
 
             if (this.fv) this.fv.pv = view;
@@ -286,8 +286,8 @@ var wick = (function (exports) {
             this.fv = view;
 
             view.pv = null;
-            view._model_ = this;
-            view._update_(this);
+            view.model = this;
+            view.update(this);
         }
 
         /**
@@ -297,7 +297,7 @@ var wick = (function (exports) {
         removeView(view) {
             
 
-            if (view._model_ == this) {
+            if (view.model == this) {
                 if (view == this.fv)
                     this.fv = view.nx;
 
@@ -331,15 +331,15 @@ var wick = (function (exports) {
 
 
         /**
-         * Called by the {@link Scheduler} when if the ModelBase is scheduled for an _update_
+         * Called by the {@link Scheduler} when if the ModelBase is scheduled for an update
          * @param      {number}  step    The step
          */
-        _scheduledUpdate_(step) { this.updateViews(); }
+        scheduledUpdate(step) { this.updateViews(); }
 
 
 
         /**
-         * Calls View#_update_ on every bound View, passing the current state of the ModelBase.
+         * Calls View#update on every bound View, passing the current state of the ModelBase.
          */
         updateViews() {
 
@@ -354,7 +354,7 @@ var wick = (function (exports) {
 
             while (view) {
 
-                view._update_(this, o);
+                view.update(this, o);
                 view = view.nx;
             }
 
@@ -595,7 +595,7 @@ var wick = (function (exports) {
 
         getByIndex(index, value) { /* NO OP **/ }
 
-        _destroy_() {
+        destroy() {
 
 
             this.__filters__ = null;
@@ -604,7 +604,7 @@ var wick = (function (exports) {
                 this.source.__unlink__(this);
             }
 
-            super._destroy_();
+            super.destroy();
         }
 
         /**
@@ -1198,6 +1198,914 @@ var wick = (function (exports) {
 
     let number = new NumberSchemeConstructor();
 
+    const HORIZONTAL_TAB = 9;
+    const SPACE = 32;
+
+    /**
+     * Lexer Jump table reference 
+     * 0. NUMBER
+     * 1. IDENTIFIER
+     * 2. QUOTE STRING
+     * 3. SPACE SET
+     * 4. TAB SET
+     * 5. CARIAGE RETURN
+     * 6. LINEFEED
+     * 7. SYMBOL
+     * 8. OPERATOR
+     * 9. OPEN BRACKET
+     * 10. CLOSE BRACKET 
+     * 11. DATA_LINK
+     */ 
+    const jump_table = [
+    7, 	 	/* A */
+    7, 	 	/* a */
+    7, 	 	/* ACKNOWLEDGE */
+    7, 	 	/* AMPERSAND */
+    7, 	 	/* ASTERISK */
+    7, 	 	/* AT */
+    7, 	 	/* B */
+    7, 	 	/* b */
+    7, 	 	/* BACKSLASH */
+    4, 	 	/* BACKSPACE */
+    6, 	 	/* BELL */
+    7, 	 	/* C */
+    7, 	 	/* c */
+    5, 	 	/* CANCEL */
+    7, 	 	/* CARET */
+    11, 	/* CARRIAGE_RETURN */
+    7, 	 	/* CLOSE_CURLY */
+    7, 	 	/* CLOSE_PARENTH */
+    7, 	 	/* CLOSE_SQUARE */
+    7, 	 	/* COLON */
+    7, 	 	/* COMMA */
+    7, 	 	/* d */
+    7, 	 	/* D */
+    7, 	 	/* DATA_LINK_ESCAPE */
+    7, 	 	/* DELETE */
+    7, 	 	/* DEVICE_CTRL_1 */
+    7, 	 	/* DEVICE_CTRL_2 */
+    7, 	 	/* DEVICE_CTRL_3 */
+    7, 	 	/* DEVICE_CTRL_4 */
+    7, 	 	/* DOLLAR */
+    7, 	 	/* DOUBLE_QUOTE */
+    7, 	 	/* e */
+    3, 	 	/* E */
+    8, 	 	/* EIGHT */
+    2, 	 	/* END_OF_MEDIUM */
+    7, 	 	/* END_OF_TRANSMISSION */
+    7, 	 	/* END_OF_TRANSMISSION_BLOCK */
+    8, 	 	/* END_OF_TXT */
+    8, 	 	/* ENQUIRY */
+    2, 	 	/* EQUAL */
+    9, 	 	/* ESCAPE */
+    10, 	 /* EXCLAMATION */
+    8, 	 	/* f */
+    8, 	 	/* F */
+    7, 	 	/* FILE_SEPERATOR */
+    7, 	 	/* FIVE */
+    7, 	 	/* FORM_FEED */
+    7, 	 	/* FORWARD_SLASH */
+    0, 	 	/* FOUR */
+    0, 	 	/* g */
+    0, 	 	/* G */
+    0, 	 	/* GRAVE */
+    0, 	 	/* GREATER_THAN */
+    0, 	 	/* GROUP_SEPERATOR */
+    0, 	 	/* h */
+    0, 	 	/* H */
+    0, 	 	/* HASH */
+    0, 	 	/* HORIZONTAL_TAB */
+    8, 	 	/* HYPHEN */
+    7, 	 	/* i */
+    8, 	 	/* I */
+    8, 	 	/* j */
+    8, 	 	/* J */
+    7, 	 	/* k */
+    7, 	 	/* K */
+    1, 	 	/* l */
+    1, 	 	/* L */
+    1, 	 	/* LESS_THAN */
+    1, 	 	/* LINE_FEED */
+    1, 	 	/* m */
+    1, 	 	/* M */
+    1, 	 	/* n */
+    1, 	 	/* N */
+    1, 	 	/* NEGATIVE_ACKNOWLEDGE */
+    1, 	 	/* NINE */
+    1, 	 	/* NULL */
+    1, 	 	/* o */
+    1, 	 	/* O */
+    1, 	 	/* ONE */
+    1, 	 	/* OPEN_CURLY */
+    1, 	 	/* OPEN_PARENTH */
+    1, 	 	/* OPEN_SQUARE */
+    1, 	 	/* p */
+    1, 	 	/* P */
+    1, 	 	/* PERCENT */
+    1, 	 	/* PERIOD */
+    1, 	 	/* PLUS */
+    1, 	 	/* q */
+    1, 	 	/* Q */
+    1, 	 	/* QMARK */
+    1, 	 	/* QUOTE */
+    9, 	 	/* r */
+    7, 	 	/* R */
+    10, 	/* RECORD_SEPERATOR */
+    7, 	 	/* s */
+    7, 	 	/* S */
+    2, 	 	/* SEMICOLON */
+    1, 	 	/* SEVEN */
+    1, 	 	/* SHIFT_IN */
+    1, 	 	/* SHIFT_OUT */
+    1, 	 	/* SIX */
+    1, 	 	/* SPACE */
+    1, 	 	/* START_OF_HEADER */
+    1, 	 	/* START_OF_TEXT */
+    1, 	 	/* SUBSTITUTE */
+    1, 	 	/* SYNCH_IDLE */
+    1, 	 	/* t */
+    1, 	 	/* T */
+    1, 	 	/* THREE */
+    1, 	 	/* TILDE */
+    1, 	 	/* TWO */
+    1, 	 	/* u */
+    1, 	 	/* U */
+    1, 	 	/* UNDER_SCORE */
+    1, 	 	/* UNIT_SEPERATOR */
+    1, 	 	/* v */
+    1, 	 	/* V */
+    1, 	 	/* VERTICAL_BAR */
+    1, 	 	/* VERTICAL_TAB */
+    1, 	 	/* w */
+    1, 	 	/* W */
+    1, 	 	/* x */
+    1, 	 	/* X */
+    9, 	 	/* y */
+    7, 	 	/* Y */
+    10,  	/* z */
+    7,  	/* Z */
+    7 		/* ZERO */
+    ];	
+
+    /**
+     * LExer Number and Identifier jump table reference
+     * Number are masked by 12(4|8) and Identifiers are masked by 10(2|8)
+     * entries marked as `0` are not evaluated as either being in the number set or the identifier set.
+     * entries marked as `2` are in the identifier set but not the number set
+     * entries marked as `4` are in the number set but not the identifier set
+     * entries marked as `8` are in both number and identifier sets
+     */
+    const number_and_identifier_table = [
+    0, 		/* A */
+    0, 		/* a */
+    0, 		/* ACKNOWLEDGE */
+    0, 		/* AMPERSAND */
+    0, 		/* ASTERISK */
+    0, 		/* AT */
+    0,		/* B */
+    0,		/* b */
+    0,		/* BACKSLASH */
+    0,		/* BACKSPACE */
+    0,		/* BELL */
+    0,		/* C */
+    0,		/* c */
+    0,		/* CANCEL */
+    0,		/* CARET */
+    0,		/* CARRIAGE_RETURN */
+    0,		/* CLOSE_CURLY */
+    0,		/* CLOSE_PARENTH */
+    0,		/* CLOSE_SQUARE */
+    0,		/* COLON */
+    0,		/* COMMA */
+    0,		/* d */
+    0,		/* D */
+    0,		/* DATA_LINK_ESCAPE */
+    0,		/* DELETE */
+    0,		/* DEVICE_CTRL_1 */
+    0,		/* DEVICE_CTRL_2 */
+    0,		/* DEVICE_CTRL_3 */
+    0,		/* DEVICE_CTRL_4 */
+    0,		/* DOLLAR */
+    0,		/* DOUBLE_QUOTE */
+    0,		/* e */
+    0,		/* E */
+    0,		/* EIGHT */
+    0,		/* END_OF_MEDIUM */
+    0,		/* END_OF_TRANSMISSION */
+    8,		/* END_OF_TRANSMISSION_BLOCK */
+    0,		/* END_OF_TXT */
+    0,		/* ENQUIRY */
+    0,		/* EQUAL */
+    0,		/* ESCAPE */
+    0,		/* EXCLAMATION */
+    0,		/* f */
+    0,		/* F */
+    0,		/* FILE_SEPERATOR */
+    2,		/* FIVE */
+    4,		/* FORM_FEED */
+    0,		/* FORWARD_SLASH */
+    8,		/* FOUR */
+    8,		/* g */
+    8,		/* G */
+    8,		/* GRAVE */
+    8,		/* GREATER_THAN */
+    8,		/* GROUP_SEPERATOR */
+    8,		/* h */
+    8,		/* H */
+    8,		/* HASH */
+    8,		/* HORIZONTAL_TAB */
+    0,		/* HYPHEN */
+    0,		/* i */
+    0,		/* I */
+    0,		/* j */
+    0,		/* J */
+    0,		/* k */
+    0,		/* K */
+    2,		/* l */
+    8,		/* L */
+    2,		/* LESS_THAN */
+    2,		/* LINE_FEED */
+    8,		/* m */
+    2,		/* M */
+    2,		/* n */
+    2,		/* N */
+    2,		/* NEGATIVE_ACKNOWLEDGE */
+    2,		/* NINE */
+    2,		/* NULL */
+    2,		/* o */
+    2,		/* O */
+    2,		/* ONE */
+    8,		/* OPEN_CURLY */
+    2,		/* OPEN_PARENTH */
+    2,		/* OPEN_SQUARE */
+    2,		/* p */
+    2,		/* P */
+    2,		/* PERCENT */
+    2,		/* PERIOD */
+    2,		/* PLUS */
+    2,		/* q */
+    8,		/* Q */
+    2,		/* QMARK */
+    2,		/* QUOTE */
+    0,		/* r */
+    0,		/* R */
+    0,		/* RECORD_SEPERATOR */
+    0,		/* s */
+    2,		/* S */
+    0,		/* SEMICOLON */
+    2,		/* SEVEN */
+    8,		/* SHIFT_IN */
+    2,		/* SHIFT_OUT */
+    2,		/* SIX */
+    2,		/* SPACE */
+    2,		/* START_OF_HEADER */
+    2,		/* START_OF_TEXT */
+    2,		/* SUBSTITUTE */
+    2,		/* SYNCH_IDLE */
+    2,		/* t */
+    2,		/* T */
+    2,		/* THREE */
+    2,		/* TILDE */
+    2,		/* TWO */
+    8,		/* u */
+    2,		/* U */
+    2,		/* UNDER_SCORE */
+    2,		/* UNIT_SEPERATOR */
+    2,		/* v */
+    2,		/* V */
+    2,		/* VERTICAL_BAR */
+    2,		/* VERTICAL_TAB */
+    2,		/* w */
+    8,		/* W */
+    2,		/* x */
+    2,		/* X */
+    0,		/* y */
+    0,		/* Y */
+    0,		/* z */
+    0,		/* Z */
+    0		/* ZERO */
+    ];
+
+    const number$1 = 1,
+        identifier = 2,
+        string = 4,
+        white_space = 8,
+        open_bracket = 16,
+        close_bracket = 32,
+        operator = 64,
+        symbol = 128,
+        new_line = 256,
+        data_link = 512,
+        alpha_numeric = (identifier | number$1),
+        white_space_new_line = (white_space | new_line),
+        Types = {
+            num: number$1,
+            number: number$1,
+            id: identifier,
+            identifier,
+            str: string,
+            string,
+            ws: white_space,
+            white_space,
+            ob: open_bracket,
+            open_bracket,
+            cb: close_bracket,
+            close_bracket,
+            op: operator,
+            operator,
+            sym: symbol,
+            symbol,
+            nl: new_line,
+            new_line,
+            dl: data_link,
+            data_link,
+            alpha_numeric,
+            white_space_new_line,
+        },
+
+    /*** MASKS ***/
+
+    TYPE_MASK = 0xF,
+    PARSE_STRING_MASK = 0x10,
+    IGNORE_WHITESPACE_MASK = 0x20,
+    TOKEN_LENGTH_MASK = 0xFFFFFFC0,
+
+    //De Bruijn Sequence for finding index of right most bit set.
+    //http://supertech.csail.mit.edu/papers/debruijn.pdf
+    debruijnLUT = [ 
+        0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 
+        31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+    ];
+
+    function getNumbrOfTrailingZeroBitsFromPowerOf2(value){
+        return debruijnLUT[(value * 0x077CB531) >>> 27];
+    }
+
+    class Lexer {
+
+        constructor(string = "", INCLUDE_WHITE_SPACE_TOKENS = false, PEEKING = false) {
+
+            if (typeof(string) !== "string") throw new Error("String value must be passed to Lexer");
+
+            /**
+             * The string that the Lexer tokenizes.
+             */
+            this.str = string;
+
+            /**
+             * Reference to the peeking Lexer.
+             */
+            this.p = null;
+
+            /**
+             * The type id of the current token.
+             */
+            this.type = 32768; //Default "non-value" for types is 1<<15;
+
+            /**
+             * The offset in the string of the start of the current token.
+             */
+            this.off = 0;
+
+            this.masked_values = 0;
+
+            /**
+             * The character offset of the current token within a line.
+             */
+            this.char = 0;
+            /**
+             * The line position of the current token.
+             */
+            this.line = 0;
+            /**
+             * The length of the string being parsed
+             */
+            this.sl = string.length;
+            /**
+             * The length of the current token.
+             */
+            this.tl = 0;
+
+            /**
+             * Flag to ignore white spaced.
+             */
+            this.IWS = !INCLUDE_WHITE_SPACE_TOKENS;
+
+            /**
+             * Flag to force the lexer to parse string contents
+             */
+             this.PARSE_STRING = false;
+
+            if (!PEEKING) this.next();
+        }
+
+        /**
+         * Restricts max parse distance to the other Lexer's current position.
+         * @param      {Lexer}  Lexer   The Lexer to limit parse distance by.
+         */
+        fence(marker = this) {
+            if (marker.str !== this.str)
+                return;
+            this.sl = marker.off;
+            return this;
+        }
+
+        /**
+         * Copies the Lexer.
+         * @return     {Lexer}  Returns a new Lexer instance with the same property values.
+         */
+        copy() {
+            let out = new Lexer(this.str, false, true);
+            out.off = this.off;
+            out.char = this.char;
+            out.line = this.line;
+            out.sl = this.sl;
+            out.masked_values = this.masked_values;
+            return out;
+        }
+
+        /**
+         * Given another Lexer with the same `str` property value, it will copy the state of that Lexer.
+         * @param      {Lexer}  [marker=this.peek]  The Lexer to clone the state from. 
+         * @throws     {Error} Throws an error if the Lexers reference different strings.
+         * @public
+         */
+        sync(marker = this.p) {
+
+            if (marker instanceof Lexer) {
+                if (marker.str !== this.str) throw new Error("Cannot sync Lexers with different strings!");
+                this.off = marker.off;
+                this.char = marker.char;
+                this.line = marker.line;
+                this.masked_values = marker.masked_values;
+            }
+
+            return this;
+        }
+
+        /**
+         * Will throw a new Error, appending the parsed string line and position information to the the error message passed into the function.
+         * @instance
+         * @public
+         * @param {String} message - The error message.
+         */
+        throw (message) {
+            let t$$1 = ("________________________________________________"),
+                is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
+            this.IWS = false;
+            let pk = this.copy();
+            while (!pk.END && pk.ty !== Types.nl) { pk.next(); }
+            let end = pk.off;
+            throw new Error(`${message} at ${this.line}:${this.char}\n${t$$1}\n${this.str.slice(this.off + this.tl + 1 - this.char, end)}\n${("").padStart(this.char - 2)}^\n${t$$1}\n${is_iws}`);
+        }
+
+        /**
+         * Proxy for Lexer.prototype.reset
+         * @public
+         */
+        r() { return this.reset(); }
+
+        /**
+         * Restore the Lexer back to it's initial state.
+         * @public
+         */
+        reset() {
+            this.p = null;
+            this.type = 32768;
+            this.off = 0;
+            this.tl = 0;
+            this.char = 0;
+            this.line = 0;
+            this.n;
+            return this;
+        }
+
+        resetHead() {
+            this.off = 0;
+            this.tl = 0;
+            this.char = 0;
+            this.line = 0;
+            this.p = null;
+            this.type = 32768;
+        }
+
+        /**
+         * Sets the internal state to point to the next token. Sets Lexer.prototype.END to `true` if the end of the string is hit.
+         * @public
+         * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
+         */
+        next(marker = this) {
+
+            let str = marker.str;
+
+            if (marker.sl < 1) {
+                marker.off = 0;
+                marker.type = 32768;
+                marker.tl = 0;
+                return marker;
+            }
+
+            //Token builder
+            let length = marker.tl;
+            let off = marker.off + length;
+            let l$$1 = marker.sl;
+            let IWS = marker.IWS;
+            let type = symbol;
+            let char = marker.char + length;
+            let line = marker.line;
+            let base = off;
+
+            if (off >= l$$1) {
+                length = 0;
+                base = l$$1;
+                char -= base - off;
+                marker.type = type;
+                marker.off = base;
+                marker.tl = length;
+                marker.char = char;
+                marker.line = line;
+                return marker;
+            }
+
+            while (true) {
+
+                base = off;
+
+                length = 1;
+
+                let code = str.charCodeAt(off);
+
+                if (code < 128) {
+
+                    switch (jump_table[code]) {
+                        case 0: //NUMBER
+                            while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)])) {}
+
+                            if (str[off] == "e" || str[off] == "E") {
+                                off++;
+                                if (str[off] == "-") off++;
+                                marker.off = off;
+                                marker.tl = 0;
+                                marker.next();
+                                off = marker.off + marker.tl;
+                                //Add e to the number string
+                            }
+
+                            type = number$1;
+                            length = off - base;
+
+                            break;
+                        case 1: //IDENTIFIER
+                            while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)]))) {}
+                            type = identifier;
+                            length = off - base;
+                            break;
+                        case 2: //QUOTED STRING
+                            if (this.PARSE_STRING) {
+                                type = symbol;
+                            } else {
+                                while (++off < l$$1 && str.charCodeAt(off) !== code) {}
+                                type = string;
+                                length = off - base + 1;
+                            }
+                            break;
+                        case 3: //SPACE SET
+                            while (++off < l$$1 && str.charCodeAt(off) === SPACE) {}
+                            type = white_space;
+                            length = off - base;
+                            break;
+                        case 4: //TAB SET
+                            while (++off < l$$1 && str[off] === HORIZONTAL_TAB) {}
+                            type = white_space;
+                            length = off - base;
+                            break;
+                        case 5: //CARIAGE RETURN
+                            length = 2;
+                        case 6: //LINEFEED
+                            type = new_line;
+                            char = 0;
+                            line++;
+                            off += length;
+                            break;
+                        case 7: //SYMBOL
+                            type = symbol;
+                            break;
+                        case 8: //OPERATOR
+                            type = operator;
+
+                            break;
+                        case 9: //OPEN BRACKET
+                            type = open_bracket;
+                            break;
+                        case 10: //CLOSE BRACKET
+                            type = close_bracket;
+                            break;
+                        case 11: //Data Link Escape
+                            type = data_link;
+                            length = 4; //Stores two UTF16 values and a data link sentinel
+                            break;
+                    }
+                }
+
+                if (IWS && (type & white_space_new_line)) {
+                    if (off < l$$1) {
+                        char += length;
+                        type = symbol;
+                        continue;
+                    } else {
+                        length = 0;
+                        base = l$$1;
+                        char -= base - off;
+                    }
+                }
+
+                break;
+            }
+
+            marker.type = type;
+            marker.off = base;
+            marker.tl = length;
+            marker.char = char;
+            marker.line = line;
+
+            return marker;
+        }
+        
+
+        /**
+         * Proxy for Lexer.prototype.assert
+         * @public
+         */
+        a(text) {
+            return this.assert(text);
+        }
+
+        /**
+         * Compares the string value of the current token to the value passed in. Advances to next token if the two are equal.
+         * @public
+         * @throws {Error} - `Expecting "${text}" got "${this.text}"`
+         * @param {String} text - The string to compare.
+         */
+        assert(text) {
+
+            if (this.off < 0) this.throw(`Expecting ${text} got null`);
+
+            if (this.text == text)
+                this.next();
+            else
+                this.throw(`Expecting "${text}" got "${this.text}"`);
+
+            return this;
+        }
+
+        /**
+         * Proxy for Lexer.prototype.assertCharacter
+         * @public
+         */
+        aC(char) { return this.assertCharacter(char); }
+        /**
+         * Compares the character value of the current token to the value passed in. Advances to next token if the two are equal.
+         * @public
+         * @throws {Error} - `Expecting "${text}" got "${this.text}"`
+         * @param {String} text - The string to compare.
+         */
+        assertCharacter(char) {
+
+            if (this.off < 0) this.throw(`Expecting ${text} got null`);
+
+            if (this.tx[this.off] == char[0])
+                this.next();
+            else
+                this.throw(`Expecting "${char[0]}" got "${this.tx[this.off]}"`);
+
+            return this;
+        }
+
+        /**
+         * Returns the Lexer bound to Lexer.prototype.p, or creates and binds a new Lexer to Lexer.prototype.p. Advences the other Lexer to the token ahead of the calling Lexer.
+         * @public
+         * @type {Lexer}
+         * @param {Lexer} [marker=this] - The marker to originate the peek from. 
+         * @param {Lexer} [peek_marker=this.p] - The Lexer to set to the next token state.
+         * @return {Lexer} - The Lexer that contains the peeked at token.
+         */
+        peek(marker = this, peek_marker = this.p) {
+
+            if (!peek_marker) {
+                if (!marker) return null;
+                if (!this.p) {
+                    this.p = new Lexer(this.str, false, true);
+                    peek_marker = this.p;
+                }
+            }
+            peek_marker.masked_values = marker.masked_values;
+            peek_marker.type = marker.type;
+            peek_marker.off = marker.off;
+            peek_marker.tl = marker.tl;
+            peek_marker.char = marker.char;
+            peek_marker.line = marker.line;
+            this.next(peek_marker);
+            return peek_marker;
+        }
+
+
+        /**
+         * Proxy for Lexer.prototype.slice
+         * @public
+         */
+        s(start) { return this.slice(start); }
+
+        /**
+         * Returns a slice of the parsed string beginning at `start` and ending at the current token.
+         * @param {Number | LexerBeta} start - The offset in this.str to begin the slice. If this value is a LexerBeta, sets the start point to the value of start.off.
+         * @return {String} A substring of the parsed string.
+         * @public
+         */
+        slice(start) {
+
+            if (typeof start === "number" || typeof start === "object") {
+                if (start instanceof Lexer) start = start.off;
+                return (this.END) ? this.str.slice(start, this.sl) : this.str.slice(start, this.off);
+            }
+            return this.str.slice(this.off, this.sl);
+        }
+
+        /**
+         * Skips to the end of a comment section.
+         * @param {boolean} ASSERT - If set to true, will through an error if there is not a comment line or block to skip.
+         * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
+         */
+        comment(ASSERT = false, marker = this) {
+
+            if (!(marker instanceof Lexer)) return marker;
+
+            if (marker.tx == "/") {
+                if (marker.pk.tx == "*") {
+                    marker.sync();
+                    while (!marker.END && (marker.nexts().tx != "*" || marker.pk.tx != "/")) { /* NO OP */ }
+                    marker.sync().assert("/");
+                } else if (marker.pk.tx == "/") {
+                    let IWS = marker.IWS;
+                    while (marker.next().ty != types.new_line && !marker.END) { /* NO OP */ }
+                    marker.IWS = IWS;
+                    marker.next();
+                } else
+                if (ASSERT) marker.throw("Expecting the start of a comment");
+            }
+
+            return marker;
+        }
+
+
+        setString(string, RESET = true) {
+            this.str = string;
+            this.sl = string.length;
+            if (RESET) this.resetHead();
+        }
+
+        toString(){
+            return this.slice();
+        }
+
+        /*** Getters and Setters ***/
+        get string() {
+            return this.str;
+        }
+
+        /**
+         * The current token in the form of a new Lexer with the current state.
+         * Proxy property for Lexer.prototype.copy
+         * @type {Lexer}
+         * @public
+         * @readonly
+         */
+        get token() {
+            return this.copy();
+        }
+
+
+        get ch() {
+            return this.str[this.off];
+        }
+
+        /**
+         * Proxy for Lexer.prototype.text
+         * @public
+         * @type {String}
+         * @readonly
+         */
+        get tx() { return this.text; }
+        
+        /**
+         * The string value of the current token.
+         * @type {String}
+         * @public
+         * @readonly
+         */
+        get text() {
+            return (this.off < 0) ? "" : this.str.slice(this.off, this.off + this.tl);
+        }
+
+        /**
+         * The type id of the current token.
+         * @type {Number}
+         * @public
+         * @readonly
+         */
+        get ty() { return this.type; }
+
+        /**
+         * The current token's offset position from the start of the string.
+         * @type {Number}
+         * @public
+         * @readonly
+         */
+        get pos() {
+            return this.off;
+        }
+
+        /**
+         * Proxy for Lexer.prototype.peek
+         * @public
+         * @readonly
+         * @type {Lexer}
+         */
+        get pk() { return this.peek(); }
+
+        /**
+         * Proxy for Lexer.prototype.next
+         * @public
+         */
+        get n() { return this.next(); }
+
+        get END(){ return this.off >= this.sl; }
+        set END(v$$1){}
+
+        get type(){
+            return 1 << (this.masked_values & TYPE_MASK);
+        }
+
+        set type(value){
+            //assuming power of 2 value.
+
+            this.masked_values = (this.masked_values & ~TYPE_MASK) | ((getNumbrOfTrailingZeroBitsFromPowerOf2(value)) & TYPE_MASK); 
+        }
+
+        get tl (){
+            return this.token_length;
+        }
+
+        set tl(value){
+            this.token_length = value;
+        }
+
+        get token_length(){
+            return ((this.masked_values & TOKEN_LENGTH_MASK) >> 6);
+        }
+
+        set token_length(value){
+            this.masked_values = (this.masked_values & ~TOKEN_LENGTH_MASK) | (((value << 6) | 0) & TOKEN_LENGTH_MASK); 
+        }
+
+        get IGNORE_WHITE_SPACE(){
+            return this.IWS;
+        }
+
+        get IWS(){
+            return !!(this.masked_values & IGNORE_WHITESPACE_MASK);
+        }
+
+        set IWS(boolean){
+            this.masked_values = (this.masked_values & ~IGNORE_WHITESPACE_MASK) | ((boolean | 0) << 5); 
+        }
+
+        get PARSE_STRING(){
+            return !!(this.masked_values & PARSE_STRING_MASK);
+        }
+
+        set PARSE_STRING(boolean){
+            this.masked_values = (this.masked_values & ~PARSE_STRING_MASK) | ((boolean | 0) << 4); 
+        }
+
+        /**
+         * Reference to token id types.
+         */
+        get types() {
+            return Types;
+        }
+    }
+
+    function whind$1(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS); }
+    whind$1.constructor = Lexer;
+
+    Lexer.types = Types;
+    whind$1.types = Types;
+
+    var whind$2 = /*#__PURE__*/Object.freeze({
+        default: whind$1,
+        Lexer: Lexer
+    });
+
     let scape_date = new Date();
     scape_date.setHours(0);
     scape_date.setMilliseconds(0);
@@ -1221,7 +2129,7 @@ var wick = (function (exports) {
 
             if(date) return date;
 
-            let lex = whind(value);
+            let lex = whind$1(value);
 
             let year = parseInt(lex.text);
 
@@ -1368,7 +2276,7 @@ var wick = (function (exports) {
         }
     }
 
-    let string = new StringSchemeConstructor();
+    let string$1 = new StringSchemeConstructor();
 
     class BoolSchemeConstructor extends SchemeConstructor {
 
@@ -1408,7 +2316,7 @@ var wick = (function (exports) {
 
     let bool = new BoolSchemeConstructor();
 
-    let schemes = { date, string, number, bool, time };
+    let schemes = { date, string: string$1, number, bool, time };
 
     class BTreeModelContainer extends ModelContainerBase {
 
@@ -1450,11 +2358,11 @@ var wick = (function (exports) {
                 this.insert(data);
         }
 
-        _destroy_() {
+        destroy() {
             if (this.btree)
-                this.btree._destroy_();
+                this.btree.destroy();
 
-            super._destroy_();
+            super.destroy();
         }
 
         get length() {
@@ -1580,7 +2488,7 @@ var wick = (function (exports) {
 
         __removeAll__() {
             if (this.btree)
-                this.btree._destroy_();
+                this.btree.destroy();
             this.btree = null;
         }
 
@@ -1610,14 +2518,14 @@ var wick = (function (exports) {
             this.items = 0;
         }
 
-        _destroy_() {
+        destroy() {
 
             this.nodes = null;
             this.keys = null;
 
             if (!this.LEAF) {
                 for (let i = 0, l = this.nodes.length; i < l; i++)
-                    this.nodes[i]._destroy_();
+                    this.nodes[i].destroy();
             }
 
         }
@@ -1985,11 +2893,11 @@ var wick = (function (exports) {
                 this.insert(data, true);
         }
 
-        _destroy_() {
+        destroy() {
 
             this.data = null;
 
-            super._destroy_();
+            super.destroy();
         }
 
         get proxy() { return new Proxy(this, ArrayContainerProxySettings); }
@@ -2422,7 +3330,7 @@ var wick = (function (exports) {
             this.schemas = { any: Model };
 
             /**
-             * { Object } Store of user defined Model instances that serve as global models, which are available to the whole application. Multiple Sources will be able to _bind_ to the Models. `<w-source>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets ._model_ whose property name matches the "model" attribute.
+             * { Object } Store of user defined Model instances that serve as global models, which are available to the whole application. Multiple Sources will be able to _bind_ to the Models. `<w-source>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets .model whose property name matches the "model" attribute.
              * 
              * Assign instances of Model or Model or any class that extends these to preset_options.models to have them used by Wick.
              * 
@@ -2710,7 +3618,7 @@ var wick = (function (exports) {
             return this._changed_;
         }
 
-        _destroy_() { this.root = null; }
+        destroy() { this.root = null; }
 
         _createProp_() {}
     }
@@ -2739,33 +3647,33 @@ var wick = (function (exports) {
     		 */
     		this.nx = null;
     		this.pv = null;
-    		this ._model_ = null;
+    		this .model = null;
     	}
 
     	/**
          * Unbinds the View from its Model and sets all properties to undefined. Should be called by any class extending View
     	 * ``` js
     	 * class ExtendingView extends wick.core.view.View{
-    	 * 		_destroy_(){
+    	 * 		destroy(){
     	 * 			//... do some stuff ...
-    	 * 			super._destroy_();
+    	 * 			super.destroy();
     	 * 		}
     	 * }
     	 * ```
          * @protected
          */
-    	_destroy_(){
+    	destroy(){
 
-    		if(this ._model_)
-    			this ._model_.removeView(this);
+    		if(this .model)
+    			this .model.removeView(this);
     	
-    		this ._model_ = undefined;
+    		this .model = undefined;
     		this.nx = undefined;
     	}	
     	/**
     		Called by a Model when its data has changed.
     	*/
-    	_update_(data){
+    	update(data){
 
     	}
     	/**
@@ -2790,7 +3698,7 @@ var wick = (function (exports) {
     	unsetModel(){
 
     		this.nx = null;
-    		this ._model_ = null;
+    		this .model = null;
     	}
     }
 
@@ -2813,9 +3721,9 @@ var wick = (function (exports) {
             return this.ele;
         }
 
-        _destroy_() {
+        destroy() {
             for (let i = 0; i < this.sources.length; i++)
-                this.sources[i]._destroy_();
+                this.sources[i].destroy();
             this.source = null;
             this.model = null;
             this.ele = null;
@@ -2830,7 +3738,7 @@ var wick = (function (exports) {
                 });
         }
 
-        _appendToDOM_(element, before_element) {
+        appendToDOM(element, before_element) {
             this._APPEND_STATE_ = true;
             if (before_element)
                 element.insertBefore(this.element, before_element);
@@ -2846,25 +3754,25 @@ var wick = (function (exports) {
                 this.ele.parentElement.removeChild(this.ele);
         }
 
-        _transitionIn_(transition, transition_name = "trs_in") {
+        transitionIn(transition, transition_name = "trs_in") {
 
             if (transition) {
                 let data = {};
 
                 data[transition_name] = transition;
 
-                this._update_(data);
+                this.update(data);
             }
 
             this._TRANSITION_STATE_ = true;
         }
 
-        _transitionOut_(transition, transition_name = "trs_out", DESTROY_ON_REMOVE = false) {
+        transitionOut(transition, transition_name = "trs_out", DESTROY_ON_REMOVE = false) {
 
             this._APPEND_STATE_ = false;
 
             if (this._TRANSITION_STATE_ === false) {
-                // if (DESTROY_ON_REMOVE && !this._DESTROYED_) this._destroy_();
+                // if (DESTROY_ON_REMOVE && !this._DESTROYED_) this.destroy();
                 this._removeFromDOM_();
                 return;
             }
@@ -2876,7 +3784,7 @@ var wick = (function (exports) {
 
                 data[transition_name] = transition;
 
-                this._update_(data);
+                this.update(data);
 
                 if (transition.trs)
                     transition_time = transition.trs.out_duration;
@@ -2931,11 +3839,11 @@ var wick = (function (exports) {
             if (transition_time > 0)
                 setTimeout(() => {
                     this._removeFromDOM_();
-                    if (DESTROY_ON_REMOVE) this._destroy_();
+                    if (DESTROY_ON_REMOVE) this.destroy();
                 }, transition_time + 2);
             else {
                 this._removeFromDOM_();
-                if (DESTROY_ON_REMOVE) this._destroy_();
+                if (DESTROY_ON_REMOVE) this.destroy();
             }
 
             return transition_time;
@@ -2943,1292 +3851,38 @@ var wick = (function (exports) {
 
         _upImport_(prop_name, data, meta) {
             if (this.parent)
-                this.parent._up_(prop_name, data, meta, this);
+                this.parent.up(prop_name, data, meta, this);
         }
 
-        _down_(data, changed_values) {
+        down(data, changed_values) {
             for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i]._down_(data, changed_values);
+                this.sources[i].down(data, changed_values);
         }
 
-        _update_(data, changed_values) {
+        update(data, changed_values) {
             for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i]._update_(data, changed_values);
+                this.sources[i].update(data, changed_values);
         }
 
-        _bubbleLink_() {
-            if (this.parent && this.parent._bubbleLink_)
-                this.parent._bubbleLink_(this);
+        bubbleLink() {
+            if (this.parent && this.parent.bubbleLink)
+                this.parent.bubbleLink(this);
             else
                 debugger
         }
     }
 
-    const HORIZONTAL_TAB = 9;
-    const SPACE = 32;
-
-    /**
-     * Lexer Jump table reference 
-     * 0. NUMBER
-     * 1. IDENTIFIER
-     * 2. QUOTE STRING
-     * 3. SPACE SET
-     * 4. TAB SET
-     * 5. CARIAGE RETURN
-     * 6. LINEFEED
-     * 7. SYMBOL
-     * 8. OPERATOR
-     * 9. OPEN BRACKET
-     * 10. CLOSE BRACKET 
-     * 11. DATA_LINK
-     */ 
-    const jump_table = [
-    7, 	 	/* A */
-    7, 	 	/* a */
-    7, 	 	/* ACKNOWLEDGE */
-    7, 	 	/* AMPERSAND */
-    7, 	 	/* ASTERISK */
-    7, 	 	/* AT */
-    7, 	 	/* B */
-    7, 	 	/* b */
-    7, 	 	/* BACKSLASH */
-    4, 	 	/* BACKSPACE */
-    6, 	 	/* BELL */
-    7, 	 	/* C */
-    7, 	 	/* c */
-    5, 	 	/* CANCEL */
-    7, 	 	/* CARET */
-    11, 	/* CARRIAGE_RETURN */
-    7, 	 	/* CLOSE_CURLY */
-    7, 	 	/* CLOSE_PARENTH */
-    7, 	 	/* CLOSE_SQUARE */
-    7, 	 	/* COLON */
-    7, 	 	/* COMMA */
-    7, 	 	/* d */
-    7, 	 	/* D */
-    7, 	 	/* DATA_LINK_ESCAPE */
-    7, 	 	/* DELETE */
-    7, 	 	/* DEVICE_CTRL_1 */
-    7, 	 	/* DEVICE_CTRL_2 */
-    7, 	 	/* DEVICE_CTRL_3 */
-    7, 	 	/* DEVICE_CTRL_4 */
-    7, 	 	/* DOLLAR */
-    7, 	 	/* DOUBLE_QUOTE */
-    7, 	 	/* e */
-    3, 	 	/* E */
-    8, 	 	/* EIGHT */
-    2, 	 	/* END_OF_MEDIUM */
-    7, 	 	/* END_OF_TRANSMISSION */
-    7, 	 	/* END_OF_TRANSMISSION_BLOCK */
-    8, 	 	/* END_OF_TXT */
-    8, 	 	/* ENQUIRY */
-    2, 	 	/* EQUAL */
-    9, 	 	/* ESCAPE */
-    10, 	 /* EXCLAMATION */
-    8, 	 	/* f */
-    8, 	 	/* F */
-    7, 	 	/* FILE_SEPERATOR */
-    7, 	 	/* FIVE */
-    7, 	 	/* FORM_FEED */
-    7, 	 	/* FORWARD_SLASH */
-    0, 	 	/* FOUR */
-    0, 	 	/* g */
-    0, 	 	/* G */
-    0, 	 	/* GRAVE */
-    0, 	 	/* GREATER_THAN */
-    0, 	 	/* GROUP_SEPERATOR */
-    0, 	 	/* h */
-    0, 	 	/* H */
-    0, 	 	/* HASH */
-    0, 	 	/* HORIZONTAL_TAB */
-    8, 	 	/* HYPHEN */
-    7, 	 	/* i */
-    8, 	 	/* I */
-    8, 	 	/* j */
-    8, 	 	/* J */
-    7, 	 	/* k */
-    7, 	 	/* K */
-    1, 	 	/* l */
-    1, 	 	/* L */
-    1, 	 	/* LESS_THAN */
-    1, 	 	/* LINE_FEED */
-    1, 	 	/* m */
-    1, 	 	/* M */
-    1, 	 	/* n */
-    1, 	 	/* N */
-    1, 	 	/* NEGATIVE_ACKNOWLEDGE */
-    1, 	 	/* NINE */
-    1, 	 	/* NULL */
-    1, 	 	/* o */
-    1, 	 	/* O */
-    1, 	 	/* ONE */
-    1, 	 	/* OPEN_CURLY */
-    1, 	 	/* OPEN_PARENTH */
-    1, 	 	/* OPEN_SQUARE */
-    1, 	 	/* p */
-    1, 	 	/* P */
-    1, 	 	/* PERCENT */
-    1, 	 	/* PERIOD */
-    1, 	 	/* PLUS */
-    1, 	 	/* q */
-    1, 	 	/* Q */
-    1, 	 	/* QMARK */
-    1, 	 	/* QUOTE */
-    9, 	 	/* r */
-    7, 	 	/* R */
-    10, 	/* RECORD_SEPERATOR */
-    7, 	 	/* s */
-    7, 	 	/* S */
-    2, 	 	/* SEMICOLON */
-    1, 	 	/* SEVEN */
-    1, 	 	/* SHIFT_IN */
-    1, 	 	/* SHIFT_OUT */
-    1, 	 	/* SIX */
-    1, 	 	/* SPACE */
-    1, 	 	/* START_OF_HEADER */
-    1, 	 	/* START_OF_TEXT */
-    1, 	 	/* SUBSTITUTE */
-    1, 	 	/* SYNCH_IDLE */
-    1, 	 	/* t */
-    1, 	 	/* T */
-    1, 	 	/* THREE */
-    1, 	 	/* TILDE */
-    1, 	 	/* TWO */
-    1, 	 	/* u */
-    1, 	 	/* U */
-    1, 	 	/* UNDER_SCORE */
-    1, 	 	/* UNIT_SEPERATOR */
-    1, 	 	/* v */
-    1, 	 	/* V */
-    1, 	 	/* VERTICAL_BAR */
-    1, 	 	/* VERTICAL_TAB */
-    1, 	 	/* w */
-    1, 	 	/* W */
-    1, 	 	/* x */
-    1, 	 	/* X */
-    9, 	 	/* y */
-    7, 	 	/* Y */
-    10,  	/* z */
-    7,  	/* Z */
-    7 		/* ZERO */
-    ];	
-
-    /**
-     * LExer Number and Identifier jump table reference
-     * Number are masked by 12(4|8) and Identifiers are masked by 10(2|8)
-     * entries marked as `0` are not evaluated as either being in the number set or the identifier set.
-     * entries marked as `2` are in the identifier set but not the number set
-     * entries marked as `4` are in the number set but not the identifier set
-     * entries marked as `8` are in both number and identifier sets
-     */
-    const number_and_identifier_table = [
-    0, 		/* A */
-    0, 		/* a */
-    0, 		/* ACKNOWLEDGE */
-    0, 		/* AMPERSAND */
-    0, 		/* ASTERISK */
-    0, 		/* AT */
-    0,		/* B */
-    0,		/* b */
-    0,		/* BACKSLASH */
-    0,		/* BACKSPACE */
-    0,		/* BELL */
-    0,		/* C */
-    0,		/* c */
-    0,		/* CANCEL */
-    0,		/* CARET */
-    0,		/* CARRIAGE_RETURN */
-    0,		/* CLOSE_CURLY */
-    0,		/* CLOSE_PARENTH */
-    0,		/* CLOSE_SQUARE */
-    0,		/* COLON */
-    0,		/* COMMA */
-    0,		/* d */
-    0,		/* D */
-    0,		/* DATA_LINK_ESCAPE */
-    0,		/* DELETE */
-    0,		/* DEVICE_CTRL_1 */
-    0,		/* DEVICE_CTRL_2 */
-    0,		/* DEVICE_CTRL_3 */
-    0,		/* DEVICE_CTRL_4 */
-    0,		/* DOLLAR */
-    0,		/* DOUBLE_QUOTE */
-    0,		/* e */
-    0,		/* E */
-    0,		/* EIGHT */
-    0,		/* END_OF_MEDIUM */
-    0,		/* END_OF_TRANSMISSION */
-    8,		/* END_OF_TRANSMISSION_BLOCK */
-    0,		/* END_OF_TXT */
-    0,		/* ENQUIRY */
-    0,		/* EQUAL */
-    0,		/* ESCAPE */
-    0,		/* EXCLAMATION */
-    0,		/* f */
-    0,		/* F */
-    0,		/* FILE_SEPERATOR */
-    2,		/* FIVE */
-    4,		/* FORM_FEED */
-    0,		/* FORWARD_SLASH */
-    8,		/* FOUR */
-    8,		/* g */
-    8,		/* G */
-    8,		/* GRAVE */
-    8,		/* GREATER_THAN */
-    8,		/* GROUP_SEPERATOR */
-    8,		/* h */
-    8,		/* H */
-    8,		/* HASH */
-    8,		/* HORIZONTAL_TAB */
-    0,		/* HYPHEN */
-    0,		/* i */
-    0,		/* I */
-    0,		/* j */
-    0,		/* J */
-    0,		/* k */
-    0,		/* K */
-    2,		/* l */
-    8,		/* L */
-    2,		/* LESS_THAN */
-    2,		/* LINE_FEED */
-    8,		/* m */
-    2,		/* M */
-    2,		/* n */
-    2,		/* N */
-    2,		/* NEGATIVE_ACKNOWLEDGE */
-    2,		/* NINE */
-    2,		/* NULL */
-    2,		/* o */
-    2,		/* O */
-    2,		/* ONE */
-    8,		/* OPEN_CURLY */
-    2,		/* OPEN_PARENTH */
-    2,		/* OPEN_SQUARE */
-    2,		/* p */
-    2,		/* P */
-    2,		/* PERCENT */
-    2,		/* PERIOD */
-    2,		/* PLUS */
-    2,		/* q */
-    8,		/* Q */
-    2,		/* QMARK */
-    2,		/* QUOTE */
-    0,		/* r */
-    0,		/* R */
-    0,		/* RECORD_SEPERATOR */
-    0,		/* s */
-    2,		/* S */
-    0,		/* SEMICOLON */
-    2,		/* SEVEN */
-    8,		/* SHIFT_IN */
-    2,		/* SHIFT_OUT */
-    2,		/* SIX */
-    2,		/* SPACE */
-    2,		/* START_OF_HEADER */
-    2,		/* START_OF_TEXT */
-    2,		/* SUBSTITUTE */
-    2,		/* SYNCH_IDLE */
-    2,		/* t */
-    2,		/* T */
-    2,		/* THREE */
-    2,		/* TILDE */
-    2,		/* TWO */
-    8,		/* u */
-    2,		/* U */
-    2,		/* UNDER_SCORE */
-    2,		/* UNIT_SEPERATOR */
-    2,		/* v */
-    2,		/* V */
-    2,		/* VERTICAL_BAR */
-    2,		/* VERTICAL_TAB */
-    2,		/* w */
-    8,		/* W */
-    2,		/* x */
-    2,		/* X */
-    0,		/* y */
-    0,		/* Y */
-    0,		/* z */
-    0,		/* Z */
-    0		/* ZERO */
-    ];
-
-    /**
-     * The types object bound to Lexer#types
-     * @type       {Object}
-     * @alias module:wick~internals.lexer.Types
-     * @see {@link module:wick.core.common.Lexer}
-     */
-    const number$1 = 1,
-        identifier = 2,
-        string$1 = 4,
-        white_space = 8,
-        open_bracket = 16,
-        close_bracket = 32,
-        operator = 64,
-        symbol = 128,
-        new_line = 256,
-        data_link = 512,
-        alpha_numeric = (identifier | number$1),
-        white_space_new_line = (white_space | new_line),
-        Types = {
-            num: number$1,
-            number: number$1,
-            id: identifier,
-            identifier,
-            str: string$1,
-            string: string$1,
-            ws: white_space,
-            white_space,
-            ob: open_bracket,
-            open_bracket,
-            cb: close_bracket,
-            close_bracket,
-            op: operator,
-            operator,
-            sym: symbol,
-            symbol,
-            nl: new_line,
-            new_line,
-            dl: data_link,
-            data_link,
-            alpha_numeric,
-            white_space_new_line,
-        };
-
-
-
-    /**
-     * @classdesc A simple Lexical tokenizer for use with text processing. 
-     * 
-     * The Lexer parses an input string and yield lexical tokens.  It also provides methods for looking ahead and asserting token values. 
-     *
-     * There are 9 types of tokens that the Lexer will create:
-     * 
-     * > 1. **Identifier** - `types.identifier` or `types.id`
-     * >    - Any set of characters beginning with `_`|`a-z`|`A-Z`, and followed by `0-9`|`a-z`|`A-Z`|`-`|`_`|`#`|`$`.
-     * > 2. **Number** - `types.number` or `types.num`
-     * >    - Any set of characters beginning with `0-9`|`.`, and followed by `0-9`|`.`.
-     * > 3. **String**: 2 - `types.string` or `types.str`
-     * >    - A set of characters beginning with either `'` or `"` and ending with a matching `'` or `"`.
-     * > 4. **Open Bracket** - `types.open_bracket` or `types.ob`
-     * >    - A single character from the set `<`|`(`|`{`|`[`.
-     * > 5. **Close Bracket** - `types.close_bracket` or `types.cb`
-     * >    - A single character from the set `>`|`)`|`}`|`]`.
-     * > 7. **Operator**: 
-     * >    - A single character from the set `*`|`+`|`<`|`=`|`>`|`\`|`&`|`%`|`!`|`|`|`^`|`:`.
-     * > 8. **New Line**: 
-     * >    - A single `newline` (`LF` or `NL`) character. It may also be `LFCR` if the text is formated for Windows.
-     * > 9. **White Space**: 
-     * >    - An uninterrupted set of `tab` or `space` characters.
-     * > 10. **Symbol**:
-     * >        - All other characters not defined by the the above, with each symbol token being comprised of one character.
-     * 
-     * Types are identified by a binary index value and are defined in Lexer.prototype.types. A token's type can be verified by with 
-     * ```js
-     * Lexer.token.type === Lexer.types.*`
-     * ```
-     * @alias Lexer
-     * @memberof module:wick.core.common
-     * @param {String} string - The string to parse. 
-     * @param {Boolean} [IGNORE_WHITE_SPACE=true] - If set to true, the Lexer will not generate tokens for newline and whitespace characters, and instead skip to the next no whitespace/newline token. 
-     * @throws     {Error} Throws "String value must be passed to Lexer" if a non-string value is passed as `string`.
-     */
-    class Lexer {
-
-        constructor(string = "", IGNORE_WHITE_SPACE = true, PEEKING = false) {
-
-            if (typeof(string) !== "string") throw new Error("String value must be passed to Lexer");
-
-            /**
-             * The string that the Lexer tokenizes.
-             */
-            this.str = string;
-
-            /**
-             * Reference to the peeking Lexer.
-             */
-            this.p = null;
-
-            /**
-             * The type id of the current token.
-             */
-            this.type = -1;
-
-            /**
-             * The offset in the string of the start of the current token.
-             */
-            this.off = 0;
-
-            /**
-             * The length of the current token.
-             */
-            this.tl = 0;
-
-            /**
-             * The character offset of the current token within a line.
-             */
-            this.char = 0;
-
-            /**
-             * The line position of the current token.
-             */
-            this.line = 0;
-
-            /**
-             * The length of the string being parsed
-             */
-            this.sl = string.length;
-
-
-            /**
-             * Flag to ignore white spaced.
-             */
-            this.IWS = IGNORE_WHITE_SPACE;
-
-            /**
-             * Flag set to true if the end of the string is met.
-             */
-            this.END = false;
-
-            /**
-             * Flag to force the lexer to parse string contents
-             */
-             this.PARSE_STRING = false;
-
-            if (!PEEKING) this.next();
-        }
-
-        /**
-         * Restricts max parse distance to the other Lexer's current position.
-         * @param      {Lexer}  Lexer   The Lexer to limit parse distance by.
-         */
-        fence(lexer = this) {
-            if (lexer.str !== this.str)
-                return;
-            this.sl = lexer.off;
-            return this;
-        }
-
-        /**
-         * Reference to token id types.
-         */
-        get types() {
-            return Types;
-        }
-
-        /**
-         * Copies the Lexer.
-         * @return     {Lexer}  Returns a new Lexer instance with the same property values.
-         */
-        copy() {
-            let out = new Lexer(this.str, this.IWS, true);
-            out.type = this.type;
-            out.off = this.off;
-            out.tl = this.tl;
-            out.char = this.char;
-            out.line = this.line;
-            out.sl = this.sl;
-            out.END = this.END;
-            return out;
-        }
-
-        /**
-         * Given another Lexer with the same `str` property value, it will copy the state of that Lexer.
-         * @param      {Lexer}  [marker=this.peek]  The Lexer to clone the state from. 
-         * @throws     {Error} Throws an error if the Lexers reference different strings.
-         * @public
-         */
-        sync(marker = this.p) {
-
-            if (marker instanceof Lexer) {
-                if (marker.str !== this.str) throw new Error("Cannot sync Lexers with different strings!");
-                this.type = marker.type;
-                this.off = marker.off;
-                this.tl = marker.tl;
-                this.char = marker.char;
-                this.line = marker.line;
-                this.END = marker.END;
-            }
-
-            return this;
-        }
-
-        /**
-         * Will throw a new Error, appending the parsed string line and position information to the the error message passed into the function.
-         * @instance
-         * @public
-         * @param {String} message - The error message.
-         */
-        throw (message) {
-            let t$$1 = ("________________________________________________"),
-                n$$1 = "\n",
-                is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
-            this.IWS = false;
-            let pk = this.copy();
-            while (!pk.END && pk.ty !== Types.nl) { pk.n(); }
-            let end = pk.off;
-            throw new Error(message + "at " + this.line + ":" + this.char + n$$1 + t$$1 + n$$1 + this.str.slice(this.off - this.char, end) + n$$1 + ("").padStart(this.char - 2) + "^" + n$$1 + t$$1 + is_iws);
-        }
-
-        /**
-         * Proxy for Lexer.prototype.reset
-         * @public
-         */
-        r() { return this.reset(); }
-
-        /**
-         * Restore the Lexer back to it's initial state.
-         * @public
-         */
-        reset() {
-            this.p = null;
-            this.type = -1;
-            this.off = 0;
-            this.tl = 0;
-            this.char = 0;
-            this.line = 0;
-            this.END = false;
-            this.n();
-            return this;
-        }
-
-        resetHead() {
-            this.off = 0;
-            this.tl = 0;
-            this.char = 0;
-            this.line = 0;
-            this.END = false;
-            this.p = null;
-            this.type = -1;
-        }
-
-        /**
-         * Proxy for Lexer.prototype.next
-         * @public
-         */
-        n() { return this.next(); }
-
-        /**
-         * Sets the internal state to point to the next token. Sets Lexer.prototype.END to `true` if the end of the string is hit.
-         * @public
-         * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
-         */
-        next(marker = this) {
-
-            let str = marker.str;
-
-            if (marker.sl < 1) {
-                marker.off = -1;
-                marker.type = -1;
-                marker.tl = 0;
-                marker.END = true;
-                return marker;
-            }
-
-            //Token builder
-            let length = marker.tl;
-            let off = marker.off + length;
-            let l$$1 = marker.sl;
-            let IWS = marker.IWS;
-            let type = symbol;
-            let char = marker.char + length;
-            let line = marker.line;
-            let base = off;
-
-            if (off >= l$$1) {
-
-                marker.END = true;
-                length = 0;
-                base = l$$1;
-                char -= base - off;
-
-                marker.type = type;
-                marker.off = base;
-                marker.tl = length;
-                marker.char = char;
-                marker.line = line;
-
-                return marker;
-            }
-
-            while (true) {
-
-                base = off;
-
-                length = 1;
-
-                let code = str.charCodeAt(off);
-
-                if (code < 128) {
-
-                    switch (jump_table[code]) {
-                        case 0: //NUMBER
-                            while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)])) {}
-
-                            if (str[off] == "e" || str[off] == "E") {
-                                off++;
-                                if (str[off] == "-") off++;
-                                marker.off = off;
-                                marker.tl = 0;
-                                marker.n();
-                                off = marker.off + marker.tl;
-                                //Add e to the number string
-                            }
-
-                            type = number$1;
-                            length = off - base;
-
-                            break;
-                        case 1: //IDENTIFIER
-                            while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)]))) {}
-                            type = identifier;
-                            length = off - base;
-                            break;
-                        case 2: //QUOTED STRING
-                            if (this.PARSE_STRING) {
-                                type = symbol;
-                            } else {
-                                while (++off < l$$1 && str.charCodeAt(off) !== code) {}
-                                type = string$1;
-                                length = off - base + 1;
-                            }
-                            break;
-                        case 3: //SPACE SET
-                            while (++off < l$$1 && str.charCodeAt(off) === SPACE) {}
-                            type = white_space;
-                            length = off - base;
-                            break;
-                        case 4: //TAB SET
-                            while (++off < l$$1 && str[off] === HORIZONTAL_TAB) {}
-                            type = white_space;
-                            length = off - base;
-                            break;
-                        case 5: //CARIAGE RETURN
-                            length = 2;
-                        case 6: //LINEFEED
-                            type = new_line;
-                            char = 0;
-                            line++;
-                            off += length;
-                            break;
-                        case 7: //SYMBOL
-                            type = symbol;
-                            break;
-                        case 8: //OPERATOR
-                            type = operator;
-
-                            break;
-                        case 9: //OPEN BRACKET
-                            type = open_bracket;
-                            break;
-                        case 10: //CLOSE BRACKET
-                            type = close_bracket;
-                            break;
-                        case 11: //Data Link Escape
-                            type = data_link;
-                            length = 4; //Stores two UTF16 values and a data link sentinel
-                            break;
-                    }
-                }
-
-                if (IWS && (type & white_space_new_line)) {
-                    if (off < l$$1) {
-                        char += length;
-                        type = symbol;
-                        continue;
-                    } else {
-                        length = 0;
-                        base = l$$1;
-                        char -= base - off;
-                        marker.END = true;
-                    }
-                }
-
-                break;
-            }
-
-            marker.type = type;
-            marker.off = base;
-            marker.tl = length;
-            marker.char = char;
-            marker.line = line;
-
-            return marker;
-        }
-        
-
-        /**
-         * Proxy for Lexer.prototype.assert
-         * @public
-         */
-        a(text) {
-            if (this.off < 0) this.throw(`Expecting ${text} got null`);
-
-            if (this.text == text)
-                this.next();
-            else
-                this.throw(`Expecting "${text}" got "${this.text}"`);
-
-            return this;
-        }
-
-        /**
-         * Compares the string value of the current token to the value passed in. Advances to next token if the two are equal.
-         * @public
-         * @throws {Error} - `Expecting "${text}" got "${this.text}"`
-         * @param {String} text - The string to compare.
-         */
-        assert(text) {
-
-            if (this.off < 0) this.throw(`Expecting ${text} got null`);
-
-            if (this.text == text)
-                this.next();
-            else
-                this.throw(`Expecting "${text}" got "${this.text}"`);
-
-            return this;
-        }
-
-        /**
-         * Proxy for Lexer.prototype.assertChcatever
-         * @public
-         */
-        _appendChild_(text) { return this.assert(text); }
-        /**
-         * Compares the character value of the current token to the value passed in. Advances to next token if the two are equal.
-         * @public
-         * @throws {Error} - `Expecting "${text}" got "${this.text}"`
-         * @param {String} text - The string to compare.
-         */
-        assertCharacer(char) {
-
-            if (this.off < 0) this.throw(`Expecting ${text} got null`);
-
-            if (this.tx[this.off] == char)
-                this.next();
-            else
-                this.throw(`Expecting "${char}" got "${this.tx}"`);
-
-            return this;
-        }
-
-        /**
-         * Proxy for Lexer.prototype.peek
-         * @public
-         * @readonly
-         * @type {Lexer}
-         */
-        get pk() { return this.peek(); }
-
-        /**
-         * Returns the Lexer bound to Lexer.prototype.p, or creates and binds a new Lexer to Lexer.prototype.p. Advences the other Lexer to the token ahead of the calling Lexer.
-         * @public
-         * @type {Lexer}
-         * @param {Lexer} [marker=this] - The marker to originate the peek from. 
-         * @param {Lexer} [peek_marker=this.p] - The Lexer to set to the next token state.
-         * @return {Lexer} - The Lexer that contains the peeked at token.
-         */
-        peek(marker = this, peek_marker = this.p) {
-
-            if (!peek_marker) {
-                if (!marker) return null;
-                if (!this.p) {
-                    this.p = new Lexer(this.str, this.IWS, true);
-                    peek_marker = this.p;
-                }
-            }
-
-            peek_marker.type = marker.type;
-            peek_marker.off = marker.off;
-            peek_marker.tl = marker.tl;
-            peek_marker.char = marker.char;
-            peek_marker.line = marker.line;
-            this.next(peek_marker);
-            return peek_marker;
-        }
-
-        /**
-         * Proxy for Lexer.prototype.text
-         * @public
-         * @type {String}
-         * @readonly
-         */
-        get tx() { return this.text; }
-        /**
-         * The string value of the current token.
-         * @type {String}
-         * @public
-         * @readonly
-         */
-        get text() {
-            return (this.off < 0) ? "" : this.str.slice(this.off, this.off + this.tl);
-        }
-
-        /**
-         * The type id of the current token.
-         * @type {Number}
-         * @public
-         * @readonly
-         */
-        get ty() { return this.type; }
-
-        /**
-         * The current token's offset position from the start of the string.
-         * @type {Number}
-         * @public
-         * @readonly
-         */
-        get pos() {
-            return this.off;
-        }
-
-        /**
-         * Proxy for Lexer.prototype.slice
-         * @public
-         */
-        s(start) { return this.slice(start); }
-
-        /**
-         * Returns a slice of the parsed string beginning at `start` and ending at the current token.
-         * @param {Number | LexerBeta} start - The offset in this.str to begin the slice. If this value is a LexerBeta, sets the start point to the value of start.off.
-         * @return {String} A substring of the parsed string.
-         * @public
-         */
-        slice(start) {
-
-            if (typeof start === "number" || typeof start === "object") {
-                if (start instanceof Lexer) start = start.off;
-                return (this.END) ? this.str.slice(start, this.sl) : this.str.slice(start, this.off);
-            }
-            return this.str.slice(this.off, this.sl);
-        }
-
-        get ch() {
-            return this.str[this.off];
-        }
-
-        /**
-         * The current token in the form of a new Lexer with the current state.
-         * Proxy property for Lexer.prototype.copy
-         * @type {Lexer}
-         * @public
-         * @readonly
-         */
-        get token() {
-            return this.copy();
-        }
-        /**
-         * Skips to the end of a comment section.
-         * @param {boolean} ASSERT - If set to true, will through an error if there is not a comment line or block to skip.
-         * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
-         */
-        comment(ASSERT = false, marker = this) {
-
-            if (!(marker instanceof Lexer)) return marker;
-
-            if (marker.tx == "/") {
-                if (marker.pk.tx == "*") {
-                    marker.sync();
-                    while (!marker.END && (marker.n().tx != "*" || marker.pk.tx != "/")) { /* NO OP */ }
-                    marker.sync().a("/");
-                } else if (marker.pk.tx == "/") {
-                    let IWS = marker.IWS;
-                    while (marker.n().ty != types.new_line && !marker.END) { /* NO OP */ }
-                    marker.IWS = IWS;
-                    marker.n();
-                } else
-                if (ASSERT) marker.throw("Expecting the start of a comment");
-            }
-
-            return marker;
-        }
-
-        get string() {
-            return this.str;
-        }
-
-        setString(string, reset = true) {
-            this.str = string;
-            this.sl = string.length;
-            if (reset) this.resetHead();
-        }
-
-        toString(){
-            return this.slice();
-        }
-    }
-
-    function whind$1(string, INCLUDE_WHITE_SPACE_TOKENS) { return new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS); }
-    whind$1.constructor = Lexer;
-
-    var whind$2 = /*#__PURE__*/Object.freeze({
-        default: whind$1
-    });
-
-    // Mode Flag
-    const KEEP = 0;
-    const IMPORT = 1;
-    const EXPORT = 2;
-    const PUT = 4;
-
-    /**
-     * Gateway for data flow. Represents a single "channel" of data flow. 
-     * 
-     * By using different modes, one can control how data enters and exits the source context.
-     * -`keep`: 
-     *  This mode is the default and treats any data on the channel as coming from the model. The model itself is not changed, and any data flow from outside the source context is ignored.
-     * -`put`:
-     *  This mode will update the model to reflect updates on the channel.
-     * -`import`:
-     *  This mode will allow data from outside the source context to enter the context as if it came from the model.
-     *  -`export`:
-     *  This mode will propagate data flow to the outer source context, allowing other sources to listen on the data flow of the originating source context.
-     *  
-     *  if `import` is active, then `keep` is implicitly inactive and the model no longer has any bearing on the value of the channel.
-     */
-    class Tap {
-
-        constructor(source, prop, modes = 0) {
-            this._source_ = source;
-            this._prop_ = prop;
-            this._modes_ = modes; // 0 implies keep
-            this._ios_ = [];
-
-            if (modes & IMPORT && source.parent)
-                source.parent.getTap(prop)._ios_.push(this);
-
-        }
-
-        _destroy_() {
-
-            for (let i = 0, l = this._ios_.length; i < l; i++)
-                this._ios_[i]._destroy_();
-
-            this._ios_ = null;
-            this._source_ = null;
-            this._prop_ = null;
-            this._modes_ = null;
-        }
-
-        load(data) {
-            this._downS_(data);
-        }
-
-        _down_(value, meta) {
-            for (let i = 0, l = this._ios_.length; i < l; i++) {
-                this._ios_[i]._down_(value, meta);
-            }
-        }
-
-        _downS_(model, IMPORTED = false) {
-            const value = model[this._prop_];
-
-            if (typeof(value) !== "undefined") {
-
-                if (IMPORTED) {
-                    if (!(this._modes_ & IMPORT))
-                        return;
-
-                    if ((this._modes_ & PUT) && typeof(value) !== "function") {
-                        this._source_._model_[this._prop_] = value;
-                    }
-
-                }
-
-                for (let i = 0, l = this._ios_.length; i < l; i++) {
-                    if (this._ios_[i] instanceof Tap) {
-                        this._ios_[i]._downS_(model, true);
-                    } else
-                        this._ios_[i]._down_(value);
-                }
-            }
-        }
-
-        _up_(value, meta) {
-
-            if (!(this._modes_ & (EXPORT | PUT)))
-                this._down_(value, meta);
-
-            if ((this._modes_ & PUT) && typeof(value) !== "undefined") {
-                this._source_._model_[this._prop_] = value;
-            }
-
-            if (this._modes_ & EXPORT)
-                this._source_._up_(this, value, meta);
-
-
-
-        }
-    }
-
-    class UpdateTap extends Tap {
-        _downS_(model) {
-            for (let i = 0, l = this._ios_.length; i < l; i++)
-                this._ios_[i]._down_(model);
-        }
-        _up_() {}
-    }
-
-    class Source extends View {
-
-        /**
-         *   In the Wick dynamic template system, Sources serve as the primary access to Model data. They, along with {@link SourceTemplate}s, are the only types of objects the directly _bind_ to a Model. When a Model is updated, the Source will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link SourceTemplate}s.
-         *   A Source will also _bind_ to an HTML element. It has no methodes to _update_ the element, but it's descendants, primarily instances of the {@link IO} class, can _update_ attributes and values of then element and its sub-elements.
-         *   @param {Source} parent - The parent {@link Source}, used internally to build a hierarchy of Sources.
-         *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
-         *   @param {Presets} presets - An instance of the {@link Presets} object.
-         *   @param {HTMLElement} element - The HTMLElement the Source will _bind_ to.
-         *   @memberof module:wick~internals.source
-         *   @alias Source
-         *   @extends SourceBase
-         */
-        constructor(parent, presets, element, ast) {
-            super();
-
-            this.ast = null;
-
-            ast.setSource(this);
-            
-            /**
-             *@type {Boolean} 
-             *@protected
-             */
-
-
-            this.parent = parent;
-            this.ele = element;
-            this._presets_ = presets;
-            this._model_ = null;
-            this._statics_ = null;
-
-            this.taps = {};
-            this.update_tap = null;
-            this.children = [];
-            this.sources = [];
-            this.badges = {};
-            this._ios_ = [];
-            this.templates = [];
-            this.hooks = [];
-
-            this._model_name_ = "";
-            this._schema_name_ = "";
-
-            this.DESTROYED = false;
-            this.LOADED = false;
-
-            this.addToParent();
-        }
-
-        _destroy_() {
-
-            this.DESTROYED = true;
-
-            this._update_({ destroyed: true });
-
-            if (this.LOADED) {
-                this.LOADED = false;
-            }
-
-            if (this.parent && this.parent.removeSource)
-                this.parent.removeSource(this);
-            //this.finalizeTransitionOut();
-            this.children.forEach((c) => c._destroy_());
-            this.children.length = 0;
-            this.data = null;
-
-            if (this.ele && this.ele.parentElement)
-                this.ele.parentElement.removeChild(this.ele);
-
-            this.ele = null;
-
-            for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i]._destroy_();
-
-
-            super._destroy_();
-
-        }
-
-        getBadges(par) {
-            for (let a in this.badges) {
-                if (!par.badges[a])
-                    par.badges[a] = this.badges[a];
-            }
-        }
-
-        addToParent() {
-            if (this.parent)
-                this.parent.sources.push(this);
-        }
-
-        addTemplate(template) {
-            template.parent = this;
-            this.templates.push(template);
-        }
-
-        addSource(source) {
-            if (source.parent == this)
-                return;
-            source.parent = this;
-            this.sources.push(source);
-        }
-
-        removeSource(source) {
-            if (source.parent !== this)
-                return;
-
-            for (let i = 0; i < this.sources.length; i++)
-                if (this.sources[i] == source)
-                    return (this.sources.splice(i, 1), source.parent = null);
-        }
-
-        removeIO(io) {
-            for (let i = 0; i < this._ios_.length; i++)
-                if (this._ios_[i] == io)
-                    return (this._ios_.splice(i, 1), io.parent = null);
-        }
-
-        getTap(name) {
-            let tap = this.taps[name];
-
-            if (!tap) {
-                if (name == "update")
-                    this.update_tap = new UpdateTap(this, name);
-                else
-                    tap = this.taps[name] = new Tap(this, name);
-            }
-            return tap;
-        }
-
-        /**
-         * Return an array of Tap objects that
-         * match the input array.
-         */
-
-        _linkTaps_(tap_list) {
-            let out_taps = [];
-            for (let i = 0, l = tap_list.length; i < l; i++) {
-                let tap = tap_list[i];
-                let name = tap.name;
-                if (this.taps[name])
-                    out_taps.push(this.taps[name]);
-                else {
-                    let bool = name == "update";
-                    let t = bool ? new UpdateTap(this, name, tap._modes_) : new Tap(this, name, tap._modes_);
-
-                    if (bool)
-                        this.update_tap = t;
-
-                    this.taps[name] = t;
-                    out_taps.push(this.taps[name]);
-                }
-            }
-
-            return out_taps;
-        }
-
-        /**
-            Sets up Model connection or creates a new Model from a schema.
-        */
-        load(model) {
-
-            let m = this._presets_.models[this._model_name_];
-
-
-            let s = this._presets_.schemas[this._schema_name_];
-
-            if (m)
-                model = m;
-            else if (s) {
-                model = new s();
-            } else if (!model)
-                model = new Model(model);
-
-            this.LOADED = true;
-
-            for (let i = 0, l = this.sources.length; i < l; i++) {
-                this.sources[i].load(model);
-                this.sources[i].getBadges(this);
-            }
-
-            model.addView(this);
-
-            for (let name in this.taps)
-                this.taps[name].load(this._model_, false);
-
-            this._update_({ created: true });
-        }
-
-        _down_(data, changed_values) {
-            this._update_(data, changed_values, true);
-        }
-
-        _up_(tap, data, meta) {
-            if (this.parent)
-                this.parent._upImport_(tap._prop_, data, meta, this);
-        }
-
-        _upImport_(prop_name, data, meta) {
-            if (this.taps[prop_name])
-                this.taps[prop_name]._up_(data, meta);
-        }
-
-        _update_(data, changed_values, IMPORTED = false) {
-
-            if (this.update_tap)
-                this.update_tap._downS_(data, IMPORTED);
-
-            if (changed_values) {
-
-                for (let name in changed_values)
-                    if (this.taps[name])
-                        this.taps[name]._downS_(data, IMPORTED);
-            } else
-                for (let name in this.taps)
-                    this.taps[name]._downS_(data, IMPORTED);
-
-            //        for (let i = 0, l = this.sources.length; i < l; i++)
-            //            this.sources[i]._down_(data, changed_values);
-
-            for (let i = 0, l = this.templates.length; i < l; i++)
-                this.templates[i]._down_(data, changed_values);
-        }
-
-        _transitionIn_(transition) {
-
-            if (this.taps.trs_in)
-                this.taps.trs_in._downS_(transition);
-
-            for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i]._transitionIn_(transition);
-
-            for (let i = 0, l = this.templates.length; i < l; i++)
-                this.templates[i]._transitionIn_(transition);
-        }
-
-        _transitionOut_(transition) {
-            if (this.taps.trs_out)
-                this.taps.trs_out._downS_(transition);
-
-            for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i]._transitionOut_(transition);
-
-
-            for (let i = 0, l = this.templates.length; i < l; i++)
-                this.templates[i]._transitionOut_(transition);
-        }
-
-        _bubbleLink_(child) {
-            if (child)
-                for (let a in child.badges)
-                    this.badges[a] = child.badges[a];
-            if (this.parent)
-                this.parent._bubbleLink_(this);
-        }
-    }
-
     const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
+
+    const STOCK_LOCATION = {
+        protocol :"",
+        host :"",
+        port :"",
+        path :"",
+        hash :"",
+        query :"",
+        search:""
+    };
 
     function fetchLocalText(URL, m = "same-origin") {
         return new Promise((res, rej) => {
@@ -4312,20 +3966,20 @@ var wick = (function (exports) {
      * Used for processing URLs, handling `document.location`, and fetching data.
      * @param      {string}   url           The URL string to wrap.
      * @param      {boolean}  USE_LOCATION  If `true` missing URL parts are filled in with data from `document.location`. 
-     * @return     {WURL}   If a falsy value is passed to `url`, and `USE_LOCATION` is `true` a Global WURL is returned. This is directly linked to the page and will _update_ the actual page URL when its values are change. Use with caution. 
-     * @alias WURL
+     * @return     {URL}   If a falsy value is passed to `url`, and `USE_LOCATION` is `true` a Global URL is returned. This is directly linked to the page and will _update_ the actual page URL when its values are change. Use with caution. 
+     * @alias URL
      * @memberof module:wick.core.network
      */
-    class WURL {
+    class URL {
 
-        static resolveRelative(wurl_or_url_original, wurl_or_url_new) {
+        static resolveRelative(URL_or_url_original, URL_or_url_new) {
             
-            let wurl_old = (wurl_or_url_original instanceof WURL) ? wurl_or_url_original : new WURL(wurl_or_url_original);
-            let wurl_new = (wurl_or_url_new instanceof WURL) ? wurl_or_url_new : new WURL(wurl_or_url_new);
-            if (wurl_new.path[0] != "/") {
+            let URL_old = (URL_or_url_original instanceof URL) ? URL_or_url_original : new URL(URL_or_url_original);
+            let URL_new = (URL_or_url_new instanceof URL) ? URL_or_url_new : new URL(URL_or_url_new);
+            if (URL_new.path[0] != "/") {
 
-                let a = wurl_old.path.split("/");
-                let b = wurl_new.path.split("/");
+                let a = URL_old.path.split("/");
+                let b = URL_new.path.split("/");
 
 
                 if (b[0] == "..") a.splice(a.length - 1, 1);
@@ -4339,23 +3993,24 @@ var wick = (function (exports) {
                             a.push(b[i]);
                     }
                 }
-                wurl_new.path = a.join("/");
+                URL_new.path = a.join("/");
             }
 
 
-            return wurl_new;
+            return URL_new;
         }
 
         constructor(url = "", USE_LOCATION = false) {
 
             let IS_STRING = true;
+            
 
-            let location = document.location;
+            const location = (typeof(document) !== "undefined") ? document.location : STOCK_LOCATION;
 
             if (!url || typeof(url) != "string") {
                 IS_STRING = false;
-                if (WURL.GLOBAL && USE_LOCATION)
-                    return WURL.GLOBAL;
+                if (URL.GLOBAL && USE_LOCATION)
+                    return URL.GLOBAL;
             }
 
             /**
@@ -4404,7 +4059,7 @@ var wick = (function (exports) {
             this.map = null;
 
             if (IS_STRING) {
-                if (url instanceof WURL) {
+                if (url instanceof URL) {
                     this.protocol = url.protocol;
                     this.user = url.user;
                     this.pwd = url.pwd;
@@ -4426,7 +4081,7 @@ var wick = (function (exports) {
                 }
             } else if (USE_LOCATION) {
 
-                WURL.G = this;
+                URL.G = this;
                 this.protocol = location.protocol;
                 this.host = location.hostname;
                 this.port = location.port;
@@ -4435,7 +4090,7 @@ var wick = (function (exports) {
                 this.query = location.search.slice(1);
                 this._getQuery_(this.query);
 
-                return WURL.R;
+                return URL.R;
             }
             this._getQuery_(this.query);
         }
@@ -4472,6 +4127,7 @@ var wick = (function (exports) {
 
             let lex = whind$1(this.query);
 
+
             const get_map = (k, m) => (m.has(k)) ? m.get(k) : m.set(k, new Map).get(k);
 
             let key = 0,
@@ -4483,19 +4139,18 @@ var wick = (function (exports) {
                 switch (lex.tx) {
                     case "&": //At new class or value
                         if (lfv > 0)
-                            key = (class_map.set(key_val, lex.s(lfv)), lfv = 0, lex.n().pos);
+                            key = (class_map.set(key_val, lex.s(lfv)), lfv = 0, lex.n.pos);
                         else {
                             key_val = lex.s(key);
-                            key = (class_map = get_map(key_val, map), lex.n().pos);
+                            key = (class_map = get_map(key_val, map), lex.n.pos);
                         }
                         continue;
                     case "=":
                         //looking for a value now
                         key_val = lex.s(key);
-                        lfv = lex.n().pos;
+                        lfv = lex.n.pos;
                         continue;
                 }
-                lex.n();
             }
 
             if (lfv > 0) class_map.set(key_val, lex.s(lfv));
@@ -4505,7 +4160,7 @@ var wick = (function (exports) {
 
             this.path = path;
 
-            return new WURL(this);
+            return new URL(this);
         }
 
         setLocation() {
@@ -4599,7 +4254,7 @@ var wick = (function (exports) {
 
                 this.query = this.query.split("?")[0] + "?" + str;
 
-                if (WURL.G == this)
+                if (URL.G == this)
                     this.goto();
             } else {
                 this.query = "";
@@ -4611,7 +4266,7 @@ var wick = (function (exports) {
 
         /**
          * Fetch a string value of the remote resource. 
-         * Just uses path component of WURL. Must be from the same origin.
+         * Just uses path component of URL. Must be from the same origin.
          * @param      {boolean}  [ALLOW_CACHE=true]  If `true`, the return string will be cached. If it is already cached, that will be returned instead. If `false`, a network fetch will always occur , and the result will not be cached.
          * @return     {Promise}  A promise object that resolves to a string of the fetched value.
          */
@@ -4619,7 +4274,7 @@ var wick = (function (exports) {
 
             if (ALLOW_CACHE) {
 
-                let resource = WURL.RC.get(this.path);
+                let resource = URL.RC.get(this.path);
 
                 if (resource)
                     return new Promise((res) => {
@@ -4627,12 +4282,12 @@ var wick = (function (exports) {
                     });
             }
 
-            return fetchLocalText(this.path).then(res => (WURL.RC.set(this.path, res), res));
+            return fetchLocalText(this.path).then(res => (URL.RC.set(this.path, res), res));
         }
 
         /**
          * Fetch a JSON value of the remote resource. 
-         * Just uses path component of WURL. Must be from the same origin.
+         * Just uses path component of URL. Must be from the same origin.
          * @param      {boolean}  [ALLOW_CACHE=true]  If `true`, the return string will be cached. If it is already cached, that will be returned instead. If `false`, a network fetch will always occur , and the result will not be cached.
          * @return     {Promise}  A promise object that resolves to a string of the fetched value.
          */
@@ -4642,7 +4297,7 @@ var wick = (function (exports) {
 
             if (ALLOW_CACHE) {
 
-                let resource = WURL.RC.get(string_url);
+                let resource = URL.RC.get(string_url);
 
                 if (resource)
                     return new Promise((res) => {
@@ -4650,7 +4305,7 @@ var wick = (function (exports) {
                     });
             }
 
-            return fetchLocalJSON(string_url).then(res => (WURL.RC.set(this.path, res), res));
+            return fetchLocalJSON(string_url).then(res => (URL.RC.set(this.path, res), res));
         }
 
         /**
@@ -4660,9 +4315,9 @@ var wick = (function (exports) {
          */
         cacheResource(resource) {
 
-            let occupied = WURL.RC.has(this.path);
+            let occupied = URL.RC.has(this.path);
 
-            WURL.RC.set(this.path, resource);
+            URL.RC.set(this.path, resource);
 
             return occupied;
         }
@@ -4682,7 +4337,7 @@ var wick = (function (exports) {
             let url = this.toString();
             history.pushState({}, "ignored title", url);
             window.onpopstate();
-            WURL.G = this;
+            URL.G = this;
         }
 
         get pathname() {
@@ -4697,111 +4352,1512 @@ var wick = (function (exports) {
     /**
      * The fetched resource cache.
      */
-    WURL.RC = new Map();
+    URL.RC = new Map();
 
     /**
-     * The Default Global WURL object. 
+     * The Default Global URL object. 
      */
-    WURL.G = null;
+    URL.G = null;
 
     /**
      * The Global object Proxy.
      */
-    WURL.R = {
+    URL.R = {
         get protocol() {
-            return WURL.G.protocol;
+            return URL.G.protocol;
         },
         set protocol(v) {
             return;
-            WURL.G.protocol = v;
+            URL.G.protocol = v;
         },
         get user() {
-            return WURL.G.user;
+            return URL.G.user;
         },
         set user(v) {
             return;
-            WURL.G.user = v;
+            URL.G.user = v;
         },
         get pwd() {
-            return WURL.G.pwd;
+            return URL.G.pwd;
         },
         set pwd(v) {
             return;
-            WURL.G.pwd = v;
+            URL.G.pwd = v;
         },
         get host() {
-            return WURL.G.host;
+            return URL.G.host;
         },
         set host(v) {
             return;
-            WURL.G.host = v;
+            URL.G.host = v;
         },
         get port() {
-            return WURL.G.port;
+            return URL.G.port;
         },
         set port(v) {
             return;
-            WURL.G.port = v;
+            URL.G.port = v;
         },
         get path() {
-            return WURL.G.path;
+            return URL.G.path;
         },
         set path(v) {
             return;
-            WURL.G.path = v;
+            URL.G.path = v;
         },
         get query() {
-            return WURL.G.query;
+            return URL.G.query;
         },
         set query(v) {
             return;
-            WURL.G.query = v;
+            URL.G.query = v;
         },
         get hash() {
-            return WURL.G.hash;
+            return URL.G.hash;
         },
         set hash(v) {
             return;
-            WURL.G.hash = v;
+            URL.G.hash = v;
         },
         get map() {
-            return WURL.G.map;
+            return URL.G.map;
         },
         set map(v) {
             return;
-            WURL.G.map = v;
+            URL.G.map = v;
         },
         setPath(path) {
-            return WURL.G.setPath(path);
+            return URL.G.setPath(path);
         },
         setLocation() {
-            return WURL.G.setLocation();
+            return URL.G.setLocation();
         },
         toString() {
-            return WURL.G.toString();
+            return URL.G.toString();
         },
         getData(class_name = "") {
-            return WURL.G.getData(class_name = "");
+            return URL.G.getData(class_name = "");
         },
         setData(class_name = "", data = null) {
-            return WURL.G.setData(class_name, data);
+            return URL.G.setData(class_name, data);
         },
         fetchText(ALLOW_CACHE = true) {
-            return WURL.G.fetchText(ALLOW_CACHE);
+            return URL.G.fetchText(ALLOW_CACHE);
         },
         cacheResource(resource) {
-            return WURL.G.cacheResource(resource);
+            return URL.G.cacheResource(resource);
         }
     };
-    Object.freeze(WURL.R);
-    Object.freeze(WURL.RC);
-    Object.seal(WURL);
+    Object.freeze(URL.R);
+    Object.freeze(URL.RC);
+    Object.seal(URL);
+
+    /**
+     * To be extended by objects needing linked list methods.
+     */
+    const LinkedList = {
+
+        props: {
+            /**
+             * Properties for horizontal graph traversal
+             * @property {object}
+             */
+            defaults: {
+                /**
+                 * Next sibling node
+                 * @property {object | null}
+                 */
+                nxt: null,
+
+                /**
+                 * Previous sibling node
+                 * @property {object | null}
+                 */
+                prv: null
+            },
+
+            /**
+             * Properties for vertical graph traversal
+             * @property {object}
+             */
+            children: {
+                /**
+                 * Number of children nodes.
+                 * @property {number}
+                 */
+                noc: 0,
+                /**
+                 * First child node
+                 * @property {object | null}
+                 */
+                fch: null,
+            },
+            parent: {
+                /**
+                 * Parent node
+                 * @property {object | null}
+                 */
+                par: null
+            }
+        },
+
+        methods: {
+            /**
+             * Default methods for Horizontal traversal
+             */
+            defaults: {
+
+                insertBefore: function(node) {
+
+                    if (!this.nxt || !this.prv) {
+                        this.nxt = this;
+                        this.prv = this;
+                    }
+
+                    if (node.prv || node.nxt) {
+                        node.prv.nxt = node.nxt;
+                        node.nxt.prv = node.prv;
+                    }
+
+                    node.prv = this.prv;
+                    this.prv.nxt = node;
+                    node.nxt = this;
+                    this.prv = node;
+                },
+
+                insertAfter: function(node) {
+
+                    if (!this.nxt || !this.prv) {
+                        this.nxt = this;
+                        this.prv = this;
+                    }
+
+                    if (node.prv || node.nxt) {
+                        node.prv.nxt = node.nxt;
+                        node.nxt.prv = node.prv;
+                    }
+
+                    this.nxt.prv = node;
+                    node.nxt = this.nxt;
+                    this.nxt = node;
+                    node.prv = this;
+                }
+            },
+            /**
+             * Methods for both horizontal and vertical traversal.
+             */
+            parent_child: {
+                /**
+                 *  Returns eve. 
+                 * @return     {<type>}  { description_of_the_return_value }
+                 */
+                root() {
+                    return this.eve();
+                },
+                /**
+                 * Returns the root node. 
+                 * @return     {Object}  return the very first node in the linked list graph.
+                 */
+                eve() {
+                    if (this.par)
+                        return this.par.eve();
+                    return this;
+                },
+
+                push(node) {
+                    this.addC(node);
+                },
+
+                unshift(node) {
+                    this.addC(node, (this.fch) ? this.fch.pre : null);
+                },
+
+                replace(old_node, new_node) {
+                    if (old_node.par == this && old_node !== new_node) {
+                        if (new_node.par) new_node.par.remove(new_node);
+
+                        if (this.fch == old_node) this.fch = new_node;
+                        new_node.par = this;
+
+
+                        if (old_node.nxt == old_node) {
+                            new_node.nxt = new_node;
+                            new_node.prv = new_node;
+                        } else {
+                            new_node.prv = old_node.prv;
+                            new_node.nxt = old_node.nxt;
+                            old_node.nxt.prv = new_node;
+                            old_node.prv.nxt = new_node;
+                        }
+
+                        old_node.par = null;
+                        old_node.prv = null;
+                        old_node.nxt = null;
+                    }
+                },
+
+                insertBefore: function(node) {
+                    if (this.par)
+                        this.par.addC(node, this.pre);
+                    else
+                        LinkedList.methods.defaults.insertBefore.call(this, node);
+                },
+
+                insertAfter: function(node) {
+                    if (this.par)
+                        this.par.addC(node, this);
+                    else
+                        LinkedList.methods.defaults.insertAfter.call(this, node);
+                },
+
+                addChild: function(child = null, prev = null) {
+
+                    if (!child) return;
+
+                    if (child.par)
+                        child.par.remC(child);
+
+                    if (prev && prev.par && prev.par == this) {
+                        if (child == prev) return;
+                        child.prv = prev;
+                        prev.nxt.prv = child;
+                        child.nxt = prev.nxt;
+                        prev.nxt = child;
+                    } else if (this.fch) {
+                        child.prv = this.fch.prv;
+                        this.fch.prv.nxt = child;
+                        child.nxt = this.fch;
+                        this.fch.prv = child;
+                    } else {
+                        this.fch = child;
+                        child.nxt = child;
+                        child.prv = child;
+                    }
+
+                    child.par = this;
+                    this.noc++;
+                },
+
+                /**
+                 * Analogue to HTMLElement.removeChild()
+                 *
+                 * @param      {HTMLNode}  child   The child
+                 */
+                removeChild: function(child) {
+                    if (child.par && child.par == this) {
+                        child.prv.nxt = child.nxt;
+                        child.nxt.prv = child.prv;
+
+                        if (child.prv == child || child.nxt == child) {
+                            if (this.fch == child)
+                                this.fch = null;
+                        } else if (this.fch == child)
+                            this.fch = child.nxt;
+
+                        child.prv = null;
+                        child.nxt = null;
+                        child.par = null;
+                        this.noc--;
+                    }
+                },
+
+                /**
+                 * Gets the next node. 
+                 *
+                 * @param      {HTMLNode}  node    The node to get the sibling of.
+                 * @return {HTMLNode | TextNode | undefined}
+                 */
+                getNextChild: function(node = this.fch) {
+                    if (node && node.nxt != this.fch && this.fch)
+                        return node.nxt;
+                    return null;
+                },
+
+                /**
+                 * Gets the child at index.
+                 *
+                 * @param      {number}  index   The index
+                 */
+                getChildAtIndex: function(index, node = this.fch) {
+                    if(node.par !== this)
+                        node = this.fch;
+
+                    let first = node;
+                    let i = 0;
+                    while (node && node != first) {
+                        if (i++ == index)
+                            return node;
+                        node = node.nxt;
+                    }
+
+                    return null;
+                },
+            }
+        },
+
+        gettersAndSetters : {
+            peer : {
+                next: {
+                    enumerable: true,
+                    configurable: true,
+                    get: function() {
+                        return this.nxt;
+                    },
+                    set: function(n) {
+                        this.insertAfter(n);
+                    }
+                },
+                previous: {
+                    enumerable: true,
+                    configurable: true,
+                    get: function() {
+                        return this.prv;
+                    },
+                    set: function(n) {
+                        this.insertBefore(n);
+                    }   
+                }
+            },
+            tree : {
+                children: {
+                    enumerable: true,
+                    configurable: true,
+                    /**
+                     * @return {array} Returns an array of all children.
+                     */
+                    get: function() {
+                        for (var z = [], i = 0, node = this.fch; i++ < this.noc;)(
+                            z.push(node), node = node.nxt
+                        );
+                        return z;
+                    },
+                    set: function(e) {
+                        /* No OP */
+                    }
+                },
+                parent: {
+                    enumerable: true,
+                    configurable: true,
+                    /**
+                     * @return parent node
+                     */
+                    get: function() {
+                        return this.par;
+                    },
+                    set: function(p) {
+                        if(p && p.addChild)
+                            p.addChild(this);
+                        else if(p === null && this.par)
+                            this.par.removeChild(this);
+                    }
+                }
+            }
+        },
+
+
+        mixin : (constructor)=>{
+            const proto = (typeof(constructor) == "function") ? constructor.prototype : (typeof(constructor) == "object") ? constructor : null;
+            if(proto){
+                Object.assign(proto, 
+                    LinkedList.props.defaults, 
+                    LinkedList.methods.defaults
+                );
+            }
+            Object.defineProperties(proto, LinkedList.gettersAndSetters.peer);
+        },
+
+        mixinTree : (constructor)=>{
+            const proto = (typeof(constructor) == "function") ? constructor.prototype : (typeof(constructor) == "object") ? constructor : null;
+            if(proto){
+                Object.assign(proto, 
+                    LinkedList.props.defaults, 
+                    LinkedList.props.children, 
+                    LinkedList.props.parent, 
+                    LinkedList.methods.defaults, 
+                    LinkedList.methods.parent_child
+                    );
+                Object.defineProperties(proto, LinkedList.gettersAndSetters.tree);
+                Object.defineProperties(proto, LinkedList.gettersAndSetters.peer);
+            }
+        }
+    };
+
+    /** NODE TYPE IDENTIFIERS **/
+    const HTML = 0;
+    const TEXT = 1;
+    const offset = "    ";
+
+    /**
+     * A node for text data.
+     * @param  {string}  str     The text value of the node.
+     */
+    class TextNode {
+
+        constructor(str = "") {
+            /**
+             * The text value
+             */
+            this.txt = str;
+        }
+
+        /**
+         * Returns the type of `1` (`TEXT`)
+         */
+        get type() {
+            return TEXT;
+        }
+
+        /**
+         * Returns a string representation of the object.
+         * @param      {string}  str     Optional string passed down from calling method.
+         * @return     {string}  String representation of the object.
+         */
+        toString(off = 0) {
+            return `${offset.repeat(off)} ${this.txt}\n`;
+        }
+
+        /**
+         * Builds a real DOM HTMLTextNode node. 
+         * @param      {HTMLElement}  parent  The real html element.
+         */
+        build(parent) {
+            parent.appendChild(document.createTextNode(this.txt));
+        }
+
+    }
+
+    LinkedList.mixinTree(TextNode);
+
+
+    /**
+     * A node for HTML data. 
+     * Handles the parsing of HTML strings.
+     */
+    class HTMLNode {
+
+        constructor() {
+
+            /**
+             * Element attributes
+             * @public
+             */
+            this.attributes = [];
+
+            /**
+             * Any Comment Lines found within.
+             * @private
+             */
+            //this.dtd_nodes = [];
+
+            /**
+             * The tag name of the object.
+             * @public
+             */
+            this.tag = "";
+
+            /**
+             * A URL instance when set.
+             * @private
+             */
+            this.url = null;
+
+            /**
+             * Whether the node is a DTD, such as a comment.
+             * @private
+             */
+            this.DTD = false;
+
+            /**
+             * True if the element is a single tag element. 
+             */
+            this.single = false;
+
+        }
+
+
+
+        /******************************************* ATTRIBUTE AND ELEMENT ACCESS ******************************************************************************************************************/
+
+
+
+        /**
+         * Returns the type of `0` (`HTML`)
+         * @public
+         */
+        get type() {
+            return HTML;
+        }
+
+        get tagName() {
+            return this.tag.toUpperCase();
+        }
+
+        get classList() {
+            let classes = this.getAttrib("class");
+            if (typeof classes.value == "string")
+                return classes.split(" ");
+            return [];
+        }
+
+        getAttribute(name) {
+            let attrib = this.getAttrib(name);
+            return (attrib) ? attrib.value : void 0;
+        }
+
+        get parentElement() {
+            return this.par;
+        }
+
+        get previousElementSibling() {
+            if (this.par) {
+                let guard = this.par.fch;
+
+                if (this == guard) return null;
+
+                let node = this.prv;
+
+                while (node && node != gaurd) {
+                    if (node.type == HTML)
+                        return node;
+                    node = node.prv;
+                }
+
+                if (node.type == HTML)
+                    return node;
+            }
+            return null;
+        }
+
+        get nextElementSibling() {
+            if (this.par) {
+                let guard = this.par.fch;
+
+                let node = this.nxt;
+
+                while (node && node != guard) {
+                    if (node.type == HTML)
+                        return node;
+                    node = node.nxt;
+                }
+            }
+            return null;
+        }
+
+
+
+        /**
+         * Gets an attribute.
+         * @param      {string}  prop    The attribute name to lookup;
+         * @public
+         */
+        getAttrib(prop) {
+            for (let i = -1, l = this.attributes.length; ++i < l;) {
+                let attrib = this.attributes[i];
+                if (attrib.name == prop) return attrib;
+            }
+            return null;
+        }
+
+
+
+        /**
+         * Get Elements by the tag name.
+         * @param      {string}   tag                  A string to match with the element's tag value.
+         * @param      {boolean}  [INCLUDE_DESCENDANTS=false]  When `true` searching will recurse depth first into child elements.
+         * @param      {Array}    array                Internal element store that is returned. 
+         * @return     {Array}    An array of matched elements.
+         * @public
+         */
+        getTag(tag, INCLUDE_DESCENDANTS = false, array = []) {
+            for (let node = this.fch; node;
+                (node = this.getNextChild(node))) {
+                if (node.type == HTML) {
+                    if (node.tag == tag) array.push(node);
+                    if (INCLUDE_DESCENDANTS) node.getTag(tag, INCLUDE_DESCENDANTS, array);
+                }
+            }
+            return array;
+        }
+
+
+
+        /**
+         * Get Elements by the tag name.
+         * @param      {string}   _class               A string to find with the element's class value.
+         * @param      {boolean}  [INCLUDE_DESCENDANTS=false]  When `true` searching will recurse depth first into child elements.
+         * @param      {Array}    array                Internal element store that is returned. 
+         * @return     {Array}    An array of matched elements.
+         * @public
+         */
+        getClass(_class, INCLUDE_DESCENDANTS = false, array = []) {
+            for (let node = this.fch; node;
+                (node = this.getNextChild(node))) {
+                if (node.type == HTML) {
+                    if (node.class.includes(_class)) array.push(node);
+                    if (INCLUDE_DESCENDANTS) node.getClass(_class, INCLUDE_DESCENDANTS, array);
+                }
+            }
+            return array;
+        }
+
+
+
+        /**
+         * Get first element with matching id.
+         * @param      {string}   id                   The identifier value to find.
+         * @param      {boolean}  [INCLUDE_DESCENDANTS=false]  When `true` searching will recurse depth first into child elements.
+         * @return     {HTMLNode}   The first element whose id matches.
+         * @public
+         */
+        getID(id, INCLUDE_DESCENDANTS = false) {
+            for (let node = this.fch, ch; node;
+                (node = this.getNextChild(node))) {
+                if (node.type == HTML) {
+                    if (node.id == id) return node;
+                    if (INCLUDE_DESCENDANTS && (ch = node.getID(id, INCLUDE_DESCENDANTS))) return ch;
+                }
+            }
+            return null;
+        }
+
+
+
+        /**
+         * The id attribute value.
+         * @public
+         */
+        get id() {
+            let id_attrib = this.getAttrib("id");
+            return (id_attrib) ? id_attrib.value : "";
+        }
+
+
+
+        /**
+         * The class attribute value.
+         * @public
+         */
+        get class() {
+            let id_attrib = this.getAttrib("class");
+            return (id_attrib) ? id_attrib.value : "";
+        }
+
+
+
+        /**
+         * Returns a string representation of the object.
+         * @return     {string}  String representation of the object.
+         * @public
+         */
+        toString(off = 0) {
+            let o = offset.repeat(off);
+
+            let str = `${o}<${this.tag}`,
+                atr = this.attributes,
+                i = -1,
+                l = atr.length;
+
+            while (++i < l) {
+                let attr = atr[i];
+                str += ` ${attr.name}="${attr.value}"`;
+            }
+
+            str += ">\n";
+            
+            if(this.single)
+                return str;
+
+            for (let node = this.fch; node;
+                (node = this.getNextChild(node))) {
+                str += node.toString(off+1);
+            }
+
+            return str + `${o}</${this.tag}>\n`;
+        }
+
+
+
+        /******************************************* PARSING ******************************************************************************************************************/
+
+
+
+        /**
+         * Creates a text node. 
+         *
+         * @param      {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}
+         * @param      {start}  start   The starting point of the data slice
+         * @private
+         */
+        createTextNode(lex, start, end) {
+            if (end) {
+                let other_lex = lex.copy();
+                other_lex.IWS = true;
+                other_lex.off = start - 1;
+                other_lex.tl = 1;
+                other_lex.sl = end;
+                let text_node = this.processTextNodeHook(other_lex.n, true);
+                if (text_node) this.addChild(text_node);
+            } else if (start < lex.off) {
+                let other_lex = lex.copy();
+                other_lex.off = start;
+                other_lex.END = false;
+                other_lex.tl = 0;
+                other_lex.fence(lex);
+                other_lex.IWS = false;
+                other_lex.n;
+                other_lex.IWS = true;
+
+                if ((other_lex.sl - other_lex.off) < 2){
+                    //TODO
+                    throw new Error("Unexpected end of input");
+                }
+
+                let text_node = this.processTextNodeHook(other_lex, false);
+                if (text_node) this.addChild(text_node);
+            }
+        }
+
+
+
+        /**
+         * Parses an HTML open tag.
+         * @param {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}  
+         * @param {Object} attribs - An object which will receive the attribute keys and values. 
+         * @private
+         */
+        parseOpenTag(lex, DTD, old_url) {
+            let HAS_URL = false;
+
+            while (!lex.END && lex.text !== ">" && lex.text !== "/") {
+
+
+                if (DTD && lex.ch == "-" && lex.pk.ch == "-") {
+                    //parse comment
+
+                    let pk = lex.pk;
+                    if (!lex.text) throw Error("Unexpected end of input.");
+                    let a = pk.n.ch,
+                        b = pk.n.ch;
+                    while (!pk.END && (b !== "-" || a !== "-")) {
+                        a = b;
+                        b = pk.n.tx;
+                    }
+                    lex.sync().n;
+                    continue;
+                }
+
+                lex.IWS = false;
+                
+                let pk = lex.pk;
+                
+                while (!pk.END && !(pk.ty & (pk.types.ws | pk.types.str | pk.types.nl)) && pk.ch !== "=" && pk.ch !== ">") { pk.n; }
+                
+                let attrib_name = pk.slice(lex).trim();
+                
+                lex.sync(); 
+                
+                lex.IWS = true;
+
+                let out_lex = lex.copy();
+                
+                out_lex.sl = lex.off;
+
+                if (lex.ch == "=") {
+                    let pk = lex.pk;
+
+                    let start = pk.off;
+
+                    pk.IWS = true;
+                    while (!(pk.ty & (pk.types.ws | pk.types.str | pk.types.nl)) && pk.ch !== ">") { pk.n; }
+                    pk.IWS = false;
+
+                    if (pk.off > start) {
+                        out_lex = lex.n.copy();
+                        out_lex.fence(pk);
+                        lex.sync();
+                    } else {
+                        //Have simple value
+                        lex.sync(pk);
+                        out_lex = lex.copy();
+                        if (lex.pos < 0)
+                            lex.throw(`Unexpected end of input. Expecting value for attribute "${attrib_name}"`);
+                        else if (lex.type == lex.types.str) {
+                            out_lex.tl = 1;
+                            out_lex.n;
+                            out_lex.sl = lex.pos + lex.tl - 1;
+                            lex.n;
+                        } else {
+                            lex.next();
+                            out_lex.fence(lex);
+                        }
+                    }
+                }
+
+                if (attrib_name == "url") {
+                    this.url = URL.resolveRelative(old_url, out_lex.slice());
+                    HAS_URL = true;
+                }
+
+                let attrib = this.processAttributeHook(attrib_name, out_lex);
+
+                if (attrib)
+                    this.attributes.push(attrib);
+            }
+
+            if (lex.text == "/") // Void Nodes
+                lex.assert("/");
+
+            return HAS_URL;
+        }
+
+        parseRunner(lex = null, OPENED = false, IGNORE_TEXT_TILL_CLOSE_TAG = false, parent = null, old_url = new URL(0, !!1)) {
+            let start = lex.pos;
+            let end = lex.pos;
+            let HAS_INNER_TEXT = false;
+            main_loop:
+            while (!lex.END) {
+                switch (lex.ch) {
+                    case "/":
+                        if (lex.pk.ch == "<") { //ignore the white space.
+                            lex.sync();
+                            break;
+                        }
+                        break;
+
+                    case "<":
+                        if (!IGNORE_TEXT_TILL_CLOSE_TAG) lex.IWS = true;
+
+                        let pk = lex.pk;
+
+                        if (pk.ch == "/") {
+                            if (pk.pk.tx !== this.tag){
+                                 break main_loop;   
+                            }
+
+                            if (HAS_INNER_TEXT) {
+                                if (IGNORE_TEXT_TILL_CLOSE_TAG)
+                                    this.createTextNode(lex, start);
+                                else if ((end - start) > 0)
+                                    this.createTextNode(lex, start, end);
+                            }
+
+                            //Close tag
+                            let name = lex.sync().n.tx;
+
+                            //Close tag is not the one we are looking for. We'll create a new dummy node and close the tag with it. 
+                            if (name !== this.tag) {
+                                //Create new node with the open tag 
+                                let insert = new HTMLNode();
+                                insert.tag = name;
+                                this.addChild(insert);
+                            }
+
+                            lex.n;
+                            lex.IWS = false;
+                            lex.a(">");
+
+                            this.endOfElementHook(lex, parent);
+
+                            return this;
+                        }
+
+                        if (pk.ch == "!") {
+                            /* DTD - Doctype and Comment tags*/
+                            //This type of tag is dropped
+                            while (!lex.END && lex.n.ch !== ">") {}                        lex.a(">");
+                            continue;
+                        }
+
+                        if (!IGNORE_TEXT_TILL_CLOSE_TAG) {
+                            //Open tag
+                            if (!OPENED) {
+                                let URL$$1 = false;
+                                this.DTD = false;
+                                this.attributes.length = 0;
+
+                                //Expect tag name 
+                                this.tag = lex.n.tx.toLowerCase();
+
+
+                                URL$$1 = this.parseOpenTag(lex.n, false, old_url);
+                                start = lex.pos + 1;
+                                lex.IWS = false;
+                                if (lex.ch == "/") lex.n;
+                                lex.a(">");
+
+
+                                OPENED = true;
+
+                                HAS_INNER_TEXT = IGNORE_TEXT_TILL_CLOSE_TAG = this.ignoreTillHook(this.tag);
+
+                                if (URL$$1) {
+
+                                    //Need to block against ill advised URL fetches. 
+
+                                    //Hook to pull in data from remote resource
+                                    let prom = this.processFetchHook(lex, true, IGNORE_TEXT_TILL_CLOSE_TAG, parent);
+
+                                    if (prom instanceof Promise) {
+                                        return prom.then(() => {
+                                            if (this.selfClosingTagHook(this.tag)) {
+                                                return this;
+                                            } // Tags without matching end tags.
+                                            return this.parseRunner(lex, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, old_url);
+                                        });
+                                    }
+                                }
+
+                                if (this.selfClosingTagHook(this.tag)){
+                                     // Tags without matching end tags.
+                                    this.single = true;
+                                    return this;
+                                }
+
+                                continue;
+                            } else {
+                                lex.IWS = false;
+                                //Create text node;
+                                if (HAS_INNER_TEXT) {
+                                    if (IGNORE_TEXT_TILL_CLOSE_TAG)
+                                        this.createTextNode(lex, start);
+                                    else if ((end - start) > 0) {
+                                        this.createTextNode(lex, start, end);
+                                    }
+                                }
+
+                                //New Child node found
+                                let node = this.createHTMLNodeHook(lex.pk.tx, lex.off);
+
+                                this.addChild(node);
+
+                                let prom = node.parseRunner(lex, false, false, this, this.url || old_url);
+                                
+                                if(prom instanceof Promise){
+                                    return prom.then(child => {
+                                        if (child.DTD) this.removeChild(child);
+                                        return this.parseRunner(lex, OPENED, false, this, old_url);
+                                    });    
+                                }else{
+                                    if (node.DTD) this.removeChild(node);
+                                    return this.parseRunner(lex, OPENED, false, this, old_url);
+                                }
+                                
+                            }
+                            //}
+                        }
+                        lex.IWS = false;
+                        break;
+                }
+
+                if (!IGNORE_TEXT_TILL_CLOSE_TAG) {
+                    if (lex.ty == 8 && !HAS_INNER_TEXT) {
+                        start = lex.pos;
+                    } else if (lex.ty == 256) ; else {
+                        HAS_INNER_TEXT = true;
+                        end = lex.off + lex.tl;
+                    }
+                }
+
+                lex.n;
+            }
+
+            if (OPENED && start < lex.off) {
+                //Got here from an network import, need produce a text node;
+                this.createTextNode(lex, start);
+            }
+
+            return this;
+        }
+
+        /**
+         * Parses HTML string. Appends new nodes, or consumes first node if tag is an empty string.
+         * @param      {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}
+         * @param      {boolean}  OPENED       The opened
+         * @param      {boolean}  IGNORE_TEXT_TILL_CLOSE_TAG  If `true`, parser will ignore all HTML syntax until the closing tag is found.
+         * @return     {Promise}  
+         * @private
+         */
+        parse(lex, url =  new URL(0, !!1)) {
+            
+            if(typeof(lex) == "string") lex = whind$1(lex);
+            
+            lex.IWS = false;
+            
+            return new Promise((res, rej) => {
+                res(this.parseRunner(lex, false, false, null, url));
+            });
+        }
+
+        /******************************************* HOOKS ******************************************************************************************************************/
+
+        endOfElementHook() {}
+
+        selfClosingTagHook(tag) {
+            switch (tag) {
+                case "input":
+                case "br":
+                case "img":
+                //svg
+                case "rect":
+                    return true;
+            }
+
+            return false;
+        }
+
+        ignoreTillHook(tag) {
+            if (tag == "script" || tag == "style") // Special character escaping tags.
+                return true;
+            return false;
+        }
+
+        createHTMLNodeHook(tag, start) { return new HTMLNode(tag); }
+
+        processFetchHook(lexer, OPENED, IGNORE_TEXT_TILL_CLOSE_TAG, parent, url) {
+            let path = this.url.path,
+                CAN_FETCH = true;
+
+            //make sure URL is not already called by a parent.
+            while (parent) {
+                if (parent.url && parent.url.path == path) {
+                    console.warn(`Preventing recursion on resource ${this.url.path}`);
+                    CAN_FETCH = false;
+                    break;
+                }
+                parent = parent.par;
+            }
+
+            if (CAN_FETCH) {
+                return this.url.fetchText().then((text) => {
+                    let lexer = whind$1(text);
+                    return this.parseRunner(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
+                }).catch((e) => {
+                    console.error(e);
+                });
+            }
+            return null;
+        }
+
+        processAttributeHook(name, lex) { return { name, value: lex.slice() }; }
+        
+        processTextNodeHook(lex, IS_INNER_HTML) {
+            if (!IS_INNER_HTML)
+                return new TextNode(lex.slice());
+            let txt = "";
+
+            lex.IWS = true;
+
+            while (!lex.END) {
+                if (lex.ty == 8) {
+                    txt += " ";
+                } else if (lex.ty == 256) ; else {
+                    txt += lex.tx;
+                }
+                lex.IWS = false;
+                lex.n;
+            }
+
+            if(!(lex.ty & (8 | 256)))
+                txt += lex.tx;
+
+            if (txt.length > 0) {
+                return new TextNode(txt.trim());
+            }
+
+            return null;
+        }
+
+        build(parent) {
+            let ele = document.createElement(this.tag);
+
+            for (let i = 0, l = this.attributes.length; i < l; i++) {
+                let attr = this.attributes[i];
+                ele.setAttribute(attr.name, attr.value);
+            }
+            //let passing_element = ele;
+            let passing_element = (this.tag == "template") ? ele.content : ele;
+
+            for (let node = this.fch; node;
+                (node = this.getNextChild(node))) {
+                node.build(passing_element);
+            }
+
+            if (parent) parent.appendChild(ele);
+
+            return ele;
+        }
+    }
+
+     LinkedList.mixinTree(HTMLNode);
+
+    // Mode Flag
+    const KEEP = 0;
+    const IMPORT = 1;
+    const EXPORT = 2;
+    const PUT = 4;
+
+    /**
+     * Gateway for data flow. Represents a single "channel" of data flow. 
+     * 
+     * By using different modes, one can control how data enters and exits the source context.
+     * -`keep`: 
+     *  This mode is the default and treats any data on the channel as coming from the model. The model itself is not changed, and any data flow from outside the source context is ignored.
+     * -`put`:
+     *  This mode will update the model to reflect updates on the channel.
+     * -`import`:
+     *  This mode will allow data from outside the source context to enter the context as if it came from the model.
+     *  -`export`:
+     *  This mode will propagate data flow to the outer source context, allowing other sources to listen on the data flow of the originating source context.
+     *  
+     *  if `import` is active, then `keep` is implicitly inactive and the model no longer has any bearing on the value of the channel.
+     */
+    class Tap {
+
+        constructor(source, prop, modes = 0) {
+            this._source_ = source;
+            this._prop_ = prop;
+            this._modes_ = modes; // 0 implies keep
+            this.ios = [];
+
+            if (modes & IMPORT && source.parent)
+                source.parent.getTap(prop).ios.push(this);
+
+        }
+
+        destroy() {
+
+            for (let i = 0, l = this.ios.length; i < l; i++)
+                this.ios[i].destroy();
+
+            this.ios = null;
+            this._source_ = null;
+            this._prop_ = null;
+            this._modes_ = null;
+        }
+
+        load(data) {
+            this.downS(data);
+        }
+
+        down(value, meta) {
+            for (let i = 0, l = this.ios.length; i < l; i++) {
+                this.ios[i].down(value, meta);
+            }
+        }
+
+        downS(model, IMPORTED = false) {
+            const value = model[this._prop_];
+
+            if (typeof(value) !== "undefined") {
+
+                if (IMPORTED) {
+                    if (!(this._modes_ & IMPORT))
+                        return;
+
+                    if ((this._modes_ & PUT) && typeof(value) !== "function") {
+                        this._source_.model[this._prop_] = value;
+                    }
+
+                }
+
+                for (let i = 0, l = this.ios.length; i < l; i++) {
+                    if (this.ios[i] instanceof Tap) {
+                        this.ios[i].downS(model, true);
+                    } else
+                        this.ios[i].down(value);
+                }
+            }
+        }
+
+        up(value, meta) {
+
+            if (!(this._modes_ & (EXPORT | PUT)))
+                this.down(value, meta);
+
+            if ((this._modes_ & PUT) && typeof(value) !== "undefined") {
+                this._source_.model[this._prop_] = value;
+            }
+
+            if (this._modes_ & EXPORT)
+                this._source_.up(this, value, meta);
+
+
+
+        }
+    }
+
+    class UpdateTap extends Tap {
+        downS(model) {
+            for (let i = 0, l = this.ios.length; i < l; i++)
+                this.ios[i].down(model);
+        }
+        up() {}
+    }
+
+    class Source extends View {
+
+        /**
+         *   In the Wick dynamic template system, Sources serve as the primary access to Model data. They, along with {@link SourceTemplate}s, are the only types of objects the directly _bind_ to a Model. When a Model is updated, the Source will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link SourceTemplate}s.
+         *   A Source will also _bind_ to an HTML element. It has no methodes to update the element, but it's descendants, primarily instances of the {@link IO} class, can update attributes and values of then element and its sub-elements.
+         *   @param {Source} parent - The parent {@link Source}, used internally to build a hierarchy of Sources.
+         *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
+         *   @param {Presets} presets - An instance of the {@link Presets} object.
+         *   @param {HTMLElement} element - The HTMLElement the Source will _bind_ to.
+         *   @memberof module:wick~internals.source
+         *   @alias Source
+         *   @extends SourceBase
+         */
+        constructor(parent, presets, element, ast) {
+            super();
+
+            this.ast = null;
+
+            ast.setSource(this);
+            
+            /**
+             *@type {Boolean} 
+             *@protected
+             */
+
+
+            this.parent = parent;
+            this.ele = element;
+            this.presets = presets;
+            this.model = null;
+            this.statics = null;
+
+            this.taps = {};
+            this.update_tap = null;
+            this.children = [];
+            this.sources = [];
+            this.badges = {};
+            this.ios = [];
+            this.templates = [];
+            this.hooks = [];
+
+            this._model_name_ = "";
+            this._schema_name_ = "";
+
+            this.DESTROYED = false;
+            this.LOADED = false;
+
+            this.addToParent();
+        }
+
+        destroy() {
+
+            this.DESTROYED = true;
+
+            this.update({ destroyed: true });
+
+            if (this.LOADED) {
+                this.LOADED = false;
+            }
+
+            if (this.parent && this.parent.removeSource)
+                this.parent.removeSource(this);
+            //this.finalizeTransitionOut();
+            this.children.forEach((c) => c.destroy());
+            this.children.length = 0;
+            this.data = null;
+
+            if (this.ele && this.ele.parentElement)
+                this.ele.parentElement.removeChild(this.ele);
+
+            this.ele = null;
+
+            for (let i = 0, l = this.sources.length; i < l; i++)
+                this.sources[i].destroy();
+
+
+            super.destroy();
+
+        }
+
+        getBadges(par) {
+            for (let a in this.badges) {
+                if (!par.badges[a])
+                    par.badges[a] = this.badges[a];
+            }
+        }
+
+        addToParent() {
+            if (this.parent)
+                this.parent.sources.push(this);
+        }
+
+        addTemplate(template) {
+            template.parent = this;
+            this.templates.push(template);
+        }
+
+        addSource(source) {
+            if (source.parent == this)
+                return;
+            source.parent = this;
+            this.sources.push(source);
+        }
+
+        removeSource(source) {
+            if (source.parent !== this)
+                return;
+
+            for (let i = 0; i < this.sources.length; i++)
+                if (this.sources[i] == source)
+                    return (this.sources.splice(i, 1), source.parent = null);
+        }
+
+        removeIO(io) {
+            for (let i = 0; i < this.ios.length; i++)
+                if (this.ios[i] == io)
+                    return (this.ios.splice(i, 1), io.parent = null);
+        }
+
+        getTap(name) {
+            let tap = this.taps[name];
+
+            if (!tap) {
+                if (name == "update")
+                    this.update_tap = new UpdateTap(this, name);
+                else
+                    tap = this.taps[name] = new Tap(this, name);
+            }
+            return tap;
+        }
+
+        /**
+         * Return an array of Tap objects that
+         * match the input array.
+         */
+
+        linkTaps(tap_list) {
+            let out_taps = [];
+            for (let i = 0, l = tap_list.length; i < l; i++) {
+                let tap = tap_list[i];
+                let name = tap.name;
+                if (this.taps[name])
+                    out_taps.push(this.taps[name]);
+                else {
+                    let bool = name == "update";
+                    let t = bool ? new UpdateTap(this, name, tap._modes_) : new Tap(this, name, tap._modes_);
+
+                    if (bool)
+                        this.update_tap = t;
+
+                    this.taps[name] = t;
+                    out_taps.push(this.taps[name]);
+                }
+            }
+
+            return out_taps;
+        }
+
+        /**
+            Sets up Model connection or creates a new Model from a schema.
+        */
+        load(model) {
+            let m = null, s = null;
+
+          if(this.presets.models)
+                m = this.presets.models[this._model_name_];
+            if(this.presets.schemas)
+                s = this.presets.schemas[this._schema_name_];
+            
+            if (m)
+                model = m;
+            else if (s) {
+                model = new s();
+            } else if (!model)
+                model = new Model(model);
+
+            this.LOADED = true;
+
+            for (let i = 0, l = this.sources.length; i < l; i++) {
+                this.sources[i].load(model);
+                this.sources[i].getBadges(this);
+            }
+
+            model.addView(this);
+
+            for (let name in this.taps)
+                this.taps[name].load(this.model, false);
+
+            this.update({ created: true });
+        }
+
+        down(data, changed_values) {
+            this.update(data, changed_values, true);
+        }
+
+        up(tap, data, meta) {
+            if (this.parent)
+                this.parent._upImport_(tap._prop_, data, meta, this);
+        }
+
+        _upImport_(prop_name, data, meta) {
+            if (this.taps[prop_name])
+                this.taps[prop_name].up(data, meta);
+        }
+
+        update(data, changed_values, IMPORTED = false) {
+
+            if (this.update_tap)
+                this.update_tap.downS(data, IMPORTED);
+
+            if (changed_values) {
+
+                for (let name in changed_values)
+                    if (this.taps[name])
+                        this.taps[name].downS(data, IMPORTED);
+            } else
+                for (let name in this.taps)
+                    this.taps[name].downS(data, IMPORTED);
+
+            //        for (let i = 0, l = this.sources.length; i < l; i++)
+            //            this.sources[i].down(data, changed_values);
+
+            for (let i = 0, l = this.templates.length; i < l; i++)
+                this.templates[i].down(data, changed_values);
+        }
+
+        transitionIn(transition) {
+
+            if (this.taps.trs_in)
+                this.taps.trs_in.downS(transition);
+
+            for (let i = 0, l = this.sources.length; i < l; i++)
+                this.sources[i].transitionIn(transition);
+
+            for (let i = 0, l = this.templates.length; i < l; i++)
+                this.templates[i].transitionIn(transition);
+        }
+
+        transitionOut(transition) {
+            if (this.taps.trs_out)
+                this.taps.trs_out.downS(transition);
+
+            for (let i = 0, l = this.sources.length; i < l; i++)
+                this.sources[i].transitionOut(transition);
+
+
+            for (let i = 0, l = this.templates.length; i < l; i++)
+                this.templates[i].transitionOut(transition);
+        }
+
+        bubbleLink(child) {
+            if (child)
+                for (let a in child.badges)
+                    this.badges[a] = child.badges[a];
+            if (this.parent)
+                this.parent.bubbleLink(this);
+        }
+    }
 
     /**
      * To be extended by objects needing linked list methods.
      * @alias module:wick~internals.LinkedList
      */
-    const LinkedList = {
+    const LinkedList$1 = {
 
         props: {
             /**
@@ -4954,14 +6010,14 @@ var wick = (function (exports) {
                     if (this.par)
                         this.par.addC(node, this.pre);
                     else
-                        LinkedList.methods.defaults.insertBefore.call(this, node);
+                        LinkedList$1.methods.defaults.insertBefore.call(this, node);
                 },
 
                 insertAfter: function(node) {
                     if (this.par)
                         this.par.addC(node, this);
                     else
-                        LinkedList.methods.defaults.insertAfter.call(this, node);
+                        LinkedList$1.methods.defaults.insertAfter.call(this, node);
                 },
 
                 addC: function(child = null, prev = null) {
@@ -5021,7 +6077,7 @@ var wick = (function (exports) {
                  * @param      {HTMLNode}  node    The node to get the sibling of.
                  * @return {HTMLNode | TextNode | undefined}
                  */
-                getN: function(node = this.fch) {
+                getNextChild: function(node = this.fch) {
                     if (node && node.nxt != this.fch && this.fch)
                         return node.nxt;
                     return null;
@@ -5068,802 +6124,6 @@ var wick = (function (exports) {
             }
         }
     };
-
-    /** NODE TYPE IDENTIFIERS **/
-    const HTML = 0;
-    const TEXT = 1;
-    const offset = "    ";
-
-    /**
-     * An AST node for text data.
-     * @param  {string}  str     The text value of the node.
-     * @memberof module:wick~internals.html
-     * @alias TextNode
-     */
-    class TextNode {
-
-        constructor(str = "") {
-            /**
-             * The text value
-             */
-            this.txt = str;
-        }
-
-        /**
-         * Returns the type of `1` (`TEXT`)
-         */
-        get type() {
-            return TEXT;
-        }
-
-        /**
-         * Returns a string representation of the object.
-         * @param      {string}  str     Optional string passed down from calling method.
-         * @return     {string}  String representation of the object.
-         */
-        toString(off = 0) {
-            return `${offset.repeat(off)} ${this.txt}\n`;
-        }
-
-        /**
-         * Builds a real DOM HTMLTextNode node. 
-         * @param      {HTMLElement}  parent  The real html element.
-         */
-        _build_(parent) {
-            parent.appendChild(document.createTextNode(this.txt));
-        }
-
-    }
-
-
-
-    /**
-     * TextNode implements some of LinkedList
-     * @extends LinkedList
-     * @memberof  module:wick~internals.html.TextNode
-     */
-    Object.assign(TextNode.prototype, LinkedList.props.defaults, LinkedList.props.parent, LinkedList.methods.defaults);
-
-
-
-    /**
-     * An AST node for HTML data. 
-     * Handles the parsing of HTML strings.
-     * @memberof module:wick~internals.html
-     * @alias HTMLNode
-     */
-    class HTMLNode {
-
-        constructor() {
-
-            /**
-             * Element _attributes_
-             * @public
-             */
-            this._attributes_ = [];
-
-            /**
-             * Any Comment Lines found within.
-             * @private
-             */
-            //this.dtd_nodes = [];
-
-            /**
-             * The tag name of the object.
-             * @public
-             */
-            this.tag = "";
-
-            /**
-             * A WURL instance when set.
-             * @private
-             */
-            this.url = null;
-
-            /**
-             * Whether the node is a DTD, such as a comment.
-             * @private
-             */
-            this.DTD = false;
-
-            /**
-             * True if the element is a single tag element. 
-             */
-            this.single = false;
-
-        }
-
-
-
-        /******************************************* ATTRIBUTE AND ELEMENT ACCESS ******************************************************************************************************************/
-
-
-
-        /**
-         * Returns the type of `0` (`HTML`)
-         * @public
-         */
-        get type() {
-            return HTML;
-        }
-
-        get tagName() {
-            return this.tag.toUpperCase();
-        }
-
-        get classList() {
-            let classes = this.getAttrib("class");
-            if (typeof classes.value == "string")
-                return classes.split(" ");
-            return [];
-        }
-
-        getAttribute(name) {
-            let attrib = this.getAttrib(name);
-            return (attrib) ? attrib.value : void 0;
-        }
-
-        get parentElement() {
-            return this.par;
-        }
-
-        get previousElementSibling() {
-            if (this.par) {
-                let guard = this.par.fch;
-
-                if (this == guard) return null;
-
-                let node = this.pre;
-
-                while (node && node != gaurd) {
-                    if (node.type == HTML)
-                        return node;
-                    node = node.pre;
-                }
-
-                if (node.type == HTML)
-                    return node;
-            }
-            return null;
-        }
-
-        get nextElementSibling() {
-            if (this.par) {
-                let guard = this.par.fch;
-
-                let node = this.nxt;
-
-                while (node && node != guard) {
-                    if (node.type == HTML)
-                        return node;
-                    node = node.nxt;
-                }
-            }
-            return null;
-        }
-
-
-
-        /**
-         * Gets an attribute.
-         * @param      {string}  prop    The attribute name to lookup;
-         * @public
-         */
-        getAttrib(prop) {
-            for (let i = -1, l = this._attributes_.length; ++i < l;) {
-                let attrib = this._attributes_[i];
-                if (attrib.name == prop) return attrib;
-            }
-            return null;
-        }
-
-
-
-        /**
-         * Get Elements by the tag name.
-         * @param      {string}   tag                  A string to match with the element's tag value.
-         * @param      {boolean}  [INCLUDE_DESCENDANTS=false]  When `true` searching will recurse depth first into child elements.
-         * @param      {Array}    array                Internal element store that is returned. 
-         * @return     {Array}    An array of matched elements.
-         * @public
-         */
-        getTag(tag, INCLUDE_DESCENDANTS = false, array = []) {
-            for (let node = this.fch; node;
-                (node = this.getN(node))) {
-                if (node.type == HTML) {
-                    if (node.tag == tag) array.push(node);
-                    if (INCLUDE_DESCENDANTS) node.getTag(tag, INCLUDE_DESCENDANTS, array);
-                }
-            }
-            return array;
-        }
-
-
-
-        /**
-         * Get Elements by the tag name.
-         * @param      {string}   _class               A string to find with the element's class value.
-         * @param      {boolean}  [INCLUDE_DESCENDANTS=false]  When `true` searching will recurse depth first into child elements.
-         * @param      {Array}    array                Internal element store that is returned. 
-         * @return     {Array}    An array of matched elements.
-         * @public
-         */
-        getClass(_class, INCLUDE_DESCENDANTS = false, array = []) {
-            for (let node = this.fch; node;
-                (node = this.getN(node))) {
-                if (node.type == HTML) {
-                    if (node.class.includes(_class)) array.push(node);
-                    if (INCLUDE_DESCENDANTS) node.getClass(_class, INCLUDE_DESCENDANTS, array);
-                }
-            }
-            return array;
-        }
-
-
-
-        /**
-         * Get first element with matching id.
-         * @param      {string}   id                   The identifier value to find.
-         * @param      {boolean}  [INCLUDE_DESCENDANTS=false]  When `true` searching will recurse depth first into child elements.
-         * @return     {HTMLNode}   The first element whose id matches.
-         * @public
-         */
-        getID(id, INCLUDE_DESCENDANTS = false) {
-            for (let node = this.fch, ch; node;
-                (node = this.getN(node))) {
-                if (node.type == HTML) {
-                    if (node.id == id) return node;
-                    if (INCLUDE_DESCENDANTS && (ch = node.getID(id, INCLUDE_DESCENDANTS))) return ch;
-                }
-            }
-            return null;
-        }
-
-
-
-        /**
-         * The id attribute value.
-         * @public
-         */
-        get id() {
-            let id_attrib = this.getAttrib("id");
-            return (id_attrib) ? id_attrib.value : "";
-        }
-
-
-
-        /**
-         * The class attribute value.
-         * @public
-         */
-        get class() {
-            let id_attrib = this.getAttrib("class");
-            return (id_attrib) ? id_attrib.value : "";
-        }
-
-
-
-        /**
-         * Returns a string representation of the object.
-         * @return     {string}  String representation of the object.
-         * @public
-         */
-        toString(off = 0) {
-            let o = offset.repeat(off);
-
-            let str = `${o}<${this.tag}`,
-                atr = this._attributes_,
-                i = -1,
-                l = atr.length;
-
-            while (++i < l) {
-                let attr = atr[i];
-                str += ` ${attr.name}="${attr.value}"`;
-            }
-
-            str += ">\n";
-            
-            if(this.single)
-                return str;
-
-            for (let node = this.fch; node;
-                (node = this.getN(node))) {
-                str += node.toString(off+1);
-            }
-
-            return str + `${o}</${this.tag}>\n`;
-        }
-
-
-
-        /******************************************* PARSING ******************************************************************************************************************/
-
-
-
-        /**
-         * Creates a text node. 
-         *
-         * @param      {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}
-         * @param      {start}  start   The starting point of the data slice
-         * @private
-         */
-        _createTextNode_(lex, start, end) {
-            if (end) {
-                let other_lex = lex.copy();
-                other_lex.IWS = true;
-                other_lex.off = start - 1;
-                other_lex.tl = 1;
-                other_lex.sl = end;
-                other_lex.n();
-                let text_node = this._processTextNodeHook_(other_lex, true);
-                if (text_node) this.addC(text_node);
-            } else if (start < lex.off) {
-                let other_lex = lex.copy();
-                other_lex.off = start;
-                other_lex.END = false;
-                other_lex.tl = 0;
-                other_lex.fence(lex);
-                other_lex.IWS = false;
-                other_lex.n();
-                other_lex.IWS = true;
-
-                if ((other_lex.sl - other_lex.off) < 2)
-                    debugger;
-
-                let text_node = this._processTextNodeHook_(other_lex, false);
-                if (text_node) this.addC(text_node);
-            }
-        }
-
-
-
-        /**
-         * Parses an HTML open tag.
-         * @param {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}  
-         * @param {Object} attribs - An object which will receive the attribute keys and values. 
-         * @private
-         */
-        _parseOpenTag_(lex, DTD, old_wurl) {
-            let HAS_URL = false;
-
-            while (!lex.END && lex.text !== ">" && lex.text !== "/") {
-
-                if (DTD && lex.ch == "-" && lex.pk.ch == "-") {
-                    //_parse_ comment
-
-                    let pk = lex.pk;
-                    if (!lex.text) throw Error("Unexpected end of input.");
-                    let a = pk.n().ch,
-                        b = pk.n().ch;
-                    while (!pk.END && (b !== "-" || a !== "-")) {
-                        a = b;
-                        b = pk.n().tx;
-                    }
-                    lex.sync().n();
-                    continue;
-                }
-
-                lex.IWS = false;
-                
-                let pk = lex.pk;
-                
-                while (!pk.END && !(pk.ty & (pk.types.ws | pk.types.str | pk.types.nl)) && pk.ch !== "=" && pk.ch !== ">") { pk.n(); }
-                
-                let attrib_name = pk.slice(lex);
-                
-                lex.sync(); 
-                
-                lex.IWS = true;
-
-                let out_lex = lex.copy();
-                
-                out_lex.sl = lex.off;
-
-                if (lex.ch == "=") {
-                    let pk = lex.pk;
-
-                    let start = pk.off;
-
-                    pk.IWS = true;
-                    while (!(pk.ty & (pk.types.ws | pk.types.str | pk.types.nl)) && pk.ch !== ">") { pk.n(); }
-                    pk.IWS = false;
-
-                    if (pk.off > start) {
-                        out_lex = lex.n().copy();
-                        out_lex.fence(pk);
-                        lex.sync();
-                    } else {
-                        //Have simple value
-                        lex.sync(pk);
-                        out_lex = lex.copy();
-                        if (lex.pos < 0)
-                            lex.throw(`Unexpected end of input. Expecting value for attribute "${attrib_name}"`);
-                        else if (lex.type == lex.types.str) {
-                            out_lex.tl = 1;
-                            out_lex.n();
-                            out_lex.sl = lex.pos + lex.tl - 1;
-                            lex.n();
-                        } else {
-                            lex.next();
-                            out_lex.fence(lex);
-                        }
-                    }
-                }
-
-                if (attrib_name == "url") {
-                    this.url = WURL.resolveRelative(old_wurl, out_lex.slice());
-                    HAS_URL = true;
-                }
-
-                let attrib = this._processAttributeHook_(attrib_name, out_lex);
-
-                if (attrib)
-                    this._attributes_.push(attrib);
-            }
-
-            if (lex.text == "/") // Void Nodes
-                lex.assert("/");
-
-            return HAS_URL;
-        }
-
-        _parseRunner_(lex = null, OPENED = false, IGNORE_TEXT_TILL_CLOSE_TAG = false, parent = null, old_wurl = null) {
-            let start = lex.pos;
-            let end = lex.pos;
-            let HAS_INNER_TEXT = false;
-            main_loop:
-            while (!lex.END) {
-
-                switch (lex.ch) {
-                    case "/":
-                        if (lex.pk.ch == "<") { //ignore the white space.
-                            lex.sync();
-                            break;
-                        }
-                        break;
-
-                    case "<":
-                        if (!IGNORE_TEXT_TILL_CLOSE_TAG) lex.IWS = true;
-
-                        let pk = lex.pk;
-
-                        if (pk.ch == "/") {
-                            if (pk.pk.tx !== this.tag){
-                                 break main_loop;   
-                            }
-
-                            if (HAS_INNER_TEXT) {
-                                if (IGNORE_TEXT_TILL_CLOSE_TAG)
-                                    this._createTextNode_(lex, start);
-                                else if ((end - start) > 0)
-                                    this._createTextNode_(lex, start, end);
-                            }
-
-                            //Close tag
-                            let name = lex.sync().n().tx;
-
-                            //Close tag is not the one we are looking for. We'll create a new dummy node and close the tag with it. 
-                            if (name !== this.tag) {
-                                //Create new node with the open tag 
-                                let insert = new HTMLNode();
-                                insert.tag = name;
-                                this.addC(insert);
-                            }
-
-                            lex.n();
-                            lex.IWS = false;
-                            lex.a(">");
-
-                            this._endOfElementHook_(lex, parent);
-
-                            return this;
-                        }
-
-                        if (pk.ch == "!") {
-                            /* DTD - Doctype and Comment tags*/
-                            //This type of tag is dropped
-                            while (!lex.END && lex.n().ch !== ">") {}                        lex.a(">");
-                            continue;
-                        }
-
-                        if (!IGNORE_TEXT_TILL_CLOSE_TAG) {
-                            //Open tag
-                            if (!OPENED) {
-                                let URL = false;
-                                this.DTD = false;
-                                this._attributes_.length = 0;
-
-                                //Expect tag name 
-                                this.tag = lex.n().tx.toLowerCase();
-
-
-                                URL = this._parseOpenTag_(lex.n(), false, old_wurl);
-                                start = lex.pos + 1;
-                                lex.IWS = false;
-                                if (lex.ch == "/") lex.n();
-                                lex.a(">");
-
-
-                                OPENED = true;
-
-                                HAS_INNER_TEXT = IGNORE_TEXT_TILL_CLOSE_TAG = this._ignoreTillHook_(this.tag);
-
-                                if (URL) {
-
-                                    //Need to block against ill advised URL fetches. 
-
-                                    //Hook to pull in data from remote resource
-                                    let prom = this._processFetchHook_(lex, true, IGNORE_TEXT_TILL_CLOSE_TAG, parent);
-
-                                    if (prom instanceof Promise) {
-                                        return prom.then(() => {
-                                            if (this._selfClosingTagHook_(this.tag)) {
-                                                return this;
-                                            } // Tags without matching end tags.
-                                            return this._parseRunner_(lex, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, old_wurl);
-                                        });
-                                    }
-                                }
-
-                                if (this._selfClosingTagHook_(this.tag)){
-                                     // Tags without matching end tags.
-                                    this.single = true;
-                                    return this;
-                                }
-
-                                continue;
-                            } else {
-                                lex.IWS = false;
-                                //Create text node;
-                                if (HAS_INNER_TEXT) {
-                                    if (IGNORE_TEXT_TILL_CLOSE_TAG)
-                                        this._createTextNode_(lex, start);
-                                    else if ((end - start) > 0) {
-                                        this._createTextNode_(lex, start, end);
-                                    }
-                                }
-
-                                //New Child node found
-                                let node = this.createHTMLNodeHook(lex.pk.tx, lex.off);
-
-                                this.addC(node);
-
-                                return node._parse_(lex, false, false, this, this.url || old_wurl).then(child => {
-                                    if (child.DTD) node.remC(child);
-                                    return this._parseRunner_(lex, OPENED, false, this, old_wurl);
-                                });
-                            }
-                            //}
-                        }
-                        lex.IWS = false;
-                        break;
-                }
-
-                if (!IGNORE_TEXT_TILL_CLOSE_TAG) {
-                    if (lex.ty == 8 && !HAS_INNER_TEXT) {
-                        start = lex.pos;
-                    } else if (lex.ty == 256) ; else {
-                        HAS_INNER_TEXT = true;
-                        end = lex.off + lex.tl;
-                    }
-                }
-
-                lex.n();
-            }
-
-            if (OPENED && start < lex.off) {
-                //console.log("OPEND TEXT IMPORT", lex.slice(start));
-                //Got here from an network import, need produce a text node;
-                this._createTextNode_(lex, start);
-            }
-
-            return this;
-        }
-
-        /**
-         * Parses HTML string. Appends new nodes, or consumes first node if tag is an empty string.
-         * @param      {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}
-         * @param      {boolean}  OPENED       The opened
-         * @param      {boolean}  IGNORE_TEXT_TILL_CLOSE_TAG  If `true`, parser will ignore all HTML syntax until the closing tag is found.
-         * @return     {Promise}  
-         * @private
-         */
-        _parse_(lex = null, OPENED = false, IGNORE_TEXT_TILL_CLOSE_TAG = false, parent = null, url = new WURL(0, !!1)) {
-            lex.IWS = false;
-            return new Promise((res, rej) => {
-                res(this._parseRunner_(lex, OPENED, IGNORE_TEXT_TILL_CLOSE_TAG, parent, url));
-            });
-        }
-
-        /******************************************* HOOKS ******************************************************************************************************************/
-
-        /**
-         * Override this to act on the finished node, right before the parse function completes and returns.
-         */
-        _endOfElementHook_() {}
-
-
-
-        /**
-         * Override this method to tell the parser that `tag` is self closing and to not look for a matching close tag by returning `true`.
-         * @param      {string}  tag     The HTML tag
-         */
-        _selfClosingTagHook_(tag) {
-            switch (tag) {
-                case "input":
-                case "br":
-                case "img":
-                //svg
-                case "rect":
-                    return true;
-            }
-
-            return false;
-        }
-
-
-
-        /**
-         * Override this method to tell the parser to not to parse innerHTML by returning `true`
-         * @param      {string}   tag     The HTML tag
-         * @return     {boolean}  If `true` is returned, parser will not react to any more HTML markup until the closing tag for this node is found.
-         * @public
-         */
-        _ignoreTillHook_(tag) {
-            if (tag == "script" || tag == "style") // Special character escaping tags.
-                return true;
-            return false;
-        }
-
-
-
-        /**
-         * Override this method to create a different node type for the given `tag` string.
-         * > If overridden, returned node should support:
-         * > - All properties and methods in {@link LinkedList}
-         * > - All properties and methods in {@link HTMLNode}
-         * @param      {string}    tag     The name of the tag to create. 
-         * @param      {number} start Marks the offset position of the `<` character of the open tag. Can be used to walk the Lexer back and parse the open tag characters again.
-         * @return     {HTMLNode}  returns a new HTMLNode.
-         * @public
-         */
-        
-    createHTMLNodeHook(tag, start) { return new HTMLNode(tag); }
-
-
-
-        /**
-         * Override this method to process how a url based resource is fetched.
-         * > If overridden:  
-         * > - Should return null or a Promise that resumes html parsing by calling this._parse_(`lexer`, `OPENED`, `IGNORE_TEXT_TILL_CLOSE_TAG`, `parent`).
-         * > - Please make sure a call to `this._parse_` includes `lexer`, `OPENED`, `IGNORE_TEXT_TILL_CLOSE_TAG`, and `parent`.
-         * @param      {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}. It contains the HTML string being _parse_d.
-         * @param      {boolean}  OPENED       Always set to `true`.
-         * @param      {boolean}  IGNORE_TEXT_TILL_CLOSE_TAG  If `true`, parser will ignore all HTML syntax until the closing tag is found. 
-         * @param      {HTMLNode|object}  parent       The parent node.
-         * @return     {boolean | Promise}  If additional processing must be done asynchronously, return a `Promise` which will call this._parse_ when it is resolved.
-         * @public
-         */
-        _processFetchHook_(lexer, OPENED, IGNORE_TEXT_TILL_CLOSE_TAG, parent, url) {
-            let path = this.url.path,
-                CAN_FETCH = true;
-
-            //make sure URL is not already called by a parent.
-            while (parent) {
-                if (parent.url && parent.url.path == path) {
-                    console.warn(`Preventing recursion on resource ${this.url.path}`);
-                    CAN_FETCH = false;
-                    break;
-                }
-                parent = parent.par;
-            }
-
-            if (CAN_FETCH) {
-                return this.url.fetchText().then((text) => {
-                    let lexer = whind$1(text);
-                    return this._parseRunner_(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
-                }).catch((e) => {
-                    console.log(e);
-                });
-            }
-            return null;
-        }
-
-
-
-        /**
-         * Override this method to _parse_ attribute data. 
-         * @param      {string}  name   The attribute name
-         * @param      {string}  value  The attribute value
-         * @return     {Object}  An attribute object to store in the `this._attributes_` array.
-         * @public
-         */
-        _processAttributeHook_(name, lex) { return { name, value: lex.slice() }; }
-
-
-
-        /**
-         * Override this to process new TextNode data as it is encountered.
-         * @param      {string}  text_node  The text node
-         * @return     {TextNode}  TextNode to add to children list. Return null instead to prevent the node from being entered.
-         * @public
-         */
-        _processTextNodeHook_(lex, IS_INNER_HTML) {
-            if (!IS_INNER_HTML)
-                return new TextNode(lex.slice());
-            let txt = "";
-
-            lex.IWS = true;
-
-            while (!lex.END) {
-                if (lex.ty == 8) {
-                    txt += " ";
-                } else if (lex.ty == 256) ; else {
-                    txt += lex.tx;
-                }
-                lex.IWS = false;
-                lex.n();
-            }
-
-            if (txt.length > 0) {
-                return new TextNode(txt.trim());
-            }
-
-            return null;
-        }
-
-
-
-        /**
-         * Constructs a new HTMLElement and appends to the parent element.
-         * Iterates through children nodes, calling their `_build_` method, passing in it's own HTMLElement as the argument for parent. 
-         * @param {HTMLElement}  parent  The parent HTMLElement to append sub elements to.
-         */
-        _build_(parent) {
-            let ele = document.createElement(this.tag);
-
-            for (let i = 0, l = this._attributes_.length; i < l; i++) {
-                let attr = this._attributes_[i];
-                ele.setAttribute(attr.name, attr.value);
-            }
-            //let passing_element = ele;
-            let passing_element = (this.tag == "template") ? ele.content : ele;
-
-            for (let node = this.fch; node;
-                (node = this.getN(node))) {
-                node._build_(passing_element);
-            }
-
-            if (parent) parent.appendChild(ele);
-
-            return ele;
-        }
-    }
-
-
-
-    /**
-     * HTMLNode implements all of LinkedList
-     * @extends LinkedList
-     * @memberof  module:wick~internals.html.HTMLNode
-     * @private
-     */
-    Object.assign(HTMLNode.prototype, LinkedList.props.defaults, LinkedList.props.children, LinkedList.props.parent, LinkedList.methods.defaults, LinkedList.methods.parent_child);
-    LinkedList.setGettersAndSetters(HTMLNode.prototype);
-
-
-
-
-    /**
-     * Builds an HTML AST. 
-     * @function
-     * @param {string} html_string - A string containing HTML data.
-     * @param {string} css_string - An existing CSSRootNode to merge with new `selectors` and `rules`.
-     * @return {Promise} Returns a `Promise` that will return a new or existing CSSRootNode.
-     * @memberof module:wick.core
-     * @alias html
-     */
-    const HTMLParser = (html_string, root = null, url) => (root = (!root || !(root instanceof HTMLNode)) ? new HTMLNode() : root, root._parse_(whind$1(html_string.replace(/\&lt;/g, "<").replace(/\&gt;/g, ">"), true, false, null, url)));
 
     class Color extends Float64Array {
 
@@ -5995,12 +6255,12 @@ var wick = (function (exports) {
 
         }
 
-        static _parse_(l, rule, r) {
+        static parse(l, rule, r) {
 
             let c = CSS_Color._fs_(l);
 
             if (c) {
-                l.n();
+                l.n;
 
                 let color = new CSS_Color();
 
@@ -6031,7 +6291,7 @@ var wick = (function (exports) {
 
             switch (l.ch) {
                 case "#":
-                    var value = l.n().tx;
+                    var value = l.n.tx;
                     let num = parseInt(value,16);
                     
                     out = { r: 0, g: 0, b: 0, a: 1 };
@@ -6051,33 +6311,33 @@ var wick = (function (exports) {
                             out.a = ((num) & 0xFF);
                         }
                     }
-                    l.n();
+                    l.n;
                     break;
                 case "r":
                     let tx = l.tx;
                     if (tx == "rgba") {
                         out = { r: 0, g: 0, b: 0, a: 1 };
-                        l.n(); // (
-                        out.r = parseInt(l.n().tx);
-                        l.n(); // ,
-                        out.g = parseInt(l.n().tx);
-                        l.n(); // ,
-                        out.b = parseInt(l.n().tx);
-                        l.n(); // ,
-                        out.a = parseFloat(l.n().tx);
-                        l.n().n();
+                        l.n; // (
+                        out.r = parseInt(l.n.tx);
+                        l.n; // ,
+                        out.g = parseInt(l.n.tx);
+                        l.n; // ,
+                        out.b = parseInt(l.n.tx);
+                        l.n; // ,
+                        out.a = parseFloat(l.n.tx);
+                        l.n.n;
                         c = new CSS_Color();
                         c.set(out);
                         break;
                     } else if (tx == "rgb") {
                         out = { r: 0, g: 0, b: 0, a: 1 };
-                        l.n(); // (
-                        out.r = parseInt(l.n().tx);
-                        l.n(); // ,
-                        out.g = parseInt(l.n().tx);
-                        l.n(); // ,
-                        out.b = parseInt(l.n().tx);
-                        l.n();
+                        l.n; // (
+                        out.r = parseInt(l.n.tx);
+                        l.n; // ,
+                        out.g = parseInt(l.n.tx);
+                        l.n; // ,
+                        out.b = parseInt(l.n.tx);
+                        l.n;
                         break;
                     }
                 default:
@@ -6243,7 +6503,7 @@ var wick = (function (exports) {
 
     class CSS_Percentage extends Number {
         
-        static _parse_(l, rule, r) {
+        static parse(l, rule, r) {
             let tx = l.tx,
                 pky = l.pk.ty;
 
@@ -6253,11 +6513,11 @@ var wick = (function (exports) {
                 if (l.ch == "-") {
                     mult = -1;
                     tx = l.p.tx;
-                    l.p.n();
+                    l.p.n;
                 }
 
                 if (l.p.ch == "%") {
-                    l.sync().n();
+                    l.sync().n;
                     return new CSS_Percentage(parseFloat(tx) * mult);
                 }
             }
@@ -6268,7 +6528,7 @@ var wick = (function (exports) {
 
             if (typeof(v) == "string") {
                 let lex = whind(v);
-                let val = CSS_Percentage._parse_(lex);
+                let val = CSS_Percentage.parse(lex);
                 if (val) 
                     return val;
             }
@@ -6308,7 +6568,7 @@ var wick = (function (exports) {
     }
 
     class CSS_Length extends Number {
-        static _parse_(l, rule, r) {
+        static parse(l, rule, r) {
             let tx = l.tx,
                 pky = l.pk.ty;
             if (l.ty == l.types.num || tx == "-" && pky == l.types.num) {
@@ -6316,11 +6576,11 @@ var wick = (function (exports) {
                 if (l.ch == "-") {
                     mult = -1;
                     tx = l.p.tx;
-                    l.p.n();
+                    l.p.n;
                 }
                 if (l.p.ty == l.types.id) {
                     let id = l.sync().tx;
-                    l.n();
+                    l.n;
                     return new CSS_Length(parseFloat(tx) * mult, id);
                 }
             }
@@ -6336,7 +6596,7 @@ var wick = (function (exports) {
             
             if (typeof(v) == "string") {
                 let lex = whind$1(v);
-                let val = CSS_Length._parse_(lex);
+                let val = CSS_Length.parse(lex);
                 if (val) return val;
             }
 
@@ -6450,24 +6710,24 @@ var wick = (function (exports) {
         get unit(){return "deg";}
     }
 
-    class CSS_URL extends WURL {
-        static _parse_(l, rule, r) {
+    class CSS_URL extends URL {
+        static parse(l, rule, r) {
             if (l.tx == "url" || l.tx == "uri") {
-                l.n().a("(");
+                l.n.a("(");
                 let v = "";
                 if (l.ty == l.types.str) {
                     v = l.tx.slice(1,-1);
-                    l.n().a(")");
+                    l.n.a(")");
                 } else {
                     let p = l.p;
-                    while (!p.END && p.n().tx !== ")") { /* NO OP */ }
+                    while (!p.END && p.n.tx !== ")") { /* NO OP */ }
                     v = p.slice(l);
                     l.sync().a(")");
                 }
                 return new CSS_URL(v);
             } if (l.ty == l.types.str){
                 let v = l.tx.slice(1,-1);
-                l.n();
+                l.n;
                 return new CSS_URL(v);
             }
 
@@ -6476,10 +6736,10 @@ var wick = (function (exports) {
     }
 
     class CSS_String extends String {
-        static _parse_(l, rule, r) {
+        static parse(l, rule, r) {
             if (l.ty == l.types.str) {
                 let tx = l.tx;
-                l.n();
+                l.n;
                 return new CSS_String(tx);
             }
             return null;
@@ -6487,10 +6747,10 @@ var wick = (function (exports) {
     }
 
     class CSS_Id extends String {
-        static _parse_(l, rule, r) {
+        static parse(l, rule, r) {
             if (l.ty == l.types.id) {
                 let tx = l.tx;
-                l.n();
+                l.n;
                 return new CSS_Id(tx);
             }
             return null;
@@ -6500,16 +6760,16 @@ var wick = (function (exports) {
     /* https://www.w3.org/TR/css-shapes-1/#typedef-basic-shape */
 
     class CSS_Shape extends Array {
-        static _parse_(l, rule, r) {
+        static parse(l, rule, r) {
             if (l.tx == "inset" || l.tx == "circle" || l.tx == "ellipse" || l.tx == "polygon") {
-                l.n().a("(");
+                l.n.a("(");
                 let v = "";
                 if (l.ty == l.types.str) {
                     v = l.tx.slice(1,-1);
-                    l.n().a(")");
+                    l.n.a(")");
                 } else {
                     let p = l.p;
-                    while (!p.END && p.n().tx !== ")") { /* NO OP */ }
+                    while (!p.END && p.n.tx !== ")") { /* NO OP */ }
                     v = p.slice(l);
                     l.sync().a(")");
                 }
@@ -6520,10 +6780,10 @@ var wick = (function (exports) {
     }
 
     class CSS_Number extends Number {
-        static _parse_(l, rule, r) {
+        static parse(l, rule, r) {
             let tx = l.tx;
             if(l.ty == l.types.num){
-                l.n();
+                l.n;
                 return new CSS_Number(tx);
             }
             return null;
@@ -6790,34 +7050,34 @@ var wick = (function (exports) {
     }
 
     class CSS_Bezier extends CBezier {
-    	static _parse_(l, rule, r) {
+    	static parse(l, rule, r) {
 
     		let out = null;
 
     		switch(l.tx){
     			case "cubic":
-    				l.n().a("(");
+    				l.n.a("(");
     				let v1 = parseFloat(l.tx);
-    				let v2 = parseFloat(l.n().a(",").tx);
-    				let v3 = parseFloat(l.n().a(",").tx);
-    				let v4 = parseFloat(l.n().a(",").tx);
+    				let v2 = parseFloat(l.n.a(",").tx);
+    				let v3 = parseFloat(l.n.a(",").tx);
+    				let v4 = parseFloat(l.n.a(",").tx);
     				l.a(")");
     				out = new CSS_Bezier(v1, v2, v3, v4);
     				break;
     			case "ease":
-    				l.n();
+    				l.n;
     				out = new CSS_Bezier(0.25, 0.1, 0.25, 1);
     				break;
     			case "ease-in":
-    				l.n();
+    				l.n;
     				out = new CSS_Bezier(0.42, 0, 1, 1);
     				break;
     			case "ease-out":
-    				l.n();
+    				l.n;
     				out = new CSS_Bezier(0, 0, 0.58, 1);
     				break;
     			case "ease-in-out":
-    				l.n();
+    				l.n;
     				out = new CSS_Bezier(0.42, 0, 0.58, 1);
     				break;
     		}
@@ -6839,22 +7099,22 @@ var wick = (function (exports) {
 
     class CSS_Gradient{
 
-    	static _parse_(l, rule, r) {
+    	static parse(l, rule, r) {
             let tx = l.tx,
                 pky = l.pk.ty;
             if (l.ty == l.types.id) {
             	switch(l.tx){
             		case "linear-gradient":
-            		l.n().a("(");
+            		l.n.a("(");
             		let num,type ="deg";
             		if(l.tx == "to");else if(l.ty == l.types.num){
             			num = parseFloat(l.ty);
-            			type = l.n().tx;
-            			l.n().a(',');
+            			type = l.n.tx;
+            			l.n.a(',');
             		}
             		let stops = [];
             		while(!l.END && l.ch != ")"){
-            			let v = CSS_Color._parse_(l, rule, r);
+            			let v = CSS_Color.parse(l, rule, r);
             			let len = null;
 
             			if(l.ch == ")") {
@@ -6863,10 +7123,10 @@ var wick = (function (exports) {
             			}
             			
             			if(l.ch != ","){
-    	        			if(!(len = CSS_Length._parse_(l, rule, r)))
-    	        				len = CSS_Percentage._parse_(l,rule,r);
+    	        			if(!(len = CSS_Length.parse(l, rule, r)))
+    	        				len = CSS_Percentage.parse(l,rule,r);
             			}else{
-            				l.n();
+            				l.n;
             			}
 
             			stops.push(new Stop(v, len));
@@ -6907,13 +7167,13 @@ var wick = (function (exports) {
     }
 
     const $medh = (prefix) => ({
-        _parse_: (l, r, a, n = 0) => (n = CSS_Length._parse_(l, r, a), (prefix > 0) ? ((prefix > 1) ? (win) => win.screen.height <= n : (win) => win.screen.height >= n) : (win) => win.screen.height == n)
+        parse: (l, r, a, n = 0) => (n = CSS_Length.parse(l, r, a), (prefix > 0) ? ((prefix > 1) ? (win) => win.screen.height <= n : (win) => win.screen.height >= n) : (win) => win.screen.height == n)
     });
 
 
     const $medw = (prefix) => ({
-        _parse_: (l, r, a, n = 0) => 
-            (n = CSS_Length._parse_(l, r, a), (prefix > 0) ? ((prefix > 1) ? (win) => win.innerWidth >= n : (win) => win.innerWidth <= n) : (win) => win.screen.width == n)
+        parse: (l, r, a, n = 0) => 
+            (n = CSS_Length.parse(l, r, a), (prefix > 0) ? ((prefix > 1) ? (win) => win.innerWidth >= n : (win) => win.innerWidth <= n) : (win) => win.screen.width == n)
     });
 
     function CSS_Media_handle(type, prefix) {
@@ -6925,7 +7185,7 @@ var wick = (function (exports) {
         }
 
         return {
-            _parse_: function(a, b, c) {
+            parse: function(a, b, c) {
                 debugger;
             }
         };
@@ -7385,7 +7645,7 @@ var wick = (function (exports) {
             return !(isNaN(this.r[0]) && isNaN(this.r[1]));
         }
 
-        _parse_(lx, rule, out_val) {
+        parse(lx, rule, out_val) {
             if (typeof(lx) == "string")
                 lx = whind$1(lx);
 
@@ -7401,7 +7661,7 @@ var wick = (function (exports) {
             for (let j = 0; j < end && !lx.END; j++) {
 
                 for (let i = 0, l = this._terms_.length; i < l; i++) {
-                    bool = this._terms_[i]._parse_(lx, rule, r);
+                    bool = this._terms_[i].parse(lx, rule, r);
                     if (!bool) break;
                 }
 
@@ -7428,7 +7688,7 @@ var wick = (function (exports) {
             outer:
                 for (let j = 0; j < end && !lx.END; j++) {
                     for (let i = 0, l = this._terms_.length; i < l; i++)
-                        if (!this._terms_[i]._parse_(lx, rule, r)) return false;
+                        if (!this._terms_[i].parse(lx, rule, r)) return false;
                 }
 
             this.sp(r.v, rule);
@@ -7445,7 +7705,7 @@ var wick = (function (exports) {
                 bool = false;
 
                 for (let i = 0, l = this._terms_.length; i < l; i++)
-                    if (this._terms_[i]._parse_(lx, rule, r)) bool = true;
+                    if (this._terms_[i].parse(lx, rule, r)) bool = true;
 
                 if (!bool && j < start) {
                     this.sp(r.v, rule);
@@ -7467,7 +7727,7 @@ var wick = (function (exports) {
                 bool = false;
 
                 for (let i = 0, l = this._terms_.length; i < l; i++) {
-                    bool = this._terms_[i]._parse_(lx, rule, r);
+                    bool = this._terms_[i].parse(lx, rule, r);
                     if (bool) break;
                 }
 
@@ -7504,13 +7764,13 @@ var wick = (function (exports) {
                 this._virtual_ = true;
         }
 
-        _parse_(l, rule, r) {
+        parse(l, rule, r) {
             if (typeof(l) == "string")
                 l = whind$1(l);
 
             let rn = { v: null };
 
-            let v = this._value_._parse_(l, rule, rn);
+            let v = this._value_.parse(l, rule, rn);
 
             if (rn.v) {
                 if (r)
@@ -7560,14 +7820,14 @@ var wick = (function (exports) {
             this._prop_ = null;
         }
 
-        _parse_(l, rule, r) {
+        parse(l, rule, r) {
 
             if (typeof(l) == "string")
                 l = whind$1(l);
 
             let v = l.tx;
             if (v == this._value_) {
-                l.n();
+                l.n;
 
                 if (r)
                     if (r.v) {
@@ -7590,12 +7850,12 @@ var wick = (function (exports) {
     }
 
     class SymbolTerm extends LiteralTerm {
-        _parse_(l, rule, r) {
+        parse(l, rule, r) {
             if (typeof(l) == "string")
                 l = whind$1(l);
 
             if (l.tx == this._value_) {
-                l.n();
+                l.n;
                 return true;
             }
 
@@ -7659,7 +7919,7 @@ var wick = (function (exports) {
                         throw new Error("Expected to have term before \"]\"");
                 case "[":
                     if (term) return term;
-                    term = _ParseGrammer_(l.n(), definitions);
+                    term = _ParseGrammer_(l.n, definitions);
                     l.a("]");
                     break;
                 case "&":
@@ -7671,7 +7931,7 @@ var wick = (function (exports) {
 
                         nt._terms_.push(term);
 
-                        l.sync().n();
+                        l.sync().n;
 
                         while (!l.END) {
                             nt._terms_.push(_ParseGrammer_(l, definitions, super_term, group, need_group, true, important));
@@ -7692,7 +7952,7 @@ var wick = (function (exports) {
 
                             nt._terms_.push(term);
 
-                            l.sync().n();
+                            l.sync().n;
 
                             while (!l.END) {
                                 nt._terms_.push(_ParseGrammer_(l, definitions, super_term, group, true, and_group, important));
@@ -7711,7 +7971,7 @@ var wick = (function (exports) {
 
                             nt._terms_.push(term);
 
-                            l.n();
+                            l.n;
 
                             while (!l.END) {
                                 nt._terms_.push(_ParseGrammer_(l, definitions, super_term, true, need_group, and_group, important));
@@ -7725,14 +7985,14 @@ var wick = (function (exports) {
                     break;
                 case "{":
                     term = _Jux_(term);
-                    term.r[0] = parseInt(l.n().tx);
-                    if (l.n().ch == ",") {
-                        l.n();
-                        if (l.n().ch == "}")
+                    term.r[0] = parseInt(l.n.tx);
+                    if (l.n.ch == ",") {
+                        l.n;
+                        if (l.n.ch == "}")
                             term.r[1] = Infinity;
                         else {
                             term.r[1] = parseInt(l.tx);
-                            l.n();
+                            l.n;
                         }
                     } else
                         term.r[1] = term.r[0];
@@ -7743,21 +8003,21 @@ var wick = (function (exports) {
                     term = _Jux_(term);
                     term.r[0] = 0;
                     term.r[1] = Infinity;
-                    l.n();
+                    l.n;
                     if (super_term) return term;
                     break;
                 case "+":
                     term = _Jux_(term);
                     term.r[0] = 1;
                     term.r[1] = Infinity;
-                    l.n();
+                    l.n;
                     if (super_term) return term;
                     break;
                 case "?":
                     term = _Jux_(term);
                     term.r[0] = 0;
                     term.r[1] = 1;
-                    l.n();
+                    l.n;
                     if (super_term) return term;
                     break;
                 case "#":
@@ -7765,11 +8025,11 @@ var wick = (function (exports) {
                     term._terms_.push(new SymbolTerm(","));
                     term.r[0] = 1;
                     term.r[1] = Infinity;
-                    l.n();
+                    l.n;
                     if (l.ch == "{") {
-                        term.r[0] = parseInt(l.n().tx);
-                        term.r[1] = parseInt(l.n().a(",").tx);
-                        l.n().a("}");
+                        term.r[0] = parseInt(l.n.tx);
+                        term.r[1] = parseInt(l.n.a(",").tx);
+                        l.n.a("}");
                     }
                     if (super_term) return term;
                     break;
@@ -7780,15 +8040,15 @@ var wick = (function (exports) {
                         let v = _ParseGrammer_(l, definitions, true);
                         term = _Jux_(term, v);
                     } else {
-                        let v = new ValueTerm(l.n().tx, _getPropertyParser_, definitions);
-                        l.n().a(">");
+                        let v = new ValueTerm(l.n.tx, _getPropertyParser_, definitions);
+                        l.n.a(">");
                         term = v;
                     }
                     break;
                 case "!":
                     /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
 
-                    l.n().a("important");
+                    l.n.a("important");
                     important.is = true;
                     break;
                 default:
@@ -7798,7 +8058,7 @@ var wick = (function (exports) {
                         term = _Jux_(term, v);
                     } else {
                         let v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx);
-                        l.n();
+                        l.n;
                         term = v;
                     }
             }
@@ -7864,7 +8124,7 @@ var wick = (function (exports) {
 
         _applyProperties_(lexer, rule) {
             while (!lexer.END && lexer.tx !== "}") this.parseProperty(lexer, rule, property_definitions);
-            lexer.n();
+            lexer.n;
         }
 
         /**
@@ -7886,7 +8146,7 @@ var wick = (function (exports) {
          * @param      {<type>}   rule           The rule
          * @return     {boolean}  The property hook.
          */
-        _getPropertyHook_(value_lexer, property_name, rule) {
+        getPropertyHook(value_lexer, property_name, rule) {
             return false;
         }
 
@@ -7908,8 +8168,8 @@ var wick = (function (exports) {
                             let id = lex.sync().tx;
                             let attrib = ele.getAttribute(id);
                             if (!attrib) return;
-                            if (lex.n().ch == "=") {
-                                let value = lex.n().tx;
+                            if (lex.n.ch == "=") {
+                                let value = lex.n.tx;
                                 if (attrib !== value) return false;
                             }
                         }
@@ -8011,17 +8271,17 @@ var wick = (function (exports) {
                 return this.parseProperty(lexer, rule, definitions);
             }
 
-            lexer.n().a(":");
+            lexer.n.a(":");
             //allow for short circuit < | > | =
             const p = lexer.pk;
             while ((p.ch !== "}" && p.ch !== ";") && !p.END) {
                 //look for end of property;
-                p.n();
+                p.n;
             }
             const out_lex = lexer.copy();
             lexer.sync();
             out_lex.fence(p);
-            if (!this._getPropertyHook_(out_lex, name, rule)) {
+            if (!this.getPropertyHook(out_lex, name, rule)) {
                 try {
                     const IS_VIRTUAL = {
                         is: false
@@ -8029,7 +8289,7 @@ var wick = (function (exports) {
                     const parser = _getPropertyParser_(name, IS_VIRTUAL, definitions);
                     if (parser && !IS_VIRTUAL.is) {
                         if (!rule.props) rule.props = {};
-                        parser._parse_(out_lex, rule.props);
+                        parser.parse(out_lex, rule.props);
                     } else
                         //Need to know what properties have not been defined
                         console.warn(`Unable to get parser for css property ${name}`);
@@ -8037,7 +8297,7 @@ var wick = (function (exports) {
                     console.log(e);
                 }
             }
-            if (lexer.ch == ";") lexer.n();
+            if (lexer.ch == ";") lexer.n;
         }
 
         /** 
@@ -8071,12 +8331,12 @@ var wick = (function (exports) {
                         selectors.push(lexer.s(start).trim().slice(0));
                         sel = new _selectorPart_();
                         if (RETURN) return new CSSSelector(selectors, selectors_array, this);
-                        lexer.n();
+                        lexer.n;
                         start = lexer.pos;
                         break;
                     case "[":
                         let p = lexer.pk;
-                        while (!p.END && p.n().tx !== "]") {}                    p.a("]");
+                        while (!p.END && p.n.tx !== "]") {}                    p.a("]");
                         if (p.END) throw new _Error_("Unexpected end of input.");
                         sel.ss.push({
                             t: "attribute",
@@ -8087,47 +8347,47 @@ var wick = (function (exports) {
                     case ":":
                         sel.ss.push({
                             t: "pseudo",
-                            v: lexer.n().tx
+                            v: lexer.n.tx
                         });
                         _eID_(lexer);
-                        lexer.n();
+                        lexer.n;
                         break;
                     case ".":
                         sel.ss.push({
                             t: "class",
-                            v: lexer.n().tx
+                            v: lexer.n.tx
                         });
                         _eID_(lexer);
-                        lexer.n();
+                        lexer.n;
                         break;
                     case "#":
                         sel.ss.push({
                             t: "id",
-                            v: lexer.n().tx
+                            v: lexer.n.tx
                         });
                         _eID_(lexer);
-                        lexer.n();
+                        lexer.n;
                         break;
                     case "*":
-                        lexer.n();
+                        lexer.n;
                         break;
                     case ">":
                         sel.c = "child";
                         selector_array.unshift(sel);
                         sel = null;
-                        lexer.n();
+                        lexer.n;
                         break;
                     case "~":
                         sel.c = "preceded";
                         selector_array.unshift(sel);
                         sel = null;
-                        lexer.n();
+                        lexer.n;
                         break;
                     case "+":
                         sel.c = "immediately preceded";
                         selector_array.unshift(sel);
                         sel = null;
-                        lexer.n();
+                        lexer.n;
                         break;
                     default:
                         if (sel.e) {
@@ -8137,7 +8397,7 @@ var wick = (function (exports) {
                         } else {
                             sel.e = lexer.tx;
                             _eID_(lexer);
-                            lexer.n();
+                            lexer.n;
                         }
                         break;
                 }
@@ -8155,7 +8415,7 @@ var wick = (function (exports) {
          * @return     {Promise}  A promise which will resolve to a CSSRuleBody
          * @private
          */
-        _parse_(lexer, root, res = null, rej = null) {
+        parse(lexer, root, res = null, rej = null) {
 
             if (root && !this.par) root.push(this);
 
@@ -8165,29 +8425,29 @@ var wick = (function (exports) {
                 while (!lexer.END) {
                     switch (lexer.ch) {
                         case "@":
-                            lexer.n();
+                            lexer.n;
                             switch (lexer.tx) {
                                 case "media": //Ignored at this iteration /* https://drafts.csswg.org/mediaqueries/ */
                                     //create media query selectors
                                     let _med_ = [],
                                         sel = null;
-                                    while (!lexer.END && lexer.n().ch !== "{") {
+                                    while (!lexer.END && lexer.n.ch !== "{") {
                                         if (!sel) sel = new _mediaSelectorPart_();
                                         if (lexer.ch == ",") _med_.push(sel), sel = null;
                                         else if (lexer.ch == "(") {
-                                            let start = lexer.n().off;
-                                            while (!lexer.END && lexer.ch !== ")") lexer.n();
+                                            let start = lexer.n.off;
+                                            while (!lexer.END && lexer.ch !== ")") lexer.n;
                                             let out_lex = lexer.copy();
                                             out_lex.off = start;
                                             out_lex.tl = 0;
-                                            out_lex.n().fence(lexer);
+                                            out_lex.n.fence(lexer);
                                             this.parseProperty(out_lex, sel, media_feature_definitions);
                                             if (lexer.pk.tx.toLowerCase() == "and") lexer.sync();
                                         } else {
                                             let id = lexer.tx.toLowerCase(),
                                                 condition = "";
                                             if (id === "only" || id === "not")
-                                                (condition = id, id = lexer.n().tx);
+                                                (condition = id, id = lexer.n.tx);
                                             sel.c = condition;
                                             sel.id = id;
                                             if (lexer.pk.tx.toLowerCase() == "and") lexer.sync();
@@ -8199,38 +8459,38 @@ var wick = (function (exports) {
                                         _med_.push(sel);
 
                                     if (_med_.length == 0)
-                                        this._parse_(lexer, null); // discard results
+                                        this.parse(lexer, null); // discard results
                                     else {
                                         let media_root = new this.constructor();
                                         media_root.media_selector = _med_;
-                                        return media_root._parse_(lexer, root).then(b => {
+                                        return media_root.parse(lexer, root).then(b => {
                                             let body = new this.constructor();
-                                            return body._parse_(lexer, root);
+                                            return body.parse(lexer, root);
                                         });
                                     }
                                     continue;
                                 case "import":
                                     /* https://drafts.csswg.org/css-cascade/#at-ruledef-import */
                                     let type;
-                                    if (type = types$1.url._parse_(lexer.n())) {
+                                    if (type = types$1.url.parse(lexer.n)) {
                                         lexer.a(";");
                                         /**
                                          * The {@link CSS_URL} incorporates a fetch mechanism that returns a Promise instance.
-                                         * We use that promise to hook into the existing promise returned by CSSRoot#_parse_,
-                                         * executing a new _parse_ sequence on the fetched string data using the existing CSSRoot instance,
-                                         * and then resume the current _parse_ sequence.
-                                         * @todo Conform to CSS spec and only _parse_ if @import is at the top of the CSS string.
+                                         * We use that promise to hook into the existing promise returned by CSSRoot#parse,
+                                         * executing a new parse sequence on the fetched string data using the existing CSSRoot instance,
+                                         * and then resume the current parse sequence.
+                                         * @todo Conform to CSS spec and only parse if @import is at the top of the CSS string.
                                          */
                                         return type.fetchText().then((str) =>
-                                            //Successfully fetched content, proceed to _parse_ in the current root.
+                                            //Successfully fetched content, proceed to parse in the current root.
                                             //let import_lexer = ;
-                                            res(this._parse_(whind$1(str, true), this).then((r) => this._parse_(lexer, r)))
+                                            res(this.parse(whind$1(str, true), this).then((r) => this.parse(lexer, r)))
                                             //_Parse_ returns Promise. 
                                             // return;
-                                        ).catch((e) => res(this._parse_(lexer)));
+                                        ).catch((e) => res(this.parse(lexer)));
                                     } else {
                                         //Failed to fetch resource, attempt to find the end to of the import clause.
-                                        while (!lexer.END && lexer.n().tx !== ";") {}                                    lexer.n();
+                                        while (!lexer.END && lexer.n.tx !== ";") {}                                    lexer.n;
                                     }
                             }
                             break;
@@ -8238,11 +8498,11 @@ var wick = (function (exports) {
                             lexer.comment(true);
                             break;
                         case "}":
-                            lexer.n();
+                            lexer.n;
                             return res(this);
                         case "{":
                             let rule = new CSSRule(this);
-                            this._applyProperties_(lexer.n(), rule);
+                            this._applyProperties_(lexer.n, rule);
                             for (let i = -1, sel = null; sel = selectors[++i];)
                                 if (sel.r) sel.r.merge(rule);
                                 else sel.r = rule;
@@ -8278,7 +8538,7 @@ var wick = (function (exports) {
         }
 
         merge(inCSSRuleBody){
-            this._parse_(whind$1(inCSSRuleBody + ""));
+            this.parse(whind$1(inCSSRuleBody + ""));
         }
 
         /**
@@ -8341,8 +8601,8 @@ var wick = (function (exports) {
      * @memberof  module:wick~internals.html.CSSRuleBody
      * @private
      */
-    Object.assign(CSSRuleBody.prototype, LinkedList.props.defaults, LinkedList.props.children, LinkedList.props.parent, LinkedList.methods.defaults, LinkedList.methods.parent_child);
-    LinkedList.setGettersAndSetters(CSSRuleBody.prototype);
+    Object.assign(CSSRuleBody.prototype, LinkedList$1.props.defaults, LinkedList$1.props.children, LinkedList$1.props.parent, LinkedList$1.methods.defaults, LinkedList$1.methods.parent_child);
+    LinkedList$1.setGettersAndSetters(CSSRuleBody.prototype);
 
     /**
      * Container for all rules found in a CSS string or strings.
@@ -8396,7 +8656,7 @@ var wick = (function (exports) {
 
         * getApplicableSelectors(element, win = window) {
 
-            for (let node = this.fch; node; node = this.getN(node)) {
+            for (let node = this.fch; node; node = this.getNextChild(node)) {
 
                 if(node.matchMedia(win)){
                     let gen = node.getApplicableSelectors(element, win);
@@ -8413,7 +8673,7 @@ var wick = (function (exports) {
          * @public
          */
         getApplicableRules(element, rule = new CSSRule(), win = window) {
-            for (let node = this.fch; node; node = this.getN(node))
+            for (let node = this.fch; node; node = this.getNextChild(node))
                 node.getApplicableRules(element, rule, win);
             return rule;
         }
@@ -8425,14 +8685,14 @@ var wick = (function (exports) {
          */
         getRule(string) {
             let r = null;
-            for (let node = this.fch; node; node = this.getN(node))
+            for (let node = this.fch; node; node = this.getNextChild(node))
                 r = node.getRule(string, r);
             return r;
         }
 
         toString(off = 0) {
             let str = "";
-            for (let node = this.fch; node; node = this.getN(node))
+            for (let node = this.fch; node; node = this.getNextChild(node))
                 str += node.toString(off);
             return str;
         }
@@ -8451,7 +8711,7 @@ var wick = (function (exports) {
                 for (let i = 0; i < this.observers.length; i++) this.observers[i].updatedCSS(this);
         }
 
-        _parse_(lex, root) {
+        parse(lex, root) {
             if (lex.sl > 0) {
 
                 if (!root && root !== null) {
@@ -8459,7 +8719,7 @@ var wick = (function (exports) {
                     this.pending_build++;
                 }
 
-                return this.fch._parse_(lex, this).then(e => {
+                return this.fch.parse(lex, this).then(e => {
                     this._setREADY_();
                     return this;
                 });
@@ -8496,8 +8756,8 @@ var wick = (function (exports) {
      * @memberof  module:wick~internals.html.CSSRootNode
      * @private
      */
-    Object.assign(CSSRootNode.prototype, LinkedList.props.defaults, LinkedList.props.children, LinkedList.props.parent, LinkedList.methods.defaults, LinkedList.methods.parent_child);
-    LinkedList.setGettersAndSetters(CSSRootNode.prototype);
+    Object.assign(CSSRootNode.prototype, LinkedList$1.props.defaults, LinkedList$1.props.children, LinkedList$1.props.parent, LinkedList$1.methods.defaults, LinkedList$1.methods.parent_child);
+    LinkedList$1.setGettersAndSetters(CSSRootNode.prototype);
 
     /**
      * Builds a CSS object graph that stores `selectors` and `rules` pulled from a CSS string. 
@@ -8508,23 +8768,23 @@ var wick = (function (exports) {
      * @memberof module:wick.core
      * @alias css
      */
-    const CSSParser = (css_string, root = null) => (root = (!root || !(root instanceof CSSRootNode)) ? new CSSRootNode() : root, root._parse_(whind(css_string, true)));
+    const CSSParser = (css_string, root = null) => (root = (!root || !(root instanceof CSSRootNode)) ? new CSSRootNode() : root, root.parse(whind(css_string, true)));
     CSSParser.types = types$1;
 
     class IOBase {
 
         constructor(parent) {
-            parent._ios_.push(this);
+            parent.ios.push(this);
             this.parent = parent;
         }
 
-        _destroy_() {
+        destroy() {
             this.parent.removeIO(this);
             this.parent = null;
         }
 
-        _down_() {}
-        _up_(value, meta) { this.parent._up_(value, meta); }
+        down() {}
+        up(value, meta) { this.parent.up(value, meta); }
     }
 
     /**
@@ -8545,18 +8805,18 @@ var wick = (function (exports) {
             this.ele = element;
         }
 
-        _destroy_() {
+        destroy() {
             this.ele = null;
-            super._destroy_();
+            super.destroy();
         }
 
-        _down_(value) {
+        down(value) {
             this.ele.data = value;
         }
     }
 
     /**
-        This IO object will _update_ the attribute value of the watched element, using the "prop" property to select the attribute to _update_.
+        This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
     */
     class AttribIO extends IOBase {
         constructor(source, errors, tap, attr, element) {
@@ -8566,16 +8826,16 @@ var wick = (function (exports) {
             this.ele = element;
         }
 
-        _destroy_() {
+        destroy() {
             this.ele = null;
             this.attrib = null;
-            super._destroy_();
+            super.destroy();
         }
 
         /**
-            Puts data into the watched element's attribute. The default action is to simply _update_ the attribute with data._value_.  
+            Puts data into the watched element's attribute. The default action is to simply update the attribute with data._value_.  
         */
-        _down_(value) {
+        down(value) {
             this.ele.setAttribute(this.attrib, value);
         }
     }
@@ -8588,19 +8848,19 @@ var wick = (function (exports) {
 
             this.ele = element;
 
-            this.event = (e) => { this.parent._up_(e.target.value, { event: e }); };
+            this.event = (e) => { this.parent.up(e.target.value, { event: e }); };
 
             this.ele.addEventListener("input", this.event);
         }
 
-        _destroy_() {
+        destroy() {
             this.ele.removeEventListener("input", this.event);
             this.ele = null;
             this.event = null;
             this.attrib = null;
         }
 
-        _down_(value) {
+        down(value) {
             this.ele.value = value;
         }
     }
@@ -8613,19 +8873,19 @@ var wick = (function (exports) {
             this.child = null;
         }
 
-        _destroy_() {
+        destroy() {
             this._value_ = null;
-            if (this.child) this.child._destroy_();
+            if (this.child) this.child.destroy();
             this.child = null;
-            super._destroy_();
+            super.destroy();
         }
 
         /**
-            Puts data into the watched element's attribute. The default action is to simply _update_ the attribute with data._value_.  
+            Puts data into the watched element's attribute. The default action is to simply update the attribute with data._value_.  
         */
-        _down_(value) {
+        down(value) {
             this._value_ = value;
-            this.child._down_();
+            this.child.down();
         }
     }
 
@@ -8640,13 +8900,13 @@ var wick = (function (exports) {
             this._setBindings_(source, errors, taps, binds);
         }
 
-        _destroy_() {
+        destroy() {
             for (var i = 0; i < this.binds.length; i++)
-                this.binds[i]._destroy_();
+                this.binds[i].destroy();
             this._SCHD_ = 0;
             this.binds = null;
             this.ele = null;
-            super._destroy_();
+            super.destroy();
         }
 
         _setBindings_(source, errors, taps, binds) {
@@ -8671,17 +8931,17 @@ var wick = (function (exports) {
                         break;
                 }
             }
-            this._down_();
+            this.down();
         }
 
         get data() {}
         set data(v) { scheduler.queueUpdate(this); }
 
-        _down_() {
+        down() {
             scheduler.queueUpdate(this);
         }
 
-        _scheduledUpdate_() {
+        scheduledUpdate() {
 
             let str = [];
 
@@ -8699,12 +8959,12 @@ var wick = (function (exports) {
             this.attrib = attr;
         }
 
-        _destroy_() {
+        destroy() {
             this.attrib = null;
-            super._destroy_();
+            super.destroy();
         }
 
-        _scheduledUpdate_() {
+        scheduledUpdate() {
 
             let str = [];
 
@@ -8743,18 +9003,18 @@ var wick = (function (exports) {
         constructor(source, errors, taps, binds, name) {
             this.binds = [];
             this._setBindings_(source, errors, taps, binds);
-            this._ios_ = [];
+            this.ios = [];
             this._value_ = "";
             this._name_ = toCamel(name);
         }
 
-        _destroy_() {
+        destroy() {
             for (let i = 0, l = this.binds.length; i < l; i++)
-                this.binds[i]._destroy_();
+                this.binds[i].destroy();
             this.binds = null;
-            for (let i = 0; i < this._ios_.length; i++)
-                this._ios_[i]._destroy_();
-            this._ios_ = null;
+            for (let i = 0; i < this.ios.length; i++)
+                this.ios[i].destroy();
+            this.ios = null;
             this._value_ = null;
             this._name_ = null;
         }
@@ -8781,30 +9041,30 @@ var wick = (function (exports) {
                         break;
                 }
             }
-            this._down_();
+            this.down();
         }
 
         get data() {}
         set data(v) { scheduler.queueUpdate(this); }
 
-        _down_() { scheduler.queueUpdate(this); }
+        down() { scheduler.queueUpdate(this); }
 
-        _scheduledUpdate_() {
+        scheduledUpdate() {
 
             let str = [];
 
             for (let i = 0; i < this.binds.length; i++)
                 str.push(this.binds[i]._value_);
             this._value_ = str.join(' ');
-            for (let i = 0, l = this._ios_.length; i < l; i++)
-                this._ios_[i]._updateRule_();
+            for (let i = 0, l = this.ios.length; i < l; i++)
+                this.ios[i]._updateRule_();
         }
 
-        addIO(io) { this._ios_.push(io); }
+        addIO(io) { this.ios.push(io); }
         removeIO(io) {
-            for (let i = 0; i < this._ios_.length; i++) {
-                let own_io = this._ios_[i];
-                if (own_io == io) return void this._ios_.splice(i, 1);
+            for (let i = 0; i < this.ios.length; i++) {
+                let own_io = this.ios[i];
+                if (own_io == io) return void this.ios.splice(i, 1);
             }
         }
     }
@@ -8821,15 +9081,15 @@ var wick = (function (exports) {
 
             this._initializeProps_(source, errors, taps, props);
 
-            this._scheduledUpdate_();
+            this.scheduledUpdate();
         }
 
-        _destroy_() {
+        destroy() {
             this._template_text_ = null;
             this._rules_text_ = null;
             this.ele = null;
             this.props = null;
-            super._destroy_();
+            super.destroy();
         }
 
         _setRule_(rule){
@@ -8864,7 +9124,7 @@ var wick = (function (exports) {
         get data() {}
         set data(data) { scheduler.queueUpdate(this); }
 
-        _scheduledUpdate_() {
+        scheduledUpdate() {
             for (let i = 0; i < this.props.length; i++) {
                 let prop = this.props[i];
                 this.ele.style[prop._name_] = prop._value_;
@@ -8877,6 +9137,7 @@ var wick = (function (exports) {
     class ExpressionIO extends TemplateString {
 
         constructor(source, errors, taps, element, binds, func) {
+            
             super(source, errors, taps, element, binds);
             this._expr_function_ = func;
             this._value_ = null;
@@ -8884,12 +9145,12 @@ var wick = (function (exports) {
             this._bl_ = this.binds.length;
         }
 
-        _destroy_(){
+        destroy(){
             this._expr_function_ = null;
             this._value_ = null;
             this._filter_expression_ = null;
             this._bl_ = null;
-            super._destroy_();
+            super.destroy();
         }
 
         set _IS_A_FILTER_(v) {
@@ -8924,7 +9185,7 @@ var wick = (function (exports) {
 
         get _IS_A_FILTER_() { return typeof(this._filter_expression_) == "function"; }
 
-        _scheduledUpdate_() {
+        scheduledUpdate() {
             if (this._IS_A_FILTER_) {
                 this.ele.update();
             } else {
@@ -8934,7 +9195,7 @@ var wick = (function (exports) {
                     if(this.binds[i]._value_ === null) return;
                     args.push(this.binds[i]._value_);
                 }
-
+                
                 this._value_ = this._expr_function_.apply(null, args);
                 this.ele.data = this._value_;
             }
@@ -8942,7 +9203,7 @@ var wick = (function (exports) {
     }
 
     class InputExpresionIO extends ExpressionIO{
-        _scheduledUpdate_() {
+        scheduledUpdate() {
             if (this._IS_A_FILTER_) {
                 this.ele.update();
             } else {
@@ -8962,7 +9223,7 @@ var wick = (function (exports) {
             let Attrib_Watch = (typeof element[event] == "undefined");
 
             this.parent = source;
-            source._ios_.push(this);
+            source.ios.push(this);
 
             this._ele_ = element;
             this._event_bind_ = new IOBase(source.getTap(event_bind.tap_name));
@@ -9009,13 +9270,13 @@ var wick = (function (exports) {
 
         /**
          * Removes all references to other objects.
-         * Calls _destroy_ on any child objects.
+         * Calls destroy on any child objects.
          */
-        _destroy_() {
+        destroy() {
             if (this._msg_)
-                this._msg_._destroy_();
+                this._msg_.destroy();
             this._event_handle_ = null;
-            this._event_bind_._destroy_();
+            this._event_bind_.destroy();
             this._msg_ = null;
             this._ele_.removeEventListener(this._event_, this._event_handle_);
             this._ele_ = null;
@@ -9026,7 +9287,7 @@ var wick = (function (exports) {
         }
 
         _handleEvent_(e) {
-            this._event_bind_._up_(this.data, { event: e });
+            this._event_bind_.up(this.data, { event: e });
 
             if (this.prevent_defaults) {
                 e.preventDefault();
@@ -9037,7 +9298,7 @@ var wick = (function (exports) {
         }
 
         _handleAttribUpdate_(e) {
-            this._event_bind_._up_(e.target.getAttribute(e.attributeName), { mutation: e });
+            this._event_bind_.up(e.target.getAttribute(e.attributeName), { mutation: e });
         }
     }
 
@@ -9069,9 +9330,9 @@ var wick = (function (exports) {
 
         /**
          * Removes all references to other objects.
-         * Calls _destroy_ on any child objects.
+         * Calls destroy on any child objects.
          */
-        _destroy_() {
+        destroy() {
             this._func_ = null;
             this._source_ = null;
             this._bound_emit_function_ = null;
@@ -9079,11 +9340,11 @@ var wick = (function (exports) {
 
         }
 
-        _down_(value, meta = { event: null }) {
+        down(value, meta = { event: null }) {
             this.meta = meta;
             const src = this._source_;
             try {
-                this._func_(value, meta.event, src._model_, this._bound_emit_function_, src._presets_, src._statics_, src);
+                this._func_(value, meta.event, src.model, this._bound_emit_function_, src.presets, src.statics, src);
             } catch (e) {
                 console.warn(this.function);
                 console.error(e);
@@ -9295,7 +9556,7 @@ var wick = (function (exports) {
                     }
                     break;
             }
-            lex.n();
+            lex.n;
         }
 
 
@@ -9329,6 +9590,7 @@ var wick = (function (exports) {
          * "return (implied)" name ? "User has a name!" : "User does not have a name!"
          * ```
          */
+         
         const bind_ids = [];
 
         const function_string = lex.slice();
@@ -9392,15 +9654,15 @@ var wick = (function (exports) {
                         } //create text node
 
 
-                        lex.sync().n();
+                        lex.sync().n;
                         lex.IWS = true; // Do not produce white space tokens during this portion.
                         let pk = lex.pk;
                         let Message= false;
 
 
-                        while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end && pk.p.ch !== barrier_a_start) || (pk.p.n().ch === barrier_a_end))) { 
+                        while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end && pk.p.ch !== barrier_a_start) || (pk.p.n.ch === barrier_a_end))) { 
                             let prev = pk.ch;
-                            pk.n(); 
+                            pk.n; 
                             if(pk.ch == barrier_a_start && prev == barrier_a_end)
                                 Message =true;
                         }
@@ -9429,7 +9691,7 @@ var wick = (function (exports) {
                             let binding = new DynamicBinding();
                             binding.tap_name = id;
                             let index = binds.push(binding) - 1;
-                            lex.n().a(sentinel);
+                            lex.n.a(sentinel);
 
                             if (EVENT$$1) {
                                 /***************************** Looking for Event Bindings ******************************************/
@@ -9444,9 +9706,9 @@ var wick = (function (exports) {
 
                                     let pk = lex.pk;
 
-                                    while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end))) { pk.n(); }
+                                    while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end))) { pk.n; }
 
-                                    lex.n();
+                                    lex.n;
 
                                     if (lex.tl < pk.off - lex.off || BannedIdentifiers[lex.tx]) {
 
@@ -9487,7 +9749,7 @@ var wick = (function (exports) {
                                                 binding.tap_name = id;
                                             }
                                             binds[index].bind = binding;
-                                            lex.n();
+                                            lex.n;
                                         }
                                         lex.a(sentinel);
                                     }
@@ -9505,7 +9767,7 @@ var wick = (function (exports) {
                     }
                     break;
             }
-            lex.n();
+            lex.n;
         }
 
         if (start < lex.off) {
@@ -9516,7 +9778,7 @@ var wick = (function (exports) {
 
             let DATA_END = start;
 
-            while (!lex.n().END)
+            while (!lex.n.END)
                 if (!(lex.ty & (lex.types.ws | lex.types.nl)))
                     DATA_END = lex.off + lex.tl;
                 
@@ -9658,12 +9920,12 @@ var wick = (function (exports) {
     }
 
     class BindingCSSRoot extends CSSRootNode {
-        _getPropertyHook_(value_lex, prop_name, rule) {
+        getPropertyHook(value_lex, prop_name, rule) {
 
             //looking for binding points
             let pk = value_lex.copy();
-            while (!pk.END && ((pk.ch != barrier_a_start || (pk.n().ch != barrier_a_start && pk.ch != barrier_b_start)))) {
-                pk.n();
+            while (!pk.END && ((pk.ch != barrier_a_start || (pk.n.ch != barrier_a_start && pk.ch != barrier_b_start)))) {
+                pk.n;
             }
 
             if (pk.END)
@@ -9682,13 +9944,13 @@ var wick = (function (exports) {
             this.binding = binding;
         }
 
-        _build_(element, source, presets, errors, taps) {
+        build(element, source, presets, errors, taps) {
             let ele = document.createTextNode(this.txt);
             this.binding._bind_(source, errors, taps, ele);
             _appendChild_(element, ele);
         }
 
-        _linkCSS_() {}
+        linkCSS() {}
 
         toString(off = 0) {
             return `${("    ").repeat(off)}${this.binding}\n`;
@@ -9722,35 +9984,35 @@ var wick = (function (exports) {
 
         /******************************************* STATICS ****************************************************/
 
-        get _statics_() {
+        get statics() {
             if (this.__statics__) return this.__statics__;
 
             if (this.par)
-                return (this.__statics__ = Object.assign({}, this.par._statics_));
+                return (this.__statics__ = Object.assign({}, this.par.statics));
 
             return (this.__statics__ = {});
         }
 
-        set _statics_(statics) {
+        set statics(statics) {
             this.__statics__ = statics;
         }
 
         /******************************************* PRESETS ****************************************************/
 
-        get _presets_() {
+        get presets() {
             if (this.__presets__) return this.__presets__;
-            return this.par._presets_;
+            return this.par.presets;
         }
 
-        set _presets_(preset) {
+        set presets(preset) {
             this.__presets__ = preset;
         }
 
         /****************************************** COMPONENTIZATION *****************************************/
 
-        _mergeComponent_() {
+        mergeComponent() {
 
-            let component = this._presets_.components[this.tag];
+            let component = this.presets.components[this.tag];
 
             if (component) {
                 this._merged_ = component;
@@ -9760,9 +10022,7 @@ var wick = (function (exports) {
 
         /******************************************* CSS ****************************************************/
 
-        _setCSS_() {}
-
-        _linkCSS_(css, win = window) {
+        linkCSS(css, win = window) {
 
             if (this.css)
                 css = this.css;
@@ -9809,13 +10069,13 @@ var wick = (function (exports) {
                 }
             }
 
-            for (let node = this.fch; node; node = this.getN(node))
-                node._linkCSS_(css, win);
+            for (let node = this.fch; node; node = this.getNextChild(node))
+                node.linkCSS(css, win);
         }
 
-        _setPendingCSS_(css) {
+        setPendingCSS(css) {
             if (this.par)
-                this.par._setPendingCSS_(css);
+                this.par.setPendingCSS(css);
             else{
                 if(!this.css)
                     this.css = [];
@@ -9829,7 +10089,7 @@ var wick = (function (exports) {
 
             let css = new BindingCSSRoot();
 
-            this._setPendingCSS_(css);
+            this.setPendingCSS(css);
 
             return css;
         }
@@ -9848,7 +10108,7 @@ var wick = (function (exports) {
         /******************************************* TAPS ****************************************************/
 
 
-        _getTap_(tap_name) {
+        getTap(tap_name) {
             this.HAS_TAPS = true;
             const l = this.tap_list.length;
             for (let i = 0; i < l; i++)
@@ -9865,7 +10125,7 @@ var wick = (function (exports) {
 
 
 
-        _checkTapMethod_(name, lex) {
+        checkTapMethod(name, lex) {
 
             let tap_mode = KEEP; // Puts
 
@@ -9895,38 +10155,38 @@ var wick = (function (exports) {
 
                 while (!lex.END) {
 
-                    this._getTap_(lex.tx)._modes_ |= tap_mode;
+                    this.getTap(lex.tx)._modes_ |= tap_mode;
 
-                    lex.n();
+                    lex.n;
                 }
 
                 return true;
             }
         }
 
-        _checkTapMethodGate_(name, lex) {
+        checkTapMethodGate(name, lex) {
 
             if (!this.par)
-                return this._checkTapMethod_(name, lex);
+                return this.checkTapMethod(name, lex);
             return false;
         }
 
-        _linkTapBinding_(binding) {
+        linkTapBinding(binding) {
 
-            binding.tap_id = this._getTap_(binding.tap_name).id;
+            binding.tap_id = this.getTap(binding.tap_name).id;
         }
 
-        _delegateTapBinding_(binding, tap_mode) {
+        delegateTapBinding(binding, tap_mode) {
 
             if (this.par)
-                return this.par._processTapBinding_(binding, tap_mode);
+                return this.par.processTapBinding(binding, tap_mode);
 
             return null;
         }
 
-        _processTapBinding_(binding, tap_mode = 0) {
+        processTapBinding(binding, tap_mode = 0) {
 
-            if (this._delegateTapBinding_(binding, tap_mode)) return binding;
+            if (this.delegateTapBinding(binding, tap_mode)) return binding;
 
             if (binding.type === TEMPLATE_BINDING_ID) {
 
@@ -9934,10 +10194,10 @@ var wick = (function (exports) {
 
                 for (let i = 0, l = _bindings_.length; i < l; i++)
                     if (_bindings_[i].type === DYNAMIC_BINDING_ID)
-                        this._linkTapBinding_(_bindings_[i]);
+                        this.linkTapBinding(_bindings_[i]);
 
             } else if (binding.type === DYNAMIC_BINDING_ID)
-                this._linkTapBinding_(binding);
+                this.linkTapBinding(binding);
 
             return binding;
         }
@@ -9960,7 +10220,7 @@ var wick = (function (exports) {
          * @param      {null}  model    The model
          * @return     {null}  { description_of_the_return_value }
          */
-        _build_(element, source, presets, errors, taps, statics, out_ele) {
+        build(element, source, presets, errors, taps, statics, out_ele) {
 
             const out_statics = this.__statics__ || statics;
             let own_out_ele;
@@ -9971,7 +10231,7 @@ var wick = (function (exports) {
                     ele: null
                 };
 
-                let out_source = this._merged_._build_(element, source, presets, errors, taps, out_statics, own_out_ele);
+                let out_source = this._merged_.build(element, source, presets, errors, taps, out_statics, own_out_ele);
 
                 if(!source)
                     source = out_source;            
@@ -9996,7 +10256,7 @@ var wick = (function (exports) {
             }
 
             if (this.HAS_TAPS)
-                taps = source._linkTaps_(this.tap_list);
+                taps = source.linkTaps(this.tap_list);
 
             if (own_element) {
 
@@ -10012,12 +10272,12 @@ var wick = (function (exports) {
                     attr.binding._bind_(source, errors, taps, own_element, attr.name);
                 }
 
-                for (let node = this.fch; node; node = this.getN(node))
-                    node._build_(own_element, source, presets, errors, taps, out_statics);
+                for (let node = this.fch; node; node = this.getNextChild(node))
+                    node.build(own_element, source, presets, errors, taps, out_statics);
 
             } else {
-                for (let node = this.fch; node; node = this.getN(node))
-                    node._build_(element, source, presets, errors, taps, out_statics);
+                for (let node = this.fch; node; node = this.getNextChild(node))
+                    node.build(element, source, presets, errors, taps, out_statics);
             }
 
 
@@ -10032,7 +10292,7 @@ var wick = (function (exports) {
          * Override this method to tell the parser that `tag` is self closing and to not look for a matching close tag by returning `true`.
          * @param      {string}  tag     The HTML tag
          */
-        _selfClosingTagHook_(tag) {
+        selfClosingTagHook(tag) {
             switch (tag) {
                 case "input":
                 case "br":
@@ -10049,9 +10309,9 @@ var wick = (function (exports) {
             return createElement(this.tag);
         }
 
-        _endOfElementHook_() {
+        endOfElementHook() {
             if (!this.fch) {
-                this._mergeComponent_();
+                this.mergeComponent();
             }
         }
 
@@ -10063,7 +10323,7 @@ var wick = (function (exports) {
          * @return     {Object}  `null` or an object to store in this nodes attributes
          * @private
          */
-        _processAttributeHook_(name, lex) {
+        processAttributeHook(name, lex) {
 
             let start = lex.off;
 
@@ -10077,9 +10337,9 @@ var wick = (function (exports) {
 
                     if (key.length > 0) {
                         if (lex.tl == lex.sl - lex.off && lex.ty == lex.types.num)
-                            this._statics_[key] = parseFloat(lex.slice());
+                            this.statics[key] = parseFloat(lex.slice());
                         else
-                            this._statics_[key] = lex.slice();
+                            this.statics[key] = lex.slice();
                     }
 
                     return null;
@@ -10099,7 +10359,7 @@ var wick = (function (exports) {
                 case "c":
                     if (name == "component") {
                         let component_name = lex.tx;
-                        let components = this._presets_.components;
+                        let components = this.presets.components;
                         if (components)
                             components[component_name] = this;
                         return null;
@@ -10112,7 +10372,7 @@ var wick = (function (exports) {
                     }
             }
 
-            if (this._checkTapMethodGate_(name, lex))
+            if (this.checkTapMethodGate(name, lex))
                 return null;
 
             if ((lex.sl - lex.off) > 0) {
@@ -10129,7 +10389,7 @@ var wick = (function (exports) {
                 let attr = {
                     name,
                     value: (start < lex.off) ? lex.slice(start) : true,
-                    binding: this._processTapBinding_(binding)
+                    binding: this.processTapBinding(binding)
                 };
                 this._bindings_.push(attr);
                 return attr;
@@ -10151,13 +10411,13 @@ var wick = (function (exports) {
          * @param      {Lexer}    
          * @return     {TextNode}  
          */
-        _processTextNodeHook_(lex) {
+        processTextNodeHook(lex) {
 
             if (lex.sl - lex.pos > 0) {
 
                 let binding = Template(lex);
                 if (binding)
-                    return new RootText(this._processTapBinding_(binding));
+                    return new RootText(this.processTapBinding(binding));
             }
 
             return null;
@@ -10174,17 +10434,17 @@ var wick = (function (exports) {
 
         /******************************************* HOOKS ****************************************************/
 
-        _endOfElementHook_() {}
+        endOfElementHook() {}
 
-        _processTextNodeHook_() {}
+        processTextNodeHook() {}
 
         /******************************************* BUILD ****************************************************/
 
-        _build_() {}
+        build() {}
 
         /******************************************* CSS ****************************************************/
 
-        _linkCSS_() {}
+        linkCSS() {}
     }
 
     class ScriptNode$1 extends VoidNode$1 {
@@ -10194,26 +10454,26 @@ var wick = (function (exports) {
             this._binding_ = null;
         }
 
-        _processTextNodeHook_(lex) {
+        processTextNodeHook(lex) {
             if (this._binding_)
                 this._binding_.val = lex.slice();
         }
 
-        _processAttributeHook_(name, lex) {
+        processAttributeHook(name, lex) {
 
             switch (name) {
                 case "on":
                     let binding = Template(lex, false);
                     if (binding.type == DYNAMIC_BINDING_ID) {
                         binding.method = SCRIPT;
-                        this._binding_ = this._processTapBinding_(binding);
+                        this._binding_ = this.processTapBinding(binding);
                     }
                     return null;
             }
 
             return { name, value: lex.slice() };
         }
-        _build_(element, source, presets, errors, taps) {
+        build(element, source, presets, errors, taps) {
             if (this._binding_)
                 this._binding_._bind_(source, errors, taps, element);
         }
@@ -10231,7 +10491,7 @@ var wick = (function (exports) {
             this.statics = {};
         }
 
-        _delegateTapBinding_() {
+        delegateTapBinding() {
             return null;
         }
 
@@ -10242,13 +10502,13 @@ var wick = (function (exports) {
 
             this.css = new BindingCSSRoot();
 
-            this._setPendingCSS_(this.css);
+            this.setPendingCSS(this.css);
 
             return this.css;
         }
 
-        _checkTapMethodGate_(name, lex) {
-            return this._checkTapMethod_(name, lex);
+        checkTapMethodGate(name, lex) {
+            return this.checkTapMethod(name, lex);
         }
 
 
@@ -10258,7 +10518,7 @@ var wick = (function (exports) {
             return createElement(this.getAttribute("element") || "div");
         }
         
-        _build_(element, source, presets, errors, taps = null, statics = null, out_ele = null) {
+        build(element, source, presets, errors, taps = null, statics = null, out_ele = null) {
 
             let data = {};
 
@@ -10338,8 +10598,8 @@ var wick = (function (exports) {
                 me.hooks.push(hook);
             }
 
-            for (let i = 0, l = this._attributes_.length; i < l; i++) {
-                let attr = this._attributes_[i];
+            for (let i = 0, l = this.attributes.length; i < l; i++) {
+                let attr = this.attributes[i];
 
                 if (!attr.value) ; else {
                     data[attr.name] = attr.value;
@@ -10347,12 +10607,12 @@ var wick = (function (exports) {
                 }
             }
 
-            for (let node = this.fch; node; node = this.getN(node))
-                node._build_(element, me, presets, errors, out_taps, statics);
+            for (let node = this.fch; node; node = this.getNextChild(node))
+                node.build(element, me, presets, errors, out_taps, statics);
 
             if (statics) {
-                me._statics_ = statics;
-                me._update_(statics);
+                me.statics = statics;
+                me.update(statics);
             }
 
 
@@ -10361,7 +10621,7 @@ var wick = (function (exports) {
 
         /******************************************* HOOKS ****************************************************/
 
-        _endOfElementHook_() {}
+        endOfElementHook() {}
 
         /**
          * Pulls Schema, Model, or tap method information from the attributes of the tag. 
@@ -10370,7 +10630,7 @@ var wick = (function (exports) {
          * @param      {Lexer}  lex     The lex
          * @return     {Object}  Key value pair.
          */
-        _processAttributeHook_(name, lex, value) {
+        processAttributeHook(name, lex, value) {
             let start = lex.off;
 
             switch (name[0]) {
@@ -10379,30 +10639,30 @@ var wick = (function (exports) {
 
                     if (key.length > 0) {
                         if (lex.tl == lex.sl - lex.off && lex.ty == lex.types.num)
-                            this._statics_[key] = parseFloat(lex.slice());
+                            this.statics[key] = parseFloat(lex.slice());
                         else
-                            this._statics_[key] = lex.slice();
+                            this.statics[key] = lex.slice();
                     }
 
                     return null;
                 case "m":
                     if (name == "model") {
                         this._model_name_ = lex.slice();
-                        lex.n();
+                        lex.n;
                         return null;
                     }
                     break;
                 case "s":
                     if (name == "schema") {
                         this._schema_name_ = lex.slice();
-                        lex.n();
+                        lex.n;
                         return null;
                     }
                     break;
                 case "c":
                     if (name == "component") {
                         let component_name = lex.tx;
-                        let components = this._presets_.components;
+                        let components = this.presets.components;
                         if (components)
                             components[component_name] = this;
                         return null;
@@ -10415,12 +10675,12 @@ var wick = (function (exports) {
                     }
                     break;
                 default:
-                    if (this._checkTapMethodGate_(name, lex))
+                    if (this.checkTapMethodGate(name, lex))
                         return null;
             }
 
             //return { name, value: lex.slice() };
-            //return super._processAttributeHook_(name, lex, value);
+            //return super.processAttributeHook(name, lex, value);
             if ((lex.sl - lex.off) > 0) {
                 let binding = Template(lex, true);
                 if (!binding) {
@@ -10434,7 +10694,7 @@ var wick = (function (exports) {
                 let attr = {
                     name,
                     value: (start < lex.off) ? lex.slice(start) : true,
-                    binding: this._processTapBinding_(binding)
+                    binding: this.processTapBinding(binding)
                 };
                 this._bindings_.push(attr);
                 return attr;
@@ -10498,15 +10758,15 @@ var wick = (function (exports) {
             tx = lex.tx;
         if (tx == "-") {
             mult = -1;
-            tx = lex.n().tx;
+            tx = lex.n.tx;
         }
-        lex.n();
+        lex.n;
         return parseFloat(tx) * mult;
     }
 
     function getNumberPair(lex, array) {
         let x = getSignedNumber(lex);
-        if (lex.ch == ',') lex.n();
+        if (lex.ch == ',') lex.n;
         let y = getSignedNumber(lex);
         array.push(x, y);
     }
@@ -10532,7 +10792,7 @@ var wick = (function (exports) {
                     case "m":
                         relative = true;
                     case "M":
-                        lex.n(); //
+                        lex.n; //
                         array.push((relative) ? PathSym.m : PathSym.M);
                         getNumberPair(lex, array);
                         parseNumberPairs(lex, array);
@@ -10541,21 +10801,21 @@ var wick = (function (exports) {
                     case "h":
                         relative = true;
                     case "H":
-                        lex.n();
+                        lex.n;
                         x = getSignedNumber(lex);
                         array.push((relative) ? PathSym.h : PathSym.H, x);
                         continue;
                     case "v":
                         relative = true;
                     case "V":
-                        lex.n();
+                        lex.n;
                         y = getSignedNumber(lex);
                         array.push((relative) ? PathSym.v : PathSym.V, y);
                         continue;
                     case "l":
                         relative = true;
                     case "L":
-                        lex.n();
+                        lex.n;
                         array.push((relative) ? PathSym.l : PathSym.L);
                         getNumberPair(lex, array);
                         parseNumberPairs(lex, array);
@@ -10601,7 +10861,7 @@ var wick = (function (exports) {
                     case "Z":
                         array.push((relative) ? PathSym.z : PathSym.Z);
                 }
-                lex.n();
+                lex.n;
             }
         }
 
@@ -10708,11 +10968,11 @@ var wick = (function (exports) {
             mult = 1;
 
         if (v == "-")
-            v = lex.n().tx, mult = -1;
+            v = lex.n.tx, mult = -1;
 
         let n = parseFloat(v) * mult;
 
-        lex.n();
+        lex.n;
 
         if (lex.ch !== ")" && lex.ch !== ",") {
             switch (lex.tx) {
@@ -10734,7 +10994,7 @@ var wick = (function (exports) {
                 case "em":
                     break;
             }
-            lex.n();
+            lex.n;
         }
         return n;
     }
@@ -10743,7 +11003,7 @@ var wick = (function (exports) {
         var lex = whind(string);
         while (!lex.END) {
             let tx = lex.tx;
-            lex.n();
+            lex.n;
             switch (tx) {
                 case "matrix":
 
@@ -10822,7 +11082,7 @@ var wick = (function (exports) {
                 case "perspective":
                     break;
             }
-            lex.n();
+            lex.n;
         }
     }
     // A 2D transform compisition of 2D position, 2D scale, and 1D rotation.
@@ -11009,7 +11269,7 @@ var wick = (function (exports) {
                     this.addKey(keys, p);
             }
 
-            _destroy_() {
+            destroy() {
                 this.keys = null;
                 this.type = null;
                 this.current_val = null;
@@ -11143,10 +11403,10 @@ var wick = (function (exports) {
                 this.setProps(props);
             }
 
-            _destroy_() {
+            destroy() {
                 for (let name in this.props)
                     if (this.props[name])
-                        this.props[name]._destroy_();
+                        this.props[name].destroy();
                 this.DESTROYED = true;
                 this.duration = 0;
                 this.obj = null;
@@ -11175,7 +11435,7 @@ var wick = (function (exports) {
              */
             setProps(props) {
                 for (let name in this.props)
-                    this.props[name]._destroy_();
+                    this.props[name].destroy();
 
                 this.props = {};
 
@@ -11208,7 +11468,7 @@ var wick = (function (exports) {
                 return true;
             }
 
-            _scheduledUpdate_(a, t) {
+            scheduledUpdate(a, t) {
 
                 if (this.run(this.time += t))
                     scheduler.queueUpdate(this);
@@ -11257,8 +11517,8 @@ var wick = (function (exports) {
                 this.duration = 0;
             }
 
-            _destroy_() {
-                this.seq.forEach(seq => seq._destroy_());
+            destroy() {
+                this.seq.forEach(seq => seq.destroy());
                 this.seq = null;
             }
 
@@ -11279,7 +11539,7 @@ var wick = (function (exports) {
                 return true;
             }
 
-            _scheduledUpdate_(a, t) {
+            scheduledUpdate(a, t) {
             	this.time += t;
                 if (this.run(this.time))
                     scheduler.queueUpdate(this);
@@ -11533,7 +11793,7 @@ var wick = (function (exports) {
                 this.OVERRIDE = override;
             }
 
-            _destroy_() {
+            destroy() {
                 let removeProps = function(seq) {
 
                     if (!seq.DESTROYED) {
@@ -11541,7 +11801,7 @@ var wick = (function (exports) {
                             obj_map.delete(seq.obj);
                     }
 
-                    seq._destroy_();
+                    seq.destroy();
                 };
                 this.in_seq.forEach(removeProps);
                 this.out_seq.forEach(removeProps);
@@ -11568,7 +11828,7 @@ var wick = (function (exports) {
 
                 return new Promise((res, rej) => {
                     if (this.duration > 0)
-                        this._scheduledUpdate_(0, 0);
+                        this.scheduledUpdate(0, 0);
                     if (this.duration < 1)
                         return res();
                     this.res = res;
@@ -11601,7 +11861,7 @@ var wick = (function (exports) {
                 
             }
 
-            _scheduledUpdate_(step, time) {
+            scheduledUpdate(step, time) {
                 if (!this.PLAY) return;
 
                 this.time += time * this.speed;
@@ -11625,7 +11885,7 @@ var wick = (function (exports) {
                 if (this.res)
                     this.res();
 
-                this._destroy_();
+                this.destroy();
             }
         }
 
@@ -11651,7 +11911,7 @@ var wick = (function (exports) {
             this.activeSources = [];
             this.dom_sources = [];
             this._filters_ = [];
-            this._ios_ = [];
+            this.ios = [];
             this.terms = [];
             this.sources = [];
             this.range = null;
@@ -11692,7 +11952,7 @@ var wick = (function (exports) {
             else this.cull(container.data);
         }
 
-        _update_(container) {
+        update(container) {
             if (container instanceof ModelContainerBase) container = container.get();
             if (!container) return;
             //let results = container.get(this.getTerms());
@@ -11708,7 +11968,7 @@ var wick = (function (exports) {
          * 
          * @protected
          */
-        _scheduledUpdate_() {
+        scheduledUpdate() {
 
             if (this.SCRUBBING) {
                 if (!this.AUTO_SCRUB) {
@@ -11788,7 +12048,7 @@ var wick = (function (exports) {
                     if (!this.dom_up_appended) {
 
                         for (let i = 0; i < this.dom_up.length; i++) {
-                            this.dom_up[i]._appendToDOM_(this.ele);
+                            this.dom_up[i].appendToDOM(this.ele);
                             this.dom_up[i].index = -1;
                             this.dom_sources.push(this.dom_up[i]);
                         }
@@ -11805,7 +12065,7 @@ var wick = (function (exports) {
                     if (!this.dom_dn_appended) {
 
                         for (let i = 0; i < this.dom_dn.length; i++) {
-                            this.dom_dn[i]._appendToDOM_(this.ele, this.dom_sources[0].ele);
+                            this.dom_dn[i].appendToDOM(this.ele, this.dom_sources[0].ele);
                             this.dom_dn[i].index = -1;
                         }
 
@@ -11892,7 +12152,7 @@ var wick = (function (exports) {
                 while (i < off) {
                     this.dom_dn.push(output[i]);
 
-                    output[i]._update_({
+                    output[i].update({
                         trs_in_dn: {
                             index: ip++,
                             trs: this.trs_dn.in
@@ -11906,14 +12166,14 @@ var wick = (function (exports) {
 
                     if (oa < this.shift) {
                         oa++;
-                        output[i]._update_({
+                        output[i].update({
                             trs_out_up: {
                                 trs: this.trs_up.out,
                                 index: 0
                             }
                         });
                     } else {
-                        output[i]._update_({
+                        output[i].update({
                             arrange: {
                                 trs: this.trs_up.in,
                                 index: (i) - off - this.shift
@@ -11923,14 +12183,14 @@ var wick = (function (exports) {
 
                     if (i >= off + limit - this.shift) {
                         ip++;
-                        output[i]._update_({
+                        output[i].update({
                             trs_out_dn: {
                                 trs: this.trs_dn.out,
                                 index: 0
                             }
                         });
                     } else {
-                        output[i]._update_({
+                        output[i].update({
                             arrange: {
                                 trs: this.trs_dn.in,
                                 index: ip++
@@ -11944,7 +12204,7 @@ var wick = (function (exports) {
 
                 while (i < off + limit + this.shift && i < ol) {
                     this.dom_up.push(output[i]);
-                    output[i]._update_({
+                    output[i].update({
                         trs_in_up: {
                             index: (i) - off - this.shift,
                             trs: this.trs_up.in
@@ -11978,10 +12238,10 @@ var wick = (function (exports) {
                     while (j < as.index && j < ol) {
                         let os = output[j];
                         os.index = j;
-                        os._appendToDOM_(this.ele, ele);
+                        os.appendToDOM(this.ele, ele);
                         trs_in.index = j;
                         //os.index = -1;
-                        os._transitionIn_(trs_in, (direction) ? "trs_in_up" : "trs_in_dn");
+                        os.transitionIn(trs_in, (direction) ? "trs_in_up" : "trs_in_dn");
                         j++;
                     }
                 } else if (as.index < 0) {
@@ -11989,20 +12249,20 @@ var wick = (function (exports) {
                         switch (as.index) {
                             case -2:
                             case -3:
-                                as._transitionOut_(trs_out, (direction) ? "trs_out_up" : "trs_out_dn");
+                                as.transitionOut(trs_out, (direction) ? "trs_out_up" : "trs_out_dn");
                                 break;
                             default:
-                                as._transitionOut_(trs_out);
+                                as.transitionOut(trs_out);
                         }
                     } else {
-                        as._transitionOut_();
+                        as.transitionOut();
                     }
                     continue;
                 }
 
                 trs_in.index = j;
 
-                as._update_({ arrange: trs_in });
+                as.update({ arrange: trs_in });
 
                 as._TRANSITION_STATE_ = true;
 
@@ -12012,10 +12272,10 @@ var wick = (function (exports) {
             }
 
             while (j < output.length) {
-                output[j]._appendToDOM_(this.ele);
+                output[j].appendToDOM(this.ele);
                 output[j].index = -1;
                 trs_in.index = j;
-                output[j]._transitionIn_(trs_in, (direction) ? "trs_in_up" : "trs_in_dn");
+                output[j].transitionIn(trs_in, (direction) ? "trs_in_up" : "trs_in_dn");
                 j++;
             }
 
@@ -12051,7 +12311,7 @@ var wick = (function (exports) {
 
             for (let i = 0, l = this._filters_.length; i < l; i++) {
                 let filter = this._filters_[i];
-                if (filter._CAN_USE_) {
+                if (filter.CAN_USE) {
                     if (filter._CAN_LIMIT_) limit = filter._value_;
                     if (filter._CAN_OFFSET_) offset = filter._value_;
                     if (filter._CAN_SHIFT_) this.shift = filter._value_;
@@ -12074,9 +12334,9 @@ var wick = (function (exports) {
             if (output.length < 1) return;
             for (let i = 0, l = this._filters_.length; i < l; i++) {
                 let filter = this._filters_[i];
-                if (filter._CAN_USE_) {
-                    if (filter._CAN_FILTER_) output = output.filter(filter._filter_function_._filter_expression_);
-                    if (filter._CAN_SORT_) output = output.sort(filter._sort_function_);
+                if (filter.CAN_USE) {
+                    if (filter.CAN_FILTER) output = output.filter(filter.filter_function._filter_expression_);
+                    if (filter.CAN_SORT) output = output.sort(filter._sort_function_);
                 }
             }
             this.activeSources = output;
@@ -12095,7 +12355,7 @@ var wick = (function (exports) {
             let transition = Transitioneer.createTransition();
             if (new_items.length == 0) {
                 let sl = this.sources.length;
-                for (let i = 0; i < sl; i++) this.sources[i]._transitionOut_(transition, "", true);
+                for (let i = 0; i < sl; i++) this.sources[i].transitionOut(transition, "", true);
                 this.sources.length = 0;
 
                 this.parent._upImport_("template_count_changed", {
@@ -12116,7 +12376,7 @@ var wick = (function (exports) {
                     }
                 for (let i = 0, l = this.sources.length; i < l; i++)
                     if (!exists.has(this.sources[i].model)) {
-                        this.sources[i]._transitionOut_(transition, "", true);
+                        this.sources[i].transitionOut(transition, "", true);
                         this.sources[i].index = -1;
                         this.sources.splice(i, 1);
                         l--;
@@ -12131,7 +12391,7 @@ var wick = (function (exports) {
                     for (let i = 0, j = 0, l = this.activeSources.length; i < l; i++, j++) {
                         if (this.activeSources[i]._TRANSITION_STATE_) {
                             if (j !== i) {
-                                this.activeSources[i]._update_({
+                                this.activeSources[i].update({
                                     arrange: {
                                         index: i,
                                         trs: transition.in
@@ -12159,9 +12419,9 @@ var wick = (function (exports) {
                 let item = items[i];
                 for (let j = 0; j < this.sources.length; j++) {
                     let Source = this.sources[j];
-                    if (Source._model_ == item) {
+                    if (Source.model == item) {
                         this.sources.splice(j, 1);
-                        Source._transitionOut_(transition, "", true);
+                        Source.transitionOut(transition, "", true);
                         break;
                     }
                 }
@@ -12187,7 +12447,7 @@ var wick = (function (exports) {
             this.filterUpdate(transition);
         }
         revise() {
-            if (this.cache) this._update_(this.cache);
+            if (this.cache) this.update(this.cache);
         }
         getTerms() {
             let out_terms = [];
@@ -12199,35 +12459,35 @@ var wick = (function (exports) {
             return out_terms;
         }
         get() {
-            if (this._model_ instanceof MultiIndexedContainer) {
+            if (this.model instanceof MultiIndexedContainer) {
                 if (this.data.index) {
                     let index = this.data.index;
                     let query = {};
                     query[index] = this.getTerms();
-                    return this._model_.get(query)[index];
+                    return this.model.get(query)[index];
                 } else console.warn("No index value provided for MultiIndexedContainer!");
             } else {
-                let source = this._model_.source;
+                let source = this.model.source;
                 let terms = this.getTerms();
                 if (source) {
-                    this._model_._destroy_();
+                    this.model.destroy();
                     let model = source.get(terms, null);
                     model.pin();
                     model.addView(this);
                 }
-                return this._model_.get(terms);
+                return this.model.get(terms);
             }
             return [];
         }
-        _down_(data, changed_values) {
-            for (let i = 0, l = this.activeSources.length; i < l; i++) this.activeSources[i]._down_(data, changed_values);
+        down(data, changed_values) {
+            for (let i = 0, l = this.activeSources.length; i < l; i++) this.activeSources[i].down(data, changed_values);
         }
-        _transitionIn_(transition) {
+        transitionIn(transition) {
             return;
             for (let i = 0, l = this.activeSources.length; i < l; i++) {
                 this.ele.appendChild(this.activeSources[i].element);
-                this.activeSources[i]._transitionIn_(transition);
-                this.activeSources[i]._update_({
+                this.activeSources[i].transitionIn(transition);
+                this.activeSources[i].update({
                     arrange: {
                         index: i,
                         trs: transition.trs_in
@@ -12235,9 +12495,9 @@ var wick = (function (exports) {
                 });
             }
         }
-        _transitionOut_(transition) {
+        transitionOut(transition) {
             return;
-            for (let i = 0, l = this.activeSources.length; i < l; i++) this.activeSources[i]._transitionOut_(transition);
+            for (let i = 0, l = this.activeSources.length; i < l; i++) this.activeSources[i].transitionOut(transition);
         }
     }
 
@@ -12254,34 +12514,34 @@ var wick = (function (exports) {
             this.template = template;
             this._activation_function_ = null;
             this._sort_function_ = null;
-            this._filter_function_ = null;
-            this._CAN_USE_ = false;
-            this._CAN_FILTER_ = false;
+            this.filter_function = null;
+            this.CAN_USE = false;
+            this.CAN_FILTER = false;
             this._CAN_LIMIT_ = false;
             this._CAN_OFFSET_ = false;
-            this._CAN_SORT_ = false;
+            this.CAN_SORT = false;
             this._SCHD_ = 0;
 
             if (activation && activation.binding){
                 this._activation_function_ = activation.binding._bind_(source, errors, taps, this);
             } else{
-                this._CAN_USE_ = true;
+                this.CAN_USE = true;
             }
 
             if (sort && sort.binding) {
                 let expr = sort.binding;
                 if (expr_check(expr)){
                     this._sort_function_ = (m1, m2) => expr.func(m1.model, m2.model);
-                    this._CAN_SORT_ = true;
+                    this.CAN_SORT = true;
                 } 
             }else
 
             if (filter && filter.binding) {
                 let expr = filter.binding;
                 if (expr_check(expr)){
-                    this._filter_function_ = expr._bind_(source, errors, taps, this);
-                    this._filter_function_._IS_A_FILTER_ = true;
-                    this._CAN_FILTER_ = true;  
+                    this.filter_function = expr._bind_(source, errors, taps, this);
+                    this.filter_function._IS_A_FILTER_ = true;
+                    this.CAN_FILTER = true;  
                 } 
             }else
 
@@ -12318,39 +12578,39 @@ var wick = (function (exports) {
             }
         }
 
-        _scheduledUpdate_() {}
+        scheduledUpdate() {}
         
         update(){
-            if(this._CAN_SORT_ || this._CAN_FILTER_){
+            if(this.CAN_SORT || this.CAN_FILTER){
                 this.template.UPDATE_FILTER = true;
                 scheduler.queueUpdate(this.template);
             }
         }
 
-        _destroy_() {
+        destroy() {
             if (this._sort_function_)
-                this._sort_function_._destroy_();
+                this._sort_function_.destroy();
             if (this._activation_function_)
-                this._activation_function_._destroy_();
-            if (this._filter_function_)
-                this._filter_function_._destroy_();
+                this._activation_function_.destroy();
+            if (this.filter_function)
+                this.filter_function.destroy();
             this._sort_function_ = null;
             this._activation_function_ = null;
-            this._filter_function_ = null;
+            this.filter_function = null;
             this.template = null;
         }
 
         get data() {}
         set data(v) {
 
-            this._CAN_USE_ = false;
-            if (v) this._CAN_USE_ = true;
+            this.CAN_USE = false;
+            if (v) this.CAN_USE = true;
             this._value_ = v;
 
             if(this._CAN_SCRUB_)
                 return this.template.scrub(this._value_, false);
             
-            if(this._CAN_SORT_ || this._CAN_FILTER_ || this._CAN_SHIFT_)
+            if(this.CAN_SORT || this.CAN_FILTER || this._CAN_SHIFT_)
                 this.template.UPDATE_FILTER = true;
             
             scheduler.queueUpdate(this.template);
@@ -12361,13 +12621,13 @@ var wick = (function (exports) {
 
         /******************************************* HOOKS ****************************************************/
 
-        _endOfElementHook_() {}
+        endOfElementHook() {}
 
         /**
          * This node only needs to assess attribute values. InnerHTML will be ignored. 
          * @return     {boolean}  { description_of_the_return_value }
          */
-        _selfClosingTagHook_() { return true; }
+        selfClosingTagHook() { return true; }
 
     }
 
@@ -12385,28 +12645,28 @@ var wick = (function (exports) {
          * @param      {Lexer}  lex     The lex
          * @private
          */
-        _processTextNodeHook_(lex) {}
+        processTextNodeHook(lex) {}
 
         _ignoreTillHook_() { return true; }
 
-        _endOfElementHook_(lex) {
+        endOfElementHook(lex) {
             let own_lex = lex.copy();
 
             own_lex.off = this._start_;
             own_lex.tl = 0;
-            own_lex.n().sl = lex.off;
+            own_lex.n.sl = lex.off;
 
-            this.par._package_ = new this.SourcePackage(own_lex, this._presets_, false);
+            this.par._package_ = new this.SourcePackage(own_lex, this.presets, false);
 
             if (!this.fch)
-                this._mergeComponent_();
+                this.mergeComponent();
         }
 
-        _mergeComponent_() {
-            let component = this._presets_.components[this.tag];
+        mergeComponent() {
+            let component = this.presets.components[this.tag];
 
             if (component)
-                this.par._package_ = new this.SourcePackage(component, this._presets_, false);
+                this.par._package_ = new this.SourcePackage(component, this.presets, false);
         }
     }
 
@@ -12419,12 +12679,12 @@ var wick = (function (exports) {
             this._package_ = null;
         }
 
-        _build_(element, source, presets, errors, taps) {
+        build(element, source, presets, errors, taps) {
 
             source = source || new Source(null, presets, element, this);
 
             if (this.HAS_TAPS)
-                taps = source._linkTaps_(this.tap_list);
+                taps = source.linkTaps(this.tap_list);
             if (this._property_bind_ && this._package_) {
 
                 let ele = createElement(this.getAttribute("element") || "ul");
@@ -12441,7 +12701,7 @@ var wick = (function (exports) {
 
                 _appendChild_(element, ele);
 
-                for (let node = this.fch; node; node = this.getN(node)) {
+                for (let node = this.fch; node; node = this.getNextChild(node)) {
                     //All filter nodes here
                     
                     let on = node.getAttrib("on");
@@ -12474,7 +12734,7 @@ var wick = (function (exports) {
 
         /******************************************* HOOKS ****************************************************/
 
-        _endOfElementHook_() {}
+        endOfElementHook() {}
 
         _ignoreTillHook_() {}
 
@@ -12489,30 +12749,30 @@ var wick = (function (exports) {
             }
         }
 
-        _processTextNodeHook_(lex) {
+        processTextNodeHook(lex) {
             if (!this._property_bind_) {
                 let cp = lex.copy();
                 lex.IWS = true;
                 cp.tl = 0;
-                if (cp.n().ch == barrier_a_start && (cp.n().ch == barrier_a_start || cp.ch == barrier_b_start)) {
+                if (cp.n.ch == barrier_a_start && (cp.n.ch == barrier_a_start || cp.ch == barrier_b_start)) {
                     let binding = Template(lex);
                     if (binding)
-                        this._property_bind_ = this._processTapBinding_(binding);
+                        this._property_bind_ = this.processTapBinding(binding);
                 }
             }
         }
     }
 
     class StyleNode$1 extends VoidNode$1 {
-        _processTextNodeHook_(lex) {
+        processTextNodeHook(lex) {
             //Feed the lexer to a new CSS Builder
             let css = this.getCSS();
 
             lex.IWS = true;
             lex.tl = 0;
-            lex.n();
+            lex.n;
 
-            css._parse_(lex).catch((e) => {
+            css.parse(lex).catch((e) => {
                 throw e;
             });
         }
@@ -12611,7 +12871,7 @@ var wick = (function (exports) {
         */
         constructor(tree, presets) {
             this.tree = tree;
-            this._presets_ = presets;
+            this.presets = presets;
         }
 
 
@@ -12652,7 +12912,7 @@ var wick = (function (exports) {
             //List of errors generated when building DOM
             let errors = [];
 
-            let source = this.tree._build_(parent_element, parent_source, this._presets_, errors);
+            let source = this.tree.build(parent_element, parent_source, this.presets, errors);
 
             if (errors.length > 0) {
                 //TODO!!!!!!Remove all _bindings_ that change Model. 
@@ -12676,7 +12936,7 @@ var wick = (function (exports) {
 
         lex.IWS = true;
 
-        while (!lex.END && lex.ch != "<") { lex.n(); }
+        while (!lex.END && lex.ch != "<") { lex.n; }
         if (!lex.END)
             return parseText(lex, SourcePackage, presets, url, win);
 
@@ -12691,7 +12951,7 @@ var wick = (function (exports) {
             
             if(++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
 
-            ast._linkCSS_(null, win);
+            ast.linkCSS(null, win);
 
             return complete(lex, SourcePackage, presets, ast, url, win);
         });
@@ -12700,7 +12960,7 @@ var wick = (function (exports) {
     function parseText(lex, SourcePackage, presets, url, win) {
         let start = lex.off;
 
-        while (!lex.END && lex.ch != "<") { lex.n(); }
+        while (!lex.END && lex.ch != "<") { lex.n; }
 
         if (!lex.END) {
 
@@ -12709,9 +12969,9 @@ var wick = (function (exports) {
 
             let node = CreateHTMLNode(lex.p.tx);
 
-            node._presets_ = presets;
+            node.presets = presets;
 
-            return node._parse_(lex, false, false, null, url).then((ast) => {
+            return node.parse(lex, false, false, null, url).then((ast) => {
                 if (ast.css && ast.css.length > 0) 
                     return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url, win);
                 
@@ -12736,7 +12996,7 @@ var wick = (function (exports) {
      * @memberof module:wick~internals.templateCompiler
      * @alias CompileSource
      */
-    function CompileSource$1(SourcePackage, presets, element, url, win = window) {
+    function CompileSource(SourcePackage, presets, element, url, win = window) {
         let lex;
         if (element instanceof whind$1.constructor) {
             lex = element;
@@ -12810,7 +13070,7 @@ var wick = (function (exports) {
             this._HAVE_ERRORS_ = false;
 
             if (element instanceof Promise) {
-                element.then((data) => CompileSource$1(this, presets, data, url, win));
+                element.then((data) => CompileSource(this, presets, data, url, win));
                 if (RETURN_PROMISE) return element;
                 return this;
             } else if (element instanceof RootNode) {
@@ -12828,7 +13088,7 @@ var wick = (function (exports) {
             }
 
             //Start the compiling of the component.
-            let promise = CompileSource$1(this, presets, element, url, win);
+            let promise = CompileSource(this, presets, element, url, win);
 
             OB.seal(this);
 
@@ -12982,11 +13242,11 @@ var wick = (function (exports) {
             this.LOADED = false;
         }
 
-        _destroy_() {
+        destroy() {
 
             for (var i = 0; i < this.eles.length; i++) {
                 let element = this.eles[i];
-                element._destroy_();
+                element.destroy();
             }
 
             this.eles = null;
@@ -13224,7 +13484,7 @@ var wick = (function (exports) {
             /**
              * The {@link Model} the 
              */
-            this._model_ = null;
+            this.model = null;
 
             /**
              * All {@link Source}s bound to this component from a {@link SourcePackag}.
@@ -13253,7 +13513,7 @@ var wick = (function (exports) {
                 if (template && template.tagName == "TEMPLATE") {
                     (new SourcePackage(template, presets, false, url)).mount(this.ele, null, presets.options.USE_SHADOW, this);
                 } else if (url) {
-                    (new WURL(url))
+                    (new URL(url))
                     .fetchText()
                         .then(text => {
                             (new SourcePackage(text, presets, false, url)).mount(null, null, presets.options.USE_SHADOW, this);
@@ -13278,7 +13538,7 @@ var wick = (function (exports) {
         transitionOut(transitioneer) {
 
             for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i]._transitionOut_({ trs_out: transitioneer });
+                this.sources[i].transitionOut({ trs_out: transitioneer });
 
             if (!this.LOADED || !this.ACTIVE) {
                 this.ACTIVE = false;
@@ -13298,7 +13558,7 @@ var wick = (function (exports) {
         transitionIn(transitioneer) {
 
             for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i]._transitionIn_({ trs_in: transitioneer });
+                this.sources[i].transitionIn({ trs_in: transitioneer });
 
 
             if (!this.LOADED || this.ACTIVE) {
@@ -13347,12 +13607,12 @@ var wick = (function (exports) {
         /**
          * @override
          */
-        handleUrlUpdate(wurl = new WURL("", true)) {
+        handleUrlUpdate(wurl = new URL("", true)) {
 
             let query_data = wurl.getData();
 
             for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i]._update_(query_data, null, true);
+                this.sources[i].update(query_data, null, true);
 
             if (this.wurl_store) {
                 let wurl = this.wurl_store;
@@ -13364,7 +13624,7 @@ var wick = (function (exports) {
                 this.wurl_store = wurl;
         }
 
-        _bubbleLink_() {
+        bubbleLink() {
 
         }
 
@@ -13376,7 +13636,7 @@ var wick = (function (exports) {
 
         down(data, src) {
             for (let i = 0, l = this.sources.length; i < l; i++)
-                if (src !== this.sources[i]) this.sources[i]._down_(data);
+                if (src !== this.sources[i]) this.sources[i].down(data);
         }
     }
 
@@ -13610,7 +13870,7 @@ var wick = (function (exports) {
             this.elements = {};
             this.component_constructors = presets.custom_sources;
             this.models_constructors = presets.schemas;
-            this._presets_ = presets;
+            this.presets = presets;
             this.current_url = null;
             this.current_query = null;
             this.current_view = null;
@@ -13620,7 +13880,7 @@ var wick = (function (exports) {
                 if (!temp.onclick) temp.onclick = (e) => {
                     let link = e.currentTarget;
                     if (link.origin !== location.origin) return;
-                    source._bubbleLink_();
+                    source.bubbleLink();
                     e.preventDefault();
                     history.pushState({}, "ignored title", link.href);
                     window.onpopstate();
@@ -13655,7 +13915,7 @@ var wick = (function (exports) {
          * @param {String} query -
          * @param {Bool} IS_SAME_PAGE -
          */
-        loadPage(page, wurl = new WURL(document.location.href), IS_SAME_PAGE = false) {
+        loadPage(page, wurl = new URL(document.location.href), IS_SAME_PAGE = false) {
 
             let transition = Transitioneer.createTransition();
 
@@ -13757,9 +14017,9 @@ var wick = (function (exports) {
             this.parseURL(this.current_view.url);
         }
 
-        loadModal(URL, query_data) {
+        loadModal(URL$$1, query_data) {
             return new Promise((res) => {
-                let wurl = new WURL(URL);
+                let wurl = new URL(URL$$1);
                 wurl.setData(query_data);
                 this.parseURL(wurl, wurl, res);
             });
@@ -13768,7 +14028,7 @@ var wick = (function (exports) {
         /*
             This function will parse a URL and determine what Page needs to be loaded into the current view.
         */
-        parseURL(location, wurl = new WURL(location.href), pending_modal_reply = null) {
+        parseURL(location, wurl = new URL(location.href), pending_modal_reply = null) {
 
             let url = location;
 
@@ -13827,21 +14087,21 @@ var wick = (function (exports) {
         /**
             Creates a new iframe object that acts as a modal that will sit ontop of everything else.
         */
-        loadNonWickPage(URL) {
+        loadNonWickPage(URL$$1) {
 
             let iframe = document.createElement("iframe");
-            iframe.src = URL;
+            iframe.src = URL$$1;
             iframe.classList.add("modal", "comp_wrap");
-            var page = new PageView(URL, iframe);
+            var page = new PageView(URL$$1, iframe);
             page.type = "modal";
-            this.pages[URL] = page; //new Modal(page, iframe, getModalContainer());
-            return this.pages[URL];
+            this.pages[URL$$1] = page; //new Modal(page, iframe, getModalContainer());
+            return this.pages[URL$$1];
         }
         /**
             Takes the DOM of another page and strips it, looking for elements to use to integrate into the SPA system.
             If it is unable to find these elements, then it will pass the DOM to loadNonWickPage to handle wrapping the page body into a wick app element.
         */
-        loadNewPage(URL, DOM, wurl = new WURL("", true), pending_modal_reply = null) {
+        loadNewPage(URL$$1, DOM, wurl = new URL("", true), pending_modal_reply = null) {
 
             //look for the app section.
 
@@ -13868,7 +14128,7 @@ var wick = (function (exports) {
             */
             if (!app_source) {
                 console.warn("Page does not have an <app> element!");
-                return this.loadNonWickPage(URL);
+                return this.loadNonWickPage(URL$$1);
             }
 
             var app_page = document.createElement("apppage");
@@ -13879,7 +14139,7 @@ var wick = (function (exports) {
 
             var dom_app = document.getElementsByTagName("app")[0];
 
-            var page = new PageView(URL, app_page);
+            var page = new PageView(URL$$1, app_page);
 
             if (app_source) {
 
@@ -13940,12 +14200,12 @@ var wick = (function (exports) {
                     element.common_components = this.elements[element_id];
                 }
 
-                let promise = page.load(this.models_constructors, this.component_constructors, this._presets_, DOM, wurl);
+                let promise = page.load(this.models_constructors, this.component_constructors, this.presets, DOM, wurl);
 
                 if (document == DOM)
                     dom_app.innerHTML = "";
 
-                if (!NO_BUFFER) this.pages[URL] = page;
+                if (!NO_BUFFER) this.pages[URL$$1] = page;
 
                 return promise;
             }
@@ -14329,7 +14589,7 @@ var wick = (function (exports) {
             this.ele.addEventListener("pointerdown", this.event_a);
         }
 
-        _destroy_() {
+        destroy() {
             this.listeners = null;
             this.ele.removeEventListener("pointerdown", this.event_a);
         }
@@ -14470,11 +14730,9 @@ var wick = (function (exports) {
         animation: Animation,
         view: View,
         css: CSSParser,
-        html: HTMLParser,
         scheme: scheme,
         model: model$1,
         network: {
-            url: WURL,
             router: Router
             /*,
                     getter: Getter,
@@ -14483,9 +14741,9 @@ var wick = (function (exports) {
         source: (...a) => new SourcePackage(...a)
     };
 
-    core.source.compiler = CompileSource$1;
+    core.source.compiler = CompileSource;
     core.lexer.constr = whind$1.constructor;
-    CompileSource$1.nodes = {
+    CompileSource.nodes = {
         root: RootNode,
         style: StyleNode$1,
         script: ScriptNode$1,
@@ -14601,8 +14859,6 @@ var wick = (function (exports) {
     exports.CSSRootNode = CSSRootNode;
     exports.CSSSelector = CSSSelector;
     exports.CSSRule = CSSRule;
-    exports.HTMLParser = HTMLParser;
-    exports.WURL = WURL;
     exports.Router = Router;
     exports.Animation = Animation;
     exports.Transitioneer = Transitioneer;

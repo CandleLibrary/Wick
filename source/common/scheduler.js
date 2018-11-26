@@ -17,7 +17,7 @@ const perf = (typeof(performance) == "undefined") ? { now: () => Date.now() } : 
 
 
 /**
- * Handles updating objects. It does this by splitting up _update_ cycles, to respect the browser event model. 
+ * Handles updating objects. It does this by splitting up update cycles, to respect the browser event model. 
  *    
  * If any object is scheduled to be updated, it will be blocked from scheduling more updates the next JavaScript runtime tick.
  * 
@@ -37,7 +37,7 @@ class Scheduler {
 
         this.queue_switch = 0;
 
-        this.callback = () => this._update_();
+        this.callback = () => this.update();
 
         this.frame_time = perf.now();
 
@@ -47,10 +47,10 @@ class Scheduler {
     }
 
     /**
-     * Given an object that has a _SCHD_ Boolean property, the Scheduler will queue the object and call its ._update_ function 
+     * Given an object that has a _SCHD_ Boolean property, the Scheduler will queue the object and call its .update function 
      * the following tick. If the object does not have a _SCHD_ property, the Scheduler will persuade the object to have such a property.
      * 
-     * If there are currently no queued objects when this is called, then the Scheduler will user caller to schedule an _update_.
+     * If there are currently no queued objects when this is called, then the Scheduler will user caller to schedule an update.
      *
      * @param      {Object}  object  The object to have updated.
      */
@@ -77,9 +77,9 @@ class Scheduler {
     }
 
     /**
-     * Called by the caller function every tick. Calls ._update_ on any object queued for an _update_. 
+     * Called by the caller function every tick. Calls .update on any object queued for an update. 
      */
-    _update_() {
+    update() {
 
         this._SCHD_ = false;
 
@@ -114,7 +114,7 @@ class Scheduler {
             } else o._SCHD_ = 0;
 
             try {
-                o._scheduledUpdate_(step_ratio, diff);
+                o.scheduledUpdate(step_ratio, diff);
             } catch (e) {
                 console.error(e);
             }

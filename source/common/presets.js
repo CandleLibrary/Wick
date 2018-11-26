@@ -78,7 +78,7 @@ class Presets {
         this.schemas = { any: Model };
 
         /**
-         * { Object } Store of user defined Model instances that serve as global models, which are available to the whole application. Multiple Sources will be able to _bind_ to the Models. `<w-source>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets ._model_ whose property name matches the "model" attribute.
+         * { Object } Store of user defined Model instances that serve as global models, which are available to the whole application. Multiple Sources will be able to _bind_ to the Models. `<w-source>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets .model whose property name matches the "model" attribute.
          * 
          * Assign instances of Model or Model or any class that extends these to preset_options.models to have them used by Wick.
          * 

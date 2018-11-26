@@ -89,11 +89,11 @@ export class ArrayModelContainer extends ModelContainerBase {
             this.insert(data, true);
     }
 
-    _destroy_() {
+    destroy() {
 
         this.data = null;
 
-        super._destroy_();
+        super.destroy();
     }
 
     get proxy() { return new Proxy(this, ArrayContainerProxySettings); }

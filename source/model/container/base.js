@@ -69,7 +69,7 @@ export class ModelContainerBase extends ModelBase {
 
     getByIndex(index, value) { /* NO OP **/ }
 
-    _destroy_() {
+    destroy() {
 
 
         this.__filters__ = null;
@@ -78,7 +78,7 @@ export class ModelContainerBase extends ModelBase {
             this.source.__unlink__(this);
         }
 
-        super._destroy_();
+        super.destroy();
     }
 
     /**

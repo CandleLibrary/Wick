@@ -1,4 +1,4 @@
-import whind from "whind";
+import whind from "@candlefw/whind";
 import { EL } from "../../common/short_names";
 import { CreateHTMLNode } from "./nodes/index";
 import { Skeleton } from "../skeleton";
@@ -17,7 +17,7 @@ function complete(lex, SourcePackage, presets, ast, url, win) {
 
     lex.IWS = true;
 
-    while (!lex.END && lex.ch != "<") { lex.n(); }
+    while (!lex.END && lex.ch != "<") { lex.n; }
     if (!lex.END)
         return parseText(lex, SourcePackage, presets, url, win);
 
@@ -32,7 +32,7 @@ function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win) {
         
         if(++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
 
-        ast._linkCSS_(null, win);
+        ast.linkCSS(null, win);
 
         return complete(lex, SourcePackage, presets, ast, url, win);
     });
@@ -41,7 +41,7 @@ function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win) {
 export function parseText(lex, SourcePackage, presets, url, win) {
     let start = lex.off;
 
-    while (!lex.END && lex.ch != "<") { lex.n(); }
+    while (!lex.END && lex.ch != "<") { lex.n; }
 
     if (!lex.END) {
 
@@ -50,9 +50,9 @@ export function parseText(lex, SourcePackage, presets, url, win) {
 
         let node = CreateHTMLNode(lex.p.tx);
 
-        node._presets_ = presets;
+        node.presets = presets;
 
-        return node._parse_(lex, false, false, null, url).then((ast) => {
+        return node.parse(lex, false, false, null, url).then((ast) => {
             if (ast.css && ast.css.length > 0) 
                 return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url, win);
             

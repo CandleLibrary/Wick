@@ -6,7 +6,7 @@ export class EventIO {
         let Attrib_Watch = (typeof element[event] == "undefined");
 
         this.parent = source;
-        source._ios_.push(this);
+        source.ios.push(this);
 
         this._ele_ = element;
         this._event_bind_ = new IOBase(source.getTap(event_bind.tap_name));
@@ -53,13 +53,13 @@ export class EventIO {
 
     /**
      * Removes all references to other objects.
-     * Calls _destroy_ on any child objects.
+     * Calls destroy on any child objects.
      */
-    _destroy_() {
+    destroy() {
         if (this._msg_)
-            this._msg_._destroy_();
+            this._msg_.destroy();
         this._event_handle_ = null;
-        this._event_bind_._destroy_();
+        this._event_bind_.destroy();
         this._msg_ = null;
         this._ele_.removeEventListener(this._event_, this._event_handle_);
         this._ele_ = null;
@@ -70,7 +70,7 @@ export class EventIO {
     }
 
     _handleEvent_(e) {
-        this._event_bind_._up_(this.data, { event: e });
+        this._event_bind_.up(this.data, { event: e });
 
         if (this.prevent_defaults) {
             e.preventDefault();
@@ -81,6 +81,6 @@ export class EventIO {
     }
 
     _handleAttribUpdate_(e) {
-        this._event_bind_._up_(e.target.getAttribute(e.attributeName), { mutation: e });
+        this._event_bind_.up(e.target.getAttribute(e.attributeName), { mutation: e });
     }
 }

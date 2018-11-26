@@ -10,33 +10,33 @@ export class View{
 		 */
 		this.nx = null;
 		this.pv = null;
-		this ._model_ = null;
+		this .model = null;
 	}
 
 	/**
      * Unbinds the View from its Model and sets all properties to undefined. Should be called by any class extending View
 	 * ``` js
 	 * class ExtendingView extends wick.core.view.View{
-	 * 		_destroy_(){
+	 * 		destroy(){
 	 * 			//... do some stuff ...
-	 * 			super._destroy_();
+	 * 			super.destroy();
 	 * 		}
 	 * }
 	 * ```
      * @protected
      */
-	_destroy_(){
+	destroy(){
 
-		if(this ._model_)
-			this ._model_.removeView(this);
+		if(this .model)
+			this .model.removeView(this);
 	
-		this ._model_ = undefined;
+		this .model = undefined;
 		this.nx = undefined;
 	}	
 	/**
 		Called by a Model when its data has changed.
 	*/
-	_update_(data){
+	update(data){
 
 	}
 	/**
@@ -61,6 +61,6 @@ export class View{
 	unsetModel(){
 
 		this.nx = null;
-		this ._model_ = null;
+		this .model = null;
 	}
 }

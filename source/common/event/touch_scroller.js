@@ -122,7 +122,7 @@ class TouchScroller {
         this.ele.addEventListener("pointerdown", this.event_a);
     }
 
-    _destroy_() {
+    destroy() {
         this.listeners = null;
         this.ele.removeEventListener("pointerdown", this.event_a);
     }

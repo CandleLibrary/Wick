@@ -46,11 +46,11 @@ export class BTreeModelContainer extends ModelContainerBase {
             this.insert(data);
     }
 
-    _destroy_() {
+    destroy() {
         if (this.btree)
-            this.btree._destroy_();
+            this.btree.destroy();
 
-        super._destroy_();
+        super.destroy();
     }
 
     get length() {
@@ -176,7 +176,7 @@ export class BTreeModelContainer extends ModelContainerBase {
 
     __removeAll__() {
         if (this.btree)
-            this.btree._destroy_();
+            this.btree.destroy();
         this.btree = null;
     }
 
@@ -206,14 +206,14 @@ class BtreeNode {
         this.items = 0;
     }
 
-    _destroy_() {
+    destroy() {
 
         this.nodes = null;
         this.keys = null;
 
         if (!this.LEAF) {
             for (let i = 0, l = this.nodes.length; i < l; i++)
-                this.nodes[i]._destroy_();
+                this.nodes[i].destroy();
         }
 
     }

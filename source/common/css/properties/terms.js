@@ -1,4 +1,4 @@
-import whind from "whind";
+import whind from "@candlefw/whind";
 
 import { NR } from "./productions";
 
@@ -24,13 +24,13 @@ class ValueTerm {
             this._virtual_ = true;
     }
 
-    _parse_(l, rule, r) {
+    parse(l, rule, r) {
         if (typeof(l) == "string")
             l = whind(l);
 
         let rn = { v: null };
 
-        let v = this._value_._parse_(l, rule, rn);
+        let v = this._value_.parse(l, rule, rn);
 
         if (rn.v) {
             if (r)
@@ -80,14 +80,14 @@ class LiteralTerm {
         this._prop_ = null;
     }
 
-    _parse_(l, rule, r) {
+    parse(l, rule, r) {
 
         if (typeof(l) == "string")
             l = whind(l);
 
         let v = l.tx;
         if (v == this._value_) {
-            l.n();
+            l.n;
 
             if (r)
                 if (r.v) {
@@ -110,12 +110,12 @@ class LiteralTerm {
 }
 
 class SymbolTerm extends LiteralTerm {
-    _parse_(l, rule, r) {
+    parse(l, rule, r) {
         if (typeof(l) == "string")
             l = whind(l);
 
         if (l.tx == this._value_) {
-            l.n();
+            l.n;
             return true;
         }
 

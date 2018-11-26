@@ -12,8 +12,8 @@ export class Setter extends View {
         this.url = url;
     }
 
-    _destroy_() {
-        super._destroy_();
+    destroy() {
+        super.destroy();
     }
 
     set(request_object) {
@@ -52,7 +52,7 @@ export class Setter extends View {
         var request = response.target;
 
         //result(request);
-            if (this ._model_){
+            if (this .model){
 
             //should be able to pipe responses as objects created from well formulated data directly into the model.
                 this.set(this.parseJson(json));

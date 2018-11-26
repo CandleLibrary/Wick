@@ -1,4 +1,4 @@
-import whind from "whind";
+import whind from "@candlefw/whind";
 import { NR, AND, OR, ONE_OF } from "./productions";
 import { LiteralTerm, ValueTerm, SymbolTerm } from "./terms";
 import {  virtual_property_definitions } from "./property_and_type_definitions";
@@ -59,7 +59,7 @@ function _ParseGrammer_(l, definitions, super_term = false, group = false, need_
                     throw new Error("Expected to have term before \"]\"");
             case "[":
                 if (term) return term;
-                term = _ParseGrammer_(l.n(), definitions);
+                term = _ParseGrammer_(l.n, definitions);
                 l.a("]");
                 break;
             case "&":
@@ -71,7 +71,7 @@ function _ParseGrammer_(l, definitions, super_term = false, group = false, need_
 
                     nt._terms_.push(term);
 
-                    l.sync().n();
+                    l.sync().n;
 
                     while (!l.END) {
                         nt._terms_.push(_ParseGrammer_(l, definitions, super_term, group, need_group, true, important));
@@ -92,7 +92,7 @@ function _ParseGrammer_(l, definitions, super_term = false, group = false, need_
 
                         nt._terms_.push(term);
 
-                        l.sync().n();
+                        l.sync().n;
 
                         while (!l.END) {
                             nt._terms_.push(_ParseGrammer_(l, definitions, super_term, group, true, and_group, important));
@@ -111,7 +111,7 @@ function _ParseGrammer_(l, definitions, super_term = false, group = false, need_
 
                         nt._terms_.push(term);
 
-                        l.n();
+                        l.n;
 
                         while (!l.END) {
                             nt._terms_.push(_ParseGrammer_(l, definitions, super_term, true, need_group, and_group, important));
@@ -125,14 +125,14 @@ function _ParseGrammer_(l, definitions, super_term = false, group = false, need_
                 break;
             case "{":
                 term = _Jux_(term);
-                term.r[0] = parseInt(l.n().tx);
-                if (l.n().ch == ",") {
-                    l.n();
-                    if (l.n().ch == "}")
+                term.r[0] = parseInt(l.n.tx);
+                if (l.n.ch == ",") {
+                    l.n;
+                    if (l.n.ch == "}")
                         term.r[1] = Infinity;
                     else {
                         term.r[1] = parseInt(l.tx);
-                        l.n();
+                        l.n;
                     }
                 } else
                     term.r[1] = term.r[0];
@@ -143,21 +143,21 @@ function _ParseGrammer_(l, definitions, super_term = false, group = false, need_
                 term = _Jux_(term);
                 term.r[0] = 0;
                 term.r[1] = Infinity;
-                l.n();
+                l.n;
                 if (super_term) return term;
                 break;
             case "+":
                 term = _Jux_(term);
                 term.r[0] = 1;
                 term.r[1] = Infinity;
-                l.n();
+                l.n;
                 if (super_term) return term;
                 break;
             case "?":
                 term = _Jux_(term);
                 term.r[0] = 0;
                 term.r[1] = 1;
-                l.n();
+                l.n;
                 if (super_term) return term;
                 break;
             case "#":
@@ -165,11 +165,11 @@ function _ParseGrammer_(l, definitions, super_term = false, group = false, need_
                 term._terms_.push(new SymbolTerm(","));
                 term.r[0] = 1;
                 term.r[1] = Infinity;
-                l.n();
+                l.n;
                 if (l.ch == "{") {
-                    term.r[0] = parseInt(l.n().tx);
-                    term.r[1] = parseInt(l.n().a(",").tx);
-                    l.n().a("}");
+                    term.r[0] = parseInt(l.n.tx);
+                    term.r[1] = parseInt(l.n.a(",").tx);
+                    l.n.a("}");
                 }
                 if (super_term) return term;
                 break;
@@ -181,15 +181,15 @@ function _ParseGrammer_(l, definitions, super_term = false, group = false, need_
                     let v = _ParseGrammer_(l, definitions, true);
                     term = _Jux_(term, v);
                 } else {
-                    let v = new ValueTerm(l.n().tx, _getPropertyParser_, definitions);
-                    l.n().a(">");
+                    let v = new ValueTerm(l.n.tx, _getPropertyParser_, definitions);
+                    l.n.a(">");
                     term = v;
                 }
                 break;
             case "!":
                 /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
 
-                l.n().a("important");
+                l.n.a("important");
                 important.is = true;
                 break;
             default:
@@ -199,7 +199,7 @@ function _ParseGrammer_(l, definitions, super_term = false, group = false, need_
                     term = _Jux_(term, v);
                 } else {
                     let v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx);
-                    l.n();
+                    l.n;
                     term = v;
                 }
         }

@@ -3,17 +3,17 @@ import { Scheduler } from "../../common/scheduler";
 export class IOBase {
 
     constructor(parent) {
-        parent._ios_.push(this);
+        parent.ios.push(this);
         this.parent = parent;
     }
 
-    _destroy_() {
+    destroy() {
         this.parent.removeIO(this);
         this.parent = null;
     }
 
-    _down_() {}
-    _up_(value, meta) { this.parent._up_(value, meta); }
+    down() {}
+    up(value, meta) { this.parent.up(value, meta); }
 }
 
 /**
@@ -34,18 +34,18 @@ export class IO extends IOBase {
         this.ele = element;
     }
 
-    _destroy_() {
+    destroy() {
         this.ele = null;
-        super._destroy_();
+        super.destroy();
     }
 
-    _down_(value) {
+    down(value) {
         this.ele.data = value;
     }
 }
 
 /**
-    This IO object will _update_ the attribute value of the watched element, using the "prop" property to select the attribute to _update_.
+    This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
 */
 export class AttribIO extends IOBase {
     constructor(source, errors, tap, attr, element) {
@@ -55,16 +55,16 @@ export class AttribIO extends IOBase {
         this.ele = element;
     }
 
-    _destroy_() {
+    destroy() {
         this.ele = null;
         this.attrib = null;
-        super._destroy_();
+        super.destroy();
     }
 
     /**
-        Puts data into the watched element's attribute. The default action is to simply _update_ the attribute with data._value_.  
+        Puts data into the watched element's attribute. The default action is to simply update the attribute with data._value_.  
     */
-    _down_(value) {
+    down(value) {
         this.ele.setAttribute(this.attrib, value);
     }
 }
@@ -77,19 +77,19 @@ export class InputIO extends IOBase {
 
         this.ele = element;
 
-        this.event = (e) => { this.parent._up_(e.target.value, { event: e }); };
+        this.event = (e) => { this.parent.up(e.target.value, { event: e }); };
 
         this.ele.addEventListener("input", this.event);
     }
 
-    _destroy_() {
+    destroy() {
         this.ele.removeEventListener("input", this.event);
         this.ele = null;
         this.event = null;
         this.attrib = null;
     }
 
-    _down_(value) {
+    down(value) {
         this.ele.value = value;
     }
 }
@@ -102,19 +102,19 @@ export class BindIO extends IOBase {
         this.child = null;
     }
 
-    _destroy_() {
+    destroy() {
         this._value_ = null;
-        if (this.child) this.child._destroy_();
+        if (this.child) this.child.destroy();
         this.child = null;
-        super._destroy_();
+        super.destroy();
     }
 
     /**
-        Puts data into the watched element's attribute. The default action is to simply _update_ the attribute with data._value_.  
+        Puts data into the watched element's attribute. The default action is to simply update the attribute with data._value_.  
     */
-    _down_(value) {
+    down(value) {
         this._value_ = value;
-        this.child._down_();
+        this.child.down();
     }
 }
 
@@ -129,13 +129,13 @@ export class TemplateString extends IOBase {
         this._setBindings_(source, errors, taps, binds);
     }
 
-    _destroy_() {
+    destroy() {
         for (var i = 0; i < this.binds.length; i++)
-            this.binds[i]._destroy_();
+            this.binds[i].destroy();
         this._SCHD_ = 0;
         this.binds = null;
         this.ele = null;
-        super._destroy_();
+        super.destroy();
     }
 
     _setBindings_(source, errors, taps, binds) {
@@ -160,17 +160,17 @@ export class TemplateString extends IOBase {
                     break;
             }
         }
-        this._down_();
+        this.down();
     }
 
     get data() {}
     set data(v) { Scheduler.queueUpdate(this); }
 
-    _down_() {
+    down() {
         Scheduler.queueUpdate(this);
     }
 
-    _scheduledUpdate_() {
+    scheduledUpdate() {
 
         let str = [];
 
@@ -188,12 +188,12 @@ export class AttribTemplate extends TemplateString {
         this.attrib = attr;
     }
 
-    _destroy_() {
+    destroy() {
         this.attrib = null;
-        super._destroy_();
+        super.destroy();
     }
 
-    _scheduledUpdate_() {
+    scheduledUpdate() {
 
         let str = [];
 

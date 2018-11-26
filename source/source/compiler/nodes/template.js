@@ -17,12 +17,12 @@ export class SourceTemplateNode extends RootNode {
         this._package_ = null;
     }
 
-    _build_(element, source, presets, errors, taps) {
+    build(element, source, presets, errors, taps) {
 
         source = source || new Source(null, presets, element, this);
 
         if (this.HAS_TAPS)
-            taps = source._linkTaps_(this.tap_list);
+            taps = source.linkTaps(this.tap_list);
         if (this._property_bind_ && this._package_) {
 
             let ele = createElement(this.getAttribute("element") || "ul");
@@ -39,7 +39,7 @@ export class SourceTemplateNode extends RootNode {
 
             _appendChild_(element, ele);
 
-            for (let node = this.fch; node; node = this.getN(node)) {
+            for (let node = this.fch; node; node = this.getNextChild(node)) {
                 //All filter nodes here
                 
                 let on = node.getAttrib("on");
@@ -72,7 +72,7 @@ export class SourceTemplateNode extends RootNode {
 
     /******************************************* HOOKS ****************************************************/
 
-    _endOfElementHook_() {}
+    endOfElementHook() {}
 
     _ignoreTillHook_() {}
 
@@ -87,15 +87,15 @@ createHTMLNodeHook(tag, start) {
         }
     }
 
-    _processTextNodeHook_(lex) {
+    processTextNodeHook(lex) {
         if (!this._property_bind_) {
             let cp = lex.copy();
             lex.IWS = true;
             cp.tl = 0;
-            if (cp.n().ch == barrier_a_start && (cp.n().ch == barrier_a_start || cp.ch == barrier_b_start)) {
+            if (cp.n.ch == barrier_a_start && (cp.n.ch == barrier_a_start || cp.ch == barrier_b_start)) {
                 let binding = Template(lex);
                 if (binding)
-                    this._property_bind_ = this._processTapBinding_(binding);
+                    this._property_bind_ = this.processTapBinding(binding);
             }
         }
     }

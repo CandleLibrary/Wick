@@ -3,11 +3,11 @@ function getValue(lex, attribute) {
         mult = 1;
 
     if (v == "-")
-        v = lex.n().tx, mult = -1;
+        v = lex.n.tx, mult = -1;
 
     let n = parseFloat(v) * mult;
 
-    lex.n();
+    lex.n;
 
     if (lex.ch !== ")" && lex.ch !== ",") {
         switch (lex.tx) {
@@ -29,7 +29,7 @@ function getValue(lex, attribute) {
             case "em":
                 break;
         }
-        lex.n();
+        lex.n;
     }
     return n;
 }
@@ -38,7 +38,7 @@ function ParseString(string, transform) {
     var lex = whind(string);
     while (!lex.END) {
         let tx = lex.tx;
-        lex.n();
+        lex.n;
         switch (tx) {
             case "matrix":
 
@@ -117,7 +117,7 @@ function ParseString(string, transform) {
             case "perspective":
                 break;
         }
-        lex.n();
+        lex.n;
     }
 }
 // A 2D transform compisition of 2D position, 2D scale, and 1D rotation.

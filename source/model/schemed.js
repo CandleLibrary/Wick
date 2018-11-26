@@ -216,7 +216,7 @@ class SchemedModel extends ModelBase {
         return this._changed_;
     }
 
-    _destroy_() { this.root = null; }
+    destroy() { this.root = null; }
 
     _createProp_() {}
 }

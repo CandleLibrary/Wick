@@ -222,7 +222,7 @@ export const LinkedList = {
              * @param      {HTMLNode}  node    The node to get the sibling of.
              * @return {HTMLNode | TextNode | undefined}
              */
-            getN: function(node = this.fch) {
+            getNextChild: function(node = this.fch) {
                 if (node && node.nxt != this.fch && this.fch)
                     return node.nxt;
                 return null;

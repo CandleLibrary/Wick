@@ -7,7 +7,7 @@ export class Source extends View {
 
     /**
      *   In the Wick dynamic template system, Sources serve as the primary access to Model data. They, along with {@link SourceTemplate}s, are the only types of objects the directly _bind_ to a Model. When a Model is updated, the Source will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link SourceTemplate}s.
-     *   A Source will also _bind_ to an HTML element. It has no methodes to _update_ the element, but it's descendants, primarily instances of the {@link IO} class, can _update_ attributes and values of then element and its sub-elements.
+     *   A Source will also _bind_ to an HTML element. It has no methodes to update the element, but it's descendants, primarily instances of the {@link IO} class, can update attributes and values of then element and its sub-elements.
      *   @param {Source} parent - The parent {@link Source}, used internally to build a hierarchy of Sources.
      *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
      *   @param {Presets} presets - An instance of the {@link Presets} object.
@@ -31,16 +31,16 @@ export class Source extends View {
 
         this.parent = parent;
         this.ele = element;
-        this._presets_ = presets;
-        this._model_ = null;
-        this._statics_ = null;
+        this.presets = presets;
+        this.model = null;
+        this.statics = null;
 
         this.taps = {};
         this.update_tap = null;
         this.children = [];
         this.sources = [];
         this.badges = {};
-        this._ios_ = [];
+        this.ios = [];
         this.templates = [];
         this.hooks = [];
 
@@ -53,11 +53,11 @@ export class Source extends View {
         this.addToParent();
     }
 
-    _destroy_() {
+    destroy() {
 
         this.DESTROYED = true;
 
-        this._update_({ destroyed: true });
+        this.update({ destroyed: true });
 
         if (this.LOADED) {
             this.LOADED = false;
@@ -72,13 +72,13 @@ export class Source extends View {
             }
             */
             if (t > 0)
-                return setTimeout(() => { this._destroy_(); }, t * 1000 + 5);
+                return setTimeout(() => { this.destroy(); }, t * 1000 + 5);
         }
 
         if (this.parent && this.parent.removeSource)
             this.parent.removeSource(this);
         //this.finalizeTransitionOut();
-        this.children.forEach((c) => c._destroy_());
+        this.children.forEach((c) => c.destroy());
         this.children.length = 0;
         this.data = null;
 
@@ -88,10 +88,10 @@ export class Source extends View {
         this.ele = null;
 
         for (let i = 0, l = this.sources.length; i < l; i++)
-            this.sources[i]._destroy_();
+            this.sources[i].destroy();
 
 
-        super._destroy_();
+        super.destroy();
 
     }
 
@@ -129,9 +129,9 @@ export class Source extends View {
     }
 
     removeIO(io) {
-        for (let i = 0; i < this._ios_.length; i++)
-            if (this._ios_[i] == io)
-                return (this._ios_.splice(i, 1), io.parent = null);
+        for (let i = 0; i < this.ios.length; i++)
+            if (this.ios[i] == io)
+                return (this.ios.splice(i, 1), io.parent = null);
     }
 
     getTap(name) {
@@ -151,7 +151,7 @@ export class Source extends View {
      * match the input array.
      */
 
-    _linkTaps_(tap_list) {
+    linkTaps(tap_list) {
         let out_taps = [];
         for (let i = 0, l = tap_list.length; i < l; i++) {
             let tap = tap_list[i];
@@ -177,12 +177,13 @@ export class Source extends View {
         Sets up Model connection or creates a new Model from a schema.
     */
     load(model) {
+        let m = null, s = null;
 
-        let m = this._presets_.models[this._model_name_];
-
-
-        let s = this._presets_.schemas[this._schema_name_];
-
+      if(this.presets.models)
+            m = this.presets.models[this._model_name_];
+        if(this.presets.schemas)
+            s = this.presets.schemas[this._schema_name_];
+        
         if (m)
             model = m;
         else if (s) {
@@ -200,75 +201,75 @@ export class Source extends View {
         model.addView(this);
 
         for (let name in this.taps)
-            this.taps[name].load(this._model_, false);
+            this.taps[name].load(this.model, false);
 
-        this._update_({ created: true });
+        this.update({ created: true });
     }
 
-    _down_(data, changed_values) {
-        this._update_(data, changed_values, true);
+    down(data, changed_values) {
+        this.update(data, changed_values, true);
     }
 
-    _up_(tap, data, meta) {
+    up(tap, data, meta) {
         if (this.parent)
             this.parent._upImport_(tap._prop_, data, meta, this);
     }
 
     _upImport_(prop_name, data, meta) {
         if (this.taps[prop_name])
-            this.taps[prop_name]._up_(data, meta);
+            this.taps[prop_name].up(data, meta);
     }
 
-    _update_(data, changed_values, IMPORTED = false) {
+    update(data, changed_values, IMPORTED = false) {
 
         if (this.update_tap)
-            this.update_tap._downS_(data, IMPORTED);
+            this.update_tap.downS(data, IMPORTED);
 
         if (changed_values) {
 
             for (let name in changed_values)
                 if (this.taps[name])
-                    this.taps[name]._downS_(data, IMPORTED);
+                    this.taps[name].downS(data, IMPORTED);
         } else
             for (let name in this.taps)
-                this.taps[name]._downS_(data, IMPORTED);
+                this.taps[name].downS(data, IMPORTED);
 
         //        for (let i = 0, l = this.sources.length; i < l; i++)
-        //            this.sources[i]._down_(data, changed_values);
+        //            this.sources[i].down(data, changed_values);
 
         for (let i = 0, l = this.templates.length; i < l; i++)
-            this.templates[i]._down_(data, changed_values);
+            this.templates[i].down(data, changed_values);
     }
 
-    _transitionIn_(transition) {
+    transitionIn(transition) {
 
         if (this.taps.trs_in)
-            this.taps.trs_in._downS_(transition);
+            this.taps.trs_in.downS(transition);
 
         for (let i = 0, l = this.sources.length; i < l; i++)
-            this.sources[i]._transitionIn_(transition);
+            this.sources[i].transitionIn(transition);
 
         for (let i = 0, l = this.templates.length; i < l; i++)
-            this.templates[i]._transitionIn_(transition);
+            this.templates[i].transitionIn(transition);
     }
 
-    _transitionOut_(transition) {
+    transitionOut(transition) {
         if (this.taps.trs_out)
-            this.taps.trs_out._downS_(transition);
+            this.taps.trs_out.downS(transition);
 
         for (let i = 0, l = this.sources.length; i < l; i++)
-            this.sources[i]._transitionOut_(transition);
+            this.sources[i].transitionOut(transition);
 
 
         for (let i = 0, l = this.templates.length; i < l; i++)
-            this.templates[i]._transitionOut_(transition);
+            this.templates[i].transitionOut(transition);
     }
 
-    _bubbleLink_(child) {
+    bubbleLink(child) {
         if (child)
             for (let a in child.badges)
                 this.badges[a] = child.badges[a];
         if (this.parent)
-            this.parent._bubbleLink_(this);
+            this.parent.bubbleLink(this);
     }
 }

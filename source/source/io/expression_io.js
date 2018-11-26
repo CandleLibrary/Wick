@@ -4,6 +4,7 @@ import { TemplateString } from "./io";
 export class ExpressionIO extends TemplateString {
 
     constructor(source, errors, taps, element, binds, func) {
+        
         super(source, errors, taps, element, binds);
         this._expr_function_ = func;
         this._value_ = null;
@@ -11,12 +12,12 @@ export class ExpressionIO extends TemplateString {
         this._bl_ = this.binds.length;
     }
 
-    _destroy_(){
+    destroy(){
         this._expr_function_ = null;
         this._value_ = null;
         this._filter_expression_ = null;
         this._bl_ = null;
-        super._destroy_();
+        super.destroy();
     }
 
     set _IS_A_FILTER_(v) {
@@ -51,7 +52,7 @@ export class ExpressionIO extends TemplateString {
 
     get _IS_A_FILTER_() { return typeof(this._filter_expression_) == "function"; }
 
-    _scheduledUpdate_() {
+    scheduledUpdate() {
         if (this._IS_A_FILTER_) {
             this.ele.update();
         } else {
@@ -61,7 +62,7 @@ export class ExpressionIO extends TemplateString {
                 if(this.binds[i]._value_ === null) return;
                 args.push(this.binds[i]._value_);
             }
-
+            
             this._value_ = this._expr_function_.apply(null, args);
             this.ele.data = this._value_;
         }
@@ -69,7 +70,7 @@ export class ExpressionIO extends TemplateString {
 }
 
 export class InputExpresionIO extends ExpressionIO{
-    _scheduledUpdate_() {
+    scheduledUpdate() {
         if (this._IS_A_FILTER_) {
             this.ele.update();
         } else {

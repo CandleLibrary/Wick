@@ -1,4 +1,4 @@
-import whind from "whind";
+import whind from "@candlefw/whind";
 
 /**
  * wick internals.
@@ -28,7 +28,7 @@ class NR { //Notation Rule
         return !(isNaN(this.r[0]) && isNaN(this.r[1]));
     }
 
-    _parse_(lx, rule, out_val) {
+    parse(lx, rule, out_val) {
         if (typeof(lx) == "string")
             lx = whind(lx);
 
@@ -44,7 +44,7 @@ class NR { //Notation Rule
         for (let j = 0; j < end && !lx.END; j++) {
 
             for (let i = 0, l = this._terms_.length; i < l; i++) {
-                bool = this._terms_[i]._parse_(lx, rule, r);
+                bool = this._terms_[i].parse(lx, rule, r);
                 if (!bool) break;
             }
 
@@ -71,7 +71,7 @@ class AND extends NR {
         outer:
             for (let j = 0; j < end && !lx.END; j++) {
                 for (let i = 0, l = this._terms_.length; i < l; i++)
-                    if (!this._terms_[i]._parse_(lx, rule, r)) return false;
+                    if (!this._terms_[i].parse(lx, rule, r)) return false;
             }
 
         this.sp(r.v, rule);
@@ -88,7 +88,7 @@ class OR extends NR {
             bool = false;
 
             for (let i = 0, l = this._terms_.length; i < l; i++)
-                if (this._terms_[i]._parse_(lx, rule, r)) bool = true;
+                if (this._terms_[i].parse(lx, rule, r)) bool = true;
 
             if (!bool && j < start) {
                 this.sp(r.v, rule);
@@ -110,7 +110,7 @@ class ONE_OF extends NR {
             bool = false;
 
             for (let i = 0, l = this._terms_.length; i < l; i++) {
-                bool = this._terms_[i]._parse_(lx, rule, r);
+                bool = this._terms_[i].parse(lx, rule, r);
                 if (bool) break;
             }
 

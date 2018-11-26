@@ -25,35 +25,35 @@ export class Tap {
         this._source_ = source;
         this._prop_ = prop;
         this._modes_ = modes; // 0 implies keep
-        this._ios_ = [];
+        this.ios = [];
 
         if (modes & IMPORT && source.parent)
-            source.parent.getTap(prop)._ios_.push(this);
+            source.parent.getTap(prop).ios.push(this);
 
     }
 
-    _destroy_() {
+    destroy() {
 
-        for (let i = 0, l = this._ios_.length; i < l; i++)
-            this._ios_[i]._destroy_();
+        for (let i = 0, l = this.ios.length; i < l; i++)
+            this.ios[i].destroy();
 
-        this._ios_ = null;
+        this.ios = null;
         this._source_ = null;
         this._prop_ = null;
         this._modes_ = null;
     }
 
     load(data) {
-        this._downS_(data);
+        this.downS(data);
     }
 
-    _down_(value, meta) {
-        for (let i = 0, l = this._ios_.length; i < l; i++) {
-            this._ios_[i]._down_(value, meta);
+    down(value, meta) {
+        for (let i = 0, l = this.ios.length; i < l; i++) {
+            this.ios[i].down(value, meta);
         }
     }
 
-    _downS_(model, IMPORTED = false) {
+    downS(model, IMPORTED = false) {
         const value = model[this._prop_];
 
         if (typeof(value) !== "undefined") {
@@ -63,31 +63,31 @@ export class Tap {
                     return;
 
                 if ((this._modes_ & PUT) && typeof(value) !== "function") {
-                    this._source_._model_[this._prop_] = value;
+                    this._source_.model[this._prop_] = value;
                 }
 
             }
 
-            for (let i = 0, l = this._ios_.length; i < l; i++) {
-                if (this._ios_[i] instanceof Tap) {
-                    this._ios_[i]._downS_(model, true);
+            for (let i = 0, l = this.ios.length; i < l; i++) {
+                if (this.ios[i] instanceof Tap) {
+                    this.ios[i].downS(model, true);
                 } else
-                    this._ios_[i]._down_(value);
+                    this.ios[i].down(value);
             }
         }
     }
 
-    _up_(value, meta) {
+    up(value, meta) {
 
         if (!(this._modes_ & (EXPORT | PUT)))
-            this._down_(value, meta);
+            this.down(value, meta);
 
         if ((this._modes_ & PUT) && typeof(value) !== "undefined") {
-            this._source_._model_[this._prop_] = value;
+            this._source_.model[this._prop_] = value;
         }
 
         if (this._modes_ & EXPORT)
-            this._source_._up_(this, value, meta);
+            this._source_.up(this, value, meta);
 
 
 
@@ -95,9 +95,9 @@ export class Tap {
 }
 
 export class UpdateTap extends Tap {
-    _downS_(model) {
-        for (let i = 0, l = this._ios_.length; i < l; i++)
-            this._ios_[i]._down_(model);
+    downS(model) {
+        for (let i = 0, l = this.ios.length; i < l; i++)
+            this.ios[i].down(model);
     }
-    _up_() {}
+    up() {}
 }

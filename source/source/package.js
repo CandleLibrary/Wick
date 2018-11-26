@@ -1,7 +1,7 @@
 import { EL, OB, _cloneNode_, _appendChild_ } from "../common/short_names";
 import { SourceManager } from "./manager";
 import { CompileSource } from "./compiler/compiler";
-import whind from "whind";
+import whind from "@candlefw/whind";
 import { Skeleton } from "./skeleton";
 import { RootNode } from "./compiler/nodes/root";
 

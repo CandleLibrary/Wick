@@ -9,11 +9,11 @@ class Getter {
         this.url = url;
         this.FETCH_IN_PROGRESS = false;
         this.rurl = process_data;
-        this ._model_ = null;
+        this .model = null;
     }
 
-    _destroy_() {
-        this ._model_ = null;
+    destroy() {
+        this .model = null;
     }
 
     get(request_object, store_object, secure = true) {
@@ -44,13 +44,13 @@ class Getter {
 
     setModel(model) {
         if (model instanceof Model) {
-            this ._model_ = model;
+            this .model = model;
         }
     }
 
     set(data) {
-        if (this ._model_)
-            this ._model_.add(data);
+        if (this .model)
+            this .model.add(data);
     }
 
     __process_url__(data) {
@@ -83,7 +83,7 @@ class Getter {
         var request = response.target;
 
         //result(request);
-        if (this ._model_) {
+        if (this .model) {
             //should be able to pipe responses as objects created from well formulated data directly into the model.
             this.set(this.parseJson(json, store));
         } else

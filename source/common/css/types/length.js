@@ -1,8 +1,8 @@
 import {CSS_Percentage} from "./percentage";
-import whind from "whind";
+import whind from "@candlefw/whind";
 
 export class CSS_Length extends Number {
-    static _parse_(l, rule, r) {
+    static parse(l, rule, r) {
         let tx = l.tx,
             pky = l.pk.ty;
         if (l.ty == l.types.num || tx == "-" && pky == l.types.num) {
@@ -10,11 +10,11 @@ export class CSS_Length extends Number {
             if (l.ch == "-") {
                 mult = -1;
                 tx = l.p.tx;
-                l.p.n();
+                l.p.n;
             }
             if (l.p.ty == l.types.id) {
                 let id = l.sync().tx;
-                l.n();
+                l.n;
                 return new CSS_Length(parseFloat(tx) * mult, id);
             }
         }
@@ -30,7 +30,7 @@ export class CSS_Length extends Number {
         
         if (typeof(v) == "string") {
             let lex = whind(v);
-            let val = CSS_Length._parse_(lex);
+            let val = CSS_Length.parse(lex);
             if (val) return val;
         }
 

@@ -58,7 +58,7 @@ class CSSRootNode {
 
     * getApplicableSelectors(element, win = window) {
 
-        for (let node = this.fch; node; node = this.getN(node)) {
+        for (let node = this.fch; node; node = this.getNextChild(node)) {
 
             if(node.matchMedia(win)){
                 let gen = node.getApplicableSelectors(element, win);
@@ -75,7 +75,7 @@ class CSSRootNode {
      * @public
      */
     getApplicableRules(element, rule = new R(), win = window) {
-        for (let node = this.fch; node; node = this.getN(node))
+        for (let node = this.fch; node; node = this.getNextChild(node))
             node.getApplicableRules(element, rule, win);
         return rule;
     }
@@ -87,14 +87,14 @@ class CSSRootNode {
      */
     getRule(string) {
         let r = null;
-        for (let node = this.fch; node; node = this.getN(node))
+        for (let node = this.fch; node; node = this.getNextChild(node))
             r = node.getRule(string, r);
         return r;
     }
 
     toString(off = 0) {
         let str = "";
-        for (let node = this.fch; node; node = this.getN(node))
+        for (let node = this.fch; node; node = this.getNextChild(node))
             str += node.toString(off);
         return str;
     }
@@ -113,7 +113,7 @@ class CSSRootNode {
             for (let i = 0; i < this.observers.length; i++) this.observers[i].updatedCSS(this);
     }
 
-    _parse_(lex, root) {
+    parse(lex, root) {
         if (lex.sl > 0) {
 
             if (!root && root !== null) {
@@ -121,7 +121,7 @@ class CSSRootNode {
                 this.pending_build++;
             }
 
-            return this.fch._parse_(lex, this).then(e => {
+            return this.fch.parse(lex, this).then(e => {
                 this._setREADY_();
                 return this;
             });
@@ -176,5 +176,5 @@ const _err_ = "Expecting Identifier";
  * @memberof module:wick.core
  * @alias css
  */
-export const CSSParser = (css_string, root = null) => (root = (!root || !(root instanceof CSSRootNode)) ? new CSSRootNode() : root, root._parse_(whind(css_string, true)));
+export const CSSParser = (css_string, root = null) => (root = (!root || !(root instanceof CSSRootNode)) ? new CSSRootNode() : root, root.parse(whind(css_string, true)));
 CSSParser.types = types;

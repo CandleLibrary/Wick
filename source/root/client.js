@@ -58,7 +58,7 @@ import { ArrayModelContainer } from "../model/container/array";
 import { View } from "../view/view";
 import { SourcePackage } from "../source/package";
 import { Source } from "../source/source";
-import { CompileSource as Compiler } from "../source/compiler/compiler";
+import { CompileSource } from "../source/compiler/compiler";
 import { RootText } from "../source/compiler/nodes/root";
 import { RootNode } from "../source/compiler/nodes/index";
 import { StyleNode } from "../source/compiler/nodes/style";
@@ -68,8 +68,6 @@ import { PackageNode } from "../source/compiler/nodes/package";
 import { SVGNode } from "../source/compiler/nodes/svg";
 import { SourceTemplateNode } from "../source/compiler/nodes/template";
 import { CSSParser, CSSRootNode, CSSSelector, CSSRule } from "../common/css/root";
-import { HTMLParser } from "../common/html/root";
-import { WURL } from "../network/wurl";
 import { Router } from "../network/router";
 import { Animation } from "../animation/animation";
 import { Transitioneer } from "../animation/transitioneer";
@@ -124,8 +122,6 @@ export { anim,
     CSSRootNode, 
     CSSSelector, 
     CSSRule,
-    HTMLParser,
-    WURL,
     Router,
     Animation,
 Transitioneer,

@@ -9,26 +9,26 @@ export class ScriptNode extends VoidNode {
         this._binding_ = null;
     }
 
-    _processTextNodeHook_(lex) {
+    processTextNodeHook(lex) {
         if (this._binding_)
             this._binding_.val = lex.slice();
     }
 
-    _processAttributeHook_(name, lex) {
+    processAttributeHook(name, lex) {
 
         switch (name) {
             case "on":
                 let binding = Template(lex, false);
                 if (binding.type == DYNAMIC_BINDING_ID) {
                     binding.method = SCRIPT;
-                    this._binding_ = this._processTapBinding_(binding);
+                    this._binding_ = this.processTapBinding(binding);
                 }
                 return null;
         }
 
         return { name, value: lex.slice() };
     }
-    _build_(element, source, presets, errors, taps) {
+    build(element, source, presets, errors, taps) {
         if (this._binding_)
             this._binding_._bind_(source, errors, taps, element);
     }

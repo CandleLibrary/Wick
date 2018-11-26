@@ -64,7 +64,7 @@ export function JSExpressionIdentifiers(lex) {
                 }
                 break;
         }
-        lex.n();
+        lex.n;
     }
 
 

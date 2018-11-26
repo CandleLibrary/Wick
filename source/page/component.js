@@ -1,4 +1,4 @@
-import { WURL } from "../network/wurl";
+import URL from "@candlefw/url";
 import { SourcePackage } from "../source/package";
 
 /**
@@ -108,7 +108,7 @@ class Component extends BaseComponent {
         /**
          * The {@link Model} the 
          */
-        this._model_ = null;
+        this.model = null;
 
         /**
          * All {@link Source}s bound to this component from a {@link SourcePackag}.
@@ -137,7 +137,7 @@ class Component extends BaseComponent {
             if (template && template.tagName == "TEMPLATE") {
                 (new SourcePackage(template, presets, false, url)).mount(this.ele, null, presets.options.USE_SHADOW, this);
             } else if (url) {
-                (new WURL(url))
+                (new URL(url))
                 .fetchText()
                     .then(text => {
                         (new SourcePackage(text, presets, false, url)).mount(null, null, presets.options.USE_SHADOW, this);
@@ -162,7 +162,7 @@ class Component extends BaseComponent {
     transitionOut(transitioneer) {
 
         for (let i = 0, l = this.sources.length; i < l; i++)
-            this.sources[i]._transitionOut_({ trs_out: transitioneer });
+            this.sources[i].transitionOut({ trs_out: transitioneer });
 
         if (!this.LOADED || !this.ACTIVE) {
             this.ACTIVE = false;
@@ -182,7 +182,7 @@ class Component extends BaseComponent {
     transitionIn(transitioneer) {
 
         for (let i = 0, l = this.sources.length; i < l; i++)
-            this.sources[i]._transitionIn_({ trs_in: transitioneer });
+            this.sources[i].transitionIn({ trs_in: transitioneer });
 
 
         if (!this.LOADED || this.ACTIVE) {
@@ -231,12 +231,12 @@ class Component extends BaseComponent {
     /**
      * @override
      */
-    handleUrlUpdate(wurl = new WURL("", true)) {
+    handleUrlUpdate(wurl = new URL("", true)) {
 
         let query_data = wurl.getData();
 
         for (let i = 0, l = this.sources.length; i < l; i++)
-            this.sources[i]._update_(query_data, null, true);
+            this.sources[i].update(query_data, null, true);
 
         if (this.wurl_store) {
             let wurl = this.wurl_store;
@@ -248,7 +248,7 @@ class Component extends BaseComponent {
             this.wurl_store = wurl;
     }
 
-    _bubbleLink_() {
+    bubbleLink() {
 
     }
 
@@ -260,7 +260,7 @@ class Component extends BaseComponent {
 
     down(data, src) {
         for (let i = 0, l = this.sources.length; i < l; i++)
-            if (src !== this.sources[i]) this.sources[i]._down_(data);
+            if (src !== this.sources[i]) this.sources[i].down(data);
     }
 }
 

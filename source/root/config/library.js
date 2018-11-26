@@ -35,15 +35,11 @@ import { SourceTemplateNode } from "../../source/compiler/nodes/template";
 //CSS
 import { CSSParser, CSSRootNode, CSSSelector, CSSRule } from "../../common/css/root";
 
-//HTML
-import { HTMLParser } from "../../common/html/root";
-
 //Routing
-import { WURL } from "../../network/wurl";
 import { Router } from "../../network/router";
 
 //Other
-import whind from "whind";
+import whind from "@candlefw/whind";
 import { Animation } from "../../animation/animation";
 import { Transitioneer } from "../../animation/transitioneer";
 import * as Common from "../../common/common";
@@ -94,11 +90,9 @@ const core = {
     animation: Animation,
     view: View,
     css: CSSParser,
-    html: HTMLParser,
     scheme: scheme,
     model: model,
     network: {
-        url: WURL,
         router: Router
         /*,
                 getter: Getter,

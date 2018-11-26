@@ -1,4 +1,5 @@
 import { NumberSchemeConstructor } from "./number.js";
+import whind from "@candlefw/whind"
 
 let scape_date = new Date();
 scape_date.setHours(0);

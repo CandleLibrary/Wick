@@ -4,7 +4,7 @@ import { _SealedProperty_ } from "../common/short_names";
 
 /**
  * The base class which all Model classes extend.
- * @memberof module:wick~internal ._model_
+ * @memberof module:wick~internal .model
  * @alias ModelBase
  */
 class ModelBase {
@@ -24,7 +24,7 @@ class ModelBase {
      *   @protected
      *   @instance
      */
-    _destroy_() {
+    destroy() {
 
         //inform views of the models demise
         var view = this.fv;
@@ -80,9 +80,9 @@ class ModelBase {
      * @throws {Error} throws an error if the value of `view` is not an instance of {@link View}.
      */
     addView(view) {
-        if (view._model_)
-            if (view._model_ !== this) {
-                view._model_.removeView(view);
+        if (view.model)
+            if (view.model !== this) {
+                view.model.removeView(view);
             } else return;
 
         if (this.fv) this.fv.pv = view;
@@ -90,8 +90,8 @@ class ModelBase {
         this.fv = view;
 
         view.pv = null;
-        view._model_ = this;
-        view._update_(this);
+        view.model = this;
+        view.update(this);
     }
 
     /**
@@ -101,7 +101,7 @@ class ModelBase {
     removeView(view) {
         
 
-        if (view._model_ == this) {
+        if (view.model == this) {
             if (view == this.fv)
                 this.fv = view.nx;
 
@@ -135,15 +135,15 @@ class ModelBase {
 
 
     /**
-     * Called by the {@link Scheduler} when if the ModelBase is scheduled for an _update_
+     * Called by the {@link Scheduler} when if the ModelBase is scheduled for an update
      * @param      {number}  step    The step
      */
-    _scheduledUpdate_(step) { this.updateViews(); }
+    scheduledUpdate(step) { this.updateViews(); }
 
 
 
     /**
-     * Calls View#_update_ on every bound View, passing the current state of the ModelBase.
+     * Calls View#update on every bound View, passing the current state of the ModelBase.
      */
     updateViews() {
 
@@ -158,7 +158,7 @@ class ModelBase {
 
         while (view) {
 
-            view._update_(this, o);
+            view.update(this, o);
             view = view.nx;
         }
 

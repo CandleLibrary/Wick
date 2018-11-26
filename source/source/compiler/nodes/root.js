@@ -1,3 +1,5 @@
+import {HTMLNode, TextNode} from "@candlefw/html";
+
 import {
     _appendChild_,
     createElement
@@ -5,10 +7,6 @@ import {
 import {
     Source
 } from "../../source";
-import {
-    HTMLNode,
-    TextNode
-} from "../../../common/html/root";
 import {
     CSSRootNode
 } from "../../../common/css/root";
@@ -40,12 +38,12 @@ import {
 
 
 export class BindingCSSRoot extends CSSRootNode {
-    _getPropertyHook_(value_lex, prop_name, rule) {
+    getPropertyHook(value_lex, prop_name, rule) {
 
         //looking for binding points
         let pk = value_lex.copy();
-        while (!pk.END && ((pk.ch != barrier_a_start || (pk.n().ch != barrier_a_start && pk.ch != barrier_b_start)))) {
-            pk.n();
+        while (!pk.END && ((pk.ch != barrier_a_start || (pk.n.ch != barrier_a_start && pk.ch != barrier_b_start)))) {
+            pk.n;
         }
 
         if (pk.END)
@@ -64,13 +62,13 @@ export class RootText extends TextNode {
         this.binding = binding;
     }
 
-    _build_(element, source, presets, errors, taps) {
+    build(element, source, presets, errors, taps) {
         let ele = document.createTextNode(this.txt);
         this.binding._bind_(source, errors, taps, ele);
         _appendChild_(element, ele);
     }
 
-    _linkCSS_() {}
+    linkCSS() {}
 
     toString(off = 0) {
         return `${("    ").repeat(off)}${this.binding}\n`;
@@ -104,35 +102,35 @@ export class RootNode extends HTMLNode {
 
     /******************************************* STATICS ****************************************************/
 
-    get _statics_() {
+    get statics() {
         if (this.__statics__) return this.__statics__;
 
         if (this.par)
-            return (this.__statics__ = Object.assign({}, this.par._statics_));
+            return (this.__statics__ = Object.assign({}, this.par.statics));
 
         return (this.__statics__ = {});
     }
 
-    set _statics_(statics) {
+    set statics(statics) {
         this.__statics__ = statics;
     }
 
     /******************************************* PRESETS ****************************************************/
 
-    get _presets_() {
+    get presets() {
         if (this.__presets__) return this.__presets__;
-        return this.par._presets_;
+        return this.par.presets;
     }
 
-    set _presets_(preset) {
+    set presets(preset) {
         this.__presets__ = preset;
     }
 
     /****************************************** COMPONENTIZATION *****************************************/
 
-    _mergeComponent_() {
+    mergeComponent() {
 
-        let component = this._presets_.components[this.tag];
+        let component = this.presets.components[this.tag];
 
         if (component) {
             this._merged_ = component;
@@ -142,9 +140,7 @@ export class RootNode extends HTMLNode {
 
     /******************************************* CSS ****************************************************/
 
-    _setCSS_() {}
-
-    _linkCSS_(css, win = window) {
+    linkCSS(css, win = window) {
 
         if (this.css)
             css = this.css;
@@ -191,13 +187,13 @@ export class RootNode extends HTMLNode {
             }
         }
 
-        for (let node = this.fch; node; node = this.getN(node))
-            node._linkCSS_(css, win);
+        for (let node = this.fch; node; node = this.getNextChild(node))
+            node.linkCSS(css, win);
     }
 
-    _setPendingCSS_(css) {
+    setPendingCSS(css) {
         if (this.par)
-            this.par._setPendingCSS_(css);
+            this.par.setPendingCSS(css);
         else{
             if(!this.css)
                 this.css = [];
@@ -211,7 +207,7 @@ export class RootNode extends HTMLNode {
 
         let css = new BindingCSSRoot();
 
-        this._setPendingCSS_(css);
+        this.setPendingCSS(css);
 
         return css;
     }
@@ -230,7 +226,7 @@ export class RootNode extends HTMLNode {
     /******************************************* TAPS ****************************************************/
 
 
-    _getTap_(tap_name) {
+    getTap(tap_name) {
         this.HAS_TAPS = true;
         const l = this.tap_list.length;
         for (let i = 0; i < l; i++)
@@ -247,7 +243,7 @@ export class RootNode extends HTMLNode {
 
 
 
-    _checkTapMethod_(name, lex) {
+    checkTapMethod(name, lex) {
 
         let tap_mode = KEEP; // Puts
 
@@ -277,38 +273,38 @@ export class RootNode extends HTMLNode {
 
             while (!lex.END) {
 
-                this._getTap_(lex.tx)._modes_ |= tap_mode;
+                this.getTap(lex.tx)._modes_ |= tap_mode;
 
-                lex.n();
+                lex.n;
             }
 
             return true;
         }
     }
 
-    _checkTapMethodGate_(name, lex) {
+    checkTapMethodGate(name, lex) {
 
         if (!this.par)
-            return this._checkTapMethod_(name, lex);
+            return this.checkTapMethod(name, lex);
         return false;
     }
 
-    _linkTapBinding_(binding) {
+    linkTapBinding(binding) {
 
-        binding.tap_id = this._getTap_(binding.tap_name).id;
+        binding.tap_id = this.getTap(binding.tap_name).id;
     }
 
-    _delegateTapBinding_(binding, tap_mode) {
+    delegateTapBinding(binding, tap_mode) {
 
         if (this.par)
-            return this.par._processTapBinding_(binding, tap_mode);
+            return this.par.processTapBinding(binding, tap_mode);
 
         return null;
     }
 
-    _processTapBinding_(binding, tap_mode = 0) {
+    processTapBinding(binding, tap_mode = 0) {
 
-        if (this._delegateTapBinding_(binding, tap_mode)) return binding;
+        if (this.delegateTapBinding(binding, tap_mode)) return binding;
 
         if (binding.type === TEMPLATE_BINDING_ID) {
 
@@ -316,10 +312,10 @@ export class RootNode extends HTMLNode {
 
             for (let i = 0, l = _bindings_.length; i < l; i++)
                 if (_bindings_[i].type === DYNAMIC_BINDING_ID)
-                    this._linkTapBinding_(_bindings_[i]);
+                    this.linkTapBinding(_bindings_[i]);
 
         } else if (binding.type === DYNAMIC_BINDING_ID)
-            this._linkTapBinding_(binding);
+            this.linkTapBinding(binding);
 
         return binding;
     }
@@ -342,7 +338,7 @@ export class RootNode extends HTMLNode {
      * @param      {null}  model    The model
      * @return     {null}  { description_of_the_return_value }
      */
-    _build_(element, source, presets, errors, taps, statics, out_ele) {
+    build(element, source, presets, errors, taps, statics, out_ele) {
 
         const out_statics = this.__statics__ || statics;
         let own_out_ele;
@@ -353,7 +349,7 @@ export class RootNode extends HTMLNode {
                 ele: null
             };
 
-            let out_source = this._merged_._build_(element, source, presets, errors, taps, out_statics, own_out_ele);
+            let out_source = this._merged_.build(element, source, presets, errors, taps, out_statics, own_out_ele);
 
             if(!source)
                 source = out_source;            
@@ -378,7 +374,7 @@ export class RootNode extends HTMLNode {
         }
 
         if (this.HAS_TAPS)
-            taps = source._linkTaps_(this.tap_list);
+            taps = source.linkTaps(this.tap_list);
 
         if (own_element) {
 
@@ -394,12 +390,12 @@ export class RootNode extends HTMLNode {
                 attr.binding._bind_(source, errors, taps, own_element, attr.name);
             }
 
-            for (let node = this.fch; node; node = this.getN(node))
-                node._build_(own_element, source, presets, errors, taps, out_statics);
+            for (let node = this.fch; node; node = this.getNextChild(node))
+                node.build(own_element, source, presets, errors, taps, out_statics);
 
         } else {
-            for (let node = this.fch; node; node = this.getN(node))
-                node._build_(element, source, presets, errors, taps, out_statics);
+            for (let node = this.fch; node; node = this.getNextChild(node))
+                node.build(element, source, presets, errors, taps, out_statics);
         }
 
 
@@ -414,7 +410,7 @@ export class RootNode extends HTMLNode {
      * Override this method to tell the parser that `tag` is self closing and to not look for a matching close tag by returning `true`.
      * @param      {string}  tag     The HTML tag
      */
-    _selfClosingTagHook_(tag) {
+    selfClosingTagHook(tag) {
         switch (tag) {
             case "input":
             case "br":
@@ -431,9 +427,9 @@ export class RootNode extends HTMLNode {
         return createElement(this.tag);
     }
 
-    _endOfElementHook_() {
+    endOfElementHook() {
         if (!this.fch) {
-            this._mergeComponent_();
+            this.mergeComponent();
         }
     }
 
@@ -445,7 +441,7 @@ export class RootNode extends HTMLNode {
      * @return     {Object}  `null` or an object to store in this nodes attributes
      * @private
      */
-    _processAttributeHook_(name, lex) {
+    processAttributeHook(name, lex) {
 
         let start = lex.off;
 
@@ -459,9 +455,9 @@ export class RootNode extends HTMLNode {
 
                 if (key.length > 0) {
                     if (lex.tl == lex.sl - lex.off && lex.ty == lex.types.num)
-                        this._statics_[key] = parseFloat(lex.slice());
+                        this.statics[key] = parseFloat(lex.slice());
                     else
-                        this._statics_[key] = lex.slice();
+                        this.statics[key] = lex.slice();
                 }
 
                 return null;
@@ -481,7 +477,7 @@ export class RootNode extends HTMLNode {
             case "c":
                 if (name == "component") {
                     let component_name = lex.tx;
-                    let components = this._presets_.components;
+                    let components = this.presets.components;
                     if (components)
                         components[component_name] = this;
                     return null;
@@ -494,7 +490,7 @@ export class RootNode extends HTMLNode {
                 }
         }
 
-        if (this._checkTapMethodGate_(name, lex))
+        if (this.checkTapMethodGate(name, lex))
             return null;
 
         if ((lex.sl - lex.off) > 0) {
@@ -511,7 +507,7 @@ export class RootNode extends HTMLNode {
             let attr = {
                 name,
                 value: (start < lex.off) ? lex.slice(start) : true,
-                binding: this._processTapBinding_(binding)
+                binding: this.processTapBinding(binding)
             };
             this._bindings_.push(attr);
             return attr;
@@ -533,13 +529,13 @@ export class RootNode extends HTMLNode {
      * @param      {Lexer}    
      * @return     {TextNode}  
      */
-    _processTextNodeHook_(lex) {
+    processTextNodeHook(lex) {
 
         if (lex.sl - lex.pos > 0) {
 
             let binding = Template(lex);
             if (binding)
-                return new RootText(this._processTapBinding_(binding));
+                return new RootText(this.processTapBinding(binding));
         }
 
         return null;

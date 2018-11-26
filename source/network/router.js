@@ -1,4 +1,4 @@
-import { WURL } from "./wurl";
+import {URL as WURL} from "@candlefw/url";
 
 import { PageView } from "../page/page";
 
@@ -59,7 +59,7 @@ export class Router {
         this.elements = {};
         this.component_constructors = presets.custom_sources;
         this.models_constructors = presets.schemas;
-        this._presets_ = presets;
+        this.presets = presets;
         this.current_url = null;
         this.current_query = null;
         this.current_view = null;
@@ -69,7 +69,7 @@ export class Router {
             if (!temp.onclick) temp.onclick = (e) => {
                 let link = e.currentTarget;
                 if (link.origin !== location.origin) return;
-                source._bubbleLink_();
+                source.bubbleLink();
                 e.preventDefault();
                 history.pushState({}, "ignored title", link.href);
                 window.onpopstate();
@@ -393,7 +393,7 @@ export class Router {
                 element.common_components = this.elements[element_id];
             }
 
-            let promise = page.load(this.models_constructors, this.component_constructors, this._presets_, DOM, wurl);
+            let promise = page.load(this.models_constructors, this.component_constructors, this.presets, DOM, wurl);
 
             if (document == DOM)
                 dom_app.innerHTML = "";

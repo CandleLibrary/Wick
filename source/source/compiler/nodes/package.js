@@ -14,27 +14,27 @@ export class PackageNode extends VoidNode {
      * @param      {Lexer}  lex     The lex
      * @private
      */
-    _processTextNodeHook_(lex) {}
+    processTextNodeHook(lex) {}
 
     _ignoreTillHook_() { return true; }
 
-    _endOfElementHook_(lex) {
+    endOfElementHook(lex) {
         let own_lex = lex.copy();
 
         own_lex.off = this._start_;
         own_lex.tl = 0;
-        own_lex.n().sl = lex.off;
+        own_lex.n.sl = lex.off;
 
-        this.par._package_ = new this.SourcePackage(own_lex, this._presets_, false);
+        this.par._package_ = new this.SourcePackage(own_lex, this.presets, false);
 
         if (!this.fch)
-            this._mergeComponent_();
+            this.mergeComponent();
     }
 
-    _mergeComponent_() {
-        let component = this._presets_.components[this.tag];
+    mergeComponent() {
+        let component = this.presets.components[this.tag];
 
         if (component)
-            this.par._package_ = new this.SourcePackage(component, this._presets_, false);
+            this.par._package_ = new this.SourcePackage(component, this.presets, false);
     }
 }

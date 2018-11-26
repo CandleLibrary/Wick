@@ -94,23 +94,16 @@ describe("Wick test suite.", function() {
 
         global.Element = window.Element;
 
-        wick = require("../build/wick.node.js");
+        wick = require("../build/wick-cjs.js");
 
         global.wick = wick;
     });
 
     it("tests", function() {
-        require("./suite/wurl_tests.js")(config);
-        require("./suite/css_tests.js")(config);
-        require("./suite/html_tests.js")(config);
         require("./suite/source_package_tests.js")(config);
         require("./suite/schema_tests.js")(config);
         require("./suite/model_tests.js")(config);
         require("./suite/btmc_tests.js")(config);
-        //describe("Model Container Tests", function(config) {
-        //    require("./suite/mc_tests.js")(config);
-        //    require("./suite/amc_tests.js")(config);
-        //});
         require("./suite/router_tests.js")(config);
     });
 });

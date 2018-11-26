@@ -16,7 +16,7 @@ export class SourceNode extends RootNode {
         this.statics = {};
     }
 
-    _delegateTapBinding_() {
+    delegateTapBinding() {
         return null;
     }
 
@@ -27,13 +27,13 @@ export class SourceNode extends RootNode {
 
         this.css = new BindingCSSRoot();
 
-        this._setPendingCSS_(this.css);
+        this.setPendingCSS(this.css);
 
         return this.css;
     }
 
-    _checkTapMethodGate_(name, lex) {
-        return this._checkTapMethod_(name, lex);
+    checkTapMethodGate(name, lex) {
+        return this.checkTapMethod(name, lex);
     }
 
 
@@ -43,7 +43,7 @@ export class SourceNode extends RootNode {
         return createElement(this.getAttribute("element") || "div");
     }
     
-    _build_(element, source, presets, errors, taps = null, statics = null, out_ele = null) {
+    build(element, source, presets, errors, taps = null, statics = null, out_ele = null) {
 
         let data = {};
 
@@ -123,8 +123,8 @@ export class SourceNode extends RootNode {
             me.hooks.push(hook);
         }
 
-        for (let i = 0, l = this._attributes_.length; i < l; i++) {
-            let attr = this._attributes_[i];
+        for (let i = 0, l = this.attributes.length; i < l; i++) {
+            let attr = this.attributes[i];
 
             if (!attr.value) {
                 //let value = this.par.importAttrib()
@@ -135,12 +135,12 @@ export class SourceNode extends RootNode {
             }
         }
 
-        for (let node = this.fch; node; node = this.getN(node))
-            node._build_(element, me, presets, errors, out_taps, statics);
+        for (let node = this.fch; node; node = this.getNextChild(node))
+            node.build(element, me, presets, errors, out_taps, statics);
 
         if (statics) {
-            me._statics_ = statics;
-            me._update_(statics);
+            me.statics = statics;
+            me.update(statics);
         }
 
 
@@ -149,7 +149,7 @@ export class SourceNode extends RootNode {
 
     /******************************************* HOOKS ****************************************************/
 
-    _endOfElementHook_() {}
+    endOfElementHook() {}
 
     /**
      * Pulls Schema, Model, or tap method information from the attributes of the tag. 
@@ -158,7 +158,7 @@ export class SourceNode extends RootNode {
      * @param      {Lexer}  lex     The lex
      * @return     {Object}  Key value pair.
      */
-    _processAttributeHook_(name, lex, value) {
+    processAttributeHook(name, lex, value) {
         let start = lex.off;
 
         switch (name[0]) {
@@ -167,30 +167,30 @@ export class SourceNode extends RootNode {
 
                 if (key.length > 0) {
                     if (lex.tl == lex.sl - lex.off && lex.ty == lex.types.num)
-                        this._statics_[key] = parseFloat(lex.slice());
+                        this.statics[key] = parseFloat(lex.slice());
                     else
-                        this._statics_[key] = lex.slice();
+                        this.statics[key] = lex.slice();
                 }
 
                 return null;
             case "m":
                 if (name == "model") {
                     this._model_name_ = lex.slice();
-                    lex.n();
+                    lex.n;
                     return null;
                 }
                 break;
             case "s":
                 if (name == "schema") {
                     this._schema_name_ = lex.slice();
-                    lex.n();
+                    lex.n;
                     return null;
                 }
                 break;
             case "c":
                 if (name == "component") {
                     let component_name = lex.tx;
-                    let components = this._presets_.components;
+                    let components = this.presets.components;
                     if (components)
                         components[component_name] = this;
                     return null;
@@ -203,12 +203,12 @@ export class SourceNode extends RootNode {
                 }
                 break;
             default:
-                if (this._checkTapMethodGate_(name, lex))
+                if (this.checkTapMethodGate(name, lex))
                     return null;
         }
 
         //return { name, value: lex.slice() };
-        //return super._processAttributeHook_(name, lex, value);
+        //return super.processAttributeHook(name, lex, value);
         if ((lex.sl - lex.off) > 0) {
             let binding = Template(lex, true);
             if (!binding) {
@@ -222,7 +222,7 @@ export class SourceNode extends RootNode {
             let attr = {
                 name,
                 value: (start < lex.off) ? lex.slice(start) : true,
-                binding: this._processTapBinding_(binding)
+                binding: this.processTapBinding(binding)
             };
             this._bindings_.push(attr);
             return attr;

@@ -1,6 +1,6 @@
 export class CSS_Percentage extends Number {
     
-    static _parse_(l, rule, r) {
+    static parse(l, rule, r) {
         let tx = l.tx,
             pky = l.pk.ty;
 
@@ -10,11 +10,11 @@ export class CSS_Percentage extends Number {
             if (l.ch == "-") {
                 mult = -1;
                 tx = l.p.tx;
-                l.p.n();
+                l.p.n;
             }
 
             if (l.p.ch == "%") {
-                l.sync().n();
+                l.sync().n;
                 return new CSS_Percentage(parseFloat(tx) * mult);
             }
         }
@@ -25,7 +25,7 @@ export class CSS_Percentage extends Number {
 
         if (typeof(v) == "string") {
             let lex = whind(v);
-            let val = CSS_Percentage._parse_(lex);
+            let val = CSS_Percentage.parse(lex);
             if (val) 
                 return val;
         }

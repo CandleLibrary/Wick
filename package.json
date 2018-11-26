@@ -1,6 +1,6 @@
 {
   "name": "@galactrax/wick",
-  "version": "0.4.8a",
+  "version": "0.5.0a",
   "description": "PWA Framework",
   "main": "./build/wick-es.js",
   "watch": {
@@ -9,7 +9,7 @@
   "scripts": {
     "prepare": "npm run build",
     "test": "nyc mocha",
-    "test.watch": "mocha -w --check-leaks -R min",
+    "test.watch": "mocha -r esm -w --check-leaks -R min",
     "build-css": "rollup --config ./build/config/css.config.js",
     "build-html": "rollup --config ./build/config/html.config.js",
     "build-anim": "rollup --config ./build/config/anim.config.js",
@@ -55,6 +55,7 @@
   "devDependencies": {
     "benchmark": "^2.1.4",
     "chai": "^4.1.2",
+    "esm": "^3.0.84",
     "expect": "^23.4.0",
     "jquery": "^3.3.1",
     "jsdoc": "^3.5.5",
@@ -68,13 +69,16 @@
     "rollup-plugin-gzip": "^1.4.0",
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-resolve": "0.0.1-predev.1",
-    "rollup-plugin-terser": "^1.0.1",
-    "whind": "0.0.1"
+    "rollup-plugin-terser": "^1.0.1"
   },
   "jshintConfig": {
     "esversion": 6,
     "unused": true
   },
   "optionalDependencies": {},
-  "dependencies": {}
+  "dependencies": {
+    "@candlefw/html": "0.0.2",
+    "@candlefw/url": "0.0.2",
+    "@candlefw/whind": "^0.2.4"
+  }
 }

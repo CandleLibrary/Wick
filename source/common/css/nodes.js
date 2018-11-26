@@ -1,4 +1,4 @@
-import whind from "whind";
+import whind from "@candlefw/whind";
 
 import { property_definitions } from "./properties/property_and_type_definitions";
 

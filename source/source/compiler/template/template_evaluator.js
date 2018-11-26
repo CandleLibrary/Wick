@@ -24,6 +24,7 @@ function processExpression(lex, binds) {
      * "return (implied)" name ? "User has a name!" : "User does not have a name!"
      * ```
      */
+     
     const bind_ids = [];
 
     const function_string = lex.slice();
@@ -87,15 +88,15 @@ export function evaluate(lex, EVENT = false) {
                     } //create text node
 
 
-                    lex.sync().n();
+                    lex.sync().n;
                     lex.IWS = true; // Do not produce white space tokens during this portion.
                     let pk = lex.pk;
                     let Message= false;
 
 
-                    while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end && pk.p.ch !== barrier_a_start) || (pk.p.n().ch === barrier_a_end))) { 
+                    while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end && pk.p.ch !== barrier_a_start) || (pk.p.n.ch === barrier_a_end))) { 
                         let prev = pk.ch;
-                        pk.n(); 
+                        pk.n; 
                         if(pk.ch == barrier_a_start && prev == barrier_a_end)
                             Message =true;
                     }
@@ -124,7 +125,7 @@ export function evaluate(lex, EVENT = false) {
                         let binding = new DynamicBinding();
                         binding.tap_name = id;
                         let index = binds.push(binding) - 1;
-                        lex.n().a(sentinel);
+                        lex.n.a(sentinel);
 
                         if (EVENT) {
                             /***************************** Looking for Event Bindings ******************************************/
@@ -139,9 +140,9 @@ export function evaluate(lex, EVENT = false) {
 
                                 let pk = lex.pk;
 
-                                while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end))) { pk.n(); }
+                                while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end))) { pk.n; }
 
-                                lex.n();
+                                lex.n;
 
                                 if (lex.tl < pk.off - lex.off || BannedIdentifiers[lex.tx]) {
 
@@ -182,7 +183,7 @@ export function evaluate(lex, EVENT = false) {
                                             binding.tap_name = id;
                                         }
                                         binds[index].bind = binding;
-                                        lex.n();
+                                        lex.n;
                                     }
                                     lex.a(sentinel);
                                 }
@@ -200,7 +201,7 @@ export function evaluate(lex, EVENT = false) {
                 }
                 break;
         }
-        lex.n();
+        lex.n;
     }
 
     if (start < lex.off) {
@@ -211,7 +212,7 @@ export function evaluate(lex, EVENT = false) {
 
         let DATA_END = start;
 
-        while (!lex.n().END)
+        while (!lex.n.END)
             if (!(lex.ty & (lex.types.ws | lex.types.nl)))
                 DATA_END = lex.off + lex.tl;
             

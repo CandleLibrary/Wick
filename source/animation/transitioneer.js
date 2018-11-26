@@ -110,7 +110,7 @@ const Transitioneer = (function() {
             this.OVERRIDE = override;
         }
 
-        _destroy_() {
+        destroy() {
             let removeProps = function(seq) {
 
                 if (!seq.DESTROYED) {
@@ -118,7 +118,7 @@ const Transitioneer = (function() {
                         obj_map.delete(seq.obj);
                 }
 
-                seq._destroy_();
+                seq.destroy();
             };
             this.in_seq.forEach(removeProps);
             this.out_seq.forEach(removeProps);
@@ -145,7 +145,7 @@ const Transitioneer = (function() {
 
             return new Promise((res, rej) => {
                 if (this.duration > 0)
-                    this._scheduledUpdate_(0, 0);
+                    this.scheduledUpdate(0, 0);
                 if (this.duration < 1)
                     return res();
                 this.res = res;
@@ -178,7 +178,7 @@ const Transitioneer = (function() {
             
         }
 
-        _scheduledUpdate_(step, time) {
+        scheduledUpdate(step, time) {
             if (!this.PLAY) return;
 
             this.time += time * this.speed;
@@ -202,7 +202,7 @@ const Transitioneer = (function() {
             if (this.res)
                 this.res();
 
-            this._destroy_();
+            this.destroy();
         }
     }
 

@@ -15,7 +15,7 @@ export class Skeleton {
     */
     constructor(tree, presets) {
         this.tree = tree;
-        this._presets_ = presets;
+        this.presets = presets;
     }
 
 
@@ -56,7 +56,7 @@ export class Skeleton {
         //List of errors generated when building DOM
         let errors = [];
 
-        let source = this.tree._build_(parent_element, parent_source, this._presets_, errors);
+        let source = this.tree.build(parent_element, parent_source, this.presets, errors);
 
         if (errors.length > 0) {
             //TODO!!!!!!Remove all _bindings_ that change Model. 

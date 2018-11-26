@@ -1,3 +1,5 @@
+import URL from "@candlefw/url";
+
 /**
  * Handles the testing of routing, component & element creation, pages and modals.
  */
@@ -14,7 +16,7 @@ function ROUTERTESTS(config) {
         if (!config.BROWSER) {
             let JSDOM = require("jsdom").JSDOM;
             before((done) => {
-                (new wick.core.network.url("/test/data/page.html")).fetchText().then(string => {
+                (new URL("/test/data/page.html")).fetchText().then(string => {
                     let virtualConsole = new (require("jsdom").VirtualConsole)();
                     let dom = new JSDOM(string, {
                         virtualConsole:virtualConsole,

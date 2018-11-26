@@ -1,3 +1,5 @@
+import URL from "@candlefw/url";
+
 function SOURCEPACKAGETESTS(config) {
 
     function appendToDocumentBody(ele) {
@@ -13,7 +15,7 @@ function SOURCEPACKAGETESTS(config) {
     describe('wick.source', function() {
 
         before(() =>
-            (new wick.core.network.url("/test/data/package.html"))
+            (new URL("/test/data/package.html"))
             .fetchText().then(text => {
                 element.innerHTML = text;
             }));
@@ -42,7 +44,7 @@ function SOURCEPACKAGETESTS(config) {
             
 
             it('Constructs a SourcePackage with Model bindings on properly formatted HTML',
-                () => (new wick.core.network.url("/test/data/package.html")).fetchText()
+                () => (new URL("/test/data/package.html")).fetchText()
                 .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
                     let ele = document.createElement("div");
                     source.mount(ele, Any, false);
@@ -52,21 +54,21 @@ function SOURCEPACKAGETESTS(config) {
                     Any.name = "Chesapeak McGee";
                     Any.set({age:22});
                     //Need to wait for update cycle
-                    scheduler._update_();
+                    scheduler.update();
                     ele.children[0].innerHTML.should.equal("Chesapeak McGee");
                     ele.children[1].innerHTML.should.equal("22");
                     Any.age = 44;
-                    scheduler._update_();
-                    scheduler._update_();
-                    scheduler._update_();
-                    scheduler._update_();
-                    scheduler._update_();
+                    scheduler.update();
+                    scheduler.update();
+                    scheduler.update();
+                    scheduler.update();
+                    scheduler.update();
                     ele.children[1].innerHTML.should.equal("44");
                     return true;
                 })));
             
             it('Creates bindings based on JavaScript expressions.',
-                () => (new wick.core.network.url("/test/data/expression.html")).fetchText()
+                () => (new URL("/test/data/expression.html")).fetchText()
                 .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
                     let ele = document.createElement("div");
                     source.mount(ele, Any, false);
@@ -75,20 +77,20 @@ function SOURCEPACKAGETESTS(config) {
                     appendToDocumentBody(ele);
                     Any.name = "Makimbo";
                     Any.age = 38;
-                    scheduler._update_();
-                    scheduler._update_();
+                    scheduler.update();
+                    scheduler.update();
                     ele.children[0].innerHTML.should.equal("Makimbo:38");
                     ele.children[1].innerHTML.should.equal("Youngin");
                     Any.age = 89;
-                    scheduler._update_();
-                    scheduler._update_();
+                    scheduler.update();
+                    scheduler.update();
                     ele.children[1].innerHTML.should.equal("Elder");
                     return true;
                 }))
             );
 
             it('Creates bindings that can send messages.',
-                () => (new wick.core.network.url("/test/data/messaging.html")).fetchText()
+                () => (new URL("/test/data/messaging.html")).fetchText()
                 .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
                     let ele = document.createElement("div");
                     source.mount(ele, Any, false);
@@ -104,18 +106,18 @@ function SOURCEPACKAGETESTS(config) {
                     choiceB.innerHTML.should.equal("Paper");
                     choiceC.innerHTML.should.equal("Scissors");
                     choiceA.click();
-                    scheduler._update_();
-                    scheduler._update_();
+                    scheduler.update();
+                    scheduler.update();
                     children[4].innerHTML.should.equal("Rock");
                     children[0].innerHTML.should.equal("Your choice is: Rock!");
                     choiceB.click();
-                    scheduler._update_();
-                    scheduler._update_();
+                    scheduler.update();
+                    scheduler.update();
                     children[4].innerHTML.should.equal("Paper");
                     children[0].innerHTML.should.equal("Your choice is: Paper!");
                     choiceC.click();
-                    scheduler._update_();
-                    scheduler._update_();
+                    scheduler.update();
+                    scheduler.update();
                     children[4].innerHTML.should.equal("Scissors");
                     children[0].innerHTML.should.equal("Your choice is: Scissors!");
                     return true;
@@ -123,7 +125,7 @@ function SOURCEPACKAGETESTS(config) {
             );
 
             it('Creates SourceTemplates that can bind to Models stored in containers.',
-                () => (new wick.core.network.url("/test/data/source_template.html")).fetchText()
+                () => (new URL("/test/data/source_template.html")).fetchText()
                 .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
                     let ele = document.createElement("div");
                     source.mount(ele, Any, false);
@@ -132,22 +134,22 @@ function SOURCEPACKAGETESTS(config) {
                     ele.children.should.have.lengthOf(1);
                     ele.children[0].children.should.have.lengthOf(2);
                     let container = ele.children[0];
-                    scheduler._update_();
-                    scheduler._update_();
+                    scheduler.update();
+                    scheduler.update();
                     container.children.should.have.lengthOf(2);
                     let childA = container.children[0];
                     let childB = container.children[1];
                     childA.innerHTML.should.equal("Doug is a young person whose age is 18.");
                     childB.innerHTML.should.equal("Carly is an old person whose age is 256.");
-                    scheduler._update_();
-                    scheduler._update_();
+                    scheduler.update();
+                    scheduler.update();
                     
                     Any.users.set({
                         name: "Chevy",
                         age: 13
                     });
-                    scheduler._update_();
-                    scheduler._update_();
+                    scheduler.update();
+                    scheduler.update();
                     let childC = container.children[2];
                     childC.innerHTML.should.equal("Chevy is a young person whose age is 13.");
                     return true;
@@ -155,7 +157,7 @@ function SOURCEPACKAGETESTS(config) {
             );
 
             it('Filters and sorts SourceTemplate elements.',
-                () => (new wick.core.network.url("/test/data/source_template_sort_and_filter.html")).fetchText()
+                () => (new URL("/test/data/source_template_sort_and_filter.html")).fetchText()
                 .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
                     let ele = document.createElement("div");
                     var manager = source.mount(ele, Any, false);
@@ -166,15 +168,15 @@ function SOURCEPACKAGETESTS(config) {
                     st.tagName.should.equal("UL");
                     st.children.should.have.lengthOf(3);
                     manager.emit("filter", "Carly");
-                    scheduler._update_();
-                    scheduler._update_();
-                    scheduler._update_();
+                    scheduler.update();
+                    scheduler.update();
+                    scheduler.update();
                     st.children.should.have.lengthOf(1);
                     st.children[0].innerHTML.should.equal("Carly is an old person whose age is 256.");
                     manager.emit("filter", "");
-                    scheduler._update_();
-                    scheduler._update_();
-                    scheduler._update_();
+                    scheduler.update();
+                    scheduler.update();
+                    scheduler.update();
                     st.children.should.have.lengthOf(3);
 
 
@@ -182,7 +184,7 @@ function SOURCEPACKAGETESTS(config) {
             );
 
             it.skip('Adds transitions effects to SourceTemplate elements.',
-                () => (new wick.core.network.url("/test/data/source_template_transition.html")).fetchText()
+                () => (new URL("/test/data/source_template_transition.html")).fetchText()
                 .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
                     t.slow(10000);
                     t.timeout(10000)
@@ -227,7 +229,7 @@ function SOURCEPACKAGETESTS(config) {
             );
 
             it('Binds messaging to input elements.',
-                () => (new wick.core.network.url("/test/data/form.html")).fetchText()
+                () => (new URL("/test/data/form.html")).fetchText()
                 .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
                     let ele = document.createElement("div");
                     source.mount(ele, Any, false);
@@ -241,8 +243,8 @@ function SOURCEPACKAGETESTS(config) {
                     let input = container.children[0];
                     input.value.should.equal(Any.name);
                     Any.name = "Silverston McGraw";
-                    scheduler._update_();
-                    scheduler._update_();
+                    scheduler.update();
+                    scheduler.update();
 
                 }))
             );
@@ -250,9 +252,9 @@ function SOURCEPACKAGETESTS(config) {
             it('Imports Partial and Complete components from page and from network',
                 () => {
                     let presets = { components: {} };
-                    (new wick.core.network.url("/test/data/markopolo.html")).fetchText()
+                    (new URL("/test/data/markopolo.html")).fetchText()
                         .then(text => wick.source(text, presets, true).then(source1 => {
-                            return (new wick.core.network.url("/test/data/template.html")).fetchText()
+                            return (new URL("/test/data/template.html")).fetchText()
                                 .then(text => wick.source(text, presets, true).then(source => {
                                     let ele = document.createElement("div");
                                     source.mount(ele, Any, false);
@@ -276,7 +278,7 @@ function SOURCEPACKAGETESTS(config) {
             this.timeout(500000);
             let element = "";
 
-            before(() => (new wick.core.network.url("/test/data/performance.html")).fetchText().then(text => {
+            before(() => (new URL("/test/data/performance.html")).fetchText().then(text => {
                 element = text;
             }).catch((e) => console.throw(e)));
 

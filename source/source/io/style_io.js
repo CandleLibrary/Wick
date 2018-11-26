@@ -29,18 +29,18 @@ export class CSSRuleTemplateString {
     constructor(source, errors, taps, binds, name) {
         this.binds = [];
         this._setBindings_(source, errors, taps, binds);
-        this._ios_ = [];
+        this.ios = [];
         this._value_ = "";
         this._name_ = toCamel(name);
     }
 
-    _destroy_() {
+    destroy() {
         for (let i = 0, l = this.binds.length; i < l; i++)
-            this.binds[i]._destroy_();
+            this.binds[i].destroy();
         this.binds = null;
-        for (let i = 0; i < this._ios_.length; i++)
-            this._ios_[i]._destroy_();
-        this._ios_ = null;
+        for (let i = 0; i < this.ios.length; i++)
+            this.ios[i].destroy();
+        this.ios = null;
         this._value_ = null;
         this._name_ = null;
     }
@@ -67,30 +67,30 @@ export class CSSRuleTemplateString {
                     break;
             }
         }
-        this._down_();
+        this.down();
     }
 
     get data() {}
     set data(v) { Scheduler.queueUpdate(this); }
 
-    _down_() { Scheduler.queueUpdate(this); }
+    down() { Scheduler.queueUpdate(this); }
 
-    _scheduledUpdate_() {
+    scheduledUpdate() {
 
         let str = [];
 
         for (let i = 0; i < this.binds.length; i++)
             str.push(this.binds[i]._value_);
         this._value_ = str.join(' ');
-        for (let i = 0, l = this._ios_.length; i < l; i++)
-            this._ios_[i]._updateRule_();
+        for (let i = 0, l = this.ios.length; i < l; i++)
+            this.ios[i]._updateRule_();
     }
 
-    addIO(io) { this._ios_.push(io); }
+    addIO(io) { this.ios.push(io); }
     removeIO(io) {
-        for (let i = 0; i < this._ios_.length; i++) {
-            let own_io = this._ios_[i];
-            if (own_io == io) return void this._ios_.splice(i, 1);
+        for (let i = 0; i < this.ios.length; i++) {
+            let own_io = this.ios[i];
+            if (own_io == io) return void this.ios.splice(i, 1);
         }
     }
 }
@@ -107,15 +107,15 @@ export class StyleIO extends IOBase {
 
         this._initializeProps_(source, errors, taps, props);
 
-        this._scheduledUpdate_();
+        this.scheduledUpdate();
     }
 
-    _destroy_() {
+    destroy() {
         this._template_text_ = null;
         this._rules_text_ = null;
         this.ele = null;
         this.props = null;
-        super._destroy_();
+        super.destroy();
     }
 
     _setRule_(rule){
@@ -150,7 +150,7 @@ export class StyleIO extends IOBase {
     get data() {}
     set data(data) { Scheduler.queueUpdate(this); }
 
-    _scheduledUpdate_() {
+    scheduledUpdate() {
         for (let i = 0; i < this.props.length; i++) {
             let prop = this.props[i];
             this.ele.style[prop._name_] = prop._value_;

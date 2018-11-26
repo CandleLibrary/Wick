@@ -13,34 +13,34 @@ export class FilterIO extends IOBase {
         this.template = template;
         this._activation_function_ = null;
         this._sort_function_ = null;
-        this._filter_function_ = null;
-        this._CAN_USE_ = false;
-        this._CAN_FILTER_ = false;
+        this.filter_function = null;
+        this.CAN_USE = false;
+        this.CAN_FILTER = false;
         this._CAN_LIMIT_ = false;
         this._CAN_OFFSET_ = false;
-        this._CAN_SORT_ = false;
+        this.CAN_SORT = false;
         this._SCHD_ = 0;
 
         if (activation && activation.binding){
             this._activation_function_ = activation.binding._bind_(source, errors, taps, this);
         } else{
-            this._CAN_USE_ = true;
+            this.CAN_USE = true;
         }
 
         if (sort && sort.binding) {
             let expr = sort.binding;
             if (expr_check(expr)){
                 this._sort_function_ = (m1, m2) => expr.func(m1.model, m2.model);
-                this._CAN_SORT_ = true;
+                this.CAN_SORT = true;
             } 
         }else
 
         if (filter && filter.binding) {
             let expr = filter.binding;
             if (expr_check(expr)){
-                this._filter_function_ = expr._bind_(source, errors, taps, this);
-                this._filter_function_._IS_A_FILTER_ = true;
-                this._CAN_FILTER_ = true;  
+                this.filter_function = expr._bind_(source, errors, taps, this);
+                this.filter_function._IS_A_FILTER_ = true;
+                this.CAN_FILTER = true;  
             } 
         }else
 
@@ -77,39 +77,39 @@ export class FilterIO extends IOBase {
         }
     }
 
-    _scheduledUpdate_() {}
+    scheduledUpdate() {}
     
     update(){
-        if(this._CAN_SORT_ || this._CAN_FILTER_){
+        if(this.CAN_SORT || this.CAN_FILTER){
             this.template.UPDATE_FILTER = true;
             Scheduler.queueUpdate(this.template);
         }
     }
 
-    _destroy_() {
+    destroy() {
         if (this._sort_function_)
-            this._sort_function_._destroy_();
+            this._sort_function_.destroy();
         if (this._activation_function_)
-            this._activation_function_._destroy_();
-        if (this._filter_function_)
-            this._filter_function_._destroy_();
+            this._activation_function_.destroy();
+        if (this.filter_function)
+            this.filter_function.destroy();
         this._sort_function_ = null;
         this._activation_function_ = null;
-        this._filter_function_ = null;
+        this.filter_function = null;
         this.template = null;
     }
 
     get data() {}
     set data(v) {
 
-        this._CAN_USE_ = false;
-        if (v) this._CAN_USE_ = true;
+        this.CAN_USE = false;
+        if (v) this.CAN_USE = true;
         this._value_ = v;
 
         if(this._CAN_SCRUB_)
             return this.template.scrub(this._value_, false);
         
-        if(this._CAN_SORT_ || this._CAN_FILTER_ || this._CAN_SHIFT_)
+        if(this.CAN_SORT || this.CAN_FILTER || this._CAN_SHIFT_)
             this.template.UPDATE_FILTER = true;
         
         Scheduler.queueUpdate(this.template);

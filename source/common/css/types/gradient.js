@@ -23,24 +23,24 @@ class Stop{
 
 export class CSS_Gradient{
 
-	static _parse_(l, rule, r) {
+	static parse(l, rule, r) {
         let tx = l.tx,
             pky = l.pk.ty;
         if (l.ty == l.types.id) {
         	switch(l.tx){
         		case "linear-gradient":
-        		l.n().a("(");
+        		l.n.a("(");
         		let dir,num,type ="deg";
         		if(l.tx == "to"){
 
         		}else if(l.ty == l.types.num){
         			num = parseFloat(l.ty);
-        			type = l.n().tx;
-        			l.n().a(',');
+        			type = l.n.tx;
+        			l.n.a(',');
         		}
         		let stops = [];
         		while(!l.END && l.ch != ")"){
-        			let v = CSS_Color._parse_(l, rule, r);
+        			let v = CSS_Color.parse(l, rule, r);
         			let len = null;
 
         			if(l.ch == ")") {
@@ -49,10 +49,10 @@ export class CSS_Gradient{
         			}
         			
         			if(l.ch != ","){
-	        			if(!(len = CSS_Length._parse_(l, rule, r)))
-	        				len = CSS_Percentage._parse_(l,rule,r);
+	        			if(!(len = CSS_Length.parse(l, rule, r)))
+	        				len = CSS_Percentage.parse(l,rule,r);
         			}else{
-        				l.n();
+        				l.n;
         			}
 
         			stops.push(new Stop(v, len));

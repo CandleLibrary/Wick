@@ -1,3 +1,5 @@
+import URL from "@candlefw/url";
+
 function MODELTESTS(config) {
     let scheduler = wick.internals.scheduler;
     describe('wick.model', function() {
@@ -12,7 +14,7 @@ function MODELTESTS(config) {
 
 
             let listener = {
-                _update_: (data) => {
+                update: (data) => {
                     data.name.should.equal("bob");
                 }
             };
@@ -30,7 +32,7 @@ function MODELTESTS(config) {
             model.nationality.should.equal("Canadian");
 
             let listener = {
-                _update_: (data) => {
+                update: (data) => {
                     data.name.should.equal("bob");
                 }
             };
@@ -38,17 +40,17 @@ function MODELTESTS(config) {
             model.addListener(listener);
 
 
-            scheduler._update_();
+            scheduler.update();
 
             let clone = model.clone();
 
             clone.name = "mark";
 
-            listener._update_ = (data) => {
+            listener.update = (data) => {
                 data.name.should.equal('mark');
             };
 
-            scheduler._update_();
+            scheduler.update();
 
             model.name.should.equal("bob");
         });
@@ -71,21 +73,21 @@ function MODELTESTS(config) {
                 }
             });
 
-            scheduler._update_();
+            scheduler.update();
 
             let listener = {
-                _update_: (data) => data.user.nationality.should.equal("Japanese")
+                update: (data) => data.user.nationality.should.equal("Japanese")
             };
 
             modelB.addListener(listener);
 
             modelA.nationality.should.equal("Japanese");
 
-            scheduler._update_();
+            scheduler.update();
 
-            listener._update_ = (data) => data.user.nationality.should.equal("Bermudian");
+            listener.update = (data) => data.user.nationality.should.equal("Bermudian");
 
-            scheduler._update_();
+            scheduler.update();
 
             modelA.nationality = "Bermudian";
 
@@ -168,7 +170,7 @@ function MODELTESTS(config) {
             User.prototype.getHook = function(prop_name, data) {
                 if (!this.LOADED) {
 
-                    (new wick.core.network.url("/test/data/user.json"))
+                    (new URL("/test/data/user.json"))
 
                     .fetchText().then(txt => {
 
@@ -188,7 +190,7 @@ function MODELTESTS(config) {
 
             let view = new wick.core.view();
 
-            view._update_ = function(data) {
+            view.update = function(data) {
                 if (data.age) {
                     data.age.should.equal(25);
                     data.name.should.equal("tom");

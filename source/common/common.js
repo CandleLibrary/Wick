@@ -1,4 +1,4 @@
-import * as Lexer from "whind";
+import * as Lexer from "@candlefw/whind";
 
 //Math
 import {QBezier} from "./math/quadratic_bezier";
