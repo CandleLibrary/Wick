@@ -1,4 +1,5 @@
 import {CSS_Percentage} from "./percentage";
+import whind from "whind";
 
 export class CSS_Length extends Number {
     static _parse_(l, rule, r) {

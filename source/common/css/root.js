@@ -127,6 +127,29 @@ class CSSRootNode {
             });
         }
     }
+
+    merge(inCSSRootNode){
+        if(inCSSRootNode instanceof CSSRootNode){
+            
+            let children = inCSSRootNode.children;
+            outer:
+            for(let i = 0; i < children.length; i++){
+                //determine if this child matches any existing selectors
+                let child = children[i];
+                
+                for(let i = 0; i < this.children.length; i++){
+                    let own_child = this.children[i];
+
+                    if(own_child.isSame(child)){
+                        own_child.merge(child);
+                        continue outer;
+                    }
+                }
+
+                this.children.push(child);
+            }
+        }
+    }
 }
 
 /**

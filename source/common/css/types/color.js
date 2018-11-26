@@ -49,7 +49,7 @@ export class CSS_Color extends Color {
 
         let c;
 
-        if (!(l instanceof whind.constructor))
+        if (typeof(l) == "string")
             l = whind(l);
 
         let out = null;

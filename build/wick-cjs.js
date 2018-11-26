@@ -5075,7 +5075,6 @@ const HTML = 0;
 const TEXT = 1;
 const offset = "    ";
 
-
 /**
  * An AST node for text data.
  * @param  {string}  str     The text value of the node.
@@ -6026,7 +6025,7 @@ class CSS_Color extends Color {
 
         let c;
 
-        if (!(l instanceof whind$1.constructor))
+        if (typeof(l) == "string")
             l = whind$1(l);
 
         let out = null;
@@ -6337,7 +6336,7 @@ class CSS_Length extends Number {
     constructor(v, u = "") {
         
         if (typeof(v) == "string") {
-            let lex = whind(v);
+            let lex = whind$1(v);
             let val = CSS_Length._parse_(lex);
             if (val) return val;
         }
@@ -8265,6 +8264,22 @@ class CSSRuleBody {
 
             return res(this);
         });
+        
+    }
+
+    isSame(inCSSRuleBody){
+        if(inCSSRuleBody instanceof CSSRuleBody){
+            if(this.media_selector){
+                if(inCSSRuleBody.media_selector)
+                    debugger;
+            }else if(!inCSSRuleBody.media_selector)
+                    return true;
+        }
+        return false;
+    }
+
+    merge(inCSSRuleBody){
+        this._parse_(whind$1(inCSSRuleBody + ""));
     }
 
     /**
@@ -8449,6 +8464,29 @@ class CSSRootNode {
                 this._setREADY_();
                 return this;
             });
+        }
+    }
+
+    merge(inCSSRootNode){
+        if(inCSSRootNode instanceof CSSRootNode){
+            
+            let children = inCSSRootNode.children;
+            outer:
+            for(let i = 0; i < children.length; i++){
+                //determine if this child matches any existing selectors
+                let child = children[i];
+                
+                for(let i = 0; i < this.children.length; i++){
+                    let own_child = this.children[i];
+
+                    if(own_child.isSame(child)){
+                        own_child.merge(child);
+                        continue outer;
+                    }
+                }
+
+                this.children.push(child);
+            }
         }
     }
 }

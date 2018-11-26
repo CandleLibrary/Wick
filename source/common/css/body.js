@@ -469,6 +469,22 @@ export class CSSRuleBody {
 
             return res(this);
         });
+        
+    }
+
+    isSame(inCSSRuleBody){
+        if(inCSSRuleBody instanceof CSSRuleBody){
+            if(this.media_selector){
+                if(inCSSRuleBody.media_selector)
+                    debugger;
+            }else if(!inCSSRuleBody.media_selector)
+                    return true;
+        }
+        return false;
+    }
+
+    merge(inCSSRuleBody){
+        this._parse_(whind(inCSSRuleBody + ""));
     }
 
     /**

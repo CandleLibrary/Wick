@@ -4,6 +4,30 @@
 		"selected_items":
 		[
 			[
+				"med",
+				"media_selector"
+			],
+			[
+				"chil",
+				"children"
+			],
+			[
+				"in",
+				"inCSSRootNode"
+			],
+			[
+				"CSSr",
+				"CSSRootNode"
+			],
+			[
+				"CSSRule",
+				"CSSRuleBody"
+			],
+			[
+				"flame",
+				"flame_dev"
+			],
+			[
 				"new",
 				"new_path"
 			],
@@ -490,66 +514,91 @@
 			[
 				"ins",
 				"insert"
-			],
-			[
-				"propert",
-				"property"
-			],
-			[
-				"proper",
-				"property"
-			],
-			[
-				"changed",
-				"changed_values"
-			],
-			[
-				"oup",
-				"outputs"
-			],
-			[
-				"fil",
-				"filterUpdate"
-			],
-			[
-				"ou",
-				"output"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "source/root/config/library.js",
+			"file": "test/test.js",
 			"settings":
 			{
-				"buffer_size": 4276,
-				"encoding": "UTF-8",
+				"buffer_size": 2895,
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "source/common/css/properties/property_and_type_definitions.js",
+			"file": "test/suite/css_tests.js",
 			"settings":
 			{
-				"buffer_size": 12862,
+				"buffer_size": 4080,
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "source/common/css/body.js",
+			"file": "source/common/math/cubic_bezier.js",
 			"settings":
 			{
-				"buffer_size": 19877,
+				"buffer_size": 5109,
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "source/common/css/nodes.js",
+			"file": "source/common/math/quadratic_bezier.js",
 			"settings":
 			{
-				"buffer_size": 2762,
+				"buffer_size": 6201,
 				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "package.json",
+			"settings":
+			{
+				"buffer_size": 2630,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "Searching 98 files for \".sl\" (whole word)\n\n/home/cinder1/work/wick/source/common/css/root.js:\n  115  \n  116      _parse_(lex, root) {\n  117:         if (lex.sl > 0) {\n  118  \n  119              if (!root && root !== null) {\n\n/home/cinder1/work/wick/source/common/html/root.js:\n  327              other_lex.off = start - 1;\n  328              other_lex.tl = 1;\n  329:             other_lex.sl = end;\n  330              other_lex.n();\n  331              let text_node = this._processTextNodeHook_(other_lex, true);\n  ...\n  341              other_lex.IWS = true;\n  342  \n  343:             if ((other_lex.sl - other_lex.off) < 2)\n  344                  debugger;\n  345  \n  ...\n  391              let out_lex = lex.copy();\n  392              \n  393:             out_lex.sl = lex.off;\n  394  \n  395              if (lex.ch == \"=\") {\n  ...\n  415                          out_lex.tl = 1;\n  416                          out_lex.n();\n  417:                         out_lex.sl = lex.pos + lex.tl - 1;\n  418                          lex.n();\n  419                      } else {\n\n/home/cinder1/work/wick/source/source/compiler/nodes/root.js:\n  459  \n  460                  if (key.length > 0) {\n  461:                     if (lex.tl == lex.sl - lex.off && lex.ty == lex.types.num)\n  462                          this._statics_[key] = parseFloat(lex.slice());\n  463                      else\n  ...\n  498              return null;\n  499  \n  500:         if ((lex.sl - lex.off) > 0) {\n  501              let binding = Template(lex, FOR_EVENT);\n  502              if (!binding) {\n  ...\n  536      _processTextNodeHook_(lex) {\n  537  \n  538:         if (lex.sl - lex.pos > 0) {\n  539  \n  540              let binding = Template(lex);\n\n/home/cinder1/work/wick/source/source/compiler/nodes/source.js:\n  167  \n  168                  if (key.length > 0) {\n  169:                     if (lex.tl == lex.sl - lex.off && lex.ty == lex.types.num)\n  170                          this._statics_[key] = parseFloat(lex.slice());\n  171                      else\n  ...\n  210          //return { name, value: lex.slice() };\n  211          //return super._processAttributeHook_(name, lex, value);\n  212:         if ((lex.sl - lex.off) > 0) {\n  213              let binding = Template(lex, true);\n  214              if (!binding) {\n\n/home/cinder1/work/wick/source/source/compiler/template/template_evaluator.js:\n  217              \n  218          if (DATA_END > start) {\n  219:             lex.sl = DATA_END;\n  220              binds.push(new RawValueBinding(lex.slice(start)));\n  221          }\n\n11 matches across 5 files\n\n\nSearching 98 files for \"createHTMLNodeHook\" (whole word)\n\n/home/cinder1/work/wick/source/common/html/root.js:\n  559  \n  560                              //New Child node found\n  561:                             let node = this.createHTMLNodeHook(lex.pk.tx, lex.off);\n  562  \n  563                              this.addC(node);\n  ...\n  663       */\n  664      \n  665: createHTMLNodeHook(tag, start) { return new HTMLNode(tag); }\n  666  \n  667  \n\n/home/cinder1/work/wick/source/source/compiler/nodes/index.js:\n   40  }\n   41  \n   42: RootNode.prototype.createHTMLNodeHook = CreateHTMLNode;\n   43  \n   44  export { RootNode, CreateHTMLNode };\n\n/home/cinder1/work/wick/source/source/compiler/nodes/svg.js:\n   10      }\n   11  \n   12:     createHTMLNodeHook(tag) {\n   13      \tconsole.log(tag)\n   14          //jump table.\n\n/home/cinder1/work/wick/source/source/compiler/nodes/template.js:\n   78  \n   79      \n   80: createHTMLNodeHook(tag, start) {\n   81          \n   82          switch (tag) {\n\n5 matches across 4 files\n",
+			"settings":
+			{
+				"buffer_size": 3607,
+				"line_ending": "Unix",
+				"name": "Find Results",
+				"scratch": true
+			}
+		},
+		{
+			"file": "source/source/compiler/nodes/template.js",
+			"settings":
+			{
+				"buffer_size": 3611,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "source/common/math/point2D.js",
+			"settings":
+			{
+				"buffer_size": 560,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "wick.sublime-project",
+			"settings":
+			{
+				"buffer_size": 496,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/cinder1/work/wax/whind/package.json",
+			"settings":
+			{
+				"buffer_size": 870,
+				"line_ending": "Unix"
 			}
 		}
 	],
@@ -609,15 +658,33 @@
 	],
 	"file_history":
 	[
-		"/home/cinder1/work/wick/source/root/client.js",
-		"/home/cinder1/work/wick/source/source/compiler/nodes/root.js",
-		"/home/cinder1/work/wick/source/source/compiler/compiler.js",
-		"/home/cinder1/work/wick/source/common/css/body.js",
+		"/home/cinder1/work/wax/ll/.git/COMMIT_EDITMSG",
+		"/home/cinder1/work/wick/test/suite/wurl_tests.js",
+		"/home/cinder1/work/wick/test/test.js",
+		"/home/cinder1/work/wick/package.json",
 		"/home/cinder1/work/wick/build/config/config.js",
+		"/home/cinder1/work/wick/source/network/wurl.js",
+		"/home/cinder1/work/wick/source/common/extends/ll.js",
+		"/home/cinder1/work/html/root.js",
+		"/home/cinder1/work/wick/test/suite/html_tests.js",
+		"/home/cinder1/work/wax/html/package.json",
+		"/home/cinder1/work/wax/whind/.git/COMMIT_EDITMSG",
+		"/home/cinder1/work/wick/source/common/css/properties/parser.js",
+		"/home/cinder1/work/wick/source/common/css/root.js",
+		"/home/cinder1/work/wick/source/common/css/body.js",
+		"/home/cinder1/work/wick/source/source/compiler/nodes/root.js",
+		"/home/cinder1/work/wick/source/common/css/nodes.js",
+		"/home/cinder1/work/wick/source/root/config/library.js",
+		"/home/cinder1/work/wick/source/root/client.js",
+		"/home/cinder1/work/wick/source/common/css/types/color.js",
+		"/home/cinder1/work/wick/source/common/design/color.js",
+		"/home/cinder1/work/wick/source/model/schemed.js",
+		"/home/cinder1/work/wick/source/common/css/types/length.js",
+		"/usr/local/bin/flame_env.sh",
+		"/home/cinder1/work/wick/source/common/css/properties/property_and_type_definitions.js",
+		"/home/cinder1/work/wick/source/source/compiler/compiler.js",
 		"/home/cinder1/work/wick/test/index.html",
 		"/home/cinder1/work/wick/source/source/compiler/nodes/style.js",
-		"/home/cinder1/work/wick/source/common/css/root.js",
-		"/home/cinder1/work/wick/package.json",
 		"/D/Work/wick/wick.sublime-project",
 		"/D/Work/wick/source/source/compiler/compiler.js",
 		"/D/Work/wick/source/source/compiler/template/template_bindings.js",
@@ -718,35 +785,18 @@
 		"/D/pytrucks/static/js/libraries/wick/docs/meta/ROADMAP.md",
 		"/D/pytrucks/static/js/libraries/wick/source/source/compiler/nodes/style.js",
 		"/D/pytrucks/static/js/libraries/wick/source/source/tap/tap.js",
-		"/D/pytrucks/static/js/libraries/wick/source/source/compiler/nodes/template.js",
-		"/D/pytrucks/static/js/libraries/wick/source/source/io/script_io.js",
-		"/D/pytrucks/static/js/libraries/wick/source/source/compiler/nodes/script.js",
-		"/D/pytrucks/static/js/libraries/wick/source/source/compiler/compiler.js",
-		"/D/pytrucks/static/js/libraries/wick/source/source/compiler/nodes/source.js",
-		"/D/pytrucks/static/js/libraries/wick/source/source/skeleton.js",
-		"/D/pytrucks/static/js/libraries/wick/source/common/css/nodes.js",
-		"/D/pytrucks/.git/COMMIT_EDITMSG",
-		"/D/pytrucks/static/js/libraries/wick/source/common/common.js",
-		"/D/pytrucks/static/js/libraries/wick/test/suite/source_package_tests.js",
-		"/D/pytrucks/static/js/libraries/wick/source/schema/schemas.js",
-		"/D/pytrucks/static/js/libraries/wick/test/suite/schema_tests.js",
-		"/D/pytrucks/static/js/libraries/wick/package.json",
-		"/D/pytrucks/static/js/libraries/wick/build/config/minibuild_es.config.js",
-		"/D/pytrucks/static/js/libraries/wick/build/config/minibuild.config.js",
-		"/D/pytrucks/static/js/libraries/wick/build/config/browserdev.config.js",
-		"/D/pytrucks/static/js/libraries/wick/build/wick-min.js",
-		"/D/pytrucks/static/js/libraries/wick/source/root/client.js",
-		"/D/pytrucks/static/js/libraries/wick/build/wick-dev.js"
+		"/D/pytrucks/static/js/libraries/wick/source/source/compiler/nodes/template.js"
 	],
 	"find":
 	{
-		"height": 45.0
+		"height": 28.0
 	},
 	"find_in_files":
 	{
 		"height": 430.0,
 		"where_history":
 		[
+			"/home/cinder1/work/wick/source/",
 			"D:\\wick\\source",
 			"D:\\pytrucks\\static\\js\\libraries\\wick\\source",
 			"/home/galactrax/wick/source/source",
@@ -758,6 +808,56 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"createHTMLNodeHook",
+			".sl",
+			"Point2D",
+			"internals",
+			"\n * @memberof  module:wick~internals",
+			" * @memberof  module:wick~internals",
+			"wick",
+			"processAtt",
+			"getAttrib",
+			"getCS",
+			"linkCSS",
+			"id",
+			"processAttrib",
+			"attributes",
+			"id",
+			"tinCSSRuleBody",
+			"inCSSRuleBody",
+			"break",
+			"merge",
+			"whind",
+			"parse",
+			"_parse_",
+			"whind",
+			"wick",
+			"charcoal",
+			"work",
+			"wick",
+			"flame",
+			"flame_dev",
+			"flame",
+			"wick_compile",
+			":0",
+			"charcoal",
+			"charcoal_compile",
+			"flame",
+			"wick_compile",
+			"wick",
+			"margin",
+			"display_internal",
+			"display_legacy",
+			"-",
+			"\">",
+			"box\">\"",
+			"\">",
+			"display",
+			"DateSchemeConstructor",
+			"CSSRootNode",
+			"source",
+			"SchemeConstructor",
+			".scheme",
 			"css",
 			"Presets",
 			"../../",
@@ -835,57 +935,7 @@
 			"address",
 			"look_up",
 			".par",
-			"parent",
-			"this",
-			".set(",
-			".set",
-			"console.log",
-			".prop_array",
-			".changed",
-			"false",
-			"scheduleUpdate",
-			".set",
-			"schme",
-			".set",
-			"__setFilters__",
-			"cosnole",
-			"console",
-			"__link__",
-			"conso",
-			"cons",
-			"__link__",
-			"debugger",
-			"scheduleUpdate",
-			"updateViewsAdded",
-			"update",
-			"insert",
-			"updateVi",
-			"_update",
-			"get(",
-			"get (",
-			"transitionOut",
-			"handleUrlUpdate",
-			"false",
-			"components",
-			"NRootnode",
-			"Rootnode",
-			"setLinks",
-			"_createElement_",
-			"Thinking",
-			"updateViewsAdded",
-			");\n",
-			"debugger",
-			"console.log",
-			"CreateSchemedContainer",
-			"this.toString()",
-			"host",
-			"__process_url__",
-			"prop",
-			"getHook",
-			"name",
-			"AnyModelProxySet",
-			"debugger",
-			"addIndex"
+			"parent"
 		],
 		"highlight": false,
 		"in_selection": false,
@@ -900,30 +950,30 @@
 		"reverse": false,
 		"show_context": true,
 		"use_buffer2": true,
-		"whole_word": false,
+		"whole_word": true,
 		"wrap": true
 	},
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 6,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "source/root/config/library.js",
+					"file": "test/test.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4276,
+						"buffer_size": 2895,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3380,
-								3383
+								1546,
+								1546
 							]
 						],
 						"settings":
@@ -933,33 +983,122 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1587.0,
+						"translation.y": 831.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "source/common/css/properties/property_and_type_definitions.js",
+					"file": "test/suite/css_tests.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 12862,
+						"buffer_size": 4080,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								2120,
+								2120
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 540.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "source/common/math/cubic_bezier.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5109,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								308,
+								308
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "source/common/math/quadratic_bezier.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6201,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2491,
+								2491
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1456.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "package.json",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2630,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								771,
+								771
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
+							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
@@ -970,12 +1109,148 @@
 					"type": "text"
 				},
 				{
-					"buffer": 2,
-					"file": "source/common/css/body.js",
+					"buffer": 5,
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 19877,
+						"buffer_size": 3607,
+						"regions":
+						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										156,
+										159
+									],
+									[
+										388,
+										391
+									],
+									[
+										601,
+										604
+									],
+									[
+										765,
+										768
+									],
+									[
+										963,
+										966
+									],
+									[
+										1227,
+										1230
+									],
+									[
+										1448,
+										1451
+									],
+									[
+										1640,
+										1643
+									],
+									[
+										1879,
+										1882
+									],
+									[
+										2186,
+										2189
+									],
+									[
+										2458,
+										2461
+									],
+									[
+										2817,
+										2835
+									],
+									[
+										2957,
+										2975
+									],
+									[
+										3141,
+										3159
+									],
+									[
+										3324,
+										3342
+									],
+									[
+										3502,
+										3520
+									]
+								],
+								"scope": ""
+							}
+						},
+						"selection":
+						[
+							[
+								3513,
+								3513
+							]
+						],
+						"settings":
+						{
+							"detect_indentation": false,
+							"line_numbers": false,
+							"output_tag": 2,
+							"result_base_dir": "",
+							"result_file_regex": "^([^ \t].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1141.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "source/source/compiler/nodes/template.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3611,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3100,
+								3100
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 180.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "source/common/math/point2D.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 560,
 						"regions":
 						{
 						},
@@ -989,8 +1264,36 @@
 						"settings":
 						{
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "wick.sublime-project",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 496,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								34,
+								34
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -1000,33 +1303,33 @@
 					"type": "text"
 				},
 				{
-					"buffer": 3,
-					"file": "source/common/css/nodes.js",
+					"buffer": 9,
+					"file": "/home/cinder1/work/wax/whind/package.json",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2762,
+						"buffer_size": 870,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1606,
-								1606
+								442,
+								442
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
+							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 9,
 					"type": "text"
 				}
 			]
@@ -1034,7 +1337,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 33.0
+		"height": 28.0
 	},
 	"input":
 	{
@@ -1079,7 +1382,7 @@
 	"project": "wick.sublime-project",
 	"replace":
 	{
-		"height": 62.0
+		"height": 52.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1088,6 +1391,86 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"pa",
+				"package.json"
+			],
+			[
+				"bez",
+				"source/common/math/cubic_bezier.js"
+			],
+			[
+				"testurl",
+				"test/suite/wurl_tests.js"
+			],
+			[
+				"test.js",
+				"test/test.js"
+			],
+			[
+				"pack",
+				"package.json"
+			],
+			[
+				"config",
+				"build/config/config.js"
+			],
+			[
+				"wur",
+				"source/network/wurl.js"
+			],
+			[
+				"ll",
+				"source/common/extends/ll.js"
+			],
+			[
+				"htmlte",
+				"test/suite/html_tests.js"
+			],
+			[
+				"htmlroot",
+				"source/common/html/root.js"
+			],
+			[
+				"compnoroot",
+				"source/source/compiler/nodes/root.js"
+			],
+			[
+				"root",
+				"source/common/html/root.js"
+			],
+			[
+				"cssroot",
+				"source/common/css/root.js"
+			],
+			[
+				"css",
+				"source/common/css/properties/parser.js"
+			],
+			[
+				"color",
+				"source/common/css/types/color.js"
+			],
+			[
+				"len",
+				"source/common/css/types/length.js"
+			],
+			[
+				"css pr",
+				"source/common/css/properties/property_and_type_definitions.js"
+			],
+			[
+				"schem",
+				"source/model/schemed.js"
+			],
+			[
+				"cssp",
+				"source/common/css/properties/parser.js"
+			],
+			[
+				"cl",
+				"source/root/client.js"
+			],
 			[
 				"cssprop",
 				"source/common/css/properties/property_and_type_definitions.js"
@@ -1105,10 +1488,6 @@
 				"source/source/compiler/nodes/style.js"
 			],
 			[
-				"cssroot",
-				"source/common/css/root.js"
-			],
-			[
 				"compil",
 				"source/source/compiler/compiler.js"
 			],
@@ -1117,16 +1496,8 @@
 				"source/source/compiler/nodes/style.js"
 			],
 			[
-				"root",
-				"source/source/compiler/nodes/root.js"
-			],
-			[
 				"test.htm",
 				"test/index.html"
-			],
-			[
-				"pack",
-				"package.json"
 			],
 			[
 				"confi",
@@ -1201,10 +1572,6 @@
 				"source\\common\\css\\nodes.js"
 			],
 			[
-				"htmlroot",
-				"source\\common\\html\\root.js"
-			],
-			[
 				"compiroot",
 				"source\\source\\compiler\\nodes\\root.js"
 			],
@@ -1222,10 +1589,6 @@
 			],
 			[
 				"cssroo",
-				"source\\common\\css\\root.js"
-			],
-			[
-				"css",
 				"source\\common\\css\\root.js"
 			],
 			[
@@ -1275,10 +1638,6 @@
 			[
 				"pac",
 				"source\\source\\package.js"
-			],
-			[
-				"cl",
-				"source\\root\\client.js"
 			],
 			[
 				"pca",
@@ -1393,10 +1752,6 @@
 				"source\\model\\container\\multi.js"
 			],
 			[
-				"schem",
-				"source\\model\\schemed.js"
-			],
-			[
 				"scheme",
 				"source\\model\\schemed.js"
 			],
@@ -1497,10 +1852,6 @@
 				"source\\source\\source.js"
 			],
 			[
-				"wur",
-				"source\\network\\wurl.js"
-			],
-			[
 				"gett",
 				"source\\network\\getter.js"
 			],
@@ -1551,54 +1902,6 @@
 			[
 				"conbas",
 				"source\\model\\container\\base.js"
-			],
-			[
-				"schema",
-				"source\\schema\\schemas.js"
-			],
-			[
-				"shceme",
-				"source\\model\\schemed.js"
-			],
-			[
-				"modelt",
-				"test\\suite\\model_tests.js"
-			],
-			[
-				"arra",
-				"source\\model\\container\\array.js"
-			],
-			[
-				"wick.js",
-				"source\\root\\wick.js"
-			],
-			[
-				"package.js",
-				"package.json"
-			],
-			[
-				"Sche",
-				"source\\common\\scheduler.js"
-			],
-			[
-				"read",
-				"README.md"
-			],
-			[
-				"model_",
-				"test\\suite\\model_tests.js"
-			],
-			[
-				"cli",
-				"source\\root\\client.js"
-			],
-			[
-				"tests",
-				"test\\suite\\model_tests.js"
-			],
-			[
-				"templat",
-				"source\\source\\template.js"
 			]
 		],
 		"width": 0.0

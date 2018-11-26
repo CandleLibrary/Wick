@@ -7,7 +7,6 @@ const HTML = 0;
 const TEXT = 1;
 const offset = "    ";
 
-
 /**
  * An AST node for text data.
  * @param  {string}  str     The text value of the node.
