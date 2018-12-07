@@ -18,6 +18,9 @@ describe("Wick test suite.", function() {
     let wick;
 
     beforeEach(function() {
+        
+        this.slow(100000);
+        this.timeout(100000);
 
         global.benchmark = require("benchmark");
 

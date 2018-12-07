@@ -140,7 +140,7 @@ function MODELTESTS(config) {
             store.getHistory(0).users.proxy.bob.access_level.should.equal(1);
         });
 
-        it("Schemed properties can be created", function() {
+        it("Can create schemed properties that accept specific values", function() {
             let user = wick.model({ name: "tommy", food: { type: "macaroon", common_name: 1122 } }, {
                 name: wick.scheme.string,
                 birthday: wick.scheme.date,
@@ -156,11 +156,12 @@ function MODELTESTS(config) {
             user.name = 1234;
             user.name.should.equal("1234");
 
-            user.birthday = "August 13, 1989";
-            user.birthday.should.equal(618991200000);
+            user.birthday = "August 13, 1989 00:00:00";
+            user.birthday.should.equal((new Date("August 13, 1989 00:00:00")).valueOf());
         });
 
         it("Allows hook functions to be defined to provide mechanisms for server storage", function(done) {
+            this.slow(20000);
             let User = wick.model.scheme({
                 name: wick.scheme.string,
                 age: wick.scheme.number,
@@ -196,7 +197,7 @@ function MODELTESTS(config) {
                 if (data.age) {
                     data.age.should.equal(25);
                     data.name.should.equal("tom");
-                    data.birthdate.should.equal(747468000000);
+                    data.birthdate.should.equal((new Date("September 8, 1993")).valueOf());
                     done();
                 }
             };
@@ -206,6 +207,7 @@ function MODELTESTS(config) {
             user.addView(view);
 
             let name = user.name;
+            user.name = name;
         });
 
         it("Creates containers that can store multiple models", function() {

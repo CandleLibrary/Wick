@@ -14,6 +14,7 @@ function SOURCEPACKAGETESTS(config) {
             document.body.appendChild(ele);
     }
     let element = document.createElement("div");
+    
     describe('wick.source', function() {
 
         before(() =>
