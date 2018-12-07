@@ -2,10 +2,6 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var whind$1 = _interopDefault(require('@candlefw/whind'));
-
 /**
  * Global Document instance short name
  * @property DOC
@@ -1228,6 +1224,1036 @@ class MultiIndexedContainer extends ModelContainerBase {
     }
 }
 
+const A = 65;
+const a = 97;
+const ACKNOWLEDGE = 6;
+const AMPERSAND = 38;
+const ASTERISK = 42;
+const AT = 64;
+const B = 66;
+const b = 98;
+const BACKSLASH = 92;
+const BACKSPACE = 8;
+const BELL = 7;
+const C = 67;
+const c = 99;
+const CANCEL = 24;
+const CARET = 94;
+const CARRIAGE_RETURN = 13;
+const CLOSE_CURLY = 125;
+const CLOSE_PARENTH = 41;
+const CLOSE_SQUARE = 93;
+const COLON = 58;
+const COMMA = 44;
+const d = 100;
+const D = 68;
+const DATA_LINK_ESCAPE = 16;
+const DELETE = 127;
+const DEVICE_CTRL_1 = 17;
+const DEVICE_CTRL_2 = 18;
+const DEVICE_CTRL_3 = 19;
+const DEVICE_CTRL_4 = 20;
+const DOLLAR = 36;
+const DOUBLE_QUOTE = 34;
+const e$1 = 101;
+const E = 69;
+const EIGHT = 56;
+const END_OF_MEDIUM = 25;
+const END_OF_TRANSMISSION = 4;
+const END_OF_TRANSMISSION_BLOCK = 23;
+const END_OF_TXT = 3;
+const ENQUIRY = 5;
+const EQUAL = 61;
+const ESCAPE = 27;
+const EXCLAMATION = 33;
+const f = 102;
+const F = 70;
+const FILE_SEPERATOR = 28;
+const FIVE = 53;
+const FORM_FEED = 12;
+const FORWARD_SLASH = 47;
+const FOUR = 52;
+const g = 103;
+const G = 71;
+const GRAVE = 96;
+const GREATER_THAN = 62;
+const GROUP_SEPERATOR = 29;
+const h = 104;
+const H = 72;
+const HASH = 35;
+const HORIZONTAL_TAB = 9;
+const HYPHEN = 45;
+const i = 105;
+const I = 73;
+const j = 106;
+const J = 74;
+const k = 107;
+const K = 75;
+const l = 108;
+const L = 76;
+const LESS_THAN = 60;
+const LINE_FEED = 10;
+const m = 109;
+const M = 77;
+const n = 110;
+const N = 78;
+const NEGATIVE_ACKNOWLEDGE = 21;
+const NINE = 57;
+const NULL = 0;
+const o = 111;
+const O = 79;
+const ONE = 49;
+const OPEN_CURLY = 123;
+const OPEN_PARENTH = 40;
+const OPEN_SQUARE = 91;
+const p = 112;
+const P = 80;
+const PERCENT = 37;
+const PERIOD = 46;
+const PLUS = 43;
+const q = 113;
+const Q = 81;
+const QMARK = 63;
+const QUOTE = 39;
+const r = 114;
+const R = 82;
+const RECORD_SEPERATOR = 30;
+const s = 115;
+const S = 83;
+const SEMICOLON = 59;
+const SEVEN = 55;
+const SHIFT_IN = 15;
+const SHIFT_OUT = 14;
+const SIX = 54;
+const SPACE = 32;
+const START_OF_HEADER = 1;
+const START_OF_TEXT = 2;
+const SUBSTITUTE = 26;
+const SYNCH_IDLE = 22;
+const t = 116;
+const T = 84;
+const THREE = 51;
+const TILDE = 126;
+const TWO = 50;
+const u = 117;
+const U = 85;
+const UNDER_SCORE = 95;
+const UNIT_SEPERATOR = 31;
+const v = 118;
+const V = 86;
+const VERTICAL_BAR = 124;
+const VERTICAL_TAB = 11;
+const w = 119;
+const W = 87;
+const x = 120;
+const X = 88;
+const y = 121;
+const Y = 89;
+const z = 122;
+const Z = 90;
+const ZERO = 48;
+
+/**
+ * Lexer Jump table reference 
+ * 0. NUMBER
+ * 1. IDENTIFIER
+ * 2. QUOTE STRING
+ * 3. SPACE SET
+ * 4. TAB SET
+ * 5. CARIAGE RETURN
+ * 6. LINEFEED
+ * 7. SYMBOL
+ * 8. OPERATOR
+ * 9. OPEN BRACKET
+ * 10. CLOSE BRACKET 
+ * 11. DATA_LINK
+ */ 
+const jump_table = [
+7, 	 	/* A */
+7, 	 	/* a */
+7, 	 	/* ACKNOWLEDGE */
+7, 	 	/* AMPERSAND */
+7, 	 	/* ASTERISK */
+7, 	 	/* AT */
+7, 	 	/* B */
+7, 	 	/* b */
+7, 	 	/* BACKSLASH */
+4, 	 	/* BACKSPACE */
+6, 	 	/* BELL */
+7, 	 	/* C */
+7, 	 	/* c */
+5, 	 	/* CANCEL */
+7, 	 	/* CARET */
+11, 	/* CARRIAGE_RETURN */
+7, 	 	/* CLOSE_CURLY */
+7, 	 	/* CLOSE_PARENTH */
+7, 	 	/* CLOSE_SQUARE */
+7, 	 	/* COLON */
+7, 	 	/* COMMA */
+7, 	 	/* d */
+7, 	 	/* D */
+7, 	 	/* DATA_LINK_ESCAPE */
+7, 	 	/* DELETE */
+7, 	 	/* DEVICE_CTRL_1 */
+7, 	 	/* DEVICE_CTRL_2 */
+7, 	 	/* DEVICE_CTRL_3 */
+7, 	 	/* DEVICE_CTRL_4 */
+7, 	 	/* DOLLAR */
+7, 	 	/* DOUBLE_QUOTE */
+7, 	 	/* e */
+3, 	 	/* E */
+8, 	 	/* EIGHT */
+2, 	 	/* END_OF_MEDIUM */
+7, 	 	/* END_OF_TRANSMISSION */
+7, 	 	/* END_OF_TRANSMISSION_BLOCK */
+8, 	 	/* END_OF_TXT */
+8, 	 	/* ENQUIRY */
+2, 	 	/* EQUAL */
+9, 	 	/* ESCAPE */
+10, 	 /* EXCLAMATION */
+8, 	 	/* f */
+8, 	 	/* F */
+7, 	 	/* FILE_SEPERATOR */
+7, 	 	/* FIVE */
+7, 	 	/* FORM_FEED */
+7, 	 	/* FORWARD_SLASH */
+0, 	 	/* FOUR */
+0, 	 	/* g */
+0, 	 	/* G */
+0, 	 	/* GRAVE */
+0, 	 	/* GREATER_THAN */
+0, 	 	/* GROUP_SEPERATOR */
+0, 	 	/* h */
+0, 	 	/* H */
+0, 	 	/* HASH */
+0, 	 	/* HORIZONTAL_TAB */
+8, 	 	/* HYPHEN */
+7, 	 	/* i */
+8, 	 	/* I */
+8, 	 	/* j */
+8, 	 	/* J */
+7, 	 	/* k */
+7, 	 	/* K */
+1, 	 	/* l */
+1, 	 	/* L */
+1, 	 	/* LESS_THAN */
+1, 	 	/* LINE_FEED */
+1, 	 	/* m */
+1, 	 	/* M */
+1, 	 	/* n */
+1, 	 	/* N */
+1, 	 	/* NEGATIVE_ACKNOWLEDGE */
+1, 	 	/* NINE */
+1, 	 	/* NULL */
+1, 	 	/* o */
+1, 	 	/* O */
+1, 	 	/* ONE */
+1, 	 	/* OPEN_CURLY */
+1, 	 	/* OPEN_PARENTH */
+1, 	 	/* OPEN_SQUARE */
+1, 	 	/* p */
+1, 	 	/* P */
+1, 	 	/* PERCENT */
+1, 	 	/* PERIOD */
+1, 	 	/* PLUS */
+1, 	 	/* q */
+1, 	 	/* Q */
+1, 	 	/* QMARK */
+1, 	 	/* QUOTE */
+9, 	 	/* r */
+7, 	 	/* R */
+10, 	/* RECORD_SEPERATOR */
+7, 	 	/* s */
+7, 	 	/* S */
+2, 	 	/* SEMICOLON */
+1, 	 	/* SEVEN */
+1, 	 	/* SHIFT_IN */
+1, 	 	/* SHIFT_OUT */
+1, 	 	/* SIX */
+1, 	 	/* SPACE */
+1, 	 	/* START_OF_HEADER */
+1, 	 	/* START_OF_TEXT */
+1, 	 	/* SUBSTITUTE */
+1, 	 	/* SYNCH_IDLE */
+1, 	 	/* t */
+1, 	 	/* T */
+1, 	 	/* THREE */
+1, 	 	/* TILDE */
+1, 	 	/* TWO */
+1, 	 	/* u */
+1, 	 	/* U */
+1, 	 	/* UNDER_SCORE */
+1, 	 	/* UNIT_SEPERATOR */
+1, 	 	/* v */
+1, 	 	/* V */
+1, 	 	/* VERTICAL_BAR */
+1, 	 	/* VERTICAL_TAB */
+1, 	 	/* w */
+1, 	 	/* W */
+1, 	 	/* x */
+1, 	 	/* X */
+9, 	 	/* y */
+7, 	 	/* Y */
+10,  	/* z */
+7,  	/* Z */
+7 		/* ZERO */
+];	
+
+/**
+ * LExer Number and Identifier jump table reference
+ * Number are masked by 12(4|8) and Identifiers are masked by 10(2|8)
+ * entries marked as `0` are not evaluated as either being in the number set or the identifier set.
+ * entries marked as `2` are in the identifier set but not the number set
+ * entries marked as `4` are in the number set but not the identifier set
+ * entries marked as `8` are in both number and identifier sets
+ */
+const number_and_identifier_table = [
+0, 		/* A */
+0, 		/* a */
+0, 		/* ACKNOWLEDGE */
+0, 		/* AMPERSAND */
+0, 		/* ASTERISK */
+0, 		/* AT */
+0,		/* B */
+0,		/* b */
+0,		/* BACKSLASH */
+0,		/* BACKSPACE */
+0,		/* BELL */
+0,		/* C */
+0,		/* c */
+0,		/* CANCEL */
+0,		/* CARET */
+0,		/* CARRIAGE_RETURN */
+0,		/* CLOSE_CURLY */
+0,		/* CLOSE_PARENTH */
+0,		/* CLOSE_SQUARE */
+0,		/* COLON */
+0,		/* COMMA */
+0,		/* d */
+0,		/* D */
+0,		/* DATA_LINK_ESCAPE */
+0,		/* DELETE */
+0,		/* DEVICE_CTRL_1 */
+0,		/* DEVICE_CTRL_2 */
+0,		/* DEVICE_CTRL_3 */
+0,		/* DEVICE_CTRL_4 */
+0,		/* DOLLAR */
+0,		/* DOUBLE_QUOTE */
+0,		/* e */
+0,		/* E */
+0,		/* EIGHT */
+0,		/* END_OF_MEDIUM */
+0,		/* END_OF_TRANSMISSION */
+8,		/* END_OF_TRANSMISSION_BLOCK */
+0,		/* END_OF_TXT */
+0,		/* ENQUIRY */
+0,		/* EQUAL */
+0,		/* ESCAPE */
+0,		/* EXCLAMATION */
+0,		/* f */
+0,		/* F */
+0,		/* FILE_SEPERATOR */
+2,		/* FIVE */
+4,		/* FORM_FEED */
+0,		/* FORWARD_SLASH */
+8,		/* FOUR */
+8,		/* g */
+8,		/* G */
+8,		/* GRAVE */
+8,		/* GREATER_THAN */
+8,		/* GROUP_SEPERATOR */
+8,		/* h */
+8,		/* H */
+8,		/* HASH */
+8,		/* HORIZONTAL_TAB */
+0,		/* HYPHEN */
+0,		/* i */
+0,		/* I */
+0,		/* j */
+0,		/* J */
+0,		/* k */
+0,		/* K */
+2,		/* l */
+8,		/* L */
+2,		/* LESS_THAN */
+2,		/* LINE_FEED */
+8,		/* m */
+2,		/* M */
+2,		/* n */
+2,		/* N */
+2,		/* NEGATIVE_ACKNOWLEDGE */
+2,		/* NINE */
+2,		/* NULL */
+2,		/* o */
+2,		/* O */
+2,		/* ONE */
+8,		/* OPEN_CURLY */
+2,		/* OPEN_PARENTH */
+2,		/* OPEN_SQUARE */
+2,		/* p */
+2,		/* P */
+2,		/* PERCENT */
+2,		/* PERIOD */
+2,		/* PLUS */
+2,		/* q */
+8,		/* Q */
+2,		/* QMARK */
+2,		/* QUOTE */
+0,		/* r */
+0,		/* R */
+0,		/* RECORD_SEPERATOR */
+0,		/* s */
+2,		/* S */
+0,		/* SEMICOLON */
+2,		/* SEVEN */
+8,		/* SHIFT_IN */
+2,		/* SHIFT_OUT */
+2,		/* SIX */
+2,		/* SPACE */
+2,		/* START_OF_HEADER */
+2,		/* START_OF_TEXT */
+2,		/* SUBSTITUTE */
+2,		/* SYNCH_IDLE */
+2,		/* t */
+2,		/* T */
+2,		/* THREE */
+2,		/* TILDE */
+2,		/* TWO */
+8,		/* u */
+2,		/* U */
+2,		/* UNDER_SCORE */
+2,		/* UNIT_SEPERATOR */
+2,		/* v */
+2,		/* V */
+2,		/* VERTICAL_BAR */
+2,		/* VERTICAL_TAB */
+2,		/* w */
+8,		/* W */
+2,		/* x */
+2,		/* X */
+0,		/* y */
+0,		/* Y */
+0,		/* z */
+0,		/* Z */
+0		/* ZERO */
+];
+
+const number = 1,
+    identifier = 2,
+    string = 4,
+    white_space = 8,
+    open_bracket = 16,
+    close_bracket = 32,
+    operator = 64,
+    symbol = 128,
+    new_line = 256,
+    data_link = 512,
+    alpha_numeric = (identifier | number),
+    white_space_new_line = (white_space | new_line),
+    Types = {
+        num: number,
+        number,
+        id: identifier,
+        identifier,
+        str: string,
+        string,
+        ws: white_space,
+        white_space,
+        ob: open_bracket,
+        open_bracket,
+        cb: close_bracket,
+        close_bracket,
+        op: operator,
+        operator,
+        sym: symbol,
+        symbol,
+        nl: new_line,
+        new_line,
+        dl: data_link,
+        data_link,
+        alpha_numeric,
+        white_space_new_line,
+    },
+
+/*** MASKS ***/
+
+TYPE_MASK = 0xF,
+PARSE_STRING_MASK = 0x10,
+IGNORE_WHITESPACE_MASK = 0x20,
+TOKEN_LENGTH_MASK = 0xFFFFFFC0,
+
+//De Bruijn Sequence for finding index of right most bit set.
+//http://supertech.csail.mit.edu/papers/debruijn.pdf
+debruijnLUT = [ 
+    0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 
+    31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+];
+
+function getNumbrOfTrailingZeroBitsFromPowerOf2(value){
+    return debruijnLUT[(value * 0x077CB531) >>> 27];
+}
+
+class Lexer {
+
+    constructor(string = "", INCLUDE_WHITE_SPACE_TOKENS = false, PEEKING = false) {
+
+        if (typeof(string) !== "string") throw new Error("String value must be passed to Lexer");
+
+        /**
+         * The string that the Lexer tokenizes.
+         */
+        this.str = string;
+
+        /**
+         * Reference to the peeking Lexer.
+         */
+        this.p = null;
+
+        /**
+         * The type id of the current token.
+         */
+        this.type = 32768; //Default "non-value" for types is 1<<15;
+
+        /**
+         * The offset in the string of the start of the current token.
+         */
+        this.off = 0;
+
+        this.masked_values = 0;
+
+        /**
+         * The character offset of the current token within a line.
+         */
+        this.char = 0;
+        /**
+         * The line position of the current token.
+         */
+        this.line = 0;
+        /**
+         * The length of the string being parsed
+         */
+        this.sl = string.length;
+        /**
+         * The length of the current token.
+         */
+        this.tl = 0;
+
+        /**
+         * Flag to ignore white spaced.
+         */
+        this.IWS = !INCLUDE_WHITE_SPACE_TOKENS;
+
+        /**
+         * Flag to force the lexer to parse string contents
+         */
+         this.PARSE_STRING = false;
+
+        if (!PEEKING) this.next();
+    }
+
+    /**
+     * Restricts max parse distance to the other Lexer's current position.
+     * @param      {Lexer}  Lexer   The Lexer to limit parse distance by.
+     */
+    fence(marker = this) {
+        if (marker.str !== this.str)
+            return;
+        this.sl = marker.off;
+        return this;
+    }
+
+    /**
+     * Copies the Lexer.
+     * @return     {Lexer}  Returns a new Lexer instance with the same property values.
+     */
+    copy( destination = new Lexer(this.str, false, true) ) {
+        destination.off = this.off;
+        destination.char = this.char;
+        destination.line = this.line;
+        destination.sl = this.sl;
+        destination.masked_values = this.masked_values;
+        return destination;
+    }
+
+    /**
+     * Given another Lexer with the same `str` property value, it will copy the state of that Lexer.
+     * @param      {Lexer}  [marker=this.peek]  The Lexer to clone the state from. 
+     * @throws     {Error} Throws an error if the Lexers reference different strings.
+     * @public
+     */
+    sync(marker = this.p) {
+
+        if (marker instanceof Lexer) {
+            if (marker.str !== this.str) throw new Error("Cannot sync Lexers with different strings!");
+            this.off = marker.off;
+            this.char = marker.char;
+            this.line = marker.line;
+            this.masked_values = marker.masked_values;
+        }
+
+        return this;
+    }
+
+    /**
+     * Will throw a new Error, appending the parsed string line and position information to the the error message passed into the function.
+     * @instance
+     * @public
+     * @param {String} message - The error message.
+     */
+    throw (message) {
+        let t$$1 = ("________________________________________________"),
+            n$$1 = "\n",
+            is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
+        this.IWS = false;
+        let pk = this.copy();
+        while (!pk.END && pk.ty !== Types.nl) { pk.next(); }
+        let end = pk.off;
+        throw new Error(`${message} at ${this.line}:${this.char}\n${t$$1}\n${this.str.slice(this.off + this.tl + 1 - this.char, end)}\n${("").padStart(this.char - 2)}^\n${t$$1}\n${is_iws}`);
+    }
+
+    /**
+     * Proxy for Lexer.prototype.reset
+     * @public
+     */
+    r() { return this.reset(); }
+
+    /**
+     * Restore the Lexer back to it's initial state.
+     * @public
+     */
+    reset() {
+        this.p = null;
+        this.type = 32768;
+        this.off = 0;
+        this.tl = 0;
+        this.char = 0;
+        this.line = 0;
+        this.n;
+        return this;
+    }
+
+    resetHead() {
+        this.off = 0;
+        this.tl = 0;
+        this.char = 0;
+        this.line = 0;
+        this.p = null;
+        this.type = 32768;
+    }
+
+    /**
+     * Sets the internal state to point to the next token. Sets Lexer.prototype.END to `true` if the end of the string is hit.
+     * @public
+     * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
+     */
+    next(marker = this) {
+
+        let str = marker.str;
+
+        if (marker.sl < 1) {
+            marker.off = 0;
+            marker.type = 32768;
+            marker.tl = 0;
+            return marker;
+        }
+
+        //Token builder
+        let length = marker.tl;
+        let off = marker.off + length;
+        let l$$1 = marker.sl;
+        let IWS = marker.IWS;
+        let type = symbol;
+        let char = marker.char + length;
+        let line = marker.line;
+        let base = off;
+
+        if (off >= l$$1) {
+            length = 0;
+            base = l$$1;
+            char -= base - off;
+            marker.type = type;
+            marker.off = base;
+            marker.tl = length;
+            marker.char = char;
+            marker.line = line;
+            return marker;
+        }
+
+        while (true) {
+
+            base = off;
+
+            length = 1;
+
+            let code = str.charCodeAt(off);
+
+            if (code < 128) {
+
+                switch (jump_table[code]) {
+                    case 0: //NUMBER
+                        while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)])) {}
+
+                        if (str[off] == "e" || str[off] == "E") {
+                            off++;
+                            if (str[off] == "-") off++;
+                            marker.off = off;
+                            marker.tl = 0;
+                            marker.next();
+                            off = marker.off + marker.tl;
+                            //Add e to the number string
+                        }
+
+                        type = number;
+                        length = off - base;
+
+                        break;
+                    case 1: //IDENTIFIER
+                        while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)]))) {}
+                        type = identifier;
+                        length = off - base;
+                        break;
+                    case 2: //QUOTED STRING
+                        if (this.PARSE_STRING) {
+                            type = symbol;
+                        } else {
+                            while (++off < l$$1 && str.charCodeAt(off) !== code) {}
+                            type = string;
+                            length = off - base + 1;
+                        }
+                        break;
+                    case 3: //SPACE SET
+                        while (++off < l$$1 && str.charCodeAt(off) === SPACE) {}
+                        type = white_space;
+                        length = off - base;
+                        break;
+                    case 4: //TAB SET
+                        while (++off < l$$1 && str[off] === HORIZONTAL_TAB) {}
+                        type = white_space;
+                        length = off - base;
+                        break;
+                    case 5: //CARIAGE RETURN
+                        length = 2;
+                    case 6: //LINEFEED
+                        type = new_line;
+                        char = 0;
+                        line++;
+                        off += length;
+                        break;
+                    case 7: //SYMBOL
+                        type = symbol;
+                        break;
+                    case 8: //OPERATOR
+                        type = operator;
+
+                        break;
+                    case 9: //OPEN BRACKET
+                        type = open_bracket;
+                        break;
+                    case 10: //CLOSE BRACKET
+                        type = close_bracket;
+                        break;
+                    case 11: //Data Link Escape
+                        type = data_link;
+                        length = 4; //Stores two UTF16 values and a data link sentinel
+                        break;
+                }
+            }
+
+            if (IWS && (type & white_space_new_line)) {
+                if (off < l$$1) {
+                    char += length;
+                    type = symbol;
+                    continue;
+                } else {
+                    length = 0;
+                    base = l$$1;
+                    char -= base - off;
+                }
+            }
+
+            break;
+        }
+
+        marker.type = type;
+        marker.off = base;
+        marker.tl = length;
+        marker.char = char;
+        marker.line = line;
+
+        return marker;
+    }
+    
+
+    /**
+     * Proxy for Lexer.prototype.assert
+     * @public
+     */
+    a(text) {
+        return this.assert(text);
+    }
+
+    /**
+     * Compares the string value of the current token to the value passed in. Advances to next token if the two are equal.
+     * @public
+     * @throws {Error} - `Expecting "${text}" got "${this.text}"`
+     * @param {String} text - The string to compare.
+     */
+    assert(text) {
+
+        if (this.off < 0) this.throw(`Expecting ${text} got null`);
+
+        if (this.text == text)
+            this.next();
+        else
+            this.throw(`Expecting "${text}" got "${this.text}"`);
+
+        return this;
+    }
+
+    /**
+     * Proxy for Lexer.prototype.assertCharacter
+     * @public
+     */
+    aC(char) { return this.assertCharacter(char); }
+    /**
+     * Compares the character value of the current token to the value passed in. Advances to next token if the two are equal.
+     * @public
+     * @throws {Error} - `Expecting "${text}" got "${this.text}"`
+     * @param {String} text - The string to compare.
+     */
+    assertCharacter(char) {
+
+        if (this.off < 0) this.throw(`Expecting ${text} got null`);
+
+        if (this.tx[this.off] == char[0])
+            this.next();
+        else
+            this.throw(`Expecting "${char[0]}" got "${this.tx[this.off]}"`);
+
+        return this;
+    }
+
+    /**
+     * Returns the Lexer bound to Lexer.prototype.p, or creates and binds a new Lexer to Lexer.prototype.p. Advences the other Lexer to the token ahead of the calling Lexer.
+     * @public
+     * @type {Lexer}
+     * @param {Lexer} [marker=this] - The marker to originate the peek from. 
+     * @param {Lexer} [peek_marker=this.p] - The Lexer to set to the next token state.
+     * @return {Lexer} - The Lexer that contains the peeked at token.
+     */
+    peek(marker = this, peek_marker = this.p) {
+
+        if (!peek_marker) {
+            if (!marker) return null;
+            if (!this.p) {
+                this.p = new Lexer(this.str, false, true);
+                peek_marker = this.p;
+            }
+        }
+        peek_marker.masked_values = marker.masked_values;
+        peek_marker.type = marker.type;
+        peek_marker.off = marker.off;
+        peek_marker.tl = marker.tl;
+        peek_marker.char = marker.char;
+        peek_marker.line = marker.line;
+        this.next(peek_marker);
+        return peek_marker;
+    }
+
+
+    /**
+     * Proxy for Lexer.prototype.slice
+     * @public
+     */
+    s(start) { return this.slice(start); }
+
+    /**
+     * Returns a slice of the parsed string beginning at `start` and ending at the current token.
+     * @param {Number | LexerBeta} start - The offset in this.str to begin the slice. If this value is a LexerBeta, sets the start point to the value of start.off.
+     * @return {String} A substring of the parsed string.
+     * @public
+     */
+    slice(start) {
+
+        if (typeof start === "number" || typeof start === "object") {
+            if (start instanceof Lexer) start = start.off;
+            return (this.END) ? this.str.slice(start, this.sl) : this.str.slice(start, this.off);
+        }
+        return this.str.slice(this.off, this.sl);
+    }
+
+    /**
+     * Skips to the end of a comment section.
+     * @param {boolean} ASSERT - If set to true, will through an error if there is not a comment line or block to skip.
+     * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
+     */
+    comment(ASSERT = false, marker = this) {
+
+        if (!(marker instanceof Lexer)) return marker;
+
+        if (marker.tx == "/") {
+            if (marker.pk.tx == "*") {
+                marker.sync();
+                while (!marker.END && (marker.nexts().tx != "*" || marker.pk.tx != "/")) { /* NO OP */ }
+                marker.sync().assert("/");
+            } else if (marker.pk.tx == "/") {
+                let IWS = marker.IWS;
+                while (marker.next().ty != types.new_line && !marker.END) { /* NO OP */ }
+                marker.IWS = IWS;
+                marker.next();
+            } else
+            if (ASSERT) marker.throw("Expecting the start of a comment");
+        }
+
+        return marker;
+    }
+
+
+    setString(string, RESET = true) {
+        this.str = string;
+        this.sl = string.length;
+        if (RESET) this.resetHead();
+    }
+
+    toString(){
+        return this.slice();
+    }
+
+    /*** Getters and Setters ***/
+    get string() {
+        return this.str;
+    }
+
+    /**
+     * The current token in the form of a new Lexer with the current state.
+     * Proxy property for Lexer.prototype.copy
+     * @type {Lexer}
+     * @public
+     * @readonly
+     */
+    get token() {
+        return this.copy();
+    }
+
+
+    get ch() {
+        return this.str[this.off];
+    }
+
+    /**
+     * Proxy for Lexer.prototype.text
+     * @public
+     * @type {String}
+     * @readonly
+     */
+    get tx() { return this.text; }
+    
+    /**
+     * The string value of the current token.
+     * @type {String}
+     * @public
+     * @readonly
+     */
+    get text() {
+        return (this.off < 0) ? "" : this.str.slice(this.off, this.off + this.tl);
+    }
+
+    /**
+     * The type id of the current token.
+     * @type {Number}
+     * @public
+     * @readonly
+     */
+    get ty() { return this.type; }
+
+    /**
+     * The current token's offset position from the start of the string.
+     * @type {Number}
+     * @public
+     * @readonly
+     */
+    get pos() {
+        return this.off;
+    }
+
+    /**
+     * Proxy for Lexer.prototype.peek
+     * @public
+     * @readonly
+     * @type {Lexer}
+     */
+    get pk() { return this.peek(); }
+
+    /**
+     * Proxy for Lexer.prototype.next
+     * @public
+     */
+    get n() { return this.next(); }
+
+    get END(){ return this.off >= this.sl; }
+    set END(v$$1){}
+
+    get type(){
+        return 1 << (this.masked_values & TYPE_MASK);
+    }
+
+    set type(value){
+        //assuming power of 2 value.
+
+        this.masked_values = (this.masked_values & ~TYPE_MASK) | ((getNumbrOfTrailingZeroBitsFromPowerOf2(value)) & TYPE_MASK); 
+    }
+
+    get tl (){
+        return this.token_length;
+    }
+
+    set tl(value){
+        this.token_length = value;
+    }
+
+    get token_length(){
+        return ((this.masked_values & TOKEN_LENGTH_MASK) >> 6);
+    }
+
+    set token_length(value){
+        this.masked_values = (this.masked_values & ~TOKEN_LENGTH_MASK) | (((value << 6) | 0) & TOKEN_LENGTH_MASK); 
+    }
+
+    get IGNORE_WHITE_SPACE(){
+        return this.IWS;
+    }
+
+    get IWS(){
+        return !!(this.masked_values & IGNORE_WHITESPACE_MASK);
+    }
+
+    set IWS(boolean){
+        this.masked_values = (this.masked_values & ~IGNORE_WHITESPACE_MASK) | ((boolean | 0) << 5); 
+    }
+
+    get PARSE_STRING(){
+        return !!(this.masked_values & PARSE_STRING_MASK);
+    }
+
+    set PARSE_STRING(boolean){
+        this.masked_values = (this.masked_values & ~PARSE_STRING_MASK) | ((boolean | 0) << 4); 
+    }
+
+    /**
+     * Reference to token id types.
+     */
+    get types() {
+        return Types;
+    }
+}
+
+function whind$1(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS); }
+
+whind$1.constructor = Lexer;
+
+Lexer.types = Types;
+whind$1.types = Types;
+
 class NumberSchemeConstructor extends SchemeConstructor {
 
     constructor() {
@@ -1262,7 +2288,7 @@ class NumberSchemeConstructor extends SchemeConstructor {
     }
 }
 
-let number = new NumberSchemeConstructor();
+let number$1 = new NumberSchemeConstructor();
 
 let scape_date = new Date();
 scape_date.setHours(0);
@@ -1434,7 +2460,7 @@ class StringSchemeConstructor extends SchemeConstructor {
     }
 }
 
-let string = new StringSchemeConstructor();
+let string$1 = new StringSchemeConstructor();
 
 class BoolSchemeConstructor extends SchemeConstructor {
 
@@ -1474,7 +2500,7 @@ class BoolSchemeConstructor extends SchemeConstructor {
 
 let bool = new BoolSchemeConstructor();
 
-let schemes = { date, string, number, bool, time };
+let schemes = { date, string: string$1, number: number$1, bool, time };
 
 
 /**
@@ -5005,8 +6031,8 @@ const LinkedList$1 = {
     }
 };
 
-const HORIZONTAL_TAB = 9;
-const SPACE = 32;
+const HORIZONTAL_TAB$1 = 9;
+const SPACE$1 = 32;
 
 /**
  * Lexer Jump table reference 
@@ -5023,7 +6049,7 @@ const SPACE = 32;
  * 10. CLOSE BRACKET 
  * 11. DATA_LINK
  */ 
-const jump_table = [
+const jump_table$1 = [
 7, 	 	/* A */
 7, 	 	/* a */
 7, 	 	/* ACKNOWLEDGE */
@@ -5162,7 +6188,7 @@ const jump_table = [
  * entries marked as `4` are in the number set but not the identifier set
  * entries marked as `8` are in both number and identifier sets
  */
-const number_and_identifier_table = [
+const number_and_identifier_table$1 = [
 0, 		/* A */
 0, 		/* a */
 0, 		/* ACKNOWLEDGE */
@@ -5299,41 +6325,41 @@ const number_and_identifier_table = [
  * @alias module:wick~internals.lexer.Types
  * @see {@link module:wick.core.common.Lexer}
  */
-const number$1 = 1,
-    identifier = 2,
-    string$1 = 4,
-    white_space = 8,
-    open_bracket = 16,
-    close_bracket = 32,
-    operator = 64,
-    symbol = 128,
-    new_line = 256,
-    data_link = 512,
-    alpha_numeric = (identifier | number$1),
-    white_space_new_line = (white_space | new_line),
-    Types = {
-        num: number$1,
-        number: number$1,
-        id: identifier,
-        identifier,
-        str: string$1,
-        string: string$1,
-        ws: white_space,
-        white_space,
-        ob: open_bracket,
-        open_bracket,
-        cb: close_bracket,
-        close_bracket,
-        op: operator,
-        operator,
-        sym: symbol,
-        symbol,
-        nl: new_line,
-        new_line,
-        dl: data_link,
-        data_link,
-        alpha_numeric,
-        white_space_new_line,
+const number$2 = 1,
+    identifier$1 = 2,
+    string$2 = 4,
+    white_space$1 = 8,
+    open_bracket$1 = 16,
+    close_bracket$1 = 32,
+    operator$1 = 64,
+    symbol$1 = 128,
+    new_line$1 = 256,
+    data_link$1 = 512,
+    alpha_numeric$1 = (identifier$1 | number$2),
+    white_space_new_line$1 = (white_space$1 | new_line$1),
+    Types$1 = {
+        num: number$2,
+        number: number$2,
+        id: identifier$1,
+        identifier: identifier$1,
+        str: string$2,
+        string: string$2,
+        ws: white_space$1,
+        white_space: white_space$1,
+        ob: open_bracket$1,
+        open_bracket: open_bracket$1,
+        cb: close_bracket$1,
+        close_bracket: close_bracket$1,
+        op: operator$1,
+        operator: operator$1,
+        sym: symbol$1,
+        symbol: symbol$1,
+        nl: new_line$1,
+        new_line: new_line$1,
+        dl: data_link$1,
+        data_link: data_link$1,
+        alpha_numeric: alpha_numeric$1,
+        white_space_new_line: white_space_new_line$1,
     };
 
 
@@ -5374,7 +6400,7 @@ const number$1 = 1,
  * @param {Boolean} [IGNORE_WHITE_SPACE=true] - If set to true, the Lexer will not generate tokens for newline and whitespace characters, and instead skip to the next no whitespace/newline token. 
  * @throws     {Error} Throws "String value must be passed to Lexer" if a non-string value is passed as `string`.
  */
-class Lexer {
+class Lexer$1 {
 
     constructor(string = "", IGNORE_WHITE_SPACE = true, PEEKING = false) {
 
@@ -5454,7 +6480,7 @@ class Lexer {
      * Reference to token id types.
      */
     get types() {
-        return Types;
+        return Types$1;
     }
 
     /**
@@ -5462,7 +6488,7 @@ class Lexer {
      * @return     {Lexer}  Returns a new Lexer instance with the same property values.
      */
     copy() {
-        let out = new Lexer(this.str, this.IWS, true);
+        let out = new Lexer$1(this.str, this.IWS, true);
         out.type = this.type;
         out.off = this.off;
         out.tl = this.tl;
@@ -5481,7 +6507,7 @@ class Lexer {
      */
     sync(marker = this.p) {
 
-        if (marker instanceof Lexer) {
+        if (marker instanceof Lexer$1) {
             if (marker.str !== this.str) throw new Error("Cannot sync Lexers with different strings!");
             this.type = marker.type;
             this.off = marker.off;
@@ -5506,7 +6532,7 @@ class Lexer {
             is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
         this.IWS = false;
         let pk = this.copy();
-        while (!pk.END && pk.ty !== Types.nl) { pk.n(); }
+        while (!pk.END && pk.ty !== Types$1.nl) { pk.n(); }
         let end = pk.off;
         throw new Error(message + "at " + this.line + ":" + this.char + n$$1 + t$$1 + n$$1 + this.str.slice(this.off - this.char, end) + n$$1 + ("").padStart(this.char - 2) + "^" + n$$1 + t$$1 + is_iws);
     }
@@ -5571,7 +6597,7 @@ class Lexer {
         let off = marker.off + length;
         let l$$1 = marker.sl;
         let IWS = marker.IWS;
-        let type = symbol;
+        let type = symbol$1;
         let char = marker.char + length;
         let line = marker.line;
         let base = off;
@@ -5602,9 +6628,9 @@ class Lexer {
 
             if (code < 128) {
 
-                switch (jump_table[code]) {
+                switch (jump_table$1[code]) {
                     case 0: //NUMBER
-                        while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)])) {}
+                        while (++off < l$$1 && (12 & number_and_identifier_table$1[str.charCodeAt(off)])) {}
 
                         if (str[off] == "e" || str[off] == "E") {
                             off++;
@@ -5616,66 +6642,66 @@ class Lexer {
                             //Add e to the number string
                         }
 
-                        type = number$1;
+                        type = number$2;
                         length = off - base;
 
                         break;
                     case 1: //IDENTIFIER
-                        while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)]))) {}
-                        type = identifier;
+                        while (++off < l$$1 && ((10 & number_and_identifier_table$1[str.charCodeAt(off)]))) {}
+                        type = identifier$1;
                         length = off - base;
                         break;
                     case 2: //QUOTED STRING
                         if (this.PARSE_STRING) {
-                            type = symbol;
+                            type = symbol$1;
                         } else {
                             while (++off < l$$1 && str.charCodeAt(off) !== code) {}
-                            type = string$1;
+                            type = string$2;
                             length = off - base + 1;
                         }
                         break;
                     case 3: //SPACE SET
-                        while (++off < l$$1 && str.charCodeAt(off) === SPACE) {}
-                        type = white_space;
+                        while (++off < l$$1 && str.charCodeAt(off) === SPACE$1) {}
+                        type = white_space$1;
                         length = off - base;
                         break;
                     case 4: //TAB SET
-                        while (++off < l$$1 && str[off] === HORIZONTAL_TAB) {}
-                        type = white_space;
+                        while (++off < l$$1 && str[off] === HORIZONTAL_TAB$1) {}
+                        type = white_space$1;
                         length = off - base;
                         break;
                     case 5: //CARIAGE RETURN
                         length = 2;
                     case 6: //LINEFEED
-                        type = new_line;
+                        type = new_line$1;
                         char = 0;
                         line++;
                         off += length;
                         break;
                     case 7: //SYMBOL
-                        type = symbol;
+                        type = symbol$1;
                         break;
                     case 8: //OPERATOR
-                        type = operator;
+                        type = operator$1;
 
                         break;
                     case 9: //OPEN BRACKET
-                        type = open_bracket;
+                        type = open_bracket$1;
                         break;
                     case 10: //CLOSE BRACKET
-                        type = close_bracket;
+                        type = close_bracket$1;
                         break;
                     case 11: //Data Link Escape
-                        type = data_link;
+                        type = data_link$1;
                         length = 4; //Stores two UTF16 values and a data link sentinel
                         break;
                 }
             }
 
-            if (IWS && (type & white_space_new_line)) {
+            if (IWS && (type & white_space_new_line$1)) {
                 if (off < l$$1) {
                     char += length;
-                    type = symbol;
+                    type = symbol$1;
                     continue;
                 } else {
                     length = 0;
@@ -5775,7 +6801,7 @@ class Lexer {
         if (!peek_marker) {
             if (!marker) return null;
             if (!this.p) {
-                this.p = new Lexer(this.str, this.IWS, true);
+                this.p = new Lexer$1(this.str, this.IWS, true);
                 peek_marker = this.p;
             }
         }
@@ -5839,7 +6865,7 @@ class Lexer {
     slice(start) {
 
         if (typeof start === "number" || typeof start === "object") {
-            if (start instanceof Lexer) start = start.off;
+            if (start instanceof Lexer$1) start = start.off;
             return (this.END) ? this.str.slice(start, this.sl) : this.str.slice(start, this.off);
         }
         return this.str.slice(this.off, this.sl);
@@ -5866,7 +6892,7 @@ class Lexer {
      */
     comment(ASSERT = false, marker = this) {
 
-        if (!(marker instanceof Lexer)) return marker;
+        if (!(marker instanceof Lexer$1)) return marker;
 
         if (marker.tx == "/") {
             if (marker.pk.tx == "*") {
@@ -5900,8 +6926,8 @@ class Lexer {
     }
 }
 
-function whind$2(string, INCLUDE_WHITE_SPACE_TOKENS) { return new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS); }
-whind$2.constructor = Lexer;
+function whind$2(string, INCLUDE_WHITE_SPACE_TOKENS) { return new Lexer$1(string, INCLUDE_WHITE_SPACE_TOKENS); }
+whind$2.constructor = Lexer$1;
 
 class Color extends Float64Array {
 
@@ -8446,7 +9472,7 @@ function CreatePropertyParser(notation, name, definitions) {
 
     const important = { is: false };
 
-    let n = d(l, definitions);
+    let n = d$1(l, definitions);
 
     if (n instanceof NR && n._terms_.length == 1)
         n = n._terms_[0];
@@ -8457,7 +9483,7 @@ function CreatePropertyParser(notation, name, definitions) {
     return n;
 }
 
-function d(l, definitions, super_term = false, group = false, need_group = false, and_group = false, important = null) {
+function d$1(l, definitions, super_term = false, group = false, need_group = false, and_group = false, important = null) {
     let term, nt;
 
     while (!l.END) {
@@ -8468,7 +9494,7 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                     throw new Error("Expected to have term before \"]\"");
             case "[":
                 if (term) return term;
-                term = d(l.n(), definitions);
+                term = d$1(l.n(), definitions);
                 l.a("]");
                 break;
             case "&":
@@ -8483,7 +9509,7 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                     l.sync().n();
 
                     while (!l.END) {
-                        nt._terms_.push(d(l, definitions, super_term, group, need_group, true, important));
+                        nt._terms_.push(d$1(l, definitions, super_term, group, need_group, true, important));
                         if (l.ch !== "&" || l.pk.ch !== "&") break;
                         l.a("&").a("&");
                     }
@@ -8504,7 +9530,7 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                         l.sync().n();
 
                         while (!l.END) {
-                            nt._terms_.push(d(l, definitions, super_term, group, true, and_group, important));
+                            nt._terms_.push(d$1(l, definitions, super_term, group, true, and_group, important));
                             if (l.ch !== "|" || l.pk.ch !== "|") break;
                             l.a("|").a("|");
                         }
@@ -8523,7 +9549,7 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                         l.n();
 
                         while (!l.END) {
-                            nt._terms_.push(d(l, definitions, super_term, true, need_group, and_group, important));
+                            nt._terms_.push(d$1(l, definitions, super_term, true, need_group, and_group, important));
                             if (l.ch !== "|") break;
                             l.a("|");
                         }
@@ -8587,7 +9613,7 @@ function d(l, definitions, super_term = false, group = false, need_group = false
 
                 if (term) {
                     if (term instanceof NR && term.isRepeating()) term = _Jux_(new NR, term);
-                    let v = d(l, definitions, true);
+                    let v = d$1(l, definitions, true);
                     term = _Jux_(term, v);
                 } else {
                     let v = new ValueTerm(l.n().tx, getPropertyParser, definitions);
@@ -8604,7 +9630,7 @@ function d(l, definitions, super_term = false, group = false, need_group = false
             default:
                 if (term) {
                     if (term instanceof NR && term.isRepeating()) term = _Jux_(new NR, term);
-                    let v = d(l, definitions, true);
+                    let v = d$1(l, definitions, true);
                     term = _Jux_(term, v);
                 } else {
                     let v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx);
@@ -10118,8 +11144,9 @@ class ExpressionIO extends TemplateString {
         if (this._IS_A_FILTER_) {
             this.ele.update();
         } else {
-            const args = [];
             
+            const args = [];
+
             for (let i = 0; i < this.binds.length; i++){
                 if(this.binds[i]._value_ === null) return;
                 args.push(this.binds[i]._value_);
@@ -10510,8 +11537,6 @@ function setIdentifier(id, store, cache) {
     }
 }
 
-const FunctionCache = new Map();
-
 function processExpression(lex, binds) {
 
     /* 
@@ -10533,13 +11558,13 @@ function processExpression(lex, binds) {
 
     /**TODO? - This could be replaced by a plugin to ensure proper Javascript expressions. Perhaps producing a JS AST */
     let args = JSExpressionIdentifiers(lex);
-    //console.log(function_string, args);
-    console.log(args);
+
+
     for (let i = 0, l = args.length; i < l; i++)
         setIdentifier(args[i], bind_ids, existing_names);
 
     bind_ids.push(`return ${function_string}`);
-    console.log(bind_ids);
+
     let funct = (Function).apply(null, bind_ids);
 
     const bindings = [];
@@ -10584,8 +11609,7 @@ function evaluate(lex, EVENT$$1 = false) {
 
                         lex.p.sync();
                     } else if (start < lex.pos) {
-                        //debugger
-                        //console.log(lex.slice(start));
+
                         binds.push(new RawValueBinding(lex.slice(start)));
                     } //create text node
 
@@ -13535,7 +14559,7 @@ class SourcePackage {
             this._skeletons_.push(new Skeleton(element, presets));
             this._complete_();
             return;
-        } else if (!(element instanceof EL) && typeof(element) !== "string" && !(element instanceof whind$1.constructor)) {
+        } else if (!(element instanceof HTMLElement) && typeof(element) !== "string" && !(element instanceof whind$1.constructor)) {
             let err = new Error("Could not create package. element is not an HTMLElement");
             this._addError_(err);
             this._complete_();
