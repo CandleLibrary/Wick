@@ -53,7 +53,7 @@ export function parseText(lex, SourcePackage, presets, url, win) {
 
         node.presets = presets;
 
-        return node.parse(lex, false, url).then((ast) => {
+        return node.parse(lex, url).then((ast) => {
             if (ast.css && ast.css.length > 0) 
                 return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url, win);
             
