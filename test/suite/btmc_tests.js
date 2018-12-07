@@ -1,5 +1,7 @@
+import wick from "../../source/wick";
+
 function BTREE_CONTAINER_TESTS(config) {
-    let scheduler = wick.internals.scheduler;
+    let Spark = wick.internals.Spark;
     
     describe('wick.model.container.btree', function() {
         

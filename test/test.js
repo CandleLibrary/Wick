@@ -10,6 +10,8 @@ const config = {
     BROWSER: false
 };
 
+import wick from "../source/wick";
+
 describe("Wick test suite.", function() {
     let window;
     let DOM;
@@ -47,8 +49,6 @@ describe("Wick test suite.", function() {
             This is a lazy way to ensure all source files will load correctly when changed.
         */
 
-        delete require.cache;
-
         let JSDOM = require("jsdom").JSDOM;
 
         /** Poly Fills **/
@@ -70,7 +70,6 @@ describe("Wick test suite.", function() {
     `);
 
         window = DOM.window;
-        window.screen.height = 20000;
 
         global.window = window;
 
@@ -78,32 +77,23 @@ describe("Wick test suite.", function() {
 
         global.HTMLElement = window.HTMLElement;
 
-        performance = {
+        const performance = {
             now() {
                 return Date.now();
             }
         };
 
-        window.performance = performance;
-
         function raf(f) { return setTimeout(f, 30); }
 
-        requestAnimationFrame = raf;
-
-        window.requestAnimationFrame = raf;
-
         global.Element = window.Element;
-
-        wick = require("../build/wick-cjs.js");
 
         global.wick = wick;
     });
 
     it("tests", function() {
-        require("./suite/source_package_tests.js")(config);
         require("./suite/schema_tests.js")(config);
         require("./suite/model_tests.js")(config);
         require("./suite/btmc_tests.js")(config);
-        require("./suite/router_tests.js")(config);
+        require("./suite/source_package_tests.js")(config);
     });
 });

@@ -1,4 +1,6 @@
 import URL from "@candlefw/url";
+import spark from "@candlefw/spark";
+import wick from "../../source/wick";
 
 function SOURCEPACKAGETESTS(config) {
 
@@ -22,8 +24,6 @@ function SOURCEPACKAGETESTS(config) {
 
         describe("Construction of Sources", function() {
 
-            let scheduler = wick.internals.scheduler;
-
             var Any = wick.model.any({
                 page_count: 34500,
                 page_number: 0,
@@ -32,6 +32,7 @@ function SOURCEPACKAGETESTS(config) {
                 date: 0,
                 style: 0,
                 name: "schmoolie",
+                age: 0,
 
                 users: [{
                     name: "Doug",
@@ -41,7 +42,6 @@ function SOURCEPACKAGETESTS(config) {
                     age: 256
                 }]
             });
-            
 
             it('Constructs a SourcePackage with Model bindings on properly formatted HTML',
                 () => (new URL("/test/data/package.html")).fetchText()
@@ -54,15 +54,15 @@ function SOURCEPACKAGETESTS(config) {
                     Any.name = "Chesapeak McGee";
                     Any.set({age:22});
                     //Need to wait for update cycle
-                    scheduler.update();
+                    spark.update();
                     ele.children[0].innerHTML.should.equal("Chesapeak McGee");
                     ele.children[1].innerHTML.should.equal("22");
                     Any.age = 44;
-                    scheduler.update();
-                    scheduler.update();
-                    scheduler.update();
-                    scheduler.update();
-                    scheduler.update();
+                    spark.update();
+                    spark.update();
+                    spark.update();
+                    spark.update();
+                    spark.update();
                     ele.children[1].innerHTML.should.equal("44");
                     return true;
                 })));
@@ -75,15 +75,18 @@ function SOURCEPACKAGETESTS(config) {
                     ele.children.should.have.lengthOf(2);
                     source._HAVE_ERRORS_.should.equal(false);
                     appendToDocumentBody(ele);
-                    Any.name = "Makimbo";
                     Any.age = 38;
-                    scheduler.update();
-                    scheduler.update();
+                    Any.name = "Makimbo";
+                    spark.update();
+                    spark.update();
+                    spark.update();
+                    spark.update();
+
                     ele.children[0].innerHTML.should.equal("Makimbo:38");
                     ele.children[1].innerHTML.should.equal("Youngin");
                     Any.age = 89;
-                    scheduler.update();
-                    scheduler.update();
+                    spark.update();
+                    spark.update();
                     ele.children[1].innerHTML.should.equal("Elder");
                     return true;
                 }))
@@ -106,18 +109,18 @@ function SOURCEPACKAGETESTS(config) {
                     choiceB.innerHTML.should.equal("Paper");
                     choiceC.innerHTML.should.equal("Scissors");
                     choiceA.click();
-                    scheduler.update();
-                    scheduler.update();
+                    spark.update();
+                    spark.update();
                     children[4].innerHTML.should.equal("Rock");
                     children[0].innerHTML.should.equal("Your choice is: Rock!");
                     choiceB.click();
-                    scheduler.update();
-                    scheduler.update();
+                    spark.update();
+                    spark.update();
                     children[4].innerHTML.should.equal("Paper");
                     children[0].innerHTML.should.equal("Your choice is: Paper!");
                     choiceC.click();
-                    scheduler.update();
-                    scheduler.update();
+                    spark.update();
+                    spark.update();
                     children[4].innerHTML.should.equal("Scissors");
                     children[0].innerHTML.should.equal("Your choice is: Scissors!");
                     return true;
@@ -134,22 +137,22 @@ function SOURCEPACKAGETESTS(config) {
                     ele.children.should.have.lengthOf(1);
                     ele.children[0].children.should.have.lengthOf(2);
                     let container = ele.children[0];
-                    scheduler.update();
-                    scheduler.update();
+                    spark.update();
+                    spark.update();
                     container.children.should.have.lengthOf(2);
                     let childA = container.children[0];
                     let childB = container.children[1];
                     childA.innerHTML.should.equal("Doug is a young person whose age is 18.");
                     childB.innerHTML.should.equal("Carly is an old person whose age is 256.");
-                    scheduler.update();
-                    scheduler.update();
+                    spark.update();
+                    spark.update();
                     
                     Any.users.set({
                         name: "Chevy",
                         age: 13
                     });
-                    scheduler.update();
-                    scheduler.update();
+                    spark.update();
+                    spark.update();
                     let childC = container.children[2];
                     childC.innerHTML.should.equal("Chevy is a young person whose age is 13.");
                     return true;
@@ -168,15 +171,15 @@ function SOURCEPACKAGETESTS(config) {
                     st.tagName.should.equal("UL");
                     st.children.should.have.lengthOf(3);
                     manager.emit("filter", "Carly");
-                    scheduler.update();
-                    scheduler.update();
-                    scheduler.update();
+                    spark.update();
+                    spark.update();
+                    spark.update();
                     st.children.should.have.lengthOf(1);
                     st.children[0].innerHTML.should.equal("Carly is an old person whose age is 256.");
                     manager.emit("filter", "");
-                    scheduler.update();
-                    scheduler.update();
-                    scheduler.update();
+                    spark.update();
+                    spark.update();
+                    spark.update();
                     st.children.should.have.lengthOf(3);
 
 
@@ -243,8 +246,8 @@ function SOURCEPACKAGETESTS(config) {
                     let input = container.children[0];
                     input.value.should.equal(Any.name);
                     Any.name = "Silverston McGraw";
-                    scheduler.update();
-                    scheduler.update();
+                    spark.update();
+                    spark.update();
 
                 }))
             );
@@ -270,73 +273,6 @@ function SOURCEPACKAGETESTS(config) {
                 });
         });
     });
-
-    if (config.PERFORMANCE) {
-
-        describe("Source Performance Test Suite", function() {
-            this.slow(100000000);
-            this.timeout(500000);
-            let element = "";
-
-            before(() => (new URL("/test/data/performance.html")).fetchText().then(text => {
-                element = text;
-            }).catch((e) => console.throw(e)));
-
-            const suite = new benchmark.Suite;
-            const number_of_elements = 100;
-            it(`Compares Build Every Component from Scratch vs Precompiling with SourcePackage: ${number_of_elements} components per cycle`, function(done) {
-                this.timeout(500000);
-                suite.add("Scratch", {
-                    defer: true,
-                    fn: function(deferred) {
-                        let Any = wick.model.any({});
-                        let constructing_template = element;
-                        let count_down = number_of_elements;
-                        let element1 = document.createElement("div");
-                        for (var i = 0; i < number_of_elements; i++) {
-                            wick.source(constructing_template, wick.core.presets({}), element, true).then((source) => {
-                                let element = document.createElement("div");
-                                let manager = source.mount(element, Any, false);
-                                element1.appendChild(element);
-
-                                if (--count_down < 1)
-                                    deferred.resolve();
-                            });
-                        }
-                    }
-                }).add("Precompiling", {
-                    defer: true,
-                    fn: function(deferred) {
-                        let Any = wick.model.any({});
-                        let constructing_template = element;
-                        let element1 = document.createElement("div");
-                        wick.source(constructing_template, wick.core.presets({}), element, true).then((source) => {
-                            for (var i = 0; i < number_of_elements; i++) {
-                                let element = document.createElement("div");
-                                let manager = source.mount(element, Any, false);
-                                element1.appendChild(element);
-                            }
-                            deferred.resolve();
-                        });
-                    }
-                }).on("start", function(event) {}).on("cycle", function(event) {
-                    if (config.BROWSER) {
-                        let li = document.createElement("li");
-                        li.innerHTML = `<ul><li class="test" style="text-align:right"><h2>${(event.target)}</h2></li></ul>`;
-                        document.getElementById("mocha-report").appendChild(li)
-                    } else
-                        console.log(event.target + "")
-                }).on(`complete`, function() {
-                    //console.log(this);
-                    //console.log()
-                    done();
-                }).run({
-                    'async': false
-                });
-            });
-        });
-    }
-
 }
 
 if (typeof module !== "undefined") module.exports = SOURCEPACKAGETESTS;

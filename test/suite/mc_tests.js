@@ -1,3 +1,5 @@
+import wick from "../../source/wick";
+
 function MCTESTS() {
     /**
     	This is a general test suite for objects the inherit from ModelContainer

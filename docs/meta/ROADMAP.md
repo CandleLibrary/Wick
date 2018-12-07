@@ -33,7 +33,7 @@ The versioning scheme of Wick is as follows:
 
 ## v0.6.*
 
-## v0.5.*
+## v0.5.* - In Active Development
 
 ### Planned Features and Improvements
 - Any container index matching.
@@ -43,8 +43,7 @@ The versioning scheme of Wick is as follows:
 - API documentation for all major classes
 - Simplify, Optimize code base
 
-
-## v0.4.* - In Active Development
+## v0.4.* 
 
 ### Planned Features and Improvements
 - ShadowDOM polyfill
@@ -389,10 +388,10 @@ Any testing or experimental features from here on will be found within the `dev`
 > Properties will be automatically parsed using the Model's schema, which uses Object.defineProperty to create special watcher and getter properties on the Model's prototype.
 If no schema object is bound to a Model through `Model#schema`, then an AnyModel is returned, which uses a Proxy object to handle updates on the Model.
 
-- Added a **Scheduler** class to keep objects from spamming `requestAnimationFrame` or setTimeout.
-> Objects can call `Scheduler#queueUpdate(this)` to have the object's `update` function be called at an appropriate time.
-The Scheduler itself uses `requestAnimationFrame` if available.
-**TransformTo** has been changed to use the Scheduler. Model will also now use the Scheduler to schedule an update pass when one or more of its properties are changed.
+- Added a **Spark** class to keep objects from spamming `requestAnimationFrame` or setTimeout.
+> Objects can call `Spark#queueUpdate(this)` to have the object's `update` function be called at an appropriate time.
+The Spark itself uses `requestAnimationFrame` if available.
+**TransformTo** has been changed to use the Spark. Model will also now use the Spark to schedule an update pass when one or more of its properties are changed.
 
 - Introduced new test suites using mocha.
 > Started making tests for ModelContainer and its derivatives. Configured the `./test` folder and files to be able to be run with mocha either in browser or in NodeJS using the same source files.

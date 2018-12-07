@@ -1,7 +1,9 @@
 import URL from "@candlefw/url";
+import spark from "@candlefw/spark";
+import wick from "../../source/wick";
 
 function MODELTESTS(config) {
-    let scheduler = wick.internals.scheduler;
+    
     describe('wick.model', function() {
         it("Allows watchers to attach receive update on change events", function() {
             let model = wick.model({
@@ -40,7 +42,7 @@ function MODELTESTS(config) {
             model.addListener(listener);
 
 
-            scheduler.update();
+            spark.update();
 
             let clone = model.clone();
 
@@ -50,7 +52,7 @@ function MODELTESTS(config) {
                 data.name.should.equal('mark');
             };
 
-            scheduler.update();
+            spark.update();
 
             model.name.should.equal("bob");
         });
@@ -73,7 +75,7 @@ function MODELTESTS(config) {
                 }
             });
 
-            scheduler.update();
+            spark.update();
 
             let listener = {
                 update: (data) => data.user.nationality.should.equal("Japanese")
@@ -83,11 +85,11 @@ function MODELTESTS(config) {
 
             modelA.nationality.should.equal("Japanese");
 
-            scheduler.update();
+            spark.update();
 
             listener.update = (data) => data.user.nationality.should.equal("Bermudian");
 
-            scheduler.update();
+            spark.update();
 
             modelA.nationality = "Bermudian";
 

@@ -1,5 +1,11 @@
 #### Wick Change Log
 
+## v0.5.0a
+
+### 12/6/2018
+
+1. Split wick into separate packages under the CandleFW banner. Wick is now cfw-wick, and it comprises the Model and Source code, with everything else moved into other CandleFW repositories. 
+
 ## v0.4.2a
 
 ### 8/29/2018
@@ -34,8 +40,8 @@
 
 2. Changed dynamic and static CSS scoping in templates to scope to <w-s> elements. 
 
-3. Added timing functions to Scheduler. 
-> - `Scheduler.queueUpdate(object, timestart, timeend)` can be called with millisecond values for `timestart` and `timeend` arguments. A value of 0 or more for `timestart` will cause the Scheduler to delay calling `_update_` on the requesting object until a period of time equal to `timestart` elapses. A value of 1 or more for `timeend` will cause the Scheduler to repeatedly call `_update_` on the requesting object for a period of time equal to `timeend`
+3. Added timing functions to Spark. 
+> - `Spark.queueUpdate(object, timestart, timeend)` can be called with millisecond values for `timestart` and `timeend` arguments. A value of 0 or more for `timestart` will cause the Spark to delay calling `_update_` on the requesting object until a period of time equal to `timestart` elapses. A value of 1 or more for `timeend` will cause the Spark to repeatedly call `_update_` on the requesting object for a period of time equal to `timeend`
 
 ## v0.4.0a
 

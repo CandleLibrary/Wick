@@ -1,40 +1,24 @@
 {
-  "name": "@galactrax/wick",
+  "name": "@candlefw/wick",
   "version": "0.5.0a",
-  "description": "PWA Framework",
-  "main": "./build/wick-es.js",
-  "watch": {
-    "jsdocs": "source/**/*.js"
-  },
+  "description": "Web Component Builder",
+  "main": "./source/wick.mjs",
   "scripts": {
     "prepare": "npm run build",
-    "test": "nyc mocha",
+    "test": "mocha -r esm",
     "test.watch": "mocha -r esm -w --check-leaks -R min",
-    "build-css": "rollup --config ./build/config/css.config.js",
-    "build-html": "rollup --config ./build/config/html.config.js",
-    "build-anim": "rollup --config ./build/config/anim.config.js",
-    "build-production": "rollup --config ./build/config/minibuild.config.js",
-    "build-production.watch": "rollup --config ./build/config/minibuild.config.js --watch --environment BUILD:pro",
-    "build-production-es": "rollup --config ./build/config/minibuild_es.config.js",
-    "build-dev": "rollup --config ./build/config/browserdev.config.js --environment  BUILD:pro",
-    "build-dev.watch": "rollup --config ./build/config/config.js --watch --environment  BUILD:dev",
-    "build-node": "rollup --config ./build/config/config.js --environment  BUILD:dev",
-    "build-node.watch": "rollup --config ./build/config/node.config.js --watch --environment  BUILD:dev",
-    "build": "rollup --config ./build/config/config.js",
-    "build.watch": "rollup --config  ./build/config/config.js --watch",
-    "jsdocs": "jsdoc ./source -r --configure ./build/config/jsdoc.json ",
-    "jsdocs.watch": "watch jsdoc ./source -r --configure ./build/config/jsdoc.json "
+    "build": "rollup --config ./build/config/main.config.js",
+    "build.watch": "rollup --config  ./build/config/main.config.js --watch"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/galactrax/wick.git"
+    "url": "git+https://github.com/galactrax/cfw-wick.git"
   },
   "keywords": [
     "SPA",
     "PWA",
-    "Framework",
+    "Components",
     "JavaScript",
-    "Animation",
     "Forms",
     "Website",
     "REST",
@@ -49,20 +33,19 @@
   "author": "Anthony Weathersby",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/galactrax/wick/issues"
+    "url": "https://github.com/galactrax/cfw-wick/issues"
   },
-  "homepage": "https://github.com/galactrax/wick#readme",
+  "homepage": "https://github.com/galactrax/cfw-wick#readme",
   "devDependencies": {
     "benchmark": "^2.1.4",
-    "chai": "^4.1.2",
+    "chai": "^4.2.0",
     "esm": "^3.0.84",
-    "expect": "^23.4.0",
     "jquery": "^3.3.1",
     "jsdoc": "^3.5.5",
-    "jsdom": "^11.11.0",
+    "jsdom": "^11.12.0",
     "mocha": "^5.2.0",
     "mocha-logger": "^1.0.6",
-    "node-fetch": "^2.2.0",
+    "node-fetch": "^2.3.0",
     "nyc": "^12.0.2",
     "rollup": "^0.62.0",
     "rollup-plugin-commonjs": "^9.2.0",
@@ -75,10 +58,12 @@
     "esversion": 6,
     "unused": true
   },
-  "optionalDependencies": {},
   "dependencies": {
-    "@candlefw/html": "0.0.2",
-    "@candlefw/url": "0.0.2",
-    "@candlefw/whind": "^0.2.4"
+    "@candlefw/css": "0.0.3",
+    "@candlefw/glow": "0.0.3",
+    "@candlefw/html": "0.0.3",
+    "@candlefw/spark": ">=0.0.3",
+    "@candlefw/url": ">=0.0.2",
+    "@candlefw/whind": "^0.2.5-a"
   }
 }

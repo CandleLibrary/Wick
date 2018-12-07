@@ -1,3 +1,6 @@
+
+import wick from "../../source/wick";
+
 function SCHEMATESTS()  {
 
 	function testSchema(scheme, name){
