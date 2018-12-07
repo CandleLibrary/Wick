@@ -1,10 +1,10 @@
 {
   "name": "@candlefw/wick",
-  "version": "0.5.1a",
+  "version": "0.5.2",
   "description": "Web Component Builder",
   "main": "./source/wick.mjs",
   "scripts": {
-    "prepare": "npm run build",
+    "prepare": "npm test && npm run build",
     "test": "mocha -r esm",
     "test.watch": "mocha -r esm -w --check-leaks -R min",
     "build": "rollup --config ./build/config/main.config.js",
