@@ -174,7 +174,7 @@ export class Source extends View {
     }
 
     /**
-        Sets up Model connection or creates a new Model from a schema.
+        Makes the source a view of the given Model. If no model passed, then the source will bind to another model depending on its `scheme` or `model` attributes. 
     */
     load(model) {
         let m = null, s = null;
@@ -191,6 +191,8 @@ export class Source extends View {
         } else if (!model)
             model = new Model(model);
 
+        let LOADED = this.LOADED;
+
         this.LOADED = true;
 
         for (let i = 0, l = this.sources.length; i < l; i++) {
@@ -203,7 +205,8 @@ export class Source extends View {
         for (let name in this.taps)
             this.taps[name].load(this.model, false);
 
-        this.update({ created: true });
+        if(!LOADED)
+            this.update({ created: true });
     }
 
     down(data, changed_values) {
@@ -212,10 +215,10 @@ export class Source extends View {
 
     up(tap, data, meta) {
         if (this.parent)
-            this.parent._upImport_(tap._prop_, data, meta, this);
+            this.parent.upImport(tap._prop_, data, meta, this);
     }
 
-    _upImport_(prop_name, data, meta) {
+    upImport(prop_name, data, meta) {
         if (this.taps[prop_name])
             this.taps[prop_name].up(data, meta);
     }
