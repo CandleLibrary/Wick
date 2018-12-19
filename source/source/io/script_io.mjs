@@ -54,7 +54,7 @@ export class ScriptIO extends IOBase {
             typeof(name) !== "undefined" &&
             typeof(value) !== "undefined"
         ) {
-            this._source_._upImport_(name, value, this.meta);
+            this._source_.upImport(name, value, this.meta);
         }
     }
 }

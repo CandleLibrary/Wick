@@ -408,7 +408,7 @@ export class SourceTemplate extends View {
                 transition.start();
             }
 
-        this.parent._upImport_("template_count_changed", {
+        this.parent.upImport("template_count_changed", {
             displayed: ol,
             offset: offset,
             count: this.activeSources.length,
@@ -476,7 +476,7 @@ export class SourceTemplate extends View {
             for (let i = 0; i < sl; i++) this.sources[i].transitionOut(transition, "", true);
             this.sources.length = 0;
 
-            this.parent._upImport_("template_count_changed", {
+            this.parent.upImport("template_count_changed", {
                 displayed: 0,
                 offset: 0,
                 count: 0,
@@ -532,7 +532,6 @@ export class SourceTemplate extends View {
      * @param      {Array}  items   An array of items no longer stored in the ModelContainer. 
      */
     removed(items, transition = Transitioneer.createTransition()) {
-        debugger
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
             for (let j = 0; j < this.sources.length; j++) {

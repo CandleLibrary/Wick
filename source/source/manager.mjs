@@ -29,7 +29,7 @@ export class SourceManager {
 
     emit(name, value) {
         for (let i = 0; i < this.sources.length; i++)
-            this.sources[i]._upImport_(name, value, {
+            this.sources[i].upImport(name, value, {
                 event: {}
             });
     }
@@ -145,7 +145,7 @@ export class SourceManager {
         return transition_time;
     }
 
-    _upImport_(prop_name, data, meta) {
+    upImport(prop_name, data, meta) {
         if (this.parent)
             this.parent.up(prop_name, data, meta, this);
     }
