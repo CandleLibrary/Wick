@@ -529,10 +529,9 @@ export class RootNode extends HTMLNode {
      * @return     {TextNode}  
      */
     processTextNodeHook(lex) {
-
         if (lex.sl - lex.pos > 0) {
 
-            let binding = Template(lex);
+            let binding = Template(lex.trim());
             if (binding)
                 return new RootText(this.processTapBinding(binding));
         }
