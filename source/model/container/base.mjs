@@ -52,7 +52,7 @@ export class ModelContainerBase extends ModelBase {
         _SealedProperty_(this, "prev", null);
 
         //Filters are a series of strings or number selectors used to determine if a model should be inserted into or retrieved from the container.
-        _SealedProperty_(this, "__filters__", null);
+        _SealedProperty_(this, "_filters_", null);
 
         this.validator = new SchemeConstructor();
 
@@ -66,7 +66,7 @@ export class ModelContainerBase extends ModelBase {
     destroy() {
 
 
-        this.__filters__ = null;
+        this._filters_ = null;
 
         if (this.source) {
             this.source.__unlink__(this);
@@ -227,7 +227,7 @@ export class ModelContainerBase extends ModelBase {
                 model.MUTATION_ID = this.MUTATION_ID;
             }
 
-            identifier = this._gI_(model, this.__filters__);
+            identifier = this._gI_(model, this._filters_);
 
             if (identifier !== undefined) {
                 out = this.__insert__(model, add_list, identifier);
@@ -258,7 +258,7 @@ export class ModelContainerBase extends ModelBase {
         if (!__FROM_SOURCE__ && this.source) {
 
             if (!term)
-                return this.source.remove(this.__filters__);
+                return this.source.remove(this._filters_);
             else
                 return this.source.remove(term);
         }
@@ -354,7 +354,7 @@ export class ModelContainerBase extends ModelBase {
         let a = this.first_link;
         while (a) {
             for (let i = 0; i < item.length; i++)
-                if (a._gI_(item[i], a.__filters__)) {
+                if (a._gI_(item[i], a._filters_)) {
                     a.scheduleUpdate();
                     a.__linksRemove__(item);
                     break;
@@ -372,7 +372,7 @@ export class ModelContainerBase extends ModelBase {
     __linksInsert__(item) {
         let a = this.first_link;
         while (a) {
-            if (a._gI_(item, a.__filters__))
+            if (a._gI_(item, a._filters_))
                 a.scheduleUpdate();
             a = a.next;
         }
@@ -411,12 +411,12 @@ export class ModelContainerBase extends ModelBase {
 
     __setFilters__(term) {
 
-        if (!this.__filters__) this.__filters__ = [];
+        if (!this._filters_) this._filters_ = [];
 
         if (Array.isArray(term))
-            this.__filters__ = this.__filters__.concat(term.map(t => this.validator.parse(t)));
+            this._filters_ = this._filters_.concat(term.map(t => this.validator.parse(t)));
         else
-            this.__filters__.push(this.validator.parse(term));
+            this._filters_.push(this.validator.parse(term));
 
     }
 

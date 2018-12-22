@@ -13,7 +13,7 @@ function complete(lex, SourcePackage, presets, ast, url, win) {
      */
     if (ast.tag && (ast.tag !== "import" && ast.tag !== "link") && ast.tag !== "template") {
         let skeleton = new Skeleton(ast, presets);
-        SourcePackage._skeletons_.push(skeleton);
+        SourcePackage.skeletons.push(skeleton);
     }
 
     lex.IWS = true;
@@ -22,14 +22,14 @@ function complete(lex, SourcePackage, presets, ast, url, win) {
     if (!lex.END)
         return parseText(lex, SourcePackage, presets, url, win);
 
-    SourcePackage._complete_();
+    SourcePackage.complete();
 
     return SourcePackage;
 }
 
 
 function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win) {
-    return css_list[index]._READY_().then(() => {
+    return css_list[index].READY().then(() => {
         
         if(++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
 
@@ -59,14 +59,14 @@ export function parseText(lex, SourcePackage, presets, url, win) {
             
             return complete(lex, SourcePackage, presets, ast, url, win);
         }).catch((e) => {
-            SourcePackage._addError_(e);
-            SourcePackage._complete_();
+            SourcePackage.addError(e);
+            SourcePackage.complete();
         });
     }
 
     debugger;
-    SourcePackage._addError_(new Error(`Unexpected end of input. ${lex.slice(start)}, ${lex.str}`));
-    SourcePackage._complete_();
+    SourcePackage.addError(new Error(`Unexpected end of input. ${lex.slice(start)}, ${lex.str}`));
+    SourcePackage.complete();
 }
 
 
@@ -93,8 +93,8 @@ function CompileSource(SourcePackage, presets, element, url, win = window) {
         lex = whind(element.innerHTML);
     } else {
         let e = new Error("Cannot compile component");
-        SourcePackage._addError_(e);
-        SourcePackage._complete_();
+        SourcePackage.addError(e);
+        SourcePackage.complete();
     }
     return parseText(lex, SourcePackage, presets, url, win);
 }

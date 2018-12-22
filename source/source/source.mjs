@@ -160,7 +160,7 @@ export class Source extends View {
                 out_taps.push(this.taps[name]);
             else {
                 let bool = name == "update";
-                let t = bool ? new UpdateTap(this, name, tap._modes_) : new Tap(this, name, tap._modes_);
+                let t = bool ? new UpdateTap(this, name, tap.modes) : new Tap(this, name, tap.modes);
 
                 if (bool)
                     this.update_tap = t;
@@ -215,7 +215,7 @@ export class Source extends View {
 
     up(tap, data, meta) {
         if (this.parent)
-            this.parent.upImport(tap._prop_, data, meta, this);
+            this.parent.upImport(tap.prop, data, meta, this);
     }
 
     upImport(prop_name, data, meta) {

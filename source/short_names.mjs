@@ -93,23 +93,23 @@ export const createElement = (e) => document.createElement(e);
 
 /**
  *  Element.prototype.appendChild short name wrapper.
- * @method _appendChild_
+ * @method appendChild
  * @package
  * @memberof module:wick~internals
  * @param 	{HTMLElement}  		el  	- parent HTMLElement.
  * @return  {HTMLElement | HTMLNode}  		ch_el 	- child HTMLElement or HTMLNode. 
  */
-export const _appendChild_ = (el, ch_el) => el.appendChild(ch_el);
+export const appendChild = (el, ch_el) => el.appendChild(ch_el);
 
 /**
  *  Element.prototype.cloneNode short name wrapper.
- * @method _cloneNode_
+ * @method cloneNode
  * @package
  * @memberof module:wick~internals
  * @param 	{HTMLElement}  		el   - HTMLElement to clone.
  * @return  {Boolean}  			bool - Switch for deep clone
  */
-export const _cloneNode_ = (el, bool) => el.cloneNode(bool);
+export const cloneNode = (el, bool) => el.cloneNode(bool);
 
 /**
  *  Element.prototype.getElementsByTagName short name wrapper.

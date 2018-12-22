@@ -51,7 +51,7 @@ function SOURCEPACKAGETESTS(config) {
                     source.mount(ele, Any, false);
                     //appendToDocumentBody(ele);
                     ele.children.should.have.lengthOf(2);
-                    source._HAVE_ERRORS_.should.equal(false);
+                    source.HAVE_ERRORS.should.equal(false);
                     Any.name = "Chesapeak McGee";
                     Any.set({age:22});
                     //Need to wait for update cycle
@@ -74,7 +74,7 @@ function SOURCEPACKAGETESTS(config) {
                     let ele = document.createElement("div");
                     source.mount(ele, Any, false);
                     ele.children.should.have.lengthOf(2);
-                    source._HAVE_ERRORS_.should.equal(false);
+                    source.HAVE_ERRORS.should.equal(false);
                     appendToDocumentBody(ele);
                     Any.age = 38;
                     Any.name = "Makimbo";
@@ -100,7 +100,7 @@ function SOURCEPACKAGETESTS(config) {
                     source.mount(ele, Any, false);
                     ele.children.should.have.lengthOf(1);
                     ele.firstElementChild.children.should.have.lengthOf(5);
-                    source._HAVE_ERRORS_.should.equal(false);
+                    source.HAVE_ERRORS.should.equal(false);
                     appendToDocumentBody(ele);
                     let children = ele.firstElementChild.children;
                     let choiceA = children[1];
@@ -134,7 +134,7 @@ function SOURCEPACKAGETESTS(config) {
                     let ele = document.createElement("div");
                     source.mount(ele, Any, false);
                     appendToDocumentBody(ele);
-                    source._HAVE_ERRORS_.should.equal(false);
+                    source.HAVE_ERRORS.should.equal(false);
                     ele.children.should.have.lengthOf(1);
                     ele.children[0].children.should.have.lengthOf(2);
                     let container = ele.children[0];
@@ -238,7 +238,7 @@ function SOURCEPACKAGETESTS(config) {
                     let ele = document.createElement("div");
                     source.mount(ele, Any, false);
                     appendToDocumentBody(ele);
-                    source._HAVE_ERRORS_.should.equal(false);
+                    source.HAVE_ERRORS.should.equal(false);
                     ele.children.should.have.lengthOf(1);
                     ele.children[0].children.should.have.lengthOf(3);
                     let container = ele.children[0];
@@ -262,7 +262,7 @@ function SOURCEPACKAGETESTS(config) {
                                 .then(text => wick.source(text, presets, true).then(source => {
                                     let ele = document.createElement("div");
                                     source.mount(ele, Any, false);
-                                    source._HAVE_ERRORS_.should.equal(false);
+                                    source.HAVE_ERRORS.should.equal(false);
                                     appendToDocumentBody(ele);
                                     ele.children.should.have.lengthOf(3);
                                     let c = ele.children;

@@ -28,11 +28,11 @@ export class ExpressionIO extends TemplateString {
 
             for (let i = 0, l = this._bl_; i < l; i++) {
                 let bind = this.binds[i];
-                if (bind.parent._prop_ == "model" || bind.parent._prop_ == "m") {
+                if (bind.parent.prop == "model" || bind.parent.prop == "m") {
                     model_arg_index = i;
                 }
 
-                if (bind.parent._prop_ == "index" || bind.parent._prop_ == "i") {
+                if (bind.parent.prop == "index" || bind.parent.prop == "i") {
                     index_arg_index = i;
                 }
             }

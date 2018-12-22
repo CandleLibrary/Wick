@@ -1,6 +1,6 @@
 import whind from "@candlefw/whind";
 
-import { EL, OB, _cloneNode_, _appendChild_ } from "../short_names";
+import { EL, OB, cloneNode, appendChild } from "../short_names";
 import { SourceManager } from "./manager";
 import { CompileSource } from "./compiler/compiler";
 import { Skeleton } from "./skeleton";
@@ -9,7 +9,7 @@ import { RootNode } from "./compiler/nodes/root";
 
 /**
  * SourcePackages stores compiled {@link SourceSkeleton}s and provide a way to _bind_ Model data to the DOM in a reusable manner. *
- * @property    {Array}    _skeletons_
+ * @property    {Array}    skeletons
  * @property    {Array}    styles
  * @property    {Array}    scripts
  * @property    {Array}    style_core
@@ -26,23 +26,23 @@ class SourcePackage {
 
     constructor(element, presets, RETURN_PROMISE = false, url = "", win = window) {
 
-        //If a package exists for the element already, it will be bound to __wick__package__. That will be returned.
-        if (element.__wick__package__) {
+        //If a package exists for the element already, it will be bound to __wick_package_. That will be returned.
+        if (element.__wick_package_) {
             if (RETURN_PROMISE)
-                return new Promise((res) => res(element.__wick__package__));
-            return element.__wick__package__;
+                return new Promise((res) => res(element.__wick_package_));
+            return element.__wick_package_;
         }
 
 
         /**
          * When set to true indicates that the package is ready to be mounted to the DOM.
          */
-        this._READY_ = false;
+        this.READY = false;
 
         /**
          * An array of SourceSkeleton objects.
          */
-        this._skeletons_ = [];
+        this.skeletons = [];
 
         /**
          * An array objects to store pending calls to SourcePackage#mount
@@ -52,12 +52,12 @@ class SourcePackage {
         /**
          * An Array of error messages received during compilation of template.
          */
-        this._errors_ = [];
+        this.errors = [];
 
         /**
          * Flag to indicate SourcePackage was compiled with errors
          */
-        this._HAVE_ERRORS_ = false;
+        this.HAVE_ERRORS = false;
 
         if (element instanceof Promise) {
             element.then((data) => CompileSource(this, presets, data, url, win));
@@ -65,13 +65,13 @@ class SourcePackage {
             return this;
         } else if (element instanceof RootNode) {
             //already an HTMLtree, just package into a skeleton and return.
-            this._skeletons_.push(new Skeleton(element, presets));
-            this._complete_();
+            this.skeletons.push(new Skeleton(element, presets));
+            this.complete();
             return;
         } else if (!(element instanceof HTMLElement) && typeof(element) !== "string" && !(element instanceof whind.constructor)) {
             let err = new Error("Could not create package. element is not an HTMLElement");
-            this._addError_(err);
-            this._complete_();
+            this.addError(err);
+            this.complete();
             if (RETURN_PROMISE)
                 return new Promise((res, rej) => rej(err));
             return;
@@ -92,12 +92,12 @@ class SourcePackage {
     /**
      * Called when template compilation completes.
      *
-     * Sets SourcePackage#_READY_ to true, send the pending mounts back through SourcePackage#mount, and freezes itself.
+     * Sets SourcePackage#READY to true, send the pending mounts back through SourcePackage#mount, and freezes itself.
      *
      * @protected
      */
-    _complete_() {
-        this._READY_ = true;
+    complete() {
+        this.READY = true;
 
         for (let m, i = 0, l = this.pms.length; i < l; i++)
             (m = this.pms[i], this.mount(m.e, m.m, m.usd, m.mgr));
@@ -105,7 +105,7 @@ class SourcePackage {
 
         this.pms.length = 0;
 
-        this._fz_();
+        this.freeze();
     }
 
     /**
@@ -115,10 +115,10 @@ class SourcePackage {
      *
      * @protected
      */
-    _addError_(error_message) {
-        this._HAVE_ERRORS_ = true;
-        //Create error skeleton and push to _skeletons_
-        this._errors_.push(error_message);
+    addError(error_message) {
+        this.HAVE_ERRORS = true;
+        //Create error skeleton and push to skeletons
+        this.errors.push(error_message);
         console.error(error_message);
     }
 
@@ -126,13 +126,13 @@ class SourcePackage {
      * Freezes properties.
      * @protected
      */
-    _fz_() {
+    freeze() {
         return;
-        OB.freeze(this._READY_);
-        OB.freeze(this._skeletons_);
+        OB.freeze(this.READY);
+        OB.freeze(this.skeletons);
         OB.freeze(this.styles);
         OB.freeze(this.pms);
-        OB.freeze(this._errors_);
+        OB.freeze(this.errors);
         OB.freeze(this);
     }
 
@@ -146,9 +146,9 @@ class SourcePackage {
      *
      * @protected
      */
-    _pushPendingMount_(element, model, USE_SHADOW_DOM, manager) {
+    pushPendingMount(element, model, USE_SHADOW_DOM, manager) {
 
-        if (this._READY_)
+        if (this.READY)
             return this.mount(element, model, USE_SHADOW_DOM, manager);
 
         this.pms.push({
@@ -171,12 +171,12 @@ class SourcePackage {
      */
     mount(element, model, USE_SHADOW_DOM = false, manager = new SourceManager(model, element)) {
 
-        if (!this._READY_)
-            return this._pushPendingMount_(element, model, USE_SHADOW_DOM, manager);
+        if (!this.READY)
+            return this.pushPendingMount(element, model, USE_SHADOW_DOM, manager);
 
         //if (!(element instanceof EL)) return null;
 
-        if (this._HAVE_ERRORS_) {
+        if (this.HAVE_ERRORS) {
             //Process
             console.warn("TODO - Package has errors, pop an error widget on this element!");
         }
@@ -195,13 +195,13 @@ class SourcePackage {
             element = shadow_root;
 
             for (i = 0, l = this.styles.length; i < l; i++) {
-                let style = _cloneNode_(this.styles[i], true);
-                _appendChild_(element, style);
+                let style = cloneNode(this.styles[i], true);
+                appendChild(element, style);
             }
         }
 
-        for (i = 0, l = this._skeletons_.length; i < l; i++) {
-            let source = this._skeletons_[i].flesh(element, model);
+        for (i = 0, l = this.skeletons.length; i < l; i++) {
+            let source = this.skeletons[i].flesh(element, model);
             source.parent = manager;
             manager.sources.push(source);
         }

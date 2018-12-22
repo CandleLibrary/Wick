@@ -25,7 +25,7 @@ export class PackageNode extends VoidNode {
         own_lex.tl = 0;
         own_lex.n.sl = lex.off;
 
-        this.par._package_ = new this.SourcePackage(own_lex, this.presets, false);
+        this.par.package = new this.SourcePackage(own_lex, this.presets, false);
 
         if (!this.fch)
             this.mergeComponent();
@@ -35,6 +35,6 @@ export class PackageNode extends VoidNode {
         let component = this.presets.components[this.tag];
 
         if (component)
-            this.par._package_ = new this.SourcePackage(component, this.presets, false);
+            this.par.package = new this.SourcePackage(component, this.presets, false);
     }
 }

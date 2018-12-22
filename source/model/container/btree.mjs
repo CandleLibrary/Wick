@@ -103,11 +103,11 @@ export class BTreeModelContainer extends ModelContainerBase {
             this.btree.get(a, b, out);
         }
 
-        if (this.__filters__) {
+        if (this._filters_) {
             for (let i = 0, l = out.length; i < l; i++) {
                 let model = out[i];
 
-                if (this._gI_(model, this.__filters__))
+                if (this._gI_(model, this._filters_))
                     __return_data__.push(model);
             }
         } else
@@ -166,8 +166,8 @@ export class BTreeModelContainer extends ModelContainerBase {
 
     __getAll__(__return_data__) {
 
-        if (this.__filters__) {
-            this.__get__(this.__filters__, __return_data__);
+        if (this._filters_) {
+            this.__get__(this._filters_, __return_data__);
         } else if (this.btree)
             this.btree.get(-Infinity, Infinity, __return_data__);
 

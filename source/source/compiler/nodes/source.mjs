@@ -1,6 +1,6 @@
 import { RootNode, BindingCSSRoot } from "./root";
 import { Source } from "../../source";
-import { _appendChild_, createElement } from "../../../short_names";
+import { appendChild, createElement } from "../../../short_names";
 import { Tap, UpdateTap } from "../../tap/tap";
 import { Template } from "../template/template_bindings";
 import { ATTRIB } from "../template/basic_bindings";
@@ -62,7 +62,7 @@ export class SourceNode extends RootNode {
 
             let bool = name == "update";
 
-            me.taps[name] = bool ? new UpdateTap(me, name, tap._modes_) : new Tap(me, name, tap._modes_);
+            me.taps[name] = bool ? new UpdateTap(me, name, tap.modes) : new Tap(me, name, tap.modes);
 
             if (bool)
                 me.update_tap = me.taps[name];
@@ -90,7 +90,7 @@ export class SourceNode extends RootNode {
             me.ele = ele;
 
             if (element) {
-                _appendChild_(element, ele);
+                appendChild(element, ele);
             }
 
             element = ele;

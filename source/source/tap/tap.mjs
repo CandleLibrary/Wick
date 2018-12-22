@@ -22,9 +22,9 @@ export const PUT = 4;
 export class Tap {
 
     constructor(source, prop, modes = 0) {
-        this._source_ = source;
-        this._prop_ = prop;
-        this._modes_ = modes; // 0 implies keep
+        this.source = source;
+        this.prop = prop;
+        this.modes = modes; // 0 implies keep
         this.ios = [];
 
         if (modes & IMPORT && source.parent)
@@ -38,9 +38,9 @@ export class Tap {
             this.ios[i].destroy();
 
         this.ios = null;
-        this._source_ = null;
-        this._prop_ = null;
-        this._modes_ = null;
+        this.source = null;
+        this.prop = null;
+        this.modes = null;
     }
 
     load(data) {
@@ -54,16 +54,16 @@ export class Tap {
     }
 
     downS(model, IMPORTED = false) {
-        const value = model[this._prop_];
+        const value = model[this.prop];
 
         if (typeof(value) !== "undefined") {
 
             if (IMPORTED) {
-                if (!(this._modes_ & IMPORT))
+                if (!(this.modes & IMPORT))
                     return;
 
-                if ((this._modes_ & PUT) && typeof(value) !== "function") {
-                    this._source_.model[this._prop_] = value;
+                if ((this.modes & PUT) && typeof(value) !== "function") {
+                    this.source.model[this.prop] = value;
                 }
 
             }
@@ -79,15 +79,15 @@ export class Tap {
 
     up(value, meta) {
 
-        if (!(this._modes_ & (EXPORT | PUT)))
+        if (!(this.modes & (EXPORT | PUT)))
             this.down(value, meta);
 
-        if ((this._modes_ & PUT) && typeof(value) !== "undefined") {
-            this._source_.model[this._prop_] = value;
+        if ((this.modes & PUT) && typeof(value) !== "undefined") {
+            this.source.model[this.prop] = value;
         }
 
-        if (this._modes_ & EXPORT)
-            this._source_.up(this, value, meta);
+        if (this.modes & EXPORT)
+            this.source.up(this, value, meta);
 
 
 

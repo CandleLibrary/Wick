@@ -23,14 +23,14 @@ export class SourceTemplate extends View {
         this.parent = null;
         this.activeSources = [];
         this.dom_sources = [];
-        this._filters_ = [];
+        this.filters = [];
         this.ios = [];
         this.terms = [];
         this.sources = [];
         this.range = null;
         this._SCHD_ = 0;
-        this._prop_ = null;
-        this._package_ = null;
+        this.prop = null;
+        this.package = null;
         this.transition_in = 0;
         this.offset = 0;
         this.limit = 0;
@@ -427,8 +427,8 @@ export class SourceTemplate extends View {
         let limit = this.limit,
             offset = 0;
 
-        for (let i = 0, l = this._filters_.length; i < l; i++) {
-            let filter = this._filters_[i];
+        for (let i = 0, l = this.filters.length; i < l; i++) {
+            let filter = this.filters[i];
             if (filter.CAN_USE) {
                 if (filter._CAN_LIMIT_) limit = filter._value_;
                 if (filter._CAN_OFFSET_) offset = filter._value_;
@@ -450,8 +450,8 @@ export class SourceTemplate extends View {
     filterUpdate(transition) {
         let output = this.sources.slice();
         if (output.length < 1) return;
-        for (let i = 0, l = this._filters_.length; i < l; i++) {
-            let filter = this._filters_[i];
+        for (let i = 0, l = this.filters.length; i < l; i++) {
+            let filter = this.filters[i];
             if (filter.CAN_USE) {
                 if (filter.CAN_FILTER) output = output.filter(filter.filter_function._filter_expression_);
                 if (filter.CAN_SORT) output = output.sort(filter._sort_function_);
@@ -552,7 +552,7 @@ export class SourceTemplate extends View {
      */
     added(items, transition = Transitioneer.createTransition()) {
         for (let i = 0; i < items.length; i++) {
-            let mgr = this._package_.mount(null, items[i], false);
+            let mgr = this.package.mount(null, items[i], false);
             mgr.sources.forEach((s) => {
                 s.parent = this.parent;
             });

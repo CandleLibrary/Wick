@@ -1,5 +1,5 @@
 import { RootNode } from "./root";
-import { _appendChild_, createElement } from "../../../short_names";
+import { appendChild, createElement } from "../../../short_names";
 import { Source } from "../../source";
 import { SourceTemplate } from "../../template";
 import { Template } from "../template/template_bindings";
@@ -14,7 +14,7 @@ export class SourceTemplateNode extends RootNode {
         this.BUILD_LIST = [];
         this.filters = [];
         this._property_bind_ = null;
-        this._package_ = null;
+        this.package = null;
     }
 
     build(element, source, presets, errors, taps) {
@@ -23,7 +23,7 @@ export class SourceTemplateNode extends RootNode {
 
         if (this.HAS_TAPS)
             taps = source.linkTaps(this.tap_list);
-        if (this._property_bind_ && this._package_) {
+        if (this._property_bind_ && this.package) {
 
             let ele = createElement(this.getAttribute("element") || "ul");
             
@@ -34,10 +34,10 @@ export class SourceTemplateNode extends RootNode {
             
 
             let me = new SourceTemplate(source, presets, ele);
-            me._package_ = this._package_;
+            me.package = this.package;
             me.prop = this._property_bind_._bind_(source, errors, taps, me);
 
-            _appendChild_(element, ele);
+            appendChild(element, ele);
 
             for (let node = this.fch; node; node = this.getNextChild(node)) {
                 //All filter nodes here
@@ -61,7 +61,7 @@ export class SourceTemplateNode extends RootNode {
                 }
 
                 if (sort || filter || limit || offset || scrub || shift) //Only create Filter node if it has a sorting bind or a filter bind
-                    me._filters_.push(new FilterIO(source, errors, taps, me, on, sort, filter, limit, offset, scrub, shift));
+                    me.filters.push(new FilterIO(source, errors, taps, me, on, sort, filter, limit, offset, scrub, shift));
             }
         }else{
             errors.push(new Error(`Missing source for template bound to "${this._property_bind_._bindings_[0].tap_name}"`));

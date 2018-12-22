@@ -2,7 +2,7 @@ import {HTMLNode, TextNode} from "@candlefw/html";
 import {CSSRootNode} from "@candlefw/css";
 
 import {
-    _appendChild_,
+    appendChild,
     createElement
 } from "../../../short_names";
 import {
@@ -64,7 +64,7 @@ export class RootText extends TextNode {
     build(element, source, presets, errors, taps) {
         let ele = document.createTextNode(this.txt);
         this.binding._bind_(source, errors, taps, ele);
-        _appendChild_(element, ele);
+        appendChild(element, ele);
     }
 
     linkCSS() {}
@@ -234,7 +234,7 @@ export class RootNode extends HTMLNode {
         const tap = {
             name: tap_name,
             id: l,
-            _modes_: 0
+            modes: 0
         };
         this.tap_list.push(tap);
         return tap;
@@ -272,7 +272,7 @@ export class RootNode extends HTMLNode {
 
             while (!lex.END) {
 
-                this.getTap(lex.tx)._modes_ |= tap_mode;
+                this.getTap(lex.tx).modes |= tap_mode;
 
                 lex.n;
             }
@@ -366,7 +366,7 @@ export class RootNode extends HTMLNode {
             }else
                 own_element = this.createElement(presets, source);
 
-            if (element) _appendChild_(element, own_element);
+            if (element) appendChild(element, own_element);
 
             if (out_ele)
                 out_ele.ele = own_element;
@@ -382,7 +382,7 @@ export class RootNode extends HTMLNode {
             if (this._badge_name_)
                 source.badges[this._badge_name_] = own_element;
 
-            if (element) _appendChild_(element, own_element);
+            if (element) appendChild(element, own_element);
 
             for (let i = 0, l = this._bindings_.length; i < l; i++) {
                 let attr = this._bindings_[i];

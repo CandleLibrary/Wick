@@ -21,7 +21,7 @@ export class ScriptIO extends IOBase {
 
         this.function = binding.val;
         this._func_ = func;
-        this._source_ = source;
+        this.source = source;
         this._bound_emit_function_ = new Proxy(this._emit_.bind(this), { set: (obj, name, value) => { obj(name, value); } });
         this.meta = null;
     }
@@ -32,7 +32,7 @@ export class ScriptIO extends IOBase {
      */
     destroy() {
         this._func_ = null;
-        this._source_ = null;
+        this.source = null;
         this._bound_emit_function_ = null;
         this._meta = null;
 
@@ -40,7 +40,7 @@ export class ScriptIO extends IOBase {
 
     down(value, meta = { event: null }) {
         this.meta = meta;
-        const src = this._source_;
+        const src = this.source;
         try {
             this._func_(value, meta.event, src.model, this._bound_emit_function_, src.presets, src.statics, src);
         } catch (e) {
@@ -54,7 +54,7 @@ export class ScriptIO extends IOBase {
             typeof(name) !== "undefined" &&
             typeof(value) !== "undefined"
         ) {
-            this._source_.upImport(name, value, this.meta);
+            this.source.upImport(name, value, this.meta);
         }
     }
 }
