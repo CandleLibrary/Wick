@@ -3,10 +3,10 @@ import { EventIO } from "../../io/event_io";
 import { ScriptIO } from "../../io/script_io";
 import { IO, AttribIO, InputIO } from "../../io/io";
 
-export const DYNAMIC_BINDING_ID = 0;
-export const RAW_VALUE_BINDING_ID = 1;
-export const TEMPLATE_BINDING_ID = 2;
-export const EVENT_BINDING_ID = 3;
+export const DYNAMICbindingID = 0;
+export const RAW_VALUEbindingID = 1;
+export const TEMPLATEbindingID = 2;
+export const EVENTbindingID = 3;
 
 export const ATTRIB = 1;
 export const STYLE = 2;
@@ -31,19 +31,19 @@ export class EventBinding {
         return new EventIO(source, errors, taps, element, eventname, this._event_, this.bind);
     }
 
-    get _bindings_() {
+    get bindings() {
         if (this.bind) {
-            if (this.bind.type == TEMPLATE_BINDING_ID)
-                return [...this.bind._bindings_, this._event_];
+            if (this.bind.type == TEMPLATEbindingID)
+                return [...this.bind.bindings, this._event_];
             else
                 return [this.bind, this._event_];
         }
         return [this._event_];
     }
-    set _bindings_(v) {}
+    set bindings(v) {}
 
     get type() {
-        return TEMPLATE_BINDING_ID;
+        return TEMPLATEbindingID;
     }
     set type(v) {}
 }
@@ -55,7 +55,7 @@ export class EventBinding {
  */
 export class ExpressionBinding {
     constructor(binds, func) {
-        this._bindings_ = binds;
+        this.bindings = binds;
         this.func = func;
     }
 
@@ -63,14 +63,14 @@ export class ExpressionBinding {
         
         switch (this.method) {
             case INPUT:
-                return new InputExpresionIO(source, errors, taps, element, this._bindings_, this.func);
+                return new InputExpresionIO(source, errors, taps, element, this.bindings, this.func);
             default:
-                return new ExpressionIO(source, errors, taps, element, this._bindings_, this.func);
+                return new ExpressionIO(source, errors, taps, element, this.bindings, this.func);
         }
     }
 
     get type() {
-        return TEMPLATE_BINDING_ID;
+        return TEMPLATEbindingID;
     }
     set type(v) {}
 }
@@ -101,7 +101,7 @@ export class DynamicBinding {
     }
 
     get type() {
-        return DYNAMIC_BINDING_ID;
+        return DYNAMICbindingID;
     }
     set type(v) {}
 
@@ -130,7 +130,7 @@ export class RawValueBinding {
     }
     get _value_() { return this.txt; }
     set _value_(v) {}
-    get type() { return RAW_VALUE_BINDING_ID; }
+    get type() { return RAW_VALUEbindingID; }
     set type(v) {}
     toString(){return this.txt;}
 }

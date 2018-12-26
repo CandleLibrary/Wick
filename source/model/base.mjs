@@ -268,7 +268,7 @@ class ModelBase {
         }
     }
 
-    toJson() { return JSON.stringify(this, null, '\t'); }
+    toJSON() { return JSON.stringify(this, null, '\t'); }
 
 
     /**

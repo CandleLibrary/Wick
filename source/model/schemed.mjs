@@ -112,17 +112,12 @@ class SchemedModel extends ModelBase {
                         if (schema_name == "proto") {
                             for (let name in schema.proto)
                                 _SealedProperty_(prototype, name, schema.proto[name]);
-                            count++;
                             continue;
                         }
 
                         if (typeof(scheme) == "function") {
                             CreateModelProperty(prototype, scheme, schema_name, count);
-                            count++;
-                            continue;
-                        }
-
-                        if (typeof(scheme) == "object") {
+                        } else if (typeof(scheme) == "object") {
                             if (Array.isArray(scheme)) {
                                 if (scheme[0] && scheme[0].container && scheme[0].schema)
                                     CreateModelProperty(prototype, scheme[0], schema_name, count);
@@ -144,8 +139,6 @@ class SchemedModel extends ModelBase {
                         look_up[schema_name] = count;
                         count++;
                     }
-
-
 
                     _SealedProperty_(prototype, "prop_offset", count);
                     _SealedProperty_(prototype, "look_up", look_up);
@@ -170,6 +163,8 @@ class SchemedModel extends ModelBase {
         if (data)
             this.set(data, true);
     }
+
+    destroy() { this.root = null; }
 
     set(data, FROM_ROOT = false) {
 
@@ -211,10 +206,9 @@ class SchemedModel extends ModelBase {
         return this._changed_;
     }
 
-    destroy() { this.root = null; }
-
-    _createProp_() {}
+    createProp() {}
 }
+SchemedModel.prototype.toJSON = Model.prototype.toJSON;
 
 class SchemedContainer extends ArrayModelContainer {
     

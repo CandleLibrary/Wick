@@ -15,7 +15,7 @@ class Model extends ModelBase {
 
         if (data)
             for (let name in data)
-                this._createProp_(name, data[name]);
+                this.createProp(name, data[name]);
 
     }
 
@@ -58,14 +58,14 @@ class Model extends ModelBase {
                      out = true;
                 }
             } else{
-                this._createProp_(prop_name, data[prop_name]);
+                this.createProp(prop_name, data[prop_name]);
                 out = true;
             }
         }
 
         return out;
     }
-    _createProp_(name, value) {
+    createProp(name, value) {
 
         let index = this.prop_offset++;
 
@@ -148,6 +148,24 @@ class Model extends ModelBase {
         }
 
         this.scheduleUpdate(name);
+    }
+
+    toJSON(HOST = true){
+        let data = {};
+
+        for(let name in this.look_up){
+            let index = this.look_up[name];
+            let prop = this.prop_array[index];
+
+            if(prop){
+                if(prop instanceof ModelBase)
+                    data[name] = prop.toJSON(false);
+                else
+                    data[name] = prop;
+            }
+        }
+
+        return HOST ? JSON.stringify(data) : data;    
     }
 }
 

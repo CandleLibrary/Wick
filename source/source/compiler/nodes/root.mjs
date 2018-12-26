@@ -1,5 +1,5 @@
-import {HTMLNode, TextNode} from "@candlefw/html";
-import {CSSRootNode} from "@candlefw/css";
+import { HTMLNode, TextNode } from "@candlefw/html";
+import { CSSRootNode } from "@candlefw/css";
 
 import {
     appendChild,
@@ -25,8 +25,8 @@ import {
     TEXT,
     INPUT,
     EVENT,
-    DYNAMIC_BINDING_ID,
-    TEMPLATE_BINDING_ID
+    DYNAMICbindingID,
+    TEMPLATEbindingID
 } from "../template/basic_bindings";
 
 
@@ -87,7 +87,7 @@ export class RootNode extends HTMLNode {
         this.HAS_TAPS = false;
 
         this.tap_list = [];
-        this._bindings_ = [];
+        this.bindings = [];
 
         this.css = null;
 
@@ -148,7 +148,7 @@ export class RootNode extends HTMLNode {
 
             let rule;
 
-            
+
             for (let i = 0; i < css.length; i++)
                 rule = css[i].getApplicableRules(this, rule, win);
 
@@ -161,10 +161,10 @@ export class RootNode extends HTMLNode {
                 //Link in the rule properties to the tap system. 
                 let HAVE_BINDING = false;
 
-                for (let i = 0, l = this._bindings_.length; i < l; i++) {
-                    let binding = this._bindings_[i];
+                for (let i = 0, l = this.bindings.length; i < l; i++) {
+                    let binding = this.bindings[i];
 
-                    if (binding.name == "css"){
+                    if (binding.name == "css") {
                         binding.binding.clear();
                         HAVE_BINDING = (binding.binding._addRule_(rule), true);
                     }
@@ -178,7 +178,7 @@ export class RootNode extends HTMLNode {
                         value: "",
                         binding
                     };
-                    this._bindings_.push(vals);
+                    this.bindings.push(vals);
 
                 }
 
@@ -193,8 +193,8 @@ export class RootNode extends HTMLNode {
     setPendingCSS(css) {
         if (this.par)
             this.par.setPendingCSS(css);
-        else{
-            if(!this.css)
+        else {
+            if (!this.css)
                 this.css = [];
             this.css.push(css);
         }
@@ -305,15 +305,15 @@ export class RootNode extends HTMLNode {
 
         if (this.delegateTapBinding(binding, tap_mode)) return binding;
 
-        if (binding.type === TEMPLATE_BINDING_ID) {
+        if (binding.type === TEMPLATEbindingID) {
 
-            let _bindings_ = binding._bindings_;
+            let bindings = binding.bindings;
 
-            for (let i = 0, l = _bindings_.length; i < l; i++)
-                if (_bindings_[i].type === DYNAMIC_BINDING_ID)
-                    this.linkTapBinding(_bindings_[i]);
+            for (let i = 0, l = bindings.length; i < l; i++)
+                if (bindings[i].type === DYNAMICbindingID)
+                    this.linkTapBinding(bindings[i]);
 
-        } else if (binding.type === DYNAMIC_BINDING_ID)
+        } else if (binding.type === DYNAMICbindingID)
             this.linkTapBinding(binding);
 
         return binding;
@@ -341,17 +341,17 @@ export class RootNode extends HTMLNode {
 
         const out_statics = this.__statics__ || statics;
         let own_out_ele;
-        
+
         if (this._merged_) {
-            
+
             own_out_ele = {
                 ele: null
             };
 
             let out_source = this._merged_.build(element, source, presets, errors, taps, out_statics, own_out_ele);
 
-            if(!source)
-                source = out_source;            
+            if (!source)
+                source = out_source;
         }
 
         let own_element;
@@ -359,11 +359,11 @@ export class RootNode extends HTMLNode {
         if (own_out_ele) {
             own_element = own_out_ele.ele;
         } else {
-            if(!source){
+            if (!source) {
                 source = new Source(null, presets, own_element, this);
                 own_element = this.createElement(presets, source);
                 source.ele = own_element;
-            }else
+            } else
                 own_element = this.createElement(presets, source);
 
             if (element) appendChild(element, own_element);
@@ -384,8 +384,8 @@ export class RootNode extends HTMLNode {
 
             if (element) appendChild(element, own_element);
 
-            for (let i = 0, l = this._bindings_.length; i < l; i++) {
-                let attr = this._bindings_[i];
+            for (let i = 0, l = this.bindings.length; i < l; i++) {
+                let attr = this.bindings[i];
                 attr.binding._bind_(source, errors, taps, own_element, attr.name);
             }
 
@@ -442,7 +442,14 @@ export class RootNode extends HTMLNode {
      */
     processAttributeHook(name, lex) {
 
-        let start = lex.off;
+        if (!name) return null;
+
+        let start = lex.off,
+            basic = {
+                IGNORE:true,
+                name,
+                value: lex.slice(start)
+            };
 
         let bind_method = ATTRIB,
             FOR_EVENT = false;
@@ -459,7 +466,7 @@ export class RootNode extends HTMLNode {
                         this.statics[key] = lex.slice();
                 }
 
-                return null;
+                return basic;
 
             case "v": //Input
                 if (name == "value")
@@ -479,45 +486,42 @@ export class RootNode extends HTMLNode {
                     let components = this.presets.components;
                     if (components)
                         components[component_name] = this;
-                    return null;
+                    return basic;
                 }
                 break;
             case "b":
                 if (name == "badge") {
                     this._badge_name_ = lex.tx;
-                    return null;
+                    return basic;
                 }
         }
 
         if (this.checkTapMethodGate(name, lex))
-            return null;
+            return {
+                name,
+                value: lex.slice(start)
+            };
 
+        basic.IGNORE = false;
         if ((lex.sl - lex.off) > 0) {
             let binding = Template(lex, FOR_EVENT);
             if (!binding) {
-                return {
-                    name,
-                    value: lex.slice(start)
-                };
+                return basic;
             }
 
             binding.val = name;
             binding.method = bind_method;
             let attr = {
+                IGNORE:false,
                 name,
                 value: (start < lex.off) ? lex.slice(start) : true,
                 binding: this.processTapBinding(binding)
             };
-            this._bindings_.push(attr);
+            this.bindings.push(attr);
             return attr;
         }
 
-        let value = lex.slice(start);
-
-        return {
-            name,
-            value: value || true
-        };
+        return basic;
     }
 
 

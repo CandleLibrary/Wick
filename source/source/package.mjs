@@ -59,6 +59,8 @@ class SourcePackage {
          */
         this.HAVE_ERRORS = false;
 
+        this.links = [];
+
         if (element instanceof Promise) {
             element.then((data) => CompileSource(this, presets, data, url, win));
             if (RETURN_PROMISE) return element;
@@ -209,6 +211,18 @@ class SourcePackage {
         if (manager.sourceLoaded) manager.sourceLoaded();
 
         return manager;
+    }
+
+    toString(){
+        let str = "";
+
+        for(let i = 0; i < this.links.length; i++)
+            str += this.links[i];
+
+        for(let i = 0; i < this.skeletons.length; i++)
+            str += this.skeletons[i].tree;
+
+        return str;
     }
 }
 

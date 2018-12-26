@@ -42,7 +42,7 @@ export class SourceNode extends RootNode {
     createElement() {
         return createElement(this.getAttribute("element") || "div");
     }
-    
+
     build(element, source, presets, errors, taps = null, statics = null, out_ele = null) {
 
         let data = {};
@@ -108,8 +108,8 @@ export class SourceNode extends RootNode {
                 ele: element
             };
 
-            for (let i = 0, l = this._bindings_.length; i < l; i++) {
-                let attr = this._bindings_[i];
+            for (let i = 0, l = this.bindings.length; i < l; i++) {
+                let attr = this.bindings[i];
                 let bind = attr.binding._bind_(me, errors, out_taps, element, attr.name);
 
                 if (hook) {
@@ -159,7 +159,12 @@ export class SourceNode extends RootNode {
      * @return     {Object}  Key value pair.
      */
     processAttributeHook(name, lex, value) {
-        let start = lex.off;
+        let start = lex.off,
+            basic = {
+                IGNORE:true,
+                name,
+                value: lex.slice(start)
+            };
 
         switch (name[0]) {
             case "#":
@@ -172,19 +177,22 @@ export class SourceNode extends RootNode {
                         this.statics[key] = lex.slice();
                 }
 
-                return null;
+                return {
+                    name,
+                    value: lex.slice(start)
+                };
             case "m":
                 if (name == "model") {
                     this._model_name_ = lex.slice();
                     lex.n;
-                    return null;
+                    return basic;
                 }
                 break;
             case "s":
                 if (name == "schema") {
                     this._schema_name_ = lex.slice();
                     lex.n;
-                    return null;
+                    return basic;
                 }
                 break;
             case "c":
@@ -193,45 +201,42 @@ export class SourceNode extends RootNode {
                     let components = this.presets.components;
                     if (components)
                         components[component_name] = this;
-                    return null;
+                    return basic;
                 }
                 break;
             case "b":
                 if (name == "badge") {
                     this._badge_name_ = lex.tx;
-                    return null;
+                    return basic;
                 }
                 break;
             default:
                 if (this.checkTapMethodGate(name, lex))
-                    return null;
+                    return basic;
         }
 
         //return { name, value: lex.slice() };
         //return super.processAttributeHook(name, lex, value);
+        basic.IGNORE = false;
+
         if ((lex.sl - lex.off) > 0) {
             let binding = Template(lex, true);
             if (!binding) {
-                return {
-                    name,
-                    value: lex.slice(start)
-                };
+                return basic;
             }
             binding.val = name;
             binding.method = ATTRIB;
             let attr = {
+                IGNORE:false,
                 name,
                 value: (start < lex.off) ? lex.slice(start) : true,
                 binding: this.processTapBinding(binding)
             };
-            this._bindings_.push(attr);
+            this.bindings.push(attr);
             return attr;
         }
 
-        return {
-            name,
-            value: lex.slice(start)
-        };
+        return basic;
 
     }
 }

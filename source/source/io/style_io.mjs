@@ -50,17 +50,17 @@ export class CSSRuleTemplateString {
             let bind = binds[i];
 
             switch (bind.type) {
-                case 0: //DYNAMIC_BINDING_ID
+                case 0: //DYNAMICbindingID
                     let new_bind = new BindIO(source, errors, source.getTap(bind.tap_name), bind)
                     this.binds.push(new_bind);
                     new_bind.child = this;
                     //this.binds.push(msg._bind_(source, errors, taps, this));
                     break;
-                case 1: //RAW_VALUE_BINDING_ID
+                case 1: //RAW_VALUEbindingID
                     this.binds.push(bind);
                     break;
-                case 2: //TEMPLATE_BINDING_ID
-                    if (bind._bindings_.length < 1) // Just a variable less expression.
+                case 2: //TEMPLATEbindingID
+                    if (bind.bindings.length < 1) // Just a variable less expression.
                         this.binds.push({ _value_: msg.func() });
                     else
                         this.binds.push(bind._bind_(source, errors, taps, this));

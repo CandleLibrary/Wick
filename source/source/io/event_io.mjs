@@ -18,14 +18,14 @@ export class EventIO {
         this.data = null;
         if (msg) {
             switch (msg.type) {
-                case 0: //DYNAMIC_BINDING_ID
+                case 0: //DYNAMICbindingID
                     this._msg_ = msg._bind_(source, errors, taps, this);
                     break;
-                case 1: //RAW_VALUE_BINDING_ID
+                case 1: //RAW_VALUEbindingID
                     this.data = msg.txt;
                     break;
-                case 2: //TEMPLATE_BINDING_ID
-                    if (msg._bindings_.length < 1) // Just a variable less expression.
+                case 2: //TEMPLATEbindingID
+                    if (msg.bindings.length < 1) // Just a variable less expression.
                         this.data = msg.func();
                     else
                         this._msg_ = msg._bind_(source, errors, taps, this);

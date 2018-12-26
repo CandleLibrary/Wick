@@ -8,8 +8,8 @@ import {
     StyleIO
 } from "../../io/style_io";
 import {
-    RAW_VALUE_BINDING_ID,
-    TEMPLATE_BINDING_ID,
+    RAW_VALUEbindingID,
+    TEMPLATEbindingID,
     ATTRIB,
     INPUT,
     RawValueBinding
@@ -30,7 +30,7 @@ export function Template(lex, FOR_EVENT) {
 
 
 function OutTemplate(binds = []) {
-    this._bindings_ = binds;
+    this.bindings = binds;
 }
 
 OutTemplate.prototype = {
@@ -38,33 +38,33 @@ OutTemplate.prototype = {
 
     attr: "",
 
-    _bindings_: null,
+    bindings: null,
 
     _bind_: function(source, errors, taps, element, attr) {
         if (this.method == ATTRIB || this.method == INPUT)
-            return new AttribTemplate(source, errors, taps, attr, element, this._bindings_);
-        return new TemplateString(source, errors, taps, element, this._bindings_);
+            return new AttribTemplate(source, errors, taps, attr, element, this.bindings);
+        return new TemplateString(source, errors, taps, element, this.bindings);
     },
 
     _appendText_: function(string) {
-        let binding = this._bindings_[this._bindings_.length - 1];
+        let binding = this.bindings[this.bindings.length - 1];
 
-        if (binding && binding.type == RAW_VALUE_BINDING_ID) {
+        if (binding && binding.type == RAW_VALUEbindingID) {
             binding.txt += string;
         } else {
-            this._bindings_.push(new RawValueBinding(string));
+            this.bindings.push(new RawValueBinding(string));
         }
     },
 
     set type(v) {},
     get type() {
-        return TEMPLATE_BINDING_ID;
+        return TEMPLATEbindingID;
     },
 
     toString(){
         let str = ""
-        for(let i = 0; i < this._bindings_.length; i++)
-            str += this._bindings_[i];
+        for(let i = 0; i < this.bindings.length; i++)
+            str += this.bindings[i];
         return str;
     }
 };
@@ -85,15 +85,15 @@ class OutStyleTemplate {
         this._css_props_ = [];
     }
 
-    get _bindings_() {
+    get bindings() {
         if (this._template_)
-            return this._template_._bindings_;
+            return this._template_.bindings;
         return [];
     }
-    set _bindings_(v) {}
+    set bindings(v) {}
 
     get type() {
-        return TEMPLATE_BINDING_ID;
+        return TEMPLATEbindingID;
     }
     set type(v) {}
 
@@ -134,7 +134,7 @@ class OutCSSRuleTemplate {
 
         this.prop_name = prop_name;
 
-        this._bindings_ = bindings;
+        this.bindings = bindings;
     }
 
     get _wick_type_() {
@@ -143,7 +143,7 @@ class OutCSSRuleTemplate {
     set _wick_type_(v) {}
 
     _bind_(source, errors, taps, io) {
-        let binding = new CSSRuleTemplateString(source, errors, taps, this._bindings_, this.prop_name);
+        let binding = new CSSRuleTemplateString(source, errors, taps, this.bindings, this.prop_name);
         binding.addIO(io);
         return binding;
     }

@@ -11,14 +11,20 @@ function complete(lex, SourcePackage, presets, ast, url, win) {
      * Only accept certain nodes for mounting to the DOM. 
      * The custom element `import` is simply used to import extra HTML data from network for use with template system. It should not exist otherwise.
      */
-    if (ast.tag && (ast.tag !== "import" && ast.tag !== "link") && ast.tag !== "template") {
-        let skeleton = new Skeleton(ast, presets);
-        SourcePackage.skeletons.push(skeleton);
+    if (ast.tag) {
+        if ((ast.tag == "import" || ast.tag == "link")) {
+            //add tags to package itself.
+            SourcePackage.links.push(ast);
+        } else if (ast.tag !== "template") {
+            let skeleton = new Skeleton(ast, presets);
+            SourcePackage.skeletons.push(skeleton);
+        }
     }
 
     lex.IWS = true;
 
     while (!lex.END && lex.ch != "<") { lex.n; }
+
     if (!lex.END)
         return parseText(lex, SourcePackage, presets, url, win);
 
@@ -30,8 +36,8 @@ function complete(lex, SourcePackage, presets, ast, url, win) {
 
 function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win) {
     return css_list[index].READY().then(() => {
-        
-        if(++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
+
+        if (++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
 
         ast.linkCSS(null, win);
 
@@ -54,9 +60,9 @@ export function parseText(lex, SourcePackage, presets, url, win) {
         node.presets = presets;
 
         return node.parse(lex, url).then((ast) => {
-            if (ast.css && ast.css.length > 0) 
+            if (ast.css && ast.css.length > 0)
                 return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url, win);
-            
+
             return complete(lex, SourcePackage, presets, ast, url, win);
         }).catch((e) => {
             SourcePackage.addError(e);

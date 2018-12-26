@@ -13,7 +13,8 @@ export class SourceTemplateNode extends RootNode {
         super();
         this.BUILD_LIST = [];
         this.filters = [];
-        this._property_bind_ = null;
+        this.property_bind = null;
+        this.property_bind_text = "";
         this.package = null;
     }
 
@@ -23,25 +24,25 @@ export class SourceTemplateNode extends RootNode {
 
         if (this.HAS_TAPS)
             taps = source.linkTaps(this.tap_list);
-        if (this._property_bind_ && this.package) {
+        if (this.property_bind && this.package) {
 
             let ele = createElement(this.getAttribute("element") || "ul");
-            
-            this.class.split(" ").map(c=> c ? ele.classList.add(c):{});
 
-            if(this._badge_name_)
+            this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
+
+            if (this._badge_name_)
                 source.badges[this._badge_name_] = ele;
-            
+
 
             let me = new SourceTemplate(source, presets, ele);
             me.package = this.package;
-            me.prop = this._property_bind_._bind_(source, errors, taps, me);
+            me.prop = this.property_bind._bind_(source, errors, taps, me);
 
             appendChild(element, ele);
 
             for (let node = this.fch; node; node = this.getNextChild(node)) {
                 //All filter nodes here
-                
+
                 let on = node.getAttrib("on");
                 let sort = node.getAttrib("sort");
                 let filter = node.getAttrib("filter");
@@ -50,12 +51,12 @@ export class SourceTemplateNode extends RootNode {
                 let scrub = node.getAttrib("scrub");
                 let shift = node.getAttrib("shift");
 
-                if(limit && limit.binding.type == 1){
+                if (limit && limit.binding.type == 1) {
                     me.limit = parseInt(limit.value);
                     limit = null;
                 }
 
-                if(shift && shift.binding.type == 1){
+                if (shift && shift.binding.type == 1) {
                     me.shift = parseInt(shift.value);
                     shift = null;
                 }
@@ -63,8 +64,8 @@ export class SourceTemplateNode extends RootNode {
                 if (sort || filter || limit || offset || scrub || shift) //Only create Filter node if it has a sorting bind or a filter bind
                     me.filters.push(new FilterIO(source, errors, taps, me, on, sort, filter, limit, offset, scrub, shift));
             }
-        }else{
-            errors.push(new Error(`Missing source for template bound to "${this._property_bind_._bindings_[0].tap_name}"`));
+        } else {
+            errors.push(new Error(`Missing source for template bound to "${this.property_bind.bindings[0].tap_name}"`));
         }
 
         return source;
@@ -76,9 +77,9 @@ export class SourceTemplateNode extends RootNode {
 
     _ignoreTillHook_() {}
 
-    
-createHTMLNodeHook(tag, start) {
-        
+
+    createHTMLNodeHook(tag, start) {
+
         switch (tag) {
             case "f":
                 return new FilterNode(); //This node is used to 
@@ -88,15 +89,25 @@ createHTMLNodeHook(tag, start) {
     }
 
     processTextNodeHook(lex) {
-        if (!this._property_bind_) {
+        if (!this.property_bind) {
+            this.property_bind_text = lex.trim().slice();
             let cp = lex.copy();
             lex.IWS = true;
             cp.tl = 0;
             if (cp.n.ch == barrier_a_start && (cp.n.ch == barrier_a_start || cp.ch == barrier_b_start)) {
                 let binding = Template(lex);
                 if (binding)
-                    this._property_bind_ = this.processTapBinding(binding);
+                    this.property_bind = this.processTapBinding(binding);
             }
         }
+    }
+
+    innerToString(off){
+        //Insert temp child node for the property_bind
+        let str = this.property_bind_text;
+
+        str += super.innerToString(off);
+
+        return str;
     }
 }
