@@ -202,6 +202,8 @@ export class Source extends View {
 
         model.addView(this);
 
+        this.model = model;
+
         for (let name in this.taps)
             this.taps[name].load(this.model, false);
 

@@ -196,10 +196,11 @@ class SourcePackage {
 
             element = shadow_root;
 
-            for (i = 0, l = this.styles.length; i < l; i++) {
-                let style = cloneNode(this.styles[i], true);
-                appendChild(element, style);
-            }
+            if(this.styles)
+                for (i = 0, l = this.styles.length; i < l; i++) {
+                    let style = cloneNode(this.styles[i], true);
+                    appendChild(element, style);
+                }
         }
 
         for (i = 0, l = this.skeletons.length; i < l; i++) {
