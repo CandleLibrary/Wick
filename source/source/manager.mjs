@@ -148,6 +148,12 @@ export class SourceManager {
     upImport(prop_name, data, meta) {
         if (this.parent)
             this.parent.up(prop_name, data, meta, this);
+        else 
+            this.up(prop_name, data, meta)
+    }
+
+    up(prop_name, data, meta){
+
     }
 
     down(data, changed_values) {

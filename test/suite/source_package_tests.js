@@ -44,6 +44,10 @@ function SOURCEPACKAGETESTS(config) {
                 }]
             });
 
+            afterEach(function(){
+                document.body.innerHTML = "";
+            })
+
             it('Constructs a SourcePackage with Model bindings on properly formatted HTML',
                 () => (new URL("/test/data/package.html")).fetchText()
                 .then(text => wick.source(text, wick.core.presets({}), true).then(source => {
@@ -272,6 +276,57 @@ function SOURCEPACKAGETESTS(config) {
                                 }));
                         }));
                 });
+
+            it('Uses (()()) style bindings to handle default values', 
+                        () => (new URL("/test/data/bindings_default_value.html"))
+                        .fetchText()
+                        .then(text => wick.source(text, {}, true).then(source => {
+                            let ele = document.createElement("div");
+                            let manager = source.mount(ele, {}, false);
+                            appendToDocumentBody(ele);
+                            ele.children.should.have.lengthOf(2);
+                            let div = ele.children[0];
+                            div.tagName.should.equal("DIV");
+                            div.innerHTML.should.equal("this is the default value")
+                        }))
+                )
+
+            it('Uses (()()) style bindings to provide alternate route for inputs',
+                        fin => {(new URL("/test/data/bindings_alternate_message.html")).fetchText()
+                        .then(text => wick.source(text, {}, true).then(source => {
+                            let ele = document.createElement("div");
+                            let manager = source.mount(ele, {}, false);
+                            appendToDocumentBody(ele);
+                            ele.children.should.have.lengthOf(1);
+                            let input = ele.children[0];
+                            input.tagName.should.equal("INPUT");
+                            manager.up = (prop, value) => {
+                                prop.should.equal("new_value");
+                                value.should.equal("test");
+                                fin();
+                            }
+                            let event = new window.Event("input");
+                            input.value = "test";
+                            input.dispatchEvent(event)
+                        }))}
+                )
+
+            it('Uses (()()) style bindings to apply a custom value to an event generated message',
+                    () => (new URL("/test/data/bindings_event_message_value.html")).fetchText()
+                        .then(text => wick.source(text, {}, true).then(source => {
+                            let ele = document.createElement("div");
+                            let manager = source.mount(ele, {}, false);
+                            appendToDocumentBody(ele);
+                            ele.children.should.have.lengthOf(1);
+                            let button = ele.children[0];
+                            button.tagName.should.equal("BUTTON");
+                            manager.up = (prop, value) => {
+                                prop.should.equal("pressed");
+                                value.should.equal(10);
+                            }
+                            button.click();
+                        }))
+                );
         });
     });
 }

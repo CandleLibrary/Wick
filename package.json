@@ -4,9 +4,9 @@
   "description": "Web Component Builder",
   "main": "./source/wick.mjs",
   "scripts": {
-    "prepare": "npm test && npm run build",
+    "prepublishOnly": "npm run build && npm test",
     "test": "mocha -r esm",
-    "test.watch": "mocha -r esm -w --check-leaks -R min",
+    "test.watch": "mocha -r esm -w -R min",
     "build": "rollup --config ./build/config/main.config.js",
     "build.watch": "rollup --config  ./build/config/main.config.js --watch"
   },

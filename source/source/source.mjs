@@ -200,7 +200,10 @@ export class Source extends View {
             this.sources[i].getBadges(this);
         }
 
-        model.addView(this);
+        if(model.addView)
+            model.addView(this);
+
+        this.model = this;
 
         for (let name in this.taps)
             this.taps[name].load(this.model, false);

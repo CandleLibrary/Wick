@@ -128,13 +128,13 @@ export class RootNode extends HTMLNode {
     /****************************************** COMPONENTIZATION *****************************************/
 
     mergeComponent() {
+        if(this.presets.components){
+            let component = this.presets.components[this.tag];
 
-        let component = this.presets.components[this.tag];
-
-        if (component) {
-            this._merged_ = component;
+            if (component) {
+                this._merged_ = component;
+            }
         }
-
     }
 
     /******************************************* CSS ****************************************************/
@@ -217,7 +217,7 @@ export class RootNode extends HTMLNode {
             if (typeof(classes.value) == "string")
                 return classes.value.split(" ");
             else
-                return classes.value.txt.split(" ");
+                return classes.value.val.split(" ");
         }
         return [];
     }

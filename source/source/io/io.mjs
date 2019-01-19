@@ -28,10 +28,13 @@ export class IOBase {
  */
 export class IO extends IOBase {
 
-    constructor(source, errors, tap, element = null) {
+    constructor(source, errors, tap, element = null, default_val) {
         super(tap);
         //Appending the value to a text node prevents abuse from insertion of malicious DOM markup. 
         this.ele = element;
+        this.argument = null;
+
+        if(default_val) this.down(default_val)
     }
 
     destroy() {
@@ -48,11 +51,13 @@ export class IO extends IOBase {
     This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
 */
 export class AttribIO extends IOBase {
-    constructor(source, errors, tap, attr, element) {
+    constructor(source, errors, tap, attr, element, default_val) {
         super(tap);
 
         this.attrib = attr;
         this.ele = element;
+
+        if(default_val) this.down(default_val)
     }
 
     destroy() {
@@ -71,13 +76,15 @@ export class AttribIO extends IOBase {
 
 export class InputIO extends IOBase {
 
-    constructor(source, errors, tap, element) {
+    constructor(source, errors, tap, element, message_key) {
 
         super(tap);
 
         this.ele = element;
 
-        this.event = (e) => { this.parent.up(e.target.value, { event: e }); };
+        const up_tap = message_key ? source.getTap(message_key) : tap;
+
+        this.event = (e) => { up_tap.up(e.target.value, { event: e }); };
 
         this.ele.addEventListener("input", this.event);
     }
