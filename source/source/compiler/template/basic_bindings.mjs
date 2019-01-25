@@ -23,22 +23,22 @@ export const EVENT = 7;
  */
 export class EventBinding {
     constructor(prop) {
-        this.bind = null;
-        this._event_ = prop;
+        this.arg = null;
+        this.event = prop;
     }
 
     _bind_(source, errors, taps, element, eventname) {
-        return new EventIO(source, errors, taps, element, eventname, this._event_, this.bind);
+        return new EventIO(source, errors, taps, element, eventname, this.event, this.arg);
     }
 
     get bindings() {
-        if (this.bind) {
-            if (this.bind.type == TEMPLATEbindingID)
-                return [...this.bind.bindings, this._event_];
+        if (this.argument) {
+            if (this.argument.type == TEMPLATEbindingID)
+                return [...this.argument.bindings, this.event];
             else
-                return [this.bind, this._event_];
+                return [this.argument, this.event];
         }
-        return [this._event_];
+        return [this.event];
     }
     set bindings(v) {}
 
@@ -46,6 +46,10 @@ export class EventBinding {
         return TEMPLATEbindingID;
     }
     set type(v) {}
+
+    set argument(binding){
+        this.arg = binding;
+    }
 }
 
 /**
@@ -57,6 +61,7 @@ export class ExpressionBinding {
     constructor(binds, func) {
         this.bindings = binds;
         this.func = func;
+        this.arg = null;
     }
 
     _bind_(source, errors, taps, element) {
@@ -84,19 +89,21 @@ export class DynamicBinding {
         this.val = "";
         this._func_ = null;
         this.method = 0;
+        this.argKey = null;
+        this.argVal = null;
     }
 
     _bind_(source, errors, taps, element) {
         let tap = source.getTap(this.tap_name); //taps[this.tap_id];
         switch (this.method) {
             case INPUT:
-                return new InputIO(source, errors, tap, element);
+                return new InputIO(source, errors, tap, element, this.argKey);
             case ATTRIB:
-                return new AttribIO(source, errors, tap, this.val, element);
+                return new AttribIO(source, errors, tap, this.val, element, this.argVal);
             case SCRIPT:
                 return new ScriptIO(source, errors, tap, this);
             default:
-                return new IO(source, errors, tap, element);
+                return new IO(source, errors, tap, element, this.argVal);
         }
     }
 
@@ -106,11 +113,20 @@ export class DynamicBinding {
     set type(v) {}
 
     toString(){return `((${this.tap_name}))`;}
+
+    set argument(binding){
+        if(binding instanceof DynamicBinding){
+            this.argKey = binding.tap_name;
+            this.argVal = binding.val;
+        }else if(binding instanceof RawValueBinding){
+            this.argVal = binding.val;
+        }
+    }
 }
 
 export class RawValueBinding {
-    constructor(txt) {
-        this.txt = txt;
+    constructor(val) {
+        this.val = val;
         this.method = 0;
     }
 
@@ -118,19 +134,19 @@ export class RawValueBinding {
 
         switch (this.method) {
             case TEXT:
-                element.data = this.txt;
+                element.data = this.val;
                 break;
             case ATTRIB:{
                 if(prop == "class"){
-                    element.classList.add.apply(element.classList, this.txt.split(" "));
+                    element.classList.add.apply(element.classList, this.val.split(" "));
                 }else
-                    element.setAttribute(prop, this.txt);
+                    element.setAttribute(prop, this.val);
             }
         }
     }
-    get _value_() { return this.txt; }
+    get _value_() { return this.val; }
     set _value_(v) {}
     get type() { return RAW_VALUEbindingID; }
     set type(v) {}
-    toString(){return this.txt;}
+    toString(){return this.val;}
 }

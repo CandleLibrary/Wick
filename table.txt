@@ -1,0 +1,16 @@
+
+> @candlefw/wick@0.5.7 build_js_parser.table /home/anthony/work/active/apps/cfw/wick
+> hydrocarbon table ./source/js/wick_js.hcg
+
+┏━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━┓
+┃ S ┃   τc  τd  $   ┃   S   C   ┃
+┣━━━╋━━━━━━━━━━━━━━━╋━━━━━━━━━━━╋━━━━━━━━━━━┓
+┃ 0 ┃   s3  s4      ┃   1   2   ┃ s → S     ┃
+┃ 1 ┃           acc ┃           ┃ s → S     ┃
+┃ 2 ┃   s3  s4      ┃       5   ┃ S → C C   ┃
+┃ 3 ┃   s3  s4      ┃       6   ┃ C → τc C  ┃
+┃ 4 ┃   r3  r3  r3  ┃           ┃ C → τd    ┃
+┃ 5 ┃           r1  ┃           ┃ S → C C   ┃
+┃ 6 ┃   r2  r2  r2  ┃           ┃ C → τc C  ┃
+┗━━━┻━━━━━━━━━━━━━━━┻━━━━━━━━━━━┻━━━━━━━━━━━┛
+

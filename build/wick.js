@@ -96,23 +96,23 @@ var wick = (function (exports) {
 
     /**
      *  Element.prototype.appendChild short name wrapper.
-     * @method _appendChild_
+     * @method appendChild
      * @package
      * @memberof module:wick~internals
      * @param 	{HTMLElement}  		el  	- parent HTMLElement.
      * @return  {HTMLElement | HTMLNode}  		ch_el 	- child HTMLElement or HTMLNode. 
      */
-    const _appendChild_ = (el, ch_el) => el.appendChild(ch_el);
+    const appendChild = (el, ch_el) => el.appendChild(ch_el);
 
     /**
      *  Element.prototype.cloneNode short name wrapper.
-     * @method _cloneNode_
+     * @method cloneNode
      * @package
      * @memberof module:wick~internals
      * @param 	{HTMLElement}  		el   - HTMLElement to clone.
      * @return  {Boolean}  			bool - Switch for deep clone
      */
-    const _cloneNode_ = (el, bool) => el.cloneNode(bool);
+    const cloneNode = (el, bool) => el.cloneNode(bool);
 
     /**
      *  Element.prototype.getElementsByTagName short name wrapper.
@@ -153,7 +153,7 @@ var wick = (function (exports) {
     /**
      * Handles updating objects. It does this by splitting up update cycles, to respect the browser event model. 
      *    
-     * If any object is scheduled to be updated, it will be blocked from scheduling more updates the next JavaScript runtime tick.
+     * If any object is scheduled to be updated, it will be blocked from scheduling more updates until the next ES VM tick.
      */
     class Spark {
         /**
@@ -172,7 +172,7 @@ var wick = (function (exports) {
 
             this.frame_time = perf.now();
 
-            this._SCHD_ = false;
+            this.SCHEDULE_PENDING = false;
         }
 
         /**
@@ -182,14 +182,15 @@ var wick = (function (exports) {
          * If there are currently no queued objects when this is called, then the Scheduler will user caller to schedule an update.
          */
         queueUpdate(object, timestart = 1, timeend = 0) {
+
             if (object._SCHD_ || object._SCHD_ > 0) {
-                if (this._SCHD_)
+                if (this.SCHEDULE_PENDING)
                     return;
                 else
                     return caller(this.callback);
             }
 
-            object._SCHD_ = (timestart | ((timeend) << 16));
+            object._SCHD_ = ((timestart & 0xFFFF) | ((timeend) << 16));
 
             this.update_queue.push(object);
 
@@ -198,9 +199,24 @@ var wick = (function (exports) {
 
             this.frame_time = perf.now() | 0;
 
-            this._SCHD_ = true;
+            this.SCHEDULE_PENDING = true;
 
             caller(this.callback);
+        }
+
+        removeFromQueue(object){
+
+            if(object._SCHD_)
+                for(let i = 0, l = this.update_queue.length; i < l; i++)
+                    if(this.update_queue[i] === object){
+                        this.update_queue.splice(i,1);
+                        object._SCHD_ = 0;
+
+                        if(l == 1)
+                            this.SCHEDULE_PENDING = false;
+
+                        return;
+                    }
         }
 
         /**
@@ -208,38 +224,41 @@ var wick = (function (exports) {
          */
         update() {
 
-            this._SCHD_ = false;
+            this.SCHEDULE_PENDING = false;
 
-            let uq = this.update_queue;
+            const uq = this.update_queue;
+            const time = perf.now() | 0;
+            const diff = Math.ceil(time - this.frame_time) | 1;
+            const step_ratio = (diff * 0.06); //  step_ratio of 1 = 16.66666666 or 1000 / 60 for 60 FPS
 
+            this.frame_time = time;
+            
             if (this.queue_switch == 0)
                 (this.update_queue = this.update_queue_b, this.queue_switch = 1);
             else
                 (this.update_queue = this.update_queue_a, this.queue_switch = 0);
 
-            let time = perf.now() | 0;
-
-            let diff = Math.ceil(time - this.frame_time) | 1;
-
-            this.frame_time = time;
-
-            let step_ratio = (diff * 0.06); //  step_ratio of 1 = 16.66666666 or 1000 / 60 for 60 FPS
-
             for (let i = 0, l = uq.length, o = uq[0]; i < l; o = uq[++i]) {
-                let timestart = ((o._SCHD_ & 65535)) - diff;
-                let timeend = ((o._SCHD_ >> 16) & 65535);
+                let timestart = ((o._SCHD_ & 0xFFFF)) - diff;
+                let timeend = ((o._SCHD_ >> 16) & 0xFFFF);
 
+                o._SCHD_ = 0;
+                
                 if (timestart > 0) {
-                    o._SCHD_ = 0;
                     this.queueUpdate(o, timestart, timeend);
                     continue;
                 }
 
-                if (timeend > 0) {
-                    this.queueUpdate(o, timestart, timeend - diff);
-                    continue;
-                } else o._SCHD_ = 0;
+                timestart = 0;
 
+                if (timeend > 0) 
+                    this.queueUpdate(o, timestart, timeend - diff);
+
+                /** 
+                    To ensure on code path doesn't block any others, 
+                    scheduledUpdate methods are called within a try catch block. 
+                    Errors by default are printed to console. 
+                **/
                 try {
                     o.scheduledUpdate(step_ratio, diff);
                 } catch (e) {
@@ -519,7 +538,7 @@ var wick = (function (exports) {
             }
         }
 
-        toJson() { return JSON.stringify(this, null, '\t'); }
+        toJSON() { return JSON.stringify(this, null, '\t'); }
 
 
         /**
@@ -640,7 +659,7 @@ var wick = (function (exports) {
             _SealedProperty_(this, "prev", null);
 
             //Filters are a series of strings or number selectors used to determine if a model should be inserted into or retrieved from the container.
-            _SealedProperty_(this, "__filters__", null);
+            _SealedProperty_(this, "_filters_", null);
 
             this.validator = new SchemeConstructor();
 
@@ -654,7 +673,7 @@ var wick = (function (exports) {
         destroy() {
 
 
-            this.__filters__ = null;
+            this._filters_ = null;
 
             if (this.source) {
                 this.source.__unlink__(this);
@@ -815,7 +834,7 @@ var wick = (function (exports) {
                     model.MUTATION_ID = this.MUTATION_ID;
                 }
 
-                identifier = this._gI_(model, this.__filters__);
+                identifier = this._gI_(model, this._filters_);
 
                 if (identifier !== undefined) {
                     out = this.__insert__(model, add_list, identifier);
@@ -846,7 +865,7 @@ var wick = (function (exports) {
             if (!__FROM_SOURCE__ && this.source) {
 
                 if (!term)
-                    return this.source.remove(this.__filters__);
+                    return this.source.remove(this._filters_);
                 else
                     return this.source.remove(term);
             }
@@ -942,7 +961,7 @@ var wick = (function (exports) {
             let a = this.first_link;
             while (a) {
                 for (let i = 0; i < item.length; i++)
-                    if (a._gI_(item[i], a.__filters__)) {
+                    if (a._gI_(item[i], a._filters_)) {
                         a.scheduleUpdate();
                         a.__linksRemove__(item);
                         break;
@@ -960,7 +979,7 @@ var wick = (function (exports) {
         __linksInsert__(item) {
             let a = this.first_link;
             while (a) {
-                if (a._gI_(item, a.__filters__))
+                if (a._gI_(item, a._filters_))
                     a.scheduleUpdate();
                 a = a.next;
             }
@@ -999,12 +1018,12 @@ var wick = (function (exports) {
 
         __setFilters__(term) {
 
-            if (!this.__filters__) this.__filters__ = [];
+            if (!this._filters_) this._filters_ = [];
 
             if (Array.isArray(term))
-                this.__filters__ = this.__filters__.concat(term.map(t => this.validator.parse(t)));
+                this._filters_ = this._filters_.concat(term.map(t => this.validator.parse(t)));
             else
-                this.__filters__.push(this.validator.parse(term));
+                this._filters_.push(this.validator.parse(term));
 
         }
 
@@ -1674,22 +1693,22 @@ var wick = (function (exports) {
             white_space_new_line,
         },
 
-    /*** MASKS ***/
+        /*** MASKS ***/
 
-    TYPE_MASK = 0xF,
-    PARSE_STRING_MASK = 0x10,
-    IGNORE_WHITESPACE_MASK = 0x20,
-    CHARACTERS_ONLY_MASK = 0x40,
-    TOKEN_LENGTH_MASK = 0xFFFFFF80,
+        TYPE_MASK = 0xF,
+        PARSE_STRING_MASK = 0x10,
+        IGNORE_WHITESPACE_MASK = 0x20,
+        CHARACTERS_ONLY_MASK = 0x40,
+        TOKEN_LENGTH_MASK = 0xFFFFFF80,
 
-    //De Bruijn Sequence for finding index of right most bit set.
-    //http://supertech.csail.mit.edu/papers/debruijn.pdf
-    debruijnLUT = [ 
-        0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 
-        31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
-    ];
+        //De Bruijn Sequence for finding index of right most bit set.
+        //http://supertech.csail.mit.edu/papers/debruijn.pdf
+        debruijnLUT = [
+            0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
+            31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+        ];
 
-    function getNumbrOfTrailingZeroBitsFromPowerOf2(value){
+    function getNumbrOfTrailingZeroBitsFromPowerOf2(value) {
         return debruijnLUT[(value * 0x077CB531) >>> 27];
     }
 
@@ -1697,7 +1716,7 @@ var wick = (function (exports) {
 
         constructor(string = "", INCLUDE_WHITE_SPACE_TOKENS = false, PEEKING = false) {
 
-            if (typeof(string) !== "string") throw new Error("String value must be passed to Lexer");
+            if (typeof(string) !== "string") throw new Error(`String value must be passed to Lexer. A ${typeof(string)} was passed as the \`string\` argument.`);
 
             /**
              * The string that the Lexer tokenizes.
@@ -1746,7 +1765,7 @@ var wick = (function (exports) {
             /**
              * Flag to force the lexer to parse string contents
              */
-             this.PARSE_STRING = false;
+            this.PARSE_STRING = false;
 
             if (!PEEKING) this.next();
         }
@@ -1766,7 +1785,7 @@ var wick = (function (exports) {
          * Copies the Lexer.
          * @return     {Lexer}  Returns a new Lexer instance with the same property values.
          */
-        copy( destination = new Lexer(this.str, false, true) ) {
+        copy(destination = new Lexer(this.str, false, true)) {
             destination.off = this.off;
             destination.char = this.char;
             destination.line = this.line;
@@ -1978,13 +1997,13 @@ var wick = (function (exports) {
 
             marker.type = type;
             marker.off = base;
-            marker.tl = (this.masked_values & CHARACTERS_ONLY_MASK) ? Math.min(1,length) : length;
+            marker.tl = (this.masked_values & CHARACTERS_ONLY_MASK) ? Math.min(1, length) : length;
             marker.char = char;
             marker.line = line;
 
             return marker;
         }
-        
+
 
         /**
          * Proxy for Lexer.prototype.assert
@@ -2108,21 +2127,56 @@ var wick = (function (exports) {
             return marker;
         }
 
-
         setString(string, RESET = true) {
             this.str = string;
             this.sl = string.length;
             if (RESET) this.resetHead();
         }
 
-        toString(){
+        toString() {
             return this.slice();
+        }
+
+        /**
+         * Returns new Whind Lexer that has leading and trailing whitespace characters removed from input. 
+         */
+        trim() {
+            let lex = this.copy();
+
+            for (; lex.off < lex.sl; lex.off++) {
+                let c$$1 = jump_table[lex.string.charCodeAt(lex.off)];
+
+                if (c$$1 > 2 && c$$1 < 7)
+                    continue;
+
+                break;
+            }
+
+            for (; lex.sl > lex.off; lex.sl--) {
+                let c$$1 = jump_table[lex.string.charCodeAt(lex.sl - 1)];
+
+                if (c$$1 > 2 && c$$1 < 7)
+                    continue;
+
+                break;
+            }
+
+            lex.token_length = 0;
+            lex.next();
+
+            return lex;
         }
 
         /*** Getters and Setters ***/
         get string() {
             return this.str;
         }
+
+        get string_length() {
+            return this.sl - this.off;
+        }
+
+        set string_length(s$$1) {}
 
         /**
          * The current token in the form of a new Lexer with the current state.
@@ -2147,7 +2201,7 @@ var wick = (function (exports) {
          * @readonly
          */
         get tx() { return this.text; }
-        
+
         /**
          * The string value of the current token.
          * @type {String}
@@ -2190,65 +2244,65 @@ var wick = (function (exports) {
          */
         get n() { return this.next(); }
 
-        get END(){ return this.off >= this.sl; }
-        set END(v$$1){}
+        get END() { return this.off >= this.sl; }
+        set END(v$$1) {}
 
-        get type(){
+        get type() {
             return 1 << (this.masked_values & TYPE_MASK);
         }
 
-        set type(value){
+        set type(value) {
             //assuming power of 2 value.
 
-            this.masked_values = (this.masked_values & ~TYPE_MASK) | ((getNumbrOfTrailingZeroBitsFromPowerOf2(value)) & TYPE_MASK); 
+            this.masked_values = (this.masked_values & ~TYPE_MASK) | ((getNumbrOfTrailingZeroBitsFromPowerOf2(value)) & TYPE_MASK);
         }
 
-        get tl (){
+        get tl() {
             return this.token_length;
         }
 
-        set tl(value){
+        set tl(value) {
             this.token_length = value;
         }
 
-        get token_length(){
+        get token_length() {
             return ((this.masked_values & TOKEN_LENGTH_MASK) >> 7);
         }
 
-        set token_length(value){
-            this.masked_values = (this.masked_values & ~TOKEN_LENGTH_MASK) | (((value << 7) | 0) & TOKEN_LENGTH_MASK); 
+        set token_length(value) {
+            this.masked_values = (this.masked_values & ~TOKEN_LENGTH_MASK) | (((value << 7) | 0) & TOKEN_LENGTH_MASK);
         }
 
-        get IGNORE_WHITE_SPACE(){
+        get IGNORE_WHITE_SPACE() {
             return this.IWS;
         }
 
-        set IGNORE_WHITE_SPACE(bool){
+        set IGNORE_WHITE_SPACE(bool) {
             this.iws = !!bool;
         }
 
-        get CHARACTERS_ONLY(){
+        get CHARACTERS_ONLY() {
             return !!(this.masked_values & CHARACTERS_ONLY_MASK);
         }
 
-        set CHARACTERS_ONLY(boolean){
-            this.masked_values = (this.masked_values & ~CHARACTERS_ONLY_MASK) | ((boolean | 0) << 6); 
+        set CHARACTERS_ONLY(boolean) {
+            this.masked_values = (this.masked_values & ~CHARACTERS_ONLY_MASK) | ((boolean | 0) << 6);
         }
 
-        get IWS(){
+        get IWS() {
             return !!(this.masked_values & IGNORE_WHITESPACE_MASK);
         }
 
-        set IWS(boolean){
-            this.masked_values = (this.masked_values & ~IGNORE_WHITESPACE_MASK) | ((boolean | 0) << 5); 
+        set IWS(boolean) {
+            this.masked_values = (this.masked_values & ~IGNORE_WHITESPACE_MASK) | ((boolean | 0) << 5);
         }
 
-        get PARSE_STRING(){
+        get PARSE_STRING() {
             return !!(this.masked_values & PARSE_STRING_MASK);
         }
 
-        set PARSE_STRING(boolean){
-            this.masked_values = (this.masked_values & ~PARSE_STRING_MASK) | ((boolean | 0) << 4); 
+        set PARSE_STRING(boolean) {
+            this.masked_values = (this.masked_values & ~PARSE_STRING_MASK) | ((boolean | 0) << 4);
         }
 
         /**
@@ -2619,11 +2673,11 @@ var wick = (function (exports) {
                 this.btree.get(a, b, out);
             }
 
-            if (this.__filters__) {
+            if (this._filters_) {
                 for (let i = 0, l = out.length; i < l; i++) {
                     let model = out[i];
 
-                    if (this._gI_(model, this.__filters__))
+                    if (this._gI_(model, this._filters_))
                         __return_data__.push(model);
                 }
             } else
@@ -2682,8 +2736,8 @@ var wick = (function (exports) {
 
         __getAll__(__return_data__) {
 
-            if (this.__filters__) {
-                this.__get__(this.__filters__, __return_data__);
+            if (this._filters_) {
+                this.__get__(this._filters_, __return_data__);
             } else if (this.btree)
                 this.btree.get(-Infinity, Infinity, __return_data__);
 
@@ -3273,7 +3327,7 @@ var wick = (function (exports) {
 
             if (data)
                 for (let name in data)
-                    this._createProp_(name, data[name]);
+                    this.createProp(name, data[name]);
 
         }
 
@@ -3316,14 +3370,14 @@ var wick = (function (exports) {
                          out = true;
                     }
                 } else{
-                    this._createProp_(prop_name, data[prop_name]);
+                    this.createProp(prop_name, data[prop_name]);
                     out = true;
                 }
             }
 
             return out;
         }
-        _createProp_(name, value) {
+        createProp(name, value) {
 
             let index = this.prop_offset++;
 
@@ -3406,6 +3460,24 @@ var wick = (function (exports) {
             }
 
             this.scheduleUpdate(name);
+        }
+
+        toJSON(HOST = true){
+            let data = {};
+
+            for(let name in this.look_up){
+                let index = this.look_up[name];
+                let prop = this.prop_array[index];
+
+                if(prop){
+                    if(prop instanceof ModelBase)
+                        data[name] = prop.toJSON(false);
+                    else
+                        data[name] = prop;
+                }
+            }
+
+            return HOST ? JSON.stringify(data) : data;    
         }
     }
 
@@ -3726,17 +3798,12 @@ var wick = (function (exports) {
                             if (schema_name == "proto") {
                                 for (let name in schema.proto)
                                     _SealedProperty_(prototype, name, schema.proto[name]);
-                                count++;
                                 continue;
                             }
 
                             if (typeof(scheme) == "function") {
                                 CreateModelProperty(prototype, scheme, schema_name, count);
-                                count++;
-                                continue;
-                            }
-
-                            if (typeof(scheme) == "object") {
+                            } else if (typeof(scheme) == "object") {
                                 if (Array.isArray(scheme)) {
                                     if (scheme[0] && scheme[0].container && scheme[0].schema)
                                         CreateModelProperty(prototype, scheme[0], schema_name, count);
@@ -3758,8 +3825,6 @@ var wick = (function (exports) {
                             look_up[schema_name] = count;
                             count++;
                         }
-
-
 
                         _SealedProperty_(prototype, "prop_offset", count);
                         _SealedProperty_(prototype, "look_up", look_up);
@@ -3784,6 +3849,8 @@ var wick = (function (exports) {
             if (data)
                 this.set(data, true);
         }
+
+        destroy() { this.root = null; }
 
         set(data, FROM_ROOT = false) {
 
@@ -3825,10 +3892,9 @@ var wick = (function (exports) {
             return this._changed_;
         }
 
-        destroy() { this.root = null; }
-
-        _createProp_() {}
+        createProp() {}
     }
+    SchemedModel.prototype.toJSON = Model.prototype.toJSON;
 
     class SchemedContainer extends ArrayModelContainer {
         
@@ -4059,6 +4125,12 @@ var wick = (function (exports) {
         upImport(prop_name, data, meta) {
             if (this.parent)
                 this.parent.up(prop_name, data, meta, this);
+            else 
+                this.up(prop_name, data, meta);
+        }
+
+        up(prop_name, data, meta){
+
         }
 
         down(data, changed_values) {
@@ -4090,6 +4162,34 @@ var wick = (function (exports) {
         query :"",
         search:""
     };
+
+    /** Implement Basic Fetch Mechanism for NodeJS **/
+    if(typeof(fetch) == "undefined" && typeof(global) !== "undefined" ){
+
+        
+        import("fs").then(fs=>{
+
+
+         global.fetch = (url, data) =>
+            new Promise((res, rej) => {
+                let p = path.resolve(process.cwd(), (url[0] == ".") ? url + "" : "." + url);
+                fs.readFile(p, "utf8", (err, data) => {
+                    if (err) {
+                        rej(err);
+                    } else {
+                        res({
+                            status: 200,
+                            text: () => {
+                                return {
+                                    then: (f) => f(data)
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    }
 
     function fetchLocalText(URL, m = "same-origin") {
         return new Promise((res, rej) => {
@@ -4719,38 +4819,52 @@ var wick = (function (exports) {
 
                 insertBefore: function(node) {
 
-                    if (!this.nxt || !this.prv) {
+                    if (!this.nxt && !this.prv) {
                         this.nxt = this;
                         this.prv = this;
                     }
 
-                    if (node.prv || node.nxt) {
-                        node.prv.nxt = node.nxt;
-                        node.nxt.prv = node.prv;
-                    }
-
-                    node.prv = this.prv;
-                    this.prv.nxt = node;
-                    node.nxt = this;
-                    this.prv = node;
+                    if(node){
+                        if (node.prv)
+                           node.prv.nxt = node.nxt;
+                        
+                        if(node.nxt) 
+                            node.nxt.prv = node.prv;
+                    
+                        node.prv = this.prv;
+                        node.nxt = this;
+                        this.prv.nxt = node;
+                        this.prv = node;
+                    }else{
+                        if (this.prv)
+                            this.prv.nxt = node;
+                        this.prv = node;
+                    } 
                 },
 
                 insertAfter: function(node) {
 
-                    if (!this.nxt || !this.prv) {
+                    if (!this.nxt && !this.prv) {
                         this.nxt = this;
                         this.prv = this;
                     }
 
-                    if (node.prv || node.nxt) {
-                        node.prv.nxt = node.nxt;
-                        node.nxt.prv = node.prv;
-                    }
-
-                    this.nxt.prv = node;
-                    node.nxt = this.nxt;
-                    this.nxt = node;
-                    node.prv = this;
+                    if(node){
+                        if (node.prv)
+                           node.prv.nxt = node.nxt;
+                        
+                        if(node.nxt) 
+                            node.nxt.prv = node.prv;
+                    
+                        node.nxt = this.nxt;
+                        node.prv = this;
+                        this.nxt.prv = node;
+                        this.nxt = node;
+                    }else{
+                        if (this.nxt)
+                            this.nxt.prv = node;
+                        this.nxt = node;
+                    } 
                 }
             },
             /**
@@ -5084,11 +5198,7 @@ var wick = (function (exports) {
 
         }
 
-
-
         /******************************************* ATTRIBUTE AND ELEMENT ACCESS ******************************************************************************************************************/
-
-
 
         /**
          * Returns the type of `0` (`HTML`)
@@ -5163,7 +5273,7 @@ var wick = (function (exports) {
         getAttrib(prop) {
             for (let i = -1, l = this.attributes.length; ++i < l;) {
                 let attrib = this.attributes[i];
-                if (attrib.name == prop) return attrib;
+                if (attrib.name == prop && !attrib.IGNORE) return attrib;
             }
             return null;
         }
@@ -5260,6 +5370,7 @@ var wick = (function (exports) {
          * @public
          */
         toString(off = 0) {
+
             let o = offset.repeat(off);
 
             let str = `${o}<${this.tag}`,
@@ -5269,7 +5380,9 @@ var wick = (function (exports) {
 
             while (++i < l) {
                 let attr = atr[i];
-                str += ` ${attr.name}="${attr.value}"`;
+               
+                if(attr.name) 
+                    str += ` ${attr.name}="${attr.value}"`;
             }
 
             str += ">\n";
@@ -5277,12 +5390,18 @@ var wick = (function (exports) {
             if(this.single)
                 return str;
 
-            for (let node = this.fch; node;
-                (node = this.getNextChild(node))) {
-                str += node.toString(off+1);
-            }
+            str += this.innerToString(off+1);
 
             return str + `${o}</${this.tag}>\n`;
+        }
+
+        innerToString(off){
+            let str = "";
+            for (let node = this.fch; node;
+                (node = this.getNextChild(node))) {
+                str += node.toString(off);
+            }
+            return str;
         }
 
 
@@ -5649,13 +5768,13 @@ var wick = (function (exports) {
             return null;
         }
 
-        processAttributeHook(name, lex) { return { name, value: lex.slice() }; }
+        processAttributeHook(name, lex) { return {IGNORE:false, name, value: lex.slice() }; }
         
         processTextNodeHook(lex, IS_INNER_HTML) {
             if (!IS_INNER_HTML)
-                return new TextNode(lex.slice());
+                return new TextNode(lex.trim().slice());
             let txt = "";
-
+            /*
             lex.IWS = true;
 
             while (!lex.END) {
@@ -5670,12 +5789,30 @@ var wick = (function (exports) {
 
             if(!(lex.ty & (8 | 256)))
                 txt += lex.tx;
-
-            if (txt.length > 0) {
-                return new TextNode(txt.trim());
-            }
+            */
+            //if (txt.length > 0) {
+                
+                let t = lex.trim();
+                 debugger   
+                if(t.string_length > 0)
+                    return new TextNode(t.slice());
+                
+            //}
 
             return null;
+        }
+
+        /**
+            Deep Clone of Element
+        */
+        clone(){
+            const clone = new this.constructor();
+
+            clone.tag = this.tag;
+
+            clone.parse(this.toString());
+
+            return clone;
         }
 
         build(parent) {
@@ -5875,7 +6012,7 @@ var wick = (function (exports) {
             if (typeof(l) == "string")
                 l = whind$1(l);
 
-            let out = null;
+            let out = { r: 0, g: 0, b: 0, a: 1 };
 
             switch (l.ch) {
                 case "#":
@@ -5913,10 +6050,10 @@ var wick = (function (exports) {
                         out.b = parseInt(l.next().tx);
                         l.next(); // ,
                         out.a = parseFloat(l.next().tx);
-                        l.next().next();
+                        l.next();
                         c = new CSS_Color();
                         c.set(out);
-                        break;
+                        return c;
                     } else if (tx == "rgb") {
                         out = { r: 0, g: 0, b: 0, a: 1 };
                         l.next(); // (
@@ -5926,8 +6063,10 @@ var wick = (function (exports) {
                         l.next(); // ,
                         out.b = parseInt(l.next().tx);
                         l.next();
-                        break;
-                    }
+                        c = new CSS_Color();
+                        c.set(out);
+                        return c;
+                    } // intentional
                 default:
                     let string = l.tx;
 
@@ -5940,6 +6079,7 @@ var wick = (function (exports) {
             return out;
         }
     } {
+
         let _$ = (r = 0, g = 0, b = 0, a = 1) => ({ r, g, b, a });
         let c = _$(0, 255, 25);
         CSS_Color.colors = {
@@ -6939,85 +7079,87 @@ var wick = (function (exports) {
     }
 
     class Stop{
-    	constructor(color, percentage){
-    		this.color = color;
-    		this.percentage = percentage || null;
-    	}
+        constructor(color, percentage){
+            this.color = color;
+            this.percentage = percentage || null;
+        }
 
-    	toString(){
-    		return `${this.color}${(this.percentage)?" "+this.percentage:""}`;
-    	}
+        toString(){
+            return `${this.color}${(this.percentage)?" "+this.percentage:""}`;
+        }
     }
 
     class CSS_Gradient{
 
-    	static parse(l, rule, r) {
+        static parse(l, rule, r) {
             let tx = l.tx,
                 pky = l.pk.ty;
             if (l.ty == l.types.id) {
-            	switch(l.tx){
-            		case "linear-gradient":
-            		l.next().a("(");
-            		let dir,num,type ="deg";
-            		if(l.tx == "to"){
+                switch(l.tx){
+                    case "linear-gradient":
+                    l.next().a("(");
+                    let dir,num,type ="deg";
+                    if(l.tx == "to"){
 
-            		}else if(l.ty == l.types.num){
-            			num = parseFloat(l.ty);
-            			type = l.next().tx;
-            			l.next().a(',');
-            		}
-            		let stops = [];
-            		while(!l.END && l.ch != ")"){
-            			let v = CSS_Color.parse(l, rule, r);
-            			let len = null;
+                    }else if(l.ty == l.types.num){
+                        num = parseFloat(l.ty);
+                        type = l.next().tx;
+                        l.next().a(',');
+                    }
 
-            			if(l.ch == ")") {
-            				stops.push(new Stop(v, len));
-            				break;
-            			}
-            			
-            			if(l.ch != ","){
-    	        			if(!(len = CSS_Length.parse(l, rule, r)))
-    	        				len = CSS_Percentage.parse(l,rule,r);
-            			}else{
-            				l.next();
-            			}
+                    let stops = [];
+                    
+                    while(!l.END && l.ch != ")"){
+                        let v = CSS_Color.parse(l, rule, r);
+                        let len = null;
 
-            			stops.push(new Stop(v, len));
-            		}
-            		l.a(")");
-            		let grad = new CSS_Gradient();
-            		grad.stops = stops;
-            		return grad;
-            	}
+                        if(l.ch == ")") {
+                            stops.push(new Stop(v, len));
+                            break;
+                        }
+                        
+                        if(l.ch != ","){
+                            if(!(len = CSS_Length.parse(l, rule, r)))
+                                len = CSS_Percentage.parse(l,rule,r);
+                        }else
+                            l.next();
+                        
+
+                        stops.push(new Stop(v, len));
+                    }
+                    l.a(")");
+                    let grad = new CSS_Gradient();
+                    grad.stops = stops;
+                    return grad;
+                }
             }
             return null;
         }
 
 
-    	constructor(type = 0){
-    		this.type = type; //linear gradient
-    		this.direction = new CSS_Length(0, "deg");
-    		this.stops = [];
-    	}
+        constructor(type = 0){
+            this.type = type; //linear gradient
+            this.direction = new CSS_Length(0, "deg");
+            this.stops = [];
+        }
 
-    	toString(){
-    		let str = [];
-    		switch(this.type){
-    			case 0:
-    			str.push("linear-gradient(");
-    			if(this.direction !== 0)
-    				str.push(this.direction.toString() + ",");
-    			break;
-    		}
+        toString(){
+            let str = [];
+            switch(this.type){
+                case 0:
+                str.push("linear-gradient(");
+                if(this.direction !== 0)
+                    str.push(this.direction.toString() + ",");
+                break;
+            }
 
-    		for(let i = 0; i < this.stops.length; i++)
-    			str.push(this.stops[i].toString()+((i<this.stops.length-1)?",":""));
+            for(let i = 0; i < this.stops.length; i++)
+                str.push(this.stops[i].toString()+((i<this.stops.length-1)?",":""));
 
-    		str.push(")");
+            str.push(")");
 
-    		return str.join(" ");
-    	}
+            return str.join(" ");
+        }
     }
 
     const $medh = (prefix) => ({
@@ -8997,7 +9139,7 @@ var wick = (function (exports) {
             }
         }
 
-        _READY_() {
+        READY() {
             if (!this.res) this.res = this._resolveReady_.bind(this);
             return new Promise(this.res);
         }
@@ -9159,9 +9301,9 @@ var wick = (function (exports) {
     class Tap {
 
         constructor(source, prop, modes = 0) {
-            this._source_ = source;
-            this._prop_ = prop;
-            this._modes_ = modes; // 0 implies keep
+            this.source = source;
+            this.prop = prop;
+            this.modes = modes; // 0 implies keep
             this.ios = [];
 
             if (modes & IMPORT && source.parent)
@@ -9175,9 +9317,9 @@ var wick = (function (exports) {
                 this.ios[i].destroy();
 
             this.ios = null;
-            this._source_ = null;
-            this._prop_ = null;
-            this._modes_ = null;
+            this.source = null;
+            this.prop = null;
+            this.modes = null;
         }
 
         load(data) {
@@ -9191,16 +9333,16 @@ var wick = (function (exports) {
         }
 
         downS(model, IMPORTED = false) {
-            const value = model[this._prop_];
+            const value = model[this.prop];
 
             if (typeof(value) !== "undefined") {
 
                 if (IMPORTED) {
-                    if (!(this._modes_ & IMPORT))
+                    if (!(this.modes & IMPORT))
                         return;
 
-                    if ((this._modes_ & PUT) && typeof(value) !== "function") {
-                        this._source_.model[this._prop_] = value;
+                    if ((this.modes & PUT) && typeof(value) !== "function") {
+                        this.source.model[this.prop] = value;
                     }
 
                 }
@@ -9216,15 +9358,15 @@ var wick = (function (exports) {
 
         up(value, meta) {
 
-            if (!(this._modes_ & (EXPORT | PUT)))
+            if (!(this.modes & (EXPORT | PUT)))
                 this.down(value, meta);
 
-            if ((this._modes_ & PUT) && typeof(value) !== "undefined") {
-                this._source_.model[this._prop_] = value;
+            if ((this.modes & PUT) && typeof(value) !== "undefined") {
+                this.source.model[this.prop] = value;
             }
 
-            if (this._modes_ & EXPORT)
-                this._source_.up(this, value, meta);
+            if (this.modes & EXPORT)
+                this.source.up(this, value, meta);
 
 
 
@@ -9396,7 +9538,7 @@ var wick = (function (exports) {
                     out_taps.push(this.taps[name]);
                 else {
                     let bool = name == "update";
-                    let t = bool ? new UpdateTap(this, name, tap._modes_) : new Tap(this, name, tap._modes_);
+                    let t = bool ? new UpdateTap(this, name, tap.modes) : new Tap(this, name, tap.modes);
 
                     if (bool)
                         this.update_tap = t;
@@ -9436,7 +9578,10 @@ var wick = (function (exports) {
                 this.sources[i].getBadges(this);
             }
 
-            model.addView(this);
+            if(model.addView)
+                model.addView(this);
+
+            this.model = this;
 
             for (let name in this.taps)
                 this.taps[name].load(this.model, false);
@@ -9451,7 +9596,7 @@ var wick = (function (exports) {
 
         up(tap, data, meta) {
             if (this.parent)
-                this.parent.upImport(tap._prop_, data, meta, this);
+                this.parent.upImport(tap.prop, data, meta, this);
         }
 
         upImport(prop_name, data, meta) {
@@ -9541,10 +9686,13 @@ var wick = (function (exports) {
      */
     class IO extends IOBase {
 
-        constructor(source, errors, tap, element = null) {
+        constructor(source, errors, tap, element = null, default_val) {
             super(tap);
             //Appending the value to a text node prevents abuse from insertion of malicious DOM markup. 
             this.ele = element;
+            this.argument = null;
+
+            if(default_val) this.down(default_val);
         }
 
         destroy() {
@@ -9561,11 +9709,13 @@ var wick = (function (exports) {
         This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
     */
     class AttribIO extends IOBase {
-        constructor(source, errors, tap, attr, element) {
+        constructor(source, errors, tap, attr, element, default_val) {
             super(tap);
 
             this.attrib = attr;
             this.ele = element;
+
+            if(default_val) this.down(default_val);
         }
 
         destroy() {
@@ -9584,13 +9734,15 @@ var wick = (function (exports) {
 
     class InputIO extends IOBase {
 
-        constructor(source, errors, tap, element) {
+        constructor(source, errors, tap, element, message_key) {
 
             super(tap);
 
             this.ele = element;
 
-            this.event = (e) => { this.parent.up(e.target.value, { event: e }); };
+            const up_tap = message_key ? source.getTap(message_key) : tap;
+
+            this.event = (e) => { up_tap.up(e.target.value, { event: e }); };
 
             this.ele.addEventListener("input", this.event);
         }
@@ -9656,17 +9808,17 @@ var wick = (function (exports) {
                 let bind = binds[i];
 
                 switch (bind.type) {
-                    case 0: //DYNAMIC_BINDING_ID
+                    case 0: //DYNAMICbindingID
                         let new_bind = new BindIO(source, errors, source.getTap(bind.tap_name), bind);
                         this.binds.push(new_bind);
                         new_bind.child = this;
                         //this.binds.push(msg._bind_(source, errors, taps, this));
                         break;
-                    case 1: //RAW_VALUE_BINDING_ID
+                    case 1: //RAW_VALUEbindingID
                         this.binds.push(bind);
                         break;
-                    case 2: //TEMPLATE_BINDING_ID
-                        if (bind._bindings_.length < 1) // Just a variable less expression.
+                    case 2: //TEMPLATEbindingID
+                        if (bind.bindings.length < 1) // Just a variable less expression.
                             this.binds.push({ _value_: msg.func() });
                         else
                             this.binds.push(bind._bind_(source, errors, taps, this));
@@ -9766,17 +9918,17 @@ var wick = (function (exports) {
                 let bind = binds[i];
 
                 switch (bind.type) {
-                    case 0: //DYNAMIC_BINDING_ID
+                    case 0: //DYNAMICbindingID
                         let new_bind = new BindIO(source, errors, source.getTap(bind.tap_name), bind);
                         this.binds.push(new_bind);
                         new_bind.child = this;
                         //this.binds.push(msg._bind_(source, errors, taps, this));
                         break;
-                    case 1: //RAW_VALUE_BINDING_ID
+                    case 1: //RAW_VALUEbindingID
                         this.binds.push(bind);
                         break;
-                    case 2: //TEMPLATE_BINDING_ID
-                        if (bind._bindings_.length < 1) // Just a variable less expression.
+                    case 2: //TEMPLATEbindingID
+                        if (bind.bindings.length < 1) // Just a variable less expression.
                             this.binds.push({ _value_: msg.func() });
                         else
                             this.binds.push(bind._bind_(source, errors, taps, this));
@@ -9902,11 +10054,11 @@ var wick = (function (exports) {
 
                 for (let i = 0, l = this._bl_; i < l; i++) {
                     let bind = this.binds[i];
-                    if (bind.parent._prop_ == "model" || bind.parent._prop_ == "m") {
+                    if (bind.parent.prop == "model" || bind.parent.prop == "m") {
                         model_arg_index = i;
                     }
 
-                    if (bind.parent._prop_ == "index" || bind.parent._prop_ == "i") {
+                    if (bind.parent.prop == "index" || bind.parent.prop == "i") {
                         index_arg_index = i;
                     }
                 }
@@ -9961,53 +10113,53 @@ var wick = (function (exports) {
     }
 
     class EventIO {
-        constructor(source, errors, taps, element, event, event_bind, msg) {
+        constructor(source, errors, taps, element, event, event_bind, argument) {
 
             let Attrib_Watch = (typeof element[event] == "undefined");
 
             this.parent = source;
             source.ios.push(this);
 
-            this._ele_ = element;
-            this._event_bind_ = new IOBase(source.getTap(event_bind.tap_name));
-            this._event_ = event.replace("on", "");
+            this.ele = element;
+            this.event_bind = new IOBase(source.getTap(event_bind.tap_name));
+            this.event = event.replace("on", "");
 
             this.prevent_defaults = false;
-            if (this._event_ == "dragstart") this.prevent_defaults = false;
-            this._msg_ = null;
+            if (this.event == "dragstart") this.prevent_defaults = false;
+            this.argument = null;
             this.data = null;
-            if (msg) {
-                switch (msg.type) {
-                    case 0: //DYNAMIC_BINDING_ID
-                        this._msg_ = msg._bind_(source, errors, taps, this);
+            if (argument) {
+                switch (argument.type) {
+                    case 0: //DYNAMICbindingID
+                        this.argument = argument._bind_(source, errors, taps, this);
                         break;
-                    case 1: //RAW_VALUE_BINDING_ID
-                        this.data = msg.txt;
+                    case 1: //RAW_VALUEbindingID
+                        this.data = argument.val;
                         break;
-                    case 2: //TEMPLATE_BINDING_ID
-                        if (msg._bindings_.length < 1) // Just a variable less expression.
-                            this.data = msg.func();
+                    case 2: //TEMPLATEbindingID
+                        if (argument.bindings.length < 1) // Just a variable less expression.
+                            this.data = argument.func();
                         else
-                            this._msg_ = msg._bind_(source, errors, taps, this);
+                            this.argument = argument._bind_(source, errors, taps, this);
                         break;
                 }
             }
 
 
             if (Attrib_Watch) {
-                this._event_handle_ = new MutationObserver((ml) => {
+                this.event_handle = new MutationObserver((ml) => {
                     ml.forEach((m) => {
                         if (m.type == "attributes") {
                             if (m.attributeName == event) {
-                                this._handleAttribUpdate_(m);
+                                this.handleAttribUpdate(m);
                             }
                         }
                     });
                 });
-                this._event_handle_.observe(this._ele_, { attributes: true });
+                this.event_handle.observe(this.ele, { attributes: true });
             } else {
-                this._event_handle_ = (e) => this._handleEvent_(e);
-                this._ele_.addEventListener(this._event_, this._event_handle_);
+                this.event_handle = (e) => this.handleEvent(e);
+                this.ele.addEventListener(this.event, this.event_handle);
             }
         }
 
@@ -10016,21 +10168,21 @@ var wick = (function (exports) {
          * Calls destroy on any child objects.
          */
         destroy() {
-            if (this._msg_)
-                this._msg_.destroy();
-            this._event_handle_ = null;
-            this._event_bind_.destroy();
-            this._msg_ = null;
-            this._ele_.removeEventListener(this._event_, this._event_handle_);
-            this._ele_ = null;
-            this._event_ = null;
+            if (this.argument)
+                this.argument.destroy();
+            this.event_handle = null;
+            this.event_bind.destroy();
+            this.argument = null;
+            this.ele.removeEventListener(this.event, this.event_handle);
+            this.ele = null;
+            this.event = null;
             this.parent.removeIO(this);
             this.parent = null;
             this.data = null;
         }
 
-        _handleEvent_(e) {
-            this._event_bind_.up(this.data, { event: e });
+        handleEvent(e) {
+            this.event_bind.up(this.data, { event: e });
 
             if (this.prevent_defaults) {
                 e.preventDefault();
@@ -10040,8 +10192,8 @@ var wick = (function (exports) {
             }
         }
 
-        _handleAttribUpdate_(e) {
-            this._event_bind_.up(e.target.getAttribute(e.attributeName), { mutation: e });
+        handleAttribUpdate(e) {
+            this.event_bind.up(e.target.getAttribute(e.attributeName), { mutation: e });
         }
     }
 
@@ -10066,7 +10218,7 @@ var wick = (function (exports) {
 
             this.function = binding.val;
             this._func_ = func;
-            this._source_ = source;
+            this.source = source;
             this._bound_emit_function_ = new Proxy(this._emit_.bind(this), { set: (obj, name, value) => { obj(name, value); } });
             this.meta = null;
         }
@@ -10077,7 +10229,7 @@ var wick = (function (exports) {
          */
         destroy() {
             this._func_ = null;
-            this._source_ = null;
+            this.source = null;
             this._bound_emit_function_ = null;
             this._meta = null;
 
@@ -10085,7 +10237,7 @@ var wick = (function (exports) {
 
         down(value, meta = { event: null }) {
             this.meta = meta;
-            const src = this._source_;
+            const src = this.source;
             try {
                 this._func_(value, meta.event, src.model, this._bound_emit_function_, src.presets, src.statics, src);
             } catch (e) {
@@ -10099,15 +10251,15 @@ var wick = (function (exports) {
                 typeof(name) !== "undefined" &&
                 typeof(value) !== "undefined"
             ) {
-                this._source_.upImport(name, value, this.meta);
+                this.source.upImport(name, value, this.meta);
             }
         }
     }
 
-    const DYNAMIC_BINDING_ID = 0;
-    const RAW_VALUE_BINDING_ID = 1;
-    const TEMPLATE_BINDING_ID = 2;
-    const EVENT_BINDING_ID = 3;
+    const DYNAMICbindingID = 0;
+    const RAW_VALUEbindingID = 1;
+    const TEMPLATEbindingID = 2;
+    const EVENTbindingID = 3;
 
     const ATTRIB = 1;
     const STYLE = 2;
@@ -10124,29 +10276,33 @@ var wick = (function (exports) {
      */
     class EventBinding {
         constructor(prop) {
-            this.bind = null;
-            this._event_ = prop;
+            this.arg = null;
+            this.event = prop;
         }
 
         _bind_(source, errors, taps, element, eventname) {
-            return new EventIO(source, errors, taps, element, eventname, this._event_, this.bind);
+            return new EventIO(source, errors, taps, element, eventname, this.event, this.arg);
         }
 
-        get _bindings_() {
-            if (this.bind) {
-                if (this.bind.type == TEMPLATE_BINDING_ID)
-                    return [...this.bind._bindings_, this._event_];
+        get bindings() {
+            if (this.argument) {
+                if (this.argument.type == TEMPLATEbindingID)
+                    return [...this.argument.bindings, this.event];
                 else
-                    return [this.bind, this._event_];
+                    return [this.argument, this.event];
             }
-            return [this._event_];
+            return [this.event];
         }
-        set _bindings_(v) {}
+        set bindings(v) {}
 
         get type() {
-            return TEMPLATE_BINDING_ID;
+            return TEMPLATEbindingID;
         }
         set type(v) {}
+
+        set argument(binding){
+            this.arg = binding;
+        }
     }
 
     /**
@@ -10156,22 +10312,23 @@ var wick = (function (exports) {
      */
     class ExpressionBinding {
         constructor(binds, func) {
-            this._bindings_ = binds;
+            this.bindings = binds;
             this.func = func;
+            this.arg = null;
         }
 
         _bind_(source, errors, taps, element) {
             
             switch (this.method) {
                 case INPUT:
-                    return new InputExpresionIO(source, errors, taps, element, this._bindings_, this.func);
+                    return new InputExpresionIO(source, errors, taps, element, this.bindings, this.func);
                 default:
-                    return new ExpressionIO(source, errors, taps, element, this._bindings_, this.func);
+                    return new ExpressionIO(source, errors, taps, element, this.bindings, this.func);
             }
         }
 
         get type() {
-            return TEMPLATE_BINDING_ID;
+            return TEMPLATEbindingID;
         }
         set type(v) {}
     }
@@ -10185,33 +10342,44 @@ var wick = (function (exports) {
             this.val = "";
             this._func_ = null;
             this.method = 0;
+            this.argKey = null;
+            this.argVal = null;
         }
 
         _bind_(source, errors, taps, element) {
             let tap = source.getTap(this.tap_name); //taps[this.tap_id];
             switch (this.method) {
                 case INPUT:
-                    return new InputIO(source, errors, tap, element);
+                    return new InputIO(source, errors, tap, element, this.argKey);
                 case ATTRIB:
-                    return new AttribIO(source, errors, tap, this.val, element);
+                    return new AttribIO(source, errors, tap, this.val, element, this.argVal);
                 case SCRIPT:
                     return new ScriptIO(source, errors, tap, this);
                 default:
-                    return new IO(source, errors, tap, element);
+                    return new IO(source, errors, tap, element, this.argVal);
             }
         }
 
         get type() {
-            return DYNAMIC_BINDING_ID;
+            return DYNAMICbindingID;
         }
         set type(v) {}
 
         toString(){return `((${this.tap_name}))`;}
+
+        set argument(binding){
+            if(binding instanceof DynamicBinding){
+                this.argKey = binding.tap_name;
+                this.argVal = binding.val;
+            }else if(binding instanceof RawValueBinding){
+                this.argVal = binding.val;
+            }
+        }
     }
 
     class RawValueBinding {
-        constructor(txt) {
-            this.txt = txt;
+        constructor(val) {
+            this.val = val;
             this.method = 0;
         }
 
@@ -10219,21 +10387,21 @@ var wick = (function (exports) {
 
             switch (this.method) {
                 case TEXT$1:
-                    element.data = this.txt;
+                    element.data = this.val;
                     break;
                 case ATTRIB:{
                     if(prop == "class"){
-                        element.classList.add.apply(element.classList, this.txt.split(" "));
+                        element.classList.add.apply(element.classList, this.val.split(" "));
                     }else
-                        element.setAttribute(prop, this.txt);
+                        element.setAttribute(prop, this.val);
                 }
             }
         }
-        get _value_() { return this.txt; }
+        get _value_() { return this.val; }
         set _value_(v) {}
-        get type() { return RAW_VALUE_BINDING_ID; }
+        get type() { return RAW_VALUEbindingID; }
         set type(v) {}
-        toString(){return this.txt;}
+        toString(){return this.val;}
     }
 
     /**
@@ -10315,7 +10483,7 @@ var wick = (function (exports) {
     const barrier_b_start = "|";
     const barrier_b_end = "|";
 
-    const BannedIdentifiers = { "true": true, "false": 1, "class": 1, "function": 1,  "return": 1, "for" : 1, "new" : 1, "let" : 1, "var" : 1, "const" : 1, "Date": 1, "null": 1, "parseFloat":1, "parseInt":1};
+    const BannedIdentifiers = { "true": true, "false": 1, "class": 1, "function": 1, "return": 1, "for": 1, "new": 1, "let": 1, "var": 1, "const": 1, "Date": 1, "null": 1, "parseFloat": 1, "parseInt": 1 };
 
     function setIdentifier(id, store, cache) {
         if (!cache[id] && !BannedIdentifiers[id]) {
@@ -10336,7 +10504,7 @@ var wick = (function (exports) {
          * "return (implied)" name ? "User has a name!" : "User does not have a name!"
          * ```
          */
-         
+
         const bind_ids = [];
 
         const function_string = lex.slice();
@@ -10404,14 +10572,14 @@ var wick = (function (exports) {
                         lex.sync().n;
                         lex.IWS = true; // Do not produce white space tokens during this portion.
                         let pk = lex.pk;
-                        let Message= false;
+                        let Message = false;
 
 
-                        while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end && pk.p.ch !== barrier_a_start) || (pk.p.n.ch === barrier_a_end))) { 
+                        while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end && pk.p.ch !== barrier_a_start) || (pk.p.n.ch === barrier_a_end))) {
                             let prev = pk.ch;
-                            pk.n; 
-                            if(pk.ch == barrier_a_start && prev == barrier_a_end)
-                                Message =true;
+                            pk.n;
+                            if (pk.ch == barrier_a_start && prev == barrier_a_end)
+                                Message = true;
                         }
 
 
@@ -10434,86 +10602,90 @@ var wick = (function (exports) {
                         } else {
 
                             /************************** Start Single Identifier Binding *******************************/
+                            
                             let id = lex.tx;
                             let binding = new DynamicBinding();
                             binding.tap_name = id;
                             let index = binds.push(binding) - 1;
                             lex.n.a(sentinel);
 
-                            if (EVENT$$1) {
-                                /***************************** Looking for Event Bindings ******************************************/
-                                
-                                if (lex.ch == barrier_a_start || lex.ch == barrier_b_start) {
+                            /***************************** Looking for Event Bindings ******************************************/
 
-                                    binds[index] = new EventBinding(binds[index]);
+                            if (lex.ch == barrier_a_start || lex.ch == barrier_b_start) {
 
-                                    let sentinel = (lex.ch == barrier_a_start) ? barrier_a_end : barrier_b_end;
+                                if(EVENT$$1){
+                                    binding = new EventBinding(binding); 
+                                    binds[index] = binding;
+                                }
 
-                                    lex.IWS = true; // Do not produce white space tokens during this portion.
+                                let sentinel = (lex.ch == barrier_a_start) ? barrier_a_end : barrier_b_end;
 
-                                    let pk = lex.pk;
+                                lex.IWS = true; // Do not produce white space tokens during this portion.
 
-                                    while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end))) { pk.n; }
+                                let pk = lex.pk;
 
-                                    lex.n;
+                                while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end))) { pk.n; }
 
-                                    if (lex.tl < pk.off - lex.off || BannedIdentifiers[lex.tx]) {
+                                lex.n;
 
-                                        const elex = lex.copy(); //The expression Lexer
+                                if (lex.tl < pk.off - lex.off || BannedIdentifiers[lex.tx]) {
 
-                                        elex.fence(pk);
+                                    const elex = lex.copy(); //The expression Lexer
 
-                                        lex.sync();
+                                    elex.fence(pk);
 
-                                        if (pk.END) //Should still have `))` or `|)` in the input string
-                                            throw new Error("Should be more to this!");
+                                    lex.sync();
 
-                                        const event_binds = [];
+                                    if (pk.END) //Should still have `))` or `|)` in the input string
+                                        throw new Error("Should be more to this!");
 
-                                        processExpression(elex, event_binds);
+                                    const event_binds = [];
 
-                                        binds[index].bind = event_binds[0];
+                                    processExpression(elex, event_binds);
 
-                                        lex.a(sentinel);
+                                    binding.argument = event_binds[0];
 
-                                    } else {
-                                        if (lex.ch !== sentinel) {
-                                            let id = lex.tx,
-                                                binding;
-                                            if (lex.ty !== lex.types.id) {
-                                                switch (lex.ty) {
-                                                    case lex.types.num:
-                                                        binding = new RawValueBinding(parseFloat(id));
-                                                        break;
-                                                    case lex.types.str:
-                                                        binding = new RawValueBinding(id.slice(1, -1));
-                                                        break;
-                                                    default:
-                                                        binding = new RawValueBinding(id.slice);
-                                                }
-                                            } else {
-                                                binding = new DynamicBinding();
-                                                binding.tap_name = id;
+                                    lex.a(sentinel);
+
+                                } else {
+
+                                    if (lex.ch !== sentinel) {
+                                        let id = lex.tx, arg_binding = null;
+                                        if (lex.ty !== lex.types.id) {
+                                            switch (lex.ty) {
+                                                case lex.types.num:
+                                                    arg_binding = new RawValueBinding(parseFloat(id));
+                                                    break;
+                                                case lex.types.str:
+                                                    arg_binding = new RawValueBinding(id.slice(1, -1));
+                                                    break;
+                                                default:
+                                                    arg_binding = new RawValueBinding(id.slice);
                                             }
-                                            binds[index].bind = binding;
-                                            lex.n;
+                                        } else {
+                                            arg_binding = new DynamicBinding();
+                                            arg_binding.tap_name = id;
                                         }
-                                        lex.a(sentinel);
+                                        binding.argument = arg_binding;
+                                        lex.n;
                                     }
+                                    lex.a(sentinel);
                                 }
                             }
                         }
 
                         lex.IWS = false;
-                        
+
                         start = lex.off + 1; //Should at the sentinel.
-                        
+
                         lex.a(barrier_a_end);
-                        
+
                         continue;
                     }
+
                     break;
             }
+
             lex.n;
         }
 
@@ -10528,7 +10700,7 @@ var wick = (function (exports) {
             while (!lex.n.END)
                 if (!(lex.ty & (lex.types.ws | lex.types.nl)))
                     DATA_END = lex.off + lex.tl;
-                
+
             if (DATA_END > start) {
                 lex.sl = DATA_END;
                 binds.push(new RawValueBinding(lex.slice(start)));
@@ -10548,9 +10720,8 @@ var wick = (function (exports) {
         return null;
     }
 
-
     function OutTemplate(binds = []) {
-        this._bindings_ = binds;
+        this.bindings = binds;
     }
 
     OutTemplate.prototype = {
@@ -10558,33 +10729,33 @@ var wick = (function (exports) {
 
         attr: "",
 
-        _bindings_: null,
+        bindings: null,
 
         _bind_: function(source, errors, taps, element, attr) {
             if (this.method == ATTRIB || this.method == INPUT)
-                return new AttribTemplate(source, errors, taps, attr, element, this._bindings_);
-            return new TemplateString(source, errors, taps, element, this._bindings_);
+                return new AttribTemplate(source, errors, taps, attr, element, this.bindings);
+            return new TemplateString(source, errors, taps, element, this.bindings);
         },
 
         _appendText_: function(string) {
-            let binding = this._bindings_[this._bindings_.length - 1];
+            let binding = this.bindings[this.bindings.length - 1];
 
-            if (binding && binding.type == RAW_VALUE_BINDING_ID) {
-                binding.txt += string;
+            if (binding && binding.type == RAW_VALUEbindingID) {
+                binding.val += string;
             } else {
-                this._bindings_.push(new RawValueBinding(string));
+                this.bindings.push(new RawValueBinding(string));
             }
         },
 
         set type(v) {},
         get type() {
-            return TEMPLATE_BINDING_ID;
+            return TEMPLATEbindingID;
         },
 
         toString(){
             let str = "";
-            for(let i = 0; i < this._bindings_.length; i++)
-                str += this._bindings_[i];
+            for(let i = 0; i < this.bindings.length; i++)
+                str += this.bindings[i];
             return str;
         }
     };
@@ -10605,15 +10776,15 @@ var wick = (function (exports) {
             this._css_props_ = [];
         }
 
-        get _bindings_() {
+        get bindings() {
             if (this._template_)
-                return this._template_._bindings_;
+                return this._template_.bindings;
             return [];
         }
-        set _bindings_(v) {}
+        set bindings(v) {}
 
         get type() {
-            return TEMPLATE_BINDING_ID;
+            return TEMPLATEbindingID;
         }
         set type(v) {}
 
@@ -10654,7 +10825,7 @@ var wick = (function (exports) {
 
             this.prop_name = prop_name;
 
-            this._bindings_ = bindings;
+            this.bindings = bindings;
         }
 
         get _wick_type_() {
@@ -10663,7 +10834,7 @@ var wick = (function (exports) {
         set _wick_type_(v) {}
 
         _bind_(source, errors, taps, io) {
-            let binding = new CSSRuleTemplateString(source, errors, taps, this._bindings_, this.prop_name);
+            let binding = new CSSRuleTemplateString(source, errors, taps, this.bindings, this.prop_name);
             binding.addIO(io);
             return binding;
         }
@@ -10697,7 +10868,7 @@ var wick = (function (exports) {
         build(element, source, presets, errors, taps) {
             let ele = document.createTextNode(this.txt);
             this.binding._bind_(source, errors, taps, ele);
-            _appendChild_(element, ele);
+            appendChild(element, ele);
         }
 
         linkCSS() {}
@@ -10720,7 +10891,7 @@ var wick = (function (exports) {
             this.HAS_TAPS = false;
 
             this.tap_list = [];
-            this._bindings_ = [];
+            this.bindings = [];
 
             this.css = null;
 
@@ -10761,13 +10932,13 @@ var wick = (function (exports) {
         /****************************************** COMPONENTIZATION *****************************************/
 
         mergeComponent() {
+            if(this.presets.components){
+                let component = this.presets.components[this.tag];
 
-            let component = this.presets.components[this.tag];
-
-            if (component) {
-                this._merged_ = component;
+                if (component) {
+                    this._merged_ = component;
+                }
             }
-
         }
 
         /******************************************* CSS ****************************************************/
@@ -10781,7 +10952,7 @@ var wick = (function (exports) {
 
                 let rule;
 
-                
+
                 for (let i = 0; i < css.length; i++)
                     rule = css[i].getApplicableRules(this, rule, win);
 
@@ -10794,10 +10965,10 @@ var wick = (function (exports) {
                     //Link in the rule properties to the tap system. 
                     let HAVE_BINDING = false;
 
-                    for (let i = 0, l = this._bindings_.length; i < l; i++) {
-                        let binding = this._bindings_[i];
+                    for (let i = 0, l = this.bindings.length; i < l; i++) {
+                        let binding = this.bindings[i];
 
-                        if (binding.name == "css"){
+                        if (binding.name == "css") {
                             binding.binding.clear();
                             HAVE_BINDING = (binding.binding._addRule_(rule), true);
                         }
@@ -10811,7 +10982,7 @@ var wick = (function (exports) {
                             value: "",
                             binding
                         };
-                        this._bindings_.push(vals);
+                        this.bindings.push(vals);
 
                     }
 
@@ -10826,8 +10997,8 @@ var wick = (function (exports) {
         setPendingCSS(css) {
             if (this.par)
                 this.par.setPendingCSS(css);
-            else{
-                if(!this.css)
+            else {
+                if (!this.css)
                     this.css = [];
                 this.css.push(css);
             }
@@ -10850,7 +11021,7 @@ var wick = (function (exports) {
                 if (typeof(classes.value) == "string")
                     return classes.value.split(" ");
                 else
-                    return classes.value.txt.split(" ");
+                    return classes.value.val.split(" ");
             }
             return [];
         }
@@ -10867,7 +11038,7 @@ var wick = (function (exports) {
             const tap = {
                 name: tap_name,
                 id: l,
-                _modes_: 0
+                modes: 0
             };
             this.tap_list.push(tap);
             return tap;
@@ -10905,7 +11076,7 @@ var wick = (function (exports) {
 
                 while (!lex.END) {
 
-                    this.getTap(lex.tx)._modes_ |= tap_mode;
+                    this.getTap(lex.tx).modes |= tap_mode;
 
                     lex.n;
                 }
@@ -10938,15 +11109,15 @@ var wick = (function (exports) {
 
             if (this.delegateTapBinding(binding, tap_mode)) return binding;
 
-            if (binding.type === TEMPLATE_BINDING_ID) {
+            if (binding.type === TEMPLATEbindingID) {
 
-                let _bindings_ = binding._bindings_;
+                let bindings = binding.bindings;
 
-                for (let i = 0, l = _bindings_.length; i < l; i++)
-                    if (_bindings_[i].type === DYNAMIC_BINDING_ID)
-                        this.linkTapBinding(_bindings_[i]);
+                for (let i = 0, l = bindings.length; i < l; i++)
+                    if (bindings[i].type === DYNAMICbindingID)
+                        this.linkTapBinding(bindings[i]);
 
-            } else if (binding.type === DYNAMIC_BINDING_ID)
+            } else if (binding.type === DYNAMICbindingID)
                 this.linkTapBinding(binding);
 
             return binding;
@@ -10974,17 +11145,17 @@ var wick = (function (exports) {
 
             const out_statics = this.__statics__ || statics;
             let own_out_ele;
-            
+
             if (this._merged_) {
-                
+
                 own_out_ele = {
                     ele: null
                 };
 
                 let out_source = this._merged_.build(element, source, presets, errors, taps, out_statics, own_out_ele);
 
-                if(!source)
-                    source = out_source;            
+                if (!source)
+                    source = out_source;
             }
 
             let own_element;
@@ -10992,14 +11163,14 @@ var wick = (function (exports) {
             if (own_out_ele) {
                 own_element = own_out_ele.ele;
             } else {
-                if(!source){
+                if (!source) {
                     source = new Source(null, presets, own_element, this);
                     own_element = this.createElement(presets, source);
                     source.ele = own_element;
-                }else
+                } else
                     own_element = this.createElement(presets, source);
 
-                if (element) _appendChild_(element, own_element);
+                if (element) appendChild(element, own_element);
 
                 if (out_ele)
                     out_ele.ele = own_element;
@@ -11015,10 +11186,10 @@ var wick = (function (exports) {
                 if (this._badge_name_)
                     source.badges[this._badge_name_] = own_element;
 
-                if (element) _appendChild_(element, own_element);
+                if (element) appendChild(element, own_element);
 
-                for (let i = 0, l = this._bindings_.length; i < l; i++) {
-                    let attr = this._bindings_[i];
+                for (let i = 0, l = this.bindings.length; i < l; i++) {
+                    let attr = this.bindings[i];
                     attr.binding._bind_(source, errors, taps, own_element, attr.name);
                 }
 
@@ -11075,7 +11246,14 @@ var wick = (function (exports) {
          */
         processAttributeHook(name, lex) {
 
-            let start = lex.off;
+            if (!name) return null;
+
+            let start = lex.off,
+                basic = {
+                    IGNORE:true,
+                    name,
+                    value: lex.slice(start)
+                };
 
             let bind_method = ATTRIB,
                 FOR_EVENT = false;
@@ -11092,7 +11270,7 @@ var wick = (function (exports) {
                             this.statics[key] = lex.slice();
                     }
 
-                    return null;
+                    return basic;
 
                 case "v": //Input
                     if (name == "value")
@@ -11112,45 +11290,42 @@ var wick = (function (exports) {
                         let components = this.presets.components;
                         if (components)
                             components[component_name] = this;
-                        return null;
+                        return basic;
                     }
                     break;
                 case "b":
                     if (name == "badge") {
                         this._badge_name_ = lex.tx;
-                        return null;
+                        return basic;
                     }
             }
 
             if (this.checkTapMethodGate(name, lex))
-                return null;
+                return {
+                    name,
+                    value: lex.slice(start)
+                };
 
+            basic.IGNORE = false;
             if ((lex.sl - lex.off) > 0) {
                 let binding = Template(lex, FOR_EVENT);
                 if (!binding) {
-                    return {
-                        name,
-                        value: lex.slice(start)
-                    };
+                    return basic;
                 }
 
                 binding.val = name;
                 binding.method = bind_method;
                 let attr = {
+                    IGNORE:false,
                     name,
                     value: (start < lex.off) ? lex.slice(start) : true,
                     binding: this.processTapBinding(binding)
                 };
-                this._bindings_.push(attr);
+                this.bindings.push(attr);
                 return attr;
             }
 
-            let value = lex.slice(start);
-
-            return {
-                name,
-                value: value || true
-            };
+            return basic;
         }
 
 
@@ -11162,10 +11337,9 @@ var wick = (function (exports) {
          * @return     {TextNode}  
          */
         processTextNodeHook(lex) {
-
             if (lex.sl - lex.pos > 0) {
 
-                let binding = Template(lex);
+                let binding = Template(lex.trim());
                 if (binding)
                     return new RootText(this.processTapBinding(binding));
             }
@@ -11200,13 +11374,15 @@ var wick = (function (exports) {
     class ScriptNode$1 extends VoidNode$1 {
         constructor() {
             super();
-            this._script_text_ = "";
-            this._binding_ = null;
+            this.script_text = "";
+            this.binding = null;
         }
 
         processTextNodeHook(lex) {
-            if (this._binding_)
-                this._binding_.val = lex.slice();
+            this.script_text = lex.slice();
+            
+            if (this.binding)
+                this.binding.val = this.script_text;
         }
 
         processAttributeHook(name, lex) {
@@ -11214,9 +11390,9 @@ var wick = (function (exports) {
             switch (name) {
                 case "on":
                     let binding = Template(lex, false);
-                    if (binding.type == DYNAMIC_BINDING_ID) {
+                    if (binding.type == DYNAMICbindingID) {
                         binding.method = SCRIPT;
-                        this._binding_ = this.processTapBinding(binding);
+                        this.binding = this.processTapBinding(binding);
                     }
                     return null;
             }
@@ -11224,8 +11400,8 @@ var wick = (function (exports) {
             return { name, value: lex.slice() };
         }
         build(element, source, presets, errors, taps) {
-            if (this._binding_)
-                this._binding_._bind_(source, errors, taps, element);
+            if (this.binding)
+                this.binding._bind_(source, errors, taps, element);
         }
     }
 
@@ -11267,7 +11443,7 @@ var wick = (function (exports) {
         createElement() {
             return createElement(this.getAttribute("element") || "div");
         }
-        
+
         build(element, source, presets, errors, taps = null, statics = null, out_ele = null) {
 
             let data = {};
@@ -11287,7 +11463,7 @@ var wick = (function (exports) {
 
                 let bool = name == "update";
 
-                me.taps[name] = bool ? new UpdateTap(me, name, tap._modes_) : new Tap(me, name, tap._modes_);
+                me.taps[name] = bool ? new UpdateTap(me, name, tap.modes) : new Tap(me, name, tap.modes);
 
                 if (bool)
                     me.update_tap = me.taps[name];
@@ -11315,7 +11491,7 @@ var wick = (function (exports) {
                 me.ele = ele;
 
                 if (element) {
-                    _appendChild_(element, ele);
+                    appendChild(element, ele);
                 }
 
                 element = ele;
@@ -11333,8 +11509,8 @@ var wick = (function (exports) {
                     ele: element
                 };
 
-                for (let i = 0, l = this._bindings_.length; i < l; i++) {
-                    let attr = this._bindings_[i];
+                for (let i = 0, l = this.bindings.length; i < l; i++) {
+                    let attr = this.bindings[i];
                     let bind = attr.binding._bind_(me, errors, out_taps, element, attr.name);
 
                     if (hook) {
@@ -11384,7 +11560,12 @@ var wick = (function (exports) {
          * @return     {Object}  Key value pair.
          */
         processAttributeHook(name, lex, value) {
-            let start = lex.off;
+            let start = lex.off,
+                basic = {
+                    IGNORE:true,
+                    name,
+                    value: lex.slice(start)
+                };
 
             switch (name[0]) {
                 case "#":
@@ -11397,19 +11578,22 @@ var wick = (function (exports) {
                             this.statics[key] = lex.slice();
                     }
 
-                    return null;
+                    return {
+                        name,
+                        value: lex.slice(start)
+                    };
                 case "m":
                     if (name == "model") {
                         this._model_name_ = lex.slice();
                         lex.n;
-                        return null;
+                        return basic;
                     }
                     break;
                 case "s":
                     if (name == "schema") {
                         this._schema_name_ = lex.slice();
                         lex.n;
-                        return null;
+                        return basic;
                     }
                     break;
                 case "c":
@@ -11418,45 +11602,42 @@ var wick = (function (exports) {
                         let components = this.presets.components;
                         if (components)
                             components[component_name] = this;
-                        return null;
+                        return basic;
                     }
                     break;
                 case "b":
                     if (name == "badge") {
                         this._badge_name_ = lex.tx;
-                        return null;
+                        return basic;
                     }
                     break;
                 default:
                     if (this.checkTapMethodGate(name, lex))
-                        return null;
+                        return basic;
             }
 
             //return { name, value: lex.slice() };
             //return super.processAttributeHook(name, lex, value);
+            basic.IGNORE = false;
+
             if ((lex.sl - lex.off) > 0) {
                 let binding = Template(lex, true);
                 if (!binding) {
-                    return {
-                        name,
-                        value: lex.slice(start)
-                    };
+                    return basic;
                 }
                 binding.val = name;
                 binding.method = ATTRIB;
                 let attr = {
+                    IGNORE:false,
                     name,
                     value: (start < lex.off) ? lex.slice(start) : true,
                     binding: this.processTapBinding(binding)
                 };
-                this._bindings_.push(attr);
+                this.bindings.push(attr);
                 return attr;
             }
 
-            return {
-                name,
-                value: lex.slice(start)
-            };
+            return basic;
 
         }
     }
@@ -11729,14 +11910,14 @@ var wick = (function (exports) {
             scheduledUpdate(a, t) {
 
                 if (this.run(this.time += t))
-                    Scheduler.queueUpdate(this);
+                    spark.queueUpdate(this);
                 else
                     this.issueEvent("stopped");
             }
 
             play(from = 0) {
                 this.time = from;
-                Scheduler.queueUpdate(this);
+                spark.queueUpdate(this);
                 this.issueEvent("started");
             }
 
@@ -11800,12 +11981,12 @@ var wick = (function (exports) {
             scheduledUpdate(a, t) {
             	this.time += t;
                 if (this.run(this.time))
-                    Scheduler.queueUpdate(this);
+                    spark.queueUpdate(this);
             }
 
             play(from = 0) {
                 this.time = 0;
-                Scheduler.queueUpdate(this);
+                spark.queueUpdate(this);
             }
         }
 
@@ -12173,14 +12354,14 @@ var wick = (function (exports) {
             this.parent = null;
             this.activeSources = [];
             this.dom_sources = [];
-            this._filters_ = [];
+            this.filters = [];
             this.ios = [];
             this.terms = [];
             this.sources = [];
             this.range = null;
             this._SCHD_ = 0;
-            this._prop_ = null;
-            this._package_ = null;
+            this.prop = null;
+            this.package = null;
             this.transition_in = 0;
             this.offset = 0;
             this.limit = 0;
@@ -12577,8 +12758,8 @@ var wick = (function (exports) {
             let limit = this.limit,
                 offset = 0;
 
-            for (let i = 0, l = this._filters_.length; i < l; i++) {
-                let filter = this._filters_[i];
+            for (let i = 0, l = this.filters.length; i < l; i++) {
+                let filter = this.filters[i];
                 if (filter.CAN_USE) {
                     if (filter._CAN_LIMIT_) limit = filter._value_;
                     if (filter._CAN_OFFSET_) offset = filter._value_;
@@ -12600,8 +12781,8 @@ var wick = (function (exports) {
         filterUpdate(transition) {
             let output = this.sources.slice();
             if (output.length < 1) return;
-            for (let i = 0, l = this._filters_.length; i < l; i++) {
-                let filter = this._filters_[i];
+            for (let i = 0, l = this.filters.length; i < l; i++) {
+                let filter = this.filters[i];
                 if (filter.CAN_USE) {
                     if (filter.CAN_FILTER) output = output.filter(filter.filter_function._filter_expression_);
                     if (filter.CAN_SORT) output = output.sort(filter._sort_function_);
@@ -12702,7 +12883,7 @@ var wick = (function (exports) {
          */
         added(items, transition = Transitioneer.createTransition()) {
             for (let i = 0; i < items.length; i++) {
-                let mgr = this._package_.mount(null, items[i], false);
+                let mgr = this.package.mount(null, items[i], false);
                 mgr.sources.forEach((s) => {
                     s.parent = this.parent;
                 });
@@ -12923,7 +13104,7 @@ var wick = (function (exports) {
             own_lex.tl = 0;
             own_lex.n.sl = lex.off;
 
-            this.par._package_ = new this.SourcePackage(own_lex, this.presets, false);
+            this.par.package = new this.SourcePackage(own_lex, this.presets, false);
 
             if (!this.fch)
                 this.mergeComponent();
@@ -12933,7 +13114,7 @@ var wick = (function (exports) {
             let component = this.presets.components[this.tag];
 
             if (component)
-                this.par._package_ = new this.SourcePackage(component, this.presets, false);
+                this.par.package = new this.SourcePackage(component, this.presets, false);
         }
     }
 
@@ -12942,8 +13123,9 @@ var wick = (function (exports) {
             super();
             this.BUILD_LIST = [];
             this.filters = [];
-            this._property_bind_ = null;
-            this._package_ = null;
+            this.property_bind = null;
+            this.property_bind_text = "";
+            this.package = null;
         }
 
         build(element, source, presets, errors, taps) {
@@ -12952,25 +13134,25 @@ var wick = (function (exports) {
 
             if (this.HAS_TAPS)
                 taps = source.linkTaps(this.tap_list);
-            if (this._property_bind_ && this._package_) {
+            if (this.property_bind && this.package) {
 
                 let ele = createElement(this.getAttribute("element") || "ul");
-                
-                this.class.split(" ").map(c=> c ? ele.classList.add(c):{});
 
-                if(this._badge_name_)
+                this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
+
+                if (this._badge_name_)
                     source.badges[this._badge_name_] = ele;
-                
+
 
                 let me = new SourceTemplate(source, presets, ele);
-                me._package_ = this._package_;
-                me.prop = this._property_bind_._bind_(source, errors, taps, me);
+                me.package = this.package;
+                me.prop = this.property_bind._bind_(source, errors, taps, me);
 
-                _appendChild_(element, ele);
+                appendChild(element, ele);
 
                 for (let node = this.fch; node; node = this.getNextChild(node)) {
                     //All filter nodes here
-                    
+
                     let on = node.getAttrib("on");
                     let sort = node.getAttrib("sort");
                     let filter = node.getAttrib("filter");
@@ -12979,21 +13161,21 @@ var wick = (function (exports) {
                     let scrub = node.getAttrib("scrub");
                     let shift = node.getAttrib("shift");
 
-                    if(limit && limit.binding.type == 1){
+                    if (limit && limit.binding.type == 1) {
                         me.limit = parseInt(limit.value);
                         limit = null;
                     }
 
-                    if(shift && shift.binding.type == 1){
+                    if (shift && shift.binding.type == 1) {
                         me.shift = parseInt(shift.value);
                         shift = null;
                     }
 
                     if (sort || filter || limit || offset || scrub || shift) //Only create Filter node if it has a sorting bind or a filter bind
-                        me._filters_.push(new FilterIO(source, errors, taps, me, on, sort, filter, limit, offset, scrub, shift));
+                        me.filters.push(new FilterIO(source, errors, taps, me, on, sort, filter, limit, offset, scrub, shift));
                 }
-            }else{
-                errors.push(new Error(`Missing source for template bound to "${this._property_bind_._bindings_[0].tap_name}"`));
+            } else {
+                errors.push(new Error(`Missing source for template bound to "${this.property_bind.bindings[0].tap_name}"`));
             }
 
             return source;
@@ -13005,9 +13187,9 @@ var wick = (function (exports) {
 
         _ignoreTillHook_() {}
 
-        
-    createHTMLNodeHook(tag, start) {
-            
+
+        createHTMLNodeHook(tag, start) {
+
             switch (tag) {
                 case "f":
                     return new FilterNode(); //This node is used to 
@@ -13017,16 +13199,26 @@ var wick = (function (exports) {
         }
 
         processTextNodeHook(lex) {
-            if (!this._property_bind_) {
+            if (!this.property_bind) {
+                this.property_bind_text = lex.trim().slice();
                 let cp = lex.copy();
                 lex.IWS = true;
                 cp.tl = 0;
                 if (cp.n.ch == barrier_a_start && (cp.n.ch == barrier_a_start || cp.ch == barrier_b_start)) {
                     let binding = Template(lex);
                     if (binding)
-                        this._property_bind_ = this.processTapBinding(binding);
+                        this.property_bind = this.processTapBinding(binding);
                 }
             }
+        }
+
+        innerToString(off){
+            //Insert temp child node for the property_bind
+            let str = this.property_bind_text;
+
+            str += super.innerToString(off);
+
+            return str;
         }
     }
 
@@ -13182,7 +13374,7 @@ var wick = (function (exports) {
             let source = this.tree.build(parent_element, parent_source, this.presets, errors);
 
             if (errors.length > 0) {
-                //TODO!!!!!!Remove all _bindings_ that change Model. 
+                //TODO!!!!!!Remove all bindings that change Model. 
                 //source.kill_up_bindings();
                 errors.forEach(e => console.log(e));
             }
@@ -13196,27 +13388,33 @@ var wick = (function (exports) {
          * Only accept certain nodes for mounting to the DOM. 
          * The custom element `import` is simply used to import extra HTML data from network for use with template system. It should not exist otherwise.
          */
-        if (ast.tag && (ast.tag !== "import" && ast.tag !== "link") && ast.tag !== "template") {
-            let skeleton = new Skeleton(ast, presets);
-            SourcePackage._skeletons_.push(skeleton);
+        if (ast.tag) {
+            if ((ast.tag == "import" || ast.tag == "link")) {
+                //add tags to package itself.
+                SourcePackage.links.push(ast);
+            } else if (ast.tag !== "template") {
+                let skeleton = new Skeleton(ast, presets);
+                SourcePackage.skeletons.push(skeleton);
+            }
         }
 
         lex.IWS = true;
 
         while (!lex.END && lex.ch != "<") { lex.n; }
+
         if (!lex.END)
             return parseText(lex, SourcePackage, presets, url, win);
 
-        SourcePackage._complete_();
+        SourcePackage.complete();
 
         return SourcePackage;
     }
 
 
     function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win) {
-        return css_list[index]._READY_().then(() => {
-            
-            if(++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
+        return css_list[index].READY().then(() => {
+
+            if (++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
 
             ast.linkCSS(null, win);
 
@@ -13239,19 +13437,19 @@ var wick = (function (exports) {
             node.presets = presets;
 
             return node.parse(lex, url).then((ast) => {
-                if (ast.css && ast.css.length > 0) 
+                if (ast.css && ast.css.length > 0)
                     return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url, win);
-                
+
                 return complete(lex, SourcePackage, presets, ast, url, win);
             }).catch((e) => {
-                SourcePackage._addError_(e);
-                SourcePackage._complete_();
+                SourcePackage.addError(e);
+                SourcePackage.complete();
             });
         }
 
         debugger;
-        SourcePackage._addError_(new Error(`Unexpected end of input. ${lex.slice(start)}, ${lex.str}`));
-        SourcePackage._complete_();
+        SourcePackage.addError(new Error(`Unexpected end of input. ${lex.slice(start)}, ${lex.str}`));
+        SourcePackage.complete();
     }
 
 
@@ -13278,15 +13476,15 @@ var wick = (function (exports) {
             lex = whind$1(element.innerHTML);
         } else {
             let e = new Error("Cannot compile component");
-            SourcePackage._addError_(e);
-            SourcePackage._complete_();
+            SourcePackage.addError(e);
+            SourcePackage.complete();
         }
         return parseText(lex, SourcePackage, presets, url, win);
     }
 
     /**
      * SourcePackages stores compiled {@link SourceSkeleton}s and provide a way to _bind_ Model data to the DOM in a reusable manner. *
-     * @property    {Array}    _skeletons_
+     * @property    {Array}    skeletons
      * @property    {Array}    styles
      * @property    {Array}    scripts
      * @property    {Array}    style_core
@@ -13303,23 +13501,23 @@ var wick = (function (exports) {
 
         constructor(element, presets, RETURN_PROMISE = false, url = "", win = window) {
 
-            //If a package exists for the element already, it will be bound to __wick__package__. That will be returned.
-            if (element.__wick__package__) {
+            //If a package exists for the element already, it will be bound to __wick_package_. That will be returned.
+            if (element.__wick_package_) {
                 if (RETURN_PROMISE)
-                    return new Promise((res) => res(element.__wick__package__));
-                return element.__wick__package__;
+                    return new Promise((res) => res(element.__wick_package_));
+                return element.__wick_package_;
             }
 
 
             /**
              * When set to true indicates that the package is ready to be mounted to the DOM.
              */
-            this._READY_ = false;
+            this.READY = false;
 
             /**
              * An array of SourceSkeleton objects.
              */
-            this._skeletons_ = [];
+            this.skeletons = [];
 
             /**
              * An array objects to store pending calls to SourcePackage#mount
@@ -13329,12 +13527,14 @@ var wick = (function (exports) {
             /**
              * An Array of error messages received during compilation of template.
              */
-            this._errors_ = [];
+            this.errors = [];
 
             /**
              * Flag to indicate SourcePackage was compiled with errors
              */
-            this._HAVE_ERRORS_ = false;
+            this.HAVE_ERRORS = false;
+
+            this.links = [];
 
             if (element instanceof Promise) {
                 element.then((data) => CompileSource(this, presets, data, url, win));
@@ -13342,13 +13542,13 @@ var wick = (function (exports) {
                 return this;
             } else if (element instanceof RootNode) {
                 //already an HTMLtree, just package into a skeleton and return.
-                this._skeletons_.push(new Skeleton(element, presets));
-                this._complete_();
+                this.skeletons.push(new Skeleton(element, presets));
+                this.complete();
                 return;
             } else if (!(element instanceof HTMLElement) && typeof(element) !== "string" && !(element instanceof whind$1.constructor)) {
                 let err = new Error("Could not create package. element is not an HTMLElement");
-                this._addError_(err);
-                this._complete_();
+                this.addError(err);
+                this.complete();
                 if (RETURN_PROMISE)
                     return new Promise((res, rej) => rej(err));
                 return;
@@ -13369,12 +13569,12 @@ var wick = (function (exports) {
         /**
          * Called when template compilation completes.
          *
-         * Sets SourcePackage#_READY_ to true, send the pending mounts back through SourcePackage#mount, and freezes itself.
+         * Sets SourcePackage#READY to true, send the pending mounts back through SourcePackage#mount, and freezes itself.
          *
          * @protected
          */
-        _complete_() {
-            this._READY_ = true;
+        complete() {
+            this.READY = true;
 
             for (let m, i = 0, l = this.pms.length; i < l; i++)
                 (m = this.pms[i], this.mount(m.e, m.m, m.usd, m.mgr));
@@ -13382,7 +13582,7 @@ var wick = (function (exports) {
 
             this.pms.length = 0;
 
-            this._fz_();
+            this.freeze();
         }
 
         /**
@@ -13392,10 +13592,10 @@ var wick = (function (exports) {
          *
          * @protected
          */
-        _addError_(error_message) {
-            this._HAVE_ERRORS_ = true;
-            //Create error skeleton and push to _skeletons_
-            this._errors_.push(error_message);
+        addError(error_message) {
+            this.HAVE_ERRORS = true;
+            //Create error skeleton and push to skeletons
+            this.errors.push(error_message);
             console.error(error_message);
         }
 
@@ -13403,13 +13603,13 @@ var wick = (function (exports) {
          * Freezes properties.
          * @protected
          */
-        _fz_() {
+        freeze() {
             return;
-            OB.freeze(this._READY_);
-            OB.freeze(this._skeletons_);
+            OB.freeze(this.READY);
+            OB.freeze(this.skeletons);
             OB.freeze(this.styles);
             OB.freeze(this.pms);
-            OB.freeze(this._errors_);
+            OB.freeze(this.errors);
             OB.freeze(this);
         }
 
@@ -13423,9 +13623,9 @@ var wick = (function (exports) {
          *
          * @protected
          */
-        _pushPendingMount_(element, model, USE_SHADOW_DOM, manager) {
+        pushPendingMount(element, model, USE_SHADOW_DOM, manager) {
 
-            if (this._READY_)
+            if (this.READY)
                 return this.mount(element, model, USE_SHADOW_DOM, manager);
 
             this.pms.push({
@@ -13448,12 +13648,12 @@ var wick = (function (exports) {
          */
         mount(element, model, USE_SHADOW_DOM = false, manager = new SourceManager(model, element)) {
 
-            if (!this._READY_)
-                return this._pushPendingMount_(element, model, USE_SHADOW_DOM, manager);
+            if (!this.READY)
+                return this.pushPendingMount(element, model, USE_SHADOW_DOM, manager);
 
             //if (!(element instanceof EL)) return null;
 
-            if (this._HAVE_ERRORS_) {
+            if (this.HAVE_ERRORS) {
                 //Process
                 console.warn("TODO - Package has errors, pop an error widget on this element!");
             }
@@ -13472,13 +13672,13 @@ var wick = (function (exports) {
                 element = shadow_root;
 
                 for (i = 0, l = this.styles.length; i < l; i++) {
-                    let style = _cloneNode_(this.styles[i], true);
-                    _appendChild_(element, style);
+                    let style = cloneNode(this.styles[i], true);
+                    appendChild(element, style);
                 }
             }
 
-            for (i = 0, l = this._skeletons_.length; i < l; i++) {
-                let source = this._skeletons_[i].flesh(element, model);
+            for (i = 0, l = this.skeletons.length; i < l; i++) {
+                let source = this.skeletons[i].flesh(element, model);
                 source.parent = manager;
                 manager.sources.push(source);
             }
@@ -13486,6 +13686,18 @@ var wick = (function (exports) {
             if (manager.sourceLoaded) manager.sourceLoaded();
 
             return manager;
+        }
+
+        toString(){
+            let str = "";
+
+            for(let i = 0; i < this.links.length; i++)
+                str += this.links[i];
+
+            for(let i = 0; i < this.skeletons.length; i++)
+                str += this.skeletons[i].tree;
+
+            return str;
         }
     }
 

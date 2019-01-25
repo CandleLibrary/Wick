@@ -1,18 +1,21 @@
 {
   "name": "@candlefw/wick",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "Web Component Builder",
   "main": "./source/wick.mjs",
   "scripts": {
-    "prepare": "npm test && npm run build",
+    "build_js_parser": "hydrocarbon compile -n jsparser -o ./source/js -t 'mjs' ./source/js/wick_js.hcg",
+    "build_js_parser.table": "hydrocarbon table ./source/js/wick_js.hcg",
+    "build_js_parser.mount": "hydrocarbon compile -n jsparser -o ./source/js -t 'mjs' -m ./source/js/wick_js.hcg",
+    "prepublishOnly": "npm run build_js_parser && npm run build && npm test",
     "test": "mocha -r esm",
-    "test.watch": "mocha -r esm -w --check-leaks -R min",
+    "test.watch": "mocha -r esm -w -R min",
     "build": "rollup --config ./build/config/main.config.js",
     "build.watch": "rollup --config  ./build/config/main.config.js --watch"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/galactrax/cfw-wick.git"
+    "url": "git+https://github.com/candlefw/wick.git"
   },
   "keywords": [
     "SPA",
@@ -33,9 +36,9 @@
   "author": "Anthony Weathersby",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/galactrax/cfw-wick/issues"
+    "url": "https://github.com/candlefw/wick/issues"
   },
-  "homepage": "https://github.com/galactrax/cfw-wick#readme",
+  "homepage": "https://github.com/candlefw/wick#readme",
   "devDependencies": {
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
@@ -52,7 +55,8 @@
     "rollup-plugin-gzip": "^1.4.0",
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-resolve": "0.0.1-predev.1",
-    "rollup-plugin-terser": "^1.0.1"
+    "rollup-plugin-terser": "^1.0.1",
+    "@candlefw/hydrocarbon": "*"
   },
   "jshintConfig": {
     "esversion": 6,
