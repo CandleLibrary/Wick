@@ -1,4 +1,5 @@
 import whind from "@candlefw/whind";
+import URL from "@candlefw/url";
 
 import { EL } from "../../short_names";
 import { CreateHTMLNode } from "./nodes/index";
@@ -7,6 +8,12 @@ import { Skeleton } from "../skeleton";
 
 
 function complete(lex, SourcePackage, presets, ast, url, win) {
+
+
+    //Record URL if present for proper error messaging. 
+    if(url && !ast.url)
+        ast.url = url;    
+
     /*
      * Only accept certain nodes for mounting to the DOM. 
      * The custom element `import` is simply used to import extra HTML data from network for use with template system. It should not exist otherwise.
@@ -85,6 +92,10 @@ export function parseText(lex, SourcePackage, presets, url, win) {
  * @alias CompileSource
  */
 function CompileSource(SourcePackage, presets, element, url, win = window) {
+    
+    if(!url)
+        url = URL.G;
+
     let lex;
     if (element instanceof whind.constructor) {
         lex = element;

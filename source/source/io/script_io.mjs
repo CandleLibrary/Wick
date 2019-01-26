@@ -1,7 +1,6 @@
 import { IOBase } from "./io";
-
 export class ScriptIO extends IOBase {
-    constructor(source, errors, tap, binding) {
+    constructor(source, errors, tap, binding, node, statics) {
 
         let func;
 
@@ -24,6 +23,13 @@ export class ScriptIO extends IOBase {
         this.source = source;
         this._bound_emit_function_ = new Proxy(this._emit_.bind(this), { set: (obj, name, value) => { obj(name, value); } });
         this.meta = null;
+        this.url = statics.url;
+
+        this.offset = node.offset;
+        this.char = node.char;
+        this.line = node.line;
+
+
     }
 
     /**
@@ -44,6 +50,7 @@ export class ScriptIO extends IOBase {
         try {
             this._func_(value, meta.event, src.model, this._bound_emit_function_, src.presets, src.statics, src);
         } catch (e) {
+            console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line}:${this.char}`)
             console.warn(this.function);
             console.error(e)
         }

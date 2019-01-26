@@ -30,8 +30,15 @@ export class ScriptNode extends VoidNode {
 
         return { name, value: lex.slice() };
     }
-    build(element, source, presets, errors, taps) {
+    build(element, source, presets, errors, taps, statics = {}) {
+        
+        if(this.url){
+            statics = Object.assign({}, statics);
+            statics.url = this.url
+        }
+        
+        
         if (this.binding)
-            this.binding._bind_(source, errors, taps, element);
+            this.binding._bind_(source, errors, taps, element, "", this, statics);
     }
 }

@@ -47,7 +47,7 @@ export class EventBinding {
     }
     set type(v) {}
 
-    set argument(binding){
+    set argument(binding) {
         this.arg = binding;
     }
 }
@@ -65,7 +65,7 @@ export class ExpressionBinding {
     }
 
     _bind_(source, errors, taps, element) {
-        
+
         switch (this.method) {
             case INPUT:
                 return new InputExpresionIO(source, errors, taps, element, this.bindings, this.func);
@@ -93,7 +93,7 @@ export class DynamicBinding {
         this.argVal = null;
     }
 
-    _bind_(source, errors, taps, element) {
+    _bind_(source, errors, taps, element, attr = "", node = null, statics = null) {
         let tap = source.getTap(this.tap_name); //taps[this.tap_id];
         switch (this.method) {
             case INPUT:
@@ -101,7 +101,7 @@ export class DynamicBinding {
             case ATTRIB:
                 return new AttribIO(source, errors, tap, this.val, element, this.argVal);
             case SCRIPT:
-                return new ScriptIO(source, errors, tap, this);
+                return new ScriptIO(source, errors, tap, this, node, statics);
             default:
                 return new IO(source, errors, tap, element, this.argVal);
         }
@@ -112,13 +112,13 @@ export class DynamicBinding {
     }
     set type(v) {}
 
-    toString(){return `((${this.tap_name}))`;}
+    toString() { return `((${this.tap_name}))`; }
 
-    set argument(binding){
-        if(binding instanceof DynamicBinding){
+    set argument(binding) {
+        if (binding instanceof DynamicBinding) {
             this.argKey = binding.tap_name;
             this.argVal = binding.val;
-        }else if(binding instanceof RawValueBinding){
+        } else if (binding instanceof RawValueBinding) {
             this.argVal = binding.val;
         }
     }
@@ -131,22 +131,27 @@ export class RawValueBinding {
     }
 
     _bind_(source, errors, taps, element, prop = "") {
-
-        switch (this.method) {
-            case TEXT:
-                element.data = this.val;
-                break;
-            case ATTRIB:{
-                if(prop == "class"){
-                    element.classList.add.apply(element.classList, this.val.split(" "));
-                }else
-                    element.setAttribute(prop, this.val);
+        try {
+            switch (this.method) {
+                case TEXT:
+                    element.data = this.val;
+                    break;
+                case ATTRIB:
+                    {
+                        if (prop == "class") {
+                            element.classList.add.apply(element.classList, this.val.split(" "));
+                        } else
+                            element.setAttribute(prop, this.val);
+                    }
             }
+        } catch (e) {
+            console.error(`Unable to process the value ${this.val}`)
+            console.error(e);
         }
     }
     get _value_() { return this.val; }
     set _value_(v) {}
     get type() { return RAW_VALUEbindingID; }
     set type(v) {}
-    toString(){return this.val;}
+    toString() { return this.val; }
 }

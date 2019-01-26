@@ -203,7 +203,8 @@ export class Source extends View {
         if(model.addView)
             model.addView(this);
 
-        this.model = this;
+        this.model = model;
+        
 
         for (let name in this.taps)
             this.taps[name].load(this.model, false);

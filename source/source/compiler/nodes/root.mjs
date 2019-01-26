@@ -61,9 +61,9 @@ export class RootText extends TextNode {
         this.binding = binding;
     }
 
-    build(element, source, presets, errors, taps) {
+    build(element, source, presets, errors, taps, statics) {
         let ele = document.createTextNode(this.txt);
-        this.binding._bind_(source, errors, taps, ele);
+        this.binding._bind_(source, errors, taps, ele, "", this, statics);
         appendChild(element, ele);
     }
 
@@ -128,7 +128,7 @@ export class RootNode extends HTMLNode {
     /****************************************** COMPONENTIZATION *****************************************/
 
     mergeComponent() {
-        if(this.presets.components){
+        if (this.presets.components) {
             let component = this.presets.components[this.tag];
 
             if (component) {
@@ -337,9 +337,16 @@ export class RootNode extends HTMLNode {
      * @param      {null}  model    The model
      * @return     {null}  { description_of_the_return_value }
      */
-    build(element, source, presets, errors, taps, statics, out_ele) {
+    build(element, source, presets, errors, taps, statics = {}, out_ele = null) {
 
-        const out_statics = this.__statics__ || statics;
+        let out_statics = this.__statics__ || statics;
+
+        if (this.url) {
+            out_statics =Object.assign({}, statics);
+            out_statics.url = this.url
+        }
+        
+
         let own_out_ele;
 
         if (this._merged_) {
@@ -386,7 +393,7 @@ export class RootNode extends HTMLNode {
 
             for (let i = 0, l = this.bindings.length; i < l; i++) {
                 let attr = this.bindings[i];
-                attr.binding._bind_(source, errors, taps, own_element, attr.name);
+                attr.binding._bind_(source, errors, taps, own_element, attr.name, this, statics);
             }
 
             for (let node = this.fch; node; node = this.getNextChild(node))
@@ -446,7 +453,7 @@ export class RootNode extends HTMLNode {
 
         let start = lex.off,
             basic = {
-                IGNORE:true,
+                IGNORE: true,
                 name,
                 value: lex.slice(start)
             };
@@ -509,10 +516,10 @@ export class RootNode extends HTMLNode {
                 return basic;
             }
 
-            binding.val = name;
+            binding.attrib = name;
             binding.method = bind_method;
             let attr = {
-                IGNORE:false,
+                IGNORE: false,
                 name,
                 value: (start < lex.off) ? lex.slice(start) : true,
                 binding: this.processTapBinding(binding)

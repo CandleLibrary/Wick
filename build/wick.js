@@ -1814,27 +1814,49 @@ var wick = (function (exports) {
         }
 
         /**
+        Creates and error message with a diagrame illustrating the location of the error. 
+        */
+        errorMessage(message = ""){
+            const arrow = String.fromCharCode(0x2b89),
+                trs = String.fromCharCode(0x2500),
+                line = String.fromCharCode(0x2500),
+                thick_line = String.fromCharCode(0x2501),
+                line_number = "    " + this.line + ": ",
+                line_fill = line_number.length,
+                t$$1 = thick_line.repeat(line_fill + 48),
+                is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
+            const pk = this.copy();
+            pk.IWS = false;
+            while (!pk.END && pk.ty !== Types.nl) { pk.next(); }
+            const end = pk.off;
+
+            return `${message} at ${this.line}:${this.char}
+${t$$1}
+${line_number+this.str.slice(this.off - this.char, end)}
+${line.repeat(this.char-1+line_fill)+trs+arrow}
+${t$$1}
+${is_iws}`;
+        }
+
+        /**
          * Will throw a new Error, appending the parsed string line and position information to the the error message passed into the function.
          * @instance
          * @public
          * @param {String} message - The error message.
+         * @param {Bool} DEFER - if true, returns an Error object instead of throwing.
          */
-        throw (message) {
-            let t$$1 = ("________________________________________________"),
-                n$$1 = "\n",
-                is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
-            this.IWS = false;
-            let pk = this.copy();
-            while (!pk.END && pk.ty !== Types.nl) { pk.next(); }
-            let end = pk.off;
-            throw new Error(`${message} at ${this.line}:${this.char}\n${t$$1}\n${this.str.slice(this.off + this.tl + 1 - this.char, end)}\n${("").padStart(this.char - 2)}^\n${t$$1}\n${is_iws}`);
+        throw (message, DEFER = false) {
+            const error = new Error(this.errorMessage(message));
+            if(DEFER)
+                return error;
+            throw error;
         }
 
         /**
          * Proxy for Lexer.prototype.reset
          * @public
          */
-        r() { return this.reset(); }
+        r() { return this.reset() }
 
         /**
          * Restore the Lexer back to it's initial state.
@@ -1867,24 +1889,26 @@ var wick = (function (exports) {
          */
         next(marker = this) {
 
-            let str = marker.str;
-
             if (marker.sl < 1) {
                 marker.off = 0;
                 marker.type = 32768;
                 marker.tl = 0;
+                marker.line = 0;
+                marker.char = 0;
                 return marker;
             }
 
             //Token builder
-            let length = marker.tl;
-            let off = marker.off + length;
-            let l$$1 = marker.sl;
-            let IWS = marker.IWS;
-            let type = symbol;
-            let char = marker.char + length;
-            let line = marker.line;
-            let base = off;
+            const l$$1 = marker.sl,
+                str = marker.str,
+                IWS = marker.IWS;
+
+            let length = marker.tl,
+                off = marker.off + length,
+                type = symbol,
+                char = marker.char + length,
+                line = marker.line,
+                base = off;
 
             if (off >= l$$1) {
                 length = 0;
@@ -1898,19 +1922,19 @@ var wick = (function (exports) {
                 return marker;
             }
 
-            while (true) {
+            for (;;) {
 
                 base = off;
 
                 length = 1;
 
-                let code = str.charCodeAt(off);
+                const code = str.charCodeAt(off);
 
                 if (code < 128) {
 
                     switch (jump_table[code]) {
                         case 0: //NUMBER
-                            while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)])) {}
+                            while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)])) ;
 
                             if (str[off] == "e" || str[off] == "E") {
                                 off++;
@@ -1927,7 +1951,7 @@ var wick = (function (exports) {
 
                             break;
                         case 1: //IDENTIFIER
-                            while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)]))) {}
+                            while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)]))) ;
                             type = identifier;
                             length = off - base;
                             break;
@@ -1935,23 +1959,24 @@ var wick = (function (exports) {
                             if (this.PARSE_STRING) {
                                 type = symbol;
                             } else {
-                                while (++off < l$$1 && str.charCodeAt(off) !== code) {}
+                                while (++off < l$$1 && str.charCodeAt(off) !== code) ;
                                 type = string;
                                 length = off - base + 1;
                             }
                             break;
                         case 3: //SPACE SET
-                            while (++off < l$$1 && str.charCodeAt(off) === SPACE) {}
+                            while (++off < l$$1 && str.charCodeAt(off) === SPACE) ;
                             type = white_space;
                             length = off - base;
                             break;
                         case 4: //TAB SET
-                            while (++off < l$$1 && str[off] === HORIZONTAL_TAB) {}
+                            while (++off < l$$1 && str[off] === HORIZONTAL_TAB) ;
                             type = white_space;
                             length = off - base;
                             break;
                         case 5: //CARIAGE RETURN
                             length = 2;
+                            //Intentional
                         case 6: //LINEFEED
                             type = new_line;
                             char = 0;
@@ -1963,7 +1988,6 @@ var wick = (function (exports) {
                             break;
                         case 8: //OPERATOR
                             type = operator;
-
                             break;
                         case 9: //OPEN BRACKET
                             type = open_bracket;
@@ -2035,7 +2059,7 @@ var wick = (function (exports) {
          * Proxy for Lexer.prototype.assertCharacter
          * @public
          */
-        aC(char) { return this.assertCharacter(char); }
+        aC(char) { return this.assertCharacter(char) }
         /**
          * Compares the character value of the current token to the value passed in. Advances to next token if the two are equal.
          * @public
@@ -2044,7 +2068,7 @@ var wick = (function (exports) {
          */
         assertCharacter(char) {
 
-            if (this.off < 0) this.throw(`Expecting ${text} got null`);
+            if (this.off < 0) this.throw(`Expecting ${char[0]} got null`);
 
             if (this.ch == char[0])
                 this.next();
@@ -2086,7 +2110,7 @@ var wick = (function (exports) {
          * Proxy for Lexer.prototype.slice
          * @public
          */
-        s(start) { return this.slice(start); }
+        s(start) { return this.slice(start) }
 
         /**
          * Returns a slice of the parsed string beginning at `start` and ending at the current token.
@@ -2116,8 +2140,8 @@ var wick = (function (exports) {
                     while (!marker.END && (marker.next().ch != "*" || marker.pk.ch != "/")) { /* NO OP */ }
                     marker.sync().assert("/");
                 } else if (marker.pk.ch == "/") {
-                    let IWS = marker.IWS;
-                    while (marker.next().ty != types.new_line && !marker.END) { /* NO OP */ }
+                    const IWS = marker.IWS;
+                    while (marker.next().ty != Types.new_line && !marker.END) { /* NO OP */ }
                     marker.IWS = IWS;
                     marker.next();
                 } else
@@ -2141,10 +2165,10 @@ var wick = (function (exports) {
          * Returns new Whind Lexer that has leading and trailing whitespace characters removed from input. 
          */
         trim() {
-            let lex = this.copy();
+            const lex = this.copy();
 
             for (; lex.off < lex.sl; lex.off++) {
-                let c$$1 = jump_table[lex.string.charCodeAt(lex.off)];
+                const c$$1 = jump_table[lex.string.charCodeAt(lex.off)];
 
                 if (c$$1 > 2 && c$$1 < 7)
                     continue;
@@ -2153,7 +2177,7 @@ var wick = (function (exports) {
             }
 
             for (; lex.sl > lex.off; lex.sl--) {
-                let c$$1 = jump_table[lex.string.charCodeAt(lex.sl - 1)];
+                const c$$1 = jump_table[lex.string.charCodeAt(lex.sl - 1)];
 
                 if (c$$1 > 2 && c$$1 < 7)
                     continue;
@@ -2200,7 +2224,7 @@ var wick = (function (exports) {
          * @type {String}
          * @readonly
          */
-        get tx() { return this.text; }
+        get tx() { return this.text }
 
         /**
          * The string value of the current token.
@@ -2218,7 +2242,7 @@ var wick = (function (exports) {
          * @public
          * @readonly
          */
-        get ty() { return this.type; }
+        get ty() { return this.type }
 
         /**
          * The current token's offset position from the start of the string.
@@ -2236,15 +2260,15 @@ var wick = (function (exports) {
          * @readonly
          * @type {Lexer}
          */
-        get pk() { return this.peek(); }
+        get pk() { return this.peek() }
 
         /**
          * Proxy for Lexer.prototype.next
          * @public
          */
-        get n() { return this.next(); }
+        get n() { return this.next() }
 
-        get END() { return this.off >= this.sl; }
+        get END() { return this.off >= this.sl }
         set END(v$$1) {}
 
         get type() {
@@ -2313,7 +2337,7 @@ var wick = (function (exports) {
         }
     }
 
-    function whind$1(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS); }
+    function whind$1(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS) }
 
     whind$1.constructor = Lexer;
 
@@ -5196,6 +5220,12 @@ var wick = (function (exports) {
              */
             this.single = false;
 
+
+            //Charactar positional information from input.
+            this.line=0;
+            this.char=0;
+            this.offset=0;
+
         }
 
         /******************************************* ATTRIBUTE AND ELEMENT ACCESS ******************************************************************************************************************/
@@ -5610,6 +5640,11 @@ var wick = (function (exports) {
 
 
                                 URL$$1 = this.parseOpenTag(lex.n, false, old_url);
+                                
+                                this.char = lex.char;
+                                this.offset = lex.off;
+                                this.line = lex.line;
+                                
                                 start = lex.pos + 1;
                                 lex.IWS = false;
                                 if (lex.ch == "/") lex.n;
@@ -5692,7 +5727,7 @@ var wick = (function (exports) {
             }
 
             if (OPENED && start < lex.off) {
-                //Got here from an network import, need produce a text node;
+                //Got here from a network import, need produce a text node;
                 this.createTextNode(lex, start);
             }
 
@@ -7695,7 +7730,7 @@ var wick = (function (exports) {
      * @alias module:wick~internals.css.types.
      * @enum {object}
      */
-    const types$1 = {
+    const types = {
         color: CSS_Color,
         length: CSS_Length,
         time: CSS_Length,
@@ -8253,7 +8288,7 @@ var wick = (function (exports) {
 
             const IS_VIRTUAL = { is: false };
 
-            if (!(this._value_ = types$1[value]))
+            if (!(this._value_ = types[value]))
                 this._value_ = getPropertyParser(value, IS_VIRTUAL, definitions);
 
             this._prop_ = "";
@@ -8979,7 +9014,7 @@ var wick = (function (exports) {
                                 case "import":
                                     /* https://drafts.csswg.org/css-cascade/#at-ruledef-import */
                                     let type;
-                                    if (type = types$1.url.parse(lexer.next())) {
+                                    if (type = types.url.parse(lexer.next())) {
                                         lexer.a(";");
                                         /**
                                          * The {@link CSS_URL} incorporates a fetch mechanism that returns a Promise instance.
@@ -9275,7 +9310,7 @@ var wick = (function (exports) {
      */
     const CSSParser = (css_string, root = null) => (root = (!root || !(root instanceof CSSRootNode)) ? new CSSRootNode() : root, root.parse(whind$1(css_string)));
 
-    CSSParser.types = types$1;
+    CSSParser.types = types;
 
     // Mode Flag
     const KEEP = 0;
@@ -9581,7 +9616,8 @@ var wick = (function (exports) {
             if(model.addView)
                 model.addView(this);
 
-            this.model = this;
+            this.model = model;
+            
 
             for (let name in this.taps)
                 this.taps[name].load(this.model, false);
@@ -10198,7 +10234,7 @@ var wick = (function (exports) {
     }
 
     class ScriptIO extends IOBase {
-        constructor(source, errors, tap, binding) {
+        constructor(source, errors, tap, binding, node, statics) {
 
             let func;
 
@@ -10221,6 +10257,13 @@ var wick = (function (exports) {
             this.source = source;
             this._bound_emit_function_ = new Proxy(this._emit_.bind(this), { set: (obj, name, value) => { obj(name, value); } });
             this.meta = null;
+            this.url = statics.url;
+
+            this.offset = node.offset;
+            this.char = node.char;
+            this.line = node.line;
+
+
         }
 
         /**
@@ -10241,6 +10284,7 @@ var wick = (function (exports) {
             try {
                 this._func_(value, meta.event, src.model, this._bound_emit_function_, src.presets, src.statics, src);
             } catch (e) {
+                console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line}:${this.char}`);
                 console.warn(this.function);
                 console.error(e);
             }
@@ -10300,7 +10344,7 @@ var wick = (function (exports) {
         }
         set type(v) {}
 
-        set argument(binding){
+        set argument(binding) {
             this.arg = binding;
         }
     }
@@ -10318,7 +10362,7 @@ var wick = (function (exports) {
         }
 
         _bind_(source, errors, taps, element) {
-            
+
             switch (this.method) {
                 case INPUT:
                     return new InputExpresionIO(source, errors, taps, element, this.bindings, this.func);
@@ -10346,7 +10390,7 @@ var wick = (function (exports) {
             this.argVal = null;
         }
 
-        _bind_(source, errors, taps, element) {
+        _bind_(source, errors, taps, element, attr = "", node = null, statics = null) {
             let tap = source.getTap(this.tap_name); //taps[this.tap_id];
             switch (this.method) {
                 case INPUT:
@@ -10354,7 +10398,7 @@ var wick = (function (exports) {
                 case ATTRIB:
                     return new AttribIO(source, errors, tap, this.val, element, this.argVal);
                 case SCRIPT:
-                    return new ScriptIO(source, errors, tap, this);
+                    return new ScriptIO(source, errors, tap, this, node, statics);
                 default:
                     return new IO(source, errors, tap, element, this.argVal);
             }
@@ -10365,13 +10409,13 @@ var wick = (function (exports) {
         }
         set type(v) {}
 
-        toString(){return `((${this.tap_name}))`;}
+        toString() { return `((${this.tap_name}))`; }
 
-        set argument(binding){
-            if(binding instanceof DynamicBinding){
+        set argument(binding) {
+            if (binding instanceof DynamicBinding) {
                 this.argKey = binding.tap_name;
                 this.argVal = binding.val;
-            }else if(binding instanceof RawValueBinding){
+            } else if (binding instanceof RawValueBinding) {
                 this.argVal = binding.val;
             }
         }
@@ -10384,24 +10428,29 @@ var wick = (function (exports) {
         }
 
         _bind_(source, errors, taps, element, prop = "") {
-
-            switch (this.method) {
-                case TEXT$1:
-                    element.data = this.val;
-                    break;
-                case ATTRIB:{
-                    if(prop == "class"){
-                        element.classList.add.apply(element.classList, this.val.split(" "));
-                    }else
-                        element.setAttribute(prop, this.val);
+            try {
+                switch (this.method) {
+                    case TEXT$1:
+                        element.data = this.val;
+                        break;
+                    case ATTRIB:
+                        {
+                            if (prop == "class") {
+                                element.classList.add.apply(element.classList, this.val.split(" "));
+                            } else
+                                element.setAttribute(prop, this.val);
+                        }
                 }
+            } catch (e) {
+                console.error(`Unable to process the value ${this.val}`);
+                console.error(e);
             }
         }
         get _value_() { return this.val; }
         set _value_(v) {}
         get type() { return RAW_VALUEbindingID; }
         set type(v) {}
-        toString(){return this.val;}
+        toString() { return this.val; }
     }
 
     /**
@@ -10865,9 +10914,9 @@ var wick = (function (exports) {
             this.binding = binding;
         }
 
-        build(element, source, presets, errors, taps) {
+        build(element, source, presets, errors, taps, statics) {
             let ele = document.createTextNode(this.txt);
-            this.binding._bind_(source, errors, taps, ele);
+            this.binding._bind_(source, errors, taps, ele, "", this, statics);
             appendChild(element, ele);
         }
 
@@ -10932,7 +10981,7 @@ var wick = (function (exports) {
         /****************************************** COMPONENTIZATION *****************************************/
 
         mergeComponent() {
-            if(this.presets.components){
+            if (this.presets.components) {
                 let component = this.presets.components[this.tag];
 
                 if (component) {
@@ -11141,9 +11190,16 @@ var wick = (function (exports) {
          * @param      {null}  model    The model
          * @return     {null}  { description_of_the_return_value }
          */
-        build(element, source, presets, errors, taps, statics, out_ele) {
+        build(element, source, presets, errors, taps, statics = {}, out_ele = null) {
 
             const out_statics = this.__statics__ || statics;
+
+            if (this.url) {
+                out_statics =Object.assign({}, statics);
+                out_statics.url = this.url;
+            }
+            
+
             let own_out_ele;
 
             if (this._merged_) {
@@ -11190,7 +11246,7 @@ var wick = (function (exports) {
 
                 for (let i = 0, l = this.bindings.length; i < l; i++) {
                     let attr = this.bindings[i];
-                    attr.binding._bind_(source, errors, taps, own_element, attr.name);
+                    attr.binding._bind_(source, errors, taps, own_element, attr.name, this, statics);
                 }
 
                 for (let node = this.fch; node; node = this.getNextChild(node))
@@ -11250,7 +11306,7 @@ var wick = (function (exports) {
 
             let start = lex.off,
                 basic = {
-                    IGNORE:true,
+                    IGNORE: true,
                     name,
                     value: lex.slice(start)
                 };
@@ -11313,10 +11369,10 @@ var wick = (function (exports) {
                     return basic;
                 }
 
-                binding.val = name;
+                binding.attrib = name;
                 binding.method = bind_method;
                 let attr = {
-                    IGNORE:false,
+                    IGNORE: false,
                     name,
                     value: (start < lex.off) ? lex.slice(start) : true,
                     binding: this.processTapBinding(binding)
@@ -11399,9 +11455,16 @@ var wick = (function (exports) {
 
             return { name, value: lex.slice() };
         }
-        build(element, source, presets, errors, taps) {
+        build(element, source, presets, errors, taps, statics = {}) {
+            
+            if(this.url){
+                statics = Object.assign({}, statics);
+                statics.url = this.url;
+            }
+            
+            
             if (this.binding)
-                this.binding._bind_(source, errors, taps, element);
+                this.binding._bind_(source, errors, taps, element, "", this, statics);
         }
     }
 
@@ -11444,7 +11507,7 @@ var wick = (function (exports) {
             return createElement(this.getAttribute("element") || "div");
         }
 
-        build(element, source, presets, errors, taps = null, statics = null, out_ele = null) {
+        build(element, source, presets, errors, taps = null, statics = {}, out_ele = null) {
 
             let data = {};
 
@@ -11536,6 +11599,12 @@ var wick = (function (exports) {
                 }
             }
 
+            if (this.url) {
+                statics = Object.assign({},statics);
+                statics.url = this.url;
+            }
+
+
             for (let node = this.fch; node; node = this.getNextChild(node))
                 node.build(element, me, presets, errors, out_taps, statics);
 
@@ -11625,7 +11694,7 @@ var wick = (function (exports) {
                 if (!binding) {
                     return basic;
                 }
-                binding.val = name;
+                binding.attrib = name;
                 binding.method = ATTRIB;
                 let attr = {
                     IGNORE:false,
@@ -12145,10 +12214,12 @@ var wick = (function (exports) {
             let seq;
 
             if (typeof(anim_data_or_duration) == "object") {
-                if (anim_data_or_duration.match && this.TT[anim_data_or_duration.match]) {
-                    let duration = anim_data_or_duration.duration;
-                    let easing = anim_data_or_duration.easing;
-                    seq = this.TT[anim_data_or_duration.match](anim_data_or_duration.obj, duration, easing);
+                if (anim_data_or_duration.match) {
+                    if (this.TT[anim_data_or_duration.match]) {
+                        let duration = anim_data_or_duration.duration;
+                        let easing = anim_data_or_duration.easing;
+                        seq = this.TT[anim_data_or_duration.match](anim_data_or_duration.obj, duration, easing);
+                    }
                 } else
                     seq = Animation.createSequence(anim_data_or_duration);
 
@@ -13384,6 +13455,13 @@ var wick = (function (exports) {
     }
 
     function complete(lex, SourcePackage, presets, ast, url, win) {
+
+
+        //Record URL if present for proper error messaging. 
+        if(url && !ast.url)
+            ast.url = url;
+        
+
         /*
          * Only accept certain nodes for mounting to the DOM. 
          * The custom element `import` is simply used to import extra HTML data from network for use with template system. It should not exist otherwise.
