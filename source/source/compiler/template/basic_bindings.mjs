@@ -99,7 +99,7 @@ export class DynamicBinding {
             case INPUT:
                 return new InputIO(source, errors, tap, element, this.argKey);
             case ATTRIB:
-                return new AttribIO(source, errors, tap, this.val, element, this.argVal);
+                return new AttribIO(source, errors, tap, attr, element, this.argVal);
             case SCRIPT:
                 return new ScriptIO(source, errors, tap, this, node, statics);
             default:

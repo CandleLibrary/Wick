@@ -99,6 +99,16 @@ export class RootNode extends HTMLNode {
         this.__statics__ = null;
     }
 
+    /******************************************* ERROR ****************************************************/
+
+    getURL() {
+        if (this.url)
+            return this.url;
+        if (this.par)
+            return this.par.getURL();
+        return null;
+    }
+
     /******************************************* STATICS ****************************************************/
 
     get statics() {
@@ -131,9 +141,8 @@ export class RootNode extends HTMLNode {
         if (this.presets.components) {
             let component = this.presets.components[this.tag];
 
-            if (component) {
+            if (component) 
                 this._merged_ = component;
-            }
         }
     }
 
@@ -339,13 +348,11 @@ export class RootNode extends HTMLNode {
      */
     build(element, source, presets, errors, taps, statics = {}, out_ele = null) {
 
-        let out_statics = this.__statics__ || statics;
+        let out_statics = statics;
 
-        if (this.url) {
-            out_statics =Object.assign({}, statics);
-            out_statics.url = this.url
-        }
-        
+        if (this.url || this.__statics__)
+            out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL() });
+
 
         let own_out_ele;
 

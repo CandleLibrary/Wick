@@ -13,7 +13,6 @@ export class SourceNode extends RootNode {
         super();
         this._model_name_ = "";
         this._schema_name_ = "";
-        this.statics = {};
     }
 
     delegateTapBinding() {

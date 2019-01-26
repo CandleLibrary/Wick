@@ -5697,6 +5697,9 @@ ${is_iws}`;
 
                                 let prom = node.parseRunner(lex, false, false, this, this.url || old_url);
                                 
+                                if(!this.url)
+                                    this.url = old_url;
+                                
                                 if(prom instanceof Promise){
                                     return prom.then(child => {
                                         if (child.DTD) this.removeChild(child);
@@ -5708,6 +5711,8 @@ ${is_iws}`;
                                 }
                                 
                             }
+
+
                             //}
                         }
                         lex.IWS = false;
@@ -10235,7 +10240,8 @@ ${is_iws}`;
 
     class ScriptIO extends IOBase {
         constructor(source, errors, tap, binding, node, statics) {
-
+            if(!statics.url)
+                debugger
             let func;
 
             try {
@@ -10284,7 +10290,7 @@ ${is_iws}`;
             try {
                 this._func_(value, meta.event, src.model, this._bound_emit_function_, src.presets, src.statics, src);
             } catch (e) {
-                console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line}:${this.char}`);
+                console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line+1}:${this.char}`);
                 console.warn(this.function);
                 console.error(e);
             }
@@ -10396,7 +10402,7 @@ ${is_iws}`;
                 case INPUT:
                     return new InputIO(source, errors, tap, element, this.argKey);
                 case ATTRIB:
-                    return new AttribIO(source, errors, tap, this.val, element, this.argVal);
+                    return new AttribIO(source, errors, tap, attr, element, this.argVal);
                 case SCRIPT:
                     return new ScriptIO(source, errors, tap, this, node, statics);
                 default:
@@ -10952,6 +10958,16 @@ ${is_iws}`;
             this.__statics__ = null;
         }
 
+        /******************************************* ERROR ****************************************************/
+
+        getURL() {
+            if (this.url)
+                return this.url;
+            if (this.par)
+                return this.par.getURL();
+            return null;
+        }
+
         /******************************************* STATICS ****************************************************/
 
         get statics() {
@@ -10984,9 +11000,8 @@ ${is_iws}`;
             if (this.presets.components) {
                 let component = this.presets.components[this.tag];
 
-                if (component) {
+                if (component) 
                     this._merged_ = component;
-                }
             }
         }
 
@@ -11192,13 +11207,11 @@ ${is_iws}`;
          */
         build(element, source, presets, errors, taps, statics = {}, out_ele = null) {
 
-            const out_statics = this.__statics__ || statics;
+            let out_statics = statics;
 
-            if (this.url) {
-                out_statics =Object.assign({}, statics);
-                out_statics.url = this.url;
-            }
-            
+            if (this.url || this.__statics__)
+                out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL() });
+
 
             let own_out_ele;
 
@@ -11461,6 +11474,10 @@ ${is_iws}`;
                 statics = Object.assign({}, statics);
                 statics.url = this.url;
             }
+            if(!statics.url){
+
+                console.trace("Script URL", statics.url);
+            }
             
             
             if (this.binding)
@@ -11477,7 +11494,6 @@ ${is_iws}`;
             super();
             this._model_name_ = "";
             this._schema_name_ = "";
-            this.statics = {};
         }
 
         delegateTapBinding() {
@@ -13155,6 +13171,7 @@ ${is_iws}`;
         constructor(start) {
             super();
             this._start_ = start;
+            this.url = this.getURL();
         }
 
         /******************************************* HOOKS ****************************************************/
@@ -13216,7 +13233,12 @@ ${is_iws}`;
 
 
                 let me = new SourceTemplate(source, presets, ele);
+                
                 me.package = this.package;
+
+                if(!me.package.skeletons[0].tree.url)
+                    me.package.skeletons[0].tree.url = this.getURL();
+            
                 me.prop = this.property_bind._bind_(source, errors, taps, me);
 
                 appendChild(element, ele);
@@ -13318,7 +13340,6 @@ ${is_iws}`;
         }
 
         createHTMLNodeHook(tag) {
-        	console.log(tag);
             //jump table.
             switch (tag[0]) {
                 case "w":
@@ -13459,8 +13480,7 @@ ${is_iws}`;
 
         //Record URL if present for proper error messaging. 
         if(url && !ast.url)
-            ast.url = url;
-        
+            ast.url = url;    
 
         /*
          * Only accept certain nodes for mounting to the DOM. 
@@ -13540,6 +13560,10 @@ ${is_iws}`;
      * @alias CompileSource
      */
     function CompileSource(SourcePackage, presets, element, url, win = window) {
+        
+        if(!url)
+            url = URL.G;
+
         let lex;
         if (element instanceof whind$1.constructor) {
             lex = element;

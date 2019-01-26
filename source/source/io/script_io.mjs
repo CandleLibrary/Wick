@@ -1,7 +1,8 @@
 import { IOBase } from "./io";
 export class ScriptIO extends IOBase {
     constructor(source, errors, tap, binding, node, statics) {
-
+        if(!statics.url)
+            debugger
         let func;
 
         try {
@@ -50,7 +51,7 @@ export class ScriptIO extends IOBase {
         try {
             this._func_(value, meta.event, src.model, this._bound_emit_function_, src.presets, src.statics, src);
         } catch (e) {
-            console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line}:${this.char}`)
+            console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line+1}:${this.char}`)
             console.warn(this.function);
             console.error(e)
         }
