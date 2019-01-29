@@ -36,10 +36,6 @@ export class ScriptNode extends VoidNode {
             statics = Object.assign({}, statics);
             statics.url = this.url
         }
-        if(!statics.url){
-
-            console.trace("Script URL", statics.url)
-        }
         
         
         if (this.binding)

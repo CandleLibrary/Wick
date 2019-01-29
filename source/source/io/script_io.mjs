@@ -1,8 +1,7 @@
 import { IOBase } from "./io";
 export class ScriptIO extends IOBase {
     constructor(source, errors, tap, binding, node, statics) {
-        if(!statics.url)
-            debugger
+        
         let func;
 
         try {
