@@ -1,6 +1,6 @@
 {
   "name": "@candlefw/wick",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "description": "Web Component Builder",
   "main": "./source/wick.mjs",
   "scripts": {
@@ -64,11 +64,11 @@
     "unused": true
   },
   "dependencies": {
-    "@candlefw/css": "*",
-    "@candlefw/glow": "*",
-    "@candlefw/html": "*",
-    "@candlefw/spark": "*",
-    "@candlefw/url": "*",
-    "@candlefw/whind": "*"
+    "@candlefw/css": "latest",
+    "@candlefw/glow": "latest",
+    "@candlefw/html": "latest",
+    "@candlefw/spark": "latest",
+    "@candlefw/url": "latest",
+    "@candlefw/whind": "latest"
   }
 }

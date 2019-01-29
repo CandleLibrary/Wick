@@ -1833,7 +1833,7 @@ class Lexer {
 
         return `${message} at ${this.line}:${this.char}
 ${t$$1}
-${line_number+this.str.slice(this.off - this.char, end)}
+${line_number+this.str.slice(Math.max(this.off - this.char, 0), end)}
 ${line.repeat(this.char-1+line_fill)+trs+arrow}
 ${t$$1}
 ${is_iws}`;
@@ -7237,7 +7237,7 @@ function getValue(lex, attribute) {
 
     let n = parseFloat(v) * mult;
 
-    lex.n;
+    lex.next();
 
     if (lex.ch !== ")" && lex.ch !== ",") {
         switch (lex.tx) {
@@ -7259,7 +7259,7 @@ function getValue(lex, attribute) {
             case "em":
                 break;
         }
-        lex.n;
+        lex.next();
     }
     return n;
 }
@@ -7269,7 +7269,7 @@ function ParseString(string, transform) {
     
     while (!lex.END) {
         let tx = lex.tx;
-        lex.n;
+        lex.next();
         switch (tx) {
             case "matrix":
 
@@ -7348,7 +7348,7 @@ function ParseString(string, transform) {
             case "perspective":
                 break;
         }
-        lex.n;
+        lex.next();
     }
 }
 // A 2D transform composition of 2D position, 2D scale, and 1D rotation.
@@ -7528,13 +7528,13 @@ function getSignedNumber(lex) {
         mult = -1;
         tx = lex.n.tx;
     }
-    lex.n;
+    lex.next();
     return parseFloat(tx) * mult;
 }
 
 function getNumberPair(lex, array) {
     let x = getSignedNumber(lex);
-    if (lex.ch == ',') lex.n;
+    if (lex.ch == ',') lex.next();
     let y = getSignedNumber(lex);
     array.push(x, y);
 }
@@ -7560,7 +7560,7 @@ class CSS_Path extends Array {
                 case "m":
                     relative = true;
                 case "M":
-                    lex.n; //
+                    lex.next(); //
                     array.push((relative) ? PathSym.m : PathSym.M);
                     getNumberPair(lex, array);
                     parseNumberPairs(lex, array);
@@ -7569,21 +7569,21 @@ class CSS_Path extends Array {
                 case "h":
                     relative = true;
                 case "H":
-                    lex.n;
+                    lex.next();
                     x = getSignedNumber(lex);
                     array.push((relative) ? PathSym.h : PathSym.H, x);
                     continue;
                 case "v":
                     relative = true;
                 case "V":
-                    lex.n;
+                    lex.next();
                     y = getSignedNumber(lex);
                     array.push((relative) ? PathSym.v : PathSym.V, y);
                     continue;
                 case "l":
                     relative = true;
                 case "L":
-                    lex.n;
+                    lex.next();
                     array.push((relative) ? PathSym.l : PathSym.L);
                     getNumberPair(lex, array);
                     parseNumberPairs(lex, array);
@@ -7629,7 +7629,7 @@ class CSS_Path extends Array {
                 case "Z":
                     array.push((relative) ? PathSym.z : PathSym.Z);
             }
-            lex.n;
+            lex.next();
         }
     }
 
@@ -10241,8 +10241,7 @@ class EventIO {
 
 class ScriptIO extends IOBase {
     constructor(source, errors, tap, binding, node, statics) {
-        if(!statics.url)
-            debugger
+        
         let func;
 
         try {
@@ -11474,10 +11473,6 @@ class ScriptNode$1 extends VoidNode$1 {
         if(this.url){
             statics = Object.assign({}, statics);
             statics.url = this.url;
-        }
-        if(!statics.url){
-
-            console.trace("Script URL", statics.url);
         }
         
         
