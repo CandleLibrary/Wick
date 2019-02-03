@@ -1,5 +1,5 @@
 # CandleFW WICK
-v0.5.0a
+v0.5.6
 
 ## Dynamic Component Template Framework
 

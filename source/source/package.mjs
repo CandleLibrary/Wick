@@ -55,6 +55,12 @@ class SourcePackage {
         this.errors = [];
 
         /**
+         * An Array of style trees.
+         */
+        this.styles = [];
+
+
+        /**
          * Flag to indicate SourcePackage was compiled with errors
          */
         this.HAVE_ERRORS = false;

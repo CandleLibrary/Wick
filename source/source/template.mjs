@@ -54,7 +54,8 @@ export class SourceTemplate extends View {
 
     get data() {}
     set data(container) {
-
+        
+        console.log(container)
         if (container instanceof ModelContainerBase) {
             container.pin();
             container.addView(this);
@@ -469,6 +470,7 @@ export class SourceTemplate extends View {
      * @protected
      */
     cull(new_items) {
+        console.log(new_items)
         if (!new_items) new_items = [];
         let transition = Transitioneer.createTransition();
         if (new_items.length == 0) {

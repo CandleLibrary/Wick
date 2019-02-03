@@ -6,12 +6,17 @@ export {model};
 export {core};
 export {internals};
 
+function compile(element, presets, RETURN_PROMISE){
+		return new SourcePackage(element, presets, RETURN_PROMISE);
+}
+
 const wick = {
 	source,
 	scheme,
 	model,
 	core,
-	internals
+	internals,
+	compile
 };
 
 export default wick;
@@ -59,11 +64,11 @@ export {
     PackageNode,
     SourceTemplateNode,
     SVGNode,
-    SchemeConstructor, 
-    DateSchemeConstructor, 
-    TimeSchemeConstructor, 
-    StringSchemeConstructor, 
-    NumberSchemeConstructor, 
-    BoolSchemeConstructor, 
+    SchemeConstructor,
+    DateSchemeConstructor,
+    TimeSchemeConstructor,
+    StringSchemeConstructor,
+    NumberSchemeConstructor,
+    BoolSchemeConstructor,
     schemes
 };
