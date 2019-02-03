@@ -12,7 +12,7 @@ export class EventIO {
         this._event_bind_ = new IOBase(source.getTap(event_bind.tap_name));
         this._event_ = event.replace("on", "");
 
-        this.prevent_defaults = false;
+        this.prevent_defaults = true;
         if (this._event_ == "dragstart") this.prevent_defaults = false;
         this._msg_ = null;
         this.data = null;
@@ -70,9 +70,9 @@ export class EventIO {
     }
 
     _handleEvent_(e) {
-        this._event_bind_.up(this.data, { event: e });
+        let prevent = this._event_bind_.up(this.data, { event: e });
 
-        if (this.prevent_defaults) {
+        if (this.prevent_defaults || prevent === true) {
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
