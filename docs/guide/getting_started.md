@@ -22,7 +22,6 @@ In HTML
 
 In JavaScript
 ```js
-const elementA = document.querySelector("#component_a");
 const elementB = `<div>((name))</div>`;
 ```
 
@@ -31,7 +30,7 @@ const elementB = `<div>((name))</div>`;
 ```javascript
 const wick = import("wick");
 
-const packageA = wick.compile(elementA);
+const packageA = wick.compile(document.querySelector("#component_a"));
 const packageB = wick.compile(elementB);
 ```
 
@@ -73,3 +72,13 @@ const componentC = `
 const packageC = wick.compile(componentC, presets);
 packageC.mount(document.body);
 ```
+
+## Things that Wick does that Vanilla HTML does not
+
+### Import InnerHTML through the network 
+
+### Element Level CSS Scoping
+
+
+
+ 
