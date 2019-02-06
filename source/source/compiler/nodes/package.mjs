@@ -5,6 +5,7 @@ export class PackageNode extends VoidNode {
     constructor(start) {
         super();
         this._start_ = start;
+        this.url = this.getURL();
     }
 
     /******************************************* HOOKS ****************************************************/

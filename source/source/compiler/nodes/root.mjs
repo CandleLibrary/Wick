@@ -61,9 +61,9 @@ export class RootText extends TextNode {
         this.binding = binding;
     }
 
-    build(element, source, presets, errors, taps) {
+    build(element, source, presets, errors, taps, statics) {
         let ele = document.createTextNode(this.txt);
-        this.binding._bind_(source, errors, taps, ele);
+        this.binding._bind_(source, errors, taps, ele, "", this, statics);
         appendChild(element, ele);
     }
 
@@ -99,6 +99,16 @@ export class RootNode extends HTMLNode {
         this.__statics__ = null;
     }
 
+    /******************************************* ERROR ****************************************************/
+
+    getURL() {
+        if (this.url)
+            return this.url;
+        if (this.par)
+            return this.par.getURL();
+        return null;
+    }
+
     /******************************************* STATICS ****************************************************/
 
     get statics() {
@@ -128,11 +138,13 @@ export class RootNode extends HTMLNode {
     /****************************************** COMPONENTIZATION *****************************************/
 
     mergeComponent() {
+        if (this.presets.components) {
 
-        let component = this.presets.components[this.tag];
+            let component = this.presets.components[this.tag];
 
-        if (component)
-            this.merged = component;
+            if (component)
+                this.merged = component;
+        }
     }
 
     /******************************************* CSS ****************************************************/
@@ -215,7 +227,7 @@ export class RootNode extends HTMLNode {
             if (typeof(classes.value) == "string")
                 return classes.value.split(" ");
             else
-                return classes.value.txt.split(" ");
+                return classes.value.val.split(" ");
         }
         return [];
     }
@@ -335,19 +347,23 @@ export class RootNode extends HTMLNode {
      * @param      {null}  model    The model
      * @return     {null}  { description_of_the_return_value }
      */
-    build(element, source, presets, errors, taps, statics, out_ele) {
+    build(element, source, presets, errors, taps, statics, out_ele = null) {
 
-        const out_statics = this.__statics__ || statics,
-            MERGED = !!this.merged;
+        let out_statics = statics;
+
+        if (this.url || this.__statics__)
+            out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL() });
+
+        const MERGED = !!this.merged;
+        
         let own_element = null;
-
 
         if (MERGED) {
 
             let own_out_ele = {
                 ele: null
             };
-            
+
             let out_source = this.merged.build(element, source, presets, errors, taps, out_statics, own_out_ele);
 
             if (!source)
@@ -382,7 +398,7 @@ export class RootNode extends HTMLNode {
 
             for (let i = 0, l = this.bindings.length; i < l; i++) {
                 let attr = this.bindings[i];
-                attr.binding._bind_(source, errors, taps, own_element, attr.name);
+                attr.binding._bind_(source, errors, taps, own_element, attr.name, this, statics);
             }
 
         }
@@ -507,7 +523,7 @@ export class RootNode extends HTMLNode {
                 return basic;
             }
 
-            binding.val = name;
+            binding.attrib = name;
             binding.method = bind_method;
             let attr = {
                 IGNORE: false,

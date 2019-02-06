@@ -42,7 +42,7 @@ export class SourceNode extends RootNode {
         return createElement(this.getAttribute("element") || "div");
     }
 
-    build(element, source, presets, errors, taps = null, statics = null, out_ele = null) {
+    build(element, source, presets, errors, taps = null, statics = {}, out_ele = null) {
 
         let data = {};
 
@@ -128,20 +128,24 @@ export class SourceNode extends RootNode {
             if (!attr.value) {
                 //let value = this.par.importAttrib()
                 //if(value) data[attr.name];
-            } else 
-                data[attr.name] = attr.value;     
+            } else
+                data[attr.name] = attr.value;
         }
+
+        if (this.url) {
+            statics = Object.assign({}, statics);
+            statics.url = this.url;
+        }
+
 
         for (let node = this.fch; node; node = this.getNextChild(node))
             node.build(element, me, presets, errors, out_taps, statics);
-        
-        if (statics) {
-            me.statics = statics;
+
+        if (statics || this.__statics__) {
+            let s = Object.assign({}, statics ? statics : {}, this.__statics__);
+            me.statics = s;
             me.update(me.statics);
-        }else if(this.__statics__){
-            me.statics = this.__statics__;
-            me.update(me.statics);
-        }
+        } 
 
         return me;
     }
@@ -224,10 +228,13 @@ export class SourceNode extends RootNode {
             if (!binding)
                 return basic;
 
-            binding.val = name;
 
+
+            //}
+            //binding.val = name;
+            binding.attrib = name;
             binding.method = ATTRIB;
-            
+
             let attr = {
                 IGNORE: false,
                 name,

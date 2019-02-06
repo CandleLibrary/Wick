@@ -35,7 +35,12 @@ export class SourceTemplateNode extends RootNode {
 
 
             let me = new SourceTemplate(source, presets, ele);
+            
             me.package = this.package;
+
+            if(!me.package.skeletons[0].tree.url)
+                me.package.skeletons[0].tree.url = this.getURL();
+        
             me.prop = this.property_bind._bind_(source, errors, taps, me);
 
             appendChild(element, ele);

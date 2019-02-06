@@ -28,7 +28,6 @@ export function Template(lex, FOR_EVENT) {
     return null;
 }
 
-
 function OutTemplate(binds = []) {
     this.bindings = binds;
 }
@@ -50,7 +49,7 @@ OutTemplate.prototype = {
         let binding = this.bindings[this.bindings.length - 1];
 
         if (binding && binding.type == RAW_VALUEbindingID) {
-            binding.txt += string;
+            binding.val += string;
         } else {
             this.bindings.push(new RawValueBinding(string));
         }

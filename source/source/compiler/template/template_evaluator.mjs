@@ -1,7 +1,7 @@
 import { JSExpressionIdentifiers } from "../../../js";
 import { RawValueBinding, EventBinding, ExpressionBinding, DynamicBinding, } from "./basic_bindings";
-import {barrier_a_start,barrier_a_end,barrier_b_start,barrier_b_end } from "../../../barriers";
-const BannedIdentifiers = { "true": true, "false": 1, "class": 1, "function": 1,  "return": 1, "for" : 1, "new" : 1, "let" : 1, "var" : 1, "const" : 1, "Date": 1, "null": 1, "parseFloat":1, "parseInt":1};
+import { barrier_a_start, barrier_a_end, barrier_b_start, barrier_b_end } from "../../../barriers";
+const BannedIdentifiers = { "true": true, "false": 1, "class": 1, "function": 1, "return": 1, "for": 1, "new": 1, "let": 1, "var": 1, "const": 1, "Date": 1, "null": 1, "parseFloat": 1, "parseInt": 1 };
 
 function setIdentifier(id, store, cache) {
     if (!cache[id] && !BannedIdentifiers[id]) {
@@ -22,7 +22,7 @@ function processExpression(lex, binds) {
      * "return (implied)" name ? "User has a name!" : "User does not have a name!"
      * ```
      */
-     
+
     const bind_ids = [];
 
     const function_string = lex.slice();
@@ -90,14 +90,14 @@ export function evaluate(lex, EVENT = false) {
                     lex.sync().n;
                     lex.IWS = true; // Do not produce white space tokens during this portion.
                     let pk = lex.pk;
-                    let Message= false;
+                    let Message = false;
 
 
-                    while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end && pk.p.ch !== barrier_a_start) || (pk.p.n.ch === barrier_a_end))) { 
+                    while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end && pk.p.ch !== barrier_a_start) || (pk.p.n.ch === barrier_a_end))) {
                         let prev = pk.ch;
-                        pk.n; 
-                        if(pk.ch == barrier_a_start && prev == barrier_a_end)
-                            Message =true;
+                        pk.n;
+                        if (pk.ch == barrier_a_start && prev == barrier_a_end)
+                            Message = true;
                     }
 
 
@@ -120,86 +120,90 @@ export function evaluate(lex, EVENT = false) {
                     } else {
 
                         /************************** Start Single Identifier Binding *******************************/
+                        
                         let id = lex.tx;
                         let binding = new DynamicBinding();
                         binding.tap_name = id;
                         let index = binds.push(binding) - 1;
                         lex.n.a(sentinel);
 
-                        if (EVENT) {
-                            /***************************** Looking for Event Bindings ******************************************/
-                            
-                            if (lex.ch == barrier_a_start || lex.ch == barrier_b_start) {
+                        /***************************** Looking for Event Bindings ******************************************/
 
-                                binds[index] = new EventBinding(binds[index]);
+                        if (lex.ch == barrier_a_start || lex.ch == barrier_b_start) {
 
-                                let sentinel = (lex.ch == barrier_a_start) ? barrier_a_end : barrier_b_end;
+                            if(EVENT){
+                                binding = new EventBinding(binding); 
+                                binds[index] = binding;
+                            }
 
-                                lex.IWS = true; // Do not produce white space tokens during this portion.
+                            let sentinel = (lex.ch == barrier_a_start) ? barrier_a_end : barrier_b_end;
 
-                                let pk = lex.pk;
+                            lex.IWS = true; // Do not produce white space tokens during this portion.
 
-                                while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end))) { pk.n; }
+                            let pk = lex.pk;
 
-                                lex.n;
+                            while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end))) { pk.n; }
 
-                                if (lex.tl < pk.off - lex.off || BannedIdentifiers[lex.tx]) {
+                            lex.n;
 
-                                    const elex = lex.copy(); //The expression Lexer
+                            if (lex.tl < pk.off - lex.off || BannedIdentifiers[lex.tx]) {
 
-                                    elex.fence(pk);
+                                const elex = lex.copy(); //The expression Lexer
 
-                                    lex.sync();
+                                elex.fence(pk);
 
-                                    if (pk.END) //Should still have `))` or `|)` in the input string
-                                        throw new Error("Should be more to this!");
+                                lex.sync();
 
-                                    const event_binds = [];
+                                if (pk.END) //Should still have `))` or `|)` in the input string
+                                    throw new Error("Should be more to this!");
 
-                                    processExpression(elex, event_binds);
+                                const event_binds = [];
 
-                                    binds[index].bind = event_binds[0];
+                                processExpression(elex, event_binds);
 
-                                    lex.a(sentinel);
+                                binding.argument = event_binds[0];
 
-                                } else {
-                                    if (lex.ch !== sentinel) {
-                                        let id = lex.tx,
-                                            binding;
-                                        if (lex.ty !== lex.types.id) {
-                                            switch (lex.ty) {
-                                                case lex.types.num:
-                                                    binding = new RawValueBinding(parseFloat(id));
-                                                    break;
-                                                case lex.types.str:
-                                                    binding = new RawValueBinding(id.slice(1, -1));
-                                                    break;
-                                                default:
-                                                    binding = new RawValueBinding(id.slice);
-                                            }
-                                        } else {
-                                            binding = new DynamicBinding();
-                                            binding.tap_name = id;
+                                lex.a(sentinel);
+
+                            } else {
+
+                                if (lex.ch !== sentinel) {
+                                    let id = lex.tx, arg_binding = null;
+                                    if (lex.ty !== lex.types.id) {
+                                        switch (lex.ty) {
+                                            case lex.types.num:
+                                                arg_binding = new RawValueBinding(parseFloat(id));
+                                                break;
+                                            case lex.types.str:
+                                                arg_binding = new RawValueBinding(id.slice(1, -1));
+                                                break;
+                                            default:
+                                                arg_binding = new RawValueBinding(id.slice);
                                         }
-                                        binds[index].bind = binding;
-                                        lex.n;
+                                    } else {
+                                        arg_binding = new DynamicBinding();
+                                        arg_binding.tap_name = id;
                                     }
-                                    lex.a(sentinel);
+                                    binding.argument = arg_binding;
+                                    lex.n;
                                 }
+                                lex.a(sentinel);
                             }
                         }
                     }
 
                     lex.IWS = false;
-                    
+
                     start = lex.off + 1; //Should at the sentinel.
-                    
+
                     lex.a(barrier_a_end);
-                    
+
                     continue;
                 }
+
                 break;
         }
+
         lex.n;
     }
 
@@ -214,7 +218,7 @@ export function evaluate(lex, EVENT = false) {
         while (!lex.n.END)
             if (!(lex.ty & (lex.types.ws | lex.types.nl)))
                 DATA_END = lex.off + lex.tl;
-            
+
         if (DATA_END > start) {
             lex.sl = DATA_END;
             binds.push(new RawValueBinding(lex.slice(start)));
