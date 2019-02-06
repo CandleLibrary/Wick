@@ -19,13 +19,13 @@ class Presets {
     constructor(preset_options = {}) {
 
         this.store = (preset_options.store instanceof Store) ? preset_options.store : null;
-        
+
         /**
          * {Object} Store for optional parameters used in the app
          */
         this.options = {
-            USE_SECURE:true,
-            USE_SHADOW:false,
+            USE_SECURE: true,
+            USE_SHADOW: false,
         };
 
         //Declaring the properties upfront to give the VM a chance to build an appropriate virtual class.
@@ -131,10 +131,10 @@ class Presets {
         c = preset_options.custom_components;
         if (c)
             for (let cn in c)
-                    this.custom_components[cn] = c[cn];
+                this.custom_components[cn] = c[cn];
 
         c = preset_options.models;
-        
+
         if (c)
             for (let cn in c)
                 if (c[cn] instanceof ModelBase)
@@ -152,12 +152,27 @@ class Presets {
         Object.freeze(this.custom_sources);
         Object.freeze(this.schemas);
         Object.freeze(this.models);
-
-
-        //Object.freeze(this);
     }
 
-    processLink(link){}
+    processLink(link) {}
+
+    /**
+        Copies values of the Presets object into a generic object. The new object is not frozen.
+    */
+    copy() {
+        let obj = {};
+
+        for (let a in this) {
+            if (typeof(this[a]) == "object")
+                obj[a] = Object.assign({}, this[a])
+            else if (typeof(this[a]) == "array")
+                obj[a] = this[a].slice();
+            else
+                obj[a] = this[a];
+        }
+
+        return obj;
+    }
 }
 
 export { Presets };

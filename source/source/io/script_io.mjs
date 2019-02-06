@@ -9,7 +9,7 @@ export class ScriptIO extends IOBase {
             if (binding._func_) {
                 func = binding._func_;
             } else {
-                func = Function(binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val).bind(source);
+                func = Function(binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val);
                 binding._func_ = func;
             }
         } catch (e) {
@@ -17,10 +17,12 @@ export class ScriptIO extends IOBase {
             func = () => {};
         }
 
+
+
         super(tap);
 
         this.function = binding.val;
-        this._func_ = func;
+        this._func_ = func.bind(source);
         this.source = source;
         this._bound_emit_function_ = new Proxy(this._emit_.bind(this), { set: (obj, name, value) => { obj(name, value); } });
         this.meta = null;

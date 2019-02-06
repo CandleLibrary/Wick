@@ -11,7 +11,7 @@ RootNode.prototype._buildStatic_ = function(
 	parent_element_var,
 	element_var, 
 	source_var,){
-	if(this._merged_){
+	if(this.merged){
 
 	}
 

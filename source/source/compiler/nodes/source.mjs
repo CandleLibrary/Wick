@@ -13,7 +13,6 @@ export class SourceNode extends RootNode {
         super();
         this._model_name_ = "";
         this._schema_name_ = "";
-        this.statics = {};
     }
 
     delegateTapBinding() {
@@ -129,20 +128,20 @@ export class SourceNode extends RootNode {
             if (!attr.value) {
                 //let value = this.par.importAttrib()
                 //if(value) data[attr.name];
-            } else {
-                data[attr.name] = attr.value;
-
-            }
+            } else 
+                data[attr.name] = attr.value;     
         }
 
         for (let node = this.fch; node; node = this.getNextChild(node))
             node.build(element, me, presets, errors, out_taps, statics);
-
+        
         if (statics) {
             me.statics = statics;
-            me.update(statics);
+            me.update(me.statics);
+        }else if(this.__statics__){
+            me.statics = this.__statics__;
+            me.update(me.statics);
         }
-
 
         return me;
     }
@@ -161,7 +160,7 @@ export class SourceNode extends RootNode {
     processAttributeHook(name, lex, value) {
         let start = lex.off,
             basic = {
-                IGNORE:true,
+                IGNORE: true,
                 name,
                 value: lex.slice(start)
             };
@@ -221,18 +220,23 @@ export class SourceNode extends RootNode {
 
         if ((lex.sl - lex.off) > 0) {
             let binding = Template(lex, true);
-            if (!binding) {
+
+            if (!binding)
                 return basic;
-            }
+
             binding.val = name;
+
             binding.method = ATTRIB;
+            
             let attr = {
-                IGNORE:false,
+                IGNORE: false,
                 name,
                 value: (start < lex.off) ? lex.slice(start) : true,
                 binding: this.processTapBinding(binding)
             };
+
             this.bindings.push(attr);
+
             return attr;
         }
 

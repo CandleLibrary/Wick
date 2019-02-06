@@ -10,7 +10,6 @@ export class SVGNode extends RootNode {
     }
 
     createHTMLNodeHook(tag) {
-    	console.log(tag)
         //jump table.
         switch (tag[0]) {
             case "w":

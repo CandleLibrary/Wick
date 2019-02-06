@@ -91,7 +91,7 @@ export class RootNode extends HTMLNode {
 
         this.css = null;
 
-        this._merged_ = false;
+        this.merged = false;
 
         this._badge_name_ = "";
 
@@ -105,13 +105,13 @@ export class RootNode extends HTMLNode {
         if (this.__statics__) return this.__statics__;
 
         if (this.par)
-            return (this.__statics__ = Object.assign({}, this.par.statics, {slots:{}}));
+            return (this.__statics__ = Object.assign({}, this.par.statics, { slots: {} }));
 
-        return (this.__statics__ = {slots:{}});
+        return (this.__statics__ = { slots: {} });
     }
 
     set statics(statics) {
-        this.__statics__ = statics;
+        //this.__statics__ = statics;
     }
 
     /******************************************* PRESETS ****************************************************/
@@ -131,8 +131,8 @@ export class RootNode extends HTMLNode {
 
         let component = this.presets.components[this.tag];
 
-        if (component) 
-            this._merged_ = component;
+        if (component)
+            this.merged = component;
     }
 
     /******************************************* CSS ****************************************************/
@@ -337,36 +337,32 @@ export class RootNode extends HTMLNode {
      */
     build(element, source, presets, errors, taps, statics, out_ele) {
 
-        const out_statics = this.__statics__ || statics;
-        let own_out_ele;
+        const out_statics = this.__statics__ || statics,
+            MERGED = !!this.merged;
+        let own_element = null;
 
-        if (this._merged_) {
 
-            own_out_ele = {
+        if (MERGED) {
+
+            let own_out_ele = {
                 ele: null
             };
-
-            let out_source = this._merged_.build(element, source, presets, errors, taps, out_statics, own_out_ele);
+            
+            let out_source = this.merged.build(element, source, presets, errors, taps, out_statics, own_out_ele);
 
             if (!source)
                 source = out_source;
 
-            return
-        }
-
-        let own_element;
-
-        if (own_out_ele) {
             own_element = own_out_ele.ele;
+
         } else {
+
             if (!source) {
                 source = new Source(null, presets, own_element, this);
                 own_element = this.createElement(presets, source);
                 source.ele = own_element;
             } else
                 own_element = this.createElement(presets, source);
-
-            if (element) appendChild(element, own_element);
 
             if (out_ele)
                 out_ele.ele = own_element;
@@ -389,14 +385,15 @@ export class RootNode extends HTMLNode {
                 attr.binding._bind_(source, errors, taps, own_element, attr.name);
             }
 
-            for (let node = this.fch; node; node = this.getNextChild(node))
-                node.build(own_element, source, presets, errors, taps, out_statics);
-
-        } else {
-            for (let node = this.fch; node; node = this.getNextChild(node))
-                node.build(element, source, presets, errors, taps, out_statics);
         }
 
+        if (!MERGED) {
+
+            const ele = own_element ? own_element : element
+
+            for (let node = this.fch; node; node = this.getNextChild(node))
+                node.build(ele, source, presets, errors, taps, out_statics);
+        }
 
         return source;
     }
@@ -444,7 +441,7 @@ export class RootNode extends HTMLNode {
 
         let start = lex.off,
             basic = {
-                IGNORE:true,
+                IGNORE: true,
                 name,
                 value: lex.slice(start)
             };
@@ -493,7 +490,7 @@ export class RootNode extends HTMLNode {
                     return basic;
                 }
             case "s":
-                if(name == "slot" && this.par){
+                if (name == "slot" && this.par) {
                     this.par.statics.slots[basic.value] = this;
                     return basic;
                 }
@@ -503,6 +500,7 @@ export class RootNode extends HTMLNode {
             return basic.IGNORE = false, basic;
 
         basic.IGNORE = false;
+
         if ((lex.sl - lex.off) > 0) {
             let binding = Template(lex, FOR_EVENT);
             if (!binding) {
@@ -512,7 +510,7 @@ export class RootNode extends HTMLNode {
             binding.val = name;
             binding.method = bind_method;
             let attr = {
-                IGNORE:false,
+                IGNORE: false,
                 name,
                 value: (start < lex.off) ? lex.slice(start) : true,
                 binding: this.processTapBinding(binding)
