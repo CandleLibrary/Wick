@@ -254,7 +254,7 @@ function SOURCEPACKAGETESTS(config) {
             );
 
             it('Imports Partial and Complete components from page and from network',
-                () => {
+                async () => {
                     let presets = { components: {} };
                     (new URL("/test/data/markopolo.html")).fetchText()
                         .then(text => wick.source(text, presets, true).then(source1 => {
@@ -271,6 +271,36 @@ function SOURCEPACKAGETESTS(config) {
 
                                 }));
                         }));
+                });
+            it.only('Allows slots to be defined in components and passes element data to the slot from a host component',
+                async () => {
+                    let presets = { components: {} };
+
+                    let utf_data = await (new URL("/test/data/slot_a.html")).fetchText();
+                    
+                    let source_package = await wick.source(utf_data, presets, true);
+
+                    let ele = document.createElement("div");
+
+                    source_package.mount(ele, {}, false);
+                    
+                    source_package.HAVE_ERRORS.should.equal(false);
+                    
+                    appendToDocumentBody(ele);
+
+                    let component = ele.children[0];
+
+                    component.children.should.have.lengthOf(2);
+
+                    component.tagName.should.equal("DIV")
+
+                    component.children[0].tagName.should.equal("DIV")
+
+                    component.children[0].innerHTML.should.equal("This should be inside the component.")
+
+                    component.children[1].tagName.should.equal("SPAN")
+
+                    component.children[1].innerHTML.should.equal("This should also be inside the component.")
                 });
         });
     });

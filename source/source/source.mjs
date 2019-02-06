@@ -200,7 +200,8 @@ export class Source extends View {
             this.sources[i].getBadges(this);
         }
 
-        model.addView(this);
+        if(model.addView)
+            model.addView(this);
 
         this.model = model;
 

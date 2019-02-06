@@ -105,9 +105,9 @@ export class RootNode extends HTMLNode {
         if (this.__statics__) return this.__statics__;
 
         if (this.par)
-            return (this.__statics__ = Object.assign({}, this.par.statics));
+            return (this.__statics__ = Object.assign({}, this.par.statics, {slots:{}}));
 
-        return (this.__statics__ = {});
+        return (this.__statics__ = {slots:{}});
     }
 
     set statics(statics) {
@@ -131,10 +131,8 @@ export class RootNode extends HTMLNode {
 
         let component = this.presets.components[this.tag];
 
-        if (component) {
+        if (component) 
             this._merged_ = component;
-        }
-
     }
 
     /******************************************* CSS ****************************************************/
@@ -352,6 +350,8 @@ export class RootNode extends HTMLNode {
 
             if (!source)
                 source = out_source;
+
+            return
         }
 
         let own_element;
@@ -427,9 +427,7 @@ export class RootNode extends HTMLNode {
     }
 
     endOfElementHook() {
-        if (!this.fch) {
-            this.mergeComponent();
-        }
+        this.mergeComponent();
     }
 
 
@@ -494,13 +492,15 @@ export class RootNode extends HTMLNode {
                     this._badge_name_ = lex.tx;
                     return basic;
                 }
+            case "s":
+                if(name == "slot" && this.par){
+                    this.par.statics.slots[basic.value] = this;
+                    return basic;
+                }
         }
 
         if (this.checkTapMethodGate(name, lex))
-            return {
-                name,
-                value: lex.slice(start)
-            };
+            return basic.IGNORE = false, basic;
 
         basic.IGNORE = false;
         if ((lex.sl - lex.off) > 0) {
