@@ -45,6 +45,12 @@ export class Tap {
 
     load(data) {
         this.downS(data);
+
+        //Make sure export occures as soon as data is ready. 
+        const value = data[this.prop];
+
+        if((typeof(value) !== "undefined") && (this.modes & EXPORT))
+            this.source.up(this, data[this.prop]);
     }
 
     down(value, meta) {

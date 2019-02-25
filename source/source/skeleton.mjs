@@ -25,14 +25,17 @@ export class Skeleton {
      * @param      {<type>}  primary_model    The model
      * @return     {<type>}  { description_of_the_return_value }
      */
-    flesh(element, primary_model = null) {
+    flesh(element, primary_model = null, parent = null) {
 
-        let Source = this.____copy____(element, null, primary_model);
+        const source = this.____copy____(element, null, primary_model);
 
-        if (Source)
-            Source.load(primary_model);
+        if (source){
+            if(parent)
+                source.parent = parent;
+            source.load(primary_model);
+        }
 
-        return Source;
+        return source;
     }
 
     /**

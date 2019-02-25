@@ -77,7 +77,7 @@ export class Source extends View {
 
         if (this.parent && this.parent.removeSource)
             this.parent.removeSource(this);
-        //this.finalizeTransitionOut();
+
         this.children.forEach((c) => c.destroy());
         this.children.length = 0;
         this.data = null;
@@ -87,8 +87,8 @@ export class Source extends View {
 
         this.ele = null;
 
-        for (let i = 0, l = this.sources.length; i < l; i++)
-            this.sources[i].destroy();
+        while(this.sources[0])
+            this.sources[0].destroy();
 
 
         super.destroy();

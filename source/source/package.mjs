@@ -177,7 +177,7 @@ class SourcePackage {
      * @param  {boolean} USE_SHADOW_DOM  - If `true`, appends the component to the element's ShadowDOM.
      * @param  {Object}  manager         - A custom manager that stores built source components. If not defined then a SourceManager is created and returned.
      */
-    mount(element, model, USE_SHADOW_DOM = false, manager = new SourceManager(model, element)) {
+    mount(element, model, USE_SHADOW_DOM = false, manager = new SourceManager(model, element), parent = manager) {
 
         if (!this.READY)
             return this.pushPendingMount(element, model, USE_SHADOW_DOM, manager);
@@ -188,6 +188,7 @@ class SourcePackage {
             //Process
             console.warn("TODO - Package has errors, pop an error widget on this element!");
         }
+        
         let i = 0,
             l = 0;
 
@@ -209,9 +210,9 @@ class SourcePackage {
                 }
         }
 
+
         for (i = 0, l = this.skeletons.length; i < l; i++) {
-            let source = this.skeletons[i].flesh(element, model);
-            source.parent = manager;
+            let source = this.skeletons[i].flesh(element, model, parent);
             manager.sources.push(source);
         }
 

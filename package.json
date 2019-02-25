@@ -7,7 +7,6 @@
     "build_js_parser": "hydrocarbon compile -n jsparser -o ./source/js -t 'mjs' ./source/js/wick_js.hcg",
     "build_js_parser.table": "hydrocarbon table ./source/js/wick_js.hcg",
     "build_js_parser.mount": "hydrocarbon compile -n jsparser -o ./source/js -t 'mjs' -m ./source/js/wick_js.hcg",
-    "prepublishOnly": "npm run build_js_parser && npm run build && npm test",
     "prepublishOnly": "npm run build && npm test",
     "test": "mocha -r esm",
     "test.watch": "mocha -r esm -w -R min",

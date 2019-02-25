@@ -429,6 +429,8 @@ export class RootNode extends HTMLNode {
             case "img":
             case "import":
             case "link":
+            case "f":
+            case "filter":
                 return true;
         }
 

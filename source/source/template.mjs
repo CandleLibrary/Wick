@@ -553,10 +553,10 @@ export class SourceTemplate extends View {
      */
     added(items, transition = Transitioneer.createTransition()) {
         for (let i = 0; i < items.length; i++) {
-            let mgr = this.package.mount(null, items[i], false);
-            mgr.sources.forEach((s) => {
-                s.parent = this.parent;
-            });
+            let mgr = this.package.mount(null, items[i], false, undefined, this.parent);
+            //mgr.sources.forEach((s) => {
+            //    s.parent = this.parent;
+            //});
             this.sources.push(mgr);
         }
         for (let i = 0; i < this.sources.length; i++) {

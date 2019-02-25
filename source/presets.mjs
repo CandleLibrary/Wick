@@ -3,6 +3,8 @@ import { DOC } from "./short_names";
 import { ModelBase } from "./model/base";
 import { Model } from "./model/model";
 import { Store } from "./model/store";
+import  URL  from "@candlefw/url";
+
 
 /**
  * There are a number of configurable options and global objects that can be passed to wick to be used throughout the PWA. The instances of the Presets class are objects that hosts all these global properties. 
@@ -147,6 +149,8 @@ class Presets {
                     this.schemas[cn] = c[cn];
 
         this.options.USE_SHADOW = (this.options.USE_SHADOW) ? (DOC.head.createShadowRoot || DOC.head.attachShadow) : false;
+
+        this.url = URL;
 
         Object.freeze(this.options);
         Object.freeze(this.custom_sources);

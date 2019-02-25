@@ -93,7 +93,8 @@ This is the heart and soul of Wick is found in the source element. This defines 
 >#### Syntax:
 >**&lt;w-c>** **((** *object-selector* **))** *[* **&lt;filter/>**  *]*&ast; *[* **&lt;w-s> *...* &lt;/w-s>** *||* **&lt;** *html-tag* **>** *...* **&lt;/** *html-tag* **>** *||* **&lt;** *component_name* **>**  *]* **&lt;/w-c>**
 
-### Filter ``<filter>``
+### Filter ``<filter>`` || ``<f>``
+
 
 
 

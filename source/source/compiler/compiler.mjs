@@ -60,7 +60,7 @@ export function parseText(lex, SourcePackage, presets, url, win) {
     if (!lex.END) {
 
         if (lex.pk.ty != lex.types.id)
-            throw new Error(`Expecting an Identifier after '<' character, ${lex.str}`);
+            lex.throw(`Expecting an Identifier after '<' character, ${lex.str}`);
 
         let node = CreateHTMLNode(lex.p.tx);
 
