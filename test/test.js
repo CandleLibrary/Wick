@@ -52,6 +52,8 @@ describe("Wick test suite.", function() {
             This is a lazy way to ensure all source files will load correctly when changed.
         */
 
+
+
         let JSDOM = require("jsdom").JSDOM;
 
         /** Poly Fills **/
@@ -79,6 +81,8 @@ describe("Wick test suite.", function() {
         global.document = window.document;
 
         global.HTMLElement = window.HTMLElement;
+
+        global.Location = window.Location;
 
         const performance = {
             now() {
