@@ -1,35 +1,35 @@
 /** This is the entire object structure of Wick, minus the platform specific outputs found in /source/root/ */
-import { Presets } from "./presets";
+import { Presets } from "./presets.mjs";
 
 //Schema
 import { SchemeConstructor, DateSchemeConstructor, TimeSchemeConstructor, StringSchemeConstructor, NumberSchemeConstructor, BoolSchemeConstructor, schemes } from "./schema/schemas";
 
 //Models
-import { Store } from "./model/store";
-import { SchemedModel } from "./model/schemed";
-import { Model } from "./model/model";
-import { ModelContainerBase } from "./model/container/base";
-import { MultiIndexedContainer } from "./model/container/multi";
-import { BTreeModelContainer } from "./model/container/btree";
-import { ArrayModelContainer } from "./model/container/array";
+import { Store } from "./model/store.mjs";
+import { SchemedModel } from "./model/schemed.mjs";
+import { Model } from "./model/model.mjs";
+import { ModelContainerBase } from "./model/container/base.mjs";
+import { MultiIndexedContainer } from "./model/container/multi.mjs";
+import { BTreeModelContainer } from "./model/container/btree.mjs";
+import { ArrayModelContainer } from "./model/container/array.mjs";
 
 //Views
-import { View } from "./view";
+import { View } from "./view.mjs";
 
 //Source
-import { SourcePackage } from "./source/package";
-import { Source } from "./source/source";
+import { SourcePackage } from "./source/package.mjs";
+import { Source } from "./source/source.mjs";
 
 //SourceCompiler
-import { CompileSource as Compiler } from "./source/compiler/compiler";
-import { RootText } from "./source/compiler/nodes/root";
-import { RootNode } from "./source/compiler/nodes/index";
-import { StyleNode } from "./source/compiler/nodes/style";
-import { ScriptNode } from "./source/compiler/nodes/script";
-import { SourceNode } from "./source/compiler/nodes/source";
-import { PackageNode } from "./source/compiler/nodes/package";
-import { SVGNode } from "./source/compiler/nodes/svg";
-import { SourceContainerNode } from "./source/compiler/nodes/template";
+import { CompileSource as Compiler } from "./source/compiler/compiler.mjs";
+import { RootText } from "./source/compiler/nodes/root.mjs";
+import { RootNode } from "./source/compiler/nodes/index.mjs";
+import { StyleNode } from "./source/compiler/nodes/style.mjs";
+import { ScriptNode } from "./source/compiler/nodes/script.mjs";
+import { SourceNode } from "./source/compiler/nodes/source.mjs";
+import { PackageNode } from "./source/compiler/nodes/package.mjs";
+import { SVGNode } from "./source/compiler/nodes/svg.mjs";
+import { SourceContainerNode } from "./source/compiler/nodes/container.mjs";
 
 const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);
 model.scheme = (schema, sm) => (sm = class extends SchemedModel {}, sm.schema = schema, sm);
