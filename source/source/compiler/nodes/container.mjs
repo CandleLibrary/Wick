@@ -9,6 +9,7 @@ import { FilterNode } from "./filter";
 import { PackageNode } from "./package";
 
 export class SourceContainerNode extends RootNode {
+
     constructor(lex) {
         super();
         this.BUILD_LIST = [];

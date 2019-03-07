@@ -41,7 +41,7 @@ import { ScriptNode } from "./source/compiler/nodes/script";
 import { SourceNode } from "./source/compiler/nodes/source";
 import { PackageNode } from "./source/compiler/nodes/package";
 import { SVGNode } from "./source/compiler/nodes/svg";
-import { SourceTemplateNode } from "./source/compiler/nodes/template";
+import { SourceContainerNode } from "./source/compiler/nodes/container";
 
 export {
     Presets,
@@ -62,7 +62,7 @@ export {
     ScriptNode,
     SourceNode,
     PackageNode,
-    SourceTemplateNode,
+    SourceContainerNode,
     SVGNode,
     SchemeConstructor,
     DateSchemeConstructor,

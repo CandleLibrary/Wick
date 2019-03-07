@@ -2,7 +2,7 @@ import { RootNode } from "./root.mjs";
 import { ScriptNode } from "./script.mjs";
 import { SourceNode } from "./source.mjs";
 import { LinkNode } from "./link.mjs";
-import { SourceTemplateNode } from "./template.mjs";
+import { SourceContainerNode } from "./container.mjs";
 import { StyleNode } from "./style.mjs";
 import { VoidNode } from "./void.mjs";
 import { SVGNode } from "./svg.mjs";
@@ -16,7 +16,7 @@ function CreateHTMLNode(tag) {
                 case "w-s":
                     return new SourceNode(); //This node is used to 
                 case "w-c":
-                    return new SourceTemplateNode(); //This node is used to 
+                    return new SourceContainerNode(); //This node is used to 
             }
             break;
         default:

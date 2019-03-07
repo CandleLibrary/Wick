@@ -29,7 +29,7 @@ import { ScriptNode } from "./source/compiler/nodes/script";
 import { SourceNode } from "./source/compiler/nodes/source";
 import { PackageNode } from "./source/compiler/nodes/package";
 import { SVGNode } from "./source/compiler/nodes/svg";
-import { SourceTemplateNode } from "./source/compiler/nodes/template";
+import { SourceContainerNode } from "./source/compiler/nodes/template";
 
 const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);
 model.scheme = (schema, sm) => (sm = class extends SchemedModel {}, sm.schema = schema, sm);
@@ -78,7 +78,7 @@ Compiler.nodes = {
     text: RootText,
     source: SourceNode,
     package: PackageNode,
-    template: SourceTemplateNode,
+    template: SourceContainerNode,
     svg:SVGNode
 };
 

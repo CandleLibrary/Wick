@@ -6,7 +6,7 @@ import { View } from "../view";
 export class Source extends View {
 
     /**
-     *   In the Wick dynamic template system, Sources serve as the primary access to Model data. They, along with {@link SourceTemplate}s, are the only types of objects the directly _bind_ to a Model. When a Model is updated, the Source will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link SourceTemplate}s.
+     *   In the Wick dynamic template system, Sources serve as the primary access to Model data. They, along with {@link SourceContainer}s, are the only types of objects the directly _bind_ to a Model. When a Model is updated, the Source will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link SourceContainer}s.
      *   A Source will also _bind_ to an HTML element. It has no methodes to update the element, but it's descendants, primarily instances of the {@link IO} class, can update attributes and values of then element and its sub-elements.
      *   @param {Source} parent - The parent {@link Source}, used internally to build a hierarchy of Sources.
      *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.

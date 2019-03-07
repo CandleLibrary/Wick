@@ -6,14 +6,14 @@ import { MultiIndexedContainer } from "../model/container/multi";
 import { View } from "../view";
 
 /**
- * SourceTemplate provide the mechanisms for dealing with lists and sets of components. 
+ * SourceContainer provide the mechanisms for dealing with lists and sets of components. 
  *
  * @param      {Source}  parent   The Source parent object.
  * @param      {Object}  data     The data object hosting attribute properties from the HTML template. 
  * @param      {Object}  presets  The global presets object.
  * @param      {HTMLElement}  element  The element that the Source will _bind_ to. 
  */
-export class SourceTemplate extends View {
+export class SourceContainer extends View {
 
     constructor(parent, presets, element) {
 

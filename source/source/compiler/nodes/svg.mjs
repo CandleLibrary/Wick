@@ -17,7 +17,7 @@ export class SVGNode extends RootNode {
                     case "w-s":
                         return new SourceNode(); //This node is used to 
                     case "w-c":
-                        return new SourceTemplateNode(); //This node is used to 
+                        return new SourceContainerNode(); //This node is used to 
                 }
                 break;
             default:
