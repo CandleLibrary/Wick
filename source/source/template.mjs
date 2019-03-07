@@ -119,10 +119,11 @@ export class SourceTemplate extends View {
     }
 
     /**
-     * Scrub provides a mechanism to scroll through pages of a container that has been limited through the limit filter.
+     * Scrub provides a mechanism to scroll through components of a container that have been limited through the limit filter.
      * @param  {Number} scrub_amount [description]
      */
     scrub(scrub_amount, SCRUBBING = true) {
+
         this.SCRUBBING = true;
 
         if (this.AUTO_SCRUB && !SCRUBBING && scrub_amount != Infinity) {
@@ -131,20 +132,27 @@ export class SourceTemplate extends View {
             this.old_scrub += scrub_amount;
             this.AUTO_SCRUB = false;
         }
-
         if (scrub_amount !== Infinity) {
+
             scrub_amount += this.sco;
 
             let s = scrub_amount - this.scrub_offset;
 
+            //Make Sure the the transition animation is completed before moving on to new animation sequences.
+
+
             if (s > 1) {
-                //Make Sure the the transition animation is completed before moving on to new animation sequences.
-                this.trs_up.play(1);
+                if (this.offset < this.max)
+                    this.trs_up.play(1);
+
                 this.scrub_offset++;
                 s = scrub_amount - this.scrub_offset;
                 this.render(null, this.activeSources, this.limit, this.offset + 1, true);
             } else if (s < -1) {
-                this.trs_dn.play(1);
+
+                if (this.offset >= 1)
+                    this.trs_dn.play(1);
+                
                 this.scrub_offset--;
                 s = scrub_amount - this.scrub_offset;
                 this.render(null, this.activeSources, this.limit, this.offset - 1, true);
@@ -155,9 +163,8 @@ export class SourceTemplate extends View {
 
             if (s > 0) {
 
-                if (this.offset >= this.max) {
+                if (this.offset >= this.max)
                     if (s > 0) s = 0;
-                }
 
 
                 if (!this.dom_up_appended) {
@@ -172,10 +179,9 @@ export class SourceTemplate extends View {
                 this.time = this.trs_up.play(s);
             } else {
 
-                if (this.offset < 1 && s < 0) {
-                    s = 0;
-                    this.scrub_v = 0;
-                }
+                if (this.offset < 1 && s < 0)
+                    s = 0, this.scrub_v = 0;
+
 
                 if (!this.dom_dn_appended) {
 
@@ -370,6 +376,8 @@ export class SourceTemplate extends View {
                             as.transitionOut(trs_out, (direction) ? "trs_out_up" : "trs_out_dn");
                             break;
                         default:
+
+
                             as.transitionOut(trs_out);
                     }
                 } else {
@@ -469,7 +477,7 @@ export class SourceTemplate extends View {
      * @protected
      */
     cull(new_items) {
-        
+
         if (!new_items) new_items = [];
         let transition = Transitioneer.createTransition();
         if (new_items.length == 0) {

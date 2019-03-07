@@ -43,7 +43,6 @@ export class SourceManager {
     }
 
     _removeFromDOM_() {
-
         if (this._APPEND_STATE_ == true) return;
 
         if (this.ele && this.ele.parentElement)
