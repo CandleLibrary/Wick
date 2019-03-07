@@ -1,6 +1,6 @@
 {
   "name": "@candlefw/wick",
-  "version": "0.5.9",
+  "version": "0.5.10",
   "description": "Web Component Builder",
   "main": "./source/wick.mjs",
   "scripts": {
