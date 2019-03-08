@@ -1,4 +1,6 @@
 import { IOBase } from "./io";
+import spark from "@candlefw/spark";
+
 export class ScriptIO extends IOBase {
     constructor(source, errors, tap, binding, node, statics) {
         
@@ -26,15 +28,17 @@ export class ScriptIO extends IOBase {
         this.function = binding.val;
         this._func_ = func.bind(source);
         this.source = source;
-        this._bound_emit_function_ = new Proxy(this._emit_.bind(this), { set: (obj, name, value) => { obj(name, value); } });
+
+        let func_bound = this.emit.bind(this);
+        func_bound.onTick = this.onTick.bind(this);
+
+        this._bound_emit_function_ = new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value); } });
         this.meta = null;
         this.url = statics.url;
 
         this.offset = node.offset;
         this.char = node.char;
         this.line = node.line;
-
-
     }
 
     /**
@@ -61,12 +65,20 @@ export class ScriptIO extends IOBase {
         }
     }
 
-    _emit_(name, value) {
+    emit(name, value) {
         if (
             typeof(name) !== "undefined" &&
             typeof(value) !== "undefined"
         ) {
             this.source.upImport(name, value, this.meta);
         }
+    }
+    // Same as emit, except the message is generated on the next global tick. Usefule for actions which required incremental updates to the ui.
+    // Value
+    onTick(name){
+        spark.queueUpdate({
+            _SCHD_:0, // Meta value for spark;
+            scheduledUpdate:(s,d)=>this.emit(name, {step:s,diff:d})
+        })
     }
 }

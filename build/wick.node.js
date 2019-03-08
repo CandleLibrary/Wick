@@ -169,7 +169,18 @@ class Spark {
 
         this.queue_switch = 0;
 
-        this.callback = () => this.update();
+        this.callback = ()=>{};
+
+
+        if(typeof(window) !== "undefined"){
+            window.addEventListener("load",()=>{
+                this.callback = () => this.update();
+                caller(this.callback);
+            });
+        }else{
+            this.callback = () => this.update();
+        }
+
 
         this.frame_time = perf.now();
 
@@ -200,9 +211,11 @@ class Spark {
 
         this.frame_time = perf.now() | 0;
 
-        this.SCHEDULE_PENDING = true;
 
-        caller(this.callback);
+        if(!this.SCHEDULE_PENDING){
+            this.SCHEDULE_PENDING = true;
+            caller(this.callback);
+        }
     }
 
     removeFromQueue(object){
@@ -1817,7 +1830,7 @@ class Lexer {
     /**
     Creates and error message with a diagrame illustrating the location of the error. 
     */
-    errorMessage(message = ""){
+    errorMessage(message = "") {
         const arrow = String.fromCharCode(0x2b89),
             trs = String.fromCharCode(0x2500),
             line = String.fromCharCode(0x2500),
@@ -1848,7 +1861,7 @@ ${is_iws}`;
      */
     throw (message, DEFER = false) {
         const error = new Error(this.errorMessage(message));
-        if(DEFER)
+        if (DEFER)
             return error;
         throw error;
     }
@@ -1923,101 +1936,133 @@ ${is_iws}`;
             return marker;
         }
 
-        for (;;) {
+        const USE_CUSTOM_SYMBOLS = !!this.symbol_map;
+        let NORMAL_PARSE = true;
 
-            base = off;
+        if (USE_CUSTOM_SYMBOLS) {
 
-            length = 1;
+            let code = str.charCodeAt(off);
+            let off2 = off;
+            let map = this.symbol_map,
+                m$$1;
+            let i$$1 = 0;
 
-            const code = str.charCodeAt(off);
+            while(code == 32 && IWS)
+                (code = str.charCodeAt(++off2), off++);
 
-            if (code < 128) {
+            while ((m$$1 = map.get(code))) {
+                map = m$$1;
+                off2 += 1;
+                code = str.charCodeAt(off2);
+            }
 
-                switch (jump_table[code]) {
-                    case 0: //NUMBER
-                        while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)])) ;
+            if (map.IS_SYM) {
+               NORMAL_PARSE = false;
+               base = off;
+               length = off2 - off;
+               char += length;
+            }
+        }
 
-                        if (str[off] == "e" || str[off] == "E") {
-                            off++;
-                            if (str[off] == "-") off++;
-                            marker.off = off;
-                            marker.tl = 0;
-                            marker.next();
-                            off = marker.off + marker.tl;
-                            //Add e to the number string
-                        }
+        if (NORMAL_PARSE) {
 
-                        type = number;
-                        length = off - base;
 
-                        break;
-                    case 1: //IDENTIFIER
-                        while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)]))) ;
-                        type = identifier;
-                        length = off - base;
-                        break;
-                    case 2: //QUOTED STRING
-                        if (this.PARSE_STRING) {
+            for (;;) {
+
+                base = off;
+
+                length = 1;
+
+                const code = str.charCodeAt(off);
+
+                if (code < 128) {
+
+                    switch (jump_table[code]) {
+                        case 0: //NUMBER
+                            while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)]));
+
+                            if (str[off] == "e" || str[off] == "E") {
+                                off++;
+                                if (str[off] == "-") off++;
+                                marker.off = off;
+                                marker.tl = 0;
+                                marker.next();
+                                off = marker.off + marker.tl;
+                                //Add e to the number string
+                            }
+
+                            type = number;
+                            length = off - base;
+
+                            break;
+                        case 1: //IDENTIFIER
+                            while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
+                            type = identifier;
+                            length = off - base;
+                            break;
+                        case 2: //QUOTED STRING
+                            if (this.PARSE_STRING) {
+                                type = symbol;
+                            } else {
+                                while (++off < l$$1 && str.charCodeAt(off) !== code);
+                                type = string;
+                                length = off - base + 1;
+                            }
+                            break;
+                        case 3: //SPACE SET
+                            while (++off < l$$1 && str.charCodeAt(off) === SPACE);
+                            type = white_space;
+                            length = off - base;
+                            break;
+                        case 4: //TAB SET
+                            while (++off < l$$1 && str[off] === HORIZONTAL_TAB);
+                            type = white_space;
+                            length = off - base;
+                            break;
+                        case 5: //CARIAGE RETURN
+                            length = 2;
+                            //Intentional
+                        case 6: //LINEFEED
+                            type = new_line;
+                            char = 0;
+                            line++;
+                            off += length;
+                            break;
+                        case 7: //SYMBOL
                             type = symbol;
-                        } else {
-                            while (++off < l$$1 && str.charCodeAt(off) !== code) ;
-                            type = string;
-                            length = off - base + 1;
-                        }
-                        break;
-                    case 3: //SPACE SET
-                        while (++off < l$$1 && str.charCodeAt(off) === SPACE) ;
-                        type = white_space;
-                        length = off - base;
-                        break;
-                    case 4: //TAB SET
-                        while (++off < l$$1 && str[off] === HORIZONTAL_TAB) ;
-                        type = white_space;
-                        length = off - base;
-                        break;
-                    case 5: //CARIAGE RETURN
-                        length = 2;
-                        //Intentional
-                    case 6: //LINEFEED
-                        type = new_line;
-                        char = 0;
-                        line++;
-                        off += length;
-                        break;
-                    case 7: //SYMBOL
+                            break;
+                        case 8: //OPERATOR
+                            type = operator;
+                            break;
+                        case 9: //OPEN BRACKET
+                            type = open_bracket;
+                            break;
+                        case 10: //CLOSE BRACKET
+                            type = close_bracket;
+                            break;
+                        case 11: //Data Link Escape
+                            type = data_link;
+                            length = 4; //Stores two UTF16 values and a data link sentinel
+                            break;
+                    }
+                }
+
+                if (IWS && (type & white_space_new_line)) {
+                    if (off < l$$1) {
+                        char += length;
                         type = symbol;
-                        break;
-                    case 8: //OPERATOR
-                        type = operator;
-                        break;
-                    case 9: //OPEN BRACKET
-                        type = open_bracket;
-                        break;
-                    case 10: //CLOSE BRACKET
-                        type = close_bracket;
-                        break;
-                    case 11: //Data Link Escape
-                        type = data_link;
-                        length = 4; //Stores two UTF16 values and a data link sentinel
-                        break;
+                        continue;
+                    } else {
+                        //Trim white space from end of string
+                        base = l$$1 - length;
+                        marker.sl -= length;
+                        length = 0;
+                        char -= base - off;
+                    }
                 }
-            }
 
-            if (IWS && (type & white_space_new_line)) {
-                if (off < l$$1) {
-                    char += length;
-                    type = symbol;
-                    continue;
-                } else {
-                    //Trim white space from end of string
-                    base = l$$1 - length;
-                    marker.sl -= length;
-                    length = 0;
-                    char -= base - off;
-                }
+                break;
             }
-
-            break;
         }
 
         marker.type = type;
@@ -2192,6 +2237,25 @@ ${is_iws}`;
         return lex;
     }
 
+    /** Adds symbol to symbol_map. This allows custom symbols to be defined and tokenized by parser. **/
+    addSymbol(sym) {
+        if (!this.symbol_map)
+            this.symbol_map = new Map;
+
+
+        let map = this.symbol_map;
+
+        for (let i$$1 = 0; i$$1 < sym.length; i$$1++) {
+            let code = sym.charCodeAt(i$$1);
+            let m$$1 = map.get(code);
+            if (!m$$1){
+                m$$1 = map.set(code, new Map).get(code);
+            }
+            map = m$$1;
+        }
+        map.IS_SYM = true;
+    }
+
     /*** Getters and Setters ***/
     get string() {
         return this.str;
@@ -2278,7 +2342,6 @@ ${is_iws}`;
 
     set type(value) {
         //assuming power of 2 value.
-
         this.masked_values = (this.masked_values & ~TYPE_MASK) | ((getNumbrOfTrailingZeroBitsFromPowerOf2(value)) & TYPE_MASK);
     }
 
@@ -4686,7 +4749,6 @@ class SourceManager {
     }
 
     _removeFromDOM_() {
-
         if (this._APPEND_STATE_ == true) return;
 
         if (this.ele && this.ele.parentElement)
@@ -9484,7 +9546,7 @@ class UpdateTap extends Tap {
 class Source extends View {
 
     /**
-     *   In the Wick dynamic template system, Sources serve as the primary access to Model data. They, along with {@link SourceTemplate}s, are the only types of objects the directly _bind_ to a Model. When a Model is updated, the Source will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link SourceTemplate}s.
+     *   In the Wick dynamic template system, Sources serve as the primary access to Model data. They, along with {@link SourceContainer}s, are the only types of objects the directly _bind_ to a Model. When a Model is updated, the Source will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link SourceContainer}s.
      *   A Source will also _bind_ to an HTML element. It has no methodes to update the element, but it's descendants, primarily instances of the {@link IO} class, can update attributes and values of then element and its sub-elements.
      *   @param {Source} parent - The parent {@link Source}, used internally to build a hierarchy of Sources.
      *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
@@ -12437,6 +12499,7 @@ const Transitioneer = (function() {
         play(t) {
             this.PLAY = true;
             let time = this.duration * t;
+
             this.step(time);
             return time;
         }
@@ -12465,6 +12528,8 @@ const Transitioneer = (function() {
 
             this.time += time * this.speed;
 
+            
+
             this.step(this.time);
 
 
@@ -12492,14 +12557,14 @@ const Transitioneer = (function() {
 })();
 
 /**
- * SourceTemplate provide the mechanisms for dealing with lists and sets of components. 
+ * SourceContainer provide the mechanisms for dealing with lists and sets of components. 
  *
  * @param      {Source}  parent   The Source parent object.
  * @param      {Object}  data     The data object hosting attribute properties from the HTML template. 
  * @param      {Object}  presets  The global presets object.
  * @param      {HTMLElement}  element  The element that the Source will _bind_ to. 
  */
-class SourceTemplate extends View {
+class SourceContainer extends View {
 
     constructor(parent, presets, element) {
 
@@ -12605,10 +12670,11 @@ class SourceTemplate extends View {
     }
 
     /**
-     * Scrub provides a mechanism to scroll through pages of a container that has been limited through the limit filter.
+     * Scrub provides a mechanism to scroll through components of a container that have been limited through the limit filter.
      * @param  {Number} scrub_amount [description]
      */
     scrub(scrub_amount, SCRUBBING = true) {
+
         this.SCRUBBING = true;
 
         if (this.AUTO_SCRUB && !SCRUBBING && scrub_amount != Infinity) {
@@ -12617,20 +12683,27 @@ class SourceTemplate extends View {
             this.old_scrub += scrub_amount;
             this.AUTO_SCRUB = false;
         }
-
         if (scrub_amount !== Infinity) {
+
             scrub_amount += this.sco;
 
             let s = scrub_amount - this.scrub_offset;
 
+            //Make Sure the the transition animation is completed before moving on to new animation sequences.
+
+
             if (s > 1) {
-                //Make Sure the the transition animation is completed before moving on to new animation sequences.
-                this.trs_up.play(1);
+                if (this.offset < this.max)
+                    this.trs_up.play(1);
+
                 this.scrub_offset++;
                 s = scrub_amount - this.scrub_offset;
                 this.render(null, this.activeSources, this.limit, this.offset + 1, true);
             } else if (s < -1) {
-                this.trs_dn.play(1);
+
+                if (this.offset >= 1)
+                    this.trs_dn.play(1);
+                
                 this.scrub_offset--;
                 s = scrub_amount - this.scrub_offset;
                 this.render(null, this.activeSources, this.limit, this.offset - 1, true);
@@ -12641,9 +12714,8 @@ class SourceTemplate extends View {
 
             if (s > 0) {
 
-                if (this.offset >= this.max) {
+                if (this.offset >= this.max)
                     if (s > 0) s = 0;
-                }
 
 
                 if (!this.dom_up_appended) {
@@ -12658,10 +12730,9 @@ class SourceTemplate extends View {
                 this.time = this.trs_up.play(s);
             } else {
 
-                if (this.offset < 1 && s < 0) {
-                    s = 0;
-                    this.scrub_v = 0;
-                }
+                if (this.offset < 1 && s < 0)
+                    s = 0, this.scrub_v = 0;
+
 
                 if (!this.dom_dn_appended) {
 
@@ -12856,6 +12927,8 @@ class SourceTemplate extends View {
                             as.transitionOut(trs_out, (direction) ? "trs_out_up" : "trs_out_dn");
                             break;
                         default:
+
+
                             as.transitionOut(trs_out);
                     }
                 } else {
@@ -12955,7 +13028,7 @@ class SourceTemplate extends View {
      * @protected
      */
     cull(new_items) {
-        
+
         if (!new_items) new_items = [];
         let transition = Transitioneer.createTransition();
         if (new_items.length == 0) {
@@ -13275,7 +13348,8 @@ class PackageNode extends VoidNode$1 {
     }
 }
 
-class SourceTemplateNode$1 extends RootNode {
+class SourceContainerNode$1 extends RootNode {
+
     constructor(lex) {
         super();
         this.BUILD_LIST = [];
@@ -13301,7 +13375,7 @@ class SourceTemplateNode$1 extends RootNode {
                 source.badges[this._badge_name_] = ele;
 
 
-            let me = new SourceTemplate(source, presets, ele);
+            let me = new SourceContainer(source, presets, ele);
             
             me.package = this.package;
 
@@ -13416,7 +13490,7 @@ class SVGNode extends RootNode {
                     case "w-s":
                         return new SourceNode(); //This node is used to 
                     case "w-c":
-                        return new SourceTemplateNode(); //This node is used to 
+                        return new SourceContainerNode(); //This node is used to 
                 }
                 break;
             default:
@@ -13489,7 +13563,7 @@ function CreateHTMLNode(tag) {
                 case "w-s":
                     return new SourceNode$1(); //This node is used to 
                 case "w-c":
-                    return new SourceTemplateNode$1(); //This node is used to 
+                    return new SourceContainerNode$1(); //This node is used to 
             }
             break;
         default:
@@ -13976,7 +14050,7 @@ CompileSource.nodes = {
     text: RootText,
     source: SourceNode$1,
     package: PackageNode,
-    template: SourceTemplateNode$1,
+    template: SourceContainerNode$1,
     svg:SVGNode
 };
 
@@ -14027,7 +14101,7 @@ exports.StyleNode = StyleNode$1;
 exports.ScriptNode = ScriptNode$1;
 exports.SourceNode = SourceNode$1;
 exports.PackageNode = PackageNode;
-exports.SourceTemplateNode = SourceTemplateNode$1;
+exports.SourceContainerNode = SourceContainerNode$1;
 exports.SVGNode = SVGNode;
 exports.SchemeConstructor = SchemeConstructor;
 exports.DateSchemeConstructor = DateSchemeConstructor;
