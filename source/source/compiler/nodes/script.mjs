@@ -10,6 +10,7 @@ export class ScriptNode extends VoidNode {
     }
 
     processTextNodeHook(lex) {
+        
         this.script_text = lex.slice();
         
         if (this.binding)
@@ -17,7 +18,6 @@ export class ScriptNode extends VoidNode {
     }
 
     processAttributeHook(name, lex) {
-
         switch (name) {
             case "on":
                 let binding = Template(lex, false);
@@ -30,6 +30,7 @@ export class ScriptNode extends VoidNode {
 
         return { name, value: lex.slice() };
     }
+
     build(element, source, presets, errors, taps, statics = {}) {
         
         if(this.url){

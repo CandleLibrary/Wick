@@ -339,13 +339,6 @@ export class RootNode extends HTMLNode {
 
     /**
      * Builds Source Tree and Dom Tree.
-     *
-     * @param      {null}  element  The element
-     * @param      {null}  source   The source
-     * @param      {null}  presets  The presets
-     * @param      {null   errors   The errors
-     * @param      {null}  model    The model
-     * @return     {null}  { description_of_the_return_value }
      */
     build(element, source, presets, errors, taps, statics, out_ele = null) {
 

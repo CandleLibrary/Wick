@@ -4,11 +4,13 @@ import spark from "@candlefw/spark";
 export class ScriptIO extends IOBase {
     constructor(source, errors, tap, binding, node, statics) {
         
-        let func;
+        let func, HAVE_CLOSURE = false;
 
         try {
             if (binding._func_) {
                 func = binding._func_;
+                if(binding.HAVE_CLOSURE)
+                    HAVE_CLOSURE = true;
             } else {
                 func = Function(binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val);
                 binding._func_ = func;
@@ -21,12 +23,16 @@ export class ScriptIO extends IOBase {
             func = () => {};
         }
 
-
-
         super(tap);
 
         this.function = binding.val;
-        this._func_ = func.bind(source);
+        this.HAVE_CLOSURE = HAVE_CLOSURE;
+
+        if(this.HAVE_CLOSURE)
+            this._func_ = func;
+        else
+            this._func_ = func.bind(source);
+        
         this.source = source;
 
         let func_bound = this.emit.bind(this);
@@ -57,7 +63,10 @@ export class ScriptIO extends IOBase {
         this.meta = meta;
         const src = this.source;
         try {
-            this._func_(value, meta.event, src.model, this._bound_emit_function_, src.presets, src.statics, src);
+            if(this.HAVE_CLOSURE)
+                this._func_(value, this._bound_emit_function_, src, meta.event);
+            else
+                this._func_(value, meta.event, src.model, this._bound_emit_function_, src.presets, src.statics, src);
         } catch (e) {
             console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line+1}:${this.char}`)
             console.warn(this.function);

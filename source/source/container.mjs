@@ -1,4 +1,4 @@
-import { Transitioneer } from "@candlefw/glow";
+import glow from "@candlefw/glow";
 import spark from "@candlefw/spark";
 
 import { ModelContainerBase } from "../model/container/base";
@@ -243,7 +243,7 @@ export class SourceContainer extends View {
 
         let OWN_TRANSITION = false;
 
-        if (!transition) transition = Transitioneer.createTransition(), OWN_TRANSITION = true;
+        if (!transition) transition = glow.createTransition(), OWN_TRANSITION = true;
 
         offset = Math.max(0, offset);
 
@@ -258,8 +258,8 @@ export class SourceContainer extends View {
             this.root = this.offset;
             let off = this.offset * this.shift;
 
-            this.trs_up = Transitioneer.createTransition(false);
-            this.trs_dn = Transitioneer.createTransition(false);
+            this.trs_up = glow.createTransition(false);
+            this.trs_dn = glow.createTransition(false);
             this.dom_dn.length = 0;
             this.dom_up.length = 0;
             this.dom_up_appended = false;
@@ -479,7 +479,7 @@ export class SourceContainer extends View {
     cull(new_items) {
 
         if (!new_items) new_items = [];
-        let transition = Transitioneer.createTransition();
+        let transition = glow.createTransition();
         if (new_items.length == 0) {
             let sl = this.sources.length;
             for (let i = 0; i < sl; i++) this.sources[i].transitionOut(transition, "", true);
@@ -540,7 +540,7 @@ export class SourceContainer extends View {
      *
      * @param      {Array}  items   An array of items no longer stored in the ModelContainer. 
      */
-    removed(items, transition = Transitioneer.createTransition()) {
+    removed(items, transition = glow.createTransition()) {
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
             for (let j = 0; j < this.sources.length; j++) {
@@ -559,7 +559,7 @@ export class SourceContainer extends View {
      *
      * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
      */
-    added(items, transition = Transitioneer.createTransition()) {
+    added(items, transition = glow.createTransition()) {
         for (let i = 0; i < items.length; i++) {
             let mgr = this.package.mount(null, items[i], false, undefined, this.parent);
             //mgr.sources.forEach((s) => {

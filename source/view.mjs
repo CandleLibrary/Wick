@@ -27,8 +27,8 @@ export class View{
      */
 	destroy(){
 
-		if(this .model)
-			this .model.removeView(this);
+		if(this.model && this.model.removeView)
+			this.model.removeView(this);
 	
 		this .model = undefined;
 		this.nx = undefined;

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="/cfw/wick"></script>
+</head>
+
+<body>
+    <script>
+    async function start() {
+
+        let i = 0;
+
+        let comp = await wick({
+
+            model: { property: 0 },
+
+            //$onjump: () => { emit.property =  i++},
+
+            $$onjump: (value, emit, comp)=>{emit.property = i++;},
+
+            dom: '<div onmouseover="((jump)(\'test\'))"> ((property)) Lets talk tacos!</div>',
+        })
+
+        console.log(comp.toString())
+
+        comp.mount(document.body);
+    }
+
+    start();
+    </script>
+</body>
+
+</html>
