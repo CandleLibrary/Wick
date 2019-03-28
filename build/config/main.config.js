@@ -1,10 +1,10 @@
 import resolve from 'rollup-plugin-node-resolve';
-
+import commonjs from 'rollup-plugin-commonjs';
 const output = [{
     name: "wick",
     file: "./build/wick.js",
     format: "iife",
-    exports: "named"
+    exports: "default"
 }, {
     name: "css_cjs",
     file: "./build/wick.node.js",
@@ -13,8 +13,8 @@ const output = [{
 }];
 
 export default {
-    input: "source/wick.mjs",
+    input: "./source/wick.web.script.mjs",
     treeshake: false,
     output,
-    plugins: [resolve({ jail: "", modulesOnly: true })]
+    plugins: [resolve({jail:"",modulesOnly: true})]
 };

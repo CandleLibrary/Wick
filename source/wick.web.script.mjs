@@ -27,7 +27,10 @@ function compile(element, presets, RETURN_PROMISE){
 	return new SourcePackage(element, presets, RETURN_PROMISE);
 }
 
-export {
+const wick = Component;
+
+Object.assign(wick, 
+{
     source,
     scheme,
     model,
@@ -59,21 +62,7 @@ export {
     StringSchemeConstructor,
     NumberSchemeConstructor,
     BoolSchemeConstructor,
-    Component,
     schemes
-};
-
-
-const wick = Component;
-
-Object.assign(wick, 
-{
-    source,
-    scheme,
-    model,
-    core,
-    internals,
-    compile
 })
 
 export default wick;
