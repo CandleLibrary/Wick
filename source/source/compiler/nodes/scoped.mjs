@@ -2,7 +2,7 @@ import { ScriptNode } from "./script.mjs";
 import { Template } from "../template/template_bindings";
 import { SCRIPT, DYNAMICbindingID } from "../template/basic_bindings";
 
-export class ClosureNode extends ScriptNode {
+export class ScopedNode extends ScriptNode {
     processAttributeHook(name, lex, func) {
         switch (name) {
             case "on":

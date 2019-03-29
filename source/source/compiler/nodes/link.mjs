@@ -6,4 +6,8 @@ export class LinkNode extends RootNode {
         presets.processLink(element, source);
         return element;
     }
+
+    build(...s){
+    	super.build(...s)
+    }
 }

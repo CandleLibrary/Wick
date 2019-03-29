@@ -19,7 +19,16 @@ export class SlotNode extends RootNode {
 
     build(element, source, presets, errors, taps, statics, out_ele) {
         return (statics.slots && statics.slots[this.name]) ?
-            statics.slots[this.name].build(element, source, presets, errors, taps, statics, out_ele): source;
+            statics.slots[this.name].build(
+                element,
+                statics.slots[this.name].getCachedSource() || source,
+                /*statics.slots[this.name].getPresets() || */presets,
+                errors,
+                taps,
+                statics,
+                out_ele
+            ) :
+            source;
     }
 
     processAttributeHook(name, lex) {
@@ -28,7 +37,7 @@ export class SlotNode extends RootNode {
 
         let start = lex.off,
             basic = {
-                IGNORE:true,
+                IGNORE: true,
                 name,
                 value: lex.slice(start)
             };
@@ -36,7 +45,7 @@ export class SlotNode extends RootNode {
         let bind_method = ATTRIB,
             FOR_EVENT = false;
 
-        if(name == "name")
+        if (name == "name")
             this.name = basic.value;
 
         return basic;

@@ -17,18 +17,12 @@ export class Source extends View {
      *   @extends SourceBase
      */
     constructor(parent, presets, element, ast) {
+        console.log(presets)
         super();
 
         this.ast = null;
 
         ast.setSource(this);
-        
-        /**
-         *@type {Boolean} 
-         *@protected
-         */
-
-
         this.parent = parent;
         this.ele = element;
         this.presets = presets;
@@ -56,24 +50,9 @@ export class Source extends View {
     destroy() {
 
         this.DESTROYED = true;
+        this.LOADED = false;
 
         this.update({ destroyed: true });
-
-        if (this.LOADED) {
-            this.LOADED = false;
-
-
-            let t = 0; //this.transitionOut();
-            /*
-            for (let i = 0, l = this.children.length; i < l; i++) {
-                let child = this.children[i];
-
-                t = Math.max(t, child.transitionOut());
-            }
-            */
-            if (t > 0)
-                return setTimeout(() => { this.destroy(); }, t * 1000 + 5);
-        }
 
         if (this.parent && this.parent.removeSource)
             this.parent.removeSource(this);
@@ -87,9 +66,8 @@ export class Source extends View {
 
         this.ele = null;
 
-        while(this.sources[0])
+        while (this.sources[0])
             this.sources[0].destroy();
-
 
         super.destroy();
 
@@ -177,13 +155,16 @@ export class Source extends View {
         Makes the source a view of the given Model. If no model passed, then the source will bind to another model depending on its `scheme` or `model` attributes. 
     */
     load(model) {
-        let m = null, s = null;
-
-      if(this.presets.models)
-            m = this.presets.models[this._model_name_];
-        if(this.presets.schemas)
-            s = this.presets.schemas[this._schema_name_];
         
+        let
+            m = null,
+            s = null;
+
+        if (this._model_name_ && this.presets.models)
+            m = this.presets.models[this._model_name_];
+        if (this._schema_name_ && this.presets.schemas)
+            s = this.presets.schemas[this._schema_name_];
+
         if (m)
             model = m;
         else if (s) {
@@ -200,7 +181,7 @@ export class Source extends View {
             this.sources[i].getBadges(this);
         }
 
-        if(model.addView)
+        if (model.addView)
             model.addView(this);
 
         this.model = model;
@@ -208,7 +189,7 @@ export class Source extends View {
         for (let name in this.taps)
             this.taps[name].load(this.model, false);
 
-        if(!LOADED)
+        if (!LOADED)
             this.update({ created: true });
     }
 

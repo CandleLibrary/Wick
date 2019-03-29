@@ -3,22 +3,22 @@ import { DOC } from "./short_names";
 import { ModelBase } from "./model/base";
 import { Model } from "./model/model";
 import { Store } from "./model/store";
-import  URL  from "@candlefw/url";
+import URL from "@candlefw/url";
 
-
+let CachedPresets = null;
 /**
- * There are a number of configurable options and global objects that can be passed to wick to be used throughout the PWA. The instances of the Presets class are objects that hosts all these global properties. 
+ // There are a number of configurable options and global objects that can be passed to wick to be used throughout the PWA. The instances of the Presets class are objects that hosts all these global properties. 
  * 
- * Presets are designed to be created once, upfront, and not changed once defined. This reinforces a holistic design for a PWA should have in terms of the types of Schemas, global Models, and overall form the PWA takes, e.g whether to use the ShadowDOM or not.
+ // Presets are designed to be created once, upfront, and not changed once defined. This reinforces a holistic design for a PWA should have in terms of the types of Schemas, global Models, and overall form the PWA takes, e.g whether to use the ShadowDOM or not.
  * 
- * Note: *This object is made immutable once created.*
+ // Note: *This object is made immutable once created. There may only be one instance of Presets*
  * 
- * @param      {Object | Presets}  preset_options  An Object containing configuration data to be used by Wick.
- * @memberof module:wick
- * @alias Presets
  */
 class Presets {
     constructor(preset_options = {}) {
+
+        if(Presets.global.v)
+            return Presets.global.v;
 
         this.store = (preset_options.store instanceof Store) ? preset_options.store : null;
 
@@ -156,6 +156,8 @@ class Presets {
         Object.freeze(this.custom_sources);
         Object.freeze(this.schemas);
         Object.freeze(this.models);
+
+        CachedPresets = this;
     }
 
     processLink(link) {}
@@ -167,7 +169,9 @@ class Presets {
         let obj = {};
 
         for (let a in this) {
-            if (typeof(this[a]) == "object")
+            if (a == "components")
+                obj.components = this.components;
+            else if (typeof(this[a]) == "object")
                 obj[a] = Object.assign({}, this[a])
             else if (typeof(this[a]) == "array")
                 obj[a] = this[a].slice();
@@ -175,8 +179,12 @@ class Presets {
                 obj[a] = this[a];
         }
 
+        obj.processLink = this.processLink.bind(this);
+
         return obj;
     }
 }
+
+Presets.global = {get v(){return CachedPresets}, set v(e){}};
 
 export { Presets };

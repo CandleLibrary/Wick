@@ -138,8 +138,8 @@ export class RootNode extends HTMLNode {
     /****************************************** COMPONENTIZATION *****************************************/
 
     mergeComponent() {
-        if (this.presets.components) {
 
+        if (this.presets.components) {
             let component = this.presets.components[this.tag];
 
             if (component)
@@ -333,12 +333,18 @@ export class RootNode extends HTMLNode {
 
     /******************************************* BUILD ****************************************************/
 
+    getCachedSource(){
+        if(this.par)
+            return this.par.getCachedSource();
+        return null;
+    }
+
     setSource(source) {
         source.ast = this;
     }
 
     /**
-     * Builds Source Tree and Dom Tree.
+     * Builds Source Graph and Dom Tree.
      */
     build(element, source, presets, errors, taps, statics, out_ele = null) {
 
@@ -359,8 +365,10 @@ export class RootNode extends HTMLNode {
 
             let out_source = this.merged.build(element, source, presets, errors, taps, out_statics, own_out_ele);
 
-            if (!source)
+            if (!source){
+                debugger
                 source = out_source;
+            }
 
             own_element = own_out_ele.ele;
 

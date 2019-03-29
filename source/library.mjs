@@ -63,7 +63,6 @@ Object.freeze(model);
 
 const core = {
     presets: a => new Presets(a),
-    view: View,
     scheme: scheme,
     model: model,
     source: (...a) => new SourcePackage(...a)
@@ -82,8 +81,6 @@ Compiler.nodes = {
     svg:SVGNode
 };
 
-let internals = { /* Empty if production */ };
-
 core.source.package = SourcePackage;
 core.source.constructor = Source;
 
@@ -96,6 +93,5 @@ export {
     source,
     scheme,
     model,
-    core,
-    internals
+    core
 };

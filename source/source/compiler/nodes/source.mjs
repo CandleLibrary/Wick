@@ -13,6 +13,19 @@ export class SourceNode extends RootNode {
         super();
         this._model_name_ = "";
         this._schema_name_ = "";
+        this._cached_ = [];
+    }
+
+    pushChached(source){
+        this._cached_.push(source)
+    }
+
+    popCached(){
+        this._cached_.pop();
+    }
+
+    getCachedSource(){
+        return this._cached_[this._cached_.length - 1];
     }
 
     delegateTapBinding() {
@@ -48,7 +61,10 @@ export class SourceNode extends RootNode {
 
         let out_taps = [];
 
-        let me = new Source(source, presets, element, this);
+
+        let me = new Source(source, this.__presets__ || presets, element, this);
+
+        this.pushChached(me);
 
         me._model_name_ = this._model_name_;
         me._schema_name_ = this._schema_name_;
@@ -145,7 +161,9 @@ export class SourceNode extends RootNode {
             let s = Object.assign({}, statics ? statics : {}, this.__statics__);
             me.statics = s;
             me.update(me.statics);
-        } 
+        }
+
+        this.popCached(me); 
 
         return me;
     }

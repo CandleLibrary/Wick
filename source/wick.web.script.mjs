@@ -1,5 +1,5 @@
-import {source, scheme, model, core, internals} from "./library.mjs";
-import {Component} from "./source/component.mjs";
+import { core } from "./library.mjs";
+import { Component } from "./source/component.mjs";
 import { Presets } from "./presets.mjs";
 import { SchemeConstructor, DateSchemeConstructor, TimeSchemeConstructor, StringSchemeConstructor, NumberSchemeConstructor, BoolSchemeConstructor, schemes } from "./schema/schemas.mjs";
 import { Store } from "./model/store.mjs";
@@ -22,47 +22,41 @@ import { PackageNode } from "./source/compiler/nodes/package.mjs";
 import { SVGNode } from "./source/compiler/nodes/svg.mjs";
 import { SourceContainerNode } from "./source/compiler/nodes/container.mjs";
 
-
-function compile(element, presets, RETURN_PROMISE){
-	return new SourcePackage(element, presets, RETURN_PROMISE);
-}
-
 const wick = Component;
 
-Object.assign(wick, 
-{
-    source,
-    scheme,
-    model,
-    core,
-    internals,
-    Presets,
-    Store,
-    SchemedModel,
-    Model,
-    ModelContainerBase,
-    MultiIndexedContainer,
-    BTreeModelContainer,
-    ArrayModelContainer,
-    View,
-    SourcePackage,
-    Source,
-    CompileSource,
-    RootText,
-    RootNode,
-    StyleNode,
-    ScriptNode,
-    SourceNode,
-    PackageNode,
-    SourceContainerNode,
-    SVGNode,
-    SchemeConstructor,
-    DateSchemeConstructor,
-    TimeSchemeConstructor,
-    StringSchemeConstructor,
-    NumberSchemeConstructor,
-    BoolSchemeConstructor,
-    schemes
+Object.assign(wick, core, {
+    classes: {
+        Presets,
+        Store,
+        SchemedModel,
+        Model,
+        ModelContainerBase,
+        MultiIndexedContainer,
+        BTreeModelContainer,
+        ArrayModelContainer,
+        View,
+        SourcePackage,
+        Source,
+        CompileSource,
+        RootText,
+        RootNode,
+        StyleNode,
+        ScriptNode,
+        SourceNode,
+        PackageNode,
+        SourceContainerNode,
+        SVGNode,
+        SchemeConstructor,
+        DateSchemeConstructor,
+        TimeSchemeConstructor,
+        StringSchemeConstructor,
+        NumberSchemeConstructor,
+        BoolSchemeConstructor
+    },
+
+    toString : ()=> `CandleFW Wick 2019`
 })
+
+Object.freeze(wick);
 
 export default wick;
