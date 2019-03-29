@@ -1,7 +1,7 @@
-import { ExpressionIO, InputExpresionIO } from "../../io/expression_io";
-import { EventIO } from "../../io/event_io";
-import { ScriptIO } from "../../io/script_io";
-import { IO, AttribIO, InputIO } from "../../io/io";
+import { ExpressionIO, InputExpressionIO, BooleanExpressionIO } from "../../io/expression_io.mjs";
+import { EventIO } from "../../io/event_io.mjs";
+import { ScriptIO } from "../../io/script_io.mjs";
+import { IO, AttribIO, InputIO, BooleanIO } from "../../io/io.mjs";
 
 export const DYNAMICbindingID = 0;
 export const RAW_VALUEbindingID = 1;
@@ -15,6 +15,7 @@ export const TEXT = 4;
 export const INPUT = 5;
 export const SCRIPT = 6;
 export const EVENT = 7;
+export const BOOL = 8;
 
 /**
  * Binding builder for expressions
@@ -65,10 +66,11 @@ export class ExpressionBinding {
     }
 
     _bind_(source, errors, taps, element) {
-
         switch (this.method) {
+            case BOOL:
+                return new BooleanExpressionIO(source, errors, taps, element, this.bindings, this.func);
             case INPUT:
-                return new InputExpresionIO(source, errors, taps, element, this.bindings, this.func);
+                return new InputExpressionIO(source, errors, taps, element, this.bindings, this.func);
             default:
                 return new ExpressionIO(source, errors, taps, element, this.bindings, this.func);
         }
@@ -98,6 +100,8 @@ export class DynamicBinding {
         switch (this.method) {
             case INPUT:
                 return new InputIO(source, errors, tap, element, this.argKey);
+            case BOOL:
+                return new BooleanIO(source, errors, tap, element, this.argVal);
             case ATTRIB:
                 return new AttribIO(source, errors, tap, attr, element, this.argVal);
             case SCRIPT:
@@ -132,6 +136,7 @@ export class RawValueBinding {
 
     _bind_(source, errors, taps, element, prop = "") {
         try {
+
             switch (this.method) {
                 case TEXT:
                     element.data = this.val;

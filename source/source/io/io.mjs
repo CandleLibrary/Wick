@@ -3,12 +3,16 @@ import spark from "@candlefw/spark";
 export class IOBase {
 
     constructor(parent) {
-        parent.ios.push(this);
-        this.parent = parent;
+
+        this.parent = null;
+
+        parent.addIO(this);
     }
 
     destroy() {
+
         this.parent.removeIO(this);
+
         this.parent = null;
     }
 
@@ -34,7 +38,7 @@ export class IO extends IOBase {
         this.ele = element;
         this.argument = null;
 
-        if(default_val) this.down(default_val)
+        if (default_val) this.down(default_val)
     }
 
     destroy() {
@@ -57,7 +61,7 @@ export class AttribIO extends IOBase {
         this.attrib = attr;
         this.ele = element;
 
-        if(default_val) this.down(default_val)
+        if (default_val) this.down(default_val)
     }
 
     destroy() {
@@ -73,6 +77,56 @@ export class AttribIO extends IOBase {
         this.ele.setAttribute(this.attrib, value);
     }
 }
+
+// Toogles the display state of the element based on the "truthyness" of the passed value
+export class BooleanIO extends IOBase {
+    constructor(source, errors, tap, element, default_val) {
+        super(tap);
+
+        this.par = element.parentElement;
+
+        this.ele = element;
+
+        this.state = false;
+
+        this.place_holder = null;
+
+        if (typeof(default_val) !== "undefined") this.down(default_val)
+
+        if (this.state == false)
+            this.ele.style.display = "none";
+
+    }
+
+    destroy() {
+        this.ele = null;
+        this.attrib = null;
+        super.destroy();
+    }
+
+    down(value) {
+
+
+        if (!this.par && this.ele.parentElement)
+            this.par = this.ele.parentElement
+
+        if (value && !this.state) {
+            this.ele.style.display = "";
+
+            if (this.place_holder)
+                this.par.replaceChild(this.ele, this.place_holder);
+
+            this.place_holder = null;
+
+            this.state = true;
+        } else if (!value && this.state) {
+            this.place_holder = document.createTextNode("");
+            this.par.replaceChild(this.place_holder, this.ele);
+            this.state = false;
+        }
+    }
+}
+
 
 export class InputIO extends IOBase {
 
@@ -125,6 +179,8 @@ export class BindIO extends IOBase {
     }
 }
 
+
+
 export class TemplateString extends IOBase {
 
     constructor(source, errors, taps, element, binds) {
@@ -173,9 +229,7 @@ export class TemplateString extends IOBase {
     get data() {}
     set data(v) { spark.queueUpdate(this); }
 
-    down() {
-        spark.queueUpdate(this);
-    }
+    down() { spark.queueUpdate(this); }
 
     scheduledUpdate() {
 

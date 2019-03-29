@@ -17,7 +17,7 @@ export class Source extends View {
      *   @extends SourceBase
      */
     constructor(parent, presets, element, ast) {
-        console.log(presets)
+        
         super();
 
         this.ast = null;
@@ -106,12 +106,6 @@ export class Source extends View {
                 return (this.sources.splice(i, 1), source.parent = null);
     }
 
-    removeIO(io) {
-        for (let i = 0; i < this.ios.length; i++)
-            if (this.ios[i] == io)
-                return (this.ios.splice(i, 1), io.parent = null);
-    }
-
     getTap(name) {
         let tap = this.taps[name];
 
@@ -155,7 +149,7 @@ export class Source extends View {
         Makes the source a view of the given Model. If no model passed, then the source will bind to another model depending on its `scheme` or `model` attributes. 
     */
     load(model) {
-        
+
         let
             m = null,
             s = null;
@@ -179,6 +173,9 @@ export class Source extends View {
         for (let i = 0, l = this.sources.length; i < l; i++) {
             this.sources[i].load(model);
             this.sources[i].getBadges(this);
+
+            //Lifecycle message
+            this.sources[i].update({mounted:true}); 
         }
 
         if (model.addView)
@@ -260,3 +257,6 @@ export class Source extends View {
             this.parent.bubbleLink(this);
     }
 }
+
+Source.prototype.removeIO = Tap.prototype.removeIO;
+Source.prototype.addIO = Tap.prototype.addIO;

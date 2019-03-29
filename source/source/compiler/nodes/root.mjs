@@ -1,6 +1,5 @@
 import { HTMLNode, TextNode } from "@candlefw/html";
 import { CSSRootNode } from "@candlefw/css";
-
 import {
     appendChild,
     createElement
@@ -25,6 +24,7 @@ import {
     TEXT,
     INPUT,
     EVENT,
+    BOOL,
     DYNAMICbindingID,
     TEMPLATEbindingID
 } from "../template/basic_bindings";
@@ -333,8 +333,8 @@ export class RootNode extends HTMLNode {
 
     /******************************************* BUILD ****************************************************/
 
-    getCachedSource(){
-        if(this.par)
+    getCachedSource() {
+        if (this.par)
             return this.par.getCachedSource();
         return null;
     }
@@ -354,7 +354,7 @@ export class RootNode extends HTMLNode {
             out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL() });
 
         const MERGED = !!this.merged;
-        
+
         let own_element = null;
 
         if (MERGED) {
@@ -365,7 +365,7 @@ export class RootNode extends HTMLNode {
 
             let out_source = this.merged.build(element, source, presets, errors, taps, out_statics, own_out_ele);
 
-            if (!source){
+            if (!source) {
                 debugger
                 source = out_source;
             }
@@ -487,6 +487,7 @@ export class RootNode extends HTMLNode {
                     bind_method = INPUT;
                 break;
 
+
             case "o": // Event Messaging linking
                 if (name[1] == "n") {
                     FOR_EVENT = true;
@@ -509,6 +510,11 @@ export class RootNode extends HTMLNode {
                     return basic;
                 }
             case "s":
+                if (name == "showif"){
+                    bind_method = BOOL;
+                    break;
+                }
+
                 if (name == "slot" && this.par) {
                     this.par.statics.slots[basic.value] = this;
                     return basic;

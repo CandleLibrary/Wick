@@ -8,13 +8,15 @@ export class MCArray extends Array {
         super();
     }
 
-    push(item) {
-        if (item instanceof Array)
-            item.forEach((i) => {
-                this.push(i);
-            });
-        else
-            super.push(item);
+    push(...item) {
+        item.forEach(item => {
+            if (item instanceof Array)
+                item.forEach((i) => {
+                    super.push(i);
+                });
+            else
+                super.push(item);
+        })
     }
 
     //For compatibility
@@ -106,7 +108,16 @@ export class ModelContainerBase extends ModelBase {
 
         @returns The result of calling this.insert
     */
-    push(item) { return this.insert(item, false, true); }
+    push(...item) {
+        item.forEach(item => {
+            if (item instanceof Array)
+                item.forEach((i) => {
+                    this.insert(i);
+                });
+            else
+                this.insert(item);
+        })
+    }
 
     /**
         Retrieves a list of items that match the term/terms. 

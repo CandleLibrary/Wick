@@ -47,7 +47,6 @@ export class SourceContainerNode extends RootNode {
             appendChild(element, ele);
 
             for (let node = this.fch; node; node = this.getNextChild(node)) {
-                //All filter nodes here
 
                 let on = node.getAttrib("on");
                 let sort = node.getAttrib("sort");

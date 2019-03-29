@@ -171,4 +171,8 @@ export class SourceManager {
         else
             debugger
     }
+
+    sourceLoaded(){
+        this.update({mounted:true});
+    }
 }

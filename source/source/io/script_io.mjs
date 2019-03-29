@@ -1,4 +1,4 @@
-import { IOBase } from "./io";
+import { IOBase } from "./io.mjs";
 import spark from "@candlefw/spark";
 
 export class ScriptIO extends IOBase {

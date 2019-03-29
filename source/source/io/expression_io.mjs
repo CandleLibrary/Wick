@@ -1,11 +1,11 @@
-import { TemplateString } from "./io";
+import { TemplateString, BooleanIO } from "./io.mjs";
+import {NOOPTap} from "../tap/tap.mjs";
 
 /******************** Expressions **********************/
 
 export class ExpressionIO extends TemplateString {
 
     constructor(source, errors, taps, element, binds, func) {
-        
         super(source, errors, taps, element, binds);
         this._expr_function_ = func;
         this._value_ = null;
@@ -71,7 +71,22 @@ export class ExpressionIO extends TemplateString {
     }
 }
 
-export class InputExpresionIO extends ExpressionIO{
+export class BooleanExpressionIO extends ExpressionIO{
+    constructor(source, errors, taps, element, binds, func){
+        super(source, errors, taps, element, binds, func);
+        Object.assign(this, new this.constr(source, errors, NOOPTap, element))
+    }
+    scheduledUpdate() {
+        const args = [];
+        for (let i = 0; i < this.binds.length; i++)
+            args.push(this.binds[i]._value_);
+        this.boolDown(this._expr_function_.apply(null, args));
+    }
+}
+BooleanExpressionIO.prototype.constr = BooleanIO.prototype.constructor
+BooleanExpressionIO.prototype.boolDown = BooleanIO.prototype.down;
+
+export class InputExpressionIO extends ExpressionIO{
     scheduledUpdate() {
         if (this._IS_A_FILTER_) {
             this.ele.update();

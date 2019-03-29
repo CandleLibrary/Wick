@@ -40,6 +40,7 @@ OutTemplate.prototype = {
     bindings: null,
 
     _bind_: function(source, errors, taps, element, attr) {
+
         if (this.method == ATTRIB || this.method == INPUT)
             return new AttribTemplate(source, errors, taps, attr, element, this.bindings);
         return new TemplateString(source, errors, taps, element, this.bindings);

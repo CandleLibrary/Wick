@@ -54,7 +54,6 @@ export class SourceContainer extends View {
 
     get data() {}
     set data(container) {
-
         if (container instanceof ModelContainerBase) {
             container.pin();
             container.addView(this);

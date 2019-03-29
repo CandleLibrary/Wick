@@ -30,7 +30,7 @@ function processExpression(lex, binds) {
     const existing_names = {};
 
     /**TODO? - This could be replaced by a plugin to ensure proper Javascript expressions. Perhaps producing a JS AST */
-    let args = JSExpressionIdentifiers(lex);
+    let args = JSExpressionIdentifiers(lex), funct;
 
 
     for (let i = 0, l = args.length; i < l; i++)
@@ -38,7 +38,13 @@ function processExpression(lex, binds) {
 
     bind_ids.push(`return ${function_string}`);
 
-    let funct = (Function).apply(null, bind_ids);
+    try{
+        funct = (Function).apply(null, bind_ids);
+    }catch(e){
+        console.error(bind_ids[bind_ids.length -1])
+        console.error(e);
+        return;
+    }
 
     const bindings = [];
 
