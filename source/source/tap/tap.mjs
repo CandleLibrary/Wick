@@ -99,7 +99,6 @@ export class Tap {
     }
 
     addIO(io) {
-
         if (io.parent === this)
             return;
 
@@ -107,6 +106,7 @@ export class Tap {
             io.parent.removeIO(io)
 
         this.ios.push(io);
+        
         io.parent = this;
     }
 

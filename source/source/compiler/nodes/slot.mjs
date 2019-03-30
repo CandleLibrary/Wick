@@ -17,7 +17,7 @@ export class SlotNode extends RootNode {
         return null;
     }
 
-    build(element, source, presets, errors, taps, statics, out_ele) {
+    build(element, source, presets, errors, taps, statics, out_ele, RENDER_ONLY = false) {
         return (statics.slots && statics.slots[this.name]) ?
             statics.slots[this.name].build(
                 element,
@@ -26,7 +26,8 @@ export class SlotNode extends RootNode {
                 errors,
                 taps,
                 statics,
-                out_ele
+                out_ele,
+                RENDER_ONLY
             ) :
             source;
     }

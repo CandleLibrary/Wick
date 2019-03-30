@@ -54,7 +54,7 @@ Object.assign(wick, core, {
         BoolSchemeConstructor
     },
 
-    toString : ()=> `CandleFW Wick 2019`
+    toString: () => `CandleFW Wick 2019`
 })
 
 Object.freeze(wick);

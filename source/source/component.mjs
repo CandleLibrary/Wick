@@ -9,6 +9,7 @@ import { SchemedModel } from "../model/schemed.mjs"
 import { ModelBase } from "../model/base.mjs"
 import { Model } from "../model/model.mjs"
 import { Presets } from "../presets.mjs"
+import { Plugin } from "../plugin.mjs"
 import URL from "@candlefw/url";
 import whind from "@candlefw/whind";
 import { getFunctionBodyString } from "../utils/get_function_body.mjs"
@@ -37,15 +38,19 @@ export const Component = (data) => createComponentWithJSSyntax(data, document.lo
  * This module allows JavaScript to be used to describe wick components. 
  */
 async function createComponentWithJSSyntax(data, locale) {
+
     const
         base = ++async_wait,
-        rs_base = return_stack.length;
+        rs_base = return_stack.length,
+        DATA_IS_STRING = typeof(data) == "string";
 
-    let presets = new Presets();
+    let presets = new Presets(),
+        url = data;
 
-    if (typeof(data) == "string" || data instanceof URL) {
+
+    if ((DATA_IS_STRING && (url = URL.resolveRelative(data, locale))) || data instanceof URL) {
+
         const
-            url = (data instanceof URL) ? data : URL.resolveRelative(data, locale),
             //Must be a JavaScript object, based on MIME and extension.
             ext = url.ext;
 
@@ -89,13 +94,18 @@ async function createComponentWithJSSyntax(data, locale) {
         } else if (ext == "html") {
             // fold data into itself to take advantage of SourcePackages automatic behavior when 
             // presented with a url
-            data = { dom: await URL.resolveRelative(data).fetchText() };
+            data = { dom: await url.fetchText() };
+
+            //Make sure we treat the previous fetch as the new url base.
+            locale = url;
         }
+    } else if (DATA_IS_STRING || data instanceof HTMLElement) {
+
+        data = { dom: data };
     }
 
     if (presets instanceof Presets)
         presets = presets.copy();
-
 
     let
         pkg = null,
@@ -119,18 +129,17 @@ async function createComponentWithJSSyntax(data, locale) {
     // If the model or scheme is an array, then the resulting component root should be either a 
     // ContainerNode or a ContainerNode wrapped inside a SourceNode.
 
+    if (data.dom && (typeof(data.dom) == "string" || data.dom.tagName == "TEMPLATE")) {
 
-    if (typeof(data.dom) == "string") { //This BasePackage can be either a HTML string or a url. Need to check for that. 
+        const url = URL.resolveRelative(data.dom, locale);
 
-        const url = URL.resolveRelative(data.dom);
-
-        let txt = data.dom;
+        let val = data.dom;
 
         if (url && url.ext == "html")
-            txt = await url.fetchText()
+            val = await url.fetchText()
 
         try {
-            pkg = await new SourcePackage(txt, presets, true, locale);
+            pkg = await new SourcePackage(val, presets, true, locale);
             var { source_tree, container_tree, container_source_tree } = EnsureRootSource(pkg, NEED_SOURCE_BITS, NEED_CONTAINER_BITS, presets);
         } catch (e) {
             throw e;
@@ -171,13 +180,23 @@ async function createComponentWithJSSyntax(data, locale) {
         return source_tree.toString();
     }
     //This will ensure that something happens
-    return_value.toString = function() { return source_tree.toString(); }
+    return_value.toString = function(model) {
+        if (model) {
+
+            let source = source_tree.build(null, null, presets, [], null, null, null,  true);
+            
+            source.load(model);
+
+            return source.ele.toString()
+        }
+        return source_tree.toString();
+    }
 
     Object.assign(return_value, injects, { model, scheme, get tree() { return source_tree } });
 
     //Unashamedly proxying the SourcePackage~mount method
-    return_value.mount = function(e, m, s) { return pkg.mount(e, m, s) };
-
+    return_value.mount = function(e, m, s, mgr) { return pkg.mount(e, m, s, mgr) };
+    
     Object.freeze(return_value);
 
 
@@ -274,7 +293,7 @@ async function integrateProperties(src, cntr, cntr_src, presets, data) {
         appending_inject = null;
 
     //Cycle through 
-    for (name in data) {
+    for (let name in data) {
         let v = data[name];
         switch (name) {
             case "filter":
@@ -478,12 +497,15 @@ RootNode.prototype.processFetchHook = function(lexer, OPENED, IGNORE_TEXT_TILL_C
 
     if (CAN_FETCH) {
         return this.url.fetchText().then(async (text) => {
-            let lexer = whind(text);
-            if (this.url.ext == "html")
+
+            const { ext, data } = await Plugin.extensionParse(this.url.ext, text);
+
+            let lexer = whind(data);
+            if (ext == "html")
                 return this.parseRunner(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
-            else if (this.url.ext == "js") {
+            else if (ext == "js") {
                 return (await Component(this.url)).tree;
-            } else if (this.url.ext == "mjs") {
+            } else if (ext == "mjs") {
                 debugger
             }
         }).catch((e) => {

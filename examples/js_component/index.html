@@ -7,24 +7,33 @@
 
 <body>
     <script>
+    let i = 0;
+
+    function fn (blas){
+        emit.property = this.id++;
+    };
+
+    const mount = ()=>this.id = 0;
+
     async function start() {
 
-        let i = 0;
 
-        let comp = await wick({
+        const presets = wick.presets();
 
-            model: { property: 0 },
+        let compA = await wick("./compA/test_component2.js");
+        let compB = await wick({
 
-            //$onjump: () => { emit.property =  i++},
+            model: { property: "Tim"},
 
-            $$onjump: (value, emit, comp)=>{emit.property = i++;},
+            $mounted : ()=>{this.id = 0;},
+            $click: ()=>{ emit.property = this.id++; },
 
-            dom: '<div onmouseover="((jump)(\'test\'))"> ((property)) Lets talk tacos!</div>',
+            dom: `./test_component.html`,
         })
+        
+        compB.mount(document.body);
 
-        console.log(comp.toString())
-
-        comp.mount(document.body);
+        console.log(wick + "")
     }
 
     start();

@@ -346,7 +346,7 @@ export class RootNode extends HTMLNode {
     /**
      * Builds Source Graph and Dom Tree.
      */
-    build(element, source, presets, errors, taps, statics, out_ele = null) {
+    build(element, source, presets, errors, taps, statics, out_ele = null, RENDER_ALL = false) {
 
         let out_statics = statics;
 
@@ -363,7 +363,7 @@ export class RootNode extends HTMLNode {
                 ele: null
             };
 
-            let out_source = this.merged.build(element, source, presets, errors, taps, out_statics, own_out_ele);
+            let out_source = this.merged.build(element, source, presets, errors, taps, out_statics, own_out_ele, RENDER_ALL);
 
             if (!source) {
                 debugger
@@ -373,13 +373,10 @@ export class RootNode extends HTMLNode {
             own_element = own_out_ele.ele;
 
         } else {
-
-            if (!source) {
+            own_element = this.createElement(presets, source);
+            
+            if (!source) 
                 source = new Source(null, presets, own_element, this);
-                own_element = this.createElement(presets, source);
-                source.ele = own_element;
-            } else
-                own_element = this.createElement(presets, source);
 
             if (out_ele)
                 out_ele.ele = own_element;
@@ -387,7 +384,6 @@ export class RootNode extends HTMLNode {
 
         if (this.HAS_TAPS)
             taps = source.linkTaps(this.tap_list);
-
         if (own_element) {
 
             if (!source.ele) source.ele = own_element;
@@ -401,7 +397,6 @@ export class RootNode extends HTMLNode {
                 let attr = this.bindings[i];
                 attr.binding._bind_(source, errors, taps, own_element, attr.name, this, statics);
             }
-
         }
 
         if (!MERGED) {
@@ -409,12 +404,11 @@ export class RootNode extends HTMLNode {
             const ele = own_element ? own_element : element
 
             for (let node = this.fch; node; node = this.getNextChild(node))
-                node.build(ele, source, presets, errors, taps, out_statics);
+                node.build(ele, source, presets, errors, taps, out_statics, null, RENDER_ALL);
         }
 
         return source;
     }
-
 
 
     /******************************************* HOOKS ****************************************************/

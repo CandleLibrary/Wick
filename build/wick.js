@@ -626,13 +626,15 @@ var wick = (function () {
             super();
         }
 
-        push(item) {
-            if (item instanceof Array)
-                item.forEach((i) => {
-                    this.push(i);
-                });
-            else
-                super.push(item);
+        push(...item) {
+            item.forEach(item => {
+                if (item instanceof Array)
+                    item.forEach((i) => {
+                        super.push(i);
+                    });
+                else
+                    super.push(item);
+            });
         }
 
         //For compatibility
@@ -724,7 +726,16 @@ var wick = (function () {
 
             @returns The result of calling this.insert
         */
-        push(item) { return this.insert(item, false, true); }
+        push(...item) {
+            item.forEach(item => {
+                if (item instanceof Array)
+                    item.forEach((i) => {
+                        this.insert(i);
+                    });
+                else
+                    this.insert(item);
+            });
+        }
 
         /**
             Retrieves a list of items that match the term/terms. 
@@ -1312,7 +1323,7 @@ var wick = (function () {
     const HASH = 35;
     const HORIZONTAL_TAB = 9;
     const HYPHEN = 45;
-    const i = 105;
+    const i$1 = 105;
     const I = 73;
     const j = 106;
     const J = 74;
@@ -1942,7 +1953,7 @@ ${is_iws}`;
                 let off2 = off;
                 let map = this.symbol_map,
                     m$$1;
-                let i$$1 = 0;
+                let i = 0;
 
                 while(code == 32 && IWS)
                     (code = str.charCodeAt(++off2), off++);
@@ -2242,8 +2253,8 @@ ${is_iws}`;
 
             let map = this.symbol_map;
 
-            for (let i$$1 = 0; i$$1 < sym.length; i$$1++) {
-                let code = sym.charCodeAt(i$$1);
+            for (let i = 0; i < sym.length; i++) {
+                let code = sym.charCodeAt(i);
                 let m$$1 = map.get(code);
                 if (!m$$1){
                     m$$1 = map.set(code, new Map).get(code);
@@ -3662,6 +3673,7 @@ ${is_iws}`;
                 credentials: m,
                 method: "Get"
             }).then(r => {
+
                 if (r.status < 200 || r.status > 299)
                     r.text().then(rej);
                 else
@@ -3743,10 +3755,12 @@ ${is_iws}`;
      */
     class URL {
 
-        static resolveRelative(URL_or_url_original, URL_or_url_new) {
+        static resolveRelative(URL_or_url_new, URL_or_url_original = document.location.toString(),) {
 
             let URL_old = (URL_or_url_original instanceof URL) ? URL_or_url_original : new URL(URL_or_url_original);
             let URL_new = (URL_or_url_new instanceof URL) ? URL_or_url_new : new URL(URL_or_url_new);
+
+            if(!URL_old || !URL_new) return null;
 
             let new_path = "";
             if (URL_new.path[0] != "/") {
@@ -3768,7 +3782,6 @@ ${is_iws}`;
                 }
                 URL_new.path = a.join("/");
             }
-
 
             return URL_new;
         }
@@ -3850,6 +3863,11 @@ ${is_iws}`;
                     this.hash = url.hash;
                 } else {
                     let part = url.match(uri_reg_ex);
+
+                    //If the complete string is not matched than we are dealing with something other 
+                    //than a pure URL. Thus, no object is returned. 
+                    if(part[0] !== url) return null;
+
                     this.protocol = part[1] || ((USE_LOCATION) ? location.protocol : "");
                     this.user = part[2] || "";
                     this.pwd = part[3] || "";
@@ -4136,6 +4154,11 @@ ${is_iws}`;
         get href() {
             return this.toString();
         }
+
+        get ext(){
+            const m = this.path.match(/\.([^\.]*)$/);
+            return m ? m[1] : "";
+        }
     }
 
     /**
@@ -4243,20 +4266,20 @@ ${is_iws}`;
 
     //import { CustomComponent } from "../page/component"
 
-
+    let CachedPresets = null;
     /**
-     * There are a number of configurable options and global objects that can be passed to wick to be used throughout the PWA. The instances of the Presets class are objects that hosts all these global properties. 
+     // There are a number of configurable options and global objects that can be passed to wick to be used throughout the PWA. The instances of the Presets class are objects that hosts all these global properties. 
      * 
-     * Presets are designed to be created once, upfront, and not changed once defined. This reinforces a holistic design for a PWA should have in terms of the types of Schemas, global Models, and overall form the PWA takes, e.g whether to use the ShadowDOM or not.
+     // Presets are designed to be created once, upfront, and not changed once defined. This reinforces a holistic design for a PWA should have in terms of the types of Schemas, global Models, and overall form the PWA takes, e.g whether to use the ShadowDOM or not.
      * 
-     * Note: *This object is made immutable once created.*
+     // Note: *This object is made immutable once created. There may only be one instance of Presets*
      * 
-     * @param      {Object | Presets}  preset_options  An Object containing configuration data to be used by Wick.
-     * @memberof module:wick
-     * @alias Presets
      */
     class Presets {
         constructor(preset_options = {}) {
+
+            if(Presets.global.v)
+                return Presets.global.v;
 
             this.store = (preset_options.store instanceof Store) ? preset_options.store : null;
 
@@ -4394,6 +4417,8 @@ ${is_iws}`;
             Object.freeze(this.custom_sources);
             Object.freeze(this.schemas);
             Object.freeze(this.models);
+
+            CachedPresets = this;
         }
 
         processLink(link) {}
@@ -4405,7 +4430,9 @@ ${is_iws}`;
             let obj = {};
 
             for (let a in this) {
-                if (typeof(this[a]) == "object")
+                if (a == "components")
+                    obj.components = this.components;
+                else if (typeof(this[a]) == "object")
                     obj[a] = Object.assign({}, this[a]);
                 else if (typeof(this[a]) == "array")
                     obj[a] = this[a].slice();
@@ -4413,9 +4440,13 @@ ${is_iws}`;
                     obj[a] = this[a];
             }
 
+            obj.processLink = this.processLink.bind(this);
+
             return obj;
         }
     }
+
+    Presets.global = {get v(){return CachedPresets}, set v(e){}};
 
     /**
      *   This is used by Model to create custom property getter and setters on non-ModelContainerBase and non-Model properties of the Model constructor.
@@ -4873,6 +4904,10 @@ ${is_iws}`;
                 this.parent.bubbleLink(this);
             else
                 debugger
+        }
+
+        sourceLoaded(){
+            this.update({mounted:true});
         }
     }
 
@@ -5645,7 +5680,7 @@ ${is_iws}`;
                 }
 
                 if (attrib_name == "url") {
-                    this.url = URL.resolveRelative(old_url, out_lex.slice());
+                    this.url = URL.resolveRelative(out_lex.slice(), old_url);
                     HAS_URL = true;
                 }
 
@@ -11491,6 +11526,24 @@ ${is_iws}`;
 
     CSSParser.types = types;
 
+    const removeFromArray = (array, ...elems) => {
+        const results = [];
+        outer:
+            for (let j = 0; j < elems.length; j++) {
+                const ele = elems[i];
+                for (let i = 0; i < array.length; i++) {
+                    if (array[i] === ele) {
+                        array.splice(i, 1);
+                        results.push(true);
+                        continue outer;
+                    }
+                }
+                results.push(false);
+            }
+
+        return results;
+    };
+
     // Mode Flag
     const KEEP = 0;
     const IMPORT = 1;
@@ -11504,13 +11557,13 @@ ${is_iws}`;
      * -`keep`: 
      *  This mode is the default and treats any data on the channel as coming from the model. The model itself is not changed, and any data flow from outside the source context is ignored.
      * -`put`:
-     *  This mode will update the model to reflect updates on the channel.
+     *  This mode will update the model to reflect updates on the channel. This will also cause any bindings to update to reflect the change on the model.
      * -`import`:
-     *  This mode will allow data from outside the source context to enter the context as if it came from the model.
+     *  This mode will allow data from outside the source context to enter the context as if it came from the model. The model itself is unchanged unless put is specified for the same property.
      *  -`export`:
-     *  This mode will propagate data flow to the outer source context, allowing other sources to listen on the data flow of the originating source context.
+     *  This mode will propagate data flow to the parent source context, allowing other sources to listen on the data flow of the originating source context.
      *  
-     *  if `import` is active, then `keep` is implicitly inactive and the model no longer has any bearing on the value of the channel.
+     *  if `import` is active, then `keep` is implicitly inactive and the model no longer has any bearing on the value of the bindings.
      */
     class Tap {
 
@@ -11542,7 +11595,7 @@ ${is_iws}`;
             //Make sure export occures as soon as data is ready. 
             const value = data[this.prop];
 
-            if((typeof(value) !== "undefined") && (this.modes & EXPORT))
+            if ((typeof(value) !== "undefined") && (this.modes & EXPORT))
                 this.source.up(this, data[this.prop]);
         }
 
@@ -11587,9 +11640,23 @@ ${is_iws}`;
 
             if (this.modes & EXPORT)
                 this.source.up(this, value, meta);
+        }
 
+        addIO(io) {
 
+            if (io.parent === this)
+                return;
 
+            if (io.parent)
+                io.parent.removeIO(io);
+
+            this.ios.push(io);
+            io.parent = this;
+        }
+
+        removeIO(io) {
+            if (removeFromArray(this.ios, io)[0])
+                io.parent = null;
         }
     }
 
@@ -11600,6 +11667,10 @@ ${is_iws}`;
         }
         up() {}
     }
+
+    // This serves as a NOOP for io methods that expect a Tap with addIO and RemoveIO operations
+    const noop = ()=>{};
+    const NOOPTap = {addIO:noop,removeIO:noop,up:noop};
 
     class Source extends View {
 
@@ -11615,18 +11686,12 @@ ${is_iws}`;
          *   @extends SourceBase
          */
         constructor(parent, presets, element, ast) {
+            
             super();
 
             this.ast = null;
 
             ast.setSource(this);
-            
-            /**
-             *@type {Boolean} 
-             *@protected
-             */
-
-
             this.parent = parent;
             this.ele = element;
             this.presets = presets;
@@ -11654,24 +11719,9 @@ ${is_iws}`;
         destroy() {
 
             this.DESTROYED = true;
+            this.LOADED = false;
 
             this.update({ destroyed: true });
-
-            if (this.LOADED) {
-                this.LOADED = false;
-
-
-                let t = 0; //this.transitionOut();
-                /*
-                for (let i = 0, l = this.children.length; i < l; i++) {
-                    let child = this.children[i];
-
-                    t = Math.max(t, child.transitionOut());
-                }
-                */
-                if (t > 0)
-                    return setTimeout(() => { this.destroy(); }, t * 1000 + 5);
-            }
 
             if (this.parent && this.parent.removeSource)
                 this.parent.removeSource(this);
@@ -11685,9 +11735,8 @@ ${is_iws}`;
 
             this.ele = null;
 
-            while(this.sources[0])
+            while (this.sources[0])
                 this.sources[0].destroy();
-
 
             super.destroy();
 
@@ -11724,12 +11773,6 @@ ${is_iws}`;
             for (let i = 0; i < this.sources.length; i++)
                 if (this.sources[i] == source)
                     return (this.sources.splice(i, 1), source.parent = null);
-        }
-
-        removeIO(io) {
-            for (let i = 0; i < this.ios.length; i++)
-                if (this.ios[i] == io)
-                    return (this.ios.splice(i, 1), io.parent = null);
         }
 
         getTap(name) {
@@ -11775,13 +11818,16 @@ ${is_iws}`;
             Makes the source a view of the given Model. If no model passed, then the source will bind to another model depending on its `scheme` or `model` attributes. 
         */
         load(model) {
-            let m = null, s = null;
 
-          if(this.presets.models)
+            let
+                m = null,
+                s = null;
+
+            if (this._model_name_ && this.presets.models)
                 m = this.presets.models[this._model_name_];
-            if(this.presets.schemas)
+            if (this._schema_name_ && this.presets.schemas)
                 s = this.presets.schemas[this._schema_name_];
-            
+
             if (m)
                 model = m;
             else if (s) {
@@ -11796,9 +11842,12 @@ ${is_iws}`;
             for (let i = 0, l = this.sources.length; i < l; i++) {
                 this.sources[i].load(model);
                 this.sources[i].getBadges(this);
+
+                //Lifecycle message
+                this.sources[i].update({mounted:true}); 
             }
 
-            if(model.addView)
+            if (model.addView)
                 model.addView(this);
 
             this.model = model;
@@ -11806,7 +11855,7 @@ ${is_iws}`;
             for (let name in this.taps)
                 this.taps[name].load(this.model, false);
 
-            if(!LOADED)
+            if (!LOADED)
                 this.update({ created: true });
         }
 
@@ -11878,15 +11927,22 @@ ${is_iws}`;
         }
     }
 
+    Source.prototype.removeIO = Tap.prototype.removeIO;
+    Source.prototype.addIO = Tap.prototype.addIO;
+
     class IOBase {
 
         constructor(parent) {
-            parent.ios.push(this);
-            this.parent = parent;
+
+            this.parent = null;
+
+            parent.addIO(this);
         }
 
         destroy() {
+
             this.parent.removeIO(this);
+
             this.parent = null;
         }
 
@@ -11912,7 +11968,7 @@ ${is_iws}`;
             this.ele = element;
             this.argument = null;
 
-            if(default_val) this.down(default_val);
+            if (default_val) this.down(default_val);
         }
 
         destroy() {
@@ -11935,7 +11991,7 @@ ${is_iws}`;
             this.attrib = attr;
             this.ele = element;
 
-            if(default_val) this.down(default_val);
+            if (default_val) this.down(default_val);
         }
 
         destroy() {
@@ -11951,6 +12007,56 @@ ${is_iws}`;
             this.ele.setAttribute(this.attrib, value);
         }
     }
+
+    // Toogles the display state of the element based on the "truthyness" of the passed value
+    class BooleanIO extends IOBase {
+        constructor(source, errors, tap, element, default_val) {
+            super(tap);
+
+            this.par = element.parentElement;
+
+            this.ele = element;
+
+            this.state = false;
+
+            this.place_holder = null;
+
+            if (typeof(default_val) !== "undefined") this.down(default_val);
+
+            if (this.state == false)
+                this.ele.style.display = "none";
+
+        }
+
+        destroy() {
+            this.ele = null;
+            this.attrib = null;
+            super.destroy();
+        }
+
+        down(value) {
+
+
+            if (!this.par && this.ele.parentElement)
+                this.par = this.ele.parentElement;
+
+            if (value && !this.state) {
+                this.ele.style.display = "";
+
+                if (this.place_holder)
+                    this.par.replaceChild(this.ele, this.place_holder);
+
+                this.place_holder = null;
+
+                this.state = true;
+            } else if (!value && this.state) {
+                this.place_holder = document.createTextNode("");
+                this.par.replaceChild(this.place_holder, this.ele);
+                this.state = false;
+            }
+        }
+    }
+
 
     class InputIO extends IOBase {
 
@@ -12003,6 +12109,8 @@ ${is_iws}`;
         }
     }
 
+
+
     class TemplateString extends IOBase {
 
         constructor(source, errors, taps, element, binds) {
@@ -12051,9 +12159,7 @@ ${is_iws}`;
         get data() {}
         set data(v) { spark.queueUpdate(this); }
 
-        down() {
-            spark.queueUpdate(this);
-        }
+        down() { spark.queueUpdate(this); }
 
         scheduledUpdate() {
 
@@ -12251,7 +12357,6 @@ ${is_iws}`;
     class ExpressionIO extends TemplateString {
 
         constructor(source, errors, taps, element, binds, func) {
-            
             super(source, errors, taps, element, binds);
             this._expr_function_ = func;
             this._value_ = null;
@@ -12317,7 +12422,22 @@ ${is_iws}`;
         }
     }
 
-    class InputExpresionIO extends ExpressionIO{
+    class BooleanExpressionIO extends ExpressionIO{
+        constructor(source, errors, taps, element, binds, func){
+            super(source, errors, taps, element, binds, func);
+            Object.assign(this, new this.constr(source, errors, NOOPTap, element));
+        }
+        scheduledUpdate() {
+            const args = [];
+            for (let i = 0; i < this.binds.length; i++)
+                args.push(this.binds[i]._value_);
+            this.boolDown(this._expr_function_.apply(null, args));
+        }
+    }
+    BooleanExpressionIO.prototype.constr = BooleanIO.prototype.constructor;
+    BooleanExpressionIO.prototype.boolDown = BooleanIO.prototype.down;
+
+    class InputExpressionIO extends ExpressionIO{
         scheduledUpdate() {
             if (this._IS_A_FILTER_) {
                 this.ele.update();
@@ -12521,6 +12641,7 @@ ${is_iws}`;
     const INPUT = 5;
     const SCRIPT = 6;
     const EVENT = 7;
+    const BOOL = 8;
 
     /**
      * Binding builder for expressions
@@ -12571,10 +12692,11 @@ ${is_iws}`;
         }
 
         _bind_(source, errors, taps, element) {
-
             switch (this.method) {
+                case BOOL:
+                    return new BooleanExpressionIO(source, errors, taps, element, this.bindings, this.func);
                 case INPUT:
-                    return new InputExpresionIO(source, errors, taps, element, this.bindings, this.func);
+                    return new InputExpressionIO(source, errors, taps, element, this.bindings, this.func);
                 default:
                     return new ExpressionIO(source, errors, taps, element, this.bindings, this.func);
             }
@@ -12604,6 +12726,8 @@ ${is_iws}`;
             switch (this.method) {
                 case INPUT:
                     return new InputIO(source, errors, tap, element, this.argKey);
+                case BOOL:
+                    return new BooleanIO(source, errors, tap, element, this.argVal);
                 case ATTRIB:
                     return new AttribIO(source, errors, tap, attr, element, this.argVal);
                 case SCRIPT:
@@ -12638,6 +12762,7 @@ ${is_iws}`;
 
         _bind_(source, errors, taps, element, prop = "") {
             try {
+
                 switch (this.method) {
                     case TEXT$1:
                         element.data = this.val;
@@ -12770,7 +12895,7 @@ ${is_iws}`;
         const existing_names = {};
 
         /**TODO? - This could be replaced by a plugin to ensure proper Javascript expressions. Perhaps producing a JS AST */
-        let args = JSExpressionIdentifiers(lex);
+        let args = JSExpressionIdentifiers(lex), funct;
 
 
         for (let i = 0, l = args.length; i < l; i++)
@@ -12778,7 +12903,13 @@ ${is_iws}`;
 
         bind_ids.push(`return ${function_string}`);
 
-        let funct = (Function).apply(null, bind_ids);
+        try{
+            funct = (Function).apply(null, bind_ids);
+        }catch(e){
+            console.error(bind_ids[bind_ids.length -1]);
+            console.error(e);
+            return;
+        }
 
         const bindings = [];
 
@@ -12990,6 +13121,7 @@ ${is_iws}`;
         bindings: null,
 
         _bind_: function(source, errors, taps, element, attr) {
+
             if (this.method == ATTRIB || this.method == INPUT)
                 return new AttribTemplate(source, errors, taps, attr, element, this.bindings);
             return new TemplateString(source, errors, taps, element, this.bindings);
@@ -13200,8 +13332,8 @@ ${is_iws}`;
         /****************************************** COMPONENTIZATION *****************************************/
 
         mergeComponent() {
-            if (this.presets.components) {
 
+            if (this.presets.components) {
                 let component = this.presets.components[this.tag];
 
                 if (component)
@@ -13395,12 +13527,18 @@ ${is_iws}`;
 
         /******************************************* BUILD ****************************************************/
 
+        getCachedSource() {
+            if (this.par)
+                return this.par.getCachedSource();
+            return null;
+        }
+
         setSource(source) {
             source.ast = this;
         }
 
         /**
-         * Builds Source Tree and Dom Tree.
+         * Builds Source Graph and Dom Tree.
          */
         build(element, source, presets, errors, taps, statics, out_ele = null) {
 
@@ -13410,7 +13548,7 @@ ${is_iws}`;
                 out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL() });
 
             const MERGED = !!this.merged;
-            
+
             let own_element = null;
 
             if (MERGED) {
@@ -13421,8 +13559,10 @@ ${is_iws}`;
 
                 let out_source = this.merged.build(element, source, presets, errors, taps, out_statics, own_out_ele);
 
-                if (!source)
+                if (!source) {
+                    debugger
                     source = out_source;
+                }
 
                 own_element = own_out_ele.ele;
 
@@ -13541,6 +13681,7 @@ ${is_iws}`;
                         bind_method = INPUT;
                     break;
 
+
                 case "o": // Event Messaging linking
                     if (name[1] == "n") {
                         FOR_EVENT = true;
@@ -13563,6 +13704,11 @@ ${is_iws}`;
                         return basic;
                     }
                 case "s":
+                    if (name == "showif"){
+                        bind_method = BOOL;
+                        break;
+                    }
+
                     if (name == "slot" && this.par) {
                         this.par.statics.slots[basic.value] = this;
                         return basic;
@@ -13689,6 +13835,19 @@ ${is_iws}`;
             super();
             this._model_name_ = "";
             this._schema_name_ = "";
+            this._cached_ = [];
+        }
+
+        pushChached(source){
+            this._cached_.push(source);
+        }
+
+        popCached(){
+            this._cached_.pop();
+        }
+
+        getCachedSource(){
+            return this._cached_[this._cached_.length - 1];
         }
 
         delegateTapBinding() {
@@ -13724,7 +13883,10 @@ ${is_iws}`;
 
             let out_taps = [];
 
-            let me = new Source(source, presets, element, this);
+
+            let me = new Source(source, this.__presets__ || presets, element, this);
+
+            this.pushChached(me);
 
             me._model_name_ = this._model_name_;
             me._schema_name_ = this._schema_name_;
@@ -13821,7 +13983,9 @@ ${is_iws}`;
                 let s = Object.assign({}, statics ? statics : {}, this.__statics__);
                 me.statics = s;
                 me.update(me.statics);
-            } 
+            }
+
+            this.popCached(me); 
 
             return me;
         }
@@ -13933,6 +14097,10 @@ ${is_iws}`;
             let element = document.createElement("a");
             presets.processLink(element, source);
             return element;
+        }
+
+        build(...s){
+        	super.build(...s);
         }
     }
 
@@ -14992,7 +15160,6 @@ ${is_iws}`;
 
         get data() {}
         set data(container) {
-
             if (container instanceof ModelContainerBase) {
                 container.pin();
                 container.addView(this);
@@ -15774,7 +15941,6 @@ ${is_iws}`;
                 appendChild(element, ele);
 
                 for (let node = this.fch; node; node = this.getNextChild(node)) {
-                    //All filter nodes here
 
                     let on = node.getAttrib("on");
                     let sort = node.getAttrib("sort");
@@ -15916,7 +16082,16 @@ ${is_iws}`;
 
         build(element, source, presets, errors, taps, statics, out_ele) {
             return (statics.slots && statics.slots[this.name]) ?
-                statics.slots[this.name].build(element, source, presets, errors, taps, statics, out_ele): source;
+                statics.slots[this.name].build(
+                    element,
+                    statics.slots[this.name].getCachedSource() || source,
+                    /*statics.slots[this.name].getPresets() || */presets,
+                    errors,
+                    taps,
+                    statics,
+                    out_ele
+                ) :
+                source;
         }
 
         processAttributeHook(name, lex) {
@@ -15925,7 +16100,7 @@ ${is_iws}`;
 
             let start = lex.off,
                 basic = {
-                    IGNORE:true,
+                    IGNORE: true,
                     name,
                     value: lex.slice(start)
                 };
@@ -15933,7 +16108,7 @@ ${is_iws}`;
             let bind_method = ATTRIB,
                 FOR_EVENT = false;
 
-            if(name == "name")
+            if (name == "name")
                 this.name = basic.value;
 
             return basic;
@@ -16159,33 +16334,8 @@ ${is_iws}`;
         return parseText(lex, SourcePackage, presets, url, win);
     }
 
-    /**
-     * SourcePackages stores compiled {@link SourceSkeleton}s and provide a way to _bind_ Model data to the DOM in a reusable manner. *
-     * @property    {Array}    skeletons
-     * @property    {Array}    styles
-     * @property    {Array}    scripts
-     * @property    {Array}    style_core
-     * @readonly
-     * @callback   If `RETURN_PROMISE` is set to `true`, a new Promise is returned, which will asynchronously return a SourcePackage instance if compilation is successful.
-     * @param      {HTMLElement}  element      The element
-     * @param      {Presets}  presets      The global Presets object.
-     * @param      {boolean}  [RETURN_PROMISE=false]  If `true` a Promise will be returned, otherwise the SourcePackage instance is returned.
-     * @return     {SourcePackage | Promise}  If a SourcePackage has already been constructed for the given element, that will be returned instead of new one being created. If
-     * @memberof module:wick.core.source
-     * @alias SourcePackage
-     */
-    class SourcePackage {
-
-        constructor(element, presets, RETURN_PROMISE = false, url = "", win = window) {
-
-            //If a package exists for the element already, it will be bound to __wick_package_. That will be returned.
-            if (element.__wick_package_) {
-                if (RETURN_PROMISE)
-                    return new Promise((res) => res(element.__wick_package_));
-                return element.__wick_package_;
-            }
-
-
+    class BasePackage{
+        constructor(){
             /**
              * When set to true indicates that the package is ready to be mounted to the DOM.
              */
@@ -16219,34 +16369,6 @@ ${is_iws}`;
 
             this.links = [];
 
-            if (element instanceof Promise) {
-                element.then((data) => CompileSource(this, presets, data, url, win));
-                if (RETURN_PROMISE) return element;
-                return this;
-            } else if (element instanceof RootNode) {
-                //already an HTMLtree, just package into a skeleton and return.
-                this.skeletons.push(new Skeleton(element, presets));
-                this.complete();
-                return;
-            } else if (!(element instanceof HTMLElement) && typeof(element) !== "string" && !(element instanceof whind$1.constructor)) {
-                let err = new Error("Could not create package. element is not an HTMLElement");
-                this.addError(err);
-                this.complete();
-                if (RETURN_PROMISE)
-                    return new Promise((res, rej) => rej(err));
-                return;
-            }
-
-            //Start the compiling of the component.
-            let promise = CompileSource(this, presets, element, url, win);
-
-            OB.seal(this);
-
-            if (RETURN_PROMISE)
-                return promise;
-            else
-                return this;
-
         }
 
         /**
@@ -16268,13 +16390,9 @@ ${is_iws}`;
             this.freeze();
         }
 
-        /**
-         * Adds Error message to the errors array.
-         *
-         * @param      {String}  error_message     the error message to add.
-         *
-         * @protected
-         */
+        
+        // Adds Error message to the errors array.
+        // ~dissuade-public
         addError(error_message) {
             this.HAVE_ERRORS = true;
             //Create error skeleton and push to skeletons
@@ -16282,10 +16400,8 @@ ${is_iws}`;
             console.error(error_message);
         }
 
-        /**
-         * Freezes properties.
-         * @protected
-         */
+        // Freezes properties.
+        // ~dissuade-public
         freeze() {
             return;
             OB.freeze(this.READY);
@@ -16385,6 +16501,64 @@ ${is_iws}`;
             return str;
         }
     }
+    /**
+     * SourcePackages stores compiled {@link SourceSkeleton}s and provide a way to _bind_ Model data to the DOM in a reusable manner. *
+     * @property    {Array}    skeletons
+     * @property    {Array}    styles
+     * @property    {Array}    scripts
+     * @property    {Array}    style_core
+     * @readonly
+     * @callback   If `RETURN_PROMISE` is set to `true`, a new Promise is returned, which will asynchronously return a SourcePackage instance if compilation is successful.
+     * @param      {HTMLElement}  element      The element
+     * @param      {Presets}  presets      The global Presets object.
+     * @param      {boolean}  [RETURN_PROMISE=false]  If `true` a Promise will be returned, otherwise the SourcePackage instance is returned.
+     * @return     {SourcePackage | Promise}  If a SourcePackage has already been constructed for the given element, that will be returned instead of new one being created. If
+     * @memberof module:wick.core.source
+     * @alias SourcePackage
+     */
+    class SourcePackage extends BasePackage{
+
+        constructor(element, presets, RETURN_PROMISE = false, url = "", win = window) {
+
+            //If a package exists for the element already, it will be bound to __wick_package_. That will be returned.
+            if (element && element.__wick_package_) {
+                if (RETURN_PROMISE)
+                    return new Promise((res) => res(element.__wick_package_));
+                return element.__wick_package_;
+            }
+
+            super();
+
+            if (element instanceof Promise) {
+                element.then((data) => CompileSource(this, presets, data, url, win));
+                if (RETURN_PROMISE) return element;
+                return this;
+            } else if (element instanceof RootNode) {
+                //already an HTMLtree, just package into a skeleton and return.
+                this.skeletons.push(new Skeleton(element, presets));
+                this.complete();
+                return;
+            } else if (!(element instanceof HTMLElement) && typeof(element) !== "string" && !(element instanceof whind$1.constructor)) {
+                let err = new Error("Could not create package. element is not an HTMLElement");
+                this.addError(err);
+                this.complete();
+                if (RETURN_PROMISE)
+                    return new Promise((res, rej) => rej(err));
+                return;
+            }
+
+            //Start the compiling of the component.
+            let promise = CompileSource(this, presets, element, url, win);
+
+            OB.seal(this);
+
+            if (RETURN_PROMISE)
+                return promise;
+            else
+                return this;
+
+        }
+    }
 
     PackageNode.prototype.SourcePackage = SourcePackage;
 
@@ -16422,7 +16596,6 @@ ${is_iws}`;
 
     const core = {
         presets: a => new Presets(a),
-        view: View,
         scheme: scheme,
         model: model,
         source: (...a) => new SourcePackage(...a)
@@ -16441,8 +16614,6 @@ ${is_iws}`;
         svg:SVGNode
     };
 
-    let internals = { /* Empty if production */ };
-
     core.source.package = SourcePackage;
     core.source.constructor = Source;
 
@@ -16451,7 +16622,7 @@ ${is_iws}`;
 
     let source = core.source;
 
-    class ClosureNode extends ScriptNode$1 {
+    class ScopedNode extends ScriptNode$1 {
         processAttributeHook(name, lex, func) {
             switch (name) {
                 case "on":
@@ -16471,173 +16642,528 @@ ${is_iws}`;
         toString(){ return  "" };
     }
 
+    const 
+        regFNHead = /([^=]*\=\>\s*\{?)|(function[^\{]*{)/,
+        regFNTail = /\}$/,
+    	getFunctionBodyString = fn => fn.toString().replace(regFNHead, "").replace(regFNTail, "").trim();
+
+    const
+        UID = () => "$ID" + (Date.now().toString(16).slice(-12) + ((Math.random() * 100000) | 0).toString(16)).slice(-16),
+
+        //Bit offsets for NEED_SOURCE_BITS flag;
+        SOURCE_BITS = {
+            MODEL: 0,
+            SCHEME: 1,
+            EXPORT: 2,
+            IMPORT: 3,
+            PUT: 4,
+            ARRAY_MODEL: 5,
+            FUNCTION_MODEL: 6,
+        },
+        return_stack = [];
+
+    let async_wait = 0;
+
+
+    const Component = (data) => createComponentWithJSSyntax(data, document.location.toString());
+
     /**
      * This module allows JavaScript to be used to describe wick components. 
      */
+    async function createComponentWithJSSyntax(data, locale) {
+        const
+            base = ++async_wait,
+            rs_base = return_stack.length;
 
-    /* Example
-    	 myComponent = Component({
-    		component: "elements"// "Traditional" attributes can be defined and passed as variables
-    		model: //The presets object can be imported and fed into the component model object can be any piece of data. Wick will a
-    		// Exports and imports defined here. 
-    		export:[""],
-    		import:[""],
-    		//Functions begining with on are treated as message receivers. Other functions are treated as part of the source object. 
-    		on_message:function(presets){} // Wick will auto inject appropiate arguments 
-    		dom:`<element>(())</element> ${element(d)}` // "Traditional" wick nomenclature can be described here
-    		style: "./style.css"; // Urls can be supplied to import extra content // Style can also be defined in dom attribute.
-    	})
-    */
-    async function Component(data, presets = {}) {
-        // Every component is a source node? If it includes source node attributes, then it becomes a source node. 
-        // Otherwise it can be a pass-through or a regular element. 
+        let presets = new Presets();
+
+        if (typeof(data) == "string" || data instanceof URL) {
+            const
+                url = (data instanceof URL) ? data : URL.resolveRelative(data, locale),
+                //Must be a JavaScript object, based on MIME and extension.
+                ext = url.ext;
+
+            if (ext == "js") {
+                try {
+                    const data = await url.fetchText();
+
+                    if (url.MIME == "text/javascript");
+                    await (new Promise(res => {
+
+                        const out = (data) => createComponentWithJSSyntax(data, url);
+
+                        (new Function("wick", "url", data))(Object.assign(out, Component), url);
+
+                        // Since we have an async function, we need some way to wait for the function to 
+                        // return be fore contining this particular execution stack.
+                        // setTimeout allows JS to wait without blocking.
+                        function e() {
+                            if (async_wait <= base) {
+                                res();
+                                clearInterval(id);
+                            }
+                        }
+
+                        let id = setInterval(e, 0);
+                    }));
+                    let rvalue = null;
+
+                    while (return_stack.length > rs_base)
+                        rvalue = return_stack.pop();
+
+                    async_wait--;
+
+                    return rvalue;
+                } catch (e) {
+                    throw e;
+                }
+                return;
+            } else if (ext == "mjs") {
+                return;
+            } else if (ext == "html") {
+                // fold data into itself to take advantage of SourcePackages automatic behavior when 
+                // presented with a url
+                data = { dom: await URL.resolveRelative(data).fetchText() };
+            }
+        }
+
+        if (presets instanceof Presets)
+            presets = presets.copy();
 
 
-        //Checking for existance of a DOM is necessary to preempt the creation of package. 
-        //Since package can already handle cases of urls and pure data being passed. 
-        let pkg = null,
-            tree, model;
+        let
+            pkg = null,
+            NEED_SOURCE_BITS = 0,
+            NEED_CONTAINER_BITS = 0,
+            tree,
+            container,
+            container_source;
+
+        // Every tree root should be a SourceNode instance if data includes source node attributes.              
+        // Create a bit field of all values that necessitate a SourceNode. 
+
+        NEED_SOURCE_BITS |= ((typeof(data.model) !== "undefined") | 0) << SOURCE_BITS.MODEL;
+        NEED_SOURCE_BITS |= ((typeof(data.scheme) !== "undefined") | 0) << SOURCE_BITS.SCHEME;
+        NEED_SOURCE_BITS |= ((typeof(data.export) !== "undefined") | 0) << SOURCE_BITS.EXPORT;
+        NEED_SOURCE_BITS |= ((typeof(data.import) !== "undefined") | 0) << SOURCE_BITS.IMPORT;
+        NEED_SOURCE_BITS |= ((typeof(data.put) !== "undefined") | 0) << SOURCE_BITS.PUT;
+        //NEED_CONTAINER_BITS |= ((typeof(data.model) === "function") | 0) << SOURCE_BITS.FUNCTION_MODEL;
+        NEED_CONTAINER_BITS |= (Array.isArray(data.model) | 0) << SOURCE_BITS.ARRAY_MODEL;
+
+        // If the model or scheme is an array, then the resulting component root should be either a 
+        // ContainerNode or a ContainerNode wrapped inside a SourceNode.
 
 
-        if (data.dom) { //This can be either a HTML string or a url. Need to check for that. 
+        if (typeof(data.dom) == "string") { //This BasePackage can be either a HTML string or a url. Need to check for that. 
+
+            const url = URL.resolveRelative(data.dom);
+
+            let txt = data.dom;
+
+            if (url && url.ext == "html")
+                txt = await url.fetchText();
+
             try {
-                pkg = await new SourcePackage(data.dom, presets, true);
+                pkg = await new SourcePackage(txt, presets, true, locale);
+                var { source_tree, container_tree, container_source_tree } = EnsureRootSource(pkg, NEED_SOURCE_BITS, NEED_CONTAINER_BITS, presets);
             } catch (e) {
                 throw e;
             }
-            tree = pkg.skeletons[0].tree;
+
         } else {
-            //This object contains other information that can be appended to a component, but the component itself is not mountable
-        }
+            // This object contains other information that can be appended to a component, but the 
+            // component itself may not be mountable
+            if (NEED_SOURCE_BITS !== 0) {
+                let
+                    src = new ScriptNode$1(),
+                    skl = new Skeleton();
 
-        for (name in data) {
-            let v = data[name];
-            switch (name) {
-                case "dom": break;
-                case "model": 
-                break;
-                case "schema": break;
-                case "import": break;
-                case "export": break;
-                case "put": break;
-                default:
-                    if (await InjectFunction(tree, name, v))
-                        break;
-                    //Function injection
+                src.__presets__ = presets;
+                pkg = new BasePackage();
 
-                    //Component Scoped function
-
-                    //Closure Scoped function
+                skl.tree = src;
+                pkg.skeletons.push[skl];
+                var source_tree = src;
             }
         }
 
-        //TODO: If there is a component property and no Source attributes defined either in data or in the compiled tree, then extract the component from the package and discard package value.
+        const { injects, model, scheme } = await integrateProperties(source_tree, container_tree, container_source_tree, presets, data);
+
+
+        // TODO: If there is a component property and no Source attributes defined either 
+        // in data or in the compiled tree, then extract the component from the package 
+        // and discard package value.
 
         //Pass throughs are used to inject methods and attributes without affecting the dom. 
 
-        /* Source node attributes
-        	model
-        	scheme
-        	export 
-        	import
-        */
 
-        // The default action with this object is to convert component back into a HTML tree string form that can be injected into the DOM of other components. 
+
+        // The default action with this object is to convert component back into a 
+        // HTML tree string form that can be injected into the DOM of other components. 
         // Additional data can be added to this object before injection using this method.
         let return_value = function(data) {
-            return tree.toString();
+            return source_tree.toString();
         };
         //This will ensure that something happens
-        return_value.toString = function() { return tree.toString(); };
+        return_value.toString = function() { return source_tree.toString(); };
+
+        Object.assign(return_value, injects, { model, scheme, get tree() { return source_tree } });
 
         //Unashamedly proxying the SourcePackage~mount method
-        return_value.mount = function(ele, m = model) { return pkg.mount(ele, m) };
+        return_value.mount = function(e, m, s) { return pkg.mount(e, m, s) };
+
+        Object.freeze(return_value);
+
+
+        async_wait--;
+
+        return_stack.push(return_value);
 
         return return_value;
     }
 
-    async function InjectFunction(tree, function_id, function_value) {
-        
-        const formal_tag = function_id.slice(0, 3);
-        
+    function checkFlag(FLAG_BITS, flag_bit_offset) {
+        return !!(FLAG_BITS >> flag_bit_offset & 1);
+    }
+    // Ensure that if there is a need for a SourceNode, there is one attached to the 
+    // Having multiple node trees also require to be sub-trees of a SourceNode, to ensure expected 
+    // Component results.
+    function EnsureRootSource(pkg, NEED_SOURCE_BITS, NEED_CONTAINER_BITS, presets) {
 
-        if (formal_tag == "$on") {
+        let
+            source_tree = null,
+            container_tree = null,
+            container_source_tree = null,
+            tree = null;
 
-        	const script = new ScriptNode$1();
-        	const function_name = function_id.slice(3);
+        if (pkg.skeletons.length > 1) NEED_SOURCE_BITS |= 0x1000000;
 
-        	script.tag = "script";
+        if (NEED_SOURCE_BITS || NEED_CONTAINER_BITS) {
+            if (pkg.skeletons.length == 1 && pkg.skeletons[0].tree instanceof SourceNode$1)
+                source_tree = pkg.skeletons[0].tree;
+            else {
+                let source = new SourceNode$1();
+                source.tag = "w-s";
+                for (let i = 0; i < pkg.skeletons.length; i++)
+                    source.addChild(pkg.skeletons[i].tree);
+                const skl = pkg.skeletons[0];
+                skl.tree = source;
+                pkg.skeletons = [skl];
+                source_tree = source;
+                source_tree.__presets__ = presets;
+            }
+        } else
+            source_tree = pkg.skeletons[0].tree;
+
+        if (NEED_CONTAINER_BITS) {
+            //Wrap existing source into a container
+            container_tree = new SourceContainerNode$1();
+            container_tree.__presets__ = presets;
+            container_tree.tag = "w-c";
+            container_tree.package = new BasePackage();
+            container_tree.package.READY = true;
+            container_tree.package.skeletons = pkg.skeletons;
 
 
-        	tree.addChild(script);
-        	
-        	script.processAttributeHook("on", whind$1(`((${function_name}))`));
+            const skl = new Skeleton();
+            skl.tree = container_tree;
+            pkg.skeletons = [skl];
 
-        	//if data is url pull that data in, other wise extract function data. 
-        	if(typeof function_value == "string"){
-        		//script.script_text = new URL().fetch()
-        	}else{
-        		script.processTextNodeHook(whind$1(function_value.toString().split(/[^\{]\{(.*)/)[1].slice(0,-1).trim()));
-        	}
+            container_source_tree = container_tree.package.skeletons[0].tree;
+            source_tree = container_source_tree;
 
-        	return true;
-        } else if (formal_tag == "$$o") {
+            /*SOURCE_BITS = {
+                MODEL: 0,
+                SCHEME: 1,
+                EXPORT: 2,
+                IMPORT: 3,
+                PUT: 4,
+                ARRAY_MODEL: 5,
+                FUNCTION_MODEL: 6,
+            }*/
 
-        	const closure = new ClosureNode();
-        	const function_name = function_id.slice(4);
-
-        	tree.addChild(closure);
-        	
-        	closure.processAttributeHook("on", whind$1(`((${function_name}))`), function_value);
-
-        	return true;
-
+            if (
+                checkFlag(NEED_SOURCE_BITS, SOURCE_BITS.MODEL) ||
+                checkFlag(NEED_SOURCE_BITS, SOURCE_BITS.IMPORT) ||
+                checkFlag(NEED_SOURCE_BITS, SOURCE_BITS.EXPORT) ||
+                checkFlag(NEED_SOURCE_BITS, SOURCE_BITS.PUT)
+            ) {
+                const source = new SourceNode$1();
+                source.tag = "w-s";
+                source.addChild(container_tree);
+                skl.tree = source;
+                source_tree = source;
+                source_tree.__presets__ = presets;
+            }
         }
 
-        return false;
+
+        return { source_tree, container_tree, container_source_tree };
     }
 
-    function compile(element, presets, RETURN_PROMISE){
-    	return new SourcePackage(element, presets, RETURN_PROMISE);
+    async function integrateProperties(src, cntr, cntr_src, presets, data) {
+        const injects = {};
+        let
+            scheme = null,
+            appending_inject = null;
+
+        //Cycle through 
+        for (name in data) {
+            let v = data[name];
+            switch (name) {
+                case "filter":
+                    break;
+                case "filter":
+                    break;
+                case "inject":
+                    if (Array.isArray(v))
+                        for (let i = 0; i < v.length; i++)
+                            integrateProperties(src, presets, v[i]);
+                    else
+                        integrateProperties(src, presets, v);
+                    break;
+                case "dom":
+                    break;
+                case "element":
+                    InjectElement(cntr_src || src, v);
+                    break;
+                case "tag":
+                    InjectTag(src, presets, v);
+                    break;
+                case "model":
+                    InjectModel(src, cntr, v, presets);
+                    break;
+                case "scheme":
+                    InjectSchema(cntr_src || src, v, presets);
+                    break;
+                case "import":
+                    InjectImport(src, v);
+                    if (cntr_src)
+                        InjectImport(cntr_src, v);
+                    break;
+                case "export":
+                    InjectExport(src, v);
+                    if (cntr_src)
+                        InjectExport(cntr_src, v);
+                    break;
+                case "put":
+                    InjectPut(src, v);
+                    if (cntr_src)
+                        InjectPut(cntr_src, v);
+                    break;
+                default:
+                    if (appending_inject = await InjectFunction(src, name, v)) {
+                        Object.assign(injects, appending_inject);
+                        break;
+                    }
+            }
+        }
+
+        return { injects, scheme };
     }
+
+    function InjectElement(tree, v) {
+        if (tree instanceof SourceNode$1)
+            tree.setAttribute("element", whind$1(String(v)));
+    }
+
+    function InjectTag(tree, presets, tag_name) {
+
+        let components = presets.components;
+        if (components)
+            components[tag_name] = tree;
+    }
+
+    function InjectModel(src_tree, container_tree, model, presets) {
+        if (container_tree) {
+            if (!Array.isArray(model) || model.length == 0)
+                throw new Error("Expecting an array value in for model");
+            let offset = 0;
+
+            if (model.length > 1) {
+                offset++;
+
+                let uid = UID(),
+                    m = model[0];
+
+                if (!(m instanceof ModelBase))
+                    m = new Model(m);
+
+                presets.models[uid] = m;
+
+                src_tree._model_name_ = uid;
+            }
+
+            if (typeof(model[offset]) !== "string")
+                throw new Error("Expecting a string expression inside array");
+
+            container_tree.processTextNodeHook(whind$1(`((${model[offset]}))`));
+
+        } else {
+
+            let uid = UID();
+
+            if (!(model instanceof ModelBase))
+                model = new Model(model);
+
+            presets.models[uid] = model;
+
+            src_tree._model_name_ = uid;
+        }
+    }
+
+    function InjectSchema(tree, scheme, presets) {
+
+        let
+            uid = UID(),
+            Scheme = scheme;
+
+        if (!Scheme.prototype || Scheme.prototype !== SchemedModel) {
+            Scheme = class extends SchemedModel {};
+            Scheme.schema = scheme;
+        }
+
+        presets.schemas[uid] = Scheme;
+
+        tree._schema_name_ = uid;
+    }
+
+    function InjectImport(tree, $import) {
+        if (tree instanceof SourceNode$1) {
+            const val = Array.isArray($import) ? $import.join(",") : $import;
+            tree.processAttributeHook("import", whind$1(String(val)));
+        }
+    }
+
+    function InjectExport(tree, $export) {
+        if (tree instanceof SourceNode$1) {
+            const val = Array.isArray($export) ? $export.join(",") : $export;
+            tree.processAttributeHook("export", whind$1(String(val)));
+        }
+    }
+
+    function InjectPut(tree, put) {
+
+        if (tree instanceof SourceNode$1) {
+            const val = Array.isArray(put) ? put.join(",") : put;
+            tree.processAttributeHook("put", whind$1(String(val)));
+        }
+    }
+
+    async function InjectFunction(tree, function_id, function_value) {
+
+        const formal_tag = function_id.slice(0, 2);
+
+        if (formal_tag[0] == "$" && formal_tag !== "$$") {
+
+            const
+                script = new ScriptNode$1(),
+                function_name = function_id.slice(1);
+
+            script.tag = "script";
+
+
+            tree.addChild(script);
+
+            script.processAttributeHook("on", whind$1(`((${function_name}))`));
+
+            //if data is url pull that data in, other wise extract function data. 
+            if (typeof function_value == "string") {
+                //script.script_text = new URL().fetch()
+            } else {
+                script.processTextNodeHook(whind$1(getFunctionBodyString(function_value)));
+            }
+
+            return {
+                [function_id]: function_value
+            };
+
+        } else if (formal_tag == "$$") {
+
+            const closure = new ScopedNode();
+            const function_name = function_id.slice(2);
+
+            tree.addChild(closure);
+
+            closure.processAttributeHook("on", whind$1(`((${function_name}))`), function_value);
+
+            return {
+                [function_id]: function_value
+            };
+        }
+
+        return null;
+    }
+
+    //Url Importing is extended to allow Component function to resolve HTML url requests
+    RootNode.prototype.processFetchHook = function(lexer, OPENED, IGNORE_TEXT_TILL_CLOSE_TAG, parent, url) {
+        let path = this.url.path,
+            CAN_FETCH = true;
+
+        //make sure URL is not already called by a parent.
+        while (parent) {
+            if (parent.url && parent.url.path == path) {
+                console.warn(`Preventing recursion on resource ${this.url.path}`);
+                CAN_FETCH = false;
+                break;
+            }
+            parent = parent.par;
+        }
+
+        if (CAN_FETCH) {
+            return this.url.fetchText().then(async (text) => {
+                let lexer = whind$1(text);
+                if (this.url.ext == "html")
+                    return this.parseRunner(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
+                else if (this.url.ext == "js") {
+                    return (await Component(this.url)).tree;
+                } else if (this.url.ext == "mjs") {
+                    debugger
+                }
+            }).catch((e) => {
+                console.error(e);
+                return this;
+            });
+        }
+        return null;
+    };
 
     const wick = Component;
 
-    Object.assign(wick, 
-    {
-        source,
-        scheme,
-        model,
-        core,
-        internals,
-        Presets,
-        Store,
-        SchemedModel,
-        Model,
-        ModelContainerBase,
-        MultiIndexedContainer,
-        BTreeModelContainer,
-        ArrayModelContainer,
-        View,
-        SourcePackage,
-        Source,
-        CompileSource,
-        RootText,
-        RootNode,
-        StyleNode: StyleNode$1,
-        ScriptNode: ScriptNode$1,
-        SourceNode: SourceNode$1,
-        PackageNode,
-        SourceContainerNode: SourceContainerNode$1,
-        SVGNode,
-        SchemeConstructor,
-        DateSchemeConstructor,
-        TimeSchemeConstructor,
-        StringSchemeConstructor,
-        NumberSchemeConstructor,
-        BoolSchemeConstructor,
-        schemes
+    Object.assign(wick, core, {
+        classes: {
+            Presets,
+            Store,
+            SchemedModel,
+            Model,
+            ModelContainerBase,
+            MultiIndexedContainer,
+            BTreeModelContainer,
+            ArrayModelContainer,
+            View,
+            SourcePackage,
+            Source,
+            CompileSource,
+            RootText,
+            RootNode,
+            StyleNode: StyleNode$1,
+            ScriptNode: ScriptNode$1,
+            SourceNode: SourceNode$1,
+            PackageNode,
+            SourceContainerNode: SourceContainerNode$1,
+            SVGNode,
+            SchemeConstructor,
+            DateSchemeConstructor,
+            TimeSchemeConstructor,
+            StringSchemeConstructor,
+            NumberSchemeConstructor,
+            BoolSchemeConstructor
+        },
+
+        toString : ()=> `CandleFW Wick 2019`
     });
+
+    Object.freeze(wick);
 
     return wick;
 

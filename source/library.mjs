@@ -13,6 +13,9 @@ import { MultiIndexedContainer } from "./model/container/multi.mjs";
 import { BTreeModelContainer } from "./model/container/btree.mjs";
 import { ArrayModelContainer } from "./model/container/array.mjs";
 
+//Plugin Handler
+import { Plugin } from "./plugin.mjs";
+
 //Views
 import { View } from "./view.mjs";
 
@@ -65,7 +68,8 @@ const core = {
     presets: a => new Presets(a),
     scheme: scheme,
     model: model,
-    source: (...a) => new SourcePackage(...a)
+    source: (...a) => new SourcePackage(...a),
+    plugin : Plugin
 };
 
 core.source.compiler = Compiler;
@@ -87,11 +91,11 @@ core.source.constructor = Source;
 Object.freeze(core.source);
 Object.freeze(core);
 
-let source = core.source;
+const source = core.source;
 
 export {
     source,
     scheme,
     model,
-    core
+    core,
 };

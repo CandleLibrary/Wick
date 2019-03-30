@@ -1,5 +1,5 @@
-import {source, scheme, model, core, internals} from "./library.mjs";
-import {Component} from "./source/component.mjs";
+import { core } from "./library.mjs";
+import { Component } from "./source/component.mjs";
 import { Presets } from "./presets.mjs";
 import { SchemeConstructor, DateSchemeConstructor, TimeSchemeConstructor, StringSchemeConstructor, NumberSchemeConstructor, BoolSchemeConstructor, schemes } from "./schema/schemas.mjs";
 import { Store } from "./model/store.mjs";
@@ -21,18 +21,11 @@ import { SourceNode } from "./source/compiler/nodes/source.mjs";
 import { PackageNode } from "./source/compiler/nodes/package.mjs";
 import { SVGNode } from "./source/compiler/nodes/svg.mjs";
 import { SourceContainerNode } from "./source/compiler/nodes/container.mjs";
+import polyfill from "./polyfill.mjs"
 
-
-function compile(element, presets, RETURN_PROMISE){
-	return new SourcePackage(element, presets, RETURN_PROMISE);
-}
+const wick = Component;
 
 export {
-    source,
-    scheme,
-    model,
-    core,
-    internals,
     Presets,
     Store,
     SchemedModel,
@@ -59,21 +52,11 @@ export {
     StringSchemeConstructor,
     NumberSchemeConstructor,
     BoolSchemeConstructor,
-    Component,
-    schemes
+    Component
 };
 
+Object.assign(wick, core)
 
-const wick = Component;
-
-Object.assign(wick, 
-{
-    source,
-    scheme,
-    model,
-    core,
-    internals,
-    compile
-})
+wick.polyfill = polyfill;
 
 export default wick;

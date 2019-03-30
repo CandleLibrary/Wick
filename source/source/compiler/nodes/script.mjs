@@ -27,19 +27,19 @@ export class ScriptNode extends VoidNode {
                 }
                 return null;
         }
-
-        return { name, value: lex.slice() };
+        return super.processAttributeHook(name, lex);
     }
 
-    build(element, source, presets, errors, taps, statics = {}) {
+    build(element, source, presets, errors, taps, statics = {}, ele = null, RENDER_ALL = false) {
+        if(RENDER_ALL)
+            return super.build(element, source, presets, errors, taps, statics, ele, RENDER_ALL);
         
         if(this.url){
             statics = Object.assign({}, statics);
             statics.url = this.url
         }
         
-        
         if (this.binding)
-            this.binding._bind_(source, errors, taps, element, "", this, statics);
+            this.binding._bind_(source, errors, taps, element, "", this, statics);        
     }
 }

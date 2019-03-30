@@ -55,7 +55,7 @@ export class SourceNode extends RootNode {
         return createElement(this.getAttribute("element") || "div");
     }
 
-    build(element, source, presets, errors, taps = null, statics = {}, out_ele = null) {
+    build(element, source, presets, errors, taps = null, statics = {}, out_ele = null, RENDER_ALL = false) {
 
         let data = {};
 
@@ -90,6 +90,7 @@ export class SourceNode extends RootNode {
          * If this is not the case, then a new element, defined by the "element" attribute of the source virtual tag (defaulted to a "div"), 
          * will be created to allow the source object to bind to an actual HTMLElement. 
          */
+           
         if (!element || this.getAttribute("element")) {
 
             let ele = this.createElement();
@@ -155,7 +156,7 @@ export class SourceNode extends RootNode {
 
 
         for (let node = this.fch; node; node = this.getNextChild(node))
-            node.build(element, me, presets, errors, out_taps, statics);
+            node.build(element, me, presets, errors, out_taps, statics, null, RENDER_ALL);
 
         if (statics || this.__statics__) {
             let s = Object.assign({}, statics ? statics : {}, this.__statics__);
