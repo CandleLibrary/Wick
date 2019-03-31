@@ -1,5 +1,5 @@
 import { TemplateString, BooleanIO } from "./io.mjs";
-import {NOOPTap} from "../tap/tap.mjs";
+import { NOOPTap } from "../tap/tap.mjs";
 
 /******************** Expressions **********************/
 
@@ -13,11 +13,11 @@ export class ExpressionIO extends TemplateString {
         this._bl_ = this.binds.length;
     }
 
-    destroy(){
-        this._expr_function_ = null;
-        this._value_ = null;
-        this._filter_expression_ = null;
+    destroy() {
         this._bl_ = null;
+        this._filter_expression_ = null;
+        this._value_ = null;
+        this._expr_function_ = null;
         super.destroy();
     }
 
@@ -39,7 +39,7 @@ export class ExpressionIO extends TemplateString {
 
             this._filter_expression_ = (source, index) => {
                 const args = [];
-                
+
                 for (let i = 0, l = this._bl_; i < l; i++) {
                     if (i == model_arg_index) { args.push(source.model); continue; }
                     if (i == index_arg_index) { args.push(index); continue; }
@@ -57,25 +57,56 @@ export class ExpressionIO extends TemplateString {
         if (this._IS_A_FILTER_) {
             this.ele.update();
         } else {
-            
+
             const args = [];
 
-            for (let i = 0; i < this.binds.length; i++){
-                if(this.binds[i]._value_ === null) return;
+            for (let i = 0; i < this.binds.length; i++) {
+                if (this.binds[i]._value_ === null) return;
                 args.push(this.binds[i]._value_);
             }
-            
+
             this._value_ = this._expr_function_.apply(null, args);
             this.ele.data = this._value_;
         }
     }
 }
 
-export class BooleanExpressionIO extends ExpressionIO{
-    constructor(source, errors, taps, element, binds, func){
+export class AttribExpressionIO extends ExpressionIO {
+    
+    constructor(source, errors, taps, element, binds, func, attrib) {
+        super(source, errors, taps, element, binds, func);
+        this.attrib = attrib;
+    }
+
+    destroy(){
+        this.attrib = "";
+        super.destroy();
+    }
+
+    scheduledUpdate() {
+        const args = [];
+
+        for (let i = 0; i < this.binds.length; i++) {
+            if (this.binds[i]._value_ === null) return;
+            args.push(this.binds[i]._value_);
+        }
+
+        this._value_ = this._expr_function_.apply(null, args);
+        this.ele.setAttribute(this.attrib, this._value_);
+    }
+}
+
+export class BooleanExpressionIO extends ExpressionIO {
+    constructor(source, errors, taps, element, binds, func) {
         super(source, errors, taps, element, binds, func);
         Object.assign(this, new this.constr(source, errors, NOOPTap, element))
     }
+
+    destroy(){
+        BooleanIO.prototype.destroy.apply(this);
+        super.destroy();
+    }
+
     scheduledUpdate() {
         const args = [];
         for (let i = 0; i < this.binds.length; i++)
@@ -83,10 +114,10 @@ export class BooleanExpressionIO extends ExpressionIO{
         this.boolDown(this._expr_function_.apply(null, args));
     }
 }
-BooleanExpressionIO.prototype.constr = BooleanIO.prototype.constructor
+BooleanExpressionIO.prototype.constr = BooleanIO.prototype.constructor;
 BooleanExpressionIO.prototype.boolDown = BooleanIO.prototype.down;
 
-export class InputExpressionIO extends ExpressionIO{
+export class InputExpressionIO extends ExpressionIO {
     scheduledUpdate() {
         if (this._IS_A_FILTER_) {
             this.ele.update();

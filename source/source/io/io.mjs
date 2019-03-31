@@ -77,6 +77,14 @@ export class AttribIO extends IOBase {
     down(value) {
         this.ele.setAttribute(this.attrib, value);
     }
+
+    set data(v){
+        this.down();
+    }
+
+    get data(){
+
+    }
 }
 
 // Toogles the display state of the element based on the "truthyness" of the passed value
@@ -245,6 +253,7 @@ export class TemplateString extends IOBase {
 export class AttribTemplate extends TemplateString {
 
     constructor(source, errors, taps, attr, element, binds) {
+        debugger
         super(source, errors, taps, element, binds);
         this.attrib = attr;
     }

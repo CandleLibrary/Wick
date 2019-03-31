@@ -509,7 +509,7 @@ RootNode.prototype.processFetchHook = function(lexer, OPENED, IGNORE_TEXT_TILL_C
                 const tree = (await Component(this.url)).tree;
                 //tree.children.forEach(c => c.parent = this)
                 this.addChild(tree);
-                return tree;
+                return this;
             } else if (ext == "mjs") {
                 debugger
             }

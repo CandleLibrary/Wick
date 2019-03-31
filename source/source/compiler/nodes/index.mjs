@@ -16,8 +16,6 @@ import { replaceEscapedHTML } from "../../../utils/string.mjs";
 //Since all nodes extend the RootNode, this needs to be declared here to prevent module cycles. 
 async function CreateHTMLNode(tag, offset, lex) {
 
-
-
     if (await Plugin.parseHTMLonTag(tag, this, lex))
         return null;
 
@@ -47,7 +45,9 @@ async function CreateHTMLNode(tag, offset, lex) {
                     return new SVGNode();
                 case "slot":
                     return new SlotNode();
+                //Elements that should not be parsed for binding points.
                 case "pre":
+                case "code":
                     return new PreNode();
             }
     }

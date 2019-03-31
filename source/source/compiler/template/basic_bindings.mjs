@@ -1,4 +1,4 @@
-import { ExpressionIO, InputExpressionIO, BooleanExpressionIO } from "../../io/expression_io.mjs";
+import { ExpressionIO, InputExpressionIO, BooleanExpressionIO, AttribExpressionIO } from "../../io/expression_io.mjs";
 import { EventIO } from "../../io/event_io.mjs";
 import { ScriptIO } from "../../io/script_io.mjs";
 import { IO, AttribIO, InputIO, BooleanIO } from "../../io/io.mjs";
@@ -64,6 +64,7 @@ export class ExpressionBinding {
         this.bindings = binds;
         this.func = func;
         this.arg = null;
+        this.attrib = "";
     }
 
     _bind_(source, errors, taps, element) {
@@ -72,6 +73,8 @@ export class ExpressionBinding {
                 return new BooleanExpressionIO(source, errors, taps, element, this.bindings, this.func);
             case INPUT:
                 return new InputExpressionIO(source, errors, taps, element, this.bindings, this.func);
+            case ATTRIB:
+                return new AttribExpressionIO(source, errors, taps, element, this.bindings, this.func, this.attrib);
             default:
                 return new ExpressionIO(source, errors, taps, element, this.bindings, this.func);
         }
@@ -94,6 +97,7 @@ export class DynamicBinding {
         this.method = 0;
         this.argKey = null;
         this.argVal = null;
+        this.attrib = "";
     }
 
     _bind_(source, errors, taps, element, attr = "", node = null, statics = null) {
