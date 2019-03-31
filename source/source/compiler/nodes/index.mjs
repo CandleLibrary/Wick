@@ -31,7 +31,7 @@ async function CreateHTMLNode(tag, offset, lex) {
             switch (tag) {
                 case "a":
                     return new LinkNode();
-                /** void elements **/
+                    /** void elements **/
                 case "template":
                     return new VoidNode();
                 case "style":
@@ -43,6 +43,8 @@ async function CreateHTMLNode(tag, offset, lex) {
                     return new SVGNode();
                 case "slot":
                     return new SlotNode();
+                case "pre":
+                    return new PreNode();
             }
     }
 

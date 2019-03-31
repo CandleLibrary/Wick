@@ -64,9 +64,7 @@ function processExpression(lex, binds) {
  * @return     {Array}   an
  */
 export function evaluate(lex, EVENT = false) {
-
     let binds = [];
-
 
     lex.IWS = false;
 
@@ -126,11 +124,16 @@ export function evaluate(lex, EVENT = false) {
                     } else {
 
                         /************************** Start Single Identifier Binding *******************************/
-                        
+                        if(lex.pk.END) // binding is not closed
+                            break; 
+
                         let id = lex.tx;
+
                         let binding = new DynamicBinding();
                         binding.tap_name = id;
                         let index = binds.push(binding) - 1;
+
+
                         lex.n.a(sentinel);
 
                         /***************************** Looking for Event Bindings ******************************************/
@@ -227,6 +230,7 @@ export function evaluate(lex, EVENT = false) {
 
         if (DATA_END > start) {
             lex.sl = DATA_END;
+            //Need to replace HTML escaped values back to actuall character values. 
             binds.push(new RawValueBinding(lex.slice(start)));
         }
     }

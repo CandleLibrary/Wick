@@ -402,8 +402,8 @@ function InjectSchema(tree, scheme, presets) {
     let
         uid = UID(),
         Scheme = scheme;
-
-    if (!Scheme.prototype || Scheme.prototype !== SchemedModel) {
+        
+    if (!Scheme.prototype || !(Scheme.prototype instanceof SchemedModel)) {
         Scheme = class extends SchemedModel {};
         Scheme.schema = scheme;
     }

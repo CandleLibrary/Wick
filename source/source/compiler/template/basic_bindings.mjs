@@ -2,6 +2,7 @@ import { ExpressionIO, InputExpressionIO, BooleanExpressionIO } from "../../io/e
 import { EventIO } from "../../io/event_io.mjs";
 import { ScriptIO } from "../../io/script_io.mjs";
 import { IO, AttribIO, InputIO, BooleanIO } from "../../io/io.mjs";
+import { replaceEscapedHTML } from "../../../utils/string.mjs";
 
 export const DYNAMICbindingID = 0;
 export const RAW_VALUEbindingID = 1;
@@ -131,7 +132,7 @@ export class DynamicBinding {
 
 export class RawValueBinding {
     constructor(val) {
-        this.val = val;
+        this.val = replaceEscapedHTML(val);
         this.method = 0;
     }
 
