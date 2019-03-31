@@ -38,6 +38,8 @@ import {
 
 import whind from "@candlefw//whind"
 
+export const par_list = [];
+
 export class BindingCSSRoot extends CSSRootNode {
     getPropertyHook(value_lex, prop_name, rule) {
 
@@ -103,11 +105,11 @@ export class RootNode extends HTMLNode {
 
     /******************************************* ERROR ****************************************************/
 
-    getURL() {
+    getURL(index) {
         if (this.url)
             return this.url;
-        if (this.par)
-            return this.par.getURL();
+        if (par_list[index])
+            return par_list[index].getURL(index - 1);
         return null;
     }
 
@@ -144,9 +146,12 @@ export class RootNode extends HTMLNode {
         if (this.presets.components) {
             let component = this.presets.components[this.tag];
 
-            if (component)
-                this.merged = component;
+            if (component) {
+                return component.merge(this);
+            }
         }
+
+        return this;
     }
 
     /******************************************* CSS ****************************************************/
@@ -202,23 +207,21 @@ export class RootNode extends HTMLNode {
             node.linkCSS(css, win);
     }
 
-    setPendingCSS(css) {
-        if (this.par)
-            this.par.setPendingCSS(css);
+    setPendingCSS(css, par = this.par) {
+        if (par)
+            par.setPendingCSS(css, par.par);
         else {
             if (!this.css)
                 this.css = [];
             this.css.push(css);
         }
-
-
     }
 
-    getCSS() {
+    getCSS(par = this.par) {
 
         let css = new BindingCSSRoot();
 
-        this.setPendingCSS(css);
+        this.setPendingCSS(css, par);
 
         return css;
     }
@@ -252,9 +255,8 @@ export class RootNode extends HTMLNode {
         return tap;
     }
 
-
-
-    checkTapMethod(name, lex) {
+    checkTapMethod(name, lex, OVERRIDE = false) { 
+        if (this.par && !OVERRIDE) return false; 
 
         let tap_mode = KEEP; // Puts
 
@@ -297,6 +299,7 @@ export class RootNode extends HTMLNode {
 
         if (!this.par)
             return this.checkTapMethod(name, lex);
+
         return false;
     }
 
@@ -348,44 +351,21 @@ export class RootNode extends HTMLNode {
     /**
      * Builds Source Graph and Dom Tree.
      */
-    build(element, source, presets, errors, taps, statics, out_ele = null, RENDER_ALL = false) {
+    build(element, source, presets, errors, taps, statics, RENDER_ALL = false) {
 
         let out_statics = statics;
 
         if (this.url || this.__statics__)
-            out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL() });
+            out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL(par_list.length - 1) });
 
-        const MERGED = !!this.merged;
+        const own_element = this.createElement(presets, source);
 
-        let own_element = null;
-
-        if (MERGED) {
-
-            let own_out_ele = {
-                ele: null
-            };
-
-            let out_source = this.merged.build(element, source, presets, errors, taps, out_statics, own_out_ele, RENDER_ALL);
-
-            if (!source) {
-                debugger
-                source = out_source;
-            }
-
-            own_element = own_out_ele.ele;
-
-        } else {
-            own_element = this.createElement(presets, source);
-
-            if (!source)
-                source = new Source(null, presets, own_element, this);
-
-            if (out_ele)
-                out_ele.ele = own_element;
-        }
+        if (!source)
+            source = new Source(null, presets, own_element, this);
 
         if (this.HAS_TAPS)
             taps = source.linkTaps(this.tap_list);
+
         if (own_element) {
 
             if (!source.ele) source.ele = own_element;
@@ -401,13 +381,14 @@ export class RootNode extends HTMLNode {
             }
         }
 
-        if (!MERGED) {
+        const ele = own_element ? own_element : element
 
-            const ele = own_element ? own_element : element
+        par_list.push(this);
 
-            for (let node = this.fch; node; node = this.getNextChild(node))
-                node.build(ele, source, presets, errors, taps, out_statics, null, RENDER_ALL);
-        }
+        for (let node = this.fch; node; node = this.getNextChild(node))
+            node.build(ele, source, presets, errors, taps, out_statics, RENDER_ALL);
+
+        par_list.pop();
 
         return source;
     }
@@ -439,7 +420,7 @@ export class RootNode extends HTMLNode {
     }
 
     endOfElementHook() {
-        this.mergeComponent();
+        return this.mergeComponent();
     }
 
 
@@ -564,5 +545,34 @@ export class RootNode extends HTMLNode {
         }
 
         return null;
+    }
+
+    merge(node) {
+        let merged_node = new this.constructor()
+        
+        merged_node.line = this.line;
+        merged_node.char = this.char;
+        merged_node.offset = this.offset;
+        merged_node.single = this.single;
+        merged_node.url = this.url;
+        merged_node.tag = this.tag;
+        merged_node.fch = this.fch;
+        merged_node.css = this.css;
+        merged_node.HAS_TAPS = this.HAS_TAPS;
+        merged_node.merged = true;
+        merged_node._badge_name_ = this._badge_name_;
+        merged_node.__presets__ = this.__presets__;
+        console.log(node.__statics__)
+        merged_node.__statics__ = node.__statics__;
+
+        if(this.tap_list)
+            merged_node.tap_list = this.tap_list.map(e => Object.assign({},e));
+
+        this.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind(e.value)));
+        node.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind(e.value)));
+
+        //merged_node.attributes = this.attributes.slice();
+
+        return merged_node;
     }
 }

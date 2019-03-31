@@ -1,4 +1,4 @@
-import { RootNode } from "./root";
+import { RootNode, par_list } from "./root";
 import { appendChild, createElement } from "../../../short_names";
 import { Source } from "../../source";
 import { SourceContainer } from "../../container.mjs";
@@ -17,6 +17,16 @@ export class SourceContainerNode extends RootNode {
         this.property_bind = null;
         this.property_bind_text = "";
         this.package = null;
+    }
+
+     merge(node) {
+        const merged_node = super.merge(node);
+        merged_nodes.BUILD_LIST = this.BUILD_LIST;
+        merged_nodes.filters = this.filters;
+        merged_nodes.property_bind = this.property_bind;
+        merged_nodes.property_bind_text = this.property_bind_text;
+        merged_nodes.package = this.package;
+        return merged_node;
     }
 
     build(element, source, presets, errors, taps) {

@@ -30,9 +30,9 @@ export class ScriptNode extends VoidNode {
         return super.processAttributeHook(name, lex);
     }
 
-    build(element, source, presets, errors, taps, statics = {}, ele = null, RENDER_ALL = false) {
+    build(element, source, presets, errors, taps, statics = {}, RENDER_ALL = false) {
         if(RENDER_ALL)
-            return super.build(element, source, presets, errors, taps, statics, ele, RENDER_ALL);
+            return super.build(element, source, presets, errors, taps, statics, RENDER_ALL);
         
         if(this.url){
             statics = Object.assign({}, statics);

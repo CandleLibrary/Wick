@@ -10,15 +10,15 @@ export class VoidNode extends RootNode {
 
     /******************************************* HOOKS ****************************************************/
 
-    endOfElementHook() {}
+    endOfElementHook() { return this }
 
     processTextNodeHook() {}
 
     /******************************************* BUILD ****************************************************/
 
-    build(a, b, c, d, e, f, g, h = false) {
-    	if(h)
-    		return super.build(a, b, c, d, e, f, g, h)
+    build(a, b, c, d, e, f, g = false) {
+        if (g)
+            return super.build(a, b, c, d, e, f, g)
     }
 
     /******************************************* CSS ****************************************************/

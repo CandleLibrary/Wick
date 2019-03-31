@@ -1,4 +1,4 @@
-import { RootNode, BindingCSSRoot } from "./root";
+import { RootNode, BindingCSSRoot, par_list } from "./root";
 import { Source } from "../../source";
 import { appendChild, createElement } from "../../../short_names";
 import { Tap, UpdateTap } from "../../tap/tap";
@@ -16,15 +16,23 @@ export class SourceNode extends RootNode {
         this._cached_ = [];
     }
 
-    pushChached(source){
+    merge(node) {
+        const merged_node = super.merge(node);
+        merged_node._model_name_ = this._model_name_;
+        merged_node._schema_name_ = this._schema_name_;
+        merged_node._cached_ = this._cached_;
+        return merged_node;
+    }
+
+    pushChached(source) {
         this._cached_.push(source)
     }
 
-    popCached(){
+    popCached() {
         this._cached_.pop();
     }
 
-    getCachedSource(){
+    getCachedSource() {
         return this._cached_[this._cached_.length - 1];
     }
 
@@ -45,7 +53,7 @@ export class SourceNode extends RootNode {
     }
 
     checkTapMethodGate(name, lex) {
-        return this.checkTapMethod(name, lex);
+        return this.checkTapMethod(name, lex, true);
     }
 
 
@@ -55,7 +63,7 @@ export class SourceNode extends RootNode {
         return createElement(this.getAttribute("element") || "div");
     }
 
-    build(element, source, presets, errors, taps = null, statics = {}, out_ele = null, RENDER_ALL = false) {
+    build(element, source, presets, errors, taps = null, statics = {},  RENDER_ALL = false) {
 
         let data = {};
 
@@ -90,7 +98,7 @@ export class SourceNode extends RootNode {
          * If this is not the case, then a new element, defined by the "element" attribute of the source virtual tag (defaulted to a "div"), 
          * will be created to allow the source object to bind to an actual HTMLElement. 
          */
-           
+
         if (!element || this.getAttribute("element")) {
 
             let ele = this.createElement();
@@ -110,9 +118,6 @@ export class SourceNode extends RootNode {
             }
 
             element = ele;
-
-            if (out_ele)
-                out_ele.ele = element;
 
             if (this._badge_name_)
                 me.badges[this._badge_name_] = element;
@@ -149,14 +154,18 @@ export class SourceNode extends RootNode {
                 data[attr.name] = attr.value;
         }
 
-        if (this.url) {
-            statics = Object.assign({}, statics);
+        if (this.url || this.__statics__) {
+            statics = this.__statics__ = Object.assign(statics, this.__statics__);
+            
             statics.url = this.url;
         }
 
+        par_list.push(this)
 
         for (let node = this.fch; node; node = this.getNextChild(node))
             node.build(element, me, presets, errors, out_taps, statics, null, RENDER_ALL);
+
+        par_list.pop()
 
         if (statics || this.__statics__) {
             let s = Object.assign({}, statics ? statics : {}, this.__statics__);
@@ -164,14 +173,14 @@ export class SourceNode extends RootNode {
             me.update(me.statics);
         }
 
-        this.popCached(me); 
+        this.popCached(me);
 
         return me;
     }
 
     /******************************************* HOOKS ****************************************************/
 
-    endOfElementHook() {}
+    endOfElementHook() { return this }
 
     /**
      * Pulls Schema, Model, or tap method information from the attributes of the tag. 
@@ -181,6 +190,7 @@ export class SourceNode extends RootNode {
      * @return     {Object}  Key value pair.
      */
     processAttributeHook(name, lex, value) {
+        console.log(name)
         let start = lex.off,
             basic = {
                 IGNORE: true,

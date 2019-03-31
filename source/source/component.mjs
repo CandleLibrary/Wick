@@ -182,7 +182,7 @@ async function createComponentWithJSSyntax(data, locale) {
 
         if (model) {
 
-            let source = source_tree.build(null, null, presets, [], null, null, null, true);
+            let source = source_tree.build(null, null, presets, [], null, null,  true);
 
             source.load(model);
 
@@ -483,7 +483,7 @@ async function InjectFunction(tree, function_id, function_value) {
     return null;
 }
 
-//Url Importing is extended to allow Component function to resolve HTML url requests
+//Url Importing is extended to allow Component function to resolve HTML/JS/MJS url requests
 RootNode.prototype.processFetchHook = function(lexer, OPENED, IGNORE_TEXT_TILL_CLOSE_TAG, parent, url) {
     let path = this.url.path,
         CAN_FETCH = true;
@@ -500,14 +500,16 @@ RootNode.prototype.processFetchHook = function(lexer, OPENED, IGNORE_TEXT_TILL_C
 
     if (CAN_FETCH) {
         return this.url.fetchText().then(async (text) => {
-
             const { ext, data } = await Plugin.extensionParse(this.url.ext, text);
 
             let lexer = whind(data);
             if (ext == "html")
                 return this.parseRunner(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
             else if (ext == "js") {
-                return (await Component(this.url)).tree;
+                const tree = (await Component(this.url)).tree;
+                //tree.children.forEach(c => c.parent = this)
+                this.addChild(tree);
+                return tree;
             } else if (ext == "mjs") {
                 debugger
             }

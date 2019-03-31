@@ -1,4 +1,4 @@
-import {removeFromArray} from "../../utils/array.mjs";
+import { removeFromArray } from "../../utils/array.mjs";
 
 // Mode Flag
 export const KEEP = 0;
@@ -71,7 +71,12 @@ export class Tap {
                     return;
 
                 if ((this.modes & PUT) && typeof(value) !== "function") {
-                    this.source.model[this.prop] = value;
+                    if (this.source.model.set)
+                        this.source.model.set({
+                            [this.prop]: value
+                        });
+                    else
+                        this.source.model[this.prop] = value;
                 }
 
             }
@@ -89,9 +94,14 @@ export class Tap {
 
         if (!(this.modes & (EXPORT | PUT)))
             this.down(value, meta);
-
+        
         if ((this.modes & PUT) && typeof(value) !== "undefined") {
-            this.source.model[this.prop] = value;
+            if (this.source.model.set)
+                this.source.model.set({
+                    [this.prop]: value
+                });
+            else
+                this.source.model[this.prop] = value;
         }
 
         if (this.modes & EXPORT)
@@ -106,7 +116,7 @@ export class Tap {
             io.parent.removeIO(io)
 
         this.ios.push(io);
-        
+
         io.parent = this;
     }
 
@@ -125,5 +135,5 @@ export class UpdateTap extends Tap {
 }
 
 // This serves as a NOOP for io methods that expect a Tap with addIO and RemoveIO operations
-const noop = ()=>{}
-export const NOOPTap = {addIO:noop,removeIO:noop,up:noop}
+const noop = () => {}
+export const NOOPTap = { addIO: noop, removeIO: noop, up: noop }
