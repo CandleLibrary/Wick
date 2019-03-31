@@ -33,6 +33,7 @@ export class IOBase {
 export class IO extends IOBase {
 
     constructor(source, errors, tap, element = null, default_val) {
+
         super(tap);
         //Appending the value to a text node prevents abuse from insertion of malicious DOM markup. 
         this.ele = element;
@@ -184,7 +185,7 @@ export class BindIO extends IOBase {
 export class TemplateString extends IOBase {
 
     constructor(source, errors, taps, element, binds) {
-
+       
         super(source);
         this._SCHD_ = 0;
         this.binds = [];
@@ -232,13 +233,12 @@ export class TemplateString extends IOBase {
     down() { spark.queueUpdate(this); }
 
     scheduledUpdate() {
-
         let str = [];
 
         for (let i = 0; i < this.binds.length; i++)
             str.push(this.binds[i]._value_);
 
-        this.ele.data = str.join('');
+        this.ele.data = str.join('');   
     }
 }
 

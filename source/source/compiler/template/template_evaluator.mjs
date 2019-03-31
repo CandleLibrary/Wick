@@ -65,10 +65,9 @@ function processExpression(lex, binds) {
  */
 export function evaluate(lex, EVENT = false) {
     let binds = [];
-
     lex.IWS = false;
-
     let start = lex.pos;
+
     while (!lex.END && lex.ty !== lex.types.str) {
         switch (lex.ch) {
             case barrier_a_start:
@@ -213,7 +212,7 @@ export function evaluate(lex, EVENT = false) {
                 break;
         }
 
-        lex.n;
+        lex.next();
     }
 
     if (start < lex.off) {
@@ -234,6 +233,5 @@ export function evaluate(lex, EVENT = false) {
             binds.push(new RawValueBinding(lex.slice(start)));
         }
     }
-
     return binds;
 }

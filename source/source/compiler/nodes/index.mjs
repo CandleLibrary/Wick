@@ -1,3 +1,5 @@
+import { HTMLNode, TextNode } from "@candlefw/html";
+
 import { RootNode } from "./root.mjs";
 import { ScriptNode } from "./script.mjs";
 import { SourceNode } from "./source.mjs";
@@ -9,6 +11,8 @@ import { SVGNode } from "./svg.mjs";
 import { SlotNode } from "./slot.mjs";
 import { PreNode } from "./pre.mjs";
 import { Plugin } from "../../../plugin.mjs";
+import { replaceEscapedHTML } from "../../../utils/string.mjs";
+
 //Since all nodes extend the RootNode, this needs to be declared here to prevent module cycles. 
 async function CreateHTMLNode(tag, offset, lex) {
 
@@ -50,6 +54,20 @@ async function CreateHTMLNode(tag, offset, lex) {
 
     return new RootNode();
 }
+
+HTMLNode.prototype.processTextNodeHook = async function(lex, IS_INNER_HTML) {
+
+    let t = lex.trim(1);
+
+    if (!IS_INNER_HTML)
+        return new TextNode(replaceEscapedHTML(t.slice()));
+
+    if (t.string_length > 0)
+        return new TextNode(replaceEscapedHTML(t.slice()));
+
+    return null;
+}
+
 
 RootNode.prototype.createHTMLNodeHook = CreateHTMLNode;
 

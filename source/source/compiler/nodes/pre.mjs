@@ -23,7 +23,7 @@ export class PreNode extends HTMLNode {
     }
 
     async processTextNodeHook(lex, IS_INNER_HTML) {
-        debugger
+
         let t = lex.trim(1);
 
         if (!IS_INNER_HTML)
@@ -36,18 +36,4 @@ export class PreNode extends HTMLNode {
 
         return null;
     }
-}
-HTMLNode.prototype.processTextNodeHook = async function(lex, IS_INNER_HTML) {
-
-    let t = lex.trim(1);
-
-    if (!IS_INNER_HTML)
-        return new TextNode(replaceEscapedHTML(t.slice()));
-
-    let txt = "";
-
-    if (t.string_length > 0)
-        return new TextNode(replaceEscapedHTML(t.slice()));
-
-    return null;
 }

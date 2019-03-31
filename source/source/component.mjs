@@ -31,7 +31,6 @@ const
 
 let async_wait = 0;
 
-
 export const Component = (data) => createComponentWithJSSyntax(data, document.location.toString())
 
 /**
@@ -59,6 +58,7 @@ async function createComponentWithJSSyntax(data, locale) {
                 const data = await url.fetchText();
 
                 if (url.MIME == "text/javascript");
+
                 await (new Promise(res => {
 
                     const out = (data) => createComponentWithJSSyntax(data, url);
@@ -90,7 +90,7 @@ async function createComponentWithJSSyntax(data, locale) {
             }
             return;
         } else if (ext == "mjs") {
-            return;
+            return; //Todo, parse using import syntax
         } else if (ext == "html") {
             // fold data into itself to take advantage of SourcePackages automatic behavior when 
             // presented with a url
@@ -176,27 +176,30 @@ async function createComponentWithJSSyntax(data, locale) {
     // The default action with this object is to convert component back into a 
     // HTML tree string form that can be injected into the DOM of other components. 
     // Additional data can be added to this object before injection using this method.
-    let return_value = function(data) {
-        return source_tree.toString();
-    }
-    //This will ensure that something happens
-    return_value.toString = function(model) {
+    let return_value = (data) => source_tree.toString();
+
+    return_value.toString = async function(model) {
+
         if (model) {
 
-            let source = source_tree.build(null, null, presets, [], null, null, null,  true);
-            
+            let source = source_tree.build(null, null, presets, [], null, null, null, true);
+
             source.load(model);
+
+            //Wait one tick to update any IOs that are dependent on spark
+            await (new Promise(res => setTimeout(res, 1)));
 
             return source.ele.toString()
         }
+
         return source_tree.toString();
     }
 
     Object.assign(return_value, injects, { model, scheme, get tree() { return source_tree } });
 
     //Unashamedly proxying the SourcePackage~mount method
-    return_value.mount = function(e, m, s, mgr) { return pkg.mount(e, m, s, mgr) };
-    
+    return_value.mount = (e, m, s, mgr) => pkg.mount(e, m, s, mgr);
+
     Object.freeze(return_value);
 
 
@@ -402,7 +405,7 @@ function InjectSchema(tree, scheme, presets) {
     let
         uid = UID(),
         Scheme = scheme;
-        
+
     if (!Scheme.prototype || !(Scheme.prototype instanceof SchemedModel)) {
         Scheme = class extends SchemedModel {};
         Scheme.schema = scheme;

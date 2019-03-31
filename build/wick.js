@@ -5454,6 +5454,23 @@ ${is_iws}`;
     const TEXT = 1;
     const offset = "    ";
 
+    // Pollyfill of HTMLElement classList
+    function classList(this_arg, list){
+        Object.assign(list, {
+            add : (name) => {
+                let attrib = this_arg.getAttrib("class");
+                if(attrib){
+                    attrib.value += " " + name;
+                    list.push(name);
+                }
+                else{
+                    this_arg.setAttribute("class", name);
+                }
+            }
+        });
+        return list;
+    }
+
     /**
      * A node for text data.
      * @param  {string}  str     The text value of the node.
@@ -5567,9 +5584,9 @@ ${is_iws}`;
 
         get classList() {
             let classes = this.getAttrib("class");
-            if (typeof classes.value == "string")
-                return classes.split(" ");
-            return [];
+            if (classes && typeof (classes.value) === "string")
+                return classList(classes.split(" "));
+            return classList(this, []);
         }
 
         getAttribute(name) {
@@ -6143,31 +6160,11 @@ ${is_iws}`;
         async processTextNodeHook(lex, IS_INNER_HTML) {
             if (!IS_INNER_HTML)
                 return new TextNode(lex.trim(1).slice());
-            let txt = "";
-            /*
-            lex.IWS = true;
-
-            while (!lex.END) {
-                if (lex.ty == 8) {
-                    txt += " ";
-                } else if (lex.ty == 256) {} else {
-                    txt += lex.tx;
-                }
-                lex.IWS = false;
-                lex.n;
-            }
-
-            if(!(lex.ty & (8 | 256)))
-                txt += lex.tx;
-            */
-            //if (txt.length > 0) {
 
             let t = lex.trim(1);
 
             if (t.string_length > 0)
                 return new TextNode(t.slice());
-
-            //}
 
             return null;
         }
@@ -6240,6 +6237,7 @@ ${is_iws}`;
                 }
             });
         }
+
         HTMLNode.prototype.appendChild = function(child) {
             this.addChild(child);
         };
@@ -12200,6 +12198,7 @@ ${is_iws}`;
     class IO extends IOBase {
 
         constructor(source, errors, tap, element = null, default_val) {
+
             super(tap);
             //Appending the value to a text node prevents abuse from insertion of malicious DOM markup. 
             this.ele = element;
@@ -12351,7 +12350,7 @@ ${is_iws}`;
     class TemplateString extends IOBase {
 
         constructor(source, errors, taps, element, binds) {
-
+           
             super(source);
             this._SCHD_ = 0;
             this.binds = [];
@@ -12399,13 +12398,12 @@ ${is_iws}`;
         down() { spark.queueUpdate(this); }
 
         scheduledUpdate() {
-
             let str = [];
 
             for (let i = 0; i < this.binds.length; i++)
                 str.push(this.binds[i]._value_);
 
-            this.ele.data = str.join('');
+            this.ele.data = str.join('');   
         }
     }
 
@@ -13207,10 +13205,9 @@ ${is_iws}`;
      */
     function evaluate(lex, EVENT$$1 = false) {
         let binds = [];
-
         lex.IWS = false;
-
         let start = lex.pos;
+
         while (!lex.END && lex.ty !== lex.types.str) {
             switch (lex.ch) {
                 case barrier_a_start:
@@ -13355,7 +13352,7 @@ ${is_iws}`;
                     break;
             }
 
-            lex.n;
+            lex.next();
         }
 
         if (start < lex.off) {
@@ -13376,7 +13373,6 @@ ${is_iws}`;
                 binds.push(new RawValueBinding(lex.slice(start)));
             }
         }
-
         return binds;
     }
 
@@ -13849,8 +13845,8 @@ ${is_iws}`;
 
             } else {
                 own_element = this.createElement(presets, source);
-                
-                if (!source) 
+
+                if (!source)
                     source = new Source(null, presets, own_element, this);
 
                 if (out_ele)
@@ -13979,7 +13975,7 @@ ${is_iws}`;
                         return basic;
                     }
                 case "s":
-                    if (name == "showif"){
+                    if (name == "showif") {
                         bind_method = BOOL;
                         break;
                     }
@@ -14027,7 +14023,11 @@ ${is_iws}`;
         async processTextNodeHook(lex) {
             if (lex.sl - lex.pos > 0) {
                 //let binding = Template(lex.trim());
-                let binding = Template(whind$1(await Plugin.parseInnerHTMLonTag(this.tag, lex.trim(1).slice()), true));
+
+                lex = whind$1(
+                    await Plugin.parseInnerHTMLonTag(this.tag, lex.trim(1).slice()), true);
+
+                let binding = Template(lex);
                 if (binding)
                     return new RootText(this.processTapBinding(binding));
             }
@@ -16270,7 +16270,7 @@ ${is_iws}`;
         }
 
         async processTextNodeHook(lex, IS_INNER_HTML) {
-            debugger
+
             let t = lex.trim(1);
 
             if (!IS_INNER_HTML)
@@ -16284,20 +16284,6 @@ ${is_iws}`;
             return null;
         }
     }
-    HTMLNode.prototype.processTextNodeHook = async function(lex, IS_INNER_HTML) {
-
-        let t = lex.trim(1);
-
-        if (!IS_INNER_HTML)
-            return new TextNode(replaceEscapedHTML(t.slice()));
-
-        let txt = "";
-
-        if (t.string_length > 0)
-            return new TextNode(replaceEscapedHTML(t.slice()));
-
-        return null;
-    };
 
     //Since all nodes extend the RootNode, this needs to be declared here to prevent module cycles. 
     async function CreateHTMLNode(tag, offset, lex) {
@@ -16340,6 +16326,20 @@ ${is_iws}`;
 
         return new RootNode();
     }
+
+    HTMLNode.prototype.processTextNodeHook = async function(lex, IS_INNER_HTML) {
+
+        let t = lex.trim(1);
+
+        if (!IS_INNER_HTML)
+            return new TextNode(replaceEscapedHTML(t.slice()));
+
+        if (t.string_length > 0)
+            return new TextNode(replaceEscapedHTML(t.slice()));
+
+        return null;
+    };
+
 
     RootNode.prototype.createHTMLNodeHook = CreateHTMLNode;
 
@@ -16857,7 +16857,6 @@ ${is_iws}`;
 
     let async_wait = 0;
 
-
     const Component = (data) => createComponentWithJSSyntax(data, document.location.toString());
 
     /**
@@ -16885,6 +16884,7 @@ ${is_iws}`;
                     const data = await url.fetchText();
 
                     if (url.MIME == "text/javascript");
+
                     await (new Promise(res => {
 
                         const out = (data) => createComponentWithJSSyntax(data, url);
@@ -16916,7 +16916,7 @@ ${is_iws}`;
                 }
                 return;
             } else if (ext == "mjs") {
-                return;
+                return; //Todo, parse using import syntax
             } else if (ext == "html") {
                 // fold data into itself to take advantage of SourcePackages automatic behavior when 
                 // presented with a url
@@ -17002,27 +17002,30 @@ ${is_iws}`;
         // The default action with this object is to convert component back into a 
         // HTML tree string form that can be injected into the DOM of other components. 
         // Additional data can be added to this object before injection using this method.
-        let return_value = function(data) {
-            return source_tree.toString();
-        };
-        //This will ensure that something happens
-        return_value.toString = function(model) {
+        let return_value = (data) => source_tree.toString();
+
+        return_value.toString = async function(model) {
+
             if (model) {
 
-                let source = source_tree.build(null, null, presets, [], null, null, null,  true);
-                
+                let source = source_tree.build(null, null, presets, [], null, null, null, true);
+
                 source.load(model);
+
+                //Wait one tick to update any IOs that are dependent on spark
+                await (new Promise(res => setTimeout(res, 1)));
 
                 return source.ele.toString()
             }
+
             return source_tree.toString();
         };
 
         Object.assign(return_value, injects, { model, scheme, get tree() { return source_tree } });
 
         //Unashamedly proxying the SourcePackage~mount method
-        return_value.mount = function(e, m, s, mgr) { return pkg.mount(e, m, s, mgr) };
-        
+        return_value.mount = (e, m, s, mgr) => pkg.mount(e, m, s, mgr);
+
         Object.freeze(return_value);
 
 
@@ -17228,7 +17231,7 @@ ${is_iws}`;
         let
             uid = UID(),
             Scheme = scheme;
-            
+
         if (!Scheme.prototype || !(Scheme.prototype instanceof SchemedModel)) {
             Scheme = class extends SchemedModel {};
             Scheme.schema = scheme;

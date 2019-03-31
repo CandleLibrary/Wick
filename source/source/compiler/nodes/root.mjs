@@ -376,8 +376,8 @@ export class RootNode extends HTMLNode {
 
         } else {
             own_element = this.createElement(presets, source);
-            
-            if (!source) 
+
+            if (!source)
                 source = new Source(null, presets, own_element, this);
 
             if (out_ele)
@@ -506,7 +506,7 @@ export class RootNode extends HTMLNode {
                     return basic;
                 }
             case "s":
-                if (name == "showif"){
+                if (name == "showif") {
                     bind_method = BOOL;
                     break;
                 }
@@ -554,7 +554,11 @@ export class RootNode extends HTMLNode {
     async processTextNodeHook(lex) {
         if (lex.sl - lex.pos > 0) {
             //let binding = Template(lex.trim());
-            let binding = Template(whind(await Plugin.parseInnerHTMLonTag(this.tag, lex.trim(1).slice()), true));
+
+            lex = whind(
+                await Plugin.parseInnerHTMLonTag(this.tag, lex.trim(1).slice()), true)
+
+            let binding = Template(lex);
             if (binding)
                 return new RootText(this.processTapBinding(binding));
         }
