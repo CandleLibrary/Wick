@@ -1,5 +1,6 @@
 import { HTMLNode, TextNode } from "@candlefw/html";
 import { CSSRootNode } from "@candlefw/css";
+import { Plugin } from "../../../plugin.mjs";
 import {
     appendChild,
     createElement
@@ -35,6 +36,7 @@ import {
     barrier_b_start
 } from "../../../barriers";
 
+import whind from "@candlefw//whind"
 
 export class BindingCSSRoot extends CSSRootNode {
     getPropertyHook(value_lex, prop_name, rule) {
@@ -549,10 +551,10 @@ export class RootNode extends HTMLNode {
      * @param      {Lexer}    
      * @return     {TextNode}  
      */
-    processTextNodeHook(lex) {
+    async processTextNodeHook(lex) {
         if (lex.sl - lex.pos > 0) {
-
-            let binding = Template(lex.trim());
+            //let binding = Template(lex.trim());
+            let binding = Template(whind(await Plugin.parseInnerHTMLonTag(this.tag, lex.trim(1).slice()), true));
             if (binding)
                 return new RootText(this.processTapBinding(binding));
         }

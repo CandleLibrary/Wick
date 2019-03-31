@@ -7,12 +7,12 @@ import { Skeleton } from "../skeleton";
 
 
 
-function complete(lex, SourcePackage, presets, ast, url, win) {
+async function complete(lex, SourcePackage, presets, ast, url, win) {
 
 
     //Record URL if present for proper error messaging. 
-    if(url && !ast.url)
-        ast.url = url;    
+    if (url && !ast.url)
+        ast.url = url;
 
     /*
      * Only accept certain nodes for mounting to the DOM. 
@@ -41,18 +41,17 @@ function complete(lex, SourcePackage, presets, ast, url, win) {
 }
 
 
-function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win) {
-    return css_list[index].READY().then(() => {
+async function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win) {
+    await css_list[index].READY();
 
-        if (++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
+    if (++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
 
-        ast.linkCSS(null, win);
+    ast.linkCSS(null, win);
 
-        return complete(lex, SourcePackage, presets, ast, url, win);
-    });
+    return complete(lex, SourcePackage, presets, ast, url, win);
 }
 
-export function parseText(lex, SourcePackage, presets, url, win) {
+export async function parseText(lex, SourcePackage, presets, url, win) {
     let start = lex.off;
 
     while (!lex.END && lex.ch != "<") { lex.n; }
@@ -62,19 +61,21 @@ export function parseText(lex, SourcePackage, presets, url, win) {
         if (lex.pk.ty != lex.types.id)
             lex.throw(`Expecting an Identifier after '<' character, ${lex.str}`);
 
-        let node = CreateHTMLNode(lex.p.tx);
+        let node = await CreateHTMLNode(lex.p.tx);
 
         node.presets = presets;
 
-        return node.parse(lex, url).then((ast) => {
+        try {
+            const ast = await node.parse(lex, url)
+
             if (ast.css && ast.css.length > 0)
                 return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url, win);
 
             return complete(lex, SourcePackage, presets, ast, url, win);
-        }).catch((e) => {
+        } catch (e) {
             SourcePackage.addError(e);
             SourcePackage.complete();
-        });
+        }
     }
 
     debugger;

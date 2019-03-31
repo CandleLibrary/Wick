@@ -7,8 +7,16 @@ import { StyleNode } from "./style.mjs";
 import { VoidNode } from "./void.mjs";
 import { SVGNode } from "./svg.mjs";
 import { SlotNode } from "./slot.mjs";
+import { PreNode } from "./pre.mjs";
+import { Plugin } from "../../../plugin.mjs";
 //Since all nodes extend the RootNode, this needs to be declared here to prevent module cycles. 
-function CreateHTMLNode(tag) {
+async function CreateHTMLNode(tag, offset, lex) {
+
+
+
+    if (await Plugin.parseHTMLonTag(tag, this, lex))
+        return null;
+
     //jump table.
     switch (tag[0]) {
         case "w":
