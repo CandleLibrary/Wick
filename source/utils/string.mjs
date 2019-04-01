@@ -19,7 +19,8 @@ const EncodingMap = new Map([
     ["&lt;", "<"],
     ["&gt;", ">"],
     ["&quot;", '"'],
-    ["&apos;", "'"]
+    ["&apos;", "'"],
+    ["&nbsp;", "    "]
 ]);
 
 function replaceEncoding(str) {
