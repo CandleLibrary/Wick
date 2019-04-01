@@ -255,8 +255,8 @@ export class RootNode extends HTMLNode {
         return tap;
     }
 
-    checkTapMethod(name, lex, OVERRIDE = false) { 
-        if (this.par && !OVERRIDE) return false; 
+    checkTapMethod(name, lex, OVERRIDE = false) {
+        if (this.par && !OVERRIDE) return false;
 
         let tap_mode = KEEP; // Puts
 
@@ -432,7 +432,7 @@ export class RootNode extends HTMLNode {
      * @private
      */
     processAttributeHook(name, lex) {
-
+        
         if (!name) return null;
 
         let start = lex.off,
@@ -536,8 +536,7 @@ export class RootNode extends HTMLNode {
         if (lex.sl - lex.pos > 0) {
             //let binding = Template(lex.trim());
 
-            lex = whind(
-                await Plugin.parseInnerHTMLonTag(this.tag, lex.trim(1).slice()), true)
+            //lex = whind(await Plugin.parseInnerHTMLonTag(this.tag, lex.trim(1).slice()), true)
 
             let binding = Template(lex);
             if (binding)
@@ -549,7 +548,7 @@ export class RootNode extends HTMLNode {
 
     merge(node) {
         let merged_node = new this.constructor()
-        
+
         merged_node.line = this.line;
         merged_node.char = this.char;
         merged_node.offset = this.offset;
@@ -562,11 +561,10 @@ export class RootNode extends HTMLNode {
         merged_node.merged = true;
         merged_node._badge_name_ = this._badge_name_;
         merged_node.__presets__ = this.__presets__;
-        console.log(node.__statics__)
         merged_node.__statics__ = node.__statics__;
 
-        if(this.tap_list)
-            merged_node.tap_list = this.tap_list.map(e => Object.assign({},e));
+        if (this.tap_list)
+            merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));
 
         this.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind(e.value)));
         node.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind(e.value)));

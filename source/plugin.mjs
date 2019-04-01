@@ -21,23 +21,67 @@ const extensionParse = {
 }
 
 
-const parseInnerHTMLonTag = {
-    name: "parseInnerHTMLonTag",
+const parseInnerHTMLOnTag = {
+    name: "parseInnerHTMLOnTag",
 
     handlers: new Map(),
 
-    load: function(TagName, fun) {
-        parseInnerHTMLonTag.handlers.set(TagName, async (d) => await fun(d));
+    load: function(tag_name, fun) {
+        parseInnerHTMLOnTag.handlers.set(tag_name, fun);
     },
 
-    plugin: async function(TagName, data) {
+    plugin: async function(tag_name, calling_node, lex) {
 
-        const handler = parseInnerHTMLonTag.handlers.get(TagName);
+        const handler = parseInnerHTMLOnTag.handlers.get(tag_name);
 
-        if (handler)
-            return await handler(data);
+        if (handler) {
 
-        return data;
+            //Search for the closing tag and extract a copy of lex that is fenced between the start and points.
+            let level = 1;
+
+            const cpy = lex.copy();
+
+            let end = 0;
+
+            while (level > 0 && !cpy.END) {
+                //*
+                if (cpy.ch == "<") {
+                    if (cpy.pk.tx == tag_name) {
+                        cpy.next();
+                        level++;
+                    } else if (cpy.pk.ch == "/" && cpy.pk.pk.tx == tag_name) {
+                        level--;
+                        end = cpy.off;
+                        cpy.sync();
+                    }
+                }
+
+                cpy.next();
+                //*/
+            };
+
+            if(cpy.END)
+                throw cpy.throw("Unexpected end of input");
+
+            cpy.off = end;
+
+            const out = lex.copy().fence(cpy); 
+
+            lex.sync(cpy);
+
+            lex.tl = 0; // reset lexer token
+
+            lex.next(); // should be <
+
+            const newHTML = await handler(out.trim().slice(), calling_node);
+
+            if (typeof(newHTML) == "string")
+                await calling_node.parseRunner(whind(newHTML), true);
+
+            return true;
+        }
+
+        return false;
     }
 }
 
@@ -49,7 +93,7 @@ const parseHTMLonTag = {
     load: function(tag_name, fun) {
         //Should dissallow common tags to prevent recursion. 
         //Test: Make sure recurssion does no occure, or if it does, detect and report.
-        parseHTMLonTag.handlers.set(tag_name, async (d) => await fun(d));
+        parseHTMLonTag.handlers.set(tag_name, fun);
     },
 
     plugin: async function(tag_name, calling_node, lex) {
@@ -75,24 +119,23 @@ const parseHTMLonTag = {
                 if (cpy.ch == "/" && ((end = cpy.off) && cpy.pk.tx == tag_name)) {
                     cpy.next();
                     level--;
-                }
-                else if (cpy.ch == "<" && cpy.pk.tx == tag_name){
+                } else if (cpy.ch == "<" && cpy.pk.tx == tag_name) {
                     cpy.next();
                     level++;
                 }
 
-                    cpy.next();
+                cpy.next();
                 //*/
             };
 
             cpy.a(">", `Expecting a matching closing tag for ${tag_name}`);
 
             const off = cpy.off;
-            
+
             cpy.off = end - 1;
-            
-            const newHTML = await handler(lex.copy().fence(cpy).trim().slice());
-            
+
+            const newHTML = await handler(lex.copy().fence(cpy).trim().slice(), calling_node);
+
             cpy.off = off;
 
             lex.sync(cpy);
@@ -130,4 +173,4 @@ export const Plugin = ((...plugins) => {
     Object.freeze(plugin);
 
     return plugin;
-})(extensionParse, parseInnerHTMLonTag, parseHTMLonTag);
+})(extensionParse, parseInnerHTMLOnTag, parseHTMLonTag);
