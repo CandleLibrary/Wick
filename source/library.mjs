@@ -34,6 +34,9 @@ import { PackageNode } from "./source/compiler/nodes/package.mjs";
 import { SVGNode } from "./source/compiler/nodes/svg.mjs";
 import { SourceContainerNode } from "./source/compiler/nodes/container.mjs";
 
+//Utilities
+import { replaceEscapedHTML } from "./utils/string.mjs";
+
 const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);
 model.scheme = (schema, sm) => (sm = class extends SchemedModel {}, sm.schema = schema, sm);
 model.constr = SchemedModel;
@@ -56,9 +59,14 @@ scheme.constr.string = StringSchemeConstructor;
 scheme.constr.date = DateSchemeConstructor;
 scheme.constr.time = TimeSchemeConstructor;
 
+const Utils = {
+    replaceEscapedHTML
+}
+
 Object.freeze(scheme.constr);
 Object.freeze(scheme);
 Object.freeze(Presets);
+Object.freeze(Utils);
 Object.freeze(model.container.constr);
 Object.freeze(model.container);
 Object.freeze(model.any);
@@ -69,7 +77,8 @@ const core = {
     scheme: scheme,
     model: model,
     source: (...a) => new SourcePackage(...a),
-    plugin : Plugin
+    plugin : Plugin,
+    utils: Utils
 };
 
 core.source.compiler = Compiler;
