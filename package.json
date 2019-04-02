@@ -8,7 +8,7 @@
     "build_js_parser.table": "hydrocarbon table ./source/js/wick_js.hcg",
     "build_js_parser.mount": "hydrocarbon compile -n jsparser -o ./source/js -t 'mjs' -m ./source/js/wick_js.hcg",
     "prepublishOnly": "npm run build && npm test",
-    "test": "mocha -r esm",
+    "test": "node --experimental-modules ./test/config.mjs",
     "test.watch": "mocha -r esm -w -R min",
     "build": "rollup --config ./build/config/main.config.js",
     "build.watch": "rollup --config  ./build/config/main.config.js --watch"

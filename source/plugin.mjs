@@ -1,5 +1,8 @@
 import whind from "@candlefw/whind";
 
+
+
+// Allows a plugin function to parse the contents of a fetched resource whose file extensions matches the one set by the plugin. 
 const extensionParse = {
     name: "extensionParse",
 
@@ -20,7 +23,9 @@ const extensionParse = {
     }
 }
 
-
+// Allows a plugin function to replace innerHTML content in-stream when a HTML tag is matched. 
+// A string containing the contents of the matched elements innerHTML is passed to the plugin function. 
+// The executor expects a string to be returned from the plugin function
 const parseInnerHTMLOnTag = {
     name: "parseInnerHTMLOnTag",
 
@@ -84,6 +89,10 @@ const parseInnerHTMLOnTag = {
         return false;
     }
 }
+
+// Allows a plugin function to replace content in-stream when a HTML tag is matched. The entire contents of the element, inner and outer HTML, can be replaced through such a plugin. 
+// A string containing the contents of the matched element (open tag, inner content, and close tag) is passed to the plugin function. 
+// The executor expects an HTML string to be returned by the HTML function.
 
 const parseHTMLonTag = {
     name: "parseHTMLonTag",
@@ -153,7 +162,9 @@ const parseHTMLonTag = {
 }
 
 
-//Houses handlers for all extension
+// Houses handlers for all plugins 
+// Makes the `plugin` funciton of the handler available, which can be accessed by calling Plugin.*plugin.name* 
+// e.g Plugin({name:"newPlugin"}) ...> Plugin.newPlugin(...)
 export const Plugin = ((...plugins) => {
 
     const plugin_map = new Map(plugins.map(p => [p.name, p.load]))
