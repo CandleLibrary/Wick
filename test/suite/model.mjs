@@ -1,27 +1,9 @@
-
-            import chai from "chai";
-            chai.should();
-        import wick from "./source/wick.mjs";
-            async function pause(time = 1000){
-            	return new Promise(res=>{
-            		setTimeout(res, 1000)
-            	})
-            };
-        
-            import spark from "@candlefw/spark";
-        
-                describe("wick", ()=>{
-                    
-                    
-                    
-                    
-                    
-                describe("model", ()=>{
-                    
-                    
-                    
-                    
-                    it("Allows watchers to attach receive update on change events", async function() {
+export default [{
+    g: "wick.model",
+    s: "mocha.chai",
+    l: ["wick", "pause", "spark"],
+    d: "Allows watchers to attach receive update on change events",
+    t: async function() {
         let model = wick.model({
             id: 0,
             name: "bob",
@@ -39,7 +21,10 @@
         model.addListener(listener);
 
         await pause(1);
-    });it("Can Create copies that reference the same listeners to allow for immutable usage", async function() {
+    }
+}, {
+    d: "Can Create copies that reference the same listeners to allow for immutable usage",
+    t: async function() {
         let model = wick.model({
             id: 0,
             name: "bob",
@@ -70,7 +55,10 @@
         spark.update();
 
         model.name.should.equal("bob");
-    });it("Allows Composition of multiple models", function(done) {
+    }
+}, {
+    d: "Allows Composition of multiple models",
+    t: function(done) {
 
         let modelA = wick.model({
             name: "Munesu",
@@ -107,7 +95,10 @@
         modelA.nationality = "Bermudian";
 
         done();
-    });it("Can create immutable data structures", async function() {
+    }
+}, {
+    d: "Can create immutable data structures",
+    t: async function() {
         let users = [{ key: "name" }, { name: "bob", access_level: 1 }, { name: "sue", access_level: 8 }, { name: "yulia", access_level: 3 }];
         let model = wick.model({ number_of_users: 3, users });
 
@@ -131,7 +122,10 @@
 
         new_model2.set({ users: { name: "yulia", access_level: 20 } });
         new_model2.users.proxy.yulia.access_level.should.equal(20);
-    });it("Store structure allows leaf imutability", async function() {
+    }
+}, {
+    d: "Store structure allows leaf imutability",
+    t: async function() {
 
         let users = [{ key: "name" }, { name: "bob", access_level: 1 }, { name: "sue", access_level: 8 }, { name: "yulia", access_level: 3 }];
 
@@ -146,7 +140,10 @@
         store.current.users.proxy.bob.access_level.should.equal(20);
 
         store.getHistory(0).users.proxy.bob.access_level.should.equal(1);
-    });it("Can create schemed properties that accept specific values", async function() {
+    }
+}, {
+    d: "Can create schemed properties that accept specific values",
+    t: async function() {
         let user = wick.model({ name: "tommy", food: { type: "macaroon", common_name: 1122 } }, {
             name: wick.scheme.string,
             birthday: wick.scheme.date,
@@ -164,7 +161,10 @@
 
         user.birthday = "August 13, 1989 00:00:00";
         user.birthday.should.equal((new Date("August 13, 1989 00:00:00")).valueOf());
-    });it("Allows hook functions to be defined to provide mechanisms for server storage", async function(done) {
+    }
+}, {
+    d: "Allows hook functions to be defined to provide mechanisms for server storage",
+    t: async function(done) {
         this.slow(20000);
         let User = wick.model.scheme({
             name: wick.scheme.string,
@@ -212,7 +212,10 @@
 
         let name = user.name;
         user.name = name;
-    });it("Creates containers that can store multiple models", async function() {
+    }
+}, {
+    d: "Creates containers that can store multiple models",
+    t: async function() {
         let User = wick.model.scheme({
             name: wick.scheme.string,
             age: wick.scheme.number,
@@ -266,7 +269,10 @@
         users.length.should.equal(7);
         users.get("tom", [])[0].age.should.equal(32);
 
-    });it("Creates complex data hierarchies from basic Javascript object descriptions", async function() {
+    }
+}, {
+    d: "Creates complex data hierarchies from basic Javascript object descriptions",
+    t: async function() {
 
         let User = wick.model.scheme({
             name: wick.scheme.string,
@@ -299,6 +305,5 @@
         Store.current.users.length.should.equal(2);
         Store.current.users.get({ name: "Charles Dogo" }, [])[0].age.should.equal(57);
         Store.current.users.get({ age: 22 }, [])[0].name.should.equal("Allator Lehtinen");
-    });;
-                });;
-                });
+    }
+}]

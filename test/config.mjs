@@ -18,13 +18,26 @@ import cfwt from "@candlefw/tests";
         install: () => `
             import url from "@candlefw/url";
         `
+    },{
+        priority: 0,
+        name: "spark",
+        install: () => `
+            import spark from "@candlefw/spark";
+        `
+    },{
+        priority: 0,
+        name: "pause",
+        install: () => `
+            async function pause(time = 1000){
+            	return new Promise(res=>{
+            		setTimeout(res, 1000)
+            	})
+            };
+        `
     })
 
     //suites
     await cfwt.installSuite("./test/suites.mjs");
-
-    //Tests
-    await cfwt.installTest("./test/suite/plugins.mjs");
 
     //groups
     cfwt.installGroup({
@@ -63,6 +76,11 @@ import cfwt from "@candlefw/tests";
             global.Element = null;
         }
     })
+
+
+    //Tests
+    //await cfwt.installTest("./test/suite/plugins.mjs");
+    await cfwt.installTest("./test/suite/model.mjs");
 
     const suite = cfwt.build("wick");
 
