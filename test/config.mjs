@@ -1,39 +1,72 @@
 import cfwt from "@candlefw/tests";
 
 
-async function start() {
+(async function start() {
 
-	console.log(process.env.PWD)
+    //Libraries
+    cfwt.installLibrary({
+        priority: 0,
+        name: "wick",
+        install: () => "import wick from \"./source/wick.mjs\";"
+    }, {
+        priority: 0,
+        name: "vue",
+        install: () => "import vue from \"vue\";"
+    },{
+        priority: 0,
+        name: "url",
+        install: () => `
+            import url from "@candlefw/url";
+        `
+    })
 
-    cfwt.installSuite({
-        name: "mocha.chai",
-        cmd: "mocha -r esm $file",
-        initialize: function() {
-            return `
-            import chai from "chai";
-            chai.should();
-        `;
+    //suites
+    await cfwt.installSuite("./test/suites.mjs");
+
+    //Tests
+    await cfwt.installTest("./test/suite/plugins.mjs");
+
+    //groups
+    cfwt.installGroup({
+        name: "mocha.chai.jsdom:wick",
+        beforeTest: async () => {
+            const DOM = new JSDOM(`
+                <!DOCTPE html>
+                
+                <head test="123">
+                
+                </head>
+                
+                <body version="v3.14">
+                    <app>
+                    </app>
+                </body>
+
+                <script>
+                </script>
+            `);
+
+            const window = DOM.window;
+            //global.window = window;
+            //global.document = window.document;
+            //global.HTMLElement = window.HTMLElement;
+            //global.Location = window.Location;
+            //global.Element = window.Element;
+
         },
 
-        group: function(name, build) {
-            return `describe("${name}", ()=>{
-            ${build()}
-        });`
-        },
+        afterTest: async () => {
+            global.window = null;
+            global.document = null;
+            global.HTMLElement = null;
+            global.Location = null;
+            global.Element = null;
+        }
+    })
 
-        test: function(name, build) {
-            const test = build();
-            if (!test)
-                return `it("${name}");`;
-            else
-                return `it("${name}", ${test});`;
-        },
+    const suite = cfwt.build("wick");
 
-        finalize: () => ""
-    });
-
-    cfwt.installTest("./test/suite/plugins.mjs");
-    console.log(cfwt.build("wick"))
-}
-
-start()
+    for (let a in suite) {
+        await suite[a].run();
+    }
+})()

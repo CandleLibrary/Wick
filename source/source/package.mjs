@@ -60,6 +60,8 @@ export class BasePackage{
         this.pms.length = 0;
 
         this.freeze();
+
+        return this;
     }
 
     
@@ -69,7 +71,6 @@ export class BasePackage{
         this.HAVE_ERRORS = true;
         //Create error skeleton and push to skeletons
         this.errors.push(error_message);
-        console.error(error_message);
     }
 
     // Freezes properties.
@@ -173,6 +174,7 @@ export class BasePackage{
         return str;
     }
 }
+
 /**
  * SourcePackages stores compiled {@link SourceSkeleton}s and provide a way to _bind_ Model data to the DOM in a reusable manner. *
  * @property    {Array}    skeletons

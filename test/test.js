@@ -75,13 +75,9 @@ describe("Wick test suite.", function() {
     `);
 
         window = DOM.window;
-
         global.window = window;
-
         global.document = window.document;
-
         global.HTMLElement = window.HTMLElement;
-
         global.Location = window.Location;
 
         const performance = {

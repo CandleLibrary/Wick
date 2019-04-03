@@ -419,7 +419,8 @@ export class RootNode extends HTMLNode {
         return createElement(this.tag);
     }
 
-    endOfElementHook() {
+    async endOfElementHook() {
+        await super.endOfElementHook();
         return this.mergeComponent();
     }
 

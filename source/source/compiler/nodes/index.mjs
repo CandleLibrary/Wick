@@ -85,4 +85,8 @@ HTMLNode.prototype.processTextNodeHook = async function(lex, IS_INNER_HTML) {
     return null;
 }
 
+HTMLNode.prototype.endOfElementHook = async function(){
+    return await Plugin.tagHandler(this.tag, this);
+}
+
 export { RootNode, CreateHTMLNode };

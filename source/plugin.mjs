@@ -1,5 +1,34 @@
 import whind from "@candlefw/whind";
+import {HTMLNode} from "@candlefw/html";
 
+
+const tagHandler = {
+    name: "tagHandler",
+
+    handlers: new Map(),
+
+    load: function(in_ext, func_) {
+        tagHandler.handlers.set(in_ext, func_);
+    },
+
+    plugin: async function(in_ext, node) {
+
+        const handler = tagHandler.handlers.get(in_ext);
+
+        if (handler){
+
+            const out_node = await handler(node);
+
+            if(out_node !== node && out_node instanceof HTMLNode){
+                //Swap out nodes. 
+                return out_node;
+            }
+
+        }
+
+        return node;
+    }
+}
 
 
 // Allows a plugin function to parse the contents of a fetched resource whose file extensions matches the one set by the plugin. 
@@ -8,8 +37,8 @@ const extensionParse = {
 
     handlers: new Map(),
 
-    load: function(in_ext, out_ext, fun) {
-        extensionParse.handlers.set(in_ext, async (d) => ({ ext: out_ext, data: await fun(d) }));
+    load: function(in_ext, out_ext, func_) {
+        extensionParse.handlers.set(in_ext, async (d) => ({ ext: out_ext, data: await func_(d) }));
     },
 
     plugin: async function(in_ext, data) {
@@ -184,4 +213,4 @@ export const Plugin = ((...plugins) => {
     Object.freeze(plugin);
 
     return plugin;
-})(extensionParse, parseInnerHTMLOnTag, parseHTMLonTag);
+})(extensionParse, parseInnerHTMLOnTag, parseHTMLonTag, tagHandler);

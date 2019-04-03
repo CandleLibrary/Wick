@@ -75,6 +75,8 @@ export async function parseText(lex, SourcePackage, presets, url, win) {
         } catch (e) {
             SourcePackage.addError(e);
             SourcePackage.complete();
+
+            return SourcePackage;
         }
     }
 
