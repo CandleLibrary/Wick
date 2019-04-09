@@ -4,6 +4,7 @@ import spark from "@candlefw/spark";
 import { ModelContainerBase } from "../model/container/base";
 import { MultiIndexedContainer } from "../model/container/multi";
 import { View } from "../view";
+import { Tap } from "./tap/tap.mjs";
 
 /**
  * SourceContainer provide the mechanisms for dealing with lists and sets of components. 
@@ -49,11 +50,13 @@ export class SourceContainer extends View {
         this.root = 0;
         this.sco = 0;
         this.AUTO_SCRUB = false;
+        this.taps = {};
         parent.addTemplate(this);
     }
 
     get data() {}
     set data(container) {
+        console.log(container)
         if (container instanceof ModelContainerBase) {
             container.pin();
             container.addView(this);
@@ -121,49 +124,62 @@ export class SourceContainer extends View {
      * Scrub provides a mechanism to scroll through components of a container that have been limited through the limit filter.
      * @param  {Number} scrub_amount [description]
      */
-    scrub(scrub_amount, SCRUBBING = true) {
+    scrub(scrub_delta, SCRUBBING = true) {
+
+        // scrub_delta is the relative ammount of change from the previous offset. 
 
         this.SCRUBBING = true;
 
-        if (this.AUTO_SCRUB && !SCRUBBING && scrub_amount != Infinity) {
-            this.root = this.offset;
-            this.sco = this.old_scrub;
-            this.old_scrub += scrub_amount;
+        if (this.AUTO_SCRUB && !SCRUBBING && scrub_delta != Infinity) {
+            //this.root = this.offset;
+            //this.sco = this.old_scrub;
+            //this.old_scrub += scrub_amount;
             this.AUTO_SCRUB = false;
         }
-        if (scrub_amount !== Infinity) {
+        console.log(scrub_delta)
+        let delta_offset = scrub_delta + this.offset;
 
-            scrub_amount += this.sco;
+        let change_from_offset_fractional = delta_offset % 1;
 
-            let s = scrub_amount - this.scrub_offset;
+        let change_from_offset_abs = delta_offset | 0;
+
+        let change_from_offset_diff = Math.abs(change_from_offset_abs - (this.offset | 0));
+        this.offset = Math.max(0, Math.min(this.max - 1, delta_offset));
+        console.log(delta_offset, this.offset, change_from_offset_diff)
+
+        if (scrub_delta !== Infinity) {
+
+            if (Math.abs(change_from_offset_diff) > 1) {
+                if (change_from_offset_diff > 1) {
+                    debugger
+                    if (this.offset < this.max)
+                        this.trs_up.play(1);
+                    //this.scrub_offset++;
+                    //s = scrub_amount - this.scrub_offset;
+                    this.render(null, this.activeSources, this.limit, this.offset + 1, true);
+                } else if (change_from_offset_diff < 1) {
+                    debugger
+                    if (this.offset >= 1)
+                        this.trs_dn.play(1);
+                    //this.scrub_offset--;
+                    //s = scrub_amount - this.scrub_offset;
+                    this.render(null, this.activeSources, this.limit, this.offset - 1, true);
+                }
+            }
+
+            //scrub_amount += this.sco;
+
+            //let s = scrub_amount - this.scrub_offset;
 
             //Make Sure the the transition animation is completed before moving on to new animation sequences.
 
+            //this.scrub_v = scrub_amount - this.old_scrub;
+            //this.old_scrub = scrub_amount;
 
-            if (s > 1) {
-                if (this.offset < this.max)
-                    this.trs_up.play(1);
-
-                this.scrub_offset++;
-                s = scrub_amount - this.scrub_offset;
-                this.render(null, this.activeSources, this.limit, this.offset + 1, true);
-            } else if (s < -1) {
-
-                if (this.offset >= 1)
-                    this.trs_dn.play(1);
-                
-                this.scrub_offset--;
-                s = scrub_amount - this.scrub_offset;
-                this.render(null, this.activeSources, this.limit, this.offset - 1, true);
-            }
-
-            this.scrub_v = scrub_amount - this.old_scrub;
-            this.old_scrub = scrub_amount;
-
-            if (s > 0) {
+            if (change_from_offset_diff > 0) {
 
                 if (this.offset >= this.max)
-                    if (s > 0) s = 0;
+                    if (change_from_offset_fractional > 0) change_from_offset_fractional = 0;
 
 
                 if (!this.dom_up_appended) {
@@ -173,14 +189,15 @@ export class SourceContainer extends View {
                         this.dom_up[i].index = -1;
                         this.dom_sources.push(this.dom_up[i]);
                     }
+
                     this.dom_up_appended = true;
                 }
-                this.time = this.trs_up.play(s);
+
+                this.time = this.trs_up.play(change_from_offset_fractional);
             } else {
 
-                if (this.offset < 1 && s < 0)
-                    s = 0, this.scrub_v = 0;
-
+                if (this.offset < 1 && change_from_offset_fractional < 0)
+                    change_from_offset_fractional = 0;
 
                 if (!this.dom_dn_appended) {
 
@@ -191,11 +208,9 @@ export class SourceContainer extends View {
 
                     this.dom_sources = this.dom_dn.concat(this.dom_sources);
 
-
                     this.dom_dn_appended = true;
                 }
-
-                this.time = this.trs_dn.play(-s);
+                this.time = this.trs_dn.play(change_from_offset_fractional);
             }
         } else {
             this.sco = 0;
@@ -246,17 +261,19 @@ export class SourceContainer extends View {
 
         offset = Math.max(0, offset);
 
+        const integer_offset = offset | 0;
+        const fractional_offset = offset % 1;
+
         if (limit > 0) {
 
-            direction = this.offset < offset;
+            direction = this.offset < integer_offset;
             this.shift = Math.max(1, Math.min(limit, this.shift));
             let ein = [];
             let shift_points = Math.ceil(ol / this.shift);
             this.max = shift_points - 1;
             this.offset = Math.max(0, Math.min(shift_points - 1, offset));
-            this.root = this.offset;
-            let off = this.offset * this.shift;
-
+            //this.root = this.offset;
+            let off = integer_offset * this.shift;
             this.trs_up = glow.createTransition(false);
             this.trs_dn = glow.createTransition(false);
             this.dom_dn.length = 0;
@@ -286,7 +303,6 @@ export class SourceContainer extends View {
             ia = 0;
 
             while (i < off + limit && i < ol) {
-
                 if (oa < this.shift) {
                     oa++;
                     output[i].update({
@@ -408,13 +424,6 @@ export class SourceContainer extends View {
 
         this.dom_sources = output;
 
-        if (OWN_TRANSITION)
-            if (NO_TRANSITION) {
-                return transition;
-            } else {
-                transition.start();
-            }
-
         this.parent.upImport("template_count_changed", {
             displayed: ol,
             offset: offset,
@@ -425,6 +434,14 @@ export class SourceContainer extends View {
             trs: transition.in
         });
 
+
+        if (OWN_TRANSITION) {
+            if (NO_TRANSITION) {
+                return transition;
+            } else {
+                transition.start();
+            }
+        }
 
         return transition;
     }
@@ -475,15 +492,14 @@ export class SourceContainer extends View {
      * 
      * @protected
      */
-    cull(new_items) {
+    cull(new_items = []) {
 
-        if (!new_items) new_items = [];
-        let transition = glow.createTransition();
+        const transition = glow.createTransition();
+
         if (new_items.length == 0) {
             let sl = this.sources.length;
             for (let i = 0; i < sl; i++) this.sources[i].transitionOut(transition, "", true);
             this.sources.length = 0;
-
             this.parent.upImport("template_count_changed", {
                 displayed: 0,
                 offset: 0,
@@ -625,3 +641,6 @@ export class SourceContainer extends View {
         for (let i = 0, l = this.activeSources.length; i < l; i++) this.activeSources[i].transitionOut(transition);
     }
 }
+
+SourceContainer.prototype.removeIO = Tap.prototype.removeIO;
+SourceContainer.prototype.addIO = Tap.prototype.addIO;
