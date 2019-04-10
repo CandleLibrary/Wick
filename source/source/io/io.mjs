@@ -253,7 +253,6 @@ export class TemplateString extends IOBase {
 export class AttribTemplate extends TemplateString {
 
     constructor(source, errors, taps, attr, element, binds) {
-        debugger
         super(source, errors, taps, element, binds);
         this.attrib = attr;
     }

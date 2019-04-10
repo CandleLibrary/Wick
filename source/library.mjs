@@ -38,7 +38,7 @@ import { SourceContainerNode } from "./source/compiler/nodes/container.mjs";
 import { replaceEscapedHTML } from "./utils/string.mjs";
 
 const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);
-model.scheme = (schema, sm) => (sm = class extends SchemedModel {}, sm.schema = schema, sm);
+model.scheme = (s, scheme) => (scheme = class extends SchemedModel {}, scheme.schema = s, scheme);
 model.constr = SchemedModel;
 model.any = (data) => new Model(data);
 model.any.constr = Model;

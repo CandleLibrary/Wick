@@ -191,6 +191,10 @@ class ModelBase {
 
 
     _deferUpdateToRoot_(data, MUTATION_ID = this.MUTATION_ID) {
+        
+        if(!this.root)
+            return this;
+
         return this.root._setThroughRoot_(data, this.address, 0, this.address.length, MUTATION_ID);
     }
 

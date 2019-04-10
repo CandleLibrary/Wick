@@ -18,16 +18,15 @@ async function CreateHTMLNode(tag, offset, lex) {
 
     if (await Plugin.parseHTMLonTag(tag, this, lex))
         return null;
-
     //jump table.
-    if (tag[0] == "2")
+    if (tag[0] == "w")
         switch (tag) {
             case "w-s":
                 return new SourceNode(); //This node is used to 
             case "w-c":
                 return new SourceContainerNode(); //This node is used to 
         }
-
+        
     switch (tag) {
         case "a":
             return new LinkNode();

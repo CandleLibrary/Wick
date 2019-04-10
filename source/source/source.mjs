@@ -23,6 +23,7 @@ export class Source extends View {
         this.ast = null;
 
         ast.setSource(this);
+        
         this.parent = parent;
         this.ele = element;
         this.presets = presets;
@@ -30,13 +31,13 @@ export class Source extends View {
         this.statics = null;
 
         this.taps = {};
-        this.update_tap = null;
         this.children = [];
         this.sources = [];
         this.badges = {};
         this.ios = [];
-        this.templates = [];
+        this.containers = [];
         this.hooks = [];
+        this.update_tap = null;
 
         this._model_name_ = "";
         this._schema_name_ = "";
@@ -87,7 +88,7 @@ export class Source extends View {
 
     addTemplate(template) {
         template.parent = this;
-        this.templates.push(template);
+        this.containers.push(template);
     }
 
     addSource(source) {
@@ -221,8 +222,8 @@ export class Source extends View {
         //        for (let i = 0, l = this.sources.length; i < l; i++)
         //            this.sources[i].down(data, changed_values);
 
-        for (let i = 0, l = this.templates.length; i < l; i++)
-            this.templates[i].down(data, changed_values);
+        for (let i = 0, l = this.containers.length; i < l; i++)
+            this.containers[i].down(data, changed_values);
     }
 
     transitionIn(transition) {
@@ -233,8 +234,8 @@ export class Source extends View {
         for (let i = 0, l = this.sources.length; i < l; i++)
             this.sources[i].transitionIn(transition);
 
-        for (let i = 0, l = this.templates.length; i < l; i++)
-            this.templates[i].transitionIn(transition);
+        for (let i = 0, l = this.containers.length; i < l; i++)
+            this.containers[i].transitionIn(transition);
     }
 
     transitionOut(transition) {
@@ -245,8 +246,8 @@ export class Source extends View {
             this.sources[i].transitionOut(transition);
 
 
-        for (let i = 0, l = this.templates.length; i < l; i++)
-            this.templates[i].transitionOut(transition);
+        for (let i = 0, l = this.containers.length; i < l; i++)
+            this.containers[i].transitionOut(transition);
     }
 
     bubbleLink(child) {

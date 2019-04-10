@@ -69,7 +69,6 @@ export class SourceNode extends RootNode {
 
         let out_taps = [];
 
-
         let me = new Source(source, this.__presets__ || presets, element, this);
 
         this.pushChached(me);
@@ -167,6 +166,7 @@ export class SourceNode extends RootNode {
 
         par_list.pop()
 
+
         if (statics || this.__statics__) {
             let s = Object.assign({}, statics ? statics : {}, this.__statics__);
             me.statics = s;
@@ -190,7 +190,7 @@ export class SourceNode extends RootNode {
      * @return     {Object}  Key value pair.
      */
     processAttributeHook(name, lex, value) {
-        console.log(name)
+
         let start = lex.off,
             basic = {
                 IGNORE: true,
@@ -229,6 +229,7 @@ export class SourceNode extends RootNode {
                 break;
             case "c":
                 if (name == "component") {
+                    
                     let component_name = lex.tx;
                     let components = this.presets.components;
                     if (components)

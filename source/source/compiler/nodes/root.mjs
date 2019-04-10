@@ -548,8 +548,7 @@ export class RootNode extends HTMLNode {
     }
 
     merge(node) {
-        let merged_node = new this.constructor()
-
+        const merged_node = new this.constructor()
         merged_node.line = this.line;
         merged_node.char = this.char;
         merged_node.offset = this.offset;
@@ -560,18 +559,21 @@ export class RootNode extends HTMLNode {
         merged_node.css = this.css;
         merged_node.HAS_TAPS = this.HAS_TAPS;
         merged_node.merged = true;
-        merged_node._badge_name_ = this._badge_name_;
-        merged_node.__presets__ = this.__presets__;
-        merged_node.__statics__ = node.__statics__;
+        merged_node._badge_name_ = node._badge_name_;
+        merged_node.__presets__ = this.presets;
+        merged_node.__statics__ = node.__statics__
 
         if (this.tap_list)
             merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));
 
+
+
         this.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind(e.value)));
         node.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind(e.value)));
 
-        //merged_node.attributes = this.attributes.slice();
+        merged_node.attributes = merged_node.attributes.concat(this.attributes, node.attributes)
 
+        //merged_node.attributes = this.attributes.slice();
         return merged_node;
     }
 }

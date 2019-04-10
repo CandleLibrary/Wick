@@ -44,7 +44,6 @@ export class SourceContainerNode extends RootNode {
             if (this._badge_name_)
                 source.badges[this._badge_name_] = ele;
 
-
             let me = new SourceContainer(source, presets, ele);
             
             me.package = this.package;
@@ -72,7 +71,7 @@ export class SourceContainerNode extends RootNode {
                 }
 
                 if (shift && shift.binding.type == 1) {
-                    me.shift = parseInt(shift.value);
+                    me.shift_amount = parseInt(shift.value);
                     shift = null;
                 }
 
@@ -88,7 +87,7 @@ export class SourceContainerNode extends RootNode {
 
     /******************************************* HOOKS ****************************************************/
 
-    endOfElementHook() {}
+    endOfElementHook() {return this}
 
     _ignoreTillHook_() {}
 
@@ -101,20 +100,28 @@ export class SourceContainerNode extends RootNode {
             default:
                 return new PackageNode(start); //This node is used to build packages
         }
+
     }
 
     processTextNodeHook(lex) {
         if (!this.property_bind) {
-            this.property_bind_text = lex.trim().slice();
-            let cp = lex.copy();
-            lex.IWS = true;
+            this.property_bind_text = lex.slice().trim();
+            
+            let cp = lex.copy().trim();
+            cp.IWS = true;
             cp.tl = 0;
-            if (cp.n.ch == barrier_a_start && (cp.n.ch == barrier_a_start || cp.ch == barrier_b_start)) {
-                let binding = Template(lex);
-                if (binding)
+            cp.next();
+
+            
+            if (cp.ch == barrier_a_start && (cp.pk.ch == barrier_a_start || cp.pk.ch == barrier_b_start)) {
+                let binding = Template(cp);
+                if (binding){
                     this.property_bind = this.processTapBinding(binding);
+                }
             }
         }
+
+        return null;
     }
 
     innerToString(off){

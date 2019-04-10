@@ -21,7 +21,7 @@ import {
 export function Template(lex, FOR_EVENT) {
     let binds = evaluate(lex, FOR_EVENT);
     if (binds.length > 0) {
-        if (binds.length == 1)
+    if (binds.length == 1)
             return binds[0];
         return new OutTemplate(binds);
     }

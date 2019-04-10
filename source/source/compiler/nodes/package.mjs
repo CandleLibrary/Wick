@@ -30,12 +30,17 @@ export class PackageNode extends VoidNode {
 
         if (!this.fch)
             this.mergeComponent();
+
+        return this;
     }
 
     mergeComponent() {
+        
         let component = this.presets.components[this.tag];
 
         if (component)
             this.par.package = new this.SourcePackage(component, this.presets, false);
+
+        return component
     }
 }
