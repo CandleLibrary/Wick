@@ -1,6 +1,6 @@
 export default [{
     name: "mocha.chai.jsdom",
-    cmd: "mocha -w -r esm $file",
+    cmd: "mocha -r esm $file",
     initialize: function() {
         return `
             import chai from "chai";

@@ -2,6 +2,9 @@ import cfwt from "@candlefw/tests";
 
 
 (async function start() {
+    //Testing turned off for alpha release
+    
+    //return;
 
     //Libraries
     cfwt.installLibrary({
@@ -30,7 +33,7 @@ import cfwt from "@candlefw/tests";
         install: () => `
             async function pause(time = 1000){
             	return new Promise(res=>{
-            		setTimeout(res, 1000)
+            		setTimeout(res, time)
             	})
             };
         `
@@ -60,11 +63,11 @@ import cfwt from "@candlefw/tests";
             `);
 
             const window = DOM.window;
-            //global.window = window;
-            //global.document = window.document;
-            //global.HTMLElement = window.HTMLElement;
-            //global.Location = window.Location;
-            //global.Element = window.Element;
+            global.window = window;
+            global.document = window.document;
+            global.HTMLElement = window.HTMLElement;
+            global.Location = window.Location;
+            global.Element = window.Element;
 
         },
 
@@ -80,9 +83,11 @@ import cfwt from "@candlefw/tests";
 
     //Tests
     //await cfwt.installTest("./test/suite/plugins.mjs");
-    await cfwt.installTest("./test/suite/model.mjs");
+    //await cfwt.installTest("./test/suite/model.mjs");
+    await cfwt.installTest("./test/suite/scrubbing.mjs");
 
     const suite = cfwt.build("wick");
+    console.log(suite)
 
     for (let a in suite) {
         await suite[a].run();

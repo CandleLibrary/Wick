@@ -1,65 +1,9 @@
-
-            import chai from "chai";
-            import jsd from "jsdom";
-            const JSDOM =  jsd.JSDOM;
-            chai.should();
-        import wick from "./source/wick.mjs";
-            import url from "@candlefw/url";
-        
-            async function pause(time = 1000){
-            	return new Promise(res=>{
-            		setTimeout(res, time)
-            	})
-            };
-        
-                describe("wick", ()=>{
-                    
-                    
-                    beforeEach(async () => {
-            const DOM = new JSDOM(`
-                <!DOCTPE html>
-                
-                <head test="123">
-                
-                </head>
-                
-                <body version="v3.14">
-                    <app>
-                    </app>
-                </body>
-
-                <script>
-                </script>
-            `);
-
-            const window = DOM.window;
-            global.window = window;
-            global.document = window.document;
-            global.HTMLElement = window.HTMLElement;
-            global.Location = window.Location;
-            global.Element = window.Element;
-
-        });
-                    afterEach(async () => {
-            global.window = null;
-            global.document = null;
-            global.HTMLElement = null;
-            global.Location = null;
-            global.Element = null;
-        });
-                    
-                describe("container", ()=>{
-                    
-                    
-                    
-                    
-                    
-                describe("scrubbing", ()=>{
-                    
-                    
-                    
-                    
-                    it("Allows scrubbing of elements within a container", async function() {
+export default [{
+    s: "mocha.chai.jsdom",
+    l: ["wick", "wick.node", "url", "pause"],
+    g: 'wick.container.scrubbing',
+    d: "Allows scrubbing of elements within a container",
+    t: async function() {
     	this.slow(5000);
     	this.timeout(12000);
 
@@ -158,7 +102,5 @@
         console.log(container.offset, container.offset_fractional, container.activeSources.map(e=>e.sources[0].test_value))
 
 
-    });;
-                });;
-                });;
-                });
+    }
+}]
