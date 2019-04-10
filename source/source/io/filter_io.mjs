@@ -8,10 +8,10 @@ let expr_check = (expr) => {
 
 
 export class FilterIO extends IOBase {
-    constructor(source, errors, taps, template, activation, sort, filter, limit, offset, scrub, shift) {
-        super(template, errors);
+    constructor(source, errors, taps, container, activation, sort, filter, limit, offset, scrub, shift) {
+        super(container, errors);
 
-        this.template = template;
+        this.container = container;
         this._activation_function_ = null;
         this._sort_function_ = null;
         this.filter_function = null;
@@ -82,8 +82,8 @@ export class FilterIO extends IOBase {
 
     update() {
         if (this.CAN_SORT || this.CAN_FILTER) {
-            this.template.UPDATE_FILTER = true;
-            spark.queueUpdate(this.template);
+            this.container.UPDATE_FILTER = true;
+            spark.queueUpdate(this.container);
         }
     }
 
@@ -97,7 +97,7 @@ export class FilterIO extends IOBase {
         this._sort_function_ = null;
         this._activation_function_ = null;
         this.filter_function = null;
-        this.template = null;
+        this.container = null;
     }
 
     get data() {}
@@ -108,11 +108,11 @@ export class FilterIO extends IOBase {
         this._value_ = v;
 
         if (this._CAN_SCRUB_)
-            return this.template.scrub(this._value_, false);
+            return this.container.scrub(parseFloat(this._value_), false);
 
         if (this.CAN_SORT || this.CAN_FILTER || this._CAN_SHIFT_)
-            this.template.UPDATE_FILTER = true;
+            this.container.UPDATE_FILTER = true;
 
-        spark.queueUpdate(this.template);
+        spark.queueUpdate(this.container);
     }
 }

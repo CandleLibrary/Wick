@@ -41,11 +41,29 @@
 
         });
                     afterEach(async () => {
-            global.window = null;
-            global.document = null;
-            global.HTMLElement = null;
-            global.Location = null;
-            global.Element = null;
+            const DOM = new JSDOM(`
+                <!DOCTPE html>
+                
+                <head test="123">
+                
+                </head>
+                
+                <body version="v3.14">
+                    <app>
+                    </app>
+                </body>
+
+                <script>
+                </script>
+            `);
+
+            const window = DOM.window;
+            global.window = window;
+            global.document = window.document;
+            global.HTMLElement = window.HTMLElement;
+            global.Location = window.Location;
+            global.Element = window.Element;
+
         });
                     
                 describe("container", ()=>{
@@ -140,7 +158,7 @@
 
         let ele = document.createElement("div");
         let mgr = component.mount(ele, { data: [{ data: 1 }, { data: 2 }, { data: 3 }, { data: 4 }, { data: 5 }, { data: 6 }, { data: 7 }, { data: 8 }] });
-        const container = mgr.sources[0].templates[0];
+        const container = mgr.sources[0].containers[0];
  
         console.log(container.activeSources.map(e=>e.sources[0].test_value))
         await pause(120)

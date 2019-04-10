@@ -40,7 +40,6 @@ async function complete(lex, SourcePackage, presets, ast, url, win) {
     return SourcePackage;
 }
 
-
 async function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win) {
     await css_list[index].READY();
 
@@ -79,8 +78,7 @@ export async function parseText(lex, SourcePackage, presets, url, win) {
             return SourcePackage;
         }
     }
-
-    debugger;
+    
     SourcePackage.addError(new Error(`Unexpected end of input. ${lex.slice(start)}, ${lex.str}`));
     SourcePackage.complete();
 }
