@@ -3,7 +3,7 @@ import spark from "@candlefw/spark";
 
 export class ScriptIO extends IOBase {
     constructor(source, errors, tap, binding, node, statics) {
-        
+
         let func, HAVE_CLOSURE = false;
 
         try {
@@ -12,7 +12,7 @@ export class ScriptIO extends IOBase {
                 if(binding.HAVE_CLOSURE)
                     HAVE_CLOSURE = true;
             } else {
-                func = Function(binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val);
+                func = Function(binding.arg_key || binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val);
                 binding._func_ = func;
             }
         } catch (e) {
