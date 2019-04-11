@@ -548,7 +548,7 @@ export class SourceContainer extends View {
 
             exists.forEach((v, k, m) => { if (v) out.push(k); });
 
-            
+
             if (out.length > 0) { 
                 // Wrap models into components
                 this.added(out, transition);
@@ -695,6 +695,7 @@ export class SourceContainer extends View {
             });
         }
     }
+    
     transitionOut(transition) {
         return;
         for (let i = 0, l = this.activeSources.length; i < l; i++) this.activeSources[i].transitionOut(transition);

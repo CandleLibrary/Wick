@@ -36,7 +36,7 @@ const EL = (typeof(HTMLElement) !== "undefined") ? HTMLElement : ()=>{};
  * @memberof module:wick~internals
  * @type Object
  */
-const OB = Object;
+const OB$1 = Object;
 
 /**
  * Global String class short name
@@ -103,7 +103,7 @@ const createElement = (e) => document.createElement(e);
  * @param 	{HTMLElement}  		el  	- parent HTMLElement.
  * @return  {HTMLElement | HTMLNode}  		ch_el 	- child HTMLElement or HTMLNode. 
  */
-const appendChild = (el, ch_el) => el.appendChild(ch_el);
+const appendChild$1 = (el, ch_el) => el.appendChild(ch_el);
 
 /**
  *  Element.prototype.cloneNode short name wrapper.
@@ -113,7 +113,7 @@ const appendChild = (el, ch_el) => el.appendChild(ch_el);
  * @param 	{HTMLElement}  		el   - HTMLElement to clone.
  * @return  {Boolean}  			bool - Switch for deep clone
  */
-const cloneNode = (el, bool) => el.cloneNode(bool);
+const cloneNode$1 = (el, bool) => el.cloneNode(bool);
 
 /**
  *  Element.prototype.getElementsByTagName short name wrapper.
@@ -135,15 +135,15 @@ const _getElementByTag_ = (el, tag) => el.getElementsByTagName(tag);
  */
 const _instanceOf_ = (inst, constr) => inst instanceof constr;
 
-const _SealedProperty_ = (object, name, value) => OB.defineProperty(object, name, {value, configurable: false, enumerable: false, writable: true});
-const _FrozenProperty_ = (object, name, value) => OB.defineProperty(object, name, {value, configurable: false, enumerable: false, writable: false});
+const _SealedProperty_ = (object, name, value) => OB$1.defineProperty(object, name, {value, configurable: false, enumerable: false, writable: true});
+const _FrozenProperty_ = (object, name, value) => OB$1.defineProperty(object, name, {value, configurable: false, enumerable: false, writable: false});
 
 /**
  * Used to call the Scheduler after a JavaScript runtime tick.
  *
  * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
  */
-    
+ 
 const caller = (typeof(window) == "object" && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
     setTimeout(f, 1);
 };
@@ -169,16 +169,7 @@ class Spark {
 
         this.queue_switch = 0;
 
-        this.callback = ()=>{};
-
-        if(typeof(window) !== "undefined"){
-            window.addEventListener("load",()=>{
-                this.callback = () => this.update();
-                caller(this.callback);
-            });
-        }else{
-            this.callback = () => this.update();
-        }
+        this.callback = () => this.update();
 
         this.frame_time = perf.now();
 
@@ -209,11 +200,9 @@ class Spark {
 
         this.frame_time = perf.now() | 0;
 
+        this.SCHEDULE_PENDING = true;
 
-        if(!this.SCHEDULE_PENDING){
-            this.SCHEDULE_PENDING = true;
-            caller(this.callback);
-        }
+        caller(this.callback);
     }
 
     removeFromQueue(object){
@@ -473,6 +462,10 @@ class ModelBase {
 
 
     _deferUpdateToRoot_(data, MUTATION_ID = this.MUTATION_ID) {
+        
+        if(!this.root)
+            return this;
+
         return this.root._setThroughRoot_(data, this.address, 0, this.address.length, MUTATION_ID);
     }
 
@@ -1844,7 +1837,7 @@ class Lexer {
             thick_line = String.fromCharCode(0x2501),
             line_number = "    " + this.line + ": ",
             line_fill = line_number.length,
-            t$$1 = thick_line.repeat(line_fill + 48),
+            t = thick_line.repeat(line_fill + 48),
             is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
         const pk = this.copy();
         pk.IWS = false;
@@ -1852,10 +1845,10 @@ class Lexer {
         const end = pk.off;
 
         return `${message} at ${this.line}:${this.char}
-${t$$1}
+${t}
 ${line_number+this.str.slice(Math.max(this.off - this.char, 0), end)}
 ${line.repeat(this.char-1+line_fill)+trs+arrow}
-${t$$1}
+${t}
 ${is_iws}`;
     }
 
@@ -1920,7 +1913,7 @@ ${is_iws}`;
         }
 
         //Token builder
-        const l$$1 = marker.sl,
+        const l = marker.sl,
             str = marker.str,
             IWS = marker.IWS;
 
@@ -1931,9 +1924,9 @@ ${is_iws}`;
             line = marker.line,
             base = off;
 
-        if (off >= l$$1) {
+        if (off >= l) {
             length = 0;
-            base = l$$1;
+            base = l;
             char -= base - off;
             marker.type = type;
             marker.off = base;
@@ -1951,14 +1944,14 @@ ${is_iws}`;
             let code = str.charCodeAt(off);
             let off2 = off;
             let map = this.symbol_map,
-                m$$1;
+                m;
             let i = 0;
 
             while (code == 32 && IWS)
                 (code = str.charCodeAt(++off2), off++);
 
-            while ((m$$1 = map.get(code))) {
-                map = m$$1;
+            while ((m = map.get(code))) {
+                map = m;
                 off2 += 1;
                 code = str.charCodeAt(off2);
             }
@@ -1986,7 +1979,7 @@ ${is_iws}`;
 
                     switch (jump_table[code]) {
                         case 0: //NUMBER
-                            while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)]));
+                            while (++off < l && (12 & number_and_identifier_table[str.charCodeAt(off)]));
 
                             if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off + 1)])) {
                                 off++;
@@ -2003,7 +1996,7 @@ ${is_iws}`;
 
                             break;
                         case 1: //IDENTIFIER
-                            while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
+                            while (++off < l && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
                             type = identifier;
                             length = off - base;
                             break;
@@ -2011,18 +2004,18 @@ ${is_iws}`;
                             if (this.PARSE_STRING) {
                                 type = symbol;
                             } else {
-                                while (++off < l$$1 && str.charCodeAt(off) !== code);
+                                while (++off < l && str.charCodeAt(off) !== code);
                                 type = string;
                                 length = off - base + 1;
                             }
                             break;
                         case 3: //SPACE SET
-                            while (++off < l$$1 && str.charCodeAt(off) === SPACE);
+                            while (++off < l && str.charCodeAt(off) === SPACE);
                             type = white_space;
                             length = off - base;
                             break;
                         case 4: //TAB SET
-                            while (++off < l$$1 && str[off] === HORIZONTAL_TAB);
+                            while (++off < l && str[off] === HORIZONTAL_TAB);
                             type = white_space;
                             length = off - base;
                             break;
@@ -2055,13 +2048,13 @@ ${is_iws}`;
                 }
 
                 if (IWS && (type & white_space_new_line)) {
-                    if (off < l$$1) {
+                    if (off < l) {
                         char += length;
                         type = symbol;
                         continue;
                     } else {
                         //Trim white space from end of string
-                        base = l$$1 - length;
+                        base = l - length;
                         marker.sl -= length;
                         length = 0;
                         char -= base - off;
@@ -2226,11 +2219,11 @@ ${is_iws}`;
             off = lex.off;
 
         for (; lex.off < lex.sl; lex.off++) {
-            const c$$1 = jump_table[lex.string.charCodeAt(lex.off)];
+            const c = jump_table[lex.string.charCodeAt(lex.off)];
 
-            if (c$$1 > 2 && c$$1 < 7) {
+            if (c > 2 && c < 7) {
 
-                if (space_count > leave_leading_amount) {
+                if (space_count >= leave_leading_amount) {
                     off++;
                 } else {
                     space_count++;
@@ -2246,10 +2239,10 @@ ${is_iws}`;
         off = lex.sl;
 
         for (; lex.sl > lex.off; lex.sl--) {
-            const c$$1 = jump_table[lex.string.charCodeAt(lex.sl - 1)];
+            const c = jump_table[lex.string.charCodeAt(lex.sl - 1)];
 
-            if (c$$1 > 2 && c$$1 < 7) {
-                if (space_count > leave_trailing_amount) {
+            if (c > 2 && c < 7) {
+                if (space_count >= leave_trailing_amount) {
                     off--;
                 } else {
                     space_count++;
@@ -2282,11 +2275,11 @@ ${is_iws}`;
 
         for (let i = 0; i < sym.length; i++) {
             let code = sym.charCodeAt(i);
-            let m$$1 = map.get(code);
-            if (!m$$1) {
-                m$$1 = map.set(code, new Map).get(code);
+            let m = map.get(code);
+            if (!m) {
+                m = map.set(code, new Map).get(code);
             }
-            map = m$$1;
+            map = m;
         }
         map.IS_SYM = true;
     }
@@ -2300,7 +2293,7 @@ ${is_iws}`;
         return this.sl - this.off;
     }
 
-    set string_length(s$$1) {}
+    set string_length(s) {}
 
     /**
      * The current token in the form of a new Lexer with the current state.
@@ -2369,7 +2362,7 @@ ${is_iws}`;
     get n() { return this.next() }
 
     get END() { return this.off >= this.sl }
-    set END(v$$1) {}
+    set END(v) {}
 
     get type() {
         return 1 << (this.masked_values & TYPE_MASK);
@@ -3104,7 +3097,7 @@ class BtreeNode {
                 if (left.LEAF)
                     for (let i = 0; i < left.keys.length; i++)
                         if (left.keys[i] != left.nodes[i].id)
-                            {/*debugger*/}
+                            {/*debugger*/};
 
                 return true;
             }
@@ -3672,7 +3665,7 @@ function fetchLocalText(URL, m = "same-origin") {
         fetch(URL, {
             mode: m, // CORs not allowed
             credentials: m,
-            method: "Get"
+            method: "GET"
         }).then(r => {
 
             if (r.status < 200 || r.status > 299)
@@ -3688,7 +3681,7 @@ function fetchLocalJSON(URL, m = "same-origin") {
         fetch(URL, {
             mode: m, // CORs not allowed
             credentials: m,
-            method: "Get"
+            method: "GET"
         }).then(r => {
             if (r.status < 200 || r.status > 299)
                 r.json().then(rej);
@@ -3795,7 +3788,7 @@ class URL {
 
         let location = (typeof(document) !== "undefined") ? document.location : STOCK_LOCATION;
 
-        if (url instanceof Location) {
+        if (typeof(Location) !== "undefined" && url instanceof Location) {
             location = url;
             url = "";
             IS_LOCATION = true;
@@ -4134,8 +4127,8 @@ class URL {
         return submitForm(this.toString(), form_data);
     }
 
-    submitJSON(json_data) {
-        return submitJSON(this.toString(), json_data);
+    submitJSON(json_data, mode) {
+        return submitJSON(this.toString(), json_data, mode);
     }
     /**
      * Goes to the current URL.
@@ -4301,10 +4294,11 @@ URL.simulate = function(){
 //Allows simulated resources to be added as a key value pair, were the key is a URI string and the value is string data.
 URL.addResource = (n,v) => (n && v && (SIMDATA || (SIMDATA = new Map())) && SIMDATA.set(n.toString(), v.toString));
 
-URL.polyfill = function() {
-    if (typeof(global) !== "undefined") {
+URL.polyfill = function() {    if (typeof(global) !== "undefined") {
+    console.log("AAAAAAAAAAAAAAAAAAAAAA");
         const fs = (Promise.resolve(require("fs"))).promises;
         const path = (Promise.resolve(require("path")));
+
 
         global.Location =  (class extends URL{});
         
@@ -5607,7 +5601,7 @@ class HTMLNode {
                         if (pk.ch == "!") {
                             /* DTD - Doctype and Comment tags*/
                             //This type of tag is dropped
-                            while (!lex.END && lex.n.ch !== ">") {}
+                            while (!lex.END && lex.n.ch !== ">") {};
                             lex.a(">");
                             lex.IWS = false;
                             continue;
@@ -5616,7 +5610,7 @@ class HTMLNode {
                         if (!IGNORE_TEXT_TILL_CLOSE_TAG) {
                             //Open tag
                             if (!OPENED) {
-                                let URL$$1 = false;
+                                let URL = false;
                                 this.DTD = false;
                                 this.attributes.length = 0;
 
@@ -5624,7 +5618,7 @@ class HTMLNode {
                                 this.tag = lex.n.tx.toLowerCase();
 
                                 lex.PARSE_STRING = false;
-                                URL$$1 = this.parseOpenTag(lex.n, false, old_url);
+                                URL = this.parseOpenTag(lex.n, false, old_url);
                                 lex.PARSE_STRING = true;
 
                                 this.char = lex.char;
@@ -5644,7 +5638,7 @@ class HTMLNode {
                                 if (HAS_INNER_TEXT)
                                     start = lex.pos;
 
-                                if (URL$$1) {
+                                if (URL) {
 
                                     //Need to block against ill advised URL fetches. 
 
@@ -5997,7 +5991,7 @@ const parseInnerHTMLOnTag = {
 
                 cpy.next();
                 //*/
-            }
+            };
 
             if(cpy.END)
                 throw cpy.throw("Unexpected end of input");
@@ -6069,7 +6063,7 @@ const parseHTMLonTag = {
 
                 cpy.next();
                 //*/
-            }
+            };
 
             cpy.a(">", `Expecting a matching closing tag for ${tag_name}`);
 
@@ -6185,185 +6179,6 @@ class View{
 		this.nx = null;
 		this .model = null;
 	}
-}
-
-class SourceManager {
-
-    constructor(model, element) {
-        this.sources = [];
-        this.model = model;
-        this.ele = element;
-        this.index = -1;
-        this._APPEND_STATE_ = false;
-        this._TRANSITION_STATE_ = false;
-        this._DESTROYED_ = false;
-        this.parent = null;
-    }
-
-    get element() {
-        if (!this.ele)
-            this.ele = this.sources[0].ele;
-        return this.ele;
-    }
-
-    destroy() {
-        for (let i = 0; i < this.sources.length; i++)
-            this.sources[i].destroy();
-        this.source = null;
-        this.model = null;
-        this.ele = null;
-        this._DESTROYED_ = true;
-        this.parent = null;
-    }
-
-    emit(name, value) {
-        for (let i = 0; i < this.sources.length; i++)
-            this.sources[i].upImport(name, value, {
-                event: {}
-            });
-    }
-
-    appendToDOM(element, before_element) {
-        this._APPEND_STATE_ = true;
-        if (before_element)
-            element.insertBefore(this.element, before_element);
-        else
-            element.appendChild(this.element);
-    }
-
-    _removeFromDOM_() {
-        if (this._APPEND_STATE_ == true) return;
-
-        if (this.ele && this.ele.parentElement)
-            this.ele.parentElement.removeChild(this.ele);
-    }
-
-    transitionIn(transition, transition_name = "trs_in") {
-
-        if (transition) {
-            let data = {};
-
-            data[transition_name] = transition;
-
-            this.update(data);
-        }
-
-        this._TRANSITION_STATE_ = true;
-    }
-
-    transitionOut(transition, transition_name = "trs_out", DESTROY_ON_REMOVE = false) {
-
-        this._APPEND_STATE_ = false;
-
-        if (this._TRANSITION_STATE_ === false) {
-            // if (DESTROY_ON_REMOVE && !this._DESTROYED_) this.destroy();
-            this._removeFromDOM_();
-            return;
-        }
-
-        let transition_time = 0;
-
-        if (transition) {
-            let data = {};
-
-            data[transition_name] = transition;
-
-            this.update(data);
-
-            if (transition.trs)
-                transition_time = transition.trs.out_duration;
-            else
-                transition_time = transition.out_duration;
-        }
-
-
-        this._TRANSITION_STATE_ = false;
-
-
-        /*
-        for (let i = 0, l = this.sources.length; i < l; i++) {
-
-            let ast = this.sources[i].ast;
-
-            let css = ast.css;
-
-            let hooks = this.sources[i].hooks;
-
-            for (let i = 0, l = hooks.length; i < l; i++) {
-
-                let hook = hooks[i];
-
-                if (!hook) continue;
-                let ele = hook.ele;
-
-                if (ele.getAttribute("trs") == "out") continue;
-                ele.setAttribute("trs", "out");
-
-                if (css) {
-                    let rule = css.getApplicableRules(ele);
-
-                    for (let name in rule.props)
-                        if (name == "transition")
-                            for (let i = 0, prop = rule.props[name]; i < prop.length; i++) {
-                                let sub_prop = prop[i];
-                                if (!isNaN(sub_prop))
-                                    transition_time = Math.max(transition_time, sub_prop.milliseconds);
-
-                            }
-
-                    if (hook.style)
-                        hook.style._setRule_(rule);
-                    else {
-                        //ele.style = rule + "";
-                    }
-                }
-            }
-        }*/
-
-        if (transition_time > 0)
-            setTimeout(() => {
-                this._removeFromDOM_();
-                if (DESTROY_ON_REMOVE) this.destroy();
-            }, transition_time + 2);
-        else {
-            this._removeFromDOM_();
-            if (DESTROY_ON_REMOVE) this.destroy();
-        }
-
-        return transition_time;
-    }
-
-    upImport(prop_name, data, meta) {
-        if (this.parent)
-            this.parent.up(prop_name, data, meta, this);
-        else 
-            this.up(prop_name, data, meta);
-    }
-
-    up(prop_name, data, meta){
-
-    }
-
-    down(data, changed_values) {
-        for (let i = 0, l = this.sources.length; i < l; i++)
-            this.sources[i].down(data, changed_values);
-    }
-
-    update(data, changed_values) {
-        for (let i = 0, l = this.sources.length; i < l; i++)
-            this.sources[i].update(data, changed_values);
-    }
-
-    bubbleLink() {
-        if (this.parent && this.parent.bubbleLink)
-            this.parent.bubbleLink(this);
-        else
-            debugger
-    }
-
-    sourceLoaded(){
-        this.update({mounted:true});
-    }
 }
 
 /**
@@ -7860,10 +7675,6 @@ class CSS_Bezier extends CBezier {
 
 		return out;
 	}
-
-	toString(){
-		 return `cubic-bezier(${this[2]},${this[3]},${this[4]},${this[5]})`;
-	}
 }
 
 class Stop{
@@ -8011,12 +7822,10 @@ function getValue(lex, attribute) {
     return n;
 }
 
-function ParseString(string, transform) {
-    let lex = null;
-    lex = string;
-
-    if(typeof(string) == "string")
-        lex = whind$1(string);
+function ParseString(lex, transform) {
+    
+    if (typeof(lex) == "string")
+            lex = whind$1(lex);
     
     while (!lex.END) {
         let tx = lex.tx;
@@ -8145,7 +7954,7 @@ class CSS_Transform2D extends Float64Array {
                 this[2] = px[2];
                 this[3] = px[3];
                 this[4] = px[4];
-            } else if (typeof(px) == "string") ParseString(px, this);
+            } else if(typeof(px) == "string"){ ParseString(px, this);}
             else {
                 this[0] = px;
                 this[1] = py;
@@ -8970,25 +8779,27 @@ const media_feature_definitions = {
  */
 class CSSSelector {
 
-    constructor(value = "", value_array = []) {
+    constructor(selectors /* string */ , selectors_arrays /* array */ ) {
 
         /**
          * The raw selector string value
          * @package
          */
-        this.v = value;
+
+        this.v = selectors;
 
         /**
          * Array of separated selector strings in reverse order.
          * @package
          */
-        this.a = value_array;
 
-        // CSS Rulesets the selector is member of .
+        this.a = selectors_arrays;
+
+        /**
+         * The CSSRule.
+         * @package
+         */
         this.r = null;
-
-        // CSS root the selector is a child of. 
-        this.root = null;
     }
 
     get id() {
@@ -9050,7 +8861,7 @@ function checkDefaults(lx) {
             if (!lx.pk.pk.END) // These values should be the only ones present. Failure otherwise.
                 return 0; // Default value present among other values. Invalid
             return 1; // Default value present only. Valid
-    }
+    };
     return 2; // Default value not present. Ignore
 }
 
@@ -9502,7 +9313,7 @@ class SymbolTerm extends LiteralTerm {
 
         return false;
     }
-}
+};
 
 //import util from "util"
 const standard_productions = {
@@ -9575,7 +9386,7 @@ function CreatePropertyParser(notation, name, definitions, productions) {
 
 function d$1(l, definitions, productions, super_term = false, oneof_group = false, or_group = false, and_group = false, important = null) {
     let term, nt, v;
-    const { JUX: JUX$$1, AND: AND$$1, OR: OR$$1, ONE_OF: ONE_OF$$1, LiteralTerm: LiteralTerm$$1, ValueTerm: ValueTerm$$1, SymbolTerm: SymbolTerm$$1 } = productions;
+    const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
 
     let GROUP_BREAK = false;
 
@@ -9592,7 +9403,7 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX$$1 && term.isRepeating()) term = foldIntoProduction(productions, new JUX$$1, term);
+                    if (term instanceof JUX && term.isRepeating()) term = foldIntoProduction(productions, new JUX, term);
                     term = foldIntoProduction(productions, term, v);
                 } else
                     term = v;
@@ -9600,13 +9411,13 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
 
             case "<":
 
-                v = new ValueTerm$$1(l.next().tx, getPropertyParser, definitions, productions);
+                v = new ValueTerm(l.next().tx, getPropertyParser, definitions, productions);
                 l.next().assert(">");
 
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX$$1 /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX$$1, term);
+                    if (term instanceof JUX /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX, term);
                     term = foldIntoProduction(productions, term, v);
                 } else {
                     term = v;
@@ -9620,7 +9431,7 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                     if (and_group)
                         return term;
 
-                    nt = new AND$$1();
+                    nt = new AND();
 
                     if (!term) throw new Error("missing term!");
 
@@ -9645,7 +9456,7 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                         if (or_group || and_group)
                             return term;
 
-                        nt = new OR$$1();
+                        nt = new OR();
 
                         nt.terms.push(term);
 
@@ -9664,7 +9475,7 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                         if (oneof_group || or_group || and_group)
                             return term;
 
-                        nt = new ONE_OF$$1();
+                        nt = new ONE_OF();
 
                         nt.terms.push(term);
 
@@ -9682,12 +9493,12 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                 break;
             default:
 
-                v = (l.ty == l.types.symbol) ? new SymbolTerm$$1(l.tx) : new LiteralTerm$$1(l.tx, l.ty);
+                v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx, l.ty);
                 l.next();
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX$$1 /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX$$1, term);
+                    if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX, term);
                     term = foldIntoProduction(productions, term, v);
                 } else {
                     term = v;
@@ -9903,7 +9714,7 @@ class CSSRuleBody {
                     if (!prop(win))
                         return false;
                 }
-            }
+            };
         }
 
         return true;
@@ -10200,7 +10011,7 @@ class CSSRuleBody {
                                     ).catch((e) => res(this.parse(lexer)));
                                 } else {
                                     //Failed to fetch resource, attempt to find the end to of the import clause.
-                                    while (!lexer.END && lexer.next().tx !== ";") {}
+                                    while (!lexer.END && lexer.next().tx !== ";") {};
                                     lexer.next();
                                 }
                         }
@@ -10231,7 +10042,6 @@ class CSSRuleBody {
                 let selector = this.parseSelector(lexer, this);
 
                 if (selector) {
-                    selector.root = this;
                     if (!this._selectors_[selector.id]) {
                         l = selectors.push(selector);
                         this._selectors_[selector.id] = selector;
@@ -10431,7 +10241,7 @@ class Segment {
     }
 
     setList() {
-        //if(this.DEMOTED) debugger
+        if(this.DEMOTED) debugger
         if (this.prod && this.list.innerHTML == "") {
             if (this.DEMOTED || !this.prod.buildList(this.list, this))
                 this.menu_icon.style.display = "none";
@@ -11254,7 +11064,7 @@ class UISelectorPart{
         return this.txt;
     }
 
-}
+};
 
 
 function drop(e){
@@ -11371,7 +11181,7 @@ function createCache(cacher){
         }
         return r;
     };
-}
+};
 
 const props = Object.assign({}, property_definitions);
 
@@ -11548,7 +11358,7 @@ class UIRuleSet {
     }
 
     rebuild(rule_body){
-        if(true || this.ver !== rule_body.ver){
+        if(this.ver !== rule_body.ver){
             this.rule_space.innerHTML = "";
             this.rules.length = 0;
             this.build(rule_body);
@@ -11576,7 +11386,7 @@ class UIRuleSet {
             }
         }
 
-        this.parent.update(this);
+        this.parent.update();
     }
 
     addProp(type, value){
@@ -11608,6 +11418,10 @@ function dragover$1(e){
     e.preventDefault();
 }
 
+//import { UIValue } from "./ui_value.mjs";
+
+const props$2 = Object.assign({}, property_definitions);
+
 class UIMaster {
     constructor(css) {
         css.addObserver(this);
@@ -11616,7 +11430,6 @@ class UIMaster {
         this.selectors = [];
         this.element = document.createElement("div");
         this.element.classList.add("cfw_css");
-        this.update_mod = 0;
 
 
         this.rule_map = new Map();
@@ -11626,7 +11439,6 @@ class UIMaster {
     // css - A CandleFW_CSS object. 
     // meta - internal 
     build(css = this.css) {
-        if(this.update_mod++%3 !== 0) return;
 
         //Extract rule bodies and set as keys for the rule_map. 
         //Any existing mapped body that does not have a matching rule should be removed. 
@@ -12048,6 +11860,7 @@ class Source extends View {
         this.ast = null;
 
         ast.setSource(this);
+        
         this.parent = parent;
         this.ele = element;
         this.presets = presets;
@@ -12055,13 +11868,13 @@ class Source extends View {
         this.statics = null;
 
         this.taps = {};
-        this.update_tap = null;
         this.children = [];
         this.sources = [];
         this.badges = {};
         this.ios = [];
-        this.templates = [];
+        this.containers = [];
         this.hooks = [];
+        this.update_tap = null;
 
         this._model_name_ = "";
         this._schema_name_ = "";
@@ -12112,7 +11925,7 @@ class Source extends View {
 
     addTemplate(template) {
         template.parent = this;
-        this.templates.push(template);
+        this.containers.push(template);
     }
 
     addSource(source) {
@@ -12246,8 +12059,8 @@ class Source extends View {
         //        for (let i = 0, l = this.sources.length; i < l; i++)
         //            this.sources[i].down(data, changed_values);
 
-        for (let i = 0, l = this.templates.length; i < l; i++)
-            this.templates[i].down(data, changed_values);
+        for (let i = 0, l = this.containers.length; i < l; i++)
+            this.containers[i].down(data, changed_values);
     }
 
     transitionIn(transition) {
@@ -12258,8 +12071,8 @@ class Source extends View {
         for (let i = 0, l = this.sources.length; i < l; i++)
             this.sources[i].transitionIn(transition);
 
-        for (let i = 0, l = this.templates.length; i < l; i++)
-            this.templates[i].transitionIn(transition);
+        for (let i = 0, l = this.containers.length; i < l; i++)
+            this.containers[i].transitionIn(transition);
     }
 
     transitionOut(transition) {
@@ -12270,8 +12083,8 @@ class Source extends View {
             this.sources[i].transitionOut(transition);
 
 
-        for (let i = 0, l = this.templates.length; i < l; i++)
-            this.templates[i].transitionOut(transition);
+        for (let i = 0, l = this.containers.length; i < l; i++)
+            this.containers[i].transitionOut(transition);
     }
 
     bubbleLink(child) {
@@ -12539,7 +12352,6 @@ class TemplateString extends IOBase {
 class AttribTemplate extends TemplateString {
 
     constructor(source, errors, taps, attr, element, binds) {
-        debugger
         super(source, errors, taps, element, binds);
         this.attrib = attr;
     }
@@ -12936,7 +12748,7 @@ class EventIO {
 
 class ScriptIO extends IOBase {
     constructor(source, errors, tap, binding, node, statics) {
-        
+
         let func, HAVE_CLOSURE = false;
 
         try {
@@ -12945,7 +12757,7 @@ class ScriptIO extends IOBase {
                 if(binding.HAVE_CLOSURE)
                     HAVE_CLOSURE = true;
             } else {
-                func = Function(binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val);
+                func = Function(binding.arg_key || binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val);
                 binding._func_ = func;
             }
         } catch (e) {
@@ -13026,7 +12838,7 @@ class ScriptIO extends IOBase {
 }
 
 function replaceEscapedHTML(string) {
-    let out_string = string;
+    let out_string = string.toString();
 
     /*  https://en.wikipedia.org/wiki/Character_encodings_in_HTML
         &amp;   → & (ampersand, U+0026)
@@ -13035,7 +12847,7 @@ function replaceEscapedHTML(string) {
         &quot;  → " (quotation mark, U+0022)
         &apos;  → ' (apostrophe, U+0027)
     */
-
+    
     out_string = out_string.split(/(\&\#*[a-zA-Z0-1]+;)/g).map(replaceEncoding).join("");
     //console.log(string, out_string)
     return out_string;
@@ -13369,7 +13181,7 @@ function processExpression(lex, binds) {
  * @param      {Lexer}  lex     The lex
  * @return     {Array}   an
  */
-function evaluate(lex, EVENT$$1 = false) {
+function evaluate(lex, EVENT = false) {
     let binds = [];
     lex.IWS = false;
     let start = lex.pos;
@@ -13445,7 +13257,7 @@ function evaluate(lex, EVENT$$1 = false) {
 
                         if (lex.ch == barrier_a_start || lex.ch == barrier_b_start) {
 
-                            if(EVENT$$1){
+                            if(EVENT){
                                 binding = new EventBinding(binding); 
                                 binds[index] = binding;
                             }
@@ -13545,7 +13357,7 @@ function evaluate(lex, EVENT$$1 = false) {
 function Template(lex, FOR_EVENT) {
     let binds = evaluate(lex, FOR_EVENT);
     if (binds.length > 0) {
-        if (binds.length == 1)
+    if (binds.length == 1)
             return binds[0];
         return new OutTemplate(binds);
     }
@@ -13703,7 +13515,7 @@ class RootText extends TextNode {
     build(element, source, presets, errors, taps, statics) {
         let ele = document.createTextNode(this.txt);
         this.binding._bind_(source, errors, taps, ele, "", this, statics);
-        appendChild(element, ele);
+        appendChild$1(element, ele);
     }
 
     linkCSS() {}
@@ -14008,7 +13820,7 @@ class RootNode extends HTMLNode {
             if (this._badge_name_)
                 source.badges[this._badge_name_] = own_element;
 
-            if (element) appendChild(element, own_element);
+            if (element) appendChild$1(element, own_element);
 
             for (let i = 0, l = this.bindings.length; i < l; i++) {
                 let attr = this.bindings[i];
@@ -14183,8 +13995,7 @@ class RootNode extends HTMLNode {
     }
 
     merge(node) {
-        let merged_node = new this.constructor();
-
+        const merged_node = new this.constructor();
         merged_node.line = this.line;
         merged_node.char = this.char;
         merged_node.offset = this.offset;
@@ -14195,18 +14006,22 @@ class RootNode extends HTMLNode {
         merged_node.css = this.css;
         merged_node.HAS_TAPS = this.HAS_TAPS;
         merged_node.merged = true;
-        merged_node._badge_name_ = this._badge_name_;
-        merged_node.__presets__ = this.__presets__;
+        merged_node._badge_name_ = node._badge_name_;
+        merged_node.__presets__ = this.presets;
         merged_node.__statics__ = node.__statics__;
+        merged_node.par = node.par;
 
         if (this.tap_list)
             merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));
 
+
         this.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind$1(e.value)));
-        node.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind$1(e.value)));
+
+        node.attributes.forEach(e => (console.log(e.name), merged_node.processAttributeHook(e.name, whind$1(e.value))));
+
+        merged_node.attributes = merged_node.attributes.concat(this.attributes, node.attributes);
 
         //merged_node.attributes = this.attributes.slice();
-
         return merged_node;
     }
 }
@@ -14292,6 +14107,7 @@ class SourceNode$1 extends RootNode {
     }
 
     merge(node) {
+        console.log(this, node);
         const merged_node = super.merge(node);
         merged_node._model_name_ = this._model_name_;
         merged_node._schema_name_ = this._schema_name_;
@@ -14344,7 +14160,6 @@ class SourceNode$1 extends RootNode {
 
         let out_taps = [];
 
-
         let me = new Source(source, this.__presets__ || presets, element, this);
 
         this.pushChached(me);
@@ -14389,7 +14204,7 @@ class SourceNode$1 extends RootNode {
             me.ele = ele;
 
             if (element) {
-                appendChild(element, ele);
+                appendChild$1(element, ele);
             }
 
             element = ele;
@@ -14442,6 +14257,7 @@ class SourceNode$1 extends RootNode {
 
         par_list.pop();
 
+
         if (statics || this.__statics__) {
             let s = Object.assign({}, statics ? statics : {}, this.__statics__);
             me.statics = s;
@@ -14465,7 +14281,7 @@ class SourceNode$1 extends RootNode {
      * @return     {Object}  Key value pair.
      */
     processAttributeHook(name, lex, value) {
-        console.log(name);
+
         let start = lex.off,
             basic = {
                 IGNORE: true,
@@ -14501,9 +14317,17 @@ class SourceNode$1 extends RootNode {
                     lex.n;
                     return basic;
                 }
+
+
+
+                if (name == "slot" && this.par) {
+                    this.par.statics.slots[basic.value] = this;
+                    return basic;
+                }
                 break;
             case "c":
                 if (name == "component") {
+                    
                     let component_name = lex.tx;
                     let components = this.presets.components;
                     if (components)
@@ -14511,6 +14335,7 @@ class SourceNode$1 extends RootNode {
                     return basic;
                 }
                 break;
+
             case "b":
                 if (name == "badge") {
                     this._badge_name_ = lex.tx;
@@ -14612,21 +14437,24 @@ const
                 this.keys = [];
                 this.current_val = null;
 
-                let IS_ARRAY = Array.isArray(keys);
+                const
+                    IS_ARRAY = Array.isArray(keys),
+                    k0 = IS_ARRAY ? keys[0] : keys,
+                    k0_val = typeof(k0.value) !== "undefined" ? k0.value : k0.v;
 
                 if (prop_name == "transform")
                     this.type = CSS_Transform2D$1;
                 else {
-                    this.type = (IS_ARRAY) ? this.getType(keys[0].value || keys[0].v) : this.getType(keys.value || keys.v);
+                    this.type = this.getType(k0_val);
                 }
 
                 this.getValue(obj, prop_name, type);
 
                 let p = this.current_val;
 
-                if (IS_ARRAY) {
+                if (IS_ARRAY)
                     keys.forEach(k => p = this.addKey(k, p));
-                } else
+                else
                     this.addKey(keys, p);
             }
 
@@ -14640,7 +14468,12 @@ const
                 if (type == CSS_STYLE) {
                     let name = prop_name.replace(/[A-Z]/g, (match) => "-" + match.toLowerCase());
                     let cs = window.getComputedStyle(obj);
+
+                    //Try to get computed value. If it does not exist, then get value from the style attribtute.
                     let value = cs.getPropertyValue(name);
+                    
+                    if(!value)
+                        value = obj.style[prop_name];
 
                     if (this.type == CSS_Percentage$1) {
                         if (obj.parentElement) {
@@ -14659,6 +14492,7 @@ const
             }
 
             getType(value) {
+
                 switch (typeof(value)) {
                     case "number":
                         return lerpNumber;
@@ -15338,8 +15172,8 @@ const Transitioneer = (function() {
         start(time = 0, speed = 1, reverse = false) {
 
             for (let i = 0; i < this.in_seq.length; i++) {
-                let seq = this.in_seq[i];
-                seq.beginCSSAnimation();
+                // let seq = this.in_seq[i];
+                // seq.beginCSSAnimation()
             }
 
             this.time = time;
@@ -15348,7 +15182,7 @@ const Transitioneer = (function() {
 
             if (this.reverse)
                 this.speed = -this.speed;
-            return
+
             return new Promise((res, rej) => {
                 if (this.duration > 0)
                     this.scheduledUpdate(0, 0);
@@ -15359,6 +15193,8 @@ const Transitioneer = (function() {
         }
 
         play(t) {
+
+
             this.PLAY = true;
             let time = this.duration * t;
             this.step(time);
@@ -15371,9 +15207,10 @@ const Transitioneer = (function() {
         }
 
         step(t) {
+            
             for (let i = 0; i < this.out_seq.length; i++) {
                 let seq = this.out_seq[i];
-                if(!seq.run(t) && !seq.FINISHED){
+                if (!seq.run(t) && !seq.FINISHED) {
                     seq.issueEvent("stopped");
                     seq.FINISHED = true;
                 }
@@ -15383,7 +15220,7 @@ const Transitioneer = (function() {
 
             for (let i = 0; i < this.in_seq.length; i++) {
                 let seq = this.in_seq[i];
-                if(!seq.run(t) && !seq.FINISHED){
+                if (!seq.run(t) && !seq.FINISHED) {
                     seq.issueEvent("stopped");
                     seq.FINISHED = true;
                 }
@@ -15427,6 +15264,13 @@ Object.assign(Animation, {
 	transformTo:(...args) => TransformTo(...args)
 });
 
+function getColumnRow(index, offset, set_size){
+	const adjusted_index = index - offset*set_size;
+	const row = Math.floor(adjusted_index/set_size);
+	const col = (index) % (set_size);
+	return {row, col};
+}
+
 /**
  * SourceContainer provide the mechanisms for dealing with lists and sets of components. 
  *
@@ -15454,28 +15298,31 @@ class SourceContainer extends View {
         this.prop = null;
         this.package = null;
         this.transition_in = 0;
-        this.offset = 0;
         this.limit = 0;
-        this.shift = 1;
+        this.shift_amount = 1;
         this.dom_dn = [];
         this.dom_up = [];
-        this.trs_up = null;
-        this.trs_dn = null;
-        this.scrub_v = 0;
-        this.old_scrub = 0;
-        this.scrub_offset = 0;
+        this.trs_ascending = null;
+        this.trs_descending = null;
         this.UPDATE_FILTER = false;
-        this.time = 0;
         this.dom_up_appended = false;
         this.dom_dn_appended = false;
         this.root = 0;
-        this.sco = 0;
         this.AUTO_SCRUB = false;
+        this.taps = {};
+
+        this.scrub_velocity = 0;
+
+        this.offset = 0;
+        this.offset_diff = 0;
+        this.offset_fractional = 0;
+
         parent.addTemplate(this);
     }
 
     get data() {}
     set data(container) {
+
         if (container instanceof ModelContainerBase) {
             container.pin();
             container.addView(this);
@@ -15511,31 +15358,59 @@ class SourceContainer extends View {
             }
 
             if (
-                Math.abs(this.sscr) > 0.0001
+                Math.abs(this.scrub_velocity) > 0.0001
             ) {
-                this.ssoc += this.sscr;
-                this.scrub(this.ssoc);
-                this.sscr *= (this.drag);
+                this.scrub(this.scrub_velocity);
+                this.scrub_velocity *= (this.drag);
 
-                let pos = this.old_scrub - this.scrub_offset + this.offset;
+                let pos = this.offset + this.scrub_velocity;
 
-                if (!((this.sscr < 0 || pos < this.max) &&
-                        (this.sscr > 0 || pos > 0))) {
-                    this.sscr = 0;
-                }
+                if (pos < 0 || pos > this.max)
+                    this.scrub_velocity = 0;
 
                 spark.queueUpdate(this);
 
             } else {
-                this.scrub_v = 0;
+                this.scrub_velocity = 0;
                 this.scrub(Infinity);
-                this.old_scrub = 0;
                 this.SCRUBBING = false;
             }
         } else if (this.UPDATE_FILTER) {
             this.filterUpdate();
+            this.render();
         } else {
+            let offset = this.offset;
             this.limitUpdate();
+            let a = this.offset;
+            this.offset = offset;
+            this.forceMount();
+            this.arrange();
+            this.offset = a;
+            this.render();
+            this.offset_diff = 0;
+        }
+    }
+
+    forceMount(){
+        const active_window_size = this.limit;
+        const offset = this.offset; 
+
+
+        const min = Math.min(offset + this.offset_diff, offset) * this.shift_amount;
+        const max = Math.max(offset + this.offset_diff, offset) * this.shift_amount + active_window_size;
+
+
+        let i = min;    
+        console.log(min, max, offset, this.offset_diff);
+
+        this.ele.innerHTML = "";
+        const output_length = this.activeSources.length;
+        this.dom_sources.length = 0;
+
+        while(i < max && i < output_length){
+            let node = this.activeSources[i++];
+            this.dom_sources.push(node);
+            node.appendToDOM(this.ele);
         }
     }
 
@@ -15543,50 +15418,43 @@ class SourceContainer extends View {
      * Scrub provides a mechanism to scroll through components of a container that have been limited through the limit filter.
      * @param  {Number} scrub_amount [description]
      */
-    scrub(scrub_amount, SCRUBBING = true) {
+    scrub(scrub_delta, SCRUBBING = true) {
+
+        // scrub_delta is the relative ammount of change from the previous offset. 
 
         this.SCRUBBING = true;
 
-        if (this.AUTO_SCRUB && !SCRUBBING && scrub_amount != Infinity) {
-            this.root = this.offset;
-            this.sco = this.old_scrub;
-            this.old_scrub += scrub_amount;
+        if (this.AUTO_SCRUB && !SCRUBBING && scrub_delta != Infinity) {
+            this.scrub_velocity = 0;
             this.AUTO_SCRUB = false;
         }
-        if (scrub_amount !== Infinity) {
 
-            scrub_amount += this.sco;
+        let delta_offset = scrub_delta + this.offset_fractional;
 
-            let s = scrub_amount - this.scrub_offset;
+        if (scrub_delta !== Infinity) {
+
+            if (Math.abs(delta_offset) > 1) {
+                if (delta_offset > 1) {
+                    if (this.offset < this.max)
+                        this.trs_ascending.play(1);
+                    this.offset++;
+                    this.offset_diff = 1;
+                    this.render(null, this.activeSources, true);
+                } else {
+                    if (this.offset >= 1)
+                        this.trs_descending.play(1);
+                    this.offset--;
+                    this.offset_diff = -1;
+                    this.render(null, this.activeSources, true);
+                }
+                delta_offset = delta_offset % 1;
+            }
 
             //Make Sure the the transition animation is completed before moving on to new animation sequences.
 
+            if (delta_offset > 0) {
 
-            if (s > 1) {
-                if (this.offset < this.max)
-                    this.trs_up.play(1);
-
-                this.scrub_offset++;
-                s = scrub_amount - this.scrub_offset;
-                this.render(null, this.activeSources, this.limit, this.offset + 1, true);
-            } else if (s < -1) {
-
-                if (this.offset >= 1)
-                    this.trs_dn.play(1);
-                
-                this.scrub_offset--;
-                s = scrub_amount - this.scrub_offset;
-                this.render(null, this.activeSources, this.limit, this.offset - 1, true);
-            }
-
-            this.scrub_v = scrub_amount - this.old_scrub;
-            this.old_scrub = scrub_amount;
-
-            if (s > 0) {
-
-                if (this.offset >= this.max)
-                    if (s > 0) s = 0;
-
+                if (this.offset + delta_offset >= this.max - 1) delta_offset = 0;
 
                 if (!this.dom_up_appended) {
 
@@ -15595,14 +15463,14 @@ class SourceContainer extends View {
                         this.dom_up[i].index = -1;
                         this.dom_sources.push(this.dom_up[i]);
                     }
+
                     this.dom_up_appended = true;
                 }
-                this.time = this.trs_up.play(s);
+
+                this.trs_ascending.play(delta_offset);
             } else {
 
-                if (this.offset < 1 && s < 0)
-                    s = 0, this.scrub_v = 0;
-
+                if (this.offset < 1) delta_offset = 0;
 
                 if (!this.dom_dn_appended) {
 
@@ -15613,232 +15481,227 @@ class SourceContainer extends View {
 
                     this.dom_sources = this.dom_dn.concat(this.dom_sources);
 
-
                     this.dom_dn_appended = true;
                 }
 
-                this.time = this.trs_dn.play(-s);
+                this.trs_descending.play(-delta_offset);
             }
+
+            this.offset_fractional = delta_offset;
+            this.scrub_velocity = scrub_delta;
         } else {
-            this.sco = 0;
 
-            if (Math.abs(this.scrub_v) > 0.000001) {
+            if (Math.abs(this.scrub_velocity) > 0.00001) {
+                const sign = Math.sign(this.scrub_velocity);
 
-                if (Math.abs(this.scrub_v) < 0.05) this.scrub_v = 0.05 * Math.sign(this.scrub_v);
-                if (Math.abs(this.scrub_v) > 0.2) this.scrub_v = 0.2 * Math.sign(this.scrub_v);
+                if (Math.abs(this.scrub_velocity) < 0.01) this.scrub_velocity = 0.01 * sign;
+                if (Math.abs(this.scrub_velocity) > 0.2) this.scrub_velocity = 0.2 * sign;
 
                 this.AUTO_SCRUB = true;
 
-                //Determine the distance traveled and normal drag decay of 0.5
-                let dist = this.scrub_v * (1 / (-0.5 + 1));
-
+                //Determine the distance traveled with normal drag decay of 0.5
+                let dist = this.scrub_velocity * (1 / (-0.5 + 1));
                 //get the distance to nearest page given the distance traveled
-                let nearest = (this.root + this.old_scrub + dist - this.scrub_offset);
-
-                nearest = (this.scrub_v > 0) ? Math.min(this.max, Math.ceil(nearest)) : Math.max(0, Math.floor(nearest));
-
+                let nearest = (this.offset + this.offset_fractional + dist);
+                nearest = (this.scrub_velocity > 0) ? Math.min(this.max, Math.ceil(nearest)) : Math.max(0, Math.floor(nearest));
                 //get the ratio of the distance from the current position and distance to the nearest 
-                let nearest_dist = nearest - (this.root + this.old_scrub - this.scrub_offset);
-                let ratio = nearest_dist / this.scrub_v;
-                let drag = Math.abs(1 - (1 / ratio));
+                let nearest_dist = nearest - (this.offset + this.offset_fractional);
+                let drag = Math.abs(1 - (1 / (nearest_dist / this.scrub_velocity)));
 
                 this.drag = drag;
-                this.sscr = this.scrub_v;
-                this.ssoc = this.old_scrub;
+                this.scrub_velocity = this.scrub_velocity;
                 this.SCRUBBING = true;
                 spark.queueUpdate(this);
             } else {
-                let pos = Math.round(this.old_scrub - this.scrub_offset + this.offset);
-                this.render(null, this.activeSources, this.limit, pos, true).play(1);
-                this.scrub_offset = 0;
+                this.offset += Math.round(this.offset_fractional);
+                this.render(null, this.activeSources, true).play(1);
+                this.scrub_velocity = 0;
+                this.offset_fractional = 0;
             }
         }
     }
 
-    render(transition, output = this.activeSources, limit = this.limit, offset = this.offset, NO_TRANSITION = false) {
-        let j = 0,
-            ol = output.length,
-            al = this.dom_sources.length;
+    arrange(output = this.activeSources) {
 
-        let direction = true;
+        //Arranges active sources according to their arrange handler.
+        const
+            limit = this.limit,
+            offset = this.offset,
+            transition = Animation.createTransition(),
+            output_length = output.length,
+            shift_points = Math.ceil(output_length / this.shift_amount),
+            active_window_start = offset * this.shift_amount;
 
-        let OWN_TRANSITION = false;
+        let i = 0;
+
+        //Sources on the ascending edge of the transition window
+        while (i < active_window_start && i < output_length)
+            output[i].update({ trs_asc_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }), i++;
+
+        //Sources in the transtion window
+        while (i < active_window_start + limit && i < output_length)
+            output[i].update({ arrange: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }), i++;
+
+        //Sources on the descending edge of the transition window
+        while (i < output_length)
+            output[i].update({ trs_dec_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }), i++;
+
+        transition.play(1);
+    }
+
+    render(transition, output = this.activeSources, NO_TRANSITION = false) {
+
+        let
+            active_window_size = this.limit,
+            offset = this.offset,
+            j = 0,
+            output_length = output.length,
+            active_length = this.dom_sources.length,
+            direction = 1,
+            OWN_TRANSITION = false,
+            trs_obj = { trs: null, pos: null };
 
         if (!transition) transition = Animation.createTransition(), OWN_TRANSITION = true;
 
         offset = Math.max(0, offset);
 
-        if (limit > 0) {
+        const active_window_start = offset * this.shift_amount;
 
-            direction = this.offset < offset;
-            this.shift = Math.max(1, Math.min(limit, this.shift));
-            let ein = [];
-            let shift_points = Math.ceil(ol / this.shift);
+        direction = Math.sign(this.offset_diff);
+
+        if (active_window_size > 0) {
+
+            this.shift_amount = Math.max(1, Math.min(active_window_size, this.shift_amount));
+
+            let
+                i = 0,
+                ip = 0,
+                oa = 0,
+                ein = [],
+                shift_points = Math.ceil(output_length / this.shift_amount);
+
             this.max = shift_points - 1;
             this.offset = Math.max(0, Math.min(shift_points - 1, offset));
-            this.root = this.offset;
-            let off = this.offset * this.shift;
 
-            this.trs_up = Animation.createTransition(false);
-            this.trs_dn = Animation.createTransition(false);
+            //Two transitions to support scrubbing from an offset in either direction
+            this.trs_ascending = Animation.createTransition(false);
+            this.trs_descending = Animation.createTransition(false);
+
             this.dom_dn.length = 0;
             this.dom_up.length = 0;
             this.dom_up_appended = false;
             this.dom_dn_appended = false;
 
-            let i = 0,
-                ip = 0,
-                ia = 0,
-                oa = 0;
+            //Sources preceeding the transition window
+            while (i < active_window_start - this.shift_amount) output[i++].index = -2;
 
-            while (i < off - this.shift) output[i++].index = -2;
-            while (i < off) {
+            //Sources entering the transition window ascending
+            while (i < active_window_start) {
                 this.dom_dn.push(output[i]);
-
-                output[i].update({
-                    trs_in_dn: {
-                        index: ip++,
-                        trs: this.trs_dn.in
-                    }
-                });
-
+                output[i].update({ trs_dec_in: { trs: this.trs_descending.in, pos: getColumnRow(i, this.offset - 1, this.shift_amount) } });
                 output[i++].index = -2;
             }
 
-            ia = 0;
+            //Sources in the transtion window
+            while (i < active_window_start + active_window_size && i < output_length) {
+                //Sources on the descending edge of the transition window
+                if (oa < this.shift_amount && ++oa) {
+                    //console.log("pos",i, getColumnRow(i, this.offset+1, this.shift_amount), output[i].sources[0].ele.style.transform)
+                    output[i].update({ trs_asc_out: { trs: this.trs_ascending.out, pos: getColumnRow(i, this.offset + 1, this.shift_amount) } });
+                } else
+                    output[i].update({ arrange: { trs: this.trs_ascending.in, pos: getColumnRow(i, this.offset + 1, this.shift_amount) } });
 
-            while (i < off + limit && i < ol) {
 
-                if (oa < this.shift) {
-                    oa++;
-                    output[i].update({
-                        trs_out_up: {
-                            trs: this.trs_up.out,
-                            index: 0
-                        }
-                    });
-                } else {
-                    output[i].update({
-                        arrange: {
-                            trs: this.trs_up.in,
-                            index: (i) - off - this.shift
-                        }
-                    });
-                }
+                //Sources on the ascending edge of the transition window
+                if (i >= active_window_start + active_window_size - this.shift_amount)
+                    output[i].update({ trs_dec_out: { trs: this.trs_descending.out, pos: getColumnRow(i, this.offset - 1, this.shift_amount) } });
+                else
+                    output[i].update({ arrange: { trs: this.trs_descending.in, pos: getColumnRow(i, this.offset - 1, this.shift_amount) } });
 
-                if (i >= off + limit - this.shift) {
-                    ip++;
-                    output[i].update({
-                        trs_out_dn: {
-                            trs: this.trs_dn.out,
-                            index: 0
-                        }
-                    });
-                } else {
-                    output[i].update({
-                        arrange: {
-                            trs: this.trs_dn.in,
-                            index: ip++
-                        }
-                    });
-                }
 
                 output[i].index = i;
                 ein.push(output[i++]);
             }
 
-            while (i < off + limit + this.shift && i < ol) {
+            //Sources entering the transition window descending
+            while (i < active_window_start + active_window_size + this.shift_amount && i < output_length) {
                 this.dom_up.push(output[i]);
                 output[i].update({
-                    trs_in_up: {
-                        index: (i) - off - this.shift,
-                        trs: this.trs_up.in
+                    trs_asc_in: {
+                        pos: getColumnRow(i, this.offset + 1, this.shift_amount),
+                        trs: this.trs_ascending.in
                     }
                 });
                 output[i++].index = -3;
             }
-            while (i < ol) output[i++].index = -3;
+
+            //Sources following the transition window
+            while (i < output_length) output[i++].index = -3;
 
             output = ein;
-
-            ol = ein.length;
-
-            this.limit = limit;
+            output_length = ein.length;
         } else {
             this.max = 0;
             this.limit = 0;
         }
 
         let trs_in = { trs: transition.in, index: 0 };
-
         let trs_out = { trs: transition.out, index: 0 };
 
-        for (let i = 0; i < ol; i++) output[i].index = i;
+        for (let i = 0; i < output_length; i++) output[i].index = i;
 
-        for (let i = 0; i < al; i++) {
+        for (let i = 0; i < active_length; i++) {
             let as = this.dom_sources[i];
 
             if (as.index > j) {
-                let ele = as.element;
-                while (j < as.index && j < ol) {
+                while (j < as.index && j < output_length) {
+
                     let os = output[j];
                     os.index = j;
-                    os.appendToDOM(this.ele, ele);
-                    trs_in.index = j;
-                    //os.index = -1;
-                    os.transitionIn(trs_in, (direction) ? "trs_in_up" : "trs_in_dn");
+                    trs_in.pos = getColumnRow(j, this.offset, this.shift_amount);
+                    os.appendToDOM(this.ele, as.element);
+                    os.transitionIn(trs_in, (direction) ? "trs_asc_in" : "trs_dec_in");
                     j++;
                 }
             } else if (as.index < 0) {
+                trs_out.pos = getColumnRow(i, 0, this.shift_amount);
                 if (!NO_TRANSITION) {
                     switch (as.index) {
                         case -2:
                         case -3:
-                            as.transitionOut(trs_out, (direction) ? "trs_out_up" : "trs_out_dn");
+                            as.transitionOut(trs_out, (direction > 0) ? "trs_asc_out" : "trs_dec_out");
                             break;
                         default:
-
-
                             as.transitionOut(trs_out);
                     }
-                } else {
+                } else{
+
+                    console.log(i, trs_out.pos, direction);
                     as.transitionOut();
                 }
+
                 continue;
             }
-
-            trs_in.index = j;
-
+            trs_in.pos = getColumnRow(j++, 0, this.shift_amount);
             as.update({ arrange: trs_in });
-
             as._TRANSITION_STATE_ = true;
-
-            j++;
-
             as.index = -1;
         }
 
         while (j < output.length) {
             output[j].appendToDOM(this.ele);
             output[j].index = -1;
-            trs_in.index = j;
-            output[j].transitionIn(trs_in, (direction) ? "trs_in_up" : "trs_in_dn");
+            trs_in.pos = getColumnRow(j, this.offset, this.shift_amount);
+
+            output[j].transitionIn(trs_in, (direction) ? "arrange" : "arrange");
             j++;
         }
 
         this.ele.style.position = this.ele.style.position;
-
         this.dom_sources = output;
 
-        if (OWN_TRANSITION)
-            if (NO_TRANSITION) {
-                return transition;
-            } else {
-                transition.start();
-            }
-
         this.parent.upImport("template_count_changed", {
-            displayed: ol,
+            displayed: output_length,
             offset: offset,
             count: this.activeSources.length,
             pages: this.max,
@@ -15847,37 +15710,42 @@ class SourceContainer extends View {
             trs: transition.in
         });
 
+        if (OWN_TRANSITION) {
+            if (NO_TRANSITION)
+                return transition;
+            transition.start();
+        }
 
         return transition;
     }
 
-    limitUpdate(transition, output) {
-
-        let limit = this.limit,
-            offset = 0;
-
+    // Reduces the compenents that are mounted and displayed to the ones determined by current filter parameters.
+    limitUpdate() {
+        let offset = this.offset;
         for (let i = 0, l = this.filters.length; i < l; i++) {
             let filter = this.filters[i];
             if (filter.CAN_USE) {
-                if (filter._CAN_LIMIT_) limit = filter._value_;
-                if (filter._CAN_OFFSET_) offset = filter._value_;
-                if (filter._CAN_SHIFT_) this.shift = filter._value_;
+                if (filter._CAN_LIMIT_) this.limit = parseInt(filter._value_);  // Make sure we are dealing with integers. 
+                                                                                // Value could be string debinding on the type of 
+                                                                                // binding. Applies to other values. 
+                if (filter._CAN_OFFSET_) offset = parseInt(filter._value_); 
+                if (filter._CAN_SHIFT_) this.shift_amount = parseInt(filter._value_);
             }
         }
 
-        this.SCRUBBING = false;
-        this.scrub_offset = 0;
-        this.scrub_v = 0;
-
-        this.render(transition, output, limit, offset);
+        this.offset_diff = offset - this.offset;
+        this.offset = offset;
     }
+
     /**
      * Filters stored Sources with search terms and outputs the matching Sources to the DOM.
      * 
      * @protected
      */
-    filterUpdate(transition) {
+    filterUpdate() {
+
         let output = this.sources.slice();
+
         if (output.length < 1) return;
         for (let i = 0, l = this.filters.length; i < l; i++) {
             let filter = this.filters[i];
@@ -15887,8 +15755,9 @@ class SourceContainer extends View {
             }
         }
         this.activeSources = output;
-        this.limitUpdate(transition, output);
         this.UPDATE_FILTER = false;
+
+        return output;
     }
     /**
      * Removes stored Sources that do not match the ModelContainer contents. 
@@ -15897,15 +15766,14 @@ class SourceContainer extends View {
      * 
      * @protected
      */
-    cull(new_items) {
+    cull(new_items = []) {
+        console.log("AA");
+        const transition = Animation.createTransition();
 
-        if (!new_items) new_items = [];
-        let transition = Animation.createTransition();
         if (new_items.length == 0) {
             let sl = this.sources.length;
             for (let i = 0; i < sl; i++) this.sources[i].transitionOut(transition, "", true);
             this.sources.length = 0;
-
             this.parent.upImport("template_count_changed", {
                 displayed: 0,
                 offset: 0,
@@ -15916,12 +15784,16 @@ class SourceContainer extends View {
                 trs: transition.in
             });
         } else {
-            let exists = new Map(new_items.map(e => [e, true]));
-            var out = [];
+
+            const
+                exists = new Map(new_items.map(e => [e, true])),
+                out = [];
+
             for (let i = 0, l = this.activeSources.length; i < l; i++)
                 if (exists.has(this.activeSources[i].model)) {
                     exists.set(this.activeSources[i].model, false);
                 }
+
             for (let i = 0, l = this.sources.length; i < l; i++)
                 if (!exists.has(this.sources[i].model)) {
                     this.sources[i].transitionOut(transition, "", true);
@@ -15929,32 +15801,60 @@ class SourceContainer extends View {
                     this.sources.splice(i, 1);
                     l--;
                     i--;
-                } else exists.set(this.sources[i].model, false);
-            exists.forEach((v, k, m) => {
-                if (v) out.push(k);
-            });
-            if (out.length > 0) {
+                } else
+                    exists.set(this.sources[i].model, false);
+
+            exists.forEach((v, k, m) => { if (v) out.push(k); });
+
+
+            if (out.length > 0) { 
+                // Wrap models into components
                 this.added(out, transition);
+
+                // Update offset, limit, and shift variables.
+                this.limitUpdate();
+
+                // Filter the current components. 
+                this.filterUpdate(out);
+
+                //Preset the positions of initial components. 
+                this.arrange();
+
+                this.render(transition);
             } else {
                 for (let i = 0, j = 0, l = this.activeSources.length; i < l; i++, j++) {
+
                     if (this.activeSources[i]._TRANSITION_STATE_) {
                         if (j !== i) {
                             this.activeSources[i].update({
                                 arrange: {
-                                    index: i,
+                                    pos: getColumnRow(i, this.offset, this.shift_amount),
                                     trs: transition.in
                                 }
                             });
                         }
-                    } else {
+                    } else
                         this.activeSources.splice(i, 1), i--, l--;
-                    }
                 }
 
-                this.filterUpdate(transition);
+                const c = this.filterUpdate(transition);
+                this.limitUpdate(transition);
+                this.arrange();
+                this.render(transition);
             }
         }
-        transition.start();
+
+        // If scrubbing is currently occuring, if the transition were to auto play then the results 
+        // would interfere with the expected behavior of scrubbing. So the transition
+        // is instead set to it's end state, and scrub is called to set intermittent 
+        // position. 
+
+        if (this.SCRUBBING) {
+            transition.play(1);
+            this.scrub(0.5);
+        } else
+            transition.start();
+
     }
     /**
      * Called by the ModelContainer when Models have been removed from its set.
@@ -15973,26 +15873,37 @@ class SourceContainer extends View {
                 }
             }
         }
+
+        this.limitUpdate();
         this.filterUpdate(transition);
+        //this.arrange();
+        this.render(transition);
     }
     /**
      * Called by the ModelContainer when Models have been added to its set.
      *
      * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
      */
-    added(items, transition = Animation.createTransition()) {
+    added(items, transition) {
+        let OWN_TRANSITION = false;
+
+        if (!transition)
+            transition = Animation.createTransition(), OWN_TRANSITION = true;
+
         for (let i = 0; i < items.length; i++) {
             let mgr = this.package.mount(null, items[i], false, undefined, this.parent);
-            //mgr.sources.forEach((s) => {
-            //    s.parent = this.parent;
-            //});
             this.sources.push(mgr);
         }
-        for (let i = 0; i < this.sources.length; i++) {
-            //this.parent.addSource(this.sources[i]);
+
+        if (OWN_TRANSITION) {
+            this.limitUpdate();
+            this.filterUpdate(transition);
+            //this.arrange();
+            this.render(transition);
+            transition.play();
         }
-        this.filterUpdate(transition);
     }
+
     revise() {
         if (this.cache) this.update(this.cache);
     }
@@ -16042,23 +15953,27 @@ class SourceContainer extends View {
             });
         }
     }
+    
     transitionOut(transition) {
         return;
         for (let i = 0, l = this.activeSources.length; i < l; i++) this.activeSources[i].transitionOut(transition);
     }
 }
 
-let expr_check = (expr)=>{
+SourceContainer.prototype.removeIO = Tap.prototype.removeIO;
+SourceContainer.prototype.addIO = Tap.prototype.addIO;
+
+let expr_check = (expr) => {
     return (expr.type == 2 && typeof(expr.func) == "function");
 };
 
 
 
 class FilterIO extends IOBase {
-    constructor(source, errors, taps, template, activation, sort, filter, limit, offset, scrub, shift) {
-        super(template, errors);
+    constructor(source, errors, taps, container, activation, sort, filter, limit, offset, scrub, shift) {
+        super(container, errors);
 
-        this.template = template;
+        this.container = container;
         this._activation_function_ = null;
         this._sort_function_ = null;
         this.filter_function = null;
@@ -16069,68 +15984,68 @@ class FilterIO extends IOBase {
         this.CAN_SORT = false;
         this._SCHD_ = 0;
 
-        if (activation && activation.binding){
+        if (activation && activation.binding) {
             this._activation_function_ = activation.binding._bind_(source, errors, taps, this);
-        } else{
+        } else {
             this.CAN_USE = true;
         }
 
         if (sort && sort.binding) {
             let expr = sort.binding;
-            if (expr_check(expr)){
+            if (expr_check(expr)) {
                 this._sort_function_ = (m1, m2) => expr.func(m1.model, m2.model);
                 this.CAN_SORT = true;
-            } 
-        }else
+            }
+        } else
 
         if (filter && filter.binding) {
             let expr = filter.binding;
-            if (expr_check(expr)){
+            if (expr_check(expr)) {
                 this.filter_function = expr._bind_(source, errors, taps, this);
                 this.filter_function._IS_A_FILTER_ = true;
-                this.CAN_FILTER = true;  
-            } 
-        }else
+                this.CAN_FILTER = true;
+            }
+        } else
 
         if (limit && limit.binding) {
             let expr = limit.binding;
-                expr.method = (expr.method == 1) ? -1 : expr.method;
-                this._limit_function_ = expr._bind_(source, errors, taps, this);
-                ///this._limit_function_._IS_A_FILTER_ = true;
-                this._CAN_LIMIT_ = true;  
-        }else
+            expr.method = (expr.method == 1) ? -1 : expr.method;
+            this._limit_function_ = expr._bind_(source, errors, taps, this);
+            this._CAN_LIMIT_ = true;
+        } else
 
         if (offset && offset.binding) {
-            let expr = offset.binding;
+            this._CAN_OFFSET_ = true;
+            if (offset.binding.type == 1) {
+                this._value_ = parseInt(offset.binding.val);
+            } else {
+                let expr = offset.binding;
                 expr.method = (expr.method == 1) ? -1 : expr.method;
                 this._offset_function_ = expr._bind_(source, errors, taps, this);
-                ///this._limit_function_._IS_A_FILTER_ = true;
-                this._CAN_OFFSET_ = true;  
-        }else
+            }
+        } else
 
         if (scrub && scrub.binding) {
             let expr = scrub.binding;
-                expr.method = (expr.method == 1) ? -1 : expr.method;
-                this._scrub_function_ = expr._bind_(source, errors, taps, this);
-                ///this._limit_function_._IS_A_FILTER_ = true;
-                this._CAN_SCRUB_ = true;  
-        }else
+            expr.method = (expr.method == 1) ? -1 : expr.method;
+            this._scrub_function_ = expr._bind_(source, errors, taps, this);
+            this._CAN_SCRUB_ = true;
+        } else
 
         if (shift && shift.binding) {
             let expr = shift.binding;
-                expr.method = (expr.method == 1) ? -1 : expr.method;
-                this._page_function_ = expr._bind_(source, errors, taps, this);
-                ///this._limit_function_._IS_A_FILTER_ = true;
-                this._CAN_SHIFT_ = true;  
+            expr.method = (expr.method == 1) ? -1 : expr.method;
+            this._page_function_ = expr._bind_(source, errors, taps, this);
+            this._CAN_SHIFT_ = true;
         }
     }
 
     scheduledUpdate() {}
-    
-    update(){
-        if(this.CAN_SORT || this.CAN_FILTER){
-            this.template.UPDATE_FILTER = true;
-            spark.queueUpdate(this.template);
+
+    update() {
+        if (this.CAN_SORT || this.CAN_FILTER) {
+            this.container.UPDATE_FILTER = true;
+            spark.queueUpdate(this.container);
         }
     }
 
@@ -16144,7 +16059,7 @@ class FilterIO extends IOBase {
         this._sort_function_ = null;
         this._activation_function_ = null;
         this.filter_function = null;
-        this.template = null;
+        this.container = null;
     }
 
     get data() {}
@@ -16154,13 +16069,13 @@ class FilterIO extends IOBase {
         if (v) this.CAN_USE = true;
         this._value_ = v;
 
-        if(this._CAN_SCRUB_)
-            return this.template.scrub(this._value_, false);
-        
-        if(this.CAN_SORT || this.CAN_FILTER || this._CAN_SHIFT_)
-            this.template.UPDATE_FILTER = true;
-        
-        spark.queueUpdate(this.template);
+        if (this._CAN_SCRUB_)
+            return this.container.scrub(parseFloat(this._value_), false);
+
+        if (this.CAN_SORT || this.CAN_FILTER || this._CAN_SHIFT_)
+            this.container.UPDATE_FILTER = true;
+
+        spark.queueUpdate(this.container);
     }
 }
 
@@ -16208,188 +16123,18 @@ class PackageNode extends VoidNode$1 {
 
         if (!this.fch)
             this.mergeComponent();
+
+        return this;
     }
 
     mergeComponent() {
+        
         let component = this.presets.components[this.tag];
 
         if (component)
             this.par.package = new this.SourcePackage(component, this.presets, false);
-    }
-}
 
-class SourceContainerNode$1 extends RootNode {
-
-    constructor(lex) {
-        super();
-        this.BUILD_LIST = [];
-        this.filters = [];
-        this.property_bind = null;
-        this.property_bind_text = "";
-        this.package = null;
-    }
-
-     merge(node) {
-        const merged_node = super.merge(node);
-        merged_nodes.BUILD_LIST = this.BUILD_LIST;
-        merged_nodes.filters = this.filters;
-        merged_nodes.property_bind = this.property_bind;
-        merged_nodes.property_bind_text = this.property_bind_text;
-        merged_nodes.package = this.package;
-        return merged_node;
-    }
-
-    build(element, source, presets, errors, taps) {
-
-        source = source || new Source(null, presets, element, this);
-
-        if (this.HAS_TAPS)
-            taps = source.linkTaps(this.tap_list);
-        if (this.property_bind && this.package) {
-
-            let ele = createElement(this.getAttribute("element") || "ul");
-
-            this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
-
-            if (this._badge_name_)
-                source.badges[this._badge_name_] = ele;
-
-
-            let me = new SourceContainer(source, presets, ele);
-            
-            me.package = this.package;
-
-            if(!me.package.skeletons[0].tree.url)
-                me.package.skeletons[0].tree.url = this.getURL();
-        
-            me.prop = this.property_bind._bind_(source, errors, taps, me);
-
-            appendChild(element, ele);
-
-            for (let node = this.fch; node; node = this.getNextChild(node)) {
-
-                let on = node.getAttrib("on");
-                let sort = node.getAttrib("sort");
-                let filter = node.getAttrib("filter");
-                let limit = node.getAttrib("limit");
-                let offset = node.getAttrib("offset");
-                let scrub = node.getAttrib("scrub");
-                let shift = node.getAttrib("shift");
-
-                if (limit && limit.binding.type == 1) {
-                    me.limit = parseInt(limit.value);
-                    limit = null;
-                }
-
-                if (shift && shift.binding.type == 1) {
-                    me.shift = parseInt(shift.value);
-                    shift = null;
-                }
-
-                if (sort || filter || limit || offset || scrub || shift) //Only create Filter node if it has a sorting bind or a filter bind
-                    me.filters.push(new FilterIO(source, errors, taps, me, on, sort, filter, limit, offset, scrub, shift));
-            }
-        } else {
-            errors.push(new Error(`Missing source for template bound to "${this.property_bind.bindings[0].tap_name}"`));
-        }
-
-        return source;
-    }
-
-    /******************************************* HOOKS ****************************************************/
-
-    endOfElementHook() {}
-
-    _ignoreTillHook_() {}
-
-
-    createHTMLNodeHook(tag, start) {
-
-        switch (tag) {
-            case "f":
-                return new FilterNode(); //This node is used to 
-            default:
-                return new PackageNode(start); //This node is used to build packages
-        }
-    }
-
-    processTextNodeHook(lex) {
-        if (!this.property_bind) {
-            this.property_bind_text = lex.trim().slice();
-            let cp = lex.copy();
-            lex.IWS = true;
-            cp.tl = 0;
-            if (cp.n.ch == barrier_a_start && (cp.n.ch == barrier_a_start || cp.ch == barrier_b_start)) {
-                let binding = Template(lex);
-                if (binding)
-                    this.property_bind = this.processTapBinding(binding);
-            }
-        }
-    }
-
-    innerToString(off){
-        //Insert temp child node for the property_bind
-        let str = this.property_bind_text;
-
-        str += super.innerToString(off);
-
-        return str;
-    }
-}
-
-class StyleNode$1 extends VoidNode$1 {
-    processTextNodeHook(lex) {
-        //Feed the lexer to a new CSS Builder
-        let css = this.getCSS();
-
-        lex.IWS = true;
-        lex.tl = 0;
-        lex.n;
-
-        css.parse(lex).catch((e) => {
-            throw e;
-        });
-    }
-}
-
-/**
- * SVG HTMLElements to be created with the svg namespace in order to be rendered correctly.
- * @class      SVGNode (name)
- */
-class SVGNode extends RootNode {
-    createElement(presets, source) {
-        return document.createElementNS("http://www.w3.org/2000/svg", this.tag);
-    }
-
-    createHTMLNodeHook(tag) {
-        //jump table.
-        switch (tag[0]) {
-            case "w":
-                switch (tag) {
-                    case "w-s":
-                        return new SourceNode(); //This node is used to 
-                    case "w-c":
-                        return new SourceContainerNode(); //This node is used to 
-                }
-                break;
-            default:
-                switch (tag) {
-                    case "a":
-                        return new LinkNode();
-                        /** void elements **/
-                    case "template":
-                        return new VoidNode();
-                    case "style":
-                        return new StyleNode();
-                    case "script":
-                        return new ScriptNode();
-                    case "svg":
-                    case "path":
-                        return new SVGNode();
-                }
-        }
-
-        return new SVGNode();
+        return component
     }
 }
 
@@ -16443,302 +16188,183 @@ class SlotNode extends RootNode {
 
 }
 
-class PreNode extends HTMLNode {
-    build(element) {
-        let ele = document.createElement(this.tag);
+class SourceManager {
 
-        for (let i = 0, l = this.attributes.length; i < l; i++) {
-            let attr = this.attributes[i];
-            ele.setAttribute(attr.name, attr.value);
-        }
-        //let passing_element = ele;
-        let passing_element = (this.tag == "template") ? ele.content : ele;
-
-        for (let node = this.fch; node;
-            (node = this.getNextChild(node))) {
-            node.build(passing_element);
-        }
-
-        if (element) element.appendChild(ele);
-
-        return ele;
+    constructor(model, element) {
+        this.sources = [];
+        this.model = model;
+        this.ele = element;
+        this.index = -1;
+        this._APPEND_STATE_ = false;
+        this._TRANSITION_STATE_ = false;
+        this._DESTROYED_ = false;
+        this.parent = null;
     }
 
-    async processTextNodeHook(lex, IS_INNER_HTML) {
-
-        let t = lex.trim(1);
-
-        if (!IS_INNER_HTML)
-            return new TextNode(replaceEscapedHTML(t.slice()));
-
-        let txt = "";
-
-        if (t.string_length > 0)
-            return new TextNode(replaceEscapedHTML(t.slice()));
-
-        return null;
-    }
-}
-
-//Since all nodes extend the RootNode, this needs to be declared here to prevent module cycles. 
-async function CreateHTMLNode(tag, offset, lex) {
-
-    if (await Plugin.parseHTMLonTag(tag, this, lex))
-        return null;
-
-    //jump table.
-    if (tag[0] == "2")
-        switch (tag) {
-            case "w-s":
-                return new SourceNode$1(); //This node is used to 
-            case "w-c":
-                return new SourceContainerNode$1(); //This node is used to 
-        }
-
-    switch (tag) {
-        case "a":
-            return new LinkNode$1();
-            /** void elements **/
-        case "template":
-            return new VoidNode$1();
-        case "style":
-            return new StyleNode$1();
-        case "script":
-            return new ScriptNode$1();
-        case "svg":
-        case "path":
-            return new SVGNode();
-        case "slot":
-            return new SlotNode();
-            //Elements that should not be parsed for binding points.
-        case "pre":
-        case "code":
-            return new PreNode();
+    get element() {
+        if (!this.ele)
+            this.ele = this.sources[0].ele;
+        return this.ele;
     }
 
-
-    return new RootNode();
-}
-
-RootNode.prototype.createHTMLNodeHook = CreateHTMLNode;
-
-// Adding the parseHTMLonTag to the original HTMLNode object. 
-HTMLNode.prototype.createHTMLNodeHook = async function(tag, start, lex) { if (await Plugin.parseHTMLonTag(tag, this, lex)) return null; return new HTMLNode(tag); };
-
-// Adding the parseInnerHTMLOnTag plugin to the original HTMLNode object.
-HTMLNode.prototype.ignoreTillHook = async function(tag, lex) {
-    
-    if (await Plugin.parseInnerHTMLOnTag(tag, this, lex)){
-        return true;
+    destroy() {
+        for (let i = 0; i < this.sources.length; i++)
+            this.sources[i].destroy();
+        this.source = null;
+        this.model = null;
+        this.ele = null;
+        this._DESTROYED_ = true;
+        this.parent = null;
     }
 
-    if (tag == "script" || tag == "style") // Special character escaping tags.
-        return true;
-
-    return false;
-};
-
-// Adding replaceEscapedHTML to original HTMLNode object.
-HTMLNode.prototype.processTextNodeHook = async function(lex, IS_INNER_HTML) {
-
-    let t = lex.trim(1);
-
-    if (!IS_INNER_HTML)
-        return new TextNode(replaceEscapedHTML(t.slice()));
-
-    if (t.string_length > 0)
-        return new TextNode(replaceEscapedHTML(t.slice()));
-
-    return null;
-};
-
-HTMLNode.prototype.endOfElementHook = async function(){
-    return await Plugin.tagHandler(this.tag, this);
-};
-
-/**
- * Factory object for Creating Source trees.  Encapsulates construction information derived from the HTML AST.  
- * 
- * @param      {HTMLElement}  element      The element
- * @param      {Function}  constructor      The constructor for the object the Skeleton will create.
- * @param      {Object}  data  Data pulled from a tags attributes
- * @param      {Presets}  presets  The global Presets instance.
- * @memberof module:wick~internals.source
- * @alias Skeleton  
- */
-class Skeleton {
-
-    /**
-        Constructor of Skeleton
-    */
-    constructor(tree, presets) {
-        this.tree = tree;
-        this.presets = presets;
+    emit(name, value) {
+        for (let i = 0; i < this.sources.length; i++)
+            this.sources[i].upImport(name, value, {
+                event: {}
+            });
     }
 
+    appendToDOM(element, before_element) {
+        this._APPEND_STATE_ = true;
+        if (before_element)
+            element.insertBefore(this.element, before_element);
+        else
+            element.appendChild(this.element);
+    }
 
-    /**
-     * Constructs Source tree and returns that. 
-     * @param {HTMLElement} element - host HTML Element. 
-     * @param      {<type>}  primary_model    The model
-     * @return     {<type>}  { description_of_the_return_value }
-     */
-    flesh(element, primary_model = null, parent = null) {
+    _removeFromDOM_() {
+        if (this._APPEND_STATE_ == true) return;
 
-        const source = this.____copy____(element, null, primary_model);
+        if (this.ele && this.ele.parentElement)
+            this.ele.parentElement.removeChild(this.ele);
+    }
 
-        if (source){
-            if(parent)
-                source.parent = parent;
-            source.load(primary_model);
+    transitionIn(transition, transition_name = "trs_in") {
+
+        if (transition) {
+            let data = {};
+
+            data[transition_name] = transition;
+
+            this.update(data);
         }
 
-        return source;
+        this._TRANSITION_STATE_ = true;
     }
 
-    /**
-     * Extends a given DOM tree and, optionally, a Source tree with it's own internal  tree.
-     * @param {HTMLElement} parent_element - HTML Element of the originating Source. 
-     * @param {<type>}  parent_source   The parent source
-     */
-    extend(parent_element = null, parent_source = null) {
-        this.____copy____(parent_element, parent_source);
-    }
+    transitionOut(transition, transition_name = "trs_out", DESTROY_ON_REMOVE = false) {
 
-    /**
-        Constructs a new object, attaching to elements hosted by a Source object. If the component to be constructed is a Source the 
-        parent_element HTMLElement gets swapped out by a cloned HTMLElement that is hosted by the newly constructed Source.
+        this._APPEND_STATE_ = false;
 
-        @param {HTMLElement} parent_element - HTML Element of the originating tree. 
-
-        @protected
-    */
-    ____copy____(parent_element = null, parent_source = null, primary_model = null) {
-        //List of errors generated when building DOM
-        let errors = [];
-
-        let source = this.tree.build(parent_element, parent_source, this.presets, errors);
-
-        if (errors.length > 0) {
-            //TODO!!!!!!Remove all bindings that change Model. 
-            //source.kill_up_bindings();
-            errors.forEach(e => console.log(e));
+        if (this._TRANSITION_STATE_ === false) {
+            // if (DESTROY_ON_REMOVE && !this._DESTROYED_) this.destroy();
+            this._removeFromDOM_();
+            return;
         }
 
-        return source;
-    }
-}
+        let transition_time = 0;
 
-async function complete(lex, SourcePackage, presets, ast, url, win) {
+        if (transition) {
+            let data = {};
 
+            data[transition_name] = transition;
 
-    //Record URL if present for proper error messaging. 
-    if (url && !ast.url)
-        ast.url = url;
+            this.update(data);
 
-    /*
-     * Only accept certain nodes for mounting to the DOM. 
-     * The custom element `import` is simply used to import extra HTML data from network for use with template system. It should not exist otherwise.
-     */
-    if (ast.tag) {
-        if ((ast.tag == "import" || ast.tag == "link")) {
-            //add tags to package itself.
-            SourcePackage.links.push(ast);
-        } else if (ast.tag !== "template") {
-            let skeleton = new Skeleton(ast, presets);
-            SourcePackage.skeletons.push(skeleton);
+            if (transition.trs)
+                transition_time = transition.trs.out_duration;
+            else
+                transition_time = transition.out_duration;
         }
-    }
-
-    lex.IWS = true;
-
-    while (!lex.END && lex.ch != "<") { lex.n; }
-
-    if (!lex.END)
-        return parseText(lex, SourcePackage, presets, url, win);
-
-    SourcePackage.complete();
-
-    return SourcePackage;
-}
 
 
-async function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win) {
-    await css_list[index].READY();
+        this._TRANSITION_STATE_ = false;
 
-    if (++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
 
-    ast.linkCSS(null, win);
+        /*
+        for (let i = 0, l = this.sources.length; i < l; i++) {
 
-    return complete(lex, SourcePackage, presets, ast, url, win);
-}
+            let ast = this.sources[i].ast;
 
-async function parseText(lex, SourcePackage, presets, url, win) {
-    let start = lex.off;
+            let css = ast.css;
 
-    while (!lex.END && lex.ch != "<") { lex.n; }
+            let hooks = this.sources[i].hooks;
 
-    if (!lex.END) {
+            for (let i = 0, l = hooks.length; i < l; i++) {
 
-        if (lex.pk.ty != lex.types.id)
-            lex.throw(`Expecting an Identifier after '<' character, ${lex.str}`);
+                let hook = hooks[i];
 
-        let node = await CreateHTMLNode(lex.p.tx);
+                if (!hook) continue;
+                let ele = hook.ele;
 
-        node.presets = presets;
+                if (ele.getAttribute("trs") == "out") continue;
+                ele.setAttribute("trs", "out");
 
-        try {
-            const ast = await node.parse(lex, url);
+                if (css) {
+                    let rule = css.getApplicableRules(ele);
 
-            if (ast.css && ast.css.length > 0)
-                return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url, win);
+                    for (let name in rule.props)
+                        if (name == "transition")
+                            for (let i = 0, prop = rule.props[name]; i < prop.length; i++) {
+                                let sub_prop = prop[i];
+                                if (!isNaN(sub_prop))
+                                    transition_time = Math.max(transition_time, sub_prop.milliseconds);
 
-            return complete(lex, SourcePackage, presets, ast, url, win);
-        } catch (e) {
-            SourcePackage.addError(e);
-            SourcePackage.complete();
+                            }
 
-            return SourcePackage;
+                    if (hook.style)
+                        hook.style._setRule_(rule);
+                    else {
+                        //ele.style = rule + "";
+                    }
+                }
+            }
+        }*/
+
+        if (transition_time > 0)
+            setTimeout(() => {
+                this._removeFromDOM_();
+                if (DESTROY_ON_REMOVE) this.destroy();
+            }, transition_time + 2);
+        else {
+            this._removeFromDOM_();
+            if (DESTROY_ON_REMOVE) this.destroy();
         }
+
+        return transition_time;
     }
 
-    debugger;
-    SourcePackage.addError(new Error(`Unexpected end of input. ${lex.slice(start)}, ${lex.str}`));
-    SourcePackage.complete();
-}
-
-
-/**
- * Compiles an object graph based input into a SourcePackage.
- * @param      {SourcePackage}  SourcePackage     The source package
- * @param      {Presets}  presets           The global Presets instance
- * @param      {HTMLElement | Lexer | string}  element     The element
- * @memberof module:wick~internals.templateCompiler
- * @alias CompileSource
- */
-function CompileSource(SourcePackage, presets, element, url, win = window) {
-    
-    if(!url)
-        url = URL.G;
-
-    let lex;
-    if (element instanceof whind$1.constructor) {
-        lex = element;
-    } else if (typeof(element) == "string")
-        lex = whind$1(element);
-    else if (element instanceof EL) {
-        if (element.tagName == "TEMPLATE") {
-            let temp = document.createElement("div");
-            temp.appendChild(element.content);
-            element = temp;
-        }
-        lex = whind$1(element.innerHTML);
-    } else {
-        let e = new Error("Cannot compile component");
-        SourcePackage.addError(e);
-        SourcePackage.complete();
+    upImport(prop_name, data, meta) {
+        if (this.parent)
+            this.parent.up(prop_name, data, meta, this);
+        else 
+            this.up(prop_name, data, meta);
     }
-    return parseText(lex, SourcePackage, presets, url, win);
+
+    up(prop_name, data, meta){
+
+    }
+
+    down(data, changed_values) {
+        for (let i = 0, l = this.sources.length; i < l; i++)
+            this.sources[i].down(data, changed_values);
+    }
+
+    update(data, changed_values) {
+        for (let i = 0, l = this.sources.length; i < l; i++)
+            this.sources[i].update(data, changed_values);
+    }
+
+    bubbleLink() {
+        if (this.parent && this.parent.bubbleLink)
+            this.parent.bubbleLink(this);
+        else
+            debugger
+    }
+
+    sourceLoaded(){
+        this.update({mounted:true});
+    }
 }
 
 class BasePackage{
@@ -16754,7 +16380,7 @@ class BasePackage{
         this.skeletons = [];
 
         /**
-         * An array objects to store pending calls to SourcePackage#mount
+         * An array objects to store pending calls to BasePackage#mount
          */
         this.pms = [];
 
@@ -16770,7 +16396,7 @@ class BasePackage{
 
 
         /**
-         * Flag to indicate SourcePackage was compiled with errors
+         * Flag to indicate BasePackage was compiled with errors
          */
         this.HAVE_ERRORS = false;
 
@@ -16781,7 +16407,7 @@ class BasePackage{
     /**
      * Called when template compilation completes.
      *
-     * Sets SourcePackage#READY to true, send the pending mounts back through SourcePackage#mount, and freezes itself.
+     * Sets BasePackage#READY to true, send the pending mounts back through BasePackage#mount, and freezes itself.
      *
      * @protected
      */
@@ -16911,6 +16537,524 @@ class BasePackage{
 }
 
 /**
+ * Factory object for Creating Source trees.  Encapsulates construction information derived from the HTML AST.  
+ * 
+ * @param      {HTMLElement}  element      The element
+ * @param      {Function}  constructor      The constructor for the object the Skeleton will create.
+ * @param      {Object}  data  Data pulled from a tags attributes
+ * @param      {Presets}  presets  The global Presets instance.
+ * @memberof module:wick~internals.source
+ * @alias Skeleton  
+ */
+class Skeleton {
+
+    /**
+        Constructor of Skeleton
+    */
+    constructor(tree, presets) {
+        this.tree = tree;
+        this.presets = presets;
+    }
+
+
+    /**
+     * Constructs Source tree and returns that. 
+     * @param {HTMLElement} element - host HTML Element. 
+     * @param      {<type>}  primary_model    The model
+     * @return     {<type>}  { description_of_the_return_value }
+     */
+    flesh(element, primary_model = null, parent = null) {
+
+        const source = this.____copy____(element, null, primary_model);
+
+        if (source){
+            if(parent)
+                source.parent = parent;
+            source.load(primary_model);
+        }
+
+        return source;
+    }
+
+    /**
+     * Extends a given DOM tree and, optionally, a Source tree with it's own internal  tree.
+     * @param {HTMLElement} parent_element - HTML Element of the originating Source. 
+     * @param {<type>}  parent_source   The parent source
+     */
+    extend(parent_element = null, parent_source = null) {
+        this.____copy____(parent_element, parent_source);
+    }
+
+    /**
+        Constructs a new object, attaching to elements hosted by a Source object. If the component to be constructed is a Source the 
+        parent_element HTMLElement gets swapped out by a cloned HTMLElement that is hosted by the newly constructed Source.
+
+        @param {HTMLElement} parent_element - HTML Element of the originating tree. 
+
+        @protected
+    */
+    ____copy____(parent_element = null, parent_source = null, primary_model = null) {
+        //List of errors generated when building DOM
+        let errors = [];
+
+        let source = this.tree.build(parent_element, parent_source, this.presets, errors);
+
+        if (errors.length > 0) {
+            //TODO!!!!!!Remove all bindings that change Model. 
+            //source.kill_up_bindings();
+            errors.forEach(e => console.log(e));
+        }
+
+        return source;
+    }
+}
+
+class SourceContainerNode$1 extends RootNode {
+
+    constructor(lex) {
+        super(lex);
+        this.BUILD_LIST = [];
+        this.filters = [];
+        this.property_bind = null;
+        this.property_bind_text = "";
+        this.package = null;
+        this.MERGED = false;
+    }
+
+    merge(node) {
+        const merged_node = super.merge(node);
+        merged_nodes.BUILD_LIST = this.BUILD_LIST;
+        merged_nodes.filters = this.filters;
+        merged_nodes.property_bind = this.property_bind;
+        merged_nodes.property_bind_text = this.property_bind_text;
+        merged_nodes.package = this.package;
+        merged_nodes.MERGED = true;
+        return merged_node;
+    }
+
+    build(element, source, presets, errors, taps, statics) {
+
+        source = source || new Source(null, presets, element, this);
+
+        if (this.HAS_TAPS)
+            taps = source.linkTaps(this.tap_list);
+
+        let pckg = this.package;
+
+        if (!pckg) {
+
+            // See if there is a slot node that can be used to pull data from the statics
+
+            // Package cannot be cached in this case, since the container may be used in different 
+            // components that assign different source tree's to the slot. 
+            if (statics.slots) {
+                let slot = null;
+
+                let children = this.children;
+
+                for (let i = 0, v = null; i < children.length; i++)
+                    if (children[i].tag == "slot") {
+                        if (statics.slots[children[i].name]) {
+                            const
+                                ele = statics.slots[children[i].name],
+                                sk = new Skeleton(ele, this.presets);
+                                
+                            pckg = new BasePackage();
+                            pckg.skeletons.push(sk);
+                            pckg.READY = true;
+
+                            //Exit loop on first successful match.
+                            break;
+                        }
+                    }
+
+            }
+        }
+
+        if (this.property_bind && pckg) {
+
+            let ele = createElement(this.getAttribute("element") || "ul");
+
+            this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
+
+            if (this._badge_name_)
+                source.badges[this._badge_name_] = ele;
+
+            let me = new SourceContainer(source, presets, ele);
+
+            me.package = pckg;
+
+            if (!me.package.skeletons[0].tree.url)
+                me.package.skeletons[0].tree.url = this.getURL();
+
+            me.prop = this.property_bind._bind_(source, errors, taps, me);
+
+            appendChild$1(element, ele);
+
+            for (let node = this.fch; node; node = this.getNextChild(node)) {
+
+                let on = node.getAttrib("on");
+                let sort = node.getAttrib("sort");
+                let filter = node.getAttrib("filter");
+                let limit = node.getAttrib("limit");
+                let offset = node.getAttrib("offset");
+                let scrub = node.getAttrib("scrub");
+                let shift = node.getAttrib("shift");
+
+                if (limit && limit.binding.type == 1) {
+                    me.limit = parseInt(limit.value);
+                    limit = null;
+                }
+
+                if (shift && shift.binding.type == 1) {
+                    me.shift_amount = parseInt(shift.value);
+                    shift = null;
+                }
+
+                if (sort || filter || limit || offset || scrub || shift) //Only create Filter node if it has a sorting bind or a filter bind
+                    me.filters.push(new FilterIO(source, errors, taps, me, on, sort, filter, limit, offset, scrub, shift));
+            }
+        } else {
+            if (this.property_bind)
+                //If there is no package at all then abort build of this element. TODO, throw an appropriate warning.
+                errors.push(new Error(`Missing source for container bound to "${this.property_bind.bindings[0].tap_name}"`));
+            else
+                errors.push(new Error(`Missing property binding for this node.`));
+        }
+
+        return source;
+    }
+
+    /******************************************* HOOKS ****************************************************/
+
+    endOfElementHook() { return this }
+
+    _ignoreTillHook_() {}
+
+
+    createHTMLNodeHook(tag, start) {
+
+        switch (tag) {
+            case "slot":
+                return new SlotNode();
+            case "f":
+                return new FilterNode(); //This node is used to 
+            default:
+                return new PackageNode(start); //This node is used to build packages
+        }
+
+    }
+
+    processTextNodeHook(lex) {
+        if (!this.property_bind) {
+            this.property_bind_text = lex.slice().trim();
+
+            let cp = lex.copy().trim();
+            cp.IWS = true;
+            cp.tl = 0;
+            cp.next();
+
+
+            if (cp.ch == barrier_a_start && (cp.pk.ch == barrier_a_start || cp.pk.ch == barrier_b_start)) {
+                let binding = Template(cp);
+                if (binding) {
+                    this.property_bind = this.processTapBinding(binding);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    innerToString(off) {
+        //Insert temp child node for the property_bind
+        let str = this.property_bind_text;
+
+        str += super.innerToString(off);
+
+        return str;
+    }
+}
+
+class StyleNode$1 extends VoidNode$1 {
+    processTextNodeHook(lex) {
+        //Feed the lexer to a new CSS Builder
+        let css = this.getCSS();
+
+        lex.IWS = true;
+        lex.tl = 0;
+        lex.n;
+
+        css.parse(lex).catch((e) => {
+            throw e;
+        });
+    }
+}
+
+/**
+ * SVG HTMLElements to be created with the svg namespace in order to be rendered correctly.
+ * @class      SVGNode (name)
+ */
+class SVGNode extends RootNode {
+    createElement(presets, source) {
+        return document.createElementNS("http://www.w3.org/2000/svg", this.tag);
+    }
+
+    createHTMLNodeHook(tag) {
+        //jump table.
+        switch (tag[0]) {
+            case "w":
+                switch (tag) {
+                    case "w-s":
+                        return new SourceNode(); //This node is used to 
+                    case "w-c":
+                        return new SourceContainerNode(); //This node is used to 
+                }
+                break;
+            default:
+                switch (tag) {
+                    case "a":
+                        return new LinkNode();
+                        /** void elements **/
+                    case "template":
+                        return new VoidNode();
+                    case "style":
+                        return new StyleNode();
+                    case "script":
+                        return new ScriptNode();
+                    case "svg":
+                    case "path":
+                        return new SVGNode();
+                }
+        }
+
+        return new SVGNode();
+    }
+}
+
+class PreNode extends HTMLNode {
+    build(element) {
+        let ele = document.createElement(this.tag);
+
+        for (let i = 0, l = this.attributes.length; i < l; i++) {
+            let attr = this.attributes[i];
+            ele.setAttribute(attr.name, attr.value);
+        }
+        //let passing_element = ele;
+        let passing_element = (this.tag == "template") ? ele.content : ele;
+
+        for (let node = this.fch; node;
+            (node = this.getNextChild(node))) {
+            node.build(passing_element);
+        }
+
+        if (element) element.appendChild(ele);
+
+        return ele;
+    }
+
+    async processTextNodeHook(lex, IS_INNER_HTML) {
+
+        let t = lex.trim(1);
+
+        if (!IS_INNER_HTML)
+            return new TextNode(replaceEscapedHTML(t.slice()));
+
+        let txt = "";
+
+        if (t.string_length > 0)
+            return new TextNode(replaceEscapedHTML(t.slice()));
+
+        return null;
+    }
+}
+
+//Since all nodes extend the RootNode, this needs to be declared here to prevent module cycles. 
+async function CreateHTMLNode(tag, offset, lex) {
+
+    if (await Plugin.parseHTMLonTag(tag, this, lex))
+        return null;
+    //jump table.
+    if (tag[0] == "w")
+        switch (tag) {
+            case "w-s":
+                return new SourceNode$1(); //This node is used to 
+            case "w-c":
+                return new SourceContainerNode$1(); //This node is used to 
+        }
+        
+    switch (tag) {
+        case "a":
+            return new LinkNode$1();
+            /** void elements **/
+        case "template":
+            return new VoidNode$1();
+        case "style":
+            return new StyleNode$1();
+        case "script":
+            return new ScriptNode$1();
+        case "svg":
+        case "path":
+            return new SVGNode();
+        case "slot":
+            return new SlotNode();
+            //Elements that should not be parsed for binding points.
+        case "pre":
+        case "code":
+            return new PreNode();
+    }
+
+
+    return new RootNode();
+}
+
+RootNode.prototype.createHTMLNodeHook = CreateHTMLNode;
+
+// Adding the parseHTMLonTag to the original HTMLNode object. 
+HTMLNode.prototype.createHTMLNodeHook = async function(tag, start, lex) { if (await Plugin.parseHTMLonTag(tag, this, lex)) return null; return new HTMLNode(tag); };
+
+// Adding the parseInnerHTMLOnTag plugin to the original HTMLNode object.
+HTMLNode.prototype.ignoreTillHook = async function(tag, lex) {
+    
+    if (await Plugin.parseInnerHTMLOnTag(tag, this, lex)){
+        return true;
+    }
+
+    if (tag == "script" || tag == "style") // Special character escaping tags.
+        return true;
+
+    return false;
+};
+
+// Adding replaceEscapedHTML to original HTMLNode object.
+HTMLNode.prototype.processTextNodeHook = async function(lex, IS_INNER_HTML) {
+
+    let t = lex.trim(1);
+
+    if (!IS_INNER_HTML)
+        return new TextNode(replaceEscapedHTML(t.slice()));
+
+    if (t.string_length > 0)
+        return new TextNode(replaceEscapedHTML(t.slice()));
+
+    return null;
+};
+
+HTMLNode.prototype.endOfElementHook = async function(){
+    return await Plugin.tagHandler(this.tag, this);
+};
+
+async function complete(lex, SourcePackage, presets, ast, url, win) {
+
+
+    //Record URL if present for proper error messaging. 
+    if (url && !ast.url)
+        ast.url = url;
+
+    /*
+     * Only accept certain nodes for mounting to the DOM. 
+     * The custom element `import` is simply used to import extra HTML data from network for use with template system. It should not exist otherwise.
+     */
+    if (ast.tag) {
+        if ((ast.tag == "import" || ast.tag == "link")) {
+            //add tags to package itself.
+            SourcePackage.links.push(ast);
+        } else if (ast.tag !== "template") {
+            let skeleton = new Skeleton(ast, presets);
+            SourcePackage.skeletons.push(skeleton);
+        }
+    }
+
+    lex.IWS = true;
+
+    while (!lex.END && lex.ch != "<") { lex.n; }
+
+    if (!lex.END)
+        return parseText(lex, SourcePackage, presets, url, win);
+
+    SourcePackage.complete();
+
+    return SourcePackage;
+}
+
+async function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win) {
+    await css_list[index].READY();
+
+    if (++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
+
+    ast.linkCSS(null, win);
+
+    return complete(lex, SourcePackage, presets, ast, url, win);
+}
+
+async function parseText(lex, SourcePackage, presets, url, win) {
+    let start = lex.off;
+
+    while (!lex.END && lex.ch != "<") { lex.n; }
+
+    if (!lex.END) {
+
+        if (lex.pk.ty != lex.types.id)
+            lex.throw(`Expecting an Identifier after '<' character, ${lex.str}`);
+
+        let node = await CreateHTMLNode(lex.p.tx);
+
+        node.presets = presets;
+
+        try {
+            const ast = await node.parse(lex, url);
+
+            if (ast.css && ast.css.length > 0)
+                return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url, win);
+
+            return complete(lex, SourcePackage, presets, ast, url, win);
+        } catch (e) {
+            SourcePackage.addError(e);
+            SourcePackage.complete();
+
+            return SourcePackage;
+        }
+    }
+    
+    SourcePackage.addError(new Error(`Unexpected end of input. ${lex.slice(start)}, ${lex.str}`));
+    SourcePackage.complete();
+}
+
+
+/**
+ * Compiles an object graph based input into a SourcePackage.
+ * @param      {SourcePackage}  SourcePackage     The source package
+ * @param      {Presets}  presets           The global Presets instance
+ * @param      {HTMLElement | Lexer | string}  element     The element
+ * @memberof module:wick~internals.templateCompiler
+ * @alias CompileSource
+ */
+function CompileSource(SourcePackage, presets, element, url, win = window) {
+    
+    if(!url)
+        url = URL.G;
+
+    let lex;
+    if (element instanceof whind$1.constructor) {
+        lex = element;
+    } else if (typeof(element) == "string")
+        lex = whind$1(element);
+    else if (element instanceof EL) {
+        if (element.tagName == "TEMPLATE") {
+            let temp = document.createElement("div");
+            temp.appendChild(element.content);
+            element = temp;
+        }
+        lex = whind$1(element.innerHTML);
+    } else {
+        let e = new Error("Cannot compile component");
+        SourcePackage.addError(e);
+        SourcePackage.complete();
+    }
+    return parseText(lex, SourcePackage, presets, url, win);
+}
+
+/**
  * SourcePackages stores compiled {@link SourceSkeleton}s and provide a way to _bind_ Model data to the DOM in a reusable manner. *
  * @property    {Array}    skeletons
  * @property    {Array}    styles
@@ -16925,7 +17069,7 @@ class BasePackage{
  * @memberof module:wick.core.source
  * @alias SourcePackage
  */
-class SourcePackage extends BasePackage{
+class SourcePackage extends BasePackage {
 
     constructor(element, presets, RETURN_PROMISE = false, url = "", win = window) {
 
@@ -16959,7 +17103,7 @@ class SourcePackage extends BasePackage{
         //Start the compiling of the component.
         let promise = CompileSource(this, presets, element, url, win);
 
-        OB.seal(this);
+        OB$1.seal(this);
 
         if (RETURN_PROMISE)
             return promise;
@@ -16974,7 +17118,7 @@ PackageNode.prototype.SourcePackage = SourcePackage;
 /** This is the entire object structure of Wick, minus the platform specific outputs found in /source/root/ */
 
 const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);
-model.scheme = (schema, sm) => (sm = class extends SchemedModel {}, sm.schema = schema, sm);
+model.scheme = (s, scheme) => (scheme = class extends SchemedModel {}, scheme.schema = s, scheme);
 model.constr = SchemedModel;
 model.any = (data) => new Model(data);
 model.any.constr = Model;
@@ -17080,21 +17224,19 @@ const
 
 let async_wait = 0;
 
-const Component = (data) => createComponentWithJSSyntax(data, document.location.toString());
+const Component = (data, presets) => createComponentWithJSSyntax(data, presets, document.location.toString());
 
 /**
  * This module allows JavaScript to be used to describe wick components. 
  */
-async function createComponentWithJSSyntax(data, locale) {
+async function createComponentWithJSSyntax(data, presets = new Presets(), locale = "") {
 
     const
         base = ++async_wait,
         rs_base = return_stack.length,
         DATA_IS_STRING = typeof(data) == "string";
 
-    let presets = new Presets(),
-        url = data;
-
+    let url = data;
 
     if ((DATA_IS_STRING && (url = URL.resolveRelative(data, locale))) || data instanceof URL) {
 
@@ -17109,10 +17251,10 @@ async function createComponentWithJSSyntax(data, locale) {
                 if (url.MIME == "text/javascript");
 
                 await (new Promise(res => {
+                    
+                    const out = (data) => createComponentWithJSSyntax(data, presets,  url);
 
-                    const out = (data) => createComponentWithJSSyntax(data, url);
-
-                    (new Function("wick", "url", data))(Object.assign(out, Component), url);
+                    (new Function("wick",  "url", data))(Object.assign(out, Component),  url);
 
                     // Since we have an async function, we need some way to wait for the function to 
                     // return be fore contining this particular execution stack.
@@ -17122,7 +17264,7 @@ async function createComponentWithJSSyntax(data, locale) {
                             res();
                             clearInterval(id);
                         }
-                    }
+                    };
 
                     let id = setInterval(e, 0);
                 }));
@@ -17153,8 +17295,9 @@ async function createComponentWithJSSyntax(data, locale) {
         data = { dom: data };
     }
 
-    if (presets instanceof Presets)
-        presets = presets.copy();
+    //if (presets instanceof Presets)
+    //    presets = presets.copy();
+
 
     let
         pkg = null,
@@ -17192,7 +17335,7 @@ async function createComponentWithJSSyntax(data, locale) {
 
             //Throw any errors generated by package creation. 
             //TODO - implement error system.
-            if(pkg.HAVE_ERRORS)
+            if (pkg.HAVE_ERRORS)
                 throw pkg.errors[0]
 
             var { source_tree, container_tree, container_source_tree } = EnsureRootSource(pkg, NEED_SOURCE_BITS, NEED_CONTAINER_BITS, presets);
@@ -17201,6 +17344,7 @@ async function createComponentWithJSSyntax(data, locale) {
         }
 
     } else {
+
         // This object contains other information that can be appended to a component, but the 
         // component itself may not be mountable
         if (NEED_SOURCE_BITS !== 0) {
@@ -17226,8 +17370,6 @@ async function createComponentWithJSSyntax(data, locale) {
 
     //Pass throughs are used to inject methods and attributes without affecting the dom. 
 
-
-
     // The default action with this object is to convert component back into a 
     // HTML tree string form that can be injected into the DOM of other components. 
     // Additional data can be added to this object before injection using this method.
@@ -17237,7 +17379,7 @@ async function createComponentWithJSSyntax(data, locale) {
 
         if (model) {
 
-            let source = source_tree.build(null, null, presets, [], null, null,  true);
+            let source = source_tree.build(null, null, presets, [], null, null, true);
 
             source.load(model);
 
@@ -17356,8 +17498,6 @@ async function integrateProperties(src, cntr, cntr_src, presets, data) {
         switch (name) {
             case "filter":
                 break;
-            case "filter":
-                break;
             case "inject":
                 if (Array.isArray(v))
                     for (let i = 0; i < v.length; i++)
@@ -17418,40 +17558,44 @@ function InjectTag(tree, presets, tag_name) {
 }
 
 function InjectModel(src_tree, container_tree, model, presets) {
-    if (container_tree) {
-        if (!Array.isArray(model) || model.length == 0)
-            throw new Error("Expecting an array value in for model");
-        let offset = 0;
+    if (typeof(model) == "string" && presets.models[model]) {
+        src_tree._model_name_ = model;
+    } else {
+        if (container_tree) {
+            if (!Array.isArray(model) || model.length == 0)
+                throw new Error("Expecting an array value in for model");
+            let offset = 0;
 
-        if (model.length > 1) {
-            offset++;
+            if (model.length > 1) {
+                offset++;
 
-            let uid = UID(),
-                m = model[0];
+                let uid = UID(),
+                    m = model[0];
 
-            if (!(m instanceof ModelBase))
-                m = new Model(m);
+                if (!(m instanceof ModelBase))
+                    m = new Model(m);
 
-            presets.models[uid] = m;
+                presets.models[uid] = m;
+
+                src_tree._model_name_ = uid;
+            }
+
+            if (typeof(model[offset]) !== "string")
+                throw new Error("Expecting a string expression inside array");
+
+            container_tree.processTextNodeHook(whind$1(`((${model[offset]}))`));
+
+        } else {
+
+            let uid = UID();
+
+            if (!(model instanceof ModelBase))
+                model = new Model(model);
+
+            presets.models[uid] = model;
 
             src_tree._model_name_ = uid;
         }
-
-        if (typeof(model[offset]) !== "string")
-            throw new Error("Expecting a string expression inside array");
-
-        container_tree.processTextNodeHook(whind$1(`((${model[offset]}))`));
-
-    } else {
-
-        let uid = UID();
-
-        if (!(model instanceof ModelBase))
-            model = new Model(model);
-
-        presets.models[uid] = model;
-
-        src_tree._model_name_ = uid;
     }
 }
 
@@ -17561,7 +17705,11 @@ RootNode.prototype.processFetchHook = function(lexer, OPENED, IGNORE_TEXT_TILL_C
             if (ext == "html")
                 return this.parseRunner(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
             else if (ext == "js") {
-                const tree = (await Component(this.url)).tree;
+
+                if (this.tag == "script")
+                    return this.parseRunner(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
+                console.log(this.presets);
+                const tree = (await Component(this.url, this.presets)).tree;
                 //tree.children.forEach(c => c.parent = this)
                 this.addChild(tree);
                 return this;

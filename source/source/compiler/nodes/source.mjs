@@ -17,6 +17,7 @@ export class SourceNode extends RootNode {
     }
 
     merge(node) {
+        console.log(this, node)
         const merged_node = super.merge(node);
         merged_node._model_name_ = this._model_name_;
         merged_node._schema_name_ = this._schema_name_;
@@ -226,6 +227,13 @@ export class SourceNode extends RootNode {
                     lex.n;
                     return basic;
                 }
+
+
+
+                if (name == "slot" && this.par) {
+                    this.par.statics.slots[basic.value] = this;
+                    return basic;
+                }
                 break;
             case "c":
                 if (name == "component") {
@@ -237,6 +245,7 @@ export class SourceNode extends RootNode {
                     return basic;
                 }
                 break;
+
             case "b":
                 if (name == "badge") {
                     this._badge_name_ = lex.tx;

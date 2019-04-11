@@ -1,5 +1,6 @@
 import { Skeleton } from "./skeleton.mjs";
-import { SourcePackage, BasePackage } from "./package.mjs";
+import { SourcePackage } from "./package.mjs";
+import { BasePackage } from "./base_package.mjs";
 import { RootNode } from "./compiler/nodes/root.mjs";
 import { ScriptNode } from "./compiler/nodes/script.mjs";
 import { ScopedNode } from "./compiler/nodes/scoped.mjs";

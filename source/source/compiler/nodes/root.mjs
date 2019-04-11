@@ -562,14 +562,15 @@ export class RootNode extends HTMLNode {
         merged_node._badge_name_ = node._badge_name_;
         merged_node.__presets__ = this.presets;
         merged_node.__statics__ = node.__statics__
+        merged_node.par = node.par;
 
         if (this.tap_list)
             merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));
 
 
-
         this.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind(e.value)));
-        node.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind(e.value)));
+
+        node.attributes.forEach(e => (console.log(e.name), merged_node.processAttributeHook(e.name, whind(e.value))));
 
         merged_node.attributes = merged_node.attributes.concat(this.attributes, node.attributes)
 
