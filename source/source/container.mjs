@@ -467,9 +467,11 @@ export class SourceContainer extends View {
         for (let i = 0, l = this.filters.length; i < l; i++) {
             let filter = this.filters[i];
             if (filter.CAN_USE) {
-                if (filter._CAN_LIMIT_) this.limit = filter._value_;
-                if (filter._CAN_OFFSET_) offset = filter._value_;
-                if (filter._CAN_SHIFT_) this.shift_amount = filter._value_;
+                if (filter._CAN_LIMIT_) this.limit = parseInt(filter._value_);  // Make sure we are dealing with integers. 
+                                                                                // Value could be string debinding on the type of 
+                                                                                // binding. Applies to other values. 
+                if (filter._CAN_OFFSET_) offset = parseInt(filter._value_); 
+                if (filter._CAN_SHIFT_) this.shift_amount = parseInt(filter._value_);
             }
         }
 
@@ -546,10 +548,20 @@ export class SourceContainer extends View {
 
             exists.forEach((v, k, m) => { if (v) out.push(k); });
 
-            if (out.length > 0) {
+            
+            if (out.length > 0) { 
+                // Wrap models into components
                 this.added(out, transition);
-                this.limitUpdate(transition);
+
+                // Update offset, limit, and shift variables.
+                this.limitUpdate();
+
+                // Filter the current components. 
+                this.filterUpdate(out);
+
+                //Preset the positions of initial components. 
                 this.arrange();
+
                 this.render(transition);
             } else {
                 for (let i = 0, j = 0, l = this.activeSources.length; i < l; i++, j++) {
