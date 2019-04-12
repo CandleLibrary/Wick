@@ -33,7 +33,7 @@ async function complete(lex, SourcePackage, presets, ast, url, win) {
     while (!lex.END && lex.ch != "<") { lex.n; }
 
     if (!lex.END)
-        return parseText(lex, SourcePackage, presets, url, win);
+        return await parseText(lex, SourcePackage, presets, url, win);
 
     SourcePackage.complete();
 
@@ -43,11 +43,11 @@ async function complete(lex, SourcePackage, presets, ast, url, win) {
 async function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win) {
     await css_list[index].READY();
 
-    if (++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
+    if (++index < css_list.length) return await buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
 
     ast.linkCSS(null, win);
 
-    return complete(lex, SourcePackage, presets, ast, url, win);
+    return await complete(lex, SourcePackage, presets, ast, url, win);
 }
 
 export async function parseText(lex, SourcePackage, presets, url, win) {
@@ -68,9 +68,9 @@ export async function parseText(lex, SourcePackage, presets, url, win) {
             const ast = await node.parse(lex, url)
 
             if (ast.css && ast.css.length > 0)
-                return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url, win);
+                return await buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url, win);
 
-            return complete(lex, SourcePackage, presets, ast, url, win);
+            return await complete(lex, SourcePackage, presets, ast, url, win);
         } catch (e) {
             SourcePackage.addError(e);
             SourcePackage.complete();

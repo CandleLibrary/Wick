@@ -27,8 +27,7 @@ const
         PUT: 4,
         ARRAY_MODEL: 5,
         FUNCTION_MODEL: 6,
-    },
-    return_stack = [];
+    };
 
 let async_wait = 0;
 
@@ -37,11 +36,11 @@ export const Component = (data, presets) => createComponentWithJSSyntax(data, pr
 /**
  * This module allows JavaScript to be used to describe wick components. 
  */
-async function createComponentWithJSSyntax(data, presets = new Presets(), locale = "") {
+async function createComponentWithJSSyntax(data, presets = new Presets(), locale = "", stack = []) {
 
     const
         base = ++async_wait,
-        rs_base = return_stack.length,
+        rs_base = stack.length,
         DATA_IS_STRING = typeof(data) == "string";
 
     let url = data;
@@ -53,14 +52,15 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
             ext = url.ext;
 
         if (ext == "js") {
+
             try {
                 const data = await url.fetchText();
 
                 if (url.MIME == "text/javascript");
 
-                await (new Promise(res => {
+                await (new Promise(async res => {
                     
-                    const out = (data) => createComponentWithJSSyntax(data, presets,  url);
+                    const out = (data) => createComponentWithJSSyntax(data, presets,  url, stack);
 
                     (new Function("wick",  "url", data))(Object.assign(out, Component),  url);
 
@@ -76,10 +76,11 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
 
                     let id = setInterval(e, 0);
                 }))
+
                 let rvalue = null;
 
-                while (return_stack.length > rs_base)
-                    rvalue = return_stack.pop();
+                while (stack.length > rs_base)
+                    rvalue = stack.pop();
 
                 async_wait--;
 
@@ -210,7 +211,7 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
 
     async_wait--;
 
-    return_stack.push(return_value);
+    stack.push(return_value);
 
     return return_value;
 }
