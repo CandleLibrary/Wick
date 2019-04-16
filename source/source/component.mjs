@@ -28,18 +28,16 @@ const
         ARRAY_MODEL: 5,
         FUNCTION_MODEL: 6,
     };
-
-let async_wait = 0;
+    
 
 export const Component = (data, presets) => createComponentWithJSSyntax(data, presets, document.location.toString())
 
 /**
  * This module allows JavaScript to be used to describe wick components. 
  */
-async function createComponentWithJSSyntax(data, presets = new Presets(), locale = "", stack = []) {
-
+async function createComponentWithJSSyntax(data, presets = new Presets(), locale = "", stack = [], async_wait = {waiting:0}) {
     const
-        base = ++async_wait,
+        base = ++async_wait.waiting,
         rs_base = stack.length,
         DATA_IS_STRING = typeof(data) == "string";
 
@@ -59,16 +57,17 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
                 if (url.MIME == "text/javascript");
 
                 await (new Promise(async res => {
-                    
-                    const out = (data) => createComponentWithJSSyntax(data, presets,  url, stack);
+
+                    const out = (data) => (console.log(stack), createComponentWithJSSyntax(data, presets,  url, stack, async_wait));
 
                     (new Function("wick",  "url", data))(Object.assign(out, Component),  url);
+                   
 
                     // Since we have an async function, we need some way to wait for the function to 
                     // return be fore contining this particular execution stack.
                     // setTimeout allows JS to wait without blocking.
                     function e() {
-                        if (async_wait <= base) {
+                        if (async_wait.waiting <= base) {
                             res();
                             clearInterval(id);
                         }
@@ -80,7 +79,7 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
                 let rvalue = null;
 
                 while (stack.length > rs_base)
-                    rvalue = stack.pop();
+                    rvalue = stack.shift();
 
                 async_wait--;
 
@@ -88,6 +87,7 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
             } catch (e) {
                 throw e;
             }
+
             return;
         } else if (ext == "mjs") {
             return; //Todo, parse using import syntax
@@ -209,7 +209,7 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
     Object.freeze(return_value);
 
 
-    async_wait--;
+    async_wait.waiting--;
 
     stack.push(return_value);
 
@@ -219,8 +219,8 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
 function checkFlag(FLAG_BITS, flag_bit_offset) {
     return !!(FLAG_BITS >> flag_bit_offset & 1);
 }
-// Ensure that if there is a need for a SourceNode, there is one attached to the 
-// Having multiple node trees also require to be sub-trees of a SourceNode, to ensure expected 
+// Ensure that if there is a need for a SourceNode, there is one set as the root of the tree 
+// Having multiple node trees also require them to be sub-trees of a SourceNode, to ensure expected 
 // Component results.
 function EnsureRootSource(pkg, NEED_SOURCE_BITS, NEED_CONTAINER_BITS, presets) {
 
