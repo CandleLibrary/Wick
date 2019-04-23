@@ -10,6 +10,7 @@ import { MultiIndexedContainer } from "./model/container/multi.mjs";
 import { BTreeModelContainer } from "./model/container/btree.mjs";
 import { ArrayModelContainer } from "./model/container/array.mjs";
 import { View } from "./view.mjs";
+import { BasePackage } from "./source/base_package.mjs";
 import { SourcePackage } from "./source/package.mjs";
 import { Source } from "./source/source.mjs";
 import { CompileSource } from "./source/compiler/compiler.mjs";
@@ -35,6 +36,7 @@ export {
     BTreeModelContainer,
     ArrayModelContainer,
     View,
+    BasePackage,
     SourcePackage,
     Source,
     CompileSource,

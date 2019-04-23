@@ -570,8 +570,6 @@ export class RootNode extends HTMLNode {
 
         this.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind(e.value)));
 
-        node.attributes.forEach(e => (console.log(e.name), merged_node.processAttributeHook(e.name, whind(e.value))));
-
         merged_node.attributes = merged_node.attributes.concat(this.attributes, node.attributes)
 
         //merged_node.attributes = this.attributes.slice();

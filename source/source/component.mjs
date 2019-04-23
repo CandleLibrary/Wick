@@ -30,6 +30,7 @@ const
     };
     
 
+
 export const Component = (data, presets) => createComponentWithJSSyntax(data, presets, document.location.toString())
 
 /**
@@ -58,7 +59,7 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
 
                 await (new Promise(async res => {
 
-                    const out = (data) => (console.log(stack), createComponentWithJSSyntax(data, presets,  url, stack, async_wait));
+                    const out = (data) => createComponentWithJSSyntax(data, presets,  url, stack, async_wait);
 
                     (new Function("wick",  "url", data))(Object.assign(out, Component),  url);
                    
@@ -213,6 +214,7 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
 
     stack.push(return_value);
 
+    console.log(return_value)
     return return_value;
 }
 

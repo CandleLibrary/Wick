@@ -17,7 +17,7 @@ export class SourceNode extends RootNode {
     }
 
     merge(node) {
-        console.log(this, node)
+        
         const merged_node = super.merge(node);
         merged_node._model_name_ = this._model_name_;
         merged_node._schema_name_ = this._schema_name_;
