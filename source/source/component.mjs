@@ -213,8 +213,7 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
     async_wait.waiting--;
 
     stack.push(return_value);
-
-    console.log(return_value)
+    
     return return_value;
 }
 
