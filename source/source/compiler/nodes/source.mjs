@@ -60,7 +60,8 @@ export class SourceNode extends RootNode {
 
     /******************************************* BUILD ****************************************************/
     createElement() {
-        return createElement(this.getAttribute("element") || "div");
+        let attr = this.getAttrib("element", true);
+        return createElement(attr ? attr.value : "div");
     }
 
     build(element, source, presets, errors, taps = null, statics = {},  RENDER_ALL = false) {
@@ -98,7 +99,7 @@ export class SourceNode extends RootNode {
          * will be created to allow the source object to bind to an actual HTMLElement. 
          */
 
-        if (!element || this.getAttribute("element")) {
+        if (!element || this.getAttrib("element", true)) {
 
             let ele = this.createElement();
 
@@ -250,6 +251,11 @@ export class SourceNode extends RootNode {
                     return basic;
                 }
                 break;
+
+            case "e":
+                if (name == "element") 
+                    return basic;
+
             default:
                 if (this.checkTapMethodGate(name, lex))
                     return basic;

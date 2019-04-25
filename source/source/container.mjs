@@ -64,7 +64,6 @@ export class SourceContainer extends View {
 
     get data() {}
     set data(container) {
-
         if (container instanceof ModelContainerBase) {
             container.pin();
             container.addView(this);
@@ -232,11 +231,11 @@ export class SourceContainer extends View {
             this.scrub_velocity = scrub_delta;
         } else {
 
-            if (Math.abs(this.scrub_velocity) > 0.00001) {
+            if (Math.abs(this.scrub_velocity) > 0.0001) {
                 const sign = Math.sign(this.scrub_velocity);
 
-                if (Math.abs(this.scrub_velocity) < 0.01) this.scrub_velocity = 0.01 * sign;
-                if (Math.abs(this.scrub_velocity) > 0.2) this.scrub_velocity = 0.2 * sign;
+                if (Math.abs(this.scrub_velocity) < 0.1) this.scrub_velocity = 0.1 * sign;
+                if (Math.abs(this.scrub_velocity) > 0.5) this.scrub_velocity = 0.5 * sign;
 
                 this.AUTO_SCRUB = true;
 
@@ -309,7 +308,7 @@ export class SourceContainer extends View {
         const active_window_start = offset * this.shift_amount;
 
         direction = Math.sign(this.offset_diff);
-
+        let prv = null;
         if (active_window_size > 0) {
 
             this.shift_amount = Math.max(1, Math.min(active_window_size, this.shift_amount));
