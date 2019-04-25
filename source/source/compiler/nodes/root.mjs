@@ -116,11 +116,11 @@ export class RootNode extends HTMLNode {
     /******************************************* STATICS ****************************************************/
 
     get statics() {
+
         if (this.__statics__) return this.__statics__;
 
         if (this.par)
             return (this.__statics__ = Object.assign({}, this.par.statics, { slots: {} }));
-
         return (this.__statics__ = { slots: {} });
     }
 
@@ -152,6 +152,36 @@ export class RootNode extends HTMLNode {
         }
 
         return this;
+    }
+
+    merge(node) {
+        const merged_node = new this.constructor()
+        merged_node.line = this.line;
+        merged_node.char = this.char;
+        merged_node.offset = this.offset;
+        merged_node.single = this.single;
+        merged_node.url = this.url;
+        merged_node.tag = this.tag;
+        merged_node.fch = this.fch;
+        merged_node.css = this.css;
+        merged_node.HAS_TAPS = this.HAS_TAPS;
+        merged_node.merged = true;
+        merged_node._badge_name_ = node._badge_name_;
+        merged_node.__presets__ = this.presets;
+        merged_node.par = node.par;
+
+        if (this.tap_list)
+            merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));
+
+
+        this.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind(e.value)));
+
+        merged_node.attributes = merged_node.attributes.concat(this.attributes, node.attributes)
+
+        merged_node.__statics__ = node.__statics__;
+
+        //merged_node.attributes = this.attributes.slice();
+        return merged_node;
     }
 
     /******************************************* CSS ****************************************************/
@@ -355,8 +385,9 @@ export class RootNode extends HTMLNode {
 
         let out_statics = statics;
 
-        if (this.url || this.__statics__)
+        if (this.url || this.__statics__){
             out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL(par_list.length - 1) });
+        }
 
         const own_element = this.createElement(presets, source);
 
@@ -545,34 +576,5 @@ export class RootNode extends HTMLNode {
         }
 
         return null;
-    }
-
-    merge(node) {
-        const merged_node = new this.constructor()
-        merged_node.line = this.line;
-        merged_node.char = this.char;
-        merged_node.offset = this.offset;
-        merged_node.single = this.single;
-        merged_node.url = this.url;
-        merged_node.tag = this.tag;
-        merged_node.fch = this.fch;
-        merged_node.css = this.css;
-        merged_node.HAS_TAPS = this.HAS_TAPS;
-        merged_node.merged = true;
-        merged_node._badge_name_ = node._badge_name_;
-        merged_node.__presets__ = this.presets;
-        merged_node.__statics__ = node.__statics__
-        merged_node.par = node.par;
-
-        if (this.tap_list)
-            merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));
-
-
-        this.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind(e.value)));
-
-        merged_node.attributes = merged_node.attributes.concat(this.attributes, node.attributes)
-
-        //merged_node.attributes = this.attributes.slice();
-        return merged_node;
     }
 }

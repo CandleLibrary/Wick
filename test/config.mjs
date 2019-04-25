@@ -84,7 +84,8 @@ import cfwt from "@candlefw/tests";
     //Tests
     //await cfwt.installTest("./test/suite/plugins.mjs");
     //await cfwt.installTest("./test/suite/model.mjs");
-    await cfwt.installTest("./test/suite/scrubbing.mjs");
+    //await cfwt.installTest("./test/suite/scrubbing.mjs");
+    await cfwt.installTest("./test/suite/merging.mjs");
 
     const suite = cfwt.build("wick");
     console.log(suite)

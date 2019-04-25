@@ -142,7 +142,7 @@ var wick = (function () {
      *
      * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
      */
-     
+        
     const caller = (typeof(window) == "object" && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
         setTimeout(f, 1);
     };
@@ -168,7 +168,16 @@ var wick = (function () {
 
             this.queue_switch = 0;
 
-            this.callback = () => this.update();
+            this.callback = ()=>{};
+
+            if(typeof(window) !== "undefined"){
+                window.addEventListener("load",()=>{
+                    this.callback = () => this.update();
+                    caller(this.callback);
+                });
+            }else{
+                this.callback = () => this.update();
+            }
 
             this.frame_time = perf.now();
 
@@ -199,9 +208,11 @@ var wick = (function () {
 
             this.frame_time = perf.now() | 0;
 
-            this.SCHEDULE_PENDING = true;
 
-            caller(this.callback);
+            if(!this.SCHEDULE_PENDING){
+                this.SCHEDULE_PENDING = true;
+                caller(this.callback);
+            }
         }
 
         removeFromQueue(object){
@@ -1836,7 +1847,7 @@ var wick = (function () {
                 thick_line = String.fromCharCode(0x2501),
                 line_number = "    " + this.line + ": ",
                 line_fill = line_number.length,
-                t = thick_line.repeat(line_fill + 48),
+                t$$1 = thick_line.repeat(line_fill + 48),
                 is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
             const pk = this.copy();
             pk.IWS = false;
@@ -1844,10 +1855,10 @@ var wick = (function () {
             const end = pk.off;
 
             return `${message} at ${this.line}:${this.char}
-${t}
+${t$$1}
 ${line_number+this.str.slice(Math.max(this.off - this.char, 0), end)}
 ${line.repeat(this.char-1+line_fill)+trs+arrow}
-${t}
+${t$$1}
 ${is_iws}`;
         }
 
@@ -1912,7 +1923,7 @@ ${is_iws}`;
             }
 
             //Token builder
-            const l = marker.sl,
+            const l$$1 = marker.sl,
                 str = marker.str,
                 IWS = marker.IWS;
 
@@ -1923,9 +1934,9 @@ ${is_iws}`;
                 line = marker.line,
                 base = off;
 
-            if (off >= l) {
+            if (off >= l$$1) {
                 length = 0;
-                base = l;
+                base = l$$1;
                 char -= base - off;
                 marker.type = type;
                 marker.off = base;
@@ -1943,14 +1954,14 @@ ${is_iws}`;
                 let code = str.charCodeAt(off);
                 let off2 = off;
                 let map = this.symbol_map,
-                    m;
+                    m$$1;
                 let i = 0;
 
                 while (code == 32 && IWS)
                     (code = str.charCodeAt(++off2), off++);
 
-                while ((m = map.get(code))) {
-                    map = m;
+                while ((m$$1 = map.get(code))) {
+                    map = m$$1;
                     off2 += 1;
                     code = str.charCodeAt(off2);
                 }
@@ -1978,7 +1989,7 @@ ${is_iws}`;
 
                         switch (jump_table[code]) {
                             case 0: //NUMBER
-                                while (++off < l && (12 & number_and_identifier_table[str.charCodeAt(off)]));
+                                while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)]));
 
                                 if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off + 1)])) {
                                     off++;
@@ -1995,7 +2006,7 @@ ${is_iws}`;
 
                                 break;
                             case 1: //IDENTIFIER
-                                while (++off < l && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
+                                while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
                                 type = identifier;
                                 length = off - base;
                                 break;
@@ -2003,18 +2014,18 @@ ${is_iws}`;
                                 if (this.PARSE_STRING) {
                                     type = symbol;
                                 } else {
-                                    while (++off < l && str.charCodeAt(off) !== code);
+                                    while (++off < l$$1 && str.charCodeAt(off) !== code);
                                     type = string;
                                     length = off - base + 1;
                                 }
                                 break;
                             case 3: //SPACE SET
-                                while (++off < l && str.charCodeAt(off) === SPACE);
+                                while (++off < l$$1 && str.charCodeAt(off) === SPACE);
                                 type = white_space;
                                 length = off - base;
                                 break;
                             case 4: //TAB SET
-                                while (++off < l && str[off] === HORIZONTAL_TAB);
+                                while (++off < l$$1 && str[off] === HORIZONTAL_TAB);
                                 type = white_space;
                                 length = off - base;
                                 break;
@@ -2047,13 +2058,13 @@ ${is_iws}`;
                     }
 
                     if (IWS && (type & white_space_new_line)) {
-                        if (off < l) {
+                        if (off < l$$1) {
                             char += length;
                             type = symbol;
                             continue;
                         } else {
                             //Trim white space from end of string
-                            base = l - length;
+                            base = l$$1 - length;
                             marker.sl -= length;
                             length = 0;
                             char -= base - off;
@@ -2218,9 +2229,9 @@ ${is_iws}`;
                 off = lex.off;
 
             for (; lex.off < lex.sl; lex.off++) {
-                const c = jump_table[lex.string.charCodeAt(lex.off)];
+                const c$$1 = jump_table[lex.string.charCodeAt(lex.off)];
 
-                if (c > 2 && c < 7) {
+                if (c$$1 > 2 && c$$1 < 7) {
 
                     if (space_count >= leave_leading_amount) {
                         off++;
@@ -2238,9 +2249,9 @@ ${is_iws}`;
             off = lex.sl;
 
             for (; lex.sl > lex.off; lex.sl--) {
-                const c = jump_table[lex.string.charCodeAt(lex.sl - 1)];
+                const c$$1 = jump_table[lex.string.charCodeAt(lex.sl - 1)];
 
-                if (c > 2 && c < 7) {
+                if (c$$1 > 2 && c$$1 < 7) {
                     if (space_count >= leave_trailing_amount) {
                         off--;
                     } else {
@@ -2274,11 +2285,11 @@ ${is_iws}`;
 
             for (let i = 0; i < sym.length; i++) {
                 let code = sym.charCodeAt(i);
-                let m = map.get(code);
-                if (!m) {
-                    m = map.set(code, new Map).get(code);
+                let m$$1 = map.get(code);
+                if (!m$$1) {
+                    m$$1 = map.set(code, new Map).get(code);
                 }
-                map = m;
+                map = m$$1;
             }
             map.IS_SYM = true;
         }
@@ -2292,7 +2303,7 @@ ${is_iws}`;
             return this.sl - this.off;
         }
 
-        set string_length(s) {}
+        set string_length(s$$1) {}
 
         /**
          * The current token in the form of a new Lexer with the current state.
@@ -2361,7 +2372,7 @@ ${is_iws}`;
         get n() { return this.next() }
 
         get END() { return this.off >= this.sl }
-        set END(v) {}
+        set END(v$$1) {}
 
         get type() {
             return 1 << (this.masked_values & TYPE_MASK);
@@ -2427,6 +2438,8 @@ ${is_iws}`;
             return Types;
         }
     }
+
+    Lexer.prototype.addCharacter = Lexer.prototype.addSymbol;
 
     function whind$1(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS) }
 
@@ -3096,7 +3109,7 @@ ${is_iws}`;
                     if (left.LEAF)
                         for (let i = 0; i < left.keys.length; i++)
                             if (left.keys[i] != left.nodes[i].id)
-                                {/*debugger*/};
+                                {/*debugger*/}
 
                     return true;
                 }
@@ -4138,6 +4151,16 @@ ${is_iws}`;
             history.pushState({}, "ignored title", url);
             window.onpopstate();
             URL.G = this;
+        }
+        //Returns the last segment of the path
+        get file(){
+            return this.path.split("/").pop();
+        }
+
+
+        //Returns the all but the last segment of the path
+        get dir(){
+            return this.path.split("/").slice(0,-1).join("/") || "/";
         }
 
         get pathname() {
@@ -5600,7 +5623,7 @@ ${is_iws}`;
                             if (pk.ch == "!") {
                                 /* DTD - Doctype and Comment tags*/
                                 //This type of tag is dropped
-                                while (!lex.END && lex.n.ch !== ">") {};
+                                while (!lex.END && lex.n.ch !== ">") {}
                                 lex.a(">");
                                 lex.IWS = false;
                                 continue;
@@ -5609,7 +5632,7 @@ ${is_iws}`;
                             if (!IGNORE_TEXT_TILL_CLOSE_TAG) {
                                 //Open tag
                                 if (!OPENED) {
-                                    let URL = false;
+                                    let URL$$1 = false;
                                     this.DTD = false;
                                     this.attributes.length = 0;
 
@@ -5617,7 +5640,7 @@ ${is_iws}`;
                                     this.tag = lex.n.tx.toLowerCase();
 
                                     lex.PARSE_STRING = false;
-                                    URL = this.parseOpenTag(lex.n, false, old_url);
+                                    URL$$1 = this.parseOpenTag(lex.n, false, old_url);
                                     lex.PARSE_STRING = true;
 
                                     this.char = lex.char;
@@ -5637,7 +5660,7 @@ ${is_iws}`;
                                     if (HAS_INNER_TEXT)
                                         start = lex.pos;
 
-                                    if (URL) {
+                                    if (URL$$1) {
 
                                         //Need to block against ill advised URL fetches. 
 
@@ -5990,7 +6013,7 @@ ${is_iws}`;
 
                     cpy.next();
                     //*/
-                };
+                }
 
                 if(cpy.END)
                     throw cpy.throw("Unexpected end of input");
@@ -6062,7 +6085,7 @@ ${is_iws}`;
 
                     cpy.next();
                     //*/
-                };
+                }
 
                 cpy.a(">", `Expecting a matching closing tag for ${tag_name}`);
 
@@ -7674,6 +7697,10 @@ ${is_iws}`;
 
     		return out;
     	}
+
+    	toString(){
+    		 return `cubic-bezier(${this[2]},${this[3]},${this[4]},${this[5]})`;
+    	}
     }
 
     class Stop{
@@ -7821,10 +7848,12 @@ ${is_iws}`;
         return n;
     }
 
-    function ParseString(lex, transform) {
-        
-        if (typeof(lex) == "string")
-                lex = whind$1(lex);
+    function ParseString(string, transform) {
+        let lex = null;
+        lex = string;
+
+        if(typeof(string) == "string")
+            lex = whind$1(string);
         
         while (!lex.END) {
             let tx = lex.tx;
@@ -7953,7 +7982,7 @@ ${is_iws}`;
                     this[2] = px[2];
                     this[3] = px[3];
                     this[4] = px[4];
-                } else if(typeof(px) == "string"){ ParseString(px, this);}
+                } else if (typeof(px) == "string") ParseString(px, this);
                 else {
                     this[0] = px;
                     this[1] = py;
@@ -8778,27 +8807,25 @@ ${is_iws}`;
      */
     class CSSSelector {
 
-        constructor(selectors /* string */ , selectors_arrays /* array */ ) {
+        constructor(value = "", value_array = []) {
 
             /**
              * The raw selector string value
              * @package
              */
-
-            this.v = selectors;
+            this.v = value;
 
             /**
              * Array of separated selector strings in reverse order.
              * @package
              */
+            this.a = value_array;
 
-            this.a = selectors_arrays;
-
-            /**
-             * The CSSRule.
-             * @package
-             */
+            // CSS Rulesets the selector is member of .
             this.r = null;
+
+            // CSS root the selector is a child of. 
+            this.root = null;
         }
 
         get id() {
@@ -8860,7 +8887,7 @@ ${is_iws}`;
                 if (!lx.pk.pk.END) // These values should be the only ones present. Failure otherwise.
                     return 0; // Default value present among other values. Invalid
                 return 1; // Default value present only. Valid
-        };
+        }
         return 2; // Default value not present. Ignore
     }
 
@@ -9312,7 +9339,7 @@ ${is_iws}`;
 
             return false;
         }
-    };
+    }
 
     //import util from "util"
     const standard_productions = {
@@ -9385,7 +9412,7 @@ ${is_iws}`;
 
     function d$1(l, definitions, productions, super_term = false, oneof_group = false, or_group = false, and_group = false, important = null) {
         let term, nt, v;
-        const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
+        const { JUX: JUX$$1, AND: AND$$1, OR: OR$$1, ONE_OF: ONE_OF$$1, LiteralTerm: LiteralTerm$$1, ValueTerm: ValueTerm$$1, SymbolTerm: SymbolTerm$$1 } = productions;
 
         let GROUP_BREAK = false;
 
@@ -9402,7 +9429,7 @@ ${is_iws}`;
                     v = checkExtensions(l, v, productions);
 
                     if (term) {
-                        if (term instanceof JUX && term.isRepeating()) term = foldIntoProduction(productions, new JUX, term);
+                        if (term instanceof JUX$$1 && term.isRepeating()) term = foldIntoProduction(productions, new JUX$$1, term);
                         term = foldIntoProduction(productions, term, v);
                     } else
                         term = v;
@@ -9410,13 +9437,13 @@ ${is_iws}`;
 
                 case "<":
 
-                    v = new ValueTerm(l.next().tx, getPropertyParser, definitions, productions);
+                    v = new ValueTerm$$1(l.next().tx, getPropertyParser, definitions, productions);
                     l.next().assert(">");
 
                     v = checkExtensions(l, v, productions);
 
                     if (term) {
-                        if (term instanceof JUX /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX, term);
+                        if (term instanceof JUX$$1 /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX$$1, term);
                         term = foldIntoProduction(productions, term, v);
                     } else {
                         term = v;
@@ -9430,7 +9457,7 @@ ${is_iws}`;
                         if (and_group)
                             return term;
 
-                        nt = new AND();
+                        nt = new AND$$1();
 
                         if (!term) throw new Error("missing term!");
 
@@ -9455,7 +9482,7 @@ ${is_iws}`;
                             if (or_group || and_group)
                                 return term;
 
-                            nt = new OR();
+                            nt = new OR$$1();
 
                             nt.terms.push(term);
 
@@ -9474,7 +9501,7 @@ ${is_iws}`;
                             if (oneof_group || or_group || and_group)
                                 return term;
 
-                            nt = new ONE_OF();
+                            nt = new ONE_OF$$1();
 
                             nt.terms.push(term);
 
@@ -9492,12 +9519,12 @@ ${is_iws}`;
                     break;
                 default:
 
-                    v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx, l.ty);
+                    v = (l.ty == l.types.symbol) ? new SymbolTerm$$1(l.tx) : new LiteralTerm$$1(l.tx, l.ty);
                     l.next();
                     v = checkExtensions(l, v, productions);
 
                     if (term) {
-                        if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX, term);
+                        if (term instanceof JUX$$1 /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX$$1, term);
                         term = foldIntoProduction(productions, term, v);
                     } else {
                         term = v;
@@ -9713,7 +9740,7 @@ ${is_iws}`;
                         if (!prop(win))
                             return false;
                     }
-                };
+                }
             }
 
             return true;
@@ -10010,7 +10037,7 @@ ${is_iws}`;
                                         ).catch((e) => res(this.parse(lexer)));
                                     } else {
                                         //Failed to fetch resource, attempt to find the end to of the import clause.
-                                        while (!lexer.END && lexer.next().tx !== ";") {};
+                                        while (!lexer.END && lexer.next().tx !== ";") {}
                                         lexer.next();
                                     }
                             }
@@ -10041,6 +10068,7 @@ ${is_iws}`;
                     let selector = this.parseSelector(lexer, this);
 
                     if (selector) {
+                        selector.root = this;
                         if (!this._selectors_[selector.id]) {
                             l = selectors.push(selector);
                             this._selectors_[selector.id] = selector;
@@ -10240,7 +10268,7 @@ ${is_iws}`;
         }
 
         setList() {
-            if(this.DEMOTED) debugger
+            //if(this.DEMOTED) debugger
             if (this.prod && this.list.innerHTML == "") {
                 if (this.DEMOTED || !this.prod.buildList(this.list, this))
                     this.menu_icon.style.display = "none";
@@ -11063,7 +11091,7 @@ ${is_iws}`;
             return this.txt;
         }
 
-    };
+    }
 
 
     function drop(e){
@@ -11180,7 +11208,7 @@ ${is_iws}`;
             }
             return r;
         };
-    };
+    }
 
     const props = Object.assign({}, property_definitions);
 
@@ -11357,7 +11385,7 @@ ${is_iws}`;
         }
 
         rebuild(rule_body){
-            if(this.ver !== rule_body.ver){
+            if(true || this.ver !== rule_body.ver){
                 this.rule_space.innerHTML = "";
                 this.rules.length = 0;
                 this.build(rule_body);
@@ -11385,7 +11413,7 @@ ${is_iws}`;
                 }
             }
 
-            this.parent.update();
+            this.parent.update(this);
         }
 
         addProp(type, value){
@@ -11417,10 +11445,6 @@ ${is_iws}`;
         e.preventDefault();
     }
 
-    //import { UIValue } from "./ui_value.mjs";
-
-    const props$2 = Object.assign({}, property_definitions);
-
     class UIMaster {
         constructor(css) {
             css.addObserver(this);
@@ -11429,6 +11453,7 @@ ${is_iws}`;
             this.selectors = [];
             this.element = document.createElement("div");
             this.element.classList.add("cfw_css");
+            this.update_mod = 0;
 
 
             this.rule_map = new Map();
@@ -11438,6 +11463,7 @@ ${is_iws}`;
         // css - A CandleFW_CSS object. 
         // meta - internal 
         build(css = this.css) {
+            if(this.update_mod++%3 !== 0) return;
 
             //Extract rule bodies and set as keys for the rule_map. 
             //Any existing mapped body that does not have a matching rule should be removed. 
@@ -13180,7 +13206,7 @@ ${is_iws}`;
      * @param      {Lexer}  lex     The lex
      * @return     {Array}   an
      */
-    function evaluate(lex, EVENT = false) {
+    function evaluate(lex, EVENT$$1 = false) {
         let binds = [];
         lex.IWS = false;
         let start = lex.pos;
@@ -13256,7 +13282,7 @@ ${is_iws}`;
 
                             if (lex.ch == barrier_a_start || lex.ch == barrier_b_start) {
 
-                                if(EVENT){
+                                if(EVENT$$1){
                                     binding = new EventBinding(binding); 
                                     binds[index] = binding;
                                 }
@@ -14016,8 +14042,6 @@ ${is_iws}`;
 
             this.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind$1(e.value)));
 
-            node.attributes.forEach(e => (console.log(e.name), merged_node.processAttributeHook(e.name, whind$1(e.value))));
-
             merged_node.attributes = merged_node.attributes.concat(this.attributes, node.attributes);
 
             //merged_node.attributes = this.attributes.slice();
@@ -14106,7 +14130,7 @@ ${is_iws}`;
         }
 
         merge(node) {
-            console.log(this, node);
+            
             const merged_node = super.merge(node);
             merged_node._model_name_ = this._model_name_;
             merged_node._schema_name_ = this._schema_name_;
@@ -14600,6 +14624,9 @@ ${is_iws}`;
                     this.FINISHED = false;
                     this.CSS_ANIMATING = false;
                     this.events = {};
+                    this.SHUTTLE = false;
+                    this.REPEAT = 0;
+                    this.SCALE = 1;
 
                     switch (this.type) {
                         case CSS_STYLE:
@@ -14673,23 +14700,59 @@ ${is_iws}`;
                             prop.run(this.obj, n, i, this.type);
                     }
 
-                    if (i >= this.duration)
+                    if (i >= this.duration || i <= 0)
                         return false;
 
                     return true;
                 }
 
                 scheduledUpdate(a, t) {
-                    if (this.run(this.time += t))
+
+                    this.time += t * this.SCALE;
+                    if (this.run(this.time)){
                         spark.queueUpdate(this);
-                    else
+                    }
+                    else if(this.REPEAT){
+                        let scale = this.SCALE;
+                        
+                        this.REPEAT--;
+
+                        if(this.SHUTTLE)
+                            scale = -scale;
+                        
+                        let from = (scale > 0) ? 0 : this.duration;
+                             
+                        this.play(scale, from);
+                    }else
                         this.issueEvent("stopped");
+
                 }
 
-                play(from = 0) {
+                //TODO: use repeat to continually play back numation 
+                repeat(count = 1){
+                    this.REPEAT = Math.max(0,parseFloat(count));
+                    return this;
+                } 
+                 //TODO: allow scale to control playback speed and direction
+                play(scale = 1, from = 0) {
+                    this.SCALE = scale;
                     this.time = from;
                     spark.queueUpdate(this);
                     this.issueEvent("started");
+                    return this;
+                }
+
+                set(i=0){
+                    if(i >= 0)
+                        this.run(i*this.duration);
+                    else
+                        this.run(this.duration - i*this.duration);
+                }
+
+
+                shuttle(SHUTTLE = true){
+                    this.SHUTTLE = !!SHUTTLE;
+                    return this;
                 }
 
                 addEventListener(event, listener) {
@@ -14779,6 +14842,9 @@ ${is_iws}`;
                     this.seq = [];
                     this.time = 0;
                     this.duration = 0;
+                    this.SHUTTLE = false;
+                    this.REPEAT = 0;
+                    this.SCALE = 1;
                 }
 
                 destroy() {
@@ -14804,15 +14870,51 @@ ${is_iws}`;
                 }
 
                 scheduledUpdate(a, t) {
-                    this.time += t;
+                    this.time += t * this.SCALE;
                     if (this.run(this.time))
                         spark.queueUpdate(this);
+                    else if(repeat){
+                        let scale = this.scale;
+                        
+                        repeat--;
+
+                        if(this.SHUTTLE)
+                            scale = -scale;
+                        
+                        let from = (scale > 0) ? 0 : this.duration;
+                             
+                        this.play(scale, from);
+                    }
                 }
 
-                play(from = 0) {
-                    this.time = 0;
-                    spark.queueUpdate(this);
+                shuttle(SHUTTLE = true){
+                    this.SHUTTLE = !!SHUTTLE;
+                    return this;
                 }
+
+                stop(){
+                    return this;
+                }
+
+                set(i=0){
+                    if(i >= 0)
+                        this.run(i*this.duration);
+                    else
+                        this.run(this.duration - i*this.duration);
+                }
+
+                //TODO: allow scale to control playback speed and direction
+                play(scale = 1, from = 0) {
+                    this.SCALE = 0;
+                    this.time = from;
+                    spark.queueUpdate(this);
+                    return this;
+                }
+                //TODO: use repeat to continually play back numation 
+                repeat(count = 0){
+                    this.REPEAT = Math.max(0,parseInt(count));
+                    return this;
+                }    
             }
 
             const GlowFunction = function() {
@@ -16969,7 +17071,7 @@ ${is_iws}`;
         while (!lex.END && lex.ch != "<") { lex.n; }
 
         if (!lex.END)
-            return parseText(lex, SourcePackage, presets, url, win);
+            return await parseText(lex, SourcePackage, presets, url, win);
 
         SourcePackage.complete();
 
@@ -16979,11 +17081,11 @@ ${is_iws}`;
     async function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win) {
         await css_list[index].READY();
 
-        if (++index < css_list.length) return buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
+        if (++index < css_list.length) return await buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
 
         ast.linkCSS(null, win);
 
-        return complete(lex, SourcePackage, presets, ast, url, win);
+        return await complete(lex, SourcePackage, presets, ast, url, win);
     }
 
     async function parseText(lex, SourcePackage, presets, url, win) {
@@ -17004,9 +17106,9 @@ ${is_iws}`;
                 const ast = await node.parse(lex, url);
 
                 if (ast.css && ast.css.length > 0)
-                    return buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url, win);
+                    return await buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url, win);
 
-                return complete(lex, SourcePackage, presets, ast, url, win);
+                return await complete(lex, SourcePackage, presets, ast, url, win);
             } catch (e) {
                 SourcePackage.addError(e);
                 SourcePackage.complete();
@@ -17218,21 +17320,19 @@ ${is_iws}`;
             PUT: 4,
             ARRAY_MODEL: 5,
             FUNCTION_MODEL: 6,
-        },
-        return_stack = [];
+        };
+        
 
-    let async_wait = 0;
 
     const Component = (data, presets) => createComponentWithJSSyntax(data, presets, document.location.toString());
 
     /**
      * This module allows JavaScript to be used to describe wick components. 
      */
-    async function createComponentWithJSSyntax(data, presets = new Presets(), locale = "") {
-
+    async function createComponentWithJSSyntax(data, presets = new Presets(), locale = "", stack = [], async_wait = {waiting:0}) {
         const
-            base = ++async_wait,
-            rs_base = return_stack.length,
+            base = ++async_wait.waiting,
+            rs_base = stack.length,
             DATA_IS_STRING = typeof(data) == "string";
 
         let url = data;
@@ -17244,33 +17344,36 @@ ${is_iws}`;
                 ext = url.ext;
 
             if (ext == "js") {
+
                 try {
                     const data = await url.fetchText();
 
                     if (url.MIME == "text/javascript");
 
-                    await (new Promise(res => {
-                        
-                        const out = (data) => createComponentWithJSSyntax(data, presets,  url);
+                    await (new Promise(async res => {
+
+                        const out = (data) => createComponentWithJSSyntax(data, presets,  url, stack, async_wait);
 
                         (new Function("wick",  "url", data))(Object.assign(out, Component),  url);
+                       
 
                         // Since we have an async function, we need some way to wait for the function to 
                         // return be fore contining this particular execution stack.
                         // setTimeout allows JS to wait without blocking.
                         function e() {
-                            if (async_wait <= base) {
+                            if (async_wait.waiting <= base) {
                                 res();
                                 clearInterval(id);
                             }
-                        };
+                        }
 
                         let id = setInterval(e, 0);
                     }));
+
                     let rvalue = null;
 
-                    while (return_stack.length > rs_base)
-                        rvalue = return_stack.pop();
+                    while (stack.length > rs_base)
+                        rvalue = stack.shift();
 
                     async_wait--;
 
@@ -17278,6 +17381,7 @@ ${is_iws}`;
                 } catch (e) {
                     throw e;
                 }
+
                 return;
             } else if (ext == "mjs") {
                 return; //Todo, parse using import syntax
@@ -17399,18 +17503,18 @@ ${is_iws}`;
         Object.freeze(return_value);
 
 
-        async_wait--;
+        async_wait.waiting--;
 
-        return_stack.push(return_value);
-
+        stack.push(return_value);
+        
         return return_value;
     }
 
     function checkFlag(FLAG_BITS, flag_bit_offset) {
         return !!(FLAG_BITS >> flag_bit_offset & 1);
     }
-    // Ensure that if there is a need for a SourceNode, there is one attached to the 
-    // Having multiple node trees also require to be sub-trees of a SourceNode, to ensure expected 
+    // Ensure that if there is a need for a SourceNode, there is one set as the root of the tree 
+    // Having multiple node trees also require them to be sub-trees of a SourceNode, to ensure expected 
     // Component results.
     function EnsureRootSource(pkg, NEED_SOURCE_BITS, NEED_CONTAINER_BITS, presets) {
 

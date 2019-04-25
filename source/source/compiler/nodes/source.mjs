@@ -17,7 +17,6 @@ export class SourceNode extends RootNode {
     }
 
     merge(node) {
-        
         const merged_node = super.merge(node);
         merged_node._model_name_ = this._model_name_;
         merged_node._schema_name_ = this._schema_name_;
@@ -155,8 +154,7 @@ export class SourceNode extends RootNode {
         }
 
         if (this.url || this.__statics__) {
-            statics = this.__statics__ = Object.assign(statics, this.__statics__);
-            
+            statics = Object.assign(statics, this.__statics__);
             statics.url = this.url;
         }
 
@@ -169,6 +167,7 @@ export class SourceNode extends RootNode {
 
 
         if (statics || this.__statics__) {
+            
             let s = Object.assign({}, statics ? statics : {}, this.__statics__);
             me.statics = s;
             me.update(me.statics);
