@@ -167,7 +167,6 @@ export class SourceNode extends RootNode {
 
 
         if (statics || this.__statics__) {
-            
             let s = Object.assign({}, statics ? statics : {}, this.__statics__);
             me.statics = s;
             me.update(me.statics);

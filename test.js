@@ -59,14 +59,25 @@
                     
                     
                     
-                    it("Merging elements pulls statics from the merged-from tag", async()=>{
+                    it("Merging elements pulls statics from the merged-from tag", async () => {
         let presets = wick.presets();
         await wick(`<w-s component="mergedto" #temp=false >test<w-s>`, presets);
         let comp = await wick(`<div><mergedto #temp=true>test false</mergedto></div>`, presets);
         let ele = document.createElement("div");
         let component = comp.mount(ele);
-        console.log(component.sources[0])
+
         component.sources[0].sources[0].statics.should.have.property("temp", "true");
+    });it("Merging pulls attribute data from both component and merged tag. Merged tag attributes are preferred", async () => {
+        let presets = wick.presets();
+        await wick(`<w-s element="div" component="mergedto" temp="false" foo="biz">test<w-s>`, presets);
+        let comp = await wick(`<div><mergedto temp="true" bar="buz">test false</mergedto></div>`, presets);
+        let ele = document.createElement("div");
+        let component = comp.mount(ele);
+
+        let sub_ele = ele.firstChild.firstChild;
+        sub_ele.getAttribute("temp").should.equal("true");
+        sub_ele.getAttribute("foo").should.equal("biz");
+        sub_ele.getAttribute("bar").should.equal("buz");
     });;
                 });;
                 });;

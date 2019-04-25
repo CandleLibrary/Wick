@@ -518,7 +518,7 @@ RootNode.prototype.processFetchHook = function(lexer, OPENED, IGNORE_TEXT_TILL_C
 
                 if (this.tag == "script")
                     return this.parseRunner(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
-                console.log(this.presets)
+
                 const tree = (await Component(this.url, this.presets)).tree;
                 //tree.children.forEach(c => c.parent = this)
                 this.addChild(tree);

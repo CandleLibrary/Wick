@@ -143,7 +143,6 @@ export class SourceContainer extends View {
 
 
         let i = min;    
-        console.log(min, max, offset, this.offset_diff)
 
         this.ele.innerHTML = "";
         const output_length = this.activeSources.length;
@@ -417,8 +416,7 @@ export class SourceContainer extends View {
                             as.transitionOut(trs_out);
                     }
                 } else{
-
-                    console.log(i, trs_out.pos, direction)
+                    
                     as.transitionOut();
                 }
 
@@ -509,7 +507,6 @@ export class SourceContainer extends View {
      * @protected
      */
     cull(new_items = []) {
-        console.log("AA")
         const transition = glow.createTransition();
 
         if (new_items.length == 0) {

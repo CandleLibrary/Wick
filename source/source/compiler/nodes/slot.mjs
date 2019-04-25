@@ -20,6 +20,7 @@ export class SlotNode extends RootNode {
     build(element, source, presets, errors, taps, statics, RENDER_ONLY = false) {
 
         return (statics.slots && statics.slots[this.name]) ?
+            (statics.slots[this.name].SLOTED = true,
             statics.slots[this.name].build(
                 element,
                 statics.slots[this.name].getCachedSource() || source,
@@ -28,7 +29,7 @@ export class SlotNode extends RootNode {
                 taps,
                 statics,
                 RENDER_ONLY
-            ) :
+            )) :
             source;
     }
 

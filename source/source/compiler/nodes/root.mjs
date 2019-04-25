@@ -78,7 +78,7 @@ export class RootText extends TextNode {
     }
 }
 
-
+var M = null;
 /**
  * Class for Root HTML AST Node.
  *@memberof module:wick~internals.templateCompiler
@@ -96,6 +96,7 @@ export class RootNode extends HTMLNode {
         this.css = null;
 
         this.merged = false;
+        this.SLOTED = false;
 
         this._badge_name_ = "";
 
@@ -155,6 +156,7 @@ export class RootNode extends HTMLNode {
     }
 
     merge(node) {
+
         const merged_node = new this.constructor()
         merged_node.line = this.line;
         merged_node.char = this.char;
@@ -162,7 +164,7 @@ export class RootNode extends HTMLNode {
         merged_node.single = this.single;
         merged_node.url = this.url;
         merged_node.tag = this.tag;
-        merged_node.fch = this.fch;
+        merged_node.fch = (node.fch || this.fch) ? new MergerNode(this.children, node.children) : null;
         merged_node.css = this.css;
         merged_node.HAS_TAPS = this.HAS_TAPS;
         merged_node.merged = true;
@@ -174,8 +176,12 @@ export class RootNode extends HTMLNode {
             merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));
 
 
-        this.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind(e.value)));
+        this.attributes.forEach(e => {
+            if(e.name == "component") return; //Prevent this from changing the global static value.
+            merged_node.processAttributeHook(e.name, whind(e.value))
+        });
 
+        node.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind(e.value)))
         merged_node.attributes = merged_node.attributes.concat(this.attributes, node.attributes)
 
         merged_node.__statics__ = node.__statics__;
@@ -507,9 +513,10 @@ export class RootNode extends HTMLNode {
             case "c":
                 if (name == "component") {
                     let component_name = lex.tx;
-                    let components = this.presets.components;
-                    if (components)
-                        components[component_name] = this;
+
+                    if (this.presets.components)
+                        this.presets.components[component_name] = this;
+
                     return basic;
                 }
                 break;
@@ -576,5 +583,35 @@ export class RootNode extends HTMLNode {
         }
 
         return null;
+    }
+}
+
+
+//Node that allows the combination of two sets of children from separate nodes that are merged together
+export class MergerNode extends RootNode {
+    constructor(...children_arrays) {
+        super();
+
+        this.c = [];
+
+        for (let i=0,l = children_arrays.length; i<l; i++)
+            if(Array.isArray(children_arrays))
+                this.c = this.c.concat(children_arrays[i]);
+    }
+
+    build(element, source, presets, errors, taps, statics, RENDER_ONLY) {
+        for (let i=0,l = this.c.length; i<l; i++){
+            if(this.c[i].SLOTED == true) continue;
+            this.c[i].build(element, source, presets, errors, taps, statics, RENDER_ONLY);
+        }
+
+        return source;
+    }
+
+
+    linkCSS() {}
+
+    toString(off = 0) {
+        return `${("    ").repeat(off)}${this.binding}\n`;
     }
 }
