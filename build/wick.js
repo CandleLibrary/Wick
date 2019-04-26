@@ -142,7 +142,7 @@ var wick = (function () {
      *
      * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
      */
-        
+     
     const caller = (typeof(window) == "object" && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
         setTimeout(f, 1);
     };
@@ -168,16 +168,7 @@ var wick = (function () {
 
             this.queue_switch = 0;
 
-            this.callback = ()=>{};
-
-            if(typeof(window) !== "undefined"){
-                window.addEventListener("load",()=>{
-                    this.callback = () => this.update();
-                    caller(this.callback);
-                });
-            }else{
-                this.callback = () => this.update();
-            }
+            this.callback = () => this.update();
 
             this.frame_time = perf.now();
 
@@ -208,11 +199,9 @@ var wick = (function () {
 
             this.frame_time = perf.now() | 0;
 
+            this.SCHEDULE_PENDING = true;
 
-            if(!this.SCHEDULE_PENDING){
-                this.SCHEDULE_PENDING = true;
-                caller(this.callback);
-            }
+            caller(this.callback);
         }
 
         removeFromQueue(object){
@@ -1847,7 +1836,7 @@ var wick = (function () {
                 thick_line = String.fromCharCode(0x2501),
                 line_number = "    " + this.line + ": ",
                 line_fill = line_number.length,
-                t$$1 = thick_line.repeat(line_fill + 48),
+                t = thick_line.repeat(line_fill + 48),
                 is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
             const pk = this.copy();
             pk.IWS = false;
@@ -1855,10 +1844,10 @@ var wick = (function () {
             const end = pk.off;
 
             return `${message} at ${this.line}:${this.char}
-${t$$1}
+${t}
 ${line_number+this.str.slice(Math.max(this.off - this.char, 0), end)}
 ${line.repeat(this.char-1+line_fill)+trs+arrow}
-${t$$1}
+${t}
 ${is_iws}`;
         }
 
@@ -1923,7 +1912,7 @@ ${is_iws}`;
             }
 
             //Token builder
-            const l$$1 = marker.sl,
+            const l = marker.sl,
                 str = marker.str,
                 IWS = marker.IWS;
 
@@ -1934,9 +1923,9 @@ ${is_iws}`;
                 line = marker.line,
                 base = off;
 
-            if (off >= l$$1) {
+            if (off >= l) {
                 length = 0;
-                base = l$$1;
+                base = l;
                 char -= base - off;
                 marker.type = type;
                 marker.off = base;
@@ -1954,14 +1943,14 @@ ${is_iws}`;
                 let code = str.charCodeAt(off);
                 let off2 = off;
                 let map = this.symbol_map,
-                    m$$1;
+                    m;
                 let i = 0;
 
                 while (code == 32 && IWS)
                     (code = str.charCodeAt(++off2), off++);
 
-                while ((m$$1 = map.get(code))) {
-                    map = m$$1;
+                while ((m = map.get(code))) {
+                    map = m;
                     off2 += 1;
                     code = str.charCodeAt(off2);
                 }
@@ -1989,7 +1978,7 @@ ${is_iws}`;
 
                         switch (jump_table[code]) {
                             case 0: //NUMBER
-                                while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)]));
+                                while (++off < l && (12 & number_and_identifier_table[str.charCodeAt(off)]));
 
                                 if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off + 1)])) {
                                     off++;
@@ -2006,7 +1995,7 @@ ${is_iws}`;
 
                                 break;
                             case 1: //IDENTIFIER
-                                while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
+                                while (++off < l && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
                                 type = identifier;
                                 length = off - base;
                                 break;
@@ -2014,18 +2003,18 @@ ${is_iws}`;
                                 if (this.PARSE_STRING) {
                                     type = symbol;
                                 } else {
-                                    while (++off < l$$1 && str.charCodeAt(off) !== code);
+                                    while (++off < l && str.charCodeAt(off) !== code);
                                     type = string;
                                     length = off - base + 1;
                                 }
                                 break;
                             case 3: //SPACE SET
-                                while (++off < l$$1 && str.charCodeAt(off) === SPACE);
+                                while (++off < l && str.charCodeAt(off) === SPACE);
                                 type = white_space;
                                 length = off - base;
                                 break;
                             case 4: //TAB SET
-                                while (++off < l$$1 && str[off] === HORIZONTAL_TAB);
+                                while (++off < l && str[off] === HORIZONTAL_TAB);
                                 type = white_space;
                                 length = off - base;
                                 break;
@@ -2058,13 +2047,13 @@ ${is_iws}`;
                     }
 
                     if (IWS && (type & white_space_new_line)) {
-                        if (off < l$$1) {
+                        if (off < l) {
                             char += length;
                             type = symbol;
                             continue;
                         } else {
                             //Trim white space from end of string
-                            base = l$$1 - length;
+                            base = l - length;
                             marker.sl -= length;
                             length = 0;
                             char -= base - off;
@@ -2229,9 +2218,9 @@ ${is_iws}`;
                 off = lex.off;
 
             for (; lex.off < lex.sl; lex.off++) {
-                const c$$1 = jump_table[lex.string.charCodeAt(lex.off)];
+                const c = jump_table[lex.string.charCodeAt(lex.off)];
 
-                if (c$$1 > 2 && c$$1 < 7) {
+                if (c > 2 && c < 7) {
 
                     if (space_count >= leave_leading_amount) {
                         off++;
@@ -2249,9 +2238,9 @@ ${is_iws}`;
             off = lex.sl;
 
             for (; lex.sl > lex.off; lex.sl--) {
-                const c$$1 = jump_table[lex.string.charCodeAt(lex.sl - 1)];
+                const c = jump_table[lex.string.charCodeAt(lex.sl - 1)];
 
-                if (c$$1 > 2 && c$$1 < 7) {
+                if (c > 2 && c < 7) {
                     if (space_count >= leave_trailing_amount) {
                         off--;
                     } else {
@@ -2285,11 +2274,11 @@ ${is_iws}`;
 
             for (let i = 0; i < sym.length; i++) {
                 let code = sym.charCodeAt(i);
-                let m$$1 = map.get(code);
-                if (!m$$1) {
-                    m$$1 = map.set(code, new Map).get(code);
+                let m = map.get(code);
+                if (!m) {
+                    m = map.set(code, new Map).get(code);
                 }
-                map = m$$1;
+                map = m;
             }
             map.IS_SYM = true;
         }
@@ -2303,7 +2292,7 @@ ${is_iws}`;
             return this.sl - this.off;
         }
 
-        set string_length(s$$1) {}
+        set string_length(s) {}
 
         /**
          * The current token in the form of a new Lexer with the current state.
@@ -2372,7 +2361,7 @@ ${is_iws}`;
         get n() { return this.next() }
 
         get END() { return this.off >= this.sl }
-        set END(v$$1) {}
+        set END(v) {}
 
         get type() {
             return 1 << (this.masked_values & TYPE_MASK);
@@ -3109,7 +3098,7 @@ ${is_iws}`;
                     if (left.LEAF)
                         for (let i = 0; i < left.keys.length; i++)
                             if (left.keys[i] != left.nodes[i].id)
-                                {/*debugger*/}
+                                {/*debugger*/};
 
                     return true;
                 }
@@ -3672,6 +3661,7 @@ ${is_iws}`;
         query: "",
         search: ""
     };
+
     function fetchLocalText(URL, m = "same-origin") {
         return new Promise((res, rej) => {
             fetch(URL, {
@@ -3765,7 +3755,7 @@ ${is_iws}`;
 
             let URL_old = (URL_or_url_original instanceof URL) ? URL_or_url_original : new URL(URL_or_url_original);
             let URL_new = (URL_or_url_new instanceof URL) ? URL_or_url_new : new URL(URL_or_url_new);
-            
+
             if (!(URL_old + "") || !(URL_new + "")) return null;
 
             let new_path = "";
@@ -4153,14 +4143,14 @@ ${is_iws}`;
             URL.G = this;
         }
         //Returns the last segment of the path
-        get file(){
+        get file() {
             return this.path.split("/").pop();
         }
 
 
         //Returns the all but the last segment of the path
-        get dir(){
-            return this.path.split("/").slice(0,-1).join("/") || "/";
+        get dir() {
+            return this.path.split("/").slice(0, -1).join("/") || "/";
         }
 
         get pathname() {
@@ -4174,6 +4164,10 @@ ${is_iws}`;
         get ext() {
             const m = this.path.match(/\.([^\.]*)$/);
             return m ? m[1] : "";
+        }
+
+        get search() {
+            return this.query;
         }
     }
 
@@ -4278,76 +4272,55 @@ ${is_iws}`;
     };
 
 
-    /** Implement Basic Fetch Mechanism for NodeJS **/
-    if (typeof(fetch) == "undefined" && typeof(global) !== "undefined") {
-        (async () => {
-            console.log("Moonshot");
-            
-            global.fetch = (url, data) =>
-                new Promise(async (res, rej) => {
-                    let p = await path.resolve(process.cwd(), (url[0] == ".") ? url + "" : "." + url);
-                    try {
-                        let data = await fs.readFile(p, "utf8");
-                        return res({
-                            status: 200,
-                            text: () => {
-                                return {
-                                    then: (f) => f(data)
-                                }
-                            }
-                        })
-                    } catch (err) {
-                        return rej(err);
-                    }
-                });
-        })();
-    }
+
 
 
     let SIMDATA = null;
 
     /* Replaces the fetch actions with functions that simulate network fetches. Resources are added by the user to a Map object. */
-    URL.simulate = function(){
+    URL.simulate = function() {
         SIMDATA = new Map;
-        URL.prototype.fetchText = async d => ((d = this.toString()), SIMDATA.get(d)) ? SIMDATA.get(d) : "" ;
-        URL.prototype.fetchJSON = async d => ((d = this.toString()), SIMDATA.get(d)) ? JSON.parse(SIMDATA.get(d).toString()) : {} ;
+        URL.prototype.fetchText = async d => ((d = this.toString()), SIMDATA.get(d)) ? SIMDATA.get(d) : "";
+        URL.prototype.fetchJSON = async d => ((d = this.toString()), SIMDATA.get(d)) ? JSON.parse(SIMDATA.get(d).toString()) : {};
     };
 
     //Allows simulated resources to be added as a key value pair, were the key is a URI string and the value is string data.
-    URL.addResource = (n,v) => (n && v && (SIMDATA || (SIMDATA = new Map())) && SIMDATA.set(n.toString(), v.toString));
+    URL.addResource = (n, v) => (n && v && (SIMDATA || (SIMDATA = new Map())) && SIMDATA.set(n.toString(), v.toString));
 
-    URL.polyfill = function() {    if (typeof(global) !== "undefined") {
-        console.log("AAAAAAAAAAAAAAAAAAAAAA");
-            const fs = (import("fs")).promises;
-            const path = (import("path"));
+    URL.polyfill = async function() {
+        if (typeof(global) !== "undefined") {
+
+            const 
+                fs = (await import("fs")).promises,
+                path = (await import("path"));
 
 
-            global.Location =  (class extends URL{});
-            
+            global.Location = (class extends URL {});
+
             global.document = global.document || {};
 
             global.document.location = new URL(process.env.PWD);
             /**
              * Global `fetch` polyfill - basic support
              */
-            global.fetch = (url, data) =>
-                new Promise((res, rej) => {
-                    let p = path.resolve(process.cwd(), (url[0] == ".") ? url + "" : "." + url);
-                    fs.readFile(p, "utf8", (err, data) => {
-                        if (err) {
-                            rej(err);
-                        } else {
-                            res({
-                                status: 200,
-                                text: () => {
-                                    return {
-                                        then: (f) => f(data)
-                                    }
-                                }
-                            });
+            global.fetch = async (url, data) => {
+                let
+                    p = path.join(process.cwd(), (url[0] == ".") ? url + "" : "." + url),
+                    d = await fs.readFile(p, "utf8");
+
+                try {
+                    return {
+                        status: 200,
+                        text: () => {
+                            return {
+                                then: (f) => f(d)
+                            }
                         }
-                    });
-                });
+                    };
+                } catch (err) {
+                    throw err;
+                }
+            };
         }
     };
 
@@ -5248,6 +5221,14 @@ ${is_iws}`;
             return this.par;
         }
 
+        get firstChild() {
+            return this.fch;
+        }
+
+        get lastChild() {
+            return this.fch ? this.fch.previous : null;
+        }
+
         get previousElementSibling() {
             if (this.par) {
                 let guard = this.par.fch;
@@ -5290,10 +5271,10 @@ ${is_iws}`;
          * @param      {string}  prop    The attribute name to lookup;
          * @public
          */
-        getAttrib(prop) {
+        getAttrib(prop, GET_IGNORED = false) {
             for (let i = -1, l = this.attributes.length; ++i < l;) {
                 let attrib = this.attributes[i];
-                if (attrib.name == prop && !attrib.IGNORE) return attrib;
+                if (attrib.name == prop && (!attrib.IGNORE || GET_IGNORED)) return attrib;
             }
             return null;
         }
@@ -5521,9 +5502,9 @@ ${is_iws}`;
 
                     let start = pk.off;
 
-                    pk.IWS = true;
-                    while (!(pk.ty & (pk.types.ws | pk.types.str | pk.types.nl)) && pk.ch !== ">") { pk.n; }
                     pk.IWS = false;
+                    
+                    while (!(pk.ty & (pk.types.ws | pk.types.str | pk.types.nl)) && pk.ch !== ">") { pk.n; }
 
                     if (pk.off > start) {
                         out_lex = lex.n.copy();
@@ -5562,6 +5543,7 @@ ${is_iws}`;
                 lex.next();
 
             lex.PARSE_STRING = true; // Reset lex to ignore string tokens.
+            
             return HAS_URL;
         }
 
@@ -5623,16 +5605,17 @@ ${is_iws}`;
                             if (pk.ch == "!") {
                                 /* DTD - Doctype and Comment tags*/
                                 //This type of tag is dropped
-                                while (!lex.END && lex.n.ch !== ">") {}
+                                while (!lex.END && lex.n.ch !== ">") {};
                                 lex.a(">");
                                 lex.IWS = false;
                                 continue;
                             }
 
                             if (!IGNORE_TEXT_TILL_CLOSE_TAG) {
+
                                 //Open tag
                                 if (!OPENED) {
-                                    let URL$$1 = false;
+                                    let URL = false;
                                     this.DTD = false;
                                     this.attributes.length = 0;
 
@@ -5640,7 +5623,7 @@ ${is_iws}`;
                                     this.tag = lex.n.tx.toLowerCase();
 
                                     lex.PARSE_STRING = false;
-                                    URL$$1 = this.parseOpenTag(lex.n, false, old_url);
+                                    URL = this.parseOpenTag(lex.n, false, old_url);
                                     lex.PARSE_STRING = true;
 
                                     this.char = lex.char;
@@ -5649,39 +5632,56 @@ ${is_iws}`;
 
                                     start = lex.pos + 1;
                                     lex.IWS = false;
-                                    if (lex.ch == "/") lex.n;
+
+                                    let SELF_CLOSING = this.selfClosingTagHook(this.tag);
+
+                                    if (lex.ch == "/") {
+                                        //This is a tag that should be closed 
+                                        lex.n;
+
+                                        SELF_CLOSING = true;
+
+                                        //This element is self closing and does not have a body.
+                                    }else{
+                                        HAS_INNER_TEXT = IGNORE_TEXT_TILL_CLOSE_TAG = (await this.ignoreTillHook(this.tag, lex));
+                                        OPENED = true;
+                                    }
+
+                                    //End of Open Tag
                                     lex.a(">");
 
 
-                                    OPENED = true;
-
-                                    HAS_INNER_TEXT = IGNORE_TEXT_TILL_CLOSE_TAG = (await this.ignoreTillHook(this.tag, lex));
-
-                                    if (HAS_INNER_TEXT)
+                                    if (HAS_INNER_TEXT){
+                                        //Insure that string do not lead to 
+                                        lex.PARSE_STRING = false;
                                         start = lex.pos;
+                                    }                                
 
-                                    if (URL$$1) {
+                                    if (URL) {
 
-                                        //Need to block against ill advised URL fetches. 
+                                        //Need to block against infinitely recursive URL fetches. 
 
                                         //Hook to pull in data from remote resource
                                         lex.PARSE_STRING = false;
+                                        
                                         await this.processFetchHook(lex, true, IGNORE_TEXT_TILL_CLOSE_TAG, parent);
+                                        
                                         lex.PARSE_STRING = true;
+                                        
                                         if (this.selfClosingTagHook(this.tag))
                                             return this;
-                                        // Tags without matching end tags.
 
+                                        // Tags without matching end tags.
                                         return this.parseRunner(lex, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, old_url);
                                     }
 
                                     
-                                    if (this.selfClosingTagHook(this.tag)) {
+                                    if (SELF_CLOSING) {
                                         // Tags without matching end tags.
                                         this.single = true;
+
                                         return this;
                                     }
-
 
                                     continue;
                                 } else {
@@ -5777,22 +5777,12 @@ ${is_iws}`;
         endOfElementHook() { return this; }
 
         selfClosingTagHook(tag) {
-            switch (tag) {
-                case "input":
-                case "br":
-                case "img":
-                    //svg
-                case "rect":
-                    return true;
-            }
-
-            return false;
+            return ["input", "br" ,"img", "rect"].includes(tag);
         }
 
         async ignoreTillHook(tag) {
-            if (tag == "script" || tag == "style") // Special character escaping tags.
-                return true;
-            return false;
+            // Special character escaping tags.
+            return ["script", "style" ,"pre"].includes(tag);
         }
 
         async createHTMLNodeHook(tag, start) { return new HTMLNode(tag); }
@@ -5859,7 +5849,6 @@ ${is_iws}`;
             }
             //let passing_element = ele;
             let passing_element = (this.tag == "template") ? ele.content : ele;
-
             for (let node = this.fch; node;
                 (node = this.getNextChild(node))) {
                 node.build(passing_element);
@@ -5891,7 +5880,9 @@ ${is_iws}`;
         if (typeof(global) !== "undefined") {
             global.HTMLElement = HTMLNode;
             global.TextNode = TextNode;
-            global.document = global.document || {};
+
+            if(!global.document)
+                global.document = {};
 
             Object.assign(global.document, {
                 createElement: function(tag) {
@@ -6013,7 +6004,7 @@ ${is_iws}`;
 
                     cpy.next();
                     //*/
-                }
+                };
 
                 if(cpy.END)
                     throw cpy.throw("Unexpected end of input");
@@ -6085,7 +6076,7 @@ ${is_iws}`;
 
                     cpy.next();
                     //*/
-                }
+                };
 
                 cpy.a(">", `Expecting a matching closing tag for ${tag_name}`);
 
@@ -8807,25 +8798,27 @@ ${is_iws}`;
      */
     class CSSSelector {
 
-        constructor(value = "", value_array = []) {
+        constructor(selectors /* string */ , selectors_arrays /* array */ ) {
 
             /**
              * The raw selector string value
              * @package
              */
-            this.v = value;
+
+            this.v = selectors;
 
             /**
              * Array of separated selector strings in reverse order.
              * @package
              */
-            this.a = value_array;
 
-            // CSS Rulesets the selector is member of .
+            this.a = selectors_arrays;
+
+            /**
+             * The CSSRule.
+             * @package
+             */
             this.r = null;
-
-            // CSS root the selector is a child of. 
-            this.root = null;
         }
 
         get id() {
@@ -8887,7 +8880,7 @@ ${is_iws}`;
                 if (!lx.pk.pk.END) // These values should be the only ones present. Failure otherwise.
                     return 0; // Default value present among other values. Invalid
                 return 1; // Default value present only. Valid
-        }
+        };
         return 2; // Default value not present. Ignore
     }
 
@@ -9339,7 +9332,7 @@ ${is_iws}`;
 
             return false;
         }
-    }
+    };
 
     //import util from "util"
     const standard_productions = {
@@ -9412,7 +9405,7 @@ ${is_iws}`;
 
     function d$1(l, definitions, productions, super_term = false, oneof_group = false, or_group = false, and_group = false, important = null) {
         let term, nt, v;
-        const { JUX: JUX$$1, AND: AND$$1, OR: OR$$1, ONE_OF: ONE_OF$$1, LiteralTerm: LiteralTerm$$1, ValueTerm: ValueTerm$$1, SymbolTerm: SymbolTerm$$1 } = productions;
+        const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
 
         let GROUP_BREAK = false;
 
@@ -9429,7 +9422,7 @@ ${is_iws}`;
                     v = checkExtensions(l, v, productions);
 
                     if (term) {
-                        if (term instanceof JUX$$1 && term.isRepeating()) term = foldIntoProduction(productions, new JUX$$1, term);
+                        if (term instanceof JUX && term.isRepeating()) term = foldIntoProduction(productions, new JUX, term);
                         term = foldIntoProduction(productions, term, v);
                     } else
                         term = v;
@@ -9437,13 +9430,13 @@ ${is_iws}`;
 
                 case "<":
 
-                    v = new ValueTerm$$1(l.next().tx, getPropertyParser, definitions, productions);
+                    v = new ValueTerm(l.next().tx, getPropertyParser, definitions, productions);
                     l.next().assert(">");
 
                     v = checkExtensions(l, v, productions);
 
                     if (term) {
-                        if (term instanceof JUX$$1 /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX$$1, term);
+                        if (term instanceof JUX /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX, term);
                         term = foldIntoProduction(productions, term, v);
                     } else {
                         term = v;
@@ -9457,7 +9450,7 @@ ${is_iws}`;
                         if (and_group)
                             return term;
 
-                        nt = new AND$$1();
+                        nt = new AND();
 
                         if (!term) throw new Error("missing term!");
 
@@ -9482,7 +9475,7 @@ ${is_iws}`;
                             if (or_group || and_group)
                                 return term;
 
-                            nt = new OR$$1();
+                            nt = new OR();
 
                             nt.terms.push(term);
 
@@ -9501,7 +9494,7 @@ ${is_iws}`;
                             if (oneof_group || or_group || and_group)
                                 return term;
 
-                            nt = new ONE_OF$$1();
+                            nt = new ONE_OF();
 
                             nt.terms.push(term);
 
@@ -9519,12 +9512,12 @@ ${is_iws}`;
                     break;
                 default:
 
-                    v = (l.ty == l.types.symbol) ? new SymbolTerm$$1(l.tx) : new LiteralTerm$$1(l.tx, l.ty);
+                    v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx, l.ty);
                     l.next();
                     v = checkExtensions(l, v, productions);
 
                     if (term) {
-                        if (term instanceof JUX$$1 /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX$$1, term);
+                        if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX, term);
                         term = foldIntoProduction(productions, term, v);
                     } else {
                         term = v;
@@ -9740,7 +9733,7 @@ ${is_iws}`;
                         if (!prop(win))
                             return false;
                     }
-                }
+                };
             }
 
             return true;
@@ -10037,7 +10030,7 @@ ${is_iws}`;
                                         ).catch((e) => res(this.parse(lexer)));
                                     } else {
                                         //Failed to fetch resource, attempt to find the end to of the import clause.
-                                        while (!lexer.END && lexer.next().tx !== ";") {}
+                                        while (!lexer.END && lexer.next().tx !== ";") {};
                                         lexer.next();
                                     }
                             }
@@ -10068,7 +10061,6 @@ ${is_iws}`;
                     let selector = this.parseSelector(lexer, this);
 
                     if (selector) {
-                        selector.root = this;
                         if (!this._selectors_[selector.id]) {
                             l = selectors.push(selector);
                             this._selectors_[selector.id] = selector;
@@ -10268,7 +10260,7 @@ ${is_iws}`;
         }
 
         setList() {
-            //if(this.DEMOTED) debugger
+            if(this.DEMOTED) debugger
             if (this.prod && this.list.innerHTML == "") {
                 if (this.DEMOTED || !this.prod.buildList(this.list, this))
                     this.menu_icon.style.display = "none";
@@ -11091,7 +11083,7 @@ ${is_iws}`;
             return this.txt;
         }
 
-    }
+    };
 
 
     function drop(e){
@@ -11208,7 +11200,7 @@ ${is_iws}`;
             }
             return r;
         };
-    }
+    };
 
     const props = Object.assign({}, property_definitions);
 
@@ -11413,7 +11405,7 @@ ${is_iws}`;
                 }
             }
 
-            this.parent.update(this);
+            this.parent.update();
         }
 
         addProp(type, value){
@@ -11445,6 +11437,10 @@ ${is_iws}`;
         e.preventDefault();
     }
 
+    //import { UIValue } from "./ui_value.mjs";
+
+    const props$2 = Object.assign({}, property_definitions);
+
     class UIMaster {
         constructor(css) {
             css.addObserver(this);
@@ -11453,7 +11449,6 @@ ${is_iws}`;
             this.selectors = [];
             this.element = document.createElement("div");
             this.element.classList.add("cfw_css");
-            this.update_mod = 0;
 
 
             this.rule_map = new Map();
@@ -11463,7 +11458,6 @@ ${is_iws}`;
         // css - A CandleFW_CSS object. 
         // meta - internal 
         build(css = this.css) {
-            if(this.update_mod++%3 !== 0) return;
 
             //Extract rule bodies and set as keys for the rule_map. 
             //Any existing mapped body that does not have a matching rule should be removed. 
@@ -13206,7 +13200,7 @@ ${is_iws}`;
      * @param      {Lexer}  lex     The lex
      * @return     {Array}   an
      */
-    function evaluate(lex, EVENT$$1 = false) {
+    function evaluate(lex, EVENT = false) {
         let binds = [];
         lex.IWS = false;
         let start = lex.pos;
@@ -13282,7 +13276,7 @@ ${is_iws}`;
 
                             if (lex.ch == barrier_a_start || lex.ch == barrier_b_start) {
 
-                                if(EVENT$$1){
+                                if(EVENT){
                                     binding = new EventBinding(binding); 
                                     binds[index] = binding;
                                 }
@@ -13550,7 +13544,7 @@ ${is_iws}`;
         }
     }
 
-
+    var M$1 = null;
     /**
      * Class for Root HTML AST Node.
      *@memberof module:wick~internals.templateCompiler
@@ -13568,6 +13562,7 @@ ${is_iws}`;
             this.css = null;
 
             this.merged = false;
+            this.SLOTED = false;
 
             this._badge_name_ = "";
 
@@ -13588,11 +13583,11 @@ ${is_iws}`;
         /******************************************* STATICS ****************************************************/
 
         get statics() {
+
             if (this.__statics__) return this.__statics__;
 
             if (this.par)
                 return (this.__statics__ = Object.assign({}, this.par.statics, { slots: {} }));
-
             return (this.__statics__ = { slots: {} });
         }
 
@@ -13624,6 +13619,41 @@ ${is_iws}`;
             }
 
             return this;
+        }
+
+        merge(node) {
+
+            const merged_node = new this.constructor();
+            merged_node.line = this.line;
+            merged_node.char = this.char;
+            merged_node.offset = this.offset;
+            merged_node.single = this.single;
+            merged_node.url = this.url;
+            merged_node.tag = this.tag;
+            merged_node.fch = (node.fch || this.fch) ? new MergerNode(this.children, node.children) : null;
+            merged_node.css = this.css;
+            merged_node.HAS_TAPS = this.HAS_TAPS;
+            merged_node.merged = true;
+            merged_node._badge_name_ = node._badge_name_;
+            merged_node.__presets__ = this.presets;
+            merged_node.par = node.par;
+
+            if (this.tap_list)
+                merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));
+
+
+            this.attributes.forEach(e => {
+                if(e.name == "component") return; //Prevent this from changing the global static value.
+                merged_node.processAttributeHook(e.name, whind$1(e.value));
+            });
+
+            node.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind$1(e.value)));
+            merged_node.attributes = merged_node.attributes.concat(this.attributes, node.attributes);
+
+            merged_node.__statics__ = node.__statics__;
+
+            //merged_node.attributes = this.attributes.slice();
+            return merged_node;
         }
 
         /******************************************* CSS ****************************************************/
@@ -13827,8 +13857,9 @@ ${is_iws}`;
 
             let out_statics = statics;
 
-            if (this.url || this.__statics__)
+            if (this.url || this.__statics__){
                 out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL(par_list.length - 1) });
+            }
 
             const own_element = this.createElement(presets, source);
 
@@ -13948,9 +13979,10 @@ ${is_iws}`;
                 case "c":
                     if (name == "component") {
                         let component_name = lex.tx;
-                        let components = this.presets.components;
-                        if (components)
-                            components[component_name] = this;
+
+                        if (this.presets.components)
+                            this.presets.components[component_name] = this;
+
                         return basic;
                     }
                     break;
@@ -14018,34 +14050,35 @@ ${is_iws}`;
 
             return null;
         }
-
-        merge(node) {
-            const merged_node = new this.constructor();
-            merged_node.line = this.line;
-            merged_node.char = this.char;
-            merged_node.offset = this.offset;
-            merged_node.single = this.single;
-            merged_node.url = this.url;
-            merged_node.tag = this.tag;
-            merged_node.fch = this.fch;
-            merged_node.css = this.css;
-            merged_node.HAS_TAPS = this.HAS_TAPS;
-            merged_node.merged = true;
-            merged_node._badge_name_ = node._badge_name_;
-            merged_node.__presets__ = this.presets;
-            merged_node.__statics__ = node.__statics__;
-            merged_node.par = node.par;
-
-            if (this.tap_list)
-                merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));
+    }
 
 
-            this.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind$1(e.value)));
+    //Node that allows the combination of two sets of children from separate nodes that are merged together
+    class MergerNode extends RootNode {
+        constructor(...children_arrays) {
+            super();
 
-            merged_node.attributes = merged_node.attributes.concat(this.attributes, node.attributes);
+            this.c = [];
 
-            //merged_node.attributes = this.attributes.slice();
-            return merged_node;
+            for (let i=0,l = children_arrays.length; i<l; i++)
+                if(Array.isArray(children_arrays))
+                    this.c = this.c.concat(children_arrays[i]);
+        }
+
+        build(element, source, presets, errors, taps, statics, RENDER_ONLY) {
+            for (let i=0,l = this.c.length; i<l; i++){
+                if(this.c[i].SLOTED == true) continue;
+                this.c[i].build(element, source, presets, errors, taps, statics, RENDER_ONLY);
+            }
+
+            return source;
+        }
+
+
+        linkCSS() {}
+
+        toString(off = 0) {
+            return `${("    ").repeat(off)}${this.binding}\n`;
         }
     }
 
@@ -14130,7 +14163,6 @@ ${is_iws}`;
         }
 
         merge(node) {
-            
             const merged_node = super.merge(node);
             merged_node._model_name_ = this._model_name_;
             merged_node._schema_name_ = this._schema_name_;
@@ -14174,7 +14206,8 @@ ${is_iws}`;
 
         /******************************************* BUILD ****************************************************/
         createElement() {
-            return createElement(this.getAttribute("element") || "div");
+            let attr = this.getAttrib("element", true);
+            return createElement(attr ? attr.value : "div");
         }
 
         build(element, source, presets, errors, taps = null, statics = {},  RENDER_ALL = false) {
@@ -14212,7 +14245,7 @@ ${is_iws}`;
              * will be created to allow the source object to bind to an actual HTMLElement. 
              */
 
-            if (!element || this.getAttribute("element")) {
+            if (!element || this.getAttrib("element", true)) {
 
                 let ele = this.createElement();
 
@@ -14268,8 +14301,7 @@ ${is_iws}`;
             }
 
             if (this.url || this.__statics__) {
-                statics = this.__statics__ = Object.assign(statics, this.__statics__);
-                
+                statics = Object.assign(statics, this.__statics__);
                 statics.url = this.url;
             }
 
@@ -14365,6 +14397,11 @@ ${is_iws}`;
                         return basic;
                     }
                     break;
+
+                case "e":
+                    if (name == "element") 
+                        return basic;
+
                 default:
                     if (this.checkTapMethodGate(name, lex))
                         return basic;
@@ -15423,7 +15460,6 @@ ${is_iws}`;
 
         get data() {}
         set data(container) {
-
             if (container instanceof ModelContainerBase) {
                 container.pin();
                 container.addView(this);
@@ -15502,7 +15538,6 @@ ${is_iws}`;
 
 
             let i = min;    
-            console.log(min, max, offset, this.offset_diff);
 
             this.ele.innerHTML = "";
             const output_length = this.activeSources.length;
@@ -15592,11 +15627,11 @@ ${is_iws}`;
                 this.scrub_velocity = scrub_delta;
             } else {
 
-                if (Math.abs(this.scrub_velocity) > 0.00001) {
+                if (Math.abs(this.scrub_velocity) > 0.0001) {
                     const sign = Math.sign(this.scrub_velocity);
 
-                    if (Math.abs(this.scrub_velocity) < 0.01) this.scrub_velocity = 0.01 * sign;
-                    if (Math.abs(this.scrub_velocity) > 0.2) this.scrub_velocity = 0.2 * sign;
+                    if (Math.abs(this.scrub_velocity) < 0.1) this.scrub_velocity = 0.1 * sign;
+                    if (Math.abs(this.scrub_velocity) > 0.5) this.scrub_velocity = 0.5 * sign;
 
                     this.AUTO_SCRUB = true;
 
@@ -15669,7 +15704,7 @@ ${is_iws}`;
             const active_window_start = offset * this.shift_amount;
 
             direction = Math.sign(this.offset_diff);
-
+            let prv = null;
             if (active_window_size > 0) {
 
                 this.shift_amount = Math.max(1, Math.min(active_window_size, this.shift_amount));
@@ -15776,8 +15811,7 @@ ${is_iws}`;
                                 as.transitionOut(trs_out);
                         }
                     } else{
-
-                        console.log(i, trs_out.pos, direction);
+                        
                         as.transitionOut();
                     }
 
@@ -15868,7 +15902,6 @@ ${is_iws}`;
          * @protected
          */
         cull(new_items = []) {
-            console.log("AA");
             const transition = Animation.createTransition();
 
             if (new_items.length == 0) {
@@ -16255,6 +16288,7 @@ ${is_iws}`;
         build(element, source, presets, errors, taps, statics, RENDER_ONLY = false) {
 
             return (statics.slots && statics.slots[this.name]) ?
+                (statics.slots[this.name].SLOTED = true,
                 statics.slots[this.name].build(
                     element,
                     statics.slots[this.name].getCachedSource() || source,
@@ -16263,7 +16297,7 @@ ${is_iws}`;
                     taps,
                     statics,
                     RENDER_ONLY
-                ) :
+                )) :
                 source;
         }
 
@@ -17365,7 +17399,7 @@ ${is_iws}`;
                                 res();
                                 clearInterval(id);
                             }
-                        }
+                        };
 
                         let id = setInterval(e, 0);
                     }));
@@ -17811,7 +17845,7 @@ ${is_iws}`;
 
                     if (this.tag == "script")
                         return this.parseRunner(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
-                    console.log(this.presets);
+
                     const tree = (await Component(this.url, this.presets)).tree;
                     //tree.children.forEach(c => c.parent = this)
                     this.addChild(tree);

@@ -4,7 +4,7 @@
             const JSDOM =  jsd.JSDOM;
             chai.should();
         import wick from "./source/wick.mjs";
-            import url from "@candlefw/url";
+            import url from "@candlefw/url"; url.polyfill();
         
             async function pause(time = 1000){
             	return new Promise(res=>{
@@ -41,44 +41,74 @@
 
         });
                     afterEach(async () => {
-            global.window = null;
-            global.document = null;
-            global.HTMLElement = null;
-            global.Location = null;
-            global.Element = null;
+            const DOM = new JSDOM(`
+                <!DOCTPE html>
+                
+                <head test="123">
+                
+                </head>
+                
+                <body version="v3.14">
+                    <app>
+                    </app>
+                </body>
+
+                <script>
+                </script>
+            `);
+
+            const window = DOM.window;
+            global.window = window;
+            global.document = window.document;
+            global.HTMLElement = window.HTMLElement;
+            global.Location = window.Location;
+            global.Element = window.Element;
+
         });
                     
-                describe("element", ()=>{
+                describe("container", ()=>{
                     
                     
                     
                     
                     
-                describe("merging", ()=>{
+                describe("scrubbing", ()=>{
                     
                     
                     
                     
-                    it("Merging elements pulls statics from the merged-from tag", async () => {
-        let presets = wick.presets();
-        await wick(`<w-s component="mergedto" #temp=false >test<w-s>`, presets);
-        let comp = await wick(`<div><mergedto #temp=true>test false</mergedto></div>`, presets);
-        let ele = document.createElement("div");
-        let component = comp.mount(ele);
+                    it("Allows scrubbing of elements within a container", async function() {
+            this.slow(5000);
+            this.timeout(12000);
+            let component = await wick("/test/data/scrubbing.js", wick.presets());
 
-        component.sources[0].sources[0].statics.should.have.property("temp", "true");
-    });it("Merging pulls attribute data from both component and merged tag. Merged tag attributes are preferred", async () => {
-        let presets = wick.presets();
-        await wick(`<w-s element="div" component="mergedto" temp="false" foo="biz">test<w-s>`, presets);
-        let comp = await wick(`<div><mergedto temp="true" bar="buz">test false</mergedto></div>`, presets);
-        let ele = document.createElement("div");
-        let component = comp.mount(ele);
+            let ele = document.createElement("div");
+            let mgr = component.mount(ele, { data: [{ data: 1 }, { data: 2 }, { data: 3 }, { data: 4 }, { data: 5 }, { data: 6 }, { data: 7 }, { data: 8 }] });
+            const container = mgr.sources[0].containers[0];
+            await pause(120)
 
-        let sub_ele = ele.firstChild.firstChild;
-        sub_ele.getAttribute("temp").should.equal("true");
-        sub_ele.getAttribute("foo").should.equal("biz");
-        sub_ele.getAttribute("bar").should.equal("buz");
-    });;
+            container.offset.should.equal(1);
+            (container.activeSources.map(e => e.sources[0].test_value))[1].should.equal(0);
+
+
+            console.log(container.offset, container.offset_fractional, container.activeSources.map(e => e.sources[0].test_value))
+            container.scrub(-0.5)
+            pause(50)
+            console.log(container.offset, container.offset_fractional, container.activeSources.map(e => e.sources[0].test_value))
+            container.scrub(-0.48)
+            pause(50)
+            console.log(container.offset, container.offset_fractional, container.activeSources.map(e => e.sources[0].test_value))
+        });it("Jumping to random points keep components in expected places.", async () => {
+            let component = await wick("/test/data/scrubbing.js", wick.presets());
+            let ele = document.createElement("div");
+            let mgr = component.mount(ele, { data: [{ data: 1 }, { data: 2 }, { data: 3 }, { data: 4 }, { data: 5 }, { data: 6 }, { data: 7 }, { data: 8 }] });
+            const container = mgr.sources[0].containers[0];
+
+            //Start a prefixed place
+            mgr.update({ offset: 4 })
+
+
+        });it("Jumping to random points keep components in expected places.");;
                 });;
                 });;
                 });

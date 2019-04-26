@@ -19,7 +19,7 @@ import cfwt from "@candlefw/tests";
         priority: 0,
         name: "url",
         install: () => `
-            import url from "@candlefw/url";
+            import url from "@candlefw/url"; url.polyfill();
         `
     },{
         priority: 0,
@@ -84,10 +84,10 @@ import cfwt from "@candlefw/tests";
     //Tests
     //await cfwt.installTest("./test/suite/plugins.mjs");
     //await cfwt.installTest("./test/suite/model.mjs");
-    //await cfwt.installTest("./test/suite/scrubbing.mjs");
+    await cfwt.installTest("./test/suite/scrubbing.mjs");
     await cfwt.installTest("./test/suite/merging.mjs");
 
-    const suite = cfwt.build("wick");
+    const suite = cfwt.build("wick.container");
     console.log(suite)
 
     for (let a in suite) {
