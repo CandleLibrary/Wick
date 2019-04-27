@@ -160,6 +160,7 @@ export class SourceContainer extends View {
      */
     scrub(scrub_delta, SCRUBBING = true) {
 
+
         // scrub_delta is the relative ammount of change from the previous offset. 
 
         this.SCRUBBING = true;
@@ -170,24 +171,34 @@ export class SourceContainer extends View {
         }
 
         let delta_offset = scrub_delta + this.offset_fractional;
-
         if (scrub_delta !== Infinity) {
 
             if (Math.abs(delta_offset) > 1) {
                 if (delta_offset > 1) {
+
+                    delta_offset = delta_offset % 1;
+                    this.offset_fractional = delta_offset;
+                    this.scrub_velocity = scrub_delta;
+
                     if (this.offset < this.max)
                         this.trs_ascending.play(1);
                     this.offset++;
                     this.offset_diff = 1;
                     this.render(null, this.activeSources, true);
                 } else {
+                    delta_offset = delta_offset % 1;
+                    this.offset_fractional = delta_offset;
+                    this.scrub_velocity = scrub_delta;
+
                     if (this.offset >= 1)
                         this.trs_descending.play(1);
                     this.offset--;
                     this.offset_diff = -1;
                     this.render(null, this.activeSources, true);
                 }
-                delta_offset = delta_offset % 1;
+                
+            }else{
+
             }
 
             //Make Sure the the transition animation is completed before moving on to new animation sequences.
@@ -254,9 +265,9 @@ export class SourceContainer extends View {
                 spark.queueUpdate(this);
             } else {
                 this.offset += Math.round(this.offset_fractional);
-                this.render(null, this.activeSources, true).play(1);
                 this.scrub_velocity = 0;
                 this.offset_fractional = 0;
+                this.render(null, this.activeSources, true).play(1);
             }
         }
     }
@@ -264,6 +275,7 @@ export class SourceContainer extends View {
     arrange(output = this.activeSources) {
 
         //Arranges active sources according to their arrange handler.
+        
         const
             limit = this.limit,
             offset = this.offset,

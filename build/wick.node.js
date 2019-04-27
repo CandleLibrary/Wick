@@ -143,7 +143,7 @@ const _FrozenProperty_ = (object, name, value) => OB$1.defineProperty(object, na
  *
  * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
  */
- 
+    
 const caller = (typeof(window) == "object" && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
     setTimeout(f, 1);
 };
@@ -169,7 +169,16 @@ class Spark {
 
         this.queue_switch = 0;
 
-        this.callback = () => this.update();
+        this.callback = ()=>{};
+
+        if(typeof(window) !== "undefined"){
+            window.addEventListener("load",()=>{
+                this.callback = () => this.update();
+                caller(this.callback);
+            });
+        }else{
+            this.callback = () => this.update();
+        }
 
         this.frame_time = perf.now();
 
@@ -200,9 +209,11 @@ class Spark {
 
         this.frame_time = perf.now() | 0;
 
-        this.SCHEDULE_PENDING = true;
 
-        caller(this.callback);
+        if(!this.SCHEDULE_PENDING){
+            this.SCHEDULE_PENDING = true;
+            caller(this.callback);
+        }
     }
 
     removeFromQueue(object){
@@ -1837,7 +1848,7 @@ class Lexer {
             thick_line = String.fromCharCode(0x2501),
             line_number = "    " + this.line + ": ",
             line_fill = line_number.length,
-            t = thick_line.repeat(line_fill + 48),
+            t$$1 = thick_line.repeat(line_fill + 48),
             is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
         const pk = this.copy();
         pk.IWS = false;
@@ -1845,10 +1856,10 @@ class Lexer {
         const end = pk.off;
 
         return `${message} at ${this.line}:${this.char}
-${t}
+${t$$1}
 ${line_number+this.str.slice(Math.max(this.off - this.char, 0), end)}
 ${line.repeat(this.char-1+line_fill)+trs+arrow}
-${t}
+${t$$1}
 ${is_iws}`;
     }
 
@@ -1913,7 +1924,7 @@ ${is_iws}`;
         }
 
         //Token builder
-        const l = marker.sl,
+        const l$$1 = marker.sl,
             str = marker.str,
             IWS = marker.IWS;
 
@@ -1924,9 +1935,9 @@ ${is_iws}`;
             line = marker.line,
             base = off;
 
-        if (off >= l) {
+        if (off >= l$$1) {
             length = 0;
-            base = l;
+            base = l$$1;
             char -= base - off;
             marker.type = type;
             marker.off = base;
@@ -1944,14 +1955,14 @@ ${is_iws}`;
             let code = str.charCodeAt(off);
             let off2 = off;
             let map = this.symbol_map,
-                m;
+                m$$1;
             let i = 0;
 
             while (code == 32 && IWS)
                 (code = str.charCodeAt(++off2), off++);
 
-            while ((m = map.get(code))) {
-                map = m;
+            while ((m$$1 = map.get(code))) {
+                map = m$$1;
                 off2 += 1;
                 code = str.charCodeAt(off2);
             }
@@ -1979,7 +1990,7 @@ ${is_iws}`;
 
                     switch (jump_table[code]) {
                         case 0: //NUMBER
-                            while (++off < l && (12 & number_and_identifier_table[str.charCodeAt(off)]));
+                            while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)]));
 
                             if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off + 1)])) {
                                 off++;
@@ -1996,7 +2007,7 @@ ${is_iws}`;
 
                             break;
                         case 1: //IDENTIFIER
-                            while (++off < l && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
+                            while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
                             type = identifier;
                             length = off - base;
                             break;
@@ -2004,18 +2015,18 @@ ${is_iws}`;
                             if (this.PARSE_STRING) {
                                 type = symbol;
                             } else {
-                                while (++off < l && str.charCodeAt(off) !== code);
+                                while (++off < l$$1 && str.charCodeAt(off) !== code);
                                 type = string;
                                 length = off - base + 1;
                             }
                             break;
                         case 3: //SPACE SET
-                            while (++off < l && str.charCodeAt(off) === SPACE);
+                            while (++off < l$$1 && str.charCodeAt(off) === SPACE);
                             type = white_space;
                             length = off - base;
                             break;
                         case 4: //TAB SET
-                            while (++off < l && str[off] === HORIZONTAL_TAB);
+                            while (++off < l$$1 && str[off] === HORIZONTAL_TAB);
                             type = white_space;
                             length = off - base;
                             break;
@@ -2048,13 +2059,13 @@ ${is_iws}`;
                 }
 
                 if (IWS && (type & white_space_new_line)) {
-                    if (off < l) {
+                    if (off < l$$1) {
                         char += length;
                         type = symbol;
                         continue;
                     } else {
                         //Trim white space from end of string
-                        base = l - length;
+                        base = l$$1 - length;
                         marker.sl -= length;
                         length = 0;
                         char -= base - off;
@@ -2219,9 +2230,9 @@ ${is_iws}`;
             off = lex.off;
 
         for (; lex.off < lex.sl; lex.off++) {
-            const c = jump_table[lex.string.charCodeAt(lex.off)];
+            const c$$1 = jump_table[lex.string.charCodeAt(lex.off)];
 
-            if (c > 2 && c < 7) {
+            if (c$$1 > 2 && c$$1 < 7) {
 
                 if (space_count >= leave_leading_amount) {
                     off++;
@@ -2239,9 +2250,9 @@ ${is_iws}`;
         off = lex.sl;
 
         for (; lex.sl > lex.off; lex.sl--) {
-            const c = jump_table[lex.string.charCodeAt(lex.sl - 1)];
+            const c$$1 = jump_table[lex.string.charCodeAt(lex.sl - 1)];
 
-            if (c > 2 && c < 7) {
+            if (c$$1 > 2 && c$$1 < 7) {
                 if (space_count >= leave_trailing_amount) {
                     off--;
                 } else {
@@ -2275,11 +2286,11 @@ ${is_iws}`;
 
         for (let i = 0; i < sym.length; i++) {
             let code = sym.charCodeAt(i);
-            let m = map.get(code);
-            if (!m) {
-                m = map.set(code, new Map).get(code);
+            let m$$1 = map.get(code);
+            if (!m$$1) {
+                m$$1 = map.set(code, new Map).get(code);
             }
-            map = m;
+            map = m$$1;
         }
         map.IS_SYM = true;
     }
@@ -2293,7 +2304,7 @@ ${is_iws}`;
         return this.sl - this.off;
     }
 
-    set string_length(s) {}
+    set string_length(s$$1) {}
 
     /**
      * The current token in the form of a new Lexer with the current state.
@@ -2362,7 +2373,7 @@ ${is_iws}`;
     get n() { return this.next() }
 
     get END() { return this.off >= this.sl }
-    set END(v) {}
+    set END(v$$1) {}
 
     get type() {
         return 1 << (this.masked_values & TYPE_MASK);
@@ -3099,7 +3110,7 @@ class BtreeNode {
                 if (left.LEAF)
                     for (let i = 0; i < left.keys.length; i++)
                         if (left.keys[i] != left.nodes[i].id)
-                            {/*debugger*/};
+                            {/*debugger*/}
 
                 return true;
             }
@@ -5606,7 +5617,7 @@ class HTMLNode {
                         if (pk.ch == "!") {
                             /* DTD - Doctype and Comment tags*/
                             //This type of tag is dropped
-                            while (!lex.END && lex.n.ch !== ">") {};
+                            while (!lex.END && lex.n.ch !== ">") {}
                             lex.a(">");
                             lex.IWS = false;
                             continue;
@@ -5616,7 +5627,7 @@ class HTMLNode {
 
                             //Open tag
                             if (!OPENED) {
-                                let URL = false;
+                                let URL$$1 = false;
                                 this.DTD = false;
                                 this.attributes.length = 0;
 
@@ -5624,7 +5635,7 @@ class HTMLNode {
                                 this.tag = lex.n.tx.toLowerCase();
 
                                 lex.PARSE_STRING = false;
-                                URL = this.parseOpenTag(lex.n, false, old_url);
+                                URL$$1 = this.parseOpenTag(lex.n, false, old_url);
                                 lex.PARSE_STRING = true;
 
                                 this.char = lex.char;
@@ -5658,7 +5669,7 @@ class HTMLNode {
                                     start = lex.pos;
                                 }                                
 
-                                if (URL) {
+                                if (URL$$1) {
 
                                     //Need to block against infinitely recursive URL fetches. 
 
@@ -6005,7 +6016,7 @@ const parseInnerHTMLOnTag = {
 
                 cpy.next();
                 //*/
-            };
+            }
 
             if(cpy.END)
                 throw cpy.throw("Unexpected end of input");
@@ -6077,7 +6088,7 @@ const parseHTMLonTag = {
 
                 cpy.next();
                 //*/
-            };
+            }
 
             cpy.a(">", `Expecting a matching closing tag for ${tag_name}`);
 
@@ -8799,27 +8810,25 @@ const media_feature_definitions = {
  */
 class CSSSelector {
 
-    constructor(selectors /* string */ , selectors_arrays /* array */ ) {
+    constructor(value = "", value_array = []) {
 
         /**
          * The raw selector string value
          * @package
          */
-
-        this.v = selectors;
+        this.v = value;
 
         /**
          * Array of separated selector strings in reverse order.
          * @package
          */
+        this.a = value_array;
 
-        this.a = selectors_arrays;
-
-        /**
-         * The CSSRule.
-         * @package
-         */
+        // CSS Rulesets the selector is member of .
         this.r = null;
+
+        // CSS root the selector is a child of. 
+        this.root = null;
     }
 
     get id() {
@@ -8881,7 +8890,7 @@ function checkDefaults(lx) {
             if (!lx.pk.pk.END) // These values should be the only ones present. Failure otherwise.
                 return 0; // Default value present among other values. Invalid
             return 1; // Default value present only. Valid
-    };
+    }
     return 2; // Default value not present. Ignore
 }
 
@@ -9333,7 +9342,7 @@ class SymbolTerm extends LiteralTerm {
 
         return false;
     }
-};
+}
 
 //import util from "util"
 const standard_productions = {
@@ -9406,7 +9415,7 @@ function CreatePropertyParser(notation, name, definitions, productions) {
 
 function d$1(l, definitions, productions, super_term = false, oneof_group = false, or_group = false, and_group = false, important = null) {
     let term, nt, v;
-    const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
+    const { JUX: JUX$$1, AND: AND$$1, OR: OR$$1, ONE_OF: ONE_OF$$1, LiteralTerm: LiteralTerm$$1, ValueTerm: ValueTerm$$1, SymbolTerm: SymbolTerm$$1 } = productions;
 
     let GROUP_BREAK = false;
 
@@ -9423,7 +9432,7 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX && term.isRepeating()) term = foldIntoProduction(productions, new JUX, term);
+                    if (term instanceof JUX$$1 && term.isRepeating()) term = foldIntoProduction(productions, new JUX$$1, term);
                     term = foldIntoProduction(productions, term, v);
                 } else
                     term = v;
@@ -9431,13 +9440,13 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
 
             case "<":
 
-                v = new ValueTerm(l.next().tx, getPropertyParser, definitions, productions);
+                v = new ValueTerm$$1(l.next().tx, getPropertyParser, definitions, productions);
                 l.next().assert(">");
 
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX, term);
+                    if (term instanceof JUX$$1 /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX$$1, term);
                     term = foldIntoProduction(productions, term, v);
                 } else {
                     term = v;
@@ -9451,7 +9460,7 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                     if (and_group)
                         return term;
 
-                    nt = new AND();
+                    nt = new AND$$1();
 
                     if (!term) throw new Error("missing term!");
 
@@ -9476,7 +9485,7 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                         if (or_group || and_group)
                             return term;
 
-                        nt = new OR();
+                        nt = new OR$$1();
 
                         nt.terms.push(term);
 
@@ -9495,7 +9504,7 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                         if (oneof_group || or_group || and_group)
                             return term;
 
-                        nt = new ONE_OF();
+                        nt = new ONE_OF$$1();
 
                         nt.terms.push(term);
 
@@ -9513,12 +9522,12 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                 break;
             default:
 
-                v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx, l.ty);
+                v = (l.ty == l.types.symbol) ? new SymbolTerm$$1(l.tx) : new LiteralTerm$$1(l.tx, l.ty);
                 l.next();
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX, term);
+                    if (term instanceof JUX$$1 /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX$$1, term);
                     term = foldIntoProduction(productions, term, v);
                 } else {
                     term = v;
@@ -9734,7 +9743,7 @@ class CSSRuleBody {
                     if (!prop(win))
                         return false;
                 }
-            };
+            }
         }
 
         return true;
@@ -10031,7 +10040,7 @@ class CSSRuleBody {
                                     ).catch((e) => res(this.parse(lexer)));
                                 } else {
                                     //Failed to fetch resource, attempt to find the end to of the import clause.
-                                    while (!lexer.END && lexer.next().tx !== ";") {};
+                                    while (!lexer.END && lexer.next().tx !== ";") {}
                                     lexer.next();
                                 }
                         }
@@ -10062,6 +10071,7 @@ class CSSRuleBody {
                 let selector = this.parseSelector(lexer, this);
 
                 if (selector) {
+                    selector.root = this;
                     if (!this._selectors_[selector.id]) {
                         l = selectors.push(selector);
                         this._selectors_[selector.id] = selector;
@@ -10261,7 +10271,7 @@ class Segment {
     }
 
     setList() {
-        if(this.DEMOTED) debugger
+        //if(this.DEMOTED) debugger
         if (this.prod && this.list.innerHTML == "") {
             if (this.DEMOTED || !this.prod.buildList(this.list, this))
                 this.menu_icon.style.display = "none";
@@ -11084,7 +11094,7 @@ class UISelectorPart{
         return this.txt;
     }
 
-};
+}
 
 
 function drop(e){
@@ -11201,7 +11211,7 @@ function createCache(cacher){
         }
         return r;
     };
-};
+}
 
 const props = Object.assign({}, property_definitions);
 
@@ -11406,7 +11416,7 @@ class UIRuleSet {
             }
         }
 
-        this.parent.update();
+        this.parent.update(this);
     }
 
     addProp(type, value){
@@ -11438,10 +11448,6 @@ function dragover$1(e){
     e.preventDefault();
 }
 
-//import { UIValue } from "./ui_value.mjs";
-
-const props$2 = Object.assign({}, property_definitions);
-
 class UIMaster {
     constructor(css) {
         css.addObserver(this);
@@ -11450,6 +11456,7 @@ class UIMaster {
         this.selectors = [];
         this.element = document.createElement("div");
         this.element.classList.add("cfw_css");
+        this.update_mod = 0;
 
 
         this.rule_map = new Map();
@@ -11459,6 +11466,7 @@ class UIMaster {
     // css - A CandleFW_CSS object. 
     // meta - internal 
     build(css = this.css) {
+        if(this.update_mod++%3 !== 0) return;
 
         //Extract rule bodies and set as keys for the rule_map. 
         //Any existing mapped body that does not have a matching rule should be removed. 
@@ -13201,7 +13209,7 @@ function processExpression(lex, binds) {
  * @param      {Lexer}  lex     The lex
  * @return     {Array}   an
  */
-function evaluate(lex, EVENT = false) {
+function evaluate(lex, EVENT$$1 = false) {
     let binds = [];
     lex.IWS = false;
     let start = lex.pos;
@@ -13277,7 +13285,7 @@ function evaluate(lex, EVENT = false) {
 
                         if (lex.ch == barrier_a_start || lex.ch == barrier_b_start) {
 
-                            if(EVENT){
+                            if(EVENT$$1){
                                 binding = new EventBinding(binding); 
                                 binds[index] = binding;
                             }
@@ -15557,6 +15565,7 @@ class SourceContainer extends View {
      */
     scrub(scrub_delta, SCRUBBING = true) {
 
+
         // scrub_delta is the relative ammount of change from the previous offset. 
 
         this.SCRUBBING = true;
@@ -15567,24 +15576,34 @@ class SourceContainer extends View {
         }
 
         let delta_offset = scrub_delta + this.offset_fractional;
-
         if (scrub_delta !== Infinity) {
 
             if (Math.abs(delta_offset) > 1) {
                 if (delta_offset > 1) {
+
+                    delta_offset = delta_offset % 1;
+                    this.offset_fractional = delta_offset;
+                    this.scrub_velocity = scrub_delta;
+
                     if (this.offset < this.max)
                         this.trs_ascending.play(1);
                     this.offset++;
                     this.offset_diff = 1;
                     this.render(null, this.activeSources, true);
                 } else {
+                    delta_offset = delta_offset % 1;
+                    this.offset_fractional = delta_offset;
+                    this.scrub_velocity = scrub_delta;
+
                     if (this.offset >= 1)
                         this.trs_descending.play(1);
                     this.offset--;
                     this.offset_diff = -1;
                     this.render(null, this.activeSources, true);
                 }
-                delta_offset = delta_offset % 1;
+                
+            }else{
+
             }
 
             //Make Sure the the transition animation is completed before moving on to new animation sequences.
@@ -15651,9 +15670,9 @@ class SourceContainer extends View {
                 spark.queueUpdate(this);
             } else {
                 this.offset += Math.round(this.offset_fractional);
-                this.render(null, this.activeSources, true).play(1);
                 this.scrub_velocity = 0;
                 this.offset_fractional = 0;
+                this.render(null, this.activeSources, true).play(1);
             }
         }
     }
@@ -15661,6 +15680,7 @@ class SourceContainer extends View {
     arrange(output = this.activeSources) {
 
         //Arranges active sources according to their arrange handler.
+        
         const
             limit = this.limit,
             offset = this.offset,
@@ -17400,7 +17420,7 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
                             res();
                             clearInterval(id);
                         }
-                    };
+                    }
 
                     let id = setInterval(e, 0);
                 }));
