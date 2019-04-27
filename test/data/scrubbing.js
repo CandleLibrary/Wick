@@ -81,7 +81,7 @@ wick({
             };
             const
                 amount = 0.25,
-                limit = Math.floor(49.25 / amount);
+                limit = Math.floor(1 / amount);
 
             for (let i = 0; i < limit; i++) {
                 emit.scrub = amount 
@@ -92,7 +92,6 @@ wick({
             console.log(src.containers[0].activeSources.map((m,i)=>({ index:i, top: m.sources[0]._top, off:m.sources[0].model.data}))[12])
             //sc.update({ scrub: Infinity })
         })()
-
 
     },
 
@@ -125,7 +124,6 @@ wick({
             emit.set = null
         }
     },
-
     $point: () => {
         let root = event.y;
 

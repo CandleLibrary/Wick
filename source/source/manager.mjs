@@ -63,7 +63,7 @@ export class SourceManager {
     }
 
     transitionOut(transition, transition_name = "trs_out", DESTROY_ON_REMOVE = false) {
-
+        
         this._APPEND_STATE_ = false;
 
         if (this._TRANSITION_STATE_ === false) {
@@ -130,7 +130,6 @@ export class SourceManager {
                 }
             }
         }*/
-
         if (transition_time > 0)
             setTimeout(() => {
                 this._removeFromDOM_();

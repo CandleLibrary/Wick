@@ -6,11 +6,11 @@ import { MultiIndexedContainer } from "../model/container/multi";
 import { View } from "../view";
 import { Tap } from "./tap/tap.mjs";
 
-function getColumnRow(index, offset, set_size){
-	const adjusted_index = index - offset*set_size;
-	const row = Math.floor(adjusted_index/set_size);
-	const col = (index) % (set_size);
-	return {row, col};
+function getColumnRow(index, offset, set_size) {
+    const adjusted_index = index - offset * set_size;
+    const row = Math.floor(adjusted_index / set_size);
+    const col = (index) % (set_size);
+    return { row, col };
 }
 
 /**
@@ -93,6 +93,7 @@ export class SourceContainer extends View {
     scheduledUpdate() {
 
         if (this.SCRUBBING) {
+
             if (!this.AUTO_SCRUB) {
                 this.SCRUBBING = false;
                 return;
@@ -101,15 +102,17 @@ export class SourceContainer extends View {
             if (
                 Math.abs(this.scrub_velocity) > 0.0001
             ) {
-                this.scrub(this.scrub_velocity);
-                this.scrub_velocity *= (this.drag);
+                if (this.scrub(this.scrub_velocity)) {
 
-                let pos = this.offset + this.scrub_velocity;
+                    this.scrub_velocity *= (this.drag);
 
-                if (pos < 0 || pos > this.max)
-                    this.scrub_velocity = 0;
+                    let pos = this.offset + this.scrub_velocity;
 
-                spark.queueUpdate(this);
+                    if (pos < 0 || pos > this.max)
+                        this.scrub_velocity = 0;
+
+                    spark.queueUpdate(this);
+                };
 
             } else {
                 this.scrub_velocity = 0;
@@ -132,22 +135,22 @@ export class SourceContainer extends View {
         }
     }
 
-    forceMount(){
+    forceMount() {
         const active_window_size = this.limit;
-        const offset = this.offset; 
+        const offset = this.offset;
 
 
         const min = Math.min(offset + this.offset_diff, offset) * this.shift_amount;
         const max = Math.max(offset + this.offset_diff, offset) * this.shift_amount + active_window_size;
 
 
-        let i = min;    
+        let i = min;
 
         this.ele.innerHTML = "";
         const output_length = this.activeSources.length;
         this.dom_sources.length = 0;
 
-        while(i < max && i < output_length){
+        while (i < max && i < output_length) {
             let node = this.activeSources[i++];
             this.dom_sources.push(node);
             node.appendToDOM(this.ele)
@@ -182,9 +185,10 @@ export class SourceContainer extends View {
 
                     if (this.offset < this.max)
                         this.trs_ascending.play(1);
+
                     this.offset++;
                     this.offset_diff = 1;
-                    this.render(null, this.activeSources, true);
+                    this.render(null, this.activeSources, true).play(1);
                 } else {
                     delta_offset = delta_offset % 1;
                     this.offset_fractional = delta_offset;
@@ -194,11 +198,8 @@ export class SourceContainer extends View {
                         this.trs_descending.play(1);
                     this.offset--;
                     this.offset_diff = -1;
-                    this.render(null, this.activeSources, true);
-                }
-                
-            }else{
-
+                    this.render(null, this.activeSources, true).play(1);
+                }                
             }
 
             //Make Sure the the transition animation is completed before moving on to new animation sequences.
@@ -240,6 +241,8 @@ export class SourceContainer extends View {
 
             this.offset_fractional = delta_offset;
             this.scrub_velocity = scrub_delta;
+
+            return true;
         } else {
 
             if (Math.abs(this.scrub_velocity) > 0.0001) {
@@ -263,16 +266,22 @@ export class SourceContainer extends View {
                 this.scrub_velocity = this.scrub_velocity;
                 this.SCRUBBING = true;
                 spark.queueUpdate(this);
+                return true;
             } else {
                 this.offset += Math.round(this.offset_fractional);
                 this.scrub_velocity = 0;
                 this.offset_fractional = 0;
                 this.render(null, this.activeSources, true).play(1);
+                this.SCRUBBING = false;
+                return false;
             }
         }
+
+        return true;
     }
 
     arrange(output = this.activeSources) {
+
 
         //Arranges active sources according to their arrange handler.
         
@@ -297,8 +306,11 @@ export class SourceContainer extends View {
         //Sources on the descending edge of the transition window
         while (i < output_length)
             output[i].update({ trs_dec_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }), i++;
-
+        
         transition.play(1);
+        
+        if(output_length > 0 && output[active_window_start])
+            console.log(output[active_window_start].ele)
     }
 
     render(transition, output = this.activeSources, NO_TRANSITION = false) {
@@ -426,8 +438,8 @@ export class SourceContainer extends View {
                         default:
                             as.transitionOut(trs_out);
                     }
-                } else{
-                    
+                } else {
+
                     as.transitionOut();
                 }
 
@@ -476,10 +488,10 @@ export class SourceContainer extends View {
         for (let i = 0, l = this.filters.length; i < l; i++) {
             let filter = this.filters[i];
             if (filter.CAN_USE) {
-                if (filter._CAN_LIMIT_) this.limit = parseInt(filter._value_);  // Make sure we are dealing with integers. 
-                                                                                // Value could be string debinding on the type of 
-                                                                                // binding. Applies to other values. 
-                if (filter._CAN_OFFSET_) offset = parseInt(filter._value_); 
+                if (filter._CAN_LIMIT_) this.limit = parseInt(filter._value_); // Make sure we are dealing with integers. 
+                // Value could be string debinding on the type of 
+                // binding. Applies to other values. 
+                if (filter._CAN_OFFSET_) offset = parseInt(filter._value_);
                 if (filter._CAN_SHIFT_) this.shift_amount = parseInt(filter._value_);
             }
         }
@@ -557,7 +569,7 @@ export class SourceContainer extends View {
             exists.forEach((v, k, m) => { if (v) out.push(k); });
 
 
-            if (out.length > 0) { 
+            if (out.length > 0) {
                 // Wrap models into components
                 this.added(out, transition);
 
@@ -598,13 +610,13 @@ export class SourceContainer extends View {
         // would interfere with the expected behavior of scrubbing. So the transition
         // is instead set to it's end state, and scrub is called to set intermittent 
         // position. 
-
+        //*
         if (this.SCRUBBING) {
-            transition.play(1);
-            this.scrub(0.5);
+            //transition.play(1);
+            //this.scrub(0);
         } else
             transition.start();
-
+    
     }
     /**
      * Called by the ModelContainer when Models have been removed from its set.
@@ -703,7 +715,7 @@ export class SourceContainer extends View {
             });
         }
     }
-    
+
     transitionOut(transition) {
         return;
         for (let i = 0, l = this.activeSources.length; i < l; i++) this.activeSources[i].transitionOut(transition);
