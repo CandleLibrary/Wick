@@ -10,7 +10,7 @@ export default [{
         let ele = document.createElement("div");
         let component = comp.mount(ele);
 
-        component.sources[0].sources[0].statics.should.have.property("temp", "true");
+        component.scopes[0].scopes[0].statics.should.have.property("temp", "true");
     }
 }, {
     d: "Merging pulls attribute data from both merging-component and merged-element. Merged elements attributes are preferred",

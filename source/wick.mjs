@@ -1,5 +1,4 @@
 import { core } from "./library.mjs";
-import { Component } from "./source/component.mjs";
 import { Presets } from "./presets.mjs";
 import { SchemeConstructor, DateSchemeConstructor, TimeSchemeConstructor, StringSchemeConstructor, NumberSchemeConstructor, BoolSchemeConstructor, schemes } from "./schema/schemas.mjs";
 import { Store } from "./model/store.mjs";
@@ -10,21 +9,22 @@ import { MultiIndexedContainer } from "./model/container/multi.mjs";
 import { BTreeModelContainer } from "./model/container/btree.mjs";
 import { ArrayModelContainer } from "./model/container/array.mjs";
 import { View } from "./view.mjs";
-import { BasePackage } from "./source/base_package.mjs";
-import { SourcePackage } from "./source/package.mjs";
-import { Source } from "./source/source.mjs";
-import { CompileSource } from "./source/compiler/compiler.mjs";
-import { RootText } from "./source/compiler/nodes/root.mjs";
-import { RootNode } from "./source/compiler/nodes/index.mjs";
-import { StyleNode } from "./source/compiler/nodes/style.mjs";
-import { ScriptNode } from "./source/compiler/nodes/script.mjs";
-import { SourceNode } from "./source/compiler/nodes/source.mjs";
-import { PackageNode } from "./source/compiler/nodes/package.mjs";
-import { SVGNode } from "./source/compiler/nodes/svg.mjs";
-import { SourceContainerNode } from "./source/compiler/nodes/container.mjs";
+import { JSCompiler } from "./component/compiler/js.mjs";
+import { HTMLCompiler } from "./component/compiler/html.mjs";
+import { BasePackage } from "./component/runtime/base_package.mjs";
+import { ScopePackage } from "./component/runtime/package.mjs";
+import { Scope } from "./component/runtime/scope.mjs";
+import { RootText } from "./component/compiler/nodes/root.mjs";
+import { RootNode } from "./component/compiler/nodes/index.mjs";
+import { StyleNode } from "./component/compiler/nodes/style.mjs";
+import { ScriptNode } from "./component/compiler/nodes/script.mjs";
+import { ScopeNode } from "./component/compiler/nodes/scope.mjs";
+import { PackageNode } from "./component/compiler/nodes/package.mjs";
+import { SVGNode } from "./component/compiler/nodes/svg.mjs";
+import { ScopeContainerNode } from "./component/compiler/nodes/container.mjs";
 import polyfill from "./polyfill.mjs"
 
-const wick = Component;
+const wick = JSCompiler;
 
 export {
     Presets,
@@ -37,24 +37,24 @@ export {
     ArrayModelContainer,
     View,
     BasePackage,
-    SourcePackage,
-    Source,
-    CompileSource,
+    ScopePackage,
+    Scope,
+    JSCompiler,
+    HTMLCompiler,
     RootText,
     RootNode,
-    StyleNode,
+    StyleNode, 
     ScriptNode,
-    SourceNode,
+    ScopeNode,
     PackageNode,
-    SourceContainerNode,
+    ScopeContainerNode,
     SVGNode,
     SchemeConstructor,
     DateSchemeConstructor,
     TimeSchemeConstructor,
     StringSchemeConstructor,
     NumberSchemeConstructor,
-    BoolSchemeConstructor,
-    Component
+    BoolSchemeConstructor
 };
 
 Object.assign(wick, core)

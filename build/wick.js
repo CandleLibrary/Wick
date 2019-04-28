@@ -665,7 +665,7 @@ var wick = (function () {
 
             super(root, address);
 
-            _SealedProperty_(this, "source", null);
+            _SealedProperty_(this, "scope", null);
             _SealedProperty_(this, "first_link", null);
 
             //For keeping the container from garbage collection.
@@ -692,8 +692,8 @@ var wick = (function () {
 
             this._filters_ = null;
 
-            if (this.source) {
-                this.source.__unlink__(this);
+            if (this.scope) {
+                this.scope.__unlink__(this);
             }
 
             super.destroy();
@@ -745,7 +745,7 @@ var wick = (function () {
             Retrieves a list of items that match the term/terms. 
 
             @param {(Array|SearchTerm)} term - A single term or a set of terms to look for in the ModelContainerBase. 
-            @param {Array} __return_data__ - Set to true by a source Container if it is calling a SubContainer insert function. 
+            @param {Array} __return_data__ - Set to true by a scope Container if it is calling a SubContainer insert function. 
 
             @returns {(ModelContainerBase|Array)} Returns a Model container or an Array of Models matching the search terms. 
         */
@@ -763,7 +763,7 @@ var wick = (function () {
                     out = __return_data__;
                 } else {
 
-                    if (!this.source)
+                    if (!this.scope)
                         USE_ARRAY = false;
 
                     out = this.__defaultReturn__(USE_ARRAY);
@@ -803,11 +803,11 @@ var wick = (function () {
 
             @param {Object} item - An Object to insert into the container. On of the properties of the object MUST have the same name as the ModelContainerBase's 
             @param {Array} item - An array of Objects to insert into the container.
-            @param {Boolean} __FROM_SOURCE__ - Set to true by a source Container if it is calling a SubContainer insert function. 
+            @param {Boolean} __FROM_SCOPE__ - Set to true by a scope Container if it is calling a SubContainer insert function. 
 
             @returns {Boolean} Returns true if an insertion into the ModelContainerBase occurred, false otherwise.
         */
-        insert(item, from_root = false, __FROM_SOURCE__ = false) {
+        insert(item, from_root = false, __FROM_SCOPE__ = false) {
 
             item = this.setHook("", item);
 
@@ -818,8 +818,8 @@ var wick = (function () {
 
             let out_data = false;
 
-            if (!__FROM_SOURCE__ && this.source)
-                return this.source.insert(item);
+            if (!__FROM_SCOPE__ && this.scope)
+                return this.scope.insert(item);
 
 
             if (item instanceof Array) {
@@ -881,19 +881,19 @@ var wick = (function () {
         /**
             Removes an item from the container. 
         */
-        remove(term, from_root = false, __FROM_SOURCE__ = false) {
+        remove(term, from_root = false, __FROM_SCOPE__ = false) {
 
             if (!from_root)
                 return this._deferUpdateToRoot_(term).remove(term, true);
 
             //term = this.getHook("term", term);
 
-            if (!__FROM_SOURCE__ && this.source) {
+            if (!__FROM_SCOPE__ && this.scope) {
 
                 if (!term)
-                    return this.source.remove(this._filters_);
+                    return this.scope.remove(this._filters_);
                 else
-                    return this.source.remove(term);
+                    return this.scope.remove(term);
             }
 
             let out_container = [];
@@ -932,7 +932,7 @@ var wick = (function () {
         */
         __unlink__(container) {
 
-            if (container instanceof ModelContainerBase && container.source == this) {
+            if (container instanceof ModelContainerBase && container.scope == this) {
 
                 if (container == this.first_link)
                     this.first_link = container.next;
@@ -943,7 +943,7 @@ var wick = (function () {
                 if (container.prev)
                     container.prev.next = container.next;
 
-                container.source = null;
+                container.scope = null;
             }
         }
 
@@ -953,9 +953,9 @@ var wick = (function () {
             @param {ModelContainerBase} container - The ModelContainerBase instance to add the set of linked containers.
         */
         __link__(container) {
-            if (container instanceof ModelContainerBase && !container.source) {
+            if (container instanceof ModelContainerBase && !container.scope) {
 
-                container.source = this;
+                container.scope = this;
 
                 container.next = this.first_link;
 
@@ -971,7 +971,7 @@ var wick = (function () {
 
                     return () => {
                         clearTimeout(id);
-                        if (!container.source)
+                        if (!container.scope)
                             console.warn("failed to clear the destruction of container in time!");
                     };
                 })(container);
@@ -4372,33 +4372,33 @@ ${is_iws}`;
             this.custom_components = {};
 
             /** 
-             * Store of user defined CustomSourcePackage factories that can be used in place of the components built by the Wick templating system. Accepts any class extending the CustomComponent class. Adds these classes from preset_options.custom_sources or preset_options.components. 
+             * Store of user defined CustomScopePackage factories that can be used in place of the components built by the Wick templating system. Accepts any class extending the CustomComponent class. Adds these classes from preset_options.custom_scopes or preset_options.components. 
              * 
-             * In routing mode, a HTML `<component>` tag whose first classname matches a property name of a member of presets.custom_sources will be assigned to an instance of that member.
+             * In routing mode, a HTML `<component>` tag whose first classname matches a property name of a member of presets.custom_scopes will be assigned to an instance of that member.
              * 
              * ### Example
              * In HTML:
              * ```html
-             * <component class="my_source class_style">
+             * <component class="my_scope class_style">
              * 
              * ```
              * In JavaScript:
              * ```javascript
-             * let MySource = CustomSourcePackage( ele =>{
+             * let MyScope = CustomScopePackage( ele =>{
              *      ele.append
              * }, {});
              * 
              * preset_options.custom_componets = {
-             *      my_source : MySource
+             *      my_scope : MyScope
              * }
              * ```
              * @instance
              * @readonly
              */
-            this.custom_sources = {};
+            this.custom_scopes = {};
 
             /**
-             * { Object } Store of user defined classes that extend the Model or Model classes. `<w-source>` tags in templates that have a value set for the  `schema` attribute, e.g. `<w-s schema="my_favorite_model_type">...</w-s>`, will be bound to a new instance of the class in presets.schema whose property name matches the "schema" attribute.
+             * { Object } Store of user defined classes that extend the Model or Model classes. `<w-scope>` tags in templates that have a value set for the  `schema` attribute, e.g. `<w-s schema="my_favorite_model_type">...</w-s>`, will be bound to a new instance of the class in presets.schema whose property name matches the "schema" attribute.
              * 
              * Assign classes that extend Model or SchemedModel to preset_options.schemas to have them available to Wick.
              * 
@@ -4416,7 +4416,7 @@ ${is_iws}`;
             this.schemas = { any: Model };
 
             /**
-             * { Object } Store of user defined Model instances that serve as global models, which are available to the whole application. Multiple Sources will be able to _bind_ to the Models. `<w-source>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets .model whose property name matches the "model" attribute.
+             * { Object } Store of user defined Model instances that serve as global models, which are available to the whole application. Multiple Scopes will be able to _bind_ to the Models. `<w-scope>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets .model whose property name matches the "model" attribute.
              * 
              * Assign instances of Model or Model or any class that extends these to preset_options.models to have them used by Wick.
              * 
@@ -4460,11 +4460,11 @@ ${is_iws}`;
                 for (let cn in c)
                     this.components[cn] = c[cn];
 
-            c = preset_options.custom_sources;
+            c = preset_options.custom_scopes;
             if (c)
                 for (let cn in c)
                     if (cn instanceof CustomComponent)
-                        this.custom_sources[cn] = c[cn];
+                        this.custom_scopes[cn] = c[cn];
 
             c = preset_options.custom_components;
             if (c)
@@ -4489,7 +4489,7 @@ ${is_iws}`;
             this.url = URL;
 
             Object.freeze(this.options);
-            Object.freeze(this.custom_sources);
+            Object.freeze(this.custom_scopes);
             Object.freeze(this.schemas);
             Object.freeze(this.models);
 
@@ -5954,7 +5954,7 @@ ${is_iws}`;
     };
 
 
-    // Allows a plugin function to parse the contents of a fetched resource whose file extensions matches the one set by the plugin. 
+    // Allows a plugin function to parse the contents of a fetched rescope whose file extensions matches the one set by the plugin. 
     const extensionParse = {
         name: "extensionParse",
 
@@ -11738,28 +11738,28 @@ ${is_iws}`;
     /**
      * Gateway for data flow. Represents a single "channel" of data flow. 
      * 
-     * By using different modes, one can control how data enters and exits the source context.
+     * By using different modes, one can control how data enters and exits the scope context.
      * -`keep`: 
-     *  This mode is the default and treats any data on the channel as coming from the model. The model itself is not changed, and any data flow from outside the source context is ignored.
+     *  This mode is the default and treats any data on the channel as coming from the model. The model itself is not changed, and any data flow from outside the scope context is ignored.
      * -`put`:
      *  This mode will update the model to reflect updates on the channel. This will also cause any bindings to update to reflect the change on the model.
      * -`import`:
-     *  This mode will allow data from outside the source context to enter the context as if it came from the model. The model itself is unchanged unless put is specified for the same property.
+     *  This mode will allow data from outside the scope context to enter the context as if it came from the model. The model itself is unchanged unless put is specified for the same property.
      *  -`export`:
-     *  This mode will propagate data flow to the parent source context, allowing other sources to listen on the data flow of the originating source context.
+     *  This mode will propagate data flow to the parent scope context, allowing other scopes to listen on the data flow of the originating scope context.
      *  
      *  if `import` is active, then `keep` is implicitly inactive and the model no longer has any bearing on the value of the bindings.
      */
     class Tap {
 
-        constructor(source, prop, modes = 0) {
-            this.source = source;
+        constructor(scope, prop, modes = 0) {
+            this.scope = scope;
             this.prop = prop;
             this.modes = modes; // 0 implies keep
             this.ios = [];
 
-            if (modes & IMPORT && source.parent)
-                source.parent.getTap(prop).ios.push(this);
+            if (modes & IMPORT && scope.parent)
+                scope.parent.getTap(prop).ios.push(this);
 
         }
 
@@ -11769,7 +11769,7 @@ ${is_iws}`;
                 this.ios[i].destroy();
 
             this.ios = null;
-            this.source = null;
+            this.scope = null;
             this.prop = null;
             this.modes = null;
         }
@@ -11781,7 +11781,7 @@ ${is_iws}`;
             const value = data[this.prop];
 
             if ((typeof(value) !== "undefined") && (this.modes & EXPORT))
-                this.source.up(this, data[this.prop]);
+                this.scope.up(this, data[this.prop]);
         }
 
         down(value, meta) {
@@ -11800,12 +11800,12 @@ ${is_iws}`;
                         return;
 
                     if ((this.modes & PUT) && typeof(value) !== "function") {
-                        if (this.source.model.set)
-                            this.source.model.set({
+                        if (this.scope.model.set)
+                            this.scope.model.set({
                                 [this.prop]: value
                             });
                         else
-                            this.source.model[this.prop] = value;
+                            this.scope.model[this.prop] = value;
                     }
 
                 }
@@ -11825,16 +11825,16 @@ ${is_iws}`;
                 this.down(value, meta);
             
             if ((this.modes & PUT) && typeof(value) !== "undefined") {
-                if (this.source.model.set)
-                    this.source.model.set({
+                if (this.scope.model.set)
+                    this.scope.model.set({
                         [this.prop]: value
                     });
                 else
-                    this.source.model[this.prop] = value;
+                    this.scope.model[this.prop] = value;
             }
 
             if (this.modes & EXPORT)
-                this.source.up(this, value, meta);
+                this.scope.up(this, value, meta);
         }
 
         addIO(io) {
@@ -11867,18 +11867,18 @@ ${is_iws}`;
     const noop = () => {};
     const NOOPTap = { addIO: noop, removeIO: noop, up: noop };
 
-    class Source extends View {
+    class Scope extends View {
 
         /**
-         *   In the Wick dynamic template system, Sources serve as the primary access to Model data. They, along with {@link SourceContainer}s, are the only types of objects the directly _bind_ to a Model. When a Model is updated, the Source will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link SourceContainer}s.
-         *   A Source will also _bind_ to an HTML element. It has no methodes to update the element, but it's descendants, primarily instances of the {@link IO} class, can update attributes and values of then element and its sub-elements.
-         *   @param {Source} parent - The parent {@link Source}, used internally to build a hierarchy of Sources.
+         *   In the Wick dynamic template system, Scopes serve as the primary access to Model data. They, along with {@link ScopeContainer}s, are the only types of objects the directly _bind_ to a Model. When a Model is updated, the Scope will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link ScopeContainer}s.
+         *   A Scope will also _bind_ to an HTML element. It has no methodes to update the element, but it's descendants, primarily instances of the {@link IO} class, can update attributes and values of then element and its sub-elements.
+         *   @param {Scope} parent - The parent {@link Scope}, used internally to build a hierarchy of Scopes.
          *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
          *   @param {Presets} presets - An instance of the {@link Presets} object.
-         *   @param {HTMLElement} element - The HTMLElement the Source will _bind_ to.
-         *   @memberof module:wick~internals.source
-         *   @alias Source
-         *   @extends SourceBase
+         *   @param {HTMLElement} element - The HTMLElement the Scope will _bind_ to.
+         *   @memberof module:wick~internals.scope
+         *   @alias Scope
+         *   @extends ScopeBase
          */
         constructor(parent, presets, element, ast) {
             
@@ -11886,7 +11886,7 @@ ${is_iws}`;
 
             this.ast = null;
 
-            ast.setSource(this);
+            ast.setScope(this);
             
             this.parent = parent;
             this.ele = element;
@@ -11896,7 +11896,7 @@ ${is_iws}`;
 
             this.taps = {};
             this.children = [];
-            this.sources = [];
+            this.scopes = [];
             this.badges = {};
             this.ios = [];
             this.containers = [];
@@ -11919,8 +11919,8 @@ ${is_iws}`;
 
             this.update({ destroyed: true });
 
-            if (this.parent && this.parent.removeSource)
-                this.parent.removeSource(this);
+            if (this.parent && this.parent.removeScope)
+                this.parent.removeScope(this);
 
             this.children.forEach((c) => c.destroy());
             this.children.length = 0;
@@ -11931,8 +11931,8 @@ ${is_iws}`;
 
             this.ele = null;
 
-            while (this.sources[0])
-                this.sources[0].destroy();
+            while (this.scopes[0])
+                this.scopes[0].destroy();
 
             super.destroy();
 
@@ -11947,7 +11947,7 @@ ${is_iws}`;
 
         addToParent() {
             if (this.parent)
-                this.parent.sources.push(this);
+                this.parent.scopes.push(this);
         }
 
         addTemplate(template) {
@@ -11955,20 +11955,20 @@ ${is_iws}`;
             this.containers.push(template);
         }
 
-        addSource(source) {
-            if (source.parent == this)
+        addScope(scope) {
+            if (scope.parent == this)
                 return;
-            source.parent = this;
-            this.sources.push(source);
+            scope.parent = this;
+            this.scopes.push(scope);
         }
 
-        removeSource(source) {
-            if (source.parent !== this)
+        removeScope(scope) {
+            if (scope.parent !== this)
                 return;
 
-            for (let i = 0; i < this.sources.length; i++)
-                if (this.sources[i] == source)
-                    return (this.sources.splice(i, 1), source.parent = null);
+            for (let i = 0; i < this.scopes.length; i++)
+                if (this.scopes[i] == scope)
+                    return (this.scopes.splice(i, 1), scope.parent = null);
         }
 
         getTap(name) {
@@ -12011,7 +12011,7 @@ ${is_iws}`;
         }
 
         /**
-            Makes the source a view of the given Model. If no model passed, then the source will bind to another model depending on its `scheme` or `model` attributes. 
+            Makes the scope a view of the given Model. If no model passed, then the scope will bind to another model depending on its `scheme` or `model` attributes. 
         */
         load(model) {
 
@@ -12035,12 +12035,12 @@ ${is_iws}`;
 
             this.LOADED = true;
 
-            for (let i = 0, l = this.sources.length; i < l; i++) {
-                this.sources[i].load(model);
-                this.sources[i].getBadges(this);
+            for (let i = 0, l = this.scopes.length; i < l; i++) {
+                this.scopes[i].load(model);
+                this.scopes[i].getBadges(this);
 
                 //Lifecycle message
-                this.sources[i].update({mounted:true}); 
+                this.scopes[i].update({mounted:true}); 
             }
 
             if (model.addView)
@@ -12083,8 +12083,8 @@ ${is_iws}`;
                 for (let name in this.taps)
                     this.taps[name].downS(data, IMPORTED);
 
-            //        for (let i = 0, l = this.sources.length; i < l; i++)
-            //            this.sources[i].down(data, changed_values);
+            //        for (let i = 0, l = this.scopes.length; i < l; i++)
+            //            this.scopes[i].down(data, changed_values);
 
             for (let i = 0, l = this.containers.length; i < l; i++)
                 this.containers[i].down(data, changed_values);
@@ -12095,8 +12095,8 @@ ${is_iws}`;
             if (this.taps.trs_in)
                 this.taps.trs_in.downS(transition);
 
-            for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i].transitionIn(transition);
+            for (let i = 0, l = this.scopes.length; i < l; i++)
+                this.scopes[i].transitionIn(transition);
 
             for (let i = 0, l = this.containers.length; i < l; i++)
                 this.containers[i].transitionIn(transition);
@@ -12106,8 +12106,8 @@ ${is_iws}`;
             if (this.taps.trs_out)
                 this.taps.trs_out.downS(transition);
 
-            for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i].transitionOut(transition);
+            for (let i = 0, l = this.scopes.length; i < l; i++)
+                this.scopes[i].transitionOut(transition);
 
 
             for (let i = 0, l = this.containers.length; i < l; i++)
@@ -12123,8 +12123,8 @@ ${is_iws}`;
         }
     }
 
-    Source.prototype.removeIO = Tap.prototype.removeIO;
-    Source.prototype.addIO = Tap.prototype.addIO;
+    Scope.prototype.removeIO = Tap.prototype.removeIO;
+    Scope.prototype.addIO = Tap.prototype.addIO;
 
     class IOBase {
 
@@ -12147,18 +12147,18 @@ ${is_iws}`;
     }
 
     /**
-     *   The IO is the last link in the Source chain. It is responsible for putting date into the DOM through the element it binds to. Alternativly, in derived versions of `IO`, it is responsible for retriving values from user inputs from input elements and events.
-     *   @param {Source} tap - The tap {@link Source}, used internally to build a hierarchy of Sources.
+     *   The IO is the last link in the Scope chain. It is responsible for putting date into the DOM through the element it binds to. Alternativly, in derived versions of `IO`, it is responsible for retriving values from user inputs from input elements and events.
+     *   @param {Scope} tap - The tap {@link Scope}, used internally to build a hierarchy of Scopes.
      *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
      *   @param {Presets} presets - An instance of the {@link Presets} object.
      *   @param {HTMLElement} element - The HTMLElement that the IO will _bind_ to.
-     *   @memberof module:wick.core.source
+     *   @memberof module:wick.core.scope
      *   @alias IO
      *   @extends IOBase
      */
     class IO extends IOBase {
 
-        constructor(source, errors, tap, element = null, default_val) {
+        constructor(scope, errors, tap, element = null, default_val) {
 
             super(tap);
             //Appending the value to a text node prevents abuse from insertion of malicious DOM markup. 
@@ -12182,7 +12182,7 @@ ${is_iws}`;
         This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
     */
     class AttribIO extends IOBase {
-        constructor(source, errors, tap, attr, element, default_val) {
+        constructor(scope, errors, tap, attr, element, default_val) {
             super(tap);
 
             this.attrib = attr;
@@ -12215,7 +12215,7 @@ ${is_iws}`;
 
     // Toogles the display state of the element based on the "truthyness" of the passed value
     class BooleanIO extends IOBase {
-        constructor(source, errors, tap, element, default_val) {
+        constructor(scope, errors, tap, element, default_val) {
             super(tap);
 
             this.par = element.parentElement;
@@ -12265,13 +12265,13 @@ ${is_iws}`;
 
     class InputIO extends IOBase {
 
-        constructor(source, errors, tap, element, message_key) {
+        constructor(scope, errors, tap, element, message_key) {
 
             super(tap);
 
             this.ele = element;
 
-            const up_tap = message_key ? source.getTap(message_key) : tap;
+            const up_tap = message_key ? scope.getTap(message_key) : tap;
 
             this.event = (e) => { up_tap.up(e.target.value, { event: e }); };
 
@@ -12292,7 +12292,7 @@ ${is_iws}`;
 
     class BindIO extends IOBase {
 
-        constructor(source, errors, tap) {
+        constructor(scope, errors, tap) {
             super(tap);
             this._value_ = null;
             this.child = null;
@@ -12318,13 +12318,13 @@ ${is_iws}`;
 
     class TemplateString extends IOBase {
 
-        constructor(source, errors, taps, element, binds) {
+        constructor(scope, errors, taps, element, binds) {
            
-            super(source);
+            super(scope);
             this._SCHD_ = 0;
             this.binds = [];
             this.ele = element;
-            this._setBindings_(source, errors, taps, binds);
+            this._setBindings_(scope, errors, taps, binds);
         }
 
         destroy() {
@@ -12336,16 +12336,16 @@ ${is_iws}`;
             super.destroy();
         }
 
-        _setBindings_(source, errors, taps, binds) {
+        _setBindings_(scope, errors, taps, binds) {
             for (var i = 0; i < binds.length; i++) {
                 let bind = binds[i];
 
                 switch (bind.type) {
                     case 0: //DYNAMICbindingID
-                        let new_bind = new BindIO(source, errors, source.getTap(bind.tap_name), bind);
+                        let new_bind = new BindIO(scope, errors, scope.getTap(bind.tap_name), bind);
                         this.binds.push(new_bind);
                         new_bind.child = this;
-                        //this.binds.push(msg._bind_(source, errors, taps, this));
+                        //this.binds.push(msg._bind_(scope, errors, taps, this));
                         break;
                     case 1: //RAW_VALUEbindingID
                         this.binds.push(bind);
@@ -12354,7 +12354,7 @@ ${is_iws}`;
                         if (bind.bindings.length < 1) // Just a variable less expression.
                             this.binds.push({ _value_: msg.func() });
                         else
-                            this.binds.push(bind._bind_(source, errors, taps, this));
+                            this.binds.push(bind._bind_(scope, errors, taps, this));
                         break;
                 }
             }
@@ -12378,8 +12378,8 @@ ${is_iws}`;
 
     class AttribTemplate extends TemplateString {
 
-        constructor(source, errors, taps, attr, element, binds) {
-            super(source, errors, taps, element, binds);
+        constructor(scope, errors, taps, attr, element, binds) {
+            super(scope, errors, taps, element, binds);
             this.attrib = attr;
         }
 
@@ -12424,9 +12424,9 @@ ${is_iws}`;
     }
 
     class CSSRuleTemplateString {
-        constructor(source, errors, taps, binds, name) {
+        constructor(scope, errors, taps, binds, name) {
             this.binds = [];
-            this._setBindings_(source, errors, taps, binds);
+            this._setBindings_(scope, errors, taps, binds);
             this.ios = [];
             this._value_ = "";
             this._name_ = toCamel(name);
@@ -12443,16 +12443,16 @@ ${is_iws}`;
             this._name_ = null;
         }
 
-        _setBindings_(source, errors, taps, binds) {
+        _setBindings_(scope, errors, taps, binds) {
             for (var i = 0; i < binds.length; i++) {
                 let bind = binds[i];
 
                 switch (bind.type) {
                     case 0: //DYNAMICbindingID
-                        let new_bind = new BindIO(source, errors, source.getTap(bind.tap_name), bind);
+                        let new_bind = new BindIO(scope, errors, scope.getTap(bind.tap_name), bind);
                         this.binds.push(new_bind);
                         new_bind.child = this;
-                        //this.binds.push(msg._bind_(source, errors, taps, this));
+                        //this.binds.push(msg._bind_(scope, errors, taps, this));
                         break;
                     case 1: //RAW_VALUEbindingID
                         this.binds.push(bind);
@@ -12461,7 +12461,7 @@ ${is_iws}`;
                         if (bind.bindings.length < 1) // Just a variable less expression.
                             this.binds.push({ _value_: msg.func() });
                         else
-                            this.binds.push(bind._bind_(source, errors, taps, this));
+                            this.binds.push(bind._bind_(scope, errors, taps, this));
                         break;
                 }
             }
@@ -12495,15 +12495,15 @@ ${is_iws}`;
 
 
     class StyleIO extends IOBase {
-        constructor(source, errors, taps, element, props = []) {
+        constructor(scope, errors, taps, element, props = []) {
 
-            super(source);
+            super(scope);
 
             this.ele = element;
 
             this.props = [];
 
-            this._initializeProps_(source, errors, taps, props);
+            this._initializeProps_(scope, errors, taps, props);
 
             this.scheduledUpdate();
         }
@@ -12532,12 +12532,12 @@ ${is_iws}`;
             }
         }
 
-        _initializeProps_(source, errors, taps, props) {
+        _initializeProps_(scope, errors, taps, props) {
 
             for (let i = 0, l = props.length; i < l; i++) {
                 let prop = props[i];
                 if (prop._wick_type_ == 1) {
-                    this.props.push(props[i]._bind_(source, errors, taps, this));
+                    this.props.push(props[i]._bind_(scope, errors, taps, this));
                 } else
                     this.props.push(prop);
             }
@@ -12560,8 +12560,8 @@ ${is_iws}`;
 
     class ExpressionIO extends TemplateString {
 
-        constructor(source, errors, taps, element, binds, func) {
-            super(source, errors, taps, element, binds);
+        constructor(scope, errors, taps, element, binds, func) {
+            super(scope, errors, taps, element, binds);
             this._expr_function_ = func;
             this._value_ = null;
             this._filter_expression_ = null;
@@ -12592,11 +12592,11 @@ ${is_iws}`;
                     }
                 }
 
-                this._filter_expression_ = (source, index) => {
+                this._filter_expression_ = (scope, index) => {
                     const args = [];
 
                     for (let i = 0, l = this._bl_; i < l; i++) {
-                        if (i == model_arg_index) { args.push(source.model); continue; }
+                        if (i == model_arg_index) { args.push(scope.model); continue; }
                         if (i == index_arg_index) { args.push(index); continue; }
                         args.push(this.binds[i]._value_);
                     }
@@ -12628,8 +12628,8 @@ ${is_iws}`;
 
     class AttribExpressionIO extends ExpressionIO {
         
-        constructor(source, errors, taps, element, binds, func, attrib) {
-            super(source, errors, taps, element, binds, func);
+        constructor(scope, errors, taps, element, binds, func, attrib) {
+            super(scope, errors, taps, element, binds, func);
             this.attrib = attrib;
         }
 
@@ -12652,9 +12652,9 @@ ${is_iws}`;
     }
 
     class BooleanExpressionIO extends ExpressionIO {
-        constructor(source, errors, taps, element, binds, func) {
-            super(source, errors, taps, element, binds, func);
-            Object.assign(this, new this.constr(source, errors, NOOPTap, element));
+        constructor(scope, errors, taps, element, binds, func) {
+            super(scope, errors, taps, element, binds, func);
+            Object.assign(this, new this.constr(scope, errors, NOOPTap, element));
         }
 
         destroy(){
@@ -12688,15 +12688,15 @@ ${is_iws}`;
     }
 
     class EventIO {
-        constructor(source, errors, taps, element, event, event_bind, argument) {
+        constructor(scope, errors, taps, element, event, event_bind, argument) {
 
             let Attrib_Watch = (typeof element[event] == "undefined");
 
-            this.parent = source;
-            source.ios.push(this);
+            this.parent = scope;
+            scope.ios.push(this);
 
             this.ele = element;
-            this.event_bind = new IOBase(source.getTap(event_bind.tap_name));
+            this.event_bind = new IOBase(scope.getTap(event_bind.tap_name));
             this.event = event.replace("on", "");
 
             this.prevent_defaults = true;
@@ -12707,7 +12707,7 @@ ${is_iws}`;
             if (argument) {
                 switch (argument.type) {
                     case 0: //DYNAMICbindingID
-                        this.argument = argument._bind_(source, errors, taps, this);
+                        this.argument = argument._bind_(scope, errors, taps, this);
                         break;
                     case 1: //RAW_VALUEbindingID
                         this.data = argument.val;
@@ -12716,7 +12716,7 @@ ${is_iws}`;
                         if (argument.bindings.length < 1) // Just a variable less expression.
                             this.data = argument.func();
                         else
-                            this.argument = argument._bind_(source, errors, taps, this);
+                            this.argument = argument._bind_(scope, errors, taps, this);
                         break;
                 }
             }
@@ -12774,7 +12774,7 @@ ${is_iws}`;
     }
 
     class ScriptIO extends IOBase {
-        constructor(source, errors, tap, binding, node, statics) {
+        constructor(scope, errors, tap, binding, node, statics) {
 
             let func, HAVE_CLOSURE = false;
 
@@ -12803,9 +12803,9 @@ ${is_iws}`;
             if(this.HAVE_CLOSURE)
                 this._func_ = func;
             else
-                this._func_ = func.bind(source);
+                this._func_ = func.bind(scope);
             
-            this.source = source;
+            this.scope = scope;
 
             let func_bound = this.emit.bind(this);
             func_bound.onTick = this.onTick.bind(this);
@@ -12825,7 +12825,7 @@ ${is_iws}`;
          */
         destroy() {
             this._func_ = null;
-            this.source = null;
+            this.scope = null;
             this._bound_emit_function_ = null;
             this._meta = null;
 
@@ -12833,7 +12833,7 @@ ${is_iws}`;
 
         down(value, meta = { event: null }) {
             this.meta = meta;
-            const src = this.source;
+            const src = this.scope;
             try {
                 if(this.HAVE_CLOSURE)
                     this._func_(value, this._bound_emit_function_, src, meta.event);
@@ -12851,7 +12851,7 @@ ${is_iws}`;
                 typeof(name) !== "undefined" &&
                 typeof(value) !== "undefined"
             ) {
-                this.source.upImport(name, value, this.meta);
+                this.scope.upImport(name, value, this.meta);
             }
         }
         // Same as emit, except the message is generated on the next global tick. Usefule for actions which required incremental updates to the ui.
@@ -12929,8 +12929,8 @@ ${is_iws}`;
             this.event = prop;
         }
 
-        _bind_(source, errors, taps, element, eventname) {
-            return new EventIO(source, errors, taps, element, eventname, this.event, this.arg);
+        _bind_(scope, errors, taps, element, eventname) {
+            return new EventIO(scope, errors, taps, element, eventname, this.event, this.arg);
         }
 
         get bindings() {
@@ -12967,16 +12967,16 @@ ${is_iws}`;
             this.attrib = "";
         }
 
-        _bind_(source, errors, taps, element) {
+        _bind_(scope, errors, taps, element) {
             switch (this.method) {
                 case BOOL:
-                    return new BooleanExpressionIO(source, errors, taps, element, this.bindings, this.func);
+                    return new BooleanExpressionIO(scope, errors, taps, element, this.bindings, this.func);
                 case INPUT:
-                    return new InputExpressionIO(source, errors, taps, element, this.bindings, this.func);
+                    return new InputExpressionIO(scope, errors, taps, element, this.bindings, this.func);
                 case ATTRIB:
-                    return new AttribExpressionIO(source, errors, taps, element, this.bindings, this.func, this.attrib);
+                    return new AttribExpressionIO(scope, errors, taps, element, this.bindings, this.func, this.attrib);
                 default:
-                    return new ExpressionIO(source, errors, taps, element, this.bindings, this.func);
+                    return new ExpressionIO(scope, errors, taps, element, this.bindings, this.func);
             }
         }
 
@@ -13000,20 +13000,20 @@ ${is_iws}`;
             this.attrib = "";
         }
 
-        _bind_(source, errors, taps, element, attr = "", node = null, statics = null) {
+        _bind_(scope, errors, taps, element, attr = "", node = null, statics = null) {
 
-            let tap = source.getTap(this.tap_name); //taps[this.tap_id];
+            let tap = scope.getTap(this.tap_name); //taps[this.tap_id];
             switch (this.method) {
                 case INPUT:
-                    return new InputIO(source, errors, tap, element, this.argKey);
+                    return new InputIO(scope, errors, tap, element, this.argKey);
                 case BOOL:
-                    return new BooleanIO(source, errors, tap, element, this.argVal);
+                    return new BooleanIO(scope, errors, tap, element, this.argVal);
                 case ATTRIB:
-                    return new AttribIO(source, errors, tap, attr, element, this.argVal);
+                    return new AttribIO(scope, errors, tap, attr, element, this.argVal);
                 case SCRIPT:
-                    return new ScriptIO(source, errors, tap, this, node, statics);
+                    return new ScriptIO(scope, errors, tap, this, node, statics);
                 default:
-                    return new IO(source, errors, tap, element, this.argVal);
+                    return new IO(scope, errors, tap, element, this.argVal);
             }
         }
 
@@ -13040,7 +13040,7 @@ ${is_iws}`;
             this.method = 0;
         }
 
-        _bind_(source, errors, taps, element, prop = "") {
+        _bind_(scope, errors, taps, element, prop = "") {
             try {
 
                 switch (this.method) {
@@ -13402,11 +13402,11 @@ ${is_iws}`;
 
         bindings: null,
 
-        _bind_: function(source, errors, taps, element, attr) {
+        _bind_: function(scope, errors, taps, element, attr) {
 
             if (this.method == ATTRIB || this.method == INPUT)
-                return new AttribTemplate(source, errors, taps, attr, element, this.bindings);
-            return new TemplateString(source, errors, taps, element, this.bindings);
+                return new AttribTemplate(scope, errors, taps, attr, element, this.bindings);
+            return new TemplateString(scope, errors, taps, element, this.bindings);
         },
 
         _appendText_: function(string) {
@@ -13480,8 +13480,8 @@ ${is_iws}`;
             }
         }
 
-        _bind_(source, errors, taps, element) {
-            return new StyleIO(source, errors, taps, element, this._css_props_);
+        _bind_(scope, errors, taps, element) {
+            return new StyleIO(scope, errors, taps, element, this._css_props_);
         }
     }
 
@@ -13505,8 +13505,8 @@ ${is_iws}`;
         }
         set _wick_type_(v) {}
 
-        _bind_(source, errors, taps, io) {
-            let binding = new CSSRuleTemplateString(source, errors, taps, this.bindings, this.prop_name);
+        _bind_(scope, errors, taps, io) {
+            let binding = new CSSRuleTemplateString(scope, errors, taps, this.bindings, this.prop_name);
             binding.addIO(io);
             return binding;
         }
@@ -13539,9 +13539,9 @@ ${is_iws}`;
             this.binding = binding;
         }
 
-        build(element, source, presets, errors, taps, statics) {
+        build(element, scope, presets, errors, taps, statics) {
             let ele = document.createTextNode(this.txt);
-            this.binding._bind_(source, errors, taps, ele, "", this, statics);
+            this.binding._bind_(scope, errors, taps, ele, "", this, statics);
             appendChild$1(element, ele);
         }
 
@@ -13773,13 +13773,13 @@ ${is_iws}`;
             let SET_TAP_METHOD = false;
 
             switch (name[0]) {
-                case "i": // Imports data updates, messages - valid on source and top level objects.
+                case "i": // Imports data updates, messages - valid on scope and top level objects.
                     if (name === "import") {
                         SET_TAP_METHOD = true;
                         tap_mode |= IMPORT;
                     }
                     break;
-                case "e": // Exports data updates, messages - valid on sources and top level objects.
+                case "e": // Exports data updates, messages - valid on scopes and top level objects.
                     if (name === "export") {
                         SET_TAP_METHOD = true;
                         tap_mode |= EXPORT;
@@ -13848,20 +13848,20 @@ ${is_iws}`;
 
         /******************************************* BUILD ****************************************************/
 
-        getCachedSource() {
+        getCachedScope() {
             if (this.par)
-                return this.par.getCachedSource();
+                return this.par.getCachedScope();
             return null;
         }
 
-        setSource(source) {
-            source.ast = this;
+        setScope(scope) {
+            scope.ast = this;
         }
 
         /**
-         * Builds Source Graph and Dom Tree.
+         * Builds Scope Graph and Dom Tree.
          */
-        build(element, source, presets, errors, taps, statics, RENDER_ALL = false) {
+        build(element, scope, presets, errors, taps, statics, RENDER_ALL = false) {
 
             let out_statics = statics;
 
@@ -13869,26 +13869,26 @@ ${is_iws}`;
                 out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL(par_list.length - 1) });
             }
 
-            const own_element = this.createElement(presets, source);
+            const own_element = this.createElement(presets, scope);
 
-            if (!source)
-                source = new Source(null, presets, own_element, this);
+            if (!scope)
+                scope = new Scope(null, presets, own_element, this);
 
             if (this.HAS_TAPS)
-                taps = source.linkTaps(this.tap_list);
+                taps = scope.linkTaps(this.tap_list);
 
             if (own_element) {
 
-                if (!source.ele) source.ele = own_element;
+                if (!scope.ele) scope.ele = own_element;
 
                 if (this._badge_name_)
-                    source.badges[this._badge_name_] = own_element;
+                    scope.badges[this._badge_name_] = own_element;
 
                 if (element) appendChild$1(element, own_element);
 
                 for (let i = 0, l = this.bindings.length; i < l; i++) {
                     let attr = this.bindings[i];
-                    attr.binding._bind_(source, errors, taps, own_element, attr.name, this, statics);
+                    attr.binding._bind_(scope, errors, taps, own_element, attr.name, this, statics);
                 }
             }
 
@@ -13897,11 +13897,11 @@ ${is_iws}`;
             par_list.push(this);
 
             for (let node = this.fch; node; node = this.getNextChild(node))
-                node.build(ele, source, presets, errors, taps, out_statics, RENDER_ALL);
+                node.build(ele, scope, presets, errors, taps, out_statics, RENDER_ALL);
 
             par_list.pop();
 
-            return source;
+            return scope;
         }
 
 
@@ -14073,13 +14073,13 @@ ${is_iws}`;
                     this.c = this.c.concat(children_arrays[i]);
         }
 
-        build(element, source, presets, errors, taps, statics, RENDER_ONLY) {
+        build(element, scope, presets, errors, taps, statics, RENDER_ONLY) {
             for (let i=0,l = this.c.length; i<l; i++){
                 if(this.c[i].SLOTED == true) continue;
-                this.c[i].build(element, source, presets, errors, taps, statics, RENDER_ONLY);
+                this.c[i].build(element, scope, presets, errors, taps, statics, RENDER_ONLY);
             }
 
-            return source;
+            return scope;
         }
 
 
@@ -14144,9 +14144,9 @@ ${is_iws}`;
             return super.processAttributeHook(name, lex);
         }
 
-        build(element, source, presets, errors, taps, statics = {}, RENDER_ALL = false) {
+        build(element, scope, presets, errors, taps, statics = {}, RENDER_ALL = false) {
             if(RENDER_ALL)
-                return super.build(element, source, presets, errors, taps, statics, RENDER_ALL);
+                return super.build(element, scope, presets, errors, taps, statics, RENDER_ALL);
             
             if(this.url){
                 statics = Object.assign({}, statics);
@@ -14154,15 +14154,15 @@ ${is_iws}`;
             }
             
             if (this.binding)
-                this.binding._bind_(source, errors, taps, element, "", this, statics);        
+                this.binding._bind_(scope, errors, taps, element, "", this, statics);        
         }
     }
 
     /**
-     * Source nodes are used to hook into specific Models, and respond to `update` events from that model.
-     * @class      SourceNode (name)
+     * Scope nodes are used to hook into specific Models, and respond to `update` events from that model.
+     * @class      ScopeNode (name)
      */
-    class SourceNode$1 extends RootNode {
+    class ScopeNode$1 extends RootNode {
         constructor() {
             super();
             this._model_name_ = "";
@@ -14178,15 +14178,15 @@ ${is_iws}`;
             return merged_node;
         }
 
-        pushChached(source) {
-            this._cached_.push(source);
+        pushChached(scope) {
+            this._cached_.push(scope);
         }
 
         popCached() {
             this._cached_.pop();
         }
 
-        getCachedSource() {
+        getCachedScope() {
             return this._cached_[this._cached_.length - 1];
         }
 
@@ -14218,13 +14218,13 @@ ${is_iws}`;
             return createElement(attr ? attr.value : "div");
         }
 
-        build(element, source, presets, errors, taps = null, statics = {},  RENDER_ALL = false) {
+        build(element, scope, presets, errors, taps = null, statics = {},  RENDER_ALL = false) {
 
             let data = {};
 
             let out_taps = [];
 
-            let me = new Source(source, this.__presets__ || presets, element, this);
+            let me = new Scope(scope, this.__presets__ || presets, element, this);
 
             this.pushChached(me);
 
@@ -14248,9 +14248,9 @@ ${is_iws}`;
             }
 
             /**
-             * To keep the layout of the output HTML predictable, Wick requires that a "real" HTMLElement be defined before a source object is created. 
-             * If this is not the case, then a new element, defined by the "element" attribute of the source virtual tag (defaulted to a "div"), 
-             * will be created to allow the source object to bind to an actual HTMLElement. 
+             * To keep the layout of the output HTML predictable, Wick requires that a "real" HTMLElement be defined before a scope object is created. 
+             * If this is not the case, then a new element, defined by the "element" attribute of the scope virtual tag (defaulted to a "div"), 
+             * will be created to allow the scope object to bind to an actual HTMLElement. 
              */
 
             if (!element || this.getAttrib("element", true)) {
@@ -14450,15 +14450,241 @@ ${is_iws}`;
     }
 
     class LinkNode$1 extends RootNode {
-        createElement(presets, source){
+        createElement(presets, scope){
             let element = document.createElement("a");
-            presets.processLink(element, source);
+            presets.processLink(element, scope);
             return element;
         }
 
         build(...s){
         	super.build(...s);
         }
+    }
+
+    let expr_check = (expr) => {
+        return (expr.type == 2 && typeof(expr.func) == "function");
+    };
+
+
+
+    class FilterIO extends IOBase {
+        constructor(scope, errors, taps, container, activation, sort, filter, limit, offset, scrub, shift) {
+            super(container, errors);
+
+            this.container = container;
+            this._activation_function_ = null;
+            this._sort_function_ = null;
+            this.filter_function = null;
+            this.CAN_USE = false;
+            this.CAN_FILTER = false;
+            this._CAN_LIMIT_ = false;
+            this._CAN_OFFSET_ = false;
+            this.CAN_SORT = false;
+            this._SCHD_ = 0;
+
+            if (activation && activation.binding) {
+                this._activation_function_ = activation.binding._bind_(scope, errors, taps, this);
+            } else {
+                this.CAN_USE = true;
+            }
+
+            if (sort && sort.binding) {
+                let expr = sort.binding;
+                if (expr_check(expr)) {
+                    this._sort_function_ = (m1, m2) => expr.func(m1.model, m2.model);
+                    this.CAN_SORT = true;
+                }
+            } else
+
+            if (filter && filter.binding) {
+                let expr = filter.binding;
+                if (expr_check(expr)) {
+                    this.filter_function = expr._bind_(scope, errors, taps, this);
+                    this.filter_function._IS_A_FILTER_ = true;
+                    this.CAN_FILTER = true;
+                }
+            } else
+
+            if (limit && limit.binding) {
+                let expr = limit.binding;
+                expr.method = (expr.method == 1) ? -1 : expr.method;
+                this._limit_function_ = expr._bind_(scope, errors, taps, this);
+                this._CAN_LIMIT_ = true;
+            } else
+
+            if (offset && offset.binding) {
+                this._CAN_OFFSET_ = true;
+                if (offset.binding.type == 1) {
+                    this._value_ = parseInt(offset.binding.val);
+                } else {
+                    let expr = offset.binding;
+                    expr.method = (expr.method == 1) ? -1 : expr.method;
+                    this._offset_function_ = expr._bind_(scope, errors, taps, this);
+                }
+            } else
+
+            if (scrub && scrub.binding) {
+                let expr = scrub.binding;
+                expr.method = (expr.method == 1) ? -1 : expr.method;
+                this._scrub_function_ = expr._bind_(scope, errors, taps, this);
+                this._CAN_SCRUB_ = true;
+            } else
+
+            if (shift && shift.binding) {
+                let expr = shift.binding;
+                expr.method = (expr.method == 1) ? -1 : expr.method;
+                this._page_function_ = expr._bind_(scope, errors, taps, this);
+                this._CAN_SHIFT_ = true;
+            }
+        }
+
+        scheduledUpdate() {}
+
+        update() {
+            if (this.CAN_SORT || this.CAN_FILTER) {
+                this.container.UPDATE_FILTER = true;
+                spark.queueUpdate(this.container);
+            }
+        }
+
+        destroy() {
+            if (this._sort_function_)
+                this._sort_function_.destroy();
+            if (this._activation_function_)
+                this._activation_function_.destroy();
+            if (this.filter_function)
+                this.filter_function.destroy();
+            this._sort_function_ = null;
+            this._activation_function_ = null;
+            this.filter_function = null;
+            this.container = null;
+        }
+
+        get data() {}
+        set data(v) {
+
+            this.CAN_USE = false;
+            if (v) this.CAN_USE = true;
+            this._value_ = v;
+
+            if (this._CAN_SCRUB_)
+                return this.container.scrub(parseFloat(this._value_), false);
+
+            if (this.CAN_SORT || this.CAN_FILTER || this._CAN_SHIFT_)
+                this.container.UPDATE_FILTER = true;
+
+            spark.queueUpdate(this.container);
+        }
+    }
+
+    class FilterNode extends VoidNode$1 {
+
+        /******************************************* HOOKS ****************************************************/
+
+        endOfElementHook() {}
+
+        /**
+         * This node only needs to assess attribute values. InnerHTML will be ignored. 
+         * @return     {boolean}  { description_of_the_return_value }
+         */
+        selfClosingTagHook() { return true; }
+
+    }
+
+    class PackageNode extends VoidNode$1 {
+
+        constructor(start) {
+            super();
+            this._start_ = start;
+            this.url = this.getURL();
+        }
+
+        /******************************************* HOOKS ****************************************************/
+
+        /**
+         * Binds new laxer to boundaries starting from open tag to close tag. Applies Lexer to new ScopePackage.
+         * @param      {Lexer}  lex     The lex
+         * @private
+         */
+        processTextNodeHook(lex) {}
+
+        _ignoreTillHook_() { return true; }
+
+        endOfElementHook(lex) {
+            let own_lex = lex.copy();
+
+            own_lex.off = this._start_;
+            own_lex.tl = 0;
+            own_lex.n.sl = lex.off;
+
+            this.par.package = new this.ScopePackage(own_lex, this.presets, false);
+
+            if (!this.fch)
+                this.mergeComponent();
+
+            return this;
+        }
+
+        mergeComponent() {
+            
+            let component = this.presets.components[this.tag];
+
+            if (component)
+                this.par.package = new this.ScopePackage(component, this.presets, false);
+
+            return component
+        }
+    }
+
+    /**
+     * Slot Node. 
+     */
+    class SlotNode extends RootNode {
+        constructor() {
+            super();
+            this.name = "";
+        }
+
+        delegateTapBinding() {
+            return null;
+        }
+
+        build(element, scope, presets, errors, taps, statics, RENDER_ONLY = false) {
+
+            return (statics.slots && statics.slots[this.name]) ?
+                (statics.slots[this.name].SLOTED = true,
+                statics.slots[this.name].build(
+                    element,
+                    statics.slots[this.name].getCachedScope() || scope,
+                    /*statics.slots[this.name].getPresets() || */presets,
+                    errors,
+                    taps,
+                    statics,
+                    RENDER_ONLY
+                )) :
+                scope;
+        }
+
+        processAttributeHook(name, lex) {
+
+            if (!name) return null;
+
+            let start = lex.off,
+                basic = {
+                    IGNORE: true,
+                    name,
+                    value: lex.slice(start)
+                };
+
+            let bind_method = ATTRIB,
+                FOR_EVENT = false;
+
+            if (name == "name")
+                this.name = basic.value;
+
+            return basic;
+        }
+
     }
 
     const
@@ -15418,14 +15644,14 @@ ${is_iws}`;
     }
 
     /**
-     * SourceContainer provide the mechanisms for dealing with lists and sets of components. 
+     * ScopeContainer provide the mechanisms for dealing with lists and sets of components. 
      *
-     * @param      {Source}  parent   The Source parent object.
+     * @param      {Scope}  parent   The Scope parent object.
      * @param      {Object}  data     The data object hosting attribute properties from the HTML template. 
      * @param      {Object}  presets  The global presets object.
-     * @param      {HTMLElement}  element  The element that the Source will _bind_ to. 
+     * @param      {HTMLElement}  element  The element that the Scope will _bind_ to. 
      */
-    class SourceContainer extends View {
+    class ScopeContainer extends View {
 
         constructor(parent, presets, element) {
 
@@ -15433,12 +15659,12 @@ ${is_iws}`;
 
             this.ele = element;
             this.parent = null;
-            this.activeSources = [];
-            this.dom_sources = [];
+            this.activeScopes = [];
+            this.dom_scopes = [];
             this.filters = [];
             this.ios = [];
             this.terms = [];
-            this.sources = [];
+            this.scopes = [];
             this.range = null;
             this._SCHD_ = 0;
             this.prop = null;
@@ -15551,12 +15777,12 @@ ${is_iws}`;
             let i = min;
 
             this.ele.innerHTML = "";
-            const output_length = this.activeSources.length;
-            this.dom_sources.length = 0;
+            const output_length = this.activeScopes.length;
+            this.dom_scopes.length = 0;
 
             while (i < max && i < output_length) {
-                let node = this.activeSources[i++];
-                this.dom_sources.push(node);
+                let node = this.activeScopes[i++];
+                this.dom_scopes.push(node);
                 node.appendToDOM(this.ele);
             }
         }
@@ -15592,7 +15818,7 @@ ${is_iws}`;
 
                         this.offset++;
                         this.offset_diff = 1;
-                        this.render(null, this.activeSources, true).play(1);
+                        this.render(null, this.activeScopes, true).play(1);
                     } else {
                         delta_offset = delta_offset % 1;
                         this.offset_fractional = delta_offset;
@@ -15602,7 +15828,7 @@ ${is_iws}`;
                             this.trs_descending.play(1);
                         this.offset--;
                         this.offset_diff = -1;
-                        this.render(null, this.activeSources, true).play(1);
+                        this.render(null, this.activeScopes, true).play(1);
                     }
 <<<<<<< HEAD
                     
@@ -15625,7 +15851,7 @@ ${is_iws}`;
                         for (let i = 0; i < this.dom_up.length; i++) {
                             this.dom_up[i].appendToDOM(this.ele);
                             this.dom_up[i].index = -1;
-                            this.dom_sources.push(this.dom_up[i]);
+                            this.dom_scopes.push(this.dom_up[i]);
                         }
 
                         this.dom_up_appended = true;
@@ -15639,11 +15865,11 @@ ${is_iws}`;
                     if (!this.dom_dn_appended) {
 
                         for (let i = 0; i < this.dom_dn.length; i++) {
-                            this.dom_dn[i].appendToDOM(this.ele, this.dom_sources[0].ele);
+                            this.dom_dn[i].appendToDOM(this.ele, this.dom_scopes[0].ele);
                             this.dom_dn[i].index = -1;
                         }
 
-                        this.dom_sources = this.dom_dn.concat(this.dom_sources);
+                        this.dom_scopes = this.dom_dn.concat(this.dom_scopes);
 
                         this.dom_dn_appended = true;
                     }
@@ -15683,9 +15909,13 @@ ${is_iws}`;
                     this.offset += Math.round(this.offset_fractional);
                     this.scrub_velocity = 0;
                     this.offset_fractional = 0;
+<<<<<<< HEAD
                     this.render(null, this.activeSources, true).play(1);
 <<<<<<< HEAD
 =======
+=======
+                    this.render(null, this.activeScopes, true).play(1);
+>>>>>>> version 0.7.0-a
                     this.SCRUBBING = false;
                     return false;
 >>>>>>> adding test for scrubbing
@@ -15695,11 +15925,15 @@ ${is_iws}`;
             return true;
         }
 
-        arrange(output = this.activeSources) {
+        arrange(output = this.activeScopes) {
 
 
+<<<<<<< HEAD
             //Arranges active sources according to their arrange handler.
             
+=======
+            //Arranges active scopes according to their arrange handler.
+>>>>>>> version 0.7.0-a
             const
                 limit = this.limit,
                 offset = this.offset,
@@ -15710,15 +15944,15 @@ ${is_iws}`;
 
             let i = 0;
 
-            //Sources on the ascending edge of the transition window
+            //Scopes on the ascending edge of the transition window
             while (i < active_window_start && i < output_length)
                 output[i].update({ trs_asc_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }), i++;
 
-            //Sources in the transtion window
+            //Scopes in the transtion window
             while (i < active_window_start + limit && i < output_length)
                 output[i].update({ arrange: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }), i++;
 
-            //Sources on the descending edge of the transition window
+            //Scopes on the descending edge of the transition window
             while (i < output_length)
                 output[i].update({ trs_dec_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }), i++;
             
@@ -15728,14 +15962,14 @@ ${is_iws}`;
                 console.log(output[active_window_start].ele);
         }
 
-        render(transition, output = this.activeSources, NO_TRANSITION = false) {
+        render(transition, output = this.activeScopes, NO_TRANSITION = false) {
 
             let
                 active_window_size = this.limit,
                 offset = this.offset,
                 j = 0,
                 output_length = output.length,
-                active_length = this.dom_sources.length,
+                active_length = this.dom_scopes.length,
                 direction = 1,
                 OWN_TRANSITION = false,
                 trs_obj = { trs: null, pos: null };
@@ -15771,27 +16005,27 @@ ${is_iws}`;
                 this.dom_up_appended = false;
                 this.dom_dn_appended = false;
 
-                //Sources preceeding the transition window
+                //Scopes preceeding the transition window
                 while (i < active_window_start - this.shift_amount) output[i++].index = -2;
 
-                //Sources entering the transition window ascending
+                //Scopes entering the transition window ascending
                 while (i < active_window_start) {
                     this.dom_dn.push(output[i]);
                     output[i].update({ trs_dec_in: { trs: this.trs_descending.in, pos: getColumnRow(i, this.offset - 1, this.shift_amount) } });
                     output[i++].index = -2;
                 }
 
-                //Sources in the transtion window
+                //Scopes in the transtion window
                 while (i < active_window_start + active_window_size && i < output_length) {
-                    //Sources on the descending edge of the transition window
+                    //Scopes on the descending edge of the transition window
                     if (oa < this.shift_amount && ++oa) {
-                        //console.log("pos",i, getColumnRow(i, this.offset+1, this.shift_amount), output[i].sources[0].ele.style.transform)
+                        //console.log("pos",i, getColumnRow(i, this.offset+1, this.shift_amount), output[i].scopes[0].ele.style.transform)
                         output[i].update({ trs_asc_out: { trs: this.trs_ascending.out, pos: getColumnRow(i, this.offset + 1, this.shift_amount) } });
                     } else
                         output[i].update({ arrange: { trs: this.trs_ascending.in, pos: getColumnRow(i, this.offset + 1, this.shift_amount) } });
 
 
-                    //Sources on the ascending edge of the transition window
+                    //Scopes on the ascending edge of the transition window
                     if (i >= active_window_start + active_window_size - this.shift_amount)
                         output[i].update({ trs_dec_out: { trs: this.trs_descending.out, pos: getColumnRow(i, this.offset - 1, this.shift_amount) } });
                     else
@@ -15802,7 +16036,7 @@ ${is_iws}`;
                     ein.push(output[i++]);
                 }
 
-                //Sources entering the transition window descending
+                //Scopes entering the transition window descending
                 while (i < active_window_start + active_window_size + this.shift_amount && i < output_length) {
                     this.dom_up.push(output[i]);
                     output[i].update({
@@ -15814,7 +16048,7 @@ ${is_iws}`;
                     output[i++].index = -3;
                 }
 
-                //Sources following the transition window
+                //Scopes following the transition window
                 while (i < output_length) output[i++].index = -3;
 
                 output = ein;
@@ -15830,7 +16064,7 @@ ${is_iws}`;
             for (let i = 0; i < output_length; i++) output[i].index = i;
 
             for (let i = 0; i < active_length; i++) {
-                let as = this.dom_sources[i];
+                let as = this.dom_scopes[i];
 
                 if (as.index > j) {
                     while (j < as.index && j < output_length) {
@@ -15876,12 +16110,12 @@ ${is_iws}`;
             }
 
             this.ele.style.position = this.ele.style.position;
-            this.dom_sources = output;
+            this.dom_scopes = output;
 
             this.parent.upImport("template_count_changed", {
                 displayed: output_length,
                 offset: offset,
-                count: this.activeSources.length,
+                count: this.activeScopes.length,
                 pages: this.max,
                 ele: this.ele,
                 template: this,
@@ -15916,13 +16150,13 @@ ${is_iws}`;
         }
 
         /**
-         * Filters stored Sources with search terms and outputs the matching Sources to the DOM.
+         * Filters stored Scopes with search terms and outputs the matching Scopes to the DOM.
          * 
          * @protected
          */
         filterUpdate() {
 
-            let output = this.sources.slice();
+            let output = this.scopes.slice();
 
             if (output.length < 1) return;
             for (let i = 0, l = this.filters.length; i < l; i++) {
@@ -15932,13 +16166,13 @@ ${is_iws}`;
                     if (filter.CAN_SORT) output = output.sort(filter._sort_function_);
                 }
             }
-            this.activeSources = output;
+            this.activeScopes = output;
             this.UPDATE_FILTER = false;
 
             return output;
         }
         /**
-         * Removes stored Sources that do not match the ModelContainer contents. 
+         * Removes stored Scopes that do not match the ModelContainer contents. 
          *
          * @param      {Array}  new_items  Array of Models that are currently stored in the ModelContainer. 
          * 
@@ -15948,9 +16182,9 @@ ${is_iws}`;
             const transition = Animation.createTransition();
 
             if (new_items.length == 0) {
-                let sl = this.sources.length;
-                for (let i = 0; i < sl; i++) this.sources[i].transitionOut(transition, "", true);
-                this.sources.length = 0;
+                let sl = this.scopes.length;
+                for (let i = 0; i < sl; i++) this.scopes[i].transitionOut(transition, "", true);
+                this.scopes.length = 0;
                 this.parent.upImport("template_count_changed", {
                     displayed: 0,
                     offset: 0,
@@ -15966,20 +16200,20 @@ ${is_iws}`;
                     exists = new Map(new_items.map(e => [e, true])),
                     out = [];
 
-                for (let i = 0, l = this.activeSources.length; i < l; i++)
-                    if (exists.has(this.activeSources[i].model)) {
-                        exists.set(this.activeSources[i].model, false);
+                for (let i = 0, l = this.activeScopes.length; i < l; i++)
+                    if (exists.has(this.activeScopes[i].model)) {
+                        exists.set(this.activeScopes[i].model, false);
                     }
 
-                for (let i = 0, l = this.sources.length; i < l; i++)
-                    if (!exists.has(this.sources[i].model)) {
-                        this.sources[i].transitionOut(transition, "", true);
-                        this.sources[i].index = -1;
-                        this.sources.splice(i, 1);
+                for (let i = 0, l = this.scopes.length; i < l; i++)
+                    if (!exists.has(this.scopes[i].model)) {
+                        this.scopes[i].transitionOut(transition, "", true);
+                        this.scopes[i].index = -1;
+                        this.scopes.splice(i, 1);
                         l--;
                         i--;
                     } else
-                        exists.set(this.sources[i].model, false);
+                        exists.set(this.scopes[i].model, false);
 
                 exists.forEach((v, k, m) => { if (v) out.push(k); });
 
@@ -15999,11 +16233,11 @@ ${is_iws}`;
 
                     this.render(transition);
                 } else {
-                    for (let i = 0, j = 0, l = this.activeSources.length; i < l; i++, j++) {
+                    for (let i = 0, j = 0, l = this.activeScopes.length; i < l; i++, j++) {
 
-                        if (this.activeSources[i]._TRANSITION_STATE_) {
+                        if (this.activeScopes[i]._TRANSITION_STATE_) {
                             if (j !== i) {
-                                this.activeSources[i].update({
+                                this.activeScopes[i].update({
                                     arrange: {
                                         pos: getColumnRow(i, this.offset, this.shift_amount),
                                         trs: transition.in
@@ -16011,7 +16245,7 @@ ${is_iws}`;
                                 });
                             }
                         } else
-                            this.activeSources.splice(i, 1), i--, l--;
+                            this.activeScopes.splice(i, 1), i--, l--;
                     }
 
                     const c = this.filterUpdate(transition);
@@ -16041,11 +16275,11 @@ ${is_iws}`;
         removed(items, transition = Animation.createTransition()) {
             for (let i = 0; i < items.length; i++) {
                 let item = items[i];
-                for (let j = 0; j < this.sources.length; j++) {
-                    let Source = this.sources[j];
-                    if (Source.model == item) {
-                        this.sources.splice(j, 1);
-                        Source.transitionOut(transition, "", true);
+                for (let j = 0; j < this.scopes.length; j++) {
+                    let Scope = this.scopes[j];
+                    if (Scope.model == item) {
+                        this.scopes.splice(j, 1);
+                        Scope.transitionOut(transition, "", true);
                         break;
                     }
                 }
@@ -16069,7 +16303,7 @@ ${is_iws}`;
 
             for (let i = 0; i < items.length; i++) {
                 let mgr = this.package.mount(null, items[i], false, undefined, this.parent);
-                this.sources.push(mgr);
+                this.scopes.push(mgr);
             }
 
             if (OWN_TRANSITION) {
@@ -16102,11 +16336,11 @@ ${is_iws}`;
                     return this.model.get(query)[index];
                 } else console.warn("No index value provided for MultiIndexedContainer!");
             } else {
-                let source = this.model.source;
+                let scope = this.model.scope;
                 let terms = this.getTerms();
-                if (source) {
+                if (scope) {
                     this.model.destroy();
-                    let model = source.get(terms, null);
+                    let model = scope.get(terms, null);
                     model.pin();
                     model.addView(this);
                 }
@@ -16115,14 +16349,14 @@ ${is_iws}`;
             return [];
         }
         down(data, changed_values) {
-            for (let i = 0, l = this.activeSources.length; i < l; i++) this.activeSources[i].down(data, changed_values);
+            for (let i = 0, l = this.activeScopes.length; i < l; i++) this.activeScopes[i].down(data, changed_values);
         }
         transitionIn(transition) {
             return;
-            for (let i = 0, l = this.activeSources.length; i < l; i++) {
-                this.ele.appendChild(this.activeSources[i].element);
-                this.activeSources[i].transitionIn(transition);
-                this.activeSources[i].update({
+            for (let i = 0, l = this.activeScopes.length; i < l; i++) {
+                this.ele.appendChild(this.activeScopes[i].element);
+                this.activeScopes[i].transitionIn(transition);
+                this.activeScopes[i].update({
                     arrange: {
                         index: i,
                         trs: transition.trs_in
@@ -16133,243 +16367,17 @@ ${is_iws}`;
 
         transitionOut(transition) {
             return;
-            for (let i = 0, l = this.activeSources.length; i < l; i++) this.activeSources[i].transitionOut(transition);
+            for (let i = 0, l = this.activeScopes.length; i < l; i++) this.activeScopes[i].transitionOut(transition);
         }
     }
 
-    SourceContainer.prototype.removeIO = Tap.prototype.removeIO;
-    SourceContainer.prototype.addIO = Tap.prototype.addIO;
+    ScopeContainer.prototype.removeIO = Tap.prototype.removeIO;
+    ScopeContainer.prototype.addIO = Tap.prototype.addIO;
 
-    let expr_check = (expr) => {
-        return (expr.type == 2 && typeof(expr.func) == "function");
-    };
-
-
-
-    class FilterIO extends IOBase {
-        constructor(source, errors, taps, container, activation, sort, filter, limit, offset, scrub, shift) {
-            super(container, errors);
-
-            this.container = container;
-            this._activation_function_ = null;
-            this._sort_function_ = null;
-            this.filter_function = null;
-            this.CAN_USE = false;
-            this.CAN_FILTER = false;
-            this._CAN_LIMIT_ = false;
-            this._CAN_OFFSET_ = false;
-            this.CAN_SORT = false;
-            this._SCHD_ = 0;
-
-            if (activation && activation.binding) {
-                this._activation_function_ = activation.binding._bind_(source, errors, taps, this);
-            } else {
-                this.CAN_USE = true;
-            }
-
-            if (sort && sort.binding) {
-                let expr = sort.binding;
-                if (expr_check(expr)) {
-                    this._sort_function_ = (m1, m2) => expr.func(m1.model, m2.model);
-                    this.CAN_SORT = true;
-                }
-            } else
-
-            if (filter && filter.binding) {
-                let expr = filter.binding;
-                if (expr_check(expr)) {
-                    this.filter_function = expr._bind_(source, errors, taps, this);
-                    this.filter_function._IS_A_FILTER_ = true;
-                    this.CAN_FILTER = true;
-                }
-            } else
-
-            if (limit && limit.binding) {
-                let expr = limit.binding;
-                expr.method = (expr.method == 1) ? -1 : expr.method;
-                this._limit_function_ = expr._bind_(source, errors, taps, this);
-                this._CAN_LIMIT_ = true;
-            } else
-
-            if (offset && offset.binding) {
-                this._CAN_OFFSET_ = true;
-                if (offset.binding.type == 1) {
-                    this._value_ = parseInt(offset.binding.val);
-                } else {
-                    let expr = offset.binding;
-                    expr.method = (expr.method == 1) ? -1 : expr.method;
-                    this._offset_function_ = expr._bind_(source, errors, taps, this);
-                }
-            } else
-
-            if (scrub && scrub.binding) {
-                let expr = scrub.binding;
-                expr.method = (expr.method == 1) ? -1 : expr.method;
-                this._scrub_function_ = expr._bind_(source, errors, taps, this);
-                this._CAN_SCRUB_ = true;
-            } else
-
-            if (shift && shift.binding) {
-                let expr = shift.binding;
-                expr.method = (expr.method == 1) ? -1 : expr.method;
-                this._page_function_ = expr._bind_(source, errors, taps, this);
-                this._CAN_SHIFT_ = true;
-            }
-        }
-
-        scheduledUpdate() {}
-
-        update() {
-            if (this.CAN_SORT || this.CAN_FILTER) {
-                this.container.UPDATE_FILTER = true;
-                spark.queueUpdate(this.container);
-            }
-        }
-
-        destroy() {
-            if (this._sort_function_)
-                this._sort_function_.destroy();
-            if (this._activation_function_)
-                this._activation_function_.destroy();
-            if (this.filter_function)
-                this.filter_function.destroy();
-            this._sort_function_ = null;
-            this._activation_function_ = null;
-            this.filter_function = null;
-            this.container = null;
-        }
-
-        get data() {}
-        set data(v) {
-
-            this.CAN_USE = false;
-            if (v) this.CAN_USE = true;
-            this._value_ = v;
-
-            if (this._CAN_SCRUB_)
-                return this.container.scrub(parseFloat(this._value_), false);
-
-            if (this.CAN_SORT || this.CAN_FILTER || this._CAN_SHIFT_)
-                this.container.UPDATE_FILTER = true;
-
-            spark.queueUpdate(this.container);
-        }
-    }
-
-    class FilterNode extends VoidNode$1 {
-
-        /******************************************* HOOKS ****************************************************/
-
-        endOfElementHook() {}
-
-        /**
-         * This node only needs to assess attribute values. InnerHTML will be ignored. 
-         * @return     {boolean}  { description_of_the_return_value }
-         */
-        selfClosingTagHook() { return true; }
-
-    }
-
-    class PackageNode extends VoidNode$1 {
-
-        constructor(start) {
-            super();
-            this._start_ = start;
-            this.url = this.getURL();
-        }
-
-        /******************************************* HOOKS ****************************************************/
-
-        /**
-         * Binds new laxer to boundaries starting from open tag to close tag. Applies Lexer to new SourcePackage.
-         * @param      {Lexer}  lex     The lex
-         * @private
-         */
-        processTextNodeHook(lex) {}
-
-        _ignoreTillHook_() { return true; }
-
-        endOfElementHook(lex) {
-            let own_lex = lex.copy();
-
-            own_lex.off = this._start_;
-            own_lex.tl = 0;
-            own_lex.n.sl = lex.off;
-
-            this.par.package = new this.SourcePackage(own_lex, this.presets, false);
-
-            if (!this.fch)
-                this.mergeComponent();
-
-            return this;
-        }
-
-        mergeComponent() {
-            
-            let component = this.presets.components[this.tag];
-
-            if (component)
-                this.par.package = new this.SourcePackage(component, this.presets, false);
-
-            return component
-        }
-    }
-
-    /**
-     * Slot Node. 
-     */
-    class SlotNode extends RootNode {
-        constructor() {
-            super();
-            this.name = "";
-        }
-
-        delegateTapBinding() {
-            return null;
-        }
-
-        build(element, source, presets, errors, taps, statics, RENDER_ONLY = false) {
-
-            return (statics.slots && statics.slots[this.name]) ?
-                (statics.slots[this.name].SLOTED = true,
-                statics.slots[this.name].build(
-                    element,
-                    statics.slots[this.name].getCachedSource() || source,
-                    /*statics.slots[this.name].getPresets() || */presets,
-                    errors,
-                    taps,
-                    statics,
-                    RENDER_ONLY
-                )) :
-                source;
-        }
-
-        processAttributeHook(name, lex) {
-
-            if (!name) return null;
-
-            let start = lex.off,
-                basic = {
-                    IGNORE: true,
-                    name,
-                    value: lex.slice(start)
-                };
-
-            let bind_method = ATTRIB,
-                FOR_EVENT = false;
-
-            if (name == "name")
-                this.name = basic.value;
-
-            return basic;
-        }
-
-    }
-
-    class SourceManager {
+    class ScopeManager {
 
         constructor(model, element) {
-            this.sources = [];
+            this.scopes = [];
             this.model = model;
             this.ele = element;
             this.index = -1;
@@ -16381,14 +16389,14 @@ ${is_iws}`;
 
         get element() {
             if (!this.ele)
-                this.ele = this.sources[0].ele;
+                this.ele = this.scopes[0].ele;
             return this.ele;
         }
 
         destroy() {
-            for (let i = 0; i < this.sources.length; i++)
-                this.sources[i].destroy();
-            this.source = null;
+            for (let i = 0; i < this.scopes.length; i++)
+                this.scopes[i].destroy();
+            this.scope = null;
             this.model = null;
             this.ele = null;
             this._DESTROYED_ = true;
@@ -16396,8 +16404,8 @@ ${is_iws}`;
         }
 
         emit(name, value) {
-            for (let i = 0; i < this.sources.length; i++)
-                this.sources[i].upImport(name, value, {
+            for (let i = 0; i < this.scopes.length; i++)
+                this.scopes[i].upImport(name, value, {
                     event: {}
                 });
         }
@@ -16431,7 +16439,7 @@ ${is_iws}`;
         }
 
         transitionOut(transition, transition_name = "trs_out", DESTROY_ON_REMOVE = false) {
-            
+
             this._APPEND_STATE_ = false;
 
             if (this._TRANSITION_STATE_ === false) {
@@ -16460,13 +16468,13 @@ ${is_iws}`;
 
 
             /*
-            for (let i = 0, l = this.sources.length; i < l; i++) {
+            for (let i = 0, l = this.scopes.length; i < l; i++) {
 
-                let ast = this.sources[i].ast;
+                let ast = this.scope.ast;
 
                 let css = ast.css;
 
-                let hooks = this.sources[i].hooks;
+                let hooks = this.scope.hooks;
 
                 for (let i = 0, l = hooks.length; i < l; i++) {
 
@@ -16514,22 +16522,22 @@ ${is_iws}`;
         upImport(prop_name, data, meta) {
             if (this.parent)
                 this.parent.up(prop_name, data, meta, this);
-            else 
+            else
                 this.up(prop_name, data, meta);
         }
 
-        up(prop_name, data, meta){
+        up(prop_name, data, meta) {
 
         }
 
         down(data, changed_values) {
-            for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i].down(data, changed_values);
+            for (let i = 0; i < this.scopes.length; i++)
+                this.scopes[i].down(data, changed_values);
         }
 
         update(data, changed_values) {
-            for (let i = 0, l = this.sources.length; i < l; i++)
-                this.sources[i].update(data, changed_values);
+            for (let i = 0; i < this.scopes.length; i++)
+                this.scopes[i].update(data, changed_values);
         }
 
         bubbleLink() {
@@ -16539,22 +16547,22 @@ ${is_iws}`;
                 debugger
         }
 
-        sourceLoaded(){
-            this.update({mounted:true});
+        scopeLoaded() {
+            this.update({ mounted: true });
         }
     }
 
-    class BasePackage{
-        constructor(){
+    class BasePackage {
+        constructor() {
             /**
              * When set to true indicates that the package is ready to be mounted to the DOM.
              */
             this.READY = false;
 
             /**
-             * An array of SourceSkeleton objects.
+             * An array of AST objects.
              */
-            this.skeletons = [];
+            this.asts = [];
 
             /**
              * An array objects to store pending calls to BasePackage#mount
@@ -16602,12 +16610,11 @@ ${is_iws}`;
             return this;
         }
 
-        
+
         // Adds Error message to the errors array.
         // ~dissuade-public
         addError(error_message) {
             this.HAVE_ERRORS = true;
-            //Create error skeleton and push to skeletons
             this.errors.push(error_message);
         }
 
@@ -16616,7 +16623,7 @@ ${is_iws}`;
         freeze() {
             return;
             OB.freeze(this.READY);
-            OB.freeze(this.skeletons);
+            OB.freeze(this.asts);
             OB.freeze(this.styles);
             OB.freeze(this.pms);
             OB.freeze(this.errors);
@@ -16652,11 +16659,11 @@ ${is_iws}`;
          * Generates new instance of component and appends it to the input element. If the compilation of the component is not complete by the time this method is called,
          the arguments are stored in a temporary buffer and later run through this method again when compilation is completed.
          * @param  {HTMLElement} element         - The element
-         * @param  {Model}   model           - The model the source component will bind to. Binding only occurs if `model` or `schema` attributes are undefined in the component decleration, the `schema` attribute type matches the model type, or `schema` is set to "any".
+         * @param  {Model}   model           - The model the scope component will bind to. Binding only occurs if `model` or `schema` attributes are undefined in the component decleration, the `schema` attribute type matches the model type, or `schema` is set to "any".
          * @param  {boolean} USE_SHADOW_DOM  - If `true`, appends the component to the element's ShadowDOM.
-         * @param  {Object}  manager         - A custom manager that stores built source components. If not defined then a SourceManager is created and returned.
+         * @param  {Object}  manager         - A custom manager that stores built scope components. If not defined then a ScopeManager is created and returned.
          */
-        mount(element, model, USE_SHADOW_DOM = false, manager = new SourceManager(model, element), parent = manager) {
+        mount(element, model, USE_SHADOW_DOM = false, manager = new ScopeManager(model, element), parent = manager) {
 
             if (!this.READY)
                 return this.pushPendingMount(element, model, USE_SHADOW_DOM, manager);
@@ -16667,12 +16674,12 @@ ${is_iws}`;
                 //Process
                 console.warn("TODO - Package has errors, pop an error widget on this element!");
             }
-            
+
             let i = 0,
                 l = 0;
 
-            if (!manager.sources)
-                manager.sources = [];
+            if (!manager.scopes)
+                manager.scopes = [];
 
             if (USE_SHADOW_DOM) {
 
@@ -16682,7 +16689,7 @@ ${is_iws}`;
 
                 element = shadow_root;
 
-                if(this.styles)
+                if (this.styles)
                     for (i = 0, l = this.styles.length; i < l; i++) {
                         let style = cloneNode(this.styles[i], true);
                         appendChild(element, style);
@@ -16690,103 +16697,41 @@ ${is_iws}`;
             }
 
 
-            for (i = 0, l = this.skeletons.length; i < l; i++) {
-                let source = this.skeletons[i].flesh(element, model, parent);
-                manager.sources.push(source);
+            for (i = 0, l = this.asts.length; i < l; i++) {
+                
+                let errors = [];
+                
+                let scope = this.asts[i].build(element, null, null, errors);
+                
+                manager.scopes.push(scope); // = this.asts.flesh(element, model, parent);
+                
+                if (errors.length > 0) {
+                    //TODO!!!!!!Remove all bindings that change Model. 
+                    //scope.kill_up_bindings();
+                    errors.forEach(e => console.log(e));
+                }
+
             }
 
-            if (manager.sourceLoaded) manager.sourceLoaded();
+            if (manager.scopeLoaded) manager.scopeLoaded();
 
             return manager;
         }
 
-        toString(){
+        toString() {
             let str = "";
 
-            for(let i = 0; i < this.links.length; i++)
+            for (let i = 0; i < this.links.length; i++)
                 str += this.links[i];
 
-            for(let i = 0; i < this.skeletons.length; i++)
-                str += this.skeletons[i].tree;
+            for (let i = 0; i < this.asts.length; i++)
+                str += this.asts[i].tree;
 
             return str;
         }
     }
 
-    /**
-     * Factory object for Creating Source trees.  Encapsulates construction information derived from the HTML AST.  
-     * 
-     * @param      {HTMLElement}  element      The element
-     * @param      {Function}  constructor      The constructor for the object the Skeleton will create.
-     * @param      {Object}  data  Data pulled from a tags attributes
-     * @param      {Presets}  presets  The global Presets instance.
-     * @memberof module:wick~internals.source
-     * @alias Skeleton  
-     */
-    class Skeleton {
-
-        /**
-            Constructor of Skeleton
-        */
-        constructor(tree, presets) {
-            this.tree = tree;
-            this.presets = presets;
-        }
-
-
-        /**
-         * Constructs Source tree and returns that. 
-         * @param {HTMLElement} element - host HTML Element. 
-         * @param      {<type>}  primary_model    The model
-         * @return     {<type>}  { description_of_the_return_value }
-         */
-        flesh(element, primary_model = null, parent = null) {
-
-            const source = this.____copy____(element, null, primary_model);
-
-            if (source){
-                if(parent)
-                    source.parent = parent;
-                source.load(primary_model);
-            }
-
-            return source;
-        }
-
-        /**
-         * Extends a given DOM tree and, optionally, a Source tree with it's own internal  tree.
-         * @param {HTMLElement} parent_element - HTML Element of the originating Source. 
-         * @param {<type>}  parent_source   The parent source
-         */
-        extend(parent_element = null, parent_source = null) {
-            this.____copy____(parent_element, parent_source);
-        }
-
-        /**
-            Constructs a new object, attaching to elements hosted by a Source object. If the component to be constructed is a Source the 
-            parent_element HTMLElement gets swapped out by a cloned HTMLElement that is hosted by the newly constructed Source.
-
-            @param {HTMLElement} parent_element - HTML Element of the originating tree. 
-
-            @protected
-        */
-        ____copy____(parent_element = null, parent_source = null, primary_model = null) {
-            //List of errors generated when building DOM
-            let errors = [];
-
-            let source = this.tree.build(parent_element, parent_source, this.presets, errors);
-
-            if (errors.length > 0) {
-                //TODO!!!!!!Remove all bindings that change Model. 
-                //source.kill_up_bindings();
-                errors.forEach(e => console.log(e));
-            }
-
-            return source;
-        }
-    }
-
-    class SourceContainerNode$1 extends RootNode {
+    class ScopeContainerNode$1 extends RootNode {
 
         constructor(lex) {
             super(lex);
@@ -16809,12 +16754,12 @@ ${is_iws}`;
             return merged_node;
         }
 
-        build(element, source, presets, errors, taps, statics) {
+        build(element, scope, presets, errors, taps, statics) {
 
-            source = source || new Source(null, presets, element, this);
+            scope = scope || new Scope(null, presets, element, this);
 
             if (this.HAS_TAPS)
-                taps = source.linkTaps(this.tap_list);
+                taps = scope.linkTaps(this.tap_list);
 
             let pckg = this.package;
 
@@ -16823,7 +16768,7 @@ ${is_iws}`;
                 // See if there is a slot node that can be used to pull data from the statics
 
                 // Package cannot be cached in this case, since the container may be used in different 
-                // components that assign different source tree's to the slot. 
+                // components that assign different scope tree's to the slot. 
                 if (statics.slots) {
                     let slot = null;
 
@@ -16832,12 +16777,12 @@ ${is_iws}`;
                     for (let i = 0, v = null; i < children.length; i++)
                         if (children[i].tag == "slot") {
                             if (statics.slots[children[i].name]) {
-                                const
-                                    ele = statics.slots[children[i].name],
-                                    sk = new Skeleton(ele, this.presets);
-                                    
+                                const ele = statics.slots[children[i].name];
+
+                                ele.__presets__ = this.presets;
+
                                 pckg = new BasePackage();
-                                pckg.skeletons.push(sk);
+                                pckg.asts.push(ele);
                                 pckg.READY = true;
 
                                 //Exit loop on first successful match.
@@ -16855,16 +16800,16 @@ ${is_iws}`;
                 this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
 
                 if (this._badge_name_)
-                    source.badges[this._badge_name_] = ele;
+                    scope.badges[this._badge_name_] = ele;
 
-                let me = new SourceContainer(source, presets, ele);
+                let me = new ScopeContainer(scope, presets, ele);
 
                 me.package = pckg;
 
-                if (!me.package.skeletons[0].tree.url)
-                    me.package.skeletons[0].tree.url = this.getURL();
+                if (!me.package.ast[0].url)
+                    me.package.ast[0].url = this.getURL();
 
-                me.prop = this.property_bind._bind_(source, errors, taps, me);
+                me.prop = this.property_bind._bind_(scope, errors, taps, me);
 
                 appendChild$1(element, ele);
 
@@ -16889,17 +16834,17 @@ ${is_iws}`;
                     }
 
                     if (sort || filter || limit || offset || scrub || shift) //Only create Filter node if it has a sorting bind or a filter bind
-                        me.filters.push(new FilterIO(source, errors, taps, me, on, sort, filter, limit, offset, scrub, shift));
+                        me.filters.push(new FilterIO(scope, errors, taps, me, on, sort, filter, limit, offset, scrub, shift));
                 }
             } else {
                 if (this.property_bind)
                     //If there is no package at all then abort build of this element. TODO, throw an appropriate warning.
-                    errors.push(new Error(`Missing source for container bound to "${this.property_bind.bindings[0].tap_name}"`));
+                    errors.push(new Error(`Missing scope for container bound to "${this.property_bind.bindings[0].tap_name}"`));
                 else
                     errors.push(new Error(`Missing property binding for this node.`));
             }
 
-            return source;
+            return scope;
         }
 
         /******************************************* HOOKS ****************************************************/
@@ -16973,7 +16918,7 @@ ${is_iws}`;
      * @class      SVGNode (name)
      */
     class SVGNode extends RootNode {
-        createElement(presets, source) {
+        createElement(presets, scope) {
             return document.createElementNS("http://www.w3.org/2000/svg", this.tag);
         }
 
@@ -16983,9 +16928,9 @@ ${is_iws}`;
                 case "w":
                     switch (tag) {
                         case "w-s":
-                            return new SourceNode(); //This node is used to 
+                            return new ScopeNode(); //This node is used to 
                         case "w-c":
-                            return new SourceContainerNode(); //This node is used to 
+                            return new ScopeContainerNode(); //This node is used to 
                     }
                     break;
                 default:
@@ -17055,9 +17000,9 @@ ${is_iws}`;
         if (tag[0] == "w")
             switch (tag) {
                 case "w-s":
-                    return new SourceNode$1(); //This node is used to 
+                    return new ScopeNode$1(); //This node is used to 
                 case "w-c":
-                    return new SourceContainerNode$1(); //This node is used to 
+                    return new ScopeContainerNode$1(); //This node is used to 
             }
             
         switch (tag) {
@@ -17121,7 +17066,7 @@ ${is_iws}`;
         return await Plugin.tagHandler(this.tag, this);
     };
 
-    async function complete(lex, SourcePackage, presets, ast, url, win) {
+    async function complete(lex, ScopePackage, presets, ast, url, win) {
 
 
         //Record URL if present for proper error messaging. 
@@ -17135,10 +17080,9 @@ ${is_iws}`;
         if (ast.tag) {
             if ((ast.tag == "import" || ast.tag == "link")) {
                 //add tags to package itself.
-                SourcePackage.links.push(ast);
+                ScopePackage.links.push(ast);
             } else if (ast.tag !== "template") {
-                let skeleton = new Skeleton(ast, presets);
-                SourcePackage.skeletons.push(skeleton);
+                ScopePackage.asts.push(ast);
             }
         }
 
@@ -17147,24 +17091,24 @@ ${is_iws}`;
         while (!lex.END && lex.ch != "<") { lex.n; }
 
         if (!lex.END)
-            return await parseText(lex, SourcePackage, presets, url, win);
+            return await parseText(lex, ScopePackage, presets, url, win);
 
-        SourcePackage.complete();
+        ScopePackage.complete();
 
-        return SourcePackage;
+        return ScopePackage;
     }
 
-    async function buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win) {
+    async function buildCSS(lex, ScopePackage, presets, ast, css_list, index, url, win) {
         await css_list[index].READY();
 
-        if (++index < css_list.length) return await buildCSS(lex, SourcePackage, presets, ast, css_list, index, url, win);
+        if (++index < css_list.length) return await buildCSS(lex, ScopePackage, presets, ast, css_list, index, url, win);
 
         ast.linkCSS(null, win);
 
-        return await complete(lex, SourcePackage, presets, ast, url, win);
+        return await complete(lex, ScopePackage, presets, ast, url, win);
     }
 
-    async function parseText(lex, SourcePackage, presets, url, win) {
+    async function parseText(lex, ScopePackage, presets, url, win) {
         let start = lex.off;
 
         while (!lex.END && lex.ch != "<") { lex.n; }
@@ -17182,31 +17126,31 @@ ${is_iws}`;
                 const ast = await node.parse(lex, url);
 
                 if (ast.css && ast.css.length > 0)
-                    return await buildCSS(lex, SourcePackage, presets, ast, ast.css, 0, url, win);
+                    return await buildCSS(lex, ScopePackage, presets, ast, ast.css, 0, url, win);
 
-                return await complete(lex, SourcePackage, presets, ast, url, win);
+                return await complete(lex, ScopePackage, presets, ast, url, win);
             } catch (e) {
-                SourcePackage.addError(e);
-                SourcePackage.complete();
+                ScopePackage.addError(e);
+                ScopePackage.complete();
 
-                return SourcePackage;
+                return ScopePackage;
             }
         }
         
-        SourcePackage.addError(new Error(`Unexpected end of input. ${lex.slice(start)}, ${lex.str}`));
-        SourcePackage.complete();
+        ScopePackage.addError(new Error(`Unexpected end of input. ${lex.slice(start)}, ${lex.str}`));
+        ScopePackage.complete();
     }
 
 
     /**
-     * Compiles an object graph based input into a SourcePackage.
-     * @param      {SourcePackage}  SourcePackage     The source package
+     * Compiles an object graph based input into a ScopePackage.
+     * @param      {ScopePackage}  ScopePackage     The scope package
      * @param      {Presets}  presets           The global Presets instance
      * @param      {HTMLElement | Lexer | string}  element     The element
      * @memberof module:wick~internals.templateCompiler
-     * @alias CompileSource
+     * @alias CompileScope
      */
-    function CompileSource(SourcePackage, presets, element, url, win = window) {
+    function HTMLCompiler(ScopePackage, presets, element, url, win = window) {
         
         if(!url)
             url = URL.G;
@@ -17225,28 +17169,13 @@ ${is_iws}`;
             lex = whind$1(element.innerHTML);
         } else {
             let e = new Error("Cannot compile component");
-            SourcePackage.addError(e);
-            SourcePackage.complete();
+            ScopePackage.addError(e);
+            ScopePackage.complete();
         }
-        return parseText(lex, SourcePackage, presets, url, win);
+        return parseText(lex, ScopePackage, presets, url, win);
     }
 
-    /**
-     * SourcePackages stores compiled {@link SourceSkeleton}s and provide a way to _bind_ Model data to the DOM in a reusable manner. *
-     * @property    {Array}    skeletons
-     * @property    {Array}    styles
-     * @property    {Array}    scripts
-     * @property    {Array}    style_core
-     * @readonly
-     * @callback   If `RETURN_PROMISE` is set to `true`, a new Promise is returned, which will asynchronously return a SourcePackage instance if compilation is successful.
-     * @param      {HTMLElement}  element      The element
-     * @param      {Presets}  presets      The global Presets object.
-     * @param      {boolean}  [RETURN_PROMISE=false]  If `true` a Promise will be returned, otherwise the SourcePackage instance is returned.
-     * @return     {SourcePackage | Promise}  If a SourcePackage has already been constructed for the given element, that will be returned instead of new one being created. If
-     * @memberof module:wick.core.source
-     * @alias SourcePackage
-     */
-    class SourcePackage extends BasePackage {
+    class ScopePackage extends BasePackage {
 
         constructor(element, presets, RETURN_PROMISE = false, url = "", win = window) {
 
@@ -17260,12 +17189,13 @@ ${is_iws}`;
             super();
 
             if (element instanceof Promise) {
-                element.then((data) => CompileSource(this, presets, data, url, win));
+                element.then((data) => HTMLCompiler(this, presets, data, url, win));
                 if (RETURN_PROMISE) return element;
                 return this;
             } else if (element instanceof RootNode) {
-                //already an HTMLtree, just package into a skeleton and return.
-                this.skeletons.push(new Skeleton(element, presets));
+
+                // Already a ComponentASTTree.
+                this.asts.push(element);
                 this.complete();
                 return;
             } else if (!(element instanceof HTMLElement) && typeof(element) !== "string" && !(element instanceof whind$1.constructor)) {
@@ -17278,7 +17208,7 @@ ${is_iws}`;
             }
 
             //Start the compiling of the component.
-            let promise = CompileSource(this, presets, element, url, win);
+            let promise = HTMLCompiler(this, presets, element, url, win);
 
             OB$1.seal(this);
 
@@ -17290,9 +17220,9 @@ ${is_iws}`;
         }
     }
 
-    PackageNode.prototype.SourcePackage = SourcePackage;
+    PackageNode.prototype.ScopePackage = ScopePackage;
 
-    /** This is the entire object structure of Wick, minus the platform specific outputs found in /source/root/ */
+    /** This is the entire object structure of Wick, minus the platform specific outputs found in /scope/root/ */
 
     const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);
     model.scheme = (s, scheme) => (scheme = class extends SchemedModel {}, scheme.schema = s, scheme);
@@ -17333,31 +17263,31 @@ ${is_iws}`;
         presets: a => new Presets(a),
         scheme: scheme,
         model: model,
-        source: (...a) => new SourcePackage(...a),
+        scope: (...a) => new ScopePackage(...a),
         plugin : Plugin,
         utils: Utils
     };
 
-    core.source.compiler = CompileSource;
+    core.scope.compiler = HTMLCompiler;
 
-    CompileSource.nodes = {
+    HTMLCompiler.nodes = {
         root: RootNode,
         style: StyleNode$1,
         script: ScriptNode$1,
         text: RootText,
-        source: SourceNode$1,
+        scope: ScopeNode$1,
         package: PackageNode,
-        template: SourceContainerNode$1,
+        template: ScopeContainerNode$1,
         svg:SVGNode
     };
 
-    core.source.package = SourcePackage;
-    core.source.constructor = Source;
+    core.scope.package = ScopePackage;
+    core.scope.constructor = Scope;
 
-    Object.freeze(core.source);
+    Object.freeze(core.scope);
     Object.freeze(core);
 
-    const source = core.source;
+    const scope = core.scope;
 
     class ScopedNode extends ScriptNode$1 {
         processAttributeHook(name, lex, func) {
@@ -17387,8 +17317,8 @@ ${is_iws}`;
     const
         UID = () => "$ID" + (Date.now().toString(16).slice(-12) + ((Math.random() * 100000) | 0).toString(16)).slice(-16),
 
-        //Bit offsets for NEED_SOURCE_BITS flag;
-        SOURCE_BITS = {
+        //Bit offsets for NEED_SCOPE_BITS flag;
+        SCOPE_BITS = {
             MODEL: 0,
             SCHEME: 1,
             EXPORT: 2,
@@ -17400,7 +17330,7 @@ ${is_iws}`;
         
 
 
-    const Component = (data, presets) => createComponentWithJSSyntax(data, presets, document.location.toString());
+    const JSCompiler = (data, presets) => createComponentWithJSSyntax(data, presets, document.location.toString());
 
     /**
      * This module allows JavaScript to be used to describe wick components. 
@@ -17430,7 +17360,7 @@ ${is_iws}`;
 
                         const out = (data) => createComponentWithJSSyntax(data, presets,  url, stack, async_wait);
 
-                        (new Function("wick",  "url", data))(Object.assign(out, Component),  url);
+                        (new Function("wick",  "url", data))(Object.assign(out, JSCompiler),  url);
                        
 
                         // Since we have an async function, we need some way to wait for the function to 
@@ -17462,7 +17392,7 @@ ${is_iws}`;
             } else if (ext == "mjs") {
                 return; //Todo, parse using import syntax
             } else if (ext == "html") {
-                // fold data into itself to take advantage of SourcePackages automatic behavior when 
+                // fold data into itself to take advantage of ScopePackages automatic behavior when 
                 // presented with a url
                 data = { dom: await url.fetchText() };
 
@@ -17480,25 +17410,25 @@ ${is_iws}`;
 
         let
             pkg = null,
-            NEED_SOURCE_BITS = 0,
+            NEED_SCOPE_BITS = 0,
             NEED_CONTAINER_BITS = 0,
             tree,
             container,
-            container_source;
+            container_scope;
 
-        // Every tree root should be a SourceNode instance if data includes source node attributes.              
-        // Create a bit field of all values that necessitate a SourceNode. 
+        // Every tree root should be a ScopeNode instance if data includes scope node attributes.              
+        // Create a bit field of all values that necessitate a ScopeNode. 
 
-        NEED_SOURCE_BITS |= ((typeof(data.model) !== "undefined") | 0) << SOURCE_BITS.MODEL;
-        NEED_SOURCE_BITS |= ((typeof(data.scheme) !== "undefined") | 0) << SOURCE_BITS.SCHEME;
-        NEED_SOURCE_BITS |= ((typeof(data.export) !== "undefined") | 0) << SOURCE_BITS.EXPORT;
-        NEED_SOURCE_BITS |= ((typeof(data.import) !== "undefined") | 0) << SOURCE_BITS.IMPORT;
-        NEED_SOURCE_BITS |= ((typeof(data.put) !== "undefined") | 0) << SOURCE_BITS.PUT;
-        //NEED_CONTAINER_BITS |= ((typeof(data.model) === "function") | 0) << SOURCE_BITS.FUNCTION_MODEL;
-        NEED_CONTAINER_BITS |= (Array.isArray(data.model) | 0) << SOURCE_BITS.ARRAY_MODEL;
+        NEED_SCOPE_BITS |= ((typeof(data.model) !== "undefined") | 0) << SCOPE_BITS.MODEL;
+        NEED_SCOPE_BITS |= ((typeof(data.scheme) !== "undefined") | 0) << SCOPE_BITS.SCHEME;
+        NEED_SCOPE_BITS |= ((typeof(data.export) !== "undefined") | 0) << SCOPE_BITS.EXPORT;
+        NEED_SCOPE_BITS |= ((typeof(data.import) !== "undefined") | 0) << SCOPE_BITS.IMPORT;
+        NEED_SCOPE_BITS |= ((typeof(data.put) !== "undefined") | 0) << SCOPE_BITS.PUT;
+        //NEED_CONTAINER_BITS |= ((typeof(data.model) === "function") | 0) << SCOPE_BITS.FUNCTION_MODEL;
+        NEED_CONTAINER_BITS |= (Array.isArray(data.model) | 0) << SCOPE_BITS.ARRAY_MODEL;
 
         // If the model or scheme is an array, then the resulting component root should be either a 
-        // ContainerNode or a ContainerNode wrapped inside a SourceNode.
+        // ContainerNode or a ContainerNode wrapped inside a ScopeNode.
 
         if (data.dom && (typeof(data.dom) == "string" || data.dom.tagName == "TEMPLATE")) {
 
@@ -17510,14 +17440,14 @@ ${is_iws}`;
                 val = await url.fetchText();
 
             try {
-                pkg = await new SourcePackage(val, presets, true, locale);
+                pkg = await new ScopePackage(val, presets, true, locale);
 
                 //Throw any errors generated by package creation. 
                 //TODO - implement error system.
                 if (pkg.HAVE_ERRORS)
                     throw pkg.errors[0]
 
-                var { source_tree, container_tree, container_source_tree } = EnsureRootSource(pkg, NEED_SOURCE_BITS, NEED_CONTAINER_BITS, presets);
+                var { scope_tree, container_tree, container_scope_tree } = EnsureRootScope(pkg, NEED_SCOPE_BITS, NEED_CONTAINER_BITS, presets);
             } catch (e) {
                 throw e;
             }
@@ -17526,24 +17456,23 @@ ${is_iws}`;
 
             // This object contains other information that can be appended to a component, but the 
             // component itself may not be mountable
-            if (NEED_SOURCE_BITS !== 0) {
-                let
-                    src = new ScriptNode$1(),
-                    skl = new Skeleton();
+            if (NEED_SCOPE_BITS !== 0) {
+                let src = new ScriptNode$1();
 
                 src.__presets__ = presets;
+                
                 pkg = new BasePackage();
-
-                skl.tree = src;
-                pkg.skeletons.push[skl];
-                var source_tree = src;
+                
+                pkg.asts = [src];
+                
+                var scope_tree = src;
             }
         }
 
-        const { injects, model, scheme } = await integrateProperties(source_tree, container_tree, container_source_tree, presets, data);
+        const { injects, model, scheme } = await integrateProperties(scope_tree, container_tree, container_scope_tree, presets, data);
 
 
-        // TODO: If there is a component property and no Source attributes defined either 
+        // TODO: If there is a component property and no Scope attributes defined either 
         // in data or in the compiled tree, then extract the component from the package 
         // and discard package value.
 
@@ -17552,28 +17481,28 @@ ${is_iws}`;
         // The default action with this object is to convert component back into a 
         // HTML tree string form that can be injected into the DOM of other components. 
         // Additional data can be added to this object before injection using this method.
-        let return_value = (data) => source_tree.toString();
+        let return_value = (data) => scope_tree.toString();
 
         return_value.toString = async function(model = {}) {
 
             if (model) {
 
-                let source = source_tree.build(null, null, presets, [], null, null, true);
+                let scope = scope_tree.build(null, null, presets, [], null, null, true);
 
-                source.load(model);
+                scope.load(model);
 
                 //Wait one tick to update any IOs that are dependent on spark
                 await (new Promise(res => setTimeout(res, 1)));
 
-                return source.ele.toString()
+                return scope.ele.toString()
             }
 
-            return source_tree.toString();
+            return scope_tree.toString();
         };
 
-        Object.assign(return_value, injects, { model, scheme, get tree() { return source_tree } });
+        Object.assign(return_value, injects, { model, scheme, get tree() { return scope_tree } });
 
-        //Unashamedly proxying the SourcePackage~mount method
+        //Unashamedly proxying the ScopePackage~mount method
         return_value.mount = (e, m, s, mgr) => pkg.mount(e, m, s, mgr);
 
         Object.freeze(return_value);
@@ -17589,54 +17518,54 @@ ${is_iws}`;
     function checkFlag(FLAG_BITS, flag_bit_offset) {
         return !!(FLAG_BITS >> flag_bit_offset & 1);
     }
-    // Ensure that if there is a need for a SourceNode, there is one set as the root of the tree 
-    // Having multiple node trees also require them to be sub-trees of a SourceNode, to ensure expected 
+    // Ensure that if there is a need for a ScopeNode, there is one set as the root of the tree 
+    // Having multiple node trees also require them to be sub-trees of a ScopeNode, to ensure expected 
     // Component results.
-    function EnsureRootSource(pkg, NEED_SOURCE_BITS, NEED_CONTAINER_BITS, presets) {
+    function EnsureRootScope(pkg, NEED_SCOPE_BITS, NEED_CONTAINER_BITS, presets) {
 
         let
-            source_tree = null,
+            scope_tree = null,
             container_tree = null,
-            container_source_tree = null,
+            container_scope_tree = null,
             tree = null;
 
-        if (pkg.skeletons.length > 1) NEED_SOURCE_BITS |= 0x1000000;
+        if (pkg.asts.length > 1) NEED_SCOPE_BITS |= 0x1000000;
 
-        if (NEED_SOURCE_BITS || NEED_CONTAINER_BITS) {
-            if (pkg.skeletons.length == 1 && pkg.skeletons[0].tree instanceof SourceNode$1)
-                source_tree = pkg.skeletons[0].tree;
+        if (NEED_SCOPE_BITS || NEED_CONTAINER_BITS) {
+            if (pkg.asts.length == 1 && pkg.asts[0] instanceof ScopeNode$1)
+                scope_tree = pkg.asts[0];
             else {
-                let source = new SourceNode$1();
-                source.tag = "w-s";
-                for (let i = 0; i < pkg.skeletons.length; i++)
-                    source.addChild(pkg.skeletons[i].tree);
-                const skl = pkg.skeletons[0];
-                skl.tree = source;
-                pkg.skeletons = [skl];
-                source_tree = source;
-                source_tree.__presets__ = presets;
+                let scope = new ScopeNode$1();
+                
+                scope.tag = "w-s";
+
+                for (let i = 0; i < pkg.asts.length; i++)
+                    scope.addChild(pkg.asts[i]);
+
+                scope.__presets__ = presets;
+                
+                pkg.asts = [scope];
+                
+                scope_tree = scope;
             }
         } else
-            source_tree = pkg.skeletons[0].tree;
+            scope_tree = pkg.asts[0];
 
         if (NEED_CONTAINER_BITS) {
-            //Wrap existing source into a container
-            container_tree = new SourceContainerNode$1();
+            //Wrap existing scope into a container
+            container_tree = new ScopeContainerNode$1();
             container_tree.__presets__ = presets;
             container_tree.tag = "w-c";
             container_tree.package = new BasePackage();
             container_tree.package.READY = true;
-            container_tree.package.skeletons = pkg.skeletons;
+            container_tree.package.asts = pkg.asts;
+            
+            pkg.asts = [container_tree];
 
+            container_scope_tree = container_tree.package.asts[0];
+            scope_tree = container_scope_tree;
 
-            const skl = new Skeleton();
-            skl.tree = container_tree;
-            pkg.skeletons = [skl];
-
-            container_source_tree = container_tree.package.skeletons[0].tree;
-            source_tree = container_source_tree;
-
-            /*SOURCE_BITS = {
+            /*SCOPE_BITS = {
                 MODEL: 0,
                 SCHEME: 1,
                 EXPORT: 2,
@@ -17647,22 +17576,27 @@ ${is_iws}`;
             }*/
 
             if (
-                checkFlag(NEED_SOURCE_BITS, SOURCE_BITS.MODEL) ||
-                checkFlag(NEED_SOURCE_BITS, SOURCE_BITS.IMPORT) ||
-                checkFlag(NEED_SOURCE_BITS, SOURCE_BITS.EXPORT) ||
-                checkFlag(NEED_SOURCE_BITS, SOURCE_BITS.PUT)
+                checkFlag(NEED_SCOPE_BITS, SCOPE_BITS.MODEL) ||
+                checkFlag(NEED_SCOPE_BITS, SCOPE_BITS.IMPORT) ||
+                checkFlag(NEED_SCOPE_BITS, SCOPE_BITS.EXPORT) ||
+                checkFlag(NEED_SCOPE_BITS, SCOPE_BITS.PUT)
             ) {
-                const source = new SourceNode$1();
-                source.tag = "w-s";
-                source.addChild(container_tree);
-                skl.tree = source;
-                source_tree = source;
-                source_tree.__presets__ = presets;
+                const scope = new ScopeNode$1();
+                
+                scope.tag = "w-s";
+                
+                scope.addChild(container_tree);
+                
+                scope.__presets__ = presets;
+                
+                pkg.asts = [scope];
+                
+                scope_tree = scope;
             }
         }
 
 
-        return { source_tree, container_tree, container_source_tree };
+        return { scope_tree, container_tree, container_scope_tree };
     }
 
     async function integrateProperties(src, cntr, cntr_src, presets, data) {
@@ -17725,7 +17659,7 @@ ${is_iws}`;
     }
 
     function InjectElement(tree, v) {
-        if (tree instanceof SourceNode$1)
+        if (tree instanceof ScopeNode$1)
             tree.setAttribute("element", whind$1(String(v)));
     }
 
@@ -17795,14 +17729,14 @@ ${is_iws}`;
     }
 
     function InjectImport(tree, $import) {
-        if (tree instanceof SourceNode$1) {
+        if (tree instanceof ScopeNode$1) {
             const val = Array.isArray($import) ? $import.join(",") : $import;
             tree.processAttributeHook("import", whind$1(String(val)));
         }
     }
 
     function InjectExport(tree, $export) {
-        if (tree instanceof SourceNode$1) {
+        if (tree instanceof ScopeNode$1) {
             const val = Array.isArray($export) ? $export.join(",") : $export;
             tree.processAttributeHook("export", whind$1(String(val)));
         }
@@ -17810,7 +17744,7 @@ ${is_iws}`;
 
     function InjectPut(tree, put) {
 
-        if (tree instanceof SourceNode$1) {
+        if (tree instanceof ScopeNode$1) {
             const val = Array.isArray(put) ? put.join(",") : put;
             tree.processAttributeHook("put", whind$1(String(val)));
         }
@@ -17869,7 +17803,7 @@ ${is_iws}`;
         //make sure URL is not already called by a parent.
         while (parent) {
             if (parent.url && parent.url.path == path) {
-                console.warn(`Preventing recursion on resource ${this.url.path}`);
+                console.warn(`Preventing recursion on rescope ${this.url.path}`);
                 CAN_FETCH = false;
                 break;
             }
@@ -17888,9 +17822,10 @@ ${is_iws}`;
                     if (this.tag == "script")
                         return this.parseRunner(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
 
-                    const tree = (await Component(this.url, this.presets)).tree;
-                    //tree.children.forEach(c => c.parent = this)
+                    const tree = (await JSCompiler(this.url, this.presets)).tree;
+
                     this.addChild(tree);
+
                     return this;
                 } else if (ext == "mjs") {
                     debugger
@@ -17902,7 +17837,7 @@ ${is_iws}`;
         return null;
     };
 
-    const wick = Component;
+    const wick = JSCompiler;
 
     Object.assign(wick, core, {
         classes: {
@@ -17915,16 +17850,16 @@ ${is_iws}`;
             BTreeModelContainer,
             ArrayModelContainer,
             View,
-            SourcePackage,
-            Source,
-            CompileSource,
+            ScopePackage,
+            Scope,
+            HTMLCompiler,
             RootText,
             RootNode,
             StyleNode: StyleNode$1,
             ScriptNode: ScriptNode$1,
-            SourceNode: SourceNode$1,
+            ScopeNode: ScopeNode$1,
             PackageNode,
-            SourceContainerNode: SourceContainerNode$1,
+            ScopeContainerNode: ScopeContainerNode$1,
             SVGNode,
             SchemeConstructor,
             DateSchemeConstructor,

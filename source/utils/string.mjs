@@ -10,7 +10,7 @@ export function replaceEscapedHTML(string) {
     */
     
     out_string = out_string.split(/(\&\#*[a-zA-Z0-1]+;)/g).map(replaceEncoding).join("");
-    //console.log(string, out_string)
+    
     return out_string;
 }
 

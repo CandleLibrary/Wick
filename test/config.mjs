@@ -87,7 +87,7 @@ import cfwt from "@candlefw/tests";
     await cfwt.installTest("./test/suite/scrubbing.mjs");
     await cfwt.installTest("./test/suite/merging.mjs");
 
-    const suite = cfwt.build("wick.container");
+    const suite = cfwt.build("wick");
     console.log(suite)
 
     for (let a in suite) {

@@ -31,7 +31,7 @@ const tagHandler = {
 }
 
 
-// Allows a plugin function to parse the contents of a fetched resource whose file extensions matches the one set by the plugin. 
+// Allows a plugin function to parse the contents of a fetched rescope whose file extensions matches the one set by the plugin. 
 const extensionParse = {
     name: "extensionParse",
 

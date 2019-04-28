@@ -1,4 +1,4 @@
-/** This is the entire object structure of Wick, minus the platform specific outputs found in /source/root/ */
+/** This is the entire object structure of Wick, minus the platform specific outputs found in /scope/root/ */
 import { Presets } from "./presets.mjs";
 
 //Schema
@@ -19,20 +19,20 @@ import { Plugin } from "./plugin.mjs";
 //Views
 import { View } from "./view.mjs";
 
-//Source
-import { SourcePackage } from "./source/package.mjs";
-import { Source } from "./source/source.mjs";
+//Scope
+import { ScopePackage } from "./component/runtime/package.mjs";
+import { Scope } from "./component/runtime/scope.mjs";
 
-//SourceCompiler
-import { CompileSource as Compiler } from "./source/compiler/compiler.mjs";
-import { RootText } from "./source/compiler/nodes/root.mjs";
-import { RootNode } from "./source/compiler/nodes/index.mjs";
-import { StyleNode } from "./source/compiler/nodes/style.mjs";
-import { ScriptNode } from "./source/compiler/nodes/script.mjs";
-import { SourceNode } from "./source/compiler/nodes/source.mjs";
-import { PackageNode } from "./source/compiler/nodes/package.mjs";
-import { SVGNode } from "./source/compiler/nodes/svg.mjs";
-import { SourceContainerNode } from "./source/compiler/nodes/container.mjs";
+//ScopeCompiler
+import { HTMLCompiler } from "./component/compiler/html.mjs";
+import { RootText } from "./component/compiler/nodes/root.mjs";
+import { RootNode } from "./component/compiler/nodes/index.mjs";
+import { StyleNode } from "./component/compiler/nodes/style.mjs";
+import { ScriptNode } from "./component/compiler/nodes/script.mjs";
+import { ScopeNode } from "./component/compiler/nodes/scope.mjs";
+import { PackageNode } from "./component/compiler/nodes/package.mjs";
+import { SVGNode } from "./component/compiler/nodes/svg.mjs";
+import { ScopeContainerNode } from "./component/compiler/nodes/container.mjs";
 
 //Utilities
 import { replaceEscapedHTML } from "./utils/string.mjs";
@@ -76,34 +76,34 @@ const core = {
     presets: a => new Presets(a),
     scheme: scheme,
     model: model,
-    source: (...a) => new SourcePackage(...a),
+    scope: (...a) => new ScopePackage(...a),
     plugin : Plugin,
     utils: Utils
 };
 
-core.source.compiler = Compiler;
+core.scope.compiler = HTMLCompiler;
 
-Compiler.nodes = {
+HTMLCompiler.nodes = {
     root: RootNode,
     style: StyleNode,
     script: ScriptNode,
     text: RootText,
-    source: SourceNode,
+    scope: ScopeNode,
     package: PackageNode,
-    template: SourceContainerNode,
+    template: ScopeContainerNode,
     svg:SVGNode
 };
 
-core.source.package = SourcePackage;
-core.source.constructor = Source;
+core.scope.package = ScopePackage;
+core.scope.constructor = Scope;
 
-Object.freeze(core.source);
+Object.freeze(core.scope);
 Object.freeze(core);
 
-const source = core.source;
+const scope = core.scope;
 
 export {
-    source,
+    scope,
     scheme,
     model,
     core,

@@ -43,7 +43,7 @@ export class ModelContainerBase extends ModelBase {
 
         super(root, address);
 
-        _SealedProperty_(this, "source", null);
+        _SealedProperty_(this, "scope", null);
         _SealedProperty_(this, "first_link", null);
 
         //For keeping the container from garbage collection.
@@ -70,8 +70,8 @@ export class ModelContainerBase extends ModelBase {
 
         this._filters_ = null;
 
-        if (this.source) {
-            this.source.__unlink__(this);
+        if (this.scope) {
+            this.scope.__unlink__(this);
         }
 
         super.destroy();
@@ -123,7 +123,7 @@ export class ModelContainerBase extends ModelBase {
         Retrieves a list of items that match the term/terms. 
 
         @param {(Array|SearchTerm)} term - A single term or a set of terms to look for in the ModelContainerBase. 
-        @param {Array} __return_data__ - Set to true by a source Container if it is calling a SubContainer insert function. 
+        @param {Array} __return_data__ - Set to true by a scope Container if it is calling a SubContainer insert function. 
 
         @returns {(ModelContainerBase|Array)} Returns a Model container or an Array of Models matching the search terms. 
     */
@@ -141,7 +141,7 @@ export class ModelContainerBase extends ModelBase {
                 out = __return_data__;
             } else {
 
-                if (!this.source)
+                if (!this.scope)
                     USE_ARRAY = false;
 
                 out = this.__defaultReturn__(USE_ARRAY);
@@ -181,11 +181,11 @@ export class ModelContainerBase extends ModelBase {
 
         @param {Object} item - An Object to insert into the container. On of the properties of the object MUST have the same name as the ModelContainerBase's 
         @param {Array} item - An array of Objects to insert into the container.
-        @param {Boolean} __FROM_SOURCE__ - Set to true by a source Container if it is calling a SubContainer insert function. 
+        @param {Boolean} __FROM_SCOPE__ - Set to true by a scope Container if it is calling a SubContainer insert function. 
 
         @returns {Boolean} Returns true if an insertion into the ModelContainerBase occurred, false otherwise.
     */
-    insert(item, from_root = false, __FROM_SOURCE__ = false) {
+    insert(item, from_root = false, __FROM_SCOPE__ = false) {
 
         item = this.setHook("", item);
 
@@ -196,8 +196,8 @@ export class ModelContainerBase extends ModelBase {
 
         let out_data = false;
 
-        if (!__FROM_SOURCE__ && this.source)
-            return this.source.insert(item);
+        if (!__FROM_SCOPE__ && this.scope)
+            return this.scope.insert(item);
 
 
         if (item instanceof Array) {
@@ -259,19 +259,19 @@ export class ModelContainerBase extends ModelBase {
     /**
         Removes an item from the container. 
     */
-    remove(term, from_root = false, __FROM_SOURCE__ = false) {
+    remove(term, from_root = false, __FROM_SCOPE__ = false) {
 
         if (!from_root)
             return this._deferUpdateToRoot_(term).remove(term, true);
 
         //term = this.getHook("term", term);
 
-        if (!__FROM_SOURCE__ && this.source) {
+        if (!__FROM_SCOPE__ && this.scope) {
 
             if (!term)
-                return this.source.remove(this._filters_);
+                return this.scope.remove(this._filters_);
             else
-                return this.source.remove(term);
+                return this.scope.remove(term);
         }
 
         let out_container = [];
@@ -310,7 +310,7 @@ export class ModelContainerBase extends ModelBase {
     */
     __unlink__(container) {
 
-        if (container instanceof ModelContainerBase && container.source == this) {
+        if (container instanceof ModelContainerBase && container.scope == this) {
 
             if (container == this.first_link)
                 this.first_link = container.next;
@@ -321,7 +321,7 @@ export class ModelContainerBase extends ModelBase {
             if (container.prev)
                 container.prev.next = container.next;
 
-            container.source = null;
+            container.scope = null;
         }
     }
 
@@ -331,9 +331,9 @@ export class ModelContainerBase extends ModelBase {
         @param {ModelContainerBase} container - The ModelContainerBase instance to add the set of linked containers.
     */
     __link__(container) {
-        if (container instanceof ModelContainerBase && !container.source) {
+        if (container instanceof ModelContainerBase && !container.scope) {
 
-            container.source = this;
+            container.scope = this;
 
             container.next = this.first_link;
 
@@ -349,7 +349,7 @@ export class ModelContainerBase extends ModelBase {
 
                 return () => {
                     clearTimeout(id);
-                    if (!container.source)
+                    if (!container.scope)
                         console.warn("failed to clear the destruction of container in time!");
                 };
             })(container);

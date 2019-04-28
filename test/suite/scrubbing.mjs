@@ -39,7 +39,7 @@ export default [/*{
                 component = await wick("/test/data/scrubbing2.js", wick.presets()),
                 ele = document.createElement("div"),
                 mgr = component.mount(ele),
-                src = mgr.sources[0],
+                src = mgr.scopes[0],
                 sc = src.containers[0];
                 await pause(16);
                 //Add incremental scrubs that add up to 5
@@ -56,8 +56,8 @@ export default [/*{
 
                 await pause(200)
 
-
-                sc.activeSources.map((m,i)=>({ index:i, top: m.sources[0]._top, off:m.sources[0].model.data}))[11].off.should.equal(17);
+                console.log(sc.activeScopes.map(e=>e.scopes[0].model))
+                sc.activeScopes.map((m,i)=>({ index:i, top: m.scopes[0]._top, off:m.scopes[0].model.data}))[11].off.should.equal(17);
 
              
         }

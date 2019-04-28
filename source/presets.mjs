@@ -36,33 +36,33 @@ class Presets {
         this.custom_components = {};
 
         /** 
-         * Store of user defined CustomSourcePackage factories that can be used in place of the components built by the Wick templating system. Accepts any class extending the CustomComponent class. Adds these classes from preset_options.custom_sources or preset_options.components. 
+         * Store of user defined CustomScopePackage factories that can be used in place of the components built by the Wick templating system. Accepts any class extending the CustomComponent class. Adds these classes from preset_options.custom_scopes or preset_options.components. 
          * 
-         * In routing mode, a HTML `<component>` tag whose first classname matches a property name of a member of presets.custom_sources will be assigned to an instance of that member.
+         * In routing mode, a HTML `<component>` tag whose first classname matches a property name of a member of presets.custom_scopes will be assigned to an instance of that member.
          * 
          * ### Example
          * In HTML:
          * ```html
-         * <component class="my_source class_style">
+         * <component class="my_scope class_style">
          * 
          * ```
          * In JavaScript:
          * ```javascript
-         * let MySource = CustomSourcePackage( ele =>{
+         * let MyScope = CustomScopePackage( ele =>{
          *      ele.append
          * }, {});
          * 
          * preset_options.custom_componets = {
-         *      my_source : MySource
+         *      my_scope : MyScope
          * }
          * ```
          * @instance
          * @readonly
          */
-        this.custom_sources = {};
+        this.custom_scopes = {};
 
         /**
-         * { Object } Store of user defined classes that extend the Model or Model classes. `<w-source>` tags in templates that have a value set for the  `schema` attribute, e.g. `<w-s schema="my_favorite_model_type">...</w-s>`, will be bound to a new instance of the class in presets.schema whose property name matches the "schema" attribute.
+         * { Object } Store of user defined classes that extend the Model or Model classes. `<w-scope>` tags in templates that have a value set for the  `schema` attribute, e.g. `<w-s schema="my_favorite_model_type">...</w-s>`, will be bound to a new instance of the class in presets.schema whose property name matches the "schema" attribute.
          * 
          * Assign classes that extend Model or SchemedModel to preset_options.schemas to have them available to Wick.
          * 
@@ -80,7 +80,7 @@ class Presets {
         this.schemas = { any: Model };
 
         /**
-         * { Object } Store of user defined Model instances that serve as global models, which are available to the whole application. Multiple Sources will be able to _bind_ to the Models. `<w-source>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets .model whose property name matches the "model" attribute.
+         * { Object } Store of user defined Model instances that serve as global models, which are available to the whole application. Multiple Scopes will be able to _bind_ to the Models. `<w-scope>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets .model whose property name matches the "model" attribute.
          * 
          * Assign instances of Model or Model or any class that extends these to preset_options.models to have them used by Wick.
          * 
@@ -124,11 +124,11 @@ class Presets {
             for (let cn in c)
                 this.components[cn] = c[cn];
 
-        c = preset_options.custom_sources;
+        c = preset_options.custom_scopes;
         if (c)
             for (let cn in c)
                 if (cn instanceof CustomComponent)
-                    this.custom_sources[cn] = c[cn];
+                    this.custom_scopes[cn] = c[cn];
 
         c = preset_options.custom_components;
         if (c)
@@ -153,7 +153,7 @@ class Presets {
         this.url = URL;
 
         Object.freeze(this.options);
-        Object.freeze(this.custom_sources);
+        Object.freeze(this.custom_scopes);
         Object.freeze(this.schemas);
         Object.freeze(this.models);
 
