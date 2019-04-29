@@ -162,9 +162,10 @@ export class ScopeContainer extends View {
      * @param  {Number} scrub_amount [description]
      */
     scrub(scrub_delta, SCRUBBING = true) {
+        // scrub_delta is the relative ammunt of change from the previous offset. 
 
-
-        // scrub_delta is the relative ammount of change from the previous offset. 
+        if(!this.SCRUBBING) 
+            this.render(null, this.activeScopes, true);
 
         this.SCRUBBING = true;
 
@@ -316,6 +317,7 @@ export class ScopeContainer extends View {
     }
 
     render(transition, output = this.activeScopes, NO_TRANSITION = false) {
+
 
         let
             active_window_size = this.limit,
@@ -560,7 +562,7 @@ export class ScopeContainer extends View {
 
             for (let i = 0, l = this.scopes.length; i < l; i++)
                 if (!exists.has(this.scopes[i].model)) {
-                    this.scopes[i].transitionOut(transition, "", true);
+                    this.scopes[i].transitionOut(transition, "dismounting", true);
                     this.scopes[i].index = -1;
                     this.scopes.splice(i, 1);
                     l--;

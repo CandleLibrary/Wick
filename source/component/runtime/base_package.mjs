@@ -153,9 +153,8 @@ export class BasePackage {
 
             if (scope) {
                 scope.parent = manager;
-                
-                if(model)
-                    scope.load(model);
+                                
+                scope.load(model);
 
                 manager.scopes.push(scope)
             }

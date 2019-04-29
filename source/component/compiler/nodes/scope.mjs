@@ -70,7 +70,7 @@ export class ScopeNode extends RootNode {
 
         let out_taps = [];
 
-        let me = new Scope(scope, this.__presets__ || presets, element, this);
+        let me = new Scope(scope, this.__presets__ || presets || this.presets, element, this);
 
         this.pushChached(me);
 
@@ -180,7 +180,7 @@ export class ScopeNode extends RootNode {
 
     /******************************************* HOOKS ****************************************************/
 
-    endOfElementHook() { return this }
+    endOfElementHook() { if(!this.__presets__) {this.presets = this.presets; } ;return this }
 
     /**
      * Pulls Schema, Model, or tap method information from the attributes of the tag. 

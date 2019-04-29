@@ -40,6 +40,8 @@ async function CreateHTMLNode(tag, offset, lex) {
         case "svg":
         case "path":
             return new SVGNode();
+        case "scope":
+            return new ScopeNode();
         case "slot":
             return new SlotNode();
             //Elements that should not be parsed for binding points.

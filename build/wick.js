@@ -12876,7 +12876,7 @@ ${is_iws}`;
         */
         
         out_string = out_string.split(/(\&\#*[a-zA-Z0-1]+;)/g).map(replaceEncoding).join("");
-        //console.log(string, out_string)
+        
         return out_string;
     }
 
@@ -15828,16 +15828,12 @@ ${is_iws}`;
                             this.trs_descending.play(1);
                         this.offset--;
                         this.offset_diff = -1;
+
                         this.render(null, this.activeScopes, true).play(1);
                     }
-<<<<<<< HEAD
-                    
-                }else{
-=======
 
                 } else {
->>>>>>> adding test for scrubbing
-
+                    
                 }
 
                 //Make Sure the the transition animation is completed before moving on to new animation sequences.
@@ -15909,16 +15905,9 @@ ${is_iws}`;
                     this.offset += Math.round(this.offset_fractional);
                     this.scrub_velocity = 0;
                     this.offset_fractional = 0;
-<<<<<<< HEAD
-                    this.render(null, this.activeSources, true).play(1);
-<<<<<<< HEAD
-=======
-=======
                     this.render(null, this.activeScopes, true).play(1);
->>>>>>> version 0.7.0-a
                     this.SCRUBBING = false;
                     return false;
->>>>>>> adding test for scrubbing
                 }
             }
 
@@ -15928,12 +15917,8 @@ ${is_iws}`;
         arrange(output = this.activeScopes) {
 
 
-<<<<<<< HEAD
-            //Arranges active sources according to their arrange handler.
-            
-=======
+
             //Arranges active scopes according to their arrange handler.
->>>>>>> version 0.7.0-a
             const
                 limit = this.limit,
                 offset = this.offset,
@@ -15958,8 +15943,6 @@ ${is_iws}`;
             
             transition.play(1);
             
-            if(output_length > 0 && output[active_window_start])
-                console.log(output[active_window_start].ele);
         }
 
         render(transition, output = this.activeScopes, NO_TRANSITION = false) {
@@ -16465,47 +16448,7 @@ ${is_iws}`;
 
 
             this._TRANSITION_STATE_ = false;
-
-
-            /*
-            for (let i = 0, l = this.scopes.length; i < l; i++) {
-
-                let ast = this.scope.ast;
-
-                let css = ast.css;
-
-                let hooks = this.scope.hooks;
-
-                for (let i = 0, l = hooks.length; i < l; i++) {
-
-                    let hook = hooks[i];
-
-                    if (!hook) continue;
-                    let ele = hook.ele;
-
-                    if (ele.getAttribute("trs") == "out") continue;
-                    ele.setAttribute("trs", "out");
-
-                    if (css) {
-                        let rule = css.getApplicableRules(ele);
-
-                        for (let name in rule.props)
-                            if (name == "transition")
-                                for (let i = 0, prop = rule.props[name]; i < prop.length; i++) {
-                                    let sub_prop = prop[i];
-                                    if (!isNaN(sub_prop))
-                                        transition_time = Math.max(transition_time, sub_prop.milliseconds);
-
-                                }
-
-                        if (hook.style)
-                            hook.style._setRule_(rule);
-                        else {
-                            //ele.style = rule + "";
-                        }
-                    }
-                }
-            }*/
+            
             if (transition_time > 0)
                 setTimeout(() => {
                     this._removeFromDOM_();
@@ -16698,19 +16641,22 @@ ${is_iws}`;
 
 
             for (i = 0, l = this.asts.length; i < l; i++) {
-                
-                let errors = [];
-                
-                let scope = this.asts[i].build(element, null, null, errors);
-                
-                manager.scopes.push(scope); // = this.asts.flesh(element, model, parent);
-                
-                if (errors.length > 0) {
-                    //TODO!!!!!!Remove all bindings that change Model. 
-                    //scope.kill_up_bindings();
-                    errors.forEach(e => console.log(e));
-                }
 
+                let errors = [];
+
+                let scope = this.asts[i].build(element, null, null, errors);
+
+                if (scope) {
+                    scope.parent = manager;
+                    
+                    if(model)
+                        scope.load(model);
+
+                    manager.scopes.push(scope);
+                }
+                
+                if (errors.length > 0)
+                    errors.forEach(e => console.log(e));
             }
 
             if (manager.scopeLoaded) manager.scopeLoaded();
@@ -16725,7 +16671,7 @@ ${is_iws}`;
                 str += this.links[i];
 
             for (let i = 0; i < this.asts.length; i++)
-                str += this.asts[i].tree;
+                str += this.asts[i];
 
             return str;
         }
@@ -16806,8 +16752,8 @@ ${is_iws}`;
 
                 me.package = pckg;
 
-                if (!me.package.ast[0].url)
-                    me.package.ast[0].url = this.getURL();
+                if (!me.package.asts[0].url)
+                    me.package.asts[0].url = this.getURL();
 
                 me.prop = this.property_bind._bind_(scope, errors, taps, me);
 

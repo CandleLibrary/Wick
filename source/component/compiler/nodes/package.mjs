@@ -25,7 +25,7 @@ export class PackageNode extends VoidNode {
         own_lex.off = this._start_;
         own_lex.tl = 0;
         own_lex.n.sl = lex.off;
-
+        
         this.par.package = new this.ScopePackage(own_lex, this.presets, false);
 
         if (!this.fch)

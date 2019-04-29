@@ -18,8 +18,11 @@ export class ScopeManager {
     }
 
     destroy() {
-        for (let i = 0; i < this.scopes.length; i++)
+        this.update({dismounted:true});
+
+        for (let i = 0; i < this.scopes.length; i++){
             this.scopes[i].destroy();
+        }
         this.scope = null;
         this.model = null;
         this.ele = null;
@@ -75,9 +78,7 @@ export class ScopeManager {
         let transition_time = 0;
 
         if (transition) {
-            let data = {};
-
-            data[transition_name] = transition;
+            let data = {[transition_name]:transition};
 
             this.update(data);
 

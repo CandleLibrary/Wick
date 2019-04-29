@@ -44,6 +44,7 @@ export const JSCompiler = (data, presets) => createComponentWithJSSyntax(data, p
  * This module allows JavaScript to be used to describe wick components. 
  */
 async function createComponentWithJSSyntax(data, presets = new Presets(), locale = "", stack = [], async_wait = {waiting:0}) {
+
     const
         base = ++async_wait.waiting,
         rs_base = stack.length,
@@ -60,6 +61,7 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
         if (ext == "js") {
 
             try {
+                //Attempt to load data. If this fails, than data is not a URL or the resource (does not exist / is not accessible).
                 const data = await url.fetchText();
 
                 if (url.MIME == "text/javascript");
@@ -93,10 +95,8 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
 
                 return rvalue;
             } catch (e) {
-                throw e;
+                console.log.log(e)
             }
-
-            return;
         } else if (ext == "mjs") {
             return; //Todo, parse using import syntax
         } else if (ext == "html") {
@@ -107,14 +107,12 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
             //Make sure we treat the previous fetch as the new url base.
             locale = url;
         }
-    } else if (DATA_IS_STRING || data instanceof HTMLElement) {
 
+
+    }  
+
+    if (DATA_IS_STRING || data instanceof HTMLElement) 
         data = { dom: data };
-    }
-
-    //if (presets instanceof Presets)
-    //    presets = presets.copy();
-
 
     let
         pkg = null,

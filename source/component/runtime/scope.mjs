@@ -17,7 +17,8 @@ export class Scope extends View {
      *   @extends ScopeBase
      */
     constructor(parent, presets, element, ast) {
-        
+        if(!presets)
+            debugger;
         super();
 
         this.ast = null;
@@ -150,7 +151,6 @@ export class Scope extends View {
         Makes the scope a view of the given Model. If no model passed, then the scope will bind to another model depending on its `scheme` or `model` attributes. 
     */
     load(model) {
-
         let
             m = null,
             s = null;
