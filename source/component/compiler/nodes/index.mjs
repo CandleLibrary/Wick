@@ -22,8 +22,10 @@ async function CreateHTMLNode(tag, offset, lex) {
     if (tag[0] == "w")
         switch (tag) {
             case "w-s":
+            case "w-scope":
                 return new ScopeNode(); //This node is used to 
             case "w-c":
+            case "w-container":
                 return new ScopeContainerNode(); //This node is used to 
         }
         
@@ -33,13 +35,17 @@ async function CreateHTMLNode(tag, offset, lex) {
             /** void elements **/
         case "template":
             return new VoidNode();
+        case "css":
         case "style":
             return new StyleNode();
+        case "js":
         case "script":
             return new ScriptNode();
         case "svg":
         case "path":
             return new SVGNode();
+        case "container":
+            return new ScopeContainerNode();
         case "scope":
             return new ScopeNode();
         case "slot":

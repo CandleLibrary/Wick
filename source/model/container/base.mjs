@@ -110,12 +110,23 @@ export class ModelContainerBase extends ModelBase {
     */
     push(...item) {
         item.forEach(item => {
-            if (item instanceof Array)
-                item.forEach((i) => {
-                    this.insert(i);
-                });
-            else
-                this.insert(item);
+            if (this.scope) {
+                if (item instanceof Array)
+                    item.forEach((i) => {
+                        this.insert(i, true, true);
+                    });
+                else
+                    this.insert(item, true, true);
+
+            } else {
+                if (item instanceof Array)
+                    item.forEach((i) => {
+                        this.insert(i);
+                    });
+                else
+                    this.insert(item);
+
+            }
         })
     }
 
@@ -186,6 +197,7 @@ export class ModelContainerBase extends ModelBase {
         @returns {Boolean} Returns true if an insertion into the ModelContainerBase occurred, false otherwise.
     */
     insert(item, from_root = false, __FROM_SCOPE__ = false) {
+
 
         item = this.setHook("", item);
 

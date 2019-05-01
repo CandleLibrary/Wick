@@ -1,3 +1,5 @@
+import spark from "@candlefw/spark";
+
 import { appendChild, createElement } from "../../../short_names.mjs";
 import { barrier_a_start, barrier_b_start } from "../../../barriers.mjs";
 import { FilterIO } from "../../io/filter_io.mjs";
@@ -13,6 +15,7 @@ import { SlotNode } from "./slot.mjs";
 import { Scope } from "../../runtime/scope.mjs";
 import { ScopeContainer } from "../../runtime/container.mjs";
 import { BasePackage } from "../../runtime/base_package.mjs"
+import { ScopeManager } from "../../runtime/manager.mjs"
 
 export class ScopeContainerNode extends RootNode {
 
@@ -41,70 +44,38 @@ export class ScopeContainerNode extends RootNode {
 
         scope = scope || new Scope(null, presets, element, this);
 
+        let
+            pckg = this.package,
+            HAS_STATIC_SCOPES = false
+
+        const
+            ele = createElement(this.getAttribute("element") || "ul"),
+            me = new ScopeContainer(scope, presets, ele);
+
+        appendChild(element, ele);
+        this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
+
         if (this.HAS_TAPS)
             taps = scope.linkTaps(this.tap_list);
 
-        let pckg = this.package;
+        if (this._badge_name_)
+            scope.badges[this._badge_name_] = ele;
 
-        if (!pckg) {
-
-            // See if there is a slot node that can be used to pull data from the statics
-
-            // Package cannot be cached in this case, since the container may be used in different 
-            // components that assign different scope tree's to the slot. 
-            if (statics.slots) {
-                let slot = null;
-
-                let children = this.children;
-
-                for (let i = 0, v = null; i < children.length; i++)
-                    if (children[i].tag == "slot") {
-                        if (statics.slots[children[i].name]) {
-                            const ele = statics.slots[children[i].name];
-
-                            ele.__presets__ = this.presets;
-
-                            pckg = new BasePackage()
-                            pckg.asts.push(ele);
-                            pckg.READY = true;
-
-                            //Exit loop on first successful match.
-                            break;
-                        }
-                    }
-
-            }
-        }
-
-        if (this.property_bind && pckg) {
-
-            let ele = createElement(this.getAttribute("element") || "ul");
-
-            this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
-
-            if (this._badge_name_)
-                scope.badges[this._badge_name_] = ele;
-
-            let me = new ScopeContainer(scope, presets, ele);
-
-            me.package = pckg;
-
-            if (!me.package.asts[0].url)
-                me.package.asts[0].url = this.getURL();
-
+        if (this.property_bind)
             me.prop = this.property_bind._bind_(scope, errors, taps, me);
 
-            appendChild(element, ele);
+        for (let node = this.fch; node; node = this.getNextChild(node)) {
 
-            for (let node = this.fch; node; node = this.getNextChild(node)) {
-
-                let on = node.getAttrib("on");
-                let sort = node.getAttrib("sort");
-                let filter = node.getAttrib("filter");
-                let limit = node.getAttrib("limit");
-                let offset = node.getAttrib("offset");
-                let scrub = node.getAttrib("scrub");
-                let shift = node.getAttrib("shift");
+            if (node.tag == "f") {
+                
+                let
+                    on = node.getAttrib("on"),
+                    sort = node.getAttrib("sort"),
+                    filter = node.getAttrib("filter"),
+                    limit = node.getAttrib("limit"),
+                    offset = node.getAttrib("offset"),
+                    scrub = node.getAttrib("scrub"),
+                    shift = node.getAttrib("shift");
 
                 if (limit && limit.binding.type == 1) {
                     me.limit = parseInt(limit.value);
@@ -118,7 +89,33 @@ export class ScopeContainerNode extends RootNode {
 
                 if (sort || filter || limit || offset || scrub || shift) //Only create Filter node if it has a sorting bind or a filter bind
                     me.filters.push(new FilterIO(scope, errors, taps, me, on, sort, filter, limit, offset, scrub, shift));
+
+            } else if (node.tag == "slot" && !pckg && statics.slots) {
+                if (statics.slots[node.name]) {
+                    const ele = statics.slots[node.name];
+                    ele.__presets__ = this.presets;
+                    pckg = new BasePackage()
+                    pckg.asts.push(ele);
+                    pckg.READY = true;
+                }
+            } else {
+                //pack node into source manager
+                const mgr = new ScopeManager();
+                mgr.scopes.push(node.build(null, scope, presets, errors, statics));
+                mgr.READY = true;
+                me.scopes.push(mgr);
+                HAS_STATIC_SCOPES = true;
             }
+        }
+
+        if (this.property_bind && pckg) {
+            me.package = pckg;
+
+            if (!me.package.asts[0].url)
+                me.package.asts[0].url = this.getURL();
+
+        } else if (HAS_STATIC_SCOPES) {
+            spark.queueUpdate(me);
         } else {
             if (this.property_bind)
                 //If there is no package at all then abort build of this element. TODO, throw an appropriate warning.
@@ -145,7 +142,9 @@ export class ScopeContainerNode extends RootNode {
             case "f":
                 return new FilterNode(); //This node is used to 
             default:
-                return new PackageNode(start); //This node is used to build packages
+                if (this.property_bind)
+                    return new PackageNode(start); //This node is used to build packages
+                return super.createHTMLNodeHook(tag, start);
         }
 
     }

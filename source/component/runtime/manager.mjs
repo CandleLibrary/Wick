@@ -39,6 +39,9 @@ export class ScopeManager {
 
     appendToDOM(element, before_element) {
         this._APPEND_STATE_ = true;
+        this.mount
+
+
         if (before_element)
             element.insertBefore(this.element, before_element);
         else

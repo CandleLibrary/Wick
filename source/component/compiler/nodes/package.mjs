@@ -6,6 +6,7 @@ export class PackageNode extends VoidNode {
         super();
         this._start_ = start;
         this.url = this.getURL();
+        this.tag = "package";
     }
 
     /******************************************* HOOKS ****************************************************/

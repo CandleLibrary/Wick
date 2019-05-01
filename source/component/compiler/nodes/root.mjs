@@ -398,7 +398,7 @@ export class RootNode extends HTMLNode {
         const own_element = this.createElement(presets, scope);
 
         if (!scope)
-            scope = new Scope(null, presets, own_element, this);
+            scope = new Scope(null, presets || this.__presets__ || this.presets, own_element, this);
 
         if (this.HAS_TAPS)
             taps = scope.linkTaps(this.tap_list);

@@ -556,9 +556,9 @@ export class ScopeContainer extends View {
                 out = [];
 
             for (let i = 0, l = this.activeScopes.length; i < l; i++)
-                if (exists.has(this.activeScopes[i].model)) {
+                if (exists.has(this.activeScopes[i].model)) 
                     exists.set(this.activeScopes[i].model, false);
-                }
+                
 
             for (let i = 0, l = this.scopes.length; i < l; i++)
                 if (!exists.has(this.scopes[i].model)) {
@@ -571,7 +571,6 @@ export class ScopeContainer extends View {
                     exists.set(this.scopes[i].model, false);
 
             exists.forEach((v, k, m) => { if (v) out.push(k); });
-
 
             if (out.length > 0) {
                 // Wrap models into components
