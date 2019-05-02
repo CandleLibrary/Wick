@@ -732,12 +732,23 @@ var wick = (function () {
         */
         push(...item) {
             item.forEach(item => {
-                if (item instanceof Array)
-                    item.forEach((i) => {
-                        this.insert(i);
-                    });
-                else
-                    this.insert(item);
+                if (this.scope) {
+                    if (item instanceof Array)
+                        item.forEach((i) => {
+                            this.insert(i, true, true);
+                        });
+                    else
+                        this.insert(item, true, true);
+
+                } else {
+                    if (item instanceof Array)
+                        item.forEach((i) => {
+                            this.insert(i);
+                        });
+                    else
+                        this.insert(item);
+
+                }
             });
         }
 
@@ -808,6 +819,7 @@ var wick = (function () {
             @returns {Boolean} Returns true if an insertion into the ModelContainerBase occurred, false otherwise.
         */
         insert(item, from_root = false, __FROM_SCOPE__ = false) {
+
 
             item = this.setHook("", item);
 
@@ -3661,7 +3673,7 @@ ${is_iws}`;
         }
     }
 
-    const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
+    const uri_reg_ex = /(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:\/\/))?(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:([^\<\>\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\<\>\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\<\>\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
 
     const STOCK_LOCATION = {
         protocol: "",
@@ -5550,8 +5562,8 @@ ${is_iws}`;
                     this.attributes.push(attrib);
             }
 
-            if (lex.ch == "/") // Void Nodes
-                lex.next();
+            //if (lex.ch == "/") // Void Nodes
+            //    lex.next();
 
             lex.PARSE_STRING = true; // Reset lex to ignore string tokens.
             
@@ -5632,6 +5644,8 @@ ${is_iws}`;
 
                                     //Expect tag name 
                                     this.tag = lex.n.tx.toLowerCase();
+                                    
+
 
                                     lex.PARSE_STRING = false;
                                     URL$$1 = this.parseOpenTag(lex.n, false, old_url);
@@ -5648,7 +5662,7 @@ ${is_iws}`;
 
                                     if (lex.ch == "/") {
                                         //This is a tag that should be closed 
-                                        lex.n;
+                                        lex.next();
 
                                         SELF_CLOSING = true;
 
@@ -5691,7 +5705,7 @@ ${is_iws}`;
                                         // Tags without matching end tags.
                                         this.single = true;
 
-                                        return this;
+                                        return (await this.endOfElementHook(lex, parent)) || this;
                                     }
 
                                     continue;
@@ -11881,7 +11895,8 @@ ${is_iws}`;
          *   @extends ScopeBase
          */
         constructor(parent, presets, element, ast) {
-            
+            if(!presets)
+                debugger;
             super();
 
             this.ast = null;
@@ -12014,7 +12029,6 @@ ${is_iws}`;
             Makes the scope a view of the given Model. If no model passed, then the scope will bind to another model depending on its `scheme` or `model` attributes. 
         */
         load(model) {
-
             let
                 m = null,
                 s = null;
@@ -13872,7 +13886,7 @@ ${is_iws}`;
             const own_element = this.createElement(presets, scope);
 
             if (!scope)
-                scope = new Scope(null, presets, own_element, this);
+                scope = new Scope(null, presets || this.__presets__ || this.presets, own_element, this);
 
             if (this.HAS_TAPS)
                 taps = scope.linkTaps(this.tap_list);
@@ -14224,7 +14238,7 @@ ${is_iws}`;
 
             let out_taps = [];
 
-            let me = new Scope(scope, this.__presets__ || presets, element, this);
+            let me = new Scope(scope, this.__presets__ || presets || this.presets, element, this);
 
             this.pushChached(me);
 
@@ -14334,7 +14348,7 @@ ${is_iws}`;
 
         /******************************************* HOOKS ****************************************************/
 
-        endOfElementHook() { return this }
+        endOfElementHook() { if(!this.__presets__) {this.presets = this.presets; } return this }
 
         /**
          * Pulls Schema, Model, or tap method information from the attributes of the tag. 
@@ -14597,6 +14611,7 @@ ${is_iws}`;
             super();
             this._start_ = start;
             this.url = this.getURL();
+            this.tag = "package";
         }
 
         /******************************************* HOOKS ****************************************************/
@@ -14616,7 +14631,7 @@ ${is_iws}`;
             own_lex.off = this._start_;
             own_lex.tl = 0;
             own_lex.n.sl = lex.off;
-
+            
             this.par.package = new this.ScopePackage(own_lex, this.presets, false);
 
             if (!this.fch)
@@ -14742,7 +14757,7 @@ ${is_iws}`;
                         this.type = this.getType(k0_val);
                     }
 
-                    this.getValue(obj, prop_name, type);
+                    this.getValue(obj, prop_name, type, k0_val);
 
                     let p = this.current_val;
 
@@ -14758,7 +14773,8 @@ ${is_iws}`;
                     this.current_val = null;
                 }
 
-                getValue(obj, prop_name, type) {
+                getValue(obj, prop_name, type, k0_val) {
+
                     if (type == CSS_STYLE) {
                         let name = prop_name.replace(/[A-Z]/g, (match) => "-" + match.toLowerCase());
                         let cs = window.getComputedStyle(obj);
@@ -14768,6 +14784,7 @@ ${is_iws}`;
                         
                         if(!value)
                             value = obj.style[prop_name];
+                    
 
                         if (this.type == CSS_Percentage$1) {
                             if (obj.parentElement) {
@@ -14777,8 +14794,7 @@ ${is_iws}`;
                                 value = (ratio * 100);
                             }
                         }
-
-                        this.current_val = new this.type(value);
+                        this.current_val = (new this.type(value));
 
                     } else {
                         this.current_val = new this.type(obj[prop_name]);
@@ -14867,7 +14883,6 @@ ${is_iws}`;
                 }
 
                 setProp(obj, prop_name, value, type) {
-
                     if (type == CSS_STYLE) {
                         obj.style[prop_name] = value;
                     } else
@@ -15176,7 +15191,7 @@ ${is_iws}`;
 
                 //TODO: allow scale to control playback speed and direction
                 play(scale = 1, from = 0) {
-                    this.SCALE = 0;
+                    this.SCALE = scale;
                     this.time = from;
                     spark.queueUpdate(this);
                     return this;
@@ -15188,19 +15203,19 @@ ${is_iws}`;
                 }    
             }
 
-            const GlowFunction = function() {
+            const GlowFunction = function(...args) {
 
-                if (arguments.length > 1) {
+                if (args.length > 1) {
 
                     let group = new AnimGroup();
 
-                    for (let i = 0; i < arguments.length; i++) {
-                        let data = arguments[i];
+                    for (let i = 0; i < args.length; i++) {
+                        let data = args[i];
 
                         let obj = data.obj;
                         let props = {};
 
-                        Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
+                        Object.keys(data).forEach(k => { if (!(({ obj: true, match: true, delay:true })[k])) props[k] = data[k]; });
 
                         group.add(new AnimSequence(obj, props));
                     }
@@ -15208,12 +15223,12 @@ ${is_iws}`;
                     return group;
 
                 } else {
-                    let data = arguments[0];
+                    let data = args[0];
 
                     let obj = data.obj;
                     let props = {};
 
-                    Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
+                    Object.keys(data).forEach(k => { if (!(({ obj: true, match: true, delay:true })[k])) props[k] = data[k]; });
 
                     let seq = new AnimSequence(obj, props);
 
@@ -15420,53 +15435,33 @@ ${is_iws}`;
         let obj_map = new Map();
         let ActiveTransition = null;
 
-        function $in(anim_data_or_duration = 0, delay = 0) {
+        function $in(...data) {
 
-            let seq;
+            let
+                seq = null,
+                length = data.length,
+                delay = 0;
 
-            if (typeof(anim_data_or_duration) == "object") {
-                if (anim_data_or_duration.match && this.TT[anim_data_or_duration.match]) {
-                    let duration = anim_data_or_duration.duration;
-                    let easing = anim_data_or_duration.easing;
-                    seq = this.TT[anim_data_or_duration.match](anim_data_or_duration.obj, duration, easing);
-                } else
-                    seq = Animation.createSequence(anim_data_or_duration);
+            if (typeof(data[length - 1]) == "number")
+                delay = data[length - 1], length--;
 
-                //Parse the object and convert into animation props. 
-                if (seq) {
-                    this.in_seq.push(seq);
-                    this.in_duration = Math.max(this.in_duration, seq.duration);
-                    if (this.OVERRIDE) {
+            for (let i = 0; i < length; i++) {
+                let anim_data = data[i];
 
-                        if (obj_map.get(seq.obj)) {
-                            let other_seq = obj_map.get(seq.obj);
-                            other_seq.removeProps(seq);
-                        }
+                if (typeof(anim_data) == "object") {
 
-                        obj_map.set(seq.obj, seq);
-                    }
-                }
+                    if (anim_data.match && this.TT[anim_data.match]) {
+                        let
+                            duration = anim_data.duration,
+                            easing = anim_data.easing;
+                        seq = this.TT[anim_data.match](anim_data.obj, duration, easing);
+                    } else
+                        seq = Animation.createSequence(anim_data);
 
-            } else
-                this.in_duration = Math.max(this.in_duration, parseInt(delay) + parseInt(anim_data_or_duration));
-
-            return this.in;
-        }
-
-
-        function $out(anim_data_or_duration = 0, delay = 0, in_delay = 0) {
-            //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
-            //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
-
-            if (typeof(anim_data_or_duration) == "object") {
-
-                if (anim_data_or_duration.match) {
-                    this.TT[anim_data_or_duration.match] = TransformTo(anim_data_or_duration.obj);
-                } else {
-                    let seq = Animation.createSequence(anim_data_or_duration);
+                    //Parse the object and convert into animation props. 
                     if (seq) {
-                        this.out_seq.push(seq);
-                        this.out_duration = Math.max(this.out_duration, seq.duration);
+                        this.in_seq.push(seq);
+                        this.in_duration = Math.max(this.in_duration, seq.duration);
                         if (this.OVERRIDE) {
 
                             if (obj_map.get(seq.obj)) {
@@ -15477,11 +15472,59 @@ ${is_iws}`;
                             obj_map.set(seq.obj, seq);
                         }
                     }
-                    this.in_delay = Math.max(this.in_delay, parseInt(delay));
                 }
-            } else {
-                this.out_duration = Math.max(this.out_duration, parseInt(delay) + parseInt(anim_data_or_duration));
-                this.in_delay = Math.max(this.in_delay, parseInt(in_delay));
+            }
+
+            this.in_duration = Math.max(this.in_duration, parseInt(delay));
+
+            return this.in;
+        }
+
+
+        function $out(...data) {
+            //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
+            //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
+            let
+                seq = null,
+                length = data.length,
+                delay = 0,
+                in_delay = 0;
+
+            if (typeof(data[length - 1]) == "number") {
+                if (typeof(data[length - 2]) == "number") {
+                    in_delay = data[length - 2];
+                    delay = data[length - 1];
+                    length -= 2;
+                } else
+                    delay = data[length - 1], length--;
+            }
+
+            for (let i = 0; i < length; i++) {
+                let anim_data = data[i];
+
+                if (typeof(anim_data) == "object") {
+
+                    if (anim_data.match) {
+                        this.TT[anim_data.match] = TransformTo(anim_data.obj);
+                    } else {
+                        let seq = Animation.createSequence(anim_data);
+                        if (seq) {
+                            this.out_seq.push(seq);
+                            this.out_duration = Math.max(this.out_duration, seq.duration);
+                            if (this.OVERRIDE) {
+
+                                if (obj_map.get(seq.obj)) {
+                                    let other_seq = obj_map.get(seq.obj);
+                                    other_seq.removeProps(seq);
+                                }
+
+                                obj_map.set(seq.obj, seq);
+                            }
+                        }
+
+                        this.in_delay = Math.max(this.in_delay, parseInt(delay));
+                    }
+                }
             }
         }
 
@@ -15579,7 +15622,7 @@ ${is_iws}`;
             }
 
             step(t) {
-                
+
                 for (let i = 0; i < this.out_seq.length; i++) {
                     let seq = this.out_seq[i];
                     if (!seq.run(t) && !seq.FINISHED) {
@@ -15792,9 +15835,10 @@ ${is_iws}`;
          * @param  {Number} scrub_amount [description]
          */
         scrub(scrub_delta, SCRUBBING = true) {
+            // scrub_delta is the relative ammunt of change from the previous offset. 
 
-
-            // scrub_delta is the relative ammount of change from the previous offset. 
+            if(!this.SCRUBBING) 
+                this.render(null, this.activeScopes, true);
 
             this.SCRUBBING = true;
 
@@ -15947,6 +15991,7 @@ ${is_iws}`;
 
         render(transition, output = this.activeScopes, NO_TRANSITION = false) {
 
+
             let
                 active_window_size = this.limit,
                 offset = this.offset,
@@ -16019,7 +16064,7 @@ ${is_iws}`;
                     ein.push(output[i++]);
                 }
 
-                //Scopes entering the transition window descending
+                //Scopes entering the transition window while offset is descending
                 while (i < active_window_start + active_window_size + this.shift_amount && i < output_length) {
                     this.dom_up.push(output[i]);
                     output[i].update({
@@ -16184,13 +16229,13 @@ ${is_iws}`;
                     out = [];
 
                 for (let i = 0, l = this.activeScopes.length; i < l; i++)
-                    if (exists.has(this.activeScopes[i].model)) {
+                    if (exists.has(this.activeScopes[i].model)) 
                         exists.set(this.activeScopes[i].model, false);
-                    }
+                    
 
                 for (let i = 0, l = this.scopes.length; i < l; i++)
                     if (!exists.has(this.scopes[i].model)) {
-                        this.scopes[i].transitionOut(transition, "", true);
+                        this.scopes[i].transitionOut(transition, "dismounting", true);
                         this.scopes[i].index = -1;
                         this.scopes.splice(i, 1);
                         l--;
@@ -16199,7 +16244,6 @@ ${is_iws}`;
                         exists.set(this.scopes[i].model, false);
 
                 exists.forEach((v, k, m) => { if (v) out.push(k); });
-
 
                 if (out.length > 0) {
                     // Wrap models into components
@@ -16377,8 +16421,11 @@ ${is_iws}`;
         }
 
         destroy() {
-            for (let i = 0; i < this.scopes.length; i++)
+            this.update({dismounted:true});
+
+            for (let i = 0; i < this.scopes.length; i++){
                 this.scopes[i].destroy();
+            }
             this.scope = null;
             this.model = null;
             this.ele = null;
@@ -16395,6 +16442,9 @@ ${is_iws}`;
 
         appendToDOM(element, before_element) {
             this._APPEND_STATE_ = true;
+            this.mount;
+
+
             if (before_element)
                 element.insertBefore(this.element, before_element);
             else
@@ -16434,9 +16484,7 @@ ${is_iws}`;
             let transition_time = 0;
 
             if (transition) {
-                let data = {};
-
-                data[transition_name] = transition;
+                let data = {[transition_name]:transition};
 
                 this.update(data);
 
@@ -16648,9 +16696,8 @@ ${is_iws}`;
 
                 if (scope) {
                     scope.parent = manager;
-                    
-                    if(model)
-                        scope.load(model);
+                                    
+                    scope.load(model);
 
                     manager.scopes.push(scope);
                 }
@@ -16704,70 +16751,38 @@ ${is_iws}`;
 
             scope = scope || new Scope(null, presets, element, this);
 
+            let
+                pckg = this.package,
+                HAS_STATIC_SCOPES = false;
+
+            const
+                ele = createElement(this.getAttribute("element") || "ul"),
+                me = new ScopeContainer(scope, presets, ele);
+
+            appendChild$1(element, ele);
+            this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
+
             if (this.HAS_TAPS)
                 taps = scope.linkTaps(this.tap_list);
 
-            let pckg = this.package;
+            if (this._badge_name_)
+                scope.badges[this._badge_name_] = ele;
 
-            if (!pckg) {
-
-                // See if there is a slot node that can be used to pull data from the statics
-
-                // Package cannot be cached in this case, since the container may be used in different 
-                // components that assign different scope tree's to the slot. 
-                if (statics.slots) {
-                    let slot = null;
-
-                    let children = this.children;
-
-                    for (let i = 0, v = null; i < children.length; i++)
-                        if (children[i].tag == "slot") {
-                            if (statics.slots[children[i].name]) {
-                                const ele = statics.slots[children[i].name];
-
-                                ele.__presets__ = this.presets;
-
-                                pckg = new BasePackage();
-                                pckg.asts.push(ele);
-                                pckg.READY = true;
-
-                                //Exit loop on first successful match.
-                                break;
-                            }
-                        }
-
-                }
-            }
-
-            if (this.property_bind && pckg) {
-
-                let ele = createElement(this.getAttribute("element") || "ul");
-
-                this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
-
-                if (this._badge_name_)
-                    scope.badges[this._badge_name_] = ele;
-
-                let me = new ScopeContainer(scope, presets, ele);
-
-                me.package = pckg;
-
-                if (!me.package.asts[0].url)
-                    me.package.asts[0].url = this.getURL();
-
+            if (this.property_bind)
                 me.prop = this.property_bind._bind_(scope, errors, taps, me);
 
-                appendChild$1(element, ele);
+            for (let node = this.fch; node; node = this.getNextChild(node)) {
 
-                for (let node = this.fch; node; node = this.getNextChild(node)) {
-
-                    let on = node.getAttrib("on");
-                    let sort = node.getAttrib("sort");
-                    let filter = node.getAttrib("filter");
-                    let limit = node.getAttrib("limit");
-                    let offset = node.getAttrib("offset");
-                    let scrub = node.getAttrib("scrub");
-                    let shift = node.getAttrib("shift");
+                if (node.tag == "f") {
+                    
+                    let
+                        on = node.getAttrib("on"),
+                        sort = node.getAttrib("sort"),
+                        filter = node.getAttrib("filter"),
+                        limit = node.getAttrib("limit"),
+                        offset = node.getAttrib("offset"),
+                        scrub = node.getAttrib("scrub"),
+                        shift = node.getAttrib("shift");
 
                     if (limit && limit.binding.type == 1) {
                         me.limit = parseInt(limit.value);
@@ -16781,7 +16796,33 @@ ${is_iws}`;
 
                     if (sort || filter || limit || offset || scrub || shift) //Only create Filter node if it has a sorting bind or a filter bind
                         me.filters.push(new FilterIO(scope, errors, taps, me, on, sort, filter, limit, offset, scrub, shift));
+
+                } else if (node.tag == "slot" && !pckg && statics.slots) {
+                    if (statics.slots[node.name]) {
+                        const ele = statics.slots[node.name];
+                        ele.__presets__ = this.presets;
+                        pckg = new BasePackage();
+                        pckg.asts.push(ele);
+                        pckg.READY = true;
+                    }
+                } else {
+                    //pack node into source manager
+                    const mgr = new ScopeManager();
+                    mgr.scopes.push(node.build(null, scope, presets, errors, statics));
+                    mgr.READY = true;
+                    me.scopes.push(mgr);
+                    HAS_STATIC_SCOPES = true;
                 }
+            }
+
+            if (this.property_bind && pckg) {
+                me.package = pckg;
+
+                if (!me.package.asts[0].url)
+                    me.package.asts[0].url = this.getURL();
+
+            } else if (HAS_STATIC_SCOPES) {
+                spark.queueUpdate(me);
             } else {
                 if (this.property_bind)
                     //If there is no package at all then abort build of this element. TODO, throw an appropriate warning.
@@ -16808,7 +16849,9 @@ ${is_iws}`;
                 case "f":
                     return new FilterNode(); //This node is used to 
                 default:
-                    return new PackageNode(start); //This node is used to build packages
+                    if (this.property_bind)
+                        return new PackageNode(start); //This node is used to build packages
+                    return super.createHTMLNodeHook(tag, start);
             }
 
         }
@@ -16946,8 +16989,10 @@ ${is_iws}`;
         if (tag[0] == "w")
             switch (tag) {
                 case "w-s":
+                case "w-scope":
                     return new ScopeNode$1(); //This node is used to 
                 case "w-c":
+                case "w-container":
                     return new ScopeContainerNode$1(); //This node is used to 
             }
             
@@ -16957,13 +17002,19 @@ ${is_iws}`;
                 /** void elements **/
             case "template":
                 return new VoidNode$1();
+            case "css":
             case "style":
                 return new StyleNode$1();
+            case "js":
             case "script":
                 return new ScriptNode$1();
             case "svg":
             case "path":
                 return new SVGNode();
+            case "container":
+                return new ScopeContainerNode$1();
+            case "scope":
+                return new ScopeNode$1();
             case "slot":
                 return new SlotNode();
                 //Elements that should not be parsed for binding points.
@@ -17273,7 +17324,7 @@ ${is_iws}`;
             ARRAY_MODEL: 5,
             FUNCTION_MODEL: 6,
         };
-        
+
 
 
     const JSCompiler = (data, presets) => createComponentWithJSSyntax(data, presets, document.location.toString());
@@ -17281,7 +17332,8 @@ ${is_iws}`;
     /**
      * This module allows JavaScript to be used to describe wick components. 
      */
-    async function createComponentWithJSSyntax(data, presets = new Presets(), locale = "", stack = [], async_wait = {waiting:0}) {
+    async function createComponentWithJSSyntax(data, presets = new Presets(), locale = "", stack = [], async_wait = { waiting: 0 }) {
+
         const
             base = ++async_wait.waiting,
             rs_base = stack.length,
@@ -17298,16 +17350,17 @@ ${is_iws}`;
             if (ext == "js") {
 
                 try {
+                    //Attempt to load data. If this fails, than data is not a URL or the resource (does not exist / is not accessible).
                     const data = await url.fetchText();
 
                     if (url.MIME == "text/javascript");
 
                     await (new Promise(async res => {
 
-                        const out = (data) => createComponentWithJSSyntax(data, presets,  url, stack, async_wait);
+                        const out = (data) => createComponentWithJSSyntax(data, presets, url, stack, async_wait);
 
-                        (new Function("wick",  "url", data))(Object.assign(out, JSCompiler),  url);
-                       
+                        (new Function("wick", "url", data))(Object.assign(out, JSCompiler), url);
+
 
                         // Since we have an async function, we need some way to wait for the function to 
                         // return be fore contining this particular execution stack.
@@ -17331,10 +17384,8 @@ ${is_iws}`;
 
                     return rvalue;
                 } catch (e) {
-                    throw e;
+                    console.log.log(e);
                 }
-
-                return;
             } else if (ext == "mjs") {
                 return; //Todo, parse using import syntax
             } else if (ext == "html") {
@@ -17345,14 +17396,12 @@ ${is_iws}`;
                 //Make sure we treat the previous fetch as the new url base.
                 locale = url;
             }
-        } else if (DATA_IS_STRING || data instanceof HTMLElement) {
 
-            data = { dom: data };
+
         }
 
-        //if (presets instanceof Presets)
-        //    presets = presets.copy();
-
+        if (DATA_IS_STRING || data instanceof HTMLElement)
+            data = { dom: data };
 
         let
             pkg = null,
@@ -17378,12 +17427,15 @@ ${is_iws}`;
 
         if (data.dom && (typeof(data.dom) == "string" || data.dom.tagName == "TEMPLATE")) {
 
-            const url = URL.resolveRelative(data.dom, locale);
-
             let val = data.dom;
 
-            if (url && url.ext == "html")
-                val = await url.fetchText();
+            if (typeof(data.dom) == "string") {
+
+                const url = URL.resolveRelative(data.dom, locale);
+
+                if (url && url.ext == "html")
+                    val = await url.fetchText();
+            }
 
             try {
                 pkg = await new ScopePackage(val, presets, true, locale);
@@ -17406,11 +17458,11 @@ ${is_iws}`;
                 let src = new ScriptNode$1();
 
                 src.__presets__ = presets;
-                
+
                 pkg = new BasePackage();
-                
+
                 pkg.asts = [src];
-                
+
                 var scope_tree = src;
             }
         }
@@ -17457,7 +17509,7 @@ ${is_iws}`;
         async_wait.waiting--;
 
         stack.push(return_value);
-        
+
         return return_value;
     }
 
@@ -17482,16 +17534,16 @@ ${is_iws}`;
                 scope_tree = pkg.asts[0];
             else {
                 let scope = new ScopeNode$1();
-                
+
                 scope.tag = "w-s";
 
                 for (let i = 0; i < pkg.asts.length; i++)
                     scope.addChild(pkg.asts[i]);
 
                 scope.__presets__ = presets;
-                
+
                 pkg.asts = [scope];
-                
+
                 scope_tree = scope;
             }
         } else
@@ -17505,7 +17557,7 @@ ${is_iws}`;
             container_tree.package = new BasePackage();
             container_tree.package.READY = true;
             container_tree.package.asts = pkg.asts;
-            
+
             pkg.asts = [container_tree];
 
             container_scope_tree = container_tree.package.asts[0];
@@ -17528,15 +17580,15 @@ ${is_iws}`;
                 checkFlag(NEED_SCOPE_BITS, SCOPE_BITS.PUT)
             ) {
                 const scope = new ScopeNode$1();
-                
+
                 scope.tag = "w-s";
-                
+
                 scope.addChild(container_tree);
-                
+
                 scope.__presets__ = presets;
-                
+
                 pkg.asts = [scope];
-                
+
                 scope_tree = scope;
             }
         }
@@ -17818,6 +17870,7 @@ ${is_iws}`;
         toString: () => `CandleFW Wick 2019`
     });
 
+    wick.whind = whind$1;
     Object.freeze(wick);
 
     return wick;

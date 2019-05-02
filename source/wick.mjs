@@ -23,6 +23,7 @@ import { PackageNode } from "./component/compiler/nodes/package.mjs";
 import { SVGNode } from "./component/compiler/nodes/svg.mjs";
 import { ScopeContainerNode } from "./component/compiler/nodes/container.mjs";
 import polyfill from "./polyfill.mjs"
+import whind from "@candlefw/whind";
 
 const wick = JSCompiler;
 
@@ -60,5 +61,6 @@ export {
 Object.assign(wick, core)
 
 wick.polyfill = polyfill;
+wick.whind = whind;
 
 export default wick;

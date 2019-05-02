@@ -21,6 +21,7 @@ import { ScopeNode } from "./component/compiler/nodes/scope.mjs";
 import { PackageNode } from "./component/compiler/nodes/package.mjs";
 import { SVGNode } from "./component/compiler/nodes/svg.mjs";
 import { ScopeContainerNode } from "./component/compiler/nodes/container.mjs";
+import whind from "@candlefw/whind";
 
 const wick = JSCompiler;
 
@@ -57,6 +58,7 @@ Object.assign(wick, core, {
     toString: () => `CandleFW Wick 2019`
 })
 
+wick.whind = whind;
 Object.freeze(wick);
 
 export default wick;

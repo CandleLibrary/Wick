@@ -391,7 +391,7 @@ export class ScopeContainer extends View {
                 ein.push(output[i++]);
             }
 
-            //Scopes entering the transition window descending
+            //Scopes entering the transition window while offset is descending
             while (i < active_window_start + active_window_size + this.shift_amount && i < output_length) {
                 this.dom_up.push(output[i]);
                 output[i].update({

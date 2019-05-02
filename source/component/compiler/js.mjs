@@ -35,7 +35,7 @@ const
         ARRAY_MODEL: 5,
         FUNCTION_MODEL: 6,
     };
-    
+
 
 
 export const JSCompiler = (data, presets) => createComponentWithJSSyntax(data, presets, document.location.toString())
@@ -43,7 +43,7 @@ export const JSCompiler = (data, presets) => createComponentWithJSSyntax(data, p
 /**
  * This module allows JavaScript to be used to describe wick components. 
  */
-async function createComponentWithJSSyntax(data, presets = new Presets(), locale = "", stack = [], async_wait = {waiting:0}) {
+async function createComponentWithJSSyntax(data, presets = new Presets(), locale = "", stack = [], async_wait = { waiting: 0 }) {
 
     const
         base = ++async_wait.waiting,
@@ -68,10 +68,10 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
 
                 await (new Promise(async res => {
 
-                    const out = (data) => createComponentWithJSSyntax(data, presets,  url, stack, async_wait);
+                    const out = (data) => createComponentWithJSSyntax(data, presets, url, stack, async_wait);
 
-                    (new Function("wick",  "url", data))(Object.assign(out, JSCompiler),  url);
-                   
+                    (new Function("wick", "url", data))(Object.assign(out, JSCompiler), url);
+
 
                     // Since we have an async function, we need some way to wait for the function to 
                     // return be fore contining this particular execution stack.
@@ -109,9 +109,9 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
         }
 
 
-    }  
+    }
 
-    if (DATA_IS_STRING || data instanceof HTMLElement) 
+    if (DATA_IS_STRING || data instanceof HTMLElement)
         data = { dom: data };
 
     let
@@ -138,12 +138,15 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
 
     if (data.dom && (typeof(data.dom) == "string" || data.dom.tagName == "TEMPLATE")) {
 
-        const url = URL.resolveRelative(data.dom, locale);
-
         let val = data.dom;
 
-        if (url && url.ext == "html")
-            val = await url.fetchText()
+        if (typeof(data.dom) == "string") {
+
+            const url = URL.resolveRelative(data.dom, locale);
+
+            if (url && url.ext == "html")
+                val = await url.fetchText()
+        }
 
         try {
             pkg = await new ScopePackage(val, presets, true, locale);
@@ -166,11 +169,11 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
             let src = new ScriptNode();
 
             src.__presets__ = presets;
-            
+
             pkg = new BasePackage();
-            
+
             pkg.asts = [src];
-            
+
             var scope_tree = src;
         }
     }
@@ -217,7 +220,7 @@ async function createComponentWithJSSyntax(data, presets = new Presets(), locale
     async_wait.waiting--;
 
     stack.push(return_value);
-    
+
     return return_value;
 }
 
@@ -242,16 +245,16 @@ function EnsureRootScope(pkg, NEED_SCOPE_BITS, NEED_CONTAINER_BITS, presets) {
             scope_tree = pkg.asts[0]
         else {
             let scope = new ScopeNode();
-            
+
             scope.tag = "w-s";
 
             for (let i = 0; i < pkg.asts.length; i++)
                 scope.addChild(pkg.asts[i]);
 
             scope.__presets__ = presets;
-            
+
             pkg.asts = [scope];
-            
+
             scope_tree = scope;
         }
     } else
@@ -265,7 +268,7 @@ function EnsureRootScope(pkg, NEED_SCOPE_BITS, NEED_CONTAINER_BITS, presets) {
         container_tree.package = new BasePackage();
         container_tree.package.READY = true;
         container_tree.package.asts = pkg.asts;
-        
+
         pkg.asts = [container_tree];
 
         container_scope_tree = container_tree.package.asts[0];
@@ -288,15 +291,15 @@ function EnsureRootScope(pkg, NEED_SCOPE_BITS, NEED_CONTAINER_BITS, presets) {
             checkFlag(NEED_SCOPE_BITS, SCOPE_BITS.PUT)
         ) {
             const scope = new ScopeNode();
-            
+
             scope.tag = "w-s";
-            
+
             scope.addChild(container_tree);
-            
+
             scope.__presets__ = presets;
-            
+
             pkg.asts = [scope];
-            
+
             scope_tree = scope;
         }
     }
