@@ -1,6 +1,7 @@
-import { JSExpressionIdentifiers } from "../../../js/js.mjs";
 import { RawValueBinding, EventBinding, ExpressionBinding, DynamicBinding, } from "./basic_bindings";
 import { barrier_a_start, barrier_a_end, barrier_b_start, barrier_b_end } from "../../../barriers";
+import JSTools from "../../../js/tools.mjs";
+
 const BannedIdentifiers = { "true": true, "false": 1, "class": 1, "function": 1, "return": 1, "for": 1, "new": 1, "let": 1, "var": 1, "const": 1, "Date": 1, "null": 1, "parseFloat": 1, "parseInt": 1 };
 
 function setIdentifier(id, store, cache) {
@@ -11,6 +12,8 @@ function setIdentifier(id, store, cache) {
 }
 
 function processExpression(lex, binds) {
+
+
 
     /* 
      * The token after the second sentinel does not cover the entire bind range.

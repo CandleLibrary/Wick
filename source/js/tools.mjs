@@ -1,0 +1,49 @@
+import JSParser from "./js.mjs";
+import env from "./js.env.mjs";
+import identifier from "./nodes/identifier.mjs";
+
+export default {
+	validate(lex){
+		let l = lex.copy();
+
+		console.log(l.slice())
+		try{
+			let result = JSParser(lex, env);
+			console.log(result)
+			return true;
+		}catch(e){
+			console.error(e);
+			return false;
+		}
+	},
+
+	getRootVariables(lex){
+		let l = lex.copy();
+		
+		let ids = new Set();
+		let closure = new Set();
+
+		try{
+			let result = JSParser(lex, env)[0];
+
+			if(result instanceof identifier){
+				ids.add(result.val);
+			}else
+				result.getRootIds(ids, closure);
+
+			console.log(ids)
+
+			return {ids, ast:result, SUCCESS : true}
+		}catch(e){
+			console.error(e);
+			return {ids, ast:null, SUCCESS : false};
+		}
+	}
+
+	types : {
+		object : 0,
+		null : 1,
+		stmts : 2,
+		
+	}
+}
