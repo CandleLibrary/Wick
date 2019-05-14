@@ -19,6 +19,9 @@ export default class extends base {
 	 	yield * this.id.traverseDepthFirst();
         for(let arg of this.args)
             yield * arg.traverseDepthFirst();
-	 	return this;
+	 	yield this;
 	 }
+     get name () {return this.id.name}
+     get type () { return types.call }
+     render(){        return `${this.id.render()}(${this.args.map(a=>a.render()).join(",")})`}
 }

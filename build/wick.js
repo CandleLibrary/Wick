@@ -142,7 +142,7 @@ var wick = (function () {
      *
      * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
      */
-        
+     
     const caller = (typeof(window) == "object" && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
         setTimeout(f, 1);
     };
@@ -168,16 +168,7 @@ var wick = (function () {
 
             this.queue_switch = 0;
 
-            this.callback = ()=>{};
-
-            if(typeof(window) !== "undefined"){
-                window.addEventListener("load",()=>{
-                    this.callback = () => this.update();
-                    caller(this.callback);
-                });
-            }else{
-                this.callback = () => this.update();
-            }
+            this.callback = () => this.update();
 
             this.frame_time = perf.now();
 
@@ -208,11 +199,9 @@ var wick = (function () {
 
             this.frame_time = perf.now() | 0;
 
+            this.SCHEDULE_PENDING = true;
 
-            if(!this.SCHEDULE_PENDING){
-                this.SCHEDULE_PENDING = true;
-                caller(this.callback);
-            }
+            caller(this.callback);
         }
 
         removeFromQueue(object){
@@ -1694,7 +1683,8 @@ var wick = (function () {
     0		/* DELETE */
     ];
 
-    const number = 1,
+    const 
+        number = 1,
         identifier = 2,
         string = 4,
         white_space = 8,
@@ -1859,7 +1849,7 @@ var wick = (function () {
                 thick_line = String.fromCharCode(0x2501),
                 line_number = "    " + this.line + ": ",
                 line_fill = line_number.length,
-                t$$1 = thick_line.repeat(line_fill + 48),
+                t = thick_line.repeat(line_fill + 48),
                 is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
             const pk = this.copy();
             pk.IWS = false;
@@ -1867,14 +1857,14 @@ var wick = (function () {
             const end = (pk.END) ? this.str.length : pk.off ;
 
         //console.log(`"${this.str.slice(this.off-this.char+((this.line > 0) ? 2 :2), end).split("").map((e,i,s)=>e.charCodeAt(0))}"`)
-        let v$$1 = "", length = 0;
-        v$$1 = this.str.slice(this.off-this.char+((this.line > 0) ? 2 :1), end);
+        let v = "", length = 0;
+        v = this.str.slice(this.off-this.char+((this.line > 0) ? 2 :1), end);
         length = this.char;
         return `${message} at ${this.line}:${this.char}
-${t$$1}
-${line_number+v$$1}
+${t}
+${line_number+v}
 ${line.repeat(length+line_fill-((this.line > 0) ? 2 :1))+arrow}
-${t$$1}
+${t}
 ${is_iws}`;
         }
 
@@ -1939,7 +1929,7 @@ ${is_iws}`;
             }
 
             //Token builder
-            const l$$1 = marker.sl,
+            const l = marker.sl,
                 str = marker.str,
                 IWS = marker.IWS;
 
@@ -1951,9 +1941,9 @@ ${is_iws}`;
                 char = marker.char,
                 root = marker.off;
 
-            if (off >= l$$1) {
+            if (off >= l) {
                 length = 0;
-                base = l$$1;
+                base = l;
                 //char -= base - off;
                 marker.char = char + (base - marker.off);
                 marker.type = type;
@@ -1971,14 +1961,14 @@ ${is_iws}`;
                 let code = str.charCodeAt(off);
                 let off2 = off;
                 let map = this.symbol_map,
-                    m$$1;
+                    m;
                 let i = 0;
 
                 while (code == 32 && IWS)
                     (code = str.charCodeAt(++off2), off++);
 
-                while ((m$$1 = map.get(code))) {
-                    map = m$$1;
+                while ((m = map.get(code))) {
+                    map = m;
                     off2 += 1;
                     code = str.charCodeAt(off2);
                 }
@@ -2005,7 +1995,7 @@ ${is_iws}`;
 
                         switch (jump_table[code]) {
                             case 0: //NUMBER
-                                while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)]));
+                                while (++off < l && (12 & number_and_identifier_table[str.charCodeAt(off)]));
 
                                 if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off + 1)])) {
                                     off++;
@@ -2022,7 +2012,7 @@ ${is_iws}`;
 
                                 break;
                             case 1: //IDENTIFIER
-                                while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
+                                while (++off < l && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
                                 type = identifier;
                                 length = off - base;
                                 break;
@@ -2030,18 +2020,18 @@ ${is_iws}`;
                                 if (this.PARSE_STRING) {
                                     type = symbol;
                                 } else {
-                                    while (++off < l$$1 && str.charCodeAt(off) !== code);
+                                    while (++off < l && str.charCodeAt(off) !== code);
                                     type = string;
                                     length = off - base + 1;
                                 }
                                 break;
                             case 3: //SPACE SET
-                                while (++off < l$$1 && str.charCodeAt(off) === SPACE);
+                                while (++off < l && str.charCodeAt(off) === SPACE);
                                 type = white_space;
                                 length = off - base;
                                 break;
                             case 4: //TAB SET
-                                while (++off < l$$1 && str[off] === HORIZONTAL_TAB);
+                                while (++off < l && str[off] === HORIZONTAL_TAB);
                                 type = white_space;
                                 length = off - base;
                                 break;
@@ -2078,7 +2068,7 @@ ${is_iws}`;
                     }
 
                     if (IWS && (type & white_space_new_line)) {
-                        if (off < l$$1) {
+                        if (off < l) {
                             type = symbol;
                             //off += length;
                             continue;
@@ -2246,9 +2236,9 @@ ${is_iws}`;
                 off = lex.off;
 
             for (; lex.off < lex.sl; lex.off++) {
-                const c$$1 = jump_table[lex.string.charCodeAt(lex.off)];
+                const c = jump_table[lex.string.charCodeAt(lex.off)];
 
-                if (c$$1 > 2 && c$$1 < 7) {
+                if (c > 2 && c < 7) {
 
                     if (space_count >= leave_leading_amount) {
                         off++;
@@ -2266,9 +2256,9 @@ ${is_iws}`;
             off = lex.sl;
 
             for (; lex.sl > lex.off; lex.sl--) {
-                const c$$1 = jump_table[lex.string.charCodeAt(lex.sl - 1)];
+                const c = jump_table[lex.string.charCodeAt(lex.sl - 1)];
 
-                if (c$$1 > 2 && c$$1 < 7) {
+                if (c > 2 && c < 7) {
                     if (space_count >= leave_trailing_amount) {
                         off--;
                     } else {
@@ -2302,11 +2292,11 @@ ${is_iws}`;
 
             for (let i = 0; i < sym.length; i++) {
                 let code = sym.charCodeAt(i);
-                let m$$1 = map.get(code);
-                if (!m$$1) {
-                    m$$1 = map.set(code, new Map).get(code);
+                let m = map.get(code);
+                if (!m) {
+                    m = map.set(code, new Map).get(code);
                 }
-                map = m$$1;
+                map = m;
             }
             map.IS_SYM = true;
         }
@@ -2320,7 +2310,7 @@ ${is_iws}`;
             return this.sl - this.off;
         }
 
-        set string_length(s$$1) {}
+        set string_length(s) {}
 
         /**
          * The current token in the form of a new Lexer with the current state.
@@ -2389,7 +2379,7 @@ ${is_iws}`;
         get n() { return this.next() }
 
         get END() { return this.off >= this.sl }
-        set END(v$$1) {}
+        set END(v) {}
 
         get type() {
             return 1 << (this.masked_values & TYPE_MASK);
@@ -3126,7 +3116,7 @@ ${is_iws}`;
                     if (left.LEAF)
                         for (let i = 0; i < left.keys.length; i++)
                             if (left.keys[i] != left.nodes[i].id)
-                                {/*debugger*/}
+                                {/*debugger*/};
 
                     return true;
                 }
@@ -3678,7 +3668,7 @@ ${is_iws}`;
         }
     }
 
-    const uri_reg_ex = /(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:\/\/))?(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:([^\<\>\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\<\>\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\<\>\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
+    const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
 
     const STOCK_LOCATION = {
         protocol: "",
@@ -5567,8 +5557,8 @@ ${is_iws}`;
                     this.attributes.push(attrib);
             }
 
-            //if (lex.ch == "/") // Void Nodes
-            //    lex.next();
+            if (lex.ch == "/") // Void Nodes
+                lex.next();
 
             lex.PARSE_STRING = true; // Reset lex to ignore string tokens.
             
@@ -5633,7 +5623,7 @@ ${is_iws}`;
                             if (pk.ch == "!") {
                                 /* DTD - Doctype and Comment tags*/
                                 //This type of tag is dropped
-                                while (!lex.END && lex.n.ch !== ">") {}
+                                while (!lex.END && lex.n.ch !== ">") {};
                                 lex.a(">");
                                 lex.IWS = false;
                                 continue;
@@ -5643,17 +5633,15 @@ ${is_iws}`;
 
                                 //Open tag
                                 if (!OPENED) {
-                                    let URL$$1 = false;
+                                    let URL = false;
                                     this.DTD = false;
                                     this.attributes.length = 0;
 
                                     //Expect tag name 
                                     this.tag = lex.n.tx.toLowerCase();
-                                    
-
 
                                     lex.PARSE_STRING = false;
-                                    URL$$1 = this.parseOpenTag(lex.n, false, old_url);
+                                    URL = this.parseOpenTag(lex.n, false, old_url);
                                     lex.PARSE_STRING = true;
 
                                     this.char = lex.char;
@@ -5667,7 +5655,7 @@ ${is_iws}`;
 
                                     if (lex.ch == "/") {
                                         //This is a tag that should be closed 
-                                        lex.next();
+                                        lex.n;
 
                                         SELF_CLOSING = true;
 
@@ -5687,7 +5675,7 @@ ${is_iws}`;
                                         start = lex.pos;
                                     }                                
 
-                                    if (URL$$1) {
+                                    if (URL) {
 
                                         //Need to block against infinitely recursive URL fetches. 
 
@@ -5710,7 +5698,7 @@ ${is_iws}`;
                                         // Tags without matching end tags.
                                         this.single = true;
 
-                                        return (await this.endOfElementHook(lex, parent)) || this;
+                                        return this;
                                     }
 
                                     continue;
@@ -6034,7 +6022,7 @@ ${is_iws}`;
 
                     cpy.next();
                     //*/
-                }
+                };
 
                 if(cpy.END)
                     throw cpy.throw("Unexpected end of input");
@@ -6106,7 +6094,7 @@ ${is_iws}`;
 
                     cpy.next();
                     //*/
-                }
+                };
 
                 cpy.a(">", `Expecting a matching closing tag for ${tag_name}`);
 
@@ -8828,25 +8816,27 @@ ${is_iws}`;
      */
     class CSSSelector {
 
-        constructor(value = "", value_array = []) {
+        constructor(selectors /* string */ , selectors_arrays /* array */ ) {
 
             /**
              * The raw selector string value
              * @package
              */
-            this.v = value;
+
+            this.v = selectors;
 
             /**
              * Array of separated selector strings in reverse order.
              * @package
              */
-            this.a = value_array;
 
-            // CSS Rulesets the selector is member of .
+            this.a = selectors_arrays;
+
+            /**
+             * The CSSRule.
+             * @package
+             */
             this.r = null;
-
-            // CSS root the selector is a child of. 
-            this.root = null;
         }
 
         get id() {
@@ -8908,7 +8898,7 @@ ${is_iws}`;
                 if (!lx.pk.pk.END) // These values should be the only ones present. Failure otherwise.
                     return 0; // Default value present among other values. Invalid
                 return 1; // Default value present only. Valid
-        }
+        };
         return 2; // Default value not present. Ignore
     }
 
@@ -9360,7 +9350,7 @@ ${is_iws}`;
 
             return false;
         }
-    }
+    };
 
     //import util from "util"
     const standard_productions = {
@@ -9433,7 +9423,7 @@ ${is_iws}`;
 
     function d$1(l, definitions, productions, super_term = false, oneof_group = false, or_group = false, and_group = false, important = null) {
         let term, nt, v;
-        const { JUX: JUX$$1, AND: AND$$1, OR: OR$$1, ONE_OF: ONE_OF$$1, LiteralTerm: LiteralTerm$$1, ValueTerm: ValueTerm$$1, SymbolTerm: SymbolTerm$$1 } = productions;
+        const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
 
         let GROUP_BREAK = false;
 
@@ -9450,7 +9440,7 @@ ${is_iws}`;
                     v = checkExtensions(l, v, productions);
 
                     if (term) {
-                        if (term instanceof JUX$$1 && term.isRepeating()) term = foldIntoProduction(productions, new JUX$$1, term);
+                        if (term instanceof JUX && term.isRepeating()) term = foldIntoProduction(productions, new JUX, term);
                         term = foldIntoProduction(productions, term, v);
                     } else
                         term = v;
@@ -9458,13 +9448,13 @@ ${is_iws}`;
 
                 case "<":
 
-                    v = new ValueTerm$$1(l.next().tx, getPropertyParser, definitions, productions);
+                    v = new ValueTerm(l.next().tx, getPropertyParser, definitions, productions);
                     l.next().assert(">");
 
                     v = checkExtensions(l, v, productions);
 
                     if (term) {
-                        if (term instanceof JUX$$1 /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX$$1, term);
+                        if (term instanceof JUX /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX, term);
                         term = foldIntoProduction(productions, term, v);
                     } else {
                         term = v;
@@ -9478,7 +9468,7 @@ ${is_iws}`;
                         if (and_group)
                             return term;
 
-                        nt = new AND$$1();
+                        nt = new AND();
 
                         if (!term) throw new Error("missing term!");
 
@@ -9503,7 +9493,7 @@ ${is_iws}`;
                             if (or_group || and_group)
                                 return term;
 
-                            nt = new OR$$1();
+                            nt = new OR();
 
                             nt.terms.push(term);
 
@@ -9522,7 +9512,7 @@ ${is_iws}`;
                             if (oneof_group || or_group || and_group)
                                 return term;
 
-                            nt = new ONE_OF$$1();
+                            nt = new ONE_OF();
 
                             nt.terms.push(term);
 
@@ -9540,12 +9530,12 @@ ${is_iws}`;
                     break;
                 default:
 
-                    v = (l.ty == l.types.symbol) ? new SymbolTerm$$1(l.tx) : new LiteralTerm$$1(l.tx, l.ty);
+                    v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx, l.ty);
                     l.next();
                     v = checkExtensions(l, v, productions);
 
                     if (term) {
-                        if (term instanceof JUX$$1 /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX$$1, term);
+                        if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX, term);
                         term = foldIntoProduction(productions, term, v);
                     } else {
                         term = v;
@@ -9761,7 +9751,7 @@ ${is_iws}`;
                         if (!prop(win))
                             return false;
                     }
-                }
+                };
             }
 
             return true;
@@ -10058,7 +10048,7 @@ ${is_iws}`;
                                         ).catch((e) => res(this.parse(lexer)));
                                     } else {
                                         //Failed to fetch resource, attempt to find the end to of the import clause.
-                                        while (!lexer.END && lexer.next().tx !== ";") {}
+                                        while (!lexer.END && lexer.next().tx !== ";") {};
                                         lexer.next();
                                     }
                             }
@@ -10089,7 +10079,6 @@ ${is_iws}`;
                     let selector = this.parseSelector(lexer, this);
 
                     if (selector) {
-                        selector.root = this;
                         if (!this._selectors_[selector.id]) {
                             l = selectors.push(selector);
                             this._selectors_[selector.id] = selector;
@@ -10289,7 +10278,7 @@ ${is_iws}`;
         }
 
         setList() {
-            //if(this.DEMOTED) debugger
+            if(this.DEMOTED) debugger
             if (this.prod && this.list.innerHTML == "") {
                 if (this.DEMOTED || !this.prod.buildList(this.list, this))
                     this.menu_icon.style.display = "none";
@@ -11112,7 +11101,7 @@ ${is_iws}`;
             return this.txt;
         }
 
-    }
+    };
 
 
     function drop(e){
@@ -11229,7 +11218,7 @@ ${is_iws}`;
             }
             return r;
         };
-    }
+    };
 
     const props = Object.assign({}, property_definitions);
 
@@ -11434,7 +11423,7 @@ ${is_iws}`;
                 }
             }
 
-            this.parent.update(this);
+            this.parent.update();
         }
 
         addProp(type, value){
@@ -11466,6 +11455,10 @@ ${is_iws}`;
         e.preventDefault();
     }
 
+    //import { UIValue } from "./ui_value.mjs";
+
+    const props$2 = Object.assign({}, property_definitions);
+
     class UIMaster {
         constructor(css) {
             css.addObserver(this);
@@ -11474,7 +11467,6 @@ ${is_iws}`;
             this.selectors = [];
             this.element = document.createElement("div");
             this.element.classList.add("cfw_css");
-            this.update_mod = 0;
 
 
             this.rule_map = new Map();
@@ -11484,7 +11476,6 @@ ${is_iws}`;
         // css - A CandleFW_CSS object. 
         // meta - internal 
         build(css = this.css) {
-            if(this.update_mod++%3 !== 0) return;
 
             //Extract rule bodies and set as keys for the rule_map. 
             //Any existing mapped body that does not have a matching rule should be removed. 
@@ -12847,7 +12838,7 @@ ${is_iws}`;
                         this.type = this.getType(k0_val);
                     }
 
-                    this.getValue(obj, prop_name, type, k0_val);
+                    this.getValue(obj, prop_name, type);
 
                     let p = this.current_val;
 
@@ -12863,8 +12854,7 @@ ${is_iws}`;
                     this.current_val = null;
                 }
 
-                getValue(obj, prop_name, type, k0_val) {
-
+                getValue(obj, prop_name, type) {
                     if (type == CSS_STYLE) {
                         let name = prop_name.replace(/[A-Z]/g, (match) => "-" + match.toLowerCase());
                         let cs = window.getComputedStyle(obj);
@@ -12874,7 +12864,6 @@ ${is_iws}`;
                         
                         if(!value)
                             value = obj.style[prop_name];
-                    
 
                         if (this.type == CSS_Percentage$1) {
                             if (obj.parentElement) {
@@ -12884,7 +12873,8 @@ ${is_iws}`;
                                 value = (ratio * 100);
                             }
                         }
-                        this.current_val = (new this.type(value));
+
+                        this.current_val = new this.type(value);
 
                     } else {
                         this.current_val = new this.type(obj[prop_name]);
@@ -12973,6 +12963,7 @@ ${is_iws}`;
                 }
 
                 setProp(obj, prop_name, value, type) {
+
                     if (type == CSS_STYLE) {
                         obj.style[prop_name] = value;
                     } else
@@ -13281,7 +13272,7 @@ ${is_iws}`;
 
                 //TODO: allow scale to control playback speed and direction
                 play(scale = 1, from = 0) {
-                    this.SCALE = scale;
+                    this.SCALE = 0;
                     this.time = from;
                     spark.queueUpdate(this);
                     return this;
@@ -13293,19 +13284,19 @@ ${is_iws}`;
                 }    
             }
 
-            const GlowFunction = function(...args) {
+            const GlowFunction = function() {
 
-                if (args.length > 1) {
+                if (arguments.length > 1) {
 
                     let group = new AnimGroup();
 
-                    for (let i = 0; i < args.length; i++) {
-                        let data = args[i];
+                    for (let i = 0; i < arguments.length; i++) {
+                        let data = arguments[i];
 
                         let obj = data.obj;
                         let props = {};
 
-                        Object.keys(data).forEach(k => { if (!(({ obj: true, match: true, delay:true })[k])) props[k] = data[k]; });
+                        Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
 
                         group.add(new AnimSequence(obj, props));
                     }
@@ -13313,12 +13304,12 @@ ${is_iws}`;
                     return group;
 
                 } else {
-                    let data = args[0];
+                    let data = arguments[0];
 
                     let obj = data.obj;
                     let props = {};
 
-                    Object.keys(data).forEach(k => { if (!(({ obj: true, match: true, delay:true })[k])) props[k] = data[k]; });
+                    Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
 
                     let seq = new AnimSequence(obj, props);
 
@@ -13525,33 +13516,53 @@ ${is_iws}`;
         let obj_map = new Map();
         let ActiveTransition = null;
 
-        function $in(...data) {
+        function $in(anim_data_or_duration = 0, delay = 0) {
 
-            let
-                seq = null,
-                length = data.length,
-                delay = 0;
+            let seq;
 
-            if (typeof(data[length - 1]) == "number")
-                delay = data[length - 1], length--;
+            if (typeof(anim_data_or_duration) == "object") {
+                if (anim_data_or_duration.match && this.TT[anim_data_or_duration.match]) {
+                    let duration = anim_data_or_duration.duration;
+                    let easing = anim_data_or_duration.easing;
+                    seq = this.TT[anim_data_or_duration.match](anim_data_or_duration.obj, duration, easing);
+                } else
+                    seq = Animation.createSequence(anim_data_or_duration);
 
-            for (let i = 0; i < length; i++) {
-                let anim_data = data[i];
+                //Parse the object and convert into animation props. 
+                if (seq) {
+                    this.in_seq.push(seq);
+                    this.in_duration = Math.max(this.in_duration, seq.duration);
+                    if (this.OVERRIDE) {
 
-                if (typeof(anim_data) == "object") {
+                        if (obj_map.get(seq.obj)) {
+                            let other_seq = obj_map.get(seq.obj);
+                            other_seq.removeProps(seq);
+                        }
 
-                    if (anim_data.match && this.TT[anim_data.match]) {
-                        let
-                            duration = anim_data.duration,
-                            easing = anim_data.easing;
-                        seq = this.TT[anim_data.match](anim_data.obj, duration, easing);
-                    } else
-                        seq = Animation.createSequence(anim_data);
+                        obj_map.set(seq.obj, seq);
+                    }
+                }
 
-                    //Parse the object and convert into animation props. 
+            } else
+                this.in_duration = Math.max(this.in_duration, parseInt(delay) + parseInt(anim_data_or_duration));
+
+            return this.in;
+        }
+
+
+        function $out(anim_data_or_duration = 0, delay = 0, in_delay = 0) {
+            //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
+            //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
+
+            if (typeof(anim_data_or_duration) == "object") {
+
+                if (anim_data_or_duration.match) {
+                    this.TT[anim_data_or_duration.match] = TransformTo(anim_data_or_duration.obj);
+                } else {
+                    let seq = Animation.createSequence(anim_data_or_duration);
                     if (seq) {
-                        this.in_seq.push(seq);
-                        this.in_duration = Math.max(this.in_duration, seq.duration);
+                        this.out_seq.push(seq);
+                        this.out_duration = Math.max(this.out_duration, seq.duration);
                         if (this.OVERRIDE) {
 
                             if (obj_map.get(seq.obj)) {
@@ -13562,59 +13573,11 @@ ${is_iws}`;
                             obj_map.set(seq.obj, seq);
                         }
                     }
+                    this.in_delay = Math.max(this.in_delay, parseInt(delay));
                 }
-            }
-
-            this.in_duration = Math.max(this.in_duration, parseInt(delay));
-
-            return this.in;
-        }
-
-
-        function $out(...data) {
-            //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
-            //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
-            let
-                seq = null,
-                length = data.length,
-                delay = 0,
-                in_delay = 0;
-
-            if (typeof(data[length - 1]) == "number") {
-                if (typeof(data[length - 2]) == "number") {
-                    in_delay = data[length - 2];
-                    delay = data[length - 1];
-                    length -= 2;
-                } else
-                    delay = data[length - 1], length--;
-            }
-
-            for (let i = 0; i < length; i++) {
-                let anim_data = data[i];
-
-                if (typeof(anim_data) == "object") {
-
-                    if (anim_data.match) {
-                        this.TT[anim_data.match] = TransformTo(anim_data.obj);
-                    } else {
-                        let seq = Animation.createSequence(anim_data);
-                        if (seq) {
-                            this.out_seq.push(seq);
-                            this.out_duration = Math.max(this.out_duration, seq.duration);
-                            if (this.OVERRIDE) {
-
-                                if (obj_map.get(seq.obj)) {
-                                    let other_seq = obj_map.get(seq.obj);
-                                    other_seq.removeProps(seq);
-                                }
-
-                                obj_map.set(seq.obj, seq);
-                            }
-                        }
-
-                        this.in_delay = Math.max(this.in_delay, parseInt(delay));
-                    }
-                }
+            } else {
+                this.out_duration = Math.max(this.out_duration, parseInt(delay) + parseInt(anim_data_or_duration));
+                this.in_delay = Math.max(this.in_delay, parseInt(in_delay));
             }
         }
 
@@ -13712,7 +13675,7 @@ ${is_iws}`;
             }
 
             step(t) {
-
+                
                 for (let i = 0; i < this.out_seq.length; i++) {
                     let seq = this.out_seq[i];
                     if (!seq.run(t) && !seq.FINISHED) {
@@ -13776,6 +13739,24 @@ ${is_iws}`;
         "HTMLElement",
     ]);
 
+    class argumentIO extends IO {
+        constructor(scope, errors, tap, script, id){
+            super(scope, errors, tap);
+            this.ele = script;
+            this.id = id;
+        }
+
+        destroy(){
+            this.id = null;
+            super.destroy();
+        }
+
+        down(value){
+            this.ele.updateProp(this, value);
+        }
+    }
+
+
     //Function.apply(Function, [binding.arg_key || binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val]);
     class ScriptIO extends IOBase {
         constructor(scope, errors, tap, binding, node, statics) {
@@ -13784,37 +13765,28 @@ ${is_iws}`;
             let ids = binding.ids;
             let func, HAVE_CLOSURE = false;
 
-            const names = [binding.arg_key || binding.tap_name, "emit"];
-            const props = [null, null];
+            //*********** PRE OBJECT FUNCTION INITIALIZATION *******************//
 
+            const args = binding.args;
+            
+            const names = args.map(a=>a.name);
 
-            //TODO, do this before building of script, when the script is first compiled. 
-            for(var i = 0; i < ids.length; i++){
-                let id = ids[i];
-                if(!window[id]){
+            names.push("emit"); // For the injected emit function
+            //names.unshift(binding.tap_name);
 
-                    if(id == "wick"){
-                        props.push(wick);
-                        names.push(id);
-                    }
+            const arg_ios = [];
 
-                    if(id == "glow"){
-                        props.push(Animation);
-                        names.push(id);
-                    }
-
-                    if(id == "whind"){
-                        props.push(whind$1);
-                        names.push(id);
-                    }
-
-                    if(presets.custom[id]){
-                        props.push(presets.custom[id]);
-                        names.push(id);
-                    }
-                    //createTapReceiver 
+            const props = args.map((a,i)=>{
+                
+                if(a.IS_TAPPED){
+                    const arg_io = new argumentIO(scope, errors, scope.getTap(a.name), null, i);
+                    arg_ios.push(arg_io);
+                    return null;
                 }
-            }
+
+                return a.val;
+            });
+            //props.unshift(null); // Place holder for value data
 
             try {
                 if (binding._func_) {
@@ -13835,7 +13807,11 @@ ${is_iws}`;
 
             super(tap);
 
+            this.IO_ACTIVATIONS = arg_ios.length;
+            this.active_IOS = 0;
+
             this.function = binding.val;
+
             this.HAVE_CLOSURE = HAVE_CLOSURE;
 
             if(this.HAVE_CLOSURE)
@@ -13845,36 +13821,65 @@ ${is_iws}`;
             
             this.scope = scope;
 
-            let func_bound = this.emit.bind(this);
+            //Embedded emit functions
+            const func_bound = this.emit.bind(this);
             func_bound.onTick = this.onTick.bind(this);
+            
+            //TODO: only needed if emit is called in function. Though highly probably. 
+            props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value); } }));
 
             this.props = props;
-            this.props[1] = new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value); } });
-            this.meta = null;
+            this.arg_ios = arg_ios;
+
+            for(const a of arg_ios)
+                a.ele = this;
+            
+            //this.meta = null;
             this.url = statics.url;
 
             this.offset = node.offset;
             this.char = node.char;
             this.line = node.line;
+
+            this.val = null;
         }
 
-        /**
-         * Removes all references to other objects.
-         * Calls destroy on any child objects.
+        /*
+            Removes all references to other objects.
+            Calls destroy on any child objects.
          */
         destroy() {
             this._func_ = null;
             this.scope = null;
             this._bound_emit_function_ = null;
             this._meta = null;
+            this.props = null;
 
+            for(const a of this.arg_ios)
+                a.destroy();
+
+            this.arg_ios = null;
+        }
+
+        updateProp(io, val){
+            this.props[io.id] = val;
+
+            if(!io.ACTIVE){
+                io.ACTIVE = true;
+                this.active_IOS++;
+            }
+            
+            this.down();
         }
 
         down(value, meta = { event: null }) {
-            this.meta = meta;
+            //this.meta = meta;
+            if(this.active_IOS < this.IO_ACTIVATIONS) 
+                return
+            
             const src = this.scope;
+
             try {
-                this.props[0] = value;
 
                 if(this.HAVE_CLOSURE)
                     this._func_.apply(this, this.props);
@@ -13895,8 +13900,11 @@ ${is_iws}`;
                 this.scope.upImport(name, value, this.meta);
             }
         }
-        // Same as emit, except the message is generated on the next global tick. Usefule for actions which required incremental updates to the ui.
-        // Value
+
+        /* 
+            Same as emit, except the message is generated on the next global tick. 
+            Useful for actions which require incremental updates to the UI.
+        */
         onTick(name){
             spark.queueUpdate({
                 _SCHD_:0, // Meta value for spark;
@@ -17467,7 +17475,7 @@ ${is_iws}`;
             }
         console.log(time);
         return o[0];
-    }
+    };
 
     var types$1 = {
     		object:1,
@@ -17477,7 +17485,7 @@ ${is_iws}`;
     		number:5,
     		string:6,
     		for:7,
-    		let:8,
+    		lex:8,
     		var:9,
     		const:10,
     		try:11,
@@ -17521,23 +17529,29 @@ ${is_iws}`;
     		pre_dec:49,
     		condition:50,
     		class:51,
+    		negate:52,
     	};
 
     class base{
     	constructor(){
     	}
     	getRootIds(ids) {}
-    	*traverseDepthFirst (){ return this }
+    	*traverseDepthFirst (){ yield this; }
+    	skip (trvs) {
+
+    		for(let val = trvs.next().value; val && val !== this ;val = trvs.next().value);
+
+    		return trvs;
+    	}
     	spin(trvs){
             let val = trvs.next().value;
-            while(val !== undefined && val !== this ){val = trvs.next().value;}
+            while(val !== undefined && val !== this ){val = trvs.next().value;};
          }
     }
 
     /** FOR **/
-
     class for_stmt extends base{
-    	constructor(set,bool,iter, body){super();this.set = set; this.bool = bool, this.iter=iter, this.body = body;}
+    	constructor(init,bool,iter, body){super();this.init = init; this.bool = bool, this.iter=iter, this.body = body;}
     	
     	getRootIds(ids, closure){
     		
@@ -17550,21 +17564,39 @@ ${is_iws}`;
 
     	*traverseDepthFirst (){ 
     	 	yield this;
-    	 	yield * this.bool.traverseDepthFirst();
-    	 	yield * this.iter.traverseDepthFirst();
-    	 	yield * this.body.traverseDepthFirst();
-    	 	return this;
+    	 	if(this.init) yield * this.init.traverseDepthFirst();
+    	 	if(this.bool) yield * this.bool.traverseDepthFirst();
+    	 	if(this.iter) yield * this.iter.traverseDepthFirst();
+    	 	if(this.body) yield * this.body.traverseDepthFirst();
+    	 	yield this;
     	 }
+
+    	 get type () { return types$1.for }
+
+    	 render(){
+    	 	let init, bool, iter, body;
+    	 	
+    	 	if(this.init) init = this.init.render();
+    	 	if(this.bool) bool = this.bool.render();
+    	 	if(this.iter) iter = this.iter.render();
+    	 	if(this.body) body = this.body.render();
+
+    	 	return `for(${init};${bool};${iter})${body}`}
     }
 
     /** IDENTIFIER **/
-
     class identifier$1 extends base{
-    	 constructor (sym){super(); this.val = sym[0];}
+    	 constructor (sym){super(); this.val = sym[0]; this.root = true;}
     	 getRootIds(ids, closuere){if(!closuere.has(this.val))ids.add(this.val);}
     	 *traverseDepthFirst (){ 
-    	 	return this;
+    	 	yield this;
     	 }
+
+    	 get name () {return this.val}
+
+    	 get type () { return types$1.id }
+
+    	 render  () { return this.val}
     }
 
     class call_expr extends base {
@@ -17584,12 +17616,14 @@ ${is_iws}`;
     	 	yield * this.id.traverseDepthFirst();
             for(let arg of this.args)
                 yield * arg.traverseDepthFirst();
-    	 	return this;
+    	 	yield this;
     	 }
+         get name () {return this.id.name}
+         get type () { return types$1.call }
+         render(){        return `${this.id.render()}(${this.args.map(a=>a.render()).join(",")})`}
     }
 
     /** CATCH **/
-
     class catch_stmt extends base {
         constructor(sym) {
             super();
@@ -17605,8 +17639,10 @@ ${is_iws}`;
     	 	yield this;
     	 	yield * this.param.traverseDepthFirst();
     	 	yield * this.body.traverseDepthFirst();
-    	 	return this;
+    	 	yield this;
     	 }
+
+         get type () { return types$1.catch }
     }
 
     /** TRY **/
@@ -17629,8 +17665,10 @@ ${is_iws}`;
             if(this.body) yield * this.body.traverseDepthFirst();
             if(this.catch) yield * this.catch.traverseDepthFirst();
             if(this.finally) yield * this.finally.traverseDepthFirst();
-            return this;
+            yield this;
          }
+
+         get type () { return types$1.try }
     }
 
     /** STATEMENTS **/
@@ -17648,14 +17686,15 @@ ${is_iws}`;
     	 	yield this;
     	 	for(let stmt of this.stmts)
     	 		yield * stmt.traverseDepthFirst();
-    	 	return this;
+    	 	yield this;
     	 }
 
          get type () { return types$1.stmts }
+
+         render(){return `${this.stmts.map(s=>s.render()).join(";")}`};
     }
 
     /** BLOCK **/
-
     class block extends stmts {
 
         constructor(sym,clsr) {
@@ -17665,29 +17704,34 @@ ${is_iws}`;
         getRootIds(ids, closure) {
         	super.getRootIds(ids, new Set([...closure.values()]));
         }
+
+        get type () { return types$1.block }
     }
 
     /** LEXICAL DECLARATION **/
-
     class lexical extends base {
         constructor(sym) {
 
         	super();
-        	this.type = sym[0];
+        	this.mode = sym[0];
             this.bindings = sym[1];
         }
 
         getRootIds(ids, closure) {
         	this.bindings.forEach(b=>b.getRootIds(ids, closure));
         }
+
+        get type () { return types$1.lex }
+
+        render(){return `${this.mode} ${this.bindings.map(b=>b.render()).join(",")};`}
     }
 
     /** BINDING DECLARATION **/
-
     class binding extends base {
         constructor(sym) {
         	super();
         	this.id = sym[0];
+            this.id.root = false;
             this.init = sym[1] ? sym[1] : null;
         }
 
@@ -17700,24 +17744,37 @@ ${is_iws}`;
     	 	yield this;
     	 	yield * this.id.traverseDepthFirst();
     	 	yield * this.init.traverseDepthFirst();
-    	 	return this;
+    	 	yield this;
     	 }
+
+         render(){return `${this.id}${this.init ? ` = ${this.init.render()}` : ""}`}
     }
 
-    /** IDENTIFIER **/
+    /** MEMBER **/
 
-    class member extends base{
-    	 constructor (sym){super(); this.id = sym[0];  this.mem = sym[2];}
-    	 getRootIds(ids, closuere){
-    	 	this.id.getRootIds(ids, closuere);
-    	 }
+    class mem extends base {
+        constructor(sym) { super();
+            this.id = sym[0];
+            this.mem = sym[2];
+            this.root = true;
+            this.mem.root = false; 
+        }
 
-    	 *traverseDepthFirst (){ 
-    	 	yield this;
-    	 	yield * this.id.traverseDepthFirst();
-    	 	yield * this.mem.traverseDepthFirst();
-    	 	return this;
-    	 }
+        getRootIds(ids, closuere) {
+            this.id.getRootIds(ids, closuere);
+        }
+
+        * traverseDepthFirst() {
+            yield this;
+            yield* this.id.traverseDepthFirst();
+            yield* this.mem.traverseDepthFirst();
+            //yield this;
+        }
+
+        get name() { return this.id.name }
+        get type() { return types$1.member }
+
+        render() { return `${this.id.render()}.${this.mem.render()}` }
     }
 
     /** ASSIGNEMENT EXPRESSION **/
@@ -17739,83 +17796,98 @@ ${is_iws}`;
             yield this;
             yield * this.id.traverseDepthFirst();
             yield * this.expr.traverseDepthFirst();
-            return this;
+            //yield this;
          }
 
          get type () { return types$1.assign }
-         
+
+        render(){return `${this.id.render()} ${this.op} ${this.expr.render()}`}
     }
 
     /** OPERATOR **/
-
     class operator$1 extends base {
 
         constructor(sym) {
             super();
             this.left = sym[0];
             this.right = sym[2];
+            this.op = "";
         }
 
         *traverseDepthFirst (){ 
     	 	yield this;
     	 	yield * this.left.traverseDepthFirst();
     	 	yield * this.right.traverseDepthFirst();
-    	 	return this;
+    	 	yield this;
     	 }
+
+         render(){return `${this.left.render()} ${this.op} ${this.right.render()}` }
     }
 
     /** MULTIPLY **/
-
     class add extends operator$1 {
 
         constructor(sym) {
             super(sym);
+           	this.op = "+";
         }
+
+        get type () { return types$1.add }
     }
 
-    /** MULTIPLY **/
-
+    /** SUBTRACT **/
     class sub extends operator$1 {
 
         constructor(sym) {
             super(sym);
+            this.op = "-";
         }
+
+        get type () { return types$1.sub }
     }
 
     /** MULTIPLY **/
-
     class div extends operator$1 {
 
         constructor(sym) {
             super(sym);
+            this.op = "/";
         }
+
+        get type () { return types$1.div }
     }
 
     /** MULTIPLY **/
-
     class mult extends operator$1 {
 
         constructor(sym) {
             super(sym);
+            this.op = "*";
         }
+
+        get type () { return types$1.mult }
+
+        
     }
 
-    /** ASSIGNEMENT EXPRESSION **/
+    /** OBJECT **/
 
     class object extends base {
         constructor(sym) {
             super();
-            this.props = sym[0] || [];
+        this.props = sym[0] || [];
         }
 
         * traverseDepthFirst (){ 
     	 	yield this;
     	 	for(let prop of this.props)
     	 		yield * prop.traverseDepthFirst();
-    	 	return this;
+    	 	yield this;
     	 }
 
-    	 get type () { return types$1.string }
+    	 get type () { return types$1.object }
+
+    	 render(){return `{${this.props.map(p=>p.render()).join(",")}}`}
     }
 
     /** STRING **/
@@ -17826,18 +17898,23 @@ ${is_iws}`;
 
          get type () { return types$1.string }
 
+         render(){return this.val}
+
     }
 
     /** NULL **/
-
     class null_ extends base{
     	 constructor (sym){super();}
+    	 get type () { return types$1.null }
+
+    	 render(){return "null"}
     }
 
     /** NUMBER **/
     class number$2 extends base{
     	 constructor (sym){super();this.val = parseFloat(sym); this.ty = "num";}
     	 get type () { return types$1.number }
+    	 render(){return this.val}
     }
 
     /** BOOLEAN **/
@@ -17847,6 +17924,31 @@ ${is_iws}`;
 
          get type () { return types$1.bool }
 
+    }
+
+    /** OPERATOR **/
+    class unary_prefix_op extends base {
+
+        constructor(sym) {
+            super();
+            this.expr = sym[1];
+            this.op = "";
+        }
+
+        *traverseDepthFirst (){ 
+    	 	yield this;
+    	 	yield * this.expr.traverseDepthFirst();
+    	 	yield this;
+    	 }
+
+         render(){return `${this.op}${this.expr.render()}` }
+    }
+
+    /** NEGATE **/
+
+    class negate extends unary_prefix_op{
+    	 constructor (sym){super(sym);this.val = parseFloat(sym); this.op = "-";}
+    	 get type () { return types$1.negate }
     }
 
     const env =  {
@@ -17861,7 +17963,7 @@ ${is_iws}`;
     		stmts,
     		lexical,
     		binding,
-    		member,
+    		member: mem,
     		block,
     		assign,
     		object,
@@ -17869,6 +17971,7 @@ ${is_iws}`;
     		sub,
     		div,
     		mult,
+    		negate_expr:negate,
     		if_stmt:function(sym){this.bool = sym[2]; this.body = sym[4]; this.else = sym[6];},
     		while_stmt:function(sym){this.bool = sym[1]; this.body = sym[3];},
     		return_stmt:function(sym){this.expr = sym[1];},
@@ -17943,6 +18046,12 @@ ${is_iws}`;
     };
 
     var JSTools = {
+    	parse(lex){
+    		let l = lex.copy();
+
+    		return parser(lex, env);
+    	},
+
     	validate(lex){
     		let l = lex.copy();
 
@@ -17971,11 +18080,8 @@ ${is_iws}`;
     			}else
     				result.getRootIds(ids, closure);
 
-    			console.log(ids);
-
     			return {ids, ast:result, SUCCESS : true}
     		}catch(e){
-    			console.error(e);
     			return {ids, ast:null, SUCCESS : false};
     		}
     	},
@@ -18047,7 +18153,7 @@ ${is_iws}`;
      * @param      {Lexer}  lex     The lex
      * @return     {Array}   an
      */
-    function evaluate(lex, EVENT$$1 = false) {
+    function evaluate(lex, EVENT = false) {
         let binds = [];
         lex.IWS = false;
         let start = lex.pos;
@@ -18123,7 +18229,7 @@ ${is_iws}`;
 
                             if (lex.ch == barrier_a_start || lex.ch == barrier_b_start) {
 
-                                if(EVENT$$1){
+                                if(EVENT){
                                     binding = new EventBinding(binding); 
                                     binds[index] = binding;
                                 }
@@ -18955,6 +19061,10 @@ ${is_iws}`;
         linkCSS() {}
     }
 
+    const defaults = {
+        glow: Animation
+    };
+
     class ScriptNode$1 extends VoidNode$1 {
         constructor() {
             super();
@@ -18963,23 +19073,93 @@ ${is_iws}`;
         }
 
         processTextNodeHook(lex) {
-            
-            this.script_text = lex.slice();
-            
-        
-            const {ids, ast} = JSTools.getRootVariables(lex);
 
-            console.log(ast);
-            let tvrs = ast.traverseDepthFirst();
-            let node = tvrs.next().value;
-            while(node !== undefined){
-                if(node.type = js.tools.b)
-                node = tvrs.next().value;
-            }
-            
-            if (this.binding){
-                this.binding.ids = [...ids.values()];
-                this.binding.val = this.script_text;
+            this.script_text = lex.slice();
+
+            try {
+                const ast = JSTools.parse(lex);
+
+                let
+                    tvrs = ast.traverseDepthFirst(),
+                    node = tvrs.next().value,
+                    non_global = new Set(),
+                    globals = new Set(),
+                    assignments = new Map();
+
+                //Retrieve undeclared variables to inject as function arguments.
+                while (node) {
+
+                    if (
+                        node.type == types$1.id ||
+                        node.type == types$1.member
+                    ) {
+                        if (node.root)
+                            globals.add(node.name);
+                    }
+
+                    if (node.type == types$1.assign) {
+
+                        node.id.root = false;
+
+                        if (!assignments.has(node.id.name))
+                            assignments.set(node.id.name, []);
+
+                        const assignment_sites = assignments.get(node.id.name);
+
+                        assignment_sites.push(node);
+                    }
+
+                    if (
+                        node.type == types$1.lex ||
+                        node.type == types$1.var
+                    ) {
+                        node.bindings.forEach(b => (non_global.add(b.id.name), globals.delete(b.id.name)));
+                    }
+
+                    node = tvrs.next().value;
+                }
+
+                //Process any out globals and get argument wrappers
+                const out_globals = [...globals.values()].map(out => {
+                    let out_object = { name: out, val: null, IS_TAPPED: false };
+
+                    if (window[out])
+                        out_object.val = window[out];
+
+                    else if (this.presets.custom[out])
+                        out_object.val = this.presets.custom[out];
+
+                    else if (this.presets[out])
+                        out_object.val = this.presets[out];
+
+                    else if (defaults[out])
+                        out_object.val = defaults[out];
+
+                    else {
+                        out_object.IS_TAPPED = true;
+                    }
+
+                    return out_object;
+                });
+
+                //Replace matching call sites with emit functions / emit member nodes
+                assignments.forEach((m,k)=>m.forEach(assign => {
+                    if (window[k] || this.presets.custom[k]|| this.presets[k]|| defaults[k])
+                        return;
+                    assign.id = new mem([new identifier$1(["emit"]), null, assign.id]);
+                }));
+
+                console.log(ast.render());
+
+                /* TODO: replace TAPPED assignments with emit(name, value) expressions. */
+
+                if (this.binding) {
+                    this.binding.args = out_globals;
+                    this.binding.val = ast.render();
+                }
+
+            } catch (e) {
+                console.error(e);
             }
         }
 
@@ -18997,16 +19177,16 @@ ${is_iws}`;
         }
 
         build(element, scope, presets, errors, taps, statics = {}, RENDER_ALL = false) {
-            if(RENDER_ALL)
+            if (RENDER_ALL)
                 return super.build(element, scope, presets, errors, taps, statics, RENDER_ALL);
-            
-            if(this.url){
+
+            if (this.url) {
                 statics = Object.assign({}, statics);
                 statics.url = this.url;
             }
-            
+
             if (this.binding)
-                this.binding._bind_(scope, errors, taps, element, "", this, statics);        
+                this.binding._bind_(scope, errors, taps, element, "", this, statics);
         }
     }
 
@@ -19186,7 +19366,7 @@ ${is_iws}`;
 
         /******************************************* HOOKS ****************************************************/
 
-        endOfElementHook() { if(!this.__presets__) {this.presets = this.presets; } return this }
+        endOfElementHook() { if(!this.__presets__) {this.presets = this.presets; } ;return this }
 
         /**
          * Pulls Schema, Model, or tap method information from the attributes of the tag. 
@@ -19646,7 +19826,7 @@ ${is_iws}`;
                             this.scrub_velocity = 0;
 
                         spark.queueUpdate(this);
-                    }
+                    };
 
                 } else {
                     this.scrub_velocity = 0;
@@ -21231,7 +21411,7 @@ ${is_iws}`;
                                 res();
                                 clearInterval(id);
                             }
-                        }
+                        };
 
                         let id = setInterval(e, 0);
                     }));
@@ -21696,9 +21876,9 @@ ${is_iws}`;
         return null;
     };
 
-    const wick$1 = JSCompiler;
+    const wick = JSCompiler;
 
-    Object.assign(wick$1, core, {
+    Object.assign(wick, core, {
         classes: {
             Presets,
             Store,
@@ -21731,9 +21911,9 @@ ${is_iws}`;
         toString: () => `CandleFW Wick 2019`
     });
 
-    wick$1.whind = whind$1;
-    Object.freeze(wick$1);
+    wick.whind = whind$1;
+    Object.freeze(wick);
 
-    return wick$1;
+    return wick;
 
 }());

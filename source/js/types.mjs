@@ -6,7 +6,7 @@ export default{
 		number:5,
 		string:6,
 		for:7,
-		let:8,
+		lex:8,
 		var:9,
 		const:10,
 		try:11,
@@ -50,4 +50,5 @@ export default{
 		pre_dec:49,
 		condition:50,
 		class:51,
+		negate:52,
 	}

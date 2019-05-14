@@ -21,9 +21,10 @@ export default class extends base {
         yield this;
         yield * this.id.traverseDepthFirst();
         yield * this.expr.traverseDepthFirst();
-        return this;
+        //yield this;
      }
 
      get type () { return types.assign }
-     
+
+    render(){return `${this.id.render()} ${this.op} ${this.expr.render()}`}
 }

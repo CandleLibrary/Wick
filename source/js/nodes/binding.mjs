@@ -1,11 +1,12 @@
 /** BINDING DECLARATION **/
 
 import base from "./base.mjs";
-
+import types from "../types.mjs";
 export default class extends base {
     constructor(sym) {
     	super();
     	this.id = sym[0];
+        this.id.root = false;
         this.init = sym[1] ? sym[1] : null;
     }
 
@@ -18,6 +19,8 @@ export default class extends base {
 	 	yield this;
 	 	yield * this.id.traverseDepthFirst();
 	 	yield * this.init.traverseDepthFirst();
-	 	return this;
+	 	yield this;
 	 }
+
+     render(){return `${this.id}${this.init ? ` = ${this.init.render()}` : ""}`}
 }

@@ -1,7 +1,7 @@
 /** CATCH **/
 
 import base from "./base.mjs";
-
+import types from "../types.mjs";
 export default class extends base {
     constructor(sym) {
         super();
@@ -17,6 +17,8 @@ export default class extends base {
 	 	yield this;
 	 	yield * this.param.traverseDepthFirst();
 	 	yield * this.body.traverseDepthFirst();
-	 	return this;
+	 	yield this;
 	 }
+
+     get type () { return types.catch }
 }

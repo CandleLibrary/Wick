@@ -19,6 +19,7 @@ import string from "./nodes/string.mjs";
 import null_ from "./nodes/null.mjs";
 import number from "./nodes/number.mjs";
 import bool from "./nodes/bool.mjs";
+import negate from "./nodes/negate.mjs";
 const env =  {
 	table:{},
 	ASI:true,
@@ -39,6 +40,7 @@ const env =  {
 		sub,
 		div,
 		mult,
+		negate_expr:negate,
 		if_stmt:function(sym){this.bool = sym[2]; this.body = sym[4]; this.else = sym[6]},
 		while_stmt:function(sym){this.bool = sym[1]; this.body = sym[3]},
 		return_stmt:function(sym){this.expr = sym[1]},

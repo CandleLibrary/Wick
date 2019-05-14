@@ -17,8 +17,10 @@ export default class extends base {
 	 	yield this;
 	 	for(let stmt of this.stmts)
 	 		yield * stmt.traverseDepthFirst();
-	 	return this;
+	 	yield this;
 	 }
 
      get type () { return types.stmts }
+
+     render(){return `${this.stmts.map(s=>s.render()).join(";")}`};
 }

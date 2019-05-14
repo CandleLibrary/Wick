@@ -1,7 +1,7 @@
 /** BLOCK **/
 
 import stmts from "./stmts.mjs";
-
+import types from "../types.mjs";
 export default class extends stmts {
 
     constructor(sym,clsr) {
@@ -11,4 +11,6 @@ export default class extends stmts {
     getRootIds(ids, closure) {
     	super.getRootIds(ids, new Set([...closure.values()]))
     }
+
+    get type () { return types.block }
 }

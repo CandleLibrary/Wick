@@ -4,6 +4,12 @@ import identifier from "./nodes/identifier.mjs";
 import types from "./types.mjs"
 
 export default {
+	parse(lex){
+		let l = lex.copy();
+
+		return JSParser(lex, env);
+	},
+
 	validate(lex){
 		let l = lex.copy();
 
@@ -32,11 +38,8 @@ export default {
 			}else
 				result.getRootIds(ids, closure);
 
-			console.log(ids)
-
 			return {ids, ast:result, SUCCESS : true}
 		}catch(e){
-			console.error(e);
 			return {ids, ast:null, SUCCESS : false};
 		}
 	},

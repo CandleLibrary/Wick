@@ -1,9 +1,9 @@
 /** FOR **/
 
 import base from "./base.mjs";
-
+import types from "../types.mjs";
 export default class extends base{
-	constructor(set,bool,iter, body){super();this.set = set; this.bool = bool, this.iter=iter, this.body = body}
+	constructor(init,bool,iter, body){super();this.init = init; this.bool = bool, this.iter=iter, this.body = body}
 	
 	getRootIds(ids, closure){
 		
@@ -16,9 +16,22 @@ export default class extends base{
 
 	*traverseDepthFirst (){ 
 	 	yield this;
-	 	yield * this.bool.traverseDepthFirst();
-	 	yield * this.iter.traverseDepthFirst();
-	 	yield * this.body.traverseDepthFirst();
-	 	return this;
+	 	if(this.init) yield * this.init.traverseDepthFirst();
+	 	if(this.bool) yield * this.bool.traverseDepthFirst();
+	 	if(this.iter) yield * this.iter.traverseDepthFirst();
+	 	if(this.body) yield * this.body.traverseDepthFirst();
+	 	yield this;
 	 }
+
+	 get type () { return types.for }
+
+	 render(){
+	 	let init, bool, iter, body;
+	 	
+	 	if(this.init) init = this.init.render();
+	 	if(this.bool) bool = this.bool.render();
+	 	if(this.iter) iter = this.iter.render();
+	 	if(this.body) body = this.body.render();
+
+	 	return `for(${init};${bool};${iter})${body}`}
 }

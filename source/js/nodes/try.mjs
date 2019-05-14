@@ -21,6 +21,8 @@ export default class extends base {
         if(this.body) yield * this.body.traverseDepthFirst();
         if(this.catch) yield * this.catch.traverseDepthFirst();
         if(this.finally) yield * this.finally.traverseDepthFirst();
-        return this;
+        yield this;
      }
+
+     get type () { return types.try }
 }
