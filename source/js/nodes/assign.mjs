@@ -2,6 +2,8 @@
 
 import base from "./base.mjs";
 
+import types from "../types.mjs";
+
 export default class extends base {
     constructor(sym) {
         super();
@@ -22,5 +24,6 @@ export default class extends base {
         return this;
      }
 
+     get type () { return types.assign }
      
 }

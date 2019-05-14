@@ -21,7 +21,7 @@ export class ScriptNode extends VoidNode {
         let tvrs = ast.traverseDepthFirst();
         let node = tvrs.next().value
         while(node !== undefined){
-            switch 
+            if(node.type = js.tools.b)
             node = tvrs.next().value
         }
         

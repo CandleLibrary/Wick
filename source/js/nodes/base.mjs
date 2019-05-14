@@ -1,6 +1,7 @@
+
+import types from "../types.mjs";
 export default class{
 	constructor(){
-
 	}
 	getRootIds(ids) {}
 	*traverseDepthFirst (){ return this }

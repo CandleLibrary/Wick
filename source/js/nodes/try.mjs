@@ -1,7 +1,7 @@
 /** TRY **/
 
 import base from "./base.mjs";
-
+import types from "../types.mjs";
 export default class extends base {
     constructor(body, _catch, _finally) {
         super();
@@ -18,8 +18,8 @@ export default class extends base {
 
     *traverseDepthFirst (){ 
         yield this;
-        if(this.catch) yield * this.catch.traverseDepthFirst();
         if(this.body) yield * this.body.traverseDepthFirst();
+        if(this.catch) yield * this.catch.traverseDepthFirst();
         if(this.finally) yield * this.finally.traverseDepthFirst();
         return this;
      }

@@ -1,6 +1,7 @@
 import JSParser from "./js.mjs";
 import env from "./js.env.mjs";
 import identifier from "./nodes/identifier.mjs";
+import types from "./types.mjs"
 
 export default {
 	validate(lex){
@@ -24,7 +25,7 @@ export default {
 		let closure = new Set();
 
 		try{
-			let result = JSParser(lex, env)[0];
+			let result = JSParser(lex, env);
 
 			if(result instanceof identifier){
 				ids.add(result.val);
@@ -38,12 +39,7 @@ export default {
 			console.error(e);
 			return {ids, ast:null, SUCCESS : false};
 		}
-	}
+	},
 
-	types : {
-		object : 0,
-		null : 1,
-		stmts : 2,
-		
-	}
+	types : types
 }

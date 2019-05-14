@@ -1,6 +1,7 @@
 /** IDENTIFIER **/
 
 import base from "./base.mjs";
+import types from "../types.mjs";
 
 export default class extends base{
 	 constructor (sym){super(); this.id = sym[0];  this.mem = sym[2]}

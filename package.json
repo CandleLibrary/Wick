@@ -4,7 +4,7 @@
   "description": "Web Component Builder",
   "main": "./source/wick.mjs",
   "scripts": {
-    "build_js_parser": "hydrocarbon compile -n jsparser -o ./source/js -t 'mjs' ./source/js/wick_js.hcg",
+    "build_js_parser": "hydrocarbon compile -n js -o ./source/js -t 'mjs' ./source/js/hc_files/js.hcg -e ./source/js/js.env.mjs",
     "build_js_parser.table": "hydrocarbon table ./source/js/wick_js.hcg",
     "build_js_parser.mount": "hydrocarbon compile -n jsparser -o ./source/js -t 'mjs' -m ./source/js/wick_js.hcg",
     "prepublishOnly": "npm run build",

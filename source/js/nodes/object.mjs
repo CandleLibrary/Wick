@@ -2,6 +2,8 @@
 
 import base from "./base.mjs";
 
+import types from "../types.mjs";
+
 export default class extends base {
     constructor(sym) {
         super();
@@ -14,4 +16,6 @@ export default class extends base {
 	 		yield * prop.traverseDepthFirst();
 	 	return this;
 	 }
+
+	 get type () { return types.string }
 }
