@@ -15,6 +15,7 @@ class argumentIO extends IO {
         super(scope, errors, tap)
         this.ele = script;
         this.id = id;
+        this.ACTIVE = false;
     }
 
     destroy(){
@@ -45,18 +46,30 @@ export class ScriptIO extends IOBase {
         names.push("emit"); // For the injected emit function
         //names.unshift(binding.tap_name);
 
-        const arg_ios = [];
+        const arg_ios = {};
+        let TAP_BINDING = -1;
+        let ACTIVE_IOS = 0;
 
         const props = args.map((a,i)=>{
             
             if(a.IS_TAPPED){
+
+                if(a.name == tap.prop)
+                    TAP_BINDING = i;
+
+                ACTIVE_IOS++;
+
                 const arg_io = new argumentIO(scope, errors, scope.getTap(a.name), null, i);
-                arg_ios.push(arg_io);
+                
+                arg_ios[a.name] = arg_io;
+
                 return null;
             }
 
             return a.val;
         });
+
+        
         //props.unshift(null); // Place holder for value data
 
         try {
@@ -78,7 +91,7 @@ export class ScriptIO extends IOBase {
 
         super(tap);
 
-        this.IO_ACTIVATIONS = arg_ios.length;
+        this.IO_ACTIVATIONS = ACTIVE_IOS;
         this.active_IOS = 0;
 
         this.function = binding.val;
@@ -91,6 +104,7 @@ export class ScriptIO extends IOBase {
             this._func_ = func.bind(scope);
         
         this.scope = scope;
+        this.TAP_BINDING = TAP_BINDING;
 
         //Embedded emit functions
         const func_bound = this.emit.bind(this);
@@ -99,11 +113,11 @@ export class ScriptIO extends IOBase {
         //TODO: only needed if emit is called in function. Though highly probably. 
         props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value); } }));
 
-        this.props = props;
+        this.arg_props = props;
         this.arg_ios = arg_ios;
 
-        for(const a of arg_ios)
-            a.ele = this;
+        for(const a in arg_ios)
+            arg_ios[a].ele = this;
         
         //this.meta = null;
         this.url = statics.url;
@@ -111,8 +125,6 @@ export class ScriptIO extends IOBase {
         this.offset = node.offset;
         this.char = node.char;
         this.line = node.line;
-
-        this.val = null;
     }
 
     /*
@@ -124,6 +136,7 @@ export class ScriptIO extends IOBase {
         this.scope = null;
         this._bound_emit_function_ = null;
         this._meta = null;
+        this.arg_props = null;
         this.props = null;
 
         for(const a of this.arg_ios)
@@ -133,29 +146,41 @@ export class ScriptIO extends IOBase {
     }
 
     updateProp(io, val){
-        this.props[io.id] = val;
+        this.arg_props[io.id] = val;
 
         if(!io.ACTIVE){
             io.ACTIVE = true;
             this.active_IOS++;
         }
-        
-        this.down()
+
+        //this.down();// Not Sure if this should be allowed. This would circumvent the expectation that the "on" binding decticts the scripts activation.
     }
 
     down(value, meta = { event: null }) {
-        //this.meta = meta;
-        if(this.active_IOS < this.IO_ACTIVATIONS) 
-            return
-        
+
         const src = this.scope;
 
-        try {
+        if(value){ 
+            if(typeof(value) == "object"){
+                //Distribute iterable properties amongst the IO_Script's own props.
+                for(const a in value){
+                    if(this.arg_ios[a])
+                        this.arg_ios[a].down(value[a]);
+                }
+            }else{
+                if(this.TAP_BINDING !== -1)
+                    this.arg_props[this.TAP_BINDING] = value;
+            }
+        }
 
+        if(this.active_IOS < this.IO_ACTIVATIONS) 
+            return
+
+        try {
             if(this.HAVE_CLOSURE)
-                this._func_.apply(this, this.props);
+                this._func_.apply(this, this.arg_props);
             else
-                this._func_.apply(this, this.props);
+                this._func_.apply(this, this.arg_props);
         } catch (e) {
             console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line+1}:${this.char}`)
             console.warn(this.function);

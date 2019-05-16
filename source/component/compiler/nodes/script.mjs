@@ -66,11 +66,13 @@ export class ScriptNode extends VoidNode {
             }
 
             //Process any out globals and get argument wrappers
-            const out_globals = [...globals.values()].map(out => {
+            const out_globals = [...globals.values()].reduce((red, out) => {
                 let out_object = { name: out, val: null, IS_TAPPED: false };
 
-                if (window[out])
-                    out_object.val = window[out];
+                if (window[out]){
+                    return red;
+                    //out_object.val = window[out];
+                }
 
                 else if (this.presets.custom[out])
                     out_object.val = this.presets.custom[out];
@@ -85,8 +87,10 @@ export class ScriptNode extends VoidNode {
                     out_object.IS_TAPPED = true;
                 }
 
-                return out_object;
-            })
+                red.push(out_object)
+
+                return red;
+            },[])
 
             //Replace matching call sites with emit functions / emit member nodes
             assignments.forEach((m,k)=>m.forEach(assign => {
