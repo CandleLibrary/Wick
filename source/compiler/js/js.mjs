@@ -3239,7 +3239,7 @@ function parser(l, e = {}) {
     fn = e.functions;
 
     l.IWS = false;
-    //l.PARSE_STRING = true;
+    l.PARSE_STRING = true;
 
     if (symbols.length > 0) {
         symbols.forEach(s => { l.addSymbol(s) });

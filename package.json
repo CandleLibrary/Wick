@@ -1,15 +1,16 @@
 {
   "name": "@candlefw/wick",
-  "version": "0.7.1-a",
+  "version": "0.8.0-a",
   "description": "Web Component Builder",
   "main": "./source/wick.mjs",
   "scripts": {
     "build_js_parser": "hydrocarbon compile -n js -o ./source/js -t 'mjs' ./source/js/hc_files/js.hcg -e ./source/js/js.env.mjs",
     "build_js_parser.table": "hydrocarbon table ./source/js/wick_js.hcg",
-    "build_js_parser.mount": "hydrocarbon compile -n jsparser -o ./source/js -t 'mjs' -m ./source/js/wick_js.hcg",
+    "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/js/env.mjs -t mjs ./source/compiler/grammars/js.hcg",
+    "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/html/env.mjs -t mjs ./source/compiler/grammars/html.hcg",
+    "compile.test": "node --experimental-modules ./test/config.mjs",
+    "test.watch": "mocha -r esm -w -R min test.js",
     "prepublishOnly": "npm run build",
-    "test": "node --experimental-modules ./test/config.mjs",
-    "test.watch": "mocha -r esm -w -R min",
     "build": "rollup --config ./build/config/main.config.js",
     "build.watch": "rollup --config  ./build/config/main.config.js --watch"
   },
@@ -40,11 +41,10 @@
   },
   "homepage": "https://github.com/candlefw/wick#readme",
   "devDependencies": {
-    "@candlefw/hydrocarbon": "*",
+    "@candlefw/hydrocarbon": "latest",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "esm": "^3.0.84",
-    "jquery": "^3.3.1",
     "jsdoc": "^3.5.5",
     "jsdom": "^11.12.0",
     "mocha": "^5.2.0",
@@ -56,8 +56,7 @@
     "rollup-plugin-gzip": "^1.4.0",
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-resolve": "0.0.1-predev.1",
-    "rollup-plugin-terser": "^1.0.1",
-    "vue": "^2.6.10"
+    "rollup-plugin-terser": "^1.0.1"
   },
   "jshintConfig": {
     "esversion": 6,

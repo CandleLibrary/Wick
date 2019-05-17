@@ -82,13 +82,13 @@ import cfwt from "@candlefw/tests";
 
 
     //Tests
-    await cfwt.installTest("./test/suite/error.mjs");
-    await cfwt.installTest("./test/suite/plugins.mjs");
-    await cfwt.installTest("./test/suite/model.mjs");
-    await cfwt.installTest("./test/suite/scrubbing.mjs");
-    await cfwt.installTest("./test/suite/merging.mjs");
+    await cfwt.installTest("./test/suite/basic.mjs");
+    //await cfwt.installTest("./test/suite/plugins.mjs");
+    //await cfwt.installTest("./test/suite/model.mjs");
+    //await cfwt.installTest("./test/suite/scrubbing.mjs");
+    //await cfwt.installTest("./test/suite/merging.mjs");
 
-    const suite = cfwt.build("wick.error");
+    const suite = cfwt.build("wick.basic");
     console.log(suite)
 
     for (let a in suite) {

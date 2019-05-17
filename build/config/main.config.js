@@ -13,7 +13,7 @@ const output = [{
 }];
 
 export default {
-    input: "./source/wick.web.script.mjs",
+    input: "./source/wick.mjs",
     treeshake: false,
     output,
     plugins: [resolve({jail:"",modulesOnly: true})]

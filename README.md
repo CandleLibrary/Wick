@@ -1,22 +1,39 @@
-# CandleFW WICK
+# CandleFW WICK <img src="https://www.google.com/url?sa=i&source=images&cd=&cad=rja&uact=8&ved=2ahUKEwjGlcGpgaPiAhWH4FQKHZ_kBioQjRx6BAgBEAU&url=https%3A%2F%2Fwww.designfreelogoonline.com%2Flogoshop%2Ffree-logo-creator-3d-flame-logo-maker%2F&psig=AOvVaw3HjQ7tgVo6r_YSHP8RO6SZ&ust=1558197806327072" alt="Candle Framework Logo">
 
-v0.6.0a
+<sub> v0.8.0a </sub>
 
-## Dynamic Component Template Framework
+** Test results go here **
 
-CandleFW Wick is a tool for building component based web pages and web applications using HTML, CSS, and JavaScript. It allows for dynamic data driven updates to a web page's HTML and CSS content. 
-
-## Usage
+## Installation
 
 >**note**:
 >This script uses ES2015 module syntax,  and has the extension ***.mjs***. To include this script in a project, you may need to use the node flag ```--experimental-modules```; or, use a bundler that supports ES modules, such as [rollup](https://github.com/rollup/rollup-plugin-node-resolve).
 
-```
+```bash
+
+#install from NPM
+
 npm install @candlefw/wick
 
+#build library
+
+npm run build
+
 ```
 
->Pre-built builds can be found in the `build` directory. `wick.js` will work with standard ``<script>`` tags and `wick.node.js` is compatible with NodeJS's Commonjs module system.
+Include ``wick.js`` in an HTML **&lt; script &gt;** file or use the wick CLI to build self contained and self hosting components. 
+
+### Production Files
+
+#### From CandleFW Website:
+<a href="https://downloads.candlefw.com/wick/latest">CandleFW Link</a>
+<sub> this link is not yet active </sub>
+
+
+<sub> this link is limited to one download per IP per 24 hours </sub>
+#### From CDN
+<sub> todo - CDN hosting links </sub>
+
 
 ```javascript
 

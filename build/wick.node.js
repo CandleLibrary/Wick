@@ -2,6 +2,535 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
+let fn = {}; const 
+/************** Maps **************/
+
+    /* Symbols To Inject into the Lexer */
+    symbols = ["</","((","))",")(","\"","'"],
+
+    /* Goto lookup maps */
+    gt0 = [0,-1,1,2],
+gt1 = [0,-10,4],
+gt2 = [0,-4,6,7,8],
+gt3 = [0,-5,14,8],
+gt4 = [0,-2,19,18,-7,20,21,22],
+gt5 = [0,-7,28,-6,32,34,33],
+gt6 = [0,-2,40,-8,39,21,22],
+gt7 = [0,-13,41],
+gt8 = [0,-8,42,44,-4,43,34,33],
+gt9 = [0,-8,48,44],
+gt10 = [0,-17,49],
+gt11 = [0,-10,56],
+gt12 = [0,-9,58],
+gt13 = [0,-17,63],
+gt14 = [0,-17,65],
+
+    // State action lookup maps
+    sm0=[0,-4,0,-4,0,-4,1],
+sm1=[0,2,-3,0,-4,0],
+sm2=[0,3,-3,0,-4,0],
+sm3=[0,-2,4,-1,0,-4,0],
+sm4=[0,-2,5,-1,0,-4,0,-5,6,-1,6,-1,7,-1,8],
+sm5=[0,-2,9,-1,0,-4,0,-5,9,-1,9,-1,9,-1,9],
+sm6=[0,-2,5,-1,0,-4,0,-5,10,-1,11,-1,7,-1,8],
+sm7=[0,-2,12,-1,0,-4,0,-5,12,-1,12,-1,12,-1,12],
+sm8=[0,-2,13,-1,0,-4,0,-5,13,-1,13,14,13,-1,13],
+sm9=[0,-2,15,-1,0,-4,0],
+sm10=[0,-2,16,-1,0,-4,0],
+sm11=[0,-2,17,-1,0,-4,0,-5,17,-1,17,17,17,-1,17],
+sm12=[0,-2,18,-1,19,-4,20,-3,21,1,-1,22],
+sm13=[0,-4,0,-4,0,-5,23],
+sm14=[0,-2,24,-1,0,-4,0,-5,24,-1,24,-1,24,-1,24],
+sm15=[0,-2,25,-1,0,-4,0,-9,26,-1,27,-3,28],
+sm16=[0,-4,0,-4,0,-9,29],
+sm17=[0,-4,0,-4,0,-11,30],
+sm18=[0,-2,18,-1,19,-4,20,-3,21,1,-1,31],
+sm19=[0,-2,32,-1,32,-4,32,-3,32,32,-1,32],
+sm20=[0,-2,18,-1,19,-4,20,-3,21,33,-1,33],
+sm21=[0,-2,34,-1,34,-4,34,-3,34,34,-1,34],
+sm22=[0,-2,35,-1,35,-4,35,-3,35,35,-1,35],
+sm23=[0,36,-1,36,-1,36,-4,36,-3,36,36,-1,36],
+sm24=[0,-2,37,-1,0,-4,0,-5,37,-1,37,-1,37,-1,37],
+sm25=[0,-2,38,-1,39,-4,0,-3,40,-11,28],
+sm26=[0,-2,38,-1,39,-4,0,-3,40],
+sm27=[0,-2,41,-1,0,-4,0,-5,41,-1,41,-1,41,-1,41],
+sm28=[0,-2,42,-1,0,-4,0,-5,42,-1,42,-1,42,-1,42],
+sm29=[0,-2,43,-1,44,-2,45,46,47,-3,48],
+sm30=[0,-2,49,-1,0,-4,0,-5,49,-1,49,49,49,-1,49],
+sm31=[0,-2,50,-1,50,-4,50,-3,50,50,-1,50],
+sm32=[0,-2,51,-1,51,-4,51,-3,51,51,-1,51],
+sm33=[0,-2,38,-1,39,-4,0,-3,40,-7,52],
+sm34=[0,-4,0,-4,0,-11,53],
+sm35=[0,-2,54,-1,54,-4,0,-3,54,-5,54,-1,54],
+sm36=[0,-2,55,-1,55,-4,0,-3,55,-5,55,-1,55],
+sm37=[0,-2,38,-1,39,-4,0,-3,40,-5,56],
+sm38=[0,-2,43,-1,44,-2,45,46,47,-3,48,-12,57,58],
+sm39=[0,-2,59,-1,59,-2,59,59,59,-3,59,-12,59,59],
+sm40=[0,-4,0,-4,0,-5,60],
+sm41=[0,-2,61,-1,0,-4,0,-5,61,-1,61,-1,61,-1,61],
+sm42=[0,-2,62,-1,62,-4,0,-3,62,-5,62,-1,62],
+sm43=[0,-2,63,-1,0,-4,0,-5,63,-1,63,-1,63,-1,63],
+sm44=[0,-2,43,-1,44,-2,45,46,47,-3,48,-12,64,64],
+sm45=[0,65,-1,65,-1,65,-4,65,-3,65,65,-1,65],
+sm46=[0,-2,43,-1,44,-2,45,46,47,-3,48,-12,66],
+sm47=[0,-2,67,-1,0,-4,0,-5,67,-1,67,-1,67,-1,67],
+
+    // Symbol Lookup map
+    lu = new Map([[1,1],[2,2],[4,3],[8,4],[16,5],[32,6],[64,7],[128,8],[256,9],[512,10],[3,11],[264,11],["any",13],["<",14],[">",15],["</",16],["/",17],["=",18],["'",19],[null,7],["\"",21],["((",25],["))",26],[")(",27]]),
+
+    //Reverse Symbol Lookup map
+    rlu = new Map([[1,1],[2,2],[3,4],[4,8],[5,16],[6,32],[7,64],[8,128],[9,256],[10,512],[11,3],[11,264],[13,"any"],[14,"<"],[15,">"],[16,"</"],[17,"/"],[18,"="],[19,"'"],[7,null],[21,"\""],[25,"(("],[26,"))"],[27,")("]]),
+
+    // States 
+    state = [sm0,
+sm1,
+sm2,
+sm3,
+sm4,
+sm5,
+sm6,
+sm7,
+sm8,
+sm9,
+sm10,
+sm11,
+sm12,
+sm13,
+sm14,
+sm15,
+sm16,
+sm17,
+sm18,
+sm19,
+sm19,
+sm20,
+sm21,
+sm22,
+sm22,
+sm22,
+sm22,
+sm23,
+sm24,
+sm25,
+sm26,
+sm27,
+sm27,
+sm28,
+sm28,
+sm29,
+sm30,
+sm30,
+sm3,
+sm31,
+sm31,
+sm32,
+sm33,
+sm34,
+sm35,
+sm36,
+sm36,
+sm36,
+sm37,
+sm38,
+sm39,
+sm39,
+sm39,
+sm39,
+sm39,
+sm39,
+sm40,
+sm41,
+sm42,
+sm41,
+sm41,
+sm29,
+sm43,
+sm44,
+sm45,
+sm46,
+sm47],
+
+/************ Functions *************/
+
+    max = Math.max,
+
+    //Error Functions
+    e = (tk,r,o,l,p)=>{if(l.END)l.throw("Unexpected end of input");else if(l.ty & (264)) l.throw(`Unexpected space character within input "${1}" `) ; else l.throw(`Unexpected token ${l.tx} within input "${111}" `);}, 
+    eh = [e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e,
+e],
+
+    //Empty Function
+    nf = ()=>-1, 
+
+    //Environment Functions
+    
+redv = (ret, fn, plen, ln, t, e, o, l, s) => {        ln = max(o.length - plen, 0);        o[ln] = fn(o.slice(-plen), e, l, s);        o.length = ln + 1;        return ret;    },
+rednv = (ret, Fn, plen, ln, t, e, o, l, s) => {        ln = max(o.length - plen, 0);        o[ln] = new Fn(o.slice(-plen), e, l, s);        o.length = ln + 1;        return ret;    },
+redn = (ret, t, e, o) => (o.push(null), ret),
+shftf = (ret, fn, t, e, o, l, s) => (fn(o, e, l, s), ret),
+C0_TAG=function (sym,env,lex,state) {this.tagname = sym[1];this.attr = sym[2];this.children = [];this.parent = null;},
+R0_TAG_BODY=function (sym,env,lex,state) {return sym[0].push(sym[1]), sym[0]},
+R1_TAG_BODY=function (sym,env,lex,state) {return [sym[0]]},
+C0_ATTRIBUTE=function (sym,env,lex,state) {this.id = sym[0]; this.val = sym[2];},
+C1_ATTRIBUTE=function (sym,env,lex,state) {this.id = sym[0]; this.val = true;},
+R0_ATTRIBUTE_HEAD=function (sym,env,lex,state) {return sym[1]},
+R0_ATTRIBUTE_DATA=function (sym,env,lex,state) {return sym[0] + ""},
+R1_ATTRIBUTE_DATA=function (sym,env,lex,state) {return sym[0] + sym[1]},
+C0_TEXT_NODE=function (sym,env,lex,state) {this.val = sym[0];this.parent = null;},
+C0_BASIC_BINDING=function (sym,env,lex,state) {this.lex = lex.copy(); this.lex.sl = lex.off-2; this.lex.off = env.start; console.log(this.lex.slice());},
+I1_BASIC_BINDING=function (sym,env,lex,state) {env.start = lex.off+2;},
+C0_CALL_BINDING=function (sym,env,lex,state) {},
+R0_BINDING_DATA=function (sym,env,lex,state) {return null},
+
+    //Sparse Map Lookup
+    lsm = (index, map) => {    if (map[0] == 0xFFFFFFFF) return map[index+1];    for (let i = 1, ind = 0, l = map.length, n = 0; i < l && ind <= index; i++) {        if (ind !== index) {            if ((n = map[i]) > -1) ind++;            else ind += -n;        } else return map[i];    }    return -1;},
+
+    //State Action Functions
+    state_funct = [()=>(14),
+()=>(5),
+()=>(1031),
+()=>(22),
+()=>(46),
+(...v)=>((redn(4099,...v))),
+()=>(38),
+()=>(42),
+()=>(10247),
+()=>(50),
+()=>(54),
+(...v)=>(redv(4103,R1_TAG_BODY,1,0,...v)),
+(...v)=>(rednv(5127,C1_ATTRIBUTE,1,0,...v)),
+()=>(62),
+()=>(66),
+()=>(70),
+()=>(6151),
+()=>(94),
+()=>(102),
+()=>(106),
+()=>(98),
+(...v)=>((redn(3075,...v))),
+()=>(110),
+(...v)=>(redv(4107,R0_TAG_BODY,2,0,...v)),
+()=>(126),
+()=>(122),
+()=>(118),
+(...v)=>(shftf(142,I1_BASIC_BINDING,...v)),
+()=>(146),
+()=>(150),
+()=>(154),
+(...v)=>(redv(3079,R1_TAG_BODY,1,0,...v)),
+(...v)=>(rednv(11271,C0_TEXT_NODE,1,0,...v)),
+(...v)=>(redv(12295,R0_ATTRIBUTE_DATA,1,0,...v)),
+()=>(13319),
+(...v)=>(rednv(2071,C0_TAG,5,0,...v)),
+(...v)=>(rednv(5135,C0_ATTRIBUTE,3,0,...v)),
+()=>(182),
+()=>(186),
+()=>(190),
+()=>(7175),
+()=>(14343),
+()=>(202),
+()=>(206),
+()=>(218),
+()=>(214),
+()=>(210),
+()=>(222),
+(...v)=>(redv(6159,R0_ATTRIBUTE_HEAD,3,0,...v)),
+(...v)=>(redv(3083,R0_TAG_BODY,2,0,...v)),
+(...v)=>(redv(12299,R1_ATTRIBUTE_DATA,2,0,...v)),
+()=>(230),
+()=>(238),
+(...v)=>(redv(8199,R0_ATTRIBUTE_DATA,1,0,...v)),
+()=>(9223),
+()=>(242),
+()=>(250),
+()=>(246),
+()=>(17415),
+()=>(258),
+(...v)=>(redv(7183,R0_ATTRIBUTE_HEAD,3,0,...v)),
+(...v)=>(redv(8203,R1_ATTRIBUTE_DATA,2,0,...v)),
+(...v)=>(rednv(15375,C0_BASIC_BINDING,3,0,...v)),
+(...v)=>(redv(17419,R0_BINDING_DATA,2,0,...v)),
+(...v)=>(rednv(2083,fn.wick_html_element,8,0,...v)),
+()=>(266),
+(...v)=>(rednv(16407,C0_CALL_BINDING,5,0,...v))],
+
+    //Goto Lookup Functions
+    goto = [v=>lsm(v,gt0),
+nf,
+nf,
+v=>lsm(v,gt1),
+v=>lsm(v,gt2),
+nf,
+v=>lsm(v,gt3),
+nf,
+nf,
+nf,
+nf,
+nf,
+v=>lsm(v,gt4),
+nf,
+nf,
+v=>lsm(v,gt5),
+nf,
+nf,
+v=>lsm(v,gt6),
+nf,
+nf,
+v=>lsm(v,gt7),
+nf,
+nf,
+nf,
+nf,
+nf,
+nf,
+nf,
+v=>lsm(v,gt8),
+v=>lsm(v,gt9),
+nf,
+nf,
+nf,
+nf,
+v=>lsm(v,gt10),
+nf,
+nf,
+v=>lsm(v,gt11),
+nf,
+nf,
+nf,
+v=>lsm(v,gt12),
+nf,
+nf,
+nf,
+nf,
+nf,
+v=>lsm(v,gt12),
+v=>lsm(v,gt13),
+nf,
+nf,
+nf,
+nf,
+nf,
+nf,
+nf,
+nf,
+nf,
+nf,
+nf,
+v=>lsm(v,gt14),
+nf,
+v=>lsm(v,gt13),
+nf,
+v=>lsm(v,gt13),
+nf];
+
+function getToken(l, SYM_LU) {
+    if (l.END) return 0; /*7*/
+
+    switch (l.ty) {
+        case 2:
+            if (SYM_LU.has(l.tx)) return SYM_LU.get(l.tx);
+            return 2;
+        case 1:
+            return 1;
+        case 4:
+            return 3;
+        case 256:
+            return 9;
+        case 8:
+            return 4;
+        case 512:
+            return 10;
+        default:
+            return SYM_LU.get(l.tx) || SYM_LU.get(l.ty);
+    }
+}
+
+/************ Parser *************/
+
+function parser(l, e = {}) {
+    
+    fn = e.functions;
+
+    l.IWS = false;
+    l.PARSE_STRING = true;
+
+    if (symbols.length > 0) {
+        symbols.forEach(s => { l.addSymbol(s); });
+        l.tl = 0;
+        l.next();
+    }
+
+    const o = [],
+        ss = [0, 0];
+
+    let time = 1000000,
+        RECOVERING = 100,
+        tk = getToken(l, lu),
+        p = l.copy(),
+        sp = 1,
+        len = 0,
+        off = 0;
+
+    outer:
+
+        while (time-- > 0) {
+
+            const fn = lsm(tk, state[ss[sp]]) || 0;
+
+            /*@*/// console.log({end:l.END, state:ss[sp], tx:l.tx, ty:l.ty, tk:tk, rev:rlu.get(tk), s_map:state[ss[sp]], res:lsm(tk, state[ss[sp]])});
+
+            let r,
+                gt = -1;
+
+            if (fn == 0) {
+                /*Ignore the token*/
+                l.next();
+                tk = getToken(l, lu);
+                continue;
+            }
+
+            if (fn > 0) {
+                r = state_funct[fn - 1](tk, e, o, l, ss[sp - 1]);
+            } else {
+
+                if (RECOVERING > 1 && !l.END) {
+                    if (tk !== lu.get(l.ty)) {
+                        //console.log("ABLE", rlu.get(tk), l.tx, tk )
+                        tk = lu.get(l.ty);
+                        continue;
+                    }
+
+                    if (tk !== 13) {
+                        //console.log("MABLE")
+                        tk = 13;
+                        RECOVERING = 1;
+                        continue;
+                    }
+                }
+
+                tk = getToken(l, lu);
+
+                const recovery_token = eh[ss[sp]](tk, e, o, l, p, ss[sp]);
+
+                if (RECOVERING > 0 && typeof(recovery_token) == "string") {
+                    RECOVERING = -1; /* To prevent infinite recursion */
+                    tk = recovery_token;
+                    l.tl = 0; /*reset current token */
+                    continue;
+                }
+            }
+
+            switch (r & 3) {
+                case 0:
+                    /* ERROR */
+
+                    if (tk == "$")
+                        l.throw("Unexpected end of input");
+                    l.throw(`Unexpected token [${RECOVERING ? l.next().tx : l.tx}]`);
+                    return [null];
+
+                case 1:
+                    /* ACCEPT */
+                    break outer;
+
+                case 2:
+                    /*SHIFT */
+                    o.push(l.tx);
+                    ss.push(off, r >> 2);
+                    sp += 2;
+                    p.sync(l);
+                    l.next();
+                    off = l.off;
+                    tk = getToken(l, lu);
+                    RECOVERING++;
+                    break;
+
+                case 3:
+                    /* REDUCE */
+
+                    len = (r & 0x3FC) >> 1;
+
+                    ss.length -= len;
+                    sp -= len;
+                    gt = goto[ss[sp]](r >> 10);
+
+                    if (gt < 0)
+                        l.throw("Invalid state reached!");
+
+                    ss.push(off, gt);
+                    sp += 2;
+                    break;
+            }
+        }
+    console.log(time);
+    return o[0];
+};
+
 /**
  * Global Document instance short name
  * @property DOC
@@ -36,7 +565,7 @@ const EL = (typeof(HTMLElement) !== "undefined") ? HTMLElement : ()=>{};
  * @memberof module:wick~internals
  * @type Object
  */
-const OB$1 = Object;
+const OB = Object;
 
 /**
  * Global String class short name
@@ -103,7 +632,7 @@ const createElement = (e) => document.createElement(e);
  * @param 	{HTMLElement}  		el  	- parent HTMLElement.
  * @return  {HTMLElement | HTMLNode}  		ch_el 	- child HTMLElement or HTMLNode. 
  */
-const appendChild$1 = (el, ch_el) => el.appendChild(ch_el);
+const appendChild = (el, ch_el) => el.appendChild(ch_el);
 
 /**
  *  Element.prototype.cloneNode short name wrapper.
@@ -113,7 +642,7 @@ const appendChild$1 = (el, ch_el) => el.appendChild(ch_el);
  * @param 	{HTMLElement}  		el   - HTMLElement to clone.
  * @return  {Boolean}  			bool - Switch for deep clone
  */
-const cloneNode$1 = (el, bool) => el.cloneNode(bool);
+const cloneNode = (el, bool) => el.cloneNode(bool);
 
 /**
  *  Element.prototype.getElementsByTagName short name wrapper.
@@ -135,1140 +664,87 @@ const _getElementByTag_ = (el, tag) => el.getElementsByTagName(tag);
  */
 const _instanceOf_ = (inst, constr) => inst instanceof constr;
 
-const _SealedProperty_ = (object, name, value) => OB$1.defineProperty(object, name, {value, configurable: false, enumerable: false, writable: true});
-const _FrozenProperty_ = (object, name, value) => OB$1.defineProperty(object, name, {value, configurable: false, enumerable: false, writable: false});
+const _SealedProperty_ = (object, name, value) => OB.defineProperty(object, name, {value, configurable: false, enumerable: false, writable: true});
+const _FrozenProperty_ = (object, name, value) => OB.defineProperty(object, name, {value, configurable: false, enumerable: false, writable: false});
 
-/**
- * Used to call the Scheduler after a JavaScript runtime tick.
- *
- * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
- */
- 
-const caller = (typeof(window) == "object" && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
-    setTimeout(f, 1);
+class HTMLTag{
+	constructor(sym, env){
+
+		const 
+			tag = sym[1],
+			attribs = sym[2],
+			children = sym[4];
+
+		for(const child of children)
+			child.parent = this;
+
+
+		this.tag = tag;
+		this.attribs = attribs;
+		this.children = children;
+		this.url = "";
+	}
+
+	createElement() {
+        return createElement(this.tag);
+    }
+
+    toString(){
+
+    }
+
+	mount(element, scope, statics){
+		let out_statics = statics;
+
+        if (this.url || this.__statics__)
+            out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL(par_list.length - 1) });
+
+        const own_element = this.createElement(scope);
+
+        if (!scope)
+            scope = new Scope(null, presets || this.__presets__ || this.presets, own_element, this);
+
+        if (this.HAS_TAPS)
+            taps = scope.linkTaps(this.tap_list);
+
+        if (own_element) {
+
+            if (!scope.ele) scope.ele = own_element;
+
+            if (this._badge_name_)
+                scope.badges[this._badge_name_] = own_element;
+
+            if (element) appendChild(element, own_element);
+
+            for (let i = 0, l = this.bindings.length; i < l; i++) {
+                let attr = this.bindings[i];
+                attr.binding._bind_(scope, errors, taps, own_element, attr.name, this, statics);
+            }
+        }
+
+        const ele = own_element ? own_element : element;
+
+        par_list.push(this);
+
+        for (let node = this.fch; node; node = this.getNextChild(node))
+            node.build(ele, scope, presets, errors, taps, out_statics);
+
+        par_list.pop();
+
+        return scope;
+	}
+}
+
+//Environment object for HTML parser
+
+const env = {
+	functions : {
+		wick_html_element: HTMLTag,
+	},
+	options : {
+		integrate : false
+	}
 };
-
-const perf = (typeof(performance) == "undefined") ? { now: () => Date.now() } : performance;
-
-
-/**
- * Handles updating objects. It does this by splitting up update cycles, to respect the browser event model. 
- *    
- * If any object is scheduled to be updated, it will be blocked from scheduling more updates until the next ES VM tick.
- */
-class Spark {
-    /**
-     * Constructs the object.
-     */
-    constructor() {
-
-        this.update_queue_a = [];
-        this.update_queue_b = [];
-
-        this.update_queue = this.update_queue_a;
-
-        this.queue_switch = 0;
-
-        this.callback = () => this.update();
-
-        this.frame_time = perf.now();
-
-        this.SCHEDULE_PENDING = false;
-    }
-
-    /**
-     * Given an object that has a _SCHD_ Boolean property, the Scheduler will queue the object and call its .update function 
-     * the following tick. If the object does not have a _SCHD_ property, the Scheduler will persuade the object to have such a property.
-     * 
-     * If there are currently no queued objects when this is called, then the Scheduler will user caller to schedule an update.
-     */
-    queueUpdate(object, timestart = 1, timeend = 0) {
-
-        if (object._SCHD_ || object._SCHD_ > 0) {
-            if (this.SCHEDULE_PENDING)
-                return;
-            else
-                return caller(this.callback);
-        }
-
-        object._SCHD_ = ((timestart & 0xFFFF) | ((timeend) << 16));
-
-        this.update_queue.push(object);
-
-        if (this._SCHD_)
-            return;
-
-        this.frame_time = perf.now() | 0;
-
-        this.SCHEDULE_PENDING = true;
-
-        caller(this.callback);
-    }
-
-    removeFromQueue(object){
-
-        if(object._SCHD_)
-            for(let i = 0, l = this.update_queue.length; i < l; i++)
-                if(this.update_queue[i] === object){
-                    this.update_queue.splice(i,1);
-                    object._SCHD_ = 0;
-
-                    if(l == 1)
-                        this.SCHEDULE_PENDING = false;
-
-                    return;
-                }
-    }
-
-    /**
-     * Called by the caller function every tick. Calls .update on any object queued for an update. 
-     */
-    update() {
-
-        this.SCHEDULE_PENDING = false;
-
-        const uq = this.update_queue;
-        const time = perf.now() | 0;
-        const diff = Math.ceil(time - this.frame_time) | 1;
-        const step_ratio = (diff * 0.06); //  step_ratio of 1 = 16.66666666 or 1000 / 60 for 60 FPS
-
-        this.frame_time = time;
-        
-        if (this.queue_switch == 0)
-            (this.update_queue = this.update_queue_b, this.queue_switch = 1);
-        else
-            (this.update_queue = this.update_queue_a, this.queue_switch = 0);
-
-        for (let i = 0, l = uq.length, o = uq[0]; i < l; o = uq[++i]) {
-            let timestart = ((o._SCHD_ & 0xFFFF)) - diff;
-            let timeend = ((o._SCHD_ >> 16) & 0xFFFF);
-
-            o._SCHD_ = 0;
-            
-            if (timestart > 0) {
-                this.queueUpdate(o, timestart, timeend);
-                continue;
-            }
-
-            timestart = 0;
-
-            if (timeend > 0) 
-                this.queueUpdate(o, timestart, timeend - diff);
-
-            /** 
-                To ensure on code path doesn't block any others, 
-                scheduledUpdate methods are called within a try catch block. 
-                Errors by default are printed to console. 
-            **/
-            try {
-                o.scheduledUpdate(step_ratio, diff);
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        uq.length = 0;
-    }
-}
-
-const spark = new Spark();
-
-/**
- * The base class which all Model classes extend.
- * @memberof module:wick~internal .model
- * @alias ModelBase
- */
-class ModelBase {
-    constructor(root = null, address = []) {
-        _SealedProperty_(this, "_cv_", []);
-        _SealedProperty_(this, "fv", null);
-        _SealedProperty_(this, "par", null);
-        _SealedProperty_(this, "MUTATION_ID", 0);
-        _SealedProperty_(this, "address", address);
-        _SealedProperty_(this, "root", root || this);
-        _SealedProperty_(this, "prop_name", "");
-    }
-
-
-    /**
-     *   Remove all references to any objects still held by this object.
-     *   @protected
-     *   @instance
-     */
-    destroy() {
-
-        //inform views of the models demise
-        var view = this.fv;
-
-        while (view) {
-            let nx = view.nx;
-            view.unsetModel();
-            view = nx;
-        }
-
-        this._cv_ = null;
-    }
-
-    setHook(prop_name, data) { return data; }
-
-    getHook(prop_name, data) { return data; }
-
-
-    /**
-     * Called by a class that extends ModelBase when on of its property values changes.
-     * @param      {string}  changed_value  The changed value
-     * @private
-     */
-    scheduleUpdate(changed_value) {
-        if (!this.fv)
-            return;
-
-
-        this._cv_.push(changed_value);
-
-        spark.queueUpdate(this);
-    }
-
-
-    getChanged(prop_name) {
-
-
-        for (let i = 0, l = this._cv_.length; i < l; i++)
-            if (this._cv_[i] == prop_name)
-                return this[prop_name];
-
-        return null;
-    }
-
-    addListener(listener) {
-        return this.addView(listener);
-    }
-
-
-    /**
-     * Adds a view to the linked list of views on the model. argument view MUST be an instance of View. 
-     * @param {View} view - The view to _bind_ to the ModelBase
-     * @throws {Error} throws an error if the value of `view` is not an instance of {@link View}.
-     */
-    addView(view) {
-        if (view.model)
-            if (view.model !== this) {
-                view.model.removeView(view);
-            } else return;
-
-        if (this.fv) this.fv.pv = view;
-        view.nx = this.fv;
-        this.fv = view;
-
-        view.pv = null;
-        view.model = this;
-        view.update(this);
-    }
-
-    /**
-     * Removes view from set of views if the passed in view is a member of model. 
-     * @param {View} view - The view to unbind from ModelBase
-     */
-    removeView(view) {
-        
-
-        if (view.model == this) {
-            if (view == this.fv)
-                this.fv = view.nx;
-
-            if (view.nx)
-                view.nx.pv = view.pv;
-            if (view.pv)
-                view.pv.nx = view.nx;
-
-            view.nx = null;
-            view.pv = null;
-        }
-    }
-
-
-    /**
-        Should return the value of the property if it is in the model and has been updated since the last cycle. Null otherwise.
-        This should be overridden by a more efficient version by inheriting objects
-    */
-    isUpdated(prop_name) {
-
-        let changed_properties = this._cv_;
-
-        for (var i = 0, l = changed_properties.length; i < l; i++)
-            if (changed_properties[i] == prop_name)
-                if (this[prop_name] !== undefined)
-                    return this[prop_name];
-
-        return null;
-    }
-
-
-
-    /**
-     * Called by the {@link spark} when if the ModelBase is scheduled for an update
-     * @param      {number}  step    The step
-     */
-    scheduledUpdate(step) { this.updateViews(); }
-
-
-
-    /**
-     * Calls View#update on every bound View, passing the current state of the ModelBase.
-     */
-    updateViews() {
-
-        let o = {};
-
-        for (let p = null, i = 0, l = this._cv_.length; i < l; i++)
-            (p = this._cv_[i], o[p] = this[p]);
-
-        this._cv_.length = 0;
-
-        var view = this.fv;
-
-        while (view) {
-
-            view.update(this, o);
-            view = view.nx;
-        }
-
-        return;
-    }
-
-
-
-    /**
-     * Updates views with a list of models that have been removed. 
-     * Primarily used in conjunction with container based views, such as Templates.
-     * @private
-     */
-    updateViewsRemoved(data) {
-
-        var view = this.fv;
-
-        while (view) {
-
-            view.removed(data);
-
-            view = view.nx;
-        }
-    }
-
-
-
-    /** MUTATION FUNCTIONS **************************************************************************************/
-
-
-
-    _deferUpdateToRoot_(data, MUTATION_ID = this.MUTATION_ID) {
-        
-        if(!this.root)
-            return this;
-
-        return this.root._setThroughRoot_(data, this.address, 0, this.address.length, MUTATION_ID);
-    }
-
-
-
-    _setThroughRoot_(data, address, index, len, m_id) {
-
-        if (index >= len) {
-
-            if (m_id !== this.MUTATION_ID) {
-                let clone = this.clone();
-                clone.set(data, true);
-                clone.MUTATION_ID = (this.par) ? this.par.MUTATION_ID : this.MUTATION_ID + 1;
-                return clone;
-            }
-
-            this.set(data, true);
-            return this;
-        }
-
-        let i = address[index++];
-
-        let model_prop = this.prop_array[i];
-
-        if (model_prop.MUTATION_ID !== this.MUTATION_ID) {
-
-            model_prop = model_prop.clone();
-
-            model_prop.MUTATION_ID = this.MUTATION_ID;
-        }
-
-        this.prop_array[i] = model_prop;
-
-        return model_prop._setThroughRoot_(data, address, index, len, model_prop.MUTATION_ID);
-    }
-
-    seal() {
-
-        let clone = this._deferUpdateToRoot_(null, this.MUTATION_ID + 1);
-
-        return clone;
-    }
-
-    clone() {
-
-        let clone = new this.constructor(this);
-
-        clone.prop_name = this.prop_name;
-        clone._cv_ = this._cv_;
-        clone.fv = this.fv;
-        clone.par = this.par;
-        clone.MUTATION_ID = this.MUTATION_ID;
-        clone.address = this.address;
-        clone.prop_name = this.prop_name;
-
-        clone.root = (this.root == this) ? clone : this.root;
-
-        return clone;
-    }
-
-    /**
-     * Updates views with a list of models that have been added. 
-     * Primarily used in conjunction with container based views, such as Templates.
-     * @private
-     */
-    updateViewsAdded(data) {
-
-        var view = this.fv;
-
-        while (view) {
-
-            view.added(data);
-
-            view = view.nx;
-        }
-    }
-
-    toJSON() { return JSON.stringify(this, null, '\t'); }
-
-
-    /**
-     * This will update the branch state of the data tree with a new branch if the MUTATION_ID is higher or lower than the current branch's parent level.
-     * In this case, the new branch will stem from the root node, and all ancestor nodes from the originating child will be cloned.
-     *
-     * @param      {Object}         child_obj    The child object
-     * @param      {(Object|number)}  MUTATION_ID  The mutation id
-     * @return     {Object}         { description_of_the_return_value }
-     */
-    setMutation(child_obj, MUTATION_ID = child_obj.MUTATION_ID) {
-        let clone = child_obj,
-            result = this;
-
-        if (MUTATION_ID == this.MUTATION_ID) return child_obj;
-
-        if (this.par)
-            result = this.par.setMutation(this, MUTATION_ID);
-
-        if (MUTATION_ID > this.MUTATION_ID) {
-            result = this.clone();
-            result.MUTATION_ID = this.MUTATION_ID + 1;
-        }
-
-        clone = child_obj.clone();
-        clone.MUTATION_ID = result.MUTATION_ID;
-        result[clone.prop_name] = clone;
-
-        return clone;
-    }
-}
-
-/**
-    Schema type. Handles the parsing, validation, and filtering of Model data properties. 
-*/
-class SchemeConstructor {
-
-    constructor() {
-
-        this.start_value = undefined;
-    }
-
-    /**
-        Parses value returns an appropriate transformed value
-    */
-    parse(value) {
-
-        return value;
-    }
-
-    /**
-
-    */
-    verify(value, result) {
-
-        result.valid = true;
-    }
-
-    filter(id, filters) {
-        for (let i = 0, l = filters.length; i < l; i++)
-            if (id === filters[i]) return true;
-        return false;
-    }
-
-    string(value) {
-
-        return value + "";
-    }
-}
-
-class MCArray extends Array {
-
-    constructor() {
-        super();
-    }
-
-    push(...item) {
-        item.forEach(item => {
-            if (item instanceof Array)
-                item.forEach((i) => {
-                    super.push(i);
-                });
-            else
-                super.push(item);
-        });
-    }
-
-    //For compatibility
-    __setFilters__() {
-
-    }
-
-    getChanged() {
-
-    }
-
-    toJSON() { return this; }
-
-    toJson() { return JSON.stringify(this, null, '\t'); }
-}
-
-// A no op function
-let EmptyFunction = () => {};
-let EmptyArray = [];
-
-class ModelContainerBase extends ModelBase {
-
-    constructor(root = null, address = []) {
-
-        super(root, address);
-
-        _SealedProperty_(this, "scope", null);
-        _SealedProperty_(this, "first_link", null);
-
-        //For keeping the container from garbage collection.
-        _SealedProperty_(this, "pin", EmptyFunction);
-
-        //For Linking to original 
-        _SealedProperty_(this, "next", null);
-        _SealedProperty_(this, "prev", null);
-
-        //Filters are a series of strings or number selectors used to determine if a model should be inserted into or retrieved from the container.
-        _SealedProperty_(this, "_filters_", null);
-
-        this.validator = new SchemeConstructor();
-
-        return this;
-    }
-
-    setByIndex(index) { /* NO OP **/ }
-
-    getByIndex(index, value) { /* NO OP **/ }
-
-    destroy() {
-
-
-        this._filters_ = null;
-
-        if (this.scope) {
-            this.scope.__unlink__(this);
-        }
-
-        super.destroy();
-    }
-
-    /**
-        Get the number of Models held in this._mContainerBase
-
-        @returns {Number}
-    */
-    get length() { return 0; }
-
-    set length(e) { /* NO OP */ }
-
-    /** 
-        Returns a ModelContainerBase type to store the results of a get().
-    */
-    __defaultReturn__(USE_ARRAY) {
-        if (USE_ARRAY) return new MCArray;
-
-        let n = new this.constructor();
-
-        n.key = this.key;
-        n.validator = this.validator;
-        n.model = this.model;
-
-        this.__link__(n);
-
-        return n;
-    }
-
-    /**
-        Array emulating kludge
-
-        @returns The result of calling this.insert
-    */
-    push(...item) {
-        item.forEach(item => {
-            if (this.scope) {
-                if (item instanceof Array)
-                    item.forEach((i) => {
-                        this.insert(i, true, true);
-                    });
-                else
-                    this.insert(item, true, true);
-
-            } else {
-                if (item instanceof Array)
-                    item.forEach((i) => {
-                        this.insert(i);
-                    });
-                else
-                    this.insert(item);
-
-            }
-        });
-    }
-
-    /**
-        Retrieves a list of items that match the term/terms. 
-
-        @param {(Array|SearchTerm)} term - A single term or a set of terms to look for in the ModelContainerBase. 
-        @param {Array} __return_data__ - Set to true by a scope Container if it is calling a SubContainer insert function. 
-
-        @returns {(ModelContainerBase|Array)} Returns a Model container or an Array of Models matching the search terms. 
-    */
-    get(term, __return_data__) {
-
-        let out = null;
-
-        term = this.getHook("term", term);
-
-        let USE_ARRAY = (__return_data__ === null) ? false : true;
-
-        if (term) {
-
-            if (__return_data__) {
-                out = __return_data__;
-            } else {
-
-                if (!this.scope)
-                    USE_ARRAY = false;
-
-                out = this.__defaultReturn__(USE_ARRAY);
-                out.__setFilters__(term);
-            }
-        } else
-            out = (__return_data__) ? __return_data__ : this.__defaultReturn__(USE_ARRAY);
-
-        if (!term)
-            this.__getAll__(out);
-        else {
-
-            let terms = term;
-
-            if (!Array.isArray(term))
-                terms = [term];
-
-            //Need to convert terms into a form that will work for the identifier type
-            terms = terms.map(t => this.validator.parse(t));
-
-            this.__get__(terms, out);
-        }
-
-        return out;
-    }
-
-    set(item, from_root = false) {
-        if (!from_root)
-            return this._deferUpdateToRoot_(item).insert(item, true);
-        else
-            this.insert(item, true);
-    }
-
-    /**
-        Inserts an item into the container. If the item is not a {Model}, an attempt will be made to convert the data in the Object into a Model.
-        If the item is an array of objects, each object in the array will be considered separately. 
-
-        @param {Object} item - An Object to insert into the container. On of the properties of the object MUST have the same name as the ModelContainerBase's 
-        @param {Array} item - An array of Objects to insert into the container.
-        @param {Boolean} __FROM_SCOPE__ - Set to true by a scope Container if it is calling a SubContainer insert function. 
-
-        @returns {Boolean} Returns true if an insertion into the ModelContainerBase occurred, false otherwise.
-    */
-    insert(item, from_root = false, __FROM_SCOPE__ = false) {
-
-
-        item = this.setHook("", item);
-
-        if (!from_root)
-            return this._deferUpdateToRoot_(item).insert(item, true);
-
-        let add_list = (this.fv) ? [] : null;
-
-        let out_data = false;
-
-        if (!__FROM_SCOPE__ && this.scope)
-            return this.scope.insert(item);
-
-
-        if (item instanceof Array) {
-            for (var i = 0; i < item.length; i++)
-                if (this.__insertSub__(item[i], out_data, add_list))
-                    out_data = true;
-        } else if (item)
-            out_data = this.__insertSub__(item, out_data, add_list);
-
-
-        if (out_data) {
-            if (this.par)
-                this.par.scheduleUpdate(this.prop_name);
-
-
-            if (add_list && add_list.length > 0) {
-                this.updateViewsAdded(add_list);
-                this.scheduleUpdate();
-            }
-        }
-
-        return out_data;
-    }
-
-    /**
-        A subset of the insert function. Handles the testing of presence of an identifier value, the conversion of an Object into a Model, and the calling of the implementation specific __insert__ function.
-    */
-    __insertSub__(item, out, add_list) {
-
-        let model = item;
-
-        var identifier = this._gI_(item);
-
-        if (identifier !== undefined) {
-
-            if (!(model instanceof ModelBase)) {
-                model = new this.model(item);
-                model.MUTATION_ID = this.MUTATION_ID;
-            }
-
-            identifier = this._gI_(model, this._filters_);
-
-            if (identifier !== undefined) {
-                out = this.__insert__(model, add_list, identifier);
-                this.__linksInsert__(model);
-            }
-        }
-
-        return out;
-    }
-
-    delete(term, from_root = false) {
-        if (!from_root)
-            return this._deferUpdateToRoot_(term).remove(term);
-        else
-            this.remove(term);
-    }
-
-    /**
-        Removes an item from the container. 
-    */
-    remove(term, from_root = false, __FROM_SCOPE__ = false) {
-
-        if (!from_root)
-            return this._deferUpdateToRoot_(term).remove(term, true);
-
-        //term = this.getHook("term", term);
-
-        if (!__FROM_SCOPE__ && this.scope) {
-
-            if (!term)
-                return this.scope.remove(this._filters_);
-            else
-                return this.scope.remove(term);
-        }
-
-        let out_container = [];
-
-        if (!term)
-            this.__removeAll__();
-
-        else {
-
-            let terms = (Array.isArray(term)) ? term : [term];
-
-            //Need to convert terms into a form that will work for the identifier type
-            terms = terms.map(t => (t instanceof ModelBase) ? t : this.validator.parse(t));
-
-            this.__remove__(terms, out_container);
-        }
-
-        if (out_container.length > 0) {
-            if (this.par)
-                this.par.scheduleUpdate(this.prop_name);
-
-
-            if (out_container && out_container.length > 0) {
-                this.updateViewsRemoved(out_container);
-                this.scheduleUpdate();
-            }
-        }
-
-        return out_container;
-    }
-
-    /**
-        Removes a ModelContainerBase from list of linked containers. 
-
-        @param {ModelContainerBase} container - The ModelContainerBase instance to remove from the set of linked containers. Must be a member of the linked containers. 
-    */
-    __unlink__(container) {
-
-        if (container instanceof ModelContainerBase && container.scope == this) {
-
-            if (container == this.first_link)
-                this.first_link = container.next;
-
-            if (container.next)
-                container.next.prev = container.prev;
-
-            if (container.prev)
-                container.prev.next = container.next;
-
-            container.scope = null;
-        }
-    }
-
-    /**
-        Adds a container to the list of tracked containers. 
-
-        @param {ModelContainerBase} container - The ModelContainerBase instance to add the set of linked containers.
-    */
-    __link__(container) {
-        if (container instanceof ModelContainerBase && !container.scope) {
-
-            container.scope = this;
-
-            container.next = this.first_link;
-
-            if (this.first_link)
-                this.first_link.prev = container;
-
-            this.first_link = container;
-
-            container.pin = ((container) => {
-                let id = setTimeout(() => {
-                    container.__unlink__();
-                }, 50);
-
-                return () => {
-                    clearTimeout(id);
-                    if (!container.scope)
-                        console.warn("failed to clear the destruction of container in time!");
-                };
-            })(container);
-        }
-    }
-
-    /**
-     * Remove items from linked ModelContainers according to the terms provided.
-     * @param      {Array}  terms   Array of terms.
-     * @private
-     */
-    __linksRemove__(item) {
-        let a = this.first_link;
-        while (a) {
-            for (let i = 0; i < item.length; i++)
-                if (a._gI_(item[i], a._filters_)) {
-                    a.scheduleUpdate();
-                    a.__linksRemove__(item);
-                    break;
-                }
-
-            a = a.next;
-        }
-    }
-
-    /**
-     * Add items to linked ModelContainers.
-     * @param      {Model}  item   Item to add.
-     * @private
-     */
-    __linksInsert__(item) {
-        let a = this.first_link;
-        while (a) {
-            if (a._gI_(item, a._filters_))
-                a.scheduleUpdate();
-            a = a.next;
-        }
-    }
-
-    /**
-        Removes any items in the ModelConatiner not included in the array "items", and adds any item in `items` not already in the ModelContainerBase.
-        @param {Array} items - An array of identifiable Models or objects. 
-    */
-    cull(items) {
-
-        let hash_table = {};
-        let existing_items = __getAll__([], true);
-
-        let loadHash = (item) => {
-            if (item instanceof Array)
-                return item.forEach((e) => loadHash(e));
-
-            let identifier = this._gI_(item);
-
-            if (identifier !== undefined)
-                hash_table[identifier] = item;
-
-        };
-
-        loadHash(items);
-
-        for (let i = 0; i < existing_items.lenth; i++) {
-            let e_item = existing_items[i];
-            if (!existing_items[this._gI_(e_item)])
-                this.__remove__(e_item);
-        }
-
-        this.insert(items);
-    }
-
-    __setFilters__(term) {
-
-        if (!this._filters_) this._filters_ = [];
-
-        if (Array.isArray(term))
-            this._filters_ = this._filters_.concat(term.map(t => this.validator.parse(t)));
-        else
-            this._filters_.push(this.validator.parse(term));
-
-    }
-
-    /**
-        Returns true if the identifier matches a predefined filter pattern, which is evaluated by this.parser. If a 
-        parser was not present the ModelContainers schema, then the function will return true upon every evaluation.
-    */
-    __filterIdentifier__(identifier, filters) {
-        if (filters.length > 0) {
-            return this.validator.filter(identifier, filters);
-        }
-        return true;
-    }
-
-    _gIf_(item, term) {
-        let t = this._gI_(item, this.filters);
-    }
-
-    /**
-        Returns the Identifier property value if it exists in the item. If an array value for filters is passed, then undefined is returned if the identifier value does not pass filtering criteria.
-        @param {(Object|Model)} item
-        @param {Array} filters - An array of filter terms to test whether the identifier meets the criteria to be handled by the ModelContainerBase.
-    */
-    _gI_(item, filters = null) {
-
-        let identifier;
-
-        if (typeof(item) == "object" && this.key)
-            identifier = item[this.key];
-        else
-            identifier = item;
-
-        if (identifier && this.validator)
-            identifier = this.validator.parse(identifier);
-
-        if (filters && identifier)
-            return (this.__filterIdentifier__(identifier, filters)) ? identifier : undefined;
-
-        return identifier;
-    }
-
-    /** 
-        OVERRIDE SECTION ********************************************************************
-        
-        All of these functions should be overridden by inheriting classes
-    */
-
-    __insert__() { return this; }
-
-    __get__(item, __return_data__) { return __return_data__; }
-
-    __getAll__(__return_data__) { return __return_data__; }
-
-    __removeAll__() { return []; }
-
-    __remove__() { return []; }
-
-    clone() {
-        let clone = super.clone();
-        clone.key = this.key;
-        clone.model = this.model;
-        clone.validator = this.validator;
-        clone.first_link = this.first_link;
-        return clone;
-    }
-
-    // END OVERRIDE *************************************************************************
-}
-
-const proto = ModelContainerBase.prototype;
-_SealedProperty_(proto, "model", null);
-_SealedProperty_(proto, "key", "");
-_SealedProperty_(proto, "validator", null);
-
-class MultiIndexedContainer extends ModelContainerBase {
-
-    constructor(data = [], root = null, address = []) {
-
-        super(root, address);
-
-        this.secondary_indexes = {};
-        this.primary_index = null;
-        this.primary_key = "";
-
-        if (data[0] && data[0].key) {
-
-            let key = data[0].key;
-
-            if (data[0].model)
-                this.model = data[0].model;
-
-            if (Array.isArray(key))
-                key.forEach((k) => (this.addKey(k)));
-
-            data = data.slice(1);
-        }
-
-        if (Array.isArray(data) && data.length > 0)
-            this.insert(data);
-    }
-
-    /**
-        Returns the length of the first index in this container. 
-    */
-    get length() { return this.primary_index.length; }
-
-    /**
-        Insert a new ModelContainerBase into the index through the key.  
-    */
-    addKey(key) {
-        let name = key.name;
-
-        let container = new MultiIndexedContainer.array([{ key, model: this.model }]);
-
-        if (this.primary_index) {
-            this.secondary_indexes[name] = container;
-            this.secondary_indexes[name].insert(this.primary_index.__getAll__());
-        } else {
-            this.primary_key = name;
-            this.primary_index = container;
-        }
-    }
-
-    get(item, __return_data__) {
-        
-        item = this.getHook("query", item);
-
-        if (item) {
-            for (let name in item) {
-                if (name == this.primary_key)
-                    return this.primary_index.get(item[name], __return_data__);
-
-                else if (this.secondary_indexes[name])
-                    return this.secondary_indexes[name].get(item[name], __return_data__);
-
-            }
-        } else
-            return this.primary_index.get(null, __return_data__);
-    }
-
-    __insert__(model, add_list, identifier) {
-
-        let out = false;
-
-        model.par = this;
-
-        if ((out = this.primary_index.insert(model))) {
-            for (let name in this.secondary_indexes) {
-
-                let index = this.secondary_indexes[name];
-
-                index.insert(model);
-            }
-        }
-
-        if (out)
-            this.updateViews(this.primary_index.get());
-
-        return out;
-    }
-    /**
-        @private 
-    */
-    __remove__(term, out_container) {
-
-        let out = false;
-
-        if ((out = this.primary_index.__remove__(term, out_container))) {
-
-            for (let name in this.secondary_indexes) {
-
-                let index = this.secondary_indexes[name];
-
-                index.__remove__(out_container);
-            }
-        }
-
-        return out;
-    }
-
-    __removeAll__() {
-
-        let out = false;
-
-        out = this.primary_index.__removeAll__();
-
-        for (let name in this.secondary_indexes) {
-
-            let index = this.secondary_indexes[name];
-
-            if (index.__removeAll__())
-                out = true;
-        }
-
-        return out;
-    }
-
-
-    /**
-        Overrides Model container default _gI_ to force item to pass.
-        @private 
-    */
-    _gI_(item, filters = null) {
-        return true;
-    }
-
-    toJSON() {
-        return this.primary_index.toJSON();
-    }
-
-    clone() {
-        let clone = super.clone();
-        clone.secondary_indexes = this.secondary_indexes;
-        clone.primary_index = this.primary_index;
-        return clone;
-    }
-}
 
 const A = 65;
 const a = 97;
@@ -1329,7 +805,7 @@ const H = 72;
 const HASH = 35;
 const HORIZONTAL_TAB = 9;
 const HYPHEN = 45;
-const i$1 = 105;
+const i = 105;
 const I = 73;
 const j = 106;
 const J = 74;
@@ -2449,11727 +1925,35 @@ ${is_iws}`;
 
 Lexer.prototype.addCharacter = Lexer.prototype.addSymbol;
 
-function whind$1(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS) }
+function whind(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS) }
 
-whind$1.constructor = Lexer;
+whind.constructor = Lexer;
 
 Lexer.types = Types;
-whind$1.types = Types;
+whind.types = Types;
 
-class NumberSchemeConstructor extends SchemeConstructor {
-
-    constructor() {
-
-        super();
-
-        this.start_value = 0;
-    }
-
-    parse(value) {
-
-        return parseFloat(value);
-    }
-
-    verify(value, result) {
-
-        result.valid = true;
-
-        if (value == NaN || value == undefined) {
-            result.valid = false;
-            result.reason = "Invalid number type.";
-        }
-    }
-
-    filter(identifier, filters) {
-
-        for (let i = 0, l = filters.length; i < l; i++)
-            if (identifier == filters[i])
-                return true;
-
-        return false;
-    }
-}
-
-let number$1 = new NumberSchemeConstructor();
-
-let scape_date = new Date();
-scape_date.setHours(0);
-scape_date.setMilliseconds(0);
-scape_date.setSeconds(0);
-scape_date.setTime(0);
-
-class DateSchemeConstructor extends NumberSchemeConstructor {
-
-    parse(value) {
-
-        if(!value)
-            return undefined;
-
-        if(value instanceof Date)
-            return value.valueOf();
-
-        if (!isNaN(value))
-            return parseInt(value);
-
-        let date = (new Date(value)).valueOf();
-
-        if(date) return date;
-
-        let lex = whind$1(value);
-
-        let year = parseInt(lex.text);
-
-        if (year) {
-
-            scape_date.setHours(0);
-            scape_date.setMilliseconds(0);
-            scape_date.setSeconds(0);
-            scape_date.setTime(0);
-
-            lex.next();
-            lex.next();
-            let month = parseInt(lex.text) - 1;
-            lex.next();
-            lex.next();
-            let day = parseInt(lex.text);
-            scape_date.setFullYear(year);
-            scape_date.setDate(day);
-            scape_date.setMonth(month);
-
-            lex.next();
-
-            if (lex.pos > -1) {
-
-                let hours = parseInt(lex.text);
-                lex.next();
-                lex.next();
-                let minutes = parseInt(lex.text);
-
-                scape_date.setHours(hours);
-                scape_date.setMinutes(minutes);
-            }
-
-
-
-            return scape_date.valueOf();
-        } 
-    }
-
-    /**
-     
-     */
-    verify(value, result) {
-
-        value = this.parse(value);
-
-        super.verify(value, result);
-    }
-
-    filter(identifier, filters) {
-
-        if (filters.length > 1) {
-
-            for (let i = 0, l = filters.length - 1; i < l; i += 2) {
-                let start = filters[i];
-                let end = filters[i + 1];
-
-                if (start <= identifier && identifier <= end) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    string(value) {
-        
-        return (new Date(value)) + "";
-    }
-}
-
-let date = new DateSchemeConstructor();
-
-class TimeSchemeConstructor extends NumberSchemeConstructor {
-
-    parse(value) {
-        if (!isNaN(value))
-            return parseFloat(value);
-        try {
-            var hour = parseInt(value.split(":")[0]);
-            var min = parseInt(value.split(":")[1].split(" ")[0]);
-            if (value.split(":")[1].split(" ")[1])
-                half = (value.split(":")[1].split(" ")[1].toLowerCase() == "pm");
-            else
-                half = 0;
-        } catch (e) {
-            var hour = 0;
-            var min = 0;
-            var half = 0;
-        }
-        
-        return parseFloat((hour + ((half) ? 12 : 0) + (min / 60)));
-    }
-
-    verify(value, result) {
-        this.parse(value);
-        super.verify(value, result);
-    }
-
-    filter(identifier, filters) {
-        return true
-    }
-
-    string(value) {
-        return (new Date(value)) + "";
-    }
-}
-
-let time = new TimeSchemeConstructor();
-
-class StringSchemeConstructor extends SchemeConstructor {
-    
-    constructor() {
-
-        super();
-
-        this.start_value = "";
-    }
-    parse(value) {
-
-        return value + "";
-    }
-
-    verify(value, result) {
-        result.valid = true;
-
-        if (value === undefined) {
-            result.valid = false;
-            result.reason = " value is undefined";
-        } else if (!value instanceof String) {
-            result.valid = false;
-            result.reason = " value is not a string.";
-        }
-    }
-
-    filter(identifier, filters) {
-
-        for (let i = 0, l = filters.length; i < l; i++)
-            if (identifier.match(filters[i] + ""))
-                return true;
-
-        return false;
-    }
-}
-
-let string$1 = new StringSchemeConstructor();
-
-class BoolSchemeConstructor extends SchemeConstructor {
-
-    constructor() {
-
-        super();
-
-        this.start_value = false;
-    }
-
-    parse(value) {
-
-        return (value) ? true : false;
-    }
-
-    verify(value, result) {
-
-        result.valid = true;
-
-        if (value === undefined) {
-            result.valid = false;
-            result.reason = " value is undefined";
-        } else if (!value instanceof Boolean) {
-            result.valid = false;
-            result.reason = " value is not a Boolean.";
-        }
-    }
-
-    filter(identifier, filters) {
-
-        if (value instanceof Boolean)
-            return true;
-
-        return false;
-    }
-}
-
-let bool = new BoolSchemeConstructor();
-
-let schemes = { date, string: string$1, number: number$1, bool, time };
-
-
-/**
- * Used by Models to ensure conformance to a predefined data structure. Becomes immutable once created.
- * @param {Object} data - An Object of `key`:`value` pairs used to define the Scheme. `value`s must be instances of or SchemeConstructor or classes that extend SchemeConstructor.
- * @readonly
- */
-class Schema {}
-
-class BTreeModelContainer extends ModelContainerBase {
-
-    constructor(data = [], root = null, address = []) {
-
-        super(root, address);
-
-        this.validator = schemes.number;
-
-        if (data[0] && data[0].key) {
-
-            let key = data[0].key;
-
-            if (typeof key == "object") {
-
-                if (key.type)
-                    this.validator = (key.type instanceof NumberSchemeConstructor) ? key.type : this.validator;
-
-                if (key.name)
-                    this.key = key.name;
-
-                if (key.unique_key)
-                    this.unique_key = key.unique_key;
-            } else
-                this.key = key;
-
-            if (data[0].model)
-                this.model = data[0].model;
-
-            data = data.slice(1);
-        }
-
-        this.min = 10;
-        this.max = 20;
-        this.size = 0;
-        this.btree = null;
-
-        if (Array.isArray(data) && data.length > 0)
-            this.insert(data);
-    }
-
-    destroy() {
-        if (this.btree)
-            this.btree.destroy();
-
-        super.destroy();
-    }
-
-    get length() {
-        return this.size;
-    }
-
-    __insert__(model, add_list, identifier) {
-
-        let result = {
-            added: false
-        };
-
-        if (!this.btree)
-            this.btree = new BtreeNode(true);
-
-        this.btree = this.btree.insert(identifier, model, this.unique_key, this.max, true, result).newnode;
-
-        if (add_list) add_list.push(model);
-
-        if (result.added) {
-            this.size++;
-            this.__updateLinks__();
-        }
-
-        return result.added;
-    }
-
-    __get__(terms, __return_data__) {
-
-        if(!this.btree) return __return_data__;
-
-        if (__return_data__ instanceof BTreeModelContainer){
-            __return_data__.btree = this.btree;
-            return __return_data__;
-        }
-
-        let out = [];
-
-        for (let i = 0, l = terms.length; i < l; i++) {
-            let b, a = terms[i];
-
-            if (a instanceof ModelBase)
-                continue;
-
-            if (i < l-1 && !(terms[i + 1] instanceof ModelBase)) {
-                b = terms[++i];
-            } else
-                b = a;
-
-            this.btree.get(a, b, out);
-        }
-
-        if (this._filters_) {
-            for (let i = 0, l = out.length; i < l; i++) {
-                let model = out[i];
-
-                if (this._gI_(model, this._filters_))
-                    __return_data__.push(model);
-            }
-        } else
-            for (let i = 0, l = out.length; i < l; i++)
-                __return_data__.push(out[i]);
-
-
-
-        return __return_data__;
-    }
-
-    __remove__(terms, out_container = []) {
-
-        if(!this.btree) return false;
-
-        let result = 0;
-
-        for (let i = 0, l = terms.length; i < l; i++) {
-            let b, a = terms[i];
-
-            if ((a instanceof ModelBase)) {
-                let v = this._gI_(a);
-                let o = this.btree.remove(v, v, this.unique_key, this.unique_key ? a[this.unique_key] : "", true, this.min, out_container);
-                result += o.out;
-                this.btree = o.out_node;
-                continue;
-            }
-
-            if (i < l-1 && !(terms[i + 1] instanceof ModelBase)) {
-                b = terms[++i];
-            } else
-                b = a;
-
-            let o = this.btree.remove(a, b, "", "", true, this.min, out_container);
-            result += o.out;
-            this.btree = o.out_node;
-        }
-
-        if (result > 0) {
-            this.size -= result;
-            this.__updateLinks__();
-            this.__linksRemove__(out_container);
-        }
-
-
-        return result !== 0;
-    }
-
-    __updateLinks__() {
-        let a = this.first_link;
-        while (a) {
-            a.btree = this.btree;
-            a = a.next;
-        }
-    }
-
-    __getAll__(__return_data__) {
-
-        if (this._filters_) {
-            this.__get__(this._filters_, __return_data__);
-        } else if (this.btree)
-            this.btree.get(-Infinity, Infinity, __return_data__);
-
-        return __return_data__;
-    }
-
-    __removeAll__() {
-        if (this.btree)
-            this.btree.destroy();
-        this.btree = null;
-    }
-
-    toJSON() {
-        let out_data = [];
-
-        if (this.btree) {
-
-            this.btree.get(this.min, this.max, out_data);
-        }
-
-        return out_data;
-    }
-
-    clone() {
-        let clone = super.clone();
-        clone.btree = this.btree;
-        return clone;
-    }
-}
-
-class BtreeNode {
-    constructor(IS_LEAF = false) {
-        this.LEAF = IS_LEAF;
-        this.nodes = [];
-        this.keys = [];
-        this.items = 0;
-    }
-
-    destroy() {
-
-        this.nodes = null;
-        this.keys = null;
-
-        if (!this.LEAF) {
-            for (let i = 0, l = this.nodes.length; i < l; i++)
-                this.nodes[i].destroy();
-        }
-
-    }
-
-    balanceInsert(max_size, IS_ROOT = false) {
-        if (this.keys.length >= max_size) {
-            //need to split this up!
-
-            let newnode = new BtreeNode(this.LEAF);
-
-            let split = (max_size >> 1) | 0;
-
-            let key = this.keys[split];
-
-            let left_keys = this.keys.slice(0, split);
-            let left_nodes = this.nodes.slice(0, (this.LEAF) ? split : split + 1);
-
-            let right_keys = this.keys.slice((this.LEAF) ? split : split + 1);
-            let right_nodes = this.nodes.slice((this.LEAF) ? split : split + 1);
-
-            newnode.keys = right_keys;
-            newnode.nodes = right_nodes;
-
-            this.keys = left_keys;
-            this.nodes = left_nodes;
-
-            if (IS_ROOT) {
-
-                let root = new BtreeNode();
-
-                root.keys.push(key);
-                root.nodes.push(this, newnode);
-
-                return {
-                    newnode: root,
-                    key: key
-                };
-            }
-
-            return {
-                newnode: newnode,
-                key: key
-            };
-        }
-
-        return {
-            newnode: this,
-            key: 0
-        };
-    }
-
-    /**
-        Inserts model into the tree, sorted by identifier. 
-    */
-    insert(identifier, model, unique_key, max_size, IS_ROOT = false, result) {
-
-        let l = this.keys.length;
-
-        if (!this.LEAF) {
-
-            for (var i = 0; i < l; i++) {
-
-                let key = this.keys[i];
-
-                if (identifier < key) {
-                    let node = this.nodes[i];
-
-                    let o = node.insert(identifier, model, unique_key, max_size, false, result);
-                    let keyr = o.key;
-                    let newnode = o.newnode;
-
-                    if (keyr == undefined) debugger
-
-                    if (newnode != node) {
-                        this.keys.splice(i, 0, keyr);
-                        this.nodes.splice(i + 1, 0, newnode);
-                    }
-
-                    return this.balanceInsert(max_size, IS_ROOT);
-                }
-            }
-
-            let node = this.nodes[i];
-
-            let {
-                newnode,
-                key
-            } = node.insert(identifier, model, unique_key, max_size, false, result);
-
-            if (key == undefined) debugger
-
-            if (newnode != node) {
-                this.keys.push(key);
-                this.nodes.push(newnode);
-            }
-
-            return this.balanceInsert(max_size, IS_ROOT);
-
-        } else {
-
-            for (let i = 0, l = this.keys.length; i < l; i++) {
-                let key = this.keys[i];
-
-                if (identifier == key) {
-
-                    if (unique_key) {
-                        if (this.nodes[i][unique_key] !== model[unique_key]) { continue; }
-                    } else
-                        this.nodes[i].set(model);
-                    
-
-                    result.added = false;
-
-                    return {
-                        newnode: this,
-                        key: identifier
-                    };
-                } else if (identifier < key) {
-
-                    this.keys.splice(i, 0, identifier);
-                    this.nodes.splice(i, 0, model);
-
-                    result.added = true;
-
-                    return this.balanceInsert(max_size, IS_ROOT);
-                }
-            }
-
-            this.keys.push(identifier);
-            this.nodes.push(model);
-
-            result.added = true;
-
-            return this.balanceInsert(max_size, IS_ROOT);
-        }
-
-        return {
-            newnode: this,
-            key: identifier,
-        };
-    }
-
-    balanceRemove(index, min_size) {
-        let left = this.nodes[index - 1];
-        let right = this.nodes[index + 1];
-        let node = this.nodes[index];
-
-        //Left rotate
-        if (left && left.keys.length > min_size) {
-
-            let lk = left.keys.length;
-            let ln = left.nodes.length;
-
-            node.keys.unshift((node.LEAF) ? left.keys[lk - 1] : this.keys[index - 1]);
-            node.nodes.unshift(left.nodes[ln - 1]);
-
-            this.keys[index - 1] = left.keys[lk - 1];
-
-            left.keys.length = lk - 1;
-            left.nodes.length = ln - 1;
-
-            return false;
-        } else
-            //Right rotate
-            if (right && right.keys.length > min_size) {
-
-                node.keys.push((node.LEAF) ? right.keys[0] : this.keys[index]);
-                node.nodes.push(right.nodes[0]);
-
-                right.keys.splice(0, 1);
-                right.nodes.splice(0, 1);
-
-                this.keys[index] = (node.LEAF) ? right.keys[1] : right.keys[0];
-
-                return false;
-
-            } else {
-
-                //Left or Right Merge
-                if (!left) {
-                    index++;
-                    left = node;
-                    node = right;
-                }
-
-                let key = this.keys[index - 1];
-                this.keys.splice(index - 1, 1);
-                this.nodes.splice(index, 1);
-
-                left.nodes = left.nodes.concat(node.nodes);
-                if (!left.LEAF) left.keys.push(key);
-                left.keys = left.keys.concat(node.keys);
-
-
-                if (left.LEAF)
-                    for (let i = 0; i < left.keys.length; i++)
-                        if (left.keys[i] != left.nodes[i].id)
-                            {/*debugger*/};
-
-                return true;
-            }
-
-    }
-
-    remove(start, end, unique_key, unique_id, IS_ROOT = false, min_size, out_container) {
-        let l = this.keys.length,
-            out = 0,
-            out_node = this;
-
-        if (!this.LEAF) {
-
-            for (var i = 0; i < l; i++) {
-
-                let key = this.keys[i];
-
-                if (start <= key)
-                    out += this.nodes[i].remove(start, end, unique_key, unique_id, false, min_size, out_container).out;
-            }
-
-            out += this.nodes[i].remove(start, end, unique_key, unique_id, false, min_size, out_container).out;
-
-            for (var i = 0; i < this.nodes.length; i++) {
-                if (this.nodes[i].keys.length < min_size) {
-                    if (this.balanceRemove(i, min_size)) {
-                        l--;
-                        i--;
-                    }
-                }
-            }
-
-            if (this.nodes.length == 1)
-                out_node = this.nodes[0];
-
-        } else {
-
-            for (let i = 0, l = this.keys.length; i < l; i++) {
-                let key = this.keys[i];
-
-                if (key <= end && key >= start) {
-                    if (unique_key, unique_id && this.nodes[i][unique_key] !== unique_id) continue;
-                    out_container.push(this.nodes[i]);
-                    out++;
-                    this.keys.splice(i, 1);
-                    this.nodes.splice(i, 1);
-                    l--;
-                    i--;
-                }
-            }
-        }
-
-        return {
-            out_node,
-            out
-        };
-    }
-
-    get(start, end, out_container) {
-
-        if (!start || !end)
-            return false;
-
-        if (!this.LEAF) {
-
-            for (var i = 0, l = this.keys.length; i < l; i++) {
-
-                let key = this.keys[i];
-
-                if (start <= key)
-                    this.nodes[i].get(start, end, out_container);
-            }
-
-            this.nodes[i].get(start, end, out_container);
-
-        } else {
-
-            let out = false;
-
-            for (let i = 0, l = this.keys.length; i < l; i++) {
-                let key = this.keys[i];
-
-                if (key <= end && key >= start)
-                    out_container.push(this.nodes[i]);
-            }
-        }
-    }
-}
-
-MultiIndexedContainer.btree = BTreeModelContainer;
-
-const ArrayContainerProxySettings = {
-
-    set: function(obj, prop, val) {
-
-        if (prop in obj && obj[prop] == val)
-            return true;
-
-        let property = obj[prop];
-
-        if (property && typeof(property) == "object")
-            property.set(val);
-        else
-            obj[prop] = val;
-
-        obj.scheduleUpdate(prop);
-
-        return true;
-    },
-
-    get: function(obj, prop, val) {
-
-        if (prop in obj)
-            return obj[prop];
-
-        if (!isNaN(prop))
-            return obj.data[prop];
-
-        let term = {};
-
-        term[obj.key] = prop;
-
-        return obj.get(prop, [])[0];
-    }
-};
-
-/**
-    Stores models in random order inside an internal array object. 
- */
-
-class ArrayModelContainer extends ModelContainerBase {
-
-    constructor(data = [], root = null, address = []) {
-
-        super(root, address);
-
-        if (data[0] && data[0].key) {
-
-            let key = data[0].key;
-
-            /* Custom selection of container types happens here. 
-             * If there are multiple keys present, then a MultiIndexedContainer is used.
-             * If the value of the key is a Numerical type, then a BtreeModelContainer is used.
-             **/
-            if (typeof(key) == "object") {
-
-                if (Array.isArray(key))
-                    return new MultiIndexedContainer(data, root, address);
-
-                if (key.type) {
-                    if (key.type instanceof NumberSchemeConstructor)
-                        return new BTreeModelContainer(data, root, address);
-                    this.validator = (key.type instanceof SchemeConstructor) ? key.type : this.validator;
-                }
-
-                if (key.name)
-                    this.key = key.name;
-            } else
-                this.key = key;
-
-            if (data[0].model)
-                this.model = data[0].model;
-
-            data = data.slice(1);
-        }
-
-        this.data = [];
-
-        if (Array.isArray(data) && data.length > 0)
-            this.insert(data, true);
-    }
-
-    destroy() {
-
-        this.data = null;
-
-        super.destroy();
-    }
-
-    get proxy() { return new Proxy(this, ArrayContainerProxySettings); }
-
-    set proxy(v) {}
-
-    get length() { return this.data.length; }
-
-    __defaultReturn__(USE_ARRAY) {
-
-        if (USE_ARRAY) return new MCArray();
-
-        let n = this.clone();
-
-        this.__link__(n);
-
-        return n;
-    }
-
-    __insert__(model, add_list, identifier) {
-
-        for (var i = 0, l = this.data.length; i < l; i++) {
-
-            var obj = this.data[i];
-
-            if (this._gI_(obj) == identifier) {
-
-                if (obj.MUTATION_ID !== this.MUTATION_ID) {
-                    obj = obj.clone();
-                    obj.MUTATION_ID = this.MUTATION_ID;
-                }
-
-                obj.set(model, true);
-
-                this.data[i] = obj;
-
-                return false; //Model not added to Container. Model just updated.
-            }
-        }
-
-        this.data.push(model);
-
-        model.address = this.address.slice();
-        model.address.push(this.data.length - 1);
-
-        model.root = this.root;
-
-        if (add_list) add_list.push(model);
-
-        return true; // Model added to Container.
-    }
-
-    getByIndex(i) {
-        return this.data[i];
-    }
-
-    setByIndex(i, m) {
-        this.data[i] = m;
-    }
-
-    __get__(term, return_data) {
-
-        let terms = null;
-
-        if (term)
-            if (term instanceof Array)
-                terms = term;
-            else
-                terms = [term];
-
-        for (let i = 0, l = this.data.length; i < l; i++) {
-            let obj = this.data[i];
-            if (this._gI_(obj, terms)) {
-                return_data.push(obj);
-            }
-        }
-
-        return return_data;
-    }
-
-    __getAll__(return_data) {
-
-        this.data.forEach((m) => {
-            return_data.push(m);
-        });
-
-        return return_data;
-    }
-
-    __removeAll__() {
-        let items = this.data.map(d => d) || [];
-
-        this.data.length = 0;
-
-        return items;
-    }
-
-    _setThroughRoot_(data, address, index, len, m_id) {
-
-        if (index >= len)
-            return this;
-
-        let i = address[index++];
-
-        let model_prop = this.data[i];
-
-        if (model_prop.MUTATION_ID !== this.MUTATION_ID) {
-            model_prop = model_prop.clone();
-            model_prop.MUTATION_ID = this.MUTATION_ID;
-        }
-
-        this.data[i] = model_prop;
-
-        return model_prop._setThroughRoot_(data, address, index, len, model_prop.MUTATION_ID);
-    }
-
-    __remove__(term, out_container) {
-
-        let result = false;
-
-        term = term.map(t => (t instanceof ModelBase) ? this._gI_(t) : t);
-        
-        for (var i = 0, l = this.data.length; i < l; i++) {
-            var obj = this.data[i];
-
-            if (this._gI_(obj, term)) {
-
-                result = true;
-
-                this.data.splice(i, 1);
-
-                l--;
-                i--;
-
-                out_container.push(obj);
-
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    toJSON() { return this.data; }
-
-    clone() {
-        let clone = super.clone();
-        clone.data = this.data.slice();
-        return clone;
-    }
-}
-
-MultiIndexedContainer.array = ArrayModelContainer;
-
-Object.freeze(ArrayModelContainer);
-
-class Model extends ModelBase {
-
-    constructor(data, root = null, address = []) {
-
-        super(root, address);
-
-        _SealedProperty_(this, "prop_array", []);
-        _SealedProperty_(this, "prop_offset", 0);
-        _SealedProperty_(this, "look_up", {});
-
-        if (data)
-            for (let name in data)
-                this.createProp(name, data[name]);
-
-    }
-
-    get proxy() { return this;}
-
-    set(data, FROM_ROOT = false) {
-
-        if (!FROM_ROOT)
-            return this._deferUpdateToRoot_(data).set(data, true);
-
-        if (!data)
-            return false;
-
-        let out = false;
-
-        for (let prop_name in data) {
-
-            let index = this.look_up[prop_name];
-
-            if (index !== undefined) {
-
-                let prop = this.prop_array[index];
-
-                if (typeof(prop) == "object") {
-
-                    if (prop.MUTATION_ID !== this.MUTATION_ID) {
-                        prop = prop.clone();
-                        prop.MUTATION_ID = this.MUTATION_ID;
-                        this.prop_array[index] = prop;
-                    }
-
-                    if (prop.set(data[prop_name], true)){
-                        this.scheduleUpdate(prop_name);
-                        out = true;
-                    }
-
-                } else if (prop !== data[prop_name]) {
-                    this.prop_array[index] = data[prop_name];
-                     this.scheduleUpdate(prop_name);
-                     out = true;
-                }
-            } else{
-                this.createProp(prop_name, data[prop_name]);
-                out = true;
-            }
-        }
-
-        return out;
-    }
-    createProp(name, value) {
-
-        let index = this.prop_offset++;
-
-        this.look_up[name] = index;
-        var address = this.address.slice();
-        address.push(index);
-
-        switch (typeof(value)) {
-
-            case "object":
-                if (Array.isArray(value))
-                    this.prop_array.push(new ArrayModelContainer(value, this.root, address));
-                else {
-                    if (value instanceof ModelBase) {
-                        value.address = address;
-                        this.prop_array.push(value);
-                    } else
-                        this.prop_array.push(new Model(value, this.root, address));
-                }
-
-                this.prop_array[index].prop_name = name;
-                this.prop_array[index].par = this;
-
-                Object.defineProperty(this, name, {
-
-                    configurable: false,
-
-                    enumerable: true,
-
-                    get: function() { return this.getHook(name, this.prop_array[index]); },
-
-                    set: (v) => {}
-                });
-
-                break;
-
-            case "function":
-
-                let object = new value(null, this.root, address);
-
-                object.par = this;
-                object.prop_name = name;
-
-                this.prop_array.push(object);
-
-                Object.defineProperty(this, name, {
-
-                    configurable: false,
-
-                    enumerable: true,
-
-                    get: function() { return this.getHook(name, this.prop_array[index]); },
-
-                    set: (v) => {}
-                });
-
-                break;
-
-            default:
-                this.prop_array.push(value);
-
-                Object.defineProperty(this, name, {
-
-                    configurable: false,
-
-                    enumerable: true,
-
-                    get: function() { return this.getHook(name, this.prop_array[index]); },
-
-                    set: function(value) {
-
-                        let val = this.prop_array[index];
-
-                        if (val !== value) {
-                            this.prop_array[index] = this.setHook(name, value);
-                            this.scheduleUpdate(name);
-                        }
-                    }
-                });
-        }
-
-        this.scheduleUpdate(name);
-    }
-
-    toJSON(HOST = true){
-        let data = {};
-
-        for(let name in this.look_up){
-            let index = this.look_up[name];
-            let prop = this.prop_array[index];
-
-            if(prop){
-                if(prop instanceof ModelBase)
-                    data[name] = prop.toJSON(false);
-                else
-                    data[name] = prop;
-            }
-        }
-
-        return HOST ? JSON.stringify(data) : data;    
-    }
-}
-
-ModelContainerBase.prototype.model = Model;
-
-class Store {
-    constructor(data) {
-
-        this.history = [{ model: new Model(data, this), actions: [{ d: data, a: null }] }];
-        this.MUTATION_ID = 0;
-    }
-
-    seal() { this.MUTATION_ID++; }
-
-    getHistory(index) { return (this.history[index]) ? this.history[index].model : null; }
-
-    get current() { return this.history[this.history.length - 1].model; }
-
-    set current(v) {}
-
-    get(data){
-        return this.current.get(data);
-    }
-
-    set(data){
-        return this.current.set(data);
-    }
-
-    _getParentMutationID_() { return this.MUTATION_ID; }
-
-    _setThroughRoot_(data, address, index, len_minus_1, m_id) {
-
-        let model_prop = this.current;
-
-        if (m_id !== this.MUTATION_ID) {
-
-            if (m_id > this.MUTATION_ID)
-                this.MUTATION_ID = this.MUTATION_ID + 1;
-            else
-                this.MUTATION_ID = this.MUTATION_ID;
-
-            model_prop = model_prop.clone();
-
-            model_prop.MUTATION_ID = this.MUTATION_ID;
-
-            this.history.push({ model: model_prop, actions: [] });
-        }
-
-        if (data)
-            this.history[this.history.length - 1].actions.push({ d: data, a: address });
-
-        return model_prop._setThroughRoot_(data, address, index, len_minus_1, this.MUTATION_ID);
-    }
-}
-
-const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
-
-const STOCK_LOCATION = {
-    protocol: "",
-    host: "",
-    port: "",
-    path: "",
-    hash: "",
-    query: "",
-    search: ""
-};
-
-function fetchLocalText(URL, m = "same-origin") {
-    return new Promise((res, rej) => {
-        fetch(URL, {
-            mode: m, // CORs not allowed
-            credentials: m,
-            method: "GET"
-        }).then(r => {
-
-            if (r.status < 200 || r.status > 299)
-                r.text().then(rej);
-            else
-                r.text().then(res);
-        }).catch(e => rej(e));
-    });
-}
-
-function fetchLocalJSON(URL, m = "same-origin") {
-    return new Promise((res, rej) => {
-        fetch(URL, {
-            mode: m, // CORs not allowed
-            credentials: m,
-            method: "GET"
-        }).then(r => {
-            if (r.status < 200 || r.status > 299)
-                r.json().then(rej);
-            else
-                r.json().then(res).catch(rej);
-        }).catch(e => rej(e));
-    });
-}
-
-function submitForm(URL, form_data, m = "same-origin") {
-    return new Promise((res, rej) => {
-        var form;
-
-        if (form_data instanceof FormData)
-            form = form_data;
-        else {
-            form = new FormData();
-            for (let name in form_data)
-                form.append(name, form_data[name] + "");
-        }
-
-        fetch(URL, {
-            mode: m, // CORs not allowed
-            credentials: m,
-            method: "POST",
-            body: form,
-        }).then(r => {
-            if (r.status < 200 || r.status > 299)
-                r.text().then(rej);
-            else
-                r.json().then(res);
-        }).catch(e => e.text().then(rej));
-    });
-}
-
-function submitJSON(URL, json_data, m = "same-origin") {
-    return new Promise((res, rej) => {
-        fetch(URL, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
-            mode: m, // CORs not allowed
-            credentials: m,
-            method: "POST",
-            body: JSON.stringify(json_data),
-        }).then(r => {
-            if (r.status < 200 || r.status > 299)
-                r.json().then(rej);
-            else
-                r.json().then(res);
-        }).catch(e => e.text().then(rej));
-    });
-}
-
-
-
-/**
- * Used for processing URLs, handling `document.location`, and fetching data.
- * @param      {string}   url           The URL string to wrap.
- * @param      {boolean}  USE_LOCATION  If `true` missing URL parts are filled in with data from `document.location`. 
- * @return     {URL}   If a falsy value is passed to `url`, and `USE_LOCATION` is `true` a Global URL is returned. This is directly linked to the page and will _update_ the actual page URL when its values are change. Use with caution. 
- * @alias URL
- * @memberof module:wick.core.network
- */
-class URL {
-
-    static resolveRelative(URL_or_url_new, URL_or_url_original = document.location.toString(), ) {
-
-        let URL_old = (URL_or_url_original instanceof URL) ? URL_or_url_original : new URL(URL_or_url_original);
-        let URL_new = (URL_or_url_new instanceof URL) ? URL_or_url_new : new URL(URL_or_url_new);
-
-        if (!(URL_old + "") || !(URL_new + "")) return null;
-
-        let new_path = "";
-        if (URL_new.path[0] != "/") {
-
-            let a = URL_old.path.split("/");
-            let b = URL_new.path.split("/");
-
-
-            if (b[0] == "..") a.splice(a.length - 1, 1);
-            for (let i = 0; i < b.length; i++) {
-                switch (b[i]) {
-                    case "..":
-                    case ".":
-                        a.splice(a.length - 1, 1);
-                        break;
-                    default:
-                        a.push(b[i]);
-                }
-            }
-            URL_new.path = a.join("/");
-        }
-
-        return URL_new;
-    }
-
-    constructor(url = "", USE_LOCATION = false) {
-
-        let IS_STRING = true,
-            IS_LOCATION = false;
-
-
-        let location = (typeof(document) !== "undefined") ? document.location : STOCK_LOCATION;
-
-        if (typeof(Location) !== "undefined" && url instanceof Location) {
-            location = url;
-            url = "";
-            IS_LOCATION = true;
-        }
-        if (!url || typeof(url) != "string") {
-            IS_STRING = false;
-            IS_LOCATION = true;
-            if (URL.GLOBAL && USE_LOCATION)
-                return URL.GLOBAL;
-        }
-
-        /**
-         * URL protocol
-         */
-        this.protocol = "";
-
-        /**
-         * Username string
-         */
-        this.user = "";
-
-        /**
-         * Password string
-         */
-        this.pwd = "";
-
-        /**
-         * URL hostname
-         */
-        this.host = "";
-
-        /**
-         * URL network port number.
-         */
-        this.port = 0;
-
-        /**
-         * URL resource path
-         */
-        this.path = "";
-
-        /**
-         * URL query string.
-         */
-        this.query = "";
-
-        /**
-         * Hashtag string
-         */
-        this.hash = "";
-
-        /**
-         * Map of the query data
-         */
-        this.map = null;
-
-        if (IS_STRING) {
-            if (url instanceof URL) {
-                this.protocol = url.protocol;
-                this.user = url.user;
-                this.pwd = url.pwd;
-                this.host = url.host;
-                this.port = url.port;
-                this.path = url.path;
-                this.query = url.query;
-                this.hash = url.hash;
-            } else {
-                let part = url.match(uri_reg_ex);
-
-                //If the complete string is not matched than we are dealing with something other 
-                //than a pure URL. Thus, no object is returned. 
-                if (part[0] !== url) return null;
-
-                this.protocol = part[1] || ((USE_LOCATION) ? location.protocol : "");
-                this.user = part[2] || "";
-                this.pwd = part[3] || "";
-                this.host = part[4] || part[5] || part[6] || ((USE_LOCATION) ? location.hostname : "");
-                this.port = parseInt(part[7] || ((USE_LOCATION) ? location.port : 0));
-                this.path = part[8] || ((USE_LOCATION) ? location.pathname : "");
-                this.query = part[9] || ((USE_LOCATION) ? location.search.slice(1) : "");
-                this.hash = part[10] || ((USE_LOCATION) ? location.hash.slice(1) : "");
-
-            }
-        } else if (IS_LOCATION) {
-            this.protocol = location.protocol.replace(/\:/g, "");
-            this.host = location.hostname;
-            this.port = location.port;
-            this.path = location.pathname;
-            this.hash = location.hash.slice(1);
-            this.query = location.search.slice(1);
-            this._getQuery_(this.query);
-
-            if (USE_LOCATION) {
-                URL.G = this;
-                return URL.R;
-            }
-        }
-        this._getQuery_(this.query);
-    }
-
-
-    /**
-    URL Query Syntax
-
-    root => [root_class] [& [class_list]]
-         => [class_list]
-
-    root_class = key_list
-
-    class_list [class [& key_list] [& class_list]]
-
-    class => name & key_list
-
-    key_list => [key_val [& key_list]]
-
-    key_val => name = val
-
-    name => ALPHANUMERIC_ID
-
-    val => NUMBER
-        => ALPHANUMERIC_ID
-    */
-
-    /**
-     * Pulls query string info into this.map
-     * @private
-     */
-    _getQuery_() {
-        let map = (this.map) ? this.map : (this.map = new Map());
-
-        let lex = whind$1(this.query);
-
-
-        const get_map = (k, m) => (m.has(k)) ? m.get(k) : m.set(k, new Map).get(k);
-
-        let key = 0,
-            key_val = "",
-            class_map = get_map(key_val, map),
-            lfv = 0;
-
-        while (!lex.END) {
-            switch (lex.tx) {
-                case "&": //At new class or value
-                    if (lfv > 0)
-                        key = (class_map.set(key_val, lex.s(lfv)), lfv = 0, lex.n.pos);
-                    else {
-                        key_val = lex.s(key);
-                        key = (class_map = get_map(key_val, map), lex.n.pos);
-                    }
-                    continue;
-                case "=":
-                    //looking for a value now
-                    key_val = lex.s(key);
-                    lfv = lex.n.pos;
-                    continue;
-            }
-            lex.n;
-        }
-
-        if (lfv > 0) class_map.set(key_val, lex.s(lfv));
-    }
-
-    setPath(path) {
-
-        this.path = path;
-
-        return new URL(this);
-    }
-
-    setLocation() {
-        history.replaceState({}, "replaced state", `${this}`);
-        window.onpopstate();
-    }
-
-    toString() {
-        let str = [];
-
-        if (this.host) {
-
-            if (this.protocol)
-                str.push(`${this.protocol}://`);
-
-            str.push(`${this.host}`);
-        }
-
-        if (this.port)
-            str.push(`:${this.port}`);
-
-        if (this.path)
-            str.push(`${this.path[0] == "/" ? "" : "/"}${this.path}`);
-
-        if (this.query)
-            str.push(((this.query[0] == "?" ? "" : "?") + this.query));
-
-        if (this.hash)
-            str.push("#" + this.hash);
-
-
-        return str.join("");
-    }
-
-    /**
-     * Pulls data stored in query string into an object an returns that.
-     * @param      {string}  class_name  The class name
-     * @return     {object}  The data.
-     */
-    getData(class_name = "") {
-        if (this.map) {
-            let out = {};
-            let _c = this.map.get(class_name);
-            if (_c) {
-                for (let [key, val] of _c.entries())
-                    out[key] = val;
-                return out;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Sets the data in the query string. Wick data is added after a second `?` character in the query field, and appended to the end of any existing data.
-     * @param      {string}  class_name  Class name to use in query string. Defaults to root, no class 
-     * @param      {object | Model | AnyModel}  data        The data
-     */
-    setData(data = null, class_name = "") {
-
-        if (data) {
-
-            let map = this.map = new Map();
-
-            let store = (map.has(class_name)) ? map.get(class_name) : (map.set(class_name, new Map()).get(class_name));
-
-            //If the data is a falsy value, delete the association.
-
-            for (let n in data) {
-                if (data[n] !== undefined && typeof data[n] !== "object")
-                    store.set(n, data[n]);
-                else
-                    store.delete(n);
-            }
-
-            //set query
-            let class_, null_class, str = "";
-
-            if ((null_class = map.get(""))) {
-                if (null_class.size > 0) {
-                    for (let [key, val] of null_class.entries())
-                        str += `&${key}=${val}`;
-
-                }
-            }
-
-            for (let [key, class_] of map.entries()) {
-                if (key === "")
-                    continue;
-                if (class_.size > 0) {
-                    str += `&${key}`;
-                    for (let [key, val] of class_.entries())
-                        str += `&${key}=${val}`;
-                }
-            }
-
-            str = str.slice(1);
-
-            this.query = this.query.split("?")[0] + "?" + str;
-
-            if (URL.G == this)
-                this.goto();
-        } else {
-            this.query = "";
-        }
-
-        return this;
-
-    }
-
-    /**
-     * Fetch a string value of the remote resource. 
-     * Just uses path component of URL. Must be from the same origin.
-     * @param      {boolean}  [ALLOW_CACHE=true]  If `true`, the return string will be cached. If it is already cached, that will be returned instead. If `false`, a network fetch will always occur , and the result will not be cached.
-     * @return     {Promise}  A promise object that resolves to a string of the fetched value.
-     */
-    fetchText(ALLOW_CACHE = true) {
-
-        if (ALLOW_CACHE) {
-
-            let resource = URL.RC.get(this.path);
-
-            if (resource)
-                return new Promise((res) => {
-                    res(resource);
-                });
-        }
-
-        return fetchLocalText(this.path).then(res => (URL.RC.set(this.path, res), res));
-    }
-
-    /**
-     * Fetch a JSON value of the remote resource. 
-     * Just uses path component of URL. Must be from the same origin.
-     * @param      {boolean}  [ALLOW_CACHE=true]  If `true`, the return string will be cached. If it is already cached, that will be returned instead. If `false`, a network fetch will always occur , and the result will not be cached.
-     * @return     {Promise}  A promise object that resolves to a string of the fetched value.
-     */
-    fetchJSON(ALLOW_CACHE = true) {
-
-        let string_url = this.toString();
-
-        if (ALLOW_CACHE) {
-
-            let resource = URL.RC.get(string_url);
-
-            if (resource)
-                return new Promise((res) => {
-                    res(resource);
-                });
-        }
-
-        return fetchLocalJSON(string_url).then(res => (URL.RC.set(this.path, res), res));
-    }
-
-    /**
-     * Cache a local resource at the value 
-     * @param    {object}  resource  The resource to store at this URL path value.
-     * @returns {boolean} `true` if a resource was already cached for this URL, false otherwise.
-     */
-    cacheResource(resource) {
-
-        let occupied = URL.RC.has(this.path);
-
-        URL.RC.set(this.path, resource);
-
-        return occupied;
-    }
-
-    submitForm(form_data) {
-        return submitForm(this.toString(), form_data);
-    }
-
-    submitJSON(json_data, mode) {
-        return submitJSON(this.toString(), json_data, mode);
-    }
-    /**
-     * Goes to the current URL.
-     */
-    goto() {
-        return;
-        let url = this.toString();
-        history.pushState({}, "ignored title", url);
-        window.onpopstate();
-        URL.G = this;
-    }
-    //Returns the last segment of the path
-    get file() {
-        return this.path.split("/").pop();
-    }
-
-
-    //Returns the all but the last segment of the path
-    get dir() {
-        return this.path.split("/").slice(0, -1).join("/") || "/";
-    }
-
-    get pathname() {
-        return this.path;
-    }
-
-    get href() {
-        return this.toString();
-    }
-
-    get ext() {
-        const m = this.path.match(/\.([^\.]*)$/);
-        return m ? m[1] : "";
-    }
-
-    get search() {
-        return this.query;
-    }
-}
-
-/**
- * The fetched resource cache.
- */
-URL.RC = new Map();
-
-/**
- * The Default Global URL object. 
- */
-URL.G = null;
-
-/**
- * The Global object Proxy.
- */
-URL.R = {
-    get protocol() {
-        return URL.G.protocol;
-    },
-    set protocol(v) {
-        return;
-        URL.G.protocol = v;
-    },
-    get user() {
-        return URL.G.user;
-    },
-    set user(v) {
-        return;
-        URL.G.user = v;
-    },
-    get pwd() {
-        return URL.G.pwd;
-    },
-    set pwd(v) {
-        return;
-        URL.G.pwd = v;
-    },
-    get host() {
-        return URL.G.host;
-    },
-    set host(v) {
-        return;
-        URL.G.host = v;
-    },
-    get port() {
-        return URL.G.port;
-    },
-    set port(v) {
-        return;
-        URL.G.port = v;
-    },
-    get path() {
-        return URL.G.path;
-    },
-    set path(v) {
-        return;
-        URL.G.path = v;
-    },
-    get query() {
-        return URL.G.query;
-    },
-    set query(v) {
-        return;
-        URL.G.query = v;
-    },
-    get hash() {
-        return URL.G.hash;
-    },
-    set hash(v) {
-        return;
-        URL.G.hash = v;
-    },
-    get map() {
-        return URL.G.map;
-    },
-    set map(v) {
-        return;
-        URL.G.map = v;
-    },
-    setPath(path) {
-        return URL.G.setPath(path);
-    },
-    setLocation() {
-        return URL.G.setLocation();
-    },
-    toString() {
-        return URL.G.toString();
-    },
-    getData(class_name = "") {
-        return URL.G.getData(class_name = "");
-    },
-    setData(class_name = "", data = null) {
-        return URL.G.setData(class_name, data);
-    },
-    fetchText(ALLOW_CACHE = true) {
-        return URL.G.fetchText(ALLOW_CACHE);
-    },
-    cacheResource(resource) {
-        return URL.G.cacheResource(resource);
-    }
-};
-
-
-
-
-
-let SIMDATA = null;
-
-/* Replaces the fetch actions with functions that simulate network fetches. Resources are added by the user to a Map object. */
-URL.simulate = function() {
-    SIMDATA = new Map;
-    URL.prototype.fetchText = async d => ((d = this.toString()), SIMDATA.get(d)) ? SIMDATA.get(d) : "";
-    URL.prototype.fetchJSON = async d => ((d = this.toString()), SIMDATA.get(d)) ? JSON.parse(SIMDATA.get(d).toString()) : {};
-};
-
-//Allows simulated resources to be added as a key value pair, were the key is a URI string and the value is string data.
-URL.addResource = (n, v) => (n && v && (SIMDATA || (SIMDATA = new Map())) && SIMDATA.set(n.toString(), v.toString));
-
-URL.polyfill = async function() {
-    if (typeof(global) !== "undefined") {
-
-        const 
-            fs = (await Promise.resolve(require("fs"))).promises,
-            path = (await Promise.resolve(require("path")));
-
-
-        global.Location = (class extends URL {});
-
-        global.document = global.document || {};
-
-        global.document.location = new URL(process.env.PWD);
-        /**
-         * Global `fetch` polyfill - basic support
-         */
-        global.fetch = async (url, data) => {
-            let
-                p = path.join(process.cwd(), (url[0] == ".") ? url + "" : "." + url),
-                d = await fs.readFile(p, "utf8");
-
-            try {
-                return {
-                    status: 200,
-                    text: () => {
-                        return {
-                            then: (f) => f(d)
-                        }
-                    }
-                };
-            } catch (err) {
-                throw err;
-            }
-        };
-    }
-};
-
-Object.freeze(URL.R);
-Object.freeze(URL.RC);
-Object.seal(URL);
-
-//import { CustomComponent } from "../page/component"
-
-let CachedPresets = null;
-/**
- // There are a number of configurable options and global objects that can be passed to wick to be used throughout the PWA. The instances of the Presets class are objects that hosts all these global properties. 
- * 
- // Presets are designed to be created once, upfront, and not changed once defined. This reinforces a holistic design for a PWA should have in terms of the types of Schemas, global Models, and overall form the PWA takes, e.g whether to use the ShadowDOM or not.
- * 
- // Note: *This object is made immutable once created. There may only be one instance of Presets*
- * 
- */
-class Presets {
-    constructor(preset_options = {}) {
-
-        if(Presets.global.v)
-            return Presets.global.v;
-
-        this.store = (preset_options.store instanceof Store) ? preset_options.store : null;
-
-        /**
-         * {Object} Store for optional parameters used in the app
-         */
-        this.options = {
-            USE_SECURE: true,
-            USE_SHADOW: false,
-        };
-
-        //Declaring the properties upfront to give the VM a chance to build an appropriate virtual class.
-        this.components = {};
-
-        this.custom_components = {};
-
-        /** 
-         * Store of user defined CustomScopePackage factories that can be used in place of the components built by the Wick templating system. Accepts any class extending the CustomComponent class. Adds these classes from preset_options.custom_scopes or preset_options.components. 
-         * 
-         * In routing mode, a HTML `<component>` tag whose first classname matches a property name of a member of presets.custom_scopes will be assigned to an instance of that member.
-         * 
-         * ### Example
-         * In HTML:
-         * ```html
-         * <component class="my_scope class_style">
-         * 
-         * ```
-         * In JavaScript:
-         * ```javascript
-         * let MyScope = CustomScopePackage( ele =>{
-         *      ele.append
-         * }, {});
-         * 
-         * preset_options.custom_componets = {
-         *      my_scope : MyScope
-         * }
-         * ```
-         * @instance
-         * @readonly
-         */
-        this.custom_scopes = {};
-
-        /**
-         * { Object } Store of user defined classes that extend the Model or Model classes. `<w-scope>` tags in templates that have a value set for the  `schema` attribute, e.g. `<w-s schema="my_favorite_model_type">...</w-s>`, will be bound to a new instance of the class in presets.schema whose property name matches the "schema" attribute.
-         * 
-         * Assign classes that extend Model or SchemedModel to preset_options.schemas to have them available to Wick.
-         * 
-         * In JavaScript:
-         * ```javascript
-         * class MyFavoriteModelType extends Model {};
-         * preset_options.custom_componets = {
-         *      my_favorite_model_type : MyFavoriteModelType
-         * }
-         * ```
-         * note: presets.schema.any is always assigned to the Model class.
-         * @instance
-         * @readonly
-         */
-        this.schemas = { any: Model };
-
-        /**
-         * { Object } Store of user defined Model instances that serve as global models, which are available to the whole application. Multiple Scopes will be able to _bind_ to the Models. `<w-scope>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets .model whose property name matches the "model" attribute.
-         * 
-         * Assign instances of Model or Model or any class that extends these to preset_options.models to have them used by Wick.
-         * 
-         * In JavaScript:
-         * ```javascript
-         * const MyGlobalModel = new Model({global_data: "This is global!"});
-         * preset_options.custom_componets = {
-         *      my_global_model : MyGlobalModel
-         * }
-         * ```
-         * @instance
-         * @readonly
-         */
-        this.models = {};
-
-        /**
-         * Configured by `preset_options.USE_SHADOW`. If set to true, and if the browser supports it, compiled and rendered template elements will be bound to a `<component>` shadow DOM, instead being appended as a child node.
-         * @instance
-         * @readonly
-         */
-        this.USE_SHADOW = false;
-
-        /**
-         * { Object } Contains all user defined HTMLElement templates 
-         */
-        this.templates = {};
-
-        /**
-         * Custom objects that can be used throughout component scripts. User defined. 
-         */
-        this.custom = preset_options.custom;
-
-        let c = preset_options.options;
-        if (c)
-            for (let cn in c)
-                this.options[cn] = c[cn];
-
-
-        c = preset_options.components;
-        if (c)
-            for (let cn in c)
-                this.components[cn] = c[cn];
-
-        c = preset_options.custom_scopes;
-        if (c)
-            for (let cn in c)
-                if (cn instanceof CustomComponent)
-                    this.custom_scopes[cn] = c[cn];
-
-        c = preset_options.custom_components;
-        if (c)
-            for (let cn in c)
-                this.custom_components[cn] = c[cn];
-
-        c = preset_options.models;
-
-        if (c)
-            for (let cn in c)
-                if (c[cn] instanceof ModelBase)
-                    this.models[cn] = c[cn];
-
-        c = preset_options.schemas;
-        if (c)
-            for (let cn in c)
-                if (ModelBase.isPrototypeOf(c[cn]))
-                    this.schemas[cn] = c[cn];
-
-        this.options.USE_SHADOW = (this.options.USE_SHADOW) ? (DOC.head.createShadowRoot || DOC.head.attachShadow) : false;
-
-        this.url = URL;
-
-        Object.freeze(this.options);
-        Object.freeze(this.custom_scopes);
-        Object.freeze(this.schemas);
-        Object.freeze(this.models);
-
-        CachedPresets = this;
-    }
-
-    processLink(link) {}
-
-    /**
-        Copies values of the Presets object into a generic object. The new object is not frozen.
-    */
-    copy() {
-        let obj = {};
-
-        for (let a in this) {
-            if (a == "components")
-                obj.components = this.components;
-            else if (typeof(this[a]) == "object")
-                obj[a] = Object.assign({}, this[a]);
-            else if (typeof(this[a]) == "array")
-                obj[a] = this[a].slice();
-            else
-                obj[a] = this[a];
-        }
-
-        obj.processLink = this.processLink.bind(this);
-
-        return obj;
-    }
-}
-
-Presets.global = {get v(){return CachedPresets}, set v(e){}};
-
-/**
- *   This is used by Model to create custom property getter and setters on non-ModelContainerBase and non-Model properties of the Model constructor.
- *   @protected
- *   @memberof module:wick~internals.model
- */
-function CreateSchemedProperty(object, scheme, schema_name, index) {
-    if (object[schema_name])
-        return;
-
-    Object.defineProperty(object, schema_name, {
-        configurable: false,
-        enumerable: true,
-        get: function() {
-            return this.getHook(schema_name, this.prop_array[index]);
-        },
-        set: function(value) {
-
-            let result = { valid: false };
-
-            let val = scheme.parse(value);
-
-            scheme.verify(val, result);
-
-            if (result.valid && this.prop_array[index] != val) {
-                this.prop_array[index] = this.setHook(schema_name, val);
-                this.scheduleUpdate(schema_name);
-                this._changed_ = true;
-            }
-        }
-    });
-}
-
-/**
-    This is used by Model to create custom property getter and setters on Model properties of the Model constructor.
-    @protected
-    @memberof module:wick~internals.model
-*/
-function CreateModelProperty(object, model, schema_name, index) {
-
-    Object.defineProperty(object, schema_name, {
-        configurable: false,
-        enumerable: true,
-        get: function() {
-
-            let m = this.prop_array[index];
-
-            if (!m) {
-                let address = this.address.slice();
-                address.push(index);
-                m = new model(null, this.root, address);
-                m.par = this;
-                m.prop_name = schema_name;
-                m.MUTATION_ID = this.MUTATION_ID;
-                this.prop_array[index] = m;
-            }
-
-            return this.getHook(schema_name, m);
-        }
-    });
-}
-
-class SchemedModel extends ModelBase {
-
-    constructor(data, root = null, address = [], _schema_ = null) {
-
-        super(root, address);
-
-        if (this.constructor === SchemedModel)
-            this.constructor = (class extends SchemedModel {});
-
-        if (!this.schema) {
-
-            let schema = this.constructor.schema || _schema_;
-
-            this.constructor.schema = schema;
-
-            if (schema) {
-
-                let __FinalConstructor__ = schema.__FinalConstructor__;
-
-                let constructor = this.constructor;
-                let prototype = constructor.prototype;
-
-                if (!__FinalConstructor__) {
-                    let count = 0;
-                    let look_up = {};
-
-                    for (let schema_name in schema) {
-                        let scheme = schema[schema_name];
-
-                        if (schema_name == "self" && Array.isArray(scheme)) 
-                            return new SchemedContainer(schema, root, address);
-                        
-
-                        if (schema_name == "getHook") {
-                            prototype.getHook = scheme;
-                            continue;
-                        }
-
-                        if (schema_name == "setHook") {
-                            prototype.setHook = scheme;
-                            continue;
-                        }
-
-                        if (schema_name == "proto") {
-                            for (let name in schema.proto)
-                                _SealedProperty_(prototype, name, schema.proto[name]);
-                            continue;
-                        }
-
-                        if (typeof(scheme) == "function") {
-                            CreateModelProperty(prototype, scheme, schema_name, count);
-                        } else if (typeof(scheme) == "object") {
-                            if (Array.isArray(scheme)) {
-                                if (scheme[0] && scheme[0].container && scheme[0].schema)
-                                    CreateModelProperty(prototype, scheme[0], schema_name, count);
-                                else if (scheme[0] instanceof ModelContainerBase)
-                                    CreateModelProperty(prototype, scheme[0].constructor, schema_name, count);
-                                else
-                                    CreateModelProperty(prototype, Model, schema_name, count);
-                            } else if (scheme instanceof SchemeConstructor)
-                                CreateSchemedProperty(prototype, scheme, schema_name, count);
-                            else {
-                                CreateModelProperty(prototype, scheme.constructor, schema_name, count);
-                            }
-                        } else {
-                            console.warn(`Could not create property ${schema_name}.`);
-
-                            continue;
-                        }
-
-                        look_up[schema_name] = count;
-                        count++;
-                    }
-
-                    _SealedProperty_(prototype, "prop_offset", count);
-                    _SealedProperty_(prototype, "look_up", look_up);
-                    _SealedProperty_(prototype, "changed", false);
-
-                    Object.seal(constructor);
-
-                    schema.__FinalConstructor__ = constructor;
-                    //_FrozenProperty_(schema, "__FinalConstructor__", constructor);
-
-                    //Start the process over with a newly minted Model that has the properties defined in the Schema
-                    return new schema.__FinalConstructor__(data, root, address);
-                }
-
-                _FrozenProperty_(prototype, "schema", schema);
-            } else
-                return new Model(data, root, address);
-        }
-
-        Object.defineProperty(this, "prop_array", { value: new Array(this.prop_offset), enumerable: false, configurable: false, writable: true });
-
-        if (data)
-            this.set(data, true);
-    }
-
-    destroy() { this.root = null; }
-
-    set(data, FROM_ROOT = false) {
-
-        if (!FROM_ROOT)
-            return this._deferUpdateToRoot_(data).set(data, true);
-
-        if (!data)
-            return false;
-
-        this._changed_ = false;
-
-        for (let prop_name in data) {
-
-            let data_prop = data[prop_name];
-
-            let index = this.look_up[prop_name];
-
-            if (index !== undefined) {
-
-                let prop = this[prop_name];
-
-                if (typeof(prop) == "object") {
-
-                    if (prop.MUTATION_ID !== this.MUTATION_ID) {
-                        prop = prop.clone();
-                        prop.MUTATION_ID = this.MUTATION_ID;
-                        this.prop_array[index] = prop;
-                    }
-
-                    if (prop.set(data_prop, true))
-                        this.scheduleUpdate(prop_name);
-
-                } else {
-                    this[prop_name] = data_prop;
-                }
-            }
-        }
-
-        return this._changed_;
-    }
-
-    createProp() {}
-}
-SchemedModel.prototype.toJSON = Model.prototype.toJSON;
-
-class SchemedContainer extends ArrayModelContainer {
-    
-    constructor(schema, root, address) {
-
-        super(schema.self, root, address);
-
-        if (schema.proto)
-            for (let name in schema.proto)
-                _SealedProperty_(this, name, schema.proto[name]);
-    }
-}
-
-/**
- * To be extended by objects needing linked list methods.
- */
-const LinkedList = {
-
-    props: {
-        /**
-         * Properties for horizontal graph traversal
-         * @property {object}
-         */
-        defaults: {
-            /**
-             * Next sibling node
-             * @property {object | null}
-             */
-            nxt: null,
-
-            /**
-             * Previous sibling node
-             * @property {object | null}
-             */
-            prv: null
-        },
-
-        /**
-         * Properties for vertical graph traversal
-         * @property {object}
-         */
-        children: {
-            /**
-             * Number of children nodes.
-             * @property {number}
-             */
-            noc: 0,
-            /**
-             * First child node
-             * @property {object | null}
-             */
-            fch: null,
-        },
-        parent: {
-            /**
-             * Parent node
-             * @property {object | null}
-             */
-            par: null
-        }
-    },
-
-    methods: {
-        /**
-         * Default methods for Horizontal traversal
-         */
-        defaults: {
-
-            insertBefore: function(node) {
-
-                if (!this.nxt && !this.prv) {
-                    this.nxt = this;
-                    this.prv = this;
-                }
-
-                if(node){
-                    if (node.prv)
-                       node.prv.nxt = node.nxt;
-                    
-                    if(node.nxt) 
-                        node.nxt.prv = node.prv;
-                
-                    node.prv = this.prv;
-                    node.nxt = this;
-                    this.prv.nxt = node;
-                    this.prv = node;
-                }else{
-                    if (this.prv)
-                        this.prv.nxt = node;
-                    this.prv = node;
-                } 
-            },
-
-            insertAfter: function(node) {
-
-                if (!this.nxt && !this.prv) {
-                    this.nxt = this;
-                    this.prv = this;
-                }
-
-                if(node){
-                    if (node.prv)
-                       node.prv.nxt = node.nxt;
-                    
-                    if(node.nxt) 
-                        node.nxt.prv = node.prv;
-                
-                    node.nxt = this.nxt;
-                    node.prv = this;
-                    this.nxt.prv = node;
-                    this.nxt = node;
-                }else{
-                    if (this.nxt)
-                        this.nxt.prv = node;
-                    this.nxt = node;
-                } 
-            }
-        },
-        /**
-         * Methods for both horizontal and vertical traversal.
-         */
-        parent_child: {
-            /**
-             *  Returns eve. 
-             * @return     {<type>}  { description_of_the_return_value }
-             */
-            root() {
-                return this.eve();
-            },
-            /**
-             * Returns the root node. 
-             * @return     {Object}  return the very first node in the linked list graph.
-             */
-            eve() {
-                if (this.par)
-                    return this.par.eve();
-                return this;
-            },
-
-            push(node) {
-                this.addChild(node);
-            },
-
-            unshift(node) {
-                this.addChild(node, (this.fch) ? this.fch.pre : null);
-            },
-
-            replace(old_node, new_node) {
-                if (old_node.par == this && old_node !== new_node) {
-                    if (new_node.par) new_node.par.remove(new_node);
-
-                    if (this.fch == old_node) this.fch = new_node;
-                    new_node.par = this;
-
-
-                    if (old_node.nxt == old_node) {
-                        new_node.nxt = new_node;
-                        new_node.prv = new_node;
-                    } else {
-                        new_node.prv = old_node.prv;
-                        new_node.nxt = old_node.nxt;
-                        old_node.nxt.prv = new_node;
-                        old_node.prv.nxt = new_node;
-                    }
-
-                    old_node.par = null;
-                    old_node.prv = null;
-                    old_node.nxt = null;
-                }
-            },
-
-            insertBefore: function(node) {
-                if (this.par)
-                    this.par.addChild(node, this.pre);
-                else
-                    LinkedList.methods.defaults.insertBefore.call(this, node);
-            },
-
-            insertAfter: function(node) {
-                if (this.par)
-                    this.par.addChild(node, this);
-                else
-                    LinkedList.methods.defaults.insertAfter.call(this, node);
-            },
-
-            addChild: function(child = null, prev = null) {
-
-                if (!child) return;
-
-                if (child.par)
-                    child.par.removeChild(child);
-
-                if (prev && prev.par && prev.par == this) {
-                    if (child == prev) return;
-                    child.prv = prev;
-                    prev.nxt.prv = child;
-                    child.nxt = prev.nxt;
-                    prev.nxt = child;
-                } else if (this.fch) {
-                    child.prv = this.fch.prv;
-                    this.fch.prv.nxt = child;
-                    child.nxt = this.fch;
-                    this.fch.prv = child;
-                } else {
-                    this.fch = child;
-                    child.nxt = child;
-                    child.prv = child;
-                }
-
-                child.par = this;
-                this.noc++;
-            },
-
-            /**
-             * Analogue to HTMLElement.removeChild()
-             *
-             * @param      {HTMLNode}  child   The child
-             */
-            removeChild: function(child) {
-                if (child.par && child.par == this) {
-                    child.prv.nxt = child.nxt;
-                    child.nxt.prv = child.prv;
-
-                    if (child.prv == child || child.nxt == child) {
-                        if (this.fch == child)
-                            this.fch = null;
-                    } else if (this.fch == child)
-                        this.fch = child.nxt;
-
-                    child.prv = null;
-                    child.nxt = null;
-                    child.par = null;
-                    this.noc--;
-                }
-            },
-
-            /**
-             * Gets the next node. 
-             *
-             * @param      {HTMLNode}  node    The node to get the sibling of.
-             * @return {HTMLNode | TextNode | undefined}
-             */
-            getNextChild: function(node = this.fch) {
-                if (node && node.nxt != this.fch && this.fch)
-                    return node.nxt;
-                return null;
-            },
-
-            /**
-             * Gets the child at index.
-             *
-             * @param      {number}  index   The index
-             */
-            getChildAtIndex: function(index, node = this.fch) {
-                if(node.par !== this)
-                    node = this.fch;
-
-                let first = node;
-                let i = 0;
-                while (node && node != first) {
-                    if (i++ == index)
-                        return node;
-                    node = node.nxt;
-                }
-
-                return null;
-            },
-        }
-    },
-
-    gettersAndSetters : {
-        peer : {
-            next: {
-                enumerable: true,
-                configurable: true,
-                get: function() {
-                    return this.nxt;
-                },
-                set: function(n) {
-                    this.insertAfter(n);
-                }
-            },
-            previous: {
-                enumerable: true,
-                configurable: true,
-                get: function() {
-                    return this.prv;
-                },
-                set: function(n) {
-                    this.insertBefore(n);
-                }   
-            }
-        },
-        tree : {
-            children: {
-                enumerable: true,
-                configurable: true,
-                /**
-                 * @return {array} Returns an array of all children.
-                 */
-                get: function() {
-                    for (var z = [], i = 0, node = this.fch; i++ < this.noc;)(
-                        z.push(node), node = node.nxt
-                    );
-                    return z;
-                },
-                set: function(e) {
-                    /* No OP */
-                }
-            },
-            parent: {
-                enumerable: true,
-                configurable: true,
-                /**
-                 * @return parent node
-                 */
-                get: function() {
-                    return this.par;
-                },
-                set: function(p) {
-                    if(p && p.addChild)
-                        p.addChild(this);
-                    else if(p === null && this.par)
-                        this.par.removeChild(this);
-                }
-            }
-        }
-    },
-
-
-    mixin : (constructor)=>{
-        const proto = (typeof(constructor) == "function") ? constructor.prototype : (typeof(constructor) == "object") ? constructor : null;
-        if(proto){
-            Object.assign(proto, 
-                LinkedList.props.defaults, 
-                LinkedList.methods.defaults
-            );
-        }
-        Object.defineProperties(proto, LinkedList.gettersAndSetters.peer);
-    },
-
-    mixinTree : (constructor)=>{
-        const proto = (typeof(constructor) == "function") ? constructor.prototype : (typeof(constructor) == "object") ? constructor : null;
-        if(proto){
-            Object.assign(proto, 
-                LinkedList.props.defaults, 
-                LinkedList.props.children, 
-                LinkedList.props.parent, 
-                LinkedList.methods.defaults, 
-                LinkedList.methods.parent_child
-                );
-            Object.defineProperties(proto, LinkedList.gettersAndSetters.tree);
-            Object.defineProperties(proto, LinkedList.gettersAndSetters.peer);
-        }
-    }
-};
-
-/** NODE TYPE IDENTIFIERS **/
-const HTML = 0;
-const TEXT = 1;
-const offset = "    ";
-
-// Pollyfill of HTMLElement classList
-function classList(this_arg, list) {
-    Object.assign(list, {
-        add: (name) => {
-            let attrib = this_arg.getAttrib("class");
-            if (attrib) {
-                attrib.value += " " + name;
-                list.push(name);
-            } else {
-                this_arg.setAttribute("class", name);
-            }
-        }
-    });
-    return list;
-}
-
-/**
- * A node for text data.
- * @param  {string}  str     The text value of the node.
- */
-class TextNode {
-
-    constructor(str = "") {
-        /**
-         * The text value
-         */
-        this.txt = str;
-    }
-
-    /**
-     * Returns the type of `1` (`TEXT`)
-     */
-    get type() {
-        return TEXT;
-    }
-
-    set data(e) { this.txt = e; }
-
-    get data() { return this.txt }
-
-    /**
-     * Returns a string representation of the object.
-     * @param      {string}  str     Optional string passed down from calling method.
-     * @return     {string}  String representation of the object.
-     */
-    toString(off = 0) {
-        return `${offset.repeat(off)} ${this.txt}\n`;
-    }
-
-    /**
-     * Builds a real DOM HTMLTextNode node. 
-     * @param      {HTMLElement}  parent  The real html element.
-     */
-    build(parent) {
-        parent.appendChild(document.createTextNode(this.txt));
-    }
-
-}
-
-LinkedList.mixinTree(TextNode);
-
-
-/**
- * A node for HTML data. 
- * Handles the parsing of HTML strings.
- */
-class HTMLNode {
-
-    constructor() {
-
-        /**
-         * Element attributes
-         * @public
-         */
-        this.attributes = [];
-
-        /**
-         * Any Comment Lines found within.
-         * @private
-         */
-        //this.dtd_nodes = [];
-
-        /**
-         * The tag name of the object.
-         * @public
-         */
-        this.tag = "";
-
-        /**
-         * A URL instance when set.
-         * @private
-         */
-        this.url = null;
-
-        /**
-         * Whether the node is a DTD, such as a comment.
-         * @private
-         */
-        this.DTD = false;
-
-        /**
-         * True if the element is a single tag element. 
-         */
-        this.single = false;
-
-
-        //Charactar positional information from input.
-        this.line = 0;
-        this.char = 0;
-        this.offset = 0;
-
-    }
-
-    /******************************************* ATTRIBUTE AND ELEMENT ACCESS ******************************************************************************************************************/
-
-    /**
-     * Returns the type of `0` (`HTML`)
-     * @public
-     */
-    get type() {
-        return HTML;
-    }
-
-    get tagName() {
-        return this.tag.toUpperCase();
-    }
-
-    get classList() {
-        let classes = this.getAttrib("class");
-        if (classes && typeof(classes.value) === "string")
-            return classList(this, classes.value.split(" "));
-        return classList(this, []);
-    }
-
-    getAttribute(name) {
-        let attrib = this.getAttrib(name);
-        return (attrib) ? attrib.value : void 0;
-    }
-
-    get parentElement() {
-        return this.par;
-    }
-
-    get firstChild() {
-        return this.fch;
-    }
-
-    get lastChild() {
-        return this.fch ? this.fch.previous : null;
-    }
-
-    get previousElementSibling() {
-        if (this.par) {
-            let guard = this.par.fch;
-
-            if (this == guard) return null;
-
-            let node = this.prv;
-
-            while (node && node != gaurd) {
-                if (node.type == HTML)
-                    return node;
-                node = node.prv;
-            }
-
-            if (node.type == HTML)
-                return node;
-        }
-        return null;
-    }
-
-    get nextElementSibling() {
-        if (this.par) {
-            let guard = this.par.fch;
-
-            let node = this.nxt;
-
-            while (node && node != guard) {
-                if (node.type == HTML)
-                    return node;
-                node = node.nxt;
-            }
-        }
-        return null;
-    }
-
-
-
-    /**
-     * Gets an attribute.
-     * @param      {string}  prop    The attribute name to lookup;
-     * @public
-     */
-    getAttrib(prop, GET_IGNORED = false) {
-        for (let i = -1, l = this.attributes.length; ++i < l;) {
-            let attrib = this.attributes[i];
-            if (attrib.name == prop && (!attrib.IGNORE || GET_IGNORED)) return attrib;
-        }
-        return null;
-    }
-
-
-
-    /**
-     * Get Elements by the tag name.
-     * @param      {string}   tag                  A string to match with the element's tag value.
-     * @param      {boolean}  [INCLUDE_DESCENDANTS=false]  When `true` searching will recurse depth first into child elements.
-     * @param      {Array}    array                Internal element store that is returned. 
-     * @return     {Array}    An array of matched elements.
-     * @public
-     */
-    getTag(tag, INCLUDE_DESCENDANTS = false, array = []) {
-        for (let node = this.fch; node;
-            (node = this.getNextChild(node))) {
-            if (node.type == HTML) {
-                if (node.tag == tag) array.push(node);
-                if (INCLUDE_DESCENDANTS) node.getTag(tag, INCLUDE_DESCENDANTS, array);
-            }
-        }
-        return array;
-    }
-
-
-
-    /**
-     * Get Elements by the tag name.
-     * @param      {string}   _class               A string to find with the element's class value.
-     * @param      {boolean}  [INCLUDE_DESCENDANTS=false]  When `true` searching will recurse depth first into child elements.
-     * @param      {Array}    array                Internal element store that is returned. 
-     * @return     {Array}    An array of matched elements.
-     * @public
-     */
-    getClass(_class, INCLUDE_DESCENDANTS = false, array = []) {
-        for (let node = this.fch; node;
-            (node = this.getNextChild(node))) {
-            if (node.type == HTML) {
-                if (node.class.includes(_class)) array.push(node);
-                if (INCLUDE_DESCENDANTS) node.getClass(_class, INCLUDE_DESCENDANTS, array);
-            }
-        }
-        return array;
-    }
-
-
-
-    /**
-     * Get first element with matching id.
-     * @param      {string}   id                   The identifier value to find.
-     * @param      {boolean}  [INCLUDE_DESCENDANTS=false]  When `true` searching will recurse depth first into child elements.
-     * @return     {HTMLNode}   The first element whose id matches.
-     * @public
-     */
-    getID(id, INCLUDE_DESCENDANTS = false) {
-        for (let node = this.fch, ch; node;
-            (node = this.getNextChild(node))) {
-            if (node.type == HTML) {
-                if (node.id == id) return node;
-                if (INCLUDE_DESCENDANTS && (ch = node.getID(id, INCLUDE_DESCENDANTS))) return ch;
-            }
-        }
-        return null;
-    }
-
-
-
-    /**
-     * The id attribute value.
-     * @public
-     */
-    get id() {
-        let id_attrib = this.getAttrib("id");
-        return (id_attrib) ? id_attrib.value : "";
-    }
-
-
-
-    /**
-     * The class attribute value.
-     * @public
-     */
-    get class() {
-        let id_attrib = this.getAttrib("class");
-        return (id_attrib) ? id_attrib.value : "";
-    }
-
-
-
-    /**
-     * Returns a string representation of the object.
-     * @return     {string}  String representation of the object.
-     * @public
-     */
-    toString(off = 0) {
-
-        let o = offset.repeat(off);
-
-        let str = `${o}<${this.tag}`,
-            atr = this.attributes,
-            i = -1,
-            l = atr.length;
-
-        while (++i < l) {
-            let attr = atr[i];
-
-            if (attr.name)
-                str += ` ${attr.name}="${attr.value}"`;
-        }
-
-        str += ">\n";
-
-        if (this.single)
-            return str;
-
-        str += this.innerToString(off + 1);
-
-        return str + `${o}</${this.tag}>\n`;
-    }
-
-    innerToString(off) {
-        let str = "";
-        for (let node = this.fch; node;
-            (node = this.getNextChild(node))) {
-            str += node.toString(off);
-        }
-        return str;
-    }
-
-
-
-    /******************************************* PARSING ******************************************************************************************************************/
-
-
-
-    /**
-     * Creates a text node. 
-     *
-     * @param      {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}
-     * @param      {start}  start   The starting point of the data slice
-     * @private
-     */
-    async createTextNode(lex, start, end) {
-
-        if (end) {
-            const other_lex = lex.copy();
-            other_lex.off = start - 1;
-            other_lex.tl = 1;
-            other_lex.sl = end;
-            other_lex.IWS = false;
-            other_lex.next();
-            const text_node = await this.processTextNodeHook(other_lex, true);
-            if (text_node) this.addChild(text_node);
-        } else if (start < lex.off) {
-            let other_lex = lex.copy();
-
-            other_lex.off = start;
-            other_lex.END = false;
-            other_lex.tl = 0;
-            other_lex.fence(lex);
-            other_lex.IWS = false;
-            other_lex.n;
-            other_lex.IWS = true;
-            if ((other_lex.sl - other_lex.off) < 2) {
-                //No data
-                //TODO
-                //throw new Error("Unexpected end of input");
-            } else {
-                let text_node = await this.processTextNodeHook(other_lex, false);
-                if (text_node) this.addChild(text_node);
-            }
-
-        }
-    }
-
-
-
-    /**
-     * Parses an HTML open tag.
-     * @param {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}  
-     * @param {Object} attribs - An object which will receive the attribute keys and values. 
-     * @private
-     */
-    parseOpenTag(lex, DTD, old_url) {
-        let HAS_URL = false;
-        lex.PARSE_STRING = false; // Want to make sure lex creates string tokens. 
-
-        while (!lex.END && lex.text !== ">" && lex.text !== "/") {
-
-
-            if (DTD && lex.ch == "-" && lex.pk.ch == "-") {
-                //parse comment
-
-                let pk = lex.pk;
-                if (!lex.text) throw Error("Unexpected end of input.");
-                let a = pk.n.ch,
-                    b = pk.n.ch;
-                while (!pk.END && (b !== "-" || a !== "-")) {
-                    a = b;
-                    b = pk.n.tx;
-                }
-                lex.sync().n;
-                continue;
-            }
-
-            lex.IWS = false;
-
-            let pk = lex.pk;
-
-            while (!pk.END && !(pk.ty & (pk.types.ws | pk.types.str | pk.types.nl)) && pk.ch !== "=" && pk.ch !== ">") { pk.n; }
-
-            let attrib_name = pk.slice(lex).trim();
-
-            lex.sync();
-
-            lex.IWS = true;
-
-            let out_lex = lex.copy();
-
-            out_lex.sl = lex.off;
-
-            if (lex.ch == "=") {
-                let pk = lex.pk;
-
-                let start = pk.off;
-
-                pk.IWS = false;
-                
-                while (!(pk.ty & (pk.types.ws | pk.types.str | pk.types.nl)) && pk.ch !== ">") { pk.n; }
-
-                if (pk.off > start) {
-                    out_lex = lex.n.copy();
-                    out_lex.fence(pk);
-                    lex.sync();
-                } else {
-                    //Have simple value
-                    lex.sync(pk);
-                    out_lex = lex.copy();
-                    if (lex.pos < 0)
-                        lex.throw(`Unexpected end of input. Expecting value for attribute "${attrib_name}"`);
-                    else if (lex.type == lex.types.str) {
-                        out_lex.tl = 1;
-                        out_lex.n;
-                        out_lex.sl = lex.pos + lex.tl - 1;
-                        lex.n;
-                    } else {
-                        lex.next();
-                        out_lex.fence(lex);
-                    }
-                }
-            }
-
-            if (attrib_name == "url") {
-                this.url = URL.resolveRelative(out_lex.slice(), old_url);
-                HAS_URL = true;
-            }
-
-            let attrib = this.processAttributeHook(attrib_name, out_lex);
-
-            if (attrib)
-                this.attributes.push(attrib);
-        }
-
-        if (lex.ch == "/") // Void Nodes
-            lex.next();
-
-        lex.PARSE_STRING = true; // Reset lex to ignore string tokens.
-        
-        return HAS_URL;
-    }
-
-    async parseRunner(lex = null, OPENED = false, IGNORE_TEXT_TILL_CLOSE_TAG = false, parent = null, old_url = new URL(0, !!1)) {
-        let start = lex.pos;
-        let end = lex.pos;
-        let HAS_INNER_TEXT = false;
-
-        // The lexer Should not produce string tokens when parsing HTML tags. If it does, markup such as 
-        //  
-        // <div> The " Market Row <b> Clipers <\b> " </div>
-        // 
-        // Would be incorrectly parsed since the lexer would produce a token {type:"string", tx:" Market Row <b> Clipers <\b> "} 
-        // that would prevent the <b> tag from being detected and parsed.
-
-        lex.PARSE_STRING = true;
-        
-        main_loop:
-            while (!lex.END) {
-                switch (lex.ch) {
-                    case "<":
-                        if (!IGNORE_TEXT_TILL_CLOSE_TAG) lex.IWS = true;
-
-                        let pk = lex.pk;
-
-                        if (pk.ch == "/") {
-                            if (pk.pk.tx !== this.tag) {
-                                break main_loop;
-                            }
-
-                            if (HAS_INNER_TEXT) {
-                                lex.PARSE_STRING = false;
-                                if (IGNORE_TEXT_TILL_CLOSE_TAG)
-                                    await this.createTextNode(lex, start);
-                                else if ((end - start) > 0)
-                                    await this.createTextNode(lex, start, end);
-                                lex.PARSE_STRING = true;
-                            }
-
-                            //Close tag
-                            let name = lex.sync().n.tx;
-
-                            //Close tag is not the one we are looking for. We'll create a new dummy node and close the tag with it. 
-                            if (name !== this.tag) {
-                                //Create new node with the open tag 
-                                let insert = new HTMLNode();
-                                insert.tag = name;
-                                this.addChild(insert);
-                            }
-
-                            lex.n;
-                            lex.IWS = false;
-                            lex.a(">");
-
-                            lex.PARSE_STRING = false;
-                            return await this.endOfElementHook(lex, parent);
-                        }
-
-                        if (pk.ch == "!") {
-                            /* DTD - Doctype and Comment tags*/
-                            //This type of tag is dropped
-                            while (!lex.END && lex.n.ch !== ">") {};
-                            lex.a(">");
-                            lex.IWS = false;
-                            continue;
-                        }
-
-                        if (!IGNORE_TEXT_TILL_CLOSE_TAG) {
-
-                            //Open tag
-                            if (!OPENED) {
-                                let URL = false;
-                                this.DTD = false;
-                                this.attributes.length = 0;
-
-                                //Expect tag name 
-                                this.tag = lex.n.tx.toLowerCase();
-
-                                lex.PARSE_STRING = false;
-                                URL = this.parseOpenTag(lex.n, false, old_url);
-                                lex.PARSE_STRING = true;
-
-                                this.char = lex.char;
-                                this.offset = lex.off;
-                                this.line = lex.line;
-
-                                start = lex.pos + 1;
-                                lex.IWS = false;
-
-                                let SELF_CLOSING = this.selfClosingTagHook(this.tag);
-
-                                if (lex.ch == "/") {
-                                    //This is a tag that should be closed 
-                                    lex.n;
-
-                                    SELF_CLOSING = true;
-
-                                    //This element is self closing and does not have a body.
-                                }else{
-                                    HAS_INNER_TEXT = IGNORE_TEXT_TILL_CLOSE_TAG = (await this.ignoreTillHook(this.tag, lex));
-                                    OPENED = true;
-                                }
-
-                                //End of Open Tag
-                                lex.a(">");
-
-
-                                if (HAS_INNER_TEXT){
-                                    //Insure that string do not lead to 
-                                    lex.PARSE_STRING = false;
-                                    start = lex.pos;
-                                }                                
-
-                                if (URL) {
-
-                                    //Need to block against infinitely recursive URL fetches. 
-
-                                    //Hook to pull in data from remote resource
-                                    lex.PARSE_STRING = false;
-                                    
-                                    await this.processFetchHook(lex, true, IGNORE_TEXT_TILL_CLOSE_TAG, parent);
-                                    
-                                    lex.PARSE_STRING = true;
-                                    
-                                    if (this.selfClosingTagHook(this.tag))
-                                        return this;
-
-                                    // Tags without matching end tags.
-                                    return this.parseRunner(lex, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, old_url);
-                                }
-
-                                
-                                if (SELF_CLOSING) {
-                                    // Tags without matching end tags.
-                                    this.single = true;
-
-                                    return this;
-                                }
-
-                                continue;
-                            } else {
-                                lex.IWS = false;
-                                //Create text node;
-                                if (HAS_INNER_TEXT) {
-                                    lex.PARSE_STRING = false;
-                                    if (IGNORE_TEXT_TILL_CLOSE_TAG)
-                                        await this.createTextNode(lex, start);
-                                    else if ((end - start) > 0) {
-                                        await this.createTextNode(lex, start, end);
-                                    }
-                                    lex.PARSE_STRING = true;
-                                }
-
-                                //New Child node found
-                                let node = await this.createHTMLNodeHook(lex.pk.tx, lex.off, lex, this);
-
-                                if (node) {
-
-                                    node.par = this;
-
-                                    node = await node.parseRunner(lex, false, false, this, this.url || old_url);
-
-                                    node.par = null;
-
-                                    node.parent = this;
-
-
-                                    if (!this.url)
-                                        this.url = old_url;
-
-                                    if (node.DTD) this.removeChild(node);
-                                }
-
-                                if (!this.url)
-                                    this.url = old_url;
-                                lex.IWS = false;
-                                start = lex.pos;
-                                end = lex.pos;
-                                HAS_INNER_TEXT = false;
-                                IGNORE_TEXT_TILL_CLOSE_TAG = false;
-
-                                continue main_loop;
-                            }
-                        }
-
-                        lex.IWS = false;
-                        break;
-                }
-
-                if (!IGNORE_TEXT_TILL_CLOSE_TAG) {
-                    if (lex.ty == 8 && !HAS_INNER_TEXT) {
-                        start = lex.pos;
-                    } else if (lex.ty == 256) {} else {
-                        HAS_INNER_TEXT = true;
-                        end = lex.off + lex.tl;
-                    }
-                }
-
-                lex.n;
-            }
-
-        if (OPENED && start < lex.off) {
-            if (lex.off - start > 0) {
-                //Got here from a network import, need produce a text node;
-                await this.createTextNode(lex, start);
-            }
-        }
-
-        return this;
-    }
-
-    /**
-     * Parses HTML string. Appends new nodes, or consumes first node if tag is an empty string.
-     * @param      {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}
-     * @param      {boolean}  OPENED       The opened
-     * @param      {boolean}  IGNORE_TEXT_TILL_CLOSE_TAG  If `true`, parser will ignore all HTML syntax until the closing tag is found.
-     * @return     {Promise}  
-     * @private
-     */
-    async parse(lex, url = new URL(0, !!1)) {
-
-        if (typeof(lex) == "string") lex = whind$1(lex);
-
-        lex.IWS = false;
-
-        return await this.parseRunner(lex, false, false, null, url);
-    }
-
-    /******************************************* HOOKS ******************************************************************************************************************/
-
-    endOfElementHook() { return this; }
-
-    selfClosingTagHook(tag) {
-        return ["input", "br" ,"img", "rect"].includes(tag);
-    }
-
-    async ignoreTillHook(tag) {
-        // Special character escaping tags.
-        return ["script", "style" ,"pre"].includes(tag);
-    }
-
-    async createHTMLNodeHook(tag, start) { return new HTMLNode(tag); }
-
-    processFetchHook(lexer, OPENED, IGNORE_TEXT_TILL_CLOSE_TAG, parent, url) {
-        let path = this.url.path,
-            CAN_FETCH = true;
-
-        //make sure URL is not already called by a parent.
-        while (parent) {
-            if (parent.url && parent.url.path == path) {
-                console.warn(`Preventing recursion on resource ${this.url.path}`);
-                CAN_FETCH = false;
-                break;
-            }
-            parent = parent.par;
-        }
-
-        if (CAN_FETCH) {
-            return this.url.fetchText().then((text) => {
-                let lexer = whind$1(text);
-                return this.parseRunner(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
-            }).catch((e) => {
-                console.error(e);
-                return this;
-            });
-        }
-        return null;
-    }
-
-    processAttributeHook(name, lex) { return { IGNORE: false, name, value: lex.slice() }; }
-
-    async processTextNodeHook(lex, IS_INNER_HTML) {
-        if (!IS_INNER_HTML)
-            return new TextNode(lex.trim(1).slice());
-
-        let t = lex.trim(1);
-
-        if (t.string_length > 0)
-            return new TextNode(t.slice());
-
-        return null;
-    }
-
-    /**
-        Deep Clone of Element
-    */
-    clone() {
-        const clone = new this.constructor();
-
-        clone.tag = this.tag;
-
-        clone.parse(this.toString());
-
-        return clone;
-    }
-
-    build(parent) {
-        let ele = document.createElement(this.tag);
-
-        for (let i = 0, l = this.attributes.length; i < l; i++) {
-            let attr = this.attributes[i];
-            ele.setAttribute(attr.name, attr.value);
-        }
-        //let passing_element = ele;
-        let passing_element = (this.tag == "template") ? ele.content : ele;
-        for (let node = this.fch; node;
-            (node = this.getNextChild(node))) {
-            node.build(passing_element);
-        }
-
-        if (parent) parent.appendChild(ele);
-
-        return ele;
-    }
-}
-
-LinkedList.mixinTree(HTMLNode);
-
-
-/**
- * Builds an HTML AST. 
- * @function
- * @param {string} html_string - A string containing HTML data.
- * @param {string} css_string - An existing CSSRootNode to merge with new `selectors` and `rules`.
- * @return {Promise} Returns a `Promise` that will return a new or existing CSSRootNode.
- * @memberof module:wick.core
- * @alias html
- */
-const HTMLParser = (html_string, root = null, url) => (root = (!root || !(root instanceof HTMLNode)) ? new HTMLNode() : root, root.parse(whind$1(html_string.replace(/\&lt;/g, "<").replace(/\&gt;/g, ">"), url)));
-
-HTMLParser.polyfill = function() {
-    URL.polyfill();
-
-    if (typeof(global) !== "undefined") {
-        global.HTMLElement = HTMLNode;
-        global.TextNode = TextNode;
-
-        if(!global.document)
-            global.document = {};
-
-        Object.assign(global.document, {
-            createElement: function(tag) {
-                let node = new HTMLElement();
-                node.tag = tag.toString().toLowerCase();
-                return node;
-            },
-            createTextNode: function(text) {
-                let node = new TextNode(text);
-                return node;
-            }
-        });
-    }
-
-    HTMLNode.prototype.appendChild = function(child) {
-        this.addChild(child);
-    };
-
-    HTMLNode.prototype.removeChild = function(child) {
-        this.removeChild(child);
-    };
-
-    HTMLNode.prototype.setAttribute = function(name, value) {
-        let attr = this.getAttrib(name);
-        if (attr)
-            attr.value = value;
-        else
-            this.attributes.push({ name, value });
-    };
-};
-
-const tagHandler = {
-    name: "tagHandler",
-
-    handlers: new Map(),
-
-    load: function(in_ext, func_) {
-        tagHandler.handlers.set(in_ext, func_);
-    },
-
-    plugin: async function(in_ext, node) {
-
-        const handler = tagHandler.handlers.get(in_ext);
-
-        if (handler){
-
-            const out_node = await handler(node);
-
-            if(out_node !== node && out_node instanceof HTMLNode){
-                //Swap out nodes. 
-                return out_node;
-            }
-
-        }
-
-        return node;
-    }
-};
-
-
-// Allows a plugin function to parse the contents of a fetched rescope whose file extensions matches the one set by the plugin. 
-const extensionParse = {
-    name: "extensionParse",
-
-    handlers: new Map(),
-
-    load: function(in_ext, out_ext, func_) {
-        extensionParse.handlers.set(in_ext, async (d) => ({ ext: out_ext, data: await func_(d) }));
-    },
-
-    plugin: async function(in_ext, data) {
-
-        const handler = extensionParse.handlers.get(in_ext);
-
-        if (handler)
-            return await handler(data);
-
-        return { ext: in_ext, data: data }
-    }
-};
-
-// Allows a plugin function to replace innerHTML content in-stream when a HTML tag is matched. 
-// A string containing the contents of the matched elements innerHTML is passed to the plugin function. 
-// The executor expects a string to be returned from the plugin function
-const parseInnerHTMLOnTag = {
-    name: "parseInnerHTMLOnTag",
-
-    handlers: new Map(),
-
-    load: function(tag_name, fun) {
-        parseInnerHTMLOnTag.handlers.set(tag_name, fun);
-    },
-
-    plugin: async function(tag_name, calling_node, lex) {
-
-        const handler = parseInnerHTMLOnTag.handlers.get(tag_name);
-
-        if (handler) {
-
-            //Search for the closing tag and extract a copy of lex that is fenced between the start and points.
-            let level = 1;
-
-            const cpy = lex.copy();
-
-            let end = 0;
-
-            while (level > 0 && !cpy.END) {
-                //*
-                if (cpy.ch == "<") {
-                    if (cpy.pk.tx == tag_name) {
-                        cpy.next();
-                        level++;
-                    } else if (cpy.pk.ch == "/" && cpy.pk.pk.tx == tag_name) {
-                        level--;
-                        end = cpy.off;
-                        cpy.sync();
-                    }
-                }
-
-                cpy.next();
-                //*/
-            };
-
-            if(cpy.END)
-                throw cpy.throw("Unexpected end of input");
-
-            cpy.off = end;
-
-            const out = lex.copy().fence(cpy); 
-
-            lex.sync(cpy);
-
-            lex.tl = 0; // reset lexer token
-
-            lex.next(); // should be <
-
-            const newHTML = await handler(out.trim().slice(), calling_node);
-
-            if (typeof(newHTML) == "string")
-                await calling_node.parseRunner(whind$1(newHTML), true);
-
-            return true;
-        }
-
-        return false;
-    }
-};
-
-// Allows a plugin function to replace content in-stream when a HTML tag is matched. The entire contents of the element, inner and outer HTML, can be replaced through such a plugin. 
-// A string containing the contents of the matched element (open tag, inner content, and close tag) is passed to the plugin function. 
-// The executor expects an HTML string to be returned by the HTML function.
-
-const parseHTMLonTag = {
-    name: "parseHTMLonTag",
-
-    handlers: new Map(),
-
-    load: function(tag_name, fun) {
-        //Should dissallow common tags to prevent recursion. 
-        //Test: Make sure recurssion does no occure, or if it does, detect and report.
-        parseHTMLonTag.handlers.set(tag_name, fun);
-    },
-
-    plugin: async function(tag_name, calling_node, lex) {
-
-        const handler = parseHTMLonTag.handlers.get(tag_name);
-
-        if (handler) {
-
-            lex.IWS = true;
-
-            let level = 1;
-
-            while (lex.next().ch != ">" && !lex.END);
-
-            const cpy = lex.copy();
-
-            lex.a(">", `Expecting an > end brace for opening tag ${tag_name}`);
-
-            let end = 0;
-
-            while (level > 0 && !cpy.END) {
-                //*
-                if (cpy.ch == "/" && ((end = cpy.off) && cpy.pk.tx == tag_name)) {
-                    cpy.next();
-                    level--;
-                } else if (cpy.ch == "<" && cpy.pk.tx == tag_name) {
-                    cpy.next();
-                    level++;
-                }
-
-                cpy.next();
-                //*/
-            };
-
-            cpy.a(">", `Expecting a matching closing tag for ${tag_name}`);
-
-            const off = cpy.off;
-
-            cpy.off = end - 1;
-
-            const newHTML = await handler(lex.copy().fence(cpy).trim().slice(), calling_node);
-
-            cpy.off = off;
-
-            lex.sync(cpy);
-
-            if (typeof(newHTML) == "string")
-                await calling_node.parseRunner(whind$1(newHTML), true);
-
-            lex.IWS = false;
-
-            return true;
-        }
-
-        return false;
-    }
-};
-
-
-// Houses handlers for all plugins 
-// Makes the `plugin` funciton of the handler available, which can be accessed by calling Plugin.*plugin.name* 
-// e.g Plugin({name:"newPlugin"}) ...> Plugin.newPlugin(...)
-const Plugin = ((...plugins) => {
-
-    const plugin_map = new Map(plugins.map(p => [p.name, p.load]));
-
-    async function plugin(name, ...data) {
-
-        const plugin = plugin_map.get(name);
-
-        if (plugin)
-            await plugin(...data);
-    }
-
-    plugins.forEach(e => {
-        plugin[e.name] = e.plugin;
-    });
-
-    Object.freeze(plugin);
-
-    return plugin;
-})(extensionParse, parseInnerHTMLOnTag, parseHTMLonTag, tagHandler);
-
-/**
- * Base class for an object that binds to and observes a Model.
- *@alias module:wick.core.view
- */
-class View{
-
-	constructor(){
-		/**
-		 * property
-		 */
-		this.nx = null;
-		this.pv = null;
-		this .model = null;
-	}
-
-	/**
-     * Unbinds the View from its Model and sets all properties to undefined. Should be called by any class extending View
-	 * ``` js
-	 * class ExtendingView extends wick.core.view.View{
-	 * 		destroy(){
-	 * 			//... do some stuff ...
-	 * 			super.destroy();
-	 * 		}
-	 * }
-	 * ```
-     * @protected
-     */
-	destroy(){
-
-		if(this.model && this.model.removeView)
-			this.model.removeView(this);
-	
-		this .model = undefined;
-		this.nx = undefined;
-	}	
-	/**
-		Called by a Model when its data has changed.
-	*/
-	update(data){
-
-	}
-	/**
-		Called by a ModelContainerBase when an item has been removed.
-	*/
-	removed(data){
-
-	}
-
-	/**
-		Called by a ModelContainerBase when an item has been added.
-	*/
-	added(data){
-
-	}
-	setModel(model){
-	}
-
-	reset(){
-		
-	}
-	unsetModel(){
-
-		this.nx = null;
-		this .model = null;
-	}
-}
-
-/**
- * Holds a set of rendered CSS properties.
- * @memberof module:wick~internals.css
- * @alias CSSRule
- */
-class CSSRule {
-    constructor(root) {
-        /**
-         * Collection of properties held by this rule.
-         * @public
-         */
-        this.props = {};
-        this.LOADED = false;
-        this.root = root;
-
-        //Reference Counting
-        this.refs = 0;
-
-        //Versioning
-        this.ver = 0;
-    }
-
-    incrementRef(){
-        this.refs++;
-    }
-
-    decrementRef(){
-        this.refs--;
-        if(this.refs <= 0){
-            //TODO: remove from rules entries.
-            debugger
-        }
-    }
-
-    addProperty(prop, rule) {
-        if (prop)
-            this.props[prop.name] = prop.value;
-    }
-
-
-
-    toString(off = 0, rule = "") {
-        let str = [],
-            offset = ("    ").repeat(off);
-
-        if (rule) {
-            if (this.props[rule]) {
-                if (Array.isArray(this.props[rule]))
-                    str.push(this.props[rule].join(" "));
-                else
-                    str.push(this.props[rule].toString());
-            }else
-                return "";
-        } else {
-            for (let a in this.props) {
-                if (this.props[a] !== null) {
-                    if (Array.isArray(this.props[a]))
-                        str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
-                    else
-                        str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].toString(), ";\n");
-                }
-            }
-        }
-
-        return str.join(""); //JSON.stringify(this.props).replace(/\"/g, "").replace(/\_/g, "-");
-    }
-
-    merge(rule) {
-        if (rule.props) {
-            for (let n in rule.props)
-                this.props[n] = rule.props[n];
-            this.LOADED = true;
-            this.ver++;
-        }
-    }
-
-    get _wick_type_() { return 0; }
-
-    set _wick_type_(v) {}
-}
-
-class Color extends Float64Array {
-
-    constructor(r, g, b, a = 0) {
-        super(4);
-
-        this.r = 0;
-        this.g = 0;
-        this.b = 0;
-        this.a = 1;
-
-        if (typeof(r) === "number") {
-            this.r = r; //Math.max(Math.min(Math.round(r),255),-255);
-            this.g = g; //Math.max(Math.min(Math.round(g),255),-255);
-            this.b = b; //Math.max(Math.min(Math.round(b),255),-255);
-            this.a = a; //Math.max(Math.min(a,1),-1);
-        }
-    }
-
-    get r() {
-        return this[0];
-    }
-
-    set r(r) {
-        this[0] = r;
-    }
-
-    get g() {
-        return this[1];
-    }
-
-    set g(g) {
-        this[1] = g;
-    }
-
-    get b() {
-        return this[2];
-    }
-
-    set b(b) {
-        this[2] = b;
-    }
-
-    get a() {
-        return this[3];
-    }
-
-    set a(a) {
-        this[3] = a;
-    }
-
-    set(color) {
-        this.r = color.r;
-        this.g = color.g;
-        this.b = color.b;
-        this.a = (color.a != undefined) ? color.a : this.a;
-    }
-
-    add(color) {
-        return new Color(
-            color.r + this.r,
-            color.g + this.g,
-            color.b + this.b,
-            color.a + this.a
-        );
-    }
-
-    mult(color) {
-        if (typeof(color) == "number") {
-            return new Color(
-                this.r * color,
-                this.g * color,
-                this.b * color,
-                this.a * color
-            );
-        } else {
-            return new Color(
-                this.r * color.r,
-                this.g * color.g,
-                this.b * color.b,
-                this.a * color.a
-            );
-        }
-    }
-
-    sub(color) {
-        return new Color(
-            this.r - color.r,
-            this.g - color.g,
-            this.b - color.b,
-            this.a - color.a
-        );
-    }
-
-    lerp(to, t){
-        return this.add(to.sub(this).mult(t));
-    }
-
-    toString() {
-        return `rgba(${this.r|0},${this.g|0},${this.b|0},${this.a})`;
-    }
-
-    toJSON() {
-        return `rgba(${this.r|0},${this.g|0},${this.b|0},${this.a})`;
-    }
-
-    copy(other){
-        let out = new Color(other);
-        return out;
-    }
-}
-
-/*
-    BODY {color: black; background: white }
-    H1 { color: maroon }
-    H2 { color: olive }
-    EM { color: #f00 }              // #rgb //
-    EM { color: #ff0000 }           // #rrggbb //
-    EM { color: rgb(255,0,0) }      // integer range 0 - 255 //
-    EM { color: rgb(100%, 0%, 0%) } // float range 0.0% - 100.0% //
-*/
-class CSS_Color extends Color {
-
-    /** UI FUNCTIONS **/
-
-    static list(){}
-
-    static valueHandler(existing_value){
-        let ele = document.createElement("input");
-        ele.type = "color";
-        ele.value = (existing_value) ? existing_value+ "" : "#000000";
-        ele.addEventListener("change", (e)=>{
-            ele.css_value = ele.value;
-        });
-        return ele;
-    }
-
-    static setInput(input, value){
-        input.type = "color";
-        input.value = value;
-    }
-
-    static buildInput(){
-        let ele = document.createElement("input");
-        ele.type = "color";
-        return ele;
-    }
-
-    static parse(l, rule, r) {
-
-        let c = CSS_Color._fs_(l);
-
-        if (c) {
-
-            let color = new CSS_Color();
-
-            color.set(c);
-
-            return color;
-        }
-
-        return null;
-    }
-    static _verify_(l) {
-        let c = CSS_Color._fs_(l, true);
-        if (c)
-            return true;
-        return false;
-    }
-    /**
-        Creates a new Color from a string or a Lexer.
-    */
-    static _fs_(l, v = false) {
-        let c;
-
-        if (typeof(l) == "string")
-            l = whind$1(l);
-
-        let out = { r: 0, g: 0, b: 0, a: 1 };
-
-        switch (l.ch) {
-            case "#":
-                l.next();
-                let pk = l.copy();
-
-                let type = l.types;
-                pk.IWS = false;
-
-
-                while(!(pk.ty & (type.newline | type.ws)) && !pk.END && pk.ch !== ";"){
-                    pk.next();
-                }
-
-                var value = pk.slice(l);
-                l.sync(pk);
-                l.tl = 0;
-                l.next();
-                
-                let num = parseInt(value,16);
-
-                if(value.length == 3 || value.length == 4){
-                    
-                    if(value.length == 4){
-                        const a = (num >> 8) & 0xF;
-                        out.a = a | a << 4;
-                        num >>= 4;
-                    }
-
-                    const r = (num >> 8) & 0xF;
-                    out.r = r | r << 4;
-                    
-                    const g = (num >> 4) & 0xF;
-                    out.g = g | g << 4;
-                    
-                    const b = (num) & 0xF;
-                    out.b = b | b << 4;
-
-                }else{
-
-                    if(value.length == 8){
-                        out.a = num & 0xFF;
-                        num >>= 8;
-                    }
-
-                    out.r = (num >> 16) & 0xFF;       
-                    out.g = (num >> 8) & 0xFF;
-                    out.b = (num) & 0xFF;
-                }
-                l.next();
-                break;
-            case "r":
-                let tx = l.tx;
-
-                const RGB_TYPE = tx === "rgba"  ? 1 : tx === "rgb" ? 2 : 0;
-                
-                if(RGB_TYPE > 0){
-
-                    l.next(); // (
-                    
-                    out.r = parseInt(l.next().tx);
-                    
-                    l.next(); // , or  %
-
-                    if(l.ch == "%"){
-                        l.next(); out.r = out.r * 255 / 100;
-                    }
-                    
-                    
-                    out.g = parseInt(l.next().tx);
-                    
-                    l.next(); // , or  %
-                   
-                    if(l.ch == "%"){
-                        l.next(); out.g = out.g * 255 / 100;
-                    }
-                    
-                    
-                    out.b = parseInt(l.next().tx);
-                    
-                    l.next(); // , or ) or %
-                    
-                    if(l.ch == "%")
-                        l.next(), out.b = out.b * 255 / 100;
-
-                    if(RGB_TYPE < 2){
-                        out.a = parseFloat(l.next().tx);
-
-                        l.next();
-                        
-                        if(l.ch == "%")
-                            l.next(), out.a = out.a * 255 / 100;
-                    }
-
-                    l.a(")");
-                    c = new CSS_Color();
-                    c.set(out);
-                    return c;
-                }  // intentional
-            default:
-
-                let string = l.tx;
-
-                if (l.ty == l.types.str){
-                    string = string.slice(1, -1);
-                }
-
-                out = CSS_Color.colors[string.toLowerCase()];
-
-                if(out)
-                    l.next();
-        }
-
-        return out;
-    }
-
-    constructor(r, g, b, a) {
-        super(r, g, b, a);
-
-        if (typeof(r) == "string")
-            this.set(CSS_Color._fs_(r) || {r:255,g:255,b:255,a:0});
-
-    }
-
-    toString(){
-        return `#${("0"+this.r.toString(16)).slice(-2)}${("0"+this.g.toString(16)).slice(-2)}${("0"+this.b.toString(16)).slice(-2)}`
-    }
-    toRGBString(){
-        return `rgba(${this.r.toString()},${this.g.toString()},${this.b.toString()},${this.a.toString()})`   
-    }
-} {
-
-    let _$ = (r = 0, g = 0, b = 0, a = 1) => ({ r, g, b, a });
-    let c = _$(0, 255, 25);
-    CSS_Color.colors = {
-        "alice blue": _$(240, 248, 255),
-        "antique white": _$(250, 235, 215),
-        "aqua marine": _$(127, 255, 212),
-        "aqua": c,
-        "azure": _$(240, 255, 255),
-        "beige": _$(245, 245, 220),
-        "bisque": _$(255, 228, 196),
-        "black": _$(),
-        "blanched almond": _$(255, 235, 205),
-        "blue violet": _$(138, 43, 226),
-        "blue": _$(0, 0, 255),
-        "brown": _$(165, 42, 42),
-        "burly wood": _$(222, 184, 135),
-        "cadet blue": _$(95, 158, 160),
-        "chart reuse": _$(127, 255),
-        "chocolate": _$(210, 105, 30),
-        "clear": _$(255, 255, 255),
-        "coral": _$(255, 127, 80),
-        "corn flower blue": _$(100, 149, 237),
-        "corn silk": _$(255, 248, 220),
-        "crimson": _$(220, 20, 60),
-        "cyan": c,
-        "dark blue": _$(0, 0, 139),
-        "dark cyan": _$(0, 139, 139),
-        "dark golden rod": _$(184, 134, 11),
-        "dark gray": _$(169, 169, 169),
-        "dark green": _$(0, 100),
-        "dark khaki": _$(189, 183, 107),
-        "dark magenta": _$(139, 0, 139),
-        "dark olive green": _$(85, 107, 47),
-        "dark orange": _$(255, 140),
-        "dark orchid": _$(153, 50, 204),
-        "dark red": _$(139),
-        "dark salmon": _$(233, 150, 122),
-        "dark sea green": _$(143, 188, 143),
-        "dark slate blue": _$(72, 61, 139),
-        "dark slate gray": _$(47, 79, 79),
-        "dark turquoise": _$(0, 206, 209),
-        "dark violet": _$(148, 0, 211),
-        "deep pink": _$(255, 20, 147),
-        "deep sky blue": _$(0, 191, 255),
-        "dim gray": _$(105, 105, 105),
-        "dodger blue": _$(30, 144, 255),
-        "firebrick": _$(178, 34, 34),
-        "floral white": _$(255, 250, 240),
-        "forest green": _$(34, 139, 34),
-        "fuchsia": _$(255, 0, 255),
-        "gainsboro": _$(220, 220, 220),
-        "ghost white": _$(248, 248, 255),
-        "gold": _$(255, 215),
-        "golden rod": _$(218, 165, 32),
-        "gray": _$(128, 128, 128),
-        "green yellow": _$(173, 255, 47),
-        "green": _$(0, 128),
-        "honeydew": _$(240, 255, 240),
-        "hot pink": _$(255, 105, 180),
-        "indian red": _$(205, 92, 92),
-        "indigo": _$(75, 0, 130),
-        "ivory": _$(255, 255, 240),
-        "khaki": _$(240, 230, 140),
-        "lavender blush": _$(255, 240, 245),
-        "lavender": _$(230, 230, 250),
-        "lawn green": _$(124, 252),
-        "lemon chiffon": _$(255, 250, 205),
-        "light blue": _$(173, 216, 230),
-        "light coral": _$(240, 128, 128),
-        "light cyan": _$(224, 255, 255),
-        "light golden rod yellow": _$(250, 250, 210),
-        "light gray": _$(211, 211, 211),
-        "light green": _$(144, 238, 144),
-        "light pink": _$(255, 182, 193),
-        "light salmon": _$(255, 160, 122),
-        "light sea green": _$(32, 178, 170),
-        "light sky blue": _$(135, 206, 250),
-        "light slate gray": _$(119, 136, 153),
-        "light steel blue": _$(176, 196, 222),
-        "light yellow": _$(255, 255, 224),
-        "lime green": _$(50, 205, 50),
-        "lime": _$(0, 255),
-        "lime": _$(0, 255),
-        "linen": _$(250, 240, 230),
-        "magenta": _$(255, 0, 255),
-        "maroon": _$(128),
-        "medium aqua marine": _$(102, 205, 170),
-        "medium blue": _$(0, 0, 205),
-        "medium orchid": _$(186, 85, 211),
-        "medium purple": _$(147, 112, 219),
-        "medium sea green": _$(60, 179, 113),
-        "medium slate blue": _$(123, 104, 238),
-        "medium spring green": _$(0, 250, 154),
-        "medium turquoise": _$(72, 209, 204),
-        "medium violet red": _$(199, 21, 133),
-        "midnight blue": _$(25, 25, 112),
-        "mint cream": _$(245, 255, 250),
-        "misty rose": _$(255, 228, 225),
-        "moccasin": _$(255, 228, 181),
-        "navajo white": _$(255, 222, 173),
-        "navy": _$(0, 0, 128),
-        "old lace": _$(253, 245, 230),
-        "olive drab": _$(107, 142, 35),
-        "olive": _$(128, 128),
-        "orange red": _$(255, 69),
-        "orange": _$(255, 165),
-        "orchid": _$(218, 112, 214),
-        "pale golden rod": _$(238, 232, 170),
-        "pale green": _$(152, 251, 152),
-        "pale turquoise": _$(175, 238, 238),
-        "pale violet red": _$(219, 112, 147),
-        "papaya whip": _$(255, 239, 213),
-        "peach puff": _$(255, 218, 185),
-        "peru": _$(205, 133, 63),
-        "pink": _$(255, 192, 203),
-        "plum": _$(221, 160, 221),
-        "powder blue": _$(176, 224, 230),
-        "purple": _$(128, 0, 128),
-        "red": _$(255),
-        "rosy brown": _$(188, 143, 143),
-        "royal blue": _$(65, 105, 225),
-        "saddle brown": _$(139, 69, 19),
-        "salmon": _$(250, 128, 114),
-        "sandy brown": _$(244, 164, 96),
-        "sea green": _$(46, 139, 87),
-        "sea shell": _$(255, 245, 238),
-        "sienna": _$(160, 82, 45),
-        "silver": _$(192, 192, 192),
-        "sky blue": _$(135, 206, 235),
-        "slate blue": _$(106, 90, 205),
-        "slate gray": _$(112, 128, 144),
-        "snow": _$(255, 250, 250),
-        "spring green": _$(0, 255, 127),
-        "steel blue": _$(70, 130, 180),
-        "tan": _$(210, 180, 140),
-        "teal": _$(0, 128, 128),
-        "thistle": _$(216, 191, 216),
-        "tomato": _$(255, 99, 71),
-        "transparent": _$(0, 0, 0, 0),
-        "turquoise": _$(64, 224, 208),
-        "violet": _$(238, 130, 238),
-        "wheat": _$(245, 222, 179),
-        "white smoke": _$(245, 245, 245),
-        "white": _$(255, 255, 255),
-        "yellow green": _$(154, 205, 50),
-        "yellow": _$(255, 255)
-    };
-}
-
-class CSS_Percentage extends Number {
-    static setInput(input, value){
-        input.type = "number";
-        input.value = parseFloat(value);
-    }
-
-    static buildInput(value){
-        let ele = document.createElement("input");
-        ele.type = "number";
-        ele.value = parseFloat(value) || 0;
-        ele.addEventListener("change", (e)=>{
-            ele.css_value = ele.value + "%";
-        });
-        return ele;
-    }
-    
-    static parse(l, rule, r) {
-        let tx = l.tx,
-            pky = l.pk.ty;
-
-        if (l.ty == l.types.num || tx == "-" && pky == l.types.num) {
-            let mult = 1;
-
-            if (l.ch == "-") {
-                mult = -1;
-                tx = l.p.tx;
-                l.p.next();
-            }
-
-            if (l.p.ch == "%") {
-                l.sync().next();
-                return new CSS_Percentage(parseFloat(tx) * mult);
-            }
-        }
-        return null;
-    }
-
-    static _verify_(l) {
-        if(typeof(l) == "string" &&  !isNaN(parseInt(l)) && l.includes("%"))
-            return true;
-        return false;
-    }
-
-    static valueHandler(){
-        let ele = document.createElement("input");
-        ele.type = "number";
-        ele.value = 100;
-        return ele;
-    }
-
-    constructor(v) {
-
-        if (typeof(v) == "string") {
-            let lex = whind(v);
-            let val = CSS_Percentage.parse(lex);
-            if (val) 
-                return val;
-        }
-        
-        super(v);
-    }
-
-    toJSON() {
-        return super.toString() + "%";
-    }
-
-    toString(radix) {
-        return super.toString(radix) + "%";
-    }
-
-    get str() {
-        return this.toString();
-    }
-
-    lerp(to, t) {
-        return new CSS_Percentage(this + (to - this) * t);
-    }
-
-    copy(other){
-        return new CSS_Percentage(other);
-    }
-
-    get type(){
-        return "%";
-    }
-}
-
-CSS_Percentage.label_name = "Percentage";
-
-class CSS_Length extends Number {
-
-    static valueHandler(value, ui_seg){
-        let ele = document.createElement("input");
-
-
-        ele.type = "number";
-        ele.value = (value) ? value + 0 : 0;
-        
-        ui_seg.css_value = ele.value + "%";
-        
-        ele.addEventListener("change", (e)=>{
-            ele.css_value = ele.value + "px";
-        });
-        return ele;
-    }
-
-    static setInput(input, value){
-        input.type = "number";
-        input.value = value;
-    }
-
-    static buildInput(){
-        let ele = document.createElement("input");
-        ele.type = "number";
-        return ele;
-    }
-
-    static parse(l, rule, r) {
-        let tx = l.tx,
-            pky = l.pk.ty;
-        if (l.ty == l.types.num || tx == "-" && pky == l.types.num) {
-            let sign = 1;
-            if (l.ch == "-") {
-                sign = -1;
-                tx = l.p.tx;
-                l.p.next();
-            }
-            if (l.p.ty == l.types.id) {
-                let id = l.sync().tx;
-                l.next();
-                return new CSS_Length(parseFloat(tx) * sign, id);
-            }
-        }
-        return null;
-    }
-
-    static _verify_(l) {
-        if (typeof(l) == "string" && !isNaN(parseInt(l)) && !l.includes("%")) return true;
-        return false;
-    }
-
-    constructor(v, u = "") {
-        
-        if (typeof(v) == "string") {
-            let lex = whind$1(v);
-            let val = CSS_Length.parse(lex);
-            if (val) return val;
-        }
-
-        if(u){
-            switch(u){
-                //Absolute
-                case "px": return new PXLength(v);
-                case "mm": return new MMLength(v);
-                case "cm": return new CMLength(v);
-                case "in": return new INLength(v);
-                case "pc": return new PCLength(v);
-                case "pt": return new PTLength(v);
-                
-                //Relative
-                case "ch": return new CHLength(v);
-                case "em": return new EMLength(v);
-                case "ex": return new EXLength(v);
-                case "rem": return new REMLength(v);
-
-                //View Port
-                case "vh": return new VHLength(v);
-                case "vw": return new VWLength(v);
-                case "vmin": return new VMINLength(v);
-                case "vmax": return new VMAXLength(v);
-
-                //Deg
-                case "deg": return new DEGLength(v);
-
-                case "%" : return new CSS_Percentage(v);
-            }
-        }
-
-        super(v);
-    }
-
-    get milliseconds() {
-        switch (this.unit) {
-            case ("s"):
-                return parseFloat(this) * 1000;
-        }
-        return parseFloat(this);
-    }
-
-    toString(radix) {
-        return super.toString(radix) + "" + this.unit;
-    }
-
-    toJSON() {
-        return super.toString() + "" + this.unit;
-    }
-
-    get str() {
-        return this.toString();
-    }
-
-    lerp(to, t) {
-        return new CSS_Length(this + (to - this) * t, this.unit);
-    }
-
-    copy(other) {
-        return new CSS_Length(other, this.unit);
-    }
-
-    set unit(t){}
-    get unit(){return "";}
-}
-
-class PXLength extends CSS_Length {
-    get unit(){return "px";}
-}
-class MMLength extends CSS_Length {
-    get unit(){return "mm";}
-}
-class CMLength extends CSS_Length {
-    get unit(){return "cm";}
-}
-class INLength extends CSS_Length {
-    get unit(){return "in";}
-}
-class PTLength extends CSS_Length {
-    get unit(){return "pt";}
-}
-class PCLength extends CSS_Length {
-    get unit(){return "pc";}
-}
-class CHLength extends CSS_Length {
-    get unit(){return "ch";}
-}
-class EMLength extends CSS_Length {
-    get unit(){return "em";}
-}
-class EXLength extends CSS_Length {
-    get unit(){return "ex";}
-}
-class REMLength extends CSS_Length {
-    get unit(){return "rem";}
-}
-class VHLength extends CSS_Length {
-    get unit(){return "vh";}
-}
-class VWLength extends CSS_Length {
-    get unit(){return "vw";}
-}
-class VMINLength extends CSS_Length {
-    get unit(){return "vmin";}
-}
-class VMAXLength extends CSS_Length {
-    get unit(){return "vmax";}
-}
-class DEGLength extends CSS_Length {
-    get unit(){return "deg";}
-}
-
-class CSS_URL extends URL {
-    static parse(l, rule, r) {
-        if (l.tx == "url" || l.tx == "uri") {
-            l.next().a("(");
-            let v = "";
-            if (l.ty == l.types.str) {
-                v = l.tx.slice(1,-1);
-                l.next().a(")");
-            } else {
-                const p = l.peek();
-                while (!p.END && p.next().tx !== ")") { /* NO OP */ }
-                v = p.slice(l);
-                l.sync().a(")");
-            }
-            return new CSS_URL(v);
-        } if (l.ty == l.types.str){
-            let v = l.tx.slice(1,-1);
-            l.next();
-            return new CSS_URL(v);
-        }
-
-        return null;
-    }
-}
-
-class CSS_String extends String {
-    
-    static list(){}
-
-    static valueHandler(existing_value){
-        let ele = document.createElement("input");
-        ele.type = "text";
-        ele.value = existing_value || "";
-        return ele;
-    }
-
-    static setInput(input, value){
-        input.type = "text";
-        input.value = value;
-    }
-
-    static buildInput(){
-        let ele = document.createElement("input");
-        ele.type = "text";
-        return ele;
-    }
-
-    static parse(l, rule, r) {
-        if (l.ty == l.types.str) {
-            let tx = l.tx;
-            l.next();
-            return new CSS_String(tx);
-        }
-        return null;
-    }
-
-    constructor(string){
-        if(string[0] == "\"" || string[0] == "\'" || string[0] == "\'")
-            string = string.slice(1,-1);
-        super(string);
-    }
-}
-
-class CSS_Id extends String {
-    static parse(l, rule, r) {
-        if (l.ty == l.types.id) {
-            let tx = l.tx;
-            l.next();
-            return new CSS_Id(tx);
-        }
-        return null;
-    }
-}
-
-/* https://www.w3.org/TR/css-shapes-1/#typedef-basic-shape */
-class CSS_Shape extends Array {
-    static parse(l, rule, r) {
-        if (l.tx == "inset" || l.tx == "circle" || l.tx == "ellipse" || l.tx == "polygon" || l.tx == "rect") {
-            l.next().a("(");
-            let v = "";
-            if (l.ty == l.types.str) {
-                v = l.tx.slice(1,-1);
-                l.next().a(")");
-            } else {
-                let p = l.pk;
-                while (!p.END && p.next().tx !== ")") { /* NO OP */ }
-                v = p.slice(l);
-                l.sync().a(")");
-            }
-            return new CSS_Shape(v);
-        }
-        return null;
-    }
-}
-
-class CSS_Number extends Number {
-
-    static valueHandler(value){
-        let ele = document.createElement("input");
-        ele.type = "number";
-        ele.value = (value) ? value + 0 : 0;
-        ele.addEventListener("change", (e)=>{
-            ele.css_value = ele.value;
-        });
-        return ele;
-    }
-
-    static setInput(input, value){
-        input.type = "number";
-        input.value = value;
-    }
-
-    static buildInput(){
-        let ele = document.createElement("input");
-        ele.type = "number";
-        return ele;
-    }
-
-    static parse(l, rule, r) {
-        
-        let sign = 1;
-
-        if(l.ch == "-" && l.pk.ty == l.types.num){
-        	l.sync();
-        	sign = -1;
-        }
-
-        if(l.ty == l.types.num){
-        	let tx = l.tx;
-            l.next();
-            return new CSS_Number(sign*(new Number(tx)));
-        }
-        return null;
-    }
-}
-
-class Point2D extends Float64Array{
-	
-	constructor(x, y) {
-		super(2);
-
-		if (typeof(x) == "number") {
-			this[0] = x;
-			this[1] = y;
-			return;
-		}
-
-		if (x instanceof Array) {
-			this[0] = x[0];
-			this[1] = x[1];
-		}
-	}
-
-	draw(ctx, s = 1){
-		ctx.beginPath();
-		ctx.moveTo(this.x*s,this.y*s);
-		ctx.arc(this.x*s, this.y*s, s*0.01, 0, 2*Math.PI);
-		ctx.stroke();
-	}
-
-	get x (){ return this[0]}
-	set x (v){if(typeof(v) !== "number") return; this[0] = v;}
-
-	get y (){ return this[1]}
-	set y (v){if(typeof(v) !== "number") return; this[1] = v;}
-}
-
-const sqrt = Math.sqrt;
-const cos = Math.cos;
-const acos = Math.acos;
-const PI = Math.PI; 
-const pow = Math.pow;
-
-// A helper function to filter for values in the [0,1] interval:
-function accept(t) {
-  return 0<=t && t <=1;
-}
-
-// A real-cuberoots-only function:
-function cuberoot(v) {
-  if(v<0) return -pow(-v,1/3);
-  return pow(v,1/3);
-}
-
-function point(t, p1, p2, p3, p4) {
-	var ti = 1 - t;
-	var ti2 = ti * ti;
-	var t2 = t * t;
-	return ti * ti2 * p1 + 3 * ti2 * t * p2 + t2 * 3 * ti * p3 + t2 * t * p4;
-}
-
-
-class CBezier extends Float64Array{
-	constructor(x1, y1, x2, y2, x3, y3, x4, y4) {
-		super(8);
-
-		//Map P1 and P2 to {0,0,1,1} if only four arguments are provided; for use with animations
-		if(arguments.length == 4){
-			this[0] = 0;
-			this[1] = 0;
-			this[2] = x1;
-			this[3] = y1;
-			this[4] = x2;
-			this[5] = y2;
-			this[6] = 1;
-			this[7] = 1;
-			return;
-		}
-		
-		if (typeof(x1) == "number") {
-			this[0] = x1;
-			this[1] = y1;
-			this[2] = x2;
-			this[3] = y2;
-			this[4] = x3;
-			this[5] = y3;
-			this[6] = x4;
-			this[7] = y4;
-			return;
-		}
-
-		if (x1 instanceof Array) {
-			this[0] = x1[0];
-			this[1] = x1[1];
-			this[2] = x1[2];
-			this[3] = x1[3];
-			this[4] = x1[4];
-			this[5] = x1[5];
-			this[6] = x1[6];
-			this[7] = x1[4];
-			return;
-		}
-	}
-
-	get x1 (){ return this[0]}
-	set x1 (v){this[0] = v;}
-	get x2 (){ return this[2]}
-	set x2 (v){this[2] = v;}
-	get x3 (){ return this[4]}
-	set x3 (v){this[4] = v;}
-	get x4 (){ return this[6]}
-	set x4 (v){this[6] = v;}
-	get y1 (){ return this[1]}
-	set y1 (v){this[1] = v;}
-	get y2 (){ return this[3]}
-	set y2 (v){this[3] = v;}
-	get y3 (){ return this[5]}
-	set y3 (v){this[5] = v;}
-	get y4 (){ return this[7]}
-	set y4 (v){this[7] = v;}
-
-	add(x,y = 0){
-		return new CCurve(
-			this[0] + x,
-			this[1] + y,
-			this[2] + x,
-			this[3] + y,
-			this[4] + x,
-			this[5] + y,
-			this[6] + x,
-			this[7] + y
-		)
-	}
-
-	valY(t){
-		return point(t, this[1], this[3], this[5], this[7]);
-	}
-
-	valX(t){
-		return point(t, this[0], this[2], this[4], this[6]);
-	}
-
-	point(t) {
-		return new Point2D(
-			point(t, this[0], this[2], this[4], this[6]),
-			point(t, this[1], this[3], this[5], this[7])
-		)
-	}
-	
-	/** 
-		Acquired from : https://pomax.github.io/bezierinfo/
-		Author:  Mike "Pomax" Kamermans
-		GitHub: https://github.com/Pomax/
-	*/
-
-	roots(p1,p2,p3,p4) {
-		var d = (-p1 + 3 * p2 - 3 * p3 + p4),
-			a = (3 * p1 - 6 * p2 + 3 * p3) / d,
-			b = (-3 * p1 + 3 * p2) / d,
-			c = p1 / d;
-
-		var p = (3 * b - a * a) / 3,
-			p3 = p / 3,
-			q = (2 * a * a * a - 9 * a * b + 27 * c) / 27,
-			q2 = q / 2,
-			discriminant = q2 * q2 + p3 * p3 * p3;
-
-		// and some variables we're going to use later on:
-		var u1, v1, root1, root2, root3;
-
-		// three possible real roots:
-		if (discriminant < 0) {
-			var mp3 = -p / 3,
-				mp33 = mp3 * mp3 * mp3,
-				r = sqrt(mp33),
-				t = -q / (2 * r),
-				cosphi = t < -1 ? -1 : t > 1 ? 1 : t,
-				phi = acos(cosphi),
-				crtr = cuberoot(r),
-				t1 = 2 * crtr;
-			root1 = t1 * cos(phi / 3) - a / 3;
-			root2 = t1 * cos((phi + 2 * PI) / 3) - a / 3;
-			root3 = t1 * cos((phi + 4 * PI) / 3) - a / 3;
-			return [root3, root1, root2]
-		}
-
-		// three real roots, but two of them are equal:
-		if (discriminant === 0) {
-			u1 = q2 < 0 ? cuberoot(-q2) : -cuberoot(q2);
-			root1 = 2 * u1 - a / 3;
-			root2 = -u1 - a / 3;
-			return [root2, root1];
-		}
-
-		// one real root, two complex roots
-		var sd = sqrt(discriminant);
-		u1 = cuberoot(sd - q2);
-		v1 = cuberoot(sd + q2);
-		root1 = u1 - v1 - a / 3;
-		return [root1];
-	}
-
-	rootsY() {
-		return this.roots(this[1],this[3],this[5],this[7]);
-	}
-
-	rootsX() {
-		return this.roots(this[0],this[2],this[4],this[6]);
-	}
-	
-	getYatX(x){
-		var x1 = this[0] - x, x2 = this[2] - x, x3 = this[4] - x, x4 = this[6] - x,
-			x2_3 = x2 * 3, x1_3 = x1 *3, x3_3 = x3 * 3,
-			d = (-x1 + x2_3 - x3_3 + x4), di = 1/d, i3 = 1/3,
-			a = (x1_3 - 6 * x2 + x3_3) * di,
-			b = (-x1_3 + x2_3) * di,
-			c = x1 * di,
-			p = (3 * b - a * a) * i3,
-			p3 = p * i3,
-			q = (2 * a * a * a - 9 * a * b + 27 * c) * (1/27),
-			q2 = q * 0.5,
-			discriminant = q2 * q2 + p3 * p3 * p3;
-
-		// and some variables we're going to use later on:
-		var u1, v1, root;
-
-		//Three real roots can never happen if p1(0,0) and p4(1,1);
-
-		// three real roots, but two of them are equal:
-		if (discriminant < 0) {
-			var mp3 = -p / 3,
-				mp33 = mp3 * mp3 * mp3,
-				r = sqrt(mp33),
-				t = -q / (2 * r),
-				cosphi = t < -1 ? -1 : t > 1 ? 1 : t,
-				phi = acos(cosphi),
-				crtr = cuberoot(r),
-				t1 = 2 * crtr;
-			root = t1 * cos((phi + 4 * PI) / 3) - a / 3;
-		}else if (discriminant === 0) {
-			u1 = q2 < 0 ? cuberoot(-q2) : -cuberoot(q2);
-			root = -u1 - a * i3;
-		}else{
-			var sd = sqrt(discriminant);
-			// one real root, two complex roots
-			u1 = cuberoot(sd - q2);
-			v1 = cuberoot(sd + q2);
-			root = u1 - v1 - a * i3;	
-		}
-
-		return point(root, this[1], this[3], this[5], this[7]);
-	}
-	/**
-		Given a Canvas 2D context object and scale value, strokes a cubic bezier curve.
-	*/
-	draw(ctx, s = 1){
-		ctx.beginPath();
-		ctx.moveTo(this[0]*s, this[1]*s);
-		ctx.bezierCurveTo(
-			this[2]*s, this[3]*s,
-			this[4]*s, this[5]*s,
-			this[6]*s, this[7]*s
-			);
-		ctx.stroke();
-	}
-}
-
-function curvePoint(curve, t) {
-    var point = {
-        x: 0,
-        y: 0
-    };
-    point.x = posOnCurve(t, curve[0], curve[2], curve[4]);
-    point.y = posOnCurve(t, curve[1], curve[3], curve[5]);
-    return point;
-}
-
-function posOnCurve(t, p1, p2, p3) {
-    var ti = 1 - t;
-    return ti * ti * p1 + 2 * ti * t * p2 + t * t * p3;
-}
-
-function splitCurve(bp, t) {
-    var left = [];
-    var right = [];
-
-    function drawCurve(bp, t) {
-        if (bp.length == 2) {
-            left.push(bp[0], bp[1]);
-            right.push(bp[0], bp[1]);
-        } else {
-            var new_bp = []; //bp.slice(0,-2);
-            for (var i = 0; i < bp.length - 2; i += 2) {
-                if (i == 0) {
-                    left.push(bp[i], bp[i + 1]);
-                }
-                if (i == bp.length - 4) {
-                    right.push(bp[i + 2], bp[i + 3]);
-                }
-                new_bp.push((1 - t) * bp[i] + t * bp[i + 2]);
-                new_bp.push((1 - t) * bp[i + 1] + t * bp[i + 3]);
-            }
-            drawCurve(new_bp, t);
-        }
-    }
-
-    drawCurve(bp, t);
-
-    return {
-        x: new QBezier(right),
-        y: new QBezier(left)
-    };
-}
-
-function curveIntersections(p1, p2, p3) {
-    var intersections = {
-        a: Infinity,
-        b: Infinity
-    };
-
-    var a = p1 - 2 * p2 + p3;
-
-    var b = 2 * (p2 - p1);
-
-    var c = p1;
-
-    if (b == 0) {} else if (Math.abs(a) < 0.00000000005) {
-        intersections.a = (-c / b); //c / b;
-    } else {
-
-        intersections.a = ((-b - Math.sqrt((b * b) - 4 * a * c)) / (2 * a));
-        intersections.b = ((-b + Math.sqrt((b * b) - 4 * a * c)) / (2 * a));
-    }
-    return intersections
-}
-
-class QBezier {
-    constructor(x1, y1, x2, y2, x3, y3) {
-        this.x1 = 0;
-        this.x2 = 0;
-        this.x3 = 0;
-        this.y1 = 0;
-        this.y2 = 0;
-        this.y3 = 0;
-
-        if (typeof(x1) == "number") {
-            this.x1 = x1;
-            this.x2 = x2;
-            this.x3 = x3;
-            this.y1 = y1;
-            this.y2 = y2;
-            this.y3 = y3;
-            return;
-        }
-
-        if (x1 instanceof QBezier) {
-            this.x1 = x1.x1;
-            this.x2 = x1.x2;
-            this.x3 = x1.x3;
-            this.y1 = x1.y1;
-            this.y2 = x1.y2;
-            this.y3 = x1.y3;
-            return;
-        }
-
-        if (x1 instanceof Array) {
-            this.x1 = x1[0];
-            this.y1 = x1[1];
-            this.x2 = x1[2];
-            this.y2 = x1[3];
-            this.x3 = x1[4];
-            this.y3 = x1[5];
-            return;
-        }
-    }
-
-    reverse() {
-        return new QBezier(
-            this.x3,
-            this.y3,
-            this.x2,
-            this.y2,
-            this.x1,
-            this.y1
-        )
-    }
-
-    point(t) {
-        return new Point2D(
-            posOnCurve(t, this.x1, this.x2, this.x3),
-            posOnCurve(t, this.y1, this.y2, this.y3))
-
-    }
-
-    tangent(t) {
-        var tan = {
-            x: 0,
-            y: 0
-        };
-
-        var px1 = this.x2 - this.x1;
-        var py1 = this.y2 - this.y1;
-
-        var px2 = this.x3 - this.x2;
-        var py2 = this.y3 - this.y2;
-
-        tan.x = (1 - t) * px1 + t * px2;
-        tan.y = (1 - t) * py1 + t * py2;
-
-        return tan;
-    }
-
-    toArray() {
-        return [this.x1, this.y1, this.x2, this.y2, this.x3, this.y3];
-    }
-
-    split(t) {
-        return splitCurve(this.toArray(), t);
-    }
-
-    rootsX() {
-        return this.roots(
-            this.x1,
-            this.x2,
-            this.x3
-        )
-
-    }
-
-    roots(p1, p2, p3) {
-        var curve = this.toArray();
-
-        var c = p1 - (2 * p2) + p3;
-        var b = 2 * (p2 - p1);
-        var a = p1;
-        var a2 = a * 2;
-        var sqrt = Math.sqrt(b * b - (a * 4 * c));
-        var t1 = (-b + sqrt) / a2;
-        var t2 = (-b - sqrt) / a2;
-
-        return [t1, t2];
-    }
-
-    rootsa() {
-        var curve = this.toArray();
-
-        var p1 = curve[1];
-        var p2 = curve[3];
-        var p3 = curve[5];
-        var x1 = curve[0];
-        var x2 = curve[2];
-        var x3 = curve[4];
-
-        var py1d = 2 * (p2 - p1);
-        var py2d = 2 * (p3 - p2);
-        var ad1 = -py1d + py2d;
-        var bd1 = py1d;
-
-        var px1d = 2 * (x2 - x1);
-        var px2d = 2 * (x3 - x2);
-        var ad2 = -px1d + px2d;
-        var bd2 = px1d;
-
-        var t1 = -bd1 / ad1;
-        var t2 = -bd2 / ad2;
-
-        return [t1, t2];
-    }
-
-    boundingBox() {
-        var x1 = curve[0];
-        var y1 = curve[1];
-        var x2 = curve[2];
-        var y2 = curve[3];
-        var x3 = curve[4];
-        var y3 = curve[5];
-        var roots = getRootsClamped(curve);
-        var min_x = Math.min(x1, x2, x3, roots.y[0] || Infinity, roots.x[0] || Infinity);
-        var min_y = Math.min(y1, y2, y3, roots.y[1] || Infinity, roots.x[1] || Infinity);
-        var max_x = Math.max(x1, x2, x3, roots.y[0] || -Infinity, roots.x[0] || -Infinity);
-        var max_y = Math.max(y1, y2, y3, roots.y[1] || -Infinity, roots.x[1] || -Infinity);
-
-        return {
-            min: {
-                x: min_x,
-                y: min_y
-            },
-            max: {
-                x: max_x,
-                y: max_y
-            }
-        };
-    }
-
-    rotate(angle, offset) {
-        angle = (angle / 180) * Math.PI;
-
-        var new_curve = this.toArray();
-
-        for (var i = 0; i < 6; i += 2) {
-            var x = curve[i] - offset.x;
-            var y = curve[i + 1] - offset.y;
-            new_curve[i] = ((x * Math.cos(angle) - y * Math.sin(angle))) + offset.x;
-            new_curve[i + 1] = ((x * Math.sin(angle) + y * Math.cos(angle))) + offset.y;
-        }
-
-        return new QBezier(new_curve);
-    }
-
-    intersects() {
-        return {
-            x: curveIntersections(this.x1, this.x2, this.x3),
-            y: curveIntersections(this.y1, this.y2, this.y3)
-        }
-    }
-
-    add(x, y) {
-        if (typeof(x) == "number") {
-            return new QBezier(
-                this.x1 + x,
-                this.y1 + y,
-                this.x2 + x,
-                this.y2 + y,
-                this.x3 + x,
-                this.y3 + y,
-            )
-        }
-    }
-}
-
-class CSS_Bezier extends CBezier {
-	static parse(l, rule, r) {
-
-		let out = null;
-
-		switch(l.tx){
-			case "cubic":
-				l.next().a("(");
-				let v1 = parseFloat(l.tx);
-				let v2 = parseFloat(l.next().a(",").tx);
-				let v3 = parseFloat(l.next().a(",").tx);
-				let v4 = parseFloat(l.next().a(",").tx);
-				l.a(")");
-				out = new CSS_Bezier(v1, v2, v3, v4);
-				break;
-			case "ease":
-				l.next();
-				out = new CSS_Bezier(0.25, 0.1, 0.25, 1);
-				break;
-			case "ease-in":
-				l.next();
-				out = new CSS_Bezier(0.42, 0, 1, 1);
-				break;
-			case "ease-out":
-				l.next();
-				out = new CSS_Bezier(0, 0, 0.58, 1);
-				break;
-			case "ease-in-out":
-				l.next();
-				out = new CSS_Bezier(0.42, 0, 0.58, 1);
-				break;
-		}
-
-		return out;
-	}
-
-	toString(){
-		 return `cubic-bezier(${this[2]},${this[3]},${this[4]},${this[5]})`;
-	}
-}
-
-class Stop{
-    constructor(color, percentage){
-        this.color = color;
-        this.percentage = percentage || null;
-    }
-
-    toString(){
-        return `${this.color}${(this.percentage)?" "+this.percentage:""}`;
-    }
-}
-
-class CSS_Gradient{
-
-    static parse(l, rule, r) {
-        let tx = l.tx,
-            pky = l.pk.ty;
-        if (l.ty == l.types.id) {
-            switch(l.tx){
-                case "linear-gradient":
-                l.next().a("(");
-                let dir,num,type ="deg";
-                if(l.tx == "to"){
-
-                }else if(l.ty == l.types.num){
-                    num = parseFloat(l.ty);
-                    type = l.next().tx;
-                    l.next().a(',');
-                }
-
-                let stops = [];
-                
-                while(!l.END && l.ch != ")"){
-                    let v = CSS_Color.parse(l, rule, r);
-                    let len = null;
-
-                    if(l.ch == ")") {
-                        stops.push(new Stop(v, len));
-                        break;
-                    }
-                    
-                    if(l.ch != ","){
-                        if(!(len = CSS_Length.parse(l, rule, r)))
-                            len = CSS_Percentage.parse(l,rule,r);
-                    }else
-                        l.next();
-                    
-
-                    stops.push(new Stop(v, len));
-                }
-                l.a(")");
-                let grad = new CSS_Gradient();
-                grad.stops = stops;
-                return grad;
-            }
-        }
-        return null;
-    }
-
-
-    constructor(type = 0){
-        this.type = type; //linear gradient
-        this.direction = new CSS_Length(0, "deg");
-        this.stops = [];
-    }
-
-    toString(){
-        let str = [];
-        switch(this.type){
-            case 0:
-            str.push("linear-gradient(");
-            if(this.direction !== 0)
-                str.push(this.direction.toString() + ",");
-            break;
-        }
-
-        for(let i = 0; i < this.stops.length; i++)
-            str.push(this.stops[i].toString()+((i<this.stops.length-1)?",":""));
-
-        str.push(")");
-
-        return str.join(" ");
-    }
-}
-
-const $medh = (prefix) => ({
-    parse: (l, r, a, n = 0) => (n = CSS_Length.parse(l, r, a), (prefix > 0) ? ((prefix > 1) ? (win) => win.innerHeight <= n : (win) => win.innerHeight >= n) : (win) => win.screen.height == n)
-});
-
-
-const $medw = (prefix) => ({
-    parse: (l, r, a, n = 0) => 
-        (n = CSS_Length.parse(l, r, a), (prefix > 0) ? ((prefix > 1) ? (win) => win.innerWidth >= n : (win) => win.innerWidth <= n) : (win) => win.screen.width == n)
-});
-
-function CSS_Media_handle(type, prefix) {
-    switch (type) {
-        case "h":
-            return $medh(prefix);
-        case "w":
-            return $medw(prefix);
-    }
-
-    return {
-        parse: function(a, b, c) {
-            debugger;
-        }
-    };
-}
-
-function getValue(lex, attribute) {
-    let v = lex.tx,
-        mult = 1;
-
-    if (v == "-")
-        v = lex.n.tx, mult = -1;
-
-    let n = parseFloat(v) * mult;
-
-    lex.next();
-
-    if (lex.ch !== ")" && lex.ch !== ",") {
-        switch (lex.tx) {
-            case "%":
-                break;
-
-            /* Rotational Values */
-            case "grad":
-                n *= Math.PI / 200;
-                break;
-            case "deg":
-                n *= Math.PI / 180;
-                break;
-            case "turn":
-                n *= Math.PI * 2;
-                break;
-            case "px":
-                break;
-            case "em":
-                break;
-        }
-        lex.next();
-    }
-    return n;
-}
-
-function ParseString(string, transform) {
-    let lex = null;
-    lex = string;
-
-    if(typeof(string) == "string")
-        lex = whind$1(string);
-    
-    while (!lex.END) {
-        let tx = lex.tx;
-        lex.next();
-        switch (tx) {
-            case "matrix":
-
-                let a = getValue(lex.a("(")),
-                    b = getValue(lex.a(",")),
-                    c = getValue(lex.a(",")),
-                    d = getValue(lex.a(",")),
-                    r = -Math.atan2(b, a),
-                    sx1 = (a / Math.cos(r)) || 0,
-                    sx2 = (b / -Math.sin(r)) || 0,
-                    sy1 = (c / Math.sin(r)) || 0,
-                    sy2 = (d / Math.cos(r)) || 0;
-                
-                if(sx2 !== 0)
-                    transform.sx = (sx1 + sx2) * 0.5;
-                else
-                    transform.sx = sx1;
-
-                if(sy1 !== 0)
-                    transform.sy = (sy1 + sy2) * 0.5;
-                else
-                    transform.sy = sy2;
-
-                transform.px = getValue(lex.a(","));
-                transform.py = getValue(lex.a(","));
-                transform.r = r;
-                lex.a(")");
-                break;
-            case "matrix3d":
-                break;
-            case "translate":
-                transform.px = getValue(lex.a("("), "left");
-                lex.a(",");
-                transform.py = getValue(lex, "left");
-                lex.a(")");
-                continue;
-            case "translateX":
-                transform.px = getValue(lex.a("("), "left");
-                lex.a(")");
-                continue;
-            case "translateY":
-                transform.py = getValue(lex.a("("), "left");
-                lex.a(")");
-                continue;
-            case "scale":
-                transform.sx = getValue(lex.a("("), "left");
-                if(lex.ch ==","){
-                    lex.a(",");
-                    transform.sy = getValue(lex, "left");
-                }
-                else transform.sy = transform.sx;
-                lex.a(")");
-                continue;
-            case "scaleX":
-                transform.sx = getValue(lex.a("("), "left");
-                lex.a(")");
-                continue;
-            case "scaleY":
-                transform.sy = getValue(lex.a("("), "left");
-                lex.a(")");
-                continue;
-            case "scaleZ":
-                break;
-            case "rotate":
-                transform.r = getValue(lex.a("("));
-                lex.a(")");
-                continue;
-            case "rotateX":
-                break;
-            case "rotateY":
-                break;
-            case "rotateZ":
-                break;
-            case "rotate3d":
-                break;
-            case "perspective":
-                break;
-        }
-        lex.next();
-    }
-}
-// A 2D transform composition of 2D position, 2D scale, and 1D rotation.
-
-class CSS_Transform2D extends Float64Array {
-    static ToString(pos = [0, 0], scl = [1, 1], rot = 0) {
-        var px = 0,
-            py = 0,
-            sx = 1,
-            sy = 1,
-            r = 0, cos = 1, sin = 0;
-        if (pos.length == 5) {
-            px = pos[0];
-            py = pos[1];
-            sx = pos[2];
-            sy = pos[3];
-            r = pos[4];
-        } else {
-            px = pos[0];
-            py = pos[1];
-            sx = scl[0];
-            sy = scl[1];
-            r = rot;
-        }
-        
-        if(r !== 0){
-            cos = Math.cos(r);
-            sin = Math.sin(r);
-        }
-
-        return `matrix(${cos * sx}, ${-sin * sx}, ${sy * sin}, ${sy * cos}, ${px}, ${py})`;
-    }
-
-
-    constructor(px, py, sx, sy, r) {
-        super(5);
-        this.sx = 1;
-        this.sy = 1;
-        if (px !== undefined) {
-            if (px instanceof CSS_Transform2D) {
-                this[0] = px[0];
-                this[1] = px[1];
-                this[2] = px[2];
-                this[3] = px[3];
-                this[4] = px[4];
-            } else if (typeof(px) == "string") ParseString(px, this);
-            else {
-                this[0] = px;
-                this[1] = py;
-                this[2] = sx;
-                this[3] = sy;
-                this[4] = r;
-            }
-        }
-    }
-    get px() {
-        return this[0];
-    }
-    set px(v) {
-        this[0] = v;
-    }
-    get py() {
-        return this[1];
-    }
-    set py(v) {
-        this[1] = v;
-    }
-    get sx() {
-        return this[2];
-    }
-    set sx(v) {
-        this[2] = v;
-    }
-    get sy() {
-        return this[3];
-    }
-    set sy(v) {
-        this[3] = v;
-    }
-    get r() {
-        return this[4];
-    }
-    set r(v) {
-        this[4] = v;
-    }
-
-    set scale(s){
-        this.sx = s;
-        this.sy = s;
-    }
-
-    get scale(){
-        return this.sx;
-    }
-    
-    lerp(to, t) {
-        let out = new CSS_Transform2D();
-        for (let i = 0; i < 5; i++) out[i] = this[i] + (to[i] - this[i]) * t;
-        return out;
-    }
-    toString() {
-        return CSS_Transform2D.ToString(this);
-    }
-
-    copy(v) {
-        let copy = new CSS_Transform2D(this);
-
-
-        if (typeof(v) == "string")
-            ParseString(v, copy);
-
-        return copy;
-    }
-
-    /**
-     * Sets the transform value of a canvas 2D context;
-     */
-    setCTX(ctx){       
-        let cos = 1, sin = 0;
-        if(this[4] != 0){
-            cos = Math.cos(this[4]);
-            sin = Math.sin(this[4]);
-        }
-        ctx.transform(cos * this[2], -sin * this[2], this[3] * sin, this[3] * cos, this[0], this[1]);
-    }
-
-    getLocalX(X){
-        return (X - this.px) / this.sx;
-    }
-
-    getLocalY(Y){
-        return (Y - this.py) / this.sy;
-    }
-}
-
-/**
- * @brief Path Info
- * @details Path syntax information for reference
- * 
- * MoveTo: M, m
- * LineTo: L, l, H, h, V, v
- * Cubic Bézier Curve: C, c, S, s
- * Quadratic Bézier Curve: Q, q, T, t
- * Elliptical Arc Curve: A, a
- * ClosePath: Z, z
- * 
- * Capital symbols represent absolute positioning, lowercase is relative
- */
-const PathSym = {
-    M: 0,
-    m: 1,
-    L: 2,
-    l: 3,
-    h: 4,
-    H: 5,
-    V: 6,
-    v: 7,
-    C: 8,
-    c: 9,
-    S: 10,
-    s: 11,
-    Q: 12,
-    q: 13,
-    T: 14,
-    t: 15,
-    A: 16,
-    a: 17,
-    Z: 18,
-    z: 19,
-    pairs: 20
-};
-
-function getSignedNumber(lex) {
-    let mult = 1,
-        tx = lex.tx;
-    if (tx == "-") {
-        mult = -1;
-        tx = lex.n.tx;
-    }
-    lex.next();
-    return parseFloat(tx) * mult;
-}
-
-function getNumberPair(lex, array) {
-    let x = getSignedNumber(lex);
-    if (lex.ch == ',') lex.next();
-    let y = getSignedNumber(lex);
-    array.push(x, y);
-}
-
-function parseNumberPairs(lex, array) {
-    while ((lex.ty == lex.types.num || lex.ch == "-") && !lex.END) {    	
-    	array.push(PathSym.pairs);
-        getNumberPair(lex, array);
-    }
-}
-/**
- * @brief An array store of path data in numerical form
- */
-class CSS_Path extends Array {
-    static FromString(string, array) {
-        let lex = whind(string);
-        while (!lex.END) {
-            let relative = false,
-                x = 0,
-                y = 0;
-            switch (lex.ch) {
-                //Move to
-                case "m":
-                    relative = true;
-                case "M":
-                    lex.next(); //
-                    array.push((relative) ? PathSym.m : PathSym.M);
-                    getNumberPair(lex, array);
-                    parseNumberPairs(lex, array);
-                    continue;
-                    //Line to
-                case "h":
-                    relative = true;
-                case "H":
-                    lex.next();
-                    x = getSignedNumber(lex);
-                    array.push((relative) ? PathSym.h : PathSym.H, x);
-                    continue;
-                case "v":
-                    relative = true;
-                case "V":
-                    lex.next();
-                    y = getSignedNumber(lex);
-                    array.push((relative) ? PathSym.v : PathSym.V, y);
-                    continue;
-                case "l":
-                    relative = true;
-                case "L":
-                    lex.next();
-                    array.push((relative) ? PathSym.l : PathSym.L);
-                    getNumberPair(lex, array);
-                    parseNumberPairs(lex, array);
-                    continue;
-                    //Cubic Curve
-                case "c":
-                    relative = true;
-                case "C":
-                    array.push((relative) ? PathSym.c : PathSym.C);
-                    getNumberPair(lex, array);
-                    getNumberPair(lex, array);
-                    getNumberPair(lex, array);
-                    parseNumberPairs(lex, array);
-                    continue;
-                case "s":
-                    relative = true;
-                case "S":
-                    array.push((relative) ? PathSym.s : PathSym.S);
-                    getNumberPair(lex, array);
-                    getNumberPair(lex, array);
-                    parseNumberPairs(lex, array);
-                    continue;
-                    //Quadratic Curve0
-                case "q":
-                    relative = true;
-                case "Q":
-                    array.push((relative) ? PathSym.q : PathSym.Q);
-                    getNumberPair(lex, array);
-                    getNumberPair(lex, array);
-                    parseNumberPairs(lex, array);
-                    continue;
-                case "t":
-                    relative = true;
-                case "T":
-                    array.push((relative) ? PathSym.t : PathSym.T);
-                    getNumberPair(lex, array);
-                    parseNumberPairs(lex, array);
-                    continue;
-                    //Elliptical Arc
-                    //Close path:
-                case "z":
-                    relative = true;
-                case "Z":
-                    array.push((relative) ? PathSym.z : PathSym.Z);
-            }
-            lex.next();
-        }
-    }
-
-    static ToString(array) {
-    	let string = [], l = array.length, i = 0;
-    	while(i < l){
-    		switch(array[i++]){
-    			case PathSym.M:
-    				string.push("M", array[i++], array[i++]);
-    				break;
-			    case PathSym.m:
-			    	string.push("m", array[i++], array[i++]);
-			    	break;
-			    case PathSym.L:
-			    	string.push("L", array[i++], array[i++]);
-			    	break;
-			    case PathSym.l:
-			    	string.push("l", array[i++], array[i++]);
-			    	break;
-			    case PathSym.h:
-			    	string.push("h", array[i++]);
-			    	break;
-			    case PathSym.H:
-			    	string.push("H", array[i++]);
-			    	break;
-			    case PathSym.V:
-			    	string.push("V", array[i++]);
-			    	break;
-			    case PathSym.v:
-			    	string.push("v", array[i++]);
-			    	break;
-			    case PathSym.C:
-			    	string.push("C", array[i++], array[i++], array[i++], array[i++], array[i++], array[i++]);
-			    	break;
-			    case PathSym.c:
-			    	string.push("c", array[i++], array[i++], array[i++], array[i++], array[i++], array[i++]);
-			    	break;
-			    case PathSym.S:
-			    	string.push("S", array[i++], array[i++], array[i++], array[i++]);
-			    	break;
-			    case PathSym.s:
-			    	string.push("s", array[i++], array[i++], array[i++], array[i++]);
-			    	break;
-			    case PathSym.Q:
-			    	string.push("Q", array[i++], array[i++], array[i++], array[i++]);
-			    	break;
-			    case PathSym.q:
-			    	string.push("q", array[i++], array[i++], array[i++], array[i++]);
-			    	break;
-			    case PathSym.T:
-			    	string.push("T", array[i++], array[i++]);
-			    	break;
-			    case PathSym.t:
-			    	string.push("t", array[i++], array[i++]);
-			    	break;
-			    case PathSym.Z:
-			    	string.push("Z");
-			    	break;
-			    case PathSym.z:
-			    	string.push("z");
-			    	break;
-			    case PathSym.pairs:
-			    	string.push(array[i++], array[i++]);
-			    	break;
-			 	case PathSym.A:
-			    case PathSym.a:
-			    default:
-			    	i++;
-    		}
-    	}
-
-    	return string.join(" ");
-    }
-
-    
-    constructor(data) {
-        super();	
-
-    	if(typeof(data) == "string"){
-    		Path.FromString(data, this);
-    	}else if(Array.isArray(data)){
-    		for(let i = 0; i < data.length;i++){
-    			this.push(parseFloat(data[i]));
-    		}
-    	}
-    }
-
-    toString(){
-    	return Path.ToString(this);
-    }
-
-    lerp(to, t, array = new Path){
-    	let l = Math.min(this.length, to.length);
-
-    	for(let i = 0; i < l; i++)
-    		array[i] = this[i] + (to[i] - this[i]) * t;
-
-    	return array;
-    }	
-}
-
-class CSS_FontName extends String {
-	static parse(l, rule, r) {
-
-		if(l.ty == l.types.str){
-			let tx = l.tx;
-            l.next();
-			return new CSS_String(tx);
-		}		
-
-		if(l.ty == l.types.id){
-
-			let pk = l.peek();
-
-			while(pk.type == l.types.id && !pk.END){
-				pk.next();
-			}
-
-			let str = pk.slice(l);
-			
-			l.sync();
-			return new CSS_String(str);
-		}
-
-        return null;
-    }
-}
-
-/**
- * CSS Type constructors
- * @alias module:wick~internals.css.types.
- * @enum {object}
- * https://www.w3.org/TR/CSS2/about.html#property-defs
- */
-const types = {
-	color: CSS_Color,
-	length: CSS_Length,
-	time: CSS_Length,
-	flex: CSS_Length,
-	angle: CSS_Length,
-	frequency: CSS_Length,
-	resolution: CSS_Length,
-	percentage: CSS_Percentage,
-	url: CSS_URL,
-	uri: CSS_URL,
-	number: CSS_Number,
-	id: CSS_Id,
-	string: CSS_String,
-	shape: CSS_Shape,
-	cubic_bezier: CSS_Bezier,
-	integer: CSS_Number,
-	gradient: CSS_Gradient,
-	transform2D : CSS_Transform2D,
-	path: CSS_Path,
-	fontname: CSS_FontName,
-
-	/* Media parsers */
-	m_width: CSS_Media_handle("w", 0),
-	m_min_width: CSS_Media_handle("w", 1),
-	m_max_width: CSS_Media_handle("w", 2),
-	m_height: CSS_Media_handle("h", 0),
-	m_min_height: CSS_Media_handle("h", 1),
-	m_max_height: CSS_Media_handle("h", 2),
-	m_device_width: CSS_Media_handle("dw", 0),
-	m_min_device_width: CSS_Media_handle("dw", 1),
-	m_max_device_width: CSS_Media_handle("dw", 2),
-	m_device_height: CSS_Media_handle("dh", 0),
-	m_min_device_height: CSS_Media_handle("dh", 1),
-	m_max_device_height: CSS_Media_handle("dh", 2)
-};
-
-/**
- * CSS Property Definitions https://www.w3.org/TR/css3-values/#value-defs
- * @alias module:wick~internals.css.property_definitions.
- * @enum {string}
- */
-const property_definitions = {
-
-	/* https://drafts.csswg.org/css-writing-modes-3/ */
-		direction:"ltr|rtl",
-		unicode_bidi:"normal|embed|isolate|bidi-override|isolate-override|plaintext",
-		writing_mode:"horizontal-tb|vertical-rl|vertical-lr",
-		text_orientation:"mixed|upright|sideways",
-		glyph_orientation_vertical:`auto|0deg|90deg|"0"|"90"`,
-		text_combine_upright:"none|all",
-
-	/* https://www.w3.org/TR/css-position-3 */ 
-		position: "static|relative|absolute|sticky|fixed",
-		top: `<length>|<percentage>|auto`,
-		left: `<length>|<percentage>|auto`,
-		bottom: `<length>|<percentage>|auto`,
-		right: `<length>|<percentage>|auto`,
-		offset_before: `<length>|<percentage>|auto`,
-		offset_after: `<length>|<percentage>|auto`,
-		offset_start: `<length>|<percentage>|auto`,
-		offset_end: `<length>|<percentage>|auto`,
-		z_index:"auto|<integer>",
-
-	/* https://www.w3.org/TR/css-display-3/ */
-		display: `[ <display_outside> || <display_inside> ] | <display_listitem> | <display_internal> | <display_box> | <display_legacy>`,
-
-	/* https://www.w3.org/TR/css-box-3 */
-		margin: `[<length>|<percentage>|0|auto]{1,4}`,
-		margin_top: `<length>|<percentage>|0|auto`,
-		margin_right: `<length>|<percentage>|0|auto`,
-		margin_bottom: `<length>|<percentage>|0|auto`,
-		margin_left: `<length>|<percentage>|0|auto`,
-
-		margin_trim:"none|in-flow|all",
-
-		padding: `[<length>|<percentage>|0|auto]{1,4}`,
-		padding_top: `<length>|<percentage>|0|auto`,
-		padding_right: `<length>|<percentage>|0|auto`,
-		padding_bottom: `<length>|<percentage>|0|auto`,
-		padding_left: `<length>|<percentage>|0|auto`,
-
-	/* https://www.w3.org/TR/CSS2/visuren.html */
-		float: `left|right|none`,
-		clear: `left|right|both|none`,
-
-	/* https://drafts.csswg.org/css-sizing-3 todo:implement fit-content(%) function */
-		box_sizing: `content-box | border-box`,
-		width: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
-		height: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
-		min_width: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
-		max_width: `<length>|<percentage>|min-content|max-content|fit-content|auto|none`,
-		min_height: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
-		max_height: `<length>|<percentage>|min-content|max-content|fit-content|auto|none`,
-
-	/* https://www.w3.org/TR/2018/REC-css-color-3-20180619 */
-		color: `<color>`,
-		opacity: `<alphavalue>`,
-
-	/* https://www.w3.org/TR/css-backgrounds-3/ */
-		background_color: `<color>`,
-		background_image: `<bg_image>#`,
-		background_repeat: `<repeat_style>#`,
-		background_attachment: `scroll|fixed|local`,
-		background_position: `[<percentage>|<length>]{1,2}|[top|center|bottom]||[left|center|right]`,
-		background_clip: `<box>#`,
-		background_origin: `<box>#`,
-		background_size: `<bg_size>#`,
-		background: `[<bg_layer>#,]?<final_bg_layer>`,
-		border_color: `<color>{1,4}`,
-		border_top_color: `<color>`,
-		border_right_color: `<color>`,
-		border_bottom_color: `<color>`,
-		border_left_color: `<color>`,
-
-		border_top_width: `<line_width>`,
-		border_right_width: `<line_width>`,
-		border_bottom_width: `<line_width>`,
-		border_left_width: `<line_width>`,
-		border_width: `<line_width>{1,4}`,
-
-		border_style: `<line_style>{1,4}`,
-		border_top_style: `<line_style>`,
-		border_right_style: `<line_style>`,
-		border_bottom_style: `<line_style>`,
-		border_left_style: `<line_style>`,
-
-		border_top: `<line_width>||<line_style>||<color>`,
-		border_right: `<line_width>||<line_style>||<color>`,
-		border_bottom: `<line_width>||<line_style>||<color>`,
-		border_left: `<line_width>||<line_style>||<color>`,
-
-		border_radius: `<length_percentage>{1,4}[ / <length_percentage>{1,4}]?`,
-		border_top_left_radius: `<length_percentage>{1,2}`,
-		border_top_right_radius: `<length_percentage>{1,2}`,
-		border_bottom_right_radius: `<length_percentage>{1,2}`,
-		border_bottom_left_radius: `<length_percentage>{1,2}`,
-
-		border: `<line_width>||<line_style>||<color>`,
-
-		border_image: `<border_image_source>||<border_image_slice>[/<border_image_width>|/<border_image_width>?/<border_image_outset>]?||<border_image_repeat>`,
-		border_image_source: `none|<image>`,
-		border_image_slice: `[<number>|<percentage>]{1,4}&&fill?`,
-		border_image_width: `[<length_percentage>|<number>|auto]{1,4}`,
-		border_image_outset: `[<length>|<number>]{1,4}`,
-		border_image_repeat: `[stretch|repeat|round|space]{1,2}`,
-		box_shadow: `none|<shadow>#`,
-		line_height: `normal|<percentage>|<length>|<number>`,
-		overflow: 'visible|hidden|scroll|auto',
-
-	/* https://www.w3.org/TR/css-fonts-4 */
-		font_display: "auto|block|swap|fallback|optional",
-		font_family: `[[<generic_family>|<family_name>],]*[<generic_family>|<family_name>]`,
-		font_language_override:"normal|<string>",
-		font: `[[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>]|caption|icon|menu|message-box|small-caption|status-bar`,
-		font_max_size: `<absolute_size>|<relative_size>|<length>|<percentage>|infinity`,
-		font_min_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
-		font_optical_sizing: `auto|none`,
-		font_pallette: `normal|light|dark|<identifier>`,
-		font_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
-		font_stretch:"<percentage>|normal|ultra-condensed|extra-condensed|condensed|semi-condensed|semi-expanded|expanded|extra-expanded|ultra-expanded",
-		font_style: `normal|italic|oblique<angle>?`,
-		font_synthesis:"none|[weight||style]",
-		font_synthesis_small_caps:"auto|none",
-		font_synthesis_style:"auto|none",
-		font_synthesis_weight:"auto|none",
-		font_variant_alternates:"normal|[stylistic(<feature-value-name>)||historical-forms||styleset(<feature-value-name>#)||character-variant(<feature-value-name>#)||swash(<feature-value-name>)||ornaments(<feature-value-name>)||annotation(<feature-value-name>)]",
-		font_variant_emoji:"auto|text|emoji|unicode",
-		font_variation_settings:" normal|[<string><number>]#",
-		font_size_adjust: `<number>|none`,
-		
-		font_weight: `normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900`,
-
-	/* https://www.w3.org/TR/css-fonts-3/ */
-		font_kerning: ` auto | normal | none`,
-		font_variant: `normal|none|[<common-lig-values>||<discretionary-lig-values>||<historical-lig-values>||<contextual-alt-values>||[small-caps|all-small-caps|petite-caps|all-petite-caps|unicase|titling-caps]||<numeric-figure-values>||<numeric-spacing-values>||<numeric-fraction-values>||ordinal||slashed-zero||<east-asian-variant-values>||<east-asian-width-values>||ruby||[sub|super]]`,
-		font_variant_ligatures:`normal|none|[<common-lig-values>||<discretionary-lig-values>||<historical-lig-values>||<contextual-alt-values> ]`,
-		font_variant_position:`normal|sub|super`,
-		font_variant_caps:`normal|small-caps|all-small-caps|petite-caps|all-petite-caps|unicase|titling-caps`,
-		font_variant_numeric: "normal | [ <numeric-figure-values> || <numeric-spacing-values> || <numeric-fraction-values> || ordinal || slashed-zero ]",
-		font_variant_east_asian:" normal | [ <east-asian-variant-values> || <east-asian-width-values> || ruby ]",
-
-	/* https://drafts.csswg.org/css-text-3 */
-		hanging_punctuation : "none|[first||[force-end|allow-end]||last]",
-		hyphens : "none|manual|auto",
-		letter_spacing: `normal|<length>`,
-		line_break : "auto|loose|normal|strict|anywhere",
-		overflow_wrap : "normal|break-word|anywhere",
-		tab_size : "<length>|<number>",
-		text_align : "start|end|left|right|center|justify|match-parent|justify-all",
-		text_align_all : "start|end|left|right|center|justify|match-parent",
-		text_align_last : "auto|start|end|left|right|center|justify|match-parent",
-		text_indent : "[[<length>|<percentage>]&&hanging?&&each-line?]",
-		text_justify : "auto|none|inter-word|inter-character",
-		text_transform : "none|[capitalize|uppercase|lowercase]||full-width||full-size-kana",
-		white_space : "normal|pre|nowrap|pre-wrap|break-spaces|pre-line",
-		word_break : " normal|keep-all|break-all|break-word",
-		word_spacing : "normal|<length>",
-		word_wrap : "  normal | break-word | anywhere",
-
-	/* https://drafts.csswg.org/css-text-decor-3 */
-		text_decoration: "<text-decoration-line>||<text-decoration-style>||<color>",
-		text_decoration_color:"<color>",
-		text_decoration_line:"none|[underline||overline||line-through||blink]",
-		text_decoration_style:"solid|double|dotted|dashed|wavy",
-		text_emphasis:"<text-emphasis-style>||<text-emphasis-color>",
-		text_emphasis_color:"<color>",
-		text_emphasis_position:"[over|under]&&[right|left]?",
-		text_emphasis_style:"none|[[filled|open]||[dot|circle|double-circle|triangle|sesame]]|<string>",
-		text_shadow:"none|[<color>?&&<length>{2,3}]#",
-		text_underline_position:"auto|[under||[left|right]]",
-
-	/* Flex Box https://www.w3.org/TR/css-flexbox-1/ */
-		align_content: `flex-start | flex-end | center | space-between | space-around | stretch`,
-		align_items: `flex-start | flex-end | center | baseline | stretch`,
-		align_self: `auto | flex-start | flex-end | center | baseline | stretch`,
-		flex:`none|[<flex-grow> <flex-shrink>?||<flex-basis>]`,
-		flex_basis:`content|<width>`,
-		flex_direction:`row | row-reverse | column | column-reverse`,
-		flex_flow:`<flex-direction>||<flex-wrap>`,
-		flex_grow:`<number>`,
-		flex_shrink:`<number>`,
-		flex_wrap:`nowrap|wrap|wrap-reverse`,
-		justify_content :"flex-start | flex-end | center | space-between | space-around",
-		order:`<integer>`,
-
-	/* https://drafts.csswg.org/css-transitions-1/ */
-		transition: `<single_transition>#`,
-		transition_delay: `<time>#`,
-		transition_duration: `<time>#`,
-		transition_property: `none|<single_transition_property>#`,
-		transition_timing_function: `<timing_function>#`,
-
-	/* CSS3 Animation https://drafts.csswg.org/css-animations-1/ */
-		animation: `<single_animation>#`,
-		animation_name: `[none|<keyframes_name>]#`,
-		animation_duration: `<time>#`,
-		animation_timing_function: `<timing_function>#`,
-		animation_iteration_count: `<single_animation_iteration_count>#`,
-		animation_direction: `<single_animation_direction>#`,
-		animation_play_state: `<single_animation_play_state>#`,
-		animation_delayed: `<time>#`,
-		animation_fill_mode: `<single_animation_fill_mode>#`,
-
-	/* https://svgwg.org/svg2-draft/interact.html#PointerEventsProperty */
-		pointer_events : `visiblePainted|visibleFill|visibleStroke|visible|painted|fill|stroke|all|none|auto`,
-
-	/* https://drafts.csswg.org/css-ui-3 */
-		caret_color :"auto|<color>",
-		cursor:"[[<url> [<number><number>]?,]*[auto|default|none|context-menu|help|pointer|progress|wait|cell|crosshair|text|vertical-text|alias|copy|move|no-drop|not-allowed|grab|grabbing|e-resize|n-resize|ne-resize|nw-resize|s-resize|se-resize|sw-resize|w-resize|ew-resize|ns-resize|nesw-resize|nwse-resize|col-resize|row-resize|all-scroll|zoom-in|zoom-out]]",
-		outline:"[<outline-color>||<outline-style>||<outline-width>]",
-		outline_color:"<color>|invert",
-		outline_offset:"<length>",
-		outline_style:"auto|<border-style>",
-		outline_width:"<line-width>",
-		resize:"none|both|horizontal|vertical",
-		text_overflow:"clip|ellipsis",
-
-	/* https://drafts.csswg.org/css-content-3/ */
-		bookmark_label:"<content-list>",
-		bookmark_level:"none|<integer>",
-		bookmark_state:"open|closed",
-		content:"normal|none|[<content-replacement>|<content-list>][/<string>]?",
-		quotes:"none|[<string><string>]+",
-		string_set:"none|[<custom-ident><string>+]#",
-	
-	/*https://www.w3.org/TR/CSS22/tables.html*/
-		caption_side:"top|bottom",
-		table_layout:"auto|fixed",
-		border_collapse:"collapse|separate",
-		border_spacing:"<length><length>?",
-		empty_cells:"show|hide",
-
-	/* https://www.w3.org/TR/CSS2/page.html */
-		page_break_before:"auto|always|avoid|left|right",
-		page_break_after:"auto|always|avoid|left|right",
-		page_break_inside:"auto|avoid|left|right",
-		orphans:"<integer>",
-		widows:"<integer>",
-
-	/* https://drafts.csswg.org/css-lists-3 */
-		counter_increment:"[<custom-ident> <integer>?]+ | none",
-		counter_reset:"[<custom-ident> <integer>?]+|none",
-		counter_set:"[<custom-ident> <integer>?]+|none",
-		list_style:"<list-style-type>||<list-style-position>||<list-style-image>",
-		list_style_image:"<url>|none",
-		list_style_position:"inside|outside",
-		list_style_type:"<counter-style>|<string>|none",
-		marker_side:"list-item|list-container",
-
-
-	vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|<percentage>|<length>`,
-
-	/* Visual Effects */
-	clip: '<shape>|auto',
-	visibility: `visible|hidden|collapse`,
-	content: `normal|none|[<string>|<uri>|<counter>|attr(<identifier>)|open-quote|close-quote|no-open-quote|no-close-quote]+`,
-	quotas: `[<string><string>]+|none`,
-	counter_reset: `[<identifier><integer>?]+|none`,
-	counter_increment: `[<identifier><integer>?]+|none`,
-};
-
-/* Properties that are not directly accessible by CSS prop creator */
-
-const virtual_property_definitions = {
-    /* https://drafts.csswg.org/css-counter-styles-3 */
-        /*system:`cyclic|numeric|alphabetic|symbolic|additive|[fixed<integer>?]|[extends<counter-style-name>]`,
-        negative:`<symbol><symbol>?`,
-        prefix:`<symbol>`,
-        suffix:`<symbol>`,
-        range:`[[<integer>|infinite]{2}]#|auto`,
-        pad:`<integer>&&<symbol>`,
-        fallback:`<counter-style-name>`
-        symbols:`<symbol>+`,*/
-
-        counter_style:`<numeric_counter_style>|<alphabetic_counter_style>|<symbolic_counter_style>|<japanese_counter_style>|<korean_counter_style>|<chinese_counter_style>|ethiopic-numeric`,
-        numeric_counter_style:`decimal|decimal-leading-zero|arabic-indic|armenian|upper-armenian|lower-armenian|bengali|cambodian|khmer|cjk-decimal|devanagari|georgian|gujarati|gurmukhi|hebrew|kannada|lao|malayalam|mongolian|myanmar|oriya|persian|lower-roman|upper-roman|tamil|telugu|thai|tibetan`,
-        symbolic_counter_style:`disc|circle|square|disclosure-open|disclosure-closed`,
-        alphabetic_counter_style:`lower-alpha|lower-latin|upper-alpha|upper-latin|cjk-earthly-branch|cjk-heavenly-stem|lower-greek|hiragana|hiragana-iroha|katakana|katakana-iroha`,
-        japanese_counter_style:`japanese-informal|japanese-formal`,
-        korean_counter_style:`korean-hangul-formal|korean-hanja-informal|and korean-hanja-formal`,
-        chinese_counter_style:`simp-chinese-informal|simp-chinese-formal|trad-chinese-informal|and trad-chinese-formal`,
-
-	/* https://drafts.csswg.org/css-content-3/ */
-		content_list:"[<string>|contents|<image>|<quote>|<target>|<leader()>]+",
-		content_replacement:"<image>",
-
-	/* https://drafts.csswg.org/css-values-4 */
-		custom_ident:"<identifier>",
-		position:"[[left|center|right]||[top|center|bottom]|[left|center|right|<length-percentage>][top|center|bottom|<length-percentage>]?|[[left|right]<length-percentage>]&&[[top|bottom]<length-percentage>]]",
-	
-	/* https://drafts.csswg.org/css-lists-3 */
-
-	east_asian_variant_values:"[jis78|jis83|jis90|jis04|simplified|traditional]",
-
-	alphavalue: '<number>',
-
-	box: `border-box|padding-box|content-box`,
-
-	/*Font-Size: www.w3.org/TR/CSS2/fonts.html#propdef-font-size */
-	absolute_size: `xx-small|x-small|small|medium|large|x-large|xx-large`,
-	relative_size: `larger|smaller`,
-
-	/*https://www.w3.org/TR/css-backgrounds-3/*/
-
-	bg_layer: `<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
-	final_bg_layer: `<background_color>||<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
-	bg_image: `<url>|<gradient>|none`,
-	repeat_style: `repeat-x|repeat-y|[repeat|space|round|no-repeat]{1,2}`,
-	background_attachment: `<attachment>#`,
-	bg_size: `<length_percentage>|auto]{1,2}|cover|contain`,
-	bg_position: `[[left|center|right|top|bottom|<length_percentage>]|[left|center|right|<length_percentage>][top|center|bottom|<length_percentage>]|[center|[left|right]<length_percentage>?]&&[center|[top|bottom]<length_percentage>?]]`,
-	attachment: `scroll|fixed|local`,
-	line_style: `none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset`,
-	line_width: `thin|medium|thick|<length>`,
-	shadow: `inset?&&<length>{2,4}&&<color>?`,
-
-	/* Font https://www.w3.org/TR/css-fonts-4/#family-name-value */
-	
-	family_name: `<fontname>`,
-	generic_family: `serif|sans-serif|cursive|fantasy|monospace`,
-	
-	/* Identifier https://drafts.csswg.org/css-values-4/ */
-
-	identifier: `<id>`,
-	custom_ident: `<id>`,
-
-	/* https://drafts.csswg.org/css-timing-1/#typedef-timing-function */
-
-	timing_function: `linear|<cubic_bezier_timing_function>|<step_timing_function>|<frames_timing_function>`,
-	cubic_bezier_timing_function: `<cubic_bezier>`,
-	step_timing_function: `step-start|step-end|'steps()'`,
-	frames_timing_function: `'frames()'`,
-
-	/* https://drafts.csswg.org/css-transitions-1/ */
-
-	single_animation_fill_mode: `none|forwards|backwards|both`,
-	single_animation_play_state: `running|paused`,
-	single_animation_direction: `normal|reverse|alternate|alternate-reverse`,
-	single_animation_iteration_count: `infinite|<number>`,
-	single_transition_property: `all|<custom_ident>`,
-	single_transition: `[none|<single_transition_property>]||<time>||<timing_function>||<time>`,
-
-	/* CSS3 Animation https://drafts.csswg.org/css-animations-1/ */
-
-	single_animation: `<time>||<timing_function>||<time>||<single_animation_iteration_count>||<single_animation_direction>||<single_animation_fill_mode>||<single_animation_play_state>||[none|<keyframes_name>]`,
-	keyframes_name: `<string>`,
-
-	/* CSS3 Stuff */
-	length_percentage: `<length>|<percentage>`,
-	frequency_percentage: `<frequency>|<percentage>`,
-	angle_percentage: `<angle>|<percentage>`,
-	time_percentage: `<time>|<percentage>`,
-	number_percentage: `<number>|<percentage>`,
-
-	/*CSS Clipping https://www.w3.org/TR/css-masking-1/#clipping */
-	clip_path: `<clip_source>|[<basic_shape>||<geometry_box>]|none`,
-	clip_source: `<url>`,
-	shape_box: `<box>|margin-box`,
-	geometry_box: `<shape_box>|fill-box|stroke-box|view-box`,
-	basic_shape: `<CSS_Shape>`,
-	ratio: `<integer>/<integer>`,
-
-	/* https://www.w3.org/TR/css-fonts-3/*/
-	common_lig_values        : `[ common-ligatures | no-common-ligatures ]`,
-	discretionary_lig_values : `[ discretionary-ligatures | no-discretionary-ligatures ]`,
-	historical_lig_values    : `[ historical-ligatures | no-historical-ligatures ]`,
-	contextual_alt_values    : `[ contextual | no-contextual ]`,
-
-	//Display
-	display_outside  : `block | inline | run-in`,
-	display_inside   : `flow | flow-root | table | flex | grid | ruby`,
-	display_listitem : `<display_outside>? && [ flow | flow-root ]? && list-item`,
-	display_internal : `table-row-group | table-header-group | table-footer-group | table-row | table-cell | table-column-group | table-column | table-caption | ruby-base | ruby-text | ruby-base-container | ruby-text-container`,
-	display_box      : `contents | none`,
-	display_legacy   : `inline-block | inline-table | inline-flex | inline-grid`,
-};
-
-const media_feature_definitions = {
-	width: "<m_width>",
-	min_width: "<m_max_width>",
-	max_width: "<m_min_width>",
-	height: "<m_height>",
-	min_height: "<m_min_height>",
-	max_height: "<m_max_height>",
-	orientation: "portrait  | landscape",
-	aspect_ratio: "<ratio>",
-	min_aspect_ratio: "<ratio>",
-	max_aspect_ratio: "<ratio>",
-	resolution: "<length>",
-	min_resolution: "<length>",
-	max_resolution: "<length>",
-	scan: "progressive|interlace",
-	grid: "",
-	monochrome: "",
-	min_monochrome: "<integer>",
-	max_monochrome: "<integer>",
-	color: "",
-	min_color: "<integer>",
-	max_color: "<integer>",
-	color_index: "",
-	min_color_index: "<integer>",
-	max_color_index: "<integer>",
-
-};
-
-/**
- * Used to _bind_ a rule to a CSS selector.
- * @param      {string}  selector        The raw selector string value
- * @param      {array}  selector_array  An array of selector group identifiers.
- * @memberof module:wick~internals.css
- * @alias CSSSelector
- */
-class CSSSelector {
-
-    constructor(selectors /* string */ , selectors_arrays /* array */ ) {
-
-        /**
-         * The raw selector string value
-         * @package
-         */
-
-        this.v = selectors;
-
-        /**
-         * Array of separated selector strings in reverse order.
-         * @package
-         */
-
-        this.a = selectors_arrays;
-
-        /**
-         * The CSSRule.
-         * @package
-         */
-        this.r = null;
-    }
-
-    get id() {
-        return this.v.join("");
-    }
-    /**
-     * Returns a string representation of the object.
-     * @return     {string}  String representation of the object.
-     */
-    toString(off = 0) {
-        let offset = ("    ").repeat(off);
-
-        let str = `${offset}${this.v.join(", ")} {\n`;
-
-        if (this.r)
-            str += this.r.toString(off + 1);
-
-        return str + `${offset}}\n`;
-    }
-
-    addProp(string) {
-        let root = this.r.root;
-        if (root) {
-            let lex = whind$1(string);
-            while (!lex.END)
-                root.parseProperty(lex, this.r, property_definitions);
-        }
-    }
-
-    removeRule(){
-        if(this.r)
-            this.r.decrementRef();
-
-        this.r = null;
-    }
-
-    addRule(rule = null){
-        
-        this.removeRule();
-
-        if(rule !== null)
-            rule.incrementRef();
-
-        this.r = rule;
-    }
-
-}
-
-var step = 0;
-
-function checkDefaults(lx) {
-    const tx = lx.tx;
-    /* https://drafts.csswg.org/css-cascade/#inherited-property */
-    switch (lx.tx) {
-        case "initial": //intentional
-        case "inherit": //intentional
-        case "unset": //intentional
-        case "revert": //intentional
-            if (!lx.pk.pk.END) // These values should be the only ones present. Failure otherwise.
-                return 0; // Default value present among other values. Invalid
-            return 1; // Default value present only. Valid
-    };
-    return 2; // Default value not present. Ignore
-}
-
-class JUX { /* Juxtaposition */
-
-    constructor() {
-        this.id = JUX.step++;
-        this.r = [NaN, NaN];
-        this.terms = [];
-        this.prop = null;
-        this.name = "";
-        this.virtual = false;
-        this.REQUIRE_COMMA = false;
-    }
-    mergeValues(existing_v, new_v) {
-        if (existing_v)
-            if (existing_v.v) {
-                if (Array.isArray(existing_v.v))
-                    existing_v.v.push(new_v.v);
-                else {
-                    existing_v.v = [existing_v.v, new_v.v];
-                }
-            } else
-                existing_v.v = new_v.v;
-    }
-
-    seal() {
-
-    }
-
-    sp(value, rule) { /* Set Property */
-        if (this.prop) {
-            if (value)
-                if (Array.isArray(value) && value.length === 1 && Array.isArray(value[0]))
-                    rule[this.prop] = value[0];
-                else
-                    rule[this.prop] = value;
-        }
-    }
-
-    isRepeating() {
-        return !(isNaN(this.r[0]) && isNaN(this.r[1]));
-    }
-
-    parse(lx, rule, out_val, ROOT = true) {
-            
-        if (typeof(lx) == "string")
-            lx = whind$1(lx);
-
-        let r = out_val || { v: null },
-            bool = false;
-
-        if (ROOT) {
-            switch (checkDefaults(lx)) {
-                case 1:
-                    this.sp(lx.tx, rule);
-                    return true;
-                case 0:
-                    return false;
-            }
-
-            bool = this.innerParser(lx, rule, out_val, r, this.start, this.end);
-
-            //if (!lx.END)
-            //    return false;
-            //else
-                this.sp(r.v, rule);
-        } else
-            bool = this.innerParser(lx, rule, out_val, r, this.start, this.end);
-
-        return bool;
-    }
-
-    checkForComma(lx) {
-        if (this.REQUIRE_COMMA) {
-            if (lx.ch == ",")
-                lx.next();
-            else return false;
-        }
-        return true;
-    }
-
-    innerParser(lx, rule, out_val, r, start, end) {
-
-        let bool = false;
-
-        repeat:
-            for (let j = 0; j < end && !lx.END; j++) {
-                let copy = lx.copy();
-                let temp_r = { v: null };
-
-                for (let i = 0, l = this.terms.length; i < l; i++) {
-
-                    let term = this.terms[i];
-
-                    if (!term.parse(copy, rule, temp_r, false)) {
-                        if (!term.OPTIONAL) {
-                            break repeat;
-                        }
-                    }
-                }
-
-                if (temp_r.v)
-                    this.mergeValues(r, temp_r);
-
-                lx.sync(copy);
-
-                bool = true;
-
-                if (!this.checkForComma(lx))
-                    break;
-            }
-
-        if (bool)
-            //console.log("JUX", s, bool)
-            return bool;
-    }
-
-    get start() {
-        return isNaN(this.r[0]) ? 1 : this.r[0];
-    }
-    set start(e) {}
-
-    get end() {
-        return isNaN(this.r[1]) ? 1 : this.r[1];
-    }
-    set end(e) {}
-
-    get OPTIONAL() { return this.r[0] === 0 }
-    set OPTIONAL(a) {}
-}
-JUX.step = 0;
-class AND extends JUX {
-    innerParser(lx, rule, out_val, r, start, end) {
-
-        const
-            PROTO = new Array(this.terms.length),
-            l = this.terms.length;
-
-        let bool = false;
-
-        repeat:
-            for (let j = 0; j < end && !lx.END; j++) {
-
-                const
-                    HIT = PROTO.fill(0),
-                    copy = lx.copy(),
-                    temp_r = { v: null };
-
-                and:
-                    while (true) {
-                        let FAILED = false;
-
-
-
-                        for (let i = 0; i < l; i++) {
-
-                            if (HIT[i] === 2) continue;
-
-                            let term = this.terms[i];
-
-                            if (!term.parse(copy, rule, temp_r, false)) {
-                                if (term.OPTIONAL)
-                                    HIT[i] = 1;
-                            } else {
-                                HIT[i] = 2;
-                                continue and;
-                            }
-                        }
-
-                        if (HIT.reduce((a, v) => a * v, 1) === 0)
-                            break repeat;
-
-                        break
-                    }
-
-
-
-                lx.sync(copy);
-
-                if (temp_r.v)
-                    this.mergeValues(r, temp_r);
-
-                bool = true;
-
-                if (!this.checkForComma(lx))
-                    break;
-            }
-
-        return bool;
-    }
-}
-
-class OR extends JUX {
-    innerParser(lx, rule, out_val, r, start, end) {
-
-        const
-            PROTO = new Array(this.terms.length),
-            l = this.terms.length;
-
-        let
-            bool = false,
-            NO_HIT = true;
-
-        repeat:
-            for (let j = 0; j < end && !lx.END; j++) {
-
-                const HIT = PROTO.fill(0);
-                let copy = lx.copy();
-                let temp_r = { v: null };
-
-                or:
-                    while (true) {
-                        let FAILED = false;
-                        for (let i = 0; i < l; i++) {
-
-                            if (HIT[i] === 2) continue;
-
-                            let term = this.terms[i];
-
-                            if (term.parse(copy, temp_r, r, false)) {
-                                NO_HIT = false;
-                                HIT[i] = 2;
-                                continue or;
-                            }
-                        }
-
-                        if (NO_HIT) break repeat;
-
-                        break;
-                    }
-
-                lx.sync(copy);
-
-                if (temp_r.v)
-                    this.mergeValues(r, temp_r);
-
-                bool = true;
-
-                if (!this.checkForComma(lx))
-                    break;
-            }
-
-        return bool;
-    }
-}
-
-OR.step = 0;
-
-class ONE_OF extends JUX {
-    innerParser(lx, rule, out_val, r, start, end) {
-
-        let BOOL = false;
-
-        let j;
-        for (j = 0; j < end && !lx.END; j++) {
-            let bool = false;
-            let copy = lx.copy();
-            let temp_r = { v: null };
-
-            for (let i = 0, l = this.terms.length; i < l; i++) {
-                ////if (!this.terms[i]) console.log(this)
-                if (this.terms[i].parse(copy, rule, temp_r, false)) {
-                    bool = true;
-                    break;
-                }
-            }
-
-            if (!bool)
-                break;
-
-            lx.sync(copy);
-            
-            if (temp_r.v)
-                this.mergeValues(r, temp_r);
-
-            BOOL = true;
-
-            if (!this.checkForComma(lx))
-                break;
-        }
-
-        return BOOL;
-    }
-}
-
-ONE_OF.step = 0;
-
-class ValueTerm {
-
-    constructor(value, getPropertyParser, definitions, productions) {
-
-        if(value instanceof JUX)
-            return value;
-        
-
-        this.value = null;
-
-        const IS_VIRTUAL = { is: false };
-        
-        if(typeof(value) == "string")
-            var u_value = value.replace(/\-/g,"_");
-
-        if (!(this.value = types[u_value]))
-            this.value = getPropertyParser(u_value, IS_VIRTUAL, definitions, productions);
-
-        this.prop = "";
-
-        if (!this.value)
-            return new LiteralTerm(value);
-
-        if(this.value instanceof JUX){
-            if (IS_VIRTUAL.is)
-                this.value.virtual = true;
-            return this.value;
-        }
-
-    }
-
-    seal(){}
-
-    parse(l, rule, r, ROOT = true) {
-        if (typeof(l) == "string")
-            l = whind$1(l);
-
-        if (ROOT) {
-
-            switch(checkDefaults(l)){
-                case 1:
-                rule[this.prop] = l.tx;
-                return true;
-                case 0:
-                return false;
-            }
-        }
-
-        let rn = { v: null };
-
-        let v = this.value.parse(l, rule, rn);
-
-        if (rn.v) {
-            if (r)
-                if (r.v) {
-                    if (Array.isArray(r.v)) {
-                        if (Array.isArray(rn.v) && !this.virtual)
-                            r.v = r.v.concat(rn.v);
-                        else
-                            r.v.push(rn.v);
-                    } else {
-                        if (Array.isArray(rn.v) && !this.virtual)
-                            r.v = ([r.v]).concat(rn.v);
-                        else
-                            r.v = [r.v, rn.v];
-                    }
-                } else
-                    r.v = (this.virtual) ? [rn.v] : rn.v;
-
-            if (this.prop && !this.virtual)
-                rule[this.prop] = rn.v;
-
-            return true;
-
-        } else if (v) {
-            if (r)
-                if (r.v) {
-                    if (Array.isArray(r.v))
-                        r.v.push(v);
-                    else
-                        r.v = [r.v, v];
-                } else
-                    r.v = v;
-
-            if (this.prop && !this.virtual && ROOT)
-                rule[this.prop] = v;
-
-            return true;
-        } else
-            return false;
-    }
-
-    get OPTIONAL (){ return false }
-    set OPTIONAL (a){}
-}
-
-class LiteralTerm {
-
-    constructor(value, type) {
-        
-        if(type == whind$1.types.string)
-            value = value.slice(1,-1);
-
-        this.value = value;
-        this.prop = null;
-    }
-
-    seal(){}
-
-    parse(l, rule, r, root = true) {
-
-        if (typeof(l) == "string")
-            l = whind$1(l);
-
-        if (root) {
-            switch(checkDefaults(l)){
-                case 1:
-                rule[this.prop] = l.tx;
-                return true;
-                case 0:
-                return false;
-            }
-        }
-
-        let v = l.tx;
-        if (v == this.value) {
-            l.next();
-
-            if (r)
-                if (r.v) {
-                    if (Array.isArray(r.v))
-                        r.v.push(v);
-                    else {
-                        let t = r.v;
-                        r.v = [t, v];
-                    }
-                } else
-                    r.v = v;
-
-            if (this.prop  && !this.virtual && root)
-                rule[this.prop] = v;
-
-            return true;
-        }
-        return false;
-    }
-
-    get OPTIONAL (){ return false }
-    set OPTIONAL (a){}
-}
-
-class SymbolTerm extends LiteralTerm {
-    parse(l, rule, r) {
-        if (typeof(l) == "string")
-            l = whind$1(l);
-
-        if (l.tx == this.value) {
-            l.next();
-            return true;
-        }
-
-        return false;
-    }
-};
-
-//import util from "util"
-const standard_productions = {
-    JUX,
-    AND,
-    OR,
-    ONE_OF,
-    LiteralTerm,
-    ValueTerm,
-    SymbolTerm
-};
-function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definitions = null, productions = standard_productions) {
-
-    let prop = definitions[property_name];
-
-    if (prop) {
-
-        if (typeof(prop) == "string") {
-            prop = definitions[property_name] = CreatePropertyParser(prop, property_name, definitions, productions);
-        }
-        prop.name = property_name;
-        return prop;
-    }
-
-    if (!definitions.__virtual)
-        definitions.__virtual = Object.assign({}, virtual_property_definitions);
-
-    prop = definitions.__virtual[property_name];
-
-    if (prop) {
-
-        IS_VIRTUAL.is = true;
-
-        if (typeof(prop) == "string") {
-            prop = definitions.__virtual[property_name] = CreatePropertyParser(prop, "", definitions, productions);
-            prop.virtual = true;
-            prop.name = property_name;
-        }
-
-        return prop;
-    }
-
-    return null;
-}
-
-
-function CreatePropertyParser(notation, name, definitions, productions) {
-
-    const l = whind$1(notation);
-    const important = { is: false };
-
-    let n = d$1(l, definitions, productions);
-    
-    n.seal();
-
-    //if (n instanceof productions.JUX && n.terms.length == 1 && n.r[1] < 2)
-    //    n = n.terms[0];
-
-    n.prop = name;
-    n.IMP = important.is;
-
-    /*//******** DEV 
-    console.log("")
-    console.log("")
-    console.log(util.inspect(n, { showHidden: false, depth: null })) 
-    //********** END Dev*/
-
-    return n;
-}
-
-function d$1(l, definitions, productions, super_term = false, oneof_group = false, or_group = false, and_group = false, important = null) {
-    let term, nt, v;
-    const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
-
-    let GROUP_BREAK = false;
-
-    while (!l.END) {
-
-        switch (l.ch) {
-            case "]":
-                return term;
-                break;
-            case "[":
-
-                v = d$1(l.next(), definitions, productions, true);
-                l.assert("]");
-                v = checkExtensions(l, v, productions);
-
-                if (term) {
-                    if (term instanceof JUX && term.isRepeating()) term = foldIntoProduction(productions, new JUX, term);
-                    term = foldIntoProduction(productions, term, v);
-                } else
-                    term = v;
-                break;
-
-            case "<":
-
-                v = new ValueTerm(l.next().tx, getPropertyParser, definitions, productions);
-                l.next().assert(">");
-
-                v = checkExtensions(l, v, productions);
-
-                if (term) {
-                    if (term instanceof JUX /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX, term);
-                    term = foldIntoProduction(productions, term, v);
-                } else {
-                    term = v;
-                }
-                break;
-
-            case "&":
-
-                if (l.pk.ch == "&") {
-
-                    if (and_group)
-                        return term;
-
-                    nt = new AND();
-
-                    if (!term) throw new Error("missing term!");
-
-                    nt.terms.push(term);
-
-                    l.sync().next();
-
-                    while (!l.END) {
-                        nt.terms.push(d$1(l, definitions, productions, super_term, oneof_group, or_group, true, important));
-                        if (l.ch !== "&" || l.pk.ch !== "&") break;
-                        l.a("&").a("&");
-                    }
-
-                    return nt;
-                }
-                break;
-            case "|":
-
-                {
-                    if (l.pk.ch == "|") {
-
-                        if (or_group || and_group)
-                            return term;
-
-                        nt = new OR();
-
-                        nt.terms.push(term);
-
-                        l.sync().next();
-
-                        while (!l.END) {
-                            nt.terms.push(d$1(l, definitions, productions, super_term, oneof_group, true, and_group, important));
-                            if (l.ch !== "|" || l.pk.ch !== "|") break;
-                            l.a("|").a("|");
-                        }
-
-                        return nt;
-
-                    } else {
-
-                        if (oneof_group || or_group || and_group)
-                            return term;
-
-                        nt = new ONE_OF();
-
-                        nt.terms.push(term);
-
-                        l.next();
-
-                        while (!l.END) {
-                            nt.terms.push(d$1(l, definitions, productions, super_term, true, or_group, and_group, important));
-                            if (l.ch !== "|") break;
-                            l.a("|");
-                        }
-
-                        return nt;
-                    }
-                }
-                break;
-            default:
-
-                v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx, l.ty);
-                l.next();
-                v = checkExtensions(l, v, productions);
-
-                if (term) {
-                    if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX, term);
-                    term = foldIntoProduction(productions, term, v);
-                } else {
-                    term = v;
-                }
-        }
-    }
-
-    return term;
-}
-
-function checkExtensions(l, term, productions) {
-    outer:
-    while (true) {
-
-        switch (l.ch) {
-            case "!":
-                /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
-                term.IMPORTANT = true;
-                l.next();
-                continue outer;
-            case "{":
-                term = foldIntoProduction(productions, term);
-                term.r[0] = parseInt(l.next().tx);
-                if (l.next().ch == ",") {
-                    l.next();
-                    if (l.pk.ch == "}") {
-
-                        term.r[1] = parseInt(l.tx);
-                        l.next();
-                    } else {
-                        term.r[1] = Infinity;
-                    }
-                } else
-                    term.r[1] = term.r[0];
-                l.a("}");
-                break;
-            case "*":
-                term = foldIntoProduction(productions, term);
-                term.r[0] = 0;
-                term.r[1] = Infinity;
-                l.next();
-                break;
-            case "+":
-                term = foldIntoProduction(productions, term);
-                term.r[0] = 1;
-                term.r[1] = Infinity;
-                l.next();
-                break;
-            case "?":
-                term = foldIntoProduction(productions, term);
-                term.r[0] = 0;
-                term.r[1] = 1;
-                l.next();
-                break;
-            case "#":
-                term = foldIntoProduction(productions, term);
-                term.terms.push(new SymbolTerm(","));
-                term.r[0] = 1;
-                term.r[1] = Infinity;
-                term.REQUIRE_COMMA = true;
-                l.next();
-                if (l.ch == "{") {
-                    term.r[0] = parseInt(l.next().tx);
-                    term.r[1] = parseInt(l.next().a(",").tx);
-                    l.next().a("}");
-                }
-                break;
-        }
-        break;
-    }
-    return term;
-}
-
-function foldIntoProduction(productions, term, new_term = null) {
-    if (term) {
-        if (!(term instanceof productions.JUX)) {
-            let nr = new productions.JUX();
-            nr.terms.push(term);
-            term = nr;
-        }
-        if (new_term) {
-            term.seal();
-            term.terms.push(new_term);
-        }
-        return term;
-    }
-    return new_term;
-}
-
-/**
- * Checks to make sure token is an Identifier.
- * @param      {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}.
- * @alias module:wick~internals.css.elementIsIdentifier
- */
-function _eID_(lexer) {
-    if (lexer.ty != lexer.types.id) lexer.throw("Expecting Identifier");
-}
-
-/**
- * The empty CSSRule instance
- * @alias module:wick~internals.css.empty_rule
- */
-const er = Object.freeze(new CSSRule());
-
-class _selectorPart_ {
-    constructor() {
-        this.e = "";
-        this.ss = [];
-        this.c = "";
-    }
-}
-class _mediaSelectorPart_ {
-    constructor() {
-        this.id = "";
-        this.props = {};
-        this.c = "";
-    }
-}
-
-class CSSRuleBody {
-    
-    constructor() {
-
-        // 
-        this.media_selector = null;
-        
-        // All selectors indexed by their value
-        this._selectors_ = {};
-
-        //All selectors in order of appearance
-        this._sel_a_ = [];
-
-        //
-        this.rules = []; 
-    }
-
-    _applyProperties_(lexer, rule) {
-        while (!lexer.END && lexer.tx !== "}") this.parseProperty(lexer, rule, property_definitions);
-        lexer.next();
-    }
-
-    /**
-     * Gets the last rule matching the selector
-     * @param      {string}  string  The string
-     * @return     {CSSRule}  The combined set of rules that match the selector.
-     */
-    getRule(string, r) {
-        let selector = this._selectors_[string];
-        if (selector) return selector.r;
-        return r;
-    }
-
-
-    /**
-     * Hook method for hijacking the property parsing function. Return true if default property parsing should not take place
-     * @param      {Lexer}   value_lexer    The value lexer
-     * @param      {<type>}   property_name  The property name
-     * @param      {<type>}   rule           The rule
-     * @return     {boolean}  The property hook.
-     */
-    _getPropertyHook_(value_lexer, property_name, rule) {
-        return false;
-    }
-
-    /**
-     * Used to match selectors to elements
-     * @param      {ele}   ele       The ele
-     * @param      {string}   criteria  The criteria
-     * @return     {boolean}  { description_of_the_return_value }
-     * @private
-     */
-    matchCriteria(ele, criteria) {
-        if (criteria.e && ele.tagName !== criteria.e.toUpperCase()) return false;
-        outer: for (let i = 0, l = criteria.ss.length; i < l; i++) {
-            let ss = criteria.ss[i];
-            switch (ss.t) {
-                case "attribute":
-                    let lex = whind$1(ss.v);
-                    if (lex.ch == "[" && lex.pk.ty == lex.types.id) {
-                        let id = lex.sync().tx;
-                        let attrib = ele.getAttribute(id);
-                        if (!attrib) return;
-                        if (lex.next().ch == "=") {
-                            let value = lex.next().tx;
-                            if (attrib !== value) return false;
-                        }
-                    }
-                    break;
-                case "pseudo":
-                    debugger;
-                    break;
-                case "class":
-                    let class_list = ele.classList;
-                    for (let j = 0, jl = class_list.length; j < jl; j++) {
-                        if (class_list[j] == ss.v) continue outer;
-                    }
-                    return false;
-                case "id":
-                    if (ele.id !== ss.v) return false;
-            }
-        }
-        return true;
-    }
-
-    matchMedia(win = window) {
-
-        if (this.media_selector) {
-            for (let i = 0; i < this.media_selector.length; i++) {
-                let m = this.media_selector[i];
-                let props = m.props;
-                for (let a in props) {
-                    let prop = props[a];
-                    if (!prop(win))
-                        return false;
-                }
-            };
-        }
-
-        return true;
-    }
-
-    
-    /* 
-        Retrieves the set of rules from all matching selectors for an element.
-            element HTMLElement - An DOM element that should be matched to applicable rules. 
-    */
-    getApplicableRules(element, rule = new CSSRule(), win = window) {
-
-        if (!this.matchMedia(win)) return;
-
-        let gen = this.getApplicableSelectors(element),
-            sel = null;
-
-        while (sel = gen.next().value) rule.merge(sel.r);
-    }
-
-    * getApplicableSelectors(element) {
-        for (let j = 0, jl = this._sel_a_.length; j < jl; j++) {
-            let ancestor = element;
-            let selector = this._sel_a_[j];
-            let sn = selector.a;
-            let criteria = null;
-            outer: for (let x = 0; x < sn.length; x++) {
-
-                let sa = sn[x];
-
-                inner: for (let i = 0, l = sa.length; i < l; i++) {
-                    criteria = sa[i];
-                    switch (criteria.c) {
-                        case "child":
-                            if (!(ancestor = ancestor.parentElement) || !this.matchCriteria(ancestor, criteria)) continue outer;
-                            break;
-                        case "preceded":
-                            while ((ancestor = ancestor.previousElementSibling))
-                                if (this.matchCriteria(ancestor, criteria)) continue inner;
-                            continue outer;
-                        case "immediately preceded":
-                            if (!(ancestor = ancestor.previousElementSibling) || !this.matchCriteria(ancestor, criteria)) continue outer;
-                            break;
-                        case "descendant":
-                            while ((ancestor = ancestor.parentElement))
-                                if (this.matchCriteria(ancestor, criteria)) continue inner;
-                            continue outer;
-                        default:
-                            if (!this.matchCriteria(ancestor, criteria)) continue outer;
-                    }
-                }
-                yield selector;
-            }
-        }
-    }
-
-    /**
-     * Parses properties
-     * @param      {Lexer}  lexer        The lexer
-     * @param      {<type>}  rule         The rule
-     * @param      {<type>}  definitions  The definitions
-     */
-    parseProperty(lexer, rule, definitions) {
-        const name = lexer.tx.replace(/\-/g, "_");
-
-        //Catch any comments
-        if (lexer.ch == "/") {
-            lexer.comment(true);
-            let bool = this.parseProperty(lexer, rule, definitions);
-            return 
-        }
-        lexer.next().a(":");
-        //allow for short circuit < | > | =
-        const p = lexer.pk;
-        while ((p.ch !== "}" && p.ch !== ";") && !p.END) {
-            //look for end of property;
-            p.next();
-        }
-        const out_lex = lexer.copy();
-        lexer.sync();
-        out_lex.fence(p);
-        if (!this._getPropertyHook_(out_lex, name, rule)) {
-            try {
-                const IS_VIRTUAL = {
-                    is: false
-                };
-                const parser = getPropertyParser(name, IS_VIRTUAL, definitions);
-                if (parser && !IS_VIRTUAL.is) {
-                    if (!rule.props) rule.props = {};
-                    parser.parse(out_lex, rule.props);
-                } else
-                    //Need to know what properties have not been defined
-                    console.warn(`Unable to get parser for css property ${name}`);
-            } catch (e) {
-                console.log(e);
-            }
-        }
-        if (lexer.ch == ";") lexer.next();
-    }
-
-    /** 
-    Parses a selector up to a token '{', creating or accessing necessary rules as it progresses. 
-
-    Reference: https://www.w3.org/TR/selectors-3/ 
-    https://www.w3.org/TR/css3-mediaqueries/
-    https://www.w3.org/TR/selectors-3/
-
-    @param {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}.
-
-    @protected
-
-    */
-    parseSelector(lexer) {
-        let rule = this,
-            id = "",
-            selector_array = [],
-            selectors_array = [];
-        let start = lexer.pos;
-        let selectors = [];
-        let sel = new _selectorPart_(),
-            RETURN = false;
-        while (!lexer.END) {
-            if (!sel) sel = new _selectorPart_();
-            switch (lexer.tx) {
-                case "{":
-                    RETURN = true;
-                case ",":
-                    selector_array.unshift(sel);
-                    selectors_array.push(selector_array);
-                    selector_array = [];
-                    selectors.push(lexer.s(start).trim().slice(0));
-                    sel = new _selectorPart_();
-                    if (RETURN) return new CSSSelector(selectors, selectors_array, this);
-                    lexer.next();
-                    start = lexer.pos;
-                    break;
-                case "[":
-                    let p = lexer.pk;
-                    while (!p.END && p.next().tx !== "]") {};
-                    p.a("]");
-                    if (p.END) throw new _Error_("Unexpected end of input.");
-                    sel.ss.push({
-                        t: "attribute",
-                        v: p.s(lexer)
-                    });
-                    lexer.sync();
-                    break;
-                case ":":
-                    sel.ss.push({
-                        t: "pseudo",
-                        v: lexer.next().tx
-                    });
-                    _eID_(lexer);
-                    lexer.next();
-                    break;
-                case ".":
-                    sel.ss.push({
-                        t: "class",
-                        v: lexer.next().tx
-                    });
-                    _eID_(lexer);
-                    lexer.next();
-                    break;
-                case "#":
-                    sel.ss.push({
-                        t: "id",
-                        v: lexer.next().tx
-                    });
-                    _eID_(lexer);
-                    lexer.next();
-                    break;
-                case "*":
-                    lexer.next();
-                    break;
-                case ">":
-                    sel.c = "child";
-                    selector_array.unshift(sel);
-                    sel = null;
-                    lexer.next();
-                    break;
-                case "~":
-                    sel.c = "preceded";
-                    selector_array.unshift(sel);
-                    sel = null;
-                    lexer.next();
-                    break;
-                case "+":
-                    sel.c = "immediately preceded";
-                    selector_array.unshift(sel);
-                    sel = null;
-                    lexer.next();
-                    break;
-                default:
-                    if (sel.e) {
-                        sel.c = "descendant";
-                        selector_array.unshift(sel);
-                        sel = null;
-                    } else {
-                        sel.e = lexer.tx;
-
-                        _eID_(lexer);
-                        lexer.next();
-                    }
-                    break;
-            }
-        }
-
-        selector_array.unshift(sel);
-        selectors_array.push(selector_array);
-        selectors.push(lexer.s(start).trim().slice(0));
-        return new CSSSelector(selectors, selectors_array, this);
-    }
-
-    /**
-     * Parses CSS string
-     * @param      {Lexer} - A Lexical tokenizing object supporting methods found in {@link Lexer}
-     * @param      {(Array|CSSRuleBody|Object|_mediaSelectorPart_)}  root    The root
-     * @return     {Promise}  A promise which will resolve to a CSSRuleBody
-     * @private
-     */
-    parse(lexer, root, res = null, rej = null) {
-
-        if (root && !this.par) root.push(this);
-
-        return new Promise((res, rej) => {
-            
-            let selectors = [], l = 0;
-            
-            while (!lexer.END) {
-                switch (lexer.ch) {
-                    case "@":
-                        lexer.next();
-                        switch (lexer.tx) {
-                            case "media": //Ignored at this iteration /* https://drafts.csswg.org/mediaqueries/ */
-                                //create media query selectors
-                                let _med_ = [],
-                                    sel = null;
-                                while (!lexer.END && lexer.next().ch !== "{") {
-                                    if (!sel) sel = new _mediaSelectorPart_();
-                                    if (lexer.ch == ",") _med_.push(sel), sel = null;
-                                    else if (lexer.ch == "(") {
-                                        let start = lexer.next().off;
-                                        while (!lexer.END && lexer.ch !== ")") lexer.next();
-                                        let out_lex = lexer.copy();
-                                        out_lex.off = start;
-                                        out_lex.tl = 0;
-                                        out_lex.next().fence(lexer);
-                                        this.parseProperty(out_lex, sel, media_feature_definitions);
-                                        if (lexer.pk.tx.toLowerCase() == "and") lexer.sync();
-                                    } else {
-                                        let id = lexer.tx.toLowerCase(),
-                                            condition = "";
-                                        if (id === "only" || id === "not")
-                                            (condition = id, id = lexer.next().tx);
-                                        sel.c = condition;
-                                        sel.id = id;
-                                        if (lexer.pk.tx.toLowerCase() == "and") lexer.sync();
-                                    }
-                                }
-                                //debugger
-                                lexer.a("{");
-                                if (sel)
-                                    _med_.push(sel);
-
-                                if (_med_.length == 0)
-                                    this.parse(lexer, null); // discard results
-                                else {
-                                    let media_root = new this.constructor();
-                                    media_root.media_selector = _med_;
-                                    res(media_root.parse(lexer, root).then(b => {
-                                        let body = new this.constructor();
-                                        return body.parse(lexer, root);
-                                    }));
-                                }
-                                continue;
-                            case "import":
-                                /* https://drafts.csswg.org/css-cascade/#at-ruledef-import */
-                                let type;
-                                if (type = types.url.parse(lexer.next())) {
-                                    lexer.a(";");
-                                    /**
-                                     * The {@link CSS_URL} incorporates a fetch mechanism that returns a Promise instance.
-                                     * We use that promise to hook into the existing promise returned by CSSRoot#parse,
-                                     * executing a new parse sequence on the fetched string data using the existing CSSRoot instance,
-                                     * and then resume the current parse sequence.
-                                     * @todo Conform to CSS spec and only parse if @import is at the head of the CSS string.
-                                     */
-                                    return type.fetchText().then((str) =>
-                                        //Successfully fetched content, proceed to parse in the current root.
-                                        //let import_lexer = ;
-                                        res(this.parse(whind$1(str), this).then((r) => this.parse(lexer, r)))
-                                        //parse returns Promise. 
-                                        // return;
-                                    ).catch((e) => res(this.parse(lexer)));
-                                } else {
-                                    //Failed to fetch resource, attempt to find the end to of the import clause.
-                                    while (!lexer.END && lexer.next().tx !== ";") {};
-                                    lexer.next();
-                                }
-                        }
-                        break;
-                    case "/":
-                        lexer.comment(true);
-                        break;
-                    case "}":
-                        lexer.next();
-                        return res(this);
-                    case "{":
-                        //Check to see if a rule body for the selector exists already.
-                        let MERGED = false;
-                        let rule = new CSSRule(this);
-                        this._applyProperties_(lexer.next(), rule);
-                        for (let i = -1, sel = null; sel = selectors[++i];)
-                            if (sel.r) {sel.r.merge(rule); MERGED = true;}
-                            else sel.addRule(rule);
-
-                        if(!MERGED){
-                            this.rules.push(rule);
-                        }
-                            
-                        selectors.length = l = 0;
-                        continue;
-                }
-
-                let selector = this.parseSelector(lexer, this);
-
-                if (selector) {
-                    if (!this._selectors_[selector.id]) {
-                        l = selectors.push(selector);
-                        this._selectors_[selector.id] = selector;
-                        this._sel_a_.push(selector);
-                    } else l = selectors.push(this._selectors_[selector.id]);
-                }
-            }
-
-            return res(this);
-        });
-
-    }
-
-    isSame(inCSSRuleBody) {
-        if (inCSSRuleBody instanceof CSSRuleBody) {
-            if (this.media_selector) {
-                if (inCSSRuleBody.media_selector) {
-                    //TODO compare media selectors;
-                }
-            } else if (!inCSSRuleBody.media_selector)
-                return true;
-        }
-        return false;
-    }
-
-    merge(inCSSRuleBody) {
-        this.parse(whind$1(inCSSRuleBody + ""));
-    }
-
-    /**
-     * Gets the media.
-     * @return     {Object}  The media.
-     * @public
-     */
-    getMedia(win = window) {
-        let start = this;
-        this._media_.forEach((m) => {
-            if (m._med_) {
-                let accept = true;
-                for (let i = 0, l = m._med_.length; i < l; i++) {
-                    let ms = m._med_[i];
-                    if (ms.props) {
-                        for (let n in ms.props) {
-                            if (!ms.props[n](win)) accept = false;
-                        }
-                    }
-                    //if(not)
-                    //    accept = !accept;
-                    if (accept)
-                        (m._next_ = start, start = m);
-                }
-            }
-        });
-        return start;
-    }
-
-    updated() {
-        this.par.updated();
-    }
-
-    toString(off = 0) {
-        let str = "";
-        for (let i = 0; i < this._sel_a_.length; i++) {
-            str += this._sel_a_[i].toString(off);
-        }
-        return str;
-    }
-
-    createSelector(selector_value) {
-        let selector = this.parseSelector(whind$1(selector_value));
-
-        if (selector)
-            if (!this._selectors_[selector.id]) {
-                this._selectors_[selector.id] = selector;
-                this._sel_a_.push(selector);
-                const rule = new CSSRule(this);
-                selector.addRule(rule);
-                this.rules.push(rule);
-            } else
-                selector = this._selectors_[selector.id];
-
-        return selector;
-    }
-}
-
-LinkedList.mixinTree(CSSRuleBody);
-
-class Segment {
-    constructor(parent) {
-        this.parent = null;
-
-        this.css_val = "";
-
-        this.val = document.createElement("span");
-        this.val.classList.add("prop_value");
-
-        this.list = document.createElement("div");
-        this.list.classList.add("prop_list");
-        //this.list.style.display = "none"
-
-        this.ext = document.createElement("button");
-        this.ext.classList.add("prop_extender");
-        this.ext.style.display = "none";
-        this.ext.setAttribute("action","ext");
-
-        this.menu_icon = document.createElement("span");
-        this.menu_icon.classList.add("prop_list_icon");
-        //this.menu_icon.innerHTML = "+"
-        this.menu_icon.style.display = "none";
-        this.menu_icon.setAttribute("superset", false);
-        this.menu_icon.appendChild(this.list);
-
-        this.element = document.createElement("span");
-        this.element.classList.add("prop_segment");
-
-        this.element.appendChild(this.menu_icon);
-        this.element.appendChild(this.val);
-        this.element.appendChild(this.ext);
-
-        this.value_list = [];
-        this.subs = [];
-        this.old_subs = [];
-        this.sib = null;
-        this.value_set;
-        this.HAS_VALUE = false;
-        this.DEMOTED = false;
-
-        this.element.addEventListener("mouseover", e => {
-            //this.setList();
-        });
-    }
-
-    destroy() {
-        this.parent = null;
-        this.element = null;
-        this.val = null;
-        this.list = null;
-        this.ext = null;
-        this.menu_icon = null;
-        this.subs.forEach(e => e.destroy());
-        this.subs = null;
-    }
-
-    reset() {
-        this.list.innerHTML = "";
-        this.val.innerHTML = "";
-        //this.subs.forEach(e => e.destroy);
-        this.subs = [];
-        this.setElement = null;
-        this.changeEvent = null;
-    }
-
-    clearSegments(){
-        if(this.subs.length > 0){
-            this.val.innerHTML = "";
-            for(let i = 0; i < this.subs.length; i++){
-                let sub = this.subs[i];
-                sub.destroy();
-            }   
-            this.subs.length = 0;
-        }
-    }
-
-    replaceSub(old_sub, new_sub) {
-        for (let i = 0; i < this.subs.length; i++) {
-            if (this.subs[i] == old_sub) {
-                this.sub[i] = new_sub;
-                this.val.replaceChild(old_sub.element, new_sub.element);
-                return;
-            }
-        }
-    }
-
-    mount(element) {
-        element.appendChild(this.element);
-    }
-
-
-    addSub(seg) {
-        this.menu_icon.setAttribute("superset", true);
-        seg.parent = this;
-        this.subs.push(seg);
-        this.val.appendChild(seg.element);
-    }
-
-    removeSub(seg) {
-        if (seg.parent == this) {
-            for (let i = 0; i < this.subs.length; i++) {
-                if (this.subs[i] == seg) {
-                    this.val.removeChild(seg.element);
-                    seg.parent = null;
-                    break;
-                }
-            }
-        }
-        return seg;
-    }
-
-    setList() {
-        if(this.DEMOTED) debugger
-        if (this.prod && this.list.innerHTML == "") {
-            if (this.DEMOTED || !this.prod.buildList(this.list, this))
-                this.menu_icon.style.display = "none";
-            else
-                this.menu_icon.style.display = "inline-block";
-        }
-    }
-    change(e) {
-        if (this.changeEvent)
-            this.changeEvent(this.setElement, this, e);
-    }
-
-    setValueHandler(element, change_event_function) {
-        this.val.innerHTML = "";
-        this.val.appendChild(element);
-
-        if (change_event_function) {
-            this.setElement = element;
-            this.changeEvent = change_event_function;
-            this.setElement.onchange = this.change.bind(this);
-        }
-
-        this.HAS_VALUE = true;
-        //this.menu_icon.style.display = "none";
-        this.setList();
-    }
-
-    set value(v) {
-        this.val.innerHTML = v;
-        this.css_val = v;
-        this.HAS_VALUE = true;
-        this.setList();
-    }
-
-    get value_count() {
-        if (this.subs.length > 0)
-            return this.subs.length
-        return (this.HAS_VALUE) ? 1 : 0;
-    }
-
-    promote() {
-
-    }
-
-    demote() {
-        let seg = new Segment;
-        seg.prod = this.prod;
-        seg.css_val = this.css_val;
-
-        if (this.change_event_function) {
-            seg.changeEvent = this.changeEvent;
-            seg.setElement = this.setElement;
-            seg.setElement.onchange = seg.change.bind(seg);
-        }
-
-        let subs = this.subs;
-
-        if (subs.length > 0) {
-
-            for (let i = 0; i < this.subs.length; i++) 
-                seg.addSub(this.subs[i]);
-            
-        } else {
-
-
-            let children = this.val.childNodes;
-
-            if (children.length > 0) {
-                for (let i = 0, l = children.length; i < l; i++) {
-                    seg.val.appendChild(children[0]);
-                }
-            } else {
-                seg.val.innerHTML = this.val.innerHTML;
-            }
-        }
-
-
-        this.menu_icon.innerHTML = "";
-        this.menu_icon.style.display = "none";
-        this.menu_icon.setAttribute("superset", false);
-        this.list.innerHTML = "";
-
-        this.reset();
-
-        this.addSub(seg);
-        seg.setList();
-        
-        this.DEMOTED = true;
-    }
-
-    addRepeat(seg) {
-        if (!this.DEMOTED)
-            //Turn self into own sub seg
-            this.demote();
-        this.addSub(seg);
-        seg.setList();
-    }
-
-    repeat(prod = this.prod) {
-        
-        if (this.value_count <= this.end && this.prod.end > 1) {
-            this.ext.style.display = "inline-block";
-
-            let root_x = 0;
-            let width = 0;
-            let diff_width = 0;
-
-            const move = (e) => {
-
-                let diff = e.clientX - root_x;
-                let min_diff = diff + diff_width;   
-
-                let EXTENDABLE = this.value_count < this.end;
-                let RETRACTABLE = this.value_count > 1;
-
-                if(EXTENDABLE && RETRACTABLE)
-                    this.ext.setAttribute("action","both");
-                else if(EXTENDABLE)
-                    this.ext.setAttribute("action","ext");
-                else
-                    this.ext.setAttribute("action","ret");
-
-                if (diff > 15 && EXTENDABLE) {
-                    let bb = this.element;
-
-                    if (!this.DEMOTED) {
-                        //Turn self into own sub seg
-                        this.demote();
-                    }
-
-                    if (this.old_subs.length > 1) {
-                        this.addSub(this.old_subs.pop());
-                    } else {
-                        prod.default(this, true);
-                    }
-
-                    let w = this.element.clientWidth;
-                    diff_width = w - width;
-                    width = w;
-                    root_x += diff_width;
-
-                    return;
-                }
-
-                let last_sub = this.subs[this.subs.length - 1];
-
-                if (diff < -5 - last_sub.width && RETRACTABLE) {
-                    const sub = this.subs[this.subs.length - 1];
-                    this.old_subs.push(sub);
-                    this.removeSub(sub);
-                    this.subs.length = this.subs.length - 1;
-
-                    let w = this.element.clientWidth;
-                    diff_width = w - width;
-                    width = w;
-
-                    root_x += diff_width;
-                }
-            };
-
-            const up = (e) => {
-                window.removeEventListener("pointermove", move);
-                window.removeEventListener("pointerup", up);
-            };
-
-            this.ext.onpointerdown = e => {
-                width = this.element.clientWidth;
-                root_x = e.clientX;
-                window.addEventListener("pointermove", move);
-                window.addEventListener("pointerup", up);
-            };
-
-
-            /*
-            this.ext.onclick = e => {
-                if (this.subs.length == 0)
-                    //Turn self into own sub seg
-                    this.demote()
-
-                prod.default(this, true);
-
-                if (this.value_count >= this.end)
-                    this.ext.style.display = "none";
-            }
-            */
-        } else {
-            this.ext.style.display = "none";
-        }
-        this.setList();
-        this.update();
-    }
-
-    get width() {
-        return this.element.clientWidth;
-    }
-
-    update() {
-        if (this.parent)
-            this.parent.update(this);
-        else {
-            let val = this.getValue();
-        }
-    }
-
-    getValue() {
-        let val = "";
-
-        if (this.subs.length > 0)
-            for (let i = 0; i < this.subs.length; i++)
-                val += " " + this.subs[i].getValue();
-        else
-            val = this.css_val;
-        return val;
-    }
-
-    toString() {
-        return this.getValue();
-    }
-}
-
-class ValueTerm$1 extends ValueTerm {
-
-    default (seg, APPEND = false, value = null) {
-        if (!APPEND) {
-            let element = this.value.valueHandler(value, seg);
-
-            if (value) {
-                seg.css_val = value.toString();
-            }
-            seg.setValueHandler(element, (ele, seg, event) => {
-                seg.css_val = element.css_value;
-                seg.update();
-            });
-        } else {
-            let sub = new Segment();
-            let element = this.value.valueHandler(value, sub);
-            if (value)
-                sub.css_val = value.toString();
-
-            sub.setValueHandler(element, (ele, seg, event) => {
-                seg.css_val = element.css_value;
-                seg.update();
-            });
-            //sub.prod = list;
-            seg.addSub(sub);
-        }
-    }
-
-    buildInput(rep = 1, value) {
-        let seg = new Segment();
-        this.default(seg, false, value);
-        return seg;
-    }
-
-    parseInput(l, seg, APPEND = false) {
-        let val = this.value.parse(l);
-
-        if (val) {
-            this.default(seg, APPEND, val);
-            return true;
-        }
-
-        return val;
-    }
-
-    list(ele, slot) {
-        let element = document.createElement("div");
-        element.classList.add("option");
-        element.innerHTML = this.value.label_name || this.value.name;
-        ele.appendChild(element);
-
-        element.addEventListener("click", e => {
-
-            slot.innerHTML = this.value;
-            if (slot) {
-                let element = this.value.valueHandler();
-                element.addEventListener("change", e => {
-
-                    let value = element.value;
-                    slot.css_val = value;
-                    slot.update();
-                });
-                slot.setValueHandler(element);
-            } else {
-                let sub = new Segment();
-                sub.setValueHandler(this.value);
-                seg.addSub(sub);
-            }
-        });
-
-        return 1;
-    }
-
-    setSegment(segment) {
-        segment.element.innerHTML = this.value.name;
-    }
-}
-
-class BlankTerm extends LiteralTerm {
-
-    default (seg, APPEND = false) {
-
-        if (!APPEND) {
-            seg.value = "  ";
-        } else {
-            let sub = new Segment();
-            sub.value = "";
-            seg.addSub(sub);
-        }
-    }
-
-    list(ele, slot) {
-        let element = document.createElement("div");
-        element.innerHTML = this.value;
-        element.classList.add("option");
-        //        ele.appendChild(element) 
-
-        return 1;
-    }
-
-    parseInput(seg, APPEND = false) {
-        this.default(seg, APPEND);
-        return false;
-    }
-}
-
-class LiteralTerm$1 extends LiteralTerm {
-
-    default (seg, APPEND = false) {
-        if (!APPEND) {
-            seg.value = this.value;
-        } else {
-            let sub = new Segment();
-            sub.value = this.value;
-            seg.addSub(sub);
-        }
-    }
-
-    list(ele, slot) {
-        let element = document.createElement("div");
-        element.innerHTML = this.value;
-        element.classList.add("option");
-        ele.appendChild(element);
-        element.addEventListener("click", e => {
-            slot.value = this.value + "";
-            slot.update();
-        });
-
-        return 1;
-    }
-
-    parseInput(l, seg, APPEND = false) {
-        if (typeof(l) == "string")
-            l = whind(l);
-
-        if (l.tx == this.value) {
-            l.next();
-            this.default(seg, APPEND);
-            return true;
-        }
-
-        return false;
-    }
-}
-
-class SymbolTerm$1 extends LiteralTerm$1 {
-    list() { return 0 }
-
-    parseInput(l, seg, r) {
-        if (typeof(l) == "string")
-            l = whind(l);
-
-        if (l.tx == this.value) {
-            l.next();
-            let sub = new Segment();
-            sub.value = this.value + "";
-            seg.addSub(sub);
-            return true;
-        }
-
-        return false;
-    }
-}
-
-/**
- * wick internals.
- * @class      JUX (name)
- */
-class JUX$1 extends JUX {
-    //Adds an entry in options list. 
-
-
-    createSegment() {
-        let segment = new Segment();
-        segment.start = this.start;
-        segment.end = this.end;
-        segment.prod = this;
-        return segment
-    }
-
-    insertBlank(seg){
-        let blank = new BlankTerm;
-        blank.parseInput(seg);
-    }
-
-    buildList(list, slot) {
-
-        if (!slot) {
-            let element = document.createElement("div");
-            element.classList.add("prop_slot");
-            slot = element;
-        }
-
-        if (!list) {
-            list = document.createElement("div");
-            list.classList.add("prop_slot");
-            slot.appendChild(list);
-        }
-        let count = 0;
-        //Build List
-        for (let i = 0, l = this.terms.length; i < l; i++) {
-            count += this.terms[i].list(list, slot);
-        }
-
-        return count > 1;
-    }
-
-    seal() {}
-
-    parseInput(lx, segment, list) {
-
-        if (typeof(lx) == "string")
-            lx = whind$1(lx);
-
-        return this.pi(lx, segment, list);
-    }
-
-    default (segment, EXTENDED = true) {
-        let seg = this.createSegment();
-
-        segment.addSub(seg);
-
-        for (let i = 0, l = this.terms.length; i < l; i++) {
-            this.terms[i].default(seg, l > 1);
-        }
-        seg.setList();
-
-        if (!EXTENDED) seg.repeat();
-    }
-
-    pi(lx, ele, lister = this, start = this.start, end = this.end) {
-        
-        let segment = this.createSegment();
-
-        let bool = false,
-            j = 0,
-            last_segment = null,
-            first;
-
-        repeat:
-            for (let j = 0; j < end && !lx.END; j++) {
-                const REPEAT = j > 0;
-
-                let copy = lx.copy();
-
-                let seg = (REPEAT) ? new Segment : segment;
-
-                seg.prod = this;
-
-                for (let i = 0, l = this.terms.length; i < l; i++) {
-
-                    let term = this.terms[i];
-
-                    if (!term.parseInput(copy, seg, l > 1)) {
-                        if (!term.OPTIONAL) {
-                            break repeat;
-                        }
-                    }
-                }
-
-                lx.sync(copy);
-
-                bool = true;
-
-                if (!this.checkForComma(lx))
-                    break;
-
-                if (REPEAT)
-                    segment.addRepeat(seg);
-            }
-
-            this.capParse(segment, ele, bool);
-            
-            return bool;
-    }
-
-    capParse(segment, ele, bool){
-        if (bool) {
-            segment.repeat();
-            if (ele)
-                ele.addSub(segment);
-            this.last_segment = segment;
-        }else {
-            segment.destroy();
-            if(this.OPTIONAL){
-                if(ele){
-                    let segment = this.createSegment();
-                    let blank = new BlankTerm();
-                    blank.parseInput(segment);
-                    segment.prod = this;
-                    
-                    segment.repeat();
-                    ele.addSub(segment);
-                }
-            }
-        }
-    }
-
-    buildInput(repeat = 1, lex) {
-
-        this.last_segment = null;
-        let seg = new Segment;
-        seg.start = this.start;
-        seg.end = this.end;
-        seg.prod = this;
-        this.parseInput(lex, seg, this);
-        return this.last_segment;
-    }
-
-    list(){
-        
-    }
-}
-
-class AND$1 extends JUX$1 {
-
-    default (segment, EXTENDED = false) {
-        //let seg = this.createSegment();
-        //segment.addSub(seg);
-        for (let i = 0, l = this.terms.length; i < l; i++) {
-            this.terms[i].default(segment, i > 1);
-        }
-        //seg.repeat();
-    }
-
-    list(ele, slot) {
-
-        let name = (this.name) ? this.name.replace("\_\g", " ") : this.terms.reduce((r, t) => r += " | " + t.name, "");
-        let element = document.createElement("div");
-        element.classList.add("option");
-        element.innerHTML = name;
-        ele.appendChild(element);
-
-        element.addEventListener("click", e => {
-            
-            slot.innerHTML = this.value;
-            if (slot) {
-                slot.clearSegments();
-                this.default(slot);
-                slot.update();
-            } else {
-                let sub = new Segment();
-                sub.setValueHandler(this.value);
-                seg.addSub(sub);
-            }
-        });
-
-        return 1;
-    }
-
-    pi(lx, ele, lister = this, start = 1, end = 1) {
-
-        outer: for (let j = 0; j < end && !lx.END; j++) {
-            for (let i = 0, l = this.terms.length; i < l; i++)
-                if (!this.terms[i].parseInput(lx, ele)) return (start === 0) ? true : false
-        }
-
-        segment.repeat();
-
-        return true;
-    }
-}
-Object.assign(AND$1.prototype, AND.prototype);
-
-class OR$1 extends JUX$1 {
-
-    default (segment, EXTENDED = false) {
-        //let seg = this.createSegment();
-        //segment.addSub(seg);
-        for (let i = 0, l = this.terms.length; i < l; i++) {
-            this.terms[i].default(segment, l > 1);
-        }
-        //seg.repeat();
-    }
-
-    buildList(list, slot) {
-        return false;
-    }
-
-    list(ele, slot) {
-
-        let name = this.terms.reduce((r, t) => r += " | " + t.name, "");
-        let element = document.createElement("div");
-        element.classList.add("option");
-        element.innerHTML = name;
-        ele.appendChild(element);
-
-        element.addEventListener("click", e => {
-            
-            slot.innerHTML = this.value;
-            if (slot) {
-                slot.clearSegments();
-                this.default(slot);
-                slot.update();
-            } else {
-                let sub = new Segment();
-                sub.setValueHandler(this.value);
-                seg.addSub(sub);
-            }
-        });
-
-        return 1;
-    }
-
-    pi(lx, ele, lister = this, start = this.start, end = this.end) {
-        
-        let segment = ele; //this.createSegment()
-
-        let bool = false;
-
-        let j = 0;
-
-        let OVERALL_BOOL = false;
-
-        for (let j = 0; j < end && !lx.END; j++) {
-            const REPEAT = j > 0;
-
-            let seg = (REPEAT) ? new Segment : segment;
-
-
-            bool = false;
-
-            this.count = (this.count) ? this.count:this.count = 0;
-            
-            outer:
-            //User "factorial" expression to isolate used results in a continous match. 
-            while(true){
-                for (let i = 0, l = this.terms.length; i < l; i++) {
-                    //if(this.terms[i].count == this.count) continue
-
-                    if (this.terms[i].parseInput(lx, seg, true)) {
-                        this.terms[i].count = this.count;
-                        OVERALL_BOOL = true;
-                        bool = true;
-                        continue outer;
-                    }
-                }
-                break;
-            }
-
-            {
-                //Go through unmatched and make placeholders.
-            }
-
-            {
-                //Sort everything based on parse 
-            }
-
-            if (!bool && j < start) {
-                bool = false;
-            } else if (start === 0)
-                bool = true;
-                if (REPEAT)
-            segment.addRepeat(seg);
-        }
-
-        if (OVERALL_BOOL) {
-            segment.repeat();
-            //if (ele)
-            //    ele.addSub(segment);
-            this.last_segment = segment;
-        }
-
-
-        return (!bool && start === 0) ? true : bool;
-    }
-}
-
-Object.assign(OR$1.prototype, OR.prototype);
-
-class ONE_OF$1 extends JUX$1 {
-
-    default (segment, EXTENDED = false) {
-        let seg = this.createSegment();
-        this.terms[0].default(seg);
-        segment.addSub(seg);
-        seg.setList();
-        if (!EXTENDED) seg.repeat();
-    }
-
-    list(ele, slot) {
-        let name = (this.name) ? this.name.replace(/_/g, " ") : this.terms.reduce((r, t) => r += " | " + t.name, "");
-        let element = document.createElement("div");
-        element.classList.add("option");
-        element.innerHTML = name;
-        ele.appendChild(element);
-
-        element.addEventListener("click", e => {
-            //debugger
-            slot.innerHTML = this.value;
-            if (slot) {
-                slot.clearSegments();
-                this.default(slot);
-                slot.update();
-            } else {
-                let sub = new Segment();
-                sub.setValueHandler(this.value);
-                seg.addSub(sub);
-            }
-        });
-
-        return 1;
-    }
-
-    pi(lx, ele, lister = this, start = this.start, end = this.end) {
-        //List
-        let segment = this.createSegment();
-
-        //Add new
-        let bool = false;
-
-        let j = 0;
-
-        //Parse Input
-        for (; j < end && !lx.END; j++) {
-            const REPEAT = j > 0;
-
-            let seg = segment;
-            
-            if(REPEAT){
-                seg = new Segment;
-                seg.prod = this;
-            }
-
-            bool = false;
-
-            for (let i = 0, l = this.terms.length; i < l; i++) {
-                bool = this.terms[i].parseInput(lx, seg);
-                if (bool) break;
-            }
-
-            if (!bool) {
-                if (j < start) {
-                    bool = false;
-                    break;
-                }
-            }
-            if (REPEAT)
-                segment.addRepeat(seg);
-
-        }
-
-        this.capParse(segment, ele, bool);
-
-        return  bool;
-    }
-}
-
-Object.assign(ONE_OF$1.prototype, ONE_OF.prototype);
-
-var ui_productions = /*#__PURE__*/Object.freeze({
-    JUX: JUX$1,
-    AND: AND$1,
-    OR: OR$1,
-    ONE_OF: ONE_OF$1,
-    LiteralTerm: LiteralTerm$1,
-    ValueTerm: ValueTerm$1,
-    SymbolTerm: SymbolTerm$1
-});
-
-function dragstart(e){
-    event.dataTransfer.setData('text/plain',null);
-    UISelectorPart.dragee = this;
-}
-
-function dragover(e){
-    e.preventDefault();
-}
-
-class UISelectorPart{
-
-    constructor(name, index){
-        this.txt = name;
-        this.index = index;
-        this.element = document.createElement("span");
-        this.element.classList.add("selector");
-        this.element.innerHTML = this.txt;
-        this.element.setAttribute("draggable", true);
-        this.parent = null;
-        this.element.addEventListener("dragstart",dragstart.bind(this));
-    }
-
-    mount(element, parent){
-        this.parent = parent;
-        if (element instanceof HTMLElement)
-            element.appendChild(this.element);
-    }
-
-    unmount(){
-        this.parent = null;
-        if (this.element.parentElement)
-            this.element.parentElement.removeChild(this.element);
-    }
-
-    compare(other_part){
-        return other_part.txt === this.txt
-    }
-
-    toString(){
-        return this.txt;
-    }
-
-};
-
-
-function drop(e){
-    if(UISelectorPart.dragee){
-        const part = UISelectorPart.dragee;
-        const parent = part.parent;
-
-        loop:
-        while(parent != this){
-
-            //Ignore if part is already present in the selector area
-            for(let i = 0; i < this.parts.length; i++)
-                if(this.parts[i].compare(part)) break loop;
-
-            part.unmount();
-            let d = parent.remove(part);
-            this.add(part, ...d);
-            part.mount(this.element, this);
-            break;
-        }
-    }
-    UISelectorPart.dragee = null;
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-    return false;
-}
-
-class UISelector {
-    constructor(selector) {
-        this.selector = selector;
-        this.parts = [];
-        
-        selector.v.forEach((e, i) => {
-            this.parts.push(new UISelectorPart(e, i));
-        });
-        
-        this.text = selector.v.join();
-    }
-
-    update() {
-        this.parent.update();
-    }
-
-    mount(parent) {
-        this.element = parent.selector_space;
-        this.element.ondrop = drop.bind(this);
-        this.element.ondragover = dragover;
-        
-        this.parent = parent;
-
-        this.parts.forEach(e=>e.mount(this.element, this));
-    }
-
-    unmount() {
-        if (this.element.parentElement)
-            this.element.parentElement.removeChild(this.element);
-    }
-
-    remove(part){
-        let index = part.index;
-        this.parts.splice(index,1);
-        this.parts.forEach((e,i)=>e.index = i);
-        const a = this.selector.a.splice(index,1)[0];
-        const v = this.selector.v.splice(index,1)[0];
-        this.update();
-        return [a,v]
-    }
-
-    add(part, a, v){
-        this.parts.push(part);
-        this.selector.a.push(a);
-        this.selector.v.push(v);
-        this.parts.forEach((e,i)=>e.index = i);
-        this.update();
-    }
-
-    rebuild(selector){
-        this.parts.forEach(e=>e.unmount(false));
-        this.parts.length = 0;
-        selector.v.forEach((e,i) => {
-            this.parts.push(new UISelectorPart(e, i));
-        });
-        this.mount(this.parent);
-
-    }
-}
-
-function createCache(cacher){
-    let cache = null;
-    const destroy = cacher.prototype.destroy;
-    const init = cacher.prototype.init;
-
-    cacher.prototype.destroy = function(...args){
-
-        if(destroy)
-            destroy.call(this, ...args);
-
-        this.next_cached = cache;
-        cache = this;
-    };
-
-    return function(...args){
-            let r;
-        if(cache){
-            r = cache;
-            cache = cache.next_cached;
-            r.next_cached = null;
-            init.call(r,...args);
-        }else{
-            r = new cacher(...args);
-            r.next_cached = null;
-            r.CACHED = true;
-        }
-        return r;
-    };
-};
-
-const props = Object.assign({}, property_definitions);
-
-var dragee = null;
-
-function dragstart$1(e){
-    event.dataTransfer.setData('text/plain',null);
-    UIProp.dragee = this;
-}
-
-class UIProp {
-    constructor(type,  parent) {
-        // Predefine all members of this object.
-        this.hash = 0;
-        this.type = "";
-        this.parent = null;
-        this._value = null;
-        this.setupElement(type);
-        this.init(type, parent);
-    }
-
-    init(type,  parent){
-        this.type = type;
-        this.parent = parent;
-    }
-
-    destroy(){
-        this.hash = 0;
-        this.type = "";
-        this.parent = null;
-        this._value = null;
-        this.type = null;
-        this.parent = null;
-        this.unmount();
-    }
-
-    build(type, value){
-        this.element.innerHTML ="";
-        this.element.appendChild(this.label);
-        let pp = getPropertyParser(type, undefined, props, ui_productions);
-        this._value = pp.buildInput(1, whind$1(value));
-        this._value.parent = this;
-        this._value.mount(this.element);
-    }
-
-    update(value) {
-        this.parent.update(this.type, value.toString());
-    }
-
-    mount(element) {
-        if (element instanceof HTMLElement)
-            element.appendChild(this.element);
-    }
-
-    unmount() {
-        if (this.element.parentElement)
-            this.element.parentElement.removeChild(this.element);
-    }
-
-    setupElement(type) {
-        this.element = document.createElement("div");
-        this.element.setAttribute("draggable", "true");
-        this.element.classList.add("prop");
-        this.element.addEventListener("dragstart", dragstart$1.bind(this));
-        this.label = document.createElement("span");
-        this.label.classList.add("prop_label");
-        this.label.innerHTML = `${type.replace(/[\-\_]/g, " ")}`;
-    }
-
-    get value(){
-        return this._value.toString();
-    }
-}
-
-UIProp = createCache(UIProp);
-
-var UIProp$1 = UIProp;
-
-const props$1 = Object.assign({}, property_definitions);
-class UIRuleSet {
-    constructor(rule_body, parent) {
-
-        this.parent = parent;
-        this.hash = 0;
-        this.rules = [];
-        this.selectors = null;
-
-        this.element = document.createElement("div");
-        this.element.classList.add("rule");
-        this.selector_space = document.createElement("div");
-        this.selector_space.classList.add("rule_selectors");
-        this.rule_space = document.createElement("div");
-        this.rule_space.classList.add("rule_body");
-
-        this.element.addEventListener("dragover", dragover$1);
-        this.element.addEventListener("drop", (e)=>{
-            
-            let prop = UIProp$1.dragee;
-            let parent = prop.parent;
-            let value = prop.value;
-            let type = prop.type;
-
-            if(parent === this)
-                return;
-
-            this.addProp(type, value);
-            parent.removeProp(type);
-
-            //move the dragee's data into this ruleset
-        });
-
-        this.element.appendChild(this.selector_space);
-        this.element.appendChild(this.rule_space);
-
-        this.build(rule_body);
-        this.mount(this.parent.element);
-
-        this.ver = rule_body;
-    }
-
-    addData(){
-
-    }
-
-    updateSelectors(obj){
-        if(obj.parts.length < 1){
-            //remove selector from the rule set.
-        }
-    }
-
-    addSelector(selector){
-
-        //Add to list of selectors and update UI
-        if(!this.selectors){
-
-            this.selectors = new UISelector(selector);
-
-            this.selectors.mount(this);
-        }else{
-            this.selectors.rebuild(selector);
-        }
-    }
-
-    mount(element) {
-        if (element instanceof HTMLElement)
-            element.appendChild(this.element);
-    }
-
-    unmount() {
-        if (this.element.parentElement)
-            this.element.parentElement.removeChild(this.element);
-    }
-
-    build(rule_body = this.rule_body) {
-
-
-        this.rule_body = rule_body;
-
-        let i = -1;
-
-        for (let a in rule_body.props) {
-            let rule;
-            
-            //Reuse Existing Rule Bodies
-            if(++i < this.rules.length){
-                rule = this.rules[i];
-            }else{
-                rule = new UIProp$1(a,  this);
-                this.rules.push(rule);
-            }
-            rule.build(a, rule_body.toString(0, a));
-            rule.mount(this.rule_space);
-        }
-    }
-
-    rebuild(rule_body){
-        if(true || this.ver !== rule_body.ver){
-            this.rule_space.innerHTML = "";
-            this.rules.length = 0;
-            this.build(rule_body);
-            this.ver = this.rule_body.ver;
-        }
-    }
-
-    update(type, value) {
-
-        if(type && value){
-
-            console.log(type, value);
-
-            let lexer = whind$1(value);
-            
-            const IS_VIRTUAL = {
-                is: false
-            };
-            
-            const parser = getPropertyParser(type, IS_VIRTUAL, property_definitions);
-            const rule = this.rule_body;
-            if (parser && !IS_VIRTUAL.is) {
-                if (!rule.props) rule.props = {};
-                parser.parse(lexer, rule.props);
-            }
-        }
-
-        this.parent.update();
-    }
-
-    addProp(type, value){
-        this.update(type, value);
-        //Increment the version of the rule_body
-        this.rule_body.ver++;
-       
-        this.rebuild(this.rule_body);
-    }
-
-    removeProp(type){
-        const rule = this.rule_body;
-        if(rule.props[type]){
-            delete rule.props[type];
-
-
-            //Increment the version of the rule_body
-            this.rule_body.ver++;
-
-            this.parent.update();
-            this.rebuild(this.rule_body);
-        }
-    }
-
-    generateHash() {}
-}
-
-function dragover$1(e){
-    e.preventDefault();
-}
-
-//import { UIValue } from "./ui_value.mjs";
-
-const props$2 = Object.assign({}, property_definitions);
-
-class UIMaster {
-    constructor(css) {
-        css.addObserver(this);
-        this.css = css;
-        this.rule_sets = [];
-        this.selectors = [];
-        this.element = document.createElement("div");
-        this.element.classList.add("cfw_css");
-
-
-        this.rule_map = new Map();
-    }
-
-    // Builds out the UI elements from collection of rule bodies and associated selector groups. 
-    // css - A CandleFW_CSS object. 
-    // meta - internal 
-    build(css = this.css) {
-
-        //Extract rule bodies and set as keys for the rule_map. 
-        //Any existing mapped body that does not have a matching rule should be removed. 
-        
-        const rule_sets = css.children;
-
-        for(let i= 0; i < rule_sets.length; i++){
-            let rule_set = rule_sets[i];
-
-            for(let i = 0; i < rule_set.rules.length; i++){
-
-                let rule = rule_set.rules[i];
-
-                if(!this.rule_map.get(rule))
-                    this.rule_map.set(rule, new UIRuleSet(rule, this));
-                else {
-                    this.rule_map.get(rule).rebuild(rule);
-                }
-            }
-
-        
-            const selector_array = rule_set._sel_a_;
-
-            for(let i = 0; i < selector_array.length; i++){
-                let selector = selector_array[i];
-                let rule_ref = selector.r;
-
-                let rule_ui = this.rule_map.get(rule_ref);
-
-                rule_ui.addSelector(selector);
-            }
-        }
-
-
-        this.css = css;
-
-        let children = css.children;
-
-        this.rule_sets = [];
-        this.selectors = [];
-    }
-
-    updatedCSS(css) {
-        if(this.UPDATE_MATCHED) return void (this.UPDATE_MATCHED = false);      
-        //this.element.innerHTML = "";
-        this.build(css);
-        //this.render();
-    }
-
-    render() {
-        for (let i = 0; i < this.rule_sets.length; i++)
-            this.rule_sets.render(this.element);
-    }
-
-    mount(element) {
-        if (element instanceof HTMLElement)
-            element.appendChild(this.element);
-    }
-
-    unmount() {
-        if (this.element.parentElement)
-            this.element.parentElement.removeChild(this.element);
-    }
-
-    update(){
-        this.UPDATE_MATCHED = true;
-    	this.css.updated();
-    }
-}
-
-/**
- * Container for all rules found in a CSS string or strings.
- *
- * @memberof module:wick~internals.css
- * @alias CSSRootNode
- */
-class CSSRootNode {
-    constructor() {
-        this.promise = null;
-        /**
-         * Media query selector
-         */
-        this.pending_build = 0;
-        this.resolves = [];
-        this.res = null;
-        this.observers = [];
-        
-        this.addChild(new CSSRuleBody());
-    }
-
-    _resolveReady_(res, rej) {
-        if (this.pending_build > 0) this.resolves.push(res);
-        res(this);
-    }
-
-    _setREADY_() {
-        if (this.pending_build < 1) {
-            for (let i = 0, l = this.resolves; i < l; i++) this.resolves[i](this);
-            this.resolves.length = 0;
-            this.res = null;
-        }
-    }
-
-    READY() {
-        if (!this.res) this.res = this._resolveReady_.bind(this);
-        return new Promise(this.res);
-    }
-    /**
-     * Creates a new instance of the object with same properties as the original.
-     * @return     {CSSRootNode}  Copy of this object.
-     * @public
-     */
-    clone() {
-        let rn = new this.constructor();
-        rn._selectors_ = this._selectors_;
-        rn._sel_a_ = this._sel_a_;
-        rn._media_ = this._media_;
-        return rn;
-    }
-
-    * getApplicableSelectors(element, win = window) {
-
-        for (let node = this.fch; node; node = this.getNextChild(node)) {
-
-            if(node.matchMedia(win)){
-                let gen = node.getApplicableSelectors(element, win);
-                let v = null;
-                while ((v = gen.next().value))
-                    yield v;
-            }
-        }
-    }
-
-    /**
-     * Retrieves the set of rules from all matching selectors for an element.
-     * @param      {HTMLElement}  element - An element to retrieve CSS rules.
-     * @public
-     */
-    getApplicableRules(element, rule = new CSSRule(), win = window) {
-        for (let node = this.fch; node; node = this.getNextChild(node))
-            node.getApplicableRules(element, rule, win);
-        return rule;
-    }
-
-    /**
-     * Gets the last rule matching the selector
-     * @param      {string}  string  The string
-     * @return     {CSSRule}  The combined set of rules that match the selector.
-     */
-    getRule(string) {
-        let r = null;
-        for (let node = this.fch; node; node = this.getNextChild(node))
-            r = node.getRule(string, r);
-        return r;
-    }
-
-    toString(off = 0) {
-        let str = "";
-        for (let node = this.fch; node; node = this.getNextChild(node))
-            str += node.toString(off);
-        return str;
-    }
-
-    addObserver(observer) {
-        this.observers.push(observer);
-    }
-
-    removeObserver(observer) {
-        for (let i = 0; i < this.observers.length; i++)
-            if (this.observers[i] == observer) return this.observers.splice(i, 1);
-    }
-
-    updated() {
-        if (this.observers.length > 0)
-            for (let i = 0; i < this.observers.length; i++) this.observers[i].updatedCSS(this);
-    }
-
-    parse(lex, root) {
-        if (typeof(lex) == "string")
-            lex = whind$1(lex);
-
-        if (lex.sl > 0) {
-
-            if (!root && root !== null) {
-                root = this;
-                this.pending_build++;
-            }
-
-            return this.fch.parse(lex, this).then(e => {
-                this._setREADY_();
-                this.updated();
-                return this;
-            });
-        }
-    }
-
-    merge(inCSSRootNode){
-        if(inCSSRootNode instanceof CSSRootNode){
-            
-            let children = inCSSRootNode.children;
-            outer:
-            for(let i = 0; i < children.length; i++){
-                //determine if this child matches any existing selectors
-                let child = children[i];
-                
-                for(let i = 0; i < this.children.length; i++){
-                    let own_child = this.children[i];
-
-                    if(own_child.isSame(child)){
-                        own_child.merge(child);
-                        continue outer;
-                    }
-                }
-
-                this.children.push(child);
-            }
-        }
-    }
-}
-
-/**
- * CSSRootNode implements all of ll
- * @extends ll
- * @memberof  module:wick~internals.html.CSSRootNode
- * @private
- */
-LinkedList.mixinTree(CSSRootNode);
-/*
- * Expecting ID error check.
- */
-const _err_ = "Expecting Identifier";
-
-/**
- * Builds a CSS object graph that stores `selectors` and `rules` pulled from a CSS string. 
- * @function
- * @param {string} css_string - A string containing CSS data.
- * @param {string} css_string - An existing CSSRootNode to merge with new `selectors` and `rules`.
- * @return {Promise} A `Promise` that will return a new or existing CSSRootNode.
- * @memberof module:wick.core
- * @alias css
- */
-const CSSParser = (css_string, root = null) => (root = (!root || !(root instanceof CSSRootNode)) ? new CSSRootNode() : root, root.parse(whind$1(css_string)));
-
-CSSParser.types = types;
-
-const removeFromArray = (array, ...elems) => {
-    const results = [];
-    outer:
-        for (let j = 0; j < elems.length; j++) {
-            const ele = elems[i];
-            for (let i = 0; i < array.length; i++) {
-                if (array[i] === ele) {
-                    array.splice(i, 1);
-                    results.push(true);
-                    continue outer;
-                }
-            }
-            results.push(false);
-        }
-
-    return results;
-};
-
-// Mode Flag
-const KEEP = 0;
-const IMPORT = 1;
-const EXPORT = 2;
-const PUT = 4;
-
-/**
- * Gateway for data flow. Represents a single "channel" of data flow. 
- * 
- * By using different modes, one can control how data enters and exits the scope context.
- * -`keep`: 
- *  This mode is the default and treats any data on the channel as coming from the model. The model itself is not changed, and any data flow from outside the scope context is ignored.
- * -`put`:
- *  This mode will update the model to reflect updates on the channel. This will also cause any bindings to update to reflect the change on the model.
- * -`import`:
- *  This mode will allow data from outside the scope context to enter the context as if it came from the model. The model itself is unchanged unless put is specified for the same property.
- *  -`export`:
- *  This mode will propagate data flow to the parent scope context, allowing other scopes to listen on the data flow of the originating scope context.
- *  
- *  if `import` is active, then `keep` is implicitly inactive and the model no longer has any bearing on the value of the bindings.
- */
-class Tap {
-
-    constructor(scope, prop, modes = 0) {
-        this.scope = scope;
-        this.prop = prop;
-        this.modes = modes; // 0 implies keep
-        this.ios = [];
-
-        if (modes & IMPORT && scope.parent)
-            scope.parent.getTap(prop).ios.push(this);
-
-    }
-
-    destroy() {
-
-        for (let i = 0, l = this.ios.length; i < l; i++)
-            this.ios[i].destroy();
-
-        this.ios = null;
-        this.scope = null;
-        this.prop = null;
-        this.modes = null;
-    }
-
-    load(data) {
-        this.downS(data);
-
-        //Make sure export occures as soon as data is ready. 
-        const value = data[this.prop];
-
-        if ((typeof(value) !== "undefined") && (this.modes & EXPORT))
-            this.scope.up(this, data[this.prop]);
-    }
-
-    down(value, meta) {
-        for (let i = 0, l = this.ios.length; i < l; i++) {
-            this.ios[i].down(value, meta);
-        }
-    }
-
-    downS(model, IMPORTED = false) {
-        const value = model[this.prop];
-
-        if (typeof(value) !== "undefined") {
-
-            if (IMPORTED) {
-                if (!(this.modes & IMPORT))
-                    return;
-
-                if ((this.modes & PUT) && typeof(value) !== "function") {
-                    if (this.scope.model.set)
-                        this.scope.model.set({
-                            [this.prop]: value
-                        });
-                    else
-                        this.scope.model[this.prop] = value;
-                }
-
-            }
-
-            for (let i = 0, l = this.ios.length; i < l; i++) {
-                if (this.ios[i] instanceof Tap) {
-                    this.ios[i].downS(model, true);
-                } else
-                    this.ios[i].down(value);
-            }
-        }
-    }
-
-    up(value, meta) {
-
-        if (!(this.modes & (EXPORT | PUT)))
-            this.down(value, meta);
-        
-        if ((this.modes & PUT) && typeof(value) !== "undefined") {
-            if (this.scope.model.set)
-                this.scope.model.set({
-                    [this.prop]: value
-                });
-            else
-                this.scope.model[this.prop] = value;
-        }
-
-        if (this.modes & EXPORT)
-            this.scope.up(this, value, meta);
-    }
-
-    addIO(io) {
-        if (io.parent === this)
-            return;
-
-        if (io.parent)
-            io.parent.removeIO(io);
-
-        this.ios.push(io);
-
-        io.parent = this;
-    }
-
-    removeIO(io) {
-        if (removeFromArray(this.ios, io)[0])
-            io.parent = null;
-    }
-}
-
-class UpdateTap extends Tap {
-    downS(model) {
-        for (let i = 0, l = this.ios.length; i < l; i++)
-            this.ios[i].down(model);
-    }
-    up() {}
-}
-
-// This serves as a NOOP for io methods that expect a Tap with addIO and RemoveIO operations
-const noop = () => {};
-const NOOPTap = { addIO: noop, removeIO: noop, up: noop };
-
-class Scope extends View {
-
-    /**
-     *   In the Wick dynamic template system, Scopes serve as the primary access to Model data. They, along with {@link ScopeContainer}s, are the only types of objects the directly _bind_ to a Model. When a Model is updated, the Scope will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link ScopeContainer}s.
-     *   A Scope will also _bind_ to an HTML element. It has no methodes to update the element, but it's descendants, primarily instances of the {@link IO} class, can update attributes and values of then element and its sub-elements.
-     *   @param {Scope} parent - The parent {@link Scope}, used internally to build a hierarchy of Scopes.
-     *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
-     *   @param {Presets} presets - An instance of the {@link Presets} object.
-     *   @param {HTMLElement} element - The HTMLElement the Scope will _bind_ to.
-     *   @memberof module:wick~internals.scope
-     *   @alias Scope
-     *   @extends ScopeBase
-     */
-    constructor(parent, presets, element, ast) {
-        if(!presets)
-            debugger;
-        super();
-
-        this.ast = null;
-
-        ast.setScope(this);
-        
-        this.parent = parent;
-        this.ele = element;
-        this.presets = presets;
-        this.model = null;
-        this.statics = null;
-
-        this.taps = {};
-        this.children = [];
-        this.scopes = [];
-        this.badges = {};
-        this.ios = [];
-        this.containers = [];
-        this.hooks = [];
-        this.update_tap = null;
-
-        this._model_name_ = "";
-        this._schema_name_ = "";
-
-        this.DESTROYED = false;
-        this.LOADED = false;
-
-        this.addToParent();
-    }
-
-    destroy() {
-
-        this.DESTROYED = true;
-        this.LOADED = false;
-
-        this.update({ destroyed: true });
-
-        if (this.parent && this.parent.removeScope)
-            this.parent.removeScope(this);
-
-        this.children.forEach((c) => c.destroy());
-        this.children.length = 0;
-        this.data = null;
-
-        if (this.ele && this.ele.parentElement)
-            this.ele.parentElement.removeChild(this.ele);
-
-        this.ele = null;
-
-        while (this.scopes[0])
-            this.scopes[0].destroy();
-
-        super.destroy();
-
-    }
-
-    getBadges(par) {
-        for (let a in this.badges) {
-            if (!par.badges[a])
-                par.badges[a] = this.badges[a];
-        }
-    }
-
-    addToParent() {
-        if (this.parent)
-            this.parent.scopes.push(this);
-    }
-
-    addTemplate(template) {
-        template.parent = this;
-        this.containers.push(template);
-    }
-
-    addScope(scope) {
-        if (scope.parent == this)
-            return;
-        scope.parent = this;
-        this.scopes.push(scope);
-    }
-
-    removeScope(scope) {
-        if (scope.parent !== this)
-            return;
-
-        for (let i = 0; i < this.scopes.length; i++)
-            if (this.scopes[i] == scope)
-                return (this.scopes.splice(i, 1), scope.parent = null);
-    }
-
-    getTap(name) {
-        let tap = this.taps[name];
-
-        if (!tap) {
-            if (name == "update")
-                this.update_tap = new UpdateTap(this, name);
-            else
-                tap = this.taps[name] = new Tap(this, name);
-        }
-        return tap;
-    }
-
-    /**
-     * Return an array of Tap objects that
-     * match the input array.
-     */
-
-    linkTaps(tap_list) {
-        let out_taps = [];
-        for (let i = 0, l = tap_list.length; i < l; i++) {
-            let tap = tap_list[i];
-            let name = tap.name;
-            if (this.taps[name])
-                out_taps.push(this.taps[name]);
-            else {
-                let bool = name == "update";
-                let t = bool ? new UpdateTap(this, name, tap.modes) : new Tap(this, name, tap.modes);
-
-                if (bool)
-                    this.update_tap = t;
-
-                this.taps[name] = t;
-                out_taps.push(this.taps[name]);
-            }
-        }
-
-        return out_taps;
-    }
-
-    /**
-        Makes the scope a view of the given Model. If no model passed, then the scope will bind to another model depending on its `scheme` or `model` attributes. 
-    */
-    load(model) {
-        let
-            m = null,
-            s = null;
-
-        if (this._model_name_ && this.presets.models)
-            m = this.presets.models[this._model_name_];
-        if (this._schema_name_ && this.presets.schemas)
-            s = this.presets.schemas[this._schema_name_];
-
-        if (m)
-            model = m;
-        else if (s) {
-            model = new s();
-        } else if (!model)
-            model = new Model(model);
-
-        let LOADED = this.LOADED;
-
-        this.LOADED = true;
-
-        for (let i = 0, l = this.scopes.length; i < l; i++) {
-            this.scopes[i].load(model);
-            this.scopes[i].getBadges(this);
-
-            //Lifecycle message
-            this.scopes[i].update({mounted:true}); 
-        }
-
-        if (model.addView)
-            model.addView(this);
-
-        this.model = model;
-
-        for (let name in this.taps)
-            this.taps[name].load(this.model, false);
-
-        if (!LOADED)
-            this.update({ created: true });
-    }
-
-    down(data, changed_values) {
-        this.update(data, changed_values, true);
-    }
-
-    up(tap, data, meta) {
-        if (this.parent)
-            this.parent.upImport(tap.prop, data, meta, this);
-    }
-
-    upImport(prop_name, data, meta) {
-        if (this.taps[prop_name])
-            this.taps[prop_name].up(data, meta);
-    }
-
-    update(data, changed_values, IMPORTED = false) {
-
-        if (this.update_tap)
-            this.update_tap.downS(data, IMPORTED);
-
-        if (changed_values) {
-
-            for (let name in changed_values)
-                if (this.taps[name])
-                    this.taps[name].downS(data, IMPORTED);
-        } else
-            for (let name in this.taps)
-                this.taps[name].downS(data, IMPORTED);
-
-        //        for (let i = 0, l = this.scopes.length; i < l; i++)
-        //            this.scopes[i].down(data, changed_values);
-
-        for (let i = 0, l = this.containers.length; i < l; i++)
-            this.containers[i].down(data, changed_values);
-    }
-
-    transitionIn(transition) {
-
-        if (this.taps.trs_in)
-            this.taps.trs_in.downS(transition);
-
-        for (let i = 0, l = this.scopes.length; i < l; i++)
-            this.scopes[i].transitionIn(transition);
-
-        for (let i = 0, l = this.containers.length; i < l; i++)
-            this.containers[i].transitionIn(transition);
-    }
-
-    transitionOut(transition) {
-        if (this.taps.trs_out)
-            this.taps.trs_out.downS(transition);
-
-        for (let i = 0, l = this.scopes.length; i < l; i++)
-            this.scopes[i].transitionOut(transition);
-
-
-        for (let i = 0, l = this.containers.length; i < l; i++)
-            this.containers[i].transitionOut(transition);
-    }
-
-    bubbleLink(child) {
-        if (child)
-            for (let a in child.badges)
-                this.badges[a] = child.badges[a];
-        if (this.parent)
-            this.parent.bubbleLink(this);
-    }
-}
-
-Scope.prototype.removeIO = Tap.prototype.removeIO;
-Scope.prototype.addIO = Tap.prototype.addIO;
-
-class IOBase {
-
-    constructor(parent) {
-
-        this.parent = null;
-
-        parent.addIO(this);
-    }
-
-    destroy() {
-
-        this.parent.removeIO(this);
-
-        this.parent = null;
-    }
-
-    down() {}
-    up(value, meta) { this.parent.up(value, meta); }
-}
-
-/**
- *   The IO is the last link in the Scope chain. It is responsible for putting date into the DOM through the element it binds to. Alternativly, in derived versions of `IO`, it is responsible for retriving values from user inputs from input elements and events.
- *   @param {Scope} tap - The tap {@link Scope}, used internally to build a hierarchy of Scopes.
- *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
- *   @param {Presets} presets - An instance of the {@link Presets} object.
- *   @param {HTMLElement} element - The HTMLElement that the IO will _bind_ to.
- *   @memberof module:wick.core.scope
- *   @alias IO
- *   @extends IOBase
- */
-class IO extends IOBase {
-
-    constructor(scope, errors, tap, element = null, default_val) {
-
-        super(tap);
-        //Appending the value to a text node prevents abuse from insertion of malicious DOM markup. 
-        this.ele = element;
-        this.argument = null;
-
-        if (default_val) this.down(default_val);
-    }
-
-    destroy() {
-        this.ele = null;
-        super.destroy();
-    }
-
-    down(value) {
-        this.ele.data = value;
-    }
-}
-
-/**
-    This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
-*/
-class AttribIO extends IOBase {
-    constructor(scope, errors, tap, attr, element, default_val) {
-        super(tap);
-
-        this.attrib = attr;
-        this.ele = element;
-
-        if (default_val) this.down(default_val);
-    }
-
-    destroy() {
-        this.ele = null;
-        this.attrib = null;
-        super.destroy();
-    }
-
-    /**
-        Puts data into the watched element's attribute. The default action is to simply update the attribute with data._value_.  
-    */
-    down(value) {
-        this.ele.setAttribute(this.attrib, value);
-    }
-
-    set data(v){
-        this.down();
-    }
-
-    get data(){
-
-    }
-}
-
-// Toogles the display state of the element based on the "truthyness" of the passed value
-class BooleanIO extends IOBase {
-    constructor(scope, errors, tap, element, default_val) {
-        super(tap);
-
-        this.par = element.parentElement;
-
-        this.ele = element;
-
-        this.state = false;
-
-        this.place_holder = null;
-
-        if (typeof(default_val) !== "undefined") this.down(default_val);
-
-        if (this.state == false)
-            this.ele.style.display = "none";
-
-    }
-
-    destroy() {
-        this.ele = null;
-        this.attrib = null;
-        super.destroy();
-    }
-
-    down(value) {
-
-
-        if (!this.par && this.ele.parentElement)
-            this.par = this.ele.parentElement;
-
-        if (value && !this.state) {
-            this.ele.style.display = "";
-
-            if (this.place_holder)
-                this.par.replaceChild(this.ele, this.place_holder);
-
-            this.place_holder = null;
-
-            this.state = true;
-        } else if (!value && this.state) {
-            this.place_holder = document.createTextNode("");
-            this.par.replaceChild(this.place_holder, this.ele);
-            this.state = false;
-        }
-    }
-}
-
-
-class InputIO extends IOBase {
-
-    constructor(scope, errors, tap, element, message_key) {
-
-        super(tap);
-
-        this.ele = element;
-
-        const up_tap = message_key ? scope.getTap(message_key) : tap;
-
-        this.event = (e) => { up_tap.up(e.target.value, { event: e }); };
-
-        this.ele.addEventListener("input", this.event);
-    }
-
-    destroy() {
-        this.ele.removeEventListener("input", this.event);
-        this.ele = null;
-        this.event = null;
-        this.attrib = null;
-    }
-
-    down(value) {
-        this.ele.value = value;
-    }
-}
-
-class BindIO extends IOBase {
-
-    constructor(scope, errors, tap) {
-        super(tap);
-        this._value_ = null;
-        this.child = null;
-    }
-
-    destroy() {
-        this._value_ = null;
-        if (this.child) this.child.destroy();
-        this.child = null;
-        super.destroy();
-    }
-
-    /**
-        Puts data into the watched element's attribute. The default action is to simply update the attribute with data._value_.  
-    */
-    down(value) {
-        this._value_ = value;
-        this.child.down();
-    }
-}
-
-
-
-class TemplateString extends IOBase {
-
-    constructor(scope, errors, taps, element, binds) {
-       
-        super(scope);
-        this._SCHD_ = 0;
-        this.binds = [];
-        this.ele = element;
-        this._setBindings_(scope, errors, taps, binds);
-    }
-
-    destroy() {
-        for (var i = 0; i < this.binds.length; i++)
-            this.binds[i].destroy();
-        this._SCHD_ = 0;
-        this.binds = null;
-        this.ele = null;
-        super.destroy();
-    }
-
-    _setBindings_(scope, errors, taps, binds) {
-        for (var i = 0; i < binds.length; i++) {
-            let bind = binds[i];
-
-            switch (bind.type) {
-                case 0: //DYNAMICbindingID
-                    let new_bind = new BindIO(scope, errors, scope.getTap(bind.tap_name), bind);
-                    this.binds.push(new_bind);
-                    new_bind.child = this;
-                    //this.binds.push(msg._bind_(scope, errors, taps, this));
-                    break;
-                case 1: //RAW_VALUEbindingID
-                    this.binds.push(bind);
-                    break;
-                case 2: //TEMPLATEbindingID
-                    if (bind.bindings.length < 1) // Just a variable less expression.
-                        this.binds.push({ _value_: msg.func() });
-                    else
-                        this.binds.push(bind._bind_(scope, errors, taps, this));
-                    break;
-            }
-        }
-        this.down();
-    }
-
-    get data() {}
-    set data(v) { spark.queueUpdate(this); }
-
-    down() { spark.queueUpdate(this); }
-
-    scheduledUpdate() {
-        let str = [];
-
-        for (let i = 0; i < this.binds.length; i++)
-            str.push(this.binds[i]._value_);
-
-        this.ele.data = str.join('');   
-    }
-}
-
-class AttribTemplate extends TemplateString {
-
-    constructor(scope, errors, taps, attr, element, binds) {
-        super(scope, errors, taps, element, binds);
-        this.attrib = attr;
-    }
-
-    destroy() {
-        this.attrib = null;
-        super.destroy();
-    }
-
-    scheduledUpdate() {
-
-        let str = [];
-
-        for (let i = 0; i < this.binds.length; i++)
-            str.push(this.binds[i]._value_);
-
-        this.ele.setAttribute(this.attrib, str.join(''));
-    }
-}
-
-function replaceString(e){
-    return e[1].toUpperCase();
-}
-
-function toCamel(string){
-    let str = string.replace(/(?:[-_])([a-z])/g, replaceString);
-    return str;
-}
-class CSSRawValue {
-
-    constructor(name, prop = null) {
-        this._name_ = toCamel(name);
-        this._value_ = "";
-
-        if (Array.isArray(prop))
-            this._value_ = prop.join(" ");
-        else
-            this._value_ = prop.toString();
-    }
-
-    get UPDATED() { return false; }
-    set UPDATED(v) {}
-}
-
-class CSSRuleTemplateString {
-    constructor(scope, errors, taps, binds, name) {
-        this.binds = [];
-        this._setBindings_(scope, errors, taps, binds);
-        this.ios = [];
-        this._value_ = "";
-        this._name_ = toCamel(name);
-    }
-
-    destroy() {
-        for (let i = 0, l = this.binds.length; i < l; i++)
-            this.binds[i].destroy();
-        this.binds = null;
-        for (let i = 0; i < this.ios.length; i++)
-            this.ios[i].destroy();
-        this.ios = null;
-        this._value_ = null;
-        this._name_ = null;
-    }
-
-    _setBindings_(scope, errors, taps, binds) {
-        for (var i = 0; i < binds.length; i++) {
-            let bind = binds[i];
-
-            switch (bind.type) {
-                case 0: //DYNAMICbindingID
-                    let new_bind = new BindIO(scope, errors, scope.getTap(bind.tap_name), bind);
-                    this.binds.push(new_bind);
-                    new_bind.child = this;
-                    //this.binds.push(msg._bind_(scope, errors, taps, this));
-                    break;
-                case 1: //RAW_VALUEbindingID
-                    this.binds.push(bind);
-                    break;
-                case 2: //TEMPLATEbindingID
-                    if (bind.bindings.length < 1) // Just a variable less expression.
-                        this.binds.push({ _value_: msg.func() });
-                    else
-                        this.binds.push(bind._bind_(scope, errors, taps, this));
-                    break;
-            }
-        }
-        this.down();
-    }
-
-    get data() {}
-    set data(v) { spark.queueUpdate(this); }
-
-    down() { spark.queueUpdate(this); }
-
-    scheduledUpdate() {
-
-        let str = [];
-
-        for (let i = 0; i < this.binds.length; i++)
-            str.push(this.binds[i]._value_);
-        this._value_ = str.join(' ');
-        for (let i = 0, l = this.ios.length; i < l; i++)
-            this.ios[i]._updateRule_();
-    }
-
-    addIO(io) { this.ios.push(io); }
-    removeIO(io) {
-        for (let i = 0; i < this.ios.length; i++) {
-            let own_io = this.ios[i];
-            if (own_io == io) return void this.ios.splice(i, 1);
-        }
-    }
-}
-
-
-class StyleIO extends IOBase {
-    constructor(scope, errors, taps, element, props = []) {
-
-        super(scope);
-
-        this.ele = element;
-
-        this.props = [];
-
-        this._initializeProps_(scope, errors, taps, props);
-
-        this.scheduledUpdate();
-    }
-
-    destroy() {
-        this._template_text_ = null;
-        this._rules_text_ = null;
-        this.ele = null;
-        this.props = null;
-        super.destroy();
-    }
-
-    _setRule_(rule){
-        let props = rule.props;
-
-        this.props.length = 0;
-
-        for (let name in props) {
-            let prop = props[name];
-
-            let wick_prop = (prop._wick_type_ > 0) ? prop.bind(this.parent, [], {}, this) : new CSSRawValue(name, prop);
-
-            this.props.push(wick_prop);
-
-            spark.queueUpdate(this);
-        }
-    }
-
-    _initializeProps_(scope, errors, taps, props) {
-
-        for (let i = 0, l = props.length; i < l; i++) {
-            let prop = props[i];
-            if (prop._wick_type_ == 1) {
-                this.props.push(props[i]._bind_(scope, errors, taps, this));
-            } else
-                this.props.push(prop);
-        }
-    }
-
-    _updateRule_() { spark.queueUpdate(this); }
-
-    get data() {}
-    set data(data) { spark.queueUpdate(this); }
-
-    scheduledUpdate() {
-        for (let i = 0; i < this.props.length; i++) {
-            let prop = this.props[i];
-            this.ele.style[prop._name_] = prop._value_;
-        }
-    }
-}
-
-/******************** Expressions **********************/
-
-class ExpressionIO extends TemplateString {
-
-    constructor(scope, errors, taps, element, binds, func) {
-        super(scope, errors, taps, element, binds);
-        this._expr_function_ = func;
-        this._value_ = null;
-        this._filter_expression_ = null;
-        this._bl_ = this.binds.length;
-    }
-
-    destroy() {
-        this._bl_ = null;
-        this._filter_expression_ = null;
-        this._value_ = null;
-        this._expr_function_ = null;
-        super.destroy();
-    }
-
-    set _IS_A_FILTER_(v) {
-        if (v == true) {
-            var model_arg_index = -1;
-            var index_arg_index = -1;
-
-            for (let i = 0, l = this._bl_; i < l; i++) {
-                let bind = this.binds[i];
-                if (bind.parent.prop == "model" || bind.parent.prop == "m") {
-                    model_arg_index = i;
-                }
-
-                if (bind.parent.prop == "index" || bind.parent.prop == "i") {
-                    index_arg_index = i;
-                }
-            }
-
-            this._filter_expression_ = (scope, index) => {
-                const args = [];
-
-                for (let i = 0, l = this._bl_; i < l; i++) {
-                    if (i == model_arg_index) { args.push(scope.model); continue; }
-                    if (i == index_arg_index) { args.push(index); continue; }
-                    args.push(this.binds[i]._value_);
-                }
-
-                return this._expr_function_.apply(null, args);
-            };
-        }
-    }
-
-    get _IS_A_FILTER_() { return typeof(this._filter_expression_) == "function"; }
-
-    scheduledUpdate() {
-        if (this._IS_A_FILTER_) {
-            this.ele.update();
-        } else {
-
-            const args = [];
-
-            for (let i = 0; i < this.binds.length; i++) {
-                if (this.binds[i]._value_ === null) return;
-                args.push(this.binds[i]._value_);
-            }
-
-            this._value_ = this._expr_function_.apply(null, args);
-            this.ele.data = this._value_;
-        }
-    }
-}
-
-class AttribExpressionIO extends ExpressionIO {
-    
-    constructor(scope, errors, taps, element, binds, func, attrib) {
-        super(scope, errors, taps, element, binds, func);
-        this.attrib = attrib;
-    }
-
-    destroy(){
-        this.attrib = "";
-        super.destroy();
-    }
-
-    scheduledUpdate() {
-        const args = [];
-
-        for (let i = 0; i < this.binds.length; i++) {
-            if (this.binds[i]._value_ === null) return;
-            args.push(this.binds[i]._value_);
-        }
-
-        this._value_ = this._expr_function_.apply(null, args);
-        this.ele.setAttribute(this.attrib, this._value_);
-    }
-}
-
-class BooleanExpressionIO extends ExpressionIO {
-    constructor(scope, errors, taps, element, binds, func) {
-        super(scope, errors, taps, element, binds, func);
-        Object.assign(this, new this.constr(scope, errors, NOOPTap, element));
-    }
-
-    destroy(){
-        BooleanIO.prototype.destroy.apply(this);
-        super.destroy();
-    }
-
-    scheduledUpdate() {
-        const args = [];
-        for (let i = 0; i < this.binds.length; i++)
-            args.push(this.binds[i]._value_);
-        this.boolDown(this._expr_function_.apply(null, args));
-    }
-}
-BooleanExpressionIO.prototype.constr = BooleanIO.prototype.constructor;
-BooleanExpressionIO.prototype.boolDown = BooleanIO.prototype.down;
-
-class InputExpressionIO extends ExpressionIO {
-    scheduledUpdate() {
-        if (this._IS_A_FILTER_) {
-            this.ele.update();
-        } else {
-            const args = [];
-            for (let i = 0; i < this.binds.length; i++)
-                args.push(this.binds[i]._value_);
-
-            this._value_ = this._expr_function_.apply(null, args);
-            this.ele.value = this._value_;
-        }
-    }
-}
-
-class EventIO {
-    constructor(scope, errors, taps, element, event, event_bind, argument) {
-
-        let Attrib_Watch = (typeof element[event] == "undefined");
-
-        this.parent = scope;
-        scope.ios.push(this);
-
-        this.ele = element;
-        this.event_bind = new IOBase(scope.getTap(event_bind.tap_name));
-        this.event = event.replace("on", "");
-
-        this.prevent_defaults = true;
-        if (this.event == "dragstart") this.prevent_defaults = false;
-        this.argument = null;
-        this.data = null;
-
-        if (argument) {
-            switch (argument.type) {
-                case 0: //DYNAMICbindingID
-                    this.argument = argument._bind_(scope, errors, taps, this);
-                    break;
-                case 1: //RAW_VALUEbindingID
-                    this.data = argument.val;
-                    break;
-                case 2: //TEMPLATEbindingID
-                    if (argument.bindings.length < 1) // Just a variable less expression.
-                        this.data = argument.func();
-                    else
-                        this.argument = argument._bind_(scope, errors, taps, this);
-                    break;
-            }
-        }
-
-
-        if (Attrib_Watch) {
-            this.event_handle = new MutationObserver((ml) => {
-                ml.forEach((m) => {
-                    if (m.type == "attributes") {
-                        if (m.attributeName == event) {
-                            this.handleAttribUpdate(m);
-                        }
-                    }
-                });
-            });
-            this.event_handle.observe(this.ele, { attributes: true });
-        } else {
-            this.event_handle = (e) => this.handleEvent(e);
-            this.ele.addEventListener(this.event, this.event_handle);
-        }
-    }
-
-    /**
-     * Removes all references to other objects.
-     * Calls destroy on any child objects.
-     */
-    destroy() {
-        if (this.argument)
-            this.argument.destroy();
-        this.event_handle = null;
-        this.event_bind.destroy();
-        this.argument = null;
-        this.ele.removeEventListener(this.event, this.event_handle);
-        this.ele = null;
-        this.event = null;
-        this.parent.removeIO(this);
-        this.parent = null;
-        this.data = null;
-    }
-
-    handleEvent(e) {
-        this.event_bind.up(this.data, { event: e });
-
-        if (this.prevent_defaults /*|| prevent === true*/) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            return false;
-        }
-    }
-
-    handleAttribUpdate(e) {
-        this.event_bind.up(e.target.getAttribute(e.attributeName), { mutation: e });
-    }
-}
-
-const
-    CSS_Length$1 = CSSParser.types.length,
-    CSS_Percentage$1 = CSSParser.types.percentage,
-    CSS_Color$1 = CSSParser.types.color,
-    CSS_Transform2D$1 = CSSParser.types.transform2D,
-    CSS_Path$1 = CSSParser.types.path,
-    CSS_Bezier$1 = CSSParser.types.cubic_bezier,
-
-    Animation = (function anim() {
-
-        var USE_TRANSFORM = false;
-
-        const
-            CSS_STYLE = 0,
-            JS_OBJECT = 1,
-            SVG = 3;
-
-        function setType(obj) {
-            if (obj instanceof HTMLElement) {
-                if (obj.tagName == "SVG")
-                    return SVG;
-                return CSS_STYLE;
-            }
-            return JS_OBJECT;
-        }
-
-        const Linear = { getYatX: x => x, toString: () => "linear" };
-
-
-        // Class to linearly interpolate number.
-        class lerpNumber extends Number { lerp(to, t, from = 0) { return this + (to - this) * t; } copy(val) { return new lerpNumber(val); } }
-        class lerpNonNumeric { constructor(v) { this.v = v; } lerp(to, t) { return to.v } copy(val) { return new lerpNonNumeric(val) } }
-
-
-        // Store animation data for a single property on a single object. Hosts methods that can create CSS based interpolation and regular JS property animations. 
-        class AnimProp {
-
-            constructor(keys, obj, prop_name, type) {
-
-                this.duration = 0;
-                this.end = false;
-                this.keys = [];
-                this.current_val = null;
-
-                const
-                    IS_ARRAY = Array.isArray(keys),
-                    k0 = IS_ARRAY ? keys[0] : keys,
-                    k0_val = typeof(k0.value) !== "undefined" ? k0.value : k0.v;
-
-                if (prop_name == "transform")
-                    this.type = CSS_Transform2D$1;
-                else {
-                    this.type = this.getType(k0_val);
-                }
-
-                this.getValue(obj, prop_name, type);
-
-                let p = this.current_val;
-
-                if (IS_ARRAY)
-                    keys.forEach(k => p = this.addKey(k, p));
-                else
-                    this.addKey(keys, p);
-            }
-
-            destroy() {
-                this.keys = null;
-                this.type = null;
-                this.current_val = null;
-            }
-
-            getValue(obj, prop_name, type) {
-                if (type == CSS_STYLE) {
-                    let name = prop_name.replace(/[A-Z]/g, (match) => "-" + match.toLowerCase());
-                    let cs = window.getComputedStyle(obj);
-
-                    //Try to get computed value. If it does not exist, then get value from the style attribtute.
-                    let value = cs.getPropertyValue(name);
-                    
-                    if(!value)
-                        value = obj.style[prop_name];
-
-                    if (this.type == CSS_Percentage$1) {
-                        if (obj.parentElement) {
-                            let pcs = window.getComputedStyle(obj.parentElement);
-                            let pvalue = pcs.getPropertyValue(name);
-                            let ratio = parseFloat(value) / parseFloat(pvalue);
-                            value = (ratio * 100);
-                        }
-                    }
-
-                    this.current_val = new this.type(value);
-
-                } else {
-                    this.current_val = new this.type(obj[prop_name]);
-                }
-            }
-
-            getType(value) {
-
-                switch (typeof(value)) {
-                    case "number":
-                        return lerpNumber;
-                        break
-                    case "string":
-                        if (CSS_Length$1._verify_(value))
-                            return CSS_Length$1;
-                        if (CSS_Percentage$1._verify_(value))
-                            return CSS_Percentage$1;
-                        if (CSS_Color$1._verify_(value))
-                            return CSS_Color$1;
-                        //intentional
-                    case "object":
-                        return lerpNonNumeric;
-                }
-            }
-
-            addKey(key, prev) {
-                let
-                    l = this.keys.length,
-                    pkey = this.keys[l - 1],
-                    v = (key.value !== undefined) ? key.value : key.v,
-                    own_key = {
-                        val: (prev) ? prev.copy(v) : new this.type(v) || 0,
-                        dur: key.duration || key.dur || 0,
-                        del: key.delay || key.del || 0,
-                        ease: key.easing || key.e || ((pkey) ? pkey.ease : Linear),
-                        len: 0
-                    };
-
-                own_key.len = own_key.dur + own_key.del;
-
-                this.keys.push(own_key);
-
-                this.duration += own_key.len;
-
-                return own_key.val;
-            }
-
-            getValueAtTime(time = 0) {
-                let val_start = this.current_val,
-                    val_end = this.current_val,
-                    key, val_out = val_start;
-
-
-                for (let i = 0; i < this.keys.length; i++) {
-                    key = this.keys[i];
-                    val_end = key.val;
-                    if (time < key.len) {
-                        break;
-                    } else
-                        time -= key.len;
-                    val_start = key.val;
-                }
-
-
-                if (key) {
-                    if (time < key.len) {
-                        if (time < key.del) {
-                            val_out = val_start;
-                        } else {
-                            let x = (time - key.del) / key.dur;
-                            let s = key.ease.getYatX(x);
-                            val_out = val_start.lerp(val_end, s, val_start);
-                        }
-                    } else {
-                        val_out = val_end;
-                    }
-                }
-
-                return val_out;
-            }
-
-            run(obj, prop_name, time, type) {
-                const val_out = this.getValueAtTime(time);
-                this.setProp(obj, prop_name, val_out, type);
-                return time < this.duration;
-            }
-
-            setProp(obj, prop_name, value, type) {
-
-                if (type == CSS_STYLE) {
-                    obj.style[prop_name] = value;
-                } else
-                    obj[prop_name] = value;
-            }
-
-            unsetProp(obj, prop_name) {
-                this.setProp(obj, prop_name, "", CSS_STYLE);
-            }
-
-            toCSSString(time = 0, prop_name = "") {
-                const value = this.getValueAtTime(time);
-                return `${prop_name}:${value.toString()}`;
-            }
-        }
-
-        // Stores animation data for a group of properties. Defines delay and repeat.
-        class AnimSequence {
-            constructor(obj, props) {
-                this.duration = 0;
-                this.time = 0;
-                this.obj = null;
-                this.type = setType(obj);
-                this.DESTROYED = false;
-                this.FINISHED = false;
-                this.CSS_ANIMATING = false;
-                this.events = {};
-                this.SHUTTLE = false;
-                this.REPEAT = 0;
-                this.SCALE = 1;
-
-                switch (this.type) {
-                    case CSS_STYLE:
-                        this.obj = obj;
-                        break;
-                    case SVG:
-                    case JS_OBJECT:
-                        this.obj = obj;
-                        break;
-                }
-
-                this.props = {};
-
-                this.setProps(props);
-            }
-
-            destroy() {
-                for (let name in this.props)
-                    if (this.props[name])
-                        this.props[name].destroy();
-                this.DESTROYED = true;
-                this.duration = 0;
-                this.obj = null;
-                this.props = null;
-                this.time = 0;
-            }
-
-            // Removes AnimProps based on object of keys that should be removed from this sequence.
-            removeProps(props) {
-                if (props instanceof AnimSequence)
-                    props = props.props;
-
-                for (let name in props) {
-                    if (this.props[name])
-                        this.props[name] = null;
-                }
-            }
-
-
-            unsetProps(props) {
-                for (let name in this.props)
-                    this.props[name].unsetProp(this.obj, name);
-            }
-
-            setProps(props) {
-                for (let name in this.props)
-                    this.props[name].destroy();
-
-                this.props = {};
-
-                for (let name in props)
-                    this.configureProp(name, props[name]);
-            }
-
-            configureProp(name, keys) {
-                let prop;
-                if (prop = this.props[name]) {
-                    this.duration = Math.max(prop.duration || prop.dur, this.duration);
-                } else {
-                    prop = new AnimProp(keys, this.obj, name, this.type);
-                    this.props[name] = prop;
-                    this.duration = Math.max(prop.duration || prop.dur, this.duration);
-                }
-            }
-
-            run(i) {
-
-                for (let n in this.props) {
-                    let prop = this.props[n];
-                    if (prop)
-                        prop.run(this.obj, n, i, this.type);
-                }
-
-                if (i >= this.duration || i <= 0)
-                    return false;
-
-                return true;
-            }
-
-            scheduledUpdate(a, t) {
-
-                this.time += t * this.SCALE;
-                if (this.run(this.time)){
-                    spark.queueUpdate(this);
-                }
-                else if(this.REPEAT){
-                    let scale = this.SCALE;
-                    
-                    this.REPEAT--;
-
-                    if(this.SHUTTLE)
-                        scale = -scale;
-                    
-                    let from = (scale > 0) ? 0 : this.duration;
-                         
-                    this.play(scale, from);
-                }else
-                    this.issueEvent("stopped");
-
-            }
-
-            //TODO: use repeat to continually play back numation 
-            repeat(count = 1){
-                this.REPEAT = Math.max(0,parseFloat(count));
-                return this;
-            } 
-             //TODO: allow scale to control playback speed and direction
-            play(scale = 1, from = 0) {
-                this.SCALE = scale;
-                this.time = from;
-                spark.queueUpdate(this);
-                this.issueEvent("started");
-                return this;
-            }
-
-            set(i=0){
-                if(i >= 0)
-                    this.run(i*this.duration);
-                else
-                    this.run(this.duration - i*this.duration);
-            }
-
-
-            shuttle(SHUTTLE = true){
-                this.SHUTTLE = !!SHUTTLE;
-                return this;
-            }
-
-            addEventListener(event, listener) {
-                if (typeof(listener) === "function") {
-                    if (!this.events[event])
-                        this.events[event] = [];
-                    this.events[event].push(listener);
-                }
-            }
-
-            removeEventListener(event, listener) {
-                if (typeof(listener) === "function") {
-                    let events = this.events[event];
-                    if (events) {
-                        for (let i = 0; i < events.length; i++)
-                            if (events[i] === listener)
-                                return e(vents.splice(i, 1), true);
-                    }
-                }
-                return false;
-            }
-
-            issueEvent(event) {
-                let events = this.events[event];
-
-                if (events)
-                    events.forEach(e => e(this));
-            }
-
-            toCSSString(keyfram_id) {
-
-                const easing = "linear";
-
-                const strings = [`.${keyfram_id}{animation:${keyfram_id} ${this.duration}ms ${Animation.ease_out.toString()}}`, `@keyframes ${keyfram_id}{`];
-
-                // TODO: Use some function to determine the number of steps that should be taken
-                // This should reflect the different keyframe variations that can occure between
-                // properties.
-                // For now, just us an arbitrary number
-
-                const len = 2;
-                const len_m_1 = len - 1;
-                for (let i = 0; i < len; i++) {
-
-                    strings.push(`${Math.round((i/len_m_1)*100)}%{`);
-
-                    for (let name in this.props)
-                        strings.push(this.props[name].toCSSString((i / len_m_1) * this.duration, name.replace(/([A-Z])/g, (match, p1) => "-" + match.toLowerCase())) + ";");
-
-                    strings.push("}");
-                }
-
-                strings.push("}");
-
-                return strings.join("\n");
-            }
-
-            beginCSSAnimation() {
-                if (!this.CSS_ANIMATING) {
-
-                    const anim_class = "class" + ((Math.random() * 10000) | 0);
-                    this.CSS_ANIMATING = anim_class;
-
-                    this.obj.classList.add(anim_class);
-                    let style = document.createElement("style");
-                    style.innerHTML = this.toCSSString(anim_class);
-                    document.head.appendChild(style);
-                    this.style = style;
-
-                    setTimeout(this.endCSSAnimation.bind(this), this.duration);
-                }
-            }
-
-            endCSSAnimation() {
-                if (this.CSS_ANIMATING) {
-                    this.obj.classList.remove(this.CSS_ANIMATING);
-                    this.CSS_ANIMATING = "";
-                    this.style.parentElement.removeChild(this.style);
-                    this.style = null;
-                }
-            }
-        }
-
-        class AnimGroup {
-
-            constructor() {
-                this.seq = [];
-                this.time = 0;
-                this.duration = 0;
-                this.SHUTTLE = false;
-                this.REPEAT = 0;
-                this.SCALE = 1;
-            }
-
-            destroy() {
-                this.seq.forEach(seq => seq.destroy());
-                this.seq = null;
-            }
-
-            add(seq) {
-                this.seq.push(seq);
-                this.duration = Math.max(this.duration, seq.duration);
-            }
-
-            run(t) {
-                for (let i = 0, l = this.seq.length; i < l; i++) {
-                    let seq = this.seq[i];
-                    seq.run(t);
-                }
-
-                if (t >= this.duration)
-                    return false;
-
-                return true;
-            }
-
-            scheduledUpdate(a, t) {
-                this.time += t * this.SCALE;
-                if (this.run(this.time))
-                    spark.queueUpdate(this);
-                else if(repeat){
-                    let scale = this.scale;
-                    
-                    repeat--;
-
-                    if(this.SHUTTLE)
-                        scale = -scale;
-                    
-                    let from = (scale > 0) ? 0 : this.duration;
-                         
-                    this.play(scale, from);
-                }
-            }
-
-            shuttle(SHUTTLE = true){
-                this.SHUTTLE = !!SHUTTLE;
-                return this;
-            }
-
-            stop(){
-                return this;
-            }
-
-            set(i=0){
-                if(i >= 0)
-                    this.run(i*this.duration);
-                else
-                    this.run(this.duration - i*this.duration);
-            }
-
-            //TODO: allow scale to control playback speed and direction
-            play(scale = 1, from = 0) {
-                this.SCALE = 0;
-                this.time = from;
-                spark.queueUpdate(this);
-                return this;
-            }
-            //TODO: use repeat to continually play back numation 
-            repeat(count = 0){
-                this.REPEAT = Math.max(0,parseInt(count));
-                return this;
-            }    
-        }
-
-        const GlowFunction = function() {
-
-            if (arguments.length > 1) {
-
-                let group = new AnimGroup();
-
-                for (let i = 0; i < arguments.length; i++) {
-                    let data = arguments[i];
-
-                    let obj = data.obj;
-                    let props = {};
-
-                    Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
-
-                    group.add(new AnimSequence(obj, props));
-                }
-
-                return group;
-
-            } else {
-                let data = arguments[0];
-
-                let obj = data.obj;
-                let props = {};
-
-                Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
-
-                let seq = new AnimSequence(obj, props);
-
-                return seq;
-            }
-        };
-
-        Object.assign(GlowFunction, {
-
-            createSequence: GlowFunction,
-
-            createGroup: function(...rest) {
-                let group = new AnimGroup;
-                rest.forEach(seq => group.add(seq));
-                return group;
-            },
-
-            set USE_TRANSFORM(v) { USE_TRANSFORM = !!v; },
-            get USE_TRANSFORM() { return USE_TRANSFORM; },
-
-            linear: Linear,
-            ease: new CSS_Bezier$1(0.25, 0.1, 0.25, 1),
-            ease_in: new CSS_Bezier$1(0.42, 0, 1, 1),
-            ease_out: new CSS_Bezier$1(0.2, 0.8, 0.3, 0.99),
-            ease_in_out: new CSS_Bezier$1(0.42, 0, 0.58, 1),
-            overshoot: new CSS_Bezier$1(0.2, 1.5, 0.2, 0.8),
-            custom: (x1, y1, x2, y2) => new CSS_Bezier$1(x1, y1, x2, y2)
-        });
-
-        return GlowFunction;
-    })();
-
-const CSS_Transform2D$2 = CSSParser.types.transform2D;
-
-function setToWithTransform(box_a, box_b, seq){
-    const start_width_as_percentage = box_a.width / box_b.width;
-    const start_height_as_percentage = box_a.height / box_b.height;
-    const pos_x_diff = -(box_b.x - box_a.x);
-    const pos_y_diff = -(box_b.y - box_a.y);
-
-    let ATransform = new CSS_Transform2D$2(pos_x_diff, pos_y_diff, start_width_as_percentage, start_height_as_percentage, 0);
-    let BTransform = new CSS_Transform2D$2(0, 0, 1, 1, 0);
-
-    seq.props.transform.keys[0].val = ATransform;
-    seq.props.transform.keys[1].val = BTransform;
-}
-
-function setTo(to, seq, duration, easing, from){
-
-    const cs = window.getComputedStyle(to, null);
-    const rect = to.getBoundingClientRect();
-    const from_rect = from.getBoundingClientRect();
-
-    let to_width = cs.getPropertyValue("width");
-    let to_height = cs.getPropertyValue("height");
-    let margin_left = parseFloat(cs.getPropertyValue("margin-left"));
-    let to_bgc = cs.getPropertyValue("background-color");
-    let to_c = cs.getPropertyValue("color");
-    const pos = cs.getPropertyValue("position");
-
-    /* USING TRANSFORM */
-
-    //Use width and height a per
-
-    if(false){
-        setToWithTransform(from_rect, rect, seq);
-        //left.keys[0].val = new left.type(start_left, "px");
-        //left.keys[1].val = new left.type(final_left,"px");
-        seq.props.transform.keys[1].dur = duration;
-        seq.props.transform.keys[1].len = duration;
-        seq.props.transform.keys[1].ease = easing;
-        seq.props.transform.duration = duration;
-    }else{
-        ////////////////////// LEFT ////////////////////// 
-
-        const left = seq.props.left;
-        let start_left = 0, final_left = 0, abs_diff = 0;
-
-        abs_diff = (left.keys[0].val - rect.left);
-
-        if(pos== "relative"){
-            //get existing offset 
-            const left = parseFloat(cs.getPropertyValue("left")) || 0;
-
-            start_left = abs_diff +left;
-            final_left = left;
-        }else{
-            start_left = to.offsetLeft + abs_diff;
-            final_left = to.offsetLeft;
-        }
-
-        left.keys[0].val = new left.type(start_left, "px");
-        left.keys[1].val = new left.type(final_left,"px");
-        left.keys[1].dur = duration;
-        left.keys[1].len = duration;
-        left.keys[1].ease = easing;
-        left.duration = duration;
-
-        ////////////////////// TOP ////////////////////// 
-        const top = seq.props.top;
-        let start_top = 0, final_top = 0;
-
-        abs_diff = (top.keys[0].val - rect.top);
-
-        if(pos== "relative"){
-             const top = parseFloat(cs.getPropertyValue("top")) || 0;
-            start_top = abs_diff + top;
-            final_top = top;
-        }else{
-            start_top = to.offsetTop + abs_diff;
-            final_top = to.offsetTop;
-        }
-
-        top.keys[0].val = new top.type(start_top, "px");
-        top.keys[1].val = new top.type(final_top,"px");
-        top.keys[1].dur = duration;
-        top.keys[1].len = duration;
-        top.keys[1].ease = easing;
-        top.duration = duration;
-
-        ////////////////////// WIDTH ////////////////////// 
-
-        seq.props.width.keys[0].val = new seq.props.width.type(to_width);
-        seq.props.width.keys[0].dur = duration;
-        seq.props.width.keys[0].len = duration;
-        seq.props.width.keys[0].ease = easing;
-        seq.props.width.duration = duration;
-
-        ////////////////////// HEIGHT ////////////////////// 
-
-        seq.props.height.keys[0].val = new seq.props.height.type(to_height);
-        seq.props.height.keys[0].dur = duration;
-        seq.props.height.keys[0].len = duration; 
-        seq.props.height.keys[0].ease = easing; 
-        seq.props.height.duration = duration;
-
-    }
-        to.style.transformOrigin = "top left";
-
-    ////////////////////// BG COLOR ////////////////////// 
-
-    seq.props.backgroundColor.keys[0].val = new seq.props.backgroundColor.type(to_bgc);
-    seq.props.backgroundColor.keys[0].dur = duration; 
-    seq.props.backgroundColor.keys[0].len = duration; 
-    seq.props.backgroundColor.keys[0].ease = easing; 
-    seq.props.backgroundColor.duration = duration;
-
-    ////////////////////// COLOR ////////////////////// 
-
-    seq.props.color.keys[0].val = new seq.props.color.type(to_c);
-    seq.props.color.keys[0].dur = duration; 
-    seq.props.color.keys[0].len = duration; 
-    seq.props.color.keys[0].ease = easing; 
-    seq.props.color.duration = duration;
-
-    seq.obj = to;
-
-
-
-    seq.addEventListener("stopped", ()=>{
-        seq.unsetProps();
-    });
-}
-
-/**
-    Transform one element from another back to itself
-    @alias module:wick~internals.TransformTo
-*/
-function TransformTo(element_from, element_to, duration = 500, easing = Animation.linear, HIDE_OTHER = false) {
-    let rect = element_from.getBoundingClientRect();
-    let cs = window.getComputedStyle(element_from, null);
-    let margin_left = parseFloat(cs.getPropertyValue("margin"));
-
-    let seq = Animation.createSequence({
-        obj: element_from,
-        // /transform: [{value:"translate(0,0)"},{value:"translate(0,0)"}],
-        width: { value: "0px"},
-        height: { value: "0px"},
-        backgroundColor: { value: "rgb(1,1,1)"},
-        color: { value: "rgb(1,1,1)"},
-        left: [{value:rect.left+"px"},{ value: "0px"}],
-        top: [{value:rect.top+"px"},{ value: "0px"}]
-    });
-
-    if (!element_to) {
-
-        let a = (seq) => (element_to, duration = 500, easing = Animation.linear,  HIDE_OTHER = false) => {
-            setTo(element_to, seq, duration, easing, element_from);
-            seq.duration = duration;
-        console.log(seq.toCSSString("MumboJumbo"));
-            return seq;
-        };
-
-        return a(seq);
-    }
-
-    setTo(element_to, duration, easing, element_from);
-    seq.duration = duration;
-    return seq;
-}
-
-const Transitioneer = (function() {
-
-    let obj_map = new Map();
-    let ActiveTransition = null;
-
-    function $in(anim_data_or_duration = 0, delay = 0) {
-
-        let seq;
-
-        if (typeof(anim_data_or_duration) == "object") {
-            if (anim_data_or_duration.match && this.TT[anim_data_or_duration.match]) {
-                let duration = anim_data_or_duration.duration;
-                let easing = anim_data_or_duration.easing;
-                seq = this.TT[anim_data_or_duration.match](anim_data_or_duration.obj, duration, easing);
-            } else
-                seq = Animation.createSequence(anim_data_or_duration);
-
-            //Parse the object and convert into animation props. 
-            if (seq) {
-                this.in_seq.push(seq);
-                this.in_duration = Math.max(this.in_duration, seq.duration);
-                if (this.OVERRIDE) {
-
-                    if (obj_map.get(seq.obj)) {
-                        let other_seq = obj_map.get(seq.obj);
-                        other_seq.removeProps(seq);
-                    }
-
-                    obj_map.set(seq.obj, seq);
-                }
-            }
-
-        } else
-            this.in_duration = Math.max(this.in_duration, parseInt(delay) + parseInt(anim_data_or_duration));
-
-        return this.in;
-    }
-
-
-    function $out(anim_data_or_duration = 0, delay = 0, in_delay = 0) {
-        //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
-        //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
-
-        if (typeof(anim_data_or_duration) == "object") {
-
-            if (anim_data_or_duration.match) {
-                this.TT[anim_data_or_duration.match] = TransformTo(anim_data_or_duration.obj);
-            } else {
-                let seq = Animation.createSequence(anim_data_or_duration);
-                if (seq) {
-                    this.out_seq.push(seq);
-                    this.out_duration = Math.max(this.out_duration, seq.duration);
-                    if (this.OVERRIDE) {
-
-                        if (obj_map.get(seq.obj)) {
-                            let other_seq = obj_map.get(seq.obj);
-                            other_seq.removeProps(seq);
-                        }
-
-                        obj_map.set(seq.obj, seq);
-                    }
-                }
-                this.in_delay = Math.max(this.in_delay, parseInt(delay));
-            }
-        } else {
-            this.out_duration = Math.max(this.out_duration, parseInt(delay) + parseInt(anim_data_or_duration));
-            this.in_delay = Math.max(this.in_delay, parseInt(in_delay));
-        }
-    }
-
-
-
-    class Transition {
-        constructor(override = true) {
-            this.in_duration = 0;
-            this.out_duration = 0;
-            this.PLAY = true;
-
-            this.reverse = false;
-
-            this.time = 0;
-
-            // If set to zero transitions for out and in will happen simultaneously.
-            this.in_delay = 0;
-
-            this.in_seq = [];
-            this.out_seq = [];
-
-            this.TT = {};
-            //Final transition time is given by max(start_len+in_delay, end_len);\
-            ActiveTransition = this;
-
-            this.out = $out.bind(this);
-            this.in = $in.bind(this);
-
-            Object.defineProperty(this.out, "out_duration", {
-                get: () => this.out_duration
-            });
-
-            this.OVERRIDE = override;
-        }
-
-        destroy() {
-            let removeProps = function(seq) {
-
-                if (!seq.DESTROYED) {
-                    if (obj_map.get(seq.obj) == seq)
-                        obj_map.delete(seq.obj);
-                }
-
-                seq.destroy();
-            };
-            this.in_seq.forEach(removeProps);
-            this.out_seq.forEach(removeProps);
-            this.in_seq.length = 0;
-            this.out_seq.length = 0;
-            this.res = null;
-            this.out = null;
-            this.in = null;
-        }
-
-        get duration() {
-            return Math.max(this.in_duration + this.in_delay, this.out_duration);
-        }
-
-
-        start(time = 0, speed = 1, reverse = false) {
-
-            for (let i = 0; i < this.in_seq.length; i++) {
-                // let seq = this.in_seq[i];
-                // seq.beginCSSAnimation()
-            }
-
-            this.time = time;
-            this.speed = Math.abs(speed);
-            this.reverse = reverse;
-
-            if (this.reverse)
-                this.speed = -this.speed;
-
-            return new Promise((res, rej) => {
-                if (this.duration > 0)
-                    this.scheduledUpdate(0, 0);
-                if (this.duration < 1)
-                    return res();
-                this.res = res;
-            });
-        }
-
-        play(t) {
-
-
-            this.PLAY = true;
-            let time = this.duration * t;
-            this.step(time);
-            return time;
-        }
-
-        stop() {
-            this.PLAY = false;
-            //There may be a need to kill any existing CSS based animations
-        }
-
-        step(t) {
-            
-            for (let i = 0; i < this.out_seq.length; i++) {
-                let seq = this.out_seq[i];
-                if (!seq.run(t) && !seq.FINISHED) {
-                    seq.issueEvent("stopped");
-                    seq.FINISHED = true;
-                }
-            }
-
-            t = Math.max(t - this.in_delay, 0);
-
-            for (let i = 0; i < this.in_seq.length; i++) {
-                let seq = this.in_seq[i];
-                if (!seq.run(t) && !seq.FINISHED) {
-                    seq.issueEvent("stopped");
-                    seq.FINISHED = true;
-                }
-            }
-
-        }
-
-        scheduledUpdate(step, time) {
-            if (!this.PLAY) return;
-
-            this.time += time * this.speed;
-
-            this.step(this.time);
-
-
-            if (this.res && this.time >= this.in_delay) {
-                this.res();
-                this.res = null;
-            }
-
-            if (this.reverse) {
-                if (this.time > 0)
-                    return spark.queueUpdate(this);
-            } else {
-                if (this.time < this.duration)
-                    return spark.queueUpdate(this);
-            }
-
-            if (this.res)
-                this.res();
-
-            this.destroy();
-        }
-    }
-
-    return { createTransition: (OVERRIDE) => new Transition(OVERRIDE) };
-})();
-
-Object.assign(Animation, {
-	createTransition:(...args) => Transitioneer.createTransition(...args),
-	transformTo:(...args) => TransformTo(...args)
-});
-
-const Globals = new Set([
-    "window",
-    "document",
-    "JSON",
-    "HTMLElement",
-]);
-
-class argumentIO extends IO {
-    constructor(scope, errors, tap, script, id){
-        super(scope, errors, tap);
-        this.ele = script;
-        this.id = id;
-        this.ACTIVE = false;
-    }
-
-    destroy(){
-        this.id = null;
-        super.destroy();
-    }
-
-    down(value){
-        this.ele.updateProp(this, value);
-    }
-}
-
-
-//Function.apply(Function, [binding.arg_key || binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val]);
-class ScriptIO extends IOBase {
-    constructor(scope, errors, tap, binding, node, statics) {
-
-        let presets = scope.presets;
-        let ids = binding.ids;
-        let func, HAVE_CLOSURE = false;
-
-        //*********** PRE OBJECT FUNCTION INITIALIZATION *******************//
-
-        const args = binding.args;
-        
-        const names = args.map(a=>a.name);
-
-        names.push("emit"); // For the injected emit function
-        //names.unshift(binding.tap_name);
-
-        const arg_ios = {};
-        let TAP_BINDING = -1;
-        let ACTIVE_IOS = 0;
-
-        const props = args.map((a,i)=>{
-            
-            if(a.IS_TAPPED){
-
-                if(a.name == tap.prop)
-                    TAP_BINDING = i;
-
-                ACTIVE_IOS++;
-
-                const arg_io = new argumentIO(scope, errors, scope.getTap(a.name), null, i);
-                
-                arg_ios[a.name] = arg_io;
-
-                return null;
-            }
-
-            return a.val;
-        });
-
-        
-        //props.unshift(null); // Place holder for value data
-
-        try {
-            if (binding._func_) {
-                func = binding._func_;
-                if(binding.HAVE_CLOSURE)
-                    HAVE_CLOSURE = true;
-            } else {
-                func = Function.apply(Function, names.concat([binding.val]));
-                binding._func_ = func;
-            }
-        } catch (e) {
-            errors.push(e);
-            console.error(`Script error encountered in ${statics.url || "virtual file"}:${node.line+1}:${node.char}`);
-            console.warn(binding.val);
-            console.error(e);
-            func = () => {};
-        }
-
-        super(tap);
-
-        this.IO_ACTIVATIONS = ACTIVE_IOS;
-        this.active_IOS = 0;
-
-        this.function = binding.val;
-
-        this.HAVE_CLOSURE = HAVE_CLOSURE;
-
-        if(this.HAVE_CLOSURE)
-            this._func_ = func;
-        else
-            this._func_ = func.bind(scope);
-        
-        this.scope = scope;
-        this.TAP_BINDING = TAP_BINDING;
-
-        //Embedded emit functions
-        const func_bound = this.emit.bind(this);
-        func_bound.onTick = this.onTick.bind(this);
-        
-        //TODO: only needed if emit is called in function. Though highly probably. 
-        props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value); } }));
-
-        this.arg_props = props;
-        this.arg_ios = arg_ios;
-
-        for(const a in arg_ios)
-            arg_ios[a].ele = this;
-        
-        //this.meta = null;
-        this.url = statics.url;
-
-        this.offset = node.offset;
-        this.char = node.char;
-        this.line = node.line;
-    }
-
-    /*
-        Removes all references to other objects.
-        Calls destroy on any child objects.
-     */
-    destroy() {
-        this._func_ = null;
-        this.scope = null;
-        this._bound_emit_function_ = null;
-        this._meta = null;
-        this.arg_props = null;
-        this.props = null;
-
-        for(const a of this.arg_ios)
-            a.destroy();
-
-        this.arg_ios = null;
-    }
-
-    updateProp(io, val){
-        this.arg_props[io.id] = val;
-
-        if(!io.ACTIVE){
-            io.ACTIVE = true;
-            this.active_IOS++;
-        }
-
-        //this.down();// Not Sure if this should be allowed. This would circumvent the expectation that the "on" binding decticts the scripts activation.
-    }
-
-    down(value, meta = { event: null }) {
-
-        const src = this.scope;
-
-        if(value){ 
-            if(typeof(value) == "object"){
-                //Distribute iterable properties amongst the IO_Script's own props.
-                for(const a in value){
-                    if(this.arg_ios[a])
-                        this.arg_ios[a].down(value[a]);
-                }
-            }else{
-                if(this.TAP_BINDING !== -1)
-                    this.arg_props[this.TAP_BINDING] = value;
-            }
-        }
-
-        if(this.active_IOS < this.IO_ACTIVATIONS) 
-            return
-
-        try {
-            if(this.HAVE_CLOSURE)
-                this._func_.apply(this, this.arg_props);
-            else
-                this._func_.apply(this, this.arg_props);
-        } catch (e) {
-            console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line+1}:${this.char}`);
-            console.warn(this.function);
-            console.error(e);
-        }
-    }
-
-    emit(name, value) {
-        if (
-            typeof(name) !== "undefined" &&
-            typeof(value) !== "undefined"
-        ) {
-            this.scope.upImport(name, value, this.meta);
-        }
-    }
-
-    /* 
-        Same as emit, except the message is generated on the next global tick. 
-        Useful for actions which require incremental updates to the UI.
-    */
-    onTick(name){
-        spark.queueUpdate({
-            _SCHD_:0, // Meta value for spark;
-            scheduledUpdate:(s,d)=>this.emit(name, {step:s,diff:d})
-        });
-    }
-}
-
-function replaceEscapedHTML(string) {
-    let out_string = string.toString();
-
-    /*  https://en.wikipedia.org/wiki/Character_encodings_in_HTML
-        &amp;   → & (ampersand, U+0026)
-        &lt;    → < (less-than sign, U+003C)
-        &gt;    → > (greater-than sign, U+003E)
-        &quot;  → " (quotation mark, U+0022)
-        &apos;  → ' (apostrophe, U+0027)
-    */
-    
-    out_string = out_string.split(/(\&\#*[a-zA-Z0-1]+;)/g).map(replaceEncoding).join("");
-    
-    return out_string;
-}
-
-const EncodingMap = new Map([
-    ["&amp;", "&"],
-    ["&lt;", "<"],
-    ["&gt;", ">"],
-    ["&quot;", '"'],
-    ["&apos;", "'"],
-    ["&nbsp;", "    "]
-]);
-
-function replaceEncoding(str) {
-    let rep = EncodingMap.get(str);
-    if (str[0] == "&" && str.slice(-1) == ";") {
-        if (rep)
-            return rep;
-        else {
-            if (str[2] == "x")
-                return String.fromCharCode(parseInt(str.slice(2, -1), 16));
-            else
-                return String.fromCharCode(parseInt(str.slice(2, -1)));
-        }
-    }
-    return str;
-}
-
-const DYNAMICbindingID = 0;
-const RAW_VALUEbindingID = 1;
-const TEMPLATEbindingID = 2;
-const EVENTbindingID = 3;
-
-const ATTRIB = 1;
-const STYLE = 2;
-const HTML$1 = 3;
-const TEXT$1 = 4;
-const INPUT = 5;
-const SCRIPT = 6;
-const EVENT = 7;
-const BOOL = 8;
-
-/**
- * Binding builder for expressions
- *
- * @class      ExpressionBinding (name)
- */
-class EventBinding {
-    constructor(prop) {
-        this.arg = null;
-        this.event = prop;
-    }
-
-    _bind_(scope, errors, taps, element, eventname) {
-        return new EventIO(scope, errors, taps, element, eventname, this.event, this.arg);
-    }
-
-    get bindings() {
-        if (this.argument) {
-            if (this.argument.type == TEMPLATEbindingID)
-                return [...this.argument.bindings, this.event];
-            else
-                return [this.argument, this.event];
-        }
-        return [this.event];
-    }
-    set bindings(v) {}
-
-    get type() {
-        return TEMPLATEbindingID;
-    }
-    set type(v) {}
-
-    set argument(binding) {
-        this.arg = binding;
-    }
-}
-
-/**
- * Binding builder for expressions
- *
- * @class      ExpressionBinding (name)
- */
-class ExpressionBinding {
-    constructor(binds, func) {
-        this.bindings = binds;
-        this.func = func;
-        this.arg = null;
-        this.attrib = "";
-    }
-
-    _bind_(scope, errors, taps, element) {
-        switch (this.method) {
-            case BOOL:
-                return new BooleanExpressionIO(scope, errors, taps, element, this.bindings, this.func);
-            case INPUT:
-                return new InputExpressionIO(scope, errors, taps, element, this.bindings, this.func);
-            case ATTRIB:
-                return new AttribExpressionIO(scope, errors, taps, element, this.bindings, this.func, this.attrib);
-            default:
-                return new ExpressionIO(scope, errors, taps, element, this.bindings, this.func);
-        }
-    }
-
-    get type() {
-        return TEMPLATEbindingID;
-    }
-    set type(v) {}
-}
-
-
-class DynamicBinding {
-
-    constructor() {
-        this.tap_name = "";
-        this.tap_id = 0;
-        this.val = "";
-        this._func_ = null;
-        this.method = 0;
-        this.argKey = null;
-        this.argVal = null;
-        this.attrib = "";
-    }
-
-    _bind_(scope, errors, taps, element, attr = "", node = null, statics = null) {
-
-        let tap = scope.getTap(this.tap_name); //taps[this.tap_id];
-        switch (this.method) {
-            case INPUT:
-                return new InputIO(scope, errors, tap, element, this.argKey);
-            case BOOL:
-                return new BooleanIO(scope, errors, tap, element, this.argVal);
-            case ATTRIB:
-                return new AttribIO(scope, errors, tap, attr, element, this.argVal);
-            case SCRIPT:
-                return new ScriptIO(scope, errors, tap, this, node, statics);
-            default:
-                return new IO(scope, errors, tap, element, this.argVal);
-        }
-    }
-
-    get type() {
-        return DYNAMICbindingID;
-    }
-    set type(v) {}
-
-    toString() { return `((${this.tap_name}))`; }
-
-    set argument(binding) {
-        if (binding instanceof DynamicBinding) {
-            this.argKey = binding.tap_name;
-            this.argVal = binding.val;
-        } else if (binding instanceof RawValueBinding) {
-            this.argVal = binding.val;
-        }
-    }
-}
-
-class RawValueBinding {
-    constructor(val) {
-        this.val = replaceEscapedHTML(val);
-        this.method = 0;
-    }
-
-    _bind_(scope, errors, taps, element, prop = "") {
-        try {
-
-            switch (this.method) {
-                case TEXT$1:
-                    element.data = this.val;
-                    break;
-                case ATTRIB:
-                    {
-                        if (prop == "class") {
-                            element.classList.add.apply(element.classList, this.val.split(" "));
-                        } else
-                            element.setAttribute(prop, this.val);
-                    }
-            }
-        } catch (e) {
-            console.error(`Unable to process the value ${this.val}`);
-            console.error(e);
-        }
-    }
-    get _value_() { return this.val; }
-    set _value_(v) {}
-    get type() { return RAW_VALUEbindingID; }
-    set type(v) {}
-    toString() { return this.val; }
-}
-
-/* Templating Syntax */
-const barrier_a_start = "(";
-const barrier_a_end = ")";
-const barrier_b_start = "|";
-const barrier_b_end = "|";
-
-let fn = {}; const 
+let fn$1 = {}; const 
 /************** Maps **************/
 
     /* Symbols To Inject into the Lexer */
-    symbols = ["{","}","(",")","[","]",".","...",";",",","<",">","<=",">=","==","!=","===","!==","+","-","*","%","/","**","++","--","<<",">>",">>>","&","|","^","!","~","&&","||","?",":","+=","-=","*=","%=","/=","**=","<<=",">>=",">>>=","&=","|=","^=","=>"],
+    symbols$1 = ["{","}","(",")","[","]",".","...",";",",","<",">","<=",">=","==","!=","===","!==","+","-","*","%","/","**","++","--","<<",">>",">>>","&","|","^","!","~","&&","||","?",":","+=","-=","*=","%=","/=","**=","<<=",">>=",">>>=","&=","|=","^=","=>"],
 
     /* Goto lookup maps */
-    gt0 = [0,-1,1,-18,2,3,4,5,6,7,103,14,8,22,12,9,13,89,-2,15,16,17,19,18,90,-4,10,-2,20,-3,21,11,-2,104,108,-2,62,106,-7,27,83,-4,81,63,102,-7,24,28,52,54,57,58,79,53,80,-2,56,-14,25,-1,26,29,30,31,32,33,34,35,36,37,38,39,40,41,49,64,-11,61,70,71,69,68,85,60,84,65,66],
-gt1 = [0,-23,111,6,7,103,14,8,22,12,9,13,89,-2,15,16,17,19,18,90,-4,10,-2,20,-3,21,11,-2,104,108,-2,62,106,-7,27,83,-4,81,63,102,-7,24,28,52,54,57,58,79,53,80,-2,56,-14,25,-1,26,29,30,31,32,33,34,35,36,37,38,39,40,41,49,64,-11,61,70,71,69,68,85,60,84,65,66],
-gt2 = [0,-22,112,5,6,7,103,14,8,22,12,9,13,89,-2,15,16,17,19,18,90,-4,10,-2,20,-3,21,11,-2,104,108,-2,62,106,-7,27,83,-4,81,63,102,-7,24,28,52,54,57,58,79,53,80,-2,56,-14,25,-1,26,29,30,31,32,33,34,35,36,37,38,39,40,41,49,64,-11,61,70,71,69,68,85,60,84,65,66],
-gt3 = [0,-113,116],
-gt4 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,156,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
-gt5 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,167,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
-gt6 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,168,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
-gt7 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,169,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
-gt8 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,170,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
-gt9 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,171,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
-gt10 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,172,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
-gt11 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,173,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
-gt12 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,174,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
-gt13 = [0,-95,176],
-gt14 = [0,-95,181],
+    gt0$1 = [0,-1,1,-18,2,3,4,5,6,7,103,14,8,22,12,9,13,89,-2,15,16,17,19,18,90,-4,10,-2,20,-3,21,11,-2,104,108,-2,62,106,-7,27,83,-4,81,63,102,-7,24,28,52,54,57,58,79,53,80,-2,56,-14,25,-1,26,29,30,31,32,33,34,35,36,37,38,39,40,41,49,64,-11,61,70,71,69,68,85,60,84,65,66],
+gt1$1 = [0,-23,111,6,7,103,14,8,22,12,9,13,89,-2,15,16,17,19,18,90,-4,10,-2,20,-3,21,11,-2,104,108,-2,62,106,-7,27,83,-4,81,63,102,-7,24,28,52,54,57,58,79,53,80,-2,56,-14,25,-1,26,29,30,31,32,33,34,35,36,37,38,39,40,41,49,64,-11,61,70,71,69,68,85,60,84,65,66],
+gt2$1 = [0,-22,112,5,6,7,103,14,8,22,12,9,13,89,-2,15,16,17,19,18,90,-4,10,-2,20,-3,21,11,-2,104,108,-2,62,106,-7,27,83,-4,81,63,102,-7,24,28,52,54,57,58,79,53,80,-2,56,-14,25,-1,26,29,30,31,32,33,34,35,36,37,38,39,40,41,49,64,-11,61,70,71,69,68,85,60,84,65,66],
+gt3$1 = [0,-113,116],
+gt4$1 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,156,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
+gt5$1 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,167,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
+gt6$1 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,168,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
+gt7$1 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,169,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
+gt8$1 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,170,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
+gt9$1 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,171,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
+gt10$1 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,172,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
+gt11$1 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,173,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
+gt12$1 = [0,-61,62,165,-13,81,63,166,-8,158,52,54,57,58,79,53,80,-2,56,160,-9,159,-17,174,157,49,161,-11,61,70,71,69,68,-1,60,-1,162,66],
+gt13$1 = [0,-95,176],
+gt14$1 = [0,-95,181],
 gt15 = [0,-61,62,165,-14,63,166,-9,182,183,57,58,79,-4,56,160,-9,159,-20,161,-11,61,70,71,69,68,-1,60,-1,162,66],
 gt16 = [0,-61,62,165,-7,27,83,-4,81,63,166,-7,187,28,52,54,57,58,79,53,80,-2,56,160,-9,159,-3,25,-1,26,29,30,31,32,33,34,35,36,37,38,39,40,41,49,64,-11,61,70,71,69,68,-1,60,84,189,66],
 gt17 = [0,-95,192],
@@ -14355,54 +2139,54 @@ gt196 = [0,-22,636,5,6,7,103,14,8,22,12,9,13,89,-2,15,16,17,19,18,90,-4,10,-2,20
 gt197 = [0,-24,638,-2,14,8,22,12,9,13,89,-2,15,16,17,19,18,90,-4,10,-2,20,-3,21,11,-6,62,-8,27,83,-4,81,63,-8,24,28,52,54,57,58,79,53,80,-2,56,-14,25,-1,26,29,30,31,32,33,34,35,36,37,38,39,40,41,49,64,-11,61,70,71,69,68,85,60,84,65,66],
 
     // State action lookup maps
-    sm0=[0,1,2,3,4,0,-4,0,-8,5,-3,6,-1,7,8,9,-2,10,11,-2,12,13,14,15,-2,16,17,18,19,20,21,22,-2,23,-2,24,25,-5,26,-2,27,-2,28,-31,29,30,-3,31,32,33,34,35,36,37,-2,38,39,40],
-sm1=[0,41,-3,0,-4,0],
-sm2=[0,42,-3,0,-4,0],
-sm3=[0,43,-3,0,-4,0],
-sm4=[0,44,2,3,4,0,-4,0,-8,5,-3,6,-1,7,8,9,-2,10,11,-2,12,13,14,15,-2,16,17,18,19,20,21,22,-2,23,-2,24,25,-5,26,-2,27,-2,28,-31,29,30,-3,31,32,33,34,35,36,37,-2,38,39,40],
-sm5=[0,45,45,45,45,0,-4,0,-8,45,45,-2,45,45,45,45,45,45,-1,45,45,-2,45,45,45,45,-2,45,45,45,45,45,45,45,45,-1,45,-2,45,45,-5,45,-2,45,-2,45,-31,45,45,-3,45,45,45,45,45,45,45,-2,45,45,45],
-sm6=[0,46,46,46,46,0,-4,0,-8,46,46,-2,46,46,46,46,46,46,-1,46,46,-2,46,46,46,46,-2,46,46,46,46,46,46,46,46,-1,46,-2,46,46,-5,46,-2,46,-2,46,-31,46,46,-3,46,46,46,46,46,46,46,-2,46,46,46],
-sm7=[0,47,47,47,47,0,-4,0,-8,47,47,-2,47,47,47,47,47,47,-1,47,47,-1,47,47,47,47,47,-2,47,47,47,47,47,47,47,47,-1,47,-2,47,47,-5,47,-2,47,-2,47,-31,47,47,-3,47,47,47,47,47,47,47,-2,47,47,47],
-sm8=[0,48,48,48,48,0,-4,0,-8,48,48,-2,48,48,48,48,48,48,-1,48,48,-1,48,48,48,48,48,-2,48,48,48,48,48,48,48,48,-1,48,-2,48,48,-5,48,-2,48,-2,48,-31,48,48,-3,48,48,48,48,48,48,48,-2,48,48,48],
-sm9=[0,-1,2,3,4,0,-4,0,-8,5,-3,6,-1,7,8,9,-2,10,11,-2,12,13,14,15,-2,16,17,18,19,20,21,22,-2,23,-2,24,25,-5,26,-2,27,-2,28,-31,29,30,-3,31,32,33,34,35,36,37,-2,38,39,40],
-sm10=[0,-4,0,-4,0,-5,49,-6,50],
-sm11=[0,-4,0,-4,0,-5,51,-6,51,-8,51,-15,51,-11,51],
-sm12=[0,-4,0,-4,0,-5,52,-3,52,-2,52,-8,52,-15,52,-11,52],
-sm13=[0,-4,0,-4,0,-5,53,53,-2,53,-2,53,-8,53,-5,53,-9,53,-11,53,-5,54,55,56,57,58,59,60,61,62,63,64,65,66,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,-5,67,68],
-sm14=[0,-4,0,-4,0,-5,69,-3,69,-2,69,-8,69,-15,69,-11,69,-18,70,71],
-sm15=[0,-4,0,-4,0,-5,72,-3,72,-2,72,-8,72,-15,72,-11,72,-18,72,72,73],
-sm16=[0,-4,0,-4,0,-5,74,-3,74,-2,74,-8,74,-15,74,-11,74,-18,74,74,74,75],
-sm17=[0,-4,0,-4,0,-5,76,-3,76,-2,76,-8,76,-15,76,-11,76,-18,76,76,76,76,77],
-sm18=[0,-4,0,-4,0,-5,78,-3,78,-2,78,-8,78,-15,78,-11,78,-18,78,78,78,78,78,79],
-sm19=[0,-4,0,-4,0,-5,80,-3,80,-2,80,-8,80,-15,80,-11,80,-18,80,80,80,80,80,80,81,82,83,84],
-sm20=[0,-4,0,-4,0,-5,85,-3,85,-2,85,-8,85,-5,86,-9,85,-11,85,-18,85,85,85,85,85,85,85,85,85,85,87,88,89,90,91],
-sm21=[0,-4,0,-4,0,-5,92,-3,92,-2,92,-8,92,-5,92,-9,92,-11,92,-18,92,92,92,92,92,92,92,92,92,92,92,92,92,92,92,93,94,95],
-sm22=[0,-4,0,-4,0,-5,96,-3,96,-2,96,-8,96,-5,96,-9,96,-11,96,-18,96,96,96,96,96,96,96,96,96,96,96,96,96,96,96,96,96,96,97,98],
-sm23=[0,-4,0,-4,0,-5,99,100,-2,99,-2,99,-8,99,-5,99,-9,99,-11,99,-18,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,101,102],
-sm24=[0,-4,0,-4,0,-5,103,103,-2,103,-2,103,-8,103,-5,103,-9,103,-11,103,-18,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103],
-sm25=[0,-4,0,-4,0,-5,104,104,-2,104,-2,104,-8,104,-5,104,-9,104,-11,104,-18,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104],
-sm26=[0,-4,0,-4,0,-5,105,105,-2,105,-2,105,-8,105,-5,105,-9,105,-11,105,-18,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,106],
-sm27=[0,-1,2,3,4,0,-4,0,-8,107,-5,7,8,-1,108,-2,11,-8,16,-18,26,-2,27,-2,28,-31,29,30,-3,31,32,33,34,35,36,37,-2,38,39,40],
-sm28=[0,-4,0,-4,0,-5,105,105,-2,105,-2,105,-8,105,-5,105,-9,105,-11,105,-18,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105],
-sm29=[0,-4,0,-4,0,-5,109,109,-1,109,109,-2,109,-8,109,-5,109,109,-8,109,-11,109,-5,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,-5,109,109],
-sm30=[0,-4,0,-4,0,-5,109,109,-1,109,109,-2,109,-4,110,-2,111,109,-5,109,109,-8,109,-11,109,112,-4,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,-5,109,109],
-sm31=[0,-4,0,-4,0,-5,113,113,-1,113,113,-2,113,-4,114,-2,111,113,-5,113,113,-8,113,-11,113,115,-4,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,-5,113,113],
-sm32=[0,-1,2,3,4,0,-4,0,-8,107,-5,7,8,-1,108,-2,11,-27,26,-1,116,117,-2,28,-45,38,39,40],
-sm33=[0,-4,0,-4,0,-5,118,118,-1,118,118,-2,118,-4,118,-2,118,118,-5,118,118,-8,118,-11,118,118,-4,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,-5,118,118],
-sm34=[0,-4,0,-4,0,-5,119,119,-1,119,119,-2,119,-4,119,-2,119,119,-5,119,119,-8,119,-11,119,119,-4,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,-5,119,119],
-sm35=[0,-4,0,-4,0,-5,120,120,-1,120,120,-2,120,-4,120,-2,120,120,-5,120,120,-8,120,-11,120,120,-4,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,-5,120,120],
-sm36=[0,-4,0,-4,0,-5,120,120,-2,120,-2,120,-4,120,-2,120,120,-5,120,120,-8,120,-5,121,-5,120,120,-4,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,-5,120,120],
-sm37=[0,-4,0,-4,0,-5,122,122,-5,122,-4,122,-2,122,-6,122,-9,123,-5,124,-6,122,-4,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,-5,122,122],
-sm38=[0,-4,0,-4,0,-5,125,125,-1,125,125,-2,125,-4,125,-2,125,125,-5,125,125,-8,125,-5,125,125,-4,125,125,-4,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,-5,125,125],
-sm39=[0,-4,0,-4,0,-5,126,126,-1,126,126,-2,126,-4,126,-2,126,126,-5,126,126,-8,126,-5,126,126,-4,126,126,-4,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,-5,126,126],
-sm40=[0,-4,0,-4,0,-5,127,127,-1,127,127,-2,127,-4,127,-2,127,127,-5,127,127,-8,127,-11,127,127,-4,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,-5,127,127],
-sm41=[0,-4,0,-4,0,-5,128,128,-1,128,128,-2,128,-4,128,-2,128,128,-5,128,128,-8,128,-11,128,128,-4,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,-5,128,128],
-sm42=[0,-4,0,-4,0,-5,129,129,-1,129,129,-2,129,-4,129,-2,129,129,-5,129,129,-8,129,-11,129,129,-4,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,-5,129,129],
-sm43=[0,-4,0,-4,0,-5,130,130,-1,130,130,-2,130,-4,130,-2,130,130,-5,130,130,-8,130,-11,130,130,-4,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,-5,130,130],
-sm44=[0,-4,0,-4,0,-5,131,131,-1,131,131,-2,131,-4,131,-2,131,131,-5,131,131,-8,131,-11,131,131,-4,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,-5,131,131],
-sm45=[0,-1,2,3,4,0,-4,0,-8,107,-5,7,8,-1,108,-2,11,132,-7,16,-18,26,-2,27,-1,133,28,-31,29,30,-3,31,32,33,34,35,36,37,-2,38,39,40],
-sm46=[0,-4,0,-4,0,-17,134,-2,111,-29,135],
-sm47=[0,-4,0,-4,0,-5,136,136,-1,136,136,-2,136,-4,136,-2,136,136,-5,136,136,-8,136,-11,136,136,-4,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,-5,136,136],
+    sm0$1=[0,1,2,3,4,0,-4,0,-8,5,-3,6,-1,7,8,9,-2,10,11,-2,12,13,14,15,-2,16,17,18,19,20,21,22,-2,23,-2,24,25,-5,26,-2,27,-2,28,-31,29,30,-3,31,32,33,34,35,36,37,-2,38,39,40],
+sm1$1=[0,41,-3,0,-4,0],
+sm2$1=[0,42,-3,0,-4,0],
+sm3$1=[0,43,-3,0,-4,0],
+sm4$1=[0,44,2,3,4,0,-4,0,-8,5,-3,6,-1,7,8,9,-2,10,11,-2,12,13,14,15,-2,16,17,18,19,20,21,22,-2,23,-2,24,25,-5,26,-2,27,-2,28,-31,29,30,-3,31,32,33,34,35,36,37,-2,38,39,40],
+sm5$1=[0,45,45,45,45,0,-4,0,-8,45,45,-2,45,45,45,45,45,45,-1,45,45,-2,45,45,45,45,-2,45,45,45,45,45,45,45,45,-1,45,-2,45,45,-5,45,-2,45,-2,45,-31,45,45,-3,45,45,45,45,45,45,45,-2,45,45,45],
+sm6$1=[0,46,46,46,46,0,-4,0,-8,46,46,-2,46,46,46,46,46,46,-1,46,46,-2,46,46,46,46,-2,46,46,46,46,46,46,46,46,-1,46,-2,46,46,-5,46,-2,46,-2,46,-31,46,46,-3,46,46,46,46,46,46,46,-2,46,46,46],
+sm7$1=[0,47,47,47,47,0,-4,0,-8,47,47,-2,47,47,47,47,47,47,-1,47,47,-1,47,47,47,47,47,-2,47,47,47,47,47,47,47,47,-1,47,-2,47,47,-5,47,-2,47,-2,47,-31,47,47,-3,47,47,47,47,47,47,47,-2,47,47,47],
+sm8$1=[0,48,48,48,48,0,-4,0,-8,48,48,-2,48,48,48,48,48,48,-1,48,48,-1,48,48,48,48,48,-2,48,48,48,48,48,48,48,48,-1,48,-2,48,48,-5,48,-2,48,-2,48,-31,48,48,-3,48,48,48,48,48,48,48,-2,48,48,48],
+sm9$1=[0,-1,2,3,4,0,-4,0,-8,5,-3,6,-1,7,8,9,-2,10,11,-2,12,13,14,15,-2,16,17,18,19,20,21,22,-2,23,-2,24,25,-5,26,-2,27,-2,28,-31,29,30,-3,31,32,33,34,35,36,37,-2,38,39,40],
+sm10$1=[0,-4,0,-4,0,-5,49,-6,50],
+sm11$1=[0,-4,0,-4,0,-5,51,-6,51,-8,51,-15,51,-11,51],
+sm12$1=[0,-4,0,-4,0,-5,52,-3,52,-2,52,-8,52,-15,52,-11,52],
+sm13$1=[0,-4,0,-4,0,-5,53,53,-2,53,-2,53,-8,53,-5,53,-9,53,-11,53,-5,54,55,56,57,58,59,60,61,62,63,64,65,66,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,53,-5,67,68],
+sm14$1=[0,-4,0,-4,0,-5,69,-3,69,-2,69,-8,69,-15,69,-11,69,-18,70,71],
+sm15$1=[0,-4,0,-4,0,-5,72,-3,72,-2,72,-8,72,-15,72,-11,72,-18,72,72,73],
+sm16$1=[0,-4,0,-4,0,-5,74,-3,74,-2,74,-8,74,-15,74,-11,74,-18,74,74,74,75],
+sm17$1=[0,-4,0,-4,0,-5,76,-3,76,-2,76,-8,76,-15,76,-11,76,-18,76,76,76,76,77],
+sm18$1=[0,-4,0,-4,0,-5,78,-3,78,-2,78,-8,78,-15,78,-11,78,-18,78,78,78,78,78,79],
+sm19$1=[0,-4,0,-4,0,-5,80,-3,80,-2,80,-8,80,-15,80,-11,80,-18,80,80,80,80,80,80,81,82,83,84],
+sm20$1=[0,-4,0,-4,0,-5,85,-3,85,-2,85,-8,85,-5,86,-9,85,-11,85,-18,85,85,85,85,85,85,85,85,85,85,87,88,89,90,91],
+sm21$1=[0,-4,0,-4,0,-5,92,-3,92,-2,92,-8,92,-5,92,-9,92,-11,92,-18,92,92,92,92,92,92,92,92,92,92,92,92,92,92,92,93,94,95],
+sm22$1=[0,-4,0,-4,0,-5,96,-3,96,-2,96,-8,96,-5,96,-9,96,-11,96,-18,96,96,96,96,96,96,96,96,96,96,96,96,96,96,96,96,96,96,97,98],
+sm23$1=[0,-4,0,-4,0,-5,99,100,-2,99,-2,99,-8,99,-5,99,-9,99,-11,99,-18,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,101,102],
+sm24$1=[0,-4,0,-4,0,-5,103,103,-2,103,-2,103,-8,103,-5,103,-9,103,-11,103,-18,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103,103],
+sm25$1=[0,-4,0,-4,0,-5,104,104,-2,104,-2,104,-8,104,-5,104,-9,104,-11,104,-18,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104,104],
+sm26$1=[0,-4,0,-4,0,-5,105,105,-2,105,-2,105,-8,105,-5,105,-9,105,-11,105,-18,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,106],
+sm27$1=[0,-1,2,3,4,0,-4,0,-8,107,-5,7,8,-1,108,-2,11,-8,16,-18,26,-2,27,-2,28,-31,29,30,-3,31,32,33,34,35,36,37,-2,38,39,40],
+sm28$1=[0,-4,0,-4,0,-5,105,105,-2,105,-2,105,-8,105,-5,105,-9,105,-11,105,-18,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105,105],
+sm29$1=[0,-4,0,-4,0,-5,109,109,-1,109,109,-2,109,-8,109,-5,109,109,-8,109,-11,109,-5,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,-5,109,109],
+sm30$1=[0,-4,0,-4,0,-5,109,109,-1,109,109,-2,109,-4,110,-2,111,109,-5,109,109,-8,109,-11,109,112,-4,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,109,-5,109,109],
+sm31$1=[0,-4,0,-4,0,-5,113,113,-1,113,113,-2,113,-4,114,-2,111,113,-5,113,113,-8,113,-11,113,115,-4,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,-5,113,113],
+sm32$1=[0,-1,2,3,4,0,-4,0,-8,107,-5,7,8,-1,108,-2,11,-27,26,-1,116,117,-2,28,-45,38,39,40],
+sm33$1=[0,-4,0,-4,0,-5,118,118,-1,118,118,-2,118,-4,118,-2,118,118,-5,118,118,-8,118,-11,118,118,-4,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,-5,118,118],
+sm34$1=[0,-4,0,-4,0,-5,119,119,-1,119,119,-2,119,-4,119,-2,119,119,-5,119,119,-8,119,-11,119,119,-4,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,-5,119,119],
+sm35$1=[0,-4,0,-4,0,-5,120,120,-1,120,120,-2,120,-4,120,-2,120,120,-5,120,120,-8,120,-11,120,120,-4,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,-5,120,120],
+sm36$1=[0,-4,0,-4,0,-5,120,120,-2,120,-2,120,-4,120,-2,120,120,-5,120,120,-8,120,-5,121,-5,120,120,-4,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,-5,120,120],
+sm37$1=[0,-4,0,-4,0,-5,122,122,-5,122,-4,122,-2,122,-6,122,-9,123,-5,124,-6,122,-4,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,122,-5,122,122],
+sm38$1=[0,-4,0,-4,0,-5,125,125,-1,125,125,-2,125,-4,125,-2,125,125,-5,125,125,-8,125,-5,125,125,-4,125,125,-4,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,125,-5,125,125],
+sm39$1=[0,-4,0,-4,0,-5,126,126,-1,126,126,-2,126,-4,126,-2,126,126,-5,126,126,-8,126,-5,126,126,-4,126,126,-4,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,-5,126,126],
+sm40$1=[0,-4,0,-4,0,-5,127,127,-1,127,127,-2,127,-4,127,-2,127,127,-5,127,127,-8,127,-11,127,127,-4,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,-5,127,127],
+sm41$1=[0,-4,0,-4,0,-5,128,128,-1,128,128,-2,128,-4,128,-2,128,128,-5,128,128,-8,128,-11,128,128,-4,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,-5,128,128],
+sm42$1=[0,-4,0,-4,0,-5,129,129,-1,129,129,-2,129,-4,129,-2,129,129,-5,129,129,-8,129,-11,129,129,-4,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,129,-5,129,129],
+sm43$1=[0,-4,0,-4,0,-5,130,130,-1,130,130,-2,130,-4,130,-2,130,130,-5,130,130,-8,130,-11,130,130,-4,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,-5,130,130],
+sm44$1=[0,-4,0,-4,0,-5,131,131,-1,131,131,-2,131,-4,131,-2,131,131,-5,131,131,-8,131,-11,131,131,-4,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,131,-5,131,131],
+sm45$1=[0,-1,2,3,4,0,-4,0,-8,107,-5,7,8,-1,108,-2,11,132,-7,16,-18,26,-2,27,-1,133,28,-31,29,30,-3,31,32,33,34,35,36,37,-2,38,39,40],
+sm46$1=[0,-4,0,-4,0,-17,134,-2,111,-29,135],
+sm47$1=[0,-4,0,-4,0,-5,136,136,-1,136,136,-2,136,-4,136,-2,136,136,-5,136,136,-8,136,-11,136,136,-4,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,-5,136,136],
 sm48=[0,-4,0,-4,0,-5,137,137,-1,137,137,-2,137,-4,137,-2,137,137,-5,137,137,-8,137,-11,137,137,-4,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,-5,137,137],
 sm49=[0,-4,0,-4,0,-43,138],
 sm50=[0,-4,0,-4,0,-43,121],
@@ -14803,95 +2587,95 @@ sm444=[0,-1,544,544,544,0,-4,0,-5,544,-3,544,-2,544,-4,544,-27,544,544,544],
 sm445=[0,545,545,545,545,0,-4,0,-8,545,545,-2,545,545,545,545,545,545,-1,545,545,-1,545,545,545,545,545,-2,545,545,545,545,545,545,545,545,-1,545,-2,545,545,-5,545,-2,545,-2,545,-31,545,545,-3,545,545,545,545,545,545,545,-2,545,545,545],
 
     // Symbol Lookup map
-    lu = new Map([[1,1],[2,2],[4,3],[8,4],[16,5],[32,6],[64,7],[128,8],[256,9],[512,10],[3,11],[264,11],["any",13],["import",14],[",",15],["*",16],["as",17],["{",18],["}",19],["from",20],["export",21],[";",22],["default",23],["function",24],["class",25],["let",26],["[",27],["async",28],["if",29],["(",30],[")",31],["else",32],["do",33],["while",34],["for",35],["var",36],["in",37],["of",38],["await",39],["continue",40],["break",41],["return",42],["throw",43],["with",44],["switch",45],["case",46],[":",47],["try",48],["catch",49],["finally",50],["debugger",51],["const",52],["=>",53],["extends",54],["static",55],["get",56],["set",57],["new",58],["]",59],[".",60],["super",61],["target",62],["...",63],["this",64],["=",65],["*=",66],["/=",67],["%=",68],["+=",69],["-=",70],["<<=",71],[">>=",72],[">>>=",73],["&=",74],["^=",75],["|=",76],["**=",77],["?",78],["||",79],["&&",80],["|",81],["^",82],["&",83],["==",84],["!=",85],["===",86],["!==",87],["<",88],[">",89],["<=",90],[">=",91],["instanceof",92],["<<",93],[">>",94],[">>>",95],["+",96],["-",97],["/",98],["%",99],["**",100],["delete",101],["void",102],["typeof",103],["~",104],["!",105],["++",106],["--",107],[null,2],["null",110],["true",111],["false",112]]),
+    lu$1 = new Map([[1,1],[2,2],[4,3],[8,4],[16,5],[32,6],[64,7],[128,8],[256,9],[512,10],[3,11],[264,11],["any",13],["import",14],[",",15],["*",16],["as",17],["{",18],["}",19],["from",20],["export",21],[";",22],["default",23],["function",24],["class",25],["let",26],["[",27],["async",28],["if",29],["(",30],[")",31],["else",32],["do",33],["while",34],["for",35],["var",36],["in",37],["of",38],["await",39],["continue",40],["break",41],["return",42],["throw",43],["with",44],["switch",45],["case",46],[":",47],["try",48],["catch",49],["finally",50],["debugger",51],["const",52],["=>",53],["extends",54],["static",55],["get",56],["set",57],["new",58],["]",59],[".",60],["super",61],["target",62],["...",63],["this",64],["=",65],["*=",66],["/=",67],["%=",68],["+=",69],["-=",70],["<<=",71],[">>=",72],[">>>=",73],["&=",74],["^=",75],["|=",76],["**=",77],["?",78],["||",79],["&&",80],["|",81],["^",82],["&",83],["==",84],["!=",85],["===",86],["!==",87],["<",88],[">",89],["<=",90],[">=",91],["instanceof",92],["<<",93],[">>",94],[">>>",95],["+",96],["-",97],["/",98],["%",99],["**",100],["delete",101],["void",102],["typeof",103],["~",104],["!",105],["++",106],["--",107],[null,2],["null",110],["true",111],["false",112]]),
 
     //Reverse Symbol Lookup map
-    rlu = new Map([[1,1],[2,2],[3,4],[4,8],[5,16],[6,32],[7,64],[8,128],[9,256],[10,512],[11,3],[11,264],[13,"any"],[14,"import"],[15,","],[16,"*"],[17,"as"],[18,"{"],[19,"}"],[20,"from"],[21,"export"],[22,";"],[23,"default"],[24,"function"],[25,"class"],[26,"let"],[27,"["],[28,"async"],[29,"if"],[30,"("],[31,")"],[32,"else"],[33,"do"],[34,"while"],[35,"for"],[36,"var"],[37,"in"],[38,"of"],[39,"await"],[40,"continue"],[41,"break"],[42,"return"],[43,"throw"],[44,"with"],[45,"switch"],[46,"case"],[47,":"],[48,"try"],[49,"catch"],[50,"finally"],[51,"debugger"],[52,"const"],[53,"=>"],[54,"extends"],[55,"static"],[56,"get"],[57,"set"],[58,"new"],[59,"]"],[60,"."],[61,"super"],[62,"target"],[63,"..."],[64,"this"],[65,"="],[66,"*="],[67,"/="],[68,"%="],[69,"+="],[70,"-="],[71,"<<="],[72,">>="],[73,">>>="],[74,"&="],[75,"^="],[76,"|="],[77,"**="],[78,"?"],[79,"||"],[80,"&&"],[81,"|"],[82,"^"],[83,"&"],[84,"=="],[85,"!="],[86,"==="],[87,"!=="],[88,"<"],[89,">"],[90,"<="],[91,">="],[92,"instanceof"],[93,"<<"],[94,">>"],[95,">>>"],[96,"+"],[97,"-"],[98,"/"],[99,"%"],[100,"**"],[101,"delete"],[102,"void"],[103,"typeof"],[104,"~"],[105,"!"],[106,"++"],[107,"--"],[2,null],[110,"null"],[111,"true"],[112,"false"]]),
+    rlu$1 = new Map([[1,1],[2,2],[3,4],[4,8],[5,16],[6,32],[7,64],[8,128],[9,256],[10,512],[11,3],[11,264],[13,"any"],[14,"import"],[15,","],[16,"*"],[17,"as"],[18,"{"],[19,"}"],[20,"from"],[21,"export"],[22,";"],[23,"default"],[24,"function"],[25,"class"],[26,"let"],[27,"["],[28,"async"],[29,"if"],[30,"("],[31,")"],[32,"else"],[33,"do"],[34,"while"],[35,"for"],[36,"var"],[37,"in"],[38,"of"],[39,"await"],[40,"continue"],[41,"break"],[42,"return"],[43,"throw"],[44,"with"],[45,"switch"],[46,"case"],[47,":"],[48,"try"],[49,"catch"],[50,"finally"],[51,"debugger"],[52,"const"],[53,"=>"],[54,"extends"],[55,"static"],[56,"get"],[57,"set"],[58,"new"],[59,"]"],[60,"."],[61,"super"],[62,"target"],[63,"..."],[64,"this"],[65,"="],[66,"*="],[67,"/="],[68,"%="],[69,"+="],[70,"-="],[71,"<<="],[72,">>="],[73,">>>="],[74,"&="],[75,"^="],[76,"|="],[77,"**="],[78,"?"],[79,"||"],[80,"&&"],[81,"|"],[82,"^"],[83,"&"],[84,"=="],[85,"!="],[86,"==="],[87,"!=="],[88,"<"],[89,">"],[90,"<="],[91,">="],[92,"instanceof"],[93,"<<"],[94,">>"],[95,">>>"],[96,"+"],[97,"-"],[98,"/"],[99,"%"],[100,"**"],[101,"delete"],[102,"void"],[103,"typeof"],[104,"~"],[105,"!"],[106,"++"],[107,"--"],[2,null],[110,"null"],[111,"true"],[112,"false"]]),
 
     // States 
-    state = [sm0,
-sm1,
-sm2,
-sm3,
-sm4,
-sm5,
-sm6,
-sm6,
-sm7,
-sm7,
-sm7,
-sm7,
-sm7,
-sm7,
-sm7,
-sm7,
-sm7,
-sm7,
-sm7,
-sm7,
-sm7,
-sm7,
-sm8,
-sm9,
-sm10,
-sm11,
-sm12,
-sm12,
-sm13,
-sm14,
-sm15,
-sm16,
-sm17,
-sm18,
-sm19,
-sm20,
-sm21,
-sm22,
-sm23,
-sm24,
-sm25,
-sm26,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm28,
-sm27,
-sm27,
-sm29,
-sm30,
-sm31,
-sm32,
-sm33,
-sm33,
-sm33,
-sm34,
-sm35,
-sm35,
-sm35,
-sm35,
-sm36,
-sm37,
-sm38,
-sm39,
-sm40,
-sm40,
-sm40,
-sm40,
-sm41,
-sm41,
-sm42,
-sm43,
-sm44,
-sm45,
-sm46,
-sm47,
+    state$1 = [sm0$1,
+sm1$1,
+sm2$1,
+sm3$1,
+sm4$1,
+sm5$1,
+sm6$1,
+sm6$1,
+sm7$1,
+sm7$1,
+sm7$1,
+sm7$1,
+sm7$1,
+sm7$1,
+sm7$1,
+sm7$1,
+sm7$1,
+sm7$1,
+sm7$1,
+sm7$1,
+sm7$1,
+sm7$1,
+sm8$1,
+sm9$1,
+sm10$1,
+sm11$1,
+sm12$1,
+sm12$1,
+sm13$1,
+sm14$1,
+sm15$1,
+sm16$1,
+sm17$1,
+sm18$1,
+sm19$1,
+sm20$1,
+sm21$1,
+sm22$1,
+sm23$1,
+sm24$1,
+sm25$1,
+sm26$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm28$1,
+sm27$1,
+sm27$1,
+sm29$1,
+sm30$1,
+sm31$1,
+sm32$1,
+sm33$1,
+sm33$1,
+sm33$1,
+sm34$1,
+sm35$1,
+sm35$1,
+sm35$1,
+sm35$1,
+sm36$1,
+sm37$1,
+sm38$1,
+sm39$1,
+sm40$1,
+sm40$1,
+sm40$1,
+sm40$1,
+sm41$1,
+sm41$1,
+sm42$1,
+sm43$1,
+sm44$1,
+sm45$1,
+sm46$1,
+sm47$1,
 sm48,
 sm48,
-sm27,
+sm27$1,
 sm49,
 sm50,
 sm51,
@@ -14908,7 +2692,7 @@ sm60,
 sm61,
 sm62,
 sm63,
-sm27,
+sm27$1,
 sm64,
 sm65,
 sm66,
@@ -14923,9 +2707,9 @@ sm71,
 sm72,
 sm73,
 sm74,
-sm27,
-sm27,
-sm27,
+sm27$1,
+sm27$1,
+sm27$1,
 sm75,
 sm76,
 sm77,
@@ -14940,37 +2724,37 @@ sm77,
 sm77,
 sm77,
 sm77,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
-sm27,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
 sm78,
-sm28,
+sm28$1,
 sm79,
 sm80,
 sm81,
-sm35,
+sm35$1,
 sm82,
 sm83,
 sm84,
@@ -14986,13 +2770,13 @@ sm93,
 sm94,
 sm95,
 sm96,
-sm27,
+sm27$1,
 sm97,
-sm27,
+sm27$1,
 sm95,
 sm98,
 sm99,
-sm31,
+sm31$1,
 sm100,
 sm101,
 sm102,
@@ -15000,7 +2784,7 @@ sm103,
 sm52,
 sm104,
 sm95,
-sm27,
+sm27$1,
 sm105,
 sm106,
 sm107,
@@ -15015,12 +2799,12 @@ sm115,
 sm115,
 sm116,
 sm117,
-sm27,
+sm27$1,
 sm118,
-sm27,
+sm27$1,
 sm119,
 sm120,
-sm27,
+sm27$1,
 sm121,
 sm122,
 sm123,
@@ -15028,7 +2812,7 @@ sm124,
 sm125,
 sm126,
 sm127,
-sm27,
+sm27$1,
 sm128,
 sm129,
 sm130,
@@ -15078,7 +2862,7 @@ sm170,
 sm171,
 sm172,
 sm172,
-sm27,
+sm27$1,
 sm173,
 sm174,
 sm175,
@@ -15086,14 +2870,14 @@ sm176,
 sm177,
 sm178,
 sm177,
-sm27,
+sm27$1,
 sm179,
 sm180,
 sm180,
 sm181,
 sm182,
 sm182,
-sm27,
+sm27$1,
 sm183,
 sm183,
 sm184,
@@ -15101,7 +2885,7 @@ sm185,
 sm186,
 sm187,
 sm188,
-sm27,
+sm27$1,
 sm189,
 sm190,
 sm191,
@@ -15114,14 +2898,14 @@ sm197,
 sm198,
 sm199,
 sm200,
-sm9,
+sm9$1,
 sm201,
 sm202,
 sm202,
 sm203,
 sm52,
 sm204,
-sm27,
+sm27$1,
 sm204,
 sm205,
 sm206,
@@ -15184,7 +2968,7 @@ sm255,
 sm52,
 sm256,
 sm256,
-sm27,
+sm27$1,
 sm257,
 sm258,
 sm259,
@@ -15199,7 +2983,7 @@ sm266,
 sm267,
 sm268,
 sm136,
-sm27,
+sm27$1,
 sm269,
 sm270,
 sm271,
@@ -15233,7 +3017,7 @@ sm292,
 sm292,
 sm293,
 sm56,
-sm27,
+sm27$1,
 sm56,
 sm294,
 sm295,
@@ -15244,10 +3028,10 @@ sm299,
 sm300,
 sm301,
 sm302,
-sm27,
-sm27,
-sm27,
-sm27,
+sm27$1,
+sm27$1,
+sm27$1,
+sm27$1,
 sm303,
 sm300,
 sm300,
@@ -15284,7 +3068,7 @@ sm328,
 sm52,
 sm329,
 sm330,
-sm27,
+sm27$1,
 sm331,
 sm332,
 sm333,
@@ -15302,12 +3086,12 @@ sm343,
 sm344,
 sm345,
 sm346,
-sm27,
+sm27$1,
 sm347,
 sm56,
 sm348,
-sm27,
-sm27,
+sm27$1,
+sm27$1,
 sm349,
 sm350,
 sm56,
@@ -15315,11 +3099,11 @@ sm351,
 sm352,
 sm353,
 sm354,
-sm27,
+sm27$1,
 sm355,
 sm356,
 sm356,
-sm27,
+sm27$1,
 sm357,
 sm358,
 sm359,
@@ -15364,13 +3148,13 @@ sm56,
 sm56,
 sm56,
 sm388,
-sm27,
+sm27$1,
 sm389,
 sm390,
 sm391,
 sm392,
 sm393,
-sm27,
+sm27$1,
 sm394,
 sm64,
 sm395,
@@ -15409,7 +3193,7 @@ sm413,
 sm414,
 sm412,
 sm415,
-sm9,
+sm9$1,
 sm416,
 sm417,
 sm418,
@@ -15451,11 +3235,11 @@ sm445],
 
 /************ Functions *************/
 
-    max = Math.max,
+    max$1 = Math.max,
 
     //Error Functions
     e$2 = (tk, env, output, lex, prv_lex) => {            /*USED for ASI*/            if (env.ASI && lex.tx !== ")" && !lex.END) {                let ENCOUNTERED_NL = (lex.tx == "}" || lex.END);                while (!ENCOUNTERED_NL && !prv_lex.END && prv_lex.off < lex.off) {                    prv_lex.next();                    if (prv_lex.ty == prv_lex.types.nl)                        ENCOUNTERED_NL = true;                }            if (ENCOUNTERED_NL)                return ";";            }            if(lex.END)            return ";";            return null;        }, 
-    eh = [e$2,
+    eh$1 = [e$2,
 e$2,
 e$2,
 e$2,
@@ -16096,14 +3880,14 @@ e$2,
 e$2],
 
     //Empty Function
-    nf = ()=>-1, 
+    nf$1 = ()=>-1, 
 
     //Environment Functions
     
-redv = (ret, fn, plen, ln, t, e, o, l, s) => {        ln = max(o.length - plen, 0);        o[ln] = fn(o.slice(-plen), e, l, s);        o.length = ln + 1;        return ret;    },
-rednv = (ret, Fn, plen, ln, t, e, o, l, s) => {        ln = max(o.length - plen, 0);        o[ln] = new Fn(o.slice(-plen), e, l, s);        o.length = ln + 1;        return ret;    },
-redn = (ret, t, e, o) => (o.push(null), ret),
-shftf = (ret, fn, t, e, o, l, s) => (fn(o, e, l, s), ret),
+redv$1 = (ret, fn, plen, ln, t, e, o, l, s) => {        ln = max$1(o.length - plen, 0);        o[ln] = fn(o.slice(-plen), e, l, s);        o.length = ln + 1;        return ret;    },
+rednv$1 = (ret, Fn, plen, ln, t, e, o, l, s) => {        ln = max$1(o.length - plen, 0);        o[ln] = new Fn(o.slice(-plen), e, l, s);        o.length = ln + 1;        return ret;    },
+redn$1 = (ret, t, e, o) => (o.push(null), ret),
+shftf$1 = (ret, fn, t, e, o, l, s) => (fn(o, e, l, s), ret),
 R0_S=function (sym,env,lex,state) {return sym[0]},
 R0_statement_list=function (sym,env,lex,state) {return [sym[0]]},
 R1_statement_list=function (sym,env,lex,state) {return (sym[0].push(sym[1]), sym[0]);},
@@ -16170,10 +3954,10 @@ R1_cover_parenthesized_expression_and_arrow_parameter_list=function (sym,env,lex
 R2_cover_parenthesized_expression_and_arrow_parameter_list=function (sym,env,lex,state) {return Array.isArray(sym[0]) ? (sym[1].push(new env.functions.spread_expr(env, sym.slice(3,5))) , sym[1]) : [sym[0], new env.functions.spread_expr(env, sym.slice(3,5))];},
 
     //Sparse Map Lookup
-    lsm = (index, map) => {    if (map[0] == 0xFFFFFFFF) return map[index+1];    for (let i = 1, ind = 0, l = map.length, n = 0; i < l && ind <= index; i++) {        if (ind !== index) {            if ((n = map[i]) > -1) ind++;            else ind += -n;        } else return map[i];    }    return -1;},
+    lsm$1 = (index, map) => {    if (map[0] == 0xFFFFFFFF) return map[index+1];    for (let i = 1, ind = 0, l = map.length, n = 0; i < l && ind <= index; i++) {        if (ind !== index) {            if ((n = map[i]) > -1) ind++;            else ind += -n;        } else return map[i];    }    return -1;},
 
     //State Action Functions
-    state_funct = [(...v)=>((redn(20483,...v))),
+    state_funct$1 = [(...v)=>((redn$1(20483,...v))),
 ()=>(306),
 ()=>(270),
 ()=>(302),
@@ -16213,17 +3997,17 @@ R2_cover_parenthesized_expression_and_arrow_parameter_list=function (sym,env,lex
 ()=>(298),
 ()=>(290),
 ()=>(294),
-(...v)=>(redv(5,R0_S,1,0,...v)),
-(...v)=>(redv(1031,R0_S,1,0,...v)),
-(...v)=>(redv(20487,R0_S,1,0,...v)),
-(...v)=>(rednv(21511,fn.stmts,1,0,...v)),
-(...v)=>(redv(22535,R0_statement_list,1,0,...v)),
+(...v)=>(redv$1(5,R0_S,1,0,...v)),
+(...v)=>(redv$1(1031,R0_S,1,0,...v)),
+(...v)=>(redv$1(20487,R0_S,1,0,...v)),
+(...v)=>(rednv$1(21511,fn$1.stmts,1,0,...v)),
+(...v)=>(redv$1(22535,R0_statement_list,1,0,...v)),
 ()=>(23559),
 ()=>(24583),
 ()=>(28679),
 ()=>(458),
 ()=>(454),
-(...v)=>(redv(88071,R0_S,1,0,...v)),
+(...v)=>(redv$1(88071,R0_S,1,0,...v)),
 ()=>(114695),
 ()=>(130055),
 ()=>(462),
@@ -16291,19 +4075,19 @@ R2_cover_parenthesized_expression_and_arrow_parameter_list=function (sym,env,lex
 ()=>(738),
 ()=>(742),
 ()=>(91143),
-(...v)=>(rednv(99335,fn.this_expr,1,0,...v)),
+(...v)=>(rednv$1(99335,fn$1.this_expr,1,0,...v)),
 ()=>(99335),
 ()=>(72711),
 ()=>(150535),
 ()=>(149511),
 ()=>(151559),
 ()=>(152583),
-(...v)=>(rednv(153607,fn.identifier,1,0,...v)),
+(...v)=>(rednv$1(153607,fn$1.identifier,1,0,...v)),
 ()=>(144391),
-(...v)=>(rednv(148487,fn.bool_literal,1,0,...v)),
-(...v)=>(rednv(147463,fn.null_literal,1,0,...v)),
-(...v)=>(rednv(145415,fn.string_literal,1,0,...v)),
-(...v)=>(rednv(146439,fn.numeric_literal,1,0,...v)),
+(...v)=>(rednv$1(148487,fn$1.bool_literal,1,0,...v)),
+(...v)=>(rednv$1(147463,fn$1.null_literal,1,0,...v)),
+(...v)=>(rednv$1(145415,fn$1.string_literal,1,0,...v)),
+(...v)=>(rednv$1(146439,fn$1.numeric_literal,1,0,...v)),
 ()=>(746),
 ()=>(754),
 ()=>(766),
@@ -16314,11 +4098,11 @@ R2_cover_parenthesized_expression_and_arrow_parameter_list=function (sym,env,lex
 ()=>(786),
 ()=>(818),
 ()=>(822),
-(...v)=>(rednv(30727,C0_empty_statement,1,0,...v)),
+(...v)=>(rednv$1(30727,C0_empty_statement,1,0,...v)),
 ()=>(826),
 ()=>(27655),
 ()=>(834),
-(...v)=>(shftf(838,I1_iteration_statement,...v)),
+(...v)=>(shftf$1(838,I1_iteration_statement,...v)),
 ()=>(842),
 ()=>(846),
 ()=>(850),
@@ -16331,17 +4115,17 @@ R2_cover_parenthesized_expression_and_arrow_parameter_list=function (sym,env,lex
 ()=>(910),
 ()=>(26631),
 ()=>(914),
-(...v)=>(redv(59399,R0_let_or_const,1,0,...v)),
-(...v)=>(redv(59399,R1_let_or_const,1,0,...v)),
-(...v)=>(redv(22539,R1_statement_list,2,0,...v)),
+(...v)=>(redv$1(59399,R0_let_or_const,1,0,...v)),
+(...v)=>(redv$1(59399,R1_let_or_const,1,0,...v)),
+(...v)=>(redv$1(22539,R1_statement_list,2,0,...v)),
 ()=>(938),
-(...v)=>(redv(31755,R0_S,2,0,...v)),
-(...v)=>(rednv(130059,fn.post_inc_expr,2,0,...v)),
-(...v)=>(rednv(130059,fn.post_dec_expr,2,0,...v)),
+(...v)=>(redv$1(31755,R0_S,2,0,...v)),
+(...v)=>(rednv$1(130059,fn$1.post_inc_expr,2,0,...v)),
+(...v)=>(rednv$1(130059,fn$1.post_dec_expr,2,0,...v)),
 ()=>(115719),
-(...v)=>(rednv(129035,fn.delete_expr,2,0,...v)),
-(...v)=>(rednv(99335,fn.array_literal,1,0,...v)),
-(...v)=>(rednv(99335,fn.object,1,0,...v)),
+(...v)=>(rednv$1(129035,fn$1.delete_expr,2,0,...v)),
+(...v)=>(rednv$1(99335,fn$1.array_literal,1,0,...v)),
+(...v)=>(rednv$1(99335,fn$1.object,1,0,...v)),
 ()=>(1066),
 ()=>(1054),
 ()=>(1078),
@@ -16352,31 +4136,31 @@ R2_cover_parenthesized_expression_and_arrow_parameter_list=function (sym,env,lex
 ()=>(1110),
 ()=>(62471),
 ()=>(78855),
-(...v)=>(rednv(129035,fn.void_expr,2,0,...v)),
-(...v)=>(rednv(129035,fn.typeof_expr,2,0,...v)),
-(...v)=>(rednv(129035,fn.plus_expr,2,0,...v)),
-(...v)=>(rednv(129035,fn.negate_expr,2,0,...v)),
-(...v)=>(rednv(129035,fn.unary_or_expr,2,0,...v)),
-(...v)=>(rednv(129035,fn.unary_not_expr,2,0,...v)),
-(...v)=>(rednv(130059,fn.pre_inc_expr,2,0,...v)),
-(...v)=>(rednv(130059,fn.pre_dec_expr,2,0,...v)),
-(...v)=>(rednv(95243,fn.call_expr,2,0,...v)),
+(...v)=>(rednv$1(129035,fn$1.void_expr,2,0,...v)),
+(...v)=>(rednv$1(129035,fn$1.typeof_expr,2,0,...v)),
+(...v)=>(rednv$1(129035,fn$1.plus_expr,2,0,...v)),
+(...v)=>(rednv$1(129035,fn$1.negate_expr,2,0,...v)),
+(...v)=>(rednv$1(129035,fn$1.unary_or_expr,2,0,...v)),
+(...v)=>(rednv$1(129035,fn$1.unary_not_expr,2,0,...v)),
+(...v)=>(rednv$1(130059,fn$1.pre_inc_expr,2,0,...v)),
+(...v)=>(rednv$1(130059,fn$1.pre_dec_expr,2,0,...v)),
+(...v)=>(rednv$1(95243,fn$1.call_expr,2,0,...v)),
 ()=>(1158),
 ()=>(1170),
-(...v)=>(rednv(77835,fn.call_expr,2,0,...v)),
-(...v)=>(rednv(90123,fn.new_expr,2,0,...v)),
+(...v)=>(rednv$1(77835,fn$1.call_expr,2,0,...v)),
+(...v)=>(rednv$1(90123,fn$1.new_expr,2,0,...v)),
 ()=>(1186),
-(...v)=>(redv(132107,R0_cover_parenthesized_expression_and_arrow_parameter_list,2,0,...v)),
+(...v)=>(redv$1(132107,R0_cover_parenthesized_expression_and_arrow_parameter_list,2,0,...v)),
 ()=>(1194),
 ()=>(1190),
 ()=>(96267),
-(...v)=>(rednv(131083,fn.await_expr,2,0,...v)),
+(...v)=>(rednv$1(131083,fn$1.await_expr,2,0,...v)),
 ()=>(1222),
-(...v)=>(rednv(47115,fn.label_stmt,2,0,...v)),
+(...v)=>(rednv$1(47115,fn$1.label_stmt,2,0,...v)),
 ()=>(1242),
 ()=>(1238),
-(...v)=>(redv(56327,R0_statement_list,1,0,...v)),
-(...v)=>(rednv(57351,fn.binding,1,0,...v)),
+(...v)=>(redv$1(56327,R0_statement_list,1,0,...v)),
+(...v)=>(rednv$1(57351,fn$1.binding,1,0,...v)),
 ()=>(1250),
 ()=>(133127),
 ()=>(1258),
@@ -16387,94 +4171,94 @@ R2_cover_parenthesized_expression_and_arrow_parameter_list=function (sym,env,lex
 ()=>(1342),
 ()=>(1346),
 ()=>(1366),
-(...v)=>(rednv(36875,fn.continue_stmt,2,0,...v)),
+(...v)=>(rednv$1(36875,fn$1.continue_stmt,2,0,...v)),
 ()=>(1374),
-(...v)=>(rednv(37899,fn.break_stmt,2,0,...v)),
+(...v)=>(rednv$1(37899,fn$1.break_stmt,2,0,...v)),
 ()=>(1378),
-(...v)=>(redv(38923,R0_return_statement,2,0,...v)),
+(...v)=>(redv$1(38923,R0_return_statement,2,0,...v)),
 ()=>(1382),
 ()=>(1390),
 ()=>(1402),
 ()=>(1406),
-(...v)=>(rednv(54283,fn.debugger_stmt,2,0,...v)),
-(...v)=>(rednv(79883,fn.class_stmt,2,0,...v)),
+(...v)=>(rednv$1(54283,fn$1.debugger_stmt,2,0,...v)),
+(...v)=>(rednv$1(79883,fn$1.class_stmt,2,0,...v)),
 ()=>(1414),
 ()=>(1422),
 ()=>(1442),
 ()=>(1438),
-(...v)=>((redn(65539,...v))),
+(...v)=>((redn$1(65539,...v))),
 ()=>(1482),
 ()=>(1490),
 ()=>(1486),
-(...v)=>(redv(60423,R0_statement_list,1,0,...v)),
-(...v)=>(rednv(29711,fn.block,3,0,...v)),
-(...v)=>(redv(88079,R0_expression,3,0,...v)),
-(...v)=>(rednv(114703,fn.assign,3,0,...v)),
+(...v)=>(redv$1(60423,R0_statement_list,1,0,...v)),
+(...v)=>(rednv$1(29711,fn$1.block,3,0,...v)),
+(...v)=>(redv$1(88079,R0_expression,3,0,...v)),
+(...v)=>(rednv$1(114703,fn$1.assign,3,0,...v)),
 ()=>(1502),
-(...v)=>(rednv(117775,fn.or,3,0,...v)),
-(...v)=>(rednv(118799,fn.and,3,0,...v)),
-(...v)=>(rednv(119823,fn.bit_or,3,0,...v)),
-(...v)=>(rednv(120847,fn.bit_xor,3,0,...v)),
-(...v)=>(rednv(121871,fn.bit_and,3,0,...v)),
-(...v)=>(rednv(122895,fn.eq,3,0,...v)),
-(...v)=>(rednv(122895,fn.neq,3,0,...v)),
-(...v)=>(rednv(122895,fn.strict_eq,3,0,...v)),
-(...v)=>(rednv(122895,fn.strict_neq,3,0,...v)),
-(...v)=>(rednv(123919,fn.lt,3,0,...v)),
-(...v)=>(rednv(123919,fn.gt,3,0,...v)),
-(...v)=>(rednv(123919,fn.lteq,3,0,...v)),
-(...v)=>(rednv(123919,fn.gteq,3,0,...v)),
-(...v)=>(rednv(123919,fn.instanceof_expr,3,0,...v)),
-(...v)=>(rednv(123919,fn.in,3,0,...v)),
-(...v)=>(rednv(124943,fn.l_shift,3,0,...v)),
-(...v)=>(rednv(124943,fn.r_shift,3,0,...v)),
-(...v)=>(rednv(124943,fn.r_shift_fill,3,0,...v)),
-(...v)=>(rednv(125967,fn.add,3,0,...v)),
-(...v)=>(rednv(125967,fn.sub,3,0,...v)),
-(...v)=>(rednv(126991,fn.mult,3,0,...v)),
-(...v)=>(rednv(126991,fn.div,3,0,...v)),
-(...v)=>(rednv(126991,fn.mod,3,0,...v)),
-(...v)=>(rednv(128015,fn.exp,3,0,...v)),
-(...v)=>(redv(110603,R0_array_literal,2,0,...v)),
+(...v)=>(rednv$1(117775,fn$1.or,3,0,...v)),
+(...v)=>(rednv$1(118799,fn$1.and,3,0,...v)),
+(...v)=>(rednv$1(119823,fn$1.bit_or,3,0,...v)),
+(...v)=>(rednv$1(120847,fn$1.bit_xor,3,0,...v)),
+(...v)=>(rednv$1(121871,fn$1.bit_and,3,0,...v)),
+(...v)=>(rednv$1(122895,fn$1.eq,3,0,...v)),
+(...v)=>(rednv$1(122895,fn$1.neq,3,0,...v)),
+(...v)=>(rednv$1(122895,fn$1.strict_eq,3,0,...v)),
+(...v)=>(rednv$1(122895,fn$1.strict_neq,3,0,...v)),
+(...v)=>(rednv$1(123919,fn$1.lt,3,0,...v)),
+(...v)=>(rednv$1(123919,fn$1.gt,3,0,...v)),
+(...v)=>(rednv$1(123919,fn$1.lteq,3,0,...v)),
+(...v)=>(rednv$1(123919,fn$1.gteq,3,0,...v)),
+(...v)=>(rednv$1(123919,fn$1.instanceof_expr,3,0,...v)),
+(...v)=>(rednv$1(123919,fn$1.in,3,0,...v)),
+(...v)=>(rednv$1(124943,fn$1.l_shift,3,0,...v)),
+(...v)=>(rednv$1(124943,fn$1.r_shift,3,0,...v)),
+(...v)=>(rednv$1(124943,fn$1.r_shift_fill,3,0,...v)),
+(...v)=>(rednv$1(125967,fn$1.add,3,0,...v)),
+(...v)=>(rednv$1(125967,fn$1.sub,3,0,...v)),
+(...v)=>(rednv$1(126991,fn$1.mult,3,0,...v)),
+(...v)=>(rednv$1(126991,fn$1.div,3,0,...v)),
+(...v)=>(rednv$1(126991,fn$1.mod,3,0,...v)),
+(...v)=>(rednv$1(128015,fn$1.exp,3,0,...v)),
+(...v)=>(redv$1(110603,R0_array_literal,2,0,...v)),
 ()=>(1510),
 ()=>(1506),
 ()=>(1530),
 ()=>(1522),
 ()=>(112647),
-(...v)=>(redv(111623,R0_statement_list,1,0,...v)),
-(...v)=>(redv(100363,R3_class_tail,2,0,...v)),
+(...v)=>(redv$1(111623,R0_statement_list,1,0,...v)),
+(...v)=>(redv$1(100363,R3_class_tail,2,0,...v)),
 ()=>(1542),
 ()=>(1538),
-(...v)=>(redv(101383,R0_statement_list,1,0,...v)),
+(...v)=>(redv$1(101383,R0_statement_list,1,0,...v)),
 ()=>(102407),
-(...v)=>(rednv(102407,C0_property_definition,1,0,...v)),
+(...v)=>(rednv$1(102407,C0_property_definition,1,0,...v)),
 ()=>(1558),
 ()=>(1562),
 ()=>(105479),
 ()=>(106503),
-(...v)=>(rednv(95247,fn.call_expr,3,0,...v)),
+(...v)=>(rednv$1(95247,fn$1.call_expr,3,0,...v)),
 ()=>(1578),
-(...v)=>(redv(97291,R0_arguments,2,0,...v)),
+(...v)=>(redv$1(97291,R0_arguments,2,0,...v)),
 ()=>(1586),
 ()=>(1582),
-(...v)=>(redv(98311,R0_statement_list,1,0,...v)),
+(...v)=>(redv$1(98311,R0_statement_list,1,0,...v)),
 ()=>(1594),
-(...v)=>(rednv(91151,fn.member,3,0,...v)),
-(...v)=>(rednv(91151,fn.new_member_stmt,3,0,...v)),
-(...v)=>(rednv(94223,fn.new_target_expr,3,0,...v)),
-(...v)=>(redv(132111,R3_case_block,3,0,...v)),
+(...v)=>(rednv$1(91151,fn$1.member,3,0,...v)),
+(...v)=>(rednv$1(91151,fn$1.new_member_stmt,3,0,...v)),
+(...v)=>(rednv$1(94223,fn$1.new_target_expr,3,0,...v)),
+(...v)=>(redv$1(132111,R3_case_block,3,0,...v)),
 ()=>(1598),
 ()=>(1602),
 ()=>(1606),
 ()=>(1610),
-(...v)=>(rednv(92175,fn.supper_expr,3,0,...v)),
+(...v)=>(rednv$1(92175,fn$1.supper_expr,3,0,...v)),
 ()=>(1614),
-(...v)=>(redv(71695,R0_arrow_function,3,0,...v)),
+(...v)=>(redv$1(71695,R0_arrow_function,3,0,...v)),
 ()=>(73735),
-(...v)=>(redv(48139,R3_case_block,2,0,...v)),
+(...v)=>(redv$1(48139,R3_case_block,2,0,...v)),
 ()=>(49159),
-(...v)=>(rednv(55311,fn.var_stmt,3,0,...v)),
-(...v)=>(rednv(57355,fn.binding,2,0,...v)),
+(...v)=>(rednv$1(55311,fn$1.var_stmt,3,0,...v)),
+(...v)=>(rednv$1(57355,fn$1.binding,2,0,...v)),
 ()=>(134155),
 ()=>(1634),
 ()=>(1642),
@@ -16503,57 +4287,57 @@ R2_cover_parenthesized_expression_and_arrow_parameter_list=function (sym,env,lex
 ()=>(1754),
 ()=>(1774),
 ()=>(1786),
-(...v)=>(redv(36879,R0_continue_statement,3,0,...v)),
-(...v)=>(redv(37903,R0_break_statement,3,0,...v)),
-(...v)=>(rednv(38927,fn.return_stmt,3,0,...v)),
+(...v)=>(redv$1(36879,R0_continue_statement,3,0,...v)),
+(...v)=>(redv$1(37903,R0_break_statement,3,0,...v)),
+(...v)=>(rednv$1(38927,fn$1.return_stmt,3,0,...v)),
 ()=>(1790),
-(...v)=>(rednv(39951,fn.throw_stmt,3,0,...v)),
-(...v)=>(redv(50191,R0_try_statement,3,0,...v)),
-(...v)=>(redv(50191,R1_try_statement,3,0,...v)),
+(...v)=>(rednv$1(39951,fn$1.throw_stmt,3,0,...v)),
+(...v)=>(redv$1(50191,R0_try_statement,3,0,...v)),
+(...v)=>(redv$1(50191,R1_try_statement,3,0,...v)),
 ()=>(1798),
-(...v)=>(rednv(79887,fn.class_stmt,3,0,...v)),
+(...v)=>(rednv$1(79887,fn$1.class_stmt,3,0,...v)),
 ()=>(1810),
 ()=>(1814),
-(...v)=>(redv(80907,R3_class_tail,2,0,...v)),
+(...v)=>(redv$1(80907,R3_class_tail,2,0,...v)),
 ()=>(82951),
-(...v)=>(redv(83975,R0_statement_list,1,0,...v)),
+(...v)=>(redv$1(83975,R0_statement_list,1,0,...v)),
 ()=>(84999),
-(...v)=>(redv(81931,R3_case_block,2,0,...v)),
+(...v)=>(redv$1(81931,R3_case_block,2,0,...v)),
 ()=>(1826),
 ()=>(65543),
 ()=>(1830),
 ()=>(67591),
-(...v)=>(redv(66567,R0_statement_list,1,0,...v)),
+(...v)=>(redv$1(66567,R0_statement_list,1,0,...v)),
 ()=>(68615),
-(...v)=>(rednv(58383,fn.lexical,3,0,...v)),
-(...v)=>(rednv(61451,fn.binding,2,0,...v)),
-(...v)=>(redv(110607,R0_array_literal,3,0,...v)),
+(...v)=>(rednv$1(58383,fn$1.lexical,3,0,...v)),
+(...v)=>(rednv$1(61451,fn$1.binding,2,0,...v)),
+(...v)=>(redv$1(110607,R0_array_literal,3,0,...v)),
 ()=>(112651),
-(...v)=>(redv(111627,R0_element_list,2,0,...v)),
-(...v)=>(redv(110607,R3_case_block,3,0,...v)),
+(...v)=>(redv$1(111627,R0_element_list,2,0,...v)),
+(...v)=>(redv$1(110607,R3_case_block,3,0,...v)),
 ()=>(1846),
-(...v)=>(rednv(113675,fn.spread_expr,2,0,...v)),
-(...v)=>(redv(100367,R3_case_block,3,0,...v)),
+(...v)=>(rednv$1(113675,fn$1.spread_expr,2,0,...v)),
+(...v)=>(redv$1(100367,R3_case_block,3,0,...v)),
 ()=>(1862),
 ()=>(108555),
-(...v)=>(rednv(102411,fn.spread_expr,2,0,...v)),
-(...v)=>(rednv(103435,C0_colon_assignment,2,0,...v)),
+(...v)=>(rednv$1(102411,fn$1.spread_expr,2,0,...v)),
+(...v)=>(rednv$1(103435,C0_colon_assignment,2,0,...v)),
 ()=>(1882),
 ()=>(1886),
 ()=>(1890),
-(...v)=>(rednv(95251,fn.call_expr,4,0,...v)),
-(...v)=>(redv(97295,R3_case_block,3,0,...v)),
+(...v)=>(rednv$1(95251,fn$1.call_expr,4,0,...v)),
+(...v)=>(redv$1(97295,R3_case_block,3,0,...v)),
 ()=>(1894),
 ()=>(1902),
-(...v)=>(rednv(98315,fn.spread_expr,2,0,...v)),
-(...v)=>(rednv(91155,fn.member,4,0,...v)),
-(...v)=>(redv(132115,R3_case_block,4,0,...v)),
-(...v)=>(redv(132115,R1_cover_parenthesized_expression_and_arrow_parameter_list,4,0,...v)),
-(...v)=>(rednv(92179,fn.supper_expr,4,0,...v)),
+(...v)=>(rednv$1(98315,fn$1.spread_expr,2,0,...v)),
+(...v)=>(rednv$1(91155,fn$1.member,4,0,...v)),
+(...v)=>(redv$1(132115,R3_case_block,4,0,...v)),
+(...v)=>(redv$1(132115,R1_cover_parenthesized_expression_and_arrow_parameter_list,4,0,...v)),
+(...v)=>(rednv$1(92179,fn$1.supper_expr,4,0,...v)),
 ()=>(1914),
 ()=>(70663),
-(...v)=>(redv(56335,R0_variable_declaration_list,3,0,...v)),
-(...v)=>(redv(109579,R3_case_block,2,0,...v)),
+(...v)=>(redv$1(56335,R0_variable_declaration_list,3,0,...v)),
+(...v)=>(redv$1(109579,R3_case_block,2,0,...v)),
 ()=>(134159),
 ()=>(1922),
 ()=>(136203),
@@ -16577,32 +4361,32 @@ R2_cover_parenthesized_expression_and_arrow_parameter_list=function (sym,env,lex
 ()=>(2026),
 ()=>(2042),
 ()=>(2050),
-(...v)=>(redv(50195,R2_try_statement,4,0,...v)),
-(...v)=>(rednv(52235,fn.finally_stmt,2,0,...v)),
+(...v)=>(redv$1(50195,R2_try_statement,4,0,...v)),
+(...v)=>(rednv$1(52235,fn$1.finally_stmt,2,0,...v)),
 ()=>(2070),
-(...v)=>(redv(80911,R2_class_tail,3,0,...v)),
-(...v)=>(redv(80911,R1_class_tail,3,0,...v)),
-(...v)=>(redv(83979,R0_class_element_list,2,0,...v)),
-(...v)=>(redv(85003,R0_class_element,2,0,...v)),
+(...v)=>(redv$1(80911,R2_class_tail,3,0,...v)),
+(...v)=>(redv$1(80911,R1_class_tail,3,0,...v)),
+(...v)=>(redv$1(83979,R0_class_element_list,2,0,...v)),
+(...v)=>(redv$1(85003,R0_class_element,2,0,...v)),
 ()=>(2074),
-(...v)=>(redv(65547,R0_S,2,0,...v)),
+(...v)=>(redv$1(65547,R0_S,2,0,...v)),
 ()=>(2086),
-(...v)=>(redv(60431,R0_variable_declaration_list,3,0,...v)),
-(...v)=>(rednv(116759,fn.condition_expr,5,0,...v)),
-(...v)=>(redv(110611,R3_case_block,4,0,...v)),
-(...v)=>(redv(111631,R1_element_list,3,0,...v)),
-(...v)=>(redv(100371,R3_case_block,4,0,...v)),
-(...v)=>(redv(101391,R0_formal_parameters,3,0,...v)),
+(...v)=>(redv$1(60431,R0_variable_declaration_list,3,0,...v)),
+(...v)=>(rednv$1(116759,fn$1.condition_expr,5,0,...v)),
+(...v)=>(redv$1(110611,R3_case_block,4,0,...v)),
+(...v)=>(redv$1(111631,R1_element_list,3,0,...v)),
+(...v)=>(redv$1(100371,R3_case_block,4,0,...v)),
+(...v)=>(redv$1(101391,R0_formal_parameters,3,0,...v)),
 ()=>(2094),
 ()=>(64519),
-(...v)=>(redv(104459,R3_case_block,2,0,...v)),
+(...v)=>(redv$1(104459,R3_case_block,2,0,...v)),
 ()=>(107535),
 ()=>(2098),
-(...v)=>(redv(97299,R3_case_block,4,0,...v)),
-(...v)=>(redv(98319,R0_formal_parameters,3,0,...v)),
+(...v)=>(redv$1(97299,R3_case_block,4,0,...v)),
+(...v)=>(redv$1(98319,R0_formal_parameters,3,0,...v)),
 ()=>(2114),
 ()=>(2118),
-(...v)=>(redv(73743,R3_case_block,3,0,...v)),
+(...v)=>(redv$1(73743,R3_case_block,3,0,...v)),
 ()=>(2122),
 ()=>(134163),
 ()=>(137231),
@@ -16611,10 +4395,10 @@ R2_cover_parenthesized_expression_and_arrow_parameter_list=function (sym,env,lex
 ()=>(2126),
 ()=>(2134),
 ()=>(138255),
-(...v)=>(rednv(32791,fn.if_stmt,5,0,...v)),
+(...v)=>(rednv$1(32791,fn$1.if_stmt,5,0,...v)),
 ()=>(2138),
 ()=>(2142),
-(...v)=>(rednv(33815,fn.while_stmt,5,0,...v)),
+(...v)=>(rednv$1(33815,fn$1.while_stmt,5,0,...v)),
 ()=>(2146),
 ()=>(2154),
 ()=>(2162),
@@ -16626,25 +4410,25 @@ R2_cover_parenthesized_expression_and_arrow_parameter_list=function (sym,env,lex
 ()=>(2210),
 ()=>(2214),
 ()=>(2222),
-(...v)=>(rednv(42007,fn.switch_stmt,5,0,...v)),
+(...v)=>(rednv$1(42007,fn$1.switch_stmt,5,0,...v)),
 ()=>(2230),
 ()=>(2250),
 ()=>(2246),
-(...v)=>(rednv(40983,fn.with_stmt,5,0,...v)),
+(...v)=>(rednv$1(40983,fn$1.with_stmt,5,0,...v)),
 ()=>(2254),
 ()=>(53255),
-(...v)=>(redv(80915,R0_class_tail,4,0,...v)),
-(...v)=>((redn(69635,...v))),
-(...v)=>(redv(65551,R0_formal_parameters,3,0,...v)),
-(...v)=>(redv(66575,R0_formal_parameters,3,0,...v)),
+(...v)=>(redv$1(80915,R0_class_tail,4,0,...v)),
+(...v)=>((redn$1(69635,...v))),
+(...v)=>(redv$1(65551,R0_formal_parameters,3,0,...v)),
+(...v)=>(redv$1(66575,R0_formal_parameters,3,0,...v)),
 ()=>(2266),
-(...v)=>(redv(111635,R1_element_list,4,0,...v)),
+(...v)=>(redv$1(111635,R1_element_list,4,0,...v)),
 ()=>(2270),
 ()=>(2274),
 ()=>(2278),
 ()=>(87047),
-(...v)=>(redv(98323,R0_argument_list,4,0,...v)),
-(...v)=>(redv(132123,R2_cover_parenthesized_expression_and_arrow_parameter_list,6,0,...v)),
+(...v)=>(redv$1(98323,R0_argument_list,4,0,...v)),
+(...v)=>(redv$1(132123,R2_cover_parenthesized_expression_and_arrow_parameter_list,6,0,...v)),
 ()=>(134167),
 ()=>(135191),
 ()=>(2282),
@@ -16652,715 +4436,715 @@ R2_cover_parenthesized_expression_and_arrow_parameter_list=function (sym,env,lex
 ()=>(2298),
 ()=>(2302),
 ()=>(2310),
-(...v)=>(redv(33819,R8_iteration_statement,6,0,...v)),
+(...v)=>(redv$1(33819,R8_iteration_statement,6,0,...v)),
 ()=>(2318),
 ()=>(2326),
 ()=>(2330),
 ()=>(2334),
 ()=>(2338),
-(...v)=>(redv(33819,R15_iteration_statement,6,0,...v)),
+(...v)=>(redv$1(33819,R15_iteration_statement,6,0,...v)),
 ()=>(2366),
 ()=>(2374),
-(...v)=>(redv(43019,R0_case_block,2,0,...v)),
+(...v)=>(redv$1(43019,R0_case_block,2,0,...v)),
 ()=>(2382),
 ()=>(2394),
-(...v)=>(redv(44039,R0_statement_list,1,0,...v)),
-(...v)=>(redv(46087,R1_default_clause,1,0,...v)),
+(...v)=>(redv$1(44039,R0_statement_list,1,0,...v)),
+(...v)=>(redv$1(46087,R1_default_clause,1,0,...v)),
 ()=>(2402),
 ()=>(2410),
 ()=>(69639),
 ()=>(2426),
 ()=>(135195),
-(...v)=>(rednv(32799,fn.if_stmt,7,0,...v)),
-(...v)=>(rednv(33823,fn.do_while_stmt,7,0,...v)),
-(...v)=>(shftf(2430,I2_iteration_statement,...v)),
-(...v)=>(redv(33823,R7_iteration_statement,7,0,...v)),
-(...v)=>(redv(33823,R6_iteration_statement,7,0,...v)),
+(...v)=>(rednv$1(32799,fn$1.if_stmt,7,0,...v)),
+(...v)=>(rednv$1(33823,fn$1.do_while_stmt,7,0,...v)),
+(...v)=>(shftf$1(2430,I2_iteration_statement,...v)),
+(...v)=>(redv$1(33823,R7_iteration_statement,7,0,...v)),
+(...v)=>(redv$1(33823,R6_iteration_statement,7,0,...v)),
 ()=>(2450),
 ()=>(2454),
-(...v)=>(redv(33823,R13_iteration_statement,7,0,...v)),
-(...v)=>(redv(33823,R14_iteration_statement,7,0,...v)),
-(...v)=>(redv(33823,R16_iteration_statement,7,0,...v)),
-(...v)=>(redv(33823,R18_iteration_statement,7,0,...v)),
+(...v)=>(redv$1(33823,R13_iteration_statement,7,0,...v)),
+(...v)=>(redv$1(33823,R14_iteration_statement,7,0,...v)),
+(...v)=>(redv$1(33823,R16_iteration_statement,7,0,...v)),
+(...v)=>(redv$1(33823,R18_iteration_statement,7,0,...v)),
 ()=>(2478),
 ()=>(2490),
-(...v)=>(redv(43023,R3_case_block,3,0,...v)),
-(...v)=>(redv(44043,R0_case_clauses,2,0,...v)),
+(...v)=>(redv$1(43023,R3_case_block,3,0,...v)),
+(...v)=>(redv$1(44043,R0_case_clauses,2,0,...v)),
 ()=>(2494),
 ()=>(2498),
-(...v)=>(rednv(51223,fn.catch_stmt,5,0,...v)),
-(...v)=>(redv(63519,R0_function_declaration,7,0,...v)),
+(...v)=>(rednv$1(51223,fn$1.catch_stmt,5,0,...v)),
+(...v)=>(redv$1(63519,R0_function_declaration,7,0,...v)),
 ()=>(2506),
 ()=>(2510),
 ()=>(2514),
-(...v)=>(redv(33827,R5_iteration_statement,8,0,...v)),
-(...v)=>(redv(33827,R4_iteration_statement,8,0,...v)),
-(...v)=>(redv(33827,R3_iteration_statement,8,0,...v)),
+(...v)=>(redv$1(33827,R5_iteration_statement,8,0,...v)),
+(...v)=>(redv$1(33827,R4_iteration_statement,8,0,...v)),
+(...v)=>(redv$1(33827,R3_iteration_statement,8,0,...v)),
 ()=>(2526),
-(...v)=>(redv(33827,R12_iteration_statement,8,0,...v)),
-(...v)=>(redv(33827,R17_iteration_statement,8,0,...v)),
-(...v)=>(redv(33827,R18_iteration_statement,8,0,...v)),
-(...v)=>(redv(33827,R0_iteration_statement,8,0,...v)),
-(...v)=>(redv(33827,R19_iteration_statement,8,0,...v)),
+(...v)=>(redv$1(33827,R12_iteration_statement,8,0,...v)),
+(...v)=>(redv$1(33827,R17_iteration_statement,8,0,...v)),
+(...v)=>(redv$1(33827,R18_iteration_statement,8,0,...v)),
+(...v)=>(redv$1(33827,R0_iteration_statement,8,0,...v)),
+(...v)=>(redv$1(33827,R19_iteration_statement,8,0,...v)),
 ()=>(2542),
-(...v)=>(redv(43027,R2_case_block,4,0,...v)),
-(...v)=>(redv(45071,R1_case_clause,3,0,...v)),
-(...v)=>(redv(46095,R0_default_clause,3,0,...v)),
-(...v)=>(redv(63523,R1_function_declaration,8,0,...v)),
-(...v)=>(rednv(86047,fn.class_method,7,0,...v)),
-(...v)=>(rednv(86047,fn.class_get_method,7,0,...v)),
+(...v)=>(redv$1(43027,R2_case_block,4,0,...v)),
+(...v)=>(redv$1(45071,R1_case_clause,3,0,...v)),
+(...v)=>(redv$1(46095,R0_default_clause,3,0,...v)),
+(...v)=>(redv$1(63523,R1_function_declaration,8,0,...v)),
+(...v)=>(rednv$1(86047,fn$1.class_method,7,0,...v)),
+(...v)=>(rednv$1(86047,fn$1.class_get_method,7,0,...v)),
 ()=>(2550),
-(...v)=>(redv(33831,R0_iteration_statement,9,0,...v)),
-(...v)=>(redv(33831,R10_iteration_statement,9,0,...v)),
-(...v)=>(redv(33831,R11_iteration_statement,9,0,...v)),
-(...v)=>(redv(33831,R20_iteration_statement,9,0,...v)),
-(...v)=>(redv(43031,R1_case_block,5,0,...v)),
-(...v)=>(redv(45075,R0_case_clause,4,0,...v)),
-(...v)=>(rednv(86051,fn.class_set_method,8,0,...v)),
-(...v)=>(redv(33835,R9_iteration_statement,10,0,...v))],
+(...v)=>(redv$1(33831,R0_iteration_statement,9,0,...v)),
+(...v)=>(redv$1(33831,R10_iteration_statement,9,0,...v)),
+(...v)=>(redv$1(33831,R11_iteration_statement,9,0,...v)),
+(...v)=>(redv$1(33831,R20_iteration_statement,9,0,...v)),
+(...v)=>(redv$1(43031,R1_case_block,5,0,...v)),
+(...v)=>(redv$1(45075,R0_case_clause,4,0,...v)),
+(...v)=>(rednv$1(86051,fn$1.class_set_method,8,0,...v)),
+(...v)=>(redv$1(33835,R9_iteration_statement,10,0,...v))],
 
     //Goto Lookup Functions
-    goto = [v=>lsm(v,gt0),
-nf,
-nf,
-nf,
-v=>lsm(v,gt1),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt2),
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt3),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt4),
-v=>lsm(v,gt5),
-v=>lsm(v,gt6),
-v=>lsm(v,gt7),
-v=>lsm(v,gt8),
-v=>lsm(v,gt9),
-v=>lsm(v,gt10),
-nf,
-v=>lsm(v,gt11),
-v=>lsm(v,gt12),
-nf,
-v=>lsm(v,gt13),
-v=>lsm(v,gt14),
-v=>lsm(v,gt15),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt16),
-v=>lsm(v,gt17),
-nf,
-nf,
-nf,
-v=>lsm(v,gt18),
-nf,
-nf,
-v=>lsm(v,gt19),
-v=>lsm(v,gt20),
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt21),
-nf,
-nf,
-nf,
-v=>lsm(v,gt22),
-v=>lsm(v,gt23),
-v=>lsm(v,gt24),
-nf,
-v=>lsm(v,gt25),
-v=>lsm(v,gt26),
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt27),
-nf,
-v=>lsm(v,gt28),
-v=>lsm(v,gt29),
-nf,
-nf,
-nf,
-v=>lsm(v,gt1),
-nf,
-v=>lsm(v,gt30),
-v=>lsm(v,gt31),
-v=>lsm(v,gt32),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt33),
-v=>lsm(v,gt34),
-v=>lsm(v,gt35),
-v=>lsm(v,gt36),
-v=>lsm(v,gt37),
-v=>lsm(v,gt38),
-v=>lsm(v,gt39),
-v=>lsm(v,gt40),
-v=>lsm(v,gt41),
-v=>lsm(v,gt42),
-v=>lsm(v,gt43),
-v=>lsm(v,gt44),
-v=>lsm(v,gt45),
-v=>lsm(v,gt46),
-v=>lsm(v,gt47),
-v=>lsm(v,gt48),
-v=>lsm(v,gt49),
-v=>lsm(v,gt50),
-v=>lsm(v,gt51),
-v=>lsm(v,gt52),
-v=>lsm(v,gt53),
-v=>lsm(v,gt54),
-v=>lsm(v,gt55),
-v=>lsm(v,gt56),
-v=>lsm(v,gt57),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt58),
-v=>lsm(v,gt59),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt60),
-nf,
-v=>lsm(v,gt61),
-v=>lsm(v,gt62),
-v=>lsm(v,gt63),
-v=>lsm(v,gt64),
-nf,
-nf,
-v=>lsm(v,gt65),
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt66),
-nf,
-v=>lsm(v,gt67),
-v=>lsm(v,gt68),
-nf,
-nf,
-v=>lsm(v,gt69),
-nf,
-v=>lsm(v,gt70),
-nf,
-nf,
-v=>lsm(v,gt71),
-v=>lsm(v,gt72),
-nf,
-nf,
-nf,
-v=>lsm(v,gt73),
-v=>lsm(v,gt74),
-v=>lsm(v,gt75),
-nf,
-v=>lsm(v,gt76),
-v=>lsm(v,gt77),
-nf,
-v=>lsm(v,gt78),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt79),
-nf,
-v=>lsm(v,gt80),
-nf,
-v=>lsm(v,gt81),
-nf,
-nf,
-v=>lsm(v,gt82),
-v=>lsm(v,gt83),
-v=>lsm(v,gt84),
-nf,
-nf,
-nf,
-v=>lsm(v,gt85),
-v=>lsm(v,gt86),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt87),
-v=>lsm(v,gt88),
-nf,
-nf,
-nf,
-v=>lsm(v,gt89),
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt90),
-nf,
-v=>lsm(v,gt91),
-v=>lsm(v,gt92),
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt93),
-v=>lsm(v,gt94),
-v=>lsm(v,gt95),
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt96),
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt30),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt97),
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt98),
-nf,
-v=>lsm(v,gt99),
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt100),
-nf,
-nf,
-nf,
-v=>lsm(v,gt101),
-nf,
-v=>lsm(v,gt102),
-nf,
-nf,
-v=>lsm(v,gt103),
-nf,
-nf,
-nf,
-v=>lsm(v,gt104),
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt105),
-v=>lsm(v,gt106),
-v=>lsm(v,gt107),
-v=>lsm(v,gt3),
-nf,
-v=>lsm(v,gt108),
-v=>lsm(v,gt109),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt110),
-nf,
-nf,
-v=>lsm(v,gt111),
-nf,
-v=>lsm(v,gt112),
-nf,
-nf,
-v=>lsm(v,gt113),
-nf,
-nf,
-v=>lsm(v,gt114),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt115),
-nf,
-v=>lsm(v,gt116),
-nf,
-nf,
-v=>lsm(v,gt117),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt118),
-nf,
-nf,
-v=>lsm(v,gt119),
-nf,
-nf,
-nf,
-v=>lsm(v,gt120),
-v=>lsm(v,gt121),
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt122),
-nf,
-nf,
-nf,
-v=>lsm(v,gt123),
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt1),
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt124),
-nf,
-v=>lsm(v,gt125),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt126),
-nf,
-nf,
-nf,
-v=>lsm(v,gt127),
-v=>lsm(v,gt128),
-v=>lsm(v,gt129),
-v=>lsm(v,gt130),
-nf,
-v=>lsm(v,gt131),
-nf,
-nf,
-v=>lsm(v,gt71),
-v=>lsm(v,gt72),
-nf,
-v=>lsm(v,gt132),
-v=>lsm(v,gt133),
-v=>lsm(v,gt134),
-v=>lsm(v,gt135),
-v=>lsm(v,gt136),
-nf,
-v=>lsm(v,gt85),
-v=>lsm(v,gt86),
-nf,
-v=>lsm(v,gt137),
-nf,
-v=>lsm(v,gt138),
-v=>lsm(v,gt139),
-v=>lsm(v,gt140),
-nf,
-v=>lsm(v,gt141),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt142),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt143),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt144),
-nf,
-nf,
-v=>lsm(v,gt145),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt146),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt147),
-v=>lsm(v,gt148),
-nf,
-v=>lsm(v,gt149),
-v=>lsm(v,gt150),
-v=>lsm(v,gt151),
-v=>lsm(v,gt152),
-v=>lsm(v,gt153),
-nf,
-v=>lsm(v,gt154),
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt155),
-nf,
-nf,
-nf,
-v=>lsm(v,gt156),
-nf,
-v=>lsm(v,gt157),
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt158),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt159),
-nf,
-v=>lsm(v,gt160),
-nf,
-v=>lsm(v,gt161),
-nf,
-v=>lsm(v,gt162),
-nf,
-nf,
-v=>lsm(v,gt163),
-nf,
-nf,
-nf,
-v=>lsm(v,gt164),
-v=>lsm(v,gt165),
-nf,
-v=>lsm(v,gt166),
-v=>lsm(v,gt167),
-v=>lsm(v,gt168),
-v=>lsm(v,gt169),
-nf,
-v=>lsm(v,gt170),
-nf,
-nf,
-v=>lsm(v,gt171),
-v=>lsm(v,gt172),
-nf,
-v=>lsm(v,gt173),
-nf,
-v=>lsm(v,gt174),
-nf,
-nf,
-v=>lsm(v,gt175),
-v=>lsm(v,gt176),
-v=>lsm(v,gt177),
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt178),
-v=>lsm(v,gt179),
-nf,
-v=>lsm(v,gt180),
-nf,
-v=>lsm(v,gt181),
-nf,
-v=>lsm(v,gt182),
-v=>lsm(v,gt183),
-v=>lsm(v,gt184),
-v=>lsm(v,gt185),
-nf,
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt186),
-nf,
-v=>lsm(v,gt187),
-v=>lsm(v,gt188),
-nf,
-nf,
-v=>lsm(v,gt189),
-nf,
-nf,
-v=>lsm(v,gt190),
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt191),
-v=>lsm(v,gt192),
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt193),
-v=>lsm(v,gt194),
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt195),
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt196),
-v=>lsm(v,gt1),
-nf,
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt197),
-nf,
-nf,
-nf,
-nf,
-v=>lsm(v,gt1),
-nf,
-nf];
+    goto$1 = [v=>lsm$1(v,gt0$1),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt1$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt2$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt3$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt4$1),
+v=>lsm$1(v,gt5$1),
+v=>lsm$1(v,gt6$1),
+v=>lsm$1(v,gt7$1),
+v=>lsm$1(v,gt8$1),
+v=>lsm$1(v,gt9$1),
+v=>lsm$1(v,gt10$1),
+nf$1,
+v=>lsm$1(v,gt11$1),
+v=>lsm$1(v,gt12$1),
+nf$1,
+v=>lsm$1(v,gt13$1),
+v=>lsm$1(v,gt14$1),
+v=>lsm$1(v,gt15),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt16),
+v=>lsm$1(v,gt17),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt18),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt19),
+v=>lsm$1(v,gt20),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt21),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt22),
+v=>lsm$1(v,gt23),
+v=>lsm$1(v,gt24),
+nf$1,
+v=>lsm$1(v,gt25),
+v=>lsm$1(v,gt26),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt27),
+nf$1,
+v=>lsm$1(v,gt28),
+v=>lsm$1(v,gt29),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt1$1),
+nf$1,
+v=>lsm$1(v,gt30),
+v=>lsm$1(v,gt31),
+v=>lsm$1(v,gt32),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt33),
+v=>lsm$1(v,gt34),
+v=>lsm$1(v,gt35),
+v=>lsm$1(v,gt36),
+v=>lsm$1(v,gt37),
+v=>lsm$1(v,gt38),
+v=>lsm$1(v,gt39),
+v=>lsm$1(v,gt40),
+v=>lsm$1(v,gt41),
+v=>lsm$1(v,gt42),
+v=>lsm$1(v,gt43),
+v=>lsm$1(v,gt44),
+v=>lsm$1(v,gt45),
+v=>lsm$1(v,gt46),
+v=>lsm$1(v,gt47),
+v=>lsm$1(v,gt48),
+v=>lsm$1(v,gt49),
+v=>lsm$1(v,gt50),
+v=>lsm$1(v,gt51),
+v=>lsm$1(v,gt52),
+v=>lsm$1(v,gt53),
+v=>lsm$1(v,gt54),
+v=>lsm$1(v,gt55),
+v=>lsm$1(v,gt56),
+v=>lsm$1(v,gt57),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt58),
+v=>lsm$1(v,gt59),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt60),
+nf$1,
+v=>lsm$1(v,gt61),
+v=>lsm$1(v,gt62),
+v=>lsm$1(v,gt63),
+v=>lsm$1(v,gt64),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt65),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt66),
+nf$1,
+v=>lsm$1(v,gt67),
+v=>lsm$1(v,gt68),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt69),
+nf$1,
+v=>lsm$1(v,gt70),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt71),
+v=>lsm$1(v,gt72),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt73),
+v=>lsm$1(v,gt74),
+v=>lsm$1(v,gt75),
+nf$1,
+v=>lsm$1(v,gt76),
+v=>lsm$1(v,gt77),
+nf$1,
+v=>lsm$1(v,gt78),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt79),
+nf$1,
+v=>lsm$1(v,gt80),
+nf$1,
+v=>lsm$1(v,gt81),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt82),
+v=>lsm$1(v,gt83),
+v=>lsm$1(v,gt84),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt85),
+v=>lsm$1(v,gt86),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt87),
+v=>lsm$1(v,gt88),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt89),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt90),
+nf$1,
+v=>lsm$1(v,gt91),
+v=>lsm$1(v,gt92),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt93),
+v=>lsm$1(v,gt94),
+v=>lsm$1(v,gt95),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt96),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt30),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt97),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt98),
+nf$1,
+v=>lsm$1(v,gt99),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt100),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt101),
+nf$1,
+v=>lsm$1(v,gt102),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt103),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt104),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt105),
+v=>lsm$1(v,gt106),
+v=>lsm$1(v,gt107),
+v=>lsm$1(v,gt3$1),
+nf$1,
+v=>lsm$1(v,gt108),
+v=>lsm$1(v,gt109),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt110),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt111),
+nf$1,
+v=>lsm$1(v,gt112),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt113),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt114),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt115),
+nf$1,
+v=>lsm$1(v,gt116),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt117),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt118),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt119),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt120),
+v=>lsm$1(v,gt121),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt122),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt123),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt1$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt124),
+nf$1,
+v=>lsm$1(v,gt125),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt126),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt127),
+v=>lsm$1(v,gt128),
+v=>lsm$1(v,gt129),
+v=>lsm$1(v,gt130),
+nf$1,
+v=>lsm$1(v,gt131),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt71),
+v=>lsm$1(v,gt72),
+nf$1,
+v=>lsm$1(v,gt132),
+v=>lsm$1(v,gt133),
+v=>lsm$1(v,gt134),
+v=>lsm$1(v,gt135),
+v=>lsm$1(v,gt136),
+nf$1,
+v=>lsm$1(v,gt85),
+v=>lsm$1(v,gt86),
+nf$1,
+v=>lsm$1(v,gt137),
+nf$1,
+v=>lsm$1(v,gt138),
+v=>lsm$1(v,gt139),
+v=>lsm$1(v,gt140),
+nf$1,
+v=>lsm$1(v,gt141),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt142),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt143),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt144),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt145),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt146),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt147),
+v=>lsm$1(v,gt148),
+nf$1,
+v=>lsm$1(v,gt149),
+v=>lsm$1(v,gt150),
+v=>lsm$1(v,gt151),
+v=>lsm$1(v,gt152),
+v=>lsm$1(v,gt153),
+nf$1,
+v=>lsm$1(v,gt154),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt155),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt156),
+nf$1,
+v=>lsm$1(v,gt157),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt158),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt159),
+nf$1,
+v=>lsm$1(v,gt160),
+nf$1,
+v=>lsm$1(v,gt161),
+nf$1,
+v=>lsm$1(v,gt162),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt163),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt164),
+v=>lsm$1(v,gt165),
+nf$1,
+v=>lsm$1(v,gt166),
+v=>lsm$1(v,gt167),
+v=>lsm$1(v,gt168),
+v=>lsm$1(v,gt169),
+nf$1,
+v=>lsm$1(v,gt170),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt171),
+v=>lsm$1(v,gt172),
+nf$1,
+v=>lsm$1(v,gt173),
+nf$1,
+v=>lsm$1(v,gt174),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt175),
+v=>lsm$1(v,gt176),
+v=>lsm$1(v,gt177),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt178),
+v=>lsm$1(v,gt179),
+nf$1,
+v=>lsm$1(v,gt180),
+nf$1,
+v=>lsm$1(v,gt181),
+nf$1,
+v=>lsm$1(v,gt182),
+v=>lsm$1(v,gt183),
+v=>lsm$1(v,gt184),
+v=>lsm$1(v,gt185),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt186),
+nf$1,
+v=>lsm$1(v,gt187),
+v=>lsm$1(v,gt188),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt189),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt190),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt191),
+v=>lsm$1(v,gt192),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt193),
+v=>lsm$1(v,gt194),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt195),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt196),
+v=>lsm$1(v,gt1$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt197),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt1$1),
+nf$1,
+nf$1];
 
-function getToken(l, SYM_LU) {
+function getToken$1(l, SYM_LU) {
     if (l.END) return 0; /*2*/
 
     switch (l.ty) {
@@ -17384,15 +5168,15 @@ function getToken(l, SYM_LU) {
 
 /************ Parser *************/
 
-function parser(l, e = {}) {
+function parser$1(l, e = {}) {
     
-    fn = e.functions;
+    fn$1 = e.functions;
 
     l.IWS = false;
-    //l.PARSE_STRING = true;
+    l.PARSE_STRING = true;
 
-    if (symbols.length > 0) {
-        symbols.forEach(s => { l.addSymbol(s); });
+    if (symbols$1.length > 0) {
+        symbols$1.forEach(s => { l.addSymbol(s); });
         l.tl = 0;
         l.next();
     }
@@ -17402,7 +5186,7 @@ function parser(l, e = {}) {
 
     let time = 1000000,
         RECOVERING = 100,
-        tk = getToken(l, lu),
+        tk = getToken$1(l, lu$1),
         p = l.copy(),
         sp = 1,
         len = 0,
@@ -17412,7 +5196,7 @@ function parser(l, e = {}) {
 
         while (time-- > 0) {
 
-            const fn = lsm(tk, state[ss[sp]]) || 0;
+            const fn = lsm$1(tk, state$1[ss[sp]]) || 0;
 
             /*@*/// console.log({end:l.END, state:ss[sp], tx:l.tx, ty:l.ty, tk:tk, rev:rlu.get(tk), s_map:state[ss[sp]], res:lsm(tk, state[ss[sp]])});
 
@@ -17422,18 +5206,18 @@ function parser(l, e = {}) {
             if (fn == 0) {
                 /*Ignore the token*/
                 l.next();
-                tk = getToken(l, lu);
+                tk = getToken$1(l, lu$1);
                 continue;
             }
 
             if (fn > 0) {
-                r = state_funct[fn - 1](tk, e, o, l, ss[sp - 1]);
+                r = state_funct$1[fn - 1](tk, e, o, l, ss[sp - 1]);
             } else {
 
                 if (RECOVERING > 1 && !l.END) {
-                    if (tk !== lu.get(l.ty)) {
+                    if (tk !== lu$1.get(l.ty)) {
                         //console.log("ABLE", rlu.get(tk), l.tx, tk )
-                        tk = lu.get(l.ty);
+                        tk = lu$1.get(l.ty);
                         continue;
                     }
 
@@ -17445,9 +5229,9 @@ function parser(l, e = {}) {
                     }
                 }
 
-                tk = getToken(l, lu);
+                tk = getToken$1(l, lu$1);
 
-                const recovery_token = eh[ss[sp]](tk, e, o, l, p, ss[sp]);
+                const recovery_token = eh$1[ss[sp]](tk, e, o, l, p, ss[sp]);
 
                 if (RECOVERING > 0 && typeof(recovery_token) == "string") {
                     RECOVERING = -1; /* To prevent infinite recursion */
@@ -17478,7 +5262,7 @@ function parser(l, e = {}) {
                     p.sync(l);
                     l.next();
                     off = l.off;
-                    tk = getToken(l, lu);
+                    tk = getToken$1(l, lu$1);
                     RECOVERING++;
                     break;
 
@@ -17489,7 +5273,7 @@ function parser(l, e = {}) {
 
                     ss.length -= len;
                     sp -= len;
-                    gt = goto[ss[sp]](r >> 10);
+                    gt = goto$1[ss[sp]](r >> 10);
 
                     if (gt < 0)
                         l.throw("Invalid state reached!");
@@ -17503,7 +5287,7 @@ function parser(l, e = {}) {
     return o[0];
 };
 
-var types$1 = {
+var types = {
 		object:1,
 		null:2,
 		stmts:3,
@@ -17597,7 +5381,7 @@ class for_stmt extends base{
 	 	yield this;
 	 }
 
-	 get type () { return types$1.for }
+	 get type () { return types.for }
 
 	 render(){
 	 	let init, bool, iter, body;
@@ -17620,7 +5404,7 @@ class identifier$1 extends base{
 
 	 get name () {return this.val}
 
-	 get type () { return types$1.id }
+	 get type () { return types.id }
 
 	 render  () { return this.val}
 }
@@ -17645,7 +5429,7 @@ class call_expr extends base {
 	 	yield this;
 	 }
      get name () {return this.id.name}
-     get type () { return types$1.call }
+     get type () { return types.call }
      render(){        return `${this.id.render()}(${this.args.map(a=>a.render()).join(",")})`}
 }
 
@@ -17668,7 +5452,7 @@ class catch_stmt extends base {
 	 	yield this;
 	 }
 
-     get type () { return types$1.catch }
+     get type () { return types.catch }
 }
 
 /** TRY **/
@@ -17694,7 +5478,7 @@ class try_stmt extends base {
         yield this;
      }
 
-     get type () { return types$1.try }
+     get type () { return types.try }
 }
 
 /** STATEMENTS **/
@@ -17715,7 +5499,7 @@ class stmts extends base {
 	 	yield this;
 	 }
 
-     get type () { return types$1.stmts }
+     get type () { return types.stmts }
 
      render(){return `${this.stmts.map(s=>s.render()).join(";")}`};
 }
@@ -17731,7 +5515,7 @@ class block extends stmts {
     	super.getRootIds(ids, new Set([...closure.values()]));
     }
 
-    get type () { return types$1.block }
+    get type () { return types.block }
 }
 
 /** LEXICAL DECLARATION **/
@@ -17747,7 +5531,7 @@ class lexical extends base {
     	this.bindings.forEach(b=>b.getRootIds(ids, closure));
     }
 
-    get type () { return types$1.lex }
+    get type () { return types.lex }
 
     render(){return `${this.mode} ${this.bindings.map(b=>b.render()).join(",")};`}
 }
@@ -17798,7 +5582,7 @@ class mem extends base {
     }
 
     get name() { return this.id.name }
-    get type() { return types$1.member }
+    get type() { return types.member }
 
     render() { return `${this.id.render()}.${this.mem.render()}` }
 }
@@ -17825,7 +5609,7 @@ class assign extends base {
         //yield this;
      }
 
-     get type () { return types$1.assign }
+     get type () { return types.assign }
 
     render(){return `${this.id.render()} ${this.op} ${this.expr.render()}`}
 }
@@ -17858,7 +5642,7 @@ class add extends operator$1 {
        	this.op = "+";
     }
 
-    get type () { return types$1.add }
+    get type () { return types.add }
 }
 
 /** SUBTRACT **/
@@ -17869,7 +5653,7 @@ class sub extends operator$1 {
         this.op = "-";
     }
 
-    get type () { return types$1.sub }
+    get type () { return types.sub }
 }
 
 /** MULTIPLY **/
@@ -17880,7 +5664,7 @@ class div extends operator$1 {
         this.op = "/";
     }
 
-    get type () { return types$1.div }
+    get type () { return types.div }
 }
 
 /** MULTIPLY **/
@@ -17891,7 +5675,7 @@ class mult extends operator$1 {
         this.op = "*";
     }
 
-    get type () { return types$1.mult }
+    get type () { return types.mult }
 
     
 }
@@ -17911,18 +5695,18 @@ class object extends base {
 	 	yield this;
 	 }
 
-	 get type () { return types$1.object }
+	 get type () { return types.object }
 
 	 render(){return `{${this.props.map(p=>p.render()).join(",")}}`}
 }
 
 /** STRING **/
 
-class string$2 extends base{
+class string$1 extends base{
 	 constructor (sym){super(); this.val = sym[0];}
 	 getRootIds(ids, closuere){if(!closuere.has(this.val))ids.add(this.val);}
 
-     get type () { return types$1.string }
+     get type () { return types.string }
 
      render(){return this.val}
 
@@ -17931,24 +5715,24 @@ class string$2 extends base{
 /** NULL **/
 class null_ extends base{
 	 constructor (sym){super();}
-	 get type () { return types$1.null }
+	 get type () { return types.null }
 
 	 render(){return "null"}
 }
 
 /** NUMBER **/
-class number$2 extends base{
+class number$1 extends base{
 	 constructor (sym){super();this.val = parseFloat(sym); this.ty = "num";}
-	 get type () { return types$1.number }
+	 get type () { return types.number }
 	 render(){return this.val}
 }
 
 /** BOOLEAN **/
 
-class bool$1 extends base{
+class bool extends base{
 	 constructor (sym){super();this.val = sym[0].slice(1) == "true";}
 
-     get type () { return types$1.bool }
+     get type () { return types.bool }
 
 }
 
@@ -17974,10 +5758,10 @@ class unary_prefix_op extends base {
 
 class negate extends unary_prefix_op{
 	 constructor (sym){super(sym);this.val = parseFloat(sym); this.op = "-";}
-	 get type () { return types$1.negate }
+	 get type () { return types.negate }
 }
 
-const env =  {
+const env$1 =  {
 	table:{},
 	ASI:true,
 	functions:{
@@ -18031,9 +5815,9 @@ const env =  {
 		post_dec_expr : function (sym){this.expr = sym[0]; this.ty = "POST DEC";},
 		condition_expr : function (sym){this.condition = sym[0]; this.le = sym[2]; this.re = sym[4];},
 		null_literal :null_,
-		numeric_literal : number$2,
-		bool_literal : bool$1,
-		string_literal : string$2,
+		numeric_literal : number$1,
+		bool_literal : bool,
+		string_literal : string$1,
 		label_stmt : function(sym){this.label =sym[0]; this.stmt = sym[1];},
 		funct_decl: function(id,args,body){this.id = id || "Anonymous"; this.args = args; this.body = body, this.scope = false;},
 		this_expr: function(){},
@@ -18065,3883 +5849,53 @@ const env =  {
 		integrate : false,
 		onstart : ()=>{
 			console.log("SDFS");
-			env.table = {};
-        	env.ASI = true;	
+			env$1.table = {};
+        	env$1.ASI = true;	
         }
 	}
 };
 
-var JSTools = {
-	parse(lex){
-		let l = lex.copy();
+// This is a variadic function that accepts objects, string, and urls, 
+//  and compiles data from the argument sources into a wick component. 
 
-		return parser(lex, env);
-	},
+// If compilation fails, failure component is generated that provides 
+// error information. 
 
-	validate(lex){
-		let l = lex.copy();
+//(data, presets)
+async function compiler (...data){
 
-		console.log(l.slice());
-		try{
-			let result = parser(lex, env);
-			console.log(result);
-			return true;
-		}catch(e){
-			console.error(e);
-			return false;
-		}
-	},
+	if(data.length === 0)
+		throw new Error("This function requires arguments. Refere to wick docs on what arguments may be passed to this function.");
 
-	getRootVariables(lex){
-		let l = lex.copy();
-		
-		let ids = new Set();
-		let closure = new Set();
+	// The presets object provides global values to this component
+	// and all its derivatives and descendents. 
+	let presets = {}; 
+	
+	if(data.length > 1)
+		presets = data.slice(-1); 
+	
+	const component_data = data[0];
 
-		try{
-			let result = parser(lex, env);
+	switch(typeof component_data){
+		case "string": 
+		/* Need to determine if string is:
+			   URL to component resource
+			   HTML data
+			   JS data
+			   or incompatible data that should throw.
+		*/
+		const ast = parser(whind(component_data), env);
+		console.dir(ast, true);
+		break;
+		case "object":
+			// Extract properties from the object that relate to wick component attributes. 
+		break;
 
-			if(result instanceof identifier$1){
-				ids.add(result.val);
-			}else
-				result.getRootIds(ids, closure);
+	}
 
-			return {ids, ast:result, SUCCESS : true}
-		}catch(e){
-			return {ids, ast:null, SUCCESS : false};
-		}
-	},
-
-	types : types$1
-};
-
-const BannedIdentifiers = { "true": true, "false": 1, "class": 1, "function": 1, "return": 1, "for": 1, "new": 1, "let": 1, "var": 1, "const": 1, "Date": 1, "null": 1, "parseFloat": 1, "parseInt": 1 };
-
-function setIdentifier(id, store, cache) {
-    if (!cache[id] && !BannedIdentifiers[id]) {
-        store.push(id);
-        cache[id] = true;
-    }
+	return {}
 }
 
-function processExpression(lex, binds) {
-
-
-
-    /* 
-     * The token after the second sentinel does not cover the entire bind range.
-     * So the text with in the bind range should be a multi token token JS expression. 
-     * We should extract all identifiers and use them to create bind points for an ExpressionIO.
-     * 
-     * The expression should work with a function return statement, as in:
-     * ```javasript
-     * "return (implied)" name ? "User has a name!" : "User does not have a name!"
-     * ```
-     */
-
-    const bind_ids = [];
-
-    const function_string = lex.slice();
-
-    const existing_names = {};
-
-    /**TODO? - This could be replaced by a plugin to ensure proper Javascript expressions. Perhaps producing a JS AST */
-    let args = JSExpressionIdentifiers(lex), funct;
-
-
-    for (let i = 0, l = args.length; i < l; i++)
-        setIdentifier(args[i], bind_ids, existing_names);
-
-    bind_ids.push(`return ${function_string}`);
-
-    try{
-        funct = (Function).apply(null, bind_ids);
-    }catch(e){
-        console.error(bind_ids[bind_ids.length -1]);
-        console.error(e);
-        return;
-    }
-
-    const bindings = [];
-
-    for (let i = 0, l = bind_ids.length - 1; i < l; i++) {
-        let binding = new DynamicBinding();
-        binding.tap_name = bind_ids[i];
-        bindings.push(binding);
-    }
-
-    binds.push(new ExpressionBinding(bindings, funct));
-}
-
-/**
- * { function_description }
- * @memberof   module:wick~internals.compiler
- * @param      {Lexer}  lex     The lex
- * @return     {Array}   an
- */
-function evaluate(lex, EVENT = false) {
-    let binds = [];
-    lex.IWS = false;
-    let start = lex.pos;
-
-    while (!lex.END && lex.ty !== lex.types.str) {
-        switch (lex.ch) {
-            case barrier_a_start:
-                if (lex.pk.ch == barrier_b_start || lex.p.ch == barrier_a_start) {
-
-                    let sentinel = (lex.p.ch == barrier_a_start) ? barrier_a_end : barrier_b_end;
-
-                    let pk2 = lex.p.pk;
-
-
-                    if (pk2.ch == barrier_b_start) {
-                        sentinel = barrier_b_end;
-                        if (start < lex.p.pos)
-                            binds.push(new RawValueBinding(lex.p.slice(start)));
-
-                        lex.p.sync();
-                    } else if (start < lex.pos) {
-
-                        binds.push(new RawValueBinding(lex.slice(start)));
-                    } //create text node
-
-
-                    lex.sync().n;
-                    lex.IWS = true; // Do not produce white space tokens during this portion.
-                    let pk = lex.pk;
-                    let Message = false;
-
-
-                    while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end && pk.p.ch !== barrier_a_start) || (pk.p.n.ch === barrier_a_end))) {
-                        let prev = pk.ch;
-                        pk.n;
-                        if (pk.ch == barrier_a_start && prev == barrier_a_end)
-                            Message = true;
-                    }
-
-
-                    if (lex.tl < pk.off - lex.off - 1 && !Message) {
-                        /***** Start Expression *******/
-
-                        const elex = lex.copy(); //The expression Lexer
-
-                        elex.fence(pk);
-
-                        lex.sync();
-
-                        if (pk.END) //Should still have `))` or `|)` in the input string
-                            throw new Error("Should be more to this!");
-
-                        processExpression(elex, binds);
-
-                        lex.a(sentinel);
-                        /***** End Expression ********/
-                    } else {
-
-                        /************************** Start Single Identifier Binding *******************************/
-                        if(lex.pk.END) // binding is not closed
-                            break; 
-
-                        let id = lex.tx;
-
-                        let binding = new DynamicBinding();
-                        binding.tap_name = id;
-                        let index = binds.push(binding) - 1;
-
-
-                        lex.n.a(sentinel);
-
-                        /***************************** Looking for Event Bindings ******************************************/
-
-                        if (lex.ch == barrier_a_start || lex.ch == barrier_b_start) {
-
-                            if(EVENT){
-                                binding = new EventBinding(binding); 
-                                binds[index] = binding;
-                            }
-
-                            let sentinel = (lex.ch == barrier_a_start) ? barrier_a_end : barrier_b_end;
-
-                            lex.IWS = true; // Do not produce white space tokens during this portion.
-
-                            let pk = lex.pk;
-
-                            while (!pk.END && (pk.ch !== sentinel || (pk.pk.ch !== barrier_a_end))) { pk.n; }
-
-                            lex.n;
-
-                            if (lex.tl < pk.off - lex.off || BannedIdentifiers[lex.tx]) {
-
-                                const elex = lex.copy(); //The expression Lexer
-
-                                elex.fence(pk);
-
-                                lex.sync();
-
-                                if (pk.END) //Should still have `))` or `|)` in the input string
-                                    throw new Error("Should be more to this!");
-
-                                const event_binds = [];
-
-                                processExpression(elex, event_binds);
-
-                                binding.argument = event_binds[0];
-
-                                lex.a(sentinel);
-
-                            } else {
-
-                                if (lex.ch !== sentinel) {
-                                    let id = lex.tx, arg_binding = null;
-                                    if (lex.ty !== lex.types.id) {
-                                        switch (lex.ty) {
-                                            case lex.types.num:
-                                                arg_binding = new RawValueBinding(parseFloat(id));
-                                                break;
-                                            case lex.types.str:
-                                                arg_binding = new RawValueBinding(id.slice(1, -1));
-                                                break;
-                                            default:
-                                                arg_binding = new RawValueBinding(id.slice);
-                                        }
-                                    } else {
-                                        arg_binding = new DynamicBinding();
-                                        arg_binding.tap_name = id;
-                                    }
-                                    binding.argument = arg_binding;
-                                    lex.n;
-                                }
-                                lex.a(sentinel);
-                            }
-                        }
-                    }
-
-                    lex.IWS = false;
-
-                    start = lex.off + 1; //Should at the sentinel.
-
-                    lex.a(barrier_a_end);
-
-                    continue;
-                }
-
-                break;
-        }
-
-        lex.next();
-    }
-
-    if (start < lex.off) {
-        lex.off = start;
-        lex.END = false;
-        lex.tl = 0;
-        lex.END = false;
-
-        let DATA_END = start;
-
-        while (!lex.n.END)
-            if (!(lex.ty & (lex.types.ws | lex.types.nl)))
-                DATA_END = lex.off + lex.tl;
-
-        if (DATA_END > start) {
-            lex.sl = DATA_END;
-            //Need to replace HTML escaped values back to actuall character values. 
-            binds.push(new RawValueBinding(lex.slice(start)));
-        }
-    }
-    return binds;
-}
-
-function Template(lex, FOR_EVENT) {
-    let binds = evaluate(lex, FOR_EVENT);
-    if (binds.length > 0) {
-    if (binds.length == 1)
-            return binds[0];
-        return new OutTemplate(binds);
-    }
-    return null;
-}
-
-function OutTemplate(binds = []) {
-    this.bindings = binds;
-}
-
-OutTemplate.prototype = {
-    method: 0,
-
-    attr: "",
-
-    bindings: null,
-
-    _bind_: function(scope, errors, taps, element, attr) {
-
-        if (this.method == ATTRIB || this.method == INPUT)
-            return new AttribTemplate(scope, errors, taps, attr, element, this.bindings);
-        return new TemplateString(scope, errors, taps, element, this.bindings);
-    },
-
-    _appendText_: function(string) {
-        let binding = this.bindings[this.bindings.length - 1];
-
-        if (binding && binding.type == RAW_VALUEbindingID) {
-            binding.val += string;
-        } else {
-            this.bindings.push(new RawValueBinding(string));
-        }
-    },
-
-    set type(v) {},
-    get type() {
-        return TEMPLATEbindingID;
-    },
-
-    toString(){
-        let str = "";
-        for(let i = 0; i < this.bindings.length; i++)
-            str += this.bindings[i];
-        return str;
-    }
-};
-
-
-function StyleTemplate(lex) {
-
-    const style = new OutStyleTemplate();
-    if(lex){
-
-    }
-    return style;
-}
-
-class OutStyleTemplate {
-
-    constructor() {
-        this._css_props_ = [];
-    }
-
-    get bindings() {
-        if (this._template_)
-            return this._template_.bindings;
-        return [];
-    }
-    set bindings(v) {}
-
-    get type() {
-        return TEMPLATEbindingID;
-    }
-    set type(v) {}
-
-    clear(){
-        this._css_props_ = [];
-    }
-
-    _addRule_(rule) {
-
-        let props = rule.props;
-
-        for (let name in props) {
-            let prop = props[name];
-
-            if(prop == null) continue;
-
-            if (prop._wick_type_ > 0)
-                this._css_props_.push(prop);
-            else 
-                this._css_props_.push(new CSSRawValue(name, prop));
-        }
-    }
-
-    _bind_(scope, errors, taps, element) {
-        return new StyleIO(scope, errors, taps, element, this._css_props_);
-    }
-}
-
-function CSSRuleTemplate(lex, prop_name) {
-    return new OutCSSRuleTemplate(lex, prop_name);
-}
-
-class OutCSSRuleTemplate {
-    constructor(lex = null, prop_name = "") {
-        let bindings = evaluate(lex);
-
-        this.binding = null;
-
-        this.prop_name = prop_name;
-
-        this.bindings = bindings;
-    }
-
-    get _wick_type_() {
-        return 1;
-    }
-    set _wick_type_(v) {}
-
-    _bind_(scope, errors, taps, io) {
-        let binding = new CSSRuleTemplateString(scope, errors, taps, this.bindings, this.prop_name);
-        binding.addIO(io);
-        return binding;
-    }
-}
-
-const par_list = [];
-
-class BindingCSSRoot extends CSSRootNode {
-    getPropertyHook(value_lex, prop_name, rule) {
-
-        //looking for binding points
-        let pk = value_lex.copy();
-        while (!pk.END && ((pk.ch != barrier_a_start || (pk.n.ch != barrier_a_start && pk.ch != barrier_b_start)))) {
-            pk.n;
-        }
-
-        if (pk.END)
-            return false;
-
-        rule.props[prop_name] = CSSRuleTemplate(value_lex, prop_name);
-
-        return true;
-    }
-}
-
-class RootText extends TextNode {
-    constructor(binding) {
-        super("");
-        binding.method = TEXT$1;
-        this.binding = binding;
-    }
-
-    build(element, scope, presets, errors, taps, statics) {
-        let ele = document.createTextNode(this.txt);
-        this.binding._bind_(scope, errors, taps, ele, "", this, statics);
-        appendChild$1(element, ele);
-    }
-
-    linkCSS() {}
-
-    toString(off = 0) {
-        return `${("    ").repeat(off)}${this.binding}\n`;
-    }
-}
-
-var M$1 = null;
-/**
- * Class for Root HTML AST Node.
- *@memberof module:wick~internals.templateCompiler
- *@alias Root
- */
-class RootNode extends HTMLNode {
-
-    constructor() {
-        super();
-        this.HAS_TAPS = false;
-
-        this.tap_list = [];
-        this.bindings = [];
-
-        this.css = null;
-
-        this.merged = false;
-        this.SLOTED = false;
-
-        this._badge_name_ = "";
-
-        this.__presets__ = null;
-        this.__statics__ = null;
-    }
-
-    /******************************************* ERROR ****************************************************/
-
-    getURL(index) {
-        if (this.url)
-            return this.url;
-        if (par_list[index])
-            return par_list[index].getURL(index - 1);
-        return null;
-    }
-
-    /******************************************* STATICS ****************************************************/
-
-    get statics() {
-
-        if (this.__statics__) return this.__statics__;
-
-        if (this.par)
-            return (this.__statics__ = Object.assign({}, this.par.statics, { slots: {} }));
-        return (this.__statics__ = { slots: {} });
-    }
-
-    set statics(statics) {
-        //this.__statics__ = statics;
-    }
-
-    /******************************************* PRESETS ****************************************************/
-
-    get presets() {
-        if (this.__presets__) return this.__presets__;
-        return this.par.presets;
-    }
-
-    set presets(preset) {
-        this.__presets__ = preset;
-    }
-
-    /****************************************** COMPONENTIZATION *****************************************/
-
-    mergeComponent() {
-
-        if (this.presets.components) {
-            let component = this.presets.components[this.tag];
-
-            if (component) {
-                return component.merge(this);
-            }
-        }
-
-        return this;
-    }
-
-    merge(node) {
-
-        const merged_node = new this.constructor();
-        merged_node.line = this.line;
-        merged_node.char = this.char;
-        merged_node.offset = this.offset;
-        merged_node.single = this.single;
-        merged_node.url = this.url;
-        merged_node.tag = this.tag;
-        merged_node.fch = (node.fch || this.fch) ? new MergerNode(this.children, node.children) : null;
-        merged_node.css = this.css;
-        merged_node.HAS_TAPS = this.HAS_TAPS;
-        merged_node.merged = true;
-        merged_node._badge_name_ = node._badge_name_;
-        merged_node.__presets__ = this.presets;
-        merged_node.par = node.par;
-
-        if (this.tap_list)
-            merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));
-
-
-        this.attributes.forEach(e => {
-            if(e.name == "component") return; //Prevent this from changing the global static value.
-            merged_node.processAttributeHook(e.name, whind$1(e.value));
-        });
-
-        node.attributes.forEach(e => merged_node.processAttributeHook(e.name, whind$1(e.value)));
-        merged_node.attributes = merged_node.attributes.concat(this.attributes, node.attributes);
-
-        merged_node.__statics__ = node.__statics__;
-
-        //merged_node.attributes = this.attributes.slice();
-        return merged_node;
-    }
-
-    /******************************************* CSS ****************************************************/
-
-    linkCSS(css, win = window) {
-
-        if (this.css)
-            css = this.css;
-
-        if (css) {
-
-            let rule;
-
-
-            for (let i = 0; i < css.length; i++)
-                rule = css[i].getApplicableRules(this, rule, win);
-
-
-            //parse rules and createBindings.
-            if (rule && rule.LOADED) {
-
-
-                //Link into the binding for style. if there is no binding, create one. 
-                //Link in the rule properties to the tap system. 
-                let HAVE_BINDING = false;
-
-                for (let i = 0, l = this.bindings.length; i < l; i++) {
-                    let binding = this.bindings[i];
-
-                    if (binding.name == "css") {
-                        binding.binding.clear();
-                        HAVE_BINDING = (binding.binding._addRule_(rule), true);
-                    }
-                }
-
-                if (!HAVE_BINDING) {
-                    let binding = StyleTemplate();
-                    binding._addRule_(rule);
-                    let vals = {
-                        name: "css",
-                        value: "",
-                        binding
-                    };
-                    this.bindings.push(vals);
-
-                }
-
-                this.css = css;
-            }
-        }
-
-        for (let node = this.fch; node; node = this.getNextChild(node))
-            node.linkCSS(css, win);
-    }
-
-    setPendingCSS(css, par = this.par) {
-        if (par)
-            par.setPendingCSS(css, par.par);
-        else {
-            if (!this.css)
-                this.css = [];
-            this.css.push(css);
-        }
-    }
-
-    getCSS(par = this.par) {
-
-        let css = new BindingCSSRoot();
-
-        this.setPendingCSS(css, par);
-
-        return css;
-    }
-
-    get classList() {
-        let classes = this.getAttrib("class");
-        if (classes) {
-            if (typeof(classes.value) == "string")
-                return classes.value.split(" ");
-            else
-                return classes.value.val.split(" ");
-        }
-        return [];
-    }
-
-    /******************************************* TAPS ****************************************************/
-
-
-    getTap(tap_name) {
-        this.HAS_TAPS = true;
-        const l = this.tap_list.length;
-        for (let i = 0; i < l; i++)
-            if (this.tap_list[i].name == tap_name)
-                return this.tap_list[i];
-        const tap = {
-            name: tap_name,
-            id: l,
-            modes: 0
-        };
-        this.tap_list.push(tap);
-        return tap;
-    }
-
-    checkTapMethod(name, lex, OVERRIDE = false) {
-        if (this.par && !OVERRIDE) return false;
-
-        let tap_mode = KEEP; // Puts
-
-        let SET_TAP_METHOD = false;
-
-        switch (name[0]) {
-            case "i": // Imports data updates, messages - valid on scope and top level objects.
-                if (name === "import") {
-                    SET_TAP_METHOD = true;
-                    tap_mode |= IMPORT;
-                }
-                break;
-            case "e": // Exports data updates, messages - valid on scopes and top level objects.
-                if (name === "export") {
-                    SET_TAP_METHOD = true;
-                    tap_mode |= EXPORT;
-                }
-                break;
-            case "p": // Pushes updates to model
-                if (name === "put") {
-                    SET_TAP_METHOD = true;
-                    tap_mode |= PUT;
-                }
-        }
-
-        if (SET_TAP_METHOD) {
-
-            while (!lex.END) {
-
-                this.getTap(lex.tx).modes |= tap_mode;
-
-                lex.n;
-            }
-
-            return true;
-        }
-    }
-
-    checkTapMethodGate(name, lex) {
-
-        if (!this.par)
-            return this.checkTapMethod(name, lex);
-
-        return false;
-    }
-
-    linkTapBinding(binding) {
-
-        binding.tap_id = this.getTap(binding.tap_name).id;
-    }
-
-    delegateTapBinding(binding, tap_mode) {
-
-        if (this.par)
-            return this.par.processTapBinding(binding, tap_mode);
-
-        return null;
-    }
-
-    processTapBinding(binding, tap_mode = 0) {
-
-        if (this.delegateTapBinding(binding, tap_mode)) return binding;
-
-        if (binding.type === TEMPLATEbindingID) {
-
-            let bindings = binding.bindings;
-
-            for (let i = 0, l = bindings.length; i < l; i++)
-                if (bindings[i].type === DYNAMICbindingID)
-                    this.linkTapBinding(bindings[i]);
-
-        } else if (binding.type === DYNAMICbindingID)
-            this.linkTapBinding(binding);
-
-        return binding;
-    }
-
-
-
-    /******************************************* BUILD ****************************************************/
-
-    getCachedScope() {
-        if (this.par)
-            return this.par.getCachedScope();
-        return null;
-    }
-
-    setScope(scope) {
-        scope.ast = this;
-    }
-
-    /**
-     * Builds Scope Graph and Dom Tree.
-     */
-    build(element, scope, presets, errors, taps, statics, RENDER_ALL = false) {
-
-        let out_statics = statics;
-
-        if (this.url || this.__statics__){
-            out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL(par_list.length - 1) });
-        }
-
-        const own_element = this.createElement(presets, scope);
-
-        if (!scope)
-            scope = new Scope(null, presets || this.__presets__ || this.presets, own_element, this);
-
-        if (this.HAS_TAPS)
-            taps = scope.linkTaps(this.tap_list);
-
-        if (own_element) {
-
-            if (!scope.ele) scope.ele = own_element;
-
-            if (this._badge_name_)
-                scope.badges[this._badge_name_] = own_element;
-
-            if (element) appendChild$1(element, own_element);
-
-            for (let i = 0, l = this.bindings.length; i < l; i++) {
-                let attr = this.bindings[i];
-                attr.binding._bind_(scope, errors, taps, own_element, attr.name, this, statics);
-            }
-        }
-
-        const ele = own_element ? own_element : element;
-
-        par_list.push(this);
-
-        for (let node = this.fch; node; node = this.getNextChild(node))
-            node.build(ele, scope, presets, errors, taps, out_statics, RENDER_ALL);
-
-        par_list.pop();
-
-        return scope;
-    }
-
-
-    /******************************************* HOOKS ****************************************************/
-
-    /**
-     * Override this method to tell the parser that `tag` is self closing and to not look for a matching close tag by returning `true`.
-     * @param      {string}  tag     The HTML tag
-     */
-    selfClosingTagHook(tag) {
-        switch (tag) {
-            case "input":
-            case "br":
-            case "img":
-            case "import":
-            case "link":
-            case "f":
-            case "filter":
-                return true;
-        }
-
-        return false;
-    }
-
-    createElement() {
-        return createElement(this.tag);
-    }
-
-    async endOfElementHook() {
-        await super.endOfElementHook();
-        return this.mergeComponent();
-    }
-
-
-    /**
-     * This will create TAP binding references and methods, binding points, and regular attribute nodes.
-     * @param      {<type>}  name    The Attribute name
-     * @param      {Lexer}  lex     The lexer containing the attribute value.
-     * @return     {Object}  `null` or an object to store in this nodes attributes
-     * @private
-     */
-    processAttributeHook(name, lex) {
-        
-        if (!name) return null;
-
-        let start = lex.off,
-            basic = {
-                IGNORE: true,
-                name,
-                value: lex.slice(start)
-            };
-
-        let bind_method = ATTRIB,
-            FOR_EVENT = false;
-
-        switch (name[0]) {
-
-            case "#": //Static values
-                let key = name.slice(1);
-
-                if (key.length > 0) {
-                    if (lex.tl == lex.sl - lex.off && lex.ty == lex.types.num)
-                        this.statics[key] = parseFloat(lex.slice());
-                    else
-                        this.statics[key] = lex.slice();
-                }
-
-                return basic;
-
-            case "v": //Input
-                if (name == "value")
-                    bind_method = INPUT;
-                break;
-
-
-            case "o": // Event Messaging linking
-                if (name[1] == "n") {
-                    FOR_EVENT = true;
-                    bind_method = EVENT;
-                }
-                break;
-
-            case "c":
-                if (name == "component") {
-                    let component_name = lex.tx;
-
-                    if (this.presets.components)
-                        this.presets.components[component_name] = this;
-
-                    return basic;
-                }
-                break;
-            case "b":
-                if (name == "badge") {
-                    this._badge_name_ = lex.tx;
-                    return basic;
-                }
-            case "s":
-                if (name == "showif") {
-                    bind_method = BOOL;
-                    break;
-                }
-
-                if (name == "slot" && this.par) {
-                    this.par.statics.slots[basic.value] = this;
-                    return basic;
-                }
-        }
-
-        if (this.checkTapMethodGate(name, lex))
-            return basic.IGNORE = false, basic;
-
-        basic.IGNORE = false;
-
-        if ((lex.sl - lex.off) > 0) {
-            let binding = Template(lex, FOR_EVENT);
-            if (!binding) {
-                return basic;
-            }
-
-            binding.attrib = name;
-            binding.method = bind_method;
-            let attr = {
-                IGNORE: false,
-                name,
-                value: (start < lex.off) ? lex.slice(start) : true,
-                binding: this.processTapBinding(binding)
-            };
-            this.bindings.push(attr);
-            return attr;
-        }
-
-        return basic;
-    }
-
-
-
-    /**
-     * Hooks into the Text Node creation context and looks for binding points. 
-     * If they are found, the text node will be made dynamic.
-     * @param      {Lexer}    
-     * @return     {TextNode}  
-     */
-    async processTextNodeHook(lex) {
-        if (lex.sl - lex.pos > 0) {
-            //let binding = Template(lex.trim());
-
-            //lex = whind(await Plugin.parseInnerHTMLonTag(this.tag, lex.trim(1).slice()), true)
-
-            let binding = Template(lex);
-            if (binding)
-                return new RootText(this.processTapBinding(binding));
-        }
-
-        return null;
-    }
-}
-
-
-//Node that allows the combination of two sets of children from separate nodes that are merged together
-class MergerNode extends RootNode {
-    constructor(...children_arrays) {
-        super();
-
-        this.c = [];
-
-        for (let i=0,l = children_arrays.length; i<l; i++)
-            if(Array.isArray(children_arrays))
-                this.c = this.c.concat(children_arrays[i]);
-    }
-
-    build(element, scope, presets, errors, taps, statics, RENDER_ONLY) {
-        for (let i=0,l = this.c.length; i<l; i++){
-            if(this.c[i].SLOTED == true) continue;
-            this.c[i].build(element, scope, presets, errors, taps, statics, RENDER_ONLY);
-        }
-
-        return scope;
-    }
-
-
-    linkCSS() {}
-
-    toString(off = 0) {
-        return `${("    ").repeat(off)}${this.binding}\n`;
-    }
-}
-
-/**
- * Void elements don't exist, they evaporate into the void.
- * Element children of VoidNodes are appended to the last element created.
- */
-class VoidNode$1 extends RootNode {
-
-    //createElement() { return null; }
-
-    /******************************************* HOOKS ****************************************************/
-
-    endOfElementHook() { return this }
-
-    processTextNodeHook() {}
-
-    /******************************************* BUILD ****************************************************/
-
-    build(a, b, c, d, e, f, g = false) {
-        if (g)
-            return super.build(a, b, c, d, e, f, g)
-    }
-
-    /******************************************* CSS ****************************************************/
-
-    linkCSS() {}
-}
-
-const defaults = {
-    glow: Animation
-};
-
-class ScriptNode$1 extends VoidNode$1 {
-    constructor() {
-        super();
-        this.script_text = "";
-        this.binding = null;
-    }
-
-    processTextNodeHook(lex) {
-
-        this.script_text = lex.slice();
-
-        try {
-            const ast = JSTools.parse(lex);
-
-            let
-                tvrs = ast.traverseDepthFirst(),
-                node = tvrs.next().value,
-                non_global = new Set(),
-                globals = new Set(),
-                assignments = new Map();
-
-            //Retrieve undeclared variables to inject as function arguments.
-            while (node) {
-
-                if (
-                    node.type == types$1.id ||
-                    node.type == types$1.member
-                ) {
-                    if (node.root)
-                        globals.add(node.name);
-                }
-
-                if (node.type == types$1.assign) {
-
-                    node.id.root = false;
-
-                    if (!assignments.has(node.id.name))
-                        assignments.set(node.id.name, []);
-
-                    const assignment_sites = assignments.get(node.id.name);
-
-                    assignment_sites.push(node);
-                }
-
-                if (
-                    node.type == types$1.lex ||
-                    node.type == types$1.var
-                ) {
-                    node.bindings.forEach(b => (non_global.add(b.id.name), globals.delete(b.id.name)));
-                }
-
-                node = tvrs.next().value;
-            }
-
-            //Process any out globals and get argument wrappers
-            const out_globals = [...globals.values()].reduce((red, out) => {
-                let out_object = { name: out, val: null, IS_TAPPED: false };
-
-                if (window[out]){
-                    return red;
-                    //out_object.val = window[out];
-                }
-
-                else if (this.presets.custom[out])
-                    out_object.val = this.presets.custom[out];
-
-                else if (this.presets[out])
-                    out_object.val = this.presets[out];
-
-                else if (defaults[out])
-                    out_object.val = defaults[out];
-
-                else {
-                    out_object.IS_TAPPED = true;
-                }
-
-                red.push(out_object);
-
-                return red;
-            },[]);
-
-            //Replace matching call sites with emit functions / emit member nodes
-            assignments.forEach((m,k)=>m.forEach(assign => {
-                if (window[k] || this.presets.custom[k]|| this.presets[k]|| defaults[k])
-                    return;
-                assign.id = new mem([new identifier$1(["emit"]), null, assign.id]);
-            }));
-
-            console.log(ast.render());
-
-            /* TODO: replace TAPPED assignments with emit(name, value) expressions. */
-
-            if (this.binding) {
-                this.binding.args = out_globals;
-                this.binding.val = ast.render();
-            }
-
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    processAttributeHook(name, lex) {
-        switch (name) {
-            case "on":
-                let binding = Template(lex, false);
-                if (binding.type == DYNAMICbindingID) {
-                    binding.method = SCRIPT;
-                    this.binding = this.processTapBinding(binding);
-                }
-                return null;
-        }
-        return super.processAttributeHook(name, lex);
-    }
-
-    build(element, scope, presets, errors, taps, statics = {}, RENDER_ALL = false) {
-        if (RENDER_ALL)
-            return super.build(element, scope, presets, errors, taps, statics, RENDER_ALL);
-
-        if (this.url) {
-            statics = Object.assign({}, statics);
-            statics.url = this.url;
-        }
-
-        if (this.binding)
-            this.binding._bind_(scope, errors, taps, element, "", this, statics);
-    }
-}
-
-/**
- * Scope nodes are used to hook into specific Models, and respond to `update` events from that model.
- * @class      ScopeNode (name)
- */
-class ScopeNode$1 extends RootNode {
-    constructor() {
-        super();
-        this._model_name_ = "";
-        this._schema_name_ = "";
-        this._cached_ = [];
-    }
-
-    merge(node) {
-        const merged_node = super.merge(node);
-        merged_node._model_name_ = this._model_name_;
-        merged_node._schema_name_ = this._schema_name_;
-        merged_node._cached_ = this._cached_;
-        return merged_node;
-    }
-
-    pushChached(scope) {
-        this._cached_.push(scope);
-    }
-
-    popCached() {
-        this._cached_.pop();
-    }
-
-    getCachedScope() {
-        return this._cached_[this._cached_.length - 1];
-    }
-
-    delegateTapBinding() {
-        return null;
-    }
-
-    getCSS() {
-
-        if (this.css)
-            return this.css;
-
-        this.css = new BindingCSSRoot();
-
-        this.setPendingCSS(this.css);
-
-        return this.css;
-    }
-
-    checkTapMethodGate(name, lex) {
-        return this.checkTapMethod(name, lex, true);
-    }
-
-
-
-    /******************************************* BUILD ****************************************************/
-    createElement() {
-        let attr = this.getAttrib("element", true);
-        return createElement(attr ? attr.value : "div");
-    }
-
-    build(element, scope, presets, errors, taps = null, statics = {},  RENDER_ALL = false) {
-
-        let data = {};
-
-        let out_taps = [];
-
-        let me = new Scope(scope, this.__presets__ || presets || this.presets, element, this);
-
-        this.pushChached(me);
-
-        me._model_name_ = this._model_name_;
-        me._schema_name_ = this._schema_name_;
-
-        let tap_list = this.tap_list;
-
-        for (let i = 0, l = tap_list.length; i < l; i++) {
-            let tap = tap_list[i],
-                name = tap.name;
-
-            let bool = name == "update";
-
-            me.taps[name] = bool ? new UpdateTap(me, name, tap.modes) : new Tap(me, name, tap.modes);
-
-            if (bool)
-                me.update_tap = me.taps[name];
-
-            out_taps.push(me.taps[name]);
-        }
-
-        /**
-         * To keep the layout of the output HTML predictable, Wick requires that a "real" HTMLElement be defined before a scope object is created. 
-         * If this is not the case, then a new element, defined by the "element" attribute of the scope virtual tag (defaulted to a "div"), 
-         * will be created to allow the scope object to bind to an actual HTMLElement. 
-         */
-
-        if (!element || this.getAttrib("element", true)) {
-
-            let ele = this.createElement();
-
-            this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
-
-            if (this.getAttribute("id"))
-                ele.id = this.getAttribute("id");
-
-            if (this.getAttribute("style"))
-                ele.style = this.getAttribute("style");
-
-            me.ele = ele;
-
-            if (element) {
-                appendChild$1(element, ele);
-            }
-
-            element = ele;
-
-            if (this._badge_name_)
-                me.badges[this._badge_name_] = element;
-
-            let hook = {
-                attr: this.attributes,
-                bindings: [],
-                style: null,
-                ele: element
-            };
-
-            for (let i = 0, l = this.bindings.length; i < l; i++) {
-                let attr = this.bindings[i];
-                let bind = attr.binding._bind_(me, errors, out_taps, element, attr.name);
-
-                if (hook) {
-                    if (attr.name == "style" || attr.name == "css")
-                        hook.style = bind;
-
-                    hook.bindings.push(bind);
-                }
-            }
-
-            me.hooks.push(hook);
-        }
-
-        for (let i = 0, l = this.attributes.length; i < l; i++) {
-            let attr = this.attributes[i];
-
-            if (!attr.value) {
-                //let value = this.par.importAttrib()
-                //if(value) data[attr.name];
-            } else
-                data[attr.name] = attr.value;
-        }
-
-        if (this.url || this.__statics__) {
-            statics = Object.assign(statics, this.__statics__);
-            statics.url = this.url;
-        }
-
-        par_list.push(this);
-
-        for (let node = this.fch; node; node = this.getNextChild(node))
-            node.build(element, me, presets, errors, out_taps, statics, null, RENDER_ALL);
-
-        par_list.pop();
-
-
-        if (statics || this.__statics__) {
-            let s = Object.assign({}, statics ? statics : {}, this.__statics__);
-            me.statics = s;
-            me.update(me.statics);
-        }
-
-        this.popCached(me);
-
-        return me;
-    }
-
-    /******************************************* HOOKS ****************************************************/
-
-    endOfElementHook() { if(!this.__presets__) {this.presets = this.presets; } ;return this }
-
-    /**
-     * Pulls Schema, Model, or tap method information from the attributes of the tag. 
-     * All other attributes are passed through without any other consideration.
-     * @param      {string}  name    The name
-     * @param      {Lexer}  lex     The lex
-     * @return     {Object}  Key value pair.
-     */
-    processAttributeHook(name, lex, value) {
-
-        let start = lex.off,
-            basic = {
-                IGNORE: true,
-                name,
-                value: lex.slice(start)
-            };
-
-        switch (name[0]) {
-            case "#":
-                let key = name.slice(1);
-
-                if (key.length > 0) {
-                    if (lex.tl == lex.sl - lex.off && lex.ty == lex.types.num)
-                        this.statics[key] = parseFloat(lex.slice());
-                    else
-                        this.statics[key] = lex.slice();
-                }
-
-                return {
-                    name,
-                    value: lex.slice(start)
-                };
-            case "m":
-                if (name == "model") {
-                    this._model_name_ = lex.slice();
-                    lex.n;
-                    return basic;
-                }
-                break;
-            case "s":
-                if (name == "schema") {
-                    this._schema_name_ = lex.slice();
-                    lex.n;
-                    return basic;
-                }
-
-
-
-                if (name == "slot" && this.par) {
-                    this.par.statics.slots[basic.value] = this;
-                    return basic;
-                }
-                break;
-            case "c":
-                if (name == "component") {
-                    
-                    let component_name = lex.tx;
-                    let components = this.presets.components;
-                    if (components)
-                        components[component_name] = this;
-                    return basic;
-                }
-                break;
-
-            case "b":
-                if (name == "badge") {
-                    this._badge_name_ = lex.tx;
-                    return basic;
-                }
-                break;
-
-            case "e":
-                if (name == "element") 
-                    return basic;
-
-            default:
-                if (this.checkTapMethodGate(name, lex))
-                    return basic;
-        }
-
-        //return { name, value: lex.slice() };
-        //return super.processAttributeHook(name, lex, value);
-        basic.IGNORE = false;
-
-        if ((lex.sl - lex.off) > 0) {
-            let binding = Template(lex, true);
-
-            if (!binding)
-                return basic;
-
-
-
-            //}
-            //binding.val = name;
-            binding.attrib = name;
-            binding.method = ATTRIB;
-
-            let attr = {
-                IGNORE: false,
-                name,
-                value: (start < lex.off) ? lex.slice(start) : true,
-                binding: this.processTapBinding(binding)
-            };
-
-            this.bindings.push(attr);
-
-            return attr;
-        }
-
-        return basic;
-
-    }
-}
-
-class LinkNode$1 extends RootNode {
-    createElement(presets, scope){
-        let element = document.createElement("a");
-        presets.processLink(element, scope);
-        return element;
-    }
-
-    build(...s){
-    	super.build(...s);
-    }
-}
-
-let expr_check = (expr) => {
-    return (expr.type == 2 && typeof(expr.func) == "function");
-};
-
-
-
-class FilterIO extends IOBase {
-    constructor(scope, errors, taps, container, activation, sort, filter, limit, offset, scrub, shift) {
-        super(container, errors);
-
-        this.container = container;
-        this._activation_function_ = null;
-        this._sort_function_ = null;
-        this.filter_function = null;
-        this.CAN_USE = false;
-        this.CAN_FILTER = false;
-        this._CAN_LIMIT_ = false;
-        this._CAN_OFFSET_ = false;
-        this.CAN_SORT = false;
-        this._SCHD_ = 0;
-
-        if (activation && activation.binding) {
-            this._activation_function_ = activation.binding._bind_(scope, errors, taps, this);
-        } else {
-            this.CAN_USE = true;
-        }
-
-        if (sort && sort.binding) {
-            let expr = sort.binding;
-            if (expr_check(expr)) {
-                this._sort_function_ = (m1, m2) => expr.func(m1.model, m2.model);
-                this.CAN_SORT = true;
-            }
-        } else
-
-        if (filter && filter.binding) {
-            let expr = filter.binding;
-            if (expr_check(expr)) {
-                this.filter_function = expr._bind_(scope, errors, taps, this);
-                this.filter_function._IS_A_FILTER_ = true;
-                this.CAN_FILTER = true;
-            }
-        } else
-
-        if (limit && limit.binding) {
-            let expr = limit.binding;
-            expr.method = (expr.method == 1) ? -1 : expr.method;
-            this._limit_function_ = expr._bind_(scope, errors, taps, this);
-            this._CAN_LIMIT_ = true;
-        } else
-
-        if (offset && offset.binding) {
-            this._CAN_OFFSET_ = true;
-            if (offset.binding.type == 1) {
-                this._value_ = parseInt(offset.binding.val);
-            } else {
-                let expr = offset.binding;
-                expr.method = (expr.method == 1) ? -1 : expr.method;
-                this._offset_function_ = expr._bind_(scope, errors, taps, this);
-            }
-        } else
-
-        if (scrub && scrub.binding) {
-            let expr = scrub.binding;
-            expr.method = (expr.method == 1) ? -1 : expr.method;
-            this._scrub_function_ = expr._bind_(scope, errors, taps, this);
-            this._CAN_SCRUB_ = true;
-        } else
-
-        if (shift && shift.binding) {
-            let expr = shift.binding;
-            expr.method = (expr.method == 1) ? -1 : expr.method;
-            this._page_function_ = expr._bind_(scope, errors, taps, this);
-            this._CAN_SHIFT_ = true;
-        }
-    }
-
-    scheduledUpdate() {}
-
-    update() {
-        if (this.CAN_SORT || this.CAN_FILTER) {
-            this.container.UPDATE_FILTER = true;
-            spark.queueUpdate(this.container);
-        }
-    }
-
-    destroy() {
-        if (this._sort_function_)
-            this._sort_function_.destroy();
-        if (this._activation_function_)
-            this._activation_function_.destroy();
-        if (this.filter_function)
-            this.filter_function.destroy();
-        this._sort_function_ = null;
-        this._activation_function_ = null;
-        this.filter_function = null;
-        this.container = null;
-    }
-
-    get data() {}
-    set data(v) {
-
-        this.CAN_USE = false;
-        if (v) this.CAN_USE = true;
-        this._value_ = v;
-
-        if (this._CAN_SCRUB_)
-            return this.container.scrub(parseFloat(this._value_), false);
-
-        if (this.CAN_SORT || this.CAN_FILTER || this._CAN_SHIFT_)
-            this.container.UPDATE_FILTER = true;
-
-        spark.queueUpdate(this.container);
-    }
-}
-
-class FilterNode extends VoidNode$1 {
-
-    /******************************************* HOOKS ****************************************************/
-
-    endOfElementHook() {}
-
-    /**
-     * This node only needs to assess attribute values. InnerHTML will be ignored. 
-     * @return     {boolean}  { description_of_the_return_value }
-     */
-    selfClosingTagHook() { return true; }
-
-}
-
-class PackageNode extends VoidNode$1 {
-
-    constructor(start) {
-        super();
-        this._start_ = start;
-        this.url = this.getURL();
-        this.tag = "package";
-    }
-
-    /******************************************* HOOKS ****************************************************/
-
-    /**
-     * Binds new laxer to boundaries starting from open tag to close tag. Applies Lexer to new ScopePackage.
-     * @param      {Lexer}  lex     The lex
-     * @private
-     */
-    processTextNodeHook(lex) {}
-
-    _ignoreTillHook_() { return true; }
-
-    endOfElementHook(lex) {
-        let own_lex = lex.copy();
-
-        own_lex.off = this._start_;
-        own_lex.tl = 0;
-        own_lex.n.sl = lex.off;
-        
-        this.par.package = new this.ScopePackage(own_lex, this.presets, false);
-
-        if (!this.fch)
-            this.mergeComponent();
-
-        return this;
-    }
-
-    mergeComponent() {
-        
-        let component = this.presets.components[this.tag];
-
-        if (component)
-            this.par.package = new this.ScopePackage(component, this.presets, false);
-
-        return component
-    }
-}
-
-/**
- * Slot Node. 
- */
-class SlotNode extends RootNode {
-    constructor() {
-        super();
-        this.name = "";
-    }
-
-    delegateTapBinding() {
-        return null;
-    }
-
-    build(element, scope, presets, errors, taps, statics, RENDER_ONLY = false) {
-
-        return (statics.slots && statics.slots[this.name]) ?
-            (statics.slots[this.name].SLOTED = true,
-            statics.slots[this.name].build(
-                element,
-                statics.slots[this.name].getCachedScope() || scope,
-                /*statics.slots[this.name].getPresets() || */presets,
-                errors,
-                taps,
-                statics,
-                RENDER_ONLY
-            )) :
-            scope;
-    }
-
-    processAttributeHook(name, lex) {
-
-        if (!name) return null;
-
-        let start = lex.off,
-            basic = {
-                IGNORE: true,
-                name,
-                value: lex.slice(start)
-            };
-
-        let bind_method = ATTRIB,
-            FOR_EVENT = false;
-
-        if (name == "name")
-            this.name = basic.value;
-
-        return basic;
-    }
-
-}
-
-function getColumnRow(index, offset, set_size) {
-    const adjusted_index = index - offset * set_size;
-    const row = Math.floor(adjusted_index / set_size);
-    const col = (index) % (set_size);
-    return { row, col };
-}
-
-/**
- * ScopeContainer provide the mechanisms for dealing with lists and sets of components. 
- *
- * @param      {Scope}  parent   The Scope parent object.
- * @param      {Object}  data     The data object hosting attribute properties from the HTML template. 
- * @param      {Object}  presets  The global presets object.
- * @param      {HTMLElement}  element  The element that the Scope will _bind_ to. 
- */
-class ScopeContainer extends View {
-
-    constructor(parent, presets, element) {
-
-        super();
-
-        this.ele = element;
-        this.parent = null;
-        this.activeScopes = [];
-        this.dom_scopes = [];
-        this.filters = [];
-        this.ios = [];
-        this.terms = [];
-        this.scopes = [];
-        this.range = null;
-        this._SCHD_ = 0;
-        this.prop = null;
-        this.package = null;
-        this.transition_in = 0;
-        this.limit = 0;
-        this.shift_amount = 1;
-        this.dom_dn = [];
-        this.dom_up = [];
-        this.trs_ascending = null;
-        this.trs_descending = null;
-        this.UPDATE_FILTER = false;
-        this.dom_up_appended = false;
-        this.dom_dn_appended = false;
-        this.root = 0;
-        this.AUTO_SCRUB = false;
-        this.taps = {};
-
-        this.scrub_velocity = 0;
-
-        this.offset = 0;
-        this.offset_diff = 0;
-        this.offset_fractional = 0;
-
-        parent.addTemplate(this);
-    }
-
-    get data() {}
-    set data(container) {
-        if (container instanceof ModelContainerBase) {
-            container.pin();
-            container.addView(this);
-            return;
-        }
-        if (!container) return;
-        if (Array.isArray(container)) this.cull(container);
-        else this.cull(container.data);
-    }
-
-    update(container) {
-        if (container instanceof ModelContainerBase) container = container.get();
-        if (!container) return;
-        //let results = container.get(this.getTerms());
-        // if (container.length > 0) {
-        if (Array.isArray(container)) this.cull(container);
-        else this.cull(container.data);
-        // }
-    }
-
-
-    /**
-     * Called by Spark when a change is made to the Template HTML structure. 
-     * 
-     * @protected
-     */
-    scheduledUpdate() {
-
-        if (this.SCRUBBING) {
-
-            if (!this.AUTO_SCRUB) {
-                this.SCRUBBING = false;
-                return;
-            }
-
-            if (
-                Math.abs(this.scrub_velocity) > 0.0001
-            ) {
-                if (this.scrub(this.scrub_velocity)) {
-
-                    this.scrub_velocity *= (this.drag);
-
-                    let pos = this.offset + this.scrub_velocity;
-
-                    if (pos < 0 || pos > this.max)
-                        this.scrub_velocity = 0;
-
-                    spark.queueUpdate(this);
-                };
-
-            } else {
-                this.scrub_velocity = 0;
-                this.scrub(Infinity);
-                this.SCRUBBING = false;
-            }
-        } else if (this.UPDATE_FILTER) {
-            this.filterUpdate();
-            this.render();
-        } else {
-            let offset = this.offset;
-            this.limitUpdate();
-            let a = this.offset;
-            this.offset = offset;
-            this.forceMount();
-            this.arrange();
-            this.offset = a;
-            this.render();
-            this.offset_diff = 0;
-        }
-    }
-
-    forceMount() {
-        const active_window_size = this.limit;
-        const offset = this.offset;
-
-
-        const min = Math.min(offset + this.offset_diff, offset) * this.shift_amount;
-        const max = Math.max(offset + this.offset_diff, offset) * this.shift_amount + active_window_size;
-
-
-        let i = min;
-
-        this.ele.innerHTML = "";
-        const output_length = this.activeScopes.length;
-        this.dom_scopes.length = 0;
-
-        while (i < max && i < output_length) {
-            let node = this.activeScopes[i++];
-            this.dom_scopes.push(node);
-            node.appendToDOM(this.ele);
-        }
-    }
-
-    /**
-     * Scrub provides a mechanism to scroll through components of a container that have been limited through the limit filter.
-     * @param  {Number} scrub_amount [description]
-     */
-    scrub(scrub_delta, SCRUBBING = true) {
-        // scrub_delta is the relative ammunt of change from the previous offset. 
-
-        if(!this.SCRUBBING) 
-            this.render(null, this.activeScopes, true);
-
-        this.SCRUBBING = true;
-
-        if (this.AUTO_SCRUB && !SCRUBBING && scrub_delta != Infinity) {
-            this.scrub_velocity = 0;
-            this.AUTO_SCRUB = false;
-        }
-
-        let delta_offset = scrub_delta + this.offset_fractional;
-        if (scrub_delta !== Infinity) {
-
-            if (Math.abs(delta_offset) > 1) {
-                if (delta_offset > 1) {
-
-                    delta_offset = delta_offset % 1;
-                    this.offset_fractional = delta_offset;
-                    this.scrub_velocity = scrub_delta;
-
-                    if (this.offset < this.max)
-                        this.trs_ascending.play(1);
-
-                    this.offset++;
-                    this.offset_diff = 1;
-                    this.render(null, this.activeScopes, true).play(1);
-                } else {
-                    delta_offset = delta_offset % 1;
-                    this.offset_fractional = delta_offset;
-                    this.scrub_velocity = scrub_delta;
-
-                    if (this.offset >= 1)
-                        this.trs_descending.play(1);
-                    this.offset--;
-                    this.offset_diff = -1;
-
-                    this.render(null, this.activeScopes, true).play(1);
-                }
-
-            } else {
-                
-            }
-
-            //Make Sure the the transition animation is completed before moving on to new animation sequences.
-
-            if (delta_offset > 0) {
-
-                if (this.offset + delta_offset >= this.max - 1) delta_offset = 0;
-
-                if (!this.dom_up_appended) {
-
-                    for (let i = 0; i < this.dom_up.length; i++) {
-                        this.dom_up[i].appendToDOM(this.ele);
-                        this.dom_up[i].index = -1;
-                        this.dom_scopes.push(this.dom_up[i]);
-                    }
-
-                    this.dom_up_appended = true;
-                }
-
-                this.trs_ascending.play(delta_offset);
-            } else {
-
-                if (this.offset < 1) delta_offset = 0;
-
-                if (!this.dom_dn_appended) {
-
-                    for (let i = 0; i < this.dom_dn.length; i++) {
-                        this.dom_dn[i].appendToDOM(this.ele, this.dom_scopes[0].ele);
-                        this.dom_dn[i].index = -1;
-                    }
-
-                    this.dom_scopes = this.dom_dn.concat(this.dom_scopes);
-
-                    this.dom_dn_appended = true;
-                }
-
-                this.trs_descending.play(-delta_offset);
-            }
-
-            this.offset_fractional = delta_offset;
-            this.scrub_velocity = scrub_delta;
-
-            return true;
-        } else {
-
-            if (Math.abs(this.scrub_velocity) > 0.0001) {
-                const sign = Math.sign(this.scrub_velocity);
-
-                if (Math.abs(this.scrub_velocity) < 0.1) this.scrub_velocity = 0.1 * sign;
-                if (Math.abs(this.scrub_velocity) > 0.5) this.scrub_velocity = 0.5 * sign;
-
-                this.AUTO_SCRUB = true;
-
-                //Determine the distance traveled with normal drag decay of 0.5
-                let dist = this.scrub_velocity * (1 / (-0.5 + 1));
-                //get the distance to nearest page given the distance traveled
-                let nearest = (this.offset + this.offset_fractional + dist);
-                nearest = (this.scrub_velocity > 0) ? Math.min(this.max, Math.ceil(nearest)) : Math.max(0, Math.floor(nearest));
-                //get the ratio of the distance from the current position and distance to the nearest 
-                let nearest_dist = nearest - (this.offset + this.offset_fractional);
-                let drag = Math.abs(1 - (1 / (nearest_dist / this.scrub_velocity)));
-
-                this.drag = drag;
-                this.scrub_velocity = this.scrub_velocity;
-                this.SCRUBBING = true;
-                spark.queueUpdate(this);
-                return true;
-            } else {
-                this.offset += Math.round(this.offset_fractional);
-                this.scrub_velocity = 0;
-                this.offset_fractional = 0;
-                this.render(null, this.activeScopes, true).play(1);
-                this.SCRUBBING = false;
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    arrange(output = this.activeScopes) {
-
-
-
-        //Arranges active scopes according to their arrange handler.
-        const
-            limit = this.limit,
-            offset = this.offset,
-            transition = Animation.createTransition(),
-            output_length = output.length,
-            shift_points = Math.ceil(output_length / this.shift_amount),
-            active_window_start = offset * this.shift_amount;
-
-        let i = 0;
-
-        //Scopes on the ascending edge of the transition window
-        while (i < active_window_start && i < output_length)
-            output[i].update({ trs_asc_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }), i++;
-
-        //Scopes in the transtion window
-        while (i < active_window_start + limit && i < output_length)
-            output[i].update({ arrange: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }), i++;
-
-        //Scopes on the descending edge of the transition window
-        while (i < output_length)
-            output[i].update({ trs_dec_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }), i++;
-        
-        transition.play(1);
-        
-    }
-
-    render(transition, output = this.activeScopes, NO_TRANSITION = false) {
-
-
-        let
-            active_window_size = this.limit,
-            offset = this.offset,
-            j = 0,
-            output_length = output.length,
-            active_length = this.dom_scopes.length,
-            direction = 1,
-            OWN_TRANSITION = false,
-            trs_obj = { trs: null, pos: null };
-
-        if (!transition) transition = Animation.createTransition(), OWN_TRANSITION = true;
-
-        offset = Math.max(0, offset);
-
-        const active_window_start = offset * this.shift_amount;
-
-        direction = Math.sign(this.offset_diff);
-        let prv = null;
-        if (active_window_size > 0) {
-
-            this.shift_amount = Math.max(1, Math.min(active_window_size, this.shift_amount));
-
-            let
-                i = 0,
-                ip = 0,
-                oa = 0,
-                ein = [],
-                shift_points = Math.ceil(output_length / this.shift_amount);
-
-            this.max = shift_points - 1;
-            this.offset = Math.max(0, Math.min(shift_points - 1, offset));
-
-            //Two transitions to support scrubbing from an offset in either direction
-            this.trs_ascending = Animation.createTransition(false);
-            this.trs_descending = Animation.createTransition(false);
-
-            this.dom_dn.length = 0;
-            this.dom_up.length = 0;
-            this.dom_up_appended = false;
-            this.dom_dn_appended = false;
-
-            //Scopes preceeding the transition window
-            while (i < active_window_start - this.shift_amount) output[i++].index = -2;
-
-            //Scopes entering the transition window ascending
-            while (i < active_window_start) {
-                this.dom_dn.push(output[i]);
-                output[i].update({ trs_dec_in: { trs: this.trs_descending.in, pos: getColumnRow(i, this.offset - 1, this.shift_amount) } });
-                output[i++].index = -2;
-            }
-
-            //Scopes in the transtion window
-            while (i < active_window_start + active_window_size && i < output_length) {
-                //Scopes on the descending edge of the transition window
-                if (oa < this.shift_amount && ++oa) {
-                    //console.log("pos",i, getColumnRow(i, this.offset+1, this.shift_amount), output[i].scopes[0].ele.style.transform)
-                    output[i].update({ trs_asc_out: { trs: this.trs_ascending.out, pos: getColumnRow(i, this.offset + 1, this.shift_amount) } });
-                } else
-                    output[i].update({ arrange: { trs: this.trs_ascending.in, pos: getColumnRow(i, this.offset + 1, this.shift_amount) } });
-
-
-                //Scopes on the ascending edge of the transition window
-                if (i >= active_window_start + active_window_size - this.shift_amount)
-                    output[i].update({ trs_dec_out: { trs: this.trs_descending.out, pos: getColumnRow(i, this.offset - 1, this.shift_amount) } });
-                else
-                    output[i].update({ arrange: { trs: this.trs_descending.in, pos: getColumnRow(i, this.offset - 1, this.shift_amount) } });
-
-
-                output[i].index = i;
-                ein.push(output[i++]);
-            }
-
-            //Scopes entering the transition window while offset is descending
-            while (i < active_window_start + active_window_size + this.shift_amount && i < output_length) {
-                this.dom_up.push(output[i]);
-                output[i].update({
-                    trs_asc_in: {
-                        pos: getColumnRow(i, this.offset + 1, this.shift_amount),
-                        trs: this.trs_ascending.in
-                    }
-                });
-                output[i++].index = -3;
-            }
-
-            //Scopes following the transition window
-            while (i < output_length) output[i++].index = -3;
-
-            output = ein;
-            output_length = ein.length;
-        } else {
-            this.max = 0;
-            this.limit = 0;
-        }
-
-        let trs_in = { trs: transition.in, index: 0 };
-        let trs_out = { trs: transition.out, index: 0 };
-
-        for (let i = 0; i < output_length; i++) output[i].index = i;
-
-        for (let i = 0; i < active_length; i++) {
-            let as = this.dom_scopes[i];
-
-            if (as.index > j) {
-                while (j < as.index && j < output_length) {
-
-                    let os = output[j];
-                    os.index = j;
-                    trs_in.pos = getColumnRow(j, this.offset, this.shift_amount);
-                    os.appendToDOM(this.ele, as.element);
-                    os.transitionIn(trs_in, (direction) ? "trs_asc_in" : "trs_dec_in");
-                    j++;
-                }
-            } else if (as.index < 0) {
-                trs_out.pos = getColumnRow(i, 0, this.shift_amount);
-                if (!NO_TRANSITION) {
-                    switch (as.index) {
-                        case -2:
-                        case -3:
-                            as.transitionOut(trs_out, (direction > 0) ? "trs_asc_out" : "trs_dec_out");
-                            break;
-                        default:
-                            as.transitionOut(trs_out);
-                    }
-                } else {
-
-                    as.transitionOut();
-                }
-
-                continue;
-            }
-            trs_in.pos = getColumnRow(j++, 0, this.shift_amount);
-            as.update({ arrange: trs_in });
-            as._TRANSITION_STATE_ = true;
-            as.index = -1;
-        }
-
-        while (j < output.length) {
-            output[j].appendToDOM(this.ele);
-            output[j].index = -1;
-            trs_in.pos = getColumnRow(j, this.offset, this.shift_amount);
-
-            output[j].transitionIn(trs_in, (direction) ? "arrange" : "arrange");
-            j++;
-        }
-
-        this.ele.style.position = this.ele.style.position;
-        this.dom_scopes = output;
-
-        this.parent.upImport("template_count_changed", {
-            displayed: output_length,
-            offset: offset,
-            count: this.activeScopes.length,
-            pages: this.max,
-            ele: this.ele,
-            template: this,
-            trs: transition.in
-        });
-
-        if (OWN_TRANSITION) {
-            if (NO_TRANSITION)
-                return transition;
-            transition.start();
-        }
-
-        return transition;
-    }
-
-    // Reduces the compenents that are mounted and displayed to the ones determined by current filter parameters.
-    limitUpdate() {
-        let offset = this.offset;
-        for (let i = 0, l = this.filters.length; i < l; i++) {
-            let filter = this.filters[i];
-            if (filter.CAN_USE) {
-                if (filter._CAN_LIMIT_) this.limit = parseInt(filter._value_); // Make sure we are dealing with integers. 
-                // Value could be string debinding on the type of 
-                // binding. Applies to other values. 
-                if (filter._CAN_OFFSET_) offset = parseInt(filter._value_);
-                if (filter._CAN_SHIFT_) this.shift_amount = parseInt(filter._value_);
-            }
-        }
-
-        this.offset_diff = offset - this.offset;
-        this.offset = offset;
-    }
-
-    /**
-     * Filters stored Scopes with search terms and outputs the matching Scopes to the DOM.
-     * 
-     * @protected
-     */
-    filterUpdate() {
-
-        let output = this.scopes.slice();
-
-        if (output.length < 1) return;
-        for (let i = 0, l = this.filters.length; i < l; i++) {
-            let filter = this.filters[i];
-            if (filter.CAN_USE) {
-                if (filter.CAN_FILTER) output = output.filter(filter.filter_function._filter_expression_);
-                if (filter.CAN_SORT) output = output.sort(filter._sort_function_);
-            }
-        }
-        this.activeScopes = output;
-        this.UPDATE_FILTER = false;
-
-        return output;
-    }
-    /**
-     * Removes stored Scopes that do not match the ModelContainer contents. 
-     *
-     * @param      {Array}  new_items  Array of Models that are currently stored in the ModelContainer. 
-     * 
-     * @protected
-     */
-    cull(new_items = []) {
-        const transition = Animation.createTransition();
-
-        if (new_items.length == 0) {
-            let sl = this.scopes.length;
-            for (let i = 0; i < sl; i++) this.scopes[i].transitionOut(transition, "", true);
-            this.scopes.length = 0;
-            this.parent.upImport("template_count_changed", {
-                displayed: 0,
-                offset: 0,
-                count: 0,
-                pages: 0,
-                ele: this.ele,
-                template: this,
-                trs: transition.in
-            });
-        } else {
-
-            const
-                exists = new Map(new_items.map(e => [e, true])),
-                out = [];
-
-            for (let i = 0, l = this.activeScopes.length; i < l; i++)
-                if (exists.has(this.activeScopes[i].model)) 
-                    exists.set(this.activeScopes[i].model, false);
-                
-
-            for (let i = 0, l = this.scopes.length; i < l; i++)
-                if (!exists.has(this.scopes[i].model)) {
-                    this.scopes[i].transitionOut(transition, "dismounting", true);
-                    this.scopes[i].index = -1;
-                    this.scopes.splice(i, 1);
-                    l--;
-                    i--;
-                } else
-                    exists.set(this.scopes[i].model, false);
-
-            exists.forEach((v, k, m) => { if (v) out.push(k); });
-
-            if (out.length > 0) {
-                // Wrap models into components
-                this.added(out, transition);
-
-                // Update offset, limit, and shift variables.
-                this.limitUpdate();
-
-                // Filter the current components. 
-                this.filterUpdate(out);
-
-                //Preset the positions of initial components. 
-                this.arrange();
-
-                this.render(transition);
-            } else {
-                for (let i = 0, j = 0, l = this.activeScopes.length; i < l; i++, j++) {
-
-                    if (this.activeScopes[i]._TRANSITION_STATE_) {
-                        if (j !== i) {
-                            this.activeScopes[i].update({
-                                arrange: {
-                                    pos: getColumnRow(i, this.offset, this.shift_amount),
-                                    trs: transition.in
-                                }
-                            });
-                        }
-                    } else
-                        this.activeScopes.splice(i, 1), i--, l--;
-                }
-
-                const c = this.filterUpdate(transition);
-                this.limitUpdate(transition);
-                this.arrange();
-                this.render(transition);
-            }
-        }
-
-        // If scrubbing is currently occuring, if the transition were to auto play then the results 
-        // would interfere with the expected behavior of scrubbing. So the transition
-        // is instead set to it's end state, and scrub is called to set intermittent 
-        // position. 
-        //*
-        if (this.SCRUBBING) {
-            //transition.play(1);
-            //this.scrub(0);
-        } else
-            transition.start();
-    
-    }
-    /**
-     * Called by the ModelContainer when Models have been removed from its set.
-     *
-     * @param      {Array}  items   An array of items no longer stored in the ModelContainer. 
-     */
-    removed(items, transition = Animation.createTransition()) {
-        for (let i = 0; i < items.length; i++) {
-            let item = items[i];
-            for (let j = 0; j < this.scopes.length; j++) {
-                let Scope = this.scopes[j];
-                if (Scope.model == item) {
-                    this.scopes.splice(j, 1);
-                    Scope.transitionOut(transition, "", true);
-                    break;
-                }
-            }
-        }
-
-        this.limitUpdate();
-        this.filterUpdate(transition);
-        //this.arrange();
-        this.render(transition);
-    }
-    /**
-     * Called by the ModelContainer when Models have been added to its set.
-     *
-     * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
-     */
-    added(items, transition) {
-        let OWN_TRANSITION = false;
-
-        if (!transition)
-            transition = Animation.createTransition(), OWN_TRANSITION = true;
-
-        for (let i = 0; i < items.length; i++) {
-            let mgr = this.package.mount(null, items[i], false, undefined, this.parent);
-            this.scopes.push(mgr);
-        }
-
-        if (OWN_TRANSITION) {
-            this.limitUpdate();
-            this.filterUpdate(transition);
-            //this.arrange();
-            this.render(transition);
-            transition.play();
-        }
-    }
-
-    revise() {
-        if (this.cache) this.update(this.cache);
-    }
-    getTerms() {
-        let out_terms = [];
-        for (let i = 0, l = this.terms.length; i < l; i++) {
-            let term = this.terms[i].term;
-            if (term) out_terms.push(term);
-        }
-        if (out_terms.length == 0) return null;
-        return out_terms;
-    }
-    get() {
-        if (this.model instanceof MultiIndexedContainer) {
-            if (this.data.index) {
-                let index = this.data.index;
-                let query = {};
-                query[index] = this.getTerms();
-                return this.model.get(query)[index];
-            } else console.warn("No index value provided for MultiIndexedContainer!");
-        } else {
-            let scope = this.model.scope;
-            let terms = this.getTerms();
-            if (scope) {
-                this.model.destroy();
-                let model = scope.get(terms, null);
-                model.pin();
-                model.addView(this);
-            }
-            return this.model.get(terms);
-        }
-        return [];
-    }
-    down(data, changed_values) {
-        for (let i = 0, l = this.activeScopes.length; i < l; i++) this.activeScopes[i].down(data, changed_values);
-    }
-    transitionIn(transition) {
-        return;
-        for (let i = 0, l = this.activeScopes.length; i < l; i++) {
-            this.ele.appendChild(this.activeScopes[i].element);
-            this.activeScopes[i].transitionIn(transition);
-            this.activeScopes[i].update({
-                arrange: {
-                    index: i,
-                    trs: transition.trs_in
-                }
-            });
-        }
-    }
-
-    transitionOut(transition) {
-        return;
-        for (let i = 0, l = this.activeScopes.length; i < l; i++) this.activeScopes[i].transitionOut(transition);
-    }
-}
-
-ScopeContainer.prototype.removeIO = Tap.prototype.removeIO;
-ScopeContainer.prototype.addIO = Tap.prototype.addIO;
-
-class ScopeManager {
-
-    constructor(model, element) {
-        this.scopes = [];
-        this.model = model;
-        this.ele = element;
-        this.index = -1;
-        this._APPEND_STATE_ = false;
-        this._TRANSITION_STATE_ = false;
-        this._DESTROYED_ = false;
-        this.parent = null;
-    }
-
-    get element() {
-        if (!this.ele)
-            this.ele = this.scopes[0].ele;
-        return this.ele;
-    }
-
-    destroy() {
-        this.update({dismounted:true});
-
-        for (let i = 0; i < this.scopes.length; i++){
-            this.scopes[i].destroy();
-        }
-        this.scope = null;
-        this.model = null;
-        this.ele = null;
-        this._DESTROYED_ = true;
-        this.parent = null;
-    }
-
-    emit(name, value) {
-        for (let i = 0; i < this.scopes.length; i++)
-            this.scopes[i].upImport(name, value, {
-                event: {}
-            });
-    }
-
-    appendToDOM(element, before_element) {
-        this._APPEND_STATE_ = true;
-        this.mount;
-
-
-        if (before_element)
-            element.insertBefore(this.element, before_element);
-        else
-            element.appendChild(this.element);
-    }
-
-    _removeFromDOM_() {
-        if (this._APPEND_STATE_ == true) return;
-
-        if (this.ele && this.ele.parentElement)
-            this.ele.parentElement.removeChild(this.ele);
-    }
-
-    transitionIn(transition, transition_name = "trs_in") {
-
-        if (transition) {
-            let data = {};
-
-            data[transition_name] = transition;
-
-            this.update(data);
-        }
-
-        this._TRANSITION_STATE_ = true;
-    }
-
-    transitionOut(transition, transition_name = "trs_out", DESTROY_ON_REMOVE = false) {
-
-        this._APPEND_STATE_ = false;
-
-        if (this._TRANSITION_STATE_ === false) {
-            // if (DESTROY_ON_REMOVE && !this._DESTROYED_) this.destroy();
-            this._removeFromDOM_();
-            return;
-        }
-
-        let transition_time = 0;
-
-        if (transition) {
-            let data = {[transition_name]:transition};
-
-            this.update(data);
-
-            if (transition.trs)
-                transition_time = transition.trs.out_duration;
-            else
-                transition_time = transition.out_duration;
-        }
-
-
-        this._TRANSITION_STATE_ = false;
-        
-        if (transition_time > 0)
-            setTimeout(() => {
-                this._removeFromDOM_();
-                if (DESTROY_ON_REMOVE) this.destroy();
-            }, transition_time + 2);
-        else {
-            this._removeFromDOM_();
-            if (DESTROY_ON_REMOVE) this.destroy();
-        }
-
-        return transition_time;
-    }
-
-    upImport(prop_name, data, meta) {
-        if (this.parent)
-            this.parent.up(prop_name, data, meta, this);
-        else
-            this.up(prop_name, data, meta);
-    }
-
-    up(prop_name, data, meta) {
-
-    }
-
-    down(data, changed_values) {
-        for (let i = 0; i < this.scopes.length; i++)
-            this.scopes[i].down(data, changed_values);
-    }
-
-    update(data, changed_values) {
-        for (let i = 0; i < this.scopes.length; i++)
-            this.scopes[i].update(data, changed_values);
-    }
-
-    bubbleLink() {
-        if (this.parent && this.parent.bubbleLink)
-            this.parent.bubbleLink(this);
-        else
-            debugger
-    }
-
-    scopeLoaded() {
-        this.update({ mounted: true });
-    }
-}
-
-class BasePackage {
-    constructor() {
-        /**
-         * When set to true indicates that the package is ready to be mounted to the DOM.
-         */
-        this.READY = false;
-
-        /**
-         * An array of AST objects.
-         */
-        this.asts = [];
-
-        /**
-         * An array objects to store pending calls to BasePackage#mount
-         */
-        this.pms = [];
-
-        /**
-         * An Array of error messages received during compilation of template.
-         */
-        this.errors = [];
-
-        /**
-         * An Array of style trees.
-         */
-        this.styles = [];
-
-
-        /**
-         * Flag to indicate BasePackage was compiled with errors
-         */
-        this.HAVE_ERRORS = false;
-
-        this.links = [];
-
-    }
-
-    /**
-     * Called when template compilation completes.
-     *
-     * Sets BasePackage#READY to true, send the pending mounts back through BasePackage#mount, and freezes itself.
-     *
-     * @protected
-     */
-    complete() {
-        this.READY = true;
-
-        for (let m, i = 0, l = this.pms.length; i < l; i++)
-            (m = this.pms[i], this.mount(m.e, m.m, m.usd, m.mgr));
-
-
-        this.pms.length = 0;
-
-        this.freeze();
-
-        return this;
-    }
-
-
-    // Adds Error message to the errors array.
-    // ~dissuade-public
-    addError(error_message) {
-        this.HAVE_ERRORS = true;
-        this.errors.push(error_message);
-    }
-
-    // Freezes properties.
-    // ~dissuade-public
-    freeze() {
-        return;
-        OB.freeze(this.READY);
-        OB.freeze(this.asts);
-        OB.freeze(this.styles);
-        OB.freeze(this.pms);
-        OB.freeze(this.errors);
-        OB.freeze(this);
-    }
-
-    /**
-     * Pushes pending mounts to the pms array.
-     *
-     * @param      {HTMLElement}  element         The element
-     * @param      {Model}  model           The model
-     * @param      {Boolean}  USE_SHADOW_DOM  The use shadow dom
-     * @param      {Object}  manager         The manager
-     *
-     * @protected
-     */
-    pushPendingMount(element, model, USE_SHADOW_DOM, manager) {
-
-        if (this.READY)
-            return this.mount(element, model, USE_SHADOW_DOM, manager);
-
-        this.pms.push({
-            e: element,
-            m: model,
-            usd: USE_SHADOW_DOM,
-            mgr: manager
-        });
-
-        return manager;
-    }
-
-    /**
-     * Generates new instance of component and appends it to the input element. If the compilation of the component is not complete by the time this method is called,
-     the arguments are stored in a temporary buffer and later run through this method again when compilation is completed.
-     * @param  {HTMLElement} element         - The element
-     * @param  {Model}   model           - The model the scope component will bind to. Binding only occurs if `model` or `schema` attributes are undefined in the component decleration, the `schema` attribute type matches the model type, or `schema` is set to "any".
-     * @param  {boolean} USE_SHADOW_DOM  - If `true`, appends the component to the element's ShadowDOM.
-     * @param  {Object}  manager         - A custom manager that stores built scope components. If not defined then a ScopeManager is created and returned.
-     */
-    mount(element, model, USE_SHADOW_DOM = false, manager = new ScopeManager(model, element), parent = manager) {
-
-        if (!this.READY)
-            return this.pushPendingMount(element, model, USE_SHADOW_DOM, manager);
-
-        //if (!(element instanceof EL)) return null;
-
-        if (this.HAVE_ERRORS) {
-            //Process
-            console.warn("TODO - Package has errors, pop an error widget on this element!");
-        }
-
-        let i = 0,
-            l = 0;
-
-        if (!manager.scopes)
-            manager.scopes = [];
-
-        if (USE_SHADOW_DOM) {
-
-            let shadow_root = element.attachShadow({
-                mode: "open"
-            });
-
-            element = shadow_root;
-
-            if (this.styles)
-                for (i = 0, l = this.styles.length; i < l; i++) {
-                    let style = cloneNode(this.styles[i], true);
-                    appendChild(element, style);
-                }
-        }
-
-
-        for (i = 0, l = this.asts.length; i < l; i++) {
-
-            let errors = [];
-
-            let scope = this.asts[i].build(element, null, null, errors);
-
-            if (scope) {
-                scope.parent = manager;
-                                
-                scope.load(model);
-
-                manager.scopes.push(scope);
-            }
-            
-            if (errors.length > 0)
-                errors.forEach(e => console.log(e));
-        }
-
-        if (manager.scopeLoaded) manager.scopeLoaded();
-
-        return manager;
-    }
-
-    toString() {
-        let str = "";
-
-        for (let i = 0; i < this.links.length; i++)
-            str += this.links[i];
-
-        for (let i = 0; i < this.asts.length; i++)
-            str += this.asts[i];
-
-        return str;
-    }
-}
-
-class ScopeContainerNode$1 extends RootNode {
-
-    constructor(lex) {
-        super(lex);
-        this.BUILD_LIST = [];
-        this.filters = [];
-        this.property_bind = null;
-        this.property_bind_text = "";
-        this.package = null;
-        this.MERGED = false;
-    }
-
-    merge(node) {
-        const merged_node = super.merge(node);
-        merged_nodes.BUILD_LIST = this.BUILD_LIST;
-        merged_nodes.filters = this.filters;
-        merged_nodes.property_bind = this.property_bind;
-        merged_nodes.property_bind_text = this.property_bind_text;
-        merged_nodes.package = this.package;
-        merged_nodes.MERGED = true;
-        return merged_node;
-    }
-
-    build(element, scope, presets, errors, taps, statics) {
-
-        scope = scope || new Scope(null, presets, element, this);
-
-        let
-            pckg = this.package,
-            HAS_STATIC_SCOPES = false;
-
-        const
-            ele = createElement(this.getAttribute("element") || "ul"),
-            me = new ScopeContainer(scope, presets, ele);
-
-        appendChild$1(element, ele);
-        this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
-
-        if (this.HAS_TAPS)
-            taps = scope.linkTaps(this.tap_list);
-
-        if (this._badge_name_)
-            scope.badges[this._badge_name_] = ele;
-
-        if (this.property_bind)
-            me.prop = this.property_bind._bind_(scope, errors, taps, me);
-
-        for (let node = this.fch; node; node = this.getNextChild(node)) {
-
-            if (node.tag == "f") {
-                
-                let
-                    on = node.getAttrib("on"),
-                    sort = node.getAttrib("sort"),
-                    filter = node.getAttrib("filter"),
-                    limit = node.getAttrib("limit"),
-                    offset = node.getAttrib("offset"),
-                    scrub = node.getAttrib("scrub"),
-                    shift = node.getAttrib("shift");
-
-                if (limit && limit.binding.type == 1) {
-                    me.limit = parseInt(limit.value);
-                    limit = null;
-                }
-
-                if (shift && shift.binding.type == 1) {
-                    me.shift_amount = parseInt(shift.value);
-                    shift = null;
-                }
-
-                if (sort || filter || limit || offset || scrub || shift) //Only create Filter node if it has a sorting bind or a filter bind
-                    me.filters.push(new FilterIO(scope, errors, taps, me, on, sort, filter, limit, offset, scrub, shift));
-
-            } else if (node.tag == "slot" && !pckg && statics.slots) {
-                if (statics.slots[node.name]) {
-                    const ele = statics.slots[node.name];
-                    ele.__presets__ = this.presets;
-                    pckg = new BasePackage();
-                    pckg.asts.push(ele);
-                    pckg.READY = true;
-                }
-            } else {
-                //pack node into source manager
-                const mgr = new ScopeManager();
-                mgr.scopes.push(node.build(null, scope, presets, errors, statics));
-                mgr.READY = true;
-                me.scopes.push(mgr);
-                HAS_STATIC_SCOPES = true;
-            }
-        }
-
-        if (this.property_bind && pckg) {
-            me.package = pckg;
-
-            if (!me.package.asts[0].url)
-                me.package.asts[0].url = this.getURL();
-
-        } else if (HAS_STATIC_SCOPES) {
-            spark.queueUpdate(me);
-        } else {
-            if (this.property_bind)
-                //If there is no package at all then abort build of this element. TODO, throw an appropriate warning.
-                errors.push(new Error(`Missing scope for container bound to "${this.property_bind.bindings[0].tap_name}"`));
-            else
-                errors.push(new Error(`Missing property binding for this node.`));
-        }
-
-        return scope;
-    }
-
-    /******************************************* HOOKS ****************************************************/
-
-    endOfElementHook() { return this }
-
-    _ignoreTillHook_() {}
-
-
-    createHTMLNodeHook(tag, start) {
-
-        switch (tag) {
-            case "slot":
-                return new SlotNode();
-            case "f":
-                return new FilterNode(); //This node is used to 
-            default:
-                if (this.property_bind)
-                    return new PackageNode(start); //This node is used to build packages
-                return super.createHTMLNodeHook(tag, start);
-        }
-
-    }
-
-    processTextNodeHook(lex) {
-        if (!this.property_bind) {
-            this.property_bind_text = lex.slice().trim();
-
-            let cp = lex.copy().trim();
-            cp.IWS = true;
-            cp.tl = 0;
-            cp.next();
-
-
-            if (cp.ch == barrier_a_start && (cp.pk.ch == barrier_a_start || cp.pk.ch == barrier_b_start)) {
-                let binding = Template(cp);
-                if (binding) {
-                    this.property_bind = this.processTapBinding(binding);
-                }
-            }
-        }
-
-        return null;
-    }
-
-    innerToString(off) {
-        //Insert temp child node for the property_bind
-        let str = this.property_bind_text;
-
-        str += super.innerToString(off);
-
-        return str;
-    }
-}
-
-class StyleNode$1 extends VoidNode$1 {
-    processTextNodeHook(lex) {
-        //Feed the lexer to a new CSS Builder
-        let css = this.getCSS();
-
-        lex.IWS = true;
-        lex.tl = 0;
-        lex.n;
-
-        css.parse(lex).catch((e) => {
-            throw e;
-        });
-    }
-}
-
-/**
- * SVG HTMLElements to be created with the svg namespace in order to be rendered correctly.
- * @class      SVGNode (name)
- */
-class SVGNode extends RootNode {
-    createElement(presets, scope) {
-        return document.createElementNS("http://www.w3.org/2000/svg", this.tag);
-    }
-
-    createHTMLNodeHook(tag) {
-        //jump table.
-        switch (tag[0]) {
-            case "w":
-                switch (tag) {
-                    case "w-s":
-                        return new ScopeNode(); //This node is used to 
-                    case "w-c":
-                        return new ScopeContainerNode(); //This node is used to 
-                }
-                break;
-            default:
-                switch (tag) {
-                    case "a":
-                        return new LinkNode();
-                        /** void elements **/
-                    case "template":
-                        return new VoidNode();
-                    case "style":
-                        return new StyleNode();
-                    case "script":
-                        return new ScriptNode();
-                    case "svg":
-                    case "path":
-                        return new SVGNode();
-                }
-        }
-
-        return new SVGNode();
-    }
-}
-
-class PreNode extends HTMLNode {
-    build(element) {
-        let ele = document.createElement(this.tag);
-
-        for (let i = 0, l = this.attributes.length; i < l; i++) {
-            let attr = this.attributes[i];
-            ele.setAttribute(attr.name, attr.value);
-        }
-        //let passing_element = ele;
-        let passing_element = (this.tag == "template") ? ele.content : ele;
-
-        for (let node = this.fch; node;
-            (node = this.getNextChild(node))) {
-            node.build(passing_element);
-        }
-
-        if (element) element.appendChild(ele);
-
-        return ele;
-    }
-
-    async processTextNodeHook(lex, IS_INNER_HTML) {
-
-        let t = lex.trim(1);
-
-        if (!IS_INNER_HTML)
-            return new TextNode(replaceEscapedHTML(t.slice()));
-
-        let txt = "";
-
-        if (t.string_length > 0)
-            return new TextNode(replaceEscapedHTML(t.slice()));
-
-        return null;
-    }
-}
-
-//Since all nodes extend the RootNode, this needs to be declared here to prevent module cycles. 
-async function CreateHTMLNode(tag, offset, lex) {
-
-    if (await Plugin.parseHTMLonTag(tag, this, lex))
-        return null;
-    //jump table.
-    if (tag[0] == "w")
-        switch (tag) {
-            case "w-s":
-            case "w-scope":
-                return new ScopeNode$1(); //This node is used to 
-            case "w-c":
-            case "w-container":
-                return new ScopeContainerNode$1(); //This node is used to 
-        }
-        
-    switch (tag) {
-        case "a":
-            return new LinkNode$1();
-            /** void elements **/
-        case "template":
-            return new VoidNode$1();
-        case "css":
-        case "style":
-            return new StyleNode$1();
-        case "js":
-        case "script":
-            return new ScriptNode$1();
-        case "svg":
-        case "path":
-            return new SVGNode();
-        case "container":
-            return new ScopeContainerNode$1();
-        case "scope":
-            return new ScopeNode$1();
-        case "slot":
-            return new SlotNode();
-            //Elements that should not be parsed for binding points.
-        case "pre":
-        case "code":
-            return new PreNode();
-    }
-
-
-    return new RootNode();
-}
-
-RootNode.prototype.createHTMLNodeHook = CreateHTMLNode;
-
-// Adding the parseHTMLonTag to the original HTMLNode object. 
-HTMLNode.prototype.createHTMLNodeHook = async function(tag, start, lex) { if (await Plugin.parseHTMLonTag(tag, this, lex)) return null; return new HTMLNode(tag); };
-
-// Adding the parseInnerHTMLOnTag plugin to the original HTMLNode object.
-HTMLNode.prototype.ignoreTillHook = async function(tag, lex) {
-    
-    if (await Plugin.parseInnerHTMLOnTag(tag, this, lex)){
-        return true;
-    }
-
-    if (tag == "script" || tag == "style") // Special character escaping tags.
-        return true;
-
-    return false;
-};
-
-// Adding replaceEscapedHTML to original HTMLNode object.
-HTMLNode.prototype.processTextNodeHook = async function(lex, IS_INNER_HTML) {
-
-    let t = lex.trim(1);
-
-    if (!IS_INNER_HTML)
-        return new TextNode(replaceEscapedHTML(t.slice()));
-
-    if (t.string_length > 0)
-        return new TextNode(replaceEscapedHTML(t.slice()));
-
-    return null;
-};
-
-HTMLNode.prototype.endOfElementHook = async function(){
-    return await Plugin.tagHandler(this.tag, this);
-};
-
-async function complete(lex, ScopePackage, presets, ast, url, win) {
-
-
-    //Record URL if present for proper error messaging. 
-    if (url && !ast.url)
-        ast.url = url;
-
-    /*
-     * Only accept certain nodes for mounting to the DOM. 
-     * The custom element `import` is simply used to import extra HTML data from network for use with template system. It should not exist otherwise.
-     */
-    if (ast.tag) {
-        if ((ast.tag == "import" || ast.tag == "link")) {
-            //add tags to package itself.
-            ScopePackage.links.push(ast);
-        } else if (ast.tag !== "template") {
-            ScopePackage.asts.push(ast);
-        }
-    }
-
-    lex.IWS = true;
-
-    while (!lex.END && lex.ch != "<") { lex.n; }
-
-    if (!lex.END)
-        return await parseText(lex, ScopePackage, presets, url, win);
-
-    ScopePackage.complete();
-
-    return ScopePackage;
-}
-
-async function buildCSS(lex, ScopePackage, presets, ast, css_list, index, url, win) {
-    await css_list[index].READY();
-
-    if (++index < css_list.length) return await buildCSS(lex, ScopePackage, presets, ast, css_list, index, url, win);
-
-    ast.linkCSS(null, win);
-
-    return await complete(lex, ScopePackage, presets, ast, url, win);
-}
-
-async function parseText(lex, ScopePackage, presets, url, win) {
-    let start = lex.off;
-
-    while (!lex.END && lex.ch != "<") { lex.n; }
-
-    if (!lex.END) {
-
-        if (lex.pk.ty != lex.types.id)
-            lex.throw(`Expecting an Identifier after '<' character, ${lex.str}`);
-
-        let node = await CreateHTMLNode(lex.p.tx);
-
-        node.presets = presets;
-
-        try {
-            const ast = await node.parse(lex, url);
-
-            if (ast.css && ast.css.length > 0)
-                return await buildCSS(lex, ScopePackage, presets, ast, ast.css, 0, url, win);
-
-            return await complete(lex, ScopePackage, presets, ast, url, win);
-        } catch (e) {
-            ScopePackage.addError(e);
-            ScopePackage.complete();
-
-            return ScopePackage;
-        }
-    }
-    
-    ScopePackage.addError(new Error(`Unexpected end of input. ${lex.slice(start)}, ${lex.str}`));
-    ScopePackage.complete();
-}
-
-
-/**
- * Compiles an object graph based input into a ScopePackage.
- * @param      {ScopePackage}  ScopePackage     The scope package
- * @param      {Presets}  presets           The global Presets instance
- * @param      {HTMLElement | Lexer | string}  element     The element
- * @memberof module:wick~internals.templateCompiler
- * @alias CompileScope
- */
-function HTMLCompiler(ScopePackage, presets, element, url, win = window) {
-    
-    if(!url)
-        url = URL.G;
-
-    let lex;
-    if (element instanceof whind$1.constructor) {
-        lex = element;
-    } else if (typeof(element) == "string")
-        lex = whind$1(element);
-    else if (element instanceof EL) {
-        if (element.tagName == "TEMPLATE") {
-            let temp = document.createElement("div");
-            temp.appendChild(element.content);
-            element = temp;
-        }
-        lex = whind$1(element.innerHTML);
-    } else {
-        let e = new Error("Cannot compile component");
-        ScopePackage.addError(e);
-        ScopePackage.complete();
-    }
-    return parseText(lex, ScopePackage, presets, url, win);
-}
-
-class ScopePackage extends BasePackage {
-
-    constructor(element, presets, RETURN_PROMISE = false, url = "", win = window) {
-
-        //If a package exists for the element already, it will be bound to __wick_package_. That will be returned.
-        if (element && element.__wick_package_) {
-            if (RETURN_PROMISE)
-                return new Promise((res) => res(element.__wick_package_));
-            return element.__wick_package_;
-        }
-
-        super();
-
-        if (element instanceof Promise) {
-            element.then((data) => HTMLCompiler(this, presets, data, url, win));
-            if (RETURN_PROMISE) return element;
-            return this;
-        } else if (element instanceof RootNode) {
-
-            // Already a ComponentASTTree.
-            this.asts.push(element);
-            this.complete();
-            return;
-        } else if (!(element instanceof HTMLElement) && typeof(element) !== "string" && !(element instanceof whind$1.constructor)) {
-            let err = new Error("Could not create package. element is not an HTMLElement");
-            this.addError(err);
-            this.complete();
-            if (RETURN_PROMISE)
-                return new Promise((res, rej) => rej(err));
-            return;
-        }
-
-        //Start the compiling of the component.
-        let promise = HTMLCompiler(this, presets, element, url, win);
-
-        OB$1.seal(this);
-
-        if (RETURN_PROMISE)
-            return promise;
-        else
-            return this;
-
-    }
-}
-
-PackageNode.prototype.ScopePackage = ScopePackage;
-
-/** This is the entire object structure of Wick, minus the platform specific outputs found in /scope/root/ */
-
-const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);
-model.scheme = (s, scheme) => (scheme = class extends SchemedModel {}, scheme.schema = s, scheme);
-model.constr = SchemedModel;
-model.any = (data) => new Model(data);
-model.any.constr = Model;
-model.container = {
-    multi: MultiIndexedContainer,
-    array: ArrayModelContainer,
-    btree: BTreeModelContainer,
-    constr: ModelContainerBase
-};
-model.store = (data) => new Store(data);
-
-//Construct Schema Exports
-const scheme = Object.create(schemes);
-scheme.constr = SchemeConstructor;
-scheme.constr.bool = BoolSchemeConstructor;
-scheme.constr.number = NumberSchemeConstructor;
-scheme.constr.string = StringSchemeConstructor;
-scheme.constr.date = DateSchemeConstructor;
-scheme.constr.time = TimeSchemeConstructor;
-
-const Utils = {
-    replaceEscapedHTML
-};
-
-Object.freeze(scheme.constr);
-Object.freeze(scheme);
-Object.freeze(Presets);
-Object.freeze(Utils);
-Object.freeze(model.container.constr);
-Object.freeze(model.container);
-Object.freeze(model.any);
-Object.freeze(model);
-
-const core = {
-    presets: a => new Presets(a),
-    scheme: scheme,
-    model: model,
-    scope: (...a) => new ScopePackage(...a),
-    plugin : Plugin,
-    utils: Utils
-};
-
-core.scope.compiler = HTMLCompiler;
-
-HTMLCompiler.nodes = {
-    root: RootNode,
-    style: StyleNode$1,
-    script: ScriptNode$1,
-    text: RootText,
-    scope: ScopeNode$1,
-    package: PackageNode,
-    template: ScopeContainerNode$1,
-    svg:SVGNode
-};
-
-core.scope.package = ScopePackage;
-core.scope.constructor = Scope;
-
-Object.freeze(core.scope);
-Object.freeze(core);
-
-const scope = core.scope;
-
-class ScopedNode extends ScriptNode$1 {
-    processAttributeHook(name, lex, func) {
-        switch (name) {
-            case "on":
-                let binding = Template(lex, false);
-                if (binding.type == DYNAMICbindingID) {
-                    binding.method = SCRIPT;
-                    this.binding = this.processTapBinding(binding);
-                    this.binding.HAVE_CLOSURE = true;
-                    this.binding._func_ = func;
-                }
-                return null;
-        }
-
-        return { name, value: lex.slice() };
-    }
-
-    toString(){ return  "" };
-}
-
-const 
-    regFNHead = /([^=]*\=\>\s*\{?)|(function[^\{]*{)/,
-    regFNTail = /\}$/,
-	getFunctionBodyString = fn => fn.toString().replace(regFNHead, "").replace(regFNTail, "").trim();
-
-const
-    UID = () => "$ID" + (Date.now().toString(16).slice(-12) + ((Math.random() * 100000) | 0).toString(16)).slice(-16),
-
-    //Bit offsets for NEED_SCOPE_BITS flag;
-    SCOPE_BITS = {
-        MODEL: 0,
-        SCHEME: 1,
-        EXPORT: 2,
-        IMPORT: 3,
-        PUT: 4,
-        ARRAY_MODEL: 5,
-        FUNCTION_MODEL: 6,
-    };
-
-
-
-const JSCompiler = (data, presets) => createComponentWithJSSyntax(data, presets, document.location.toString());
-
-/**
- * This module allows JavaScript to be used to describe wick components. 
- */
-async function createComponentWithJSSyntax(data, presets = new Presets(), locale = "", stack = [], async_wait = { waiting: 0 }) {
-
-    const
-        base = ++async_wait.waiting,
-        rs_base = stack.length,
-        DATA_IS_STRING = typeof(data) == "string";
-
-    let url = data;
-
-    if ((DATA_IS_STRING && (url = URL.resolveRelative(data, locale))) || data instanceof URL) {
-
-        const
-            //Must be a JavaScript object, based on MIME and extension.
-            ext = url.ext;
-
-        if (ext == "js") {
-
-            try {
-                //Attempt to load data. If this fails, than data is not a URL or the resource (does not exist / is not accessible).
-                const data = await url.fetchText();
-
-                if (url.MIME == "text/javascript");
-
-                await (new Promise(async res => {
-
-                    const out = (data) => createComponentWithJSSyntax(data, presets, url, stack, async_wait);
-
-                    (new Function("wick", "url", data))(Object.assign(out, JSCompiler), url);
-
-
-                    // Since we have an async function, we need some way to wait for the function to 
-                    // return be fore contining this particular execution stack.
-                    // setTimeout allows JS to wait without blocking.
-                    function e() {
-                        if (async_wait.waiting <= base) {
-                            res();
-                            clearInterval(id);
-                        }
-                    };
-
-                    let id = setInterval(e, 0);
-                }));
-
-                let rvalue = null;
-
-                while (stack.length > rs_base)
-                    rvalue = stack.shift();
-
-                async_wait--;
-
-                return rvalue;
-            } catch (e) {
-                console.log.log(e);
-            }
-        } else if (ext == "mjs") {
-            return; //Todo, parse using import syntax
-        } else if (ext == "html") {
-            // fold data into itself to take advantage of ScopePackages automatic behavior when 
-            // presented with a url
-            data = { dom: await url.fetchText() };
-
-            //Make sure we treat the previous fetch as the new url base.
-            locale = url;
-        }
-
-
-    }
-
-    if (DATA_IS_STRING || data instanceof HTMLElement)
-        data = { dom: data };
-
-    let
-        pkg = null,
-        NEED_SCOPE_BITS = 0,
-        NEED_CONTAINER_BITS = 0,
-        tree,
-        container,
-        container_scope;
-
-    // Every tree root should be a ScopeNode instance if data includes scope node attributes.              
-    // Create a bit field of all values that necessitate a ScopeNode. 
-
-    NEED_SCOPE_BITS |= ((typeof(data.model) !== "undefined") | 0) << SCOPE_BITS.MODEL;
-    NEED_SCOPE_BITS |= ((typeof(data.scheme) !== "undefined") | 0) << SCOPE_BITS.SCHEME;
-    NEED_SCOPE_BITS |= ((typeof(data.export) !== "undefined") | 0) << SCOPE_BITS.EXPORT;
-    NEED_SCOPE_BITS |= ((typeof(data.import) !== "undefined") | 0) << SCOPE_BITS.IMPORT;
-    NEED_SCOPE_BITS |= ((typeof(data.put) !== "undefined") | 0) << SCOPE_BITS.PUT;
-    //NEED_CONTAINER_BITS |= ((typeof(data.model) === "function") | 0) << SCOPE_BITS.FUNCTION_MODEL;
-    NEED_CONTAINER_BITS |= (Array.isArray(data.model) | 0) << SCOPE_BITS.ARRAY_MODEL;
-
-    // If the model or scheme is an array, then the resulting component root should be either a 
-    // ContainerNode or a ContainerNode wrapped inside a ScopeNode.
-
-    if (data.dom && (typeof(data.dom) == "string" || data.dom.tagName == "TEMPLATE")) {
-
-        let val = data.dom;
-
-        if (typeof(data.dom) == "string") {
-
-            const url = URL.resolveRelative(data.dom, locale);
-
-            if (url && url.ext == "html")
-                val = await url.fetchText();
-        }
-
-        try {
-            pkg = await new ScopePackage(val, presets, true, locale);
-
-            //Throw any errors generated by package creation. 
-            //TODO - implement error system.
-            if (pkg.HAVE_ERRORS)
-                throw pkg.errors[0]
-
-            var { scope_tree, container_tree, container_scope_tree } = EnsureRootScope(pkg, NEED_SCOPE_BITS, NEED_CONTAINER_BITS, presets);
-        } catch (e) {
-            throw e;
-        }
-
-    } else {
-
-        // This object contains other information that can be appended to a component, but the 
-        // component itself may not be mountable
-        if (NEED_SCOPE_BITS !== 0) {
-            let src = new ScriptNode$1();
-
-            src.__presets__ = presets;
-
-            pkg = new BasePackage();
-
-            pkg.asts = [src];
-
-            var scope_tree = src;
-        }
-    }
-
-    const { injects, model, scheme } = await integrateProperties(scope_tree, container_tree, container_scope_tree, presets, data);
-
-
-    // TODO: If there is a component property and no Scope attributes defined either 
-    // in data or in the compiled tree, then extract the component from the package 
-    // and discard package value.
-
-    //Pass throughs are used to inject methods and attributes without affecting the dom. 
-
-    // The default action with this object is to convert component back into a 
-    // HTML tree string form that can be injected into the DOM of other components. 
-    // Additional data can be added to this object before injection using this method.
-    let return_value = (data) => scope_tree.toString();
-
-    return_value.toString = async function(model = {}) {
-
-        if (model) {
-
-            let scope = scope_tree.build(null, null, presets, [], null, null, true);
-
-            scope.load(model);
-
-            //Wait one tick to update any IOs that are dependent on spark
-            await (new Promise(res => setTimeout(res, 1)));
-
-            return scope.ele.toString()
-        }
-
-        return scope_tree.toString();
-    };
-
-    Object.assign(return_value, injects, { model, scheme, get tree() { return scope_tree } });
-
-    //Unashamedly proxying the ScopePackage~mount method
-    return_value.mount = (e, m, s, mgr) => pkg.mount(e, m, s, mgr);
-
-    Object.freeze(return_value);
-
-
-    async_wait.waiting--;
-
-    stack.push(return_value);
-
-    return return_value;
-}
-
-function checkFlag(FLAG_BITS, flag_bit_offset) {
-    return !!(FLAG_BITS >> flag_bit_offset & 1);
-}
-// Ensure that if there is a need for a ScopeNode, there is one set as the root of the tree 
-// Having multiple node trees also require them to be sub-trees of a ScopeNode, to ensure expected 
-// Component results.
-function EnsureRootScope(pkg, NEED_SCOPE_BITS, NEED_CONTAINER_BITS, presets) {
-
-    let
-        scope_tree = null,
-        container_tree = null,
-        container_scope_tree = null,
-        tree = null;
-
-    if (pkg.asts.length > 1) NEED_SCOPE_BITS |= 0x1000000;
-
-    if (NEED_SCOPE_BITS || NEED_CONTAINER_BITS) {
-        if (pkg.asts.length == 1 && pkg.asts[0] instanceof ScopeNode$1)
-            scope_tree = pkg.asts[0];
-        else {
-            let scope = new ScopeNode$1();
-
-            scope.tag = "w-s";
-
-            for (let i = 0; i < pkg.asts.length; i++)
-                scope.addChild(pkg.asts[i]);
-
-            scope.__presets__ = presets;
-
-            pkg.asts = [scope];
-
-            scope_tree = scope;
-        }
-    } else
-        scope_tree = pkg.asts[0];
-
-    if (NEED_CONTAINER_BITS) {
-        //Wrap existing scope into a container
-        container_tree = new ScopeContainerNode$1();
-        container_tree.__presets__ = presets;
-        container_tree.tag = "w-c";
-        container_tree.package = new BasePackage();
-        container_tree.package.READY = true;
-        container_tree.package.asts = pkg.asts;
-
-        pkg.asts = [container_tree];
-
-        container_scope_tree = container_tree.package.asts[0];
-        scope_tree = container_scope_tree;
-
-        /*SCOPE_BITS = {
-            MODEL: 0,
-            SCHEME: 1,
-            EXPORT: 2,
-            IMPORT: 3,
-            PUT: 4,
-            ARRAY_MODEL: 5,
-            FUNCTION_MODEL: 6,
-        }*/
-
-        if (
-            checkFlag(NEED_SCOPE_BITS, SCOPE_BITS.MODEL) ||
-            checkFlag(NEED_SCOPE_BITS, SCOPE_BITS.IMPORT) ||
-            checkFlag(NEED_SCOPE_BITS, SCOPE_BITS.EXPORT) ||
-            checkFlag(NEED_SCOPE_BITS, SCOPE_BITS.PUT)
-        ) {
-            const scope = new ScopeNode$1();
-
-            scope.tag = "w-s";
-
-            scope.addChild(container_tree);
-
-            scope.__presets__ = presets;
-
-            pkg.asts = [scope];
-
-            scope_tree = scope;
-        }
-    }
-
-
-    return { scope_tree, container_tree, container_scope_tree };
-}
-
-async function integrateProperties(src, cntr, cntr_src, presets, data) {
-    const injects = {};
-    let
-        scheme = null,
-        appending_inject = null;
-
-    //Cycle through 
-    for (let name in data) {
-        let v = data[name];
-        switch (name) {
-            case "filter":
-                break;
-            case "inject":
-                if (Array.isArray(v))
-                    for (let i = 0; i < v.length; i++)
-                        integrateProperties(src, presets, v[i]);
-                else
-                    integrateProperties(src, presets, v);
-                break;
-            case "dom":
-                break;
-            case "element":
-                InjectElement(cntr_src || src, v);
-                break;
-            case "tag":
-                InjectTag(src, presets, v);
-                break;
-            case "model":
-                InjectModel(src, cntr, v, presets);
-                break;
-            case "scheme":
-                InjectSchema(cntr_src || src, v, presets);
-                break;
-            case "import":
-                InjectImport(src, v);
-                if (cntr_src)
-                    InjectImport(cntr_src, v);
-                break;
-            case "export":
-                InjectExport(src, v);
-                if (cntr_src)
-                    InjectExport(cntr_src, v);
-                break;
-            case "put":
-                InjectPut(src, v);
-                if (cntr_src)
-                    InjectPut(cntr_src, v);
-                break;
-            default:
-                if (appending_inject = await InjectFunction(src, name, v)) {
-                    Object.assign(injects, appending_inject);
-                    break;
-                }
-        }
-    }
-
-    return { injects, scheme };
-}
-
-function InjectElement(tree, v) {
-    if (tree instanceof ScopeNode$1)
-        tree.setAttribute("element", whind$1(String(v)));
-}
-
-function InjectTag(tree, presets, tag_name) {
-
-    let components = presets.components;
-    if (components)
-        components[tag_name] = tree;
-}
-
-function InjectModel(src_tree, container_tree, model, presets) {
-    if (typeof(model) == "string" && presets.models[model]) {
-        src_tree._model_name_ = model;
-    } else {
-        if (container_tree) {
-            if (!Array.isArray(model) || model.length == 0)
-                throw new Error("Expecting an array value in for model");
-            let offset = 0;
-
-            if (model.length > 1) {
-                offset++;
-
-                let uid = UID(),
-                    m = model[0];
-
-                if (!(m instanceof ModelBase))
-                    m = new Model(m);
-
-                presets.models[uid] = m;
-
-                src_tree._model_name_ = uid;
-            }
-
-            if (typeof(model[offset]) !== "string")
-                throw new Error("Expecting a string expression inside array");
-
-            container_tree.processTextNodeHook(whind$1(`((${model[offset]}))`));
-
-        } else {
-
-            let uid = UID();
-
-            if (!(model instanceof ModelBase))
-                model = new Model(model);
-
-            presets.models[uid] = model;
-
-            src_tree._model_name_ = uid;
-        }
-    }
-}
-
-function InjectSchema(tree, scheme, presets) {
-
-    let
-        uid = UID(),
-        Scheme = scheme;
-
-    if (!Scheme.prototype || !(Scheme.prototype instanceof SchemedModel)) {
-        Scheme = class extends SchemedModel {};
-        Scheme.schema = scheme;
-    }
-
-    presets.schemas[uid] = Scheme;
-
-    tree._schema_name_ = uid;
-}
-
-function InjectImport(tree, $import) {
-    if (tree instanceof ScopeNode$1) {
-        const val = Array.isArray($import) ? $import.join(",") : $import;
-        tree.processAttributeHook("import", whind$1(String(val)));
-    }
-}
-
-function InjectExport(tree, $export) {
-    if (tree instanceof ScopeNode$1) {
-        const val = Array.isArray($export) ? $export.join(",") : $export;
-        tree.processAttributeHook("export", whind$1(String(val)));
-    }
-}
-
-function InjectPut(tree, put) {
-
-    if (tree instanceof ScopeNode$1) {
-        const val = Array.isArray(put) ? put.join(",") : put;
-        tree.processAttributeHook("put", whind$1(String(val)));
-    }
-}
-
-async function InjectFunction(tree, function_id, function_value) {
-
-    const formal_tag = function_id.slice(0, 2);
-
-    if (formal_tag[0] == "$" && formal_tag !== "$$") {
-
-        const
-            script = new ScriptNode$1(),
-            function_name = function_id.slice(1);
-
-        script.tag = "script";
-
-
-        tree.addChild(script);
-
-        script.processAttributeHook("on", whind$1(`((${function_name}))`));
-
-        //if data is url pull that data in, other wise extract function data. 
-        if (typeof function_value == "string") {
-            //script.script_text = new URL().fetch()
-        } else {
-            script.processTextNodeHook(whind$1(getFunctionBodyString(function_value)));
-        }
-
-        return {
-            [function_id]: function_value
-        };
-
-    } else if (formal_tag == "$$") {
-
-        const closure = new ScopedNode();
-        const function_name = function_id.slice(2);
-
-        tree.addChild(closure);
-
-        closure.processAttributeHook("on", whind$1(`((${function_name}))`), function_value);
-
-        return {
-            [function_id]: function_value
-        };
-    }
-
-    return null;
-}
-
-//Url Importing is extended to allow Component function to resolve HTML/JS/MJS url requests
-RootNode.prototype.processFetchHook = function(lexer, OPENED, IGNORE_TEXT_TILL_CLOSE_TAG, parent, url) {
-    let path = this.url.path,
-        CAN_FETCH = true;
-
-    //make sure URL is not already called by a parent.
-    while (parent) {
-        if (parent.url && parent.url.path == path) {
-            console.warn(`Preventing recursion on rescope ${this.url.path}`);
-            CAN_FETCH = false;
-            break;
-        }
-        parent = parent.par;
-    }
-
-    if (CAN_FETCH) {
-        return this.url.fetchText().then(async (text) => {
-            const { ext, data } = await Plugin.extensionParse(this.url.ext, text);
-
-            let lexer = whind$1(data);
-            if (ext == "html")
-                return this.parseRunner(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
-            else if (ext == "js") {
-
-                if (this.tag == "script")
-                    return this.parseRunner(lexer, true, IGNORE_TEXT_TILL_CLOSE_TAG, this, this.url);
-
-                const tree = (await JSCompiler(this.url, this.presets)).tree;
-
-                this.addChild(tree);
-
-                return this;
-            } else if (ext == "mjs") {
-                debugger
-            }
-        }).catch((e) => {
-            return this;
-        });
-    }
-    return null;
-};
-
-const wick = JSCompiler;
-
-Object.assign(wick, core, {
-    classes: {
-        Presets,
-        Store,
-        SchemedModel,
-        Model,
-        ModelContainerBase,
-        MultiIndexedContainer,
-        BTreeModelContainer,
-        ArrayModelContainer,
-        View,
-        ScopePackage,
-        Scope,
-        HTMLCompiler,
-        RootText,
-        RootNode,
-        StyleNode: StyleNode$1,
-        ScriptNode: ScriptNode$1,
-        ScopeNode: ScopeNode$1,
-        PackageNode,
-        ScopeContainerNode: ScopeContainerNode$1,
-        SVGNode,
-        SchemeConstructor,
-        DateSchemeConstructor,
-        TimeSchemeConstructor,
-        StringSchemeConstructor,
-        NumberSchemeConstructor,
-        BoolSchemeConstructor
-    },
-
-    toString: () => `CandleFW Wick 2019`
-});
-
-wick.whind = whind$1;
-Object.freeze(wick);
+const wick = compiler;
 
 exports.default = wick;
