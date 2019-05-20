@@ -17,7 +17,7 @@
 ##############################################################################################
 ##############################################################################################
 	<> WICK_HTML → GOAL_TAG
-		│ IMPORT_LIST GOAL_TAG 								↦return { sym[1].import_list = sym[0], sym[0]}
+		│ IMPORT_LIST GOAL_TAG 								↦return { sym[1].import_list = sym[0], sym[1]}
 
 	<> IMPORT_LIST → IMPORT_TAG 							↦return { [sym[0]] }
 		│ IMPORT_LIST IMPORT_TAG 							↦return { sym[0].push(sym[1]), sym[0] }

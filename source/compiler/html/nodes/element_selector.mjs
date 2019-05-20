@@ -9,6 +9,7 @@ import SVGNode from "./svg.mjs";
 import SlotNode from "./slot.mjs";
 import PreNode from "./pre.mjs";
 import FilterNode from "./filter.mjs";
+import ImportNode from "./import.mjs";
 //import Plugin from "../../../plugin.mjs";
 
 export default function (sym, env, lex){ 
@@ -45,7 +46,8 @@ export default function (sym, env, lex){
             node =  new ScopeNode(children, attribs, presets); break;
         case "slot":
             node =  new SlotNode(children, attribs, presets); break;
-            
+        case "import":
+            node =  new ImportNode(attribs, presets); break;
             //Elements that should not be parsed for binding points.
         case "pre":
         case "code":

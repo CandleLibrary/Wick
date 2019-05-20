@@ -97,6 +97,8 @@ const
                     this.READY = true;
                     this.ast = ast;
 
+                    debugger
+
                     if (!this.name)
                         this.name = this.ast.getAttrib("component").value || "undefined-component";
                 });
