@@ -91,8 +91,9 @@ const
             // If this function is an operand of the new operator, run an alternative 
             // compiler on the calling object.
             if (new.target) {
+                const monitor = {pending_count:1};
 
-                compileAST(component_data, presets).then(ast => {
+                compileAST(component_data, presets, monitor).then(ast => {
                     this.READY = true;
                     this.ast = ast;
 

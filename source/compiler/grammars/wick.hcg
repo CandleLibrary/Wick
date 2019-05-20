@@ -9,13 +9,20 @@
 <> S → start							↦return{ sym[0] }
 
 <> start → script 
-	│ GOAL_TAG							
+	│ WICK_HTML							
 
 ##############################################################################################
 ##############################################################################################
 #### HTML / ML
 ##############################################################################################
 ##############################################################################################
+	<> WICK_HTML → GOAL_TAG
+		│ IMPORT_LIST GOAL_TAG 								↦return { sym[1].import_list = sym[0], sym[0]}
+
+	<> IMPORT_LIST → IMPORT_TAG 							↦return { [sym[0]] }
+		│ IMPORT_LIST IMPORT_TAG 							↦return { sym[0].push(sym[1]), sym[0] }
+	
+	<> IMPORT_TAG → < τimport ATTRIBUTES /? >  				↦cstr ^element_selector
 
 	<> GOAL_TAG → TAG │ DTD_TAG
 
@@ -28,9 +35,9 @@
 		│ < VOID_NAME ATTRIBUTES /? >						↦cstr ^element_selector
 
 
-	#######
+	###########################################################################################
 	# https://www.w3.org/TR/2011/WD-html-markup-20110113/syntax.html#syntax-elements
-	######
+	###########################################################################################
 
 	<> VOID_NAME → τinput
 		│ τarea
@@ -48,6 +55,7 @@
 		│ τsource
 		│ τtrack
 		│ τwbr
+	# Wick Elements #########################################################################
 		│ τf
 		│ τfilter
 

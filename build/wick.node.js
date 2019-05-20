@@ -416,7 +416,8 @@ const number_and_identifier_table = [
 0		/* DELETE */
 ];
 
-const number = 1,
+const 
+    number = 1,
     identifier = 2,
     string = 4,
     white_space = 8,
@@ -1187,7 +1188,7 @@ whind$1.constructor = Lexer;
 Lexer.types = Types;
 whind$1.types = Types;
 
-const uri_reg_ex = /(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:\/\/))?(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:([^\<\>\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\<\>\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\<\>\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
+const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
 
 const STOCK_LOCATION = {
     protocol: "",
@@ -2006,7 +2007,7 @@ const _FrozenProperty_ = (object, name, value) => OB.defineProperty(object, name
  *
  * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
  */
-    
+ 
 const caller = (typeof(window) == "object" && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
     setTimeout(f, 1);
 };
@@ -2032,16 +2033,7 @@ class Spark {
 
         this.queue_switch = 0;
 
-        this.callback = ()=>{};
-
-        if(typeof(window) !== "undefined"){
-            window.addEventListener("load",()=>{
-                this.callback = () => this.update();
-                caller(this.callback);
-            });
-        }else{
-            this.callback = () => this.update();
-        }
+        this.callback = () => this.update();
 
         this.frame_time = perf.now();
 
@@ -2072,11 +2064,9 @@ class Spark {
 
         this.frame_time = perf.now() | 0;
 
+        this.SCHEDULE_PENDING = true;
 
-        if(!this.SCHEDULE_PENDING){
-            this.SCHEDULE_PENDING = true;
-            caller(this.callback);
-        }
+        caller(this.callback);
     }
 
     removeFromQueue(object){
@@ -12724,25 +12714,27 @@ const media_feature_definitions = {
  */
 class CSSSelector {
 
-    constructor(value = "", value_array = []) {
+    constructor(selectors /* string */ , selectors_arrays /* array */ ) {
 
         /**
          * The raw selector string value
          * @package
          */
-        this.v = value;
+
+        this.v = selectors;
 
         /**
          * Array of separated selector strings in reverse order.
          * @package
          */
-        this.a = value_array;
 
-        // CSS Rulesets the selector is member of .
+        this.a = selectors_arrays;
+
+        /**
+         * The CSSRule.
+         * @package
+         */
         this.r = null;
-
-        // CSS root the selector is a child of. 
-        this.root = null;
     }
 
     get id() {
@@ -13985,7 +13977,6 @@ class CSSRuleBody {
                 let selector = this.parseSelector(lexer, this);
 
                 if (selector) {
-                    selector.root = this;
                     if (!this._selectors_[selector.id]) {
                         l = selectors.push(selector);
                         this._selectors_[selector.id] = selector;
@@ -14185,7 +14176,7 @@ class Segment {
     }
 
     setList() {
-        //if(this.DEMOTED) debugger
+        if(this.DEMOTED) debugger
         if (this.prod && this.list.innerHTML == "") {
             if (this.DEMOTED || !this.prod.buildList(this.list, this))
                 this.menu_icon.style.display = "none";
@@ -15330,7 +15321,7 @@ class UIRuleSet {
             }
         }
 
-        this.parent.update(this);
+        this.parent.update();
     }
 
     addProp(type, value){
@@ -15362,6 +15353,10 @@ function dragover$1(e){
     e.preventDefault();
 }
 
+//import { UIValue } from "./ui_value.mjs";
+
+const props$2 = Object.assign({}, property_definitions);
+
 class UIMaster {
     constructor(css) {
         css.addObserver(this);
@@ -15370,7 +15365,6 @@ class UIMaster {
         this.selectors = [];
         this.element = document.createElement("div");
         this.element.classList.add("cfw_css");
-        this.update_mod = 0;
 
 
         this.rule_map = new Map();
@@ -15380,7 +15374,6 @@ class UIMaster {
     // css - A CandleFW_CSS object. 
     // meta - internal 
     build(css = this.css) {
-        if(this.update_mod++%3 !== 0) return;
 
         //Extract rule bodies and set as keys for the rule_map. 
         //Any existing mapped body that does not have a matching rule should be removed. 
@@ -15681,7 +15674,7 @@ const
                     this.type = this.getType(k0_val);
                 }
 
-                this.getValue(obj, prop_name, type, k0_val);
+                this.getValue(obj, prop_name, type);
 
                 let p = this.current_val;
 
@@ -15697,8 +15690,7 @@ const
                 this.current_val = null;
             }
 
-            getValue(obj, prop_name, type, k0_val) {
-
+            getValue(obj, prop_name, type) {
                 if (type == CSS_STYLE) {
                     let name = prop_name.replace(/[A-Z]/g, (match) => "-" + match.toLowerCase());
                     let cs = window.getComputedStyle(obj);
@@ -15708,7 +15700,6 @@ const
                     
                     if(!value)
                         value = obj.style[prop_name];
-                
 
                     if (this.type == CSS_Percentage$1) {
                         if (obj.parentElement) {
@@ -15718,7 +15709,8 @@ const
                             value = (ratio * 100);
                         }
                     }
-                    this.current_val = (new this.type(value));
+
+                    this.current_val = new this.type(value);
 
                 } else {
                     this.current_val = new this.type(obj[prop_name]);
@@ -15807,6 +15799,7 @@ const
             }
 
             setProp(obj, prop_name, value, type) {
+
                 if (type == CSS_STYLE) {
                     obj.style[prop_name] = value;
                 } else
@@ -16115,7 +16108,7 @@ const
 
             //TODO: allow scale to control playback speed and direction
             play(scale = 1, from = 0) {
-                this.SCALE = scale;
+                this.SCALE = 0;
                 this.time = from;
                 spark.queueUpdate(this);
                 return this;
@@ -16127,19 +16120,19 @@ const
             }    
         }
 
-        const GlowFunction = function(...args) {
+        const GlowFunction = function() {
 
-            if (args.length > 1) {
+            if (arguments.length > 1) {
 
                 let group = new AnimGroup();
 
-                for (let i = 0; i < args.length; i++) {
-                    let data = args[i];
+                for (let i = 0; i < arguments.length; i++) {
+                    let data = arguments[i];
 
                     let obj = data.obj;
                     let props = {};
 
-                    Object.keys(data).forEach(k => { if (!(({ obj: true, match: true, delay:true })[k])) props[k] = data[k]; });
+                    Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
 
                     group.add(new AnimSequence(obj, props));
                 }
@@ -16147,12 +16140,12 @@ const
                 return group;
 
             } else {
-                let data = args[0];
+                let data = arguments[0];
 
                 let obj = data.obj;
                 let props = {};
 
-                Object.keys(data).forEach(k => { if (!(({ obj: true, match: true, delay:true })[k])) props[k] = data[k]; });
+                Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
 
                 let seq = new AnimSequence(obj, props);
 
@@ -16359,33 +16352,53 @@ const Transitioneer = (function() {
     let obj_map = new Map();
     let ActiveTransition = null;
 
-    function $in(...data) {
+    function $in(anim_data_or_duration = 0, delay = 0) {
 
-        let
-            seq = null,
-            length = data.length,
-            delay = 0;
+        let seq;
 
-        if (typeof(data[length - 1]) == "number")
-            delay = data[length - 1], length--;
+        if (typeof(anim_data_or_duration) == "object") {
+            if (anim_data_or_duration.match && this.TT[anim_data_or_duration.match]) {
+                let duration = anim_data_or_duration.duration;
+                let easing = anim_data_or_duration.easing;
+                seq = this.TT[anim_data_or_duration.match](anim_data_or_duration.obj, duration, easing);
+            } else
+                seq = Animation.createSequence(anim_data_or_duration);
 
-        for (let i = 0; i < length; i++) {
-            let anim_data = data[i];
+            //Parse the object and convert into animation props. 
+            if (seq) {
+                this.in_seq.push(seq);
+                this.in_duration = Math.max(this.in_duration, seq.duration);
+                if (this.OVERRIDE) {
 
-            if (typeof(anim_data) == "object") {
+                    if (obj_map.get(seq.obj)) {
+                        let other_seq = obj_map.get(seq.obj);
+                        other_seq.removeProps(seq);
+                    }
 
-                if (anim_data.match && this.TT[anim_data.match]) {
-                    let
-                        duration = anim_data.duration,
-                        easing = anim_data.easing;
-                    seq = this.TT[anim_data.match](anim_data.obj, duration, easing);
-                } else
-                    seq = Animation.createSequence(anim_data);
+                    obj_map.set(seq.obj, seq);
+                }
+            }
 
-                //Parse the object and convert into animation props. 
+        } else
+            this.in_duration = Math.max(this.in_duration, parseInt(delay) + parseInt(anim_data_or_duration));
+
+        return this.in;
+    }
+
+
+    function $out(anim_data_or_duration = 0, delay = 0, in_delay = 0) {
+        //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
+        //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
+
+        if (typeof(anim_data_or_duration) == "object") {
+
+            if (anim_data_or_duration.match) {
+                this.TT[anim_data_or_duration.match] = TransformTo(anim_data_or_duration.obj);
+            } else {
+                let seq = Animation.createSequence(anim_data_or_duration);
                 if (seq) {
-                    this.in_seq.push(seq);
-                    this.in_duration = Math.max(this.in_duration, seq.duration);
+                    this.out_seq.push(seq);
+                    this.out_duration = Math.max(this.out_duration, seq.duration);
                     if (this.OVERRIDE) {
 
                         if (obj_map.get(seq.obj)) {
@@ -16396,59 +16409,11 @@ const Transitioneer = (function() {
                         obj_map.set(seq.obj, seq);
                     }
                 }
+                this.in_delay = Math.max(this.in_delay, parseInt(delay));
             }
-        }
-
-        this.in_duration = Math.max(this.in_duration, parseInt(delay));
-
-        return this.in;
-    }
-
-
-    function $out(...data) {
-        //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
-        //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
-        let
-            seq = null,
-            length = data.length,
-            delay = 0,
-            in_delay = 0;
-
-        if (typeof(data[length - 1]) == "number") {
-            if (typeof(data[length - 2]) == "number") {
-                in_delay = data[length - 2];
-                delay = data[length - 1];
-                length -= 2;
-            } else
-                delay = data[length - 1], length--;
-        }
-
-        for (let i = 0; i < length; i++) {
-            let anim_data = data[i];
-
-            if (typeof(anim_data) == "object") {
-
-                if (anim_data.match) {
-                    this.TT[anim_data.match] = TransformTo(anim_data.obj);
-                } else {
-                    let seq = Animation.createSequence(anim_data);
-                    if (seq) {
-                        this.out_seq.push(seq);
-                        this.out_duration = Math.max(this.out_duration, seq.duration);
-                        if (this.OVERRIDE) {
-
-                            if (obj_map.get(seq.obj)) {
-                                let other_seq = obj_map.get(seq.obj);
-                                other_seq.removeProps(seq);
-                            }
-
-                            obj_map.set(seq.obj, seq);
-                        }
-                    }
-
-                    this.in_delay = Math.max(this.in_delay, parseInt(delay));
-                }
-            }
+        } else {
+            this.out_duration = Math.max(this.out_duration, parseInt(delay) + parseInt(anim_data_or_duration));
+            this.in_delay = Math.max(this.in_delay, parseInt(in_delay));
         }
     }
 
@@ -16546,7 +16511,7 @@ const Transitioneer = (function() {
         }
 
         step(t) {
-
+            
             for (let i = 0; i < this.out_seq.length; i++) {
                 let seq = this.out_seq[i];
                 if (!seq.run(t) && !seq.FINISHED) {
@@ -17100,7 +17065,7 @@ class ScopeContainer extends View {
         this.range = null;
         this._SCHD_ = 0;
         this.prop = null;
-        this.package = null;
+        this.component = null;
         this.transition_in = 0;
         this.limit = 0;
         this.shift_amount = 1;
@@ -17715,8 +17680,11 @@ class ScopeContainer extends View {
         if (!transition)
             transition = Animation.createTransition(), OWN_TRANSITION = true;
 
-        for (let i = 0; i < items.length; i++) 
-            this.scopes.push(this.package.mount(null, items[i], false, undefined, this.parent));
+        for (let i = 0; i < items.length; i++) {
+            const scope = this.component.mount(null, items[i]);
+            this.scopes.push(scope);
+            this.parent.addScope(scope);
+        }
 
         if (OWN_TRANSITION) {
             this.limitUpdate();
@@ -17998,13 +17966,15 @@ class d$2 {
 
     //Mounts component data to new HTMLElement object.
     mount(HTMLElement_, bound_data_object) {
+        let element = null;
+        
+        if ((HTMLElement_ instanceof HTMLElement)){
+            //throw new Error("HTMLElement_ argument is not an instance of HTMLElement. Cannot mount component");
 
-        if (!(HTMLElement_ instanceof HTMLElement))
-            throw new Error("HTMLElement_ argument is not an instance of HTMLElement. Cannot mount component");
+            element = HTMLElement_.attachShadow({ mode: 'open' });
+        }
 
-        const shadow = HTMLElement_.attachShadow({ mode: 'open' });
-
-        const scope = this.ast.mount(shadow);
+        const scope = this.ast.mount(element);
 
         if (bound_data_object)
             scope.load(bound_data_object);
@@ -18075,6 +18045,9 @@ class ctr extends ElementNode {
 
         this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
 
+        if(this.component_constructor)
+            container.component = this.component_constructor;
+
         for (let i = 0; i < this.filters.length; i++)
             this.filters[i].mount(scope, container);
 
@@ -18083,14 +18056,14 @@ class ctr extends ElementNode {
 
         if (this.binds.length > 0) {
             for (let i = 0; i < this.binds.length; i++)
-                this.binds[i].mount(null, scope, statics, presets, this);
+                this.binds[i].mount(null, scope, statics, presets, container);
+        }else{ 
+            //If there is no binding, then there is no potential to have ModelContainer borne components.
+            //Instead, load any existing children as component entries for the container element. 
+            for (let i = 0; i < this.nodes.length; i++)
+                container.activeScopes.push(this.nodes[i].mount(null, null, statics, presets));
         }
 
-        if(this.component_constructor)
-            container.component = this.component_constructor;
-
-        for (let i = 0; i < this.nodes.length; i++)
-            container.activeScopes.push(this.nodes[i].mount(null, null, statics, presets));
 
         container.render();
 
@@ -18472,8 +18445,9 @@ const
             // If this function is an operand of the new operator, run an alternative 
             // compiler on the calling object.
             if (new.target) {
+                const monitor = {pending_count:1};
 
-                compileAST(component_data, presets).then(ast => {
+                compileAST(component_data, presets, monitor).then(ast => {
                     this.READY = true;
                     this.ast = ast;
 

@@ -19,19 +19,22 @@
 		</template>
 		<script type="text/javascript">
 			async function start(){
-				let m = wick.model({doug:44});
+				let m = wick.model({doug:[{name:"pate"}, {name:"mary"}]});
+				
 				(await wick(`
 					<scope element="div">
-				Test
 
-				<container>
-					<f sort="((m1 + m2))"/>
+						<import url="./test.html" />
 
-					<div>Tiger</div>
-					<div>Dragon</div>
-				</container>
+						Test
 
-			</scope>
+						<container>
+							<f sort="((m1 + m2))"/>
+							((doug))
+							<tractor/>
+						</container>
+
+					</scope>
 				`)).mount(document.body, m);
 			}
 			start();

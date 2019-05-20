@@ -61,6 +61,9 @@ export default class ctr extends ElementNode {
 
         this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
 
+        if(this.component_constructor)
+            container.component = this.component_constructor;
+
         for (let i = 0; i < this.filters.length; i++)
             this.filters[i].mount(scope, container);
 
@@ -69,14 +72,14 @@ export default class ctr extends ElementNode {
 
         if (this.binds.length > 0) {
             for (let i = 0; i < this.binds.length; i++)
-                this.binds[i].mount(null, scope, statics, presets, this);
+                this.binds[i].mount(null, scope, statics, presets, container);
+        }else{ 
+            //If there is no binding, then there is no potential to have ModelContainer borne components.
+            //Instead, load any existing children as component entries for the container element. 
+            for (let i = 0; i < this.nodes.length; i++)
+                container.activeScopes.push(this.nodes[i].mount(null, null, statics, presets));
         }
 
-        if(this.component_constructor)
-            container.component = this.component_constructor;
-
-        for (let i = 0; i < this.nodes.length; i++)
-            container.activeScopes.push(this.nodes[i].mount(null, null, statics, presets));
 
         container.render();
 

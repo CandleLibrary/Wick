@@ -38,7 +38,7 @@ export default class ScopeContainer extends Observer {
         this.range = null;
         this._SCHD_ = 0;
         this.prop = null;
-        this.package = null;
+        this.component = null;
         this.transition_in = 0;
         this.limit = 0;
         this.shift_amount = 1;
@@ -653,8 +653,11 @@ export default class ScopeContainer extends Observer {
         if (!transition)
             transition = glow.createTransition(), OWN_TRANSITION = true;
 
-        for (let i = 0; i < items.length; i++) 
-            this.scopes.push(this.package.mount(null, items[i], false, undefined, this.parent));
+        for (let i = 0; i < items.length; i++) {
+            const scope = this.component.mount(null, items[i]);
+            this.scopes.push(scope);
+            this.parent.addScope(scope);
+        }
 
         if (OWN_TRANSITION) {
             this.limitUpdate();

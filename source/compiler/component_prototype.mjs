@@ -29,13 +29,15 @@ export default class d {
 
     //Mounts component data to new HTMLElement object.
     mount(HTMLElement_, bound_data_object) {
+        let element = null;
+        
+        if ((HTMLElement_ instanceof HTMLElement)){
+            //throw new Error("HTMLElement_ argument is not an instance of HTMLElement. Cannot mount component");
 
-        if (!(HTMLElement_ instanceof HTMLElement))
-            throw new Error("HTMLElement_ argument is not an instance of HTMLElement. Cannot mount component");
+            element = HTMLElement_.attachShadow({ mode: 'open' });
+        }
 
-        const shadow = HTMLElement_.attachShadow({ mode: 'open' });
-
-        const scope = this.ast.mount(shadow);
+        const scope = this.ast.mount(element);
 
         if (bound_data_object)
             scope.load(bound_data_object);
