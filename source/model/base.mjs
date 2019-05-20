@@ -26,13 +26,13 @@ class ModelBase {
      */
     destroy() {
 
-        //inform views of the models demise
-        var view = this.fv;
+        //inform observers of the models demise
+        var observer = this.fv;
 
-        while (view) {
-            let nx = view.nx;
-            view.unsetModel();
-            view = nx;
+        while (observer) {
+            let nx = observer.nx;
+            observer.unsetModel();
+            observer = nx;
         }
 
         this._cv_ = null;
@@ -70,48 +70,48 @@ class ModelBase {
     }
 
     addListener(listener) {
-        return this.addView(listener);
+        return this.addObserver(listener);
     }
 
 
     /**
-     * Adds a view to the linked list of views on the model. argument view MUST be an instance of View. 
-     * @param {View} view - The view to _bind_ to the ModelBase
-     * @throws {Error} throws an error if the value of `view` is not an instance of {@link View}.
+     * Adds a observer to the linked list of observers on the model. argument observer MUST be an instance of View. 
+     * @param {View} observer - The observer to _bind_ to the ModelBase
+     * @throws {Error} throws an error if the value of `observer` is not an instance of {@link View}.
      */
-    addView(view) {
-        if (view.model)
-            if (view.model !== this) {
-                view.model.removeView(view);
+    addObserver(observer) {
+        if (observer.model)
+            if (observer.model !== this) {
+                observer.model.removeView(observer);
             } else return;
 
-        if (this.fv) this.fv.pv = view;
-        view.nx = this.fv;
-        this.fv = view;
+        if (this.fv) this.fv.pv = observer;
+        observer.nx = this.fv;
+        this.fv = observer;
 
-        view.pv = null;
-        view.model = this;
-        view.update(this);
+        observer.pv = null;
+        observer.model = this;
+        observer.update(this);
     }
 
     /**
-     * Removes view from set of views if the passed in view is a member of model. 
-     * @param {View} view - The view to unbind from ModelBase
+     * Removes observer from set of observers if the passed in observer is a member of model. 
+     * @param {View} observer - The observer to unbind from ModelBase
      */
-    removeView(view) {
+    removeView(observer) {
         
 
-        if (view.model == this) {
-            if (view == this.fv)
-                this.fv = view.nx;
+        if (observer.model == this) {
+            if (observer == this.fv)
+                this.fv = observer.nx;
 
-            if (view.nx)
-                view.nx.pv = view.pv;
-            if (view.pv)
-                view.pv.nx = view.nx;
+            if (observer.nx)
+                observer.nx.pv = observer.pv;
+            if (observer.pv)
+                observer.pv.nx = observer.nx;
 
-            view.nx = null;
-            view.pv = null;
+            observer.nx = null;
+            observer.pv = null;
         }
     }
 
@@ -154,12 +154,12 @@ class ModelBase {
 
         this._cv_.length = 0;
 
-        var view = this.fv;
+        var observer = this.fv;
 
-        while (view) {
+        while (observer) {
 
-            view.update(this, o);
-            view = view.nx;
+            observer.update(this, o);
+            observer = observer.nx;
         }
 
         return;
@@ -168,19 +168,19 @@ class ModelBase {
 
 
     /**
-     * Updates views with a list of models that have been removed. 
-     * Primarily used in conjunction with container based views, such as Templates.
+     * Updates observers with a list of models that have been removed. 
+     * Primarily used in conjunction with container based observers, such as Templates.
      * @private
      */
     updateViewsRemoved(data) {
 
-        var view = this.fv;
+        var observer = this.fv;
 
-        while (view) {
+        while (observer) {
 
-            view.removed(data);
+            observer.removed(data);
 
-            view = view.nx;
+            observer = observer.nx;
         }
     }
 
@@ -256,19 +256,19 @@ class ModelBase {
     }
 
     /**
-     * Updates views with a list of models that have been added. 
-     * Primarily used in conjunction with container based views, such as Templates.
+     * Updates observers with a list of models that have been added. 
+     * Primarily used in conjunction with container based observers, such as Templates.
      * @private
      */
     updateViewsAdded(data) {
 
-        var view = this.fv;
+        var observer = this.fv;
 
-        while (view) {
+        while (observer) {
 
-            view.added(data);
+            observer.added(data);
 
-            view = view.nx;
+            observer = observer.nx;
         }
     }
 

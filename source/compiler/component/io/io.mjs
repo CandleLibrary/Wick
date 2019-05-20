@@ -102,7 +102,7 @@ export class AttribIO extends IOBase {
 /**
     This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
 */
-export class TextNodeIO extends IOBase {
+export class DataNodeIO extends IOBase {
     constructor(scope, tap, element, default_val) {
         super(tap);
         this.ele = element;

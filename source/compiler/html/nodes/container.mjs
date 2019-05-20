@@ -1,105 +1,85 @@
 import Scope from "../../component/runtime/scope.mjs";
 import Container from "../../component/runtime/container.mjs";
 import ElementNode from "./element.mjs";
+import Filter from "./filter.mjs";
+import TextNode from "./text.mjs";
+import proto from "../../component_prototype.mjs";
+
 import {
     appendChild,
     createElement
 } from "../../../short_names.mjs";
 
-export default class ctr extends ElementNode{
-	constructor(children, attribs){
-		super("container", children, attribs);
+function BaseComponent(ast, presets) {
+    this.ast = ast;
+    this.READY = true;
+    this.presets = presets;
+    //Reference to the component name. Used with the Web Component API
+    this.name = "";
+}
 
-		this.filters = null;
-		this.property_bind = null;
-		this.scope_children = null;
-	}
+BaseComponent.prototype = proto.prototype;
 
-	mount(element, scope, statics, presets){
+export default class ctr extends ElementNode {
+    
+    constructor(children, attribs, presets) {
+        super("container", children, attribs, presets);
+
+        this.filters = null;
+        this.property_bind = null;
+        this.scope_children = null;
+
+        //Tag name of HTMLElement the container will create;
+        this.element = this.getAttribute("element") || "ul";
+
+        this.filters = children.reduce((r, c) => { if (c instanceof Filter) r.push(c); return r }, []);
+        this.nodes = children.reduce((r, c) => { if (c instanceof ElementNode && !(c instanceof Filter)) r.push(c); return r }, []);
+        this.binds = children.reduce((r, c) => { if (c instanceof TextNode && c.IS_BINDING) r.push(c); return r }, []);
+
+        //Keep in mind slots!;
+        this.component_constructor = (this.nodes.length > 0) ? new BaseComponent(this.nodes[0], this.presets) : null;
+    }
+
+    merge(node) {
+        const merged_node = super.merge(node);
+        merged_node.filters = this.filters;
+        merged_node.nodes = this.filters;
+        merged_node.binds = this.binds;
+        merged_node.MERGED = true;
+        return merged_node;
+    }
+
+    mount(element, scope, statics, presets) {
 
         scope = scope || new Scope(null, presets, element, this);
 
-        let
-            pckg = this.package,
-            HAS_STATIC_SCOPES = false
-
         const
-            ele = createElement(this.getAttribute("element") || "ul"),
-            me = new ScopeContainer(scope, presets, ele);
+            ele = createElement(this.element),
+            container = new Container(scope, presets, ele);
 
         appendChild(element, ele);
 
         this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
 
-        if (this.HAS_TAPS)
-            taps = scope.linkTaps(this.tap_list);
+        for (let i = 0; i < this.filters.length; i++)
+            this.filters[i].mount(scope, container);
 
-        if (this._badge_name_)
-            scope.badges[this._badge_name_] = ele;
+        for (let i = 0, l = this.attribs.length; i < l; i++)
+            this.attribs[i].bind(ele, scope);
 
-        if (this.property_bind)
-            me.prop = this.property_bind._bind_(scope, errors, taps, me);
-        /*
-        for (let node = this.fch; node; node = this.getNextChild(node)) {
-
-            if (node.tag == "f") {
-                
-                let
-                    on = node.getAttribute("on"),
-                    sort = node.getAttribute("sort"),
-                    filter = node.getAttribute("filter"),
-                    limit = node.getAttribute("limit"),
-                    offset = node.getAttribute("offset"),
-                    scrub = node.getAttribute("scrub"),
-                    shift = node.getAttribute("shift");
-
-                if (limit && limit.binding.type == 1) {
-                    me.limit = parseInt(limit.value);
-                    limit = null;
-                }
-
-                if (shift && shift.binding.type == 1) {
-                    me.shift_amount = parseInt(shift.value);
-                    shift = null;
-                }
-
-                if (sort || filter || limit || offset || scrub || shift) //Only create Filter node if it has a sorting bind or a filter bind
-                    me.filters.push(new FilterIO(scope, errors, taps, me, on, sort, filter, limit, offset, scrub, shift));
-
-            } else if (node.tag == "slot" && !pckg && statics.slots) {
-                if (statics.slots[node.name]) {
-                    const ele = statics.slots[node.name];
-                    ele.__presets__ = this.presets;
-                    pckg = new BasePackage()
-                    pckg.asts.push(ele);
-                    pckg.READY = true;
-                }
-            } else {
-                //pack node into source manager
-                const mgr = new ScopeManager();
-                mgr.scopes.push(node.build(null, scope, presets, errors, statics));
-                mgr.READY = true;
-                me.scopes.push(mgr);
-                HAS_STATIC_SCOPES = true;
-            }
-        }*/
-
-        if (this.property_bind && pckg) {
-            me.package = pckg;
-
-            if (!me.package.asts[0].url)
-                me.package.asts[0].url = this.getURL();
-
-        } else if (HAS_STATIC_SCOPES) {
-            spark.queueUpdate(me);
-        } else {
-            if (this.property_bind)
-                //If there is no package at all then abort build of this element. TODO, throw an appropriate warning.
-                errors.push(new Error(`Missing scope for container bound to "${this.property_bind.bindings[0].tap_name}"`));
-            else
-                errors.push(new Error(`Missing property binding for this node.`));
+        if (this.binds.length > 0) {
+            for (let i = 0; i < this.binds.length; i++)
+                this.binds[i].mount(null, scope, statics, presets, this);
         }
 
+        if(this.component_constructor)
+            container.component = this.component_constructor;
+
+        for (let i = 0; i < this.nodes.length; i++)
+            container.activeScopes.push(this.nodes[i].mount(null, null, statics, presets));
+
+        container.render();
+
         return scope;
-	}
+    }
 }

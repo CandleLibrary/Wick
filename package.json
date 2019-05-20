@@ -70,5 +70,51 @@
     "@candlefw/spark": "latest",
     "@candlefw/url": "latest",
     "@candlefw/whind": "latest"
+  },
+  "eslintConfig": {
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": 2018
+    },
+    "env": {
+      "es6": true,
+      "browser": true,
+      "node": true
+    },
+    "extends": "eslint:recommended",
+    "rules": {
+      "no-fallthrough": [
+        "error",
+        {
+          "commentPattern": "[iI]ntentional( - [\\w\\W]*){0,1}"
+        }
+      ],
+      "semi-style": [
+        "error",
+        "last"
+      ],
+      "semi": [
+        "warn",
+        "always",
+        {
+          "omitLastInOneLineBlock": true
+        }
+      ],
+      "prefer-const": "warn",
+      "new-cap": [
+        "error"
+      ],
+      "padding-line-between-statements": [
+        "error",
+        {
+          "blankLine": "always",
+          "prev": "function",
+          "next": "*"
+        }
+      ]
+    }
+  },
+  "engine": {
+    "node": ">=12.0.0"
   }
 }

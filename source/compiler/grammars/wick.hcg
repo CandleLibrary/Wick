@@ -22,9 +22,10 @@
 	<> DTD_TAG → < \! \-- BODY_STRING \-- >								 	
 
 	<> TAG → < TAGNAME ATTRIBUTES > TAG_BODY </ TAGNAME >	↦cstr ^element_selector
-		│ < VOID_NAME ATTRIBUTES / >						↦cstr ^element_selector
 		│ < TAGNAME ATTRIBUTES / >							↦cstr ^element_selector
 		│ < τscript ATTRIBUTES > script </ τscript > 		↦cstr ^element_selector
+		│ < VOID_NAME ATTRIBUTES ></ VOID_NAME > 			↦cstr ^element_selector
+		│ < VOID_NAME ATTRIBUTES /? >						↦cstr ^element_selector
 
 
 	#######
@@ -718,7 +719,7 @@
 	##############################################################################################################
 
 		<> conditional_expression → logical_or_expression
-			│ logical_or_expression ? assignment_expression : assignment_expression ↦cstr ^condition_expr
+			│ logical_or_expression \? assignment_expression : assignment_expression ↦cstr ^condition_expr
 
 	##############################################################################################################
 	# https://www.ecma-international.org/ecma-262/9.0/index.html#sec-binary-logical-operators

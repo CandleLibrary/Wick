@@ -7,15 +7,21 @@ import {
 
 export default class scp extends ElementNode{
 
-	constructor(children, attribs){
-		super("scope", children, attribs);
+	constructor(children, attribs, presets){
+        
+		super("scope", children, attribs, presets);
 
 		this.import = this.getAttrib("import").value;
 		this.export = this.getAttrib("export").value;
 		this.put = this.getAttrib("put").value;
 		this.model_name = this.getAttrib("model").value;
 		this.schema_name = this.getAttrib("schema").value;
+        this.element = this.getAttrib("element").value;
 	}
+
+    createElement() {
+        return createElement(this.element);
+    }
 
 	mount(element, scope, statics, presets){
 
@@ -53,7 +59,6 @@ export default class scp extends ElementNode{
          * If this is not the case, then a new element, defined by the "element" attribute of the scope virtual tag (defaulted to a "div"), 
          * will be created to allow the scope object to bind to an actual HTMLElement. 
          */
-         debugger
         if (!element || this.getAttrib("element").value) {
 
             let ele = this.createElement();

@@ -1,6 +1,6 @@
 /**
  * Base class for an object that binds to and observes a Model.
- *@alias module:wick.core.view
+ *@alias module:wick.core.observer
  */
 export default class View{
 
@@ -16,7 +16,7 @@ export default class View{
 	/**
      * Unbinds the View from its Model and sets all properties to undefined. Should be called by any class extending View
 	 * ``` js
-	 * class ExtendingView extends wick.core.view.View{
+	 * class ExtendingView extends wick.core.observer.View{
 	 * 		destroy(){
 	 * 			//... do some stuff ...
 	 * 			super.destroy();

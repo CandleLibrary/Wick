@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="/cfw/wick"></script>
+	</head>
+	<body>
+		<template id="test">
+			<scope element="div">
+				Test
+
+				<container>
+					<f sort="((m1 + m2))">
+
+					<div>Tiger</div>
+					<div>Dragon</div>
+				</container>
+
+			</scope>
+		</template>
+		<script type="text/javascript">
+			async function start(){
+				let m = wick.model({doug:44});
+				(await wick(`
+					<scope element="div">
+				Test
+
+				<container>
+					<f sort="((m1 + m2))"/>
+
+					<div>Tiger</div>
+					<div>Dragon</div>
+				</container>
+
+			</scope>
+				`)).mount(document.body, m);
+			}
+			start();
+		</script>
+	</body>
+</html>

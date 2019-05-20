@@ -1,6 +1,6 @@
 import { Model } from "../../../model/model.mjs";
 import { Tap, UpdateTap } from "../tap/tap.mjs";
-import Observer from "../../../observer/view.mjs";
+import Observer from "../../../observer/observer.mjs";
 
 
 export default class Scope extends Observer {
@@ -45,16 +45,19 @@ export default class Scope extends Observer {
 
         this.DESTROYED = false;
         this.LOADED = false;
+        this.CONNECTED = false;
+        this.TRANSITIONED_IN = false;
 
         this.addToParent();
     }
 
     destroy() {
 
+        //Lifecycle Events: Destroying <======================================================================
+        this.update({destroying:true});
+
         this.DESTROYED = true;
         this.LOADED = false;
-
-        this.update({ destroyed: true });
 
         if (this.parent && this.parent.removeScope)
             this.parent.removeScope(this);
@@ -72,14 +75,12 @@ export default class Scope extends Observer {
             this.scopes[0].destroy();
 
         super.destroy();
-
     }
 
     getBadges(par) {
-        for (let a in this.badges) {
+        for (let a in this.badges) 
             if (!par.badges[a])
                 par.badges[a] = this.badges[a];
-        }
     }
 
     addToParent() {
@@ -148,48 +149,46 @@ export default class Scope extends Observer {
     }
 
     /**
-        Makes the scope a view of the given Model. If no model passed, then the scope will bind to another model depending on its `scheme` or `model` attributes. 
+        Makes the scope a observer of the given Model. If no model passed, then the scope will bind to another model depending on its `scheme` or `model` attributes. 
     */
     load(model) {
         let
             m = null,
-            s = null;
+            SchemedConstructor = null;
 
         if (this._model_name_ && this.presets.models)
             m = this.presets.models[this._model_name_];
         if (this._schema_name_ && this.presets.schemas)
-            s = this.presets.schemas[this._schema_name_];
+            SchemedConstructor = this.presets.schemas[this._schema_name_];
 
         if (m)
             model = m;
-        else if (s) {
-            model = new s();
+        else if (SchemedConstructor) {
+            model = new SchemedConstructor();
         } else if (!model)
             model = new Model(model);
-
-        let LOADED = this.LOADED;
 
         this.LOADED = true;
 
         for (let i = 0, l = this.scopes.length; i < l; i++) {
             this.scopes[i].load(model);
             this.scopes[i].getBadges(this);
-
-            //Lifecycle message
-            this.scopes[i].update({mounted:true}); 
         }
 
-        if (model.addView)
-            model.addView(this);
+
+        if (model.addObserver)
+            model.addObserver(this);
 
         this.model = model;
 
         for (let name in this.taps)
             this.taps[name].load(this.model, false);
 
-        if (!LOADED)
-            this.update({ created: true });
+        //Lifecycle Events: Loaded <======================================================================
+        this.update({loaded:true}); 
     }
+
+    /*************** DATA HANDLING CODE **************************************/
 
     down(data, changed_values) {
         this.update(data, changed_values, true);
@@ -219,35 +218,8 @@ export default class Scope extends Observer {
             for (let name in this.taps)
                 this.taps[name].downS(data, IMPORTED);
 
-        //        for (let i = 0, l = this.scopes.length; i < l; i++)
-        //            this.scopes[i].down(data, changed_values);
-
         for (let i = 0, l = this.containers.length; i < l; i++)
             this.containers[i].down(data, changed_values);
-    }
-
-    transitionIn(transition) {
-
-        if (this.taps.trs_in)
-            this.taps.trs_in.downS(transition);
-
-        for (let i = 0, l = this.scopes.length; i < l; i++)
-            this.scopes[i].transitionIn(transition);
-
-        for (let i = 0, l = this.containers.length; i < l; i++)
-            this.containers[i].transitionIn(transition);
-    }
-
-    transitionOut(transition) {
-        if (this.taps.trs_out)
-            this.taps.trs_out.downS(transition);
-
-        for (let i = 0, l = this.scopes.length; i < l; i++)
-            this.scopes[i].transitionOut(transition);
-
-
-        for (let i = 0, l = this.containers.length; i < l; i++)
-            this.containers[i].transitionOut(transition);
     }
 
     bubbleLink(child) {
@@ -256,6 +228,79 @@ export default class Scope extends Observer {
                 this.badges[a] = child.badges[a];
         if (this.parent)
             this.parent.bubbleLink(this);
+    }
+
+    /*************** DOM CODE ****************************/
+
+    appendToDOM(element, before_element) {
+
+        //Lifecycle Events: Connecting <======================================================================
+        this.update({connecting:true});
+        
+        this.CONNECTED = true;
+
+        if (before_element)
+            element.insertBefore(this.ele, before_element);
+        else
+            element.appendChild(this.ele);
+
+        //Lifecycle Events: Connected <======================================================================
+        this.update({connected:true});
+    }
+
+    removeFromDOM() {
+        //Lifecycle Events: Disconnecting <======================================================================
+        this.update({disconnecting:true});
+
+        if (this.CONNECTED == true) return;
+
+        if (this.ele && this.ele.parentElement)
+            this.ele.parentElement.removeChild(this.ele);
+
+        //Lifecycle Events: Disconnected <======================================================================
+        this.update({disconnectied:true});
+    }
+
+    transitionIn(transition, transition_name = "trs_in") {
+
+        if (transition) 
+            this.update({[transition_name]:transition});
+
+        this.TRANSITIONED_IN = true;
+    }
+
+    transitionOut(transition, transition_name = "trs_out", DESTROY_AFTER_TRANSITION = false) {
+
+        this.CONNECTED = false;
+
+        if (this.TRANSITIONED_IN === false) {
+            this.removeFromDOM();
+            if (DESTROY_AFTER_TRANSITION) this.destroy();
+            return;
+        }
+
+        let transition_time = 0;
+
+        if (transition) {
+
+            this.update({[transition_name]:transition});
+
+            if (transition.trs)
+                transition_time = transition.trs.out_duration;
+            else
+                transition_time = transition.out_duration;
+        }
+
+        this.TRANSITIONED_IN = false;
+        
+        transition_time = Math.max(transition_time, 0);
+
+        setTimeout(() => {
+            this.removeFromDOM();
+            if (DESTROY_AFTER_TRANSITION) this.destroy();
+        }, transition_time + 2);
+
+        return transition_time;
     }
 }
 

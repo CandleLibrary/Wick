@@ -18,37 +18,40 @@ export default function (sym, env, lex){
         attribs = sym[2],
         children = (FULL) ? sym[4] : [];
 
+    const presets = env.presets;
+
     let node = null;
 
     switch (tag) {
         case "filter":
         case "f":
-            node =  new FilterNode(attribs); break;
+            node =  new FilterNode(attribs, presets); break;
         case "a":
-            node =  new LinkNode(children, attribs); break;
+            node =  new LinkNode(children, attribs, presets); break;
             /** void elements **/
         case "template":
-            node =  new VoidNode(tag, children, attribs); break;
+            node =  new VoidNode(tag, children, attribs, presets); break;
         case "css":
         case "style":
-            node =  new StyleNode(children, attribs); break;
+            node =  new StyleNode(children, attribs, presets); break;
         case "script":
-            node =  new ScriptNode(children, attribs); break;
+            node =  new ScriptNode(children, attribs, presets); break;
         case "svg":
         case "path":
-            node =  new SVGNode(tag, children, attribs); break;
+            node =  new SVGNode(tag, children, attribs, presets); break;
         case "container":
-            node =  new ContainerNode(children, attribs); break;
+            node =  new ContainerNode(children, attribs, presets); break;
         case "scope":
-            node =  new ScopeNode(children, attribs); break;
+            node =  new ScopeNode(children, attribs, presets); break;
         case "slot":
-            node =  new SlotNode(children, attribs); break;
+            node =  new SlotNode(children, attribs, presets); break;
+            
             //Elements that should not be parsed for binding points.
         case "pre":
         case "code":
-            node =  new PreNode(children, attribs); break;
+            node =  new PreNode(children, attribs, presets); break;
         default:
-            node =  new ElementNode(tag, children, attribs); break;
+            node =  new ElementNode(tag, children, attribs, presets); break;
     }
 
     node.SINGLE = !FULL;

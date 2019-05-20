@@ -9,7 +9,7 @@ import { ModelContainerBase } from "./model/container/base.mjs";
 import { MultiIndexedContainer } from "./model/container/multi.mjs";
 import { BTreeModelContainer } from "./model/container/btree.mjs";
 import { ArrayModelContainer } from "./model/container/array.mjs";
-import { View } from "./view.mjs";
+import { View } from "./observer.mjs";
 import { Scope } from "./component/runtime/scope.mjs";
 import { ScopePackage } from "./component/runtime/package.mjs";
 import { HTMLCompiler } from "./component/compiler/html.mjs";

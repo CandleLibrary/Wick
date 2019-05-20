@@ -1,29 +1,26 @@
 import Binding from "./binding.mjs";
 
-import {TextNodeIO} from "../../component/io/io.mjs";
+import { DataNodeIO } from "../../component/io/io.mjs";
 
-export default class TextNode{
+export default class TextNode {
 
-	constructor(sym, env){
+    constructor(sym, env) {
         this.data = sym[0];
         this.IS_BINDING = (this.data instanceof Binding);
-	}
+    }
 
     toString(off = 0) {
         return `${offset.repeat(off)} ${this.data.toString()}\n`;
     }
 
-	mount(element, scope, statics){
-		const ele = document.createTextNode("")
-		
-		element.appendChild(ele);
+    mount(element, scope, statics, presets, ele = document.createTextNode("")) {
 
-		if(this.IS_BINDING){
-			const bind = this.data.bind(scope);
-			const io = new TextNodeIO(scope, bind, ele, this.data.exprb);
+        if (ele instanceof Text)
+            element.appendChild(ele);
 
-		}else{
-			ele.data = this.data;
-		}
-	}
+        if (this.IS_BINDING)
+            new DataNodeIO(scope, this.data.bind(scope), ele, this.data.exprb);
+        else
+            ele.data = this.data;
+    }
 }

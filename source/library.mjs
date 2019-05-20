@@ -17,7 +17,7 @@ import { ArrayModelContainer } from "./model/container/array.mjs";
 import { Plugin } from "./plugin.mjs";
 
 //Views
-import { View } from "./view.mjs";
+import { View } from "./observer.mjs";
 
 //Scope
 import { ScopePackage } from "./component/runtime/package.mjs";

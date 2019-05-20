@@ -3,7 +3,7 @@ import spark from "@candlefw/spark";
 
 import { ModelContainerBase } from "../../../model/container/base.mjs";
 import { MultiIndexedContainer } from "../../../model/container/multi.mjs";
-import Observer from "../../../observer/view.mjs";
+import Observer from "../../../observer/observer.mjs";
 import { Tap } from "../tap/tap.mjs";
 
 function getColumnRow(index, offset, set_size) {
@@ -66,7 +66,7 @@ export default class ScopeContainer extends Observer {
     set data(container) {
         if (container instanceof ModelContainerBase) {
             container.pin();
-            container.addView(this);
+            container.addObserver(this);
             return;
         }
         if (!container) return;
@@ -112,7 +112,7 @@ export default class ScopeContainer extends Observer {
                         this.scrub_velocity = 0;
 
                     spark.queueUpdate(this);
-                };
+                }
 
             } else {
                 this.scrub_velocity = 0;
@@ -123,13 +123,17 @@ export default class ScopeContainer extends Observer {
             this.filterUpdate();
             this.render();
         } else {
-            let offset = this.offset;
+            
+            const offset_a = this.offset;
+            
             this.limitUpdate();
-            let a = this.offset;
-            this.offset = offset;
+            
+            const offset_b = this.offset;
+
+            this.offset = offset_a;
             this.forceMount();
             this.arrange();
-            this.offset = a;
+            this.offset = offset_b;
             this.render();
             this.offset_diff = 0;
         }
@@ -151,9 +155,9 @@ export default class ScopeContainer extends Observer {
         this.dom_scopes.length = 0;
 
         while (i < max && i < output_length) {
-            let node = this.activeScopes[i++];
+            const node = this.activeScopes[i++];
             this.dom_scopes.push(node);
-            node.appendToDOM(this.ele)
+            node.appendToDOM(this.ele);
         }
     }
 
@@ -203,9 +207,7 @@ export default class ScopeContainer extends Observer {
                     this.render(null, this.activeScopes, true).play(1);
                 }
 
-            } else {
-                
-            }
+            } 
 
             //Make Sure the the transition animation is completed before moving on to new animation sequences.
 
@@ -281,8 +283,6 @@ export default class ScopeContainer extends Observer {
                 return false;
             }
         }
-
-        return true;
     }
 
     arrange(output = this.activeScopes) {
@@ -326,8 +326,7 @@ export default class ScopeContainer extends Observer {
             output_length = output.length,
             active_length = this.dom_scopes.length,
             direction = 1,
-            OWN_TRANSITION = false,
-            trs_obj = { trs: null, pos: null };
+            OWN_TRANSITION = false;
 
         if (!transition) transition = glow.createTransition(), OWN_TRANSITION = true;
 
@@ -336,14 +335,13 @@ export default class ScopeContainer extends Observer {
         const active_window_start = offset * this.shift_amount;
 
         direction = Math.sign(this.offset_diff);
-        let prv = null;
+
         if (active_window_size > 0) {
 
             this.shift_amount = Math.max(1, Math.min(active_window_size, this.shift_amount));
 
             let
                 i = 0,
-                ip = 0,
                 oa = 0,
                 ein = [],
                 shift_points = Math.ceil(output_length / this.shift_amount);
@@ -655,10 +653,8 @@ export default class ScopeContainer extends Observer {
         if (!transition)
             transition = glow.createTransition(), OWN_TRANSITION = true;
 
-        for (let i = 0; i < items.length; i++) {
-            let mgr = this.package.mount(null, items[i], false, undefined, this.parent);
-            this.scopes.push(mgr);
-        }
+        for (let i = 0; i < items.length; i++) 
+            this.scopes.push(this.package.mount(null, items[i], false, undefined, this.parent));
 
         if (OWN_TRANSITION) {
             this.limitUpdate();
@@ -672,6 +668,7 @@ export default class ScopeContainer extends Observer {
     revise() {
         if (this.cache) this.update(this.cache);
     }
+
     getTerms() {
         let out_terms = [];
         for (let i = 0, l = this.terms.length; i < l; i++) {
@@ -681,6 +678,7 @@ export default class ScopeContainer extends Observer {
         if (out_terms.length == 0) return null;
         return out_terms;
     }
+
     get() {
         if (this.model instanceof MultiIndexedContainer) {
             if (this.data.index) {
@@ -696,32 +694,15 @@ export default class ScopeContainer extends Observer {
                 this.model.destroy();
                 let model = scope.get(terms, null);
                 model.pin();
-                model.addView(this);
+                model.addObserver(this);
             }
             return this.model.get(terms);
         }
         return [];
     }
+
     down(data, changed_values) {
         for (let i = 0, l = this.activeScopes.length; i < l; i++) this.activeScopes[i].down(data, changed_values);
-    }
-    transitionIn(transition) {
-        return;
-        for (let i = 0, l = this.activeScopes.length; i < l; i++) {
-            this.ele.appendChild(this.activeScopes[i].element);
-            this.activeScopes[i].transitionIn(transition);
-            this.activeScopes[i].update({
-                arrange: {
-                    index: i,
-                    trs: transition.trs_in
-                }
-            });
-        }
-    }
-
-    transitionOut(transition) {
-        return;
-        for (let i = 0, l = this.activeScopes.length; i < l; i++) this.activeScopes[i].transitionOut(transition);
     }
 }
 
