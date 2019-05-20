@@ -1,10 +1,10 @@
-import { ModelBase } from "../base";
+import { ModelBase } from "../base.mjs";
 
-import { ModelContainerBase, MCArray } from "./base";
+import { ModelContainerBase, MCArray } from "./base.mjs";
 
-import { MultiIndexedContainer } from "./multi";
+import { MultiIndexedContainer } from "./multi.mjs";
 
-import { NumberSchemeConstructor, schemes } from "../../schema/schemas";
+import { NumberSchemeConstructor, schemes } from "../../schema/schemas.mjs";
 
 export class BTreeModelContainer extends ModelContainerBase {
 

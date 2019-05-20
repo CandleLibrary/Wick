@@ -1,9 +1,9 @@
 import glow from "@candlefw/glow";
 import spark from "@candlefw/spark";
 
-import { ModelContainerBase } from "../../model/container/base";
-import { MultiIndexedContainer } from "../../model/container/multi";
-import { View } from "../../view";
+import { ModelContainerBase } from "../../../model/container/base.mjs";
+import { MultiIndexedContainer } from "../../../model/container/multi.mjs";
+import Observer from "../../../observer/view.mjs";
 import { Tap } from "../tap/tap.mjs";
 
 function getColumnRow(index, offset, set_size) {
@@ -21,7 +21,7 @@ function getColumnRow(index, offset, set_size) {
  * @param      {Object}  presets  The global presets object.
  * @param      {HTMLElement}  element  The element that the Scope will _bind_ to. 
  */
-export class ScopeContainer extends View {
+export default class ScopeContainer extends Observer {
 
     constructor(parent, presets, element) {
 

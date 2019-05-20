@@ -15,4 +15,6 @@ export default class{
         let val = trvs.next().value;
         while(val !== undefined && val !== this ){val = trvs.next().value};
      }
+     toString(){return this.render()}
+     render(){return ""}
 }

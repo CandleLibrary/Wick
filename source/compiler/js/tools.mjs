@@ -1,5 +1,5 @@
 import JSParser from "./js.mjs";
-import env from "./js.env.mjs";
+import env from "../env.mjs";
 import identifier from "./nodes/identifier.mjs";
 import types from "./types.mjs"
 

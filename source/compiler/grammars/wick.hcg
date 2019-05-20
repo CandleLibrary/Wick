@@ -1,14 +1,100 @@
-@NAME CFW Wick JS Parser
+@NAME CFW Wick Parser
 
-@EXT js
+@EXT wick
 
-@SYMBOL { } ( ) [ ] . ... ; , < > <= >= == != === !== + - * % / ** ++ -- << >> >>> & | ^ ! ~ && || ? : += -= *= %= /= **= <<= >>= >>>= &= |= ^= =>
+@SYMBOL </ (( )) )( " '  { } ( ) [ ] . ... ; , < > <= >= == != === !== + - * % / ** ++ -- << >> >>> & | ^ ! ~ && || ? : += -= *= %= /= **= <<= >>= >>>= &= |= ^= =>
 
 @IGNORE θws θnl
 
 <> S → start							↦return{ sym[0] }
 
-<> start → script 						↦return{ sym[0] }
+<> start → script 
+	│ GOAL_TAG							
+
+##############################################################################################
+##############################################################################################
+#### HTML / ML
+##############################################################################################
+##############################################################################################
+
+	<> GOAL_TAG → TAG │ DTD_TAG
+
+	<> DTD_TAG → < \! \-- BODY_STRING \-- >								 	
+
+	<> TAG → < TAGNAME ATTRIBUTES > TAG_BODY </ TAGNAME >	↦cstr ^element_selector
+		│ < VOID_NAME ATTRIBUTES / >						↦cstr ^element_selector
+		│ < TAGNAME ATTRIBUTES / >							↦cstr ^element_selector
+		│ < τscript ATTRIBUTES > script </ τscript > 		↦cstr ^element_selector
+
+
+	#######
+	# https://www.w3.org/TR/2011/WD-html-markup-20110113/syntax.html#syntax-elements
+	######
+
+	<> VOID_NAME → τinput
+		│ τarea
+		│ τbase
+		│ τbr
+		│ τcol
+		│ τcommand
+		│ τembed
+		│ τhr
+		│ τimg
+		│ τkeygen
+		│ τlink
+		│ τmeta
+		│ τparam
+		│ τsource
+		│ τtrack
+		│ τwbr
+		│ τf
+		│ τfilter
+
+	<> TAG_BODY →  TAG_BODY TEXT_NODE  						↦return { sym[0].push(sym[1]), sym[0] }
+		│ TAG_BODY TAG  									↦return { sym[0].push(sym[1]), sym[0] }
+		│ TAG 												↦return { [sym[0]] }
+		│ TEXT_NODE 										↦return { [sym[0]] }
+		│ ɛ 
+
+	<> ATTRIBUTES → ATTRIBUTES ATTRIBUTE  					↦return { sym[0].push(sym[1]), sym[0] }
+		│ ATTRIBUTE 										↦return { [sym[0]] }
+		│ ɛ
+
+	<> ATTRIBUTE → ATTRIBUTE_HEAD = ATTRIBUTE_BODY 	 		↦cstr ^attribute
+	 	│ ATTRIBUTE_HEAD 									↦cstr ^attribute
+
+	<> ATTRIBUTE_HEAD → ' θid '								↦return { sym[1] }
+		│ " θid "											↦return { sym[1] }
+		│ θid
+
+	<> ATTRIBUTE_BODY → normal_string 						
+		│ θid 											
+		│ WICK_BINDING 									
+		│ " WICK_BINDING " 									↦return { sym[1] }
+
+
+	<> TAGNAME → θid
+
+	<> TEXT_NODE → BODY_STRING 								↦cstr ^text
+		│ WICK_BINDING 										↦cstr ^text
+
+	<> BODY_STRING → BODY_STRING BODY_SYMBOLS 				↦return { sym[0] + sym[1] }			
+		│ BODY_SYMBOLS 										↦return { sym[0] + "" }
+
+	<> BODY_SYMBOLS → θid │ θany │ θws │ θnl
+
+	<> WICK_BINDING → CALL_BINDING  							
+		│ BASIC_BINDING
+
+	<> BASIC_BINDING → \(( ↦{ env.start = lex.off+2 } expression \))   ↦cstr ^wick_binding
+	<> CALL_BINDING → \(( ↦{ env.start = lex.off+2 } expression \)( expression \))    ↦cstr ^wick_binding
+
+
+##############################################################################################
+##############################################################################################
+#### JavaScript
+##############################################################################################
+##############################################################################################
 
 ## MODULES
 
@@ -128,12 +214,16 @@
 			│ throw_statement
 			│ try_statement
 			│ debugger_statement
+			######################## WICK EXCLUSIVE
+			│ html_statment
+		
+		<> html_statment → GOAL_TAG ; 								↦return{sym[0]}
 
-		 <> declaration → class_declaration
+		<> declaration → class_declaration
 			│ hoistable_declaration
 			│ lexical_declaration
 
-		 <> hoistable_declaration → function_declaration
+		<> hoistable_declaration → function_declaration
 			# │ generator_declaration
 			# │ async_function_declaration
 			# │ async_generator_declaration
@@ -265,7 +355,7 @@
 	# https://www.ecma-international.org/ecma-262/9.0/index.html#sec-return-statement
 	##############################################################################################################
 
-		<> return_statement → τreturn ; 								↦return{ (new env.functions.return_stmt([])) }
+		<> return_statement → τreturn ; 								↦cstr ^return_stmt
 			│ τreturn  expression ; 									↦cstr ^return_stmt
 
 	##############################################################################################################
@@ -536,6 +626,8 @@
 
 
 
+
+
 ##############################################################################################################
 # https://www.ecma-international.org/ecma-262/9.0/index.html#sec-object-initializer
 ##############################################################################################################
@@ -602,7 +694,7 @@
 	##############################################################################################################
 
 		<> assignment_expression → conditional_expression 
-			# │ yield_expression
+			# │ yield_expressionGOAL_TAG
 			│ arrow_function
 			#│ async_arrow_function
 			│ left_hand_side_expresssion = assignment_expression  					↦cstr ^assign
@@ -797,42 +889,52 @@
 		│ ... binding_pattern
 
 
-##############################################################################################################
-# https://www.ecma-international.org/ecma-262/9.0/index.html#sec-ecmascript-language-lexical-grammar
-# Incomplete
-##############################################################################################################
+	##############################################################################################################
+	# https://www.ecma-international.org/ecma-262/9.0/index.html#sec-ecmascript-language-lexical-grammar
+	# Incomplete
+	##############################################################################################################
 
-	<> literal → boolean_literal				
-		│ null_literal
-		│ string_literal					
-		│ numeric_literal					
+		<> literal → boolean_literal				
+			│ null_literal
+			│ string_literal					
+			│ numeric_literal					
 
-	<> string_literal → θstr					↦cstr ^string_literal
+		<> string_literal → normal_string			↦cstr ^string_literal
 
-	<> numeric_literal → θnum					↦cstr ^numeric_literal
+		<> numeric_literal → θnum					↦cstr ^numeric_literal
 
-	<> null_literal →  τnull					↦cstr ^null_literal
+		<> null_literal →  τnull					↦cstr ^null_literal
 
-	<> boolean_literal → τtrue 					↦cstr ^bool_literal
-		│ τfalse 								↦cstr ^bool_literal
+		<> boolean_literal → τtrue 					↦cstr ^bool_literal
+			│ τfalse 								↦cstr ^bool_literal
 
-# <> HTMLExpression → StartTag
+	# <> HTMLExpression → StartTag
 
-# https://www.ecma-international.org/ecma-262/9.0/index.html#sec-identifiers
+	# https://www.ecma-international.org/ecma-262/9.0/index.html#sec-identifiers
 
-<> label_identifier → identifier				#↦cstr ^identifier		
-		#│ τyield 							↦cstr ^yield_id
-		#│ τawait 							↦cstr ^await_id
+	<> label_identifier → identifier				#↦cstr ^identifier		
+			#│ τyield 							↦cstr ^yield_id
+			#│ τawait 							↦cstr ^await_id
 
-<> identifier_reference → identifier			#↦cstr ^identifier		
-		#│ τyield 							↦cstr ^yield_id
-		#│ τawait 							↦cstr ^await_id
+	<> identifier_reference → identifier			#↦cstr ^identifier		
+			#│ τyield 							↦cstr ^yield_id
+			#│ τawait 							↦cstr ^await_id
 
-<> binding_identifier → identifier				#↦cstr ^identifier		
-		#│ τyield 							↦cstr ^yield_id
-		#│ τawait 							↦cstr ^await_id
+	<> binding_identifier → identifier				#↦cstr ^identifier		
+			#│ τyield 							↦cstr ^yield_id
+			#│ τawait 							↦cstr ^await_id
 
-<> identifier → identifier_name							
+	<> identifier → identifier_name							
 
-<> identifier_name → θid						↦cstr ^identifier
-		
+	<> identifier_name → θid					↦cstr ^identifier
+			
+	## STRINGS 
+
+	<> normal_string → \" string_data \"        ↦return { sym[1] }
+		│ \' string_data \' 					↦return { sym[1] }
+
+	<> string_data → string_data_val 			↦return { sym[0] + "" }	
+		│ string_data string_data_val 			↦return { sym[0] + sym[1]}
+
+	<> string_data_val → θid 
+		│ θws │ θany

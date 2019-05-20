@@ -6,7 +6,8 @@
   "scripts": {
     "build_js_parser": "hydrocarbon compile -n js -o ./source/js -t 'mjs' ./source/js/hc_files/js.hcg -e ./source/js/js.env.mjs",
     "build_js_parser.table": "hydrocarbon table ./source/js/wick_js.hcg",
-    "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/js/env.mjs -t mjs ./source/compiler/grammars/js.hcg",
+    "compile": "hydrocarbon compile -u -o ./source/compiler/ -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/wick.hcg",
+    "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/js/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
     "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/html/env.mjs -t mjs ./source/compiler/grammars/html.hcg",
     "compile.test": "node --experimental-modules ./test/config.mjs",
     "test.watch": "mocha -r esm -w -R min test.js",

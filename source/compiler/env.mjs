@@ -1,29 +1,45 @@
-import for_stmt from "./nodes/for.mjs"
-import call_expr from "./nodes/call.mjs";
-import identifier from "./nodes/identifier.mjs";
-import catch_stmt from "./nodes/catch.mjs";
-import try_stmt from "./nodes/try.mjs";
-import stmts from "./nodes/stmts.mjs";
-import block from "./nodes/block.mjs";
-import lexical from "./nodes/lexical.mjs";
-import binding from "./nodes/binding.mjs";
-import member from "./nodes/member.mjs";
-import assign from "./nodes/assign.mjs";
-import add from "./nodes/add.mjs";
-import sub from "./nodes/sub.mjs";
-import div from "./nodes/div.mjs";
-import mult from "./nodes/mult.mjs";
-import object from "./nodes/object.mjs";
-import base from "./nodes/base.mjs";
-import string from "./nodes/string.mjs";
-import null_ from "./nodes/null.mjs";
-import number from "./nodes/number.mjs";
-import bool from "./nodes/bool.mjs";
-import negate from "./nodes/negate.mjs";
+import for_stmt from "./js/nodes/for.mjs"
+import call_expr from "./js/nodes/call.mjs";
+import identifier from "./js/nodes/identifier.mjs";
+import catch_stmt from "./js/nodes/catch.mjs";
+import try_stmt from "./js/nodes/try.mjs";
+import stmts from "./js/nodes/stmts.mjs";
+import block from "./js/nodes/block.mjs";
+import lexical from "./js/nodes/lexical.mjs";
+import binding from "./js/nodes/binding.mjs";
+import member from "./js/nodes/member.mjs";
+import assign from "./js/nodes/assign.mjs";
+import add from "./js/nodes/add.mjs";
+import exp from "./js/nodes/exp.mjs";
+import sub from "./js/nodes/sub.mjs";
+import div from "./js/nodes/div.mjs";
+import mult from "./js/nodes/mult.mjs";
+import object from "./js/nodes/object.mjs";
+import base from "./js/nodes/base.mjs";
+import string from "./js/nodes/string.mjs";
+import null_ from "./js/nodes/null.mjs";
+import number from "./js/nodes/number.mjs";
+import bool from "./js/nodes/bool.mjs";
+import negate from "./js/nodes/negate.mjs";
+import rtrn from "./js/nodes/return.mjs";
+
+//HTML
+import element_selector from "./html/nodes/element_selector.mjs";
+import attribute from "./html/nodes/attribute.mjs";
+import wick_binding from "./html/nodes/binding.mjs";
+import text from "./html/nodes/text.mjs";
+
 const env =  {
 	table:{},
 	ASI:true,
 	functions:{
+		//HTML
+		element_selector,
+		attribute,
+		wick_binding,
+		text,
+
+		//JS
 		for_stmt,
 		call_expr,
 		identifier,
@@ -40,10 +56,11 @@ const env =  {
 		sub,
 		div,
 		mult,
+		exp,
 		negate_expr:negate,
 		if_stmt:function(sym){this.bool = sym[2]; this.body = sym[4]; this.else = sym[6]},
 		while_stmt:function(sym){this.bool = sym[1]; this.body = sym[3]},
-		return_stmt:function(sym){this.expr = sym[1]},
+		return_stmt:rtrn,
 		class_stmt: function(sym){this.id = sym[1], this.tail= sym[2]},
 		class_tail:function(sym){this.heritage = sym[0]; this.body = sym[2]},
 		debugger_stmt: base,
@@ -80,29 +97,42 @@ const env =  {
 		label_stmt : function(sym){this.label =sym[0]; this.stmt = sym[1]},
 		funct_decl: function(id,args,body){this.id = id || "Anonymous"; this.args = args; this.body = body, this.scope = false},
 		this_expr: function(){},
-		defaultError: (tk, env, output, lex, prv_lex) => {
+		
+		defaultError: (tk, env, output, lex, prv_lex,ss, lu) => {
             /*USED for ASI*/
-            if (env.ASI && lex.tx !== ")" && !lex.END) {
-                let ENCOUNTERED_NL = (lex.tx == "}" || lex.END);
 
-                while (!ENCOUNTERED_NL && !prv_lex.END && prv_lex.off < lex.off) {
+            if (env.ASI && lex.tx !== ")" && !lex.END) {
+
+            	if(lex.tx == "</") // As in "<script> script body => (</)script>"
+            		return lu.get(";");
+
+                let ENCOUNTERED_END_CHAR = (lex.tx == "}" || lex.END || lex.tx == "</");
+
+                while (!ENCOUNTERED_END_CHAR && !prv_lex.END && prv_lex.off < lex.off) {
                     prv_lex.next();
                     if (prv_lex.ty == prv_lex.types.nl)
-                        ENCOUNTERED_NL = true;
+                        ENCOUNTERED_END_CHAR = true;
                 }
 
-	            if (ENCOUNTERED_NL)
-	                return ";";
+	            if (ENCOUNTERED_END_CHAR)
+	                return lu.get(";");
             }
 
             if(lex.END)
-            	return ";";
-
-            return null;
+            	return lu.get(";");
         }
-
 	},
 
+	prst:[],
+	pushPresets(prst){
+		env.prst.push(prst)
+	},
+	popPresets(){
+		return env.prst.pop();
+	},
+	get presets(){
+		return env.prst[env.prst.length -1 ] || null;
+	},
 
 	options : {
 		integrate : false,

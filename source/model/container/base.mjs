@@ -1,6 +1,6 @@
-import { ModelBase } from "../base";
-import { _SealedProperty_ } from "../../short_names";
-import { SchemeConstructor } from "../../schema/constructor";
+import { ModelBase } from "../base.mjs";
+import { _SealedProperty_ } from "../../short_names.mjs";
+import { SchemeConstructor } from "../../schema/constructor.mjs";
 
 export class MCArray extends Array {
 

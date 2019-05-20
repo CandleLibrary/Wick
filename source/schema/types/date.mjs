@@ -1,6 +1,6 @@
 import whind from "@candlefw/whind";
 
-import { NumberSchemeConstructor } from "./number";
+import { NumberSchemeConstructor } from "./number.mjs";
 
 let scape_date = new Date();
 scape_date.setHours(0);

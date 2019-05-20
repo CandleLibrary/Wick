@@ -1,7 +1,7 @@
-import { ModelBase } from "./base";
-import { ArrayModelContainer } from "./container/array";
-import { ModelContainerBase } from "./container/base";
-import { _SealedProperty_ } from "../short_names";
+import { ModelBase } from "./base.mjs";
+import { ArrayModelContainer } from "./container/array.mjs";
+import { ModelContainerBase } from "./container/base.mjs";
+import { _SealedProperty_ } from "../short_names.mjs";
 
 class Model extends ModelBase {
 

@@ -1,4 +1,4 @@
-import { ModelContainerBase } from "./base";
+import { ModelContainerBase } from "./base.mjs";
 
 export class MultiIndexedContainer extends ModelContainerBase {
 

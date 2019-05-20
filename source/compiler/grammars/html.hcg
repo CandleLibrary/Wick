@@ -14,12 +14,7 @@
 
 <> TAG → < TAGNAME ATTRIBUTES > TAG_BODY </ TAGNAME >	 ↦cstr ^wick_html_element
 
-	│ < TAGNAME ATTRIBUTES />							↦cstr { 
-																this.tagname = sym[1];
-																this.attr = sym[2];
-																this.children = [];
-																this.parent = null;
-															}
+	│ < TAGNAME ATTRIBUTES / >							↦cstr ^wick_html_element
 
 <> TAG_BODY →  TAG_BODY TEXT_NODE  					↦return { sym[0].push(sym[1]), sym[0] }
 	│ TAG_BODY TAG  								↦return { sym[0].push(sym[1]), sym[0] }
@@ -31,8 +26,8 @@
 	│ ATTRIBUTE 									↦return { [sym[0]] }
 	│ ɛ
 
-<> ATTRIBUTE → ATTRIBUTE_HEAD = ATTRIBUTE_BODY 	 	↦cstr { this.id = sym[0]; this.val = sym[2] }
- 	│ ATTRIBUTE_HEAD 								↦cstr { this.id = sym[0]; this.val = true }
+<> ATTRIBUTE → ATTRIBUTE_HEAD = ATTRIBUTE_BODY 	 	↦cstr ^attribute
+ 	│ ATTRIBUTE_HEAD 								↦cstr ^attribute
 
 <> ATTRIBUTE_HEAD → ' θid '							↦return { sym[1] }
 	│ " θid "										↦return { sym[1] }
@@ -53,10 +48,7 @@
 
 <> TAGNAME → θid
 
-<> TEXT_NODE → BODY_STRING 							↦cstr { 
-																this.val = sym[0];
-																this.parent = null;
-															}
+<> TEXT_NODE → BODY_STRING 							↦cstr ^text
 
 <> BODY_STRING → BODY_STRING BODY_SYMBOLS 			↦return { sym[0] + sym[1] }			
 	│ BODY_SYMBOLS 									↦return { sym[0] + "" }
@@ -66,9 +58,8 @@
 <> BINDING → CALL_BINDING  							
 	│ BASIC_BINDING
 
-<> BASIC_BINDING → \(( ↦{ env.start = lex.off+2 } BINDING_DATA \))   ↦cstr{ this.lex = lex.copy(); this.lex.sl = lex.off-2; this.lex.off = env.start; console.log(this.lex.slice()) }
-
-<> CALL_BINDING → \(( ↦{ env.start = lex.off+2 } BINDING_DATA \)( BINDING_DATA \))    ↦cstr {  }
+<> BASIC_BINDING → \(( ↦{ env.start = lex.off+2 } BINDING_DATA \))   ↦cstr ^binding
+<> CALL_BINDING → \(( ↦{ env.start = lex.off+2 } BINDING_DATA \)( BINDING_DATA \))    ↦cstr ^binding
 
 <> BINDING_DATA → BINDING_DATA BINDING_DATA    ↦return { null }   
 	│ θid │ θws │ θnl │ θsym │ θop │ θany  		  

@@ -111,7 +111,7 @@ class Presets {
         /**
          * Custom objects that can be used throughout component scripts. User defined. 
          */
-        this.custom = preset_options.custom;
+        this.custom = preset_options.custom || {};
 
         let c = preset_options.options;
         if (c)

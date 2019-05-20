@@ -1,16 +1,16 @@
-import { OB } from "../short_names";
+import { OB } from "../short_names.mjs";
 
-import { SchemeConstructor } from "./constructor";
+import { SchemeConstructor } from "./constructor.mjs";
 
-import { date, DateSchemeConstructor } from "./types/date";
+import { date, DateSchemeConstructor } from "./types/date.mjs";
 
-import { time, TimeSchemeConstructor } from "./types/time";
+import { time, TimeSchemeConstructor } from "./types/time.mjs";
 
-import { string, StringSchemeConstructor } from "./types/string";
+import { string, StringSchemeConstructor } from "./types/string.mjs";
 
-import { number, NumberSchemeConstructor } from "./types/number";
+import { number, NumberSchemeConstructor } from "./types/number.mjs";
 
-import { bool, BoolSchemeConstructor } from "./types/bool";
+import { bool, BoolSchemeConstructor } from "./types/bool.mjs";
 
 let schemes = { date, string, number, bool, time };
 

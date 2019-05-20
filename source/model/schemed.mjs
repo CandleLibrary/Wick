@@ -1,9 +1,9 @@
-import { ArrayModelContainer } from "./container/array";
-import { ModelContainerBase } from "./container/base";
-import { SchemeConstructor } from "../schema/schemas";
-import { Model } from "./model";
-import { ModelBase } from "./base";
-import { _SealedProperty_, _FrozenProperty_ } from "../short_names";
+import { ArrayModelContainer } from "./container/array.mjs";
+import { ModelContainerBase } from "./container/base.mjs";
+import { SchemeConstructor } from "../schema/schemas.mjs";
+import { Model } from "./model.mjs";
+import { ModelBase } from "./base.mjs";
+import { _SealedProperty_, _FrozenProperty_ } from "../short_names.mjs";
 
 /**
  *   This is used by Model to create custom property getter and setters on non-ModelContainerBase and non-Model properties of the Model constructor.

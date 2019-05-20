@@ -30,12 +30,13 @@ class argumentIO extends IO {
 
 
 //Function.apply(Function, [binding.arg_key || binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val]);
-export class ScriptIO extends IOBase {
+export default class ScriptIO extends IOBase {
     constructor(scope, errors, tap, binding, node, statics) {
 
         let presets = scope.presets;
         let ids = binding.ids;
         let func, HAVE_CLOSURE = false;
+        tap = tap || {prop:""}
 
         //*********** PRE OBJECT FUNCTION INITIALIZATION *******************//
 
@@ -71,7 +72,6 @@ export class ScriptIO extends IOBase {
 
         
         //props.unshift(null); // Place holder for value data
-
         try {
             if (binding._func_) {
                 func = binding._func_;
@@ -152,8 +152,6 @@ export class ScriptIO extends IOBase {
             io.ACTIVE = true;
             this.active_IOS++;
         }
-
-        //this.down();// Not Sure if this should be allowed. This would circumvent the expectation that the "on" binding decticts the scripts activation.
     }
 
     down(value, meta = { event: null }) {
@@ -177,10 +175,11 @@ export class ScriptIO extends IOBase {
             return
 
         try {
+            
             if(this.HAVE_CLOSURE)
-                this._func_.apply(this, this.arg_props);
+                return this._func_.apply(this, this.arg_props);
             else
-                this._func_.apply(this, this.arg_props);
+                return this._func_.apply(this, this.arg_props);
         } catch (e) {
             console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line+1}:${this.char}`)
             console.warn(this.function);

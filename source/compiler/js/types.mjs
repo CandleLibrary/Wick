@@ -51,4 +51,5 @@ export default{
 		condition:50,
 		class:51,
 		negate:52,
+		exp:53
 	}

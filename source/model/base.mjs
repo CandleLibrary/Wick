@@ -1,6 +1,6 @@
 import spark from "@candlefw/spark";
 
-import { _SealedProperty_ } from "../short_names";
+import { _SealedProperty_ } from "../short_names.mjs";
 
 /**
  * The base class which all Model classes extend.

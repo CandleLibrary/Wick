@@ -2,7 +2,7 @@
  * Base class for an object that binds to and observes a Model.
  *@alias module:wick.core.view
  */
-export class View{
+export default class View{
 
 	constructor(){
 		/**

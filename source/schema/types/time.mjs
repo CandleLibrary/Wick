@@ -1,4 +1,4 @@
-import { NumberSchemeConstructor } from "./number";
+import { NumberSchemeConstructor } from "./number.mjs";
 
 class TimeSchemeConstructor extends NumberSchemeConstructor {
 

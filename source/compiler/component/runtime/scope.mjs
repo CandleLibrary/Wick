@@ -1,9 +1,9 @@
-import { Model } from "../../model/model.mjs";
+import { Model } from "../../../model/model.mjs";
 import { Tap, UpdateTap } from "../tap/tap.mjs";
-import { View } from "../../view.mjs";
+import Observer from "../../../observer/view.mjs";
 
 
-export class Scope extends View {
+export default class Scope extends Observer {
 
     /**
      *   In the Wick dynamic template system, Scopes serve as the primary access to Model data. They, along with {@link ScopeContainer}s, are the only types of objects the directly _bind_ to a Model. When a Model is updated, the Scope will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link ScopeContainer}s.
@@ -17,13 +17,13 @@ export class Scope extends View {
      *   @extends ScopeBase
      */
     constructor(parent, presets, element, ast) {
-        if(!presets)
-            debugger;
+        //if(!presets)
+        //    debugger;
         super();
 
-        this.ast = null;
+        this.ast = ast;
 
-        ast.setScope(this);
+        //ast.setScope(this);
         
         this.parent = parent;
         this.ele = element;

@@ -1,12 +1,12 @@
-import { ModelBase } from "../base";
+import { ModelBase } from "../base.mjs";
 
-import { ModelContainerBase, MCArray } from "./base";
+import { ModelContainerBase, MCArray } from "./base.mjs";
 
-import { MultiIndexedContainer } from "./multi";
+import { MultiIndexedContainer } from "./multi.mjs";
 
-import { BTreeModelContainer } from "./btree";
+import { BTreeModelContainer } from "./btree.mjs";
 
-import { NumberSchemeConstructor, SchemeConstructor } from "../../schema/schemas";
+import { NumberSchemeConstructor, SchemeConstructor } from "../../schema/schemas.mjs";
 
 const ArrayContainerProxySettings = {
 

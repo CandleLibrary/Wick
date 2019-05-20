@@ -1,4 +1,4 @@
-import { SchemeConstructor } from "../constructor";
+import { SchemeConstructor } from "../constructor.mjs";
 
 class BoolSchemeConstructor extends SchemeConstructor {
 
