@@ -181,7 +181,7 @@ export default class ScriptIO extends IOBase {
             else
                 return this._func_.apply(this, this.arg_props);
         } catch (e) {
-            console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line+1}:${this.char}`);
+            console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line+1}:${this.char}`)
             console.warn(this.function);
             console.error(e)
         }

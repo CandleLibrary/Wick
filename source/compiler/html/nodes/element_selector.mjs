@@ -43,11 +43,11 @@ export default function (sym, env, lex){
         case "container":
             node =  new ContainerNode(children, attribs, presets); break;
         case "scope":
-            node =  new ScopeNode(children, attribs, presets); break;
+            node =  new ScopeNode(tag, children, attribs, presets); break;
         case "slot":
             node =  new SlotNode(children, attribs, presets); break;
         case "import":
-            node =  new ImportNode(attribs, presets); break;
+            node =  new ImportNode(attribs, presets, env); break;
             //Elements that should not be parsed for binding points.
         case "pre":
         case "code":

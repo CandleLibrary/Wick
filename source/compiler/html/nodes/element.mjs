@@ -26,6 +26,9 @@ export default class ElementNode{
 
         this.component = this.getAttrib("component").value;
 
+        if(this.component)
+            presets.components[this.component] = this;
+
         this.url = this.getAttrib("url").value ? URL.resolveRelative(this.getAttrib("url").value) : null;
         this.id = this.getAttrib("id").value;
         this.class = this.getAttrib("id").value;
@@ -44,12 +47,21 @@ export default class ElementNode{
         for(const attrib of this.attribs)
             attrib.link(this);
 
+        return this;
+    }
 
-        if (presets.components) {
-            const component = this.presets.components[this.tag];
+    // Traverse the contructed AST and apply any necessary transforms. 
+    finalize(){
+        if(this.children.length == 0){
+            if(this.presets.components[this.tag]){
+                return this.presets.components[this.tag].merge(this);
+            }
+        }
 
-            if (component) 
-                return component.merge(this);
+
+        for(let i = 0; i < this.children.length; i++){
+            const child = this.children[i];
+            this.children[i] = child.finalize();
         }
 
         return this;
@@ -110,8 +122,8 @@ export default class ElementNode{
     /****************************************** COMPONENTIZATION *****************************************/
 
     merge(node) {
-
-        const merged_node = new this.constructor();
+        
+        const merged_node = new this.constructor(this.tag, null, null, this.presets);
         merged_node.line = this.line;
         merged_node.char = this.char;
         merged_node.offset = this.offset;
@@ -129,7 +141,7 @@ export default class ElementNode{
         if (this.tap_list)
             merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));
 
-        merged_node.attribs = merged_node.attributes.concat(this.attribs, node.attribs);
+        merged_node.attribs = merged_node.attribs.concat(this.attribs, node.attribs);
 
         merged_node.statics = node.statics;
 

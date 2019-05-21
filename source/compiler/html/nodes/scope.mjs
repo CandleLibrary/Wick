@@ -7,7 +7,7 @@ import {
 
 export default class scp extends ElementNode{
 
-	constructor(children, attribs, presets){
+	constructor(tag, children, attribs, presets){
         
 		super("scope", children, attribs, presets);
 

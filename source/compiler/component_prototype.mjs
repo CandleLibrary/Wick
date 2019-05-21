@@ -29,6 +29,7 @@ export default class d {
 
     //Mounts component data to new HTMLElement object.
     mount(HTMLElement_, bound_data_object) {
+
         let element = null;
         
         if ((HTMLElement_ instanceof HTMLElement)){

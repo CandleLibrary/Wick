@@ -3,6 +3,7 @@ import URL from "@candlefw/url";
 
 import { Presets } from "../presets.mjs";
 import wick_compile from "./wick.mjs";
+import CompilerEnv from "./compiler_env.mjs";
 import env from "./env.mjs";
 import proto from "./component_prototype.mjs";
 
@@ -57,17 +58,23 @@ const
                     break;
             }
 
-            env.pushPresets(presets);
-
             try {
 
-                ast = wick_compile(whind(string_data), env);
+                return await (new Promise(res => {
+                    const compiler_env = new CompilerEnv(presets, env);
+                    compiler_env.pending++;
+
+
+                    compiler_env.pendingResolvedFunction = () => { res(ast) };
+
+                    ast = wick_compile(whind(string_data), compiler_env);
+
+                    compiler_env.resolve();
+                }));
 
             } catch (err) {
                 console.error(err);
             }
-
-            env.popPresets();
 
             return ast;
         },
@@ -91,17 +98,6 @@ const
             // If this function is an operand of the new operator, run an alternative 
             // compiler on the calling object.
             if (new.target) {
-                const monitor = {pending_count:1};
-
-                compileAST(component_data, presets, monitor).then(ast => {
-                    this.READY = true;
-                    this.ast = ast;
-
-                    debugger
-
-                    if (!this.name)
-                        this.name = this.ast.getAttrib("component").value || "undefined-component";
-                });
 
                 this.ast = null;
 
@@ -117,7 +113,20 @@ const
                 }
 
             } else {
-                return new Component(...data);
+
+                return new Promise(() => {
+                    const comp = new Component(...data);
+
+                    return compileAST(component_data, presets).then(ast => {
+                        debugger
+                        comp.READY = true;
+                        comp.ast = ast;
+                        comp.ast.finalize();
+
+                        if (!comp.name)
+                            comp.name = comp.ast.getAttrib("component").value || "undefined-component";
+                    });
+                });
             }
         };
 

@@ -415,8 +415,7 @@ var wick = (function () {
     0		/* DELETE */
     ];
 
-    const 
-        number = 1,
+    const number = 1,
         identifier = 2,
         string = 4,
         white_space = 8,
@@ -1187,7 +1186,7 @@ ${is_iws}`;
     Lexer.types = Types;
     whind$1.types = Types;
 
-    const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
+    const uri_reg_ex = /(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:\/\/))?(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:([^\<\>\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\<\>\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\<\>\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
 
     const STOCK_LOCATION = {
         protocol: "",
@@ -2006,7 +2005,7 @@ ${is_iws}`;
      *
      * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
      */
-     
+        
     const caller = (typeof(window) == "object" && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
         setTimeout(f, 1);
     };
@@ -2032,7 +2031,16 @@ ${is_iws}`;
 
             this.queue_switch = 0;
 
-            this.callback = () => this.update();
+            this.callback = ()=>{};
+
+            if(typeof(window) !== "undefined"){
+                window.addEventListener("load",()=>{
+                    this.callback = () => this.update();
+                    caller(this.callback);
+                });
+            }else{
+                this.callback = () => this.update();
+            }
 
             this.frame_time = perf.now();
 
@@ -2063,9 +2071,11 @@ ${is_iws}`;
 
             this.frame_time = perf.now() | 0;
 
-            this.SCHEDULE_PENDING = true;
 
-            caller(this.callback);
+            if(!this.SCHEDULE_PENDING){
+                this.SCHEDULE_PENDING = true;
+                caller(this.callback);
+            }
         }
 
         removeFromQueue(object){
@@ -8444,6 +8454,47 @@ ${is_iws}`;
         return o[0];
     }
 
+    // This prevents env variable access conflicts when concurrent compilation
+    // are processing text data. 
+
+    class CompilerEnvironment {
+        constructor(presets, env, url) {
+            this.functions = env.functions;
+            this.prst = [presets];
+            this.url = "";
+            this.pending = 0;
+            this.parent = null;
+            this.pendingResolvedFunction = () => {};
+        }
+
+        pushPresets(prst) {
+            this.prst.push(prst);
+        }
+
+        popPresets() {
+            return this.prst.pop();
+        }
+
+        get presets() {
+            return this.prst[this.prst.length - 1] || null;
+        }
+
+        setParent(parent){
+            this.parent = parent;
+            parent.pending++;
+        }
+
+        resolve() {
+            this.pending--;
+            if (this.pending < 1) {
+                if (this.parent)
+                    this.parent.resolve();
+                else
+                    this.pendingResolvedFunction();
+            }
+        }
+    }
+
     var types = {
     		object:1,
     		null:2,
@@ -9512,6 +9563,9 @@ ${is_iws}`;
 
             this.component = this.getAttrib("component").value;
 
+            if(this.component)
+                presets.components[this.component] = this;
+
             this.url = this.getAttrib("url").value ? URL.resolveRelative(this.getAttrib("url").value) : null;
             this.id = this.getAttrib("id").value;
             this.class = this.getAttrib("id").value;
@@ -9530,12 +9584,21 @@ ${is_iws}`;
             for(const attrib of this.attribs)
                 attrib.link(this);
 
+            return this;
+        }
 
-            if (presets.components) {
-                const component = this.presets.components[this.tag];
+        // Traverse the contructed AST and apply any necessary transforms. 
+        finalize(){
+            if(this.children.length == 0){
+                if(this.presets.components[this.tag]){
+                    return this.presets.components[this.tag].merge(this);
+                }
+            }
 
-                if (component) 
-                    return component.merge(this);
+
+            for(let i = 0; i < this.children.length; i++){
+                const child = this.children[i];
+                this.children[i] = child.finalize();
             }
 
             return this;
@@ -9596,8 +9659,8 @@ ${is_iws}`;
         /****************************************** COMPONENTIZATION *****************************************/
 
         merge(node) {
-
-            const merged_node = new this.constructor();
+            
+            const merged_node = new this.constructor(this.tag, null, null, this.presets);
             merged_node.line = this.line;
             merged_node.char = this.char;
             merged_node.offset = this.offset;
@@ -9615,7 +9678,7 @@ ${is_iws}`;
             if (this.tap_list)
                 merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));
 
-            merged_node.attribs = merged_node.attributes.concat(this.attribs, node.attribs);
+            merged_node.attribs = merged_node.attribs.concat(this.attribs, node.attribs);
 
             merged_node.statics = node.statics;
 
@@ -12790,27 +12853,25 @@ ${is_iws}`;
      */
     class CSSSelector {
 
-        constructor(selectors /* string */ , selectors_arrays /* array */ ) {
+        constructor(value = "", value_array = []) {
 
             /**
              * The raw selector string value
              * @package
              */
-
-            this.v = selectors;
+            this.v = value;
 
             /**
              * Array of separated selector strings in reverse order.
              * @package
              */
+            this.a = value_array;
 
-            this.a = selectors_arrays;
-
-            /**
-             * The CSSRule.
-             * @package
-             */
+            // CSS Rulesets the selector is member of .
             this.r = null;
+
+            // CSS root the selector is a child of. 
+            this.root = null;
         }
 
         get id() {
@@ -14053,6 +14114,7 @@ ${is_iws}`;
                     let selector = this.parseSelector(lexer, this);
 
                     if (selector) {
+                        selector.root = this;
                         if (!this._selectors_[selector.id]) {
                             l = selectors.push(selector);
                             this._selectors_[selector.id] = selector;
@@ -14252,7 +14314,7 @@ ${is_iws}`;
         }
 
         setList() {
-            if(this.DEMOTED) debugger
+            //if(this.DEMOTED) debugger
             if (this.prod && this.list.innerHTML == "") {
                 if (this.DEMOTED || !this.prod.buildList(this.list, this))
                     this.menu_icon.style.display = "none";
@@ -15397,7 +15459,7 @@ ${is_iws}`;
                 }
             }
 
-            this.parent.update();
+            this.parent.update(this);
         }
 
         addProp(type, value){
@@ -15429,10 +15491,6 @@ ${is_iws}`;
         e.preventDefault();
     }
 
-    //import { UIValue } from "./ui_value.mjs";
-
-    const props$2 = Object.assign({}, property_definitions);
-
     class UIMaster {
         constructor(css) {
             css.addObserver(this);
@@ -15441,6 +15499,7 @@ ${is_iws}`;
             this.selectors = [];
             this.element = document.createElement("div");
             this.element.classList.add("cfw_css");
+            this.update_mod = 0;
 
 
             this.rule_map = new Map();
@@ -15450,6 +15509,7 @@ ${is_iws}`;
         // css - A CandleFW_CSS object. 
         // meta - internal 
         build(css = this.css) {
+            if(this.update_mod++%3 !== 0) return;
 
             //Extract rule bodies and set as keys for the rule_map. 
             //Any existing mapped body that does not have a matching rule should be removed. 
@@ -15750,7 +15810,7 @@ ${is_iws}`;
                         this.type = this.getType(k0_val);
                     }
 
-                    this.getValue(obj, prop_name, type);
+                    this.getValue(obj, prop_name, type, k0_val);
 
                     let p = this.current_val;
 
@@ -15766,7 +15826,8 @@ ${is_iws}`;
                     this.current_val = null;
                 }
 
-                getValue(obj, prop_name, type) {
+                getValue(obj, prop_name, type, k0_val) {
+
                     if (type == CSS_STYLE) {
                         let name = prop_name.replace(/[A-Z]/g, (match) => "-" + match.toLowerCase());
                         let cs = window.getComputedStyle(obj);
@@ -15776,6 +15837,7 @@ ${is_iws}`;
                         
                         if(!value)
                             value = obj.style[prop_name];
+                    
 
                         if (this.type == CSS_Percentage$1) {
                             if (obj.parentElement) {
@@ -15785,8 +15847,7 @@ ${is_iws}`;
                                 value = (ratio * 100);
                             }
                         }
-
-                        this.current_val = new this.type(value);
+                        this.current_val = (new this.type(value));
 
                     } else {
                         this.current_val = new this.type(obj[prop_name]);
@@ -15875,7 +15936,6 @@ ${is_iws}`;
                 }
 
                 setProp(obj, prop_name, value, type) {
-
                     if (type == CSS_STYLE) {
                         obj.style[prop_name] = value;
                     } else
@@ -16184,7 +16244,7 @@ ${is_iws}`;
 
                 //TODO: allow scale to control playback speed and direction
                 play(scale = 1, from = 0) {
-                    this.SCALE = 0;
+                    this.SCALE = scale;
                     this.time = from;
                     spark.queueUpdate(this);
                     return this;
@@ -16196,19 +16256,19 @@ ${is_iws}`;
                 }    
             }
 
-            const GlowFunction = function() {
+            const GlowFunction = function(...args) {
 
-                if (arguments.length > 1) {
+                if (args.length > 1) {
 
                     let group = new AnimGroup();
 
-                    for (let i = 0; i < arguments.length; i++) {
-                        let data = arguments[i];
+                    for (let i = 0; i < args.length; i++) {
+                        let data = args[i];
 
                         let obj = data.obj;
                         let props = {};
 
-                        Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
+                        Object.keys(data).forEach(k => { if (!(({ obj: true, match: true, delay:true })[k])) props[k] = data[k]; });
 
                         group.add(new AnimSequence(obj, props));
                     }
@@ -16216,12 +16276,12 @@ ${is_iws}`;
                     return group;
 
                 } else {
-                    let data = arguments[0];
+                    let data = args[0];
 
                     let obj = data.obj;
                     let props = {};
 
-                    Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
+                    Object.keys(data).forEach(k => { if (!(({ obj: true, match: true, delay:true })[k])) props[k] = data[k]; });
 
                     let seq = new AnimSequence(obj, props);
 
@@ -16428,53 +16488,33 @@ ${is_iws}`;
         let obj_map = new Map();
         let ActiveTransition = null;
 
-        function $in(anim_data_or_duration = 0, delay = 0) {
+        function $in(...data) {
 
-            let seq;
+            let
+                seq = null,
+                length = data.length,
+                delay = 0;
 
-            if (typeof(anim_data_or_duration) == "object") {
-                if (anim_data_or_duration.match && this.TT[anim_data_or_duration.match]) {
-                    let duration = anim_data_or_duration.duration;
-                    let easing = anim_data_or_duration.easing;
-                    seq = this.TT[anim_data_or_duration.match](anim_data_or_duration.obj, duration, easing);
-                } else
-                    seq = Animation.createSequence(anim_data_or_duration);
+            if (typeof(data[length - 1]) == "number")
+                delay = data[length - 1], length--;
 
-                //Parse the object and convert into animation props. 
-                if (seq) {
-                    this.in_seq.push(seq);
-                    this.in_duration = Math.max(this.in_duration, seq.duration);
-                    if (this.OVERRIDE) {
+            for (let i = 0; i < length; i++) {
+                let anim_data = data[i];
 
-                        if (obj_map.get(seq.obj)) {
-                            let other_seq = obj_map.get(seq.obj);
-                            other_seq.removeProps(seq);
-                        }
+                if (typeof(anim_data) == "object") {
 
-                        obj_map.set(seq.obj, seq);
-                    }
-                }
+                    if (anim_data.match && this.TT[anim_data.match]) {
+                        let
+                            duration = anim_data.duration,
+                            easing = anim_data.easing;
+                        seq = this.TT[anim_data.match](anim_data.obj, duration, easing);
+                    } else
+                        seq = Animation.createSequence(anim_data);
 
-            } else
-                this.in_duration = Math.max(this.in_duration, parseInt(delay) + parseInt(anim_data_or_duration));
-
-            return this.in;
-        }
-
-
-        function $out(anim_data_or_duration = 0, delay = 0, in_delay = 0) {
-            //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
-            //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
-
-            if (typeof(anim_data_or_duration) == "object") {
-
-                if (anim_data_or_duration.match) {
-                    this.TT[anim_data_or_duration.match] = TransformTo(anim_data_or_duration.obj);
-                } else {
-                    let seq = Animation.createSequence(anim_data_or_duration);
+                    //Parse the object and convert into animation props. 
                     if (seq) {
-                        this.out_seq.push(seq);
-                        this.out_duration = Math.max(this.out_duration, seq.duration);
+                        this.in_seq.push(seq);
+                        this.in_duration = Math.max(this.in_duration, seq.duration);
                         if (this.OVERRIDE) {
 
                             if (obj_map.get(seq.obj)) {
@@ -16485,11 +16525,59 @@ ${is_iws}`;
                             obj_map.set(seq.obj, seq);
                         }
                     }
-                    this.in_delay = Math.max(this.in_delay, parseInt(delay));
                 }
-            } else {
-                this.out_duration = Math.max(this.out_duration, parseInt(delay) + parseInt(anim_data_or_duration));
-                this.in_delay = Math.max(this.in_delay, parseInt(in_delay));
+            }
+
+            this.in_duration = Math.max(this.in_duration, parseInt(delay));
+
+            return this.in;
+        }
+
+
+        function $out(...data) {
+            //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
+            //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
+            let
+                seq = null,
+                length = data.length,
+                delay = 0,
+                in_delay = 0;
+
+            if (typeof(data[length - 1]) == "number") {
+                if (typeof(data[length - 2]) == "number") {
+                    in_delay = data[length - 2];
+                    delay = data[length - 1];
+                    length -= 2;
+                } else
+                    delay = data[length - 1], length--;
+            }
+
+            for (let i = 0; i < length; i++) {
+                let anim_data = data[i];
+
+                if (typeof(anim_data) == "object") {
+
+                    if (anim_data.match) {
+                        this.TT[anim_data.match] = TransformTo(anim_data.obj);
+                    } else {
+                        let seq = Animation.createSequence(anim_data);
+                        if (seq) {
+                            this.out_seq.push(seq);
+                            this.out_duration = Math.max(this.out_duration, seq.duration);
+                            if (this.OVERRIDE) {
+
+                                if (obj_map.get(seq.obj)) {
+                                    let other_seq = obj_map.get(seq.obj);
+                                    other_seq.removeProps(seq);
+                                }
+
+                                obj_map.set(seq.obj, seq);
+                            }
+                        }
+
+                        this.in_delay = Math.max(this.in_delay, parseInt(delay));
+                    }
+                }
             }
         }
 
@@ -16587,7 +16675,7 @@ ${is_iws}`;
             }
 
             step(t) {
-                
+
                 for (let i = 0; i < this.out_seq.length; i++) {
                     let seq = this.out_seq[i];
                     if (!seq.run(t) && !seq.FINISHED) {
@@ -16964,7 +17052,7 @@ ${is_iws}`;
 
     class scp extends ElementNode{
 
-    	constructor(children, attribs, presets){
+    	constructor(tag, children, attribs, presets){
             
     		super("scope", children, attribs, presets);
 
@@ -17999,6 +18087,10 @@ ${is_iws}`;
             return `${offset.repeat(off)} ${this.data.toString()}\n`;
         }
 
+        finalize(){
+            
+        }
+
         mount(element, scope, statics, presets, ele = document.createTextNode("")) {
 
             if (ele instanceof Text)
@@ -18042,6 +18134,7 @@ ${is_iws}`;
 
         //Mounts component data to new HTMLElement object.
         mount(HTMLElement_, bound_data_object) {
+
             let element = null;
             
             if ((HTMLElement_ instanceof HTMLElement)){
@@ -18184,13 +18277,27 @@ ${is_iws}`;
     }
 
     class Import extends ElementNode{
-    	constructor(attribs, presets){
+    	constructor(attribs, presets, env){
     		super("import", null, attribs, presets);
-    		this.url = this.getAttribute("url");
+    		this.url = URL.resolveRelative(this.getAttribute("url"), env.url);
+    		this.load(env);
     	}
 
-    	load(){
-    		debugger
+    	async load(env){
+    		try{
+    			const own_env = new CompilerEnvironment(env.presets, env);
+    			own_env.setParent(env);
+
+    			const txt_data = await this.url.fetchText();
+
+    			own_env.pending++;
+
+    			const ast = parser(whind$1(txt_data), own_env);
+    			own_env.resolve();
+
+    		}catch(err){
+    			console.error(err);
+    		}
     	}
     }
 
@@ -18227,11 +18334,11 @@ ${is_iws}`;
             case "container":
                 node =  new ctr(children, attribs, presets); break;
             case "scope":
-                node =  new scp(children, attribs, presets); break;
+                node =  new scp(tag, children, attribs, presets); break;
             case "slot":
                 node =  new slt(children, attribs, presets); break;
             case "import":
-                node =  new Import(attribs, presets); break;
+                node =  new Import(attribs, presets, env); break;
                 //Elements that should not be parsed for binding points.
             case "pre":
             case "code":
@@ -18499,17 +18606,23 @@ ${is_iws}`;
                         break;
                 }
 
-                env.pushPresets(presets);
-
                 try {
 
-                    ast = parser(whind$1(string_data), env);
+                    return await (new Promise(res => {
+                        const compiler_env = new CompilerEnvironment(presets, env);
+                        compiler_env.pending++;
+
+
+                        compiler_env.pendingResolvedFunction = () => { res(ast); };
+
+                        ast = parser(whind$1(string_data), compiler_env);
+
+                        compiler_env.resolve();
+                    }));
 
                 } catch (err) {
                     console.error(err);
                 }
-
-                env.popPresets();
 
                 return ast;
             },
@@ -18533,17 +18646,6 @@ ${is_iws}`;
                 // If this function is an operand of the new operator, run an alternative 
                 // compiler on the calling object.
                 if (new.target) {
-                    const monitor = {pending_count:1};
-
-                    compileAST(component_data, presets, monitor).then(ast => {
-                        this.READY = true;
-                        this.ast = ast;
-
-                        debugger
-
-                        if (!this.name)
-                            this.name = this.ast.getAttrib("component").value || "undefined-component";
-                    });
 
                     this.ast = null;
 
@@ -18559,7 +18661,20 @@ ${is_iws}`;
                     }
 
                 } else {
-                    return new Component(...data);
+
+                    return new Promise(() => {
+                        const comp = new Component(...data);
+
+                        return compileAST(component_data, presets).then(ast => {
+                            debugger
+                            comp.READY = true;
+                            comp.ast = ast;
+                            comp.ast.finalize();
+
+                            if (!comp.name)
+                                comp.name = comp.ast.getAttrib("component").value || "undefined-component";
+                        });
+                    });
                 }
             };
 

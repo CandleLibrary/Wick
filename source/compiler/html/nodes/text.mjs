@@ -13,6 +13,10 @@ export default class TextNode {
         return `${offset.repeat(off)} ${this.data.toString()}\n`;
     }
 
+    finalize(){
+        
+    }
+
     mount(element, scope, statics, presets, ele = document.createTextNode("")) {
 
         if (ele instanceof Text)
