@@ -1,6 +1,6 @@
 export const EXPRESSION = 5;
 export const IDENTIFIER = 6;
-export const EVENT = 7;
+export const CONTAINER = 7;
 export const BOOL = 8;
 
 import types from "../../js/types.mjs";
@@ -11,6 +11,7 @@ import rtrn from "../../js/nodes/return.mjs";
 //import JSTools from "../../js/tools.mjs";
 
 import ExpressionIO  from "../../component/io/expression_io.mjs";
+import ContainerIO  from "../../component/io/container_io.mjs";
 
 import glow from "@candlefw/glow";
 
@@ -133,10 +134,16 @@ export default class Binding{
         this.METHOD = EXPRESSION;
 	}
 
+    setForContainer(){
+        if(this.METHOD == EXPRESSION)
+            this.METHOD = CONTAINER;
+    }
+
 	bind(scope, element){
         if(this.METHOD == EXPRESSION){
             return new ExpressionIO(element, scope, [], scope, this, this.lex);
-        }
+        }else if(this.METHOD == CONTAINER)
+            return new ContainerIO(element, scope, [], scope, this, this.lex);
         else 
             return scope.getTap(this.val);	
     }

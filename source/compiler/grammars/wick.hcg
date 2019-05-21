@@ -19,14 +19,16 @@
 	<> WICK_HTML → GOAL_TAG
 		│ IMPORT_LIST GOAL_TAG 								↦return { sym[1].import_list = sym[0], sym[1]}
 
+
 	<> IMPORT_LIST → IMPORT_TAG 							↦return { [sym[0]] }
 		│ IMPORT_LIST IMPORT_TAG 							↦return { sym[0].push(sym[1]), sym[0] }
 	
 	<> IMPORT_TAG → < τimport ATTRIBUTES /? >  				↦cstr ^element_selector
 
-	<> GOAL_TAG → TAG │ DTD_TAG
+	<> GOAL_TAG → TAG
+		│ DTD TAG 											↦return { sym[1] }
 
-	<> DTD_TAG → < \! \-- BODY_STRING \-- >								 	
+	<> DTD → < ! BODY_STRING >					    		↦return { null }			 	
 
 	<> TAG → < TAGNAME ATTRIBUTES > TAG_BODY </ TAGNAME >	↦cstr ^element_selector
 		│ < TAGNAME ATTRIBUTES / >							↦cstr ^element_selector
@@ -63,6 +65,7 @@
 		│ TAG_BODY TAG  									↦return { sym[0].push(sym[1]), sym[0] }
 		│ TAG 												↦return { [sym[0]] }
 		│ TEXT_NODE 										↦return { [sym[0]] }
+		│ DTD 											 	↦return { null }
 		│ ɛ 
 
 	<> ATTRIBUTES → ATTRIBUTES ATTRIBUTE  					↦return { sym[0].push(sym[1]), sym[0] }
@@ -90,7 +93,7 @@
 	<> BODY_STRING → BODY_STRING BODY_SYMBOLS 				↦return { sym[0] + sym[1] }			
 		│ BODY_SYMBOLS 										↦return { sym[0] + "" }
 
-	<> BODY_SYMBOLS → θid │ θany │ θws │ θnl
+	<> BODY_SYMBOLS → θid │ θany │ θws │ θnl │ θsym
 
 	<> WICK_BINDING → CALL_BINDING  							
 		│ BASIC_BINDING

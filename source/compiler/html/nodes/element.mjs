@@ -162,7 +162,7 @@ export default class ElementNode {
         merged_node.single = this.single;
         merged_node.url = this.url;
         merged_node.tag = this.tag;
-        merged_node.children = (node.children || this.children) ? [...this.children, ...node.children] : [];
+        merged_node.children = (node.children || this.children) ? [...node.children, ...this.children] : [];
         merged_node.css = this.css;
         merged_node.HAS_TAPS = this.HAS_TAPS;
         merged_node.MERGED = true;

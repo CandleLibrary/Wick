@@ -32,14 +32,15 @@
 						<input value=((color)) type="text"/>
 
 						<container>
-							<!--<f filter=((scope.ele.style.color == color))/>-->
+							((doug))
+
+							<f filter=(( scope.model.name.includes(color) )) />
+							<f sort=(( s1.model.name < s2.model.name ? -1 : 1 )) />
 
 							<tractor style="color:green">
-								<div slot=test>Im A best </div>
-							</tractor>
+								<div><input value=((color)) type="text"/></div>
+								<div slot=test>Im A best ((color))</div>
 
-							<tractor style="color:red">
-								<div slot=test>Im Z best </div>
 							</tractor>
 						</container>
 

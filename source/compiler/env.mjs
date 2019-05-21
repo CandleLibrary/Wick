@@ -24,6 +24,7 @@ import negate from "./js/nodes/negate.mjs";
 import rtrn from "./js/nodes/return.mjs";
 import lt from "./js/nodes/lt.mjs";
 import eq from "./js/nodes/eq.mjs";
+import condition from "./js/nodes/condition.mjs";
 
 //HTML
 import element_selector from "./html/nodes/element_selector.mjs";
@@ -133,9 +134,7 @@ const env = {
             this.ty = "POST INCR";},
         post_dec_expr: function(sym) { this.expr = sym[0];
             this.ty = "POST DEC";},
-        condition_expr: function(sym) { this.condition = sym[0];
-            this.le = sym[2];
-            this.re = sym[4];},
+        condition_expr: condition,
         null_literal: null_,
         numeric_literal: number,
         bool_literal: bool,

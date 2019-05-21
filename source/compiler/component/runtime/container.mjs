@@ -125,16 +125,16 @@ export default class ScopeContainer extends Observer {
             this.render();
         } else {
 
-            const offset_a = this.offset;
+           // const offset_a = this.offset;
 
-            this.limitUpdate();
+            //this.limitUpdate();
 
-            const offset_b = this.offset;
+            //const offset_b = this.offset;
 
-            this.offset = offset_a;
+            //this.offset = offset_a;
             this.forceMount();
             this.arrange();
-            this.offset = offset_b;
+            //this.offset = offset_b;
             this.render();
             this.offset_diff = 0;
         }
@@ -483,24 +483,6 @@ export default class ScopeContainer extends Observer {
         return transition;
     }
 
-    // Reduces the compenents that are mounted and displayed to the ones determined by current filter parameters.
-    limitUpdate() {
-        let offset = this.offset;
-        for (let i = 0, l = this.filters.length; i < l; i++) {
-            let filter = this.filters[i];
-            if (filter.CAN_USE) {
-                if (filter._CAN_LIMIT_) this.limit = parseInt(filter.val); // Make sure we are dealing with integers. 
-                // Value could be string debinding on the type of 
-                // binding. Applies to other values. 
-                if (filter._CAN_OFFSET_) offset = parseInt(filter.val);
-                if (filter._CAN_SHIFT_) this.shift_amount = parseInt(filter.val);
-            }
-        }
-
-        this.offset_diff = offset - this.offset;
-        this.offset = offset;
-    }
-
     /**
      * Filters stored Scopes with search terms and outputs the matching Scopes to the DOM.
      * 
@@ -511,23 +493,23 @@ export default class ScopeContainer extends Observer {
         let output = this.scopes.slice();
 
         if (output.length < 1) return;
+        
         for (let i = 0, l = this.filters.length; i < l; i++) {
-            let filter = this.filters[i];
-            if (filter.CAN_USE) {
-                if (filter.CAN_FILTER) output = output.filter(e => filter.containerFunction(e));
-                if (filter.CAN_SORT) output = output.sort((a, b) => filter.containerFunction(a, b));
-            }
+            const filter = this.filters[i];
+            
+            if(filter.ARRAY_ACTION)
+                output = filter.action(output);
         }
 
         this.activeScopes = output;
+        
         this.UPDATE_FILTER = false;
 
         return output;
     }
 
-    limitExpressionUpdate(ransition = glow.createTransition()){
+    limitExpressionUpdate(transition = glow.createTransition()){
         // Update offset, limit, and shift variables.
-        this.limitUpdate();
 
         //Preset the positions of initial components. 
         this.arrange();
