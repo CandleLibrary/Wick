@@ -63,6 +63,7 @@ export default class ScopeContainer extends Observer {
     }
 
     get data() {}
+
     set data(container) {
         if (container instanceof ModelContainerBase) {
             container.pin();
@@ -123,11 +124,11 @@ export default class ScopeContainer extends Observer {
             this.filterUpdate();
             this.render();
         } else {
-            
+
             const offset_a = this.offset;
-            
+
             this.limitUpdate();
-            
+
             const offset_b = this.offset;
 
             this.offset = offset_a;
@@ -168,7 +169,7 @@ export default class ScopeContainer extends Observer {
     scrub(scrub_delta, SCRUBBING = true) {
         // scrub_delta is the relative ammunt of change from the previous offset. 
 
-        if(!this.SCRUBBING) 
+        if (!this.SCRUBBING)
             this.render(null, this.activeScopes, true);
 
         this.SCRUBBING = true;
@@ -207,7 +208,7 @@ export default class ScopeContainer extends Observer {
                     this.render(null, this.activeScopes, true).play(1);
                 }
 
-            } 
+            }
 
             //Make Sure the the transition animation is completed before moving on to new animation sequences.
 
@@ -287,8 +288,6 @@ export default class ScopeContainer extends Observer {
 
     arrange(output = this.activeScopes) {
 
-
-
         //Arranges active scopes according to their arrange handler.
         const
             limit = this.limit,
@@ -311,9 +310,9 @@ export default class ScopeContainer extends Observer {
         //Scopes on the descending edge of the transition window
         while (i < output_length)
             output[i].update({ trs_dec_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }), i++;
-        
+
         transition.play(1);
-        
+
     }
 
     render(transition, output = this.activeScopes, NO_TRANSITION = false) {
@@ -490,11 +489,11 @@ export default class ScopeContainer extends Observer {
         for (let i = 0, l = this.filters.length; i < l; i++) {
             let filter = this.filters[i];
             if (filter.CAN_USE) {
-                if (filter._CAN_LIMIT_) this.limit = parseInt(filter._value_); // Make sure we are dealing with integers. 
+                if (filter._CAN_LIMIT_) this.limit = parseInt(filter.val); // Make sure we are dealing with integers. 
                 // Value could be string debinding on the type of 
                 // binding. Applies to other values. 
-                if (filter._CAN_OFFSET_) offset = parseInt(filter._value_);
-                if (filter._CAN_SHIFT_) this.shift_amount = parseInt(filter._value_);
+                if (filter._CAN_OFFSET_) offset = parseInt(filter.val);
+                if (filter._CAN_SHIFT_) this.shift_amount = parseInt(filter.val);
             }
         }
 
@@ -515,15 +514,51 @@ export default class ScopeContainer extends Observer {
         for (let i = 0, l = this.filters.length; i < l; i++) {
             let filter = this.filters[i];
             if (filter.CAN_USE) {
-                if (filter.CAN_FILTER) output = output.filter(filter.filter_function._filter_expression_);
-                if (filter.CAN_SORT) output = output.sort(filter._sort_function_);
+                if (filter.CAN_FILTER) output = output.filter(e => filter.containerFunction(e));
+                if (filter.CAN_SORT) output = output.sort((a, b) => filter.containerFunction(a, b));
             }
         }
+
         this.activeScopes = output;
         this.UPDATE_FILTER = false;
 
         return output;
     }
+
+    limitExpressionUpdate(ransition = glow.createTransition()){
+        // Update offset, limit, and shift variables.
+        this.limitUpdate();
+
+        //Preset the positions of initial components. 
+        this.arrange();
+
+        this.render(transition);
+
+        // If scrubbing is currently occuring, if the transition were to auto play then the results 
+        // would interfere with the expected behavior of scrubbing. So the transition
+        // is instead set to it's end state, and scrub is called to set intermittent 
+        // position. 
+        if (!this.SCRUBBING)
+            transition.start();
+    }
+
+    filterExpressionUpdate(transition = glow.createTransition()) {
+        // Filter the current components. 
+        this.filterUpdate();
+
+        //Preset the positions of initial components. 
+        this.arrange();
+
+        this.render(transition);
+
+        // If scrubbing is currently occuring, if the transition were to auto play then the results 
+        // would interfere with the expected behavior of scrubbing. So the transition
+        // is instead set to it's end state, and scrub is called to set intermittent 
+        // position. 
+        if (!this.SCRUBBING)
+            transition.start();
+    }
+
     /**
      * Removes stored Scopes that do not match the ModelContainer contents. 
      *
@@ -532,6 +567,7 @@ export default class ScopeContainer extends Observer {
      * @protected
      */
     cull(new_items = []) {
+
         const transition = glow.createTransition();
 
         if (new_items.length == 0) {
@@ -547,6 +583,10 @@ export default class ScopeContainer extends Observer {
                 template: this,
                 trs: transition.in
             });
+
+            if (!this.SCRUBBING)
+                transition.start();
+
         } else {
 
             const
@@ -554,9 +594,9 @@ export default class ScopeContainer extends Observer {
                 out = [];
 
             for (let i = 0, l = this.activeScopes.length; i < l; i++)
-                if (exists.has(this.activeScopes[i].model)) 
+                if (exists.has(this.activeScopes[i].model))
                     exists.set(this.activeScopes[i].model, false);
-                
+
 
             for (let i = 0, l = this.scopes.length; i < l; i++)
                 if (!exists.has(this.scopes[i].model)) {
@@ -574,16 +614,6 @@ export default class ScopeContainer extends Observer {
                 // Wrap models into components
                 this.added(out, transition);
 
-                // Update offset, limit, and shift variables.
-                this.limitUpdate();
-
-                // Filter the current components. 
-                this.filterUpdate(out);
-
-                //Preset the positions of initial components. 
-                this.arrange();
-
-                this.render(transition);
             } else {
                 for (let i = 0, j = 0, l = this.activeScopes.length; i < l; i++, j++) {
 
@@ -599,25 +629,10 @@ export default class ScopeContainer extends Observer {
                     } else
                         this.activeScopes.splice(i, 1), i--, l--;
                 }
-
-                const c = this.filterUpdate(transition);
-                this.limitUpdate(transition);
-                this.arrange();
-                this.render(transition);
             }
-        }
 
-        // If scrubbing is currently occuring, if the transition were to auto play then the results 
-        // would interfere with the expected behavior of scrubbing. So the transition
-        // is instead set to it's end state, and scrub is called to set intermittent 
-        // position. 
-        //*
-        if (this.SCRUBBING) {
-            //transition.play(1);
-            //this.scrub(0);
-        } else
-            transition.start();
-    
+            this.filterExpressionUpdate(transition);
+        }
     }
     /**
      * Called by the ModelContainer when Models have been removed from its set.
@@ -637,10 +652,7 @@ export default class ScopeContainer extends Observer {
             }
         }
 
-        this.limitUpdate();
-        this.filterUpdate(transition);
-        //this.arrange();
-        this.render(transition);
+        this.filterExpressionUpdate(transition);
     }
     /**
      * Called by the ModelContainer when Models have been added to its set.
@@ -655,17 +667,15 @@ export default class ScopeContainer extends Observer {
 
         for (let i = 0; i < items.length; i++) {
             const scope = this.component.mount(null, items[i]);
+
+            //TODO: Make sure both of there references are removed when the scope is destroyed.
             this.scopes.push(scope);
             this.parent.addScope(scope);
         }
 
-        if (OWN_TRANSITION) {
-            this.limitUpdate();
-            this.filterUpdate(transition);
-            //this.arrange();
-            this.render(transition);
-            transition.play();
-        }
+
+        if (OWN_TRANSITION) 
+            this.filterExpressionUpdate(transition);
     }
 
     revise() {

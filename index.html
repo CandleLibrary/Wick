@@ -19,20 +19,28 @@
 		</template>
 		<script type="text/javascript">
 			async function start(){
-				let m = wick.model({doug:[{name:"pate"}, {name:"mary"}]});
+				const m = wick.model({doug:[{name:"pate"}, {name:"mary"}]});
 				
 				(await wick(`
-					<import url="./test.html" />
+					<import url="./test.html"/>
 					
 					<scope element="div">
 
+						<div url="./test.html" ><div slot=test>Im Z best Dawg </div></div>
 
 						Test
+						<input value=((color)) type="text"/>
 
 						<container>
-							<f sort="((m1 + m2))"/>
-							((doug))
-							<tractor/>
+							<!--<f filter=((scope.ele.style.color == color))/>-->
+
+							<tractor style="color:green">
+								<div slot=test>Im A best </div>
+							</tractor>
+
+							<tractor style="color:red">
+								<div slot=test>Im Z best </div>
+							</tractor>
 						</container>
 
 					</scope>

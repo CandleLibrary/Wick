@@ -1,83 +1,96 @@
-import {
-    appendChild,
-    createElement
-} from "../../../short_names.mjs";
-
+import { appendChild, createElement } from "../../../short_names.mjs";
 import Scope from "../../component/runtime/scope.mjs";
+import CompilerEnv from "../../compiler_env.mjs";
+import wick_compile from "../../wick.mjs";
 
 import URL from "@candlefw/url";
 import whind from "@candlefw/whind";
 
-export default class ElementNode{
+export default class ElementNode {
 
-    constructor(tag = "", children = [], attribs = [], presets){
-        
-        if(children)
-            for(const child of children)
+    constructor(env, tag = "", children = [], attribs = [], presets) {
+
+        if (children)
+            for (const child of children)
                 child.parent = this;
 
         this.SINGLE = false;
         this.MERGED = false;
 
-        this.presets =presets;
+        this.presets = presets;
         this.tag = tag;
         this.attribs = attribs || [];
         this.children = children || [];
+        this.proxied = null;
+        this.slots = null;
 
         this.component = this.getAttrib("component").value;
 
-        if(this.component)
+        if (this.component)
             presets.components[this.component] = this;
 
         this.url = this.getAttrib("url").value ? URL.resolveRelative(this.getAttrib("url").value) : null;
         this.id = this.getAttrib("id").value;
         this.class = this.getAttrib("id").value;
         this.name = this.getAttrib("name").value;
+        this.slot = this.getAttrib("slot").value;
 
-        if(this.url){
-            this.url.fetchText().then(e=>{
-                const lex = whind(e);
-                //let nodes = env.compile(lex, env);
-                //console.log(nodes)
-                //this.children.push(nodes);
-            });
-        }
 
         //Prepare attributes with data from this element
-        for(const attrib of this.attribs)
+        for (const attrib of this.attribs)
             attrib.link(this);
+
+        if (this.url)
+            this.loadURL(env)
 
         return this;
     }
 
     // Traverse the contructed AST and apply any necessary transforms. 
-    finalize(){
-        if(this.children.length == 0){
-            if(this.presets.components[this.tag]){
-                return this.presets.components[this.tag].merge(this);
-            }
+    finalize(slots_in = {}) {
+
+
+        if(this.slot){
+
+            if(!this.proxied_mount)
+                this.proxied_mount = this.mount.bind(this);
+            
+            //if(!slots_in[this.slot])
+            slots_in[this.slot] = this.proxied_mount;
+            
+            this.mount = ()=>{};
         }
 
-
-        for(let i = 0; i < this.children.length; i++){
+        for (let i = 0; i < this.children.length; i++) {
             const child = this.children[i];
-            this.children[i] = child.finalize();
+            this.children[i] = child.finalize(slots_in);
+        }
+
+        const slots_out = Object.assign({}, slots_in);
+
+        if (this.presets.components[this.tag]) 
+            this.proxied = this.presets.components[this.tag].merge(this);
+
+        if(this.proxied){
+            let ele = this.proxied.finalize(slots_out);
+            ele.slots = slots_out;
+            this.mount = ele.mount.bind(ele);
         }
 
         return this;
     }
 
-    getAttribute(name){
+    getAttribute(name) {
         return this.getAttrib(name).value;
     }
 
-    getAttrib(name){
-        for(const attrib of this.attribs){
-            if(attrib.name === name)
+    getAttrib(name) {
+        for (const attrib of this.attribs) {
+            if (attrib.name === name)
                 return attrib;
         }
 
-        return {name:"", value:""}
+        return { name: "", value: "" }
     }
 
     createElement() {
@@ -121,16 +134,35 @@ export default class ElementNode{
 
     /****************************************** COMPONENTIZATION *****************************************/
 
-    merge(node) {
-        
-        const merged_node = new this.constructor(this.tag, null, null, this.presets);
+
+    async loadURL(env) {
+        try {
+            const own_env = new CompilerEnv(env.presets, env);
+            own_env.setParent(env);
+
+            const txt_data = await this.url.fetchText();
+
+            own_env.pending++;
+
+            const ast = wick_compile(whind(txt_data), own_env);
+            
+            this.proxied = ast.merge(this);
+
+            own_env.resolve();
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    merge(node, merged_node = new this.constructor(null, this.tag, null, null, this.presets)) {
         merged_node.line = this.line;
         merged_node.char = this.char;
         merged_node.offset = this.offset;
         merged_node.single = this.single;
         merged_node.url = this.url;
         merged_node.tag = this.tag;
-        merged_node.children  = (node.children || this.children) ? new MergerNode(this.children, node.children) : null;
+        merged_node.children = (node.children || this.children) ? [...this.children, ...node.children] : [];
         merged_node.css = this.css;
         merged_node.HAS_TAPS = this.HAS_TAPS;
         merged_node.MERGED = true;
@@ -150,11 +182,12 @@ export default class ElementNode{
 
     /******************************************* BUILD ****************************************************/
 
-    mount(element, scope, statics, presets = this.presets){
-        const out_statics = statics;
+    mount(element, scope, statics = {}, presets = this.presets) {
 
         // /if (this.url || this.__statics__)
         // /    out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL(par_list.length - 1) });
+         if(this.slots)
+            statics = Object.assign({}, statics, this.slots)
 
         const own_element = this.createElement(scope);
 
@@ -164,7 +197,7 @@ export default class ElementNode{
         if (this.HAS_TAPS)
             taps = scope.linkTaps(this.tap_list);
 
-        if (own_element) {      
+        if (own_element) {
 
             if (!scope.ele) scope.ele = own_element;
 
@@ -173,17 +206,17 @@ export default class ElementNode{
 
             if (element) appendChild(element, own_element);
 
-            for (let i = 0, l = this.attribs.length; i < l; i++) 
+            for (let i = 0, l = this.attribs.length; i < l; i++)
                 this.attribs[i].bind(own_element, scope);
         }
 
         const ele = own_element ? own_element : element;
 
         //par_list.push(this);
-        for(let i = 0; i < this.children.length; i++){
+        for (let i = 0; i < this.children.length; i++) {
             //for (let node = this.fch; node; node = this.getNextChild(node))
             const node = this.children[i];
-                node.mount(ele, scope, out_statics, presets);
+            node.mount(ele, scope, statics, presets);
         }
 
         //par_list.pop();
@@ -197,14 +230,14 @@ export class MergerNode {
     constructor(...children_arrays) {
         this.c = [];
 
-        for (let i=0,l = children_arrays.length; i<l; i++)
-            if(Array.isArray(children_arrays))
+        for (let i = 0, l = children_arrays.length; i < l; i++)
+            if (Array.isArray(children_arrays))
                 this.c = this.c.concat(children_arrays[i]);
     }
 
     mount(element, scope, statics, presets = this.presets) {
-        for (let i=0,l = this.c.length; i<l; i++){
-            if(this.c[i].SLOTED == true) continue;
+        for (let i = 0, l = this.c.length; i < l; i++) {
+            if (this.c[i].SLOTED == true) continue;
             this.c[i].build(element, scope, statics, presets);
         }
 

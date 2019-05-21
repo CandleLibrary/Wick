@@ -42,6 +42,7 @@ export default class d {
 
         if (bound_data_object)
             scope.load(bound_data_object);
+        
 
         return scope;
     }

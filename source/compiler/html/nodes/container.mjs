@@ -22,8 +22,8 @@ BaseComponent.prototype = proto.prototype;
 
 export default class ctr extends ElementNode {
     
-    constructor(children, attribs, presets) {
-        super("container", children, attribs, presets);
+    constructor(env, tag, children, attribs, presets) {
+        super(env, "container", children, attribs, presets);
 
         this.filters = null;
         this.property_bind = null;
@@ -32,12 +32,26 @@ export default class ctr extends ElementNode {
         //Tag name of HTMLElement the container will create;
         this.element = this.getAttribute("element") || "ul";
 
+        this.filters = null;
+        this.nodes = null;
+        this.binds = null;
+
+        
+    }
+
+    finalize(slots = {}){
+        super.finalize(slots);
+
+        const children = this.children;
+
         this.filters = children.reduce((r, c) => { if (c instanceof Filter) r.push(c); return r }, []);
         this.nodes = children.reduce((r, c) => { if (c instanceof ElementNode && !(c instanceof Filter)) r.push(c); return r }, []);
         this.binds = children.reduce((r, c) => { if (c instanceof TextNode && c.IS_BINDING) r.push(c); return r }, []);
 
         //Keep in mind slots!;
         this.component_constructor = (this.nodes.length > 0) ? new BaseComponent(this.nodes[0], this.presets) : null;
+
+        return this;
     }
 
     merge(node) {
@@ -50,7 +64,7 @@ export default class ctr extends ElementNode {
     }
 
     mount(element, scope, statics, presets) {
-
+        
         scope = scope || new Scope(null, presets, element, this);
 
         const
@@ -64,8 +78,13 @@ export default class ctr extends ElementNode {
         if(this.component_constructor)
             container.component = this.component_constructor;
 
-        for (let i = 0; i < this.filters.length; i++)
-            this.filters[i].mount(scope, container);
+        for (let i = 0; i < this.filters.length; i++){
+            let io = this.filters[i].mount(scope, container);
+            io.IS_FILTER = true;
+            io.CAN_FILTER = true;
+            io.CAN_USE = true;
+            container.filters.push(io);
+        }
 
         for (let i = 0, l = this.attribs.length; i < l; i++)
             this.attribs[i].bind(ele, scope);
@@ -77,11 +96,11 @@ export default class ctr extends ElementNode {
             //If there is no binding, then there is no potential to have ModelContainer borne components.
             //Instead, load any existing children as component entries for the container element. 
             for (let i = 0; i < this.nodes.length; i++)
-                container.activeScopes.push(this.nodes[i].mount(null, null, statics, presets));
+                container.scopes.push(this.nodes[i].mount(null, null, statics, presets));
+            container.filterUpdate();
+            container.render();
         }
 
-
-        container.render();
 
         return scope;
     }

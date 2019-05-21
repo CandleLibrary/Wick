@@ -20,9 +20,9 @@ const defaults = { glow }
 
 
 export default class scr extends ElementNode{
-	constructor(ast, attribs, presets){
+	constructor(env, tag, children, attribs, presets){
 		
-		super("script", [], attribs);
+		super(env, "script", null, attribs, presets);
 
 		this.processJSAST(ast, presets, true);
 

@@ -13,6 +13,7 @@ import ImportNode from "./import.mjs";
 //import Plugin from "../../../plugin.mjs";
 
 export default function (sym, env, lex){ 
+
 	const 
         FULL = sym.length > 5,
         tag = sym[1],
@@ -21,40 +22,42 @@ export default function (sym, env, lex){
 
     const presets = env.presets;
 
-    let node = null;
-
+    let node = null, cstr = null;
+    
     switch (tag) {
         case "filter":
         case "f":
-            node =  new FilterNode(attribs, presets); break;
+            cstr =  FilterNode; break;
         case "a":
-            node =  new LinkNode(children, attribs, presets); break;
+            cstr =  LinkNode; break;
             /** void elements **/
         case "template":
-            node =  new VoidNode(tag, children, attribs, presets); break;
+            cstr =  VoidNode; break;
         case "css":
         case "style":
-            node =  new StyleNode(children, attribs, presets); break;
+            cstr =  StyleNode; break;
         case "script":
-            node =  new ScriptNode(children, attribs, presets); break;
+            cstr =  ScriptNode; break;
         case "svg":
         case "path":
-            node =  new SVGNode(tag, children, attribs, presets); break;
+            cstr =  SVGNode; break;
         case "container":
-            node =  new ContainerNode(children, attribs, presets); break;
+            cstr =  ContainerNode; break;
         case "scope":
-            node =  new ScopeNode(tag, children, attribs, presets); break;
+            cstr =  ScopeNode; break;
         case "slot":
-            node =  new SlotNode(children, attribs, presets); break;
+            cstr =  SlotNode; break;
         case "import":
-            node =  new ImportNode(attribs, presets, env); break;
+            cstr =  ImportNode; break;
             //Elements that should not be parsed for binding points.
         case "pre":
         case "code":
-            node =  new PreNode(children, attribs, presets); break;
+            cstr =  PreNode; break;
         default:
-            node =  new ElementNode(tag, children, attribs, presets); break;
+            cstr =  ElementNode; break;
     }
+
+    node = new cstr(env, tag, children, attribs, presets);
 
     node.SINGLE = !FULL;
 

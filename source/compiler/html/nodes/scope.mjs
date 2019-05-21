@@ -7,9 +7,9 @@ import {
 
 export default class scp extends ElementNode{
 
-	constructor(tag, children, attribs, presets){
+	constructor(env, tag, children, attribs, presets){
         
-		super("scope", children, attribs, presets);
+		super(env, "scope", children, attribs, presets);
 
 		this.import = this.getAttrib("import").value;
 		this.export = this.getAttrib("export").value;
@@ -20,10 +20,10 @@ export default class scp extends ElementNode{
 	}
 
     createElement() {
-        return createElement(this.element);
+        return createElement(this.element || "div");
     }
 
-	mount(element, scope, statics, presets){
+	mount(element, scope, statics = {}, presets){
 
         let data = {};
 
@@ -31,6 +31,9 @@ export default class scp extends ElementNode{
 
         let me = new Scope(scope, this.__presets__ || presets || this.presets, element, this);
 
+        if(this.slots)
+            statics = Object.assign({}, statics, this.slots)
+        
         //this.pushChached(me);
 
         me._model_name_ = this.model_name;

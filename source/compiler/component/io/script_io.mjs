@@ -11,19 +11,19 @@ const Globals = new Set([
 ])
 
 class argumentIO extends IO {
-    constructor(scope, errors, tap, script, id){
+    constructor(scope, errors, tap, script, id) {
         super(scope, errors, tap)
         this.ele = script;
         this.id = id;
         this.ACTIVE = false;
     }
 
-    destroy(){
+    destroy() {
         this.id = null;
         super.destroy();
     }
 
-    down(value){
+    down(value) {
         this.ele.updateProp(this, value);
     }
 }
@@ -36,13 +36,13 @@ export default class ScriptIO extends IOBase {
         let presets = scope.presets;
         let ids = binding.ids;
         let func, HAVE_CLOSURE = false;
-        tap = tap || {prop:""}
+        tap = tap || { prop: "" }
 
         //*********** PRE OBJECT FUNCTION INITIALIZATION *******************//
 
         const args = binding.args;
-        
-        const names = args.map(a=>a.name);
+
+        const names = args.map(a => a.name);
 
         names.push("emit"); // For the injected emit function
         //names.unshift(binding.tap_name);
@@ -51,17 +51,17 @@ export default class ScriptIO extends IOBase {
         let TAP_BINDING = -1;
         let ACTIVE_IOS = 0;
 
-        const props = args.map((a,i)=>{
-            
-            if(a.IS_TAPPED){
+        const props = args.map((a, i) => {
 
-                if(a.name == tap.prop)
+            if (a.IS_TAPPED) {
+
+                if (a.name == tap.prop)
                     TAP_BINDING = i;
 
                 ACTIVE_IOS++;
 
                 const arg_io = new argumentIO(scope, errors, scope.getTap(a.name), null, i);
-                
+
                 arg_ios[a.name] = arg_io;
 
                 return null;
@@ -70,12 +70,12 @@ export default class ScriptIO extends IOBase {
             return a.val;
         });
 
-        
+
         //props.unshift(null); // Place holder for value data
         try {
             if (binding._func_) {
                 func = binding._func_;
-                if(binding.HAVE_CLOSURE)
+                if (binding.HAVE_CLOSURE)
                     HAVE_CLOSURE = true;
             } else {
                 func = Function.apply(Function, names.concat([binding.val]));
@@ -98,27 +98,27 @@ export default class ScriptIO extends IOBase {
 
         this.HAVE_CLOSURE = HAVE_CLOSURE;
 
-        if(this.HAVE_CLOSURE)
+        if (this.HAVE_CLOSURE)
             this._func_ = func;
         else
             this._func_ = func.bind(scope);
-        
+
         this.scope = scope;
         this.TAP_BINDING = TAP_BINDING;
 
         //Embedded emit functions
         const func_bound = this.emit.bind(this);
         func_bound.onTick = this.onTick.bind(this);
-        
+
         //TODO: only needed if emit is called in function. Though highly probably. 
         props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value); } }));
 
         this.arg_props = props;
         this.arg_ios = arg_ios;
 
-        for(const a in arg_ios)
+        for (const a in arg_ios)
             arg_ios[a].ele = this;
-        
+
         //this.meta = null;
         this.url = statics.url;
 
@@ -139,44 +139,48 @@ export default class ScriptIO extends IOBase {
         this.arg_props = null;
         this.props = null;
 
-        for(const a of this.arg_ios)
+        for (const a of this.arg_ios)
             a.destroy();
 
         this.arg_ios = null;
     }
 
-    updateProp(io, val){
+    updateProp(io, val) {
         this.arg_props[io.id] = val;
 
-        if(!io.ACTIVE){
+        if (!io.ACTIVE) {
             io.ACTIVE = true;
             this.active_IOS++;
         }
     }
 
-    down(value, meta = { event: null }) {
+    setValue(value) {
+        if (typeof(value) == "object") {
+            //Distribute iterable properties amongst the IO_Script's own props.
+            for (const a in value) {
+                if (this.arg_ios[a])
+                    this.arg_ios[a].down(value[a]);
+            }
+        } else {
+            if (this.TAP_BINDING !== -1)
+                this.arg_props[this.TAP_BINDING] = value;
+        }
+    }
+
+    down(value) {
 
         const src = this.scope;
 
-        if(value){ 
-            if(typeof(value) == "object"){
-                //Distribute iterable properties amongst the IO_Script's own props.
-                for(const a in value){
-                    if(this.arg_ios[a])
-                        this.arg_ios[a].down(value[a]);
-                }
-            }else{
-                if(this.TAP_BINDING !== -1)
-                    this.arg_props[this.TAP_BINDING] = value;
-            }
-        }
+        if (value)
+            this.setValue(value);
 
-        if(this.active_IOS < this.IO_ACTIVATIONS) 
+
+        if (this.active_IOS < this.IO_ACTIVATIONS)
             return
 
         try {
-            
-            if(this.HAVE_CLOSURE)
+
+            if (this.HAVE_CLOSURE)
                 return this._func_.apply(this, this.arg_props);
             else
                 return this._func_.apply(this, this.arg_props);
@@ -200,10 +204,10 @@ export default class ScriptIO extends IOBase {
         Same as emit, except the message is generated on the next global tick. 
         Useful for actions which require incremental updates to the UI.
     */
-    onTick(name){
+    onTick(name) {
         spark.queueUpdate({
-            _SCHD_:0, // Meta value for spark;
-            scheduledUpdate:(s,d)=>this.emit(name, {step:s,diff:d})
+            _SCHD_: 0, // Meta value for spark;
+            scheduledUpdate: (s, d) => this.emit(name, { step: s, diff: d })
         })
     }
 }

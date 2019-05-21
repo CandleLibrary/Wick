@@ -10,6 +10,6 @@ export default class extends base{
 
      get type () { return types.string }
 
-     render(){return this.val}
+     render(){return `"${this.val}"`}
 
 }

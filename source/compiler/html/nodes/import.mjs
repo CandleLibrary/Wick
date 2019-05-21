@@ -6,8 +6,8 @@ import whind from "@candlefw/whind";
 import URL from "@candlefw/url";
 
 export default class Import extends ElementNode{
-	constructor(attribs, presets, env){
-		super("import", null, attribs, presets);
+	constructor(env, tag, children, attribs, presets){
+		super(env, "import", null, attribs, presets);
 		this.url = URL.resolveRelative(this.getAttribute("url"), env.url);
 		this.load(env);
 	}
@@ -28,4 +28,6 @@ export default class Import extends ElementNode{
 			console.error(err);
 		}
 	}
+
+		loadURL(){/*Intentional*/ return;}
 }

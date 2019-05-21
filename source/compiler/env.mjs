@@ -23,6 +23,7 @@ import bool from "./js/nodes/bool.mjs";
 import negate from "./js/nodes/negate.mjs";
 import rtrn from "./js/nodes/return.mjs";
 import lt from "./js/nodes/lt.mjs";
+import eq from "./js/nodes/eq.mjs";
 
 //HTML
 import element_selector from "./html/nodes/element_selector.mjs";
@@ -60,6 +61,7 @@ const env = {
         exp,
         lt,
         negate_expr: negate,
+        eq,
         if_stmt: function(sym) { this.bool = sym[2];
             this.body = sym[4];
             this.else = sym[6];},
@@ -108,9 +110,6 @@ const env = {
         gte_expr: function(sym) { this.le = sym[0];
             this.re = sym[2];
             this.ty = "GTE";},
-        eq_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "EQ";},
         seq_expr: function(sym) { this.le = sym[0];
             this.re = sym[2];
             this.ty = "STRICT_EQ";},

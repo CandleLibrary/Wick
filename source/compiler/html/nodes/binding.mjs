@@ -133,9 +133,9 @@ export default class Binding{
         this.METHOD = EXPRESSION;
 	}
 
-	bind(scope){
+	bind(scope, element){
         if(this.METHOD == EXPRESSION){
-            return new ExpressionIO(null, scope, [], scope, this, this.lex);
+            return new ExpressionIO(element, scope, [], scope, this, this.lex);
         }
         else 
             return scope.getTap(this.val);	

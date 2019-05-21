@@ -2,7 +2,7 @@
 import ElementNode from "./element.mjs";
 
 export default class svg extends ElementNode{
-	constructor(children, attribs){
-		super("svg", children, attribs);
+	constructor(env, tag, children, attribs, presets){
+		super(env, "svg", children, attribs, presets);
 	}
 }

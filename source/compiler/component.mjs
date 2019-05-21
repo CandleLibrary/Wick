@@ -11,11 +11,8 @@ const
 
     default_presets = new Presets,
 
-    // This is to allow components to import data from remote resources
-
-
     // If compilation fails, failure component is generated that provides 
-    // error information. 
+    // error information. Should be fancy though.
 
     compileAST = async (component_data, presets) => {
             var
@@ -114,17 +111,19 @@ const
 
             } else {
 
-                return new Promise(() => {
+                return new Promise(res => {
                     const comp = new Component(...data);
 
                     return compileAST(component_data, presets).then(ast => {
-                        debugger
+                        
                         comp.READY = true;
                         comp.ast = ast;
                         comp.ast.finalize();
 
                         if (!comp.name)
                             comp.name = comp.ast.getAttrib("component").value || "undefined-component";
+
+                        return res(comp)
                     });
                 });
             }

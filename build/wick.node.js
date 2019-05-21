@@ -416,7 +416,8 @@ const number_and_identifier_table = [
 0		/* DELETE */
 ];
 
-const number = 1,
+const
+    number = 1,
     identifier = 2,
     string = 4,
     white_space = 8,
@@ -468,7 +469,7 @@ const number = 1,
         31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
     ];
 
-const  getNumbrOfTrailingZeroBitsFromPowerOf2 = (value) => debruijnLUT[(value * 0x077CB531) >>> 27];
+const getNumbrOfTrailingZeroBitsFromPowerOf2 = (value) => debruijnLUT[(value * 0x077CB531) >>> 27];
 
 class Lexer {
 
@@ -575,29 +576,46 @@ class Lexer {
     Creates and error message with a diagrame illustrating the location of the error. 
     */
     errorMessage(message = "") {
-        const arrow = String.fromCharCode(0x2b89),
-            trs = String.fromCharCode(0x2500),
-            line = String.fromCharCode(0x2500),
-            thick_line = String.fromCharCode(0x2501),
-            line_number = "    " + this.line + ": ",
-            line_fill = line_number.length,
-            t$$1 = thick_line.repeat(line_fill + 48),
-            is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
         const pk = this.copy();
-        pk.IWS = false;
-        while (!pk.END && pk.ty !== Types.nl) { pk.next(); }
-        const end = (pk.END) ? this.str.length : pk.off ;
 
-    //console.log(`"${this.str.slice(this.off-this.char+((this.line > 0) ? 2 :2), end).split("").map((e,i,s)=>e.charCodeAt(0))}"`)
-    let v$$1 = "", length = 0;
-    v$$1 = this.str.slice(this.off-this.char+((this.line > 0) ? 2 :1), end);
-    length = this.char;
-    return `${message} at ${this.line}:${this.char}
-${t$$1}
-${line_number+v$$1}
-${line.repeat(length+line_fill-((this.line > 0) ? 2 :1))+arrow}
-${t$$1}
-${is_iws}`;
+        pk.IWS = false;
+
+        while (!pk.END && pk.ty !== Types.nl) { pk.next(); }
+
+        const end = (pk.END) ? this.str.length : pk.off,
+
+            nls = (this.line > 0) ? 2 : 1,
+
+            number_of_tabs =
+            this.str
+            .slice(this.off - this.char + nls, this.off + nls)
+            .split("")
+            .reduce((r$$1, v$$1) => (r$$1 + ((v$$1.charCodeAt(0) == HORIZONTAL_TAB) | 0)), 0),
+
+            arrow = String.fromCharCode(0x2b89),
+
+            line = String.fromCharCode(0x2500),
+
+            thick_line = String.fromCharCode(0x2501),
+
+            line_number = `    ${this.line}: `,
+
+            line_fill = line_number.length + number_of_tabs,
+
+            line_text = this.str.slice(this.off - this.char + (nls), end).replace(/\t/g, "  "),
+
+            error_border = thick_line.repeat(line_text.length + line_number.length + 2),
+
+            is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "",
+
+            msg =[ `${message} at ${this.line}:${this.char}` ,
+            `${error_border}` ,
+            `${line_number+line_text}` ,
+            `${line.repeat(this.char+line_fill-(nls))+arrow}` ,
+            `${error_border}` ,
+            `${is_iws}`].join("\n");
+
+        return msg
     }
 
     /**
@@ -795,7 +813,7 @@ ${is_iws}`;
                             length = 4; //Stores two UTF16 values and a data link sentinel
                             break;
                     }
-                }else{
+                } else {
                     break;
                 }
 
@@ -1187,7 +1205,7 @@ whind$1.constructor = Lexer;
 Lexer.types = Types;
 whind$1.types = Types;
 
-const uri_reg_ex = /(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:\/\/))?(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:([^\<\>\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\<\>\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\<\>\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
+const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
 
 const STOCK_LOCATION = {
     protocol: "",
@@ -2006,7 +2024,7 @@ const _FrozenProperty_ = (object, name, value) => OB.defineProperty(object, name
  *
  * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
  */
-    
+ 
 const caller = (typeof(window) == "object" && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
     setTimeout(f, 1);
 };
@@ -2032,16 +2050,7 @@ class Spark {
 
         this.queue_switch = 0;
 
-        this.callback = ()=>{};
-
-        if(typeof(window) !== "undefined"){
-            window.addEventListener("load",()=>{
-                this.callback = () => this.update();
-                caller(this.callback);
-            });
-        }else{
-            this.callback = () => this.update();
-        }
+        this.callback = () => this.update();
 
         this.frame_time = perf.now();
 
@@ -2072,11 +2081,9 @@ class Spark {
 
         this.frame_time = perf.now() | 0;
 
+        this.SCHEDULE_PENDING = true;
 
-        if(!this.SCHEDULE_PENDING){
-            this.SCHEDULE_PENDING = true;
-            caller(this.callback);
-        }
+        caller(this.callback);
     }
 
     removeFromQueue(object){
@@ -8931,7 +8938,7 @@ class string$2 extends base{
 
      get type () { return types.string }
 
-     render(){return this.val}
+     render(){return `"${this.val}"`}
 
 }
 
@@ -9017,6 +9024,17 @@ class lt extends operator$1 {
     }
 
     get type () { return types.lt }
+}
+
+/** EQUALITY **/
+class eq extends operator$1 {
+
+    constructor(sym) {
+        super(sym);
+       	this.op = "==";
+    }
+
+    get type () { return types.eq }
 }
 
 const removeFromArray = (array, ...elems) => {
@@ -9546,76 +9564,91 @@ class Scope extends View {
 Scope.prototype.removeIO = Tap.prototype.removeIO;
 Scope.prototype.addIO = Tap.prototype.addIO;
 
-class ElementNode{
+class ElementNode {
 
-    constructor(tag = "", children = [], attribs = [], presets){
-        
-        if(children)
-            for(const child of children)
+    constructor(env, tag = "", children = [], attribs = [], presets) {
+
+        if (children)
+            for (const child of children)
                 child.parent = this;
 
         this.SINGLE = false;
         this.MERGED = false;
 
-        this.presets =presets;
+        this.presets = presets;
         this.tag = tag;
         this.attribs = attribs || [];
         this.children = children || [];
+        this.proxied = null;
+        this.slots = null;
 
         this.component = this.getAttrib("component").value;
 
-        if(this.component)
+        if (this.component)
             presets.components[this.component] = this;
 
         this.url = this.getAttrib("url").value ? URL.resolveRelative(this.getAttrib("url").value) : null;
         this.id = this.getAttrib("id").value;
         this.class = this.getAttrib("id").value;
         this.name = this.getAttrib("name").value;
+        this.slot = this.getAttrib("slot").value;
 
-        if(this.url){
-            this.url.fetchText().then(e=>{
-                const lex = whind$1(e);
-                //let nodes = env.compile(lex, env);
-                //console.log(nodes)
-                //this.children.push(nodes);
-            });
-        }
 
         //Prepare attributes with data from this element
-        for(const attrib of this.attribs)
+        for (const attrib of this.attribs)
             attrib.link(this);
+
+        if (this.url)
+            this.loadURL(env);
 
         return this;
     }
 
     // Traverse the contructed AST and apply any necessary transforms. 
-    finalize(){
-        if(this.children.length == 0){
-            if(this.presets.components[this.tag]){
-                return this.presets.components[this.tag].merge(this);
-            }
+    finalize(slots_in = {}) {
+
+
+        if(this.slot){
+
+            if(!this.proxied_mount)
+                this.proxied_mount = this.mount.bind(this);
+            
+            //if(!slots_in[this.slot])
+            slots_in[this.slot] = this.proxied_mount;
+            
+            this.mount = ()=>{};
         }
 
-
-        for(let i = 0; i < this.children.length; i++){
+        for (let i = 0; i < this.children.length; i++) {
             const child = this.children[i];
-            this.children[i] = child.finalize();
+            this.children[i] = child.finalize(slots_in);
+        }
+
+        const slots_out = Object.assign({}, slots_in);
+
+        if (this.presets.components[this.tag]) 
+            this.proxied = this.presets.components[this.tag].merge(this);
+
+        if(this.proxied){
+            let ele = this.proxied.finalize(slots_out);
+            ele.slots = slots_out;
+            this.mount = ele.mount.bind(ele);
         }
 
         return this;
     }
 
-    getAttribute(name){
+    getAttribute(name) {
         return this.getAttrib(name).value;
     }
 
-    getAttrib(name){
-        for(const attrib of this.attribs){
-            if(attrib.name === name)
+    getAttrib(name) {
+        for (const attrib of this.attribs) {
+            if (attrib.name === name)
                 return attrib;
         }
 
-        return {name:"", value:""}
+        return { name: "", value: "" }
     }
 
     createElement() {
@@ -9659,16 +9692,35 @@ class ElementNode{
 
     /****************************************** COMPONENTIZATION *****************************************/
 
-    merge(node) {
-        
-        const merged_node = new this.constructor(this.tag, null, null, this.presets);
+
+    async loadURL(env) {
+        try {
+            const own_env = new CompilerEnvironment(env.presets, env);
+            own_env.setParent(env);
+
+            const txt_data = await this.url.fetchText();
+
+            own_env.pending++;
+
+            const ast = parser(whind$1(txt_data), own_env);
+            
+            this.proxied = ast.merge(this);
+
+            own_env.resolve();
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    merge(node, merged_node = new this.constructor(null, this.tag, null, null, this.presets)) {
         merged_node.line = this.line;
         merged_node.char = this.char;
         merged_node.offset = this.offset;
         merged_node.single = this.single;
         merged_node.url = this.url;
         merged_node.tag = this.tag;
-        merged_node.children  = (node.children || this.children) ? new MergerNode(this.children, node.children) : null;
+        merged_node.children = (node.children || this.children) ? [...this.children, ...node.children] : [];
         merged_node.css = this.css;
         merged_node.HAS_TAPS = this.HAS_TAPS;
         merged_node.MERGED = true;
@@ -9688,11 +9740,12 @@ class ElementNode{
 
     /******************************************* BUILD ****************************************************/
 
-    mount(element, scope, statics, presets = this.presets){
-        const out_statics = statics;
+    mount(element, scope, statics = {}, presets = this.presets) {
 
         // /if (this.url || this.__statics__)
         // /    out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL(par_list.length - 1) });
+         if(this.slots)
+            statics = Object.assign({}, statics, this.slots);
 
         const own_element = this.createElement(scope);
 
@@ -9702,7 +9755,7 @@ class ElementNode{
         if (this.HAS_TAPS)
             taps = scope.linkTaps(this.tap_list);
 
-        if (own_element) {      
+        if (own_element) {
 
             if (!scope.ele) scope.ele = own_element;
 
@@ -9711,17 +9764,17 @@ class ElementNode{
 
             if (element) appendChild(element, own_element);
 
-            for (let i = 0, l = this.attribs.length; i < l; i++) 
+            for (let i = 0, l = this.attribs.length; i < l; i++)
                 this.attribs[i].bind(own_element, scope);
         }
 
         const ele = own_element ? own_element : element;
 
         //par_list.push(this);
-        for(let i = 0; i < this.children.length; i++){
+        for (let i = 0; i < this.children.length; i++) {
             //for (let node = this.fch; node; node = this.getNextChild(node))
             const node = this.children[i];
-                node.mount(ele, scope, out_statics, presets);
+            node.mount(ele, scope, statics, presets);
         }
 
         //par_list.pop();
@@ -9735,14 +9788,14 @@ class MergerNode {
     constructor(...children_arrays) {
         this.c = [];
 
-        for (let i=0,l = children_arrays.length; i<l; i++)
-            if(Array.isArray(children_arrays))
+        for (let i = 0, l = children_arrays.length; i < l; i++)
+            if (Array.isArray(children_arrays))
                 this.c = this.c.concat(children_arrays[i]);
     }
 
     mount(element, scope, statics, presets = this.presets) {
-        for (let i=0,l = this.c.length; i<l; i++){
-            if(this.c[i].SLOTED == true) continue;
+        for (let i = 0, l = this.c.length; i < l; i++) {
+            if (this.c[i].SLOTED == true) continue;
             this.c[i].build(element, scope, statics, presets);
         }
 
@@ -12854,25 +12907,27 @@ const media_feature_definitions = {
  */
 class CSSSelector {
 
-    constructor(value = "", value_array = []) {
+    constructor(selectors /* string */ , selectors_arrays /* array */ ) {
 
         /**
          * The raw selector string value
          * @package
          */
-        this.v = value;
+
+        this.v = selectors;
 
         /**
          * Array of separated selector strings in reverse order.
          * @package
          */
-        this.a = value_array;
 
-        // CSS Rulesets the selector is member of .
+        this.a = selectors_arrays;
+
+        /**
+         * The CSSRule.
+         * @package
+         */
         this.r = null;
-
-        // CSS root the selector is a child of. 
-        this.root = null;
     }
 
     get id() {
@@ -14115,7 +14170,6 @@ class CSSRuleBody {
                 let selector = this.parseSelector(lexer, this);
 
                 if (selector) {
-                    selector.root = this;
                     if (!this._selectors_[selector.id]) {
                         l = selectors.push(selector);
                         this._selectors_[selector.id] = selector;
@@ -14315,7 +14369,7 @@ class Segment {
     }
 
     setList() {
-        //if(this.DEMOTED) debugger
+        if(this.DEMOTED) debugger
         if (this.prod && this.list.innerHTML == "") {
             if (this.DEMOTED || !this.prod.buildList(this.list, this))
                 this.menu_icon.style.display = "none";
@@ -15460,7 +15514,7 @@ class UIRuleSet {
             }
         }
 
-        this.parent.update(this);
+        this.parent.update();
     }
 
     addProp(type, value){
@@ -15492,6 +15546,10 @@ function dragover$1(e){
     e.preventDefault();
 }
 
+//import { UIValue } from "./ui_value.mjs";
+
+const props$2 = Object.assign({}, property_definitions);
+
 class UIMaster {
     constructor(css) {
         css.addObserver(this);
@@ -15500,7 +15558,6 @@ class UIMaster {
         this.selectors = [];
         this.element = document.createElement("div");
         this.element.classList.add("cfw_css");
-        this.update_mod = 0;
 
 
         this.rule_map = new Map();
@@ -15510,7 +15567,6 @@ class UIMaster {
     // css - A CandleFW_CSS object. 
     // meta - internal 
     build(css = this.css) {
-        if(this.update_mod++%3 !== 0) return;
 
         //Extract rule bodies and set as keys for the rule_map. 
         //Any existing mapped body that does not have a matching rule should be removed. 
@@ -15811,7 +15867,7 @@ const
                     this.type = this.getType(k0_val);
                 }
 
-                this.getValue(obj, prop_name, type, k0_val);
+                this.getValue(obj, prop_name, type);
 
                 let p = this.current_val;
 
@@ -15827,8 +15883,7 @@ const
                 this.current_val = null;
             }
 
-            getValue(obj, prop_name, type, k0_val) {
-
+            getValue(obj, prop_name, type) {
                 if (type == CSS_STYLE) {
                     let name = prop_name.replace(/[A-Z]/g, (match) => "-" + match.toLowerCase());
                     let cs = window.getComputedStyle(obj);
@@ -15838,7 +15893,6 @@ const
                     
                     if(!value)
                         value = obj.style[prop_name];
-                
 
                     if (this.type == CSS_Percentage$1) {
                         if (obj.parentElement) {
@@ -15848,7 +15902,8 @@ const
                             value = (ratio * 100);
                         }
                     }
-                    this.current_val = (new this.type(value));
+
+                    this.current_val = new this.type(value);
 
                 } else {
                     this.current_val = new this.type(obj[prop_name]);
@@ -15937,6 +15992,7 @@ const
             }
 
             setProp(obj, prop_name, value, type) {
+
                 if (type == CSS_STYLE) {
                     obj.style[prop_name] = value;
                 } else
@@ -16245,7 +16301,7 @@ const
 
             //TODO: allow scale to control playback speed and direction
             play(scale = 1, from = 0) {
-                this.SCALE = scale;
+                this.SCALE = 0;
                 this.time = from;
                 spark.queueUpdate(this);
                 return this;
@@ -16257,19 +16313,19 @@ const
             }    
         }
 
-        const GlowFunction = function(...args) {
+        const GlowFunction = function() {
 
-            if (args.length > 1) {
+            if (arguments.length > 1) {
 
                 let group = new AnimGroup();
 
-                for (let i = 0; i < args.length; i++) {
-                    let data = args[i];
+                for (let i = 0; i < arguments.length; i++) {
+                    let data = arguments[i];
 
                     let obj = data.obj;
                     let props = {};
 
-                    Object.keys(data).forEach(k => { if (!(({ obj: true, match: true, delay:true })[k])) props[k] = data[k]; });
+                    Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
 
                     group.add(new AnimSequence(obj, props));
                 }
@@ -16277,12 +16333,12 @@ const
                 return group;
 
             } else {
-                let data = args[0];
+                let data = arguments[0];
 
                 let obj = data.obj;
                 let props = {};
 
-                Object.keys(data).forEach(k => { if (!(({ obj: true, match: true, delay:true })[k])) props[k] = data[k]; });
+                Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
 
                 let seq = new AnimSequence(obj, props);
 
@@ -16489,33 +16545,53 @@ const Transitioneer = (function() {
     let obj_map = new Map();
     let ActiveTransition = null;
 
-    function $in(...data) {
+    function $in(anim_data_or_duration = 0, delay = 0) {
 
-        let
-            seq = null,
-            length = data.length,
-            delay = 0;
+        let seq;
 
-        if (typeof(data[length - 1]) == "number")
-            delay = data[length - 1], length--;
+        if (typeof(anim_data_or_duration) == "object") {
+            if (anim_data_or_duration.match && this.TT[anim_data_or_duration.match]) {
+                let duration = anim_data_or_duration.duration;
+                let easing = anim_data_or_duration.easing;
+                seq = this.TT[anim_data_or_duration.match](anim_data_or_duration.obj, duration, easing);
+            } else
+                seq = Animation.createSequence(anim_data_or_duration);
 
-        for (let i = 0; i < length; i++) {
-            let anim_data = data[i];
+            //Parse the object and convert into animation props. 
+            if (seq) {
+                this.in_seq.push(seq);
+                this.in_duration = Math.max(this.in_duration, seq.duration);
+                if (this.OVERRIDE) {
 
-            if (typeof(anim_data) == "object") {
+                    if (obj_map.get(seq.obj)) {
+                        let other_seq = obj_map.get(seq.obj);
+                        other_seq.removeProps(seq);
+                    }
 
-                if (anim_data.match && this.TT[anim_data.match]) {
-                    let
-                        duration = anim_data.duration,
-                        easing = anim_data.easing;
-                    seq = this.TT[anim_data.match](anim_data.obj, duration, easing);
-                } else
-                    seq = Animation.createSequence(anim_data);
+                    obj_map.set(seq.obj, seq);
+                }
+            }
 
-                //Parse the object and convert into animation props. 
+        } else
+            this.in_duration = Math.max(this.in_duration, parseInt(delay) + parseInt(anim_data_or_duration));
+
+        return this.in;
+    }
+
+
+    function $out(anim_data_or_duration = 0, delay = 0, in_delay = 0) {
+        //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
+        //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
+
+        if (typeof(anim_data_or_duration) == "object") {
+
+            if (anim_data_or_duration.match) {
+                this.TT[anim_data_or_duration.match] = TransformTo(anim_data_or_duration.obj);
+            } else {
+                let seq = Animation.createSequence(anim_data_or_duration);
                 if (seq) {
-                    this.in_seq.push(seq);
-                    this.in_duration = Math.max(this.in_duration, seq.duration);
+                    this.out_seq.push(seq);
+                    this.out_duration = Math.max(this.out_duration, seq.duration);
                     if (this.OVERRIDE) {
 
                         if (obj_map.get(seq.obj)) {
@@ -16526,59 +16602,11 @@ const Transitioneer = (function() {
                         obj_map.set(seq.obj, seq);
                     }
                 }
+                this.in_delay = Math.max(this.in_delay, parseInt(delay));
             }
-        }
-
-        this.in_duration = Math.max(this.in_duration, parseInt(delay));
-
-        return this.in;
-    }
-
-
-    function $out(...data) {
-        //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
-        //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
-        let
-            seq = null,
-            length = data.length,
-            delay = 0,
-            in_delay = 0;
-
-        if (typeof(data[length - 1]) == "number") {
-            if (typeof(data[length - 2]) == "number") {
-                in_delay = data[length - 2];
-                delay = data[length - 1];
-                length -= 2;
-            } else
-                delay = data[length - 1], length--;
-        }
-
-        for (let i = 0; i < length; i++) {
-            let anim_data = data[i];
-
-            if (typeof(anim_data) == "object") {
-
-                if (anim_data.match) {
-                    this.TT[anim_data.match] = TransformTo(anim_data.obj);
-                } else {
-                    let seq = Animation.createSequence(anim_data);
-                    if (seq) {
-                        this.out_seq.push(seq);
-                        this.out_duration = Math.max(this.out_duration, seq.duration);
-                        if (this.OVERRIDE) {
-
-                            if (obj_map.get(seq.obj)) {
-                                let other_seq = obj_map.get(seq.obj);
-                                other_seq.removeProps(seq);
-                            }
-
-                            obj_map.set(seq.obj, seq);
-                        }
-                    }
-
-                    this.in_delay = Math.max(this.in_delay, parseInt(delay));
-                }
-            }
+        } else {
+            this.out_duration = Math.max(this.out_duration, parseInt(delay) + parseInt(anim_data_or_duration));
+            this.in_delay = Math.max(this.in_delay, parseInt(in_delay));
         }
     }
 
@@ -16676,7 +16704,7 @@ const Transitioneer = (function() {
         }
 
         step(t) {
-
+            
             for (let i = 0; i < this.out_seq.length; i++) {
                 let seq = this.out_seq[i];
                 if (!seq.run(t) && !seq.FINISHED) {
@@ -16741,19 +16769,19 @@ const Globals = new Set([
 ]);
 
 class argumentIO extends IO {
-    constructor(scope, errors, tap, script, id){
+    constructor(scope, errors, tap, script, id) {
         super(scope, errors, tap);
         this.ele = script;
         this.id = id;
         this.ACTIVE = false;
     }
 
-    destroy(){
+    destroy() {
         this.id = null;
         super.destroy();
     }
 
-    down(value){
+    down(value) {
         this.ele.updateProp(this, value);
     }
 }
@@ -16766,13 +16794,13 @@ class ScriptIO extends IOBase {
         let presets = scope.presets;
         let ids = binding.ids;
         let func, HAVE_CLOSURE = false;
-        tap = tap || {prop:""};
+        tap = tap || { prop: "" };
 
         //*********** PRE OBJECT FUNCTION INITIALIZATION *******************//
 
         const args = binding.args;
-        
-        const names = args.map(a=>a.name);
+
+        const names = args.map(a => a.name);
 
         names.push("emit"); // For the injected emit function
         //names.unshift(binding.tap_name);
@@ -16781,17 +16809,17 @@ class ScriptIO extends IOBase {
         let TAP_BINDING = -1;
         let ACTIVE_IOS = 0;
 
-        const props = args.map((a,i)=>{
-            
-            if(a.IS_TAPPED){
+        const props = args.map((a, i) => {
 
-                if(a.name == tap.prop)
+            if (a.IS_TAPPED) {
+
+                if (a.name == tap.prop)
                     TAP_BINDING = i;
 
                 ACTIVE_IOS++;
 
                 const arg_io = new argumentIO(scope, errors, scope.getTap(a.name), null, i);
-                
+
                 arg_ios[a.name] = arg_io;
 
                 return null;
@@ -16800,12 +16828,12 @@ class ScriptIO extends IOBase {
             return a.val;
         });
 
-        
+
         //props.unshift(null); // Place holder for value data
         try {
             if (binding._func_) {
                 func = binding._func_;
-                if(binding.HAVE_CLOSURE)
+                if (binding.HAVE_CLOSURE)
                     HAVE_CLOSURE = true;
             } else {
                 func = Function.apply(Function, names.concat([binding.val]));
@@ -16828,27 +16856,27 @@ class ScriptIO extends IOBase {
 
         this.HAVE_CLOSURE = HAVE_CLOSURE;
 
-        if(this.HAVE_CLOSURE)
+        if (this.HAVE_CLOSURE)
             this._func_ = func;
         else
             this._func_ = func.bind(scope);
-        
+
         this.scope = scope;
         this.TAP_BINDING = TAP_BINDING;
 
         //Embedded emit functions
         const func_bound = this.emit.bind(this);
         func_bound.onTick = this.onTick.bind(this);
-        
+
         //TODO: only needed if emit is called in function. Though highly probably. 
         props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value); } }));
 
         this.arg_props = props;
         this.arg_ios = arg_ios;
 
-        for(const a in arg_ios)
+        for (const a in arg_ios)
             arg_ios[a].ele = this;
-        
+
         //this.meta = null;
         this.url = statics.url;
 
@@ -16869,44 +16897,48 @@ class ScriptIO extends IOBase {
         this.arg_props = null;
         this.props = null;
 
-        for(const a of this.arg_ios)
+        for (const a of this.arg_ios)
             a.destroy();
 
         this.arg_ios = null;
     }
 
-    updateProp(io, val){
+    updateProp(io, val) {
         this.arg_props[io.id] = val;
 
-        if(!io.ACTIVE){
+        if (!io.ACTIVE) {
             io.ACTIVE = true;
             this.active_IOS++;
         }
     }
 
-    down(value, meta = { event: null }) {
+    setValue(value) {
+        if (typeof(value) == "object") {
+            //Distribute iterable properties amongst the IO_Script's own props.
+            for (const a in value) {
+                if (this.arg_ios[a])
+                    this.arg_ios[a].down(value[a]);
+            }
+        } else {
+            if (this.TAP_BINDING !== -1)
+                this.arg_props[this.TAP_BINDING] = value;
+        }
+    }
+
+    down(value) {
 
         const src = this.scope;
 
-        if(value){ 
-            if(typeof(value) == "object"){
-                //Distribute iterable properties amongst the IO_Script's own props.
-                for(const a in value){
-                    if(this.arg_ios[a])
-                        this.arg_ios[a].down(value[a]);
-                }
-            }else{
-                if(this.TAP_BINDING !== -1)
-                    this.arg_props[this.TAP_BINDING] = value;
-            }
-        }
+        if (value)
+            this.setValue(value);
 
-        if(this.active_IOS < this.IO_ACTIVATIONS) 
+
+        if (this.active_IOS < this.IO_ACTIVATIONS)
             return
 
         try {
-            
-            if(this.HAVE_CLOSURE)
+
+            if (this.HAVE_CLOSURE)
                 return this._func_.apply(this, this.arg_props);
             else
                 return this._func_.apply(this, this.arg_props);
@@ -16930,10 +16962,10 @@ class ScriptIO extends IOBase {
         Same as emit, except the message is generated on the next global tick. 
         Useful for actions which require incremental updates to the UI.
     */
-    onTick(name){
+    onTick(name) {
         spark.queueUpdate({
-            _SCHD_:0, // Meta value for spark;
-            scheduledUpdate:(s,d)=>this.emit(name, {step:s,diff:d})
+            _SCHD_: 0, // Meta value for spark;
+            scheduledUpdate: (s, d) => this.emit(name, { step: s, diff: d })
         });
     }
 }
@@ -16947,9 +16979,9 @@ const defaults = { glow: Animation };
 
 
 class scr extends ElementNode{
-	constructor(ast, attribs, presets){
+	constructor(env, tag, children, attribs, presets){
 		
-		super("script", [], attribs);
+		super(env, "script", null, attribs, presets);
 
 		this.processJSAST(ast, presets, true);
 
@@ -17053,9 +17085,9 @@ class scr extends ElementNode{
 
 class scp extends ElementNode{
 
-	constructor(tag, children, attribs, presets){
+	constructor(env, tag, children, attribs, presets){
         
-		super("scope", children, attribs, presets);
+		super(env, "scope", children, attribs, presets);
 
 		this.import = this.getAttrib("import").value;
 		this.export = this.getAttrib("export").value;
@@ -17066,10 +17098,10 @@ class scp extends ElementNode{
 	}
 
     createElement() {
-        return createElement(this.element);
+        return createElement(this.element || "div");
     }
 
-	mount(element, scope, statics, presets){
+	mount(element, scope, statics = {}, presets){
 
         let data = {};
 
@@ -17077,6 +17109,9 @@ class scp extends ElementNode{
 
         let me = new Scope(scope, this.__presets__ || presets || this.presets, element, this);
 
+        if(this.slots)
+            statics = Object.assign({}, statics, this.slots);
+        
         //this.pushChached(me);
 
         me._model_name_ = this.model_name;
@@ -17193,8 +17228,8 @@ class scp extends ElementNode{
 }
 
 class a$1 extends ElementNode{
-	constructor(children, attribs){
-		super("a", children, attribs);
+	constructor(env, tag, children, attribs, presets){
+		super(env, "a", children, attribs, presets);
 	}
 }
 
@@ -17255,6 +17290,7 @@ class ScopeContainer extends View {
     }
 
     get data() {}
+
     set data(container) {
         if (container instanceof ModelContainerBase) {
             container.pin();
@@ -17315,11 +17351,11 @@ class ScopeContainer extends View {
             this.filterUpdate();
             this.render();
         } else {
-            
+
             const offset_a = this.offset;
-            
+
             this.limitUpdate();
-            
+
             const offset_b = this.offset;
 
             this.offset = offset_a;
@@ -17360,7 +17396,7 @@ class ScopeContainer extends View {
     scrub(scrub_delta, SCRUBBING = true) {
         // scrub_delta is the relative ammunt of change from the previous offset. 
 
-        if(!this.SCRUBBING) 
+        if (!this.SCRUBBING)
             this.render(null, this.activeScopes, true);
 
         this.SCRUBBING = true;
@@ -17399,7 +17435,7 @@ class ScopeContainer extends View {
                     this.render(null, this.activeScopes, true).play(1);
                 }
 
-            } 
+            }
 
             //Make Sure the the transition animation is completed before moving on to new animation sequences.
 
@@ -17479,8 +17515,6 @@ class ScopeContainer extends View {
 
     arrange(output = this.activeScopes) {
 
-
-
         //Arranges active scopes according to their arrange handler.
         const
             limit = this.limit,
@@ -17503,9 +17537,9 @@ class ScopeContainer extends View {
         //Scopes on the descending edge of the transition window
         while (i < output_length)
             output[i].update({ trs_dec_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }), i++;
-        
+
         transition.play(1);
-        
+
     }
 
     render(transition, output = this.activeScopes, NO_TRANSITION = false) {
@@ -17682,11 +17716,11 @@ class ScopeContainer extends View {
         for (let i = 0, l = this.filters.length; i < l; i++) {
             let filter = this.filters[i];
             if (filter.CAN_USE) {
-                if (filter._CAN_LIMIT_) this.limit = parseInt(filter._value_); // Make sure we are dealing with integers. 
+                if (filter._CAN_LIMIT_) this.limit = parseInt(filter.val); // Make sure we are dealing with integers. 
                 // Value could be string debinding on the type of 
                 // binding. Applies to other values. 
-                if (filter._CAN_OFFSET_) offset = parseInt(filter._value_);
-                if (filter._CAN_SHIFT_) this.shift_amount = parseInt(filter._value_);
+                if (filter._CAN_OFFSET_) offset = parseInt(filter.val);
+                if (filter._CAN_SHIFT_) this.shift_amount = parseInt(filter.val);
             }
         }
 
@@ -17707,15 +17741,51 @@ class ScopeContainer extends View {
         for (let i = 0, l = this.filters.length; i < l; i++) {
             let filter = this.filters[i];
             if (filter.CAN_USE) {
-                if (filter.CAN_FILTER) output = output.filter(filter.filter_function._filter_expression_);
-                if (filter.CAN_SORT) output = output.sort(filter._sort_function_);
+                if (filter.CAN_FILTER) output = output.filter(e => filter.containerFunction(e));
+                if (filter.CAN_SORT) output = output.sort((a, b) => filter.containerFunction(a, b));
             }
         }
+
         this.activeScopes = output;
         this.UPDATE_FILTER = false;
 
         return output;
     }
+
+    limitExpressionUpdate(ransition = Animation.createTransition()){
+        // Update offset, limit, and shift variables.
+        this.limitUpdate();
+
+        //Preset the positions of initial components. 
+        this.arrange();
+
+        this.render(transition);
+
+        // If scrubbing is currently occuring, if the transition were to auto play then the results 
+        // would interfere with the expected behavior of scrubbing. So the transition
+        // is instead set to it's end state, and scrub is called to set intermittent 
+        // position. 
+        if (!this.SCRUBBING)
+            transition.start();
+    }
+
+    filterExpressionUpdate(transition = Animation.createTransition()) {
+        // Filter the current components. 
+        this.filterUpdate();
+
+        //Preset the positions of initial components. 
+        this.arrange();
+
+        this.render(transition);
+
+        // If scrubbing is currently occuring, if the transition were to auto play then the results 
+        // would interfere with the expected behavior of scrubbing. So the transition
+        // is instead set to it's end state, and scrub is called to set intermittent 
+        // position. 
+        if (!this.SCRUBBING)
+            transition.start();
+    }
+
     /**
      * Removes stored Scopes that do not match the ModelContainer contents. 
      *
@@ -17724,6 +17794,7 @@ class ScopeContainer extends View {
      * @protected
      */
     cull(new_items = []) {
+
         const transition = Animation.createTransition();
 
         if (new_items.length == 0) {
@@ -17739,6 +17810,10 @@ class ScopeContainer extends View {
                 template: this,
                 trs: transition.in
             });
+
+            if (!this.SCRUBBING)
+                transition.start();
+
         } else {
 
             const
@@ -17746,9 +17821,9 @@ class ScopeContainer extends View {
                 out = [];
 
             for (let i = 0, l = this.activeScopes.length; i < l; i++)
-                if (exists.has(this.activeScopes[i].model)) 
+                if (exists.has(this.activeScopes[i].model))
                     exists.set(this.activeScopes[i].model, false);
-                
+
 
             for (let i = 0, l = this.scopes.length; i < l; i++)
                 if (!exists.has(this.scopes[i].model)) {
@@ -17766,16 +17841,6 @@ class ScopeContainer extends View {
                 // Wrap models into components
                 this.added(out, transition);
 
-                // Update offset, limit, and shift variables.
-                this.limitUpdate();
-
-                // Filter the current components. 
-                this.filterUpdate(out);
-
-                //Preset the positions of initial components. 
-                this.arrange();
-
-                this.render(transition);
             } else {
                 for (let i = 0, j = 0, l = this.activeScopes.length; i < l; i++, j++) {
 
@@ -17791,25 +17856,10 @@ class ScopeContainer extends View {
                     } else
                         this.activeScopes.splice(i, 1), i--, l--;
                 }
-
-                const c = this.filterUpdate(transition);
-                this.limitUpdate(transition);
-                this.arrange();
-                this.render(transition);
             }
-        }
 
-        // If scrubbing is currently occuring, if the transition were to auto play then the results 
-        // would interfere with the expected behavior of scrubbing. So the transition
-        // is instead set to it's end state, and scrub is called to set intermittent 
-        // position. 
-        //*
-        if (this.SCRUBBING) {
-            //transition.play(1);
-            //this.scrub(0);
-        } else
-            transition.start();
-    
+            this.filterExpressionUpdate(transition);
+        }
     }
     /**
      * Called by the ModelContainer when Models have been removed from its set.
@@ -17829,10 +17879,7 @@ class ScopeContainer extends View {
             }
         }
 
-        this.limitUpdate();
-        this.filterUpdate(transition);
-        //this.arrange();
-        this.render(transition);
+        this.filterExpressionUpdate(transition);
     }
     /**
      * Called by the ModelContainer when Models have been added to its set.
@@ -17847,17 +17894,15 @@ class ScopeContainer extends View {
 
         for (let i = 0; i < items.length; i++) {
             const scope = this.component.mount(null, items[i]);
+
+            //TODO: Make sure both of there references are removed when the scope is destroyed.
             this.scopes.push(scope);
             this.parent.addScope(scope);
         }
 
-        if (OWN_TRANSITION) {
-            this.limitUpdate();
-            this.filterUpdate(transition);
-            //this.arrange();
-            this.render(transition);
-            transition.play();
-        }
+
+        if (OWN_TRANSITION) 
+            this.filterExpressionUpdate(transition);
     }
 
     revise() {
@@ -17905,37 +17950,65 @@ ScopeContainer.prototype.removeIO = Tap.prototype.removeIO;
 ScopeContainer.prototype.addIO = Tap.prototype.addIO;
 
 class fltr extends ElementNode{
-	constructor(attribs, presets){
-		super("f", null, attribs, presets);
+	constructor(env, tag, children, attribs, presets){
+		super(env, "f", null, attribs, presets);
 	}
 
 	mount(scope, container){
-
+		return this.attribs[0].value.bind(scope, container);
 	}
 }
 
 /******************** Expressions **********************/
 
 class ExpressionIO extends ScriptIO {
-    constructor(ele, scope, errors, tap, binding, lex){
+    constructor(ele, scope, errors, tap, binding, lex) {
         super(scope, errors, tap, binding, lex, {});
-        this.ele = ele;   
+        this.ele = ele;
         this._SCHD_ = 0;
+        this.IS_FILTER = false;
+        this.ACTIVE = false;
+        this.containerFunction = this.containerFunction.bind(this);
     }
 
-    updateProp(io, val){
-        super.updateProp(io,val);
-        this.down();
+    updateProp(io, val) {
+        super.updateProp(io, val);
+        if (!this._SCHD_)
+            this.down();
     }
 
-    down(v,m){
-        this.val = super.down(v,m);
-        spark.queueUpdate(this);
+    setValue(value) {
+        if (Array.isArray(value)) {
+            value.forEach((v, i) => this.arg_props[i] = v);
+            this.active_IOS = this.IO_ACTIVATIONS;
+        } else if (typeof(value) == "object") {
+            //Distribute iterable properties amongst the IO_Script's own props.
+            for (const a in value) {
+                if (this.arg_ios[a])
+                    this.arg_ios[a].down(value[a]);
+            }
+        } else {
+            if (this.TAP_BINDING !== -1)
+                this.arg_props[this.TAP_BINDING] = value;
+        }
+    }
+
+    down(v, m) {
+        
+        if(this.IS_FILTER)
+            this.ele.filterExpressionUpdate();
+        else
+            this.val = super.down(v, m);
+    }
+
+    containerFunction(...data) {
+        return super.down(data);
     }
 
     scheduledUpdate() {
-        this.ele.data = this.val;
-    }   
+        if(!this.IS_FILTER)
+            this.ele.data = this.val;
+    }
 }
 
 const EXPRESSION$1 = 5;
@@ -18062,9 +18135,9 @@ class Binding{
         this.METHOD = EXPRESSION$1;
 	}
 
-	bind(scope){
+	bind(scope, element){
         if(this.METHOD == EXPRESSION$1){
-            return new ExpressionIO(null, scope, [], scope, this, this.lex);
+            return new ExpressionIO(element, scope, [], scope, this, this.lex);
         }
         else 
             return scope.getTap(this.val);	
@@ -18089,7 +18162,7 @@ class TextNode {
     }
 
     finalize(){
-        
+        return this;
     }
 
     mount(element, scope, statics, presets, ele = document.createTextNode("")) {
@@ -18098,7 +18171,7 @@ class TextNode {
             element.appendChild(ele);
 
         if (this.IS_BINDING)
-            new DataNodeIO(scope, this.data.bind(scope), ele, this.data.exprb);
+            return new DataNodeIO(scope, this.data.bind(scope), ele, this.data.exprb);
         else
             ele.data = this.data;
     }
@@ -18148,6 +18221,7 @@ class d$2 {
 
         if (bound_data_object)
             scope.load(bound_data_object);
+        
 
         return scope;
     }
@@ -18176,8 +18250,8 @@ BaseComponent.prototype = d$2.prototype;
 
 class ctr extends ElementNode {
     
-    constructor(children, attribs, presets) {
-        super("container", children, attribs, presets);
+    constructor(env, tag, children, attribs, presets) {
+        super(env, "container", children, attribs, presets);
 
         this.filters = null;
         this.property_bind = null;
@@ -18186,12 +18260,26 @@ class ctr extends ElementNode {
         //Tag name of HTMLElement the container will create;
         this.element = this.getAttribute("element") || "ul";
 
+        this.filters = null;
+        this.nodes = null;
+        this.binds = null;
+
+        
+    }
+
+    finalize(slots = {}){
+        super.finalize(slots);
+
+        const children = this.children;
+
         this.filters = children.reduce((r, c) => { if (c instanceof fltr) r.push(c); return r }, []);
         this.nodes = children.reduce((r, c) => { if (c instanceof ElementNode && !(c instanceof fltr)) r.push(c); return r }, []);
         this.binds = children.reduce((r, c) => { if (c instanceof TextNode && c.IS_BINDING) r.push(c); return r }, []);
 
         //Keep in mind slots!;
         this.component_constructor = (this.nodes.length > 0) ? new BaseComponent(this.nodes[0], this.presets) : null;
+
+        return this;
     }
 
     merge(node) {
@@ -18204,7 +18292,7 @@ class ctr extends ElementNode {
     }
 
     mount(element, scope, statics, presets) {
-
+        
         scope = scope || new Scope(null, presets, element, this);
 
         const
@@ -18218,8 +18306,13 @@ class ctr extends ElementNode {
         if(this.component_constructor)
             container.component = this.component_constructor;
 
-        for (let i = 0; i < this.filters.length; i++)
-            this.filters[i].mount(scope, container);
+        for (let i = 0; i < this.filters.length; i++){
+            let io = this.filters[i].mount(scope, container);
+            io.IS_FILTER = true;
+            io.CAN_FILTER = true;
+            io.CAN_USE = true;
+            container.filters.push(io);
+        }
 
         for (let i = 0, l = this.attribs.length; i < l; i++)
             this.attribs[i].bind(ele, scope);
@@ -18231,55 +18324,64 @@ class ctr extends ElementNode {
             //If there is no binding, then there is no potential to have ModelContainer borne components.
             //Instead, load any existing children as component entries for the container element. 
             for (let i = 0; i < this.nodes.length; i++)
-                container.activeScopes.push(this.nodes[i].mount(null, null, statics, presets));
+                container.scopes.push(this.nodes[i].mount(null, null, statics, presets));
+            container.filterUpdate();
+            container.render();
         }
 
-
-        container.render();
 
         return scope;
     }
 }
 
 class sty extends ElementNode{
-	constructor(children, attribs){
+	constructor(env, tag, children, attribs, presets){
 		CSSParser;
 		
 		let data = children[0].data;
 		CSSParser(data).then(css=>{
 			debugger
 		});
-		super("style", children, attribs);
+		super(env, "style", children, attribs, presets);
 	}
 }
 
 class v$1 extends ElementNode{
-	constructor(tag, children, attribs){
-		super(tag, children, attribs);
+	constructor(env, tag, children, attribs, presets){
+		super(env, tag, children, attribs, presets);
 	}
 }
 
 class svg extends ElementNode{
-	constructor(children, attribs){
-		super("svg", children, attribs);
+	constructor(env, tag, children, attribs, presets){
+		super(env, "svg", children, attribs, presets);
 	}
 }
 
 class slt extends ElementNode{
-	constructor(children, attribs){
-		super("slot", children, attribs);
+	finalize(){
+		this.name = this.getAttribute("name");
+		return this;
+	}
+
+	mount(element, scope, statics, presets){
+		if(statics && statics[this.name]){
+			let ele = statics[this.name];
+			statics[this.name] = null;
+			ele(element, scope, statics, presets);
+		}
 	}
 }
 
 class pre extends ElementNode{
-	constructor(children, attribs){
-		super("pre", children, attribs);
+	constructor(env, tag, children, attribs, presets){
+		super(env, "pre", children, attribs, presets);
 	}
 }
 
 class Import extends ElementNode{
-	constructor(attribs, presets, env){
-		super("import", null, attribs, presets);
+	constructor(env, tag, children, attribs, presets){
+		super(env, "import", null, attribs, presets);
 		this.url = URL.resolveRelative(this.getAttribute("url"), env.url);
 		this.load(env);
 	}
@@ -18300,11 +18402,14 @@ class Import extends ElementNode{
 			console.error(err);
 		}
 	}
+
+		loadURL(){/*Intentional*/ return;}
 }
 
 //import Plugin from "../../../plugin.mjs";
 
 function element_selector (sym, env, lex){ 
+
 	const 
         FULL = sym.length > 5,
         tag = sym[1],
@@ -18313,40 +18418,42 @@ function element_selector (sym, env, lex){
 
     const presets = env.presets;
 
-    let node = null;
-
+    let node = null, cstr = null;
+    
     switch (tag) {
         case "filter":
         case "f":
-            node =  new fltr(attribs, presets); break;
+            cstr =  fltr; break;
         case "a":
-            node =  new a$1(children, attribs, presets); break;
+            cstr =  a$1; break;
             /** void elements **/
         case "template":
-            node =  new v$1(tag, children, attribs, presets); break;
+            cstr =  v$1; break;
         case "css":
         case "style":
-            node =  new sty(children, attribs, presets); break;
+            cstr =  sty; break;
         case "script":
-            node =  new scr(children, attribs, presets); break;
+            cstr =  scr; break;
         case "svg":
         case "path":
-            node =  new svg(tag, children, attribs, presets); break;
+            cstr =  svg; break;
         case "container":
-            node =  new ctr(children, attribs, presets); break;
+            cstr =  ctr; break;
         case "scope":
-            node =  new scp(tag, children, attribs, presets); break;
+            cstr =  scp; break;
         case "slot":
-            node =  new slt(children, attribs, presets); break;
+            cstr =  slt; break;
         case "import":
-            node =  new Import(attribs, presets, env); break;
+            cstr =  Import; break;
             //Elements that should not be parsed for binding points.
         case "pre":
         case "code":
-            node =  new pre(children, attribs, presets); break;
+            cstr =  pre; break;
         default:
-            node =  new ElementNode(tag, children, attribs, presets); break;
+            cstr =  ElementNode; break;
     }
+
+    node = new cstr(env, tag, children, attribs, presets);
 
     node.SINGLE = !FULL;
 
@@ -18423,6 +18530,7 @@ const env = {
         exp,
         lt,
         negate_expr: negate,
+        eq,
         if_stmt: function(sym) { this.bool = sym[2];
             this.body = sym[4];
             this.else = sym[6];},
@@ -18471,9 +18579,6 @@ const env = {
         gte_expr: function(sym) { this.le = sym[0];
             this.re = sym[2];
             this.ty = "GTE";},
-        eq_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "EQ";},
         seq_expr: function(sym) { this.le = sym[0];
             this.re = sym[2];
             this.ty = "STRICT_EQ";},
@@ -18560,11 +18665,8 @@ const
 
     default_presets = new Presets,
 
-    // This is to allow components to import data from remote resources
-
-
     // If compilation fails, failure component is generated that provides 
-    // error information. 
+    // error information. Should be fancy though.
 
     compileAST = async (component_data, presets) => {
             var
@@ -18663,17 +18765,19 @@ const
 
             } else {
 
-                return new Promise(() => {
+                return new Promise(res => {
                     const comp = new Component(...data);
 
                     return compileAST(component_data, presets).then(ast => {
-                        debugger
+                        
                         comp.READY = true;
                         comp.ast = ast;
                         comp.ast.finalize();
 
                         if (!comp.name)
                             comp.name = comp.ast.getAttrib("component").value || "undefined-component";
+
+                        return res(comp)
                     });
                 });
             }

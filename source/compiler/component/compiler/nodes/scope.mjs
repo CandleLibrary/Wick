@@ -14,6 +14,7 @@ export class ScopeNode extends RootNode {
         this._model_name_ = "";
         this._schema_name_ = "";
         this._cached_ = [];
+        this.element = 
     }
 
     merge(node) {
@@ -21,7 +22,6 @@ export class ScopeNode extends RootNode {
         merged_node._model_name_ = this._model_name_;
         merged_node._schema_name_ = this._schema_name_;
         merged_node._cached_ = this._cached_;
-        return merged_node;
     }
 
     pushChached(scope) {

@@ -14,7 +14,7 @@ export default class TextNode {
     }
 
     finalize(){
-        
+        return this;
     }
 
     mount(element, scope, statics, presets, ele = document.createTextNode("")) {
@@ -23,7 +23,7 @@ export default class TextNode {
             element.appendChild(ele);
 
         if (this.IS_BINDING)
-            new DataNodeIO(scope, this.data.bind(scope), ele, this.data.exprb);
+            return new DataNodeIO(scope, this.data.bind(scope), ele, this.data.exprb);
         else
             ele.data = this.data;
     }
