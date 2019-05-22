@@ -270,7 +270,7 @@ export default class Scope extends Observer {
     }
 
     transitionOut(transition, transition_name = "trs_out", DESTROY_AFTER_TRANSITION = false) {
-
+        console.log(transition_name)
         this.CONNECTED = false;
 
         if (this.TRANSITIONED_IN === false) {

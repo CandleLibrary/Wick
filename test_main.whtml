@@ -1,0 +1,42 @@
+<import url="./test.html"/>
+					
+<scope element="div">
+
+	<div url="./test.html" ><div slot=test>Im Z best Dawg </div></div>
+
+	Test
+	<input value=((color)) type="text"/>
+
+	<container>
+
+		((doug))
+
+		<f filter=(( scope.model.name.includes(color) )) />
+		<f sort=(( s1.model.name < s2.model.name ? -1 : 1 )) />
+
+		<tractor style="color:green;position: absolute;">
+			
+			<div><input value=((color)) type="text"/></div>
+			
+			<div slot=test>I'm a best ((color))</div>
+
+			<script on=((trs_dec_in))>
+				console.log(color);
+				trs({
+					obj:this.ele,
+					transform:[{v:"translate(0px, 0px) rotate(0)"}, {v:"rotate(0.5) translate(60px, 80px) ", duration:1000, easing:glow.ease_out}]
+				});
+			</script>
+
+			<script on=((trs_out))>
+				trs({
+					obj:this.ele,
+					transform:[{v:"rotate(0.5) translate(60px, 80px) "}, {v:"translate(0px, 0px) rotate(0)", duration:1000, easing:glow.ease_out}]
+				});
+			</script>
+
+		</tractor>
+
+	</container>
+
+</scope>

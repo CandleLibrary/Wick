@@ -8,6 +8,7 @@ export default class CompilerEnvironment {
         this.url = "";
         this.pending = 0;
         this.parent = null;
+        this.ASI = true; // Automatic Semi-Colon Insertion
         this.pendingResolvedFunction = () => {};
     }
 

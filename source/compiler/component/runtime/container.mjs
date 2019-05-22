@@ -120,9 +120,6 @@ export default class ScopeContainer extends Observer {
                 this.scrub(Infinity);
                 this.SCRUBBING = false;
             }
-        } else if (this.UPDATE_FILTER) {
-            this.filterUpdate();
-            this.render();
         } else {
 
            // const offset_a = this.offset;
@@ -294,7 +291,6 @@ export default class ScopeContainer extends Observer {
             offset = this.offset,
             transition = glow.createTransition(),
             output_length = output.length,
-            shift_points = Math.ceil(output_length / this.shift_amount),
             active_window_start = offset * this.shift_amount;
 
         let i = 0;
@@ -416,15 +412,16 @@ export default class ScopeContainer extends Observer {
         for (let i = 0; i < output_length; i++) output[i].index = i;
 
         for (let i = 0; i < active_length; i++) {
-            let as = this.dom_scopes[i];
+
+            const as = this.dom_scopes[i];
 
             if (as.index > j) {
                 while (j < as.index && j < output_length) {
-
-                    let os = output[j];
-                    os.index = j;
+                    const os = output[j];
+                    os.index = -1;
                     trs_in.pos = getColumnRow(j, this.offset, this.shift_amount);
-                    os.appendToDOM(this.ele, as.element);
+
+                    os.appendToDOM(this.ele, as.ele);
                     os.transitionIn(trs_in, (direction) ? "trs_asc_in" : "trs_dec_in");
                     j++;
                 }
@@ -436,11 +433,11 @@ export default class ScopeContainer extends Observer {
                         case -3:
                             as.transitionOut(trs_out, (direction > 0) ? "trs_asc_out" : "trs_dec_out");
                             break;
-                        default:
+                        default:{
                             as.transitionOut(trs_out);
+                        }
                     }
                 } else {
-
                     as.transitionOut();
                 }
 
@@ -508,26 +505,14 @@ export default class ScopeContainer extends Observer {
         return output;
     }
 
-    limitExpressionUpdate(transition = glow.createTransition()){
-        // Update offset, limit, and shift variables.
-
-        //Preset the positions of initial components. 
-        this.arrange();
-
-        this.render(transition);
-
-        // If scrubbing is currently occuring, if the transition were to auto play then the results 
-        // would interfere with the expected behavior of scrubbing. So the transition
-        // is instead set to it's end state, and scrub is called to set intermittent 
-        // position. 
-        if (!this.SCRUBBING)
-            transition.start();
-    }
-
     filterExpressionUpdate(transition = glow.createTransition()) {
         // Filter the current components. 
         this.filterUpdate();
 
+        this.limitExpressionUpdate(transition);
+    }
+
+    limitExpressionUpdate(transition = glow.createTransition()){
         //Preset the positions of initial components. 
         this.arrange();
 

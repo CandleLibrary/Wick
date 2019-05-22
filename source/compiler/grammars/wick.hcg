@@ -651,15 +651,11 @@
 	<> property_definition_list → property_definition 				↦return{ [sym[0]] }
 		│ property_definition_list , property_definition			↦return{ (sym[0].push(sym[2]), sym[0]) }
 
-	<> property_definition →  colon_assignment 
-		│ cover_initialized_name 									↦cstr{ this.id = sym[0]; }
+	<> property_definition →  cover_initialized_name 				
 		│ identifier_reference 										
-	 	│ method_definition											↦cstr{ this.id = sym[0]; }
+	 	│ method_definition											
 		│ ... assignment_expression 								↦cstr ^spread_expr
-
-	<> colon_assignment → property_name colon_expression 			↦cstr{ this.id = sym[0]; this.expr = sym[1] }
-
-	<> colon_expression → : assignment_expression 					↦return{ sym[1] }
+		│ property_name : assignment_expression						↦cstr ^property_binding		
 
 	<> property_name → literal_property_name
 		│ computed_property_name
@@ -668,9 +664,9 @@
 		│ string_literal
 		│ numeric_literal
 
-	<> computed_property_name → [ assignment_expression ]
+	<> computed_property_name → [ assignment_expression ] 			↦return{ sym[1] }
 
-	<> cover_initialized_name → identifier_reference initializer
+	<> cover_initialized_name → identifier_reference initializer 	↦cstr ^binding
 
 	<> initializer → = assignment_expression						↦return{ sym[1] }
 
@@ -706,7 +702,7 @@
 	##############################################################################################################
 
 		<> assignment_expression → conditional_expression 
-			# │ yield_expressionGOAL_TAG
+			# │ yield_expression
 			│ arrow_function
 			#│ async_arrow_function
 			│ left_hand_side_expresssion = assignment_expression  					↦cstr ^assign

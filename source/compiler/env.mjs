@@ -1,36 +1,39 @@
-import for_stmt from "./js/nodes/for.mjs"
-import call_expr from "./js/nodes/call.mjs";
-import identifier from "./js/nodes/identifier.mjs";
-import catch_stmt from "./js/nodes/catch.mjs";
-import try_stmt from "./js/nodes/try.mjs";
-import stmts from "./js/nodes/stmts.mjs";
-import block from "./js/nodes/block.mjs";
-import lexical from "./js/nodes/lexical.mjs";
-import binding from "./js/nodes/binding.mjs";
-import member from "./js/nodes/member.mjs";
-import assign from "./js/nodes/assign.mjs";
-import add from "./js/nodes/add.mjs";
-import exp from "./js/nodes/exp.mjs";
-import sub from "./js/nodes/sub.mjs";
-import div from "./js/nodes/div.mjs";
-import mult from "./js/nodes/mult.mjs";
-import object from "./js/nodes/object.mjs";
-import base from "./js/nodes/base.mjs";
-import string from "./js/nodes/string.mjs";
-import null_ from "./js/nodes/null.mjs";
-import number from "./js/nodes/number.mjs";
-import bool from "./js/nodes/bool.mjs";
-import negate from "./js/nodes/negate.mjs";
-import rtrn from "./js/nodes/return.mjs";
-import lt from "./js/nodes/lt.mjs";
-import eq from "./js/nodes/eq.mjs";
-import condition from "./js/nodes/condition.mjs";
+import for_stmt from "./js/for.mjs";
+import call_expr from "./js/call.mjs";
+import identifier from "./js/identifier.mjs";
+import catch_stmt from "./js/catch.mjs";
+import try_stmt from "./js/try.mjs";
+import stmts from "./js/stmts.mjs";
+import block from "./js/block.mjs";
+import lexical from "./js/lexical.mjs";
+import binding from "./js/binding.mjs";
+import member from "./js/member.mjs";
+import assign from "./js/assign.mjs";
+import add from "./js/add.mjs";
+import exp from "./js/exp.mjs";
+import sub from "./js/sub.mjs";
+import div from "./js/div.mjs";
+import mult from "./js/mult.mjs";
+import object from "./js/object.mjs";
+import debugger_stmt from "./js/debugger.mjs";
+import string from "./js/string.mjs";
+import null_ from "./js/null.mjs";
+import number from "./js/number.mjs";
+import bool from "./js/bool.mjs";
+import negate from "./js/negate.mjs";
+import rtrn from "./js/return.mjs";
+import lt from "./js/lt.mjs";
+import eq from "./js/eq.mjs";
+import condition from "./js/condition.mjs";
+import array_literal from "./js/array_literal.mjs";
+import this_expr from "./js/this.mjs";
+import property_binding from "./js/property_binding.mjs";
 
 //HTML
-import element_selector from "./html/nodes/element_selector.mjs";
-import attribute from "./html/nodes/attribute.mjs";
-import wick_binding from "./html/nodes/binding.mjs";
-import text from "./html/nodes/text.mjs";
+import element_selector from "./html/element_selector.mjs";
+import attribute from "./html/attribute.mjs";
+import wick_binding from "./html/binding.mjs";
+import text from "./html/text.mjs";
 
 const env = {
     table: {},
@@ -63,6 +66,8 @@ const env = {
         lt,
         negate_expr: negate,
         eq,
+        array_literal,
+        property_binding,
         if_stmt: function(sym) { this.bool = sym[2];
             this.body = sym[4];
             this.else = sym[6];},
@@ -72,7 +77,7 @@ const env = {
         class_stmt: function(sym) { this.id = sym[1], this.tail = sym[2];},
         class_tail: function(sym) { this.heritage = sym[0];
             this.body = sym[2];},
-        debugger_stmt: base,
+        debugger_stmt,
         lex_stmt: function(sym) { this.ty = sym[0];
             this.declarations = sym[1];},
         var_stmt: function(sym) { this.declarations = sym[1] },
@@ -144,7 +149,7 @@ const env = {
         funct_decl: function(id, args, body) { this.id = id || "Anonymous";
             this.args = args;
             this.body = body, this.scope = false },
-        this_expr: function() {},
+        this_expr,
 
         defaultError: (tk, env, output, lex, prv_lex, ss, lu) => {
             /*USED for ASI*/

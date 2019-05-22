@@ -4,18 +4,12 @@ import {terser} from 'rollup-plugin-terser';
 import gzipPlugin from 'rollup-plugin-gzip';
 const output = [{
     name: "wick",
-    file: "./build/wick_dev.js",
-    format: "iife",
-    exports: "default",
-},{
-    name: "wick",
     file: "./build/wick.js",
     format: "iife",
-    exports: "default",
-    sourcemap:"inline"
+    exports: "default"
 }, {
-    name: "css_cjs",
-    file: "./build/wick.node.js",
+    name: "wick.node",
+    file: "./build/wick_node.js",
     format: "cjs",
     exports: "named"
 }];

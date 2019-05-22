@@ -93,15 +93,11 @@ export default class Container extends ScriptIO {
     }
 
     filter(array) {
-        return array.filter((a) => {
-            return super.down([a]);
-        })
+        return array.filter((a) => super.down([a]));
     }
 
     sort(array) {
-        let out_array=  array.sort((a, b) => super.down([a, b]));
-
-        return out_array
+        return array.sort((a, b) => super.down([a, b]));
     }
 
     scrub() {

@@ -21,31 +21,7 @@
 			async function start(){
 				const m = wick.model({doug:[{name:"pate"}, {name:"mary"}]});
 				
-				(await wick(`
-					<import url="./test.html"/>
-					
-					<scope element="div">
-
-						<div url="./test.html" ><div slot=test>Im Z best Dawg </div></div>
-
-						Test
-						<input value=((color)) type="text"/>
-
-						<container>
-							((doug))
-
-							<f filter=(( scope.model.name.includes(color) )) />
-							<f sort=(( s1.model.name < s2.model.name ? -1 : 1 )) />
-
-							<tractor style="color:green">
-								<div><input value=((color)) type="text"/></div>
-								<div slot=test>Im A best ((color))</div>
-
-							</tractor>
-						</container>
-
-					</scope>
-				`)).mount(document.body, m);
+				(await wick("./test_main.whtml")).mount(document.body, m);
 			}
 			start();
 		</script>
