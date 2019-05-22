@@ -1205,7 +1205,7 @@ whind$1.constructor = Lexer;
 Lexer.types = Types;
 whind$1.types = Types;
 
-const uri_reg_ex = /(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:\/\/))?(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:([^\<\>\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\<\>\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\<\>\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
+const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
 
 const STOCK_LOCATION = {
     protocol: "",
@@ -2024,7 +2024,7 @@ const _FrozenProperty_ = (object, name, value) => OB.defineProperty(object, name
  *
  * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
  */
-    
+ 
 const caller = (typeof(window) == "object" && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
     setTimeout(f, 1);
 };
@@ -2050,16 +2050,7 @@ class Spark {
 
         this.queue_switch = 0;
 
-        this.callback = ()=>{};
-
-        if(typeof(window) !== "undefined"){
-            window.addEventListener("load",()=>{
-                this.callback = () => this.update();
-                caller(this.callback);
-            });
-        }else{
-            this.callback = () => this.update();
-        }
+        this.callback = () => this.update();
 
         this.frame_time = perf.now();
 
@@ -2090,11 +2081,9 @@ class Spark {
 
         this.frame_time = perf.now() | 0;
 
+        this.SCHEDULE_PENDING = true;
 
-        if(!this.SCHEDULE_PENDING){
-            this.SCHEDULE_PENDING = true;
-            caller(this.callback);
-        }
+        caller(this.callback);
     }
 
     removeFromQueue(object){
@@ -8562,7 +8551,8 @@ var types = {
 		negate:51,
 		array_literal:52,
 		this_expr:53,
-		prop_bind:54
+		prop_bind:54,
+		function_declaration:55,
 	};
 
 class base{
@@ -8720,8 +8710,10 @@ class stmts extends base {
 
     *traverseDepthFirst (){ 
 	 	yield this;
-	 	for(let stmt of this.stmts)
+	 	for(let stmt of this.stmts){
+            if(!stmt.traverseDepthFirst) continue; // kludge for empty statements
 	 		yield * stmt.traverseDepthFirst();
+        }
 	 	yield this;
 	 }
 
@@ -9151,6 +9143,44 @@ class property_binding extends binding {
     }
     get type( ){return types.prop_bind}
     render() { return `${this.id.type > 4 ? `[${this.id.render()}]` : this.id.render()} : ${this.init.render()}` }
+}
+
+class funct_decl extends base {
+    constructor(id, args, body) {
+
+        super();
+
+        this.id = id;
+
+        //This is a declaration and id cannot be a closure variable. 
+        this.id.root = false;
+
+        this.args = args || [];
+        this.body = body || [];
+    }
+
+    getRootIds(ids, closure) {
+        this.id.getRootIds(ids, closure);
+        this.args.forEach(e => e.getRootIds(ids, closure));
+    }
+
+    *traverseDepthFirst (){ 
+        yield this;
+        
+        yield * this.id.traverseDepthFirst();
+        
+        for(let arg of this.args)
+            yield * arg.traverseDepthFirst();
+
+        for(let arg of this.body)
+            yield * arg.traverseDepthFirst();
+     }
+
+    get name() { return this.id.name }
+    
+    get type() { return types.function_declaration }
+
+    render() { return `function ${this.id.render()}(${this.args.map(a=>a.render()).join(",")}){${this.body.render()}}` }
 }
 
 const removeFromArray = (array, ...elems) => {
@@ -9924,6 +9954,109 @@ class MergerNode {
         return `${("    ").repeat(off)}${this.binding}\n`;
     }
 }
+
+const env = {};
+var JS = {
+
+	processType(type, ast, fn){
+		for(const a of ast.traverseDepthFirst()){
+			if(a.type == type)
+				fn(a);
+		}
+	},
+	getClosureVariableNames(ast, ...global_objects){
+		let
+            tvrs = ast.traverseDepthFirst(),
+            node = tvrs.next().value,
+            non_global = new Set(),
+            globals = new Set(),
+            assignments = new Map();
+
+        //Retrieve undeclared variables to inject as function arguments.
+        while (node) {
+
+            if (
+                node.type == types.id ||
+                node.type == types.member
+            ) {
+                if (node.root)
+                    globals.add(node.name);
+            }
+
+            if (
+                node.type == types.lex ||
+                node.type == types.var
+            ) {
+                node.bindings.forEach(b => (non_global.add(b.id.name), globals.delete(b.id.name)));
+            }
+
+            node = tvrs.next().value;
+        }
+
+        return [...globals.values()].reduce((red, out) => {
+
+            if (window[out]) 
+            	//Skip anything already defined on the global object. 
+                return red;
+
+            red.push(out);
+            return red;
+        }, [])
+	},
+
+	//Returns the argument names of the first function declaration defined in the ast
+	getFunctionDeclarationArgumentNames(ast){
+		const tvrs = ast.traverseDepthFirst(); let node = null;
+
+		while((node = tvrs.next().value)){
+			if(node.type == types.function_declaration){
+				return node.args.map(e=>e.name);
+			}
+		}
+		return [];
+	},
+	parse(lex){
+		let l = lex.copy();
+
+		return JSParser(lex, env);
+	},
+
+	validate(lex){
+		let l = lex.copy();
+
+		console.log(l.slice());
+		try{
+			let result = JSParser(lex, env);
+			console.log(result);
+			return true;
+		}catch(e){
+			console.error(e);
+			return false;
+		}
+	},
+
+	getRootVariables(lex){
+		let l = lex.copy();
+		
+		let ids = new Set();
+		let closure = new Set();
+
+		try{
+			let result = JSParser(lex, env);
+
+			if(result instanceof identifier$1){
+				ids.add(result.val);
+			}else
+				result.getRootIds(ids, closure);
+
+			return {ids, ast:result, SUCCESS : true}
+		}catch(e){
+			return {ids, ast:null, SUCCESS : false};
+		}
+	},
+
+	types : types
+};
 
 class IOBase {
 
@@ -13023,25 +13156,27 @@ const media_feature_definitions = {
  */
 class CSSSelector {
 
-    constructor(value = "", value_array = []) {
+    constructor(selectors /* string */ , selectors_arrays /* array */ ) {
 
         /**
          * The raw selector string value
          * @package
          */
-        this.v = value;
+
+        this.v = selectors;
 
         /**
          * Array of separated selector strings in reverse order.
          * @package
          */
-        this.a = value_array;
 
-        // CSS Rulesets the selector is member of .
+        this.a = selectors_arrays;
+
+        /**
+         * The CSSRule.
+         * @package
+         */
         this.r = null;
-
-        // CSS root the selector is a child of. 
-        this.root = null;
     }
 
     get id() {
@@ -14284,7 +14419,6 @@ class CSSRuleBody {
                 let selector = this.parseSelector(lexer, this);
 
                 if (selector) {
-                    selector.root = this;
                     if (!this._selectors_[selector.id]) {
                         l = selectors.push(selector);
                         this._selectors_[selector.id] = selector;
@@ -14484,7 +14618,7 @@ class Segment {
     }
 
     setList() {
-        //if(this.DEMOTED) debugger
+        if(this.DEMOTED) debugger
         if (this.prod && this.list.innerHTML == "") {
             if (this.DEMOTED || !this.prod.buildList(this.list, this))
                 this.menu_icon.style.display = "none";
@@ -15629,7 +15763,7 @@ class UIRuleSet {
             }
         }
 
-        this.parent.update(this);
+        this.parent.update();
     }
 
     addProp(type, value){
@@ -15661,6 +15795,10 @@ function dragover$1(e){
     e.preventDefault();
 }
 
+//import { UIValue } from "./ui_value.mjs";
+
+const props$2 = Object.assign({}, property_definitions);
+
 class UIMaster {
     constructor(css) {
         css.addObserver(this);
@@ -15669,7 +15807,6 @@ class UIMaster {
         this.selectors = [];
         this.element = document.createElement("div");
         this.element.classList.add("cfw_css");
-        this.update_mod = 0;
 
 
         this.rule_map = new Map();
@@ -15679,7 +15816,6 @@ class UIMaster {
     // css - A CandleFW_CSS object. 
     // meta - internal 
     build(css = this.css) {
-        if(this.update_mod++%3 !== 0) return;
 
         //Extract rule bodies and set as keys for the rule_map. 
         //Any existing mapped body that does not have a matching rule should be removed. 
@@ -15980,7 +16116,7 @@ const
                     this.type = this.getType(k0_val);
                 }
 
-                this.getValue(obj, prop_name, type, k0_val);
+                this.getValue(obj, prop_name, type);
 
                 let p = this.current_val;
 
@@ -15996,8 +16132,7 @@ const
                 this.current_val = null;
             }
 
-            getValue(obj, prop_name, type, k0_val) {
-
+            getValue(obj, prop_name, type) {
                 if (type == CSS_STYLE) {
                     let name = prop_name.replace(/[A-Z]/g, (match) => "-" + match.toLowerCase());
                     let cs = window.getComputedStyle(obj);
@@ -16007,7 +16142,6 @@ const
                     
                     if(!value)
                         value = obj.style[prop_name];
-                
 
                     if (this.type == CSS_Percentage$1) {
                         if (obj.parentElement) {
@@ -16017,7 +16151,8 @@ const
                             value = (ratio * 100);
                         }
                     }
-                    this.current_val = (new this.type(value));
+
+                    this.current_val = new this.type(value);
 
                 } else {
                     this.current_val = new this.type(obj[prop_name]);
@@ -16106,6 +16241,7 @@ const
             }
 
             setProp(obj, prop_name, value, type) {
+
                 if (type == CSS_STYLE) {
                     obj.style[prop_name] = value;
                 } else
@@ -16414,7 +16550,7 @@ const
 
             //TODO: allow scale to control playback speed and direction
             play(scale = 1, from = 0) {
-                this.SCALE = scale;
+                this.SCALE = 0;
                 this.time = from;
                 spark.queueUpdate(this);
                 return this;
@@ -16426,19 +16562,19 @@ const
             }    
         }
 
-        const GlowFunction = function(...args) {
+        const GlowFunction = function() {
 
-            if (args.length > 1) {
+            if (arguments.length > 1) {
 
                 let group = new AnimGroup();
 
-                for (let i = 0; i < args.length; i++) {
-                    let data = args[i];
+                for (let i = 0; i < arguments.length; i++) {
+                    let data = arguments[i];
 
                     let obj = data.obj;
                     let props = {};
 
-                    Object.keys(data).forEach(k => { if (!(({ obj: true, match: true, delay:true })[k])) props[k] = data[k]; });
+                    Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
 
                     group.add(new AnimSequence(obj, props));
                 }
@@ -16446,12 +16582,12 @@ const
                 return group;
 
             } else {
-                let data = args[0];
+                let data = arguments[0];
 
                 let obj = data.obj;
                 let props = {};
 
-                Object.keys(data).forEach(k => { if (!(({ obj: true, match: true, delay:true })[k])) props[k] = data[k]; });
+                Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
 
                 let seq = new AnimSequence(obj, props);
 
@@ -16658,33 +16794,53 @@ const Transitioneer = (function() {
     let obj_map = new Map();
     let ActiveTransition = null;
 
-    function $in(...data) {
+    function $in(anim_data_or_duration = 0, delay = 0) {
 
-        let
-            seq = null,
-            length = data.length,
-            delay = 0;
+        let seq;
 
-        if (typeof(data[length - 1]) == "number")
-            delay = data[length - 1], length--;
+        if (typeof(anim_data_or_duration) == "object") {
+            if (anim_data_or_duration.match && this.TT[anim_data_or_duration.match]) {
+                let duration = anim_data_or_duration.duration;
+                let easing = anim_data_or_duration.easing;
+                seq = this.TT[anim_data_or_duration.match](anim_data_or_duration.obj, duration, easing);
+            } else
+                seq = Animation.createSequence(anim_data_or_duration);
 
-        for (let i = 0; i < length; i++) {
-            let anim_data = data[i];
+            //Parse the object and convert into animation props. 
+            if (seq) {
+                this.in_seq.push(seq);
+                this.in_duration = Math.max(this.in_duration, seq.duration);
+                if (this.OVERRIDE) {
 
-            if (typeof(anim_data) == "object") {
+                    if (obj_map.get(seq.obj)) {
+                        let other_seq = obj_map.get(seq.obj);
+                        other_seq.removeProps(seq);
+                    }
 
-                if (anim_data.match && this.TT[anim_data.match]) {
-                    let
-                        duration = anim_data.duration,
-                        easing = anim_data.easing;
-                    seq = this.TT[anim_data.match](anim_data.obj, duration, easing);
-                } else
-                    seq = Animation.createSequence(anim_data);
+                    obj_map.set(seq.obj, seq);
+                }
+            }
 
-                //Parse the object and convert into animation props. 
+        } else
+            this.in_duration = Math.max(this.in_duration, parseInt(delay) + parseInt(anim_data_or_duration));
+
+        return this.in;
+    }
+
+
+    function $out(anim_data_or_duration = 0, delay = 0, in_delay = 0) {
+        //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
+        //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
+
+        if (typeof(anim_data_or_duration) == "object") {
+
+            if (anim_data_or_duration.match) {
+                this.TT[anim_data_or_duration.match] = TransformTo(anim_data_or_duration.obj);
+            } else {
+                let seq = Animation.createSequence(anim_data_or_duration);
                 if (seq) {
-                    this.in_seq.push(seq);
-                    this.in_duration = Math.max(this.in_duration, seq.duration);
+                    this.out_seq.push(seq);
+                    this.out_duration = Math.max(this.out_duration, seq.duration);
                     if (this.OVERRIDE) {
 
                         if (obj_map.get(seq.obj)) {
@@ -16695,59 +16851,11 @@ const Transitioneer = (function() {
                         obj_map.set(seq.obj, seq);
                     }
                 }
+                this.in_delay = Math.max(this.in_delay, parseInt(delay));
             }
-        }
-
-        this.in_duration = Math.max(this.in_duration, parseInt(delay));
-
-        return this.in;
-    }
-
-
-    function $out(...data) {
-        //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
-        //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
-        let
-            seq = null,
-            length = data.length,
-            delay = 0,
-            in_delay = 0;
-
-        if (typeof(data[length - 1]) == "number") {
-            if (typeof(data[length - 2]) == "number") {
-                in_delay = data[length - 2];
-                delay = data[length - 1];
-                length -= 2;
-            } else
-                delay = data[length - 1], length--;
-        }
-
-        for (let i = 0; i < length; i++) {
-            let anim_data = data[i];
-
-            if (typeof(anim_data) == "object") {
-
-                if (anim_data.match) {
-                    this.TT[anim_data.match] = TransformTo(anim_data.obj);
-                } else {
-                    let seq = Animation.createSequence(anim_data);
-                    if (seq) {
-                        this.out_seq.push(seq);
-                        this.out_duration = Math.max(this.out_duration, seq.duration);
-                        if (this.OVERRIDE) {
-
-                            if (obj_map.get(seq.obj)) {
-                                let other_seq = obj_map.get(seq.obj);
-                                other_seq.removeProps(seq);
-                            }
-
-                            obj_map.set(seq.obj, seq);
-                        }
-                    }
-
-                    this.in_delay = Math.max(this.in_delay, parseInt(delay));
-                }
-            }
+        } else {
+            this.out_duration = Math.max(this.out_duration, parseInt(delay) + parseInt(anim_data_or_duration));
+            this.in_delay = Math.max(this.in_delay, parseInt(in_delay));
         }
     }
 
@@ -16845,7 +16953,7 @@ const Transitioneer = (function() {
         }
 
         step(t) {
-
+            
             for (let i = 0; i < this.out_seq.length; i++) {
                 let seq = this.out_seq[i];
                 if (!seq.run(t) && !seq.FINISHED) {
@@ -17128,81 +17236,32 @@ class scr extends ElementNode {
     }
 
     processJSAST(ast, presets = { custom: {} }, ALLOW_EMIT = false) {
-        const
-            tvrs = ast.traverseDepthFirst(),
-            non_global = new Set(),
-            globals = new Set(),
-            assignments = new Map();
-            
-        let
-            node = tvrs.next().value;
-
-        //Retrieve undeclared variables to inject as function arguments.
-        while (node) {
-
-            if (
-                (node.type == types.id ||
-                    node.type == types.member) &&
-                node.root
-            ) globals.add(node.name);
-
-
-            if (node.type == types.assign) {
-
-                node.id.root = false;
-
-                if (!assignments.has(node.id.name))
-                    assignments.set(node.id.name, []);
-
-                const assignment_sites = assignments.get(node.id.name);
-
-                assignment_sites.push(node);
-            }
-
-            if (
-                node.type == types.lex ||
-                node.type == types.var
-            ) node.bindings.forEach(b => (non_global.add(b.id.name), globals.delete(b.id.name)));
-
-
-            node = tvrs.next().value;
-        }
-
-        //Process any out globals and get argument wrappers
-        const out_globals = [...globals.values()].reduce((red, out) => {
+        const out_global_names = JS.getClosureVariableNames(ast);
+        
+        const out_globals = out_global_names.map(out=>{
             const out_object = { name: out, val: null, IS_TAPPED: false };
 
-            if (out == "this")
-                return red;
-
-            if (window[out]) {
-                return red;
-                //out_object.val = window[out];
-            } else if (presets.custom[out])
+            if (presets.custom[out])
                 out_object.val = presets.custom[out];
-
             else if (presets[out])
                 out_object.val = presets[out];
-
             else if (defaults[out])
                 out_object.val = defaults[out];
-
             else {
                 out_object.IS_TAPPED = true;
             }
 
-            red.push(out_object);
+            return out_object;
+        }); 
 
-            return red;
-        }, []);
+        JS.processType(types.assignment, ast, assign=>{
+            const k = assign.id.name;
 
-        if (ALLOW_EMIT)
-            //Replace matching call sites with emit functions / emit member nodes
-            assignments.forEach((m, k) => m.forEach(assign => {
-                if (window[k] || this.presets.custom[k] || this.presets[k] || defaults[k])
+            if (window[k] || this.presets.custom[k] || this.presets[k] || defaults[k])
                     return;
-                assign.id = new mem([new identifier$1(["emit"]), null, assign.id]);
-            }));
+
+            assign.id = new mem([new identifier$1(["emit"]), null, assign.id]);
+        });
 
         this.args = out_globals;
         this.val = ast + "";
@@ -18073,11 +18132,22 @@ class d$2 {
     }
 
     //Mounts component data to new HTMLElement object.
-    mount(HTMLElement_, bound_data_object) {
+    async mount(HTMLElement_, bound_data_object) {
 
+        if (this.READY !== true) {
+            if (!this.__pending)
+                this.__pending = [];
+
+            return new Promise(res =>this.__pending.push([HTMLElement_, bound_data_object, res]))
+        }
+
+        return this.nonAsyncMount(HTMLElement_, bound_data_object);
+    }
+
+    nonAsyncMount(HTMLElement_, bound_data_object){
         let element = null;
-        
-        if ((HTMLElement_ instanceof HTMLElement)){
+
+        if ((HTMLElement_ instanceof HTMLElement)) {
             //throw new Error("HTMLElement_ argument is not an instance of HTMLElement. Cannot mount component");
 
             element = HTMLElement_.attachShadow({ mode: 'open' });
@@ -18087,7 +18157,6 @@ class d$2 {
 
         if (bound_data_object)
             scope.load(bound_data_object);
-        
 
         return scope;
     }
@@ -18309,79 +18378,32 @@ class Binding {
 
     processJSAST(ast, presets = { custom: {} }, ALLOW_EMIT = false) {
 
-        let
-            tvrs = ast.traverseDepthFirst(),
-            node = tvrs.next().value,
-            non_global = new Set(),
-            globals = new Set(),
-            assignments = new Map();
+        const out_global_names = JS.getClosureVariableNames(ast);
+        
+        const out_globals = out_global_names.map(out=>{
+            const out_object = { name: out, val: null, IS_TAPPED: false };
 
-        //Retrieve undeclared variables to inject as function arguments.
-        while (node) {
-
-            if (
-                node.type == types.id ||
-                node.type == types.member
-            ) {
-                if (node.root)
-                    globals.add(node.name);
-            }
-
-            if (node.type == types.assign) {
-
-                node.id.root = false;
-
-                if (!assignments.has(node.id.name))
-                    assignments.set(node.id.name, []);
-
-                const assignment_sites = assignments.get(node.id.name);
-
-                assignment_sites.push(node);
-            }
-
-            if (
-                node.type == types.lex ||
-                node.type == types.var
-            ) {
-                node.bindings.forEach(b => (non_global.add(b.id.name), globals.delete(b.id.name)));
-            }
-
-            node = tvrs.next().value;
-        }
-        console.log(ast,ast+"",globals);
-        //Process any out globals and get argument wrappers
-        const out_globals = [...globals.values()].reduce((red, out) => {
-            let out_object = { name: out, val: null, IS_TAPPED: false };
-
-            if (window[out]) {
-                return red;
-                //out_object.val = window[out];
-            } else if (presets.custom[out])
+            if (presets.custom[out])
                 out_object.val = presets.custom[out];
-
             else if (presets[out])
                 out_object.val = presets[out];
-
             else if (defaults$1[out])
                 out_object.val = defaults$1[out];
-
             else {
                 out_object.IS_TAPPED = true;
             }
 
-            red.push(out_object);
+            return out_object;
+        }); 
 
-            return red;
-        }, []);
+        JS.processType(types.assignment, ast, assign$$1=>{
+            const k = assign$$1.id.name;
 
-        if (ALLOW_EMIT)
-            //Replace matching call sites with emit functions / emit member nodes
-            assignments.forEach((m, k) => m.forEach(assign$$1 => {
-                if (window[k] || this.presets.custom[k] || this.presets[k] || defaults$1[k])
+            if (window[k] || this.presets.custom[k] || this.presets[k] || defaults$1[k])
                     return;
-                assign$$1.id = new mem([new identifier$1(["emit"]), null, assign$$1.id]);
-            }));
 
+            assign$$1.id = new mem([new identifier$1(["emit"]), null, assign$$1.id]);
+        });
 
         let r = new rtrn([]);
         r.expr = ast;
@@ -18449,7 +18471,8 @@ function BaseComponent(ast, presets) {
     this.name = "";
 }
 
-BaseComponent.prototype = d$2.prototype;
+Object.assign(BaseComponent.prototype,d$2.prototype);
+BaseComponent.prototype.mount = d$2.prototype.nonAsyncMount;
 
 class ctr extends ElementNode {
     
@@ -18696,7 +18719,7 @@ class Attribute {
     }
 }
 
-const env = {
+const env$1 = {
     table: {},
     ASI: true,
     functions: {
@@ -18807,9 +18830,7 @@ const env = {
         string_literal: string$2,
         label_stmt: function(sym) { this.label = sym[0];
             this.stmt = sym[1];},
-        funct_decl: function(id, args, body) { this.id = id || "Anonymous";
-            this.args = args;
-            this.body = body, this.scope = false; },
+        funct_decl,
         this_expr,
 
         defaultError: (tk, env, output, lex, prv_lex, ss, lu) => {
@@ -18839,20 +18860,20 @@ const env = {
 
     prst: [],
     pushPresets(prst) {
-        env.prst.push(prst);
+        env$1.prst.push(prst);
     },
     popPresets() {
-        return env.prst.pop();
+        return env$1.prst.pop();
     },
     get presets() {
-        return env.prst[env.prst.length - 1] || null;
+        return env$1.prst[env$1.prst.length - 1] || null;
     },
 
     options: {
         integrate: false,
         onstart: () => {
-            env.table = {};
-            env.ASI = true;
+            env$1.table = {};
+            env$1.ASI = true;
         }
     }
 };
@@ -18883,8 +18904,14 @@ const
 
                     var url;
 
-                    if ((url = URL.resolveRelative(component_data, "")))
-                        string_data = await url.fetchText();
+                    if ((url = URL.resolveRelative(component_data, ""))){
+                        try{
+                            string_data = await url.fetchText();
+                        }catch(e){
+                            console.log(e);
+                        }
+                    }
+
                     break;
 
                 case "object":
@@ -18908,7 +18935,7 @@ const
             try {
 
                 return await (new Promise(res => {
-                    const compiler_env = new CompilerEnvironment(presets, env);
+                    const compiler_env = new CompilerEnvironment(presets, env$1);
                     compiler_env.pending++;
 
 
@@ -18954,28 +18981,58 @@ const
 
                 //Reference to the component name. Used with the Web Component API
                 this.name = "";
+                
+                this.pending = new Promise(res => {
+                    compileAST(component_data, presets).then(ast => {
 
-                if (this.constructor !== Component) {
-                    //Go through chain and extract functions that have names starting with $. Add them to the ast.  
-                }
+                        if (this.constructor !== Component) {
+                                                
+                            //Go through prototype chain and extract functions that have names starting with $. Add them to the ast.
 
-            } else {
+                            for(const a of Object.getOwnPropertyNames(this.constructor.prototype)){
+                                if(a == "constructor") continue;
 
-                return new Promise(res => {
-                    const comp = new Component(...data);
+                                const r = this.constructor.prototype[a];
 
-                    return compileAST(component_data, presets).then(ast => {
-                        
-                        comp.READY = true;
-                        comp.ast = ast;
-                        comp.ast.finalize();
+                                if(typeof r == "function"){
 
-                        if (!comp.name)
-                            comp.name = comp.ast.getAttrib("component").value || "undefined-component";
+                                    //extract and process function information. 
+                                    let c_env = new CompilerEnvironment(presets, env$1);
+                                    
+                                    let js_ast = parser(whind$1("function " + r.toString().trim()+";"), c_env);
 
-                        return res(comp)
+                                    let ids = JS.getClosureVariableNames(js_ast);
+                                    let args = JS.getFunctionDeclarationArgumentNames(js_ast); // Function arguments in wick class component definitions are treated as TAP variables. 
+
+                                    const HAS_CLOSURE = (ids.filter(a=>!args.includes(a))).length > 0;
+
+                                    //debugger
+
+                                    //Checking for variable leaks. 
+                                    //if all closure variables match all argument variables, then the function is self contained and can be completely enclosed by the 
+                                }
+                            }
+                        }
+
+                        this.READY = true;
+                        this.ast = ast;
+                        this.ast.finalize();
+
+                        if (!this.name)
+                            this.name = this.ast.getAttrib("component").value || "undefined-component";
+
+                        if(this.__pending){
+                            this.__pending.forEach(e=>e[2](this.mount(...e.slice(0,2))));
+                            this.__pending = null;
+                        }
+
+                        return res(this)
                     });
                 });
+            } else {
+                const comp = new Component(...data);
+
+                return comp;
             }
         };
 

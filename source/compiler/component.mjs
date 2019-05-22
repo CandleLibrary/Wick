@@ -5,6 +5,7 @@ import { Presets } from "../presets.mjs";
 import wick_compile from "./wick.mjs";
 import CompilerEnv from "./compiler_env.mjs";
 import env from "./env.mjs";
+import JS from "./js/tools.mjs";
 import proto from "./component_prototype.mjs";
 
 const
@@ -33,8 +34,14 @@ const
 
                     var url;
 
-                    if ((url = URL.resolveRelative(component_data, "")))
-                        string_data = await url.fetchText();
+                    if ((url = URL.resolveRelative(component_data, ""))){
+                        try{
+                            string_data = await url.fetchText();
+                        }catch(e){
+                            console.log(e);
+                        }
+                    }
+
                     break;
 
                 case "object":
@@ -104,28 +111,58 @@ const
 
                 //Reference to the component name. Used with the Web Component API
                 this.name = "";
+                
+                this.pending = new Promise(res => {
+                    compileAST(component_data, presets).then(ast => {
 
-                if (this.constructor !== Component) {
-                    //Go through chain and extract functions that have names starting with $. Add them to the ast.  
-                }
+                        if (this.constructor !== Component) {
+                                                
+                            //Go through prototype chain and extract functions that have names starting with $. Add them to the ast.
 
-            } else {
+                            for(const a of Object.getOwnPropertyNames(this.constructor.prototype)){
+                                if(a == "constructor") continue;
 
-                return new Promise(res => {
-                    const comp = new Component(...data);
+                                const r = this.constructor.prototype[a];
 
-                    return compileAST(component_data, presets).then(ast => {
-                        
-                        comp.READY = true;
-                        comp.ast = ast;
-                        comp.ast.finalize();
+                                if(typeof r == "function"){
 
-                        if (!comp.name)
-                            comp.name = comp.ast.getAttrib("component").value || "undefined-component";
+                                    //extract and process function information. 
+                                    let c_env = new CompilerEnv(presets, env);
+                                    
+                                    let js_ast = wick_compile(whind("function " + r.toString().trim()+";"), c_env)
 
-                        return res(comp)
+                                    let ids = JS.getClosureVariableNames(js_ast);
+                                    let args = JS.getFunctionDeclarationArgumentNames(js_ast); // Function arguments in wick class component definitions are treated as TAP variables. 
+
+                                    const HAS_CLOSURE = (ids.filter(a=>!args.includes(a))).length > 0;
+
+                                    //debugger
+
+                                    //Checking for variable leaks. 
+                                    //if all closure variables match all argument variables, then the function is self contained and can be completely enclosed by the 
+                                }
+                            }
+                        }
+
+                        this.READY = true;
+                        this.ast = ast;
+                        this.ast.finalize();
+
+                        if (!this.name)
+                            this.name = this.ast.getAttrib("component").value || "undefined-component";
+
+                        if(this.__pending){
+                            this.__pending.forEach(e=>e[2](this.mount(...e.slice(0,2))));
+                            this.__pending = null;
+                        }
+
+                        return res(this)
                     });
-                });
+                })
+            } else {
+                const comp = new Component(...data);
+
+                return comp;
             }
         };
 

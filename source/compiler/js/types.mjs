@@ -52,5 +52,6 @@ export default{
 		negate:51,
 		array_literal:52,
 		this_expr:53,
-		prop_bind:54
+		prop_bind:54,
+		function_declaration:55,
 	};

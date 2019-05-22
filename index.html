@@ -4,11 +4,14 @@
 		<script src="/cfw/wick"></script>
 	</head>
 	<body>
+		<div id="a"></div>
+		<div id="b"></div>
 		<template id="test">
 			<scope element="div">
 				Test
 
 				<container>
+
 					<f sort="((m1 + m2))">
 
 					<div>Tiger</div>
@@ -18,10 +21,29 @@
 			</scope>
 		</template>
 		<script type="text/javascript">
+
+			class D extends wick{
+				constructor(){
+					super(`<div>((test))</div>`)
+				}
+
+
+
+				test(max){
+					console.log(this);
+					glow.render();
+				}
+			}
+
 			async function start(){
+
+				let a = new D;
+
+				a.mount(document.getElementById("b"));
+
 				const m = wick.model({doug:[{name:"pate"}, {name:"mary"}]});
 				
-				(await wick("./test_main.whtml")).mount(document.body, m);
+				wick("./test_main.whtml").mount(document.getElementById("a"), m);
 			}
 			start();
 		</script>

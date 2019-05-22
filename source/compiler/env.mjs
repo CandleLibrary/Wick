@@ -28,6 +28,7 @@ import condition from "./js/condition.mjs";
 import array_literal from "./js/array_literal.mjs";
 import this_expr from "./js/this.mjs";
 import property_binding from "./js/property_binding.mjs";
+import funct_decl from "./js/function_declaration.mjs";
 
 //HTML
 import element_selector from "./html/element_selector.mjs";
@@ -146,9 +147,7 @@ const env = {
         string_literal: string,
         label_stmt: function(sym) { this.label = sym[0];
             this.stmt = sym[1];},
-        funct_decl: function(id, args, body) { this.id = id || "Anonymous";
-            this.args = args;
-            this.body = body, this.scope = false },
+        funct_decl,
         this_expr,
 
         defaultError: (tk, env, output, lex, prv_lex, ss, lu) => {

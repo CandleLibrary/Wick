@@ -1,9 +1,65 @@
-import JSParser from "./js.mjs";
-import env from "../env.mjs";
-import identifier from "./nodes/identifier.mjs";
+import identifier from "./identifier.mjs";
 import types from "./types.mjs"
-
+const env = {};
 export default {
+
+	processType(type, ast, fn){
+		for(const a of ast.traverseDepthFirst()){
+			if(a.type == type)
+				fn(a);
+		}
+	},
+	getClosureVariableNames(ast, ...global_objects){
+		let
+            tvrs = ast.traverseDepthFirst(),
+            node = tvrs.next().value,
+            non_global = new Set(),
+            globals = new Set(),
+            assignments = new Map();
+
+        //Retrieve undeclared variables to inject as function arguments.
+        while (node) {
+
+            if (
+                node.type == types.id ||
+                node.type == types.member
+            ) {
+                if (node.root)
+                    globals.add(node.name);
+            }
+
+            if (
+                node.type == types.lex ||
+                node.type == types.var
+            ) {
+                node.bindings.forEach(b => (non_global.add(b.id.name), globals.delete(b.id.name)));
+            }
+
+            node = tvrs.next().value;
+        }
+
+        return [...globals.values()].reduce((red, out) => {
+
+            if (window[out]) 
+            	//Skip anything already defined on the global object. 
+                return red;
+
+            red.push(out)
+            return red;
+        }, [])
+	},
+
+	//Returns the argument names of the first function declaration defined in the ast
+	getFunctionDeclarationArgumentNames(ast){
+		const tvrs = ast.traverseDepthFirst(); let node = null;
+
+		while((node = tvrs.next().value)){
+			if(node.type == types.function_declaration){
+				return node.args.map(e=>e.name);
+			}
+		}
+		return [];
+	},
 	parse(lex){
 		let l = lex.copy();
 

@@ -15,8 +15,10 @@ export default class extends base {
 
     *traverseDepthFirst (){ 
 	 	yield this;
-	 	for(let stmt of this.stmts)
+	 	for(let stmt of this.stmts){
+            if(!stmt.traverseDepthFirst) continue; // kludge for empty statements
 	 		yield * stmt.traverseDepthFirst();
+        }
 	 	yield this;
 	 }
 

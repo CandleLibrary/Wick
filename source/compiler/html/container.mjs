@@ -19,7 +19,8 @@ function BaseComponent(ast, presets) {
     this.name = "";
 }
 
-BaseComponent.prototype = proto.prototype;
+Object.assign(BaseComponent.prototype,proto.prototype);
+BaseComponent.prototype.mount = proto.prototype.nonAsyncMount;
 
 export default class ctr extends ElementNode {
     

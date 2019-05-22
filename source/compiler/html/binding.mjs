@@ -3,10 +3,12 @@ import identifier from "../js/identifier.mjs";
 import assignement from "../js/assign.mjs";
 import member from "../js/member.mjs";
 import rtrn from "../js/return.mjs";
+import JS from "../js/tools.mjs";
 //import JSTools from "./js/tools.mjs";
 
 import ExpressionIO from "../component/io/expression_io.mjs";
 import ContainerIO from "../component/io/container_io.mjs";
+
 
 import glow from "@candlefw/glow";
 
@@ -49,79 +51,32 @@ export default class Binding {
 
     processJSAST(ast, presets = { custom: {} }, ALLOW_EMIT = false) {
 
-        let
-            tvrs = ast.traverseDepthFirst(),
-            node = tvrs.next().value,
-            non_global = new Set(),
-            globals = new Set(),
-            assignments = new Map();
+        const out_global_names = JS.getClosureVariableNames(ast)
+        
+        const out_globals = out_global_names.map(out=>{
+            const out_object = { name: out, val: null, IS_TAPPED: false };
 
-        //Retrieve undeclared variables to inject as function arguments.
-        while (node) {
-
-            if (
-                node.type == types.id ||
-                node.type == types.member
-            ) {
-                if (node.root)
-                    globals.add(node.name);
-            }
-
-            if (node.type == types.assign) {
-
-                node.id.root = false;
-
-                if (!assignments.has(node.id.name))
-                    assignments.set(node.id.name, []);
-
-                const assignment_sites = assignments.get(node.id.name);
-
-                assignment_sites.push(node);
-            }
-
-            if (
-                node.type == types.lex ||
-                node.type == types.var
-            ) {
-                node.bindings.forEach(b => (non_global.add(b.id.name), globals.delete(b.id.name)));
-            }
-
-            node = tvrs.next().value;
-        }
-        console.log(ast,ast+"",globals)
-        //Process any out globals and get argument wrappers
-        const out_globals = [...globals.values()].reduce((red, out) => {
-            let out_object = { name: out, val: null, IS_TAPPED: false };
-
-            if (window[out]) {
-                return red;
-                //out_object.val = window[out];
-            } else if (presets.custom[out])
+            if (presets.custom[out])
                 out_object.val = presets.custom[out];
-
             else if (presets[out])
                 out_object.val = presets[out];
-
             else if (defaults[out])
-                out_object.val = defaults[out]
-
+                out_object.val = defaults[out];
             else {
                 out_object.IS_TAPPED = true;
             }
 
-            red.push(out_object)
+            return out_object;
+        }) 
 
-            return red;
-        }, [])
+        JS.processType(types.assignment, ast, assign=>{
+            const k = assign.id.name;
 
-        if (ALLOW_EMIT)
-            //Replace matching call sites with emit functions / emit member nodes
-            assignments.forEach((m, k) => m.forEach(assign => {
-                if (window[k] || this.presets.custom[k] || this.presets[k] || defaults[k])
+            if (window[k] || this.presets.custom[k] || this.presets[k] || defaults[k])
                     return;
-                assign.id = new member([new identifier(["emit"]), null, assign.id]);
-            }))
 
+            assign.id = new member([new identifier(["emit"]), null, assign.id]);
+        })
 
         let r = new rtrn([]);
         r.expr = ast;
