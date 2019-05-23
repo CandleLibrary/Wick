@@ -4,8 +4,8 @@ import spark from "@candlefw/spark";
 /******************** Expressions **********************/
 
 export default class Container extends ScriptIO {
-    constructor(container, scope, errors, tap, binding, lex) {
-        super(scope, errors, tap, binding, lex, {});
+    constructor(container, scope, errors, tap, binding, lex, pinned) {
+        super(scope, errors, tap, binding, lex, pinned);
 
         this.container = container;
 

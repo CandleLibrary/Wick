@@ -30,12 +30,13 @@ export default class Attribute {
 
     }
 
-    bind(element, scope) {
+    bind(element, scope, pinned) {
+        
         if (!this.isBINDING)
             element.setAttribute(this.name, this.value);
         else {
             const
-                bind = this.value.bind(scope),
+                bind = this.value.bind(scope, pinned),
                 io = new this.io_constr(scope, [], bind, this.name, element, this.value.default);
         }
     }

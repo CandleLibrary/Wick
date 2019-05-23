@@ -17,7 +17,7 @@ export default class TextNode {
         return this;
     }
 
-    mount(element, scope, statics, presets, ele = document.createTextNode("")) {
+    mount(element, scope, presets, statics, pinned, ele = document.createTextNode("")) {
 
         if (ele instanceof Text)
             element.appendChild(ele);

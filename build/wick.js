@@ -417,7 +417,7 @@ var wick = (function () {
 
     const
         number = 1,
-        identifier = 2,
+        identifier$1 = 2,
         string = 4,
         white_space = 8,
         open_bracket = 16,
@@ -426,13 +426,13 @@ var wick = (function () {
         symbol = 128,
         new_line = 256,
         data_link = 512,
-        alpha_numeric = (identifier | number),
+        alpha_numeric = (identifier$1 | number),
         white_space_new_line = (white_space | new_line),
         Types = {
             num: number,
             number,
-            id: identifier,
-            identifier,
+            id: identifier$1,
+            identifier: identifier$1,
             str: string,
             string,
             ws: white_space,
@@ -762,7 +762,7 @@ var wick = (function () {
                                 break;
                             case 1: //IDENTIFIER
                                 while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
-                                type = identifier;
+                                type = identifier$1;
                                 length = off - base;
                                 break;
                             case 2: //QUOTED STRING
@@ -8450,7 +8450,7 @@ var wick = (function () {
                         break;
                 }
             }
-        console.log(time);
+        //console.log(time);
         return o[0];
     }
 
@@ -8532,6 +8532,7 @@ var wick = (function () {
     		lte:33,
     		gte:34,
     		assign:35,
+    		assignment:35,
     		equal:36,
     		or:37,
     		and:38,
@@ -8552,6 +8553,7 @@ var wick = (function () {
     		this_expr:53,
     		prop_bind:54,
     		function_declaration:55,
+    		debugger:56
     	};
 
     class base{
@@ -8609,7 +8611,7 @@ var wick = (function () {
     }
 
     /** IDENTIFIER **/
-    class identifier$1 extends base{
+    class identifier$2 extends base{
     	 constructor (sym){super(); this.val = sym[0]; this.root = true;}
     	 getRootIds(ids, closuere){if(!closuere.has(this.val))ids.add(this.val);}
     	 *traverseDepthFirst (){ 
@@ -8825,7 +8827,7 @@ var wick = (function () {
             //yield this;
          }
 
-         get type () { return types.assign }
+        get type () { return types.assign }
 
         render(){return `${this.id.render()} ${this.op} ${this.expr.render()}`}
     }
@@ -9672,7 +9674,7 @@ var wick = (function () {
         }
 
         transitionOut(transition, transition_name = "trs_out", DESTROY_AFTER_TRANSITION = false) {
-            console.log(transition_name);
+            
             this.CONNECTED = false;
 
             if (this.TRANSITIONED_IN === false) {
@@ -9732,11 +9734,12 @@ var wick = (function () {
             if (this.component)
                 presets.components[this.component] = this;
 
-            this.url = this.getAttrib("url").value ? URL.resolveRelative(this.getAttrib("url").value) : null;
-            this.id = this.getAttrib("id").value;
-            this.class = this.getAttrib("id").value;
-            this.name = this.getAttrib("name").value;
-            this.slot = this.getAttrib("slot").value;
+            this.url = this.getAttribute("url") ? URL.resolveRelative(this.getAttribute("url")) : null;
+            this.id = this.getAttribute("id");
+            this.class = this.getAttribute("id");
+            this.name = this.getAttribute("name");
+            this.slot = this.getAttribute("slot");
+            this.pinned = (this.getAttribute("pin")) ? this.getAttribute("pin") + "$" : "";
 
 
             //Prepare attributes with data from this element
@@ -9753,15 +9756,15 @@ var wick = (function () {
         finalize(slots_in = {}) {
 
 
-            if(this.slot){
+            if (this.slot) {
 
-                if(!this.proxied_mount)
+                if (!this.proxied_mount)
                     this.proxied_mount = this.mount.bind(this);
-                
+
                 //if(!slots_in[this.slot])
                 slots_in[this.slot] = this.proxied_mount;
-                
-                this.mount = ()=>{};
+
+                this.mount = () => {};
             }
 
             for (let i = 0; i < this.children.length; i++) {
@@ -9771,14 +9774,22 @@ var wick = (function () {
 
             const slots_out = Object.assign({}, slots_in);
 
-            if (this.presets.components[this.tag]) 
+            if (this.presets.components[this.tag])
                 this.proxied = this.presets.components[this.tag].merge(this);
 
-            if(this.proxied){
+            if (this.proxied) {
                 let ele = this.proxied.finalize(slots_out);
                 ele.slots = slots_out;
                 this.mount = ele.mount.bind(ele);
             }
+
+            this.children.sort(function(a,b){
+                if(a.tag == "script" && b.tag !== "script")
+                    return 1;
+                if(a.tag !== "script" && b.tag == "script")
+                    return -1;
+                return 0;
+            });
 
             return this;
         }
@@ -9827,18 +9838,14 @@ var wick = (function () {
         }
 
         innerToString(off) {
-            let str = "";
-            for (let node = this.fch; node;
-                (node = this.getNextChild(node))) {
-                str += node.toString(off);
-            }
-            return str;
+            return this.children.map(e=>e.toString()).join("");
         }
 
         /****************************************** COMPONENTIZATION *****************************************/
 
 
         async loadURL(env) {
+
             try {
                 const own_env = new CompilerEnvironment(env.presets, env);
                 own_env.setParent(env);
@@ -9848,7 +9855,7 @@ var wick = (function () {
                 own_env.pending++;
 
                 const ast = parser(whind$1(txt_data), own_env);
-                
+
                 this.proxied = ast.merge(this);
 
                 own_env.resolve();
@@ -9859,6 +9866,7 @@ var wick = (function () {
         }
 
         merge(node, merged_node = new this.constructor(null, this.tag, null, null, this.presets)) {
+
             merged_node.line = this.line;
             merged_node.char = this.char;
             merged_node.offset = this.offset;
@@ -9885,44 +9893,36 @@ var wick = (function () {
 
         /******************************************* BUILD ****************************************************/
 
-        mount(element, scope, statics = {}, presets = this.presets) {
+        mount(element, scope, presets = this.presets, slots = {}, pinned = {}) {
 
-            // /if (this.url || this.__statics__)
-            // /    out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL(par_list.length - 1) });
-             if(this.slots)
-                statics = Object.assign({}, statics, this.slots);
+            if (this.slots)
+                slots = Object.assign({}, slots, this.slots);
 
             const own_element = this.createElement(scope);
+            if (element) appendChild(element, own_element);
+
+            if(this.pinned){
+                pinned[this.pinned] = own_element;
+            }
 
             if (!scope)
                 scope = new Scope(null, presets || this.__presets__ || this.presets, own_element, this);
 
-            if (this.HAS_TAPS)
-                taps = scope.linkTaps(this.tap_list);
+            //if (this.HAS_TAPS)
+                //taps = scope.linkTaps(this.tap_list);
 
-            if (own_element) {
+            if (!scope.ele) scope.ele = own_element;
 
-                if (!scope.ele) scope.ele = own_element;
+            if (this._badge_name_)
+                scope.badges[this._badge_name_] = own_element;
 
-                if (this._badge_name_)
-                    scope.badges[this._badge_name_] = own_element;
+            for (let i = 0, l = this.attribs.length; i < l; i++)
+                this.attribs[i].bind(own_element, scope, pinned);
 
-                if (element) appendChild(element, own_element);
-
-                for (let i = 0, l = this.attribs.length; i < l; i++)
-                    this.attribs[i].bind(own_element, scope);
-            }
-
-            const ele = own_element ? own_element : element;
-
-            //par_list.push(this);
             for (let i = 0; i < this.children.length; i++) {
-                //for (let node = this.fch; node; node = this.getNextChild(node))
                 const node = this.children[i];
-                node.mount(ele, scope, statics, presets);
+                node.mount(own_element, scope, presets, slots, pinned);
             }
-
-            //par_list.pop();
 
             return scope;
         }
@@ -9938,10 +9938,10 @@ var wick = (function () {
                     this.c = this.c.concat(children_arrays[i]);
         }
 
-        mount(element, scope, statics, presets = this.presets) {
+        mount(element, scope, presets, statics, pinned) {
             for (let i = 0, l = this.c.length; i < l; i++) {
                 if (this.c[i].SLOTED == true) continue;
-                this.c[i].build(element, scope, statics, presets);
+                this.c[i].build(element, scope, presets, statics, pinned);
             }
 
             return scope;
@@ -9993,8 +9993,7 @@ var wick = (function () {
             }
 
             return [...globals.values()].reduce((red, out) => {
-
-                if (window[out]) 
+                if (window[out] || out == "this") 
                 	//Skip anything already defined on the global object. 
                     return red;
 
@@ -10043,7 +10042,7 @@ var wick = (function () {
     		try{
     			let result = JSParser(lex, env);
 
-    			if(result instanceof identifier$1){
+    			if(result instanceof identifier$2){
     				ids.add(result.val);
     			}else
     				result.getRootIds(ids, closure);
@@ -17037,100 +17036,36 @@ var wick = (function () {
 
     //Function.apply(Function, [binding.arg_key || binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val]);
     class ScriptIO extends IOBase {
-        constructor(scope, errors, tap, binding, node, statics) {
+        constructor(scope, errors, tap, script, lex, pinned) {
 
-            let presets = scope.presets;
-            let ids = binding.ids;
-            let func, HAVE_CLOSURE = false;
-            tap = tap || { prop: "" };
-
-            //*********** PRE OBJECT FUNCTION INITIALIZATION *******************//
-
-            const args = binding.args;
-
-            const names = args.map(a => a.name);
-
-            names.push("emit"); // For the injected emit function
-            //names.unshift(binding.tap_name);
-
-            const arg_ios = {};
-            let TAP_BINDING = -1;
-            let ACTIVE_IOS = 0;
-
-            const props = args.map((a, i) => {
-
-                if (a.IS_TAPPED) {
-
-                    if (a.name == tap.prop)
-                        TAP_BINDING = i;
-
-                    ACTIVE_IOS++;
-
-                    const arg_io = new argumentIO(scope, errors, scope.getTap(a.name), null, i);
-
-                    arg_ios[a.name] = arg_io;
-
-                    return null;
-                }
-
-                return a.val;
-            });
-
-
-            //props.unshift(null); // Place holder for value data
-            try {
-                if (binding._func_) {
-                    func = binding._func_;
-                    if (binding.HAVE_CLOSURE)
-                        HAVE_CLOSURE = true;
-                } else {
-                    func = Function.apply(Function, names.concat([binding.val]));
-                    binding._func_ = func;
-                }
-            } catch (e) {
-                errors.push(e);
-                console.error(`Script error encountered in ${statics.url || "virtual file"}:${node.line+1}:${node.char}`);
-                console.warn(binding.val);
-                console.error(e);
-                func = () => {};
-            }
+            const HAVE_CLOSURE = false;
 
             super(tap);
 
-            this.IO_ACTIVATIONS = ACTIVE_IOS;
-            this.active_IOS = 0;
-
-            this.function = binding.val;
-
-            this.HAVE_CLOSURE = HAVE_CLOSURE;
-
-            if (this.HAVE_CLOSURE)
-                this._func_ = func;
-            else
-                this._func_ = func.bind(scope);
-
             this.scope = scope;
-            this.TAP_BINDING = TAP_BINDING;
+            this.TAP_BINDING_INDEX = -1;
+            this.ACTIVE_IOS = 0;
+            this.IO_ACTIVATIONS = 0;
+            
+            this.function = null;
+            
+            this.HAVE_CLOSURE = HAVE_CLOSURE;
+            if (this.HAVE_CLOSURE)
+                this.function = script.function;
+            else
+                this.function = script.function.bind(scope);
 
             //Embedded emit functions
             const func_bound = this.emit.bind(this);
             func_bound.onTick = this.onTick.bind(this);
 
             //TODO: only needed if emit is called in function. Though highly probably. 
-            props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value); } }));
-
-            this.arg_props = props;
-            this.arg_ios = arg_ios;
-
-            for (const a in arg_ios)
-                arg_ios[a].ele = this;
-
-            //this.meta = null;
-            this.url = statics.url;
-
-            this.offset = node.offset;
-            this.char = node.char;
-            this.line = node.line;
+            this.arg_props = [];
+            this.arg_ios = {};
+            
+            this.initProps(script.args, tap, errors, pinned);
+            
+            this.arg_props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value); } }));
         }
 
         /*
@@ -17138,7 +17073,7 @@ var wick = (function () {
             Calls destroy on any child objects.
          */
         destroy() {
-            this._func_ = null;
+            this.function = null;
             this.scope = null;
             this._bound_emit_function_ = null;
             this._meta = null;
@@ -17151,12 +17086,43 @@ var wick = (function () {
             this.arg_ios = null;
         }
 
+        initProps(arg_array, tap, errors, pinned){
+            for(let i = 0; i < arg_array.length; i++){
+                
+                const a = arg_array[i];
+
+                if(a.IS_ELEMENT){
+                    
+                    this.arg_props.push(pinned[a.name]);
+
+                }else if(a.IS_TAPPED){
+
+                    let val = null;
+                    
+                    const name = a.name;
+                    
+                    if(name == tap.name){
+                        val = tap.prop;
+                        this.TAP_BINDING_INDEX = i;
+                    }
+                    
+                    this.ACTIVE_IOS++;
+                    
+                    this.arg_ios[name] = new argumentIO(this.scope, errors, this.scope.getTap(name), this, i);
+
+                    this.arg_props.push(val);
+                }else{
+                    this.arg_props.push(a.val);
+                }
+            }
+        }
+
         updateProp(io, val) {
             this.arg_props[io.id] = val;
 
             if (!io.ACTIVE) {
                 io.ACTIVE = true;
-                this.active_IOS++;
+                this.ACTIVE_IOS++;
             }
         }
 
@@ -17168,8 +17134,8 @@ var wick = (function () {
                         this.arg_ios[a].down(value[a]);
                 }
             } else {
-                if (this.TAP_BINDING !== -1)
-                    this.arg_props[this.TAP_BINDING] = value;
+                if (this.TAP_BINDING_INDEX !== -1)
+                    this.arg_props[this.TAP_BINDING_INDEX] = value;
             }
         }
 
@@ -17181,15 +17147,15 @@ var wick = (function () {
                 this.setValue(value);
 
 
-            if (this.active_IOS < this.IO_ACTIVATIONS)
+            if (this.ACTIVE_IOS < this.IO_ACTIVATIONS)
                 return
 
             try {
 
                 if (this.HAVE_CLOSURE)
-                    return this._func_.apply(this, this.arg_props);
+                    return this.function.apply(this, this.arg_props);
                 else
-                    return this._func_.apply(this, this.arg_props);
+                    return this.function.apply(this, this.arg_props);
             } catch (e) {
                 console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line+1}:${this.char}`);
                 console.warn(this.function);
@@ -17218,59 +17184,99 @@ var wick = (function () {
         }
     }
 
-    const EXPRESSION = 5;
-    const IDENTIFIER = 6;
-    const EVENT = 7;
-    const BOOL = 8;
+    //Cache for scripts that have already been built. Keys are the final strings of processed ASTs
+    var FUNCTION_CACHE = new Map();
 
     const defaults = { glow: Animation };
 
+    function GetOutGlobals(ast, presets) {
+
+        return JS.getClosureVariableNames(ast).map(out => {
+            const out_object = { name: out, val: null, IS_TAPPED: false, IS_ELEMENT : false};
+
+            if (presets.custom[out])
+                out_object.val = presets.custom[out];
+            else if (presets[out])
+                out_object.val = presets[out];
+            else if (defaults[out])
+                out_object.val = defaults[out];
+            else if (out[out.length -1] == "$"){
+                out_object.IS_ELEMENT = true;
+                //out_object.name = out.slice(0,-1);
+            } else {
+                out_object.IS_TAPPED = true;
+            }
+
+            return out_object;
+        })
+    }
+
+    function AddEmit(ast, presets, ignore) {
+        JS.processType(types.assignment, ast, assign => {
+            const k = assign.id.name;
+
+            if (window[k] || presets.custom[k] || presets[k] || defaults[k] || ignore.includes(k))
+                return;
+            
+            assign.id = new member([new identifier(["emit"]), null, assign.id]);
+        });
+    }
 
     class scr extends ElementNode {
-
-        constructor(env, tag, children, attribs, presets) {
+        
+        constructor(env, tag, ast, attribs, presets) {
             super(env, "script", null, attribs, presets);
-            this.processJSAST(children, presets, true);
+            this.function = null;
+            this.args = null;
+            this.ast = ast;
+            this.READY = false;
+            this.val = "";
+
+            this.processJSAST(presets);
+
             this.on = this.getAttrib("on").value;
         }
 
-        processJSAST(ast, presets = { custom: {} }, ALLOW_EMIT = false) {
-            const out_global_names = JS.getClosureVariableNames(ast);
-            
-            const out_globals = out_global_names.map(out=>{
-                const out_object = { name: out, val: null, IS_TAPPED: false };
-
-                if (presets.custom[out])
-                    out_object.val = presets.custom[out];
-                else if (presets[out])
-                    out_object.val = presets[out];
-                else if (defaults[out])
-                    out_object.val = defaults[out];
-                else {
-                    out_object.IS_TAPPED = true;
-                }
-
-                return out_object;
-            }); 
-
-            JS.processType(types.assignment, ast, assign=>{
-                const k = assign.id.name;
-
-                if (window[k] || this.presets.custom[k] || this.presets[k] || defaults[k])
-                        return;
-
-                assign.id = new mem([new identifier$1(["emit"]), null, assign.id]);
-            });
-
-            this.args = out_globals;
-            this.val = ast + "";
-            this.expr = ast;
-            this.METHOD = EXPRESSION;
+        processJSAST(presets = { custom: {} }) {
+            this.args = GetOutGlobals(this.ast, presets);
+            AddEmit(this.ast, presets, this.args.map(a=>a.name));
+            this.val = this.ast + "";
         }
 
-        mount(element, scope, statics, presets) {
-            const tap = this.on.bind(scope);
-            new ScriptIO(scope, [], tap, this, {}, statics);
+        finalize() {
+            if (!FUNCTION_CACHE.has(this.val)) {
+
+                let func, HAVE_CLOSURE = false;
+
+                const
+                    args = this.args,
+                    names = args.map(a => a.name);
+
+                // For the injected emit function
+                names.push("emit");
+
+                try {
+                    this.function = Function.apply(Function, names.concat([this.val]));
+                    this.READY = true;
+                    FUNCTION_CACHE.set(this.val, this.function);
+                } catch (e) {
+                    //errors.push(e);
+                    console.error(`Script error encountered in ${statics.url || "virtual file"}:${node.line+1}:${node.char}`);
+                    console.warn(this.val);
+                    console.error(e);
+                }
+            } else {
+                this.function = FUNCTION_CACHE.get(this.val);
+            }
+
+            return this;
+        }
+
+        mount(element, scope, presets, slots, pinned) {
+            if (this.READY) {
+                const tap = this.on.bind(scope);
+                new ScriptIO(scope, [], tap, this, {}, pinned);
+            }
         }
     }
 
@@ -17292,33 +17298,22 @@ var wick = (function () {
             return createElement(this.element || "div");
         }
 
-    	mount(element, scope, statics = {}, presets){
+    	mount(element, scope, presets = this.presets, slots = {}, pinned = {}){
 
-            let me = new Scope(scope, this.__presets__ || presets || this.presets, element, this);
+            let me = new Scope(scope, presets, element, this);
 
             if(this.slots)
-                statics = Object.assign({}, statics, this.slots);
+                slots = Object.assign({}, slots, this.slots);
+
+            //Reset pinned
+            pinned = {};
+
+            if(this.pinned)
+                pinned[this.pinned] = me.ele;
             
-            //this.pushChached(me);
 
             me._model_name_ = this.model_name;
             me._schema_name_ = this.schema_name;
-
-            /*
-            for (let i = 0, l = tap_list.length; i < l; i++) {
-                let tap = tap_list[i],
-                    name = tap.name;
-
-                let bool = name == "update";
-
-                me.taps[name] = bool ? new UpdateTap(me, name, tap.modes) : new Tap(me, name, tap.modes);
-
-                if (bool)
-                    me.update_tap = me.taps[name];
-
-                out_taps.push(me.taps[name]);
-            }
-            */
 
             /**
              * To keep the layout of the output HTML predictable, Wick requires that a "real" HTMLElement be defined before a scope object is created. 
@@ -17347,66 +17342,15 @@ var wick = (function () {
 
                 if (this._badge_name_)
                     me.badges[this._badge_name_] = element;
-
-                /*
-                let hook = {
-                    attr: this.attributes,
-                    bindings: [],
-                    style: null,
-                    ele: element
-                };
-                for (let i = 0, l = this.bindings.length; i < l; i++) {
-                    let attr = this.bindings[i];
-                    let bind = attr.binding._bind_(me, errors, out_taps, element, attr.name);
-
-                    if (hook) {
-                        if (attr.name == "style" || attr.name == "css")
-                            hook.style = bind;
-
-                        hook.bindings.push(bind);
-                    }
-                }
-
-                me.hooks.push(hook);
-                */
             }
-            /*
-            for (let i = 0, l = this.attributes.length; i < l; i++) {
-                let attr = this.attributes[i];
 
-                if (!attr.value) {
-                    //let value = this.par.importAttrib()
-                    //if(value) data[attr.name];
-                } else
-                    data[attr.name] = attr.value;
-            }
-    `           
-            if (this.url || this.__statics__) {
-                statics = Object.assign(statics, this.__statics__);
-                statics.url = this.url;
-            }
-            */
-            /*
-                par_list.push(this)
-            */
+            for (let i = 0, l = this.attribs.length; i < l; i++)
+                this.attribs[i].bind(element, scope, pinned);
 
-            //par_list.push(this);
             for(let i = 0; i < this.children.length; i++){
-                //for (let node = this.fch; node; node = this.getNextChild(node))
                 const node = this.children[i];
-                    node.mount(element, me, statics, presets);
+                node.mount(element, me, presets, slots, pinned);
             }
-            /*
-                par_list.pop()
-            */
-            /*
-            if (statics || this.__statics__) {
-                let s = Object.assign({}, statics ? statics : {}, this.__statics__);
-                me.statics = s;
-                me.update(me.statics);
-            }*/
-
-            //this.popCached(me);
 
             return me;
     	}
@@ -18191,19 +18135,18 @@ var wick = (function () {
     /******************** Expressions **********************/
 
     class ExpressionIO extends ScriptIO {
-        constructor(ele, scope, errors, tap, binding, lex) {
-            super(scope, errors, tap, binding, lex, {});
+        constructor(ele, scope, errors, tap, binding, lex, pinned) {
+            super(scope, errors, tap, binding, lex, pinned);
             this.ele = ele;
             this.old_val = null;
             this._SCHD_ = 0;
-            this.ACTIVE = false;
+            this.ACTIVE = true;
             this.containerFunction = this.containerFunction.bind(this);
         }
 
         updateProp(io, val) {
             super.updateProp(io, val);
-            
-                this.down();
+            this.down();
         }
 
         down(v, m) {
@@ -18225,8 +18168,8 @@ var wick = (function () {
     /******************** Expressions **********************/
 
     class Container extends ScriptIO {
-        constructor(container, scope, errors, tap, binding, lex) {
-            super(scope, errors, tap, binding, lex, {});
+        constructor(container, scope, errors, tap, binding, lex, pinned) {
+            super(scope, errors, tap, binding, lex, pinned);
 
             this.container = container;
 
@@ -18339,13 +18282,10 @@ var wick = (function () {
         }
     }
 
-    const EXPRESSION$1 = 5;
-    const IDENTIFIER$1 = 6;
+    const EXPRESSION = 5;
+    const IDENTIFIER = 6;
     const CONTAINER = 7;
-    const BOOL$1 = 8;
-
-    const defaults$1 = { glow: Animation };
-
+    const BOOL = 8;
 
     class Binding {
 
@@ -18354,76 +18294,50 @@ var wick = (function () {
             this.lex.sl = lex.off - 3;
             this.lex.off = env.start;
 
-            this.METHOD = IDENTIFIER$1;
+            this.METHOD = IDENTIFIER;
 
-            this.expr = sym[1];
-            this.exprb = (sym.length > 3) ? sym[3] : null;
+            this.ast = sym[1];
+            this.prop = (sym.length > 3) ? sym[3] : null;
 
+            this.function = null;
             this.args = null;
-            this.val = this.expr + "";
+            this.READY = false;
 
-            if (!(this.expr instanceof identifier$1) && !(this.expr instanceof mem))
-                this.processJSAST(this.expr, env.presets);
+            this.val = this.ast + "";
 
-            console.log(this.expr + "");
+            if (!(this.ast instanceof identifier$2) && !(this.ast instanceof mem))
+                this.processJSAST(env.presets);
+            
         }
 
         toString() {
-            if (this.exprb)
-                return `((${this.expr + ""})(${this.exprb + ""}))`;
+            if (this.prop)
+                return `((${this.ast + ""})(${this.prop + ""}))`;
             else
-                return `((${this.expr + ""}))`;
+                return `((${this.ast + ""}))`;
         }
 
-        processJSAST(ast, presets = { custom: {} }, ALLOW_EMIT = false) {
-
-            const out_global_names = JS.getClosureVariableNames(ast);
-            
-            const out_globals = out_global_names.map(out=>{
-                const out_object = { name: out, val: null, IS_TAPPED: false };
-
-                if (presets.custom[out])
-                    out_object.val = presets.custom[out];
-                else if (presets[out])
-                    out_object.val = presets[out];
-                else if (defaults$1[out])
-                    out_object.val = defaults$1[out];
-                else {
-                    out_object.IS_TAPPED = true;
-                }
-
-                return out_object;
-            }); 
-
-            JS.processType(types.assignment, ast, assign$$1=>{
-                const k = assign$$1.id.name;
-
-                if (window[k] || this.presets.custom[k] || this.presets[k] || defaults$1[k])
-                        return;
-
-                assign$$1.id = new mem([new identifier$1(["emit"]), null, assign$$1.id]);
-            });
-
+        processJSAST(presets = { custom: {} }) {
+            this.args = GetOutGlobals(this.ast, presets);
+            AddEmit(this.ast, presets);
             let r = new rtrn([]);
-            r.expr = ast;
-            ast = r;
-
-            this.args = out_globals;
-            this.val = ast + "";
-            this.expr = ast;
-            this.METHOD = EXPRESSION$1;
+            r.expr = this.ast;
+            this.ast = r;
+            this.val = r + "";
+            this.METHOD = EXPRESSION;
+            scr.prototype.finalize.call(this);
         }
 
         setForContainer() {
-            if (this.METHOD == EXPRESSION$1)
+            if (this.METHOD == EXPRESSION)
                 this.METHOD = CONTAINER;
         }
 
-        bind(scope, element) {
-            if (this.METHOD == EXPRESSION$1) {
-                return new ExpressionIO(element, scope, [], scope, this, this.lex);
+        bind(scope, element, pinned) {
+            if (this.METHOD == EXPRESSION) {
+                return new ExpressionIO(element, scope, [], scope, this, this.lex, pinned);
             } else if (this.METHOD == CONTAINER)
-                return new Container(element, scope, [], scope, this, this.lex);
+                return new Container(element, scope, [], scope, this, this.lex, pinned);
             else
                 return scope.getTap(this.val);
         }
@@ -18450,7 +18364,7 @@ var wick = (function () {
             return this;
         }
 
-        mount(element, scope, statics, presets, ele = document.createTextNode("")) {
+        mount(element, scope, presets, statics, pinned, ele = document.createTextNode("")) {
 
             if (ele instanceof Text)
                 element.appendChild(ele);
@@ -18514,7 +18428,7 @@ var wick = (function () {
             return merged_node;
         }
 
-        mount(element, scope, statics, presets) {
+        mount(element, scope, presets, slots, pinned) {
             
             scope = scope || new Scope(null, presets, element, this);
 
@@ -18533,16 +18447,16 @@ var wick = (function () {
                 this.filters[i].mount(scope, container);
 
             for (let i = 0, l = this.attribs.length; i < l; i++)
-                this.attribs[i].bind(ele, scope);
+                this.attribs[i].bind(ele, scope, pinned);
 
             if (this.binds.length > 0) {
                 for (let i = 0; i < this.binds.length; i++)
-                    this.binds[i].mount(null, scope, statics, presets, container);
+                    this.binds[i].mount(null, scope, presets, slots, pinned, container);
             }else{ 
                 //If there is no binding, then there is no potential to have ModelContainer borne components.
                 //Instead, load any existing children as component entries for the container element. 
                 for (let i = 0; i < this.nodes.length; i++)
-                    container.scopes.push(this.nodes[i].mount(null, null, statics, presets));
+                    container.scopes.push(this.nodes[i].mount(null, null, presets, slots));
                 container.filterUpdate();
                 container.render();
             }
@@ -18581,11 +18495,11 @@ var wick = (function () {
     		return this;
     	}
 
-    	mount(element, scope, statics, presets){
-    		if(statics && statics[this.name]){
-    			let ele = statics[this.name];
-    			statics[this.name] = null;
-    			ele(element, scope, statics, presets);
+    	mount(element, scope, presets, slots, pinned){
+    		if(slots && slots[this.name]){
+    			let ele = slots[this.name];
+    			slots[this.name] = null;
+    			ele(element, scope, presets, slots, pinned);
     		}
     	}
     }
@@ -18707,12 +18621,13 @@ var wick = (function () {
 
         }
 
-        bind(element, scope) {
+        bind(element, scope, pinned) {
+            
             if (!this.isBINDING)
                 element.setAttribute(this.name, this.value);
             else {
                 const
-                    bind = this.value.bind(scope),
+                    bind = this.value.bind(scope, pinned),
                     io = new this.io_constr(scope, [], bind, this.name, element, this.value.default);
             }
         }
@@ -18731,7 +18646,7 @@ var wick = (function () {
             //JS
             for_stmt,
             call_expr,
-            identifier: identifier$1,
+            identifier: identifier$2,
             catch_stmt,
             try_stmt,
             stmts,
@@ -18984,7 +18899,7 @@ var wick = (function () {
                     this.pending = new Promise(res => {
                         compileAST(component_data, presets).then(ast => {
 
-                            if (this.constructor !== Component) {
+                            if (this.constructor.prototype !== Component.prototype) {
                                                     
                                 //Go through prototype chain and extract functions that have names starting with $. Add them to the ast.
 
@@ -19006,6 +18921,8 @@ var wick = (function () {
                                         const HAS_CLOSURE = (ids.filter(a=>!args.includes(a))).length > 0;
 
                                         //debugger
+                                        //Create and attach a script IO to the HTML ast. 
+
 
                                         //Checking for variable leaks. 
                                         //if all closure variables match all argument variables, then the function is self contained and can be completely enclosed by the 

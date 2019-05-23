@@ -23,33 +23,22 @@ export default class scp extends ElementNode{
         return createElement(this.element || "div");
     }
 
-	mount(element, scope, statics = {}, presets){
+	mount(element, scope, presets = this.presets, slots = {}, pinned = {}){
 
-        let me = new Scope(scope, this.__presets__ || presets || this.presets, element, this);
+        let me = new Scope(scope, presets, element, this);
 
         if(this.slots)
-            statics = Object.assign({}, statics, this.slots);
+            slots = Object.assign({}, slots, this.slots);
+
+        //Reset pinned
+        pinned = {};
+
+        if(this.pinned)
+            pinned[this.pinned] = me.ele;
         
-        //this.pushChached(me);
 
         me._model_name_ = this.model_name;
         me._schema_name_ = this.schema_name;
-
-        /*
-        for (let i = 0, l = tap_list.length; i < l; i++) {
-            let tap = tap_list[i],
-                name = tap.name;
-
-            let bool = name == "update";
-
-            me.taps[name] = bool ? new UpdateTap(me, name, tap.modes) : new Tap(me, name, tap.modes);
-
-            if (bool)
-                me.update_tap = me.taps[name];
-
-            out_taps.push(me.taps[name]);
-        }
-        */
 
         /**
          * To keep the layout of the output HTML predictable, Wick requires that a "real" HTMLElement be defined before a scope object is created. 
@@ -78,66 +67,15 @@ export default class scp extends ElementNode{
 
             if (this._badge_name_)
                 me.badges[this._badge_name_] = element;
-
-            /*
-            let hook = {
-                attr: this.attributes,
-                bindings: [],
-                style: null,
-                ele: element
-            };
-            for (let i = 0, l = this.bindings.length; i < l; i++) {
-                let attr = this.bindings[i];
-                let bind = attr.binding._bind_(me, errors, out_taps, element, attr.name);
-
-                if (hook) {
-                    if (attr.name == "style" || attr.name == "css")
-                        hook.style = bind;
-
-                    hook.bindings.push(bind);
-                }
-            }
-
-            me.hooks.push(hook);
-            */
         }
-        /*
-        for (let i = 0, l = this.attributes.length; i < l; i++) {
-            let attr = this.attributes[i];
 
-            if (!attr.value) {
-                //let value = this.par.importAttrib()
-                //if(value) data[attr.name];
-            } else
-                data[attr.name] = attr.value;
-        }
-`           
-        if (this.url || this.__statics__) {
-            statics = Object.assign(statics, this.__statics__);
-            statics.url = this.url;
-        }
-        */
-        /*
-            par_list.push(this)
-        */
+        for (let i = 0, l = this.attribs.length; i < l; i++)
+            this.attribs[i].bind(element, scope, pinned)
 
-        //par_list.push(this);
         for(let i = 0; i < this.children.length; i++){
-            //for (let node = this.fch; node; node = this.getNextChild(node))
             const node = this.children[i];
-                node.mount(element, me, statics, presets);
+            node.mount(element, me, presets, slots, pinned);
         }
-        /*
-            par_list.pop()
-        */
-        /*
-        if (statics || this.__statics__) {
-            let s = Object.assign({}, statics ? statics : {}, this.__statics__);
-            me.statics = s;
-            me.update(me.statics);
-        }*/
-
-        //this.popCached(me);
 
         return me;
 	}

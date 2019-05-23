@@ -24,7 +24,7 @@ export default class extends base {
         //yield this;
      }
 
-     get type () { return types.assign }
+    get type () { return types.assign }
 
     render(){return `${this.id.render()} ${this.op} ${this.expr.render()}`}
 }

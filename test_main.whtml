@@ -16,12 +16,16 @@
 
 		<tractor style="color:green;position: absolute;">
 			
-			<div><input value=((color)) type="text"/></div>
+			<div><input value=((color)) type="text" /></div>
 			
-			<div slot=test>I'm a best ((color))</div>
+			<div slot=test pin=dragon> I'm a best ((color))</div>
+
+			<script on=((connected))>
+				dragon$.innerHTML = "foundation";
+				console.log(dragon$)
+			</script>
 
 			<script on=((trs_dec_in))>
-				console.log(color);
 				trs({
 					obj:this.ele,
 					transform:[{v:"translate(0px, 0px) rotate(0)"}, {v:"rotate(0.5) translate(60px, 80px) ", duration:1000, easing:glow.ease_out}]

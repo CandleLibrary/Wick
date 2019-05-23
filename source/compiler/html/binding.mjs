@@ -3,23 +3,15 @@ import identifier from "../js/identifier.mjs";
 import assignement from "../js/assign.mjs";
 import member from "../js/member.mjs";
 import rtrn from "../js/return.mjs";
-import JS from "../js/tools.mjs";
-//import JSTools from "./js/tools.mjs";
-
+import {GetOutGlobals, AddEmit} from "./script_functions.mjs";
+import FUNCTION_CACHE from "./function_cache.mjs";
 import ExpressionIO from "../component/io/expression_io.mjs";
 import ContainerIO from "../component/io/container_io.mjs";
-
-
-import glow from "@candlefw/glow";
-
-
+import script from "./script.mjs";
 export const EXPRESSION = 5;
 export const IDENTIFIER = 6;
 export const CONTAINER = 7;
 export const BOOL = 8;
-
-const defaults = { glow }
-
 
 export default class Binding {
 
@@ -30,62 +22,36 @@ export default class Binding {
 
         this.METHOD = IDENTIFIER;
 
-        this.expr = sym[1];
-        this.exprb = (sym.length > 3) ? sym[3] : null;
+        this.ast = sym[1];
+        this.prop = (sym.length > 3) ? sym[3] : null;
 
+        this.function = null;
         this.args = null;
-        this.val = this.expr + "";
+        this.READY = false;
 
-        if (!(this.expr instanceof identifier) && !(this.expr instanceof member))
-            this.processJSAST(this.expr, env.presets);
+        this.val = this.ast + "";
 
-        console.log(this.expr + "")
+        if (!(this.ast instanceof identifier) && !(this.ast instanceof member))
+            this.processJSAST(env.presets);
+        
     }
 
     toString() {
-        if (this.exprb)
-            return `((${this.expr + ""})(${this.exprb + ""}))`;
+        if (this.prop)
+            return `((${this.ast + ""})(${this.prop + ""}))`;
         else
-            return `((${this.expr + ""}))`;
+            return `((${this.ast + ""}))`;
     }
 
-    processJSAST(ast, presets = { custom: {} }, ALLOW_EMIT = false) {
-
-        const out_global_names = JS.getClosureVariableNames(ast)
-        
-        const out_globals = out_global_names.map(out=>{
-            const out_object = { name: out, val: null, IS_TAPPED: false };
-
-            if (presets.custom[out])
-                out_object.val = presets.custom[out];
-            else if (presets[out])
-                out_object.val = presets[out];
-            else if (defaults[out])
-                out_object.val = defaults[out];
-            else {
-                out_object.IS_TAPPED = true;
-            }
-
-            return out_object;
-        }) 
-
-        JS.processType(types.assignment, ast, assign=>{
-            const k = assign.id.name;
-
-            if (window[k] || this.presets.custom[k] || this.presets[k] || defaults[k])
-                    return;
-
-            assign.id = new member([new identifier(["emit"]), null, assign.id]);
-        })
-
+    processJSAST(presets = { custom: {} }) {
+        this.args = GetOutGlobals(this.ast, presets);
+        AddEmit(this.ast, presets);
         let r = new rtrn([]);
-        r.expr = ast;
-        ast = r;
-
-        this.args = out_globals;
-        this.val = ast + "";
-        this.expr = ast;
+        r.expr = this.ast;
+        this.ast = r;
+        this.val = r + "";
         this.METHOD = EXPRESSION;
+        script.prototype.finalize.call(this);
     }
 
     setForContainer() {
@@ -93,11 +59,11 @@ export default class Binding {
             this.METHOD = CONTAINER;
     }
 
-    bind(scope, element) {
+    bind(scope, element, pinned) {
         if (this.METHOD == EXPRESSION) {
-            return new ExpressionIO(element, scope, [], scope, this, this.lex);
+            return new ExpressionIO(element, scope, [], scope, this, this.lex, pinned);
         } else if (this.METHOD == CONTAINER)
-            return new ContainerIO(element, scope, [], scope, this, this.lex);
+            return new ContainerIO(element, scope, [], scope, this, this.lex, pinned);
         else
             return scope.getTap(this.val);
     }

@@ -63,7 +63,7 @@ export default class ctr extends ElementNode {
         return merged_node;
     }
 
-    mount(element, scope, statics, presets) {
+    mount(element, scope, presets, slots, pinned) {
         
         scope = scope || new Scope(null, presets, element, this);
 
@@ -82,16 +82,16 @@ export default class ctr extends ElementNode {
             this.filters[i].mount(scope, container);
 
         for (let i = 0, l = this.attribs.length; i < l; i++)
-            this.attribs[i].bind(ele, scope);
+            this.attribs[i].bind(ele, scope, pinned);
 
         if (this.binds.length > 0) {
             for (let i = 0; i < this.binds.length; i++)
-                this.binds[i].mount(null, scope, statics, presets, container);
+                this.binds[i].mount(null, scope, presets, slots, pinned, container);
         }else{ 
             //If there is no binding, then there is no potential to have ModelContainer borne components.
             //Instead, load any existing children as component entries for the container element. 
             for (let i = 0; i < this.nodes.length; i++)
-                container.scopes.push(this.nodes[i].mount(null, null, statics, presets));
+                container.scopes.push(this.nodes[i].mount(null, null, presets, slots));
             container.filterUpdate();
             container.render();
         }

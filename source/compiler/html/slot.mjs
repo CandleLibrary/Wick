@@ -7,11 +7,11 @@ export default class slt extends ElementNode{
 		return this;
 	}
 
-	mount(element, scope, statics, presets){
-		if(statics && statics[this.name]){
-			let ele = statics[this.name];
-			statics[this.name] = null;
-			ele(element, scope, statics, presets);
+	mount(element, scope, presets, slots, pinned){
+		if(slots && slots[this.name]){
+			let ele = slots[this.name];
+			slots[this.name] = null;
+			ele(element, scope, presets, slots, pinned);
 		}
 	}
 }

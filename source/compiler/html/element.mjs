@@ -29,11 +29,12 @@ export default class ElementNode {
         if (this.component)
             presets.components[this.component] = this;
 
-        this.url = this.getAttrib("url").value ? URL.resolveRelative(this.getAttrib("url").value) : null;
-        this.id = this.getAttrib("id").value;
-        this.class = this.getAttrib("id").value;
-        this.name = this.getAttrib("name").value;
-        this.slot = this.getAttrib("slot").value;
+        this.url = this.getAttribute("url") ? URL.resolveRelative(this.getAttribute("url")) : null;
+        this.id = this.getAttribute("id");
+        this.class = this.getAttribute("id");
+        this.name = this.getAttribute("name");
+        this.slot = this.getAttribute("slot");
+        this.pinned = (this.getAttribute("pin")) ? this.getAttribute("pin") + "$" : "";
 
 
         //Prepare attributes with data from this element
@@ -50,15 +51,15 @@ export default class ElementNode {
     finalize(slots_in = {}) {
 
 
-        if(this.slot){
+        if (this.slot) {
 
-            if(!this.proxied_mount)
+            if (!this.proxied_mount)
                 this.proxied_mount = this.mount.bind(this);
-            
+
             //if(!slots_in[this.slot])
             slots_in[this.slot] = this.proxied_mount;
-            
-            this.mount = ()=>{};
+
+            this.mount = () => {};
         }
 
         for (let i = 0; i < this.children.length; i++) {
@@ -68,14 +69,22 @@ export default class ElementNode {
 
         const slots_out = Object.assign({}, slots_in);
 
-        if (this.presets.components[this.tag]) 
+        if (this.presets.components[this.tag])
             this.proxied = this.presets.components[this.tag].merge(this);
 
-        if(this.proxied){
+        if (this.proxied) {
             let ele = this.proxied.finalize(slots_out);
             ele.slots = slots_out;
             this.mount = ele.mount.bind(ele);
         }
+
+        this.children.sort(function(a,b){
+            if(a.tag == "script" && b.tag !== "script")
+                return 1;
+            if(a.tag !== "script" && b.tag == "script")
+                return -1;
+            return 0;
+        })
 
         return this;
     }
@@ -124,18 +133,14 @@ export default class ElementNode {
     }
 
     innerToString(off) {
-        let str = "";
-        for (let node = this.fch; node;
-            (node = this.getNextChild(node))) {
-            str += node.toString(off);
-        }
-        return str;
+        return this.children.map(e=>e.toString()).join("");
     }
 
     /****************************************** COMPONENTIZATION *****************************************/
 
 
     async loadURL(env) {
+
         try {
             const own_env = new CompilerEnv(env.presets, env);
             own_env.setParent(env);
@@ -145,7 +150,7 @@ export default class ElementNode {
             own_env.pending++;
 
             const ast = wick_compile(whind(txt_data), own_env);
-            
+
             this.proxied = ast.merge(this);
 
             own_env.resolve();
@@ -156,6 +161,7 @@ export default class ElementNode {
     }
 
     merge(node, merged_node = new this.constructor(null, this.tag, null, null, this.presets)) {
+
         merged_node.line = this.line;
         merged_node.char = this.char;
         merged_node.offset = this.offset;
@@ -182,44 +188,36 @@ export default class ElementNode {
 
     /******************************************* BUILD ****************************************************/
 
-    mount(element, scope, statics = {}, presets = this.presets) {
+    mount(element, scope, presets = this.presets, slots = {}, pinned = {}) {
 
-        // /if (this.url || this.__statics__)
-        // /    out_statics = Object.assign({}, statics, this.__statics__, { url: this.getURL(par_list.length - 1) });
-         if(this.slots)
-            statics = Object.assign({}, statics, this.slots)
+        if (this.slots)
+            slots = Object.assign({}, slots, this.slots)
 
         const own_element = this.createElement(scope);
+        if (element) appendChild(element, own_element);
+
+        if(this.pinned){
+            pinned[this.pinned] = own_element;
+        }
 
         if (!scope)
             scope = new Scope(null, presets || this.__presets__ || this.presets, own_element, this);
 
-        if (this.HAS_TAPS)
-            taps = scope.linkTaps(this.tap_list);
+        //if (this.HAS_TAPS)
+            //taps = scope.linkTaps(this.tap_list);
 
-        if (own_element) {
+        if (!scope.ele) scope.ele = own_element;
 
-            if (!scope.ele) scope.ele = own_element;
+        if (this._badge_name_)
+            scope.badges[this._badge_name_] = own_element;
 
-            if (this._badge_name_)
-                scope.badges[this._badge_name_] = own_element;
+        for (let i = 0, l = this.attribs.length; i < l; i++)
+            this.attribs[i].bind(own_element, scope, pinned)
 
-            if (element) appendChild(element, own_element);
-
-            for (let i = 0, l = this.attribs.length; i < l; i++)
-                this.attribs[i].bind(own_element, scope);
-        }
-
-        const ele = own_element ? own_element : element;
-
-        //par_list.push(this);
         for (let i = 0; i < this.children.length; i++) {
-            //for (let node = this.fch; node; node = this.getNextChild(node))
             const node = this.children[i];
-            node.mount(ele, scope, statics, presets);
+            node.mount(own_element, scope, presets, slots, pinned);
         }
-
-        //par_list.pop();
 
         return scope;
     }
@@ -235,10 +233,10 @@ export class MergerNode {
                 this.c = this.c.concat(children_arrays[i]);
     }
 
-    mount(element, scope, statics, presets = this.presets) {
+    mount(element, scope, presets, statics, pinned) {
         for (let i = 0, l = this.c.length; i < l; i++) {
             if (this.c[i].SLOTED == true) continue;
-            this.c[i].build(element, scope, statics, presets);
+            this.c[i].build(element, scope, presets, statics, pinned);
         }
 
         return scope;

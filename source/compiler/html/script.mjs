@@ -1,67 +1,68 @@
 import ElementNode from "./element.mjs";
-
 import types from "../js/types.mjs";
 import identifier from "../js/identifier.mjs";
 import member from "../js/member.mjs";
 import JS from "../js/tools.mjs";
-
 import ScriptIO from "../component/io/script_io.mjs";
-
-export const EXPRESSION = 5;
-export const IDENTIFIER = 6;
-export const EVENT = 7;
-export const BOOL = 8;
-
-
 import glow from "@candlefw/glow";
-
-const defaults = { glow };
+import FUNCTION_CACHE from "./function_cache.mjs";
+import {GetOutGlobals, AddEmit} from "./script_functions.mjs";
 
 
 export default class scr extends ElementNode {
-
-    constructor(env, tag, children, attribs, presets) {
+    
+    constructor(env, tag, ast, attribs, presets) {
         super(env, "script", null, attribs, presets);
-        this.processJSAST(children, presets, true);
+        this.function = null;
+        this.args = null;
+        this.ast = ast;
+        this.READY = false;
+        this.val = "";
+
+        this.processJSAST(presets);
+
         this.on = this.getAttrib("on").value;
     }
 
-    processJSAST(ast, presets = { custom: {} }, ALLOW_EMIT = false) {
-        const out_global_names = JS.getClosureVariableNames(ast)
-        
-        const out_globals = out_global_names.map(out=>{
-            const out_object = { name: out, val: null, IS_TAPPED: false };
-
-            if (presets.custom[out])
-                out_object.val = presets.custom[out];
-            else if (presets[out])
-                out_object.val = presets[out];
-            else if (defaults[out])
-                out_object.val = defaults[out];
-            else {
-                out_object.IS_TAPPED = true;
-            }
-
-            return out_object;
-        }) 
-
-        JS.processType(types.assignment, ast, assign=>{
-            const k = assign.id.name;
-
-            if (window[k] || this.presets.custom[k] || this.presets[k] || defaults[k])
-                    return;
-
-            assign.id = new member([new identifier(["emit"]), null, assign.id]);
-        })
-
-        this.args = out_globals;
-        this.val = ast + "";
-        this.expr = ast;
-        this.METHOD = EXPRESSION;
+    processJSAST(presets = { custom: {} }) {
+        this.args = GetOutGlobals(this.ast, presets);
+        AddEmit(this.ast, presets, this.args.map(a=>a.name));
+        this.val = this.ast + "";
     }
 
-    mount(element, scope, statics, presets) {
-        const tap = this.on.bind(scope);
-        new ScriptIO(scope, [], tap, this, {}, statics);
+    finalize() {
+        if (!FUNCTION_CACHE.has(this.val)) {
+
+            let func, HAVE_CLOSURE = false;
+
+            const
+                args = this.args,
+                names = args.map(a => a.name);
+
+            // For the injected emit function
+            names.push("emit");
+
+            try {
+                this.function = Function.apply(Function, names.concat([this.val]));
+                this.READY = true;
+                FUNCTION_CACHE.set(this.val, this.function)
+            } catch (e) {
+                //errors.push(e);
+                console.error(`Script error encountered in ${statics.url || "virtual file"}:${node.line+1}:${node.char}`)
+                console.warn(this.val);
+                console.error(e)
+            }
+        } else {
+            this.function = FUNCTION_CACHE.get(this.val)
+        }
+
+        return this;
+    }
+
+    mount(element, scope, presets, slots, pinned) {
+        if (this.READY) {
+            const tap = this.on.bind(scope);
+            new ScriptIO(scope, [], tap, this, {}, pinned);
+        }
     }
 }

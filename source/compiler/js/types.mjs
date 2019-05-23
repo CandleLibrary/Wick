@@ -34,6 +34,7 @@ export default{
 		lte:33,
 		gte:34,
 		assign:35,
+		assignment:35,
 		equal:36,
 		or:37,
 		and:38,
@@ -54,4 +55,5 @@ export default{
 		this_expr:53,
 		prop_bind:54,
 		function_declaration:55,
+		debugger:56
 	};

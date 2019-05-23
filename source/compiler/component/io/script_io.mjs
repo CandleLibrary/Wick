@@ -31,100 +31,36 @@ class argumentIO extends IO {
 
 //Function.apply(Function, [binding.arg_key || binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val]);
 export default class ScriptIO extends IOBase {
-    constructor(scope, errors, tap, binding, node, statics) {
+    constructor(scope, errors, tap, script, lex, pinned) {
 
-        let presets = scope.presets;
-        let ids = binding.ids;
-        let func, HAVE_CLOSURE = false;
-        tap = tap || { prop: "" }
-
-        //*********** PRE OBJECT FUNCTION INITIALIZATION *******************//
-
-        const args = binding.args;
-
-        const names = args.map(a => a.name);
-
-        names.push("emit"); // For the injected emit function
-        //names.unshift(binding.tap_name);
-
-        const arg_ios = {};
-        let TAP_BINDING = -1;
-        let ACTIVE_IOS = 0;
-
-        const props = args.map((a, i) => {
-
-            if (a.IS_TAPPED) {
-
-                if (a.name == tap.prop)
-                    TAP_BINDING = i;
-
-                ACTIVE_IOS++;
-
-                const arg_io = new argumentIO(scope, errors, scope.getTap(a.name), null, i);
-
-                arg_ios[a.name] = arg_io;
-
-                return null;
-            }
-
-            return a.val;
-        });
-
-
-        //props.unshift(null); // Place holder for value data
-        try {
-            if (binding._func_) {
-                func = binding._func_;
-                if (binding.HAVE_CLOSURE)
-                    HAVE_CLOSURE = true;
-            } else {
-                func = Function.apply(Function, names.concat([binding.val]));
-                binding._func_ = func;
-            }
-        } catch (e) {
-            errors.push(e);
-            console.error(`Script error encountered in ${statics.url || "virtual file"}:${node.line+1}:${node.char}`)
-            console.warn(binding.val);
-            console.error(e)
-            func = () => {};
-        }
+        const HAVE_CLOSURE = false;
 
         super(tap);
 
-        this.IO_ACTIVATIONS = ACTIVE_IOS;
-        this.active_IOS = 0;
-
-        this.function = binding.val;
-
-        this.HAVE_CLOSURE = HAVE_CLOSURE;
-
-        if (this.HAVE_CLOSURE)
-            this._func_ = func;
-        else
-            this._func_ = func.bind(scope);
-
         this.scope = scope;
-        this.TAP_BINDING = TAP_BINDING;
+        this.TAP_BINDING_INDEX = -1;
+        this.ACTIVE_IOS = 0;
+        this.IO_ACTIVATIONS = 0;
+        
+        this.function = null;
+        
+        this.HAVE_CLOSURE = HAVE_CLOSURE;
+        if (this.HAVE_CLOSURE)
+            this.function = script.function;
+        else
+            this.function = script.function.bind(scope);
 
         //Embedded emit functions
         const func_bound = this.emit.bind(this);
         func_bound.onTick = this.onTick.bind(this);
 
         //TODO: only needed if emit is called in function. Though highly probably. 
-        props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value); } }));
-
-        this.arg_props = props;
-        this.arg_ios = arg_ios;
-
-        for (const a in arg_ios)
-            arg_ios[a].ele = this;
-
-        //this.meta = null;
-        this.url = statics.url;
-
-        this.offset = node.offset;
-        this.char = node.char;
-        this.line = node.line;
+        this.arg_props = [];
+        this.arg_ios = {};
+        
+        this.initProps(script.args, tap, errors, pinned);
+        
+        this.arg_props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value); } }));
     }
 
     /*
@@ -132,7 +68,7 @@ export default class ScriptIO extends IOBase {
         Calls destroy on any child objects.
      */
     destroy() {
-        this._func_ = null;
+        this.function = null;
         this.scope = null;
         this._bound_emit_function_ = null;
         this._meta = null;
@@ -145,12 +81,43 @@ export default class ScriptIO extends IOBase {
         this.arg_ios = null;
     }
 
+    initProps(arg_array, tap, errors, pinned){
+        for(let i = 0; i < arg_array.length; i++){
+            
+            const a = arg_array[i];
+
+            if(a.IS_ELEMENT){
+                
+                this.arg_props.push(pinned[a.name]);
+
+            }else if(a.IS_TAPPED){
+
+                let val = null;
+                
+                const name = a.name;
+                
+                if(name == tap.name){
+                    val = tap.prop;
+                    this.TAP_BINDING_INDEX = i;
+                }
+                
+                this.ACTIVE_IOS++;
+                
+                this.arg_ios[name] = new argumentIO(this.scope, errors, this.scope.getTap(name), this, i);
+
+                this.arg_props.push(val)
+            }else{
+                this.arg_props.push(a.val)
+            }
+        }
+    }
+
     updateProp(io, val) {
         this.arg_props[io.id] = val;
 
         if (!io.ACTIVE) {
             io.ACTIVE = true;
-            this.active_IOS++;
+            this.ACTIVE_IOS++;
         }
     }
 
@@ -162,8 +129,8 @@ export default class ScriptIO extends IOBase {
                     this.arg_ios[a].down(value[a]);
             }
         } else {
-            if (this.TAP_BINDING !== -1)
-                this.arg_props[this.TAP_BINDING] = value;
+            if (this.TAP_BINDING_INDEX !== -1)
+                this.arg_props[this.TAP_BINDING_INDEX] = value;
         }
     }
 
@@ -175,15 +142,15 @@ export default class ScriptIO extends IOBase {
             this.setValue(value);
 
 
-        if (this.active_IOS < this.IO_ACTIVATIONS)
+        if (this.ACTIVE_IOS < this.IO_ACTIVATIONS)
             return
 
         try {
 
             if (this.HAVE_CLOSURE)
-                return this._func_.apply(this, this.arg_props);
+                return this.function.apply(this, this.arg_props);
             else
-                return this._func_.apply(this, this.arg_props);
+                return this.function.apply(this, this.arg_props);
         } catch (e) {
             console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line+1}:${this.char}`)
             console.warn(this.function);

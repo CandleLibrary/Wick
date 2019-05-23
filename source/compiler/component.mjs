@@ -115,7 +115,7 @@ const
                 this.pending = new Promise(res => {
                     compileAST(component_data, presets).then(ast => {
 
-                        if (this.constructor !== Component) {
+                        if (this.constructor.prototype !== Component.prototype) {
                                                 
                             //Go through prototype chain and extract functions that have names starting with $. Add them to the ast.
 
@@ -137,6 +137,8 @@ const
                                     const HAS_CLOSURE = (ids.filter(a=>!args.includes(a))).length > 0;
 
                                     //debugger
+                                    //Create and attach a script IO to the HTML ast. 
+
 
                                     //Checking for variable leaks. 
                                     //if all closure variables match all argument variables, then the function is self contained and can be completely enclosed by the 

@@ -39,8 +39,7 @@ export default {
         }
 
         return [...globals.values()].reduce((red, out) => {
-
-            if (window[out]) 
+            if (window[out] || out == "this") 
             	//Skip anything already defined on the global object. 
                 return red;
 
