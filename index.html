@@ -24,14 +24,12 @@
 
 			class D extends wick{
 				constructor(){
-					super(`<div>((test))</div>`)
+					super(`<div>((testt))<input type=text value=((testt))/> </div>`)
 				}
 
-
-
-				test(max){
+				testt(testt){
 					console.log(this);
-					glow.render();
+					console.log(testt);
 				}
 			}
 
@@ -43,7 +41,7 @@
 
 				const m = wick.model({doug:[{name:"pate"}, {name:"mary"}]});
 				
-				wick("./test_main.whtml").mount(document.getElementById("a"), m);
+				(new wick("./test_main.whtml")).mount(document.getElementById("a"), m);
 			}
 			start();
 		</script>

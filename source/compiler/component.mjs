@@ -5,8 +5,15 @@ import { Presets } from "../presets.mjs";
 import wick_compile from "./wick.mjs";
 import CompilerEnv from "./compiler_env.mjs";
 import env from "./env.mjs";
-import JS from "./js/tools.mjs";
 import proto from "./component_prototype.mjs";
+
+import JS from "./js/tools.mjs";
+import types from "./js/types.mjs";
+import Statements from "./js/stmts.mjs";
+
+import Script from "./html/script.mjs";
+import Attribute from "./html/attribute.mjs";
+import Binding from "./html/binding.mjs";
 
 const
 
@@ -131,12 +138,21 @@ const
                                     
                                     let js_ast = wick_compile(whind("function " + r.toString().trim()+";"), c_env)
 
-                                    let ids = JS.getClosureVariableNames(js_ast);
+                                    let func_ast = JS.getFirst(js_ast, types.function_declaration);
+                                    let ids = JS.getClosureVariableNames(func_ast);
                                     let args = JS.getFunctionDeclarationArgumentNames(js_ast); // Function arguments in wick class component definitions are treated as TAP variables. 
-
                                     const HAS_CLOSURE = (ids.filter(a=>!args.includes(a))).length > 0;
 
-                                    //debugger
+                                    const binding = new Binding([null, func_ast.id], {presets, start:0}, whind("ddddd"));
+                                    const attrib = new Attribute(["on", null, binding], presets);
+                                    const stmt = new Statements([func_ast.body]);
+                            
+                                    let script = new Script({}, null, stmt, [attrib], presets);
+
+                                    script.finalize();
+
+                                    ast.children.push(script);
+
                                     //Create and attach a script IO to the HTML ast. 
 
 

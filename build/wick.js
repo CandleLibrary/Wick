@@ -9963,6 +9963,19 @@ var wick = (function () {
     				fn(a);
     		}
     	},
+
+    	getFirst(ast, type){
+    		const tvrs = ast.traverseDepthFirst(); let node = null;
+
+    		while((node = tvrs.next().value)){
+    			if(node.type == type){
+    				return node;
+    			}
+    		}
+
+    		return null;
+    	},
+    	
     	getClosureVariableNames(ast, ...global_objects){
     		let
                 tvrs = ast.traverseDepthFirst(),
@@ -18915,12 +18928,21 @@ var wick = (function () {
                                         
                                         let js_ast = parser(whind$1("function " + r.toString().trim()+";"), c_env);
 
-                                        let ids = JS.getClosureVariableNames(js_ast);
+                                        let func_ast = JS.getFirst(js_ast, types.function_declaration);
+                                        let ids = JS.getClosureVariableNames(func_ast);
                                         let args = JS.getFunctionDeclarationArgumentNames(js_ast); // Function arguments in wick class component definitions are treated as TAP variables. 
-
                                         const HAS_CLOSURE = (ids.filter(a=>!args.includes(a))).length > 0;
 
-                                        //debugger
+                                        const binding = new Binding([null, func_ast.id], {presets, start:0}, whind$1("ddddd"));
+                                        const attrib = new Attribute(["on", null, binding], presets);
+                                        const stmt = new stmts([func_ast.body]);
+                                
+                                        let script = new scr({}, null, stmt, [attrib], presets);
+
+                                        script.finalize();
+
+                                        ast.children.push(script);
+
                                         //Create and attach a script IO to the HTML ast. 
 
 

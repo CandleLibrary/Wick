@@ -9,6 +9,19 @@ export default {
 				fn(a);
 		}
 	},
+
+	getFirst(ast, type){
+		const tvrs = ast.traverseDepthFirst(); let node = null;
+
+		while((node = tvrs.next().value)){
+			if(node.type == type){
+				return node;
+			}
+		}
+
+		return null;
+	},
+	
 	getClosureVariableNames(ast, ...global_objects){
 		let
             tvrs = ast.traverseDepthFirst(),
