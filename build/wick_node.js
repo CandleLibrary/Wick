@@ -93,7 +93,7 @@ const q = 113;
 const Q = 81;
 const QMARK = 63;
 const QUOTE = 39;
-const r = 114;
+const r$1 = 114;
 const R = 82;
 const RECORD_SEPERATOR = 30;
 const s = 115;
@@ -584,13 +584,13 @@ class Lexer {
 
         const end = (pk.END) ? this.str.length : pk.off,
 
-            nls = (this.line > 0) ? 2 : 1,
+            nls = (this.line > 0) ? 2 : 0,
 
             number_of_tabs =
             this.str
             .slice(this.off - this.char + nls, this.off + nls)
             .split("")
-            .reduce((r$$1, v$$1) => (r$$1 + ((v$$1.charCodeAt(0) == HORIZONTAL_TAB) | 0)), 0),
+            .reduce((r, v) => (r + ((v.charCodeAt(0) == HORIZONTAL_TAB) | 0)), 0),
 
             arrow = String.fromCharCode(0x2b89),
 
@@ -679,7 +679,7 @@ class Lexer {
         }
 
         //Token builder
-        const l$$1 = marker.sl,
+        const l = marker.sl,
             str = marker.str,
             IWS = marker.IWS;
 
@@ -691,9 +691,9 @@ class Lexer {
             char = marker.char,
             root = marker.off;
 
-        if (off >= l$$1) {
+        if (off >= l) {
             length = 0;
-            base = l$$1;
+            base = l;
             //char -= base - off;
             marker.char = char + (base - marker.off);
             marker.type = type;
@@ -711,14 +711,14 @@ class Lexer {
             let code = str.charCodeAt(off);
             let off2 = off;
             let map = this.symbol_map,
-                m$$1;
+                m;
             let i = 0;
 
             while (code == 32 && IWS)
                 (code = str.charCodeAt(++off2), off++);
 
-            while ((m$$1 = map.get(code))) {
-                map = m$$1;
+            while ((m = map.get(code))) {
+                map = m;
                 off2 += 1;
                 code = str.charCodeAt(off2);
             }
@@ -745,7 +745,7 @@ class Lexer {
 
                     switch (jump_table[code]) {
                         case 0: //NUMBER
-                            while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)]));
+                            while (++off < l && (12 & number_and_identifier_table[str.charCodeAt(off)]));
 
                             if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off + 1)])) {
                                 off++;
@@ -762,7 +762,7 @@ class Lexer {
 
                             break;
                         case 1: //IDENTIFIER
-                            while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
+                            while (++off < l && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
                             type = identifier$1;
                             length = off - base;
                             break;
@@ -770,18 +770,18 @@ class Lexer {
                             if (this.PARSE_STRING) {
                                 type = symbol;
                             } else {
-                                while (++off < l$$1 && str.charCodeAt(off) !== code);
+                                while (++off < l && str.charCodeAt(off) !== code);
                                 type = string;
                                 length = off - base + 1;
                             }
                             break;
                         case 3: //SPACE SET
-                            while (++off < l$$1 && str.charCodeAt(off) === SPACE);
+                            while (++off < l && str.charCodeAt(off) === SPACE);
                             type = white_space;
                             length = off - base;
                             break;
                         case 4: //TAB SET
-                            while (++off < l$$1 && str[off] === HORIZONTAL_TAB);
+                            while (++off < l && str[off] === HORIZONTAL_TAB);
                             type = white_space;
                             length = off - base;
                             break;
@@ -818,7 +818,7 @@ class Lexer {
                 }
 
                 if (IWS && (type & white_space_new_line)) {
-                    if (off < l$$1) {
+                    if (off < l) {
                         type = symbol;
                         //off += length;
                         continue;
@@ -986,9 +986,9 @@ class Lexer {
             off = lex.off;
 
         for (; lex.off < lex.sl; lex.off++) {
-            const c$$1 = jump_table[lex.string.charCodeAt(lex.off)];
+            const c = jump_table[lex.string.charCodeAt(lex.off)];
 
-            if (c$$1 > 2 && c$$1 < 7) {
+            if (c > 2 && c < 7) {
 
                 if (space_count >= leave_leading_amount) {
                     off++;
@@ -1006,9 +1006,9 @@ class Lexer {
         off = lex.sl;
 
         for (; lex.sl > lex.off; lex.sl--) {
-            const c$$1 = jump_table[lex.string.charCodeAt(lex.sl - 1)];
+            const c = jump_table[lex.string.charCodeAt(lex.sl - 1)];
 
-            if (c$$1 > 2 && c$$1 < 7) {
+            if (c > 2 && c < 7) {
                 if (space_count >= leave_trailing_amount) {
                     off--;
                 } else {
@@ -1042,11 +1042,11 @@ class Lexer {
 
         for (let i = 0; i < sym.length; i++) {
             let code = sym.charCodeAt(i);
-            let m$$1 = map.get(code);
-            if (!m$$1) {
-                m$$1 = map.set(code, new Map).get(code);
+            let m = map.get(code);
+            if (!m) {
+                m = map.set(code, new Map).get(code);
             }
-            map = m$$1;
+            map = m;
         }
         map.IS_SYM = true;
     }
@@ -1060,7 +1060,7 @@ class Lexer {
         return this.sl - this.off;
     }
 
-    set string_length(s$$1) {}
+    set string_length(s) {}
 
     /**
      * The current token in the form of a new Lexer with the current state.
@@ -1129,7 +1129,7 @@ class Lexer {
     get n() { return this.next() }
 
     get END() { return this.off >= this.sl }
-    set END(v$$1) {}
+    set END(v) {}
 
     get type() {
         return 1 << (this.masked_values & TYPE_MASK);
@@ -1205,7 +1205,7 @@ whind$1.constructor = Lexer;
 Lexer.types = Types;
 whind$1.types = Types;
 
-const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
+const uri_reg_ex = /(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:\/\/))?(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:([^\<\>\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\<\>\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\<\>\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
 
 const STOCK_LOCATION = {
     protocol: "",
@@ -1607,7 +1607,7 @@ class URL {
                         str += `&${key}=${val}`;
                 }
             }
-
+            
             str = str.slice(1);
 
             this.query = this.query.split("?")[0] + "?" + str;
@@ -1846,8 +1846,8 @@ URL.polyfill = async function() {
     if (typeof(global) !== "undefined") {
 
         const 
-            fs = (await Promise.resolve(require("fs"))).promises,
-            path = (await Promise.resolve(require("path")));
+            fs = (await Promise.resolve(require('fs'))).promises,
+            path = (await Promise.resolve(require('path')));
 
 
         global.Location = (class extends URL {});
@@ -1860,7 +1860,7 @@ URL.polyfill = async function() {
          */
         global.fetch = async (url, data) => {
             let
-                p = path.join(process.cwd(), (url[0] == ".") ? url + "" : "." + url),
+                p = path.resolve(process.cwd(), "" + url),
                 d = await fs.readFile(p, "utf8");
 
             try {
@@ -2024,7 +2024,7 @@ const _FrozenProperty_ = (object, name, value) => OB.defineProperty(object, name
  *
  * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
  */
- 
+    
 const caller = (typeof(window) == "object" && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
     setTimeout(f, 1);
 };
@@ -2050,7 +2050,16 @@ class Spark {
 
         this.queue_switch = 0;
 
-        this.callback = () => this.update();
+        this.callback = ()=>{};
+
+        if(typeof(window) !== "undefined"){
+            window.addEventListener("load",()=>{
+                this.callback = () => this.update();
+                caller(this.callback);
+            });
+        }else{
+            this.callback = () => this.update();
+        }
 
         this.frame_time = perf.now();
 
@@ -2081,9 +2090,11 @@ class Spark {
 
         this.frame_time = perf.now() | 0;
 
-        this.SCHEDULE_PENDING = true;
 
-        caller(this.callback);
+        if(!this.SCHEDULE_PENDING){
+            this.SCHEDULE_PENDING = true;
+            caller(this.callback);
+        }
     }
 
     removeFromQueue(object){
@@ -3812,7 +3823,7 @@ class BtreeNode {
                 if (left.LEAF)
                     for (let i = 0; i < left.keys.length; i++)
                         if (left.keys[i] != left.nodes[i].id)
-                            {/*debugger*/}
+                            {/*debugger*/};
 
                 return true;
             }
@@ -8453,7 +8464,7 @@ function parser(l, e = {}) {
         }
     //console.log(time);
     return o[0];
-}
+};
 
 // This prevents env variable access conflicts when concurrent compilation
 // are processing text data. 
@@ -8570,7 +8581,7 @@ class base{
 	}
 	spin(trvs){
         let val = trvs.next().value;
-        while(val !== undefined && val !== this ){val = trvs.next().value;}
+        while(val !== undefined && val !== this ){val = trvs.next().value;};
      }
      toString(){return this.render()}
      render(){return ""}
@@ -8700,7 +8711,7 @@ class try_stmt extends base {
 }
 
 /** STATEMENTS **/
-class stmts extends base {
+class Statements extends base {
     constructor(sym) {
         super();
         this.stmts = sym[0];
@@ -8725,7 +8736,7 @@ class stmts extends base {
 }
 
 /** BLOCK **/
-class block extends stmts {
+class block extends Statements {
 
     constructor(sym,clsr) {
         super([sym[1]]);
@@ -10569,13 +10580,13 @@ const LinkedList = {
  * @memberof module:wick~internals.css
  * @alias CSSRule
  */
-class CSSRule {
+class CSSRule$1 {
     constructor(root) {
         /**
          * Collection of properties held by this rule.
          * @public
          */
-        this.props = {};
+        this.props = [];
         this.LOADED = false;
         this.root = root;
 
@@ -10618,8 +10629,8 @@ class CSSRule {
             }else
                 return "";
         } else {
-            for (let a in this.props) {
-                if (this.props[a] !== null) {
+            for (const a of this.props) {
+                if (a !== null) {
                     if (Array.isArray(this.props[a]))
                         str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
                     else
@@ -10792,7 +10803,7 @@ class CSS_Color extends Color {
         return ele;
     }
 
-    static parse(l, rule, r) {
+    static parse(l) {
 
         let c = CSS_Color._fs_(l);
 
@@ -11221,7 +11232,7 @@ class CSS_Length extends Number {
         return ele;
     }
 
-    static parse(l, rule, r) {
+    static parse(l) {
         let tx = l.tx,
             pky = l.pk.ty;
         if (l.ty == l.types.num || tx == "-" && pky == l.types.num) {
@@ -11364,7 +11375,7 @@ class DEGLength extends CSS_Length {
 }
 
 class CSS_URL extends URL {
-    static parse(l, rule, r) {
+    static parse(l) {
         if (l.tx == "url" || l.tx == "uri") {
             l.next().a("(");
             let v = "";
@@ -11410,7 +11421,7 @@ class CSS_String extends String {
         return ele;
     }
 
-    static parse(l, rule, r) {
+    static parse(l) {
         if (l.ty == l.types.str) {
             let tx = l.tx;
             l.next();
@@ -11427,7 +11438,7 @@ class CSS_String extends String {
 }
 
 class CSS_Id extends String {
-    static parse(l, rule, r) {
+    static parse(l) {
         if (l.ty == l.types.id) {
             let tx = l.tx;
             l.next();
@@ -11439,7 +11450,7 @@ class CSS_Id extends String {
 
 /* https://www.w3.org/TR/css-shapes-1/#typedef-basic-shape */
 class CSS_Shape extends Array {
-    static parse(l, rule, r) {
+    static parse(l) {
         if (l.tx == "inset" || l.tx == "circle" || l.tx == "ellipse" || l.tx == "polygon" || l.tx == "rect") {
             l.next().a("(");
             let v = "";
@@ -11481,7 +11492,7 @@ class CSS_Number extends Number {
         return ele;
     }
 
-    static parse(l, rule, r) {
+    static parse(l) {
         
         let sign = 1;
 
@@ -12024,7 +12035,7 @@ class QBezier {
 }
 
 class CSS_Bezier extends CBezier {
-	static parse(l, rule, r) {
+	static parse(l) {
 
 		let out = null;
 
@@ -12077,7 +12088,7 @@ class Stop{
 
 class CSS_Gradient{
 
-    static parse(l, rule, r) {
+    static parse(l) {
         let tx = l.tx,
             pky = l.pk.ty;
         if (l.ty == l.types.id) {
@@ -12105,8 +12116,8 @@ class CSS_Gradient{
                     }
                     
                     if(l.ch != ","){
-                        if(!(len = CSS_Length.parse(l, rule, r)))
-                            len = CSS_Percentage.parse(l,rule,r);
+                        if(!(len = CSS_Length.parse(l)))
+                            len = CSS_Percentage.parse(l);
                     }else
                         l.next();
                     
@@ -12167,7 +12178,7 @@ function CSS_Media_handle(type, prefix) {
     }
 
     return {
-        parse: function(a, b, c) {
+        parse: function(a) {
             debugger;
         }
     };
@@ -12681,7 +12692,7 @@ class CSS_Path extends Array {
 }
 
 class CSS_FontName extends String {
-	static parse(l, rule, r) {
+	static parse(l) {
 
 		if(l.ty == l.types.str){
 			let tx = l.tx;
@@ -12709,9 +12720,6 @@ class CSS_FontName extends String {
 
 /**
  * CSS Type constructors
- * @alias module:wick~internals.css.types.
- * @enum {object}
- * https://www.w3.org/TR/CSS2/about.html#property-defs
  */
 const types$1 = {
 	color: CSS_Color,
@@ -12752,8 +12760,6 @@ const types$1 = {
 
 /**
  * CSS Property Definitions https://www.w3.org/TR/css3-values/#value-defs
- * @alias module:wick~internals.css.property_definitions.
- * @enum {string}
  */
 const property_definitions = {
 
@@ -13250,7 +13256,7 @@ function checkDefaults(lx) {
             if (!lx.pk.pk.END) // These values should be the only ones present. Failure otherwise.
                 return 0; // Default value present among other values. Invalid
             return 1; // Default value present only. Valid
-    }
+    };
     return 2; // Default value not present. Ignore
 }
 
@@ -13260,7 +13266,7 @@ class JUX { /* Juxtaposition */
         this.id = JUX.step++;
         this.r = [NaN, NaN];
         this.terms = [];
-        this.prop = null;
+        this.HAS_PROP = false;
         this.name = "";
         this.virtual = false;
         this.REQUIRE_COMMA = false;
@@ -13282,12 +13288,12 @@ class JUX { /* Juxtaposition */
     }
 
     sp(value, rule) { /* Set Property */
-        if (this.prop) {
+        if (this.HAS_PROP) {
             if (value)
                 if (Array.isArray(value) && value.length === 1 && Array.isArray(value[0]))
-                    rule[this.prop] = value[0];
+                    rule[0] = value[0];
                 else
-                    rule[this.prop] = value;
+                    rule[0] = value;
         }
     }
 
@@ -13295,13 +13301,22 @@ class JUX { /* Juxtaposition */
         return !(isNaN(this.r[0]) && isNaN(this.r[1]));
     }
 
-    parse(lx, rule, out_val, ROOT = true) {
+    parse(data){
+        const prop_data = [];
+
+        this.parseLVL1(data instanceof whind$1.constructor ? data : whind$1(data + ""), prop_data);
+
+        return prop_data;
+    }
+
+
+
+    parseLVL1(lx, out_val = [], ROOT = true) {
             
         if (typeof(lx) == "string")
             lx = whind$1(lx);
 
-        let r = out_val || { v: null },
-            bool = false;
+        let bool = false;
 
         if (ROOT) {
             switch (checkDefaults(lx)) {
@@ -13312,14 +13327,14 @@ class JUX { /* Juxtaposition */
                     return false;
             }
 
-            bool = this.innerParser(lx, rule, out_val, r, this.start, this.end);
+            bool = this.parseLVL2(lx, out_val, this.start, this.end);
 
             //if (!lx.END)
             //    return false;
             //else
-                this.sp(r.v, rule);
+                //this.sp(r.v, rule);
         } else
-            bool = this.innerParser(lx, rule, out_val, r, this.start, this.end);
+            bool = this.parseLVL2(lx, out_val, this.start, this.end);
 
         return bool;
     }
@@ -13333,28 +13348,28 @@ class JUX { /* Juxtaposition */
         return true;
     }
 
-    innerParser(lx, rule, out_val, r, start, end) {
+    parseLVL2(lx, out_val, start, end) {
 
         let bool = false;
 
         repeat:
             for (let j = 0; j < end && !lx.END; j++) {
-                let copy = lx.copy();
-                let temp_r = { v: null };
+                const copy = lx.copy();
+                //let temp_r = { v: null }
 
                 for (let i = 0, l = this.terms.length; i < l; i++) {
 
                     let term = this.terms[i];
 
-                    if (!term.parse(copy, rule, temp_r, false)) {
+                    if (!term.parseLVL1(copy, out_val, false)) {
                         if (!term.OPTIONAL) {
                             break repeat;
                         }
                     }
                 }
 
-                if (temp_r.v)
-                    this.mergeValues(r, temp_r);
+                //if (temp_r.v)
+                //    this.mergeValues(r, temp_r)
 
                 lx.sync(copy);
 
@@ -13384,7 +13399,7 @@ class JUX { /* Juxtaposition */
 }
 JUX.step = 0;
 class AND extends JUX {
-    innerParser(lx, rule, out_val, r, start, end) {
+    parseLVL2(lx, out_val, start, end) {
 
         const
             PROTO = new Array(this.terms.length),
@@ -13397,8 +13412,8 @@ class AND extends JUX {
 
                 const
                     HIT = PROTO.fill(0),
-                    copy = lx.copy(),
-                    temp_r = { v: null };
+                    copy = lx.copy();
+                    //temp_r = [];
 
                 and:
                     while (true) {
@@ -13412,7 +13427,7 @@ class AND extends JUX {
 
                             let term = this.terms[i];
 
-                            if (!term.parse(copy, rule, temp_r, false)) {
+                            if (!term.parseLVL1(copy, out_val, false)) {
                                 if (term.OPTIONAL)
                                     HIT[i] = 1;
                             } else {
@@ -13431,8 +13446,8 @@ class AND extends JUX {
 
                 lx.sync(copy);
 
-                if (temp_r.v)
-                    this.mergeValues(r, temp_r);
+                // if (temp_r.length > 0)
+                //     r.push(...temp);
 
                 bool = true;
 
@@ -13445,7 +13460,7 @@ class AND extends JUX {
 }
 
 class OR extends JUX {
-    innerParser(lx, rule, out_val, r, start, end) {
+    parseLVL2(lx, out_val, start, end) {
 
         const
             PROTO = new Array(this.terms.length),
@@ -13471,7 +13486,7 @@ class OR extends JUX {
 
                             let term = this.terms[i];
 
-                            if (term.parse(copy, temp_r, r, false)) {
+                            if (term.parseLVL1(copy, out_val, false)) {
                                 NO_HIT = false;
                                 HIT[i] = 2;
                                 continue or;
@@ -13485,8 +13500,8 @@ class OR extends JUX {
 
                 lx.sync(copy);
 
-                if (temp_r.v)
-                    this.mergeValues(r, temp_r);
+                //if (temp_r.v)
+                //    this.mergeValues(r, temp_r)
 
                 bool = true;
 
@@ -13501,19 +13516,20 @@ class OR extends JUX {
 OR.step = 0;
 
 class ONE_OF extends JUX {
-    innerParser(lx, rule, out_val, r, start, end) {
+    parseLVL2(lx, out_val, start, end) {
 
         let BOOL = false;
 
-        let j;
-        for (j = 0; j < end && !lx.END; j++) {
+        for (let j = 0; j < end && !lx.END; j++) {
+
+            const 
+                copy = lx.copy(),
+                temp_r = [];
+            
             let bool = false;
-            let copy = lx.copy();
-            let temp_r = { v: null };
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                ////if (!this.terms[i]) console.log(this)
-                if (this.terms[i].parse(copy, rule, temp_r, false)) {
+                if (this.terms[i].parseLVL1(copy, out_val, false)) {
                     bool = true;
                     break;
                 }
@@ -13524,8 +13540,8 @@ class ONE_OF extends JUX {
 
             lx.sync(copy);
             
-            if (temp_r.v)
-                this.mergeValues(r, temp_r);
+            //if (temp_r.v)
+            //    this.mergeValues(r, temp_r)
 
             BOOL = true;
 
@@ -13539,13 +13555,67 @@ class ONE_OF extends JUX {
 
 ONE_OF.step = 0;
 
-class ValueTerm {
+class LiteralTerm{
+
+    constructor(value, type) {
+        
+        if(type == whind$1.types.string)
+            value = value.slice(1,-1);
+
+        this.value = value;
+        this.HAS_PROP = false;
+    }
+
+    seal(){}
+
+    parse(data){
+        const prop_data = [];
+
+        this.parseLVL1(data instanceof whind$1.constructor ? data : whind$1(data + ""), prop_data);
+
+        return prop_data;
+    }
+
+    parseLVL1(l, r, root = true) {
+
+        if (typeof(l) == "string")
+            l = whind$1(l);
+
+        if (root) {
+            switch(checkDefaults(l)){
+                case 1:
+                rule.push(l.tx);
+                return true;
+                case 0:
+                return false;
+            }
+        }
+
+        let v = l.tx;
+        
+        if (v == this.value) {
+            l.next();
+            r.push(v);
+            //if (this.HAS_PROP  && !this.virtual && root)
+            //    rule[0] = v;
+
+            return true;
+        }
+        return false;
+    }
+
+    get OPTIONAL (){ return false }
+    set OPTIONAL (a){}
+}
+
+class ValueTerm extends LiteralTerm{
 
     constructor(value, getPropertyParser, definitions, productions) {
+        
+        super(value);
 
         if(value instanceof JUX)
             return value;
-        
 
         this.value = null;
 
@@ -13557,141 +13627,62 @@ class ValueTerm {
         if (!(this.value = types$1[u_value]))
             this.value = getPropertyParser(u_value, IS_VIRTUAL, definitions, productions);
 
-        this.prop = "";
-
         if (!this.value)
             return new LiteralTerm(value);
 
         if(this.value instanceof JUX){
+
             if (IS_VIRTUAL.is)
                 this.value.virtual = true;
+
             return this.value;
         }
-
     }
 
-    seal(){}
-
-    parse(l, rule, r, ROOT = true) {
+    parseLVL1(l, r, ROOT = true) {
         if (typeof(l) == "string")
             l = whind$1(l);
 
         if (ROOT) {
-
             switch(checkDefaults(l)){
                 case 1:
-                rule[this.prop] = l.tx;
+                r.push(l.tx);
                 return true;
                 case 0:
                 return false;
             }
         }
 
-        let rn = { v: null };
+        //const rn = [];
 
-        let v = this.value.parse(l, rule, rn);
+        const v = this.value.parse(l);
 
-        if (rn.v) {
-            if (r)
-                if (r.v) {
-                    if (Array.isArray(r.v)) {
-                        if (Array.isArray(rn.v) && !this.virtual)
-                            r.v = r.v.concat(rn.v);
-                        else
-                            r.v.push(rn.v);
-                    } else {
-                        if (Array.isArray(rn.v) && !this.virtual)
-                            r.v = ([r.v]).concat(rn.v);
-                        else
-                            r.v = [r.v, rn.v];
-                    }
-                } else
-                    r.v = (this.virtual) ? [rn.v] : rn.v;
+        /*if (rn.length > 0) {
+            
+           // r.push(...rn);
 
-            if (this.prop && !this.virtual)
-                rule[this.prop] = rn.v;
+            // if (this.HAS_PROP && !this.virtual)
+            //     rule[0] = rn.v;
 
             return true;
 
-        } else if (v) {
-            if (r)
-                if (r.v) {
-                    if (Array.isArray(r.v))
-                        r.v.push(v);
-                    else
-                        r.v = [r.v, v];
-                } else
-                    r.v = v;
+        } else */if (v) {
 
-            if (this.prop && !this.virtual && ROOT)
-                rule[this.prop] = v;
+            r.push(v);
+
+            //if (this.HAS_PROP && !this.virtual && ROOT)
+            //    rule[0] = v;
 
             return true;
         } else
             return false;
     }
-
-    get OPTIONAL (){ return false }
-    set OPTIONAL (a){}
 }
 
-class LiteralTerm {
 
-    constructor(value, type) {
-        
-        if(type == whind$1.types.string)
-            value = value.slice(1,-1);
-
-        this.value = value;
-        this.prop = null;
-    }
-
-    seal(){}
-
-    parse(l, rule, r, root = true) {
-
-        if (typeof(l) == "string")
-            l = whind$1(l);
-
-        if (root) {
-            switch(checkDefaults(l)){
-                case 1:
-                rule[this.prop] = l.tx;
-                return true;
-                case 0:
-                return false;
-            }
-        }
-
-        let v = l.tx;
-        if (v == this.value) {
-            l.next();
-
-            if (r)
-                if (r.v) {
-                    if (Array.isArray(r.v))
-                        r.v.push(v);
-                    else {
-                        let t = r.v;
-                        r.v = [t, v];
-                    }
-                } else
-                    r.v = v;
-
-            if (this.prop  && !this.virtual && root)
-                rule[this.prop] = v;
-
-            return true;
-        }
-        return false;
-    }
-
-    get OPTIONAL (){ return false }
-    set OPTIONAL (a){}
-}
 
 class SymbolTerm extends LiteralTerm {
-    parse(l, rule, r) {
+    parseLVL1(l, rule, r) {
         if (typeof(l) == "string")
             l = whind$1(l);
 
@@ -13702,7 +13693,7 @@ class SymbolTerm extends LiteralTerm {
 
         return false;
     }
-}
+};
 
 //import util from "util"
 const standard_productions = {
@@ -13714,35 +13705,36 @@ const standard_productions = {
     ValueTerm,
     SymbolTerm
 };
+
 function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definitions = null, productions = standard_productions) {
 
-    let prop = definitions[property_name];
+    let parser_val = definitions[property_name];
 
-    if (prop) {
+    if (parser_val) {
 
-        if (typeof(prop) == "string") {
-            prop = definitions[property_name] = CreatePropertyParser(prop, property_name, definitions, productions);
+        if (typeof(parser_val) == "string") {
+            parser_val = definitions[property_name] = CreatePropertyParser(parser_val, property_name, definitions, productions);
         }
-        prop.name = property_name;
-        return prop;
+        parser_val.name = property_name;
+        return parser_val;
     }
 
     if (!definitions.__virtual)
         definitions.__virtual = Object.assign({}, virtual_property_definitions);
 
-    prop = definitions.__virtual[property_name];
+    parser_val = definitions.__virtual[property_name];
 
-    if (prop) {
+    if (parser_val) {
 
         IS_VIRTUAL.is = true;
 
-        if (typeof(prop) == "string") {
-            prop = definitions.__virtual[property_name] = CreatePropertyParser(prop, "", definitions, productions);
-            prop.virtual = true;
-            prop.name = property_name;
+        if (typeof(parser_val) == "string") {
+            parser_val = definitions.__virtual[property_name] = CreatePropertyParser(parser_val, "", definitions, productions);
+            parser_val.virtual = true;
+            parser_val.name = property_name;
         }
 
-        return prop;
+        return parser_val;
     }
 
     return null;
@@ -13761,7 +13753,7 @@ function CreatePropertyParser(notation, name, definitions, productions) {
     //if (n instanceof productions.JUX && n.terms.length == 1 && n.r[1] < 2)
     //    n = n.terms[0];
 
-    n.prop = name;
+    n.HAS_PROP = true;
     n.IMP = important.is;
 
     /*//******** DEV 
@@ -13775,7 +13767,7 @@ function CreatePropertyParser(notation, name, definitions, productions) {
 
 function d$1(l, definitions, productions, super_term = false, oneof_group = false, or_group = false, and_group = false, important = null) {
     let term, nt, v;
-    const { JUX: JUX$$1, AND: AND$$1, OR: OR$$1, ONE_OF: ONE_OF$$1, LiteralTerm: LiteralTerm$$1, ValueTerm: ValueTerm$$1, SymbolTerm: SymbolTerm$$1 } = productions;
+    const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
 
     let GROUP_BREAK = false;
 
@@ -13792,7 +13784,7 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX$$1 && term.isRepeating()) term = foldIntoProduction(productions, new JUX$$1, term);
+                    if (term instanceof JUX && term.isRepeating()) term = foldIntoProduction(productions, new JUX, term);
                     term = foldIntoProduction(productions, term, v);
                 } else
                     term = v;
@@ -13800,13 +13792,13 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
 
             case "<":
 
-                v = new ValueTerm$$1(l.next().tx, getPropertyParser, definitions, productions);
+                v = new ValueTerm(l.next().tx, getPropertyParser, definitions, productions);
                 l.next().assert(">");
 
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX$$1 /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX$$1, term);
+                    if (term instanceof JUX /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX, term);
                     term = foldIntoProduction(productions, term, v);
                 } else {
                     term = v;
@@ -13820,7 +13812,7 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                     if (and_group)
                         return term;
 
-                    nt = new AND$$1();
+                    nt = new AND();
 
                     if (!term) throw new Error("missing term!");
 
@@ -13845,7 +13837,7 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                         if (or_group || and_group)
                             return term;
 
-                        nt = new OR$$1();
+                        nt = new OR();
 
                         nt.terms.push(term);
 
@@ -13864,7 +13856,7 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                         if (oneof_group || or_group || and_group)
                             return term;
 
-                        nt = new ONE_OF$$1();
+                        nt = new ONE_OF();
 
                         nt.terms.push(term);
 
@@ -13882,12 +13874,12 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                 break;
             default:
 
-                v = (l.ty == l.types.symbol) ? new SymbolTerm$$1(l.tx) : new LiteralTerm$$1(l.tx, l.ty);
+                v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx, l.ty);
                 l.next();
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX$$1 /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX$$1, term);
+                    if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX, term);
                     term = foldIntoProduction(productions, term, v);
                 } else {
                     term = v;
@@ -13990,7 +13982,7 @@ function _eID_(lexer) {
  * The empty CSSRule instance
  * @alias module:wick~internals.css.empty_rule
  */
-const er = Object.freeze(new CSSRule());
+const er = Object.freeze(new CSSRule$1());
 
 class _selectorPart_ {
     constructor() {
@@ -14092,7 +14084,7 @@ class CSSRuleBody {
         return true;
     }
 
-    matchMedia(win = window) {
+    matchMedia (win = window) {
 
         if (this.media_selector) {
             for (let i = 0; i < this.media_selector.length; i++) {
@@ -14103,7 +14095,7 @@ class CSSRuleBody {
                     if (!prop(win))
                         return false;
                 }
-            }
+            };
         }
 
         return true;
@@ -14114,7 +14106,7 @@ class CSSRuleBody {
         Retrieves the set of rules from all matching selectors for an element.
             element HTMLElement - An DOM element that should be matched to applicable rules. 
     */
-    getApplicableRules(element, rule = new CSSRule(), win = window) {
+    getApplicableRules(element, rule = new CSSRule$1(), win = window) {
 
         if (!this.matchMedia(win)) return;
 
@@ -14400,7 +14392,7 @@ class CSSRuleBody {
                                     ).catch((e) => res(this.parse(lexer)));
                                 } else {
                                     //Failed to fetch resource, attempt to find the end to of the import clause.
-                                    while (!lexer.END && lexer.next().tx !== ";") {}
+                                    while (!lexer.END && lexer.next().tx !== ";") {};
                                     lexer.next();
                                 }
                         }
@@ -14414,7 +14406,7 @@ class CSSRuleBody {
                     case "{":
                         //Check to see if a rule body for the selector exists already.
                         let MERGED = false;
-                        let rule = new CSSRule(this);
+                        let rule = new CSSRule$1(this);
                         this._applyProperties_(lexer.next(), rule);
                         for (let i = -1, sel = null; sel = selectors[++i];)
                             if (sel.r) {sel.r.merge(rule); MERGED = true;}
@@ -14506,7 +14498,7 @@ class CSSRuleBody {
             if (!this._selectors_[selector.id]) {
                 this._selectors_[selector.id] = selector;
                 this._sel_a_.push(selector);
-                const rule = new CSSRule(this);
+                const rule = new CSSRule$1(this);
                 selector.addRule(rule);
                 this.rules.push(rule);
             } else
@@ -15453,7 +15445,7 @@ class UISelectorPart{
         return this.txt;
     }
 
-}
+};
 
 
 function drop(e){
@@ -15570,7 +15562,7 @@ function createCache(cacher){
         }
         return r;
     };
-}
+};
 
 const props = Object.assign({}, property_definitions);
 
@@ -15898,6 +15890,10 @@ class UIMaster {
     }
 }
 
+//export { CSSRule, CSSSelector };
+
+
+
 /**
  * Container for all rules found in a CSS string or strings.
  *
@@ -16128,7 +16124,7 @@ const
                     this.type = this.getType(k0_val);
                 }
 
-                this.getValue(obj, prop_name, type);
+                this.getValue(obj, prop_name, type, k0_val);
 
                 let p = this.current_val;
 
@@ -16144,7 +16140,8 @@ const
                 this.current_val = null;
             }
 
-            getValue(obj, prop_name, type) {
+            getValue(obj, prop_name, type, k0_val) {
+
                 if (type == CSS_STYLE) {
                     let name = prop_name.replace(/[A-Z]/g, (match) => "-" + match.toLowerCase());
                     let cs = window.getComputedStyle(obj);
@@ -16154,6 +16151,7 @@ const
                     
                     if(!value)
                         value = obj.style[prop_name];
+                
 
                     if (this.type == CSS_Percentage$1) {
                         if (obj.parentElement) {
@@ -16163,8 +16161,7 @@ const
                             value = (ratio * 100);
                         }
                     }
-
-                    this.current_val = new this.type(value);
+                    this.current_val = (new this.type(value));
 
                 } else {
                     this.current_val = new this.type(obj[prop_name]);
@@ -16253,7 +16250,6 @@ const
             }
 
             setProp(obj, prop_name, value, type) {
-
                 if (type == CSS_STYLE) {
                     obj.style[prop_name] = value;
                 } else
@@ -16562,7 +16558,7 @@ const
 
             //TODO: allow scale to control playback speed and direction
             play(scale = 1, from = 0) {
-                this.SCALE = 0;
+                this.SCALE = scale;
                 this.time = from;
                 spark.queueUpdate(this);
                 return this;
@@ -16574,19 +16570,19 @@ const
             }    
         }
 
-        const GlowFunction = function() {
+        const GlowFunction = function(...args) {
 
-            if (arguments.length > 1) {
+            if (args.length > 1) {
 
                 let group = new AnimGroup();
 
-                for (let i = 0; i < arguments.length; i++) {
-                    let data = arguments[i];
+                for (let i = 0; i < args.length; i++) {
+                    let data = args[i];
 
                     let obj = data.obj;
                     let props = {};
 
-                    Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
+                    Object.keys(data).forEach(k => { if (!(({ obj: true, match: true, delay:true })[k])) props[k] = data[k]; });
 
                     group.add(new AnimSequence(obj, props));
                 }
@@ -16594,12 +16590,12 @@ const
                 return group;
 
             } else {
-                let data = arguments[0];
+                let data = args[0];
 
                 let obj = data.obj;
                 let props = {};
 
-                Object.keys(data).forEach(k => { if (!(({ obj: true, match: true })[k])) props[k] = data[k]; });
+                Object.keys(data).forEach(k => { if (!(({ obj: true, match: true, delay:true })[k])) props[k] = data[k]; });
 
                 let seq = new AnimSequence(obj, props);
 
@@ -16806,53 +16802,33 @@ const Transitioneer = (function() {
     let obj_map = new Map();
     let ActiveTransition = null;
 
-    function $in(anim_data_or_duration = 0, delay = 0) {
+    function $in(...data) {
 
-        let seq;
+        let
+            seq = null,
+            length = data.length,
+            delay = 0;
 
-        if (typeof(anim_data_or_duration) == "object") {
-            if (anim_data_or_duration.match && this.TT[anim_data_or_duration.match]) {
-                let duration = anim_data_or_duration.duration;
-                let easing = anim_data_or_duration.easing;
-                seq = this.TT[anim_data_or_duration.match](anim_data_or_duration.obj, duration, easing);
-            } else
-                seq = Animation.createSequence(anim_data_or_duration);
+        if (typeof(data[length - 1]) == "number")
+            delay = data[length - 1], length--;
 
-            //Parse the object and convert into animation props. 
-            if (seq) {
-                this.in_seq.push(seq);
-                this.in_duration = Math.max(this.in_duration, seq.duration);
-                if (this.OVERRIDE) {
+        for (let i = 0; i < length; i++) {
+            let anim_data = data[i];
 
-                    if (obj_map.get(seq.obj)) {
-                        let other_seq = obj_map.get(seq.obj);
-                        other_seq.removeProps(seq);
-                    }
+            if (typeof(anim_data) == "object") {
 
-                    obj_map.set(seq.obj, seq);
-                }
-            }
+                if (anim_data.match && this.TT[anim_data.match]) {
+                    let
+                        duration = anim_data.duration,
+                        easing = anim_data.easing;
+                    seq = this.TT[anim_data.match](anim_data.obj, duration, easing);
+                } else
+                    seq = Animation.createSequence(anim_data);
 
-        } else
-            this.in_duration = Math.max(this.in_duration, parseInt(delay) + parseInt(anim_data_or_duration));
-
-        return this.in;
-    }
-
-
-    function $out(anim_data_or_duration = 0, delay = 0, in_delay = 0) {
-        //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
-        //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
-
-        if (typeof(anim_data_or_duration) == "object") {
-
-            if (anim_data_or_duration.match) {
-                this.TT[anim_data_or_duration.match] = TransformTo(anim_data_or_duration.obj);
-            } else {
-                let seq = Animation.createSequence(anim_data_or_duration);
+                //Parse the object and convert into animation props. 
                 if (seq) {
-                    this.out_seq.push(seq);
-                    this.out_duration = Math.max(this.out_duration, seq.duration);
+                    this.in_seq.push(seq);
+                    this.in_duration = Math.max(this.in_duration, seq.duration);
                     if (this.OVERRIDE) {
 
                         if (obj_map.get(seq.obj)) {
@@ -16863,11 +16839,59 @@ const Transitioneer = (function() {
                         obj_map.set(seq.obj, seq);
                     }
                 }
-                this.in_delay = Math.max(this.in_delay, parseInt(delay));
             }
-        } else {
-            this.out_duration = Math.max(this.out_duration, parseInt(delay) + parseInt(anim_data_or_duration));
-            this.in_delay = Math.max(this.in_delay, parseInt(in_delay));
+        }
+
+        this.in_duration = Math.max(this.in_duration, parseInt(delay));
+
+        return this.in;
+    }
+
+
+    function $out(...data) {
+        //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
+        //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
+        let
+            seq = null,
+            length = data.length,
+            delay = 0,
+            in_delay = 0;
+
+        if (typeof(data[length - 1]) == "number") {
+            if (typeof(data[length - 2]) == "number") {
+                in_delay = data[length - 2];
+                delay = data[length - 1];
+                length -= 2;
+            } else
+                delay = data[length - 1], length--;
+        }
+
+        for (let i = 0; i < length; i++) {
+            let anim_data = data[i];
+
+            if (typeof(anim_data) == "object") {
+
+                if (anim_data.match) {
+                    this.TT[anim_data.match] = TransformTo(anim_data.obj);
+                } else {
+                    let seq = Animation.createSequence(anim_data);
+                    if (seq) {
+                        this.out_seq.push(seq);
+                        this.out_duration = Math.max(this.out_duration, seq.duration);
+                        if (this.OVERRIDE) {
+
+                            if (obj_map.get(seq.obj)) {
+                                let other_seq = obj_map.get(seq.obj);
+                                other_seq.removeProps(seq);
+                            }
+
+                            obj_map.set(seq.obj, seq);
+                        }
+                    }
+
+                    this.in_delay = Math.max(this.in_delay, parseInt(delay));
+                }
+            }
         }
     }
 
@@ -16965,7 +16989,7 @@ const Transitioneer = (function() {
         }
 
         step(t) {
-            
+
             for (let i = 0; i < this.out_seq.length; i++) {
                 let seq = this.out_seq[i];
                 if (!seq.run(t) && !seq.FINISHED) {
@@ -17057,7 +17081,7 @@ class ScriptIO extends IOBase {
         super(tap);
 
         this.scope = scope;
-        this.TAP_BINDING_INDEX = -1;
+        this.TAP_BINDING_INDEX = script.args.reduce((r,a,i)=>(a.name == tap.name) ? i: r,0);
         this.ACTIVE_IOS = 0;
         this.IO_ACTIVATIONS = 0;
         
@@ -17376,6 +17400,8 @@ class a$1 extends ElementNode{
 	}
 }
 
+//import glow from "@candlefw/glow";
+
 function getColumnRow(index, offset, set_size) {
     const adjusted_index = index - offset * set_size;
     const row = Math.floor(adjusted_index / set_size);
@@ -17659,7 +17685,7 @@ class ScopeContainer extends View {
         const
             limit = this.limit,
             offset = this.offset,
-            transition = Animation.createTransition(),
+            transition = glow.createTransition(),
             output_length = output.length,
             active_window_start = offset * this.shift_amount;
 
@@ -17693,7 +17719,7 @@ class ScopeContainer extends View {
             direction = 1,
             OWN_TRANSITION = false;
 
-        if (!transition) transition = Animation.createTransition(), OWN_TRANSITION = true;
+        if (!transition) transition = glow.createTransition(), OWN_TRANSITION = true;
 
         offset = Math.max(0, offset);
 
@@ -17715,8 +17741,8 @@ class ScopeContainer extends View {
             this.offset = Math.max(0, Math.min(shift_points - 1, offset));
 
             //Two transitions to support scrubbing from an offset in either direction
-            this.trs_ascending = Animation.createTransition(false);
-            this.trs_descending = Animation.createTransition(false);
+            this.trs_ascending = glow.createTransition(false);
+            this.trs_descending = glow.createTransition(false);
 
             this.dom_dn.length = 0;
             this.dom_up.length = 0;
@@ -17875,14 +17901,14 @@ class ScopeContainer extends View {
         return output;
     }
 
-    filterExpressionUpdate(transition = Animation.createTransition()) {
+    filterExpressionUpdate(transition = glow.createTransition()) {
         // Filter the current components. 
         this.filterUpdate();
 
         this.limitExpressionUpdate(transition);
     }
 
-    limitExpressionUpdate(transition = Animation.createTransition()){
+    limitExpressionUpdate(transition = glow.createTransition()){
         //Preset the positions of initial components. 
         this.arrange();
 
@@ -17905,7 +17931,7 @@ class ScopeContainer extends View {
      */
     cull(new_items = []) {
 
-        const transition = Animation.createTransition();
+        const transition = glow.createTransition();
 
         if (new_items.length == 0) {
             let sl = this.scopes.length;
@@ -17976,7 +18002,7 @@ class ScopeContainer extends View {
      *
      * @param      {Array}  items   An array of items no longer stored in the ModelContainer. 
      */
-    removed(items, transition = Animation.createTransition()) {
+    removed(items, transition = glow.createTransition()) {
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
             for (let j = 0; j < this.scopes.length; j++) {
@@ -18000,7 +18026,7 @@ class ScopeContainer extends View {
         let OWN_TRANSITION = false;
 
         if (!transition)
-            transition = Animation.createTransition(), OWN_TRANSITION = true;
+            transition = glow.createTransition(), OWN_TRANSITION = true;
 
         for (let i = 0; i < items.length; i++) {
             const scope = this.component.mount(null, items[i]);
@@ -18479,14 +18505,18 @@ class ctr extends ElementNode {
     }
 }
 
+//import css from "@candlefw/css";
+
 class sty extends ElementNode{
 	constructor(env, tag, children, attribs, presets){
-		CSSParser;
+		//css;
 		
 		let data = children[0].data;
-		CSSParser(data).then(css=>{
+		/*
+		css(data).then(css=>{
 			debugger
 		});
+		*/
 		super(env, "style", children, attribs, presets);
 	}
 }
@@ -18628,8 +18658,7 @@ class Attribute {
         const tag = element.tag;
 
         if (this.isBINDING) {
-
-            if (this.name == "value" && tag == "input")
+            if (this.name == "value" && (tag == "input" || tag == "textarea"))
                 this.io_constr = InputIO;
         }
 
@@ -18663,7 +18692,7 @@ const env$1 = {
         identifier: identifier$2,
         catch_stmt,
         try_stmt,
-        stmts,
+        stmts: Statements,
         lexical,
         binding,
         member: mem,
@@ -18890,10 +18919,10 @@ const
             let presets = default_presets;
 
             if (data.length > 1)
-                presets = data.slice(-1);
+                presets = new Presets(data[1]);
 
             if (data.length === 0)
-                throw new Error("This function requires arguments. Refer to wick docs on what arguments may be passed to this function.");
+                throw new Error("This function requires arguments. Please Refere to wick docs on what arguments may be passed to this function.");
 
             const component_data = data[0];
 
@@ -18936,7 +18965,7 @@ const
 
                                     const binding = new Binding([null, func_ast.id], {presets, start:0}, whind$1("ddddd"));
                                     const attrib = new Attribute(["on", null, binding], presets);
-                                    const stmt = new stmts([func_ast.body]);
+                                    const stmt = new Statements([func_ast.body]);
                             
                                     let script = new scr({}, null, stmt, [attrib], presets);
 

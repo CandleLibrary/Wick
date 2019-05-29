@@ -1,5 +1,5 @@
 import Binding from "./binding.mjs";
-import { IO, AttribIO, InputIO } from "../component/io/io.mjs";
+import { AttribIO, InputIO } from "../component/io/io.mjs";
 
 export default class Attribute {
 
@@ -23,8 +23,7 @@ export default class Attribute {
         const tag = element.tag;
 
         if (this.isBINDING) {
-
-            if (this.name == "value" && tag == "input")
+            if (this.name == "value" && (tag == "input" || tag == "textarea"))
                 this.io_constr = InputIO;
         }
 

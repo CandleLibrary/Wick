@@ -38,7 +38,7 @@ export default class ScriptIO extends IOBase {
         super(tap);
 
         this.scope = scope;
-        this.TAP_BINDING_INDEX = -1;
+        this.TAP_BINDING_INDEX = script.args.reduce((r,a,i)=>(a.name == tap.name) ? i: r,0);
         this.ACTIVE_IOS = 0;
         this.IO_ACTIVATIONS = 0;
         

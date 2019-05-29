@@ -99,10 +99,10 @@ const
             let presets = default_presets;
 
             if (data.length > 1)
-                presets = data.slice(-1);
+                presets = new Presets(data[1]);
 
             if (data.length === 0)
-                throw new Error("This function requires arguments. Refer to wick docs on what arguments may be passed to this function.");
+                throw new Error("This function requires arguments. Please Refere to wick docs on what arguments may be passed to this function.");
 
             const component_data = data[0];
 

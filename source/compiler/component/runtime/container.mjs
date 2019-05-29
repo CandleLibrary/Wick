@@ -1,4 +1,4 @@
-import glow from "@candlefw/glow";
+//import glow from "@candlefw/glow";
 import spark from "@candlefw/spark";
 
 import { ModelContainerBase } from "../../../model/container/base.mjs";

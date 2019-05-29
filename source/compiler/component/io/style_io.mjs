@@ -9,6 +9,7 @@ function toCamel(string){
     let str = string.replace(/(?:[-_])([a-z])/g, replaceString);
     return str;
 }
+/*
 export class CSSRawValue {
 
     constructor(name, prop = null) {
@@ -24,6 +25,7 @@ export class CSSRawValue {
     get UPDATED() { return false; }
     set UPDATED(v) {}
 }
+*/
 
 export class CSSRuleTemplateString {
     constructor(scope, errors, taps, binds, name) {
