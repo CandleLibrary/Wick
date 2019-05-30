@@ -129,11 +129,11 @@
 			│ try_statement
 			│ debugger_statement
 
-		 <> declaration → class_declaration
+		<> declaration → class_declaration
 			│ hoistable_declaration
 			│ lexical_declaration
 
-		 <> hoistable_declaration → function_declaration
+		<> hoistable_declaration → function_declaration
 			# │ generator_declaration
 			# │ async_function_declaration
 			# │ async_generator_declaration
@@ -265,7 +265,7 @@
 	# https://www.ecma-international.org/ecma-262/9.0/index.html#sec-return-statement
 	##############################################################################################################
 
-		<> return_statement → τreturn ; 								↦return{ (new env.functions.return_stmt([])) }
+		<> return_statement → τreturn ; 								↦cstr ^return_stmt
 			│ τreturn  expression ; 									↦cstr ^return_stmt
 
 	##############################################################################################################
@@ -536,6 +536,8 @@
 
 
 
+
+
 ##############################################################################################################
 # https://www.ecma-international.org/ecma-262/9.0/index.html#sec-object-initializer
 ##############################################################################################################
@@ -547,15 +549,11 @@
 	<> property_definition_list → property_definition 				↦return{ [sym[0]] }
 		│ property_definition_list , property_definition			↦return{ (sym[0].push(sym[2]), sym[0]) }
 
-	<> property_definition →  colon_assignment 
-		│ cover_initialized_name 									↦cstr{ this.id = sym[0]; }
+	<> property_definition →  cover_initialized_name 				
 		│ identifier_reference 										
-	 	│ method_definition											↦cstr{ this.id = sym[0]; }
+	 	│ method_definition											
 		│ ... assignment_expression 								↦cstr ^spread_expr
-
-	<> colon_assignment → property_name colon_expression 			↦cstr{ this.id = sym[0]; this.expr = sym[1] }
-
-	<> colon_expression → : assignment_expression 					↦return{ sym[1] }
+		│ property_name : assignment_expression						↦cstr ^property_binding		
 
 	<> property_name → literal_property_name
 		│ computed_property_name
@@ -564,9 +562,9 @@
 		│ string_literal
 		│ numeric_literal
 
-	<> computed_property_name → [ assignment_expression ]
+	<> computed_property_name → [ assignment_expression ] 			↦return{ sym[1] }
 
-	<> cover_initialized_name → identifier_reference initializer
+	<> cover_initialized_name → identifier_reference initializer 	↦cstr ^binding
 
 	<> initializer → = assignment_expression						↦return{ sym[1] }
 
@@ -626,7 +624,7 @@
 	##############################################################################################################
 
 		<> conditional_expression → logical_or_expression
-			│ logical_or_expression ? assignment_expression : assignment_expression ↦cstr ^condition_expr
+			│ logical_or_expression \? assignment_expression : assignment_expression ↦cstr ^condition_expr
 
 	##############################################################################################################
 	# https://www.ecma-international.org/ecma-262/9.0/index.html#sec-binary-logical-operators
@@ -797,42 +795,52 @@
 		│ ... binding_pattern
 
 
-##############################################################################################################
-# https://www.ecma-international.org/ecma-262/9.0/index.html#sec-ecmascript-language-lexical-grammar
-# Incomplete
-##############################################################################################################
+	##############################################################################################################
+	# https://www.ecma-international.org/ecma-262/9.0/index.html#sec-ecmascript-language-lexical-grammar
+	# Incomplete
+	##############################################################################################################
 
-	<> literal → boolean_literal				
-		│ null_literal
-		│ string_literal					
-		│ numeric_literal					
+		<> literal → boolean_literal				
+			│ null_literal
+			│ string_literal					
+			│ numeric_literal					
 
-	<> string_literal → θstr					↦cstr ^string_literal
+		<> string_literal → normal_string			↦cstr ^string_literal
 
-	<> numeric_literal → θnum					↦cstr ^numeric_literal
+		<> numeric_literal → θnum					↦cstr ^numeric_literal
 
-	<> null_literal →  τnull					↦cstr ^null_literal
+		<> null_literal →  τnull					↦cstr ^null_literal
 
-	<> boolean_literal → τtrue 					↦cstr ^bool_literal
-		│ τfalse 								↦cstr ^bool_literal
+		<> boolean_literal → τtrue 					↦cstr ^bool_literal
+			│ τfalse 								↦cstr ^bool_literal
 
-# <> HTMLExpression → StartTag
+	# <> HTMLExpression → StartTag
 
-# https://www.ecma-international.org/ecma-262/9.0/index.html#sec-identifiers
+	# https://www.ecma-international.org/ecma-262/9.0/index.html#sec-identifiers
 
-<> label_identifier → identifier				#↦cstr ^identifier		
-		#│ τyield 							↦cstr ^yield_id
-		#│ τawait 							↦cstr ^await_id
+	<> label_identifier → identifier				#↦cstr ^identifier		
+			#│ τyield 							↦cstr ^yield_id
+			#│ τawait 							↦cstr ^await_id
 
-<> identifier_reference → identifier			#↦cstr ^identifier		
-		#│ τyield 							↦cstr ^yield_id
-		#│ τawait 							↦cstr ^await_id
+	<> identifier_reference → identifier			#↦cstr ^identifier		
+			#│ τyield 							↦cstr ^yield_id
+			#│ τawait 							↦cstr ^await_id
 
-<> binding_identifier → identifier				#↦cstr ^identifier		
-		#│ τyield 							↦cstr ^yield_id
-		#│ τawait 							↦cstr ^await_id
+	<> binding_identifier → identifier				#↦cstr ^identifier		
+			#│ τyield 							↦cstr ^yield_id
+			#│ τawait 							↦cstr ^await_id
 
-<> identifier → identifier_name							
+	<> identifier → identifier_name							
 
-<> identifier_name → θid						↦cstr ^identifier
-		
+	<> identifier_name → θid					↦cstr ^identifier
+			
+	## STRINGS 
+
+	<> normal_string → \" string_data \"        ↦return { sym[1] }
+		│ \' string_data \' 					↦return { sym[1] }
+
+	<> string_data → string_data_val 			↦return { sym[0] + "" }	
+		│ string_data string_data_val 			↦return { sym[0] + sym[1]}
+
+	<> string_data_val → θid 
+		│ θws │ θany

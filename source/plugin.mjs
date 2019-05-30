@@ -28,7 +28,7 @@ const tagHandler = {
 
         return node;
     }
-}
+};
 
 
 // Allows a plugin function to parse the contents of a fetched rescope whose file extensions matches the one set by the plugin. 
@@ -48,9 +48,9 @@ const extensionParse = {
         if (handler)
             return await handler(data);
 
-        return { ext: in_ext, data: data }
+        return { ext: in_ext, data: data };
     }
-}
+};
 
 // Allows a plugin function to replace innerHTML content in-stream when a HTML tag is matched. 
 // A string containing the contents of the matched elements innerHTML is passed to the plugin function. 
