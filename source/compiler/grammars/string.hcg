@@ -1,0 +1,9 @@
+## STRINGS 
+
+<> normal_string → \" string_data \"        ↦return { sym[1] }
+	│ \' string_data \' 					↦return { sym[1] }
+
+<> string_data → ((string_data_val))(+") 	
+
+<> string_data_val → θid 
+	│ θws │ θany

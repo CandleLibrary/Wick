@@ -8,6 +8,8 @@
 
 @IGNORE θws θnl 
 
+@IMPORT ./string.hcg as string
+
 ##############################################################################################
 ##############################################################################################
 #### HTML / ML
@@ -30,7 +32,6 @@
 
 	<> TAG → < TAGNAME ATTRIBUTES > TAG_BODY </ TAGNAME >	↦cstr ^element_selector
 		│ < TAGNAME ATTRIBUTES / >							↦cstr ^element_selector
-		│ < τscript ATTRIBUTES > script </ τscript > 		↦cstr ^element_selector
 		│ < VOID_NAME ATTRIBUTES ></ VOID_NAME > 			↦cstr ^element_selector
 		│ < VOID_NAME ATTRIBUTES /? >						↦cstr ^element_selector
 
@@ -77,7 +78,7 @@
 		│ " θid "											↦return { sym[1] }
 		│ θid
 
-	<> ATTRIBUTE_BODY → normal_string 						
+	<> ATTRIBUTE_BODY → string::normal_string 						
 		│ θid 											
 
 	<> TAGNAME → θid

@@ -2,7 +2,7 @@
 
 @EXT wick
 
-@SYMBOL </ (( )) )( " '  { } ( ) [ ] . ... ; , < > <= >= == != === !== + - * % / ** ++ -- << >> >>> & | ^ ! ~ && || ? : += -= *= %= /= **= <<= >>= >>>= &= |= ^= =>
+@SYMBOL (( )) )(
 
 @IGNORE θws θnl
 
@@ -23,8 +23,11 @@
 
 +> html::TEXT_NODE → WICK_BINDING 													↦cstr ^text
 
++> html::TAG →  < τstyle html::ATTRIBUTES > css::CSS </ τstyle > 					↦cstr ^element_selector
+	│ < τscript html::ATTRIBUTES > js::javascript </ τscript > 							↦cstr ^element_selector
+
 <> WICK_BINDING → CALL_BINDING  							
 	│ BASIC_BINDING
 
-<> BASIC_BINDING → \(( ↦{ env.start = lex.off+2 } expression \))   					↦cstr ^wick_binding
-<> CALL_BINDING → \(( ↦{ env.start = lex.off+2 } expression \)( expression \))    	↦cstr ^wick_binding
+<> BASIC_BINDING → \(( ↦{ env.start = lex.off+2 } js::expression \))   					↦cstr ^wick_binding
+<> CALL_BINDING → \(( ↦{ env.start = lex.off+2 } js::expression )( js::expression \))    	↦cstr ^wick_binding
