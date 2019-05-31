@@ -1,4 +1,4 @@
-//import glow from "@candlefw/glow";
+import glow from "@candlefw/glow";
 import spark from "@candlefw/spark";
 
 import { ModelContainerBase } from "../../../model/container/base.mjs";
@@ -24,7 +24,7 @@ function getColumnRow(index, offset, set_size) {
 export default class ScopeContainer extends Observer {
 
     constructor(parent, presets, element) {
-
+        
         super();
 
         this.ele = element;

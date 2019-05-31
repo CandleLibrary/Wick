@@ -17,11 +17,7 @@
 ##############################################################################################
 	
 	<> HTML → GOAL_TAG
-		│ IMPORT_LIST GOAL_TAG 								↦return { sym[1].import_list = sym[0], sym[1]}
-
-
-	<> IMPORT_LIST → IMPORT_TAG 							↦return { [sym[0]] }
-		│ IMPORT_LIST IMPORT_TAG 							↦return { sym[0].push(sym[1]), sym[0] }
+		│ ((IMPORT_TAG))(+) GOAL_TAG 								↦return { sym[1].import_list = sym[0], sym[1]}
 	
 	<> IMPORT_TAG → < τimport ATTRIBUTES /? >  				↦cstr ^element_selector
 
@@ -30,10 +26,10 @@
 
 	<> DTD → < ! BODY_STRING >					    		↦return { null }			 	
 
-	<> TAG → < TAGNAME ATTRIBUTES > TAG_BODY </ TAGNAME >	↦cstr ^element_selector
-		│ < TAGNAME ATTRIBUTES / >							↦cstr ^element_selector
-		│ < VOID_NAME ATTRIBUTES ></ VOID_NAME > 			↦cstr ^element_selector
-		│ < VOID_NAME ATTRIBUTES /? >						↦cstr ^element_selector
+	<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY </ TAGNAME >	↦cstr ^element_selector
+		│ < TAGNAME ATTRIBUTES? / >							↦cstr ^element_selector
+		│ < VOID_NAME ATTRIBUTES? ></ VOID_NAME > 			↦cstr ^element_selector
+		│ < VOID_NAME ATTRIBUTES? /? >						↦cstr ^element_selector
 
 
 	###########################################################################################
@@ -69,7 +65,6 @@
 
 	<> ATTRIBUTES → ATTRIBUTES ATTRIBUTE  					↦return { sym[0].push(sym[1]), sym[0] }
 		│ ATTRIBUTE 										↦return { [sym[0]] }
-		│ ɛ
 
 	<> ATTRIBUTE → ATTRIBUTE_HEAD = ATTRIBUTE_BODY 	 		↦cstr ^attribute
 	 	│ ATTRIBUTE_HEAD 									↦cstr ^attribute
@@ -88,7 +83,7 @@
 	<> BODY_STRING → BODY_STRING BODY_SYMBOLS 				↦return { sym[0] + sym[1] }			
 		│ BODY_SYMBOLS 										↦return { sym[0] + "" }
 
-	<> BODY_SYMBOLS → θid │ θany │ θws │ θnl │ θsym
+	<> BODY_SYMBOLS → θany │ θws │ θnl
 
 
 
