@@ -1,7 +1,6 @@
 import JS from "../js/tools.mjs";
-import types from "../js/types.mjs";
 import glow from "@candlefw/glow";
-
+import {types, identifier, member} from "../../../node_modules/@candlefw/hydrocarbon/source/grammar/js/exports.mjs";
 const defaults = { glow };
 
 export function GetOutGlobals(ast, presets) {
@@ -23,7 +22,7 @@ export function GetOutGlobals(ast, presets) {
         }
 
         return out_object;
-    })
+    });
 }
 
 export function AddEmit(ast, presets, ignore) {
@@ -34,5 +33,5 @@ export function AddEmit(ast, presets, ignore) {
             return;
         
         assign.id = new member([new identifier(["emit"]), null, assign.id]);
-    })
+    });
 }

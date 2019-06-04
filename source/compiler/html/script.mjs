@@ -1,7 +1,5 @@
+import {types, identifier, member, rtrn} from "../../../node_modules/@candlefw/hydrocarbon/source/grammar/js/exports.mjs";
 import ElementNode from "./element.mjs";
-import types from "../js/types.mjs";
-import identifier from "../js/identifier.mjs";
-import member from "../js/member.mjs";
 import JS from "../js/tools.mjs";
 import ScriptIO from "../component/io/script_io.mjs";
 import glow from "@candlefw/glow";
@@ -43,6 +41,7 @@ export default class scr extends ElementNode {
             names.push("emit");
 
             try {
+                debugger
                 this.function = Function.apply(Function, names.concat([this.val]));
                 this.READY = true;
                 FUNCTION_CACHE.set(this.val, this.function)

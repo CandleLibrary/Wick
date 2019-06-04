@@ -4,7 +4,7 @@
 
 @EXT html
 
-@SYMBOL </ (( )) )( " ' 
+@SYMBOL </ (( )) )( 
 
 @IGNORE θws θnl 
 
@@ -15,9 +15,9 @@
 #### HTML / ML
 ##############################################################################################
 ##############################################################################################
-	
-	<> HTML → GOAL_TAG
-		│ ((IMPORT_TAG))(+) GOAL_TAG 								↦return { sym[1].import_list = sym[0], sym[1]}
+	<> HTML → BODY
+
+	<> BODY → GOAL_TAG
 	
 	<> IMPORT_TAG → < τimport ATTRIBUTES /? >  				↦cstr ^element_selector
 
@@ -52,9 +52,6 @@
 		│ τsource
 		│ τtrack
 		│ τwbr
-	# Wick Elements #########################################################################
-		│ τf
-		│ τfilter
 
 	<> TAG_BODY →  TAG_BODY TEXT_NODE  						↦return { sym[0].push(sym[1]), sym[0] }
 		│ TAG_BODY TAG  									↦return { sym[0].push(sym[1]), sym[0] }

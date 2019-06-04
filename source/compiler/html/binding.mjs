@@ -1,8 +1,5 @@
-import types from "../js/types.mjs";
-import identifier from "../js/identifier.mjs";
-import assignement from "../js/assign.mjs";
-import member from "../js/member.mjs";
-import rtrn from "../js/return.mjs";
+import {identifier, member, rtrn} from "../../../node_modules/@candlefw/hydrocarbon/source/grammar/js/exports.mjs";
+
 import {GetOutGlobals, AddEmit} from "./script_functions.mjs";
 import FUNCTION_CACHE from "./function_cache.mjs";
 import ExpressionIO from "../component/io/expression_io.mjs";

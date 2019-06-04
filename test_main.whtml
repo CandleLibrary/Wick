@@ -1,5 +1,5 @@
-<import url="./test.html"/>
-					
+<import url="./test.html" >	
+
 <scope element="div">
 
 	<div url="./test.html" ><div slot=test>Im Z best Dawg </div></div>

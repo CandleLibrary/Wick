@@ -1,5 +1,4 @@
-import identifier from "./identifier.mjs";
-import types from "./types.mjs"
+import {types, identifier} from "../../../node_modules/@candlefw/hydrocarbon/source/grammar/js/exports.mjs";
 const env = {};
 export default {
 

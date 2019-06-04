@@ -8,9 +8,7 @@ import env from "./env.mjs";
 import proto from "./component_prototype.mjs";
 
 import JS from "./js/tools.mjs";
-import types from "./js/types.mjs";
-import Statements from "./js/stmts.mjs";
-
+import {types, statements} from "../../node_modules/@candlefw/hydrocarbon/source/grammar/js/exports.mjs";
 import Script from "./html/script.mjs";
 import Attribute from "./html/attribute.mjs";
 import Binding from "./html/binding.mjs";
@@ -145,7 +143,7 @@ const
 
                                     const binding = new Binding([null, func_ast.id], {presets, start:0}, whind("ddddd"));
                                     const attrib = new Attribute(["on", null, binding], presets);
-                                    const stmt = new Statements([func_ast.body]);
+                                    const stmt = func_ast.body;
                             
                                     let script = new Script({}, null, stmt, [attrib], presets);
 

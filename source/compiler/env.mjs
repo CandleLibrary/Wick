@@ -1,34 +1,50 @@
-import for_stmt from "./js/for.mjs";
-import call_expr from "./js/call.mjs";
-import identifier from "./js/identifier.mjs";
-import catch_stmt from "./js/catch.mjs";
-import try_stmt from "./js/try.mjs";
-import stmts from "./js/stmts.mjs";
-import block from "./js/block.mjs";
-import lexical from "./js/lexical.mjs";
-import binding from "./js/binding.mjs";
-import member from "./js/member.mjs";
-import assign from "./js/assign.mjs";
-import add from "./js/add.mjs";
-import exp from "./js/exp.mjs";
-import sub from "./js/sub.mjs";
-import div from "./js/div.mjs";
-import mult from "./js/mult.mjs";
-import object from "./js/object.mjs";
-import debugger_stmt from "./js/debugger.mjs";
-import string from "./js/string.mjs";
-import null_ from "./js/null.mjs";
-import number from "./js/number.mjs";
-import bool from "./js/bool.mjs";
-import negate from "./js/negate.mjs";
-import rtrn from "./js/return.mjs";
-import lt from "./js/lt.mjs";
-import eq from "./js/eq.mjs";
-import condition from "./js/condition.mjs";
-import array_literal from "./js/array_literal.mjs";
-import this_expr from "./js/this.mjs";
-import property_binding from "./js/property_binding.mjs";
-import funct_decl from "./js/function_declaration.mjs";
+import {
+    for_stmt,
+    call_expr,
+    identifier,
+    catch_stmt,
+    try_stmt,
+    statements,
+    block,
+    lexical,
+    binding,
+    member,
+    assign,
+    add,
+    exp,
+    sub,
+    div,
+    mult,
+    object,
+    debugger_stmt,
+    string,
+    null_,
+    number,
+    bool,
+    negate,
+    rtrn,
+    condition,
+    array_literal,
+    this_expr,
+    property_binding,
+    arrow,
+    funct_decl,
+    expression_list,
+    if_stmt,
+    post_inc,
+    post_dec,
+    expr_stmt,
+    _or,
+    _and,
+    not,
+    new_member_stmt,
+    spread,
+    equal,
+    greater,
+    greater_eq,
+    less,
+    less_eq
+} from "../../node_modules/@candlefw/hydrocarbon/source/grammar/js/exports.mjs";
 
 //HTML
 import element_selector from "./html/element_selector.mjs";
@@ -47,108 +63,98 @@ const env = {
         text,
 
         //JS
-        for_stmt,
-        call_expr,
-        identifier,
-        catch_stmt,
-        try_stmt,
-        stmts,
-        lexical,
-        binding,
-        member,
-        block,
-        assign,
-        object,
+        //JS
         add,
-        sub,
-        div,
-        mult,
-        exp,
-        lt,
-        negate_expr: negate,
-        eq,
+        and: _and,
         array_literal,
-        property_binding,
-        if_stmt: function(sym) { this.bool = sym[2];
-            this.body = sym[4];
-            this.else = sym[6];},
-        while_stmt: function(sym) { this.bool = sym[1];
-            this.body = sym[3];},
-        return_stmt: rtrn,
-        class_stmt: function(sym) { this.id = sym[1], this.tail = sym[2];},
-        class_tail: function(sym) { this.heritage = sym[0];
-            this.body = sym[2];},
-        debugger_stmt,
-        lex_stmt: function(sym) { this.ty = sym[0];
-            this.declarations = sym[1];},
-        var_stmt: function(sym) { this.declarations = sym[1] },
-        member_expr: function(sym) { this.id = sym[0];
-            this.expr = sym[2];},
-        add_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "ADD";},
-        or_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "OR";},
-        and_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "AND";},
-        sub_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "SUB";},
-        mult_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "MUL";},
-        div_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "DIV";},
-        mod_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "MOD";},
-        lt_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "LT";},
-        gt_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "GT";},
-        lte_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "LTE";},
-        gte_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "GTE";},
-        seq_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "STRICT_EQ";},
-        neq_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "NEQ";},
-        sneq_expr: function(sym) { this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "STRICT_NEQ";},
-        unary_not_expr: function(sym) { this.expr = sym[1];
-            this.ty = "NOT";},
-        unary_plus: function(sym) { this.expr = sym[1];
-            this.ty = "PRE INCR";},
-        unary_minus: function(sym) { this.expr = sym[1];
-            this.ty = "PRE INCR";},
-        pre_inc_expr: function(sym) { this.expr = sym[1];
-            this.ty = "PRE INCR";},
-        pre_dec_expr: function(sym) { this.expr = sym[1];
-            this.ty = "PRE DEC";},
-        post_inc_expr: function(sym) { this.expr = sym[0];
-            this.ty = "POST INCR";},
-        post_dec_expr: function(sym) { this.expr = sym[0];
-            this.ty = "POST DEC";},
+        arrow,
+        assign,
+        binding,
+        block,
+        bool_literal: bool,
+        call_expr,
+        catch_stmt,
         condition_expr: condition,
+        debugger_stmt,
+        div,
+        eq: equal,
+        exp,
+        expr_stmt,
+        expression_list,
+        for_stmt,
+        funct_decl,
+        gt: greater,
+        gteq: greater_eq,
+        identifier,
+        if_stmt,
+        lexical,
+        lt: less,
+        lteq: less_eq,
+        member,
+        mult,
+        negate_expr: negate,
         null_literal: null_,
         numeric_literal: number,
-        bool_literal: bool,
+        object,
+        or: _or,
+        post_dec_expr: post_dec,
+        post_inc_expr: post_inc,
+        property_binding,
+        unary_not_expr: not,
+        new_member_stmt,
+        spread_expr: spread,
+        return_stmt: rtrn,
+        stmts:statements,
         string_literal: string,
-        label_stmt: function(sym) { this.label = sym[0];
-            this.stmt = sym[1];},
-        funct_decl,
+        sub,
         this_expr,
+        try_stmt,
+        while_stmt: function(sym) {
+            this.bool = sym[1];
+            this.body = sym[3];
+        },
+        var_stmt: function(sym) { this.declarations = sym[1] },
+        mod_expr: function(sym) {
+            this.le = sym[0];
+            this.re = sym[2];
+            this.ty = "MOD";
+        },
+        seq_expr: function(sym) {
+            this.le = sym[0];
+            this.re = sym[2];
+            this.ty = "STRICT_EQ";
+        },
+        neq_expr: function(sym) {
+            this.le = sym[0];
+            this.re = sym[2];
+            this.ty = "NEQ";
+        },
+        sneq_expr: function(sym) {
+            this.le = sym[0];
+            this.re = sym[2];
+            this.ty = "STRICT_NEQ";
+        },
+        unary_plus: function(sym) {
+            this.expr = sym[1];
+            this.ty = "PRE INCR";
+        },
+        unary_minus: function(sym) {
+            this.expr = sym[1];
+            this.ty = "PRE INCR";
+        },
+        pre_inc_expr: function(sym) {
+            this.expr = sym[1];
+            this.ty = "PRE INCR";
+        },
+        pre_dec_expr: function(sym) {
+            this.expr = sym[1];
+            this.ty = "PRE DEC";
+        },
+
+        label_stmt: function(sym) {
+            this.label = sym[0];
+            this.stmt = sym[1];
+        },
 
         defaultError: (tk, env, output, lex, prv_lex, ss, lu) => {
             /*USED for ASI*/
