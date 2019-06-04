@@ -4,7 +4,7 @@ import {
     identifier,
     catch_stmt,
     try_stmt,
-    statements,
+    stmts as statements,
     block,
     lexical,
     binding,
@@ -44,7 +44,7 @@ import {
     greater_eq,
     less,
     less_eq
-} from "../../node_modules/@candlefw/hydrocarbon/source/grammar/js/exports.mjs";
+} from "@candlefw/js";
 
 //HTML
 import element_selector from "./html/element_selector.mjs";

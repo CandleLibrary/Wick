@@ -1,5 +1,4 @@
-import {identifier, member, rtrn} from "../../../node_modules/@candlefw/hydrocarbon/source/grammar/js/exports.mjs";
-
+import {identifier, member, rtrn} from "@candlefw/js";
 import {GetOutGlobals, AddEmit} from "./script_functions.mjs";
 import FUNCTION_CACHE from "./function_cache.mjs";
 import ExpressionIO from "../component/io/expression_io.mjs";
@@ -43,8 +42,7 @@ export default class Binding {
     processJSAST(presets = { custom: {} }) {
         this.args = GetOutGlobals(this.ast, presets);
         AddEmit(this.ast, presets);
-        let r = new rtrn([]);
-        r.expr = this.ast;
+        let r = new rtrn([this.ast]);
         this.ast = r;
         this.val = r + "";
         this.METHOD = EXPRESSION;

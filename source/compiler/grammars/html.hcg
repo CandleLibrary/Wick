@@ -26,10 +26,10 @@
 
 	<> DTD → < ! BODY_STRING >					    		↦return { null }			 	
 
-	<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY </ TAGNAME >	↦cstr ^element_selector
-		│ < TAGNAME ATTRIBUTES? / >							↦cstr ^element_selector
-		│ < VOID_NAME ATTRIBUTES? ></ VOID_NAME > 			↦cstr ^element_selector
-		│ < VOID_NAME ATTRIBUTES? /? >						↦cstr ^element_selector
+	<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY </ TAGNAME >	↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
+		│ < TAGNAME ATTRIBUTES? / >							↦return { fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
+		│ < VOID_NAME ATTRIBUTES? > </ VOID_NAME > 			↦return { fn.element_selector($$sym2, $$sym3, $$sym4, env, lex ) }
+		│ < VOID_NAME ATTRIBUTES? /? >						↦return { fn.element_selector($$sym2, $$sym3, null,, env, lex ) }
 
 
 	###########################################################################################

@@ -1,10 +1,9 @@
 ## STRINGS 
 @IGNORE θws θnl 
 
-
 <> normal_string → \" string_data \"        ↦return { $sym2 }
 	│ \' string_data \' 					↦return { $sym2 }
 
 <> string_data → ( string_data_val )(+") 	
 
-<> string_data_val → θid │ θws │ θany │ θsym │ θop │ θcb │ │ θob
+<> string_data_val → θid │ θws │ θany │ θsym │ θop │ θcb │ θob

@@ -1,4 +1,4 @@
-import {types, identifier} from "../../../node_modules/@candlefw/hydrocarbon/source/grammar/js/exports.mjs";
+import {types, identifier} from "@candlefw/js";
 const env = {};
 export default {
 
@@ -31,13 +31,15 @@ export default {
 
         //Retrieve undeclared variables to inject as function arguments.
         while (node) {
-
             if (
                 node.type == types.id ||
                 node.type == types.member
             ) {
-                if (node.root)
+                if (node.root && !non_global.has(node.name)){
                     globals.add(node.name);
+                }else{
+                	non_global.add(node.name);
+                }
             }
 
             if (

@@ -1,4 +1,4 @@
-import {types, identifier, member, rtrn} from "../../../node_modules/@candlefw/hydrocarbon/source/grammar/js/exports.mjs";
+import {types, identifier, member, rtrn} from "@candlefw/js";
 import ElementNode from "./element.mjs";
 import JS from "../js/tools.mjs";
 import ScriptIO from "../component/io/script_io.mjs";
@@ -41,13 +41,12 @@ export default class scr extends ElementNode {
             names.push("emit");
 
             try {
-                debugger
                 this.function = Function.apply(Function, names.concat([this.val]));
                 this.READY = true;
                 FUNCTION_CACHE.set(this.val, this.function)
             } catch (e) {
                 //errors.push(e);
-                console.error(`Script error encountered in ${statics.url || "virtual file"}:${node.line+1}:${node.char}`)
+                //console.error(`Script error encountered in ${statics.url || "virtual file"}:${node.line+1}:${node.char}`)
                 console.warn(this.val);
                 console.error(e)
             }
