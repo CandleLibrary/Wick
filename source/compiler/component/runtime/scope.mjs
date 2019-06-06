@@ -152,6 +152,7 @@ export default class Scope extends Observer {
         Makes the scope a observer of the given Model. If no model passed, then the scope will bind to another model depending on its `scheme` or `model` attributes. 
     */
     load(model) {
+
         let
             m = null,
             SchemedConstructor = null;

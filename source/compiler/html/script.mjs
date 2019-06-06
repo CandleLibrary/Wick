@@ -1,4 +1,4 @@
-import {types, identifier, member, rtrn} from "@candlefw/js";
+import {types, identifier} from "@candlefw/js";
 import ElementNode from "./element.mjs";
 import JS from "../js/tools.mjs";
 import ScriptIO from "../component/io/script_io.mjs";

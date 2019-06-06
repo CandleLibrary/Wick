@@ -17,8 +17,8 @@ let CachedPresets = null;
 class Presets {
     constructor(preset_options = {}) {
 
-        if(Presets.global.v)
-            return Presets.global.v;
+        //if(Presets.global.v)
+        //    return Presets.global.v;
 
         this.store = (preset_options.store instanceof Store) ? preset_options.store : null;
 

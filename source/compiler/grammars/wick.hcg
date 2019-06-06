@@ -6,7 +6,7 @@
 
 @IGNORE θws θnl
 
-@IMPORT ../../../node_modules/@candlefw/hydrocarbon/source/grammar/js/javascript.hcg as js
+@IMPORT ../../../node_modules/@candlefw/js/source/grammar/ecmascript.hcg as js
 
 @IMPORT ./html.hcg as html
 
@@ -32,8 +32,8 @@
 
 +> html::TEXT_NODE → WICK_BINDING 															↦cstr ^text
 
-+> html::TAG →  < τstyle html::ATTRIBUTES > css::CSS </ τstyle > 							↦cstr ^element_selector
-	│ < τscript html::ATTRIBUTES > js::javascript </ τscript > 								↦cstr ^element_selector
++> html::TAG →  < τstyle html::ATTRIBUTES? > css::CSS </ τstyle > 							↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
+	│ < τscript html::ATTRIBUTES? > js::script? </ τscript > 								↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 
 <> WICK_BINDING → CALL_BINDING  							
 	│ BASIC_BINDING

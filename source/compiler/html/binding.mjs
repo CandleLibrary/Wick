@@ -1,4 +1,4 @@
-import {identifier, member, rtrn} from "@candlefw/js";
+import {identifier, member_expression, return_statement} from "@candlefw/js";
 import {GetOutGlobals, AddEmit} from "./script_functions.mjs";
 import FUNCTION_CACHE from "./function_cache.mjs";
 import ExpressionIO from "../component/io/expression_io.mjs";
@@ -27,7 +27,7 @@ export default class Binding {
 
         this.val = this.ast + "";
 
-        if (!(this.ast instanceof identifier) && !(this.ast instanceof member))
+        if (!(this.ast instanceof identifier) && !(this.ast instanceof member_expression))
             this.processJSAST(env.presets);
         
     }
@@ -42,7 +42,7 @@ export default class Binding {
     processJSAST(presets = { custom: {} }) {
         this.args = GetOutGlobals(this.ast, presets);
         AddEmit(this.ast, presets);
-        let r = new rtrn([this.ast]);
+        let r = new return_statement([this.ast]);
         this.ast = r;
         this.val = r + "";
         this.METHOD = EXPRESSION;

@@ -32,8 +32,8 @@ export default {
         //Retrieve undeclared variables to inject as function arguments.
         while (node) {
             if (
-                node.type == types.id ||
-                node.type == types.member
+                node.type == types.identifier ||
+                node.type == types.member_expression
             ) {
                 if (node.root && !non_global.has(node.name)){
                     globals.add(node.name);
@@ -43,7 +43,7 @@ export default {
             }
 
             if (
-                node.type == types.lex ||
+                node.type == types.lexical_declaration ||
                 node.type == types.var
             ) {
                 node.bindings.forEach(b => (non_global.add(b.id.name), globals.delete(b.id.name)));
@@ -53,7 +53,7 @@ export default {
         }
 
         return [...globals.values()].reduce((red, out) => {
-            if (window[out] || out == "this") 
+            if ((window[out] && !(window[out] instanceof HTMLElement)) || out == "this") 
             	//Skip anything already defined on the global object. 
                 return red;
 

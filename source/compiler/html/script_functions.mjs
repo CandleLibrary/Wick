@@ -1,6 +1,6 @@
 import JS from "../js/tools.mjs";
 import glow from "@candlefw/glow";
-import {types, identifier, member} from "@candlefw/js";
+import {types, identifier, member_expression} from "@candlefw/js";
 const defaults = { glow };
 
 export function GetOutGlobals(ast, presets) {
@@ -26,12 +26,12 @@ export function GetOutGlobals(ast, presets) {
 }
 
 export function AddEmit(ast, presets, ignore) {
-    JS.processType(types.assignment, ast, assign => {
+    JS.processType(types.assignment_expression, ast, assign => {
         const k = assign.id.name;
 
-        if (window[k] || presets.custom[k] || presets[k] || defaults[k] || ignore.includes(k))
+        if ((window[k] && !(window[k] instanceof HTMLElement)) || presets.custom[k] || presets[k] || defaults[k] || ignore.includes(k))
             return;
         
-        assign.connect.id.replace(new member([new identifier(["emit"]), null, assign.id]));
+        assign.connect.id.replace(new member_expression([new identifier(["emit"]), null, assign.id]));
     });
 }

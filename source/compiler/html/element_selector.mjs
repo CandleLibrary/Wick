@@ -12,13 +12,12 @@ import FilterNode from "./filter.mjs";
 import ImportNode from "./import.mjs";
 //import Plugin from "./../plugin.mjs";
 
-export default function (sym, env, lex, st, stack, len){ 
+export default function (tag,attribs,children, env, lex){ 
 
 	const 
-        FULL = len > 5,
-        tag = sym[1],
-        attribs = (Array.isArray(sym[2]))  ? sym[2] : [],
-        children = (FULL) ? (Array.isArray(sym[2])) ? sym[4] : sym[3] : [];
+        FULL = !!children;
+        attribs = attribs || [],
+        children =children || [];
 
     const presets = env.presets;
 

@@ -40,7 +40,7 @@ export default class d {
         return this.nonAsyncMount(HTMLElement_, bound_data_object);
     }
 
-    nonAsyncMount(HTMLElement_, bound_data_object){
+    nonAsyncMount(HTMLElement_, bound_data_object = null){
         let element = null;
 
         if ((HTMLElement_ instanceof HTMLElement)) {
@@ -51,8 +51,7 @@ export default class d {
 
         const scope = this.ast.mount(element);
 
-        if (bound_data_object)
-            scope.load(bound_data_object);
+        scope.load(bound_data_object);
 
         return scope;
     }
