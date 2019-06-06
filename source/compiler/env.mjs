@@ -147,6 +147,7 @@ const env = {
         return_statement,
         spread_element,
         statements,
+        string_literal:string,
         string,
         subtract_expression,
         this_literal,
@@ -157,6 +158,7 @@ const env = {
         unary_xor_expression,
         void_expression,
         argument_list,
+        arrow:arrow_function_declaration,
 
 
         while_stmt: function(sym) {

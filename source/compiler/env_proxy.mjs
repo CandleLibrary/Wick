@@ -133,7 +133,6 @@ const env =  {
 	options : {
 		integrate : false,
 		onstart : ()=>{
-			console.log("SDFS")
 			env.table = {};
         	env.ASI = true;	
         }

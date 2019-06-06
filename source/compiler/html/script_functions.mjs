@@ -1,37 +1,54 @@
 import JS from "../js/tools.mjs";
 import glow from "@candlefw/glow";
-import {types, identifier, member_expression} from "@candlefw/js";
+import { types, identifier, member_expression } from "@candlefw/js";
 const defaults = { glow };
 
 export function GetOutGlobals(ast, presets) {
+    const args = [];
+    const ids = [];
+    const arg_lu = new Set();
 
-    return JS.getClosureVariableNames(ast).map(out => {
-        const out_object = { name: out, val: null, IS_TAPPED: false, IS_ELEMENT : false};
+    JS.getClosureVariableNames(ast).forEach(out => {
 
-        if (presets.custom[out])
-            out_object.val = presets.custom[out];
-        else if (presets[out])
-            out_object.val = presets[out];
-        else if (defaults[out])
-            out_object.val = defaults[out];
-        else if (out[out.length -1] == "$"){
-            out_object.IS_ELEMENT = true;
-            //out_object.name = out.slice(0,-1);
-        } else {
-            out_object.IS_TAPPED = true;
+        const name = out.name;
+
+        if (!arg_lu.has(name)) {
+            arg_lu.add(name)
+
+            const out_object = { name, val: null, IS_TAPPED: false, IS_ELEMENT: false };
+
+            if (presets.custom[name])
+                out_object.val = presets.custom[name];
+            else if (presets[name])
+                out_object.val = presets[name];
+            else if (defaults[name])
+                out_object.val = defaults[name];
+            else if (name[name.length - 1] == "$") {
+                out_object.IS_ELEMENT = true;
+                //out_object.name = out.slice(0,-1);
+            } else {
+                out_object.IS_TAPPED = true;
+            }
+            args.push(out_object);
         }
-
-        return out_object;
+        ids.push(out);
     });
+
+    return { args, ids };
 }
 
 export function AddEmit(ast, presets, ignore) {
-    JS.processType(types.assignment_expression, ast, assign => {
-        const k = assign.id.name;
+    ast.forEach( node => {
 
-        if ((window[k] && !(window[k] instanceof HTMLElement)) || presets.custom[k] || presets[k] || defaults[k] || ignore.includes(k))
-            return;
-        
-        assign.connect.id.replace(new member_expression([new identifier(["emit"]), null, assign.id]));
+        if(node.parent.type == types.assignment_expression){
+            const assign = node.parent;
+
+            const k = node.name;
+
+            if ((window[k] && !(window[k] instanceof HTMLElement)) || presets.custom[k] || presets[k] || defaults[k] || ignore.includes(k))
+                return;
+
+            node.replace(new member_expression([new identifier(["emit"]), null, node]));
+        }
     });
 }

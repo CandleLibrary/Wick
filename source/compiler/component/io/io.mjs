@@ -1,5 +1,5 @@
 import spark from "@candlefw/spark";
-
+import {EXPORT } from "../tap/tap.mjs";
 export class IOBase {
 
     constructor(parent) {
@@ -18,6 +18,7 @@ export class IOBase {
     }
 
     down() {}
+
     up(value, meta) { this.parent.up(value, meta); }
 
     //For IO composition.
@@ -64,15 +65,36 @@ export class IO extends IOBase {
     }
 }
 
+class RedirectAttribIO extends IOBase{
+    constructor(scope, errors, down_tap, up_tap){
+        super(down_tap);
+        this.up_tap = up_tap;
+    }
+
+    down(value){
+        this.up_tap.up(value);
+    }
+}
+
 /**
     This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
 */
 export class AttribIO extends IOBase {
     constructor(scope, errors, tap, attr, element, default_val) {
+
+        if(element.io){
+            let down_tap = element.io.parent;
+            let root = scope.parent;
+            tap.modes |= EXPORT;
+            return new RedirectAttribIO(scope, errors, element.io.parent, tap)
+        }
+
         super(tap);
 
         this.attrib = attr;
         this.ele = element;
+        this.ele.io = this;
+        
 
         if (default_val) this.down(default_val)
     }
@@ -123,7 +145,7 @@ export class DataNodeIO extends IOBase {
     }
 }
 
-export class InputIO extends IOBase {
+export class EventIO extends IOBase {
 
     constructor(scope, errors, tap, attrib_name, element, default_val) {
 
@@ -134,6 +156,39 @@ export class InputIO extends IOBase {
         const up_tap = default_val ? scope.getTap(default_val) : tap;
 
         this.event = (e) => { up_tap.up(e.target.value, { event: e }); };
+
+        this.event_name = attrib_name.replace("on", "");
+
+        this.ele.addEventListener(this.event_name, this.event);
+    }
+
+    destroy() {
+        this.ele.removeEventListener("input", this.event);
+        this.ele = null;
+        this.event = null;
+        this.event_name = null;
+        this.attrib = null;
+    }
+
+    down(value) {
+        this.ele.value = value;
+    }
+}
+
+export class InputIO extends IOBase {
+
+    constructor(scope, errors, tap, attrib_name, element, default_val) {
+
+        super(tap);
+
+        this.ele = element;
+
+        const up_tap = default_val ? scope.getTap(default_val) : tap;
+
+        if(element.type == "checkbox")
+            this.event = (e) => {up_tap.up(e.target.checked, { event: e }); };
+        else
+            this.event = (e) => {up_tap.up(e.target.value, { event: e }); };
 
         this.ele.addEventListener("input", this.event);
     }

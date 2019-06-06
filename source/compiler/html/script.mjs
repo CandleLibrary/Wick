@@ -23,8 +23,9 @@ export default class scr extends ElementNode {
     }
 
     processJSAST(presets = { custom: {} }) {
-        this.args = GetOutGlobals(this.ast, presets);
-        AddEmit(this.ast, presets, this.args.map(a=>a.name));
+        const {args, ids} = GetOutGlobals(this.ast, presets);
+        this.args = args;
+        AddEmit(ids, presets, this.args.reduce((r, a)=> ((a.IS_TAPPED) ? null : r.push(a.name), r), []));
         this.val = this.ast + "";
     }
 

@@ -40,9 +40,14 @@ export default class Binding {
     }
 
     processJSAST(presets = { custom: {} }) {
-        this.args = GetOutGlobals(this.ast, presets);
-        AddEmit(this.ast, presets);
-        let r = new return_statement([this.ast]);
+        const {args, ids} = GetOutGlobals(this.ast, presets);
+
+        this.args = args;
+
+        AddEmit(ids, presets);
+
+        let r = new return_statement([]);
+        r.vals[0] = this.ast;
         this.ast = r;
         this.val = r + "";
         this.METHOD = EXPRESSION;

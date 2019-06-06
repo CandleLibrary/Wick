@@ -96,6 +96,7 @@ export class Tap {
             this.down(value, meta);
         
         if ((this.modes & PUT) && typeof(value) !== "undefined") {
+
             if (this.scope.model.set)
                 this.scope.model.set({
                     [this.prop]: value

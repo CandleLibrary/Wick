@@ -22,10 +22,12 @@ export default {
 	},
 	
 	getClosureVariableNames(ast, ...global_objects){
+		if(!ast)
+			return;
 		let
             tvrs = ast.traverseDepthFirst(),
             node = tvrs.next().value,
-            non_global = new Set(),
+            non_global = new Set(...global_objects),
             globals = new Set(),
             assignments = new Map();
 
@@ -36,24 +38,38 @@ export default {
                 node.type == types.member_expression
             ) {
                 if (node.root && !non_global.has(node.name)){
-                    globals.add(node.name);
+                    globals.add(node);
                 }else{
-                	non_global.add(node.name);
+                	//non_global.add(node.name);
                 }
+            }
+
+            if(ast !== node && node.type == types.arrow_function_declaration){
+
+            	let glbl = new Set; 
+
+            	node.getRootIds(glbl)
+
+            	let g = this.getClosureVariableNames(node,glbl);
+
+            	g.forEach(v=>globals.add(g))
+
+            	node.skip();
             }
 
             if (
                 node.type == types.lexical_declaration ||
                 node.type == types.var
             ) {
-                node.bindings.forEach(b => (non_global.add(b.id.name), globals.delete(b.id.name)));
+                node.bindings.forEach(b => (non_global.add(b.id.name), globals.forEach(g=>{if(g.name == b.id.name) globals.delete(b.id.name)})));
             }
 
             node = tvrs.next().value;
         }
 
         return [...globals.values()].reduce((red, out) => {
-            if ((window[out] && !(window[out] instanceof HTMLElement)) || out == "this") 
+        	const name = out.name;
+            if ((window[name] && !(window[name] instanceof HTMLElement)) || name == "this") 
             	//Skip anything already defined on the global object. 
                 return red;
 
@@ -62,12 +78,24 @@ export default {
         }, [])
 	},
 
+	getRootVariables(ast){
+		const tvrs = ast.traverseDepthFirst(); let node = null;
+		var vars = [];
+		while((node = tvrs.next().value)){
+			if(node.type == types.function_declaration || node.type == types.arrow_function_declaration){
+				return node.args.map(e=>e.name);
+			}
+		}
+		return vars
+	},
+
 	//Returns the argument names of the first function declaration defined in the ast
 	getFunctionDeclarationArgumentNames(ast){
+		
 		const tvrs = ast.traverseDepthFirst(); let node = null;
 
 		while((node = tvrs.next().value)){
-			if(node.type == types.function_declaration){
+			if(node.type == types.function_declaration || node.type == types.arrow_function_declaration){
 				return node.args.map(e=>e.name);
 			}
 		}
@@ -82,10 +110,8 @@ export default {
 	validate(lex){
 		let l = lex.copy();
 
-		console.log(l.slice())
 		try{
 			let result = JSParser(lex, env);
-			console.log(result)
 			return true;
 		}catch(e){
 			console.error(e);
