@@ -13,7 +13,6 @@ import ImportNode from "./import.mjs";
 //import Plugin from "./../plugin.mjs";
 
 export default function (tag,attribs,children, env, lex){ 
-
 	const 
         FULL = !!children;
         attribs = attribs || [],

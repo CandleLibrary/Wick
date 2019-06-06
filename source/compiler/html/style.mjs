@@ -5,7 +5,7 @@ import ElementNode from "./element.mjs";
 export default class sty extends ElementNode{
 	constructor(env, tag, children, attribs, presets){
 		//css;
-		
+
 		let data = children[0].data;
 		/*
 		css(data).then(css=>{
@@ -14,4 +14,8 @@ export default class sty extends ElementNode{
 		*/
 		super(env, "style", children, attribs, presets);
 	}
+
+	finalize(){return this}
+	render(){}
+	mount(){}
 }

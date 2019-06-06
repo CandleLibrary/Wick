@@ -2,7 +2,7 @@
 
 @EXT wick
 
-@SYMBOL (( )) )( </
+@SYMBOL (( )) )( </ 
 
 @IGNORE θws θnl
 
@@ -12,19 +12,19 @@
 
 @IMPORT ../../../node_modules/@candlefw/css/source/grammar/css.hcg as css 
 
-<> S → start																				↦r{ sym[0] }
+<> S → start																				↦r{ $sym1 }
 
-<> start → js::javascript 
-	│ html::HTML
+<> start → html::HTML
+	 │ js::javascript 
 
-+> js::statement → html::GOAL_TAG ;  	  													↦r {sym[0]}
++> js::statement → html::GOAL_TAG ;  	  													↦r { $sym1 }
 
-+> html::BODY →  IMPORT_TAG(+) html::GOAL_TAG 												↦return { sym[1].import_list = sym[0], sym[1]}
++> html::BODY →  IMPORT_TAG(+) html::GOAL_TAG 												↦return { $sym1.import_list = $sym2, $sym1}
 	
 <> IMPORT_TAG → < τimport html::ATTRIBUTES /? >  											↦cstr ^element_selector
 
 +> html::ATTRIBUTE_BODY → WICK_BINDING 									
-	│ " WICK_BINDING " 																		↦return { sym[1] }
+	│ " WICK_BINDING " 																		↦return { $sym2 }
 
 +> html::VOID_NAME → τimport
 		│ τf
@@ -32,11 +32,11 @@
 
 +> html::TEXT_NODE → WICK_BINDING 															↦cstr ^text
 
-+> html::TAG →  < τstyle html::ATTRIBUTES? > css::CSS </ τstyle > 							↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
-	│ < τscript html::ATTRIBUTES? > js::script? </ τscript > 								↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
++> html::TAG → < τstyle html::ATTRIBUTES? >  css::CSS  </ τstyle > 							↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
+	 │ < τscript html::ATTRIBUTES? > js::script? </ τscript > 								↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 
 <> WICK_BINDING → CALL_BINDING  							
-	│ BASIC_BINDING
-
+ 	│ BASIC_BINDING
+ 
 <> BASIC_BINDING → \(( ↦{ env.start = lex.off+2 } js::expression \))   						↦cstr ^wick_binding
 <> CALL_BINDING → \(( ↦{ env.start = lex.off+2 } js::expression \)( js::expression \))    	↦cstr ^wick_binding

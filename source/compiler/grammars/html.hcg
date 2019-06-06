@@ -4,7 +4,7 @@
 
 @EXT html
 
-@SYMBOL </ (( )) )( 
+@SYMBOL </ 
 
 @IGNORE θws θnl 
 
@@ -26,7 +26,7 @@
 
 	<> DTD → < ! BODY_STRING >					    		↦return { null }			 	
 
-	<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY </ TAGNAME >	↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
+	<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >	↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 		│ < TAGNAME ATTRIBUTES? / >							↦return { fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
 		│ < VOID_NAME ATTRIBUTES? > </ VOID_NAME > 			↦return { fn.element_selector($$sym2, $$sym3, $$sym4, env, lex ) }
 		│ < VOID_NAME ATTRIBUTES? /? >						↦return { fn.element_selector($$sym2, $$sym3, null, env, lex ) }
@@ -58,7 +58,6 @@
 		│ TAG 												↦return { [sym[0]] }
 		│ TEXT_NODE 										↦return { [sym[0]] }
 		│ DTD 											 	↦return { null }
-		│ ɛ 
 
 	<> ATTRIBUTES → ATTRIBUTES ATTRIBUTE  					↦return { sym[0].push(sym[1]), sym[0] }
 		│ ATTRIBUTE 										↦return { [sym[0]] }
