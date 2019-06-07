@@ -13,6 +13,7 @@ import ImportNode from "./import.mjs";
 //import Plugin from "./../plugin.mjs";
 
 export default function (tag,attribs,children, env, lex){ 
+
 	const 
         FULL = !!children;
         attribs = attribs || [],
@@ -49,8 +50,8 @@ export default function (tag,attribs,children, env, lex){
             cstr =  ImportNode; break;
             //Elements that should not be parsed for binding points.
         case "pre":
-        case "code":
             cstr =  PreNode; break;
+        case "code":
         default:
             cstr =  ElementNode; break;
     }

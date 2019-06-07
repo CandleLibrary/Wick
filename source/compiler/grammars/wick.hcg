@@ -6,7 +6,9 @@
 
 @IGNORE θws θnl
 
-@IMPORT ../../../node_modules/@candlefw/js/source/grammar/ecmascript.hcg as js
+#@IMPORT ../../../node_modules/@candlefw/js/source/grammar/ecmascript.hcg as js
+
+@IMPORT ./md.hcg as md
 
 @IMPORT ./html.hcg as html
 
@@ -15,28 +17,31 @@
 <> S → start																				↦r{ $sym1 }
 
 <> start → html::HTML
-	 │ js::javascript 
+	 #│ js::javascript 
 
-+> js::statement → html::GOAL_TAG ;  	  													↦r { $sym1 }
+
+#+> js::statement → html::GOAL_TAG ;  	  													↦r { $sym1 }
 
 +> html::BODY →  IMPORT_TAG(+) html::GOAL_TAG 												↦return { $sym2.import_list = $sym1, $sym2}
 	
++> html::TEXT_NODE → md::MARKDOWN_BLOCKS
+	
 <> IMPORT_TAG → < τimport html::ATTRIBUTES /? >  											↦return { fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
 
-+> html::ATTRIBUTE_BODY → WICK_BINDING 									
-	│ " WICK_BINDING " 																		↦return { $sym2 }
+#+> html::ATTRIBUTE_BODY → WICK_BINDING 									
+#	│ " WICK_BINDING " 																		↦return { $sym2 }
 
 +> html::VOID_NAME → τimport
 		│ τf
 		│ τfilter
 
-+> html::TEXT_NODE → WICK_BINDING 															↦cstr ^text
+#+> html::TEXT_NODE → WICK_BINDING 															↦cstr ^text
 
 +> html::TAG → < τstyle html::ATTRIBUTES? >  css::CSS  </ τstyle > 							↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
-	 │ < τscript html::ATTRIBUTES? > js::script? </ τscript > 								↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
+	 #│ < τscript html::ATTRIBUTES? > js::script? </ τscript > 								↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 
-<> WICK_BINDING → CALL_BINDING  							
- 	│ BASIC_BINDING
+#<> WICK_BINDING → CALL_BINDING  							
+# 	│ BASIC_BINDING
  
-<> BASIC_BINDING → \(( ↦{ env.start = lex.off+2 } js::expression \))   						↦cstr ^wick_binding
-<> CALL_BINDING → \(( ↦{ env.start = lex.off+2 } js::expression \)( js::expression \))    	↦cstr ^wick_binding
+#<> BASIC_BINDING → \(( ↦{ env.start = lex.off+2 } js::expression \))   						↦cstr ^wick_binding
+#<> CALL_BINDING → \(( ↦{ env.start = lex.off+2 } js::expression \)( js::expression \))    	↦cstr ^wick_binding

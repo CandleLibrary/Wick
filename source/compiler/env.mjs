@@ -78,6 +78,26 @@ import {
 } from "@candlefw/css";
 
 
+function create_ordered_list(sym, offset = 0, level = -1, env, lex) {
+
+    for (let i = offset; i < sym.length; i++) {
+        const s = sym[i],
+            lvl = (s.lvl) ? s.lvl.length : 0,
+            li = s.li;
+            console.log(s.lvl)
+
+        if (lvl > level) {
+            create_ordered_list(sym, i, lvl, env, lex);
+        } else if (lvl < level) {
+            sym[offset] = element_selector("ul", null, sym.splice(offset, i - offset), env, lex);
+            return;
+        } else
+            sym[i] = li;
+    }
+
+    return sym[offset] = element_selector("span", null, sym.splice(offset, sym.length - offset), env, lex);
+}
+
 const env = {
     table: {},
     ASI: true,
@@ -98,7 +118,7 @@ const env = {
         pseudoClassSelector,
         pseudoElementSelector,
         parseDeclaration,
-        
+
         //JS
         add_expression,
         and_expression,
@@ -147,7 +167,7 @@ const env = {
         return_statement,
         spread_element,
         statements,
-        string_literal:string,
+        string_literal: string,
         string,
         subtract_expression,
         this_literal,
@@ -158,50 +178,16 @@ const env = {
         unary_xor_expression,
         void_expression,
         argument_list,
-        arrow:arrow_function_declaration,
+        arrow: arrow_function_declaration,
 
+        //MARKDOWN
+        create_ordered_list,
 
         while_stmt: function(sym) {
             this.bool = sym[1];
             this.body = sym[3];
         },
         var_stmt: function(sym) { this.declarations = sym[1] },
-        mod_expr: function(sym) {
-            this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "MOD";
-        },
-        seq_expr: function(sym) {
-            this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "STRICT_EQ";
-        },
-        neq_expr: function(sym) {
-            this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "NEQ";
-        },
-        sneq_expr: function(sym) {
-            this.le = sym[0];
-            this.re = sym[2];
-            this.ty = "STRICT_NEQ";
-        },
-        unary_plus: function(sym) {
-            this.expr = sym[1];
-            this.ty = "PRE INCR";
-        },
-        unary_minus: function(sym) {
-            this.expr = sym[1];
-            this.ty = "PRE INCR";
-        },
-        pre_inc_expr: function(sym) {
-            this.expr = sym[1];
-            this.ty = "PRE INCR";
-        },
-        pre_dec_expr: function(sym) {
-            this.expr = sym[1];
-            this.ty = "PRE DEC";
-        },
 
         label_stmt: function(sym) {
             this.label = sym[0];

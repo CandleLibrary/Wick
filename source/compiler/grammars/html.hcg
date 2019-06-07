@@ -24,7 +24,7 @@
 	<> GOAL_TAG → TAG
 		│ DTD TAG 											↦return { sym[1] }
 
-	<> DTD → < ! BODY_STRING >					    		↦return { null }			 	
+	<> DTD → < ! BODY_SYMBOLS(+") >					    		↦return { null }			 	
 
 	<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >	↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 		│ < TAGNAME ATTRIBUTES? / >							↦return { fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
@@ -53,11 +53,13 @@
 		│ τtrack
 		│ τwbr
 
-	<> TAG_BODY →  TAG_BODY TEXT_NODE  						↦return { sym[0].push(sym[1]), sym[0] }
-		│ TAG_BODY TAG  									↦return { sym[0].push(sym[1]), sym[0] }
-		│ TAG 												↦return { [sym[0]] }
-		│ TEXT_NODE 										↦return { [sym[0]] }
+	<> TAG_BODY → TAG_BODY_ITEM(+)
+
+
+	<> TAG_BODY_ITEM → TEXT_NODE  								
+		│ TAG 												
 		│ DTD 											 	↦return { null }
+		
 
 	<> ATTRIBUTES → ATTRIBUTES ATTRIBUTE  					↦return { sym[0].push(sym[1]), sym[0] }
 		│ ATTRIBUTE 										↦return { [sym[0]] }
@@ -74,12 +76,9 @@
 
 	<> TAGNAME → θid
 
-	<> TEXT_NODE → BODY_STRING 								↦cstr ^text
-
-	<> BODY_STRING → BODY_STRING BODY_SYMBOLS 				↦return { sym[0] + sym[1] }			
-		│ BODY_SYMBOLS 										↦return { sym[0] + "" }
-
-	<> BODY_SYMBOLS → θany │ θws │ θnl
+	<> TEXT_NODE → BODY_SYMBOLS(+") 							↦cstr ^text
+	
+	<> BODY_SYMBOLS → θany │ θws 
 
 
 
