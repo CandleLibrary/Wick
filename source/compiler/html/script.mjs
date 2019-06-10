@@ -13,7 +13,7 @@ export default class scr extends ElementNode {
         super(env, "script", null, attribs, presets);
         this.function = null;
         this.args = null;
-        this.ast = ast;
+        this.ast = ast[0];
         this.READY = false;
         this.val = "";
 

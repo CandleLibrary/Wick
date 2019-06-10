@@ -41,12 +41,12 @@ export default class d {
     }
 
     nonAsyncMount(HTMLElement_, bound_data_object = null){
-        let element = null;
+        let element = HTMLElement_;
 
         if ((HTMLElement_ instanceof HTMLElement)) {
             //throw new Error("HTMLElement_ argument is not an instance of HTMLElement. Cannot mount component");
 
-            element = HTMLElement_.attachShadow({ mode: 'open' });
+            //element = HTMLElement_.attachShadow({ mode: 'open' });
         }
 
         const scope = this.ast.mount(element);

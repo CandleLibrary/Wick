@@ -78,7 +78,7 @@
 
 	<> TEXT_NODE → BODY_SYMBOLS(+") 							↦cstr ^text
 	
-	<> BODY_SYMBOLS → θany │ θws 
+	<> BODY_SYMBOLS → θid │ θws │ θsym │ θop │ θob │ θcb
 
 
 

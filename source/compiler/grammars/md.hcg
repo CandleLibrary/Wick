@@ -2,48 +2,60 @@
 
 @EXT md
 
+@SYMBOL ``` ``
 
-@IGNORE θws  θnl
 @IMPORT ./html.hcg as html
 
-<> MD → MARKDOWN_BLOCKS
+<> MD → INLINE
 
-<> MARKDOWN_BLOCKS → HEADER 
-   #│ BLOCK_QUOTES
-   # │ CODE_BLOCK
-   │ UNORDERED_LIST_ITEMS
-   │ EMPHASIS
-   │ LINK
+<> MARKDOWN_BLOCKS → MD_BLOCK_PRE UNORDERED_LIST_ITEMS 	↦r { $sym2 }
+	│ MD_BLOCK_PRE html::TEXT_NODE 						↦r { $sym2 }
+	│ MD_BLOCK_PRE html::TAG  							↦r { $sym2 }
+	│ MD_BLOCK_PRE 										↦cstr ^text
+    │ MD_BLOCK_PRE BLOCK_QUOTES 						↦r { $sym2 }
+   #│ CODE_BLOCK
+   #│ UNORDERED_LIST_ITEMS
 
++> html::TAG_BODY_ITEM → MARKDOWN_BLOCKS
 
-<> HEADER → \#(+) MD_INLINE_ELEMENTS θnl							↦r { fn.element_selector("h" + $sym1.length, null, $$sym2,  env, lex ) }
+<> MD_BLOCK_PRE → θnl θws(*) ↦r {$sym1}
+
+<> UNORDERED_LIST_ITEMS → (\* θws)(+) θws(*) (html::TEXT_NODE │ html::TAG)(+) ↦r { fn.element_selector("li", null, $sym3, env, lex, $sym1.length) }
+
+<> BLOCK_QUOTES → (\> θws)(+) θws(*) (html::TEXT_NODE │ html::TAG)(+) 			↦r { fn.element_selector("blockquote", null, $sym3, env, lex, $sym1.length) }
+
+<> HEADER → \# INLINE											↦r { fn.element_selector("h" + $sym1.length, null, $$sym2,  env, lex ) }
 
 	
-<> MD_INLINE_ELEMENTS → MD_INLINE_ELEMENT(+)						
+<> MD_INLINE_ELEMENTS → INLINE
 
-<> MD_INLINE_ELEMENT → html::TAG
-	│ html::TEXT_NODE
+<> INLINE → MD_INLINE_ELEMENT(+)						
+
+<> MD_INLINE_ELEMENT → TEXT_NODE 
 	│ EMPHASIS
 	│ LINK
 	│ CODE_QUOTE
 
-<> BLOCK_QUOTES → BLOCK_QUOTE_LINE(+) 
 
-<> BLOCK_QUOTE_LINE → \> MD_INLINE_ELEMENTS θnl
 
-<> UNORDERED_LIST_ITEMS → UNORDERED_LIST_ITEM(+)											↦r {fn.create_ordered_list($$sym1, 0, -1, env, lex)}
+<> CODE_BLOCK → ``` θid? ( θnl TEXT_NODE ↦r{fn.element_selector("pre", null,  [$$sym2], env, lex)} )(*) θnl ``` θnl 
+																						
+																			↦r { console.log("RAINBOW") ,fn.element_selector("pre", null,  $$sym3, env, lex) }
 
-<> UNORDERED_LIST_ITEM → ( \+ │ \- │ \* ) code_sentinel? MD_INLINE_ELEMENTS θnl   ↦r { {lvl:$$sym2, li:fn.element_selector("li", null,  $$sym3, env, lex)} }
+<> LINK → \[ TEXT_NODE \]\( TEXT_NODE \)
 
-<> CODE_BLOCK → \` \` \` θid? ( θnl html::TEXT_NODE ↦r{fn.element_selector("pre", null,  [$$sym2], env, lex)} )(*) θnl \` \` \` θnl ↦r { fn.element_selector("pre", null,  $$sym5, env, lex) }
+<> EMPHASIS → EMPHASIS_START \)												↦r { fn.element_selector("b", null,  $$sym2, env, lex) }
 
-<> LINK → \[ html::TEXT_NODE \]\( html::TEXT_NODE \)
+<> EMPHASIS_START → \( (MD_INLINE_ELEMENT(+) )
 
-<> EMPHASIS → \* MD_INLINE_ELEMENTS \*								↦r { fn.element_selector("b", null,  $$sym2, env, lex) }
+<> CODE_QUOTE → `` BODY_SYMBOLS(+")  `` 									↦r { fn.element_selector("code", null,  new fn.text([$sym2], env), env, lex) }
 
-<> CODE_QUOTE → `` html::TEXT_NODE  `` 								↦r { fn.element_selector("code", null,  $$sym3, env, lex) }
+<> TEXT_NODE → (θid │ θws)(+") 												↦r {new fn.text([$sym1], env)} 
+	
+<> BODY_SYMBOLS → θid │ θany │ θws 
 
-<> code_sentinel → \* \* \* \* ↦r {console.log("ASDASDASDASD")}
+<> TEXT_NODE2 → BSYMS(+") 	↦cstr ^text
 
+<> BSYMS → θid │ θsym │ θws
 
 

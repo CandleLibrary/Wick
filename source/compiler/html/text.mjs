@@ -7,6 +7,7 @@ export default class TextNode {
     constructor(sym, env) {
         this.data = sym[0];
         this.IS_BINDING = (this.data instanceof Binding);
+        this.tag = "text";
     }
 
     toString(off = 0) {
@@ -15,6 +16,10 @@ export default class TextNode {
 
     finalize(){
         return this;
+    }
+
+    get IS_WHITESPACE(){
+        return !this.IS_BINDING && (!this.data.trim());
     }
 
     mount(element, scope, presets, statics, pinned, ele = document.createTextNode("")) {
