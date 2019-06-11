@@ -10,7 +10,7 @@ export default class ExpressionIO extends ScriptIO {
         this.old_val = null;
         this._SCHD_ = 0;
         this.ACTIVE = true;
-        this.containerFunction = this.containerFunction.bind(this);
+        //this.containerFunction = this.containerFunction.bind(this);
     }
 
     updateProp(io, val) {

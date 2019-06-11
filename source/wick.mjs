@@ -32,7 +32,7 @@ wick.model = model;
 wick.presets = d=>new Presets(d);
 wick.astCompiler = function(string){
 	return wick_compile(whind(string), CompilerEnv);
-}
+};
 
 export default wick;
 

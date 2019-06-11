@@ -47,7 +47,7 @@
 <> CODE_BLOCK → \``` (IGN θws)  θid?  (IGN θws)  θnl (θnl? (html::BODY_SYMBOLS)(*")  		↦r { fn.element_selector("code", null,[new fn.text([$sym1 + $sym2], env)], env, lex)} )(+) (IGN θws θnl) \```  
 																							↦r { fn.element_selector("pre", null, $$sym4, env, lex) }
 
-<> LINK → \[ BODY_SYMBOLS2(+") \]\( (html::TEXT_NODE │ html::TAG) \) 						↦r { fn.element_selector("a", [new fn.attribute(["href", "", $sym2])], [$sym5], env, lex) }
+<> LINK → \[ html::ATTRIBUTE_BODY \]\( (html::TEXT_NODE │ html::TAG) \) 						↦r { fn.element_selector("a", [new fn.attribute(["href", "", $sym2])], [$sym5], env, lex) }
 
 
 <> ITALIC_BOLD_EMPHASIS → \{{{ html::TEXT_NODE(+) \}}}										↦r { fn.element_selector("i", null, [fn.element_selector("b", null, $sym2, env, lex)], env, lex) }

@@ -7,7 +7,7 @@ export default class fltr extends ElementNode{
 
 		this.type = 0;
 
-		if(this.attribs[0])
+		if(this.attribs[0] && this.attribs[0].value.setForContainer)
 			this.attribs[0].value.setForContainer();
 	}
 
