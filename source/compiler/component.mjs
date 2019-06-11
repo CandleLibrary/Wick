@@ -96,8 +96,10 @@ const
             // and all its derivatives and descendents. 
             let presets = default_presets;
 
-            if (data.length > 1)
-                presets = new Presets(data[1]);
+            if (data.length > 1){
+                presets = (data[1] instanceof Presets) ? data[1] : new Presets(data[1]);
+            }
+            
 
             if (data.length === 0)
                 throw new Error("This function requires arguments. Please Refere to wick docs on what arguments may be passed to this function.");
