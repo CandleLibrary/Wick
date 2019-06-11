@@ -166,22 +166,24 @@ class Presets {
         Copies values of the Presets object into a generic object. The new object is not frozen.
     */
     copy() {
-        let obj = {};
+        const obj = {};
 
         for (let a in this) {
             if (a == "components")
                 obj.components = this.components;
             else if (typeof(this[a]) == "object")
-                obj[a] = Object.assign({}, this[a])
+                obj[a] = Object.assign({}, this[a]);
             else if (typeof(this[a]) == "array")
                 obj[a] = this[a].slice();
             else
                 obj[a] = this[a];
         }
 
-        obj.processLink = this.processLink.bind(this);
+        const presets = new Presets(obj);
 
-        return obj;
+        presets.processLink = this.processLink.bind(this);
+
+        return presets;
     }
 }
 
