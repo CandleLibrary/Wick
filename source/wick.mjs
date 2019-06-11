@@ -11,6 +11,7 @@ import { ModelContainerBase } from "./model/container/base.mjs";
 import { MultiIndexedContainer } from "./model/container/multi.mjs";
 import { BTreeModelContainer } from "./model/container/btree.mjs";
 import { ArrayModelContainer } from "./model/container/array.mjs";
+import { Presets } from "./presets.mjs";
 import whind from "@candlefw/whind";
 const wick = compiler;
 
@@ -28,7 +29,7 @@ model.container = {
 model.store = (data) => new Store(data);
 wick.scheme = model.scheme;
 wick.model = model;
-
+wick.presets = d=>new Presets(d);
 wick.astCompiler = function(string){
 	return wick_compile(whind(string), CompilerEnv);
 }

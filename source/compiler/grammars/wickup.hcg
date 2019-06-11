@@ -10,7 +10,7 @@
 
 +> html::TEXT_NODE → WICKUP_INLINE_ELEMENT
 
-<> WICKUP_PLUGIN → PRE_MD_BLK WICKUP_BLOCK 	↦return { ($sym2) ? $sym2.leader = $sym1 : null, $sym2 }
+<> WICKUP_PLUGIN → PRE_MD_BLK WICKUP_BLOCK 	↦return { $sym2 }
    │ PRE_MD_BLK html::TEXT_NODE				↦return { $sym2 }
    │ PRE_MD_BLK html::TAG 					↦return { $sym2 }
    │ PRE_MD_BLK								↦cstr ^text
@@ -27,17 +27,19 @@
 # Escaped symbol
 +> html::BODY_SYMBOLS → \\ θany 															↦r { $sym2 }
 
-<> HORIZONTAL_RULE → HORIZONTAL_RULE_BODY													↦r { fn.element_selector("hr", null, null,  env, lex, "HRB" ) }
+<> HORIZONTAL_RULE → HORIZONTAL_RULE_BODY													↦r { fn.element_selector("hr", null, null,  env, lex ) }
 	│ HORIZONTAL_RULE_BODY (html::TEXT_NODE │ html::TAG)									↦return { $sym2 }
 
 <> HORIZONTAL_RULE_BODY → === ( = │ === )(*)												↦return { $sym1 }
 	│ --- ( - │--- )(*)	 																	↦return { $sym1 }
 
-<> HEADER → \#(+) (IGN θws) html::TEXT_NODE(+)												↦r { fn.element_selector("h" + Math.min($sym1.length, 6), null, $$sym2,  env, lex , "HEADER") }
+<> HEADER → \#(+) (IGN θws) (html::TEXT_NODE │ html::TAG)(+)								↦r { fn.element_selector("h" + Math.min($sym1.length, 6), null, $$sym2,  env, lex) }
 
-<> BLOCK_QUOTES → (\> θws)(+) θws(*)  (html::TEXT_NODE │ html::TAG)(+) 		↦r { fn.element_selector("blockquote", null, $sym3, env, lex, $sym1.length) }
+<> BLOCK_QUOTES → (\> θws)(+) θws(*)  (html::TEXT_NODE │ html::TAG │ HEADER)(+) 			↦r { fn.element_selector("blockquote", null, $sym3, env, lex, $sym1.length) }
 
-<> UNORDERED_LIST_ITEM → (( \+  │ \* │ θnum ) θws )(+) θws(*)  (html::TEXT_NODE │ html::TAG)(+)   ↦r { fn.element_selector("li", null, $sym3, env, lex, $sym1.length) }
+<> UNORDERED_LIST_ITEM → ( ( \+  │ \* │ θnum ) θws )(+) θws(*)  (html::TEXT_NODE │ html::TAG │ HEADER)(+)   
+																							
+																							↦r { fn.element_selector("li", null, $sym3, env, lex, $sym1.length) }
 				
 
 <> WICKUP_INLINE_ELEMENT → LINK

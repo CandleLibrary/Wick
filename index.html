@@ -2,6 +2,7 @@
 <html>
 	<head>
 		<script src="/cfw/wick"></script>
+<<<<<<< Updated upstream
 		<style type="text/css">
 			blockquote{
 				background-color: rgba(0,0,0,0.05);
@@ -9,6 +10,12 @@
 				display: block;
 				padding:20px;
 
+=======
+		<style>
+			blockquote {
+				background-color: rgba(0,0,0,0.12);
+				border-radius: 5px;
+>>>>>>> Stashed changes
 			}
 		</style>
 	</head>
@@ -50,7 +57,7 @@
 
 				const m = wick.model({doug:[{name:"pate"}, {name:"mary"}]});
 				
-				(new wick("./test_main.whtml")).mount(document.getElementById("a"), m);
+				(wick("./test_main.whtml")).mount(document.getElementById("a"), m);
 			}
 			start();
 		</script>

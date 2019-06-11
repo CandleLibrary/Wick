@@ -4,7 +4,7 @@
 
 @EXT html
 
-@SYMBOL </ 
+@SYMBOL </  
 
 @IGNORE θws θnl 
 
@@ -24,7 +24,7 @@
 	<> GOAL_TAG → TAG
 		│ DTD TAG 											↦return { sym[1] }
 
-	<> DTD → < ! BODY_SYMBOLS(+") >					    		↦return { null }			 	
+	<> DTD → < ! BODY_SYMBOLS(+") >					    	↦return { null }			 	
 
 	<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >	↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 		│ < TAGNAME ATTRIBUTES? / >							↦return { fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
@@ -32,53 +32,55 @@
 		│ < VOID_NAME ATTRIBUTES? /? >						↦return { fn.element_selector($$sym2, $$sym3, null, env, lex ) }
 
 
-	###########################################################################################
-	# https://www.w3.org/TR/2011/WD-html-markup-20110113/syntax.html#syntax-elements
-	###########################################################################################
+###########################################################################################
+# https://www.w3.org/TR/2011/WD-html-markup-20110113/syntax.html#syntax-elements
+###########################################################################################
 
-	<> VOID_NAME → τinput
-		│ τarea
-		│ τbase
-		│ τbr
-		│ τcol
-		│ τcommand
-		│ τembed
-		│ τhr
-		│ τimg
-		│ τkeygen
-		│ τlink
-		│ τmeta
-		│ τparam
-		│ τsource
-		│ τtrack
-		│ τwbr
+<> VOID_NAME → τinput
+	│ τarea
+	│ τbase
+	│ τbr
+	│ τcol
+	│ τcommand
+	│ τembed
+	│ τhr
+	│ τimg
+	│ τkeygen
+	│ τlink
+	│ τmeta
+	│ τparam
+	│ τsource
+	│ τtrack
+	│ τwbr
 
-	<> TAG_BODY → TAG_BODY_ITEM(+)
+<> TAG_BODY → (TAG_BODY_ITEM)(+)
 
 
-	<> TAG_BODY_ITEM → TEXT_NODE  								
-		│ TAG 												
-		│ DTD 											 	↦return { null }
-		
-
-	<> ATTRIBUTES → ATTRIBUTES ATTRIBUTE  					↦return { sym[0].push(sym[1]), sym[0] }
-		│ ATTRIBUTE 										↦return { [sym[0]] }
-
-	<> ATTRIBUTE → ATTRIBUTE_HEAD = ATTRIBUTE_BODY 	 		↦cstr ^attribute
-	 	│ ATTRIBUTE_HEAD 									↦cstr ^attribute
-
-	<> ATTRIBUTE_HEAD → ' θid '								↦return { sym[1] }
-		│ " θid "											↦return { sym[1] }
-		│ θid
-
-	<> ATTRIBUTE_BODY → string::normal_string 						
-		│ θid 											
-
-	<> TAGNAME → θid
-
-	<> TEXT_NODE → BODY_SYMBOLS(+") 							↦cstr ^text
+<> TAG_BODY_ITEM → TEXT_NODE  						
+	│ TAG 											
+	│ DTD 											
 	
-	<> BODY_SYMBOLS → θid │ θws │ θsym │ θop │ θob │ θcb
+
+<> ATTRIBUTES → ATTRIBUTES ATTRIBUTE  					↦return { sym[0].push(sym[1]), sym[0] }
+	│ ATTRIBUTE 										↦return { [sym[0]] }
+
+<> ATTRIBUTE → ATTRIBUTE_HEAD = ATTRIBUTE_BODY 	 		↦cstr ^attribute
+ 	│ ATTRIBUTE_HEAD 									↦cstr ^attribute
+
+<> ATTRIBUTE_HEAD → ' θid '								↦return { sym[1] }
+	│ " θid "											↦return { sym[1] }
+	│ θid
+
+<> ATTRIBUTE_BODY → string::normal_string 						
+	│ θid 											
+
+<> TAGNAME → θid
+
+
+
+<> TEXT_NODE → BODY_SYMBOLS(+") 							↦cstr ^text
+
+<> BODY_SYMBOLS → θid │ θws │ θsym │ θop │ θob │ θcb │ θnum
 
 
 

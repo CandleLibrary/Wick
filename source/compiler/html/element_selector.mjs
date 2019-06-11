@@ -15,9 +15,8 @@ import ImportNode from "./import.mjs";
 function processChildren(children, env, lex) {
 
     let PREVIOUS_NODE = null;
-    let RETRY = false;
-    let previous = null;
-    if (children.length > 1){
+
+    if (children.length > 1) {
         for (let i = 0; i < children.length; i++) {
             let node = children[i];
             //If meta is true, then a wickup node was created. Use the tag name to determine the next course of action. 
@@ -28,7 +27,6 @@ function processChildren(children, env, lex) {
                 switch (tag) {
                     case "blockquote":
                         node.wickup = false;
-                        RETRY = true;
                         if (PREVIOUS_NODE && PREVIOUS_NODE.tag == "blockquote") {
                             let level = 1,
                                 ul = PREVIOUS_NODE;
@@ -85,7 +83,7 @@ function processChildren(children, env, lex) {
                     } else {
                         let node2 = children[i + 1];
                         if (node2) {
-                            if (node2.tag !== "text" || node2.IS_WHITESPACE){
+                            if (node2.tag === "text" && node2.IS_WHITESPACE) {
                                 continue;
                             }
                         }
@@ -95,7 +93,7 @@ function processChildren(children, env, lex) {
 
             PREVIOUS_NODE = node;
         }
-        PREVIOUS_NODE= null;
+        PREVIOUS_NODE = null;
         for (let i = 0; i < children.length; i++) {
             let node = children[i];
             //If meta is true, then a wickup node was created. Use the tag name to determine the next course of action. 
@@ -105,7 +103,9 @@ function processChildren(children, env, lex) {
             if (meta) {
                 switch (tag) {
                     case "li":
+                        console.log(PREVIOUS_NODE)
                         if (PREVIOUS_NODE && PREVIOUS_NODE.tag == "ul") {
+
                             let level = 1,
                                 ul = PREVIOUS_NODE;
                             while (level < meta) {
@@ -114,12 +114,13 @@ function processChildren(children, env, lex) {
                                     ul = ul_child;
                                 } else {
                                     ul_child = es("ul", null, [], env, lex);
-                                    ul.children.push(ul_child)
+                                    ul.children.push(ul_child);
                                     ul = ul_child;
                                 }
 
                                 level++;
                             }
+
                             ul.children.push(node);
                             children.splice(i, 1);
                             i--;
@@ -129,18 +130,19 @@ function processChildren(children, env, lex) {
                             node = children[i]
                         }
                         break;
-                    }
+                }
             } else {
 
                 //This will roll new nodes into the previous node as children of the previous node if the following conditions are met:
                 // 1. The previous node is a wickup node of type either UL or Blockquote
                 // 2. The new node is anything other than a text node containing only white space. 
                 if (PREVIOUS_NODE) {
-                    if (node.tag !== "text" || (!node.IS_WHITESPACE)) {
-
+                    if ((node.tag !== "text") || (!node.IS_WHITESPACE)) {
+      
                         if (PREVIOUS_NODE.wickup)
                             switch (PREVIOUS_NODE.tag) {
                                 case "ul":
+
                                     let ul = PREVIOUS_NODE;
                                     //Insert into last li. if the last 
                                     while (1) {
@@ -155,12 +157,12 @@ function processChildren(children, env, lex) {
                                     }
                                     ul.children.push(node);
 
-                                   const node2 = children[i + 1];
+                                    const node2 = children[i + 1];
 
                                     if (node2) {
-                                        if (node2.tag == "text" && node2.IS_WHITESPACE){
-                                            children.splice(i+1, 1);
-                                             //i--;
+                                        if (node2.tag == "text" && node2.IS_WHITESPACE) {
+                                            children.splice(i + 1, 1);
+                                            //i--;
                                         }
 
                                     }
@@ -168,18 +170,15 @@ function processChildren(children, env, lex) {
                                     children.splice(i, 1);
                                     i--;
 
-
                                     node = PREVIOUS_NODE;
                                     break;
-
-                                    //return null;
                             }
                     } else {
                         let node2 = children[i + 1];
                         if (node2) {
-                            if (node2.tag !== "text" || node2.IS_WHITESPACE){
-                                console.log("node2:",node2)
-                                //continue;
+                            if (node2.tag !== "text" || !node2.IS_WHITESPACE) {
+                                console.log("node2:", node2)
+                                continue;
                             }
                         }
                     }
@@ -190,72 +189,70 @@ function processChildren(children, env, lex) {
     }
 }
 
-export default function es(tag, attribs, children, env, lex, meta = 0) {
+export default function es(tag, attribs, children, env, lex, meta = 0) {    
+    console.log(meta)
 
     const
         FULL = !!children;
-        attribs = attribs || [],
-        children = (Array.isArray(children)) ? children : children ? [children] : [];
 
+    attribs = attribs || [];
+    children = (Array.isArray(children)) ? children : children ? [children] : [];
 
     if (children) processChildren(children, env, lex);
 
     const presets = env.presets;
 
     let node = null,
-        cstr = null;
-    console.log(tag)
+        Constructor = null;
 
     switch (tag) {
         case "text":
             break;
         case "filter":
-
-
         case "f":
-            cstr = FilterNode;
+            Constructor = FilterNode;
             break;
         case "a":
-            cstr = LinkNode;
+            Constructor = LinkNode;
             break;
             /** void elements **/
         case "template":
-            cstr = VoidNode;
+            Constructor = VoidNode;
             break;
         case "css":
         case "style":
-            cstr = StyleNode;
+            Constructor = StyleNode;
             break;
         case "script":
-            cstr = ScriptNode;
+            Constructor = ScriptNode;
             break;
         case "svg":
         case "path":
-            cstr = SVGNode;
+            Constructor = SVGNode;
             break;
         case "container":
-            cstr = ContainerNode;
+            Constructor = ContainerNode;
             break;
         case "scope":
-            cstr = ScopeNode;
+            Constructor = ScopeNode;
             break;
         case "slot":
-            cstr = SlotNode;
+            Constructor = SlotNode;
             break;
         case "import":
-            cstr = ImportNode;
+            Constructor = ImportNode;
             break;
             //Elements that should not be parsed for binding points.
         case "pre":
-            cstr = PreNode;
+            Constructor = PreNode;
             break;
         case "code":
         default:
-            cstr = ElementNode;
+            Constructor = ElementNode;
             break;
     }
 
-    node = new cstr(env, tag, children, attribs, presets);
+    node = new Constructor(env, tag, children, attribs, presets);
 
     node.wickup = meta || false;
 

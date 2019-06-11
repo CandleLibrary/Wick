@@ -16,11 +16,10 @@ const output = [{
 
 export default {
     input: "./source/wick.mjs",
-    treeshake: false,
     output,
     plugins: [
     resolve({jail:"",modulesOnly: true}),  
-    //terser(), 
-    //gzipPlugin()
+    terser({mangle:true, module:true}), 
+    gzipPlugin()
     ]
 };
