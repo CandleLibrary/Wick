@@ -27,6 +27,8 @@ export default class Binding {
 
         this.val = this.ast + "";
 
+
+
         if (!(this.ast instanceof identifier) && !(this.ast instanceof member_expression))
             this.processJSAST(env.presets);
         
@@ -73,4 +75,4 @@ Binding.type = {
     Attribute: 0,
     TextNode: 1,
     Style: 2
-}
+};

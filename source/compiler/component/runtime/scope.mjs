@@ -252,7 +252,8 @@ export default class Scope extends Observer {
     removeFromDOM() {
         //Lifecycle Events: Disconnecting <======================================================================
         this.update({disconnecting:true});
-
+        
+        //Prevent erroneous removal of scope.
         if (this.CONNECTED == true) return;
 
         if (this.ele && this.ele.parentElement)
@@ -271,7 +272,7 @@ export default class Scope extends Observer {
     }
 
     transitionOut(transition, transition_name = "trs_out", DESTROY_AFTER_TRANSITION = false) {
-        
+
         this.CONNECTED = false;
 
         if (this.TRANSITIONED_IN === false) {

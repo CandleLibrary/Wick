@@ -460,7 +460,15 @@ export default class ScopeContainer extends Observer {
 
         this.ele.style.position = this.ele.style.position;
         this.dom_scopes = output;
-
+        console.log({
+            displayed: output_length,
+            offset: offset,
+            count: this.activeScopes.length,
+            pages: this.max,
+            ele: this.ele,
+            template: this,
+            trs: transition.in
+        })
         this.parent.upImport("template_count_changed", {
             displayed: output_length,
             offset: offset,

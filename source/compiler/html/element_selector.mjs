@@ -103,7 +103,6 @@ function processChildren(children, env, lex) {
             if (meta) {
                 switch (tag) {
                     case "li":
-                        console.log(PREVIOUS_NODE)
                         if (PREVIOUS_NODE && PREVIOUS_NODE.tag == "ul") {
 
                             let level = 1,
@@ -177,7 +176,6 @@ function processChildren(children, env, lex) {
                         let node2 = children[i + 1];
                         if (node2) {
                             if (node2.tag !== "text" || !node2.IS_WHITESPACE) {
-                                console.log("node2:", node2)
                                 continue;
                             }
                         }
@@ -190,7 +188,6 @@ function processChildren(children, env, lex) {
 }
 
 export default function es(tag, attribs, children, env, lex, meta = 0) {    
-    console.log(meta)
 
     const
         FULL = !!children;
@@ -224,6 +221,7 @@ export default function es(tag, attribs, children, env, lex, meta = 0) {
             Constructor = StyleNode;
             break;
         case "script":
+        case "js":
             Constructor = ScriptNode;
             break;
         case "svg":
@@ -239,6 +237,7 @@ export default function es(tag, attribs, children, env, lex, meta = 0) {
         case "slot":
             Constructor = SlotNode;
             break;
+        case "link":
         case "import":
             Constructor = ImportNode;
             break;

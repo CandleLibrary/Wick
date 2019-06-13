@@ -7,6 +7,9 @@ import {
     await_expression,
     binding,
     block_statement,
+    bit_and_expression,
+bit_or_expression,
+bit_xor_expression,
     bool_literal,
     call_expression,
     catch_statement,
@@ -55,7 +58,9 @@ import {
     unary_or_expression,
     unary_xor_expression,
     void_expression,
-    argument_list
+    argument_list,
+    parenthasized
+
 } from "@candlefw/js";
 
 //HTML
@@ -120,12 +125,16 @@ const env = {
         parseDeclaration,
 
         //JS
+        parenthasized,
         add_expression,
         and_expression,
         array_literal,
         arrow_function_declaration,
         assignment_expression,
         await_expression,
+        bit_and_expression,
+bit_or_expression,
+bit_xor_expression,
         binding,
         block_statement,
         bool_literal,

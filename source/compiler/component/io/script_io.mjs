@@ -8,7 +8,7 @@ const Globals = new Set([
     "document",
     "JSON",
     "HTMLElement",
-])
+]);
 
 class argumentIO extends IO {
     constructor(scope, errors, tap, script, id) {
@@ -24,6 +24,7 @@ class argumentIO extends IO {
     }
 
     down(value) {
+        
         this.ele.updateProp(this, value);
     }
 }
@@ -32,6 +33,7 @@ class argumentIO extends IO {
 //Function.apply(Function, [binding.arg_key || binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val]);
 export default class ScriptIO extends IOBase {
     constructor(scope, errors, tap, script, lex, pinned) {
+        console.log({pinned})
 
         const HAVE_CLOSURE = false;
 

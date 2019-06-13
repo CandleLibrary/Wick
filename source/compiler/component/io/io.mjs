@@ -113,7 +113,7 @@ export class AttribIO extends IOBase {
     }
 
     set data(v){
-        this.down();
+        this.down(v);
     }
 
     get data(){

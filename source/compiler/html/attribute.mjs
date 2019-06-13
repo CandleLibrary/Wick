@@ -39,8 +39,10 @@ export default class Attribute {
 
     bind(element, scope, pinned) {
         if (this.RENDER)
-            if (!this.isBINDING)
+            if (!this.isBINDING){
+                console.log(this.value)
                 element.setAttribute(this.name, this.value);
+            }
             else {
                 const
                     bind = this.value.bind(scope, pinned),
