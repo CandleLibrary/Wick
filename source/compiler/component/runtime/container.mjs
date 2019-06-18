@@ -65,11 +65,15 @@ export default class ScopeContainer extends Observer {
     get data() {}
 
     set data(container) {
+
         if (container instanceof ModelContainerBase) {
             container.pin();
             container.addObserver(this);
             return;
+        }else{
+            this.unsetModel();
         }
+
         if (!container) return;
         if (Array.isArray(container)) this.cull(container);
         else this.cull(container.data);
@@ -293,6 +297,8 @@ export default class ScopeContainer extends Observer {
             output_length = output.length,
             active_window_start = offset * this.shift_amount;
 
+
+
         let i = 0;
 
         //Scopes on the ascending edge of the transition window
@@ -459,16 +465,9 @@ export default class ScopeContainer extends Observer {
         }
 
         this.ele.style.position = this.ele.style.position;
+        
         this.dom_scopes = output;
-        console.log({
-            displayed: output_length,
-            offset: offset,
-            count: this.activeScopes.length,
-            pages: this.max,
-            ele: this.ele,
-            template: this,
-            trs: transition.in
-        })
+
         this.parent.upImport("template_count_changed", {
             displayed: output_length,
             offset: offset,
@@ -521,6 +520,7 @@ export default class ScopeContainer extends Observer {
     }
 
     limitExpressionUpdate(transition = glow.createTransition()){
+
         //Preset the positions of initial components. 
         this.arrange();
 

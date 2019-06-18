@@ -10,7 +10,7 @@ export default class View{
 		 */
 		this.nx = null;
 		this.pv = null;
-		this .model = null;
+		this.model = null;
 	}
 
 	/**
@@ -26,11 +26,8 @@ export default class View{
      * @protected
      */
 	destroy(){
-
-		if(this.model && this.model.removeView)
-			this.model.removeView(this);
-	
-		this .model = undefined;
+		this.unsetModel();
+		this.model = undefined;
 		this.nx = undefined;
 	}	
 	/**
@@ -59,8 +56,9 @@ export default class View{
 		
 	}
 	unsetModel(){
-
+		if(this.model && this.model.removeView)
+			this.model.removeView(this);
 		this.nx = null;
-		this .model = null;
+		this.model = null;
 	}
 }

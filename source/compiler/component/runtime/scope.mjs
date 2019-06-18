@@ -98,6 +98,7 @@ export default class Scope extends Observer {
             return;
         scope.parent = this;
         this.scopes.push(scope);
+        scope.linkImportTaps(this);
     }
 
     removeScope(scope) {
@@ -107,6 +108,12 @@ export default class Scope extends Observer {
         for (let i = 0; i < this.scopes.length; i++)
             if (this.scopes[i] == scope)
                 return (this.scopes.splice(i, 1), scope.parent = null);
+    }
+
+    linkImportTaps(parent_scope){
+        for(const tap in this.taps){
+            this.taps[tap].linkImport(parent_scope);
+        }
     }
 
     getTap(name) {

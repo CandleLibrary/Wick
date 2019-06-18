@@ -27,11 +27,7 @@ export class Tap {
         this.scope = scope;
         this.prop = prop;
         this.modes = modes; // 0 implies keep
-        this.ios = [];
-
-        if (modes & IMPORT && scope.parent)
-            scope.parent.getTap(prop).ios.push(this);
-
+        this.ios = [];       
     }
 
     destroy() {
@@ -45,7 +41,14 @@ export class Tap {
         this.modes = null;
     }
 
+    linkImport(parent_scope){
+        
+        if ((this.modes & IMPORT))
+            parent_scope.getTap(this.prop).addIO(this);
+    }
+
     load(data) {
+
         this.downS(data);
 
         //Make sure export occures as soon as data is ready. 
@@ -114,7 +117,7 @@ export class Tap {
             return;
 
         if (io.parent)
-            io.parent.removeIO(io)
+            io.parent.removeIO(io);
 
         this.ios.push(io);
 

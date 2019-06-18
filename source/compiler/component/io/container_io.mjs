@@ -3,7 +3,7 @@ import spark from "@candlefw/spark";
 
 /******************** Expressions **********************/
 
-export default class Container extends ScriptIO {
+export default class ContainerIO extends ScriptIO {
     constructor(container, scope, errors, tap, binding, lex, pinned) {
         super(scope, errors, tap, binding, lex, pinned);
 
@@ -18,17 +18,19 @@ export default class Container extends ScriptIO {
     bindToContainer(type, container) {
         this.container = container;
 
+        const STATIC = this.IO_ACTIVATIONS == 0;
+
         switch (type) {
             case "sort":
                 this.ARRAY_ACTION = true;
                 container.filters.push(this);
                 this.action = this.sort;
-                break;
+                return;
             case "filter":
                 this.ARRAY_ACTION = true;
                 container.filters.push(this);
                 this.action = this.filter;
-                break;
+                return;
             case "scrub":
                 this.action = this.scrub;
                 break;
@@ -42,6 +44,9 @@ export default class Container extends ScriptIO {
                 this.action = this.shift_amount;
                 break;
         }
+        
+        if (STATIC)
+            this.down();
     }
 
     destroy() {
@@ -70,15 +75,14 @@ export default class Container extends ScriptIO {
         }
     }
 
-    down(v, m) {
-        let old = this.val
-        this.val = super.down(v, m);
+    down() {
 
-        if (this.ARRAY_ACTION){
+        const old = this.val;
+        this.val = super.down();
+
+        if (this.ARRAY_ACTION) {
             this.container.filterExpressionUpdate();
-        }
-
-        else if (this.val !== undefined && val !== old) {
+        } else if (this.val !== undefined && this.val !== old) {
             this.action();
             this.container.limitExpressionUpdate();
         }

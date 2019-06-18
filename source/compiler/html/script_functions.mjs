@@ -40,7 +40,7 @@ export function GetOutGlobals(ast, presets) {
 export function AddEmit(ast, presets, ignore) {
     ast.forEach( node => {
 
-        if(node.parent.type == types.assignment_expression){
+        if(node.parent && node.parent.type == types.assignment_expression){
             const assign = node.parent;
 
             const k = node.name;

@@ -5,7 +5,7 @@ import spark from "@candlefw/spark";
 
 export default class ExpressionIO extends ScriptIO {
     constructor(ele, scope, errors, tap, binding, lex, pinned) {
-        super(scope, errors, tap, binding, lex, pinned)
+        super(scope, errors, tap, binding, lex, pinned);
         this.ele = ele;
         this.old_val = null;
         this._SCHD_ = 0;

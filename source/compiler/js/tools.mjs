@@ -88,7 +88,7 @@ export default {
                 return node.args.map(e => e.name);
             }
         }
-        return vars
+        return vars;
     },
 
     //Returns the argument names of the first function declaration defined in the ast
@@ -103,23 +103,6 @@ export default {
             }
         }
         return [];
-    },
-    parse(lex) {
-        let l = lex.copy();
-
-        return JSParser(lex, env);
-    },
-
-    validate(lex) {
-        let l = lex.copy();
-
-        try {
-            let result = JSParser(lex, env);
-            return true;
-        } catch (e) {
-            console.error(e);
-            return false;
-        }
     },
 
     getRootVariables(lex) {
@@ -136,11 +119,11 @@ export default {
             } else
                 result.getRootIds(ids, closure);
 
-            return { ids, ast: result, SUCCESS: true }
+            return { ids, ast: result, SUCCESS: true };
         } catch (e) {
             return { ids, ast: null, SUCCESS: false };
         }
     },
 
     types: types
-}
+};

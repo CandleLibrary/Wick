@@ -1,18 +1,9 @@
 import { IOBase, IO } from "./io.mjs";
-import glow from "@candlefw/glow";
-import whind from "@candlefw/whind";
 import spark from "@candlefw/spark";
 
-const Globals = new Set([
-    "window",
-    "document",
-    "JSON",
-    "HTMLElement",
-]);
-
-class argumentIO extends IO {
+class ArgumentIO extends IO {
     constructor(scope, errors, tap, script, id) {
-        super(scope, errors, tap)
+        super(scope, errors, tap);
         this.ele = script;
         this.id = id;
         this.ACTIVE = false;
@@ -32,8 +23,8 @@ class argumentIO extends IO {
 
 //Function.apply(Function, [binding.arg_key || binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val]);
 export default class ScriptIO extends IOBase {
+
     constructor(scope, errors, tap, script, lex, pinned) {
-        console.log({pinned})
 
         const HAVE_CLOSURE = false;
 
@@ -62,7 +53,7 @@ export default class ScriptIO extends IOBase {
         
         this.initProps(script.args, tap, errors, pinned);
         
-        this.arg_props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value); } }));
+        this.arg_props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value) } }));
     }
 
     /*
@@ -105,11 +96,11 @@ export default class ScriptIO extends IOBase {
                 
                 this.ACTIVE_IOS++;
                 
-                this.arg_ios[name] = new argumentIO(this.scope, errors, this.scope.getTap(name), this, i);
+                this.arg_ios[name] = new ArgumentIO(this.scope, errors, this.scope.getTap(name), this, i);
 
-                this.arg_props.push(val)
+                this.arg_props.push(val);
             }else{
-                this.arg_props.push(a.val)
+                this.arg_props.push(a.val);
             }
         }
     }
@@ -145,7 +136,7 @@ export default class ScriptIO extends IOBase {
 
 
         if (this.ACTIVE_IOS < this.IO_ACTIVATIONS)
-            return
+            return;
 
         try {
 
@@ -154,9 +145,9 @@ export default class ScriptIO extends IOBase {
             else
                 return this.function.apply(this, this.arg_props);
         } catch (e) {
-            console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line+1}:${this.char}`)
+            console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line+1}:${this.char}`);
             console.warn(this.function);
-            console.error(e)
+            console.error(e);
         }
     }
 
@@ -177,6 +168,6 @@ export default class ScriptIO extends IOBase {
         spark.queueUpdate({
             _SCHD_: 0, // Meta value for spark;
             scheduledUpdate: (s, d) => this.emit(name, { step: s, diff: d })
-        })
+        });
     }
 }

@@ -1,5 +1,5 @@
-import {identifier, member_expression, return_statement} from "@candlefw/js";
-import {GetOutGlobals, AddEmit} from "./script_functions.mjs";
+import { identifier, member_expression, return_statement } from "@candlefw/js";
+import { GetOutGlobals, AddEmit } from "./script_functions.mjs";
 import FUNCTION_CACHE from "./function_cache.mjs";
 import ExpressionIO from "../component/io/expression_io.mjs";
 import ContainerIO from "../component/io/container_io.mjs";
@@ -31,7 +31,7 @@ export default class Binding {
 
         if (!(this.ast instanceof identifier) && !(this.ast instanceof member_expression))
             this.processJSAST(env.presets);
-        
+
     }
 
     toString() {
@@ -42,13 +42,13 @@ export default class Binding {
     }
 
     processJSAST(presets = { custom: {} }) {
-        const {args, ids} = GetOutGlobals(this.ast, presets);
+        const { args, ids } = GetOutGlobals(this.ast, presets);
 
         this.args = args;
 
         AddEmit(ids, presets);
 
-        let r = new return_statement([]);
+        const r = new return_statement([]);
         r.vals[0] = this.ast;
         this.ast = r;
         this.val = r + "";
@@ -56,9 +56,12 @@ export default class Binding {
         script.prototype.finalize.call(this);
     }
 
-    setForContainer() {
-        if (this.METHOD == EXPRESSION)
-            this.METHOD = CONTAINER;
+    setForContainer(presets) {
+
+        if (this.METHOD == IDENTIFIER)
+            this.processJSAST(presets);
+
+        this.METHOD = CONTAINER;
     }
 
     bind(scope, element, pinned) {
