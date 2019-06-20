@@ -15,7 +15,7 @@ class ArgumentIO extends IO {
     }
 
     down(value) {
-        
+
         this.ele.updateProp(this, value);
     }
 }
@@ -31,12 +31,13 @@ export default class ScriptIO extends IOBase {
         super(tap);
 
         this.scope = scope;
-        this.TAP_BINDING_INDEX = script.args.reduce((r,a,i)=>(a.name == tap.name) ? i: r,0);
+        this.TAP_BINDING_INDEX = script.args.reduce((r, a, i) => (a.name == tap.name) ? i : r, 0);
         this.ACTIVE_IOS = 0;
         this.IO_ACTIVATIONS = 0;
-        
+        this._SCHD_ = 0;
+
         this.function = null;
-        
+
         this.HAVE_CLOSURE = HAVE_CLOSURE;
         if (this.HAVE_CLOSURE)
             this.function = script.function;
@@ -50,9 +51,9 @@ export default class ScriptIO extends IOBase {
         //TODO: only needed if emit is called in function. Though highly probably. 
         this.arg_props = [];
         this.arg_ios = {};
-        
+
         this.initProps(script.args, tap, errors, pinned);
-        
+
         this.arg_props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value) } }));
     }
 
@@ -68,38 +69,40 @@ export default class ScriptIO extends IOBase {
         this.arg_props = null;
         this.props = null;
 
-        for (const a of this.arg_ios)
-            a.destroy();
+        for (const a in this.arg_ios)
+            this.arg_ios[a].destroy();
 
         this.arg_ios = null;
+
+        super.destroy();
     }
 
-    initProps(arg_array, tap, errors, pinned){
-        for(let i = 0; i < arg_array.length; i++){
-            
+    initProps(arg_array, tap, errors, pinned) {
+        for (let i = 0; i < arg_array.length; i++) {
+
             const a = arg_array[i];
 
-            if(a.IS_ELEMENT){
-                
+            if (a.IS_ELEMENT) {
+
                 this.arg_props.push(pinned[a.name]);
 
-            }else if(a.IS_TAPPED){
+            } else if (a.IS_TAPPED) {
 
                 let val = null;
-                
+
                 const name = a.name;
-                
-                if(name == tap.name){
+
+                if (name == tap.name) {
                     val = tap.prop;
                     this.TAP_BINDING_INDEX = i;
                 }
-                
+
                 this.ACTIVE_IOS++;
-                
+
                 this.arg_ios[name] = new ArgumentIO(this.scope, errors, this.scope.getTap(name), this, i);
 
                 this.arg_props.push(val);
-            }else{
+            } else {
                 this.arg_props.push(a.val);
             }
         }
@@ -127,28 +130,34 @@ export default class ScriptIO extends IOBase {
         }
     }
 
-    down(value) {
+    scheduledUpdate() {
+        // Check to make sure the function reference is still. May not be if the IO was destroyed between
+        // a down update and spark subsequently calling the io's scheduledUpdate method
+        
+        if (this.function) { 
+            try {
+                if (this.HAVE_CLOSURE)
+                    return this.function.apply(this, this.arg_props);
+                else
+                    return this.function.apply(this, this.arg_props);
+            } catch (e) {
+                console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line+1}:${this.char}`);
+                console.warn(this.function);
+                console.error(e);
+            }
+        }
+    }
 
-        const src = this.scope;
+    down(value) {
 
         if (value)
             this.setValue(value);
 
-
         if (this.ACTIVE_IOS < this.IO_ACTIVATIONS)
             return;
 
-        try {
-
-            if (this.HAVE_CLOSURE)
-                return this.function.apply(this, this.arg_props);
-            else
-                return this.function.apply(this, this.arg_props);
-        } catch (e) {
-            console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line+1}:${this.char}`);
-            console.warn(this.function);
-            console.error(e);
-        }
+        if (!this._SCHD_)
+            spark.queueUpdate(this);
     }
 
     emit(name, value) {

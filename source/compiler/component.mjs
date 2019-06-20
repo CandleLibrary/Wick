@@ -8,7 +8,7 @@ import env from "./env.mjs";
 import proto from "./component_prototype.mjs";
 
 import JS from "./js/tools.mjs";
-import {types, statements} from "@candlefw/js";
+import {types} from "@candlefw/js";
 import Script from "./html/script.mjs";
 import Attribute from "./html/attribute.mjs";
 import Binding from "./html/binding.mjs";

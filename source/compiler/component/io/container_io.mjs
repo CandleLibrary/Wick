@@ -50,8 +50,8 @@ export default class ContainerIO extends ScriptIO {
     }
 
     destroy() {
-        super.destroy;
         this.container = null;
+        super.destroy();
     }
 
     updateProp(io, val) {
@@ -75,10 +75,10 @@ export default class ContainerIO extends ScriptIO {
         }
     }
 
-    down() {
-
+    scheduledUpdate() {
         const old = this.val;
-        this.val = super.down();
+
+        this.val = super.scheduledUpdate();
 
         if (this.ARRAY_ACTION) {
             this.container.filterExpressionUpdate();
@@ -88,20 +88,12 @@ export default class ContainerIO extends ScriptIO {
         }
     }
 
-    containerFunction(...data) {
-        return super.down(data);
-    }
-
-    scheduledUpdate() {
-        this.ele.data = this.val;
-    }
-
     filter(array) {
-        return array.filter((a) => super.down([a]));
+        return array.filter((a) => (this.setValue([a]), super.scheduledUpdate()));
     }
 
     sort(array) {
-        return array.sort((a, b) => super.down([a, b]));
+        return array.sort((a, b) => (this.setValue([a, b]), super.scheduledUpdate()));
     }
 
     scrub() {

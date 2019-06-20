@@ -168,6 +168,7 @@ export class EventIO extends IOBase {
         this.event = null;
         this.event_name = null;
         this.attrib = null;
+        super.destroy();
     }
 
     down(value) {
@@ -186,9 +187,9 @@ export class InputIO extends IOBase {
         const up_tap = default_val ? scope.getTap(default_val) : tap;
 
         if(element.type == "checkbox")
-            this.event = (e) => {up_tap.up(e.target.checked, { event: e }); };
+            this.event = (e) => {up_tap.up(e.target.checked, { event: e }) };
         else
-            this.event = (e) => {up_tap.up(e.target.value, { event: e }); };
+            this.event = (e) => {up_tap.up(e.target.value, { event: e }) };
 
         this.ele.addEventListener("input", this.event);
     }
@@ -198,6 +199,7 @@ export class InputIO extends IOBase {
         this.ele = null;
         this.event = null;
         this.attrib = null;
+        super.destroy();
     }
 
     down(value) {

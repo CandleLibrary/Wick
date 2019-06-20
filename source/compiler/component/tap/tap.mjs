@@ -31,10 +31,7 @@ export class Tap {
     }
 
     destroy() {
-
-        for (let i = 0, l = this.ios.length; i < l; i++)
-            this.ios[i].destroy();
-
+        this.ios.forEach(io => io.destroy());
         this.ios = null;
         this.scope = null;
         this.prop = null;

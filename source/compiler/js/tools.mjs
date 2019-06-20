@@ -25,12 +25,13 @@ export default {
     getClosureVariableNames(ast, ...global_objects) {
         if (!ast)
             return;
-        let
+        const
             tvrs = ast.traverseDepthFirst(),
-            node = tvrs.next().value,
             non_global = new Set(...global_objects),
-            globals = new Set(),
-            assignments = new Map();
+            globals = new Set();
+
+        let
+            node = tvrs.next().value;
 
         //Retrieve undeclared variables to inject as function arguments.
         while (node) {
@@ -39,6 +40,7 @@ export default {
                 node.type == types.member_expression
             ) {
                 if (node.root && !non_global.has(node.name)) {
+
                     globals.add(node);
                 } else {
                     //non_global.add(node.name);
@@ -47,13 +49,16 @@ export default {
 
             if (ast !== node && node.type == types.arrow_function_declaration) {
 
-                let glbl = new Set;
+                const glbl = new Set;
 
-                node.getRootIds(glbl)
+                node.getRootIds(glbl);
 
-                let g = this.getClosureVariableNames(node, glbl);
+                const g = this.getClosureVariableNames(node, glbl);
 
-                g.forEach(v => globals.add(g))
+                g.forEach(v => {
+                    if(Array.isArray(v))debugger;
+                    globals.add(v)
+                });
 
                 node.skip();
             }
@@ -74,9 +79,10 @@ export default {
                 //Skip anything already defined on the global object. 
                 return red;
 
-            red.push(out)
+            red.push(out);
+
             return red;
-        }, [])
+        }, []);
     },
 
     getRootVariables(ast) {

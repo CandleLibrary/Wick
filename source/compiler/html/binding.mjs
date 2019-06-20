@@ -18,8 +18,8 @@ export default class Binding {
 
         this.METHOD = IDENTIFIER;
 
-        this.ast = sym[1];
-        this.prop = (sym.length > 3) ? sym[3] : null;
+        this.ast = sym[2];
+        this.prop = (sym.length > 3) ? sym[5] : null;
 
         this.function = null;
         this.args = null;

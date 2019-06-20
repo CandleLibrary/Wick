@@ -69,6 +69,14 @@ export default class Scope extends Observer {
         if (this.ele && this.ele.parentElement)
             this.ele.parentElement.removeChild(this.ele);
 
+        for(const io of this.ios)
+            io.destroy();
+
+        for(const tap in this.taps)
+            this.taps[tap].destroy();
+
+        this.taps = null;
+        this.ios = null;
         this.ele = null;
 
         while (this.scopes[0])

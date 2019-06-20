@@ -18,16 +18,11 @@ export default class ExpressionIO extends ScriptIO {
         this.down();
     }
 
-    down(v, m) {
-        this.val = super.down(v, m);
-        
-        if (!this._SCHD_){
-            this.ele.data = this.val;
-            spark.queueUpdate(this);
-        }
-    }
-
     scheduledUpdate() {
+        
+        this.val = super.scheduledUpdate();
+        this.ele.data = this.val;
+
         if(this.val !== this.old_val){
             this.old_val = this.val;
             this.ele.data = this.val;

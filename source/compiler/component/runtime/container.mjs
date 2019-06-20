@@ -24,7 +24,7 @@ function getColumnRow(index, offset, set_size) {
 export default class ScopeContainer extends Observer {
 
     constructor(parent, presets, element) {
-        
+
         super();
 
         this.ele = element;
@@ -70,7 +70,7 @@ export default class ScopeContainer extends Observer {
             container.pin();
             container.addObserver(this);
             return;
-        }else{
+        } else {
             this.unsetModel();
         }
 
@@ -126,7 +126,7 @@ export default class ScopeContainer extends Observer {
             }
         } else {
 
-           // const offset_a = this.offset;
+            // const offset_a = this.offset;
 
             //this.limitUpdate();
 
@@ -439,9 +439,10 @@ export default class ScopeContainer extends Observer {
                         case -3:
                             as.transitionOut(trs_out, (direction > 0) ? "trs_asc_out" : "trs_dec_out");
                             break;
-                        default:{
-                            as.transitionOut(trs_out);
-                        }
+                        default:
+                            {
+                                as.transitionOut(trs_out);
+                            }
                     }
                 } else {
                     as.transitionOut();
@@ -465,7 +466,7 @@ export default class ScopeContainer extends Observer {
         }
 
         this.ele.style.position = this.ele.style.position;
-        
+
         this.dom_scopes = output;
 
         this.parent.upImport("template_count_changed", {
@@ -497,16 +498,16 @@ export default class ScopeContainer extends Observer {
         let output = this.scopes.slice();
 
         if (output.length < 1) return;
-        
+
         for (let i = 0, l = this.filters.length; i < l; i++) {
             const filter = this.filters[i];
-            
-            if(filter.ARRAY_ACTION)
+
+            if (filter.ARRAY_ACTION)
                 output = filter.action(output);
         }
 
         this.activeScopes = output;
-        
+
         this.UPDATE_FILTER = false;
 
         return output;
@@ -519,7 +520,7 @@ export default class ScopeContainer extends Observer {
         this.limitExpressionUpdate(transition);
     }
 
-    limitExpressionUpdate(transition = glow.createTransition()){
+    limitExpressionUpdate(transition = glow.createTransition()) {
 
         //Preset the positions of initial components. 
         this.arrange();
@@ -546,9 +547,13 @@ export default class ScopeContainer extends Observer {
         const transition = glow.createTransition();
 
         if (new_items.length == 0) {
-            let sl = this.scopes.length;
+
+            const sl = this.scopes.length;
+
             for (let i = 0; i < sl; i++) this.scopes[i].transitionOut(transition, "", true);
+
             this.scopes.length = 0;
+            this.activeScopes.length = 0;
             this.parent.upImport("template_count_changed", {
                 displayed: 0,
                 offset: 0,
@@ -583,7 +588,7 @@ export default class ScopeContainer extends Observer {
                 } else
                     exists.set(this.scopes[i].model, false);
 
-            exists.forEach((v, k, m) => { if (v) out.push(k); });
+            exists.forEach((v, k) => { if (v) out.push(k); });
 
             if (out.length > 0) {
                 // Wrap models into components
@@ -649,7 +654,7 @@ export default class ScopeContainer extends Observer {
         }
 
 
-        if (OWN_TRANSITION) 
+        if (OWN_TRANSITION)
             this.filterExpressionUpdate(transition);
     }
 
@@ -658,9 +663,12 @@ export default class ScopeContainer extends Observer {
     }
 
     getTerms() {
-        let out_terms = [];
+        const out_terms = [];
+
         for (let i = 0, l = this.terms.length; i < l; i++) {
-            let term = this.terms[i].term;
+
+            const term = this.terms[i].term;
+
             if (term) out_terms.push(term);
         }
         if (out_terms.length == 0) return null;
@@ -670,17 +678,18 @@ export default class ScopeContainer extends Observer {
     get() {
         if (this.model instanceof MultiIndexedContainer) {
             if (this.data.index) {
-                let index = this.data.index;
-                let query = {};
+                const index = this.data.index,
+                    query = {};
                 query[index] = this.getTerms();
                 return this.model.get(query)[index];
             } else console.warn("No index value provided for MultiIndexedContainer!");
         } else {
-            let scope = this.model.scope;
-            let terms = this.getTerms();
+
+            const  scope = this.model.scope,
+                terms = this.getTerms();
             if (scope) {
                 this.model.destroy();
-                let model = scope.get(terms, null);
+                const model = scope.get(terms, null);
                 model.pin();
                 model.addObserver(this);
             }
