@@ -2,7 +2,7 @@
 
 @EXT wick
 
-@SYMBOL (( )) )( </ 
+@SYMBOL </ 
 
 @IGNORE θws θnl
 
@@ -28,7 +28,7 @@
 	│ < τjs html::ATTRIBUTES? > js::script? </ τjs > 										↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 	│ \{ js::expression \{ js::script? \} \}												↦r {fn.element_selector("script", ["on", null, new env.wick_binding(["on",null, $sym2])], $sym4, env, lex) }
 
-+> html::TAG_BODY_ITEM → wickup::WICKUP_PLUGIN
+
 
 <> IMPORT_TAG → < τimport html::ATTRIBUTES /? > (</ τimport>)?  							↦return { fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
 
@@ -47,5 +47,5 @@
 <> WICK_BINDING → CALL_BINDING  							
  	│ BASIC_BINDING
  
-<> BASIC_BINDING → \(( ↦{ env.start = lex.off+2 } js::expression \))   						↦cstr ^wick_binding
-<> CALL_BINDING → \(( ↦{ env.start = lex.off+2 } js::expression \)( js::expression \))    	↦cstr ^wick_binding
+<> BASIC_BINDING → \( (ERR θws ) \( ↦{ env.start = lex.off+2 } js::expression \) (ERR θws ) \)   							↦cstr ^wick_binding
+<> CALL_BINDING → \( (ERR θws ) \( ↦{ env.start = lex.off+2 } js::expression \) (ERR θws ) \( js::expression \) (ERR θws ) \)    	↦cstr ^wick_binding

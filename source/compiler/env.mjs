@@ -1,4 +1,8 @@
 import {
+    script,
+    module,
+    export_statement,
+    import_statement,
     add_expression,
     and_expression,
     array_literal,
@@ -8,8 +12,9 @@ import {
     binding,
     block_statement,
     bit_and_expression,
-bit_or_expression,
-bit_xor_expression,
+    label_statement,
+    bit_or_expression,
+    bit_xor_expression,
     bool_literal,
     call_expression,
     catch_statement,
@@ -89,7 +94,7 @@ function create_ordered_list(sym, offset = 0, level = -1, env, lex) {
         const s = sym[i],
             lvl = (s.lvl) ? s.lvl.length : 0,
             li = s.li;
-            console.log(s.lvl)
+        console.log(s.lvl)
 
         if (lvl > level) {
             create_ordered_list(sym, i, lvl, env, lex);
@@ -125,6 +130,10 @@ const env = {
         parseDeclaration,
 
         //JS
+        script,
+        module,
+        export_statement,
+        import_statement,
         parenthasized,
         add_expression,
         and_expression,
@@ -133,8 +142,9 @@ const env = {
         assignment_expression,
         await_expression,
         bit_and_expression,
-bit_or_expression,
-bit_xor_expression,
+        bit_or_expression,
+        bit_xor_expression,
+        label_statement,
         binding,
         block_statement,
         bool_literal,
@@ -209,7 +219,7 @@ bit_xor_expression,
             if (env.ASI && lex.tx !== ")" && !lex.END) {
 
                 if (lex.tx == "</") // As in "<script> script body => (</)script>"
-                    return lu.get(";");
+                    return lu({ tx: ";" });
 
                 let ENCOUNTERED_END_CHAR = (lex.tx == "}" || lex.END || lex.tx == "</");
 
@@ -219,12 +229,16 @@ bit_xor_expression,
                         ENCOUNTERED_END_CHAR = true;
                 }
 
-                if (ENCOUNTERED_END_CHAR)
-                    return lu.get(";");
+                if (ENCOUNTERED_END_CHAR) {
+                    lex.tl = 0;
+                    return lu({ tx: ";" });
+                }
             }
 
-            if (lex.END)
-                return lu.get(";");
+            if (lex.END) {
+                lex.tl = 0;
+                return lu({ tx: ";" });
+            }
         }
     },
 

@@ -67,14 +67,17 @@
 <> ATTRIBUTE → ATTRIBUTE_HEAD = ATTRIBUTE_BODY 	 		↦cstr ^attribute
  	│ ATTRIBUTE_HEAD 									↦cstr ^attribute
 
-<> ATTRIBUTE_HEAD → ' θid '								↦return { sym[1] }
-	│ " θid "											↦return { sym[1] }
-	│ θid
+<> ATTRIBUTE_HEAD → ' identifier '								↦return { sym[1] }
+	│ " identifier "											↦return { sym[1] }
+	│ identifier
 
 <> ATTRIBUTE_BODY → string::normal_string 						
-	│ θid 											
+	│ identifier 											
 
-<> TAGNAME → θid
+<> TAGNAME → identifier
+
+
+<> identifier → (θid) ( θid │ \- │ \_ │ \: )(*+) (θws │ θnl)?  ↦ r { $sym1 + $sym2 } 
 
 
 
