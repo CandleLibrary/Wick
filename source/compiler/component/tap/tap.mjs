@@ -36,12 +36,16 @@ export class Tap {
         this.scope = null;
         this.prop = null;
         this.modes = null;
+        this.value = null;
     }
 
     linkImport(parent_scope){
-        
-        if ((this.modes & IMPORT))
-            parent_scope.getTap(this.prop).addIO(this);
+        if ((this.modes & IMPORT)){
+            const tap = parent_scope.getTap(this.prop);
+            tap.addIO(this);
+            
+        }
+
     }
 
     load(data) {
@@ -65,6 +69,7 @@ export class Tap {
         const value = model[this.prop];
 
         if (typeof(value) !== "undefined") {
+            this.value = value;
 
             if (IMPORTED) {
                 if (!(this.modes & IMPORT))
@@ -119,6 +124,9 @@ export class Tap {
         this.ios.push(io);
 
         io.parent = this;
+
+        if(this.value !== undefined)
+            io.down(this.value);
     }
 
     removeIO(io) {
