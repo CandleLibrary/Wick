@@ -31,7 +31,7 @@ export default class ScriptIO extends IOBase {
         super(tap);
 
         this.scope = scope;
-        this.TAP_BINDING_INDEX = script.args.reduce((r, a, i) => (a.name == tap.name) ? i : r, 0);
+        this.TAP_BINDING_INDEX = script.args.reduce((r, a, i) => (a.name == tap.prop) ? i : r, -1);
         this.ACTIVE_IOS = 0;
         this.IO_ACTIVATIONS = 0;
         this._SCHD_ = 0;
@@ -81,11 +81,8 @@ export default class ScriptIO extends IOBase {
         for (let i = 0; i < arg_array.length; i++) {
 
             const a = arg_array[i];
-
             if (a.IS_ELEMENT) {
-
                 this.arg_props.push(pinned[a.name]);
-
             } else if (a.IS_TAPPED) {
 
                 let val = null;

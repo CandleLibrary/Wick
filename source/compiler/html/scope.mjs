@@ -29,10 +29,10 @@ export default class scp extends ElementNode {
         this.model_name = this.getAttrib("model").value;
         this.schema_name = this.getAttrib("scheme").value;
 
-        if (this.getAttrib("scheme"))
+        if (this.schema_name)
             this.getAttrib("scheme").RENDER = false;
 
-        if (this.getAttrib("model"))
+        if (this.model_name)
             this.getAttrib("model").RENDER = false;
 
         if (this.getAttrib("put"))
@@ -108,9 +108,10 @@ export default class scp extends ElementNode {
         //Reset pinned
         pinned = {};
 
-        if (this.pinned)
+        if (this.pinned){
+            console.log(this.pinned)
             pinned[this.pinned] = runtime_scope.ele;
-
+        }
 
         runtime_scope._model_name_ = this.model_name;
         runtime_scope._schema_name_ = this.schema_name;

@@ -171,11 +171,12 @@ export default class Scope extends Observer {
         let
             m = null,
             SchemedConstructor = null;
-
+            
         if (this._model_name_ && this.presets.models)
             m = this.presets.models[this._model_name_];
-        if (this._schema_name_ && this.presets.schemas)
+        if (this._schema_name_ && this.presets.schemas){
             SchemedConstructor = this.presets.schemas[this._schema_name_];
+        }
 
         if (m)
             model = m;

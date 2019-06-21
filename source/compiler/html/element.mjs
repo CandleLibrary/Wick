@@ -42,7 +42,7 @@ export default class ElementNode {
             attrib.link(this);
 
         if (this.url)
-            this.loadURL(env)
+            this.loadURL(env);
 
         return this;
     }
@@ -175,6 +175,7 @@ export default class ElementNode {
         merged_node._badge_name_ = node._badge_name_;
         merged_node.presets = this.presets;
         merged_node.par = node.par;
+        merged_node.pinned = node.pinned || this.pinned;
 
         if (this.tap_list)
             merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));

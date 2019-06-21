@@ -19,7 +19,7 @@
 <> start → html::HTML
 	 │ js::javascript 
 
-+> js::statement → html::GOAL_TAG ;  	  													↦r { $sym1 }
++> js::statement → html::GOAL_TAG ;  	  													↦r { $sym2 }
 
 +> html::BODY →  IMPORT_TAG(+) html::GOAL_TAG 												↦return { $sym2.import_list = $sym1, $sym2}
 	
@@ -28,10 +28,7 @@
 	│ < τjs html::ATTRIBUTES? > js::script? </ τjs > 										↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 	│ \{ js::expression \{ js::script? \} \}												↦r {fn.element_selector("script", ["on", null, new env.wick_binding(["on",null, $sym2])], $sym4, env, lex) }
 
-
-
-<> IMPORT_TAG → < τimport html::ATTRIBUTES /? > ( </ τimport > )?  							↦return { fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
-
+<> IMPORT_TAG → < (τimport │ τlink) html::ATTRIBUTES /? > ( </ (τimport │ τlink) > )?  		↦return { fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
 
 +> html::VOID_NAME → τimport
 		│ τlink
@@ -48,4 +45,4 @@
  	│ BASIC_BINDING
  
 <> BASIC_BINDING → \( (ERR θws ) \( ↦{ env.start = lex.off+2 } js::expression \) (ERR θws ) \)   							↦cstr ^wick_binding
-<> CALL_BINDING → \( (ERR θws ) \( ↦{ env.start = lex.off+2 } js::expression \) (ERR θws ) \( js::expression \) (ERR θws ) \)    	↦cstr ^wick_binding
+<> CALL_BINDING → \( (ERR θws ) \( ↦{ env.start = lex.off+2 } js::expression \) (ERR θws ) \( js::expression? \) (ERR θws ) \)    	↦cstr ^wick_binding
