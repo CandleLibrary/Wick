@@ -30,7 +30,7 @@
 
 
 
-<> IMPORT_TAG → < τimport html::ATTRIBUTES /? > (</ τimport>)?  							↦return { fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
+<> IMPORT_TAG → < τimport html::ATTRIBUTES /? > ( </ τimport > )?  							↦return { fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
 
 
 +> html::VOID_NAME → τimport

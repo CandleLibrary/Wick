@@ -11,9 +11,9 @@ export const PUT = 4;
  * 
  * By using different modes, one can control how data enters and exits the scope context.
  * -`keep`: 
- *  This mode is the default and treats any data on the channel as coming from the model. The model itself is not changed, and any data flow from outside the scope context is ignored.
+ *  This mode is the default and treats any data on the channel as coming from the model. The model itself is not changed from any input on the channel, and any data flow from outside the scope context is ignored.
  * -`put`:
- *  This mode will update the model to reflect updates on the channel. This will also cause any bindings to update to reflect the change on the model.
+ *  This mode will update the model to reflect inputs on the channel. This will also cause any binding to update to reflect the change on the model.
  * -`import`:
  *  This mode will allow data from outside the scope context to enter the context as if it came from the model. The model itself is unchanged unless put is specified for the same property.
  *  -`export`:
@@ -144,5 +144,5 @@ export class UpdateTap extends Tap {
 }
 
 // This serves as a NOOP for io methods that expect a Tap with addIO and RemoveIO operations
-const noop = () => {}
-export const NOOPTap = { addIO: noop, removeIO: noop, up: noop }
+const noop = () => {};
+export const NOOPTap = { addIO: noop, removeIO: noop, up: noop };

@@ -77,8 +77,7 @@
 <> TAGNAME → identifier
 
 
-<> identifier → (θid) ( θid │ \- │ \_ │ \: )(*+) (θws │ θnl)?  ↦ r { $sym1 + $sym2 } 
-
+<> identifier → (θid) ( θid │ \- │ \_ │ \: )(*") (θws │ θnl)?  ↦ r { $sym1 + $sym2 } 
 
 
 <> TEXT_NODE → BODY_SYMBOLS(+") 							↦cstr ^text
