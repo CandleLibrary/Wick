@@ -42,8 +42,11 @@ export default class Attribute {
         if (this.RENDER)
             if (!this.isBINDING)
 
-            {
-                element.setAttribute(this.name, this.value);
+            {   
+                if(this.name == "class")
+                   this.value.split(" ").map(c => c ? element.classList.add(c) : {});
+                else    
+                    element.setAttribute(this.name, this.value);
             }
 
             else 

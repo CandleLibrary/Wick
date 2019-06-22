@@ -47,9 +47,6 @@ export default class scp extends ElementNode {
         this.element = this.getAttrib("element").value;
     }
 
-    createElement() {
-        return createElement(this.element || "div");
-    }
 
     getTap(tap_name) {
 
@@ -98,78 +95,46 @@ export default class scp extends ElementNode {
         }
     }
 
-    mount(element, scope, presets = this.presets, slots = {}, pinned = {}) {
+    createElement(scope) {
+        if (!scope.ele || this.getAttribute("element")){
+            const ele =  createElement(this.element || "div");
 
-        const runtime_scope = new Scope(scope, presets, element, this);
+            if(scope.ele){
+                appendChild(scope.ele, ele);
+                scope.ele = ele;
+            }
 
-        if (this.slots)
-            slots = Object.assign({}, slots, this.slots);
+            return ele;
+        } 
+
+        return  scope.ele;
+    }
+
+    mount(own_element, outer_scope, presets = this.presets, slots = {}, pinned = {}) {
+
+        const scope = new Scope(outer_scope, presets, own_element, this);
+
+        if (this.HAS_TAPS) {
+            const tap_list = this.tap_list;
+
+            for (let i = 0, l = tap_list.length; i < l; i++) {
+                const tap = tap_list[i],
+                    name = tap.name,
+                    bool = name == "update";
+
+                scope.taps[name] = bool ? new UpdateTap(scope, name, tap.modes) : new Tap(scope, name, tap.modes);
+
+                if (bool)
+                    scope.update_tap = scope.taps[name];
+            }
+        }
+
+        scope._model_name_ = this.model_name;
+        scope._schema_name_ = this.schema_name;
 
         //Reset pinned
         pinned = {};
 
-        if (this.pinned)
-            pinned[this.pinned] = runtime_scope.ele;
-
-        runtime_scope._model_name_ = this.model_name;
-        runtime_scope._schema_name_ = this.schema_name;
-
-        if(this.HAS_TAPS){ 
-            let tap_list = this.tap_list;
-
-            for (let i = 0, l = tap_list.length; i < l; i++) {
-                let tap = tap_list[i],
-                    name = tap.name;
-
-                let bool = name == "update";
-
-                runtime_scope.taps[name] = bool ? new UpdateTap(runtime_scope, name, tap.modes) : new Tap(runtime_scope, name, tap.modes);
-
-                if (bool)
-                    runtime_scope.update_tap = runtime_scope.taps[name];
-
-                //out_taps.push(runtime_scope.taps[name]);
-            }
-        }
-
-        /**
-         * To keep the layout of the output HTML predictable, Wick requires that a "real" HTMLElement be defined before a scope object is created. 
-         * If this is not the case, then a new element, defined by the "element" attribute of the scope virtual tag (defaulted to a "div"), 
-         * will be created to allow the scope object to bind to an actual HTMLElement. 
-         */
-        if (!element || this.getAttrib("element").value) {
-
-            let ele = this.createElement();
-
-            this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
-
-            if (this.getAttribute("id"))
-                ele.id = this.getAttribute("id");
-
-            if (this.getAttribute("style"))
-                ele.style = this.getAttribute("style");
-
-            runtime_scope.ele = ele;
-
-            if (element) {
-                appendChild(element, ele);
-            }
-
-            element = ele;
-
-            if (this._badge_name_)
-                runtime_scope.badges[this._badge_name_] = element;
-        }
-
-        for (let i = 0, l = this.attribs.length; i < l; i++){
-            this.attribs[i].bind(element, runtime_scope, pinned);
-        }
-
-        for (let i = 0; i < this.children.length; i++) {
-            const node = this.children[i];
-            node.mount(element, runtime_scope, presets, slots, pinned);
-        }
-
-        return runtime_scope;
+        return super.mount(null, scope, presets, slots, pinned);
     }
 }

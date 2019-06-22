@@ -99,7 +99,7 @@ export const createElement = (e) => document.createElement(e);
  * @param 	{HTMLElement}  		el  	- parent HTMLElement.
  * @return  {HTMLElement | HTMLNode}  		ch_el 	- child HTMLElement or HTMLNode. 
  */
-export const appendChild = (el, ch_el) => el.appendChild(ch_el);
+export const appendChild = (el, ch_el) => el && el.appendChild(ch_el);
 
 /**
  *  Element.prototype.cloneNode short name wrapper.

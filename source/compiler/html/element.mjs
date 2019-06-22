@@ -21,11 +21,11 @@ export default class ElementNode {
 
         this.presets = presets;
         this.tag = tag;
-        this.attribs = attribs || [];
         this.children = children || [];
         this.proxied = null;
         this.slots = null;
         this.origin_url = env.url;
+        this.attribs = new Map((attribs||[]).map(a=>(a.link(this), [a.name, a])));
 
         this.component = this.getAttrib("component").value;
 
@@ -39,10 +39,9 @@ export default class ElementNode {
         this.slot = this.getAttribute("slot");
         this.pinned = (this.getAttribute("pin")) ? this.getAttribute("pin") + "$" : "";
 
-
         //Prepare attributes with data from this element
-        for (const attrib of this.attribs)
-            attrib.link(this);
+       // for (const attrib of this.attribs)
+       //     attrib.link(this);
 
         if (this.url)
             this.loadAndParseUrl(env);
@@ -97,6 +96,9 @@ export default class ElementNode {
     }
 
     getAttrib(name) {
+
+        return this.attribs.get(name) || { name: "", value: "" };
+
         for (const attrib of this.attribs) {
             if (attrib.name === name)
                 return attrib;
@@ -112,14 +114,12 @@ export default class ElementNode {
     toString(off = 0) {
 
         var o = offset.repeat(off),
-            str = `${o}<${this.tag}`,
-            atr = this.attribs,
-            i = -1,
-            l = atr.length;
+            str = `${o}<${this.tag}`;
+            //atr = this.attribs,
+           // i = -1,
+           // l = atr.length;
 
-        while (++i < l) {
-            const attr = atr[i];
-
+        for(const attr of this.attribs.values()) {
             if (attr.name)
                 str += ` ${attr.name}="${attr.value}"`;
         }
@@ -188,7 +188,7 @@ export default class ElementNode {
         if (this.tap_list)
             merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));
 
-        merged_node.attribs = merged_node.attribs.concat(this.attribs, node.attribs);
+        merged_node.attribs = new Map(function *(...a){for(const e of a) yield * e;}(this.attribs, node.attribs));
 
         merged_node.statics = node.statics;
 
@@ -199,24 +199,22 @@ export default class ElementNode {
 
     mount(element, scope, presets = this.presets, slots = {}, pinned = {}) {
 
+        const own_element = this.createElement(scope);
+
+        appendChild(element, own_element);
+
         if (this.slots)
             slots = Object.assign({}, slots, this.slots);
 
-        const own_element = this.createElement(scope);
-
-        if (element) appendChild(element, own_element);
-
-        if(this.pinned){
-            pinned[this.pinned] = own_element;
-        }
+        pinned[this.pinned] = own_element;
 
         if (!scope)
-            scope = new Scope(null, presets || this.__presets__ || this.presets, own_element, this);
+            scope = new Scope(null, presets || this.presets, own_element, this);
 
         if (!scope.ele) scope.ele = own_element;
 
-        for (let i = 0, l = this.attribs.length; i < l; i++)
-            this.attribs[i].bind(own_element, scope, pinned);
+        for(const attr of this.attribs.values()) 
+            attr.bind(own_element, scope, pinned);
 
         for (let i = 0; i < this.children.length; i++) {
             const node = this.children[i];
