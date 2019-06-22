@@ -240,8 +240,21 @@ const env = {
         },
 
         defaultError: (tk, env, output, lex, prv_lex, ss, lu) => {
-            /*USED for ASI*/
+            if (lex.tx == "//" || lex.tx == "/*") {
+                if (lex.tx == "//")
+                    while (!lex.END && lex.ty !== lex.types.nl)
+                        lex.next();
 
+                if (lex.tx == "/*")
+                    while (!lex.END && lex.tx !== "*/")
+                        lex.next();
+
+                lex.next();
+
+                return lu(lex);
+            }
+
+            /*USED for ASI*/
             if (env.ASI && lex.tx !== ")" && !lex.END) {
 
                 if (lex.tx == "</") // As in "<script> script body => (</)script>"

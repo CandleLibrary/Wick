@@ -13,7 +13,7 @@ export default {
         err(`Error while trying to fetch ${o.origin_url + ""}`);
         err(e);
     },
-    default: (e, o) => {
+    default: e => {
         err(`Unable to retrieve error handler`);
         throw e;
     }
