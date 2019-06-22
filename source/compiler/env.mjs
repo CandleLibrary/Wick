@@ -1,8 +1,15 @@
 import {
     script,
     module,
-    export_statement,
-    import_statement,
+    import_declaration,
+    import_clause,
+    default_import,
+    name_space_import,
+    named_imports,
+    import_specifier,
+    export_declaration,
+    export_clause,
+    export_specifier,
     add_expression,
     and_expression,
     array_literal,
@@ -39,6 +46,7 @@ import {
     multiply_expression,
     negate_expression,
     new_expression,
+    empty_statement,
     null_literal,
     numeric_literal,
     object_literal,
@@ -64,7 +72,13 @@ import {
     unary_xor_expression,
     void_expression,
     argument_list,
-    parenthasized
+    parenthasized,
+    break_statement,
+    continue_statement,
+    switch_statement,
+    variable_statement,
+        case_statement,
+        default_case_statement,
 
 } from "@candlefw/js";
 
@@ -94,7 +108,6 @@ function create_ordered_list(sym, offset = 0, level = -1, env, lex) {
         const s = sym[i],
             lvl = (s.lvl) ? s.lvl.length : 0,
             li = s.li;
-        console.log(s.lvl)
 
         if (lvl > level) {
             create_ordered_list(sym, i, lvl, env, lex);
@@ -130,10 +143,24 @@ const env = {
         parseDeclaration,
 
         //JS
+        switch_statement,
         script,
         module,
-        export_statement,
-        import_statement,
+        empty_statement,
+        break_statement,
+        case_statement,
+        default_case_statement,
+        continue_statement,
+        import_declaration,
+        import_clause,
+        variable_statement,
+        default_import,
+        name_space_import,
+        named_imports,
+        import_specifier,
+        export_declaration,
+        export_clause,
+        export_specifier,
         parenthasized,
         add_expression,
         and_expression,

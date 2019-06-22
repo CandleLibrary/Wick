@@ -48,7 +48,7 @@ export function AddEmit(ast, presets, ignore) {
             if ((window[k] && !(window[k] instanceof HTMLElement)) || presets.custom[k] || presets[k] || defaults[k] || ignore.includes(k))
                 return;
 
-            node.replace(new member_expression([new identifier(["emit"]), null, node]));
+            node.replace(new member_expression(new identifier(["emit"]), node));
         }
     });
 }

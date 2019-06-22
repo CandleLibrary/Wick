@@ -26,8 +26,9 @@ export default class Attribute {
 
         if (this.isBINDING) {
 
-            if (this.name.slice(0, 2) == "on")
+            if (this.name.slice(0, 2) == "on"){
                 this.io_constr = EventIO;
+            }
 
             else
 
@@ -39,13 +40,17 @@ export default class Attribute {
 
     bind(element, scope, pinned) {
         if (this.RENDER)
-            if (!this.isBINDING){
+            if (!this.isBINDING)
+
+            {
                 element.setAttribute(this.name, this.value);
             }
-            else {
-                const
-                    bind = this.value.bind(scope, pinned),
-                    io = new this.io_constr(scope, [], bind, this.name, element, this.value.default);
+
+            else 
+
+            {
+                const bind = this.value.bind(scope, pinned);
+                new this.io_constr(scope, [], bind, this.name, element, this.value.default);
             }
     }
 }

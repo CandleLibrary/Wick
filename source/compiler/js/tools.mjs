@@ -27,9 +27,8 @@ export default {
             return;
         const
             tvrs = ast.traverseDepthFirst(),
-            non_global = new Set(...global_objects),
+            non_global = new Set(global_objects),
             globals = new Set();
-
         let
             node = tvrs.next().value;
 
@@ -40,7 +39,6 @@ export default {
                 node.type == types.member_expression
             ) {
                 if (node.root && !non_global.has(node.name)) {
-
                     globals.add(node);
                 } else {
                     //non_global.add(node.name);
@@ -50,10 +48,11 @@ export default {
             if (ast !== node && node.type == types.arrow_function_declaration) {
 
                 const glbl = new Set;
+                const closure = new Set;
 
-                node.getRootIds(glbl);
+                node.getRootIds(glbl,closure);
 
-                const g = this.getClosureVariableNames(node, glbl);
+                const g = this.getClosureVariableNames(node, ...[...closure.values(), ...non_global.values()]);
 
                 g.forEach(v => {
                     if(Array.isArray(v))debugger;
@@ -65,7 +64,7 @@ export default {
 
             if (
                 node.type == types.lexical_declaration
-                //||node.type == types.var
+                || node.type == types.variable_declaration
             ) {
                 node.bindings.forEach(b => (non_global.add(b.id.name), globals.forEach(g => { if (g.name == b.id.name) globals.delete(b.id.name) })));
             }

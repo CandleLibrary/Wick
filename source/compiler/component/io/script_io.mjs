@@ -114,7 +114,7 @@ export default class ScriptIO extends IOBase {
         }
     }
 
-    setValue(value) {
+    setValue(value, meta) {
         if (typeof(value) == "object") {
             //Distribute iterable properties amongst the IO_Script's own props.
             for (const a in value) {
@@ -122,8 +122,9 @@ export default class ScriptIO extends IOBase {
                     this.arg_ios[a].down(value[a]);
             }
         } else {
-            if (this.TAP_BINDING_INDEX !== -1)
+            if (this.TAP_BINDING_INDEX !== -1){
                 this.arg_props[this.TAP_BINDING_INDEX] = value;
+            }
         }
     }
 
@@ -145,10 +146,13 @@ export default class ScriptIO extends IOBase {
         }
     }
 
-    down(value) {
-
+    down(value, meta) {
+        
         if (value)
             this.setValue(value);
+
+        if(meta)
+            this.setValue(meta);
 
         if (this.ACTIVE_IOS < this.IO_ACTIVATIONS)
             return;

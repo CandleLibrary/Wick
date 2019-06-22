@@ -27,14 +27,13 @@ export default class Binding {
 
         this.val = this.ast + "";
 
-
-
         if (!(this.ast instanceof identifier) && !(this.ast instanceof member_expression))
             this.processJSAST(env.presets);
 
     }
 
     toString() {
+        
         if (this.prop)
             return `((${this.ast + ""})(${this.prop + ""}))`;
         else

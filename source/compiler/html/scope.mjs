@@ -108,10 +108,8 @@ export default class scp extends ElementNode {
         //Reset pinned
         pinned = {};
 
-        if (this.pinned){
-            console.log(this.pinned)
+        if (this.pinned)
             pinned[this.pinned] = runtime_scope.ele;
-        }
 
         runtime_scope._model_name_ = this.model_name;
         runtime_scope._schema_name_ = this.schema_name;
@@ -164,7 +162,7 @@ export default class scp extends ElementNode {
         }
 
         for (let i = 0, l = this.attribs.length; i < l; i++){
-            this.attribs[i].bind(element, runtime_scope, pinned)
+            this.attribs[i].bind(element, runtime_scope, pinned);
         }
 
         for (let i = 0; i < this.children.length; i++) {

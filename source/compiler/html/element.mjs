@@ -73,7 +73,7 @@ export default class ElementNode {
             this.proxied = this.presets.components[this.tag].merge(this);
 
         if (this.proxied) {
-            let ele = this.proxied.finalize(slots_out);
+            const ele = this.proxied.finalize(slots_out);
             ele.slots = slots_out;
             this.mount = ele.mount.bind(ele);
         }
@@ -84,7 +84,7 @@ export default class ElementNode {
             if(a.tag !== "script" && b.tag == "script")
                 return -1;
             return 0;
-        })
+        });
 
         return this;
     }
@@ -192,9 +192,10 @@ export default class ElementNode {
     mount(element, scope, presets = this.presets, slots = {}, pinned = {}) {
 
         if (this.slots)
-            slots = Object.assign({}, slots, this.slots)
+            slots = Object.assign({}, slots, this.slots);
 
         const own_element = this.createElement(scope);
+
         if (element) appendChild(element, own_element);
 
         if(this.pinned){
@@ -204,16 +205,10 @@ export default class ElementNode {
         if (!scope)
             scope = new Scope(null, presets || this.__presets__ || this.presets, own_element, this);
 
-        //if (this.HAS_TAPS)
-            //taps = scope.linkTaps(this.tap_list);
-
         if (!scope.ele) scope.ele = own_element;
 
-        if (this._badge_name_)
-            scope.badges[this._badge_name_] = own_element;
-
         for (let i = 0, l = this.attribs.length; i < l; i++)
-            this.attribs[i].bind(own_element, scope, pinned)
+            this.attribs[i].bind(own_element, scope, pinned);
 
         for (let i = 0; i < this.children.length; i++) {
             const node = this.children[i];
