@@ -1,5 +1,6 @@
 import { IOBase, IO } from "./io.mjs";
 import spark from "@candlefw/spark";
+import error from "../../../utils/error.mjs";
 
 class ArgumentIO extends IO {
     constructor(scope, errors, tap, script, id) {
@@ -37,6 +38,7 @@ export default class ScriptIO extends IOBase {
         this.function = null;
 
         this.HAVE_CLOSURE = HAVE_CLOSURE;
+        
         if (this.HAVE_CLOSURE)
             this.function = script.function;
         else
@@ -137,9 +139,7 @@ export default class ScriptIO extends IOBase {
                 else
                     return this.function.apply(this, this.arg_props);
             } catch (e) {
-                console.error(`Script error encountered in ${this.url || "virtual file"}:${this.line+1}:${this.char}`);
-                console.warn(this.function);
-                console.error(e);
+                error(error.IO_FUNCTION_FAIL, e, this);
             }
         }
     }

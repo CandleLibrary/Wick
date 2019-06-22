@@ -56,7 +56,7 @@ export default {
 
                 g.forEach(v => {
                     if(Array.isArray(v))debugger;
-                    globals.add(v)
+                    globals.add(v);
                 });
 
                 node.skip();

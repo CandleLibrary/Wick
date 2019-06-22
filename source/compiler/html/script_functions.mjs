@@ -13,7 +13,7 @@ export function GetOutGlobals(ast, presets) {
         const name = out.name;
 
         if (!arg_lu.has(name)) {
-            arg_lu.add(name)
+            arg_lu.add(name);
 
             const out_object = { name, val: null, IS_TAPPED: false, IS_ELEMENT: false };
 

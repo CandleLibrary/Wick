@@ -25,7 +25,7 @@ export default class ElementNode {
         this.proxied = null;
         this.slots = null;
         this.origin_url = env.url;
-        this.attribs = new Map((attribs||[]).map(a=>(a.link(this), [a.name, a])));
+        this.attribs = new Map((attribs || []).map(a => (a.link(this), [a.name, a])));
 
         this.component = this.getAttrib("component").value;
 
@@ -38,10 +38,6 @@ export default class ElementNode {
         this.name = this.getAttribute("name");
         this.slot = this.getAttribute("slot");
         this.pinned = (this.getAttribute("pin")) ? this.getAttribute("pin") + "$" : "";
-
-        //Prepare attributes with data from this element
-       // for (const attrib of this.attribs)
-       //     attrib.link(this);
 
         if (this.url)
             this.loadAndParseUrl(env);
@@ -80,10 +76,10 @@ export default class ElementNode {
             this.mount = ele.mount.bind(ele);
         }
 
-        this.children.sort(function(a,b){
-            if(a.tag == "script" && b.tag !== "script")
+        this.children.sort(function(a, b) {
+            if (a.tag == "script" && b.tag !== "script")
                 return 1;
-            if(a.tag !== "script" && b.tag == "script")
+            if (a.tag !== "script" && b.tag == "script")
                 return -1;
             return 0;
         });
@@ -96,15 +92,7 @@ export default class ElementNode {
     }
 
     getAttrib(name) {
-
         return this.attribs.get(name) || { name: "", value: "" };
-
-        for (const attrib of this.attribs) {
-            if (attrib.name === name)
-                return attrib;
-        }
-
-        return { name: "", value: "" };
     }
 
     createElement() {
@@ -115,11 +103,8 @@ export default class ElementNode {
 
         var o = offset.repeat(off),
             str = `${o}<${this.tag}`;
-            //atr = this.attribs,
-           // i = -1,
-           // l = atr.length;
 
-        for(const attr of this.attribs.values()) {
+        for (const attr of this.attribs.values()) {
             if (attr.name)
                 str += ` ${attr.name}="${attr.value}"`;
         }
@@ -135,35 +120,39 @@ export default class ElementNode {
     }
 
     innerToString(off) {
-        return this.children.map(e=>e.toString()).join("");
+        return this.children.map(e => e.toString()).join("");
     }
 
     /****************************************** COMPONENTIZATION *****************************************/
 
-    loadAST(ast){        
-        if(ast)
+    loadAST(ast) {
+        if (ast)
             this.proxied = ast.merge();
     }
 
     async loadAndParseUrl(env) {
-        var ast = null, own_env = new CompilerEnv(env.presets, env, this.url);
-        
+        var ast = null,
+            text_data = "",
+            own_env = new CompilerEnv(env.presets, env, this.url);
+
         own_env.setParent(env);
 
         try {
-            
-            const txt_data = await this.url.fetchText();
-
             own_env.pending++;
+            text_data = await this.url.fetchText();
+        } catch (e) {
+            error(error.RESOURCE_FETCHED_FROM_NODE_FAILURE, e, this);
+        }
 
-            ast = wick_compile(whind(txt_data), own_env);
+        if (text_data)
+            try {
+                ast = wick_compile(whind(text_data), own_env);
+            } catch (e) { error(error.ELEMENT_PARSE_FAILURE, e, this) }
 
-        } catch (err) {error(err, this)}
-        
         this.loadAST(ast);
 
         own_env.resolve();
-        
+
         return;
     }
 
@@ -188,7 +177,7 @@ export default class ElementNode {
         if (this.tap_list)
             merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));
 
-        merged_node.attribs = new Map(function *(...a){for(const e of a) yield * e;}(this.attribs, node.attribs));
+        merged_node.attribs = new Map(function*(...a) { for (const e of a) yield* e; }(this.attribs, node.attribs));
 
         merged_node.statics = node.statics;
 
@@ -213,7 +202,7 @@ export default class ElementNode {
 
         if (!scope.ele) scope.ele = own_element;
 
-        for(const attr of this.attribs.values()) 
+        for (const attr of this.attribs.values())
             attr.bind(own_element, scope, pinned);
 
         for (let i = 0; i < this.children.length; i++) {
