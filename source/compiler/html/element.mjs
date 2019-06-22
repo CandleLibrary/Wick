@@ -2,9 +2,11 @@ import { appendChild, createElement } from "../../short_names.mjs";
 import Scope from "../component/runtime/scope.mjs";
 import CompilerEnv from "../compiler_env.mjs";
 import wick_compile from "../wick.mjs";
-
+import error from "../../utils/error.mjs";
 import URL from "@candlefw/url";
 import whind from "@candlefw/whind";
+
+const offset = "    ";
 
 export default class ElementNode {
 
@@ -23,13 +25,14 @@ export default class ElementNode {
         this.children = children || [];
         this.proxied = null;
         this.slots = null;
+        this.origin_url = env.url;
 
         this.component = this.getAttrib("component").value;
 
         if (this.component)
             presets.components[this.component] = this;
 
-        this.url = this.getAttribute("url") ? URL.resolveRelative(this.getAttribute("url")) : null;
+        this.url = this.getAttribute("url") ? URL.resolveRelative(this.getAttribute("url"), env.url) : null;
         this.id = this.getAttribute("id");
         this.class = this.getAttribute("id");
         this.name = this.getAttribute("name");
@@ -42,7 +45,7 @@ export default class ElementNode {
             attrib.link(this);
 
         if (this.url)
-            this.loadURL(env);
+            this.loadAndParseUrl(env);
 
         return this;
     }
@@ -99,7 +102,7 @@ export default class ElementNode {
                 return attrib;
         }
 
-        return { name: "", value: "" }
+        return { name: "", value: "" };
     }
 
     createElement() {
@@ -108,15 +111,14 @@ export default class ElementNode {
 
     toString(off = 0) {
 
-        let o = offset.repeat(off);
-
-        let str = `${o}<${this.tag}`,
+        var o = offset.repeat(off),
+            str = `${o}<${this.tag}`,
             atr = this.attribs,
             i = -1,
             l = atr.length;
 
         while (++i < l) {
-            let attr = atr[i];
+            const attr = atr[i];
 
             if (attr.name)
                 str += ` ${attr.name}="${attr.value}"`;
@@ -138,29 +140,34 @@ export default class ElementNode {
 
     /****************************************** COMPONENTIZATION *****************************************/
 
+    loadAST(ast){        
+        if(ast)
+            this.proxied = ast.merge();
+    }
 
-    async loadURL(env) {
+    async loadAndParseUrl(env) {
+        var ast = null, own_env = new CompilerEnv(env.presets, env, this.url);
+        
+        own_env.setParent(env);
 
         try {
-            const own_env = new CompilerEnv(env.presets, env);
-            own_env.setParent(env);
-
+            
             const txt_data = await this.url.fetchText();
 
             own_env.pending++;
 
-            const ast = wick_compile(whind(txt_data), own_env);
+            ast = wick_compile(whind(txt_data), own_env);
 
-            this.proxied = ast.merge(this);
+        } catch (err) {error(err, this)}
+        
+        this.loadAST(ast);
 
-            own_env.resolve();
-
-        } catch (err) {
-            console.error(err);
-        }
+        own_env.resolve();
+        
+        return;
     }
 
-    merge(node, merged_node = new this.constructor(null, this.tag, null, null, this.presets)) {
+    merge(node, merged_node = new this.constructor({}, this.tag, null, null, this.presets)) {
 
         merged_node.line = this.line;
         merged_node.char = this.char;
@@ -176,6 +183,7 @@ export default class ElementNode {
         merged_node.presets = this.presets;
         merged_node.par = node.par;
         merged_node.pinned = node.pinned || this.pinned;
+        merged_node.origin_url = node.url;
 
         if (this.tap_list)
             merged_node.tap_list = this.tap_list.map(e => Object.assign({}, e));

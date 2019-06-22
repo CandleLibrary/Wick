@@ -1,3 +1,5 @@
+import URL from "@candlefw/url";
+
 // This prevents env variable access conflicts when concurrent compilation
 // are processing text data. 
 
@@ -5,7 +7,7 @@ export default class CompilerEnvironment {
     constructor(presets, env, url) {
         this.functions = env.functions;
         this.prst = [presets];
-        this.url = "";
+        this.url = url || new URL;
         this.pending = 0;
         this.parent = null;
         this.ASI = true; // Automatic Semi-Colon Insertion

@@ -20,8 +20,6 @@ class ArgumentIO extends IO {
     }
 }
 
-
-//Function.apply(Function, [binding.arg_key || binding.tap_name, "event", "model", "emit", "presets", "static", "src", binding.val]);
 export default class ScriptIO extends IOBase {
 
     constructor(scope, errors, tap, script, lex, pinned) {
@@ -147,7 +145,7 @@ export default class ScriptIO extends IOBase {
     }
 
     down(value, meta) {
-        
+
         if (value)
             this.setValue(value);
 

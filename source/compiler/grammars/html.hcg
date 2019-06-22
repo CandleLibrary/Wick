@@ -67,9 +67,10 @@
 <> ATTRIBUTE → ATTRIBUTE_HEAD = ATTRIBUTE_BODY 	 		↦cstr ^attribute
  	│ ATTRIBUTE_HEAD 									↦cstr ^attribute
 
-<> ATTRIBUTE_HEAD → ' identifier '								↦return { sym[1] }
-	│ " identifier "											↦return { sym[1] }
+<> ATTRIBUTE_HEAD → ' identifier? '								↦return { sym[1] }
+	│ " identifier? "											↦return { sym[1] }
 	│ identifier
+
 
 <> ATTRIBUTE_BODY → string::normal_string 						
 	│ identifier 											
