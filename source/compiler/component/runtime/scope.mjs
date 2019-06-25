@@ -21,24 +21,23 @@ export default class Scope extends Observer {
         super();
 
         this.ast = ast;
-        
-        this.parent = null;
         this.ele = element;
-        this.presets = presets;
+        
+        //this.presets = presets;
+        //this.statics = null;
+        this.parent = null;
         this.model = null;
-        this.statics = null;
-
-        this.taps = {};
-        this.children = [];
-        this.scopes = [];
-        this.badges = {};
-        this.ios = [];
-        this.containers = [];
-        this.hooks = [];
         this.update_tap = null;
 
-        this._model_name_ = "";
-        this._schema_name_ = "";
+        //this.children = [];
+        //this.badges = {};
+        //this.ios = [];
+        //this.hooks = [];
+
+        this.taps = {};
+        this.scopes = [];
+        this.containers = [];
+        this.css = [];
 
         this.DESTROYED = false;
         this.LOADED = false;
@@ -59,21 +58,21 @@ export default class Scope extends Observer {
         if (this.parent && this.parent.removeScope)
             this.parent.removeScope(this);
 
-        this.children.forEach((c) => c.destroy());
-        this.children.length = 0;
+        //this.children.forEach((c) => c.destroy());
+        //this.children.length = 0;
         this.data = null;
 
         if (this.ele && this.ele.parentElement)
             this.ele.parentElement.removeChild(this.ele);
 
-        for(const io of this.ios)
-            io.destroy();
+        //for(const io of this.ios)
+        //    io.destroy();
 
         for(const tap in this.taps)
             this.taps[tap].destroy();
 
         this.taps = null;
-        this.ios = null;
+        //this.ios = null;
         this.ele = null;
 
         while (this.scopes[0])
@@ -163,12 +162,15 @@ export default class Scope extends Observer {
 
         let
             m = null,
-            SchemedConstructor = null;
+            SchemedConstructor = null,
+            presets = this.ast.presets,
+            model_name = this.ast.model_name,
+            scheme_name = this.ast.scheme_name;
             
-        if (this._model_name_ && this.presets.models)
-            m = this.presets.models[this._model_name_];
-        if (this._schema_name_ && this.presets.schemas){
-            SchemedConstructor = this.presets.schemas[this._schema_name_];
+        if (model_name && this.presets.models)
+            m = presets.models[model_name];
+        if (scheme_name && presets.schemas){
+            SchemedConstructor = presets.schemas[scheme_name];
         }
 
         if (m)
