@@ -15,7 +15,10 @@ let CachedPresets = null;
  * 
  */
 class Presets {
-    constructor(preset_options = {}) {
+    constructor(preset_options) {
+
+        if (!preset_options)
+            preset_options = {};
 
         //if(Presets.global.v)
         //    return Presets.global.v;

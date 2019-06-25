@@ -227,7 +227,8 @@ export default class ElementNode {
             };
             own_element.addEventListener("load", fn);
             scope.PENDING_LOADS++;
-        }
+        } 
+
 
         return scope;
     }

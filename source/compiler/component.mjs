@@ -38,9 +38,12 @@ const
 
                     string_data = component_data;
 
-                    var url;
+                    var url, IS_URL = (
+                        component_data[0] !== "<" &&
+                        component_data[0] !== " "
+                    );
 
-                    if ((url = URL.resolveRelative(component_data, ""))){
+                    if (IS_URL &&(url = URL.resolveRelative(component_data, ""))){
                         try{
                             string_data = await url.fetchText();
                         }catch(e){
@@ -52,7 +55,7 @@ const
 
                 case "object":
                     if (component_data instanceof URL) {
-
+                        string_data = await url.fetchText();
                     } else if (component_data instanceof HTMLElement) {
 
                         if (component_data.tagName == "TEMPLATE")
@@ -176,9 +179,9 @@ const
                             this.__pending = null;
                         }
 
-                        return res(this)
+                        return res(this);
                     });
-                })
+                });
             } else {
                 const comp = new Component(...data);
 

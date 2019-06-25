@@ -23,7 +23,7 @@
 
 +> html::BODY →  IMPORT_TAG(+) html::GOAL_TAG 												↦return { $sym2.import_list = $sym1, $sym2}
 	
-+> html::TAG → < τstyle html::ATTRIBUTES? >  css::CSS  </ τstyle > 							↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
++> html::TAG → < τstyle html::ATTRIBUTES? >  css::CSS?  </ τstyle > 						↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 	│ < τscript html::ATTRIBUTES? > js::script? </ τscript > 								↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 	│ < τjs html::ATTRIBUTES? > js::script? </ τjs > 										↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 	│ \{ js::expression \{ js::script? \} \}												↦r {fn.element_selector("script", ["on", null, new env.wick_binding(["on",null, $sym2])], $sym4, env, lex) }
