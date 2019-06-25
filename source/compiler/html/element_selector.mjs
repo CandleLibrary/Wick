@@ -12,7 +12,7 @@ import FilterNode from "./filter.mjs";
 import ImportNode from "./import.mjs";
 //import Plugin from "./../plugin.mjs";
 
-function processChildren(children, env, lex) {
+function processWickupChildren(children, env, lex) {
 
     let PREVIOUS_NODE = null;
 
@@ -36,7 +36,7 @@ function processChildren(children, env, lex) {
                                     ul = ul_child;
                                 } else {
                                     ul_child = es("blockquote", null, [], env, lex);
-                                    ul.children.push(ul_child)
+                                    ul.children.push(ul_child);
                                     ul = ul_child;
                                 }
 
@@ -173,7 +173,7 @@ function processChildren(children, env, lex) {
                                     break;
                             }
                     } else {
-                        let node2 = children[i + 1];
+                        const node2 = children[i + 1];
                         if (node2) {
                             if (node2.tag !== "text" || !node2.IS_WHITESPACE) {
                                 continue;
@@ -195,12 +195,13 @@ export default function es(tag, attribs, children, env, lex, meta = 0) {
     attribs = attribs || [];
     children = (Array.isArray(children)) ? children : children ? [children] : [];
 
-    if (children) processChildren(children, env, lex);
+    if (children) processWickupChildren(children, env, lex);
 
     const presets = env.presets;
 
     let node = null,
-        Constructor = null;
+        Constructor = null,
+        USE_PENDING_LOAD = "";
 
     switch (tag) {
         case "text":
@@ -245,13 +246,16 @@ export default function es(tag, attribs, children, env, lex, meta = 0) {
         case "pre":
             Constructor = PreNode;
             break;
+        case "img":
+            USE_PENDING_LOAD = "src";
+            /* intentional */
         case "code":
         default:
             Constructor = ElementNode;
             break;
     }
 
-    node = new Constructor(env, tag, children, attribs, presets);
+    node = new Constructor(env, tag, children, attribs, presets, USE_PENDING_LOAD);
 
     node.wickup = meta || false;
 

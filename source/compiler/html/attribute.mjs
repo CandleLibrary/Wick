@@ -53,7 +53,7 @@ export default class Attribute {
 
             {
                 const bind = this.value.bind(scope, pinned);
-                new this.io_constr(scope, [], bind, this.name, element, this.value.default);
+                new this.io_constr(scope, this, bind, this.name, element, this.value.default);
             }
     }
 }

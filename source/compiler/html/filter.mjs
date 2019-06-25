@@ -13,6 +13,6 @@ export default class fltr extends ElementNode {
 
     mount(scope, container) {
         for (const attr of this.attribs.values()) 
-             attr.value.bind(scope).bindToContainer(attr.name, container);
+             attr.value.bind(scope, null, null, this).bindToContainer(attr.name, container);
     }
 }

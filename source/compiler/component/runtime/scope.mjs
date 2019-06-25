@@ -17,15 +17,12 @@ export default class Scope extends Observer {
      *   @extends ScopeBase
      */
     constructor(parent, presets, element, ast) {
-        //if(!presets)
-        //    debugger;
+ 
         super();
 
         this.ast = ast;
-
-        //ast.setScope(this);
         
-        this.parent = parent;
+        this.parent = null;
         this.ele = element;
         this.presets = presets;
         this.model = null;
@@ -47,14 +44,14 @@ export default class Scope extends Observer {
         this.LOADED = false;
         this.CONNECTED = false;
         this.TRANSITIONED_IN = false;
+        this.PENDING_LOADS = 1; //set to one for self
 
-        this.addToParent();
+        this.addToParent(parent);
     }
 
     destroy() {
 
-        //Lifecycle Events: Destroying <======================================================================
-        this.update({destroying:true});
+        this.update({destroying:true}); //Lifecycle Events: Destroying <======================================================================
 
         this.DESTROYED = true;
         this.LOADED = false;
@@ -85,19 +82,14 @@ export default class Scope extends Observer {
         super.destroy();
     }
 
-    getBadges(par) {
-        for (let a in this.badges) 
-            if (!par.badges[a])
-                par.badges[a] = this.badges[a];
-    }
-
-    addToParent() {
-        if (this.parent)
-            this.parent.scopes.push(this);
+    addToParent(parent) {
+        if (parent)
+            parent.addScope(this);        
     }
 
     addTemplate(template) {
         template.parent = this;
+        this.PENDING_LOADS++;
         this.containers.push(template);
     }
 
@@ -106,6 +98,7 @@ export default class Scope extends Observer {
             return;
         scope.parent = this;
         this.scopes.push(scope);
+        this.PENDING_LOADS++;
         scope.linkImportTaps(this);
     }
 
@@ -185,24 +178,36 @@ export default class Scope extends Observer {
         } else if (!model)
             model = new Model(model);
 
-        this.LOADED = true;
-
         for (let i = 0, l = this.scopes.length; i < l; i++) {
             this.scopes[i].load(model);
             this.scopes[i].getBadges(this);
         }
-
 
         if (model.addObserver)
             model.addObserver(this);
 
         this.model = model;
 
-        for (let name in this.taps)
-            this.taps[name].load(this.model, false);
+        for (const tap in this.taps)
+            this.taps[tap].load(this.model, false);
+        
+        this.update({loading:true});  //Lifecycle Events: Loading <======================================================================
+        //this.update({loaded:true});  //Lifecycle Events: Loaded <======================================================================
+        //this.LOADED = true
 
-        //Lifecycle Events: Loaded <======================================================================
-        this.update({loaded:true}); 
+        //Allow one tick to happen before acknowledging load
+        setTimeout(this.loadAcknowledged.bind(this),1);
+    }
+
+    loadAcknowledged(){
+        //This is called when all elements of responded with a loaded signal.
+
+        if(!this.LOADED && --this.PENDING_LOADS <= 0){
+            this.LOADED = true;
+            this.update({loaded:true});  //Lifecycle Events: Loaded <======================================================================
+            if(this.parent)
+                this.parent.loadAcknowledged();
+        }
     }
 
     /*************** DATA HANDLING CODE **************************************/
@@ -221,19 +226,28 @@ export default class Scope extends Observer {
             this.taps[prop_name].up(data, meta);
     }
 
-    update(data, changed_values, IMPORTED = false) {
+    update(data, changed_values, IMPORTED = false, meta = null) {
 
         if (this.update_tap)
             this.update_tap.downS(data, IMPORTED);
 
         if (changed_values) {
-
             for (let name in changed_values)
                 if (this.taps[name])
-                    this.taps[name].downS(data, IMPORTED);
-        } else
-            for (let name in this.taps)
-                this.taps[name].downS(data, IMPORTED);
+                    this.taps[name].downS(data, IMPORTED, meta);
+        } else{
+            let map = new Map;
+
+            for (let name in this.taps){
+                map.set(name, this.taps[name]);
+            }
+
+            for(let name in data){
+                if(map.has(name))
+                    map.get(name).downS(data, IMPORTED, meta);
+                //this.taps[name]
+            }
+        }
 
         for (let i = 0, l = this.containers.length; i < l; i++)
             this.containers[i].down(data, changed_values);
@@ -266,12 +280,12 @@ export default class Scope extends Observer {
     }
 
     removeFromDOM() {
+        //Prevent erroneous removal of scope.
+        if (this.CONNECTED == true) return;
+        
         //Lifecycle Events: Disconnecting <======================================================================
         this.update({disconnecting:true});
         
-        //Prevent erroneous removal of scope.
-        if (this.CONNECTED == true) return;
-
         if (this.ele && this.ele.parentElement)
             this.ele.parentElement.removeChild(this.ele);
 
@@ -280,9 +294,9 @@ export default class Scope extends Observer {
     }
 
     transitionIn(transition, transition_name = "trs_in") {
-
+        
         if (transition) 
-            this.update({[transition_name]:transition});
+            this.update({trs:transition, [transition_name]:transition}, null, false, {IMMEDIATE:true});
 
         this.TRANSITIONED_IN = true;
     }
@@ -301,7 +315,7 @@ export default class Scope extends Observer {
 
         if (transition) {
 
-            this.update({[transition_name]:transition});
+            this.update({trs:transition, [transition_name]:transition}, null, false, {IMMEDIATE:true});
 
             if (transition.trs)
                 transition_time = transition.trs.out_duration;

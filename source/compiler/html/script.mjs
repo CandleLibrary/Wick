@@ -2,8 +2,9 @@ import ElementNode from "./element.mjs";
 import ScriptIO from "../component/io/script_io.mjs";
 import FUNCTION_CACHE from "./function_cache.mjs";
 import { GetOutGlobals, AddEmit as addEmitExpression } from "./script_functions.mjs";
+import error from "../../utils/error.mjs";
 
-export default class scr extends ElementNode {
+export default class ScriptNode extends ElementNode {
 
     constructor(env, tag, ast, attribs, presets) {
         super(env, "script", null, attribs, presets);
@@ -37,8 +38,6 @@ export default class scr extends ElementNode {
 
         if (true || !FUNCTION_CACHE.has(this.val)) {
 
-            let func, HAVE_CLOSURE = false;
-
             const
                 args = this.args,
                 names = args.map(a => a.name);
@@ -49,15 +48,13 @@ export default class scr extends ElementNode {
             try {
                 this.function = Function.apply(Function, names.concat([this.val]));
                 this.READY = true;
-                FUNCTION_CACHE.set(this.val, this.function)
+                FUNCTION_CACHE.set(this.val, this.function);
             } catch (e) {
-                //errors.push(e);
-                //console.error(`Script error encountered in ${statics.url || "virtual file"}:${node.line+1}:${node.char}`)
-                console.warn(this.val);
-                console.error(e)
+                error(error.SCRIPT_FUNCTION_CREATE_FAILURE, e, this);
             }
+
         } else {
-            this.function = FUNCTION_CACHE.get(this.val)
+            this.function = FUNCTION_CACHE.get(this.val);
         }
 
         return this;
@@ -65,8 +62,8 @@ export default class scr extends ElementNode {
 
     mount(element, scope, presets, slots, pinned) {
         if (this.READY) {
-            const tap = this.on.bind(scope);
-            new ScriptIO(scope, [], tap, this, {}, pinned);
+            const tap = this.on.bind(scope, null, null, this);
+            new ScriptIO(scope, this, tap, this, {}, pinned);
         }
     }
 }

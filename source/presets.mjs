@@ -28,6 +28,7 @@ class Presets {
         this.options = {
             USE_SECURE: true,
             USE_SHADOW: false,
+            INJECT_ERROR_HANDLER_INTO_SUBFUNCTIONS: false,
         };
 
         //Declaring the properties upfront to give the VM a chance to build an appropriate virtual class.

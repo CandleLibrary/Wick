@@ -23,7 +23,8 @@ class ArgumentIO extends IO {
 
 export default class ScriptIO extends IOBase {
 
-    constructor(scope, errors, tap, script, lex, pinned) {
+    constructor(scope, node, tap, script, lex, pinned) {
+        
 
         const HAVE_CLOSURE = false;
 
@@ -34,6 +35,7 @@ export default class ScriptIO extends IOBase {
         this.ACTIVE_IOS = 0;
         this.IO_ACTIVATIONS = 0;
         this._SCHD_ = 0;
+        this.node = node;
 
         this.function = null;
 
@@ -52,7 +54,7 @@ export default class ScriptIO extends IOBase {
         this.arg_props = [];
         this.arg_ios = {};
 
-        this.initProps(script.args, tap, errors, pinned);
+        this.initProps(script.args, tap, node, pinned);
 
         this.arg_props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value) } }));
     }
@@ -139,7 +141,7 @@ export default class ScriptIO extends IOBase {
                 else
                     return this.function.apply(this, this.arg_props);
             } catch (e) {
-                error(error.IO_FUNCTION_FAIL, e, this);
+                error(error.IO_FUNCTION_FAIL, e, this.node);
             }
         }
     }
@@ -149,11 +151,16 @@ export default class ScriptIO extends IOBase {
         if (value)
             this.setValue(value);
 
-        if(meta)
+        if(meta){
             this.setValue(meta);
+            if(meta.IMMEDIATE && this.ACTIVE_IOS >= this.IO_ACTIVATIONS){
+                return this.scheduledUpdate();
+            }
+        }
 
-        if (this.ACTIVE_IOS < this.IO_ACTIVATIONS)
+                if (this.ACTIVE_IOS < this.IO_ACTIVATIONS)
             return;
+
 
         if (!this._SCHD_)
             spark.queueUpdate(this);

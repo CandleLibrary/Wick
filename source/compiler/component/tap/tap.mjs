@@ -65,7 +65,7 @@ export class Tap {
         }
     }
 
-    downS(model, IMPORTED = false) {
+    downS(model, IMPORTED = false, meta = null) {
         const value = model[this.prop];
 
         if (typeof(value) !== "undefined") {
@@ -83,14 +83,13 @@ export class Tap {
                     else
                         this.scope.model[this.prop] = value;
                 }
-
             }
 
             for (let i = 0, l = this.ios.length; i < l; i++) {
                 if (this.ios[i] instanceof Tap) {
-                    this.ios[i].downS(model, true);
+                    this.ios[i].downS(model, true, meta);
                 } else
-                    this.ios[i].down(value);
+                    this.ios[i].down(value, meta);
             }
         }
     }

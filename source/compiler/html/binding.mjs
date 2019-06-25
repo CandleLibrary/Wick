@@ -25,6 +25,8 @@ export default class Binding {
         this.args = null;
         this.READY = false;
 
+        this.origin_url = env.url;
+
         this.val = this.ast + "";
 
         if (!(this.ast instanceof identifier) && !(this.ast instanceof member_expression))
@@ -63,11 +65,11 @@ export default class Binding {
         this.METHOD = CONTAINER;
     }
 
-    bind(scope, element, pinned) {
+    bind(scope, element, pinned, node = this) {
         if (this.METHOD == EXPRESSION) {
-            return new ExpressionIO(element, scope, [], scope, this, this.lex, pinned);
+            return new ExpressionIO(element, scope, node, scope, this, this.lex, pinned);
         } else if (this.METHOD == CONTAINER)
-            return new ContainerIO(element, scope, [], scope, this, this.lex, pinned);
+            return new ContainerIO(element, scope, node, scope, this, this.lex, pinned);
         else
             return scope.getTap(this.val);
     }

@@ -59,6 +59,8 @@ export default class ScopeContainer extends Observer {
         this.offset_diff = 0;
         this.offset_fractional = 0;
 
+        this.LOADED = false;
+
         parent.addTemplate(this);
     }
 
@@ -77,6 +79,8 @@ export default class ScopeContainer extends Observer {
         if (!container) return;
         if (Array.isArray(container)) this.cull(container);
         else this.cull(container.data);
+
+        this.loadAcknowledged();
     }
 
     update(container) {
@@ -87,6 +91,13 @@ export default class ScopeContainer extends Observer {
         if (Array.isArray(container)) this.cull(container);
         else this.cull(container.data);
         // }
+    }
+
+    loadAcknowledged(){
+        if(!this.LOADED){
+            this.LOADED = true;
+            this.parent.loadAcknowledged();
+        }
     }
 
 

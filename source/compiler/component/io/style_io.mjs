@@ -128,7 +128,7 @@ export class StyleIO extends IOBase {
         for (let name in props) {
             let prop = props[name];
 
-            let wick_prop = (prop._wick_type_ > 0) ? prop.bind(this.parent, [], {}, this) : new CSSRawValue(name, prop);
+            let wick_prop = (prop._wick_type_ > 0) ? prop.bind(this.parent, this, {}, this) : new CSSRawValue(name, prop);
 
             this.props.push(wick_prop);
 
@@ -141,7 +141,7 @@ export class StyleIO extends IOBase {
         for (let i = 0, l = props.length; i < l; i++) {
             let prop = props[i];
             if (prop._wick_type_ == 1) {
-                this.props.push(props[i]._bind_(scope, errors, taps, this));
+                this.props.push(props[i]._bind_(scope, this, taps, this));
             } else
                 this.props.push(prop);
         }

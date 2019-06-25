@@ -12,6 +12,7 @@ import {types} from "@candlefw/js";
 import Script from "./html/script.mjs";
 import Attribute from "./html/attribute.mjs";
 import Binding from "./html/binding.mjs";
+import error from "../utils/error.mjs";
 
 const
 
@@ -67,10 +68,11 @@ const
                     break;
             }
 
+            const compiler_env = new CompilerEnv(presets, env);
+            
             try {
 
                 return await (new Promise(res => {
-                    const compiler_env = new CompilerEnv(presets, env);
                     compiler_env.pending++;
 
 
@@ -81,8 +83,8 @@ const
                     compiler_env.resolve();
                 }));
 
-            } catch (err) {
-                console.error(err);
+            } catch (e) {
+                error(error.COMPONENT_PARSE_FAILURE, e, compiler_env);
             }
 
             return ast;

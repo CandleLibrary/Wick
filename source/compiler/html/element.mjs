@@ -10,7 +10,7 @@ const offset = "    ";
 
 export default class ElementNode {
 
-    constructor(env, tag = "", children = [], attribs = [], presets) {
+    constructor(env, tag = "", children = [], attribs = [], presets, USE_PENDING_LOAD_ATTRIB) {
 
         if (children)
             for (const child of children)
@@ -26,6 +26,7 @@ export default class ElementNode {
         this.slots = null;
         this.origin_url = env.url;
         this.attribs = new Map((attribs || []).map(a => (a.link(this), [a.name, a])));
+        this.pending_load_attrib = USE_PENDING_LOAD_ATTRIB;
 
         this.component = this.getAttrib("component").value;
 
@@ -126,8 +127,8 @@ export default class ElementNode {
     /****************************************** COMPONENTIZATION *****************************************/
 
     loadAST(ast) {
-        if (ast)
-            this.proxied = ast.merge();
+        if (ast instanceof ElementNode)
+            this.proxied = ast//.merge();
     }
 
     async loadAndParseUrl(env) {
@@ -208,6 +209,24 @@ export default class ElementNode {
         for (let i = 0; i < this.children.length; i++) {
             const node = this.children[i];
             node.mount(own_element, scope, presets, slots, pinned);
+        }
+
+        /* 
+            If there is an attribute that will cause the browser to fetch a resource that is 
+            is subsequently loaded in to the element, then create a listener that will 
+            update the scopes PENDING_LOADS property when the resource is requested and then 
+            received.
+
+            example elemnts = img, svg
+        */
+        if(this.pending_load_attrib && this.getAttrib(this.pending_load_attrib).value){
+            debugger
+            const fn = e=>{
+                scope.acknowledgePending();
+                own_element.removeEventListener("load", fn);
+            };
+            own_element.addEventListener("load", fn);
+            scope.PENDING_LOADS++;
         }
 
         return scope;
