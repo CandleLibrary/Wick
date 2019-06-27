@@ -128,7 +128,7 @@ export default class ElementNode {
 
     loadAST(ast) {
         if (ast instanceof ElementNode)
-            this.proxied = ast//.merge();
+            this.proxied = ast;//.merge();
     }
 
     async loadAndParseUrl(env) {

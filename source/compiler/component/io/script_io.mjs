@@ -147,7 +147,6 @@ export default class ScriptIO extends IOBase {
     }
 
     down(value, meta) {
-
         if (value)
             this.setValue(value);
 
@@ -160,7 +159,6 @@ export default class ScriptIO extends IOBase {
 
                 if (this.ACTIVE_IOS < this.IO_ACTIVATIONS)
             return;
-
 
         if (!this._SCHD_)
             spark.queueUpdate(this);

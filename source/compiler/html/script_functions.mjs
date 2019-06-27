@@ -38,17 +38,21 @@ export function GetOutGlobals(ast, presets) {
 }
 
 export function AddEmit(ast, presets, ignore) {
-    ast.forEach( node => {
 
-        if(node.parent && node.parent.type == types.assignment_expression){
-            const assign = node.parent;
+    ast.forEach(node => {
 
-            const k = node.name;
+        if (node.parent && node.parent.type == types.assignment_expression && node.type == types.identifier) {
+            if (node == node.parent.left) {
 
-            if ((window[k] && !(window[k] instanceof HTMLElement)) || presets.custom[k] || presets[k] || defaults[k] || ignore.includes(k))
-                return;
+                const assign = node.parent;
 
-            node.replace(new member_expression(new identifier(["emit"]), node));
+                const k = node.name;
+
+                if ((window[k] && !(window[k] instanceof HTMLElement)) || presets.custom[k] || presets[k] || defaults[k] || ignore.includes(k))
+                    return;
+
+                node.replace(new member_expression(new identifier(["emit"]), node));
+            }
         }
     });
 }

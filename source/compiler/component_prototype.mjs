@@ -46,7 +46,7 @@ export default class d {
         if ((HTMLElement_ instanceof HTMLElement)) {
             //throw new Error("HTMLElement_ argument is not an instance of HTMLElement. Cannot mount component");
 
-            //element = HTMLElement_.attachShadow({ mode: 'open' });
+            element = HTMLElement_.attachShadow({ mode: 'open' });
         }
 
         const scope = this.ast.mount(element);

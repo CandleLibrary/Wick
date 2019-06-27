@@ -31,9 +31,9 @@ export default class Scope extends Observer {
 
         //this.children = [];
         //this.badges = {};
-        //this.ios = [];
         //this.hooks = [];
 
+        this.ios = [];
         this.taps = {};
         this.scopes = [];
         this.containers = [];
@@ -180,6 +180,9 @@ export default class Scope extends Observer {
         } else if (!model)
             model = new Model(model);
 
+        if(this.css.length>0)
+            this.loadCSS();
+
         for (let i = 0, l = this.scopes.length; i < l; i++) {
             this.scopes[i].load(model);
             this.scopes[i].getBadges(this);
@@ -199,6 +202,20 @@ export default class Scope extends Observer {
 
         //Allow one tick to happen before acknowledging load
         setTimeout(this.loadAcknowledged.bind(this),1);
+    }
+
+    loadCSS(element = this.ele){
+        
+        for(let i = 0; i < this.css.length; i++){
+            const css = this.css[i];
+
+            const rules = css.getApplicableRules(element);
+
+            element.style = (""+rules).slice(1,-1) + "";
+        }
+
+        for(let i = 0; i < element.children.length; i++)
+            this.loadCSS(element.children[i]);
     }
 
     loadAcknowledged(){

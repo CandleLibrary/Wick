@@ -1,4 +1,4 @@
-/*
+//*
 import {
     script,
     module,
@@ -82,7 +82,7 @@ import {
     case_statement,
     default_case_statement,
 } from "@candlefw/js";
-*/
+//*/
 
 //HTML
 import element_selector from "./html/element_selector.mjs";
@@ -97,6 +97,7 @@ import {
     ruleset,
     compoundSelector,
     comboSelector,
+    typeselector,
     selector,
     idSelector,
     classSelector,
@@ -142,6 +143,7 @@ const env = {
         selector,
         idSelector,
         classSelector,
+        typeselector,
         attribSelector,
         pseudoClassSelector,
         pseudoElementSelector,
@@ -150,7 +152,7 @@ const env = {
         stylerule,
         ruleset,
 
-/*        //JS
+//*        //JS
         switch_statement,
         script,
         module,
@@ -234,7 +236,7 @@ const env = {
         void_expression,
         argument_list,
         arrow: arrow_function_declaration,
-*/
+//*/
         //MARKDOWN
         create_ordered_list,
 
