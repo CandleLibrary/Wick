@@ -28,22 +28,22 @@ export default class d {
     }
 
     //Mounts component data to new HTMLElement object.
-    async mount(HTMLElement_, bound_data_object) {
+    async mount(HTMLElement_, bound_data_object, USE_SHADOW) {
 
         if (this.READY !== true) {
             if (!this.__pending)
                 this.__pending = [];
 
-            return new Promise(res =>this.__pending.push([HTMLElement_, bound_data_object, res]))
+            return new Promise(res =>this.__pending.push([HTMLElement_, bound_data_object, USE_SHADOW, res]));
         }
 
-        return this.nonAsyncMount(HTMLElement_, bound_data_object);
+        return this.nonAsyncMount(HTMLElement_, bound_data_object, USE_SHADOW);
     }
 
-    nonAsyncMount(HTMLElement_, bound_data_object = null){
+    nonAsyncMount(HTMLElement_, bound_data_object = null, USE_SHADOW = true){
         let element = HTMLElement_;
 
-        if ((HTMLElement_ instanceof HTMLElement)) {
+        if ((HTMLElement_ instanceof HTMLElement) && USE_SHADOW) {
             //throw new Error("HTMLElement_ argument is not an instance of HTMLElement. Cannot mount component");
 
             element = HTMLElement_.attachShadow({ mode: 'open' });

@@ -19,7 +19,7 @@ export default {
     output,
     plugins: [
     resolve({jail:"",modulesOnly: true}),  
-    terser({mangle:true, module:true}), 
-    gzipPlugin()
+    //terser({mangle:true, module:true}), 
+    //gzipPlugin()
     ]
 };

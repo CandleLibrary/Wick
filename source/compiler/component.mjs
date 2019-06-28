@@ -175,7 +175,7 @@ const
                             this.name = this.ast.getAttrib("component").value || "undefined-component";
 
                         if(this.__pending){
-                            this.__pending.forEach(e=>e[2](this.mount(...e.slice(0,2))));
+                            this.__pending.forEach(e=>e[3](this.mount(...e.slice(0,3))));
                             this.__pending = null;
                         }
 
