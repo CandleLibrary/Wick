@@ -8,7 +8,7 @@ import env from "./env.mjs";
 import proto from "./component_prototype.mjs";
 
 import JS from "./js/tools.mjs";
-import {types} from "@candlefw/js";
+import { types } from "@candlefw/js";
 import Script from "./html/script.mjs";
 import Attribute from "./html/attribute.mjs";
 import Binding from "./html/binding.mjs";
@@ -43,10 +43,10 @@ const
                         component_data[0] !== " "
                     );
 
-                    if (IS_URL &&(url = URL.resolveRelative(component_data, ""))){
-                        try{
+                    if (IS_URL && (url = URL.resolveRelative(component_data, ""))) {
+                        try {
                             string_data = await url.fetchText();
-                        }catch(e){
+                        } catch (e) {
                             console.log(e);
                         }
                     }
@@ -72,7 +72,7 @@ const
             }
 
             const compiler_env = new CompilerEnv(presets, env);
-            
+
             try {
 
                 return await (new Promise(res => {
@@ -101,10 +101,10 @@ const
             // and all its derivatives and descendents. 
             let presets = default_presets;
 
-            if (data.length > 1){
+            if (data.length > 1) {
                 presets = (data[1] instanceof Presets) ? data[1] : new Presets(data[1]);
             }
-            
+
 
             if (data.length === 0)
                 throw new Error("This function requires arguments. Please Refere to wick docs on what arguments may be passed to this function.");
@@ -112,7 +112,7 @@ const
             const component_data = data[0];
 
             // If this function is an operand of the new operator, run an alternative 
-            // compiler on the calling object.
+            // compiler on the calgling object.
             if (new.target) {
 
                 this.ast = null;
@@ -123,35 +123,35 @@ const
 
                 //Reference to the component name. Used with the Web Component API
                 this.name = "";
-                
+
                 this.pending = new Promise(res => {
                     compileAST(component_data, presets).then(ast => {
 
                         if (this.constructor.prototype !== Component.prototype) {
-                                                
+
                             //Go through prototype chain and extract functions that have names starting with $. Add them to the ast.
 
-                            for(const a of Object.getOwnPropertyNames(this.constructor.prototype)){
-                                if(a == "constructor") continue;
+                            for (const a of Object.getOwnPropertyNames(this.constructor.prototype)) {
+                                if (a == "constructor") continue;
 
                                 const r = this.constructor.prototype[a];
 
-                                if(typeof r == "function"){
+                                if (typeof r == "function") {
 
                                     //extract and process function information. 
                                     let c_env = new CompilerEnv(presets, env);
-                                    
-                                    let js_ast = wick_compile(whind("function " + r.toString().trim()+";"), c_env)
+
+                                    let js_ast = wick_compile(whind("function " + r.toString().trim() + ";"), c_env);
 
                                     let func_ast = JS.getFirst(js_ast, types.function_declaration);
                                     let ids = JS.getClosureVariableNames(func_ast);
                                     let args = JS.getFunctionDeclarationArgumentNames(js_ast); // Function arguments in wick class component definitions are treated as TAP variables. 
-                                    const HAS_CLOSURE = (ids.filter(a=>!args.includes(a))).length > 0;
+                                    const HAS_CLOSURE = (ids.filter(a => !args.includes(a))).length > 0;
 
-                                    const binding = new Binding([null, func_ast.id], {presets, start:0}, whind("ddddd"));
+                                    const binding = new Binding([null, func_ast.id], { presets, start: 0 }, whind("ddddd"));
                                     const attrib = new Attribute(["on", null, binding], presets);
                                     const stmt = func_ast.body;
-                            
+
                                     let script = new Script({}, null, stmt, [attrib], presets);
 
                                     script.finalize();
@@ -174,8 +174,8 @@ const
                         if (!this.name)
                             this.name = this.ast.getAttrib("component").value || "undefined-component";
 
-                        if(this.__pending){
-                            this.__pending.forEach(e=>e[3](this.mount(...e.slice(0,3))));
+                        if (this.__pending) {
+                            this.__pending.forEach(e => e[3](this.mount(...e.slice(0, 3))));
                             this.__pending = null;
                         }
 

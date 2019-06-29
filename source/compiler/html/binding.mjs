@@ -29,7 +29,7 @@ export default class Binding {
 
         this.val = this.ast + "";
 
-        if (!(this.ast instanceof identifier) && !(this.ast instanceof member_expression))
+        if (!(this.ast instanceof identifier))
             this.processJSAST(env.presets);
 
     }

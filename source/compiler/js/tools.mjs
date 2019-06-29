@@ -38,6 +38,10 @@ export default {
                 node.type == types.identifier ||
                 node.type == types.member_expression
             ) {
+                if (node.type == types.member_expression && !(
+                        node.id.type == types.identifier ||
+                        node.id.type == types.member_expression
+                    )) {} else
                 if (node.root && !non_global.has(node.name)) {
                     globals.add(node);
                 } else {
@@ -50,12 +54,12 @@ export default {
                 const glbl = new Set;
                 const closure = new Set;
 
-                node.getRootIds(glbl,closure);
+                node.getRootIds(glbl, closure);
 
                 const g = this.getClosureVariableNames(node, ...[...closure.values(), ...non_global.values()]);
 
                 g.forEach(v => {
-                    if(Array.isArray(v))debugger;
+                    if (Array.isArray(v)) debugger;
                     globals.add(v);
                 });
 
@@ -63,8 +67,8 @@ export default {
             }
 
             if (
-                node.type == types.lexical_declaration
-                || node.type == types.variable_declaration
+                node.type == types.lexical_declaration ||
+                node.type == types.variable_declaration
             ) {
                 node.bindings.forEach(b => (non_global.add(b.id.name), globals.forEach(g => { if (g.name == b.id.name) globals.delete(b.id.name) })));
             }
