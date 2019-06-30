@@ -19,7 +19,9 @@
 <> start → html::HTML
 	 │ js::javascript 
 
-+> js::statement → html::GOAL_TAG ;  	  													↦r { $sym2 }
+# +> js::statement → html::GOAL_TAG ;  	  													↦r { $sym2 }
+
++> js::expression → html::GOAL_TAG 															↦r { new fn.js_wick_node($sym2) }
 
 +> html::BODY →  IMPORT_TAG(+) html::GOAL_TAG 												↦return { $sym2.import_list = $sym1, $sym2}
 	
