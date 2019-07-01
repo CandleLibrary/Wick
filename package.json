@@ -10,10 +10,11 @@
     "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/js/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
     "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/html/env.mjs -t mjs ./source/compiler/grammars/html.hcg",
     "compile.test": "node --experimental-modules ./test/config.mjs",
-    "test.watch": "mocha -r esm -w -R min test.js",
-    "test": "mocha -r esm -w -R min test/test.js",
+    "test.watch": "mocha -r esm -w test.js ",
+    "test": "mocha --require esm -w --watch-extensions mjs test/test.js",
     "prepublishOnly": "npm run build",
-    "build": "rollup --config ./build/config/main.config.js"
+    "build": "rollup --config ./build/config/main.config.js",
+    "build.watch": "rollup --config ./build/config/main.config.js --watch"
   },
   "repository": {
     "type": "git",
@@ -45,18 +46,18 @@
     "@candlefw/hydrocarbon": "latest",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
-    "esm": "^3.0.84",
+    "esm": "latest",
     "jsdoc": "^3.6.2",
     "jsdom": "^11.12.0",
     "mocha": "^5.2.0",
     "mocha-logger": "^1.0.6",
     "node-fetch": "^2.3.0",
     "nyc": "^14.1.1",
-    "rollup": "^1.16.3",
-    "rollup-plugin-gzip": "^2.2.0",
-    "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-resolve": "0.0.1-predev.1",
-    "rollup-plugin-terser": "^5.0.0"
+    "rollup": "latest",
+    "rollup-plugin-gzip": "latest",
+    "rollup-plugin-node-resolve": "latest",
+    "rollup-plugin-resolve": "latest",
+    "rollup-plugin-terser": "latest"
   },
   "jshintConfig": {
     "esversion": 6,
@@ -68,6 +69,11 @@
     "@candlefw/spark": "latest",
     "@candlefw/url": "latest",
     "@candlefw/whind": "latest"
+  },
+  "esm": {
+    "cjs":{
+      "cache": true
+    }
   },
   "eslintConfig": {
     "parserOptions": {
