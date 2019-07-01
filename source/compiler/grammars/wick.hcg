@@ -21,7 +21,7 @@
 
 # +> js::statement → html::GOAL_TAG ;  	  													↦r { $sym2 }
 
-+> js::expression → html::GOAL_TAG 															↦r { new fn.js_wick_node($sym2) }
++> js::primary_expression → html::GOAL_TAG 															↦r { new fn.js_wick_node($sym1) }
 
 +> html::BODY →  IMPORT_TAG(+) html::GOAL_TAG 												↦return { $sym2.import_list = $sym1, $sym2}
 	

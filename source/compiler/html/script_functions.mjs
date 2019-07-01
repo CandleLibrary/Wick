@@ -1,7 +1,14 @@
 import JS from "../js/tools.mjs";
 import glow from "@candlefw/glow";
 import { types, identifier, member_expression } from "@candlefw/js";
-const defaults = { glow };
+
+const defaults = {
+    glow,
+    wickNodeExpression: function(scope, id) {
+        const out = scope.ast.presets.components[id].mount(null, scope, scope.ast.presets, undefined, undefined, true);
+        return out;
+    }
+}
 
 export function GetOutGlobals(ast, presets) {
     const args = [];
@@ -16,13 +23,13 @@ export function GetOutGlobals(ast, presets) {
             arg_lu.add(name);
 
             const out_object = { name, val: null, IS_TAPPED: false, IS_ELEMENT: false };
-
             if (presets.custom[name])
                 out_object.val = presets.custom[name];
             else if (presets[name])
                 out_object.val = presets[name];
-            else if (defaults[name])
+            else if (defaults[name]){
                 out_object.val = defaults[name];
+            }
             else if (name[name.length - 1] == "$") {
                 out_object.IS_ELEMENT = true;
                 //out_object.name = out.slice(0,-1);

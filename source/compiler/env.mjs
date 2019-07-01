@@ -89,6 +89,7 @@ import element_selector from "./html/element_selector.mjs";
 import attribute from "./html/attribute.mjs";
 import wick_binding from "./html/binding.mjs";
 import text from "./html/text.mjs";
+import js_html_literal from "./html/js_html_literal.mjs";
 
 //CSS
 import {
@@ -136,6 +137,7 @@ const env = {
         attribute,
         wick_binding,
         text,
+        js_wick_node:js_html_literal,
 
         //CSS
         compoundSelector,

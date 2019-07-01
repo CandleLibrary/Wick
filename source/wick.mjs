@@ -15,6 +15,9 @@ import { Presets } from "./presets.mjs";
 import whind from "@candlefw/whind";
 const wick = compiler;
 
+
+
+
 const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);
 model.scheme = Object.assign((s, scheme) => (scheme = class extends SchemedModel {}, scheme.schema = s, scheme), schemes);
 model.constr = SchemedModel;

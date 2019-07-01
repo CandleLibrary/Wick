@@ -187,9 +187,10 @@ export default class ElementNode {
 
     /******************************************* BUILD ****************************************************/
 
-    mount(element, scope, presets = this.presets, slots = {}, pinned = {}) {
+    mount(element, scope, presets = this.presets, slots = {}, pinned = {}, RETURN_ELEMENT = false) {
 
         const own_element = this.createElement(scope);
+        
 
         appendChild(element, own_element);
 
@@ -230,7 +231,7 @@ export default class ElementNode {
         } 
 
 
-        return scope;
+        return (RETURN_ELEMENT) ? own_element : scope;
     }
 }
 

@@ -54,6 +54,9 @@ export default class Binding {
         this.ast = r;
         this.val = r + "";
         this.METHOD = EXPRESSION;
+
+        console.log(this.ast.render())
+
         script.prototype.finalize.call(this);
     }
 

@@ -137,11 +137,15 @@ export class DataNodeIO extends IOBase {
         super.destroy();
     }
 
-    /**
-        Puts data into the watched element's attribute. The default action is to simply update the attribute with data._value_.  
-    */
     down(value) {
-        this.ele.data = value;
+        if(value instanceof HTMLElement){
+            if(value !== this.ele){
+                this.ele.parentElement.replaceNode(value, this.ele)
+                console.log(this.ele+"", value+"")
+                this.ele = value;
+            }
+        }else
+            this.ele.data = value;
     }
 }
 
