@@ -166,35 +166,6 @@ export default class Scope extends Observer {
     }
 
     /**
-     * Return an array of Tap objects that
-     * match the input array.
-     */
-
-    linkTaps(tap_list) {
-        let out_taps = [];
-
-        for (const tap of tap_list) {
-            let name = tap.name;
-
-            if (this.taps.has(name))
-                out_taps.push(this.taps.get(name));
-            else {
-                let bool = name == "update";
-                let t = bool ? new UpdateTap(this, name, tap.modes) : new Tap(this, name, tap.modes);
-
-                if (bool)
-                    this.update_tap = t;
-
-                this.taps.set(name, t);
-
-                out_taps.push(t);
-            }
-        }
-
-        return out_taps;
-    }
-
-    /**
         Makes the scope a observer of the given Model. If no model passed, then the scope will bind to another model depending on its `scheme` or `model` attributes. 
     */
     load(model) {
@@ -292,10 +263,9 @@ export default class Scope extends Observer {
             for (let name in changed_values)
                 if (this.taps.has(name))
                     this.taps.get(name).downS(data, IMPORTED, meta);
-        } else {
+        } else 
             for (const tap of this.taps.values())
                 tap.downS(data, IMPORTED, meta);
-        }
 
         for (const container of this.containers)
             container.down(data, changed_values);
