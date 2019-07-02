@@ -3885,7 +3885,7 @@ R50_IMPORT_TAG=function (sym,env,lex,state,output,len) {return fn.element_select
 R70_BASIC_BINDING=function (sym,env,lex,state,output,len) {return new fn.wick_binding(sym[2],null,env,lex)},
 I71_BASIC_BINDING=function (sym,env,lex,state,output,len) {env.start = lex.off+2},
 R80_CALL_BINDING=function (sym,env,lex,state,output,len) {return new fn.wick_binding(sym[2],sym[5],env,lex)},
-R81_CALL_BINDING=function (sym,env,lex,state,output,len) {return new fn.wick_binding(sym[2],sym[4],env,lex)},
+R81_CALL_BINDING=function (sym,env,lex,state,output,len) {return new fn.wick_binding(null,sym[4],env,lex)},
 R140_css_STYLE_SHEET=function (sym,env,lex,state,output,len) {return new fn.ruleset(sym[0],sym[1])},
 R141_css_STYLE_SHEET=function (sym,env,lex,state,output,len) {return new fn.ruleset(null,sym[0])},
 R142_css_STYLE_SHEET=function (sym,env,lex,state,output,len) {return new fn.ruleset(sym[0],null)},

@@ -1,9 +1,14 @@
 import chai from "chai";
 import chaiAsPromised from 'chai-as-promised';
+/*
 import wick from "../source/wick.mjs";
-
 import { IOBase } from "../source/compiler/component/io/io.mjs";
 import Component from "../source/compiler/component_prototype.mjs";
+/*/
+import wick from "../source/wick.js";
+import { IOBase } from "../source/compiler/component/io/io.js";
+import Component from "../source/compiler/component_prototype.js";
+//*/
 
 import html from "@candlefw/html";
 
@@ -36,6 +41,16 @@ function* recurseIONodes(io) {
     yield io;
     if (io.ele instanceof IOBase)
         yield* recurseIO(io.ele);
+}
+
+async function createComponent(value){
+    const comp = await wick(value).pending;
+
+        const mount = new HTMLElement();
+
+        mount.tag = "div";
+
+    return {scope: await comp.mount(mount), ele:mount};
 }
 
 console.log("----------------------------------------------------START----------------------------------------------------")
@@ -74,7 +89,7 @@ describe("Merging", function() {
         await wick(`<scope element="div" component="mergedto" temp="false" foo="biz">test</scope>`, presets).pending;
         const comp = await wick(`<div><mergedto temp="true" bar="buz">test false</mergedto></div>`, presets).pending;
         const mount = new HTMLElement();
-        mount.tag ="div";
+        mount.tag = "div";
         const scope = await comp.mount(mount);
         const sub_ele = scope.ele.firstChild;
         sub_ele.getAttribute("temp").should.equal("true");
@@ -92,11 +107,101 @@ describe("Errors", function() {
     });
 });
 
+describe("Scoped data flow", function() {
+    it("Exports data to parent scope when [export] attribute is set.", async function() {
+        const comp = await wick(`
+            
+            <scope export=out_test ><script on=((in_test))> out_test = "myvalue"  </script></scope>
+
+        `).pending;
+
+        const mount = new HTMLElement();
+
+        mount.tag = "div";
+
+        const scope = await comp.mount(mount);
+        var UPIMPORTED = false;
+
+        scope.parent = { upImport: (prop_name, data, meta) => UPIMPORTED = data == "myvalue" && prop_name == "out_test" }
+
+        scope.update({ in_test: true });
+
+        await sleep(10);
+
+        UPIMPORTED.should.equal(true);
+    })
+})
+
 describe("Binding Methods", function() {
 
     it("Scripts can define arguments using on=((id)(arg_list)) syntax");
 
-    it("Input bindings to value using ((id)(expr)), (()(expr)), ((id)), & ((id)()) all work correctly ");
+    it.only("Input bindings to [value] attribute using syntaxes of the form \n\t((id)(id)) \n\t(()(id)) \n\t((id)) \n\t((id)()) \n\twork correctly.", async function() {
+        const {scope, ele} = await createComponent(
+            "<scope export='a b c d f'>"
+                +"<input type='text' value=(( a )( e )) />"
+                +"<input type='text' value=((   )( f )) />"
+                +"<input type='text' value=(( c )) />"
+                +"<input type='text' value=(( d )(   )) />"
+            +"</scope>"
+        ), [a,b,c,d] = ele.children[0].children;
+
+        var DID_RUN = false;
+        
+        /******************************************************/
+        
+        a.value = "testAfalse";
+        scope.parent = { upImport: (prop_name, data, meta) => {
+                prop_name.should.equal("e");
+                data.sould.equal("testAtrue");
+                DID_RUN = true;
+            }
+        }
+        scope.update({a:"testAtrue", e:"failed"})
+        await sleep(2);
+        a.value.should.equal('testAtrue');
+        a.runEvent("updated", {})
+        await sleep(2);
+        DID_RUN.should.be.true;
+        
+        /******************************************************/
+
+        DID_RUN = false;
+        b.value = "testBfalse";
+        scope.parent = { upImport: (prop_name, data, meta) => {
+                prop_name.should.equal("f");
+                data.sould.equal("testBfalse");
+                DID_RUN = true;
+            }
+        }
+        scope.update({f:"testAtrue", e:"failed"})
+        await sleep(2);
+        b.value.should.equal('testBfalse');
+        b.runEvent("updated", {})
+        await sleep(2);
+        b.value.should.equal('testBfalse');
+        DID_RUN.should.be.true;
+
+        /******************************************************/
+
+        DID_RUN = false;
+        c.value = "testC";
+        scope.parent = { upImport: (prop_name, data, meta) => {
+                prop_name.should.equal("c");
+                data.sould.equal("testCnewer");
+                DID_RUN = true;
+            }
+        }
+        scope.update({c:"testCnew", e:"failed"})
+        await sleep(2);
+        c.value.should.equal('testCnew');
+        c.value = "testCnewer";
+        c.runEvent("updated", {})
+        await sleep(2);
+        DID_RUN.should.be.true;
+
+    });
+
 
     it("HTML element should appear in the scoped DOM when an ExpressionIO, bound to a DataIO, yields a HTML object.", async function() {
 
@@ -116,6 +221,7 @@ describe("Binding Methods", function() {
         scope.ele.children[0].should.be.instanceof(Text);
 
         scope.update({ isUser: false, name: "Douglas Adams" });
+
         await sleep(1);
 
         scope.ele.children.should.have.lengthOf(1);
@@ -123,6 +229,7 @@ describe("Binding Methods", function() {
         scope.ele.children[0].data.should.equal("non-user");
 
         scope.update({ isUser: true, name: "Douglas Adams" });
+
         await sleep(2);
 
         scope.ele.children.should.have.lengthOf(1);
@@ -131,7 +238,6 @@ describe("Binding Methods", function() {
         scope.ele.children[0].children[0].data.should.equal("Douglas Adams");
 
         const element = scope.ele.children[0].children[0];
-
 
         scope.update({ isUser: false, name: "Douglas Adamss" });
 

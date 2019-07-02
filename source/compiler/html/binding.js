@@ -12,6 +12,8 @@ export const BOOL = 8;
 export default class Binding {
 
     constructor(exprA, exprB, env, lex) {
+        console.log({exprA, exprB})
+
         this.lex = lex.copy();
         this.lex.sl = lex.off - 3;
         this.lex.off = env.start;
@@ -29,7 +31,7 @@ export default class Binding {
 
         this.val = this.ast + "";
 
-        if (!(this.ast instanceof identifier))
+        if (this.ast && !(this.ast instanceof identifier))
             this.processJSAST(env.presets);
 
     }
