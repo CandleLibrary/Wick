@@ -1,17 +1,17 @@
-import compiler from "./compiler/component.mjs";;
+import compiler from "./compiler/component.js";;
 
-import wick_compile from "./compiler/wick.mjs";;
-import CompilerEnv from "./compiler/compiler_env.mjs";;
+import wick_compile from "./compiler/wick.js";;
+import CompilerEnv from "./compiler/compiler_env.js";;
 //Models
-import { Store } from "./model/store.mjs";;
-import { SchemedModel } from "./model/schemed.mjs";;
-import { schemes } from "./schema/schemas.mjs";;
-import { Model } from "./model/model.mjs";;
-import { ModelContainerBase } from "./model/container/base.mjs";;
-import { MultiIndexedContainer } from "./model/container/multi.mjs";;
-import { BTreeModelContainer } from "./model/container/btree.mjs";;
-import { ArrayModelContainer } from "./model/container/array.mjs";;
-import { Presets } from "./presets.mjs";;
+import { Store } from "./model/store.js";;
+import { SchemedModel } from "./model/schemed.js";;
+import { schemes } from "./schema/schemas.js";;
+import { Model } from "./model/model.js";;
+import { ModelContainerBase } from "./model/container/base.js";;
+import { MultiIndexedContainer } from "./model/container/multi.js";;
+import { BTreeModelContainer } from "./model/container/btree.js";;
+import { ArrayModelContainer } from "./model/container/array.js";;
+import { Presets } from "./presets.js";;
 import whind from "@candlefw/whind";
 const wick = compiler;
 
