@@ -16,7 +16,6 @@ class ArgumentIO extends IO {
     }
 
     down(value) {
-
         this.ele.updateProp(this, value);
     }
 }

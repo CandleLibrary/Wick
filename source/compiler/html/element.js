@@ -26,6 +26,10 @@ export default class ElementNode {
         this.slots = null;
         this.origin_url = env.url;
         this.attribs = new Map((attribs || []).map(a => (a.link(this), [a.name, a])));
+
+        if(this.attribs.has(""))
+            this.attribs.delete("");
+
         this.pending_load_attrib = USE_PENDING_LOAD_ATTRIB;
 
         this.component = this.getAttrib("component").value;

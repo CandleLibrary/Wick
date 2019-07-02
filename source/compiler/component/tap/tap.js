@@ -134,15 +134,15 @@ export class Tap {
         this.ios.push(io);
 
         io.parent = this;
-
-        if(this.value !== undefined)
-            io.down(this.value);
-        
     }
 
     removeIO(io) {
         if (removeFromArray(this.ios, io)[0])
             io.parent = null;
+    }
+
+    discardElement(ele){
+        this.parent.discardElement(ele);
     }
 }
 

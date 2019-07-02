@@ -1,5 +1,5 @@
-import spark from "@candlefw/spark";
 import { EXPORT } from "../tap/tap.js";
+
 export class IOBase {
 
     constructor(parent, element = null) {
@@ -10,10 +10,19 @@ export class IOBase {
         parent.addIO(this);
     }
 
+    discardElement(ele){
+        this.parent.discardElement(ele);
+    }
+
     destroy() {
         this.parent.removeIO(this);
 
         this.parent = null;
+    }
+
+    init(default_val){
+        ((default_val = (this.parent.value || default_val))
+            && this.down(default_val));
     }
 
     down() {}
@@ -25,6 +34,7 @@ export class IOBase {
 
     addIO(child) {
         this.ele = child;
+        child.parent = this;
     }
 
     removeIO() {
@@ -51,7 +61,7 @@ export class IO extends IOBase {
 
         this.argument = null;
 
-        if (default_val) this.down(default_val)
+       // if (default_val) this.down(default_val);
     }
 
     destroy() {
@@ -85,7 +95,7 @@ export class AttribIO extends IOBase {
             let down_tap = element.io.parent;
             let root = scope.parent;
             tap.modes |= EXPORT;
-            return new RedirectAttribIO(scope, errors, element.io.parent, tap)
+            return new RedirectAttribIO(scope, errors, element.io.parent, tap);
         }
 
         super(tap, element);
@@ -93,8 +103,7 @@ export class AttribIO extends IOBase {
         this.attrib = attr;
         this.ele.io = this;
 
-
-        if (default_val) this.down(default_val)
+        this.init(default_val);
     }
 
     destroy() {
@@ -118,7 +127,7 @@ export class AttribIO extends IOBase {
 
     }
 }
-
+var test = null;
 /**
     This io updates the value of a TextNode or it replaces the TextNode with another element if it is passed an HTMLElement
 */
@@ -127,7 +136,8 @@ export class DataNodeIO extends IOBase {
         super(tap, element);
         this.ele = element;
         this.ELEMENT_IS_TEXT = element instanceof Text;
-        if (default_val) this.down(default_val)
+
+        this.init(default_val);
     }
 
     destroy() {
@@ -135,21 +145,23 @@ export class DataNodeIO extends IOBase {
         this.attrib = null;
         super.destroy();
     }
-
     down(value) {
+        const ele = this.ele;
+
         if (value instanceof HTMLElement) {
+            
             if (value !== this.ele) {
                 this.ELEMENT_IS_TEXT = false;
-                this.ele.parentElement.replaceNode(value, this.ele)
                 this.ele = value;
+                ele.parentElement.replaceNode(value, ele);
+                this.discardElement(ele);
             }
         } else {
             if (!this.ELEMENT_IS_TEXT) {
                 this.ELEMENT_IS_TEXT = true;
-                const ele = new Text();
-                console.log("SDFSDFSDFSDF")
-                this.ele.parentElement.replaceNode(ele, this.ele)
-                this.ele = ele;
+                this.ele = new Text();
+                ele.parentElement.replaceNode(this.ele, ele);
+                this.discardElement(ele);
             }
             this.ele.data = value;
         }

@@ -46,6 +46,7 @@
     "@candlefw/hydrocarbon": "latest",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
     "esm": "latest",
     "jsdoc": "^3.6.2",
     "jsdom": "^11.12.0",
@@ -71,7 +72,7 @@
     "@candlefw/whind": "latest"
   },
   "esm": {
-    "cjs":{
+    "cjs": {
       "cache": true
     }
   },

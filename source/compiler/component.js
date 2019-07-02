@@ -87,10 +87,8 @@ const
                 }));
 
             } catch (e) {
-                error(error.COMPONENT_PARSE_FAILURE, e, compiler_env);
+                throw error(error.COMPONENT_PARSE_FAILURE, e, compiler_env);
             }
-
-            return ast;
         },
 
 
@@ -111,6 +109,7 @@ const
 
             const component_data = data[0];
 
+
             // If this function is an operand of the new operator, run an alternative 
             // compiler on the calgling object.
             if (new.target) {
@@ -124,64 +123,59 @@ const
                 //Reference to the component name. Used with the Web Component API
                 this.name = "";
 
-                this.pending = new Promise(res => {
-                    compileAST(component_data, presets).then(ast => {
+                const extrascripts = [];
 
-                        if (this.constructor.prototype !== Component.prototype) {
+                this.pending = ((async () => {
 
-                            //Go through prototype chain and extract functions that have names starting with $. Add them to the ast.
+                    const ast = await compileAST(component_data, presets);
 
-                            for (const a of Object.getOwnPropertyNames(this.constructor.prototype)) {
-                                if (a == "constructor") continue;
+                    ast.children.push(...extrascripts);
 
-                                const r = this.constructor.prototype[a];
+                    this.READY = true;
+                    this.ast = ast;
+                    this.ast.finalize();
 
-                                if (typeof r == "function") {
+                    if (!this.name)
+                        this.name = this.ast.getAttrib("component").value || "undefined-component";
 
-                                    //extract and process function information. 
-                                    let c_env = new CompilerEnv(presets, env);
+                    if (this.__pending) {
+                        this.__pending.forEach(e => e[3](this.mount(...e.slice(0, 3))));
+                        this.__pending = null;
+                    }
 
-                                    let js_ast = wick_compile(whind("function " + r.toString().trim() + ";"), c_env);
+                    return this;
+                })());
 
-                                    let func_ast = JS.getFirst(js_ast, types.function_declaration);
-                                    let ids = JS.getClosureVariableNames(func_ast);
-                                    let args = JS.getFunctionDeclarationArgumentNames(js_ast); // Function arguments in wick class component definitions are treated as TAP variables. 
-                                    const HAS_CLOSURE = (ids.filter(a => !args.includes(a))).length > 0;
+                if (this.constructor.prototype !== Component.prototype) {
 
-                                    const binding = new Binding([null, func_ast.id], { presets, start: 0 }, whind("ddddd"));
-                                    const attrib = new Attribute(["on", null, binding], presets);
-                                    const stmt = func_ast.body;
+                    //Go through prototype chain and extract functions that have names starting with $. Add them to the ast.
 
-                                    let script = new Script({}, null, stmt, [attrib], presets);
+                    for (const a of Object.getOwnPropertyNames(this.constructor.prototype)) {
+                        if (a == "constructor") continue;
 
-                                    script.finalize();
+                        const r = this.constructor.prototype[a];
 
-                                    ast.children.push(script);
+                        if (typeof r == "function") {
 
-                                    //Create and attach a script IO to the HTML ast. 
+                            //extract and process function information. 
+                            const c_env = new CompilerEnv(presets, env),
+                                js_ast = wick_compile(whind("function " + r.toString().trim() + ";"), c_env),
+                                func_ast = JS.getFirst(js_ast, types.function_declaration);
+                                
+                            //const HAS_CLOSURE = (ids.filter(a => !args.includes(a))).length > 0;
 
+                            const binding = new Binding([null, func_ast.id], { presets, start: 0 }, whind("ddddd"));
+                            const attrib = new Attribute(["on", null, binding], presets);
+                            const stmt = func_ast.body;
 
-                                    //Checking for variable leaks. 
-                                    //if all closure variables match all argument variables, then the function is self contained and can be completely enclosed by the 
-                                }
-                            }
+                            let script = new Script({}, null, stmt, [attrib], presets);
+
+                            script.finalize();
+
+                            extrascripts.push(script);
                         }
-
-                        this.READY = true;
-                        this.ast = ast;
-                        this.ast.finalize();
-
-                        if (!this.name)
-                            this.name = this.ast.getAttrib("component").value || "undefined-component";
-
-                        if (this.__pending) {
-                            this.__pending.forEach(e => e[3](this.mount(...e.slice(0, 3))));
-                            this.__pending = null;
-                        }
-
-                        return res(this);
-                    });
-                });
+                    }
+                }
             } else {
                 const comp = new Component(...data);
 

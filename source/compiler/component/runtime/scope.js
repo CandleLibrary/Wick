@@ -1,5 +1,6 @@
 import { Model } from "../../../model/model.js";
 import { Tap, UpdateTap } from "../tap/tap.js";
+import { IOBase } from "../io/io.js";
 import Observer from "../../../observer/observer.js";
 
 
@@ -23,15 +24,11 @@ export default class Scope extends Observer {
         this.ast = ast;
         this.ele = element;
 
-        //this.presets = presets;
-        //this.statics = null;
+        element.wick_scope = this;
+
         this.parent = null;
         this.model = null;
         this.update_tap = null;
-
-        //this.children = [];
-        //this.badges = {};
-        //this.hooks = [];
 
         this.ios = [];
         this.taps = new Map;
@@ -46,6 +43,36 @@ export default class Scope extends Observer {
         this.PENDING_LOADS = 1; //set to one for self
 
         this.addToParent(parent);
+    }
+
+    discardElement(ele, ios) {
+        if (!ios) {
+            ios = [];
+
+            for (const tap of this.taps.values())
+                for (let io of tap.ios) {
+                    while (io.ele instanceof IOBase)
+                        io = io.ele;
+                    ios.push(io);
+                }
+
+        }
+
+        for (let i = 0; i < ios.length; i++) {
+            const io = ios[i];
+            if (io.ele == ele) {
+                io.destroy();
+                ios.splice(i--, 1);
+            }
+        }
+
+        const children = ele.children;
+
+        for (let i = 0; i < children.length; i++)
+            this.discardElement(children[i], ios);
+
+        if (ele.wick_scope)
+            ele.wick_scope.destroy();
     }
 
     destroy() {
@@ -117,6 +144,9 @@ export default class Scope extends Observer {
     }
 
     getTap(name) {
+
+        if (!name) return null;
+
         let tap = this.taps.get(name);
 
         if (!tap) {
@@ -142,7 +172,8 @@ export default class Scope extends Observer {
 
     linkTaps(tap_list) {
         let out_taps = [];
-        for(const tap of tap_list){
+
+        for (const tap of tap_list) {
             let name = tap.name;
 
             if (this.taps.has(name))
@@ -191,9 +222,9 @@ export default class Scope extends Observer {
         if (this.css.length > 0)
             this.loadCSS();
 
-        for(const scope of this.scopes) {
+        for (const scope of this.scopes) {
             scope.load(model);
-            scope.getBadges(this);
+            // /scope.getBadges(this);
         }
 
         if (model.addObserver)
@@ -221,7 +252,7 @@ export default class Scope extends Observer {
             element.style = ("" + rules).slice(1, -1) + "";
         }
 
-        element.children.forEach(child=>this.loadCSS(child))
+        element.children.forEach(child => this.loadCSS(child))
     }
 
     loadAcknowledged() {
