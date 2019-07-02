@@ -22,9 +22,9 @@
 	<> IMPORT_TAG → < τimport ATTRIBUTES /? >  				↦cstr ^element_selector
 
 	<> GOAL_TAG → TAG
-		│ DTD TAG 											↦return { sym[1] }
+		#│ DTD TAG 											↦return { sym[1] }
 
-	<> DTD → < ! BODY_SYMBOLS(+") >					    	↦return { null }			 	
+	#<> DTD → < ! BODY_SYMBOLS(+") >					    	↦return { null }			 	
 
 	<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >	↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 		│ < TAGNAME ATTRIBUTES? / >							↦return { fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
@@ -53,12 +53,11 @@
 	│ τtrack
 	│ τwbr
 
-<> TAG_BODY → (TAG_BODY_ITEM)(+)
-
+<> TAG_BODY → TAG_BODY_ITEM(+)
 
 <> TAG_BODY_ITEM → TEXT_NODE  						
 	│ TAG 											
-	│ DTD 											
+	#│ DTD 											
 	
 
 <> ATTRIBUTES → ATTRIBUTES ATTRIBUTE  					↦return { sym[0].push(sym[1]), sym[0] }

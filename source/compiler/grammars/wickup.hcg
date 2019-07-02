@@ -2,7 +2,7 @@
 
 @EXT md
 
-@SYMBOL ``` `` {{ {{{ }}} }} === ---
+@SYMBOL ``` `` === 
 
 @IMPORT ./html.hcg as html
 
@@ -23,21 +23,24 @@
    │ CODE_BLOCK					
    │ UNORDERED_LIST_ITEM
 
+<> WICKUP_COMBO → html::TEXT_NODE │ html::TAG
+
+<> WICKUP_COMBO_PLUS → WICKUP_COMBO │ HEADER
 
 # Escaped symbol
-+> html::BODY_SYMBOLS → \\ θany 															↦r { $sym2 }
+# +> html::BODY_SYMBOLS → \\ θany 															↦r { $sym2 }
 
 <> HORIZONTAL_RULE → HORIZONTAL_RULE_BODY													↦r { fn.element_selector("hr", null, null,  env, lex ) }
-	│ HORIZONTAL_RULE_BODY (html::TEXT_NODE │ html::TAG)									↦return { $sym2 }
+	│ HORIZONTAL_RULE_BODY WICKUP_COMBO														↦return { $sym2 }
 
-<> HORIZONTAL_RULE_BODY → === ( = │ === )(*)												↦return { $sym1 }
+<> HORIZONTAL_RULE_BODY → _ _(*)															↦return { $sym1 }
 	│ --- ( - │--- )(*)	 																	↦return { $sym1 }
 
-<> HEADER → \#(+) (IGN θws) (html::TEXT_NODE │ html::TAG)(+)								↦r { fn.element_selector("h" + Math.min($sym1.length, 6), null, $$sym2,  env, lex) }
+<> HEADER → \#(+) (IGN θws) WICKUP_COMBO(+)													↦r { fn.element_selector("h" + Math.min($sym1.length, 6), null, $$sym2,  env, lex) }
 
-<> BLOCK_QUOTES → (\> θws)(+) θws(*)  (html::TEXT_NODE │ html::TAG │ HEADER)(+) 			↦r { fn.element_selector("blockquote", null, $sym3, env, lex, $sym1.length) }
+<> BLOCK_QUOTES → (\> θws)(+) θws(*)  WICKUP_COMBO_PLUS(+) 									↦r { fn.element_selector("blockquote", null, $sym3, env, lex, $sym1.length) }
 
-<> UNORDERED_LIST_ITEM → ( ( \+  │ \* │ θnum ) θws )(+) θws(*)  (html::TEXT_NODE │ html::TAG │ HEADER)(+)   
+<> UNORDERED_LIST_ITEM → ( ( \+  │ \* │ θnum ) θws )(+) θws(*)  WICKUP_COMBO_PLUS(+)   
 																							
 																							↦r { fn.element_selector("li", null, $sym3, env, lex, $sym1.length) }
 				
@@ -49,13 +52,13 @@
 <> CODE_BLOCK → \``` (IGN θws)  θid?  (IGN θws)  θnl (θnl? (html::BODY_SYMBOLS)(*")  		↦r { fn.element_selector("code", null,[new fn.text([$sym1 + $sym2], env)], env, lex)} )(+) (IGN θws θnl) \```  
 																							↦r { fn.element_selector("pre", null, $$sym4, env, lex) }
 
-<> LINK → \[ (IGN θws) html::ATTRIBUTE_BODY (IGN θws) \]\( (html::TEXT_NODE │ html::TAG) \) 						↦r { fn.element_selector("a", [new fn.attribute(["href", "", $sym2])], [$sym5], env, lex) }
+<> LINK → \[ (IGN θws) html::ATTRIBUTE_BODY (IGN θws) \]\( WICKUP_COMBO \) 						↦r { fn.element_selector("a", [new fn.attribute(["href", "", $sym2])], [$sym5], env, lex) }
 
 
-<> ITALIC_BOLD_EMPHASIS → \{{{ html::TEXT_NODE(+) \}}}										↦r { fn.element_selector("i", null, [fn.element_selector("b", null, $sym2, env, lex)], env, lex) }
+<> ITALIC_BOLD_EMPHASIS → \{ { { html::TEXT_NODE(+) \} } }										↦r { fn.element_selector("i", null, [fn.element_selector("b", null, $sym2, env, lex)], env, lex) }
 	│ BOLD_EMPHASIS
 
-<> BOLD_EMPHASIS → \{{ html::TEXT_NODE(+) \}}												↦r { fn.element_selector("b", null, $sym2, env, lex) }
+<> BOLD_EMPHASIS → \{ { html::TEXT_NODE(+) \} }												↦r { fn.element_selector("b", null, $sym2, env, lex) }
 	│ EMPHASIS
 
 <> EMPHASIS → \{ html::TEXT_NODE(+) \}														↦r { fn.element_selector("i", null, $sym2, env, lex) }
