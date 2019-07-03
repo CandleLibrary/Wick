@@ -7,7 +7,7 @@ const offset = "";
 export default class TextNode {
 
     constructor(sym, env) {
-        this.data = sym[0];
+        this.data = sym[0] || "";
         this.IS_BINDING = (this.data instanceof Binding);
         this.tag = "text";
     }
@@ -21,7 +21,7 @@ export default class TextNode {
     }
 
     get IS_WHITESPACE(){
-        return !this.IS_BINDING && (!this.data.trim());
+        return !this.IS_BINDING && (!this.data.toString().trim());
     }
 
     mount(element, scope, presets, statics, pinned, ele = document.createTextNode("")) {

@@ -2,11 +2,13 @@
 
 @EXT md
 
-@SYMBOL ``` `` === 
+@IGNORE θws θnl
+
+@SYMBOL ``` `` === </ ]()
 
 @IMPORT ./html.hcg as html
 
-+> html::TAG_BODY_ITEM → WICKUP_PLUGIN
++> html::TAG_BODY_ITEM → WICKUP_PLUGIN 
 
 +> html::TEXT_NODE → WICKUP_INLINE_ELEMENT
 
@@ -16,49 +18,50 @@
    │ PRE_MD_BLK								↦cstr ^text
    │ PRE_MD_BLK HORIZONTAL_RULE 			↦return { $sym2 }
 
-<> PRE_MD_BLK → θnl θws(*)					↦return { $sym1 + $sym2.join("")  }
+<> PRE_MD_BLK → θnl θws(*)					↦r {$sym1}					
 
 <> WICKUP_BLOCK → HEADER 
    │ BLOCK_QUOTES				
    │ CODE_BLOCK					
    │ UNORDERED_LIST_ITEM
 
-<> WICKUP_COMBO → html::TEXT_NODE │ html::TAG
+<> WICKUP_COMBO → html::TEXT_NODE (RED </ ) │ html::TAG 
 
 <> WICKUP_COMBO_PLUS → WICKUP_COMBO │ HEADER
 
 # Escaped symbol
 # +> html::BODY_SYMBOLS → \\ θany 															↦r { $sym2 }
 
-<> HORIZONTAL_RULE → HORIZONTAL_RULE_BODY													↦r { fn.element_selector("hr", null, null,  env, lex ) }
+<> HORIZONTAL_RULE → HORIZONTAL_RULE_BODY	(RED θnl)										↦r { fn.element_selector("hr", null, null,  env, lex ) }
 	│ HORIZONTAL_RULE_BODY WICKUP_COMBO														↦return { $sym2 }
 
-<> HORIZONTAL_RULE_BODY → _ _(*)															↦return { $sym1 }
-	│ --- ( - │--- )(*)	 																	↦return { $sym1 }
+<> HORIZONTAL_RULE_BODY → \_(+)																↦return { $sym1 }
 
-<> HEADER → \#(+) (IGN θws) WICKUP_COMBO(+)													↦r { fn.element_selector("h" + Math.min($sym1.length, 6), null, $$sym2,  env, lex) }
+<> HEADER → \#(+) 	 WICKUP_COMBO(+) 														↦r { fn.element_selector("h" + Math.min($sym1.length, 6), null, $$sym2,  env, lex) }
 
-<> BLOCK_QUOTES → (\> θws)(+) θws(*)  WICKUP_COMBO_PLUS(+) 									↦r { fn.element_selector("blockquote", null, $sym3, env, lex, $sym1.length) }
+<> BLOCK_QUOTES → ( \> )(+)  WICKUP_COMBO_PLUS(+) 	(RED θnl)								↦r { fn.element_selector("blockquote", null, $sym2, env, lex, $sym1.length) }
 
-<> UNORDERED_LIST_ITEM → ( ( \+  │ \* │ θnum ) θws )(+) θws(*)  WICKUP_COMBO_PLUS(+)   
+<> UNORDERED_LIST_ITEM → ( \+  │ \*  )(+) WICKUP_COMBO_PLUS(+) (RED θnl)  
 																							
-																							↦r { fn.element_selector("li", null, $sym3, env, lex, $sym1.length) }
+																							↦r { fn.element_selector("li", null, $sym2, env, lex, $sym1.length) }
 				
 
 <> WICKUP_INLINE_ELEMENT → LINK
 	│ ITALIC_BOLD_EMPHASIS
 	│ CODE_QUOTE		
 
-<> CODE_BLOCK → \``` (IGN θws)  θid?  (IGN θws)  θnl (θnl? (html::BODY_SYMBOLS)(*")  		↦r { fn.element_selector("code", null,[new fn.text([$sym1 + $sym2], env)], env, lex)} )(+) (IGN θws θnl) \```  
+<> CODE_BLOCK → \``` θid?   θnl (θnl? html::TEXT_NODE 
+										↦r { fn.element_selector("code", null,[($sym2.data = $sym1 + $sym2.data, $sym2)], env, lex)} )(+) (IGN θws θnl) \```  
+																							
 																							↦r { fn.element_selector("pre", null, $$sym4, env, lex) }
 
-<> LINK → \[ (IGN θws) html::ATTRIBUTE_BODY (IGN θws) \]\( WICKUP_COMBO \) 						↦r { fn.element_selector("a", [new fn.attribute(["href", "", $sym2])], [$sym5], env, lex) }
+<> LINK → \[ (IGN θws) html::ATTRIBUTE_BODY (IGN θws) \]( WICKUP_COMBO \) 						↦r { fn.element_selector("a", [new fn.attribute(["href", "", $sym2])], [$sym5], env, lex) }
 
 
-<> ITALIC_BOLD_EMPHASIS → \{ { { html::TEXT_NODE(+) \} } }										↦r { fn.element_selector("i", null, [fn.element_selector("b", null, $sym2, env, lex)], env, lex) }
+<> ITALIC_BOLD_EMPHASIS → \{ \{ \{ html::TEXT_NODE(+) \} \} \}										↦r { fn.element_selector("i", null, [fn.element_selector("b", null, $sym4, env, lex)], env, lex) }
 	│ BOLD_EMPHASIS
 
-<> BOLD_EMPHASIS → \{ { html::TEXT_NODE(+) \} }												↦r { fn.element_selector("b", null, $sym2, env, lex) }
+<> BOLD_EMPHASIS → \{ \{ html::TEXT_NODE(+) \} \}												↦r { fn.element_selector("b", null, $sym3, env, lex) }
 	│ EMPHASIS
 
 <> EMPHASIS → \{ html::TEXT_NODE(+) \}														↦r { fn.element_selector("i", null, $sym2, env, lex) }
@@ -71,4 +74,4 @@
 
 <> CODE_QUOTE_SYMBOLS → BODY_SYMBOLS2(+")
 
-<> BODY_SYMBOLS2 → θid │ θsym │ θws │ θob │ θcb │ θop │ θnum │ θstr │ \#
+<> BODY_SYMBOLS2 → θid │ θsym │  θob │ θcb │ θop │ θnum │ θstr │ \#

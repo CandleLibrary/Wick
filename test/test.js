@@ -43,17 +43,21 @@ function* recurseIONodes(io) {
         yield* recurseIO(io.ele);
 }
 
-async function createComponent(value){
+async function createComponent(value) {
     const comp = await wick(value).pending;
 
-        const mount = new HTMLElement();
+    const mount = new HTMLElement();
 
-        mount.tag = "div";
+    mount.tag = "div";
 
-    return {scope: await comp.mount(mount), ele:mount};
+    return { scope: await comp.mount(mount), ele: mount };
 }
 
-console.log("----------------------------------------------------START----------------------------------------------------")
+import parsing from "./parsing.js";
+
+parsing(createComponent);
+
+console.log("----------------------------------------------------START----------------------------------------------------");
 
 describe("Basic", function() {
     it("Creates compiled components using HTML syntax", async function() {
@@ -136,48 +140,50 @@ describe("Binding Methods", function() {
 
     it("Scripts can define arguments using on=((id)(arg_list)) syntax");
 
-    it.only("Input bindings to [value] attribute using syntaxes of the form \n\t((id)(id)) \n\t(()(id)) \n\t((id)) \n\t((id)()) \n\twork correctly.", async function() {
-        const {scope, ele} = await createComponent(
-            "<scope export='a b c d f'>"
-                +"<input type='text' value=(( a )( e )) />"
-                +"<input type='text' value=((   )( f )) />"
-                +"<input type='text' value=(( c )) />"
-                +"<input type='text' value=(( d )(   )) />"
-            +"</scope>"
-        ), [a,b,c,d] = ele.children[0].children;
+    it("Input bindings to [value] attribute using syntaxes of the form \n\t((id)(id)) \n\t(()(id)) \n\t((id)) \n\t((id)()) \n\twork correctly.", async function() {
+        const { scope, ele } = await createComponent(
+            "<scope export='a b c d f'>" +
+            "<input type='text' value=(( a )( e )) />" +
+            "<input type='text' value=((   )( f )) />" +
+            "<input type='text' value=(( c )) />" +
+            "<input type='text' value=(( d )(   )) />" +
+            "</scope>"
+        ), [a, b, c, d] = ele.children[0].children;
 
         var DID_RUN = false;
-        
+
         /******************************************************/
-        
+
         a.value = "testAfalse";
-        scope.parent = { upImport: (prop_name, data, meta) => {
+        scope.parent = {
+            upImport: (prop_name, data, meta) => {
                 prop_name.should.equal("e");
                 data.sould.equal("testAtrue");
                 DID_RUN = true;
             }
-        }
-        scope.update({a:"testAtrue", e:"failed"})
+        };
+        scope.update({ a: "testAtrue", e: "failed" });
         await sleep(2);
         a.value.should.equal('testAtrue');
-        a.runEvent("updated", {})
+        a.runEvent("updated", {});
         await sleep(2);
         DID_RUN.should.be.true;
-        
+
         /******************************************************/
 
         DID_RUN = false;
         b.value = "testBfalse";
-        scope.parent = { upImport: (prop_name, data, meta) => {
+        scope.parent = {
+            upImport: (prop_name, data, meta) => {
                 prop_name.should.equal("f");
                 data.sould.equal("testBfalse");
                 DID_RUN = true;
             }
-        }
-        scope.update({f:"testAtrue", e:"failed"})
+        };
+        scope.update({ f: "testAtrue", e: "failed" });
         await sleep(2);
         b.value.should.equal('testBfalse');
-        b.runEvent("updated", {})
+        b.runEvent("updated", {});
         await sleep(2);
         b.value.should.equal('testBfalse');
         DID_RUN.should.be.true;
@@ -186,13 +192,14 @@ describe("Binding Methods", function() {
 
         DID_RUN = false;
         c.value = "testC";
-        scope.parent = { upImport: (prop_name, data, meta) => {
+        scope.parent = {
+            upImport: (prop_name, data, meta) => {
                 prop_name.should.equal("c");
                 data.sould.equal("testCnewer");
                 DID_RUN = true;
             }
-        }
-        scope.update({c:"testCnew", e:"failed"})
+        };
+        scope.update({ c: "testCnew", e: "failed" });
         await sleep(2);
         c.value.should.equal('testCnew');
         c.value = "testCnewer";

@@ -18,8 +18,6 @@
 	<> HTML → BODY
 
 	<> BODY → GOAL_TAG
-	
-	<> IMPORT_TAG → < τimport ATTRIBUTES /? >  				↦cstr ^element_selector
 
 	<> GOAL_TAG → TAG
 		#│ DTD TAG 											↦return { sym[1] }
