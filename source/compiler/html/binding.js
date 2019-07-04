@@ -12,7 +12,6 @@ export const BOOL = 8;
 export default class Binding {
 
     constructor(exprA, exprB, env, lex) {
-        console.log({exprA, exprB})
 
         this.lex = lex.copy();
         this.lex.sl = lex.off - 3;

@@ -187,7 +187,8 @@ function processWickupChildren(children, env, lex) {
     }
 }
 
-export default function es(tag, attribs, children, env, lex, meta = 0) {    
+export default function es(tag, attribs, children, env, lex, meta = 0) {  
+    env.off = lex.off;
 
     const
         FULL = !!children;

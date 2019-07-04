@@ -210,7 +210,7 @@ describe("Binding Methods", function() {
     });
 
 
-    it("HTML element should appear in the scoped DOM when an ExpressionIO, bound to a DataIO, yields a HTML object.", async function() {
+    it("HTML element should appear in the scoped DOM when an ExpressionIO, piped to a TextIO, yields a HTML object.", async function() {
 
         const comp = await wick(`
             

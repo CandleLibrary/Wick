@@ -857,7 +857,7 @@ R2902_js_cover_parenthesized_expression_and_arrow_parameter_list=sym=>new fn.par
 R2903_js_cover_parenthesized_expression_and_arrow_parameter_list=sym=>new fn.parenthasized(sym$2,new fn.spread_element(sym.slice(3,5))),
 R3210_html_BODY=sym=>((sym[1].import_list = sym[0],sym[1])),
 R3230_html_TAG=(sym,env,lex)=>fn.element_selector(sym[1],sym[2],sym[4],env,lex),
-I3231_html_TAG=function (sym,env,lex){env.off = lex.off + lex.tl;},
+I3231_html_TAG=function (sym,env,lex){env.off = lex.off;},
 R3232_html_TAG=(sym,env,lex)=>fn.element_selector(sym[1],sym[2],sym[3],env,lex),
 R3233_html_TAG=(sym,env,lex)=>fn.element_selector(sym[1],null,sym[3],env,lex),
 R3234_html_TAG=(sym,env,lex)=>fn.element_selector(sym[1],null,sym[2],env,lex),
