@@ -4,7 +4,7 @@
 
 @IGNORE θws θnl
 
-@SYMBOL ``` `` === </ ](
+@SYMBOL ``` `` === </ ]()
 
 @IMPORT ./html.hcg as html
 
@@ -18,7 +18,7 @@
    │ PRE_MD_BLK								↦cstr ^text
    │ PRE_MD_BLK HORIZONTAL_RULE 			↦return { $sym2 }
 
-<> PRE_MD_BLK → θnl (θws)(*)					↦r {$sym1}					
+<> PRE_MD_BLK → θnl θws(*)					↦r {$sym1}					
 
 <> WICKUP_BLOCK → HEADER 
    │ BLOCK_QUOTES				
@@ -37,7 +37,7 @@
 
 <> HORIZONTAL_RULE_BODY → \_(+)																↦return { $sym1 }
 
-<> HEADER → ( \# )(+) WICKUP_COMBO(+) 	(RED θnl)												↦r { fn.element_selector("h" + Math.min($sym1.length, 6), null, $$sym2,  env, lex) }
+<> HEADER → \#(+) 	 WICKUP_COMBO(+) 														↦r { fn.element_selector("h" + Math.min($sym1.length, 6), null, $$sym2,  env, lex) }
 
 <> BLOCK_QUOTES → ( \> )(+)  WICKUP_COMBO_PLUS(+) 	(RED θnl)								↦r { fn.element_selector("blockquote", null, $sym2, env, lex, $sym1.length) }
 

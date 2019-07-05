@@ -10,8 +10,9 @@
     "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
     "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/html.hcg",
     "compile.test": "node --experimental-modules ./test/config.mjs",
-    "test.watch": "mocha -r esm -w test.js ",
-    "test": "mocha --require esm -w --watch-extensions mjs test/test.js",
+    "test.coverage": "nyc npm run test",
+    "test.watch": "mocha -r esm -w --watch-extensions mjs test/test.js test.js",
+    "test": "mocha --require esm --watch-extensions mjs test/test.js",
     "prepublishOnly": "npm run build",
     "build": "rollup --config ./build/config/main.config.js",
     "build.watch": "rollup --config ./build/config/main.config.js --watch"

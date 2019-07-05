@@ -6,13 +6,10 @@ const offset = "";
 
 export default class TextNode {
 
-    constructor(sym, env, lex) {
-        if(sym[0] instanceof Binding){
-            this.data = sym[0];
-            this.IS_BINDING = true;
-        }else{
-            this.data = lex.str.slice(env.off, lex.off)
-        }
+    constructor(sym, env) {
+        
+        this.data = sym[0] || "";
+        this.IS_BINDING = (this.data instanceof Binding);
         this.tag = "text";
     }
 

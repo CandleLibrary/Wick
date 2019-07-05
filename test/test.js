@@ -44,7 +44,12 @@ function* recurseIONodes(io) {
 }
 
 async function createComponent(value) {
-    const comp = await wick(value).pending;
+    let comp;
+    try {
+        comp = await wick(value).pending;
+    } catch (e) {
+        throw e;
+    }
 
     const mount = new HTMLElement();
 
@@ -140,72 +145,108 @@ describe("Binding Methods", function() {
 
     it("Scripts can define arguments using on=((id)(arg_list)) syntax");
 
-    it("Input bindings to [value] attribute using syntaxes of the form \n\t((id)(id)) \n\t(()(id)) \n\t((id)) \n\t((id)()) \n\twork correctly.", async function() {
-        const { scope, ele } = await createComponent(
-            "<scope export='a b c d f'>" +
-            "<input type='text' value=(( a )( e )) />" +
-            "<input type='text' value=((   )( f )) />" +
-            "<input type='text' value=(( c )) />" +
-            "<input type='text' value=(( d )(   )) />" +
-            "</scope>"
-        ), [a, b, c, d] = ele.children[0].children;
+    describe("Bindings on <input> [value] attribute.", function() {
 
-        var DID_RUN = false;
+        it("((A)(B)) : Value data received on binding A and user input pushed out through binding B", async function() {
+            const { scope, ele } = await createComponent(
+                "<scope export='a b'>" +
+                "<input type='text' value=(( a )( b )) />" +
+                "</scope>"
+            ), [a, b] = ele.children[0].children;
 
-        /******************************************************/
+            var DID_RUN = false;
+            a.value = "testAfalse";
+            scope.parent = {
+                upImport: (prop_name, data, meta) => {
+                    prop_name.should.equal("c");
+                    data.sould.equal("testAtrue");
+                    DID_RUN = true;
+                }
+            };
+            scope.update({ a: "testAtrue", c: "failed" });
+            await sleep(2);
+            a.value.should.equal('testAtrue');
+            a.runEvent("updated", {});
+            await sleep(2);
+            DID_RUN.should.be.true;
+        })
 
-        a.value = "testAfalse";
-        scope.parent = {
-            upImport: (prop_name, data, meta) => {
-                prop_name.should.equal("e");
-                data.sould.equal("testAtrue");
-                DID_RUN = true;
-            }
-        };
-        scope.update({ a: "testAtrue", e: "failed" });
-        await sleep(2);
-        a.value.should.equal('testAtrue');
-        a.runEvent("updated", {});
-        await sleep(2);
-        DID_RUN.should.be.true;
+        it("(()(A)) : Scope data ignored and user input pushed out through binding A", async function() {
+            const { scope, ele } = await createComponent(
+                "<scope export='b'>" +
+                "<input type='text' value=((  )( b )) />" +
+                "</scope>"
+            ), [b] = ele.children[0].children;
 
-        /******************************************************/
+            var DID_RUN = false;
+            b.value = "testBfalse";
+            scope.parent = {
+                upImport: (prop_name, data, meta) => {
+                    prop_name.should.equal("f");
+                    data.sould.equal("testBfalse");
+                    DID_RUN = true;
+                }
+            };
+            scope.update({ f: "testAtrue", e: "failed" });
+            await sleep(2);
+            b.value.should.equal('testBfalse');
+            b.runEvent("updated", {});
+            await sleep(2);
+            b.value.should.equal('testBfalse');
+            DID_RUN.should.be.true;
+        })
 
-        DID_RUN = false;
-        b.value = "testBfalse";
-        scope.parent = {
-            upImport: (prop_name, data, meta) => {
-                prop_name.should.equal("f");
-                data.sould.equal("testBfalse");
-                DID_RUN = true;
-            }
-        };
-        scope.update({ f: "testAtrue", e: "failed" });
-        await sleep(2);
-        b.value.should.equal('testBfalse');
-        b.runEvent("updated", {});
-        await sleep(2);
-        b.value.should.equal('testBfalse');
-        DID_RUN.should.be.true;
+        it("((A)) : Scope data received on A and user input pushed out through binding A", async function() {
+            const { scope, ele } = await createComponent(
+                "<scope export='a'>" +
+                "<input type='text' value=(( a )) />" +
+                "</scope>"
+            ), [a] = ele.children[0].children;
 
-        /******************************************************/
+            var DID_RUN = false;
+            a.value = "testBfalse";
+            scope.parent = {
+                upImport: (prop_name, data, meta) => {
+                    prop_name.should.equal("a");
+                    data.sould.equal("testBfalse");
+                    DID_RUN = true;
+                }
+            };
+            a.value.should.equal('testBfalse');
+            scope.update({ a: "testAtrue", e: "failed" });
+            await sleep(1);
+            a.value.should.equal('testAtrue');
+            a.value = "testBfalse";
+            a.runEvent("updated", {});
+            await sleep(1);
+            a.value.should.equal('testBfalse');
+            DID_RUN.should.be.true;
+        })
 
-        DID_RUN = false;
-        c.value = "testC";
-        scope.parent = {
-            upImport: (prop_name, data, meta) => {
-                prop_name.should.equal("c");
-                data.sould.equal("testCnewer");
-                DID_RUN = true;
-            }
-        };
-        scope.update({ c: "testCnew", e: "failed" });
-        await sleep(2);
-        c.value.should.equal('testCnew');
-        c.value = "testCnewer";
-        c.runEvent("updated", {})
-        await sleep(2);
-        DID_RUN.should.be.true;
+        it("((A)()) : Scope data received on A and user input ignored", async function() {
+            const { scope, ele } = await createComponent(
+                "<scope export='a'>" +
+                "<input type='text' value=(( d )(   )) />" +
+                "</scope>"
+            ), [a] = ele.children[0].children;
+
+            var DID_RUN = false;
+            c.value = "testC";
+            scope.parent = {
+                upImport: (prop_name, data, meta) => {
+                    prop_name.should.equal("c");
+                    data.sould.equal("testCnewer");
+                    DID_RUN = true;
+                }
+            };
+            scope.update({ c: "testCnew", e: "failed" });
+            await sleep(2);
+            c.value.should.equal('testCnew');
+            c.value = "testCnewer";
+            c.runEvent("updated", {})
+            await sleep(2);
+            DID_RUN.should.be.true;
+        })
 
     });
 

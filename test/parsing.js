@@ -11,8 +11,21 @@ export default function(createComponent) {
             ele.children[0].children[0].tag.should.equal("h2");
         });
 
+        it("JS Expressions", async function() {
+            (await createComponent(`<h2>(())</h2>`)).should.not.throw;
+            (await createComponent(`<h2>(( 2+2 ))</h2>`)).should.not.throw;
+            (await createComponent(`<h2>(( alpha ? douglas : "rainbow" ))</h2>`)).should.not.throw;
+            (await createComponent(`<h2>(( test && <a>rainbow</a> ))</h2>`)).should.not.throw;
+            (await createComponent(`<h2>(( [tree, dog, cat] ))</h2>` )).should.not.throw;
+            (await createComponent(`<h2>(( {pine:box, ["salamander"]: test}))</h2>` )).should.not.throw;
+            (await createComponent(`<h2>(( id ))</h2>`)).should.not.throw;
+            (await createComponent(`<h2>(( 1 || 2 || 3 ))</h2>`)).should.not.throw;
+            (await createComponent(`<h2>(( 1 || 2 || 3 ))</h2>`)).should.not.throw;
+            (await createComponent(`<h2>(( 1 || 2 || 3 ))</h2>`)).should.not.throw;
+        });
 
-        describe.only("Parses wickup™ grammer", function() {
+
+        describe.skip("Parses wickup™ grammer", function() {
             it("Header:  # HEADER", async function() {
                 const { ele } = await createComponent(
                     `<scope>

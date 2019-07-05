@@ -24,9 +24,9 @@
 
 	#<> DTD → < ! BODY_SYMBOLS(+") >					    	↦return { null }			 	
 
-	<> TAG → < TAGNAME ATTRIBUTES? > ↦{env.off = lex.off+lex.tl }TAG_BODY? </ TAGNAME >	↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
+	<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >	↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 		│ < TAGNAME ATTRIBUTES? / >							↦return { fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
-		│ < VOID_NAME ATTRIBUTES? > ↦{env.off = lex.off+lex.tl }</ VOID_NAME > 			↦return { fn.element_selector($$sym2, $$sym3, $$sym4, env, lex ) }
+		│ < VOID_NAME ATTRIBUTES? > </ VOID_NAME > 			↦return { fn.element_selector($$sym2, $$sym3, $$sym4, env, lex ) }
 		│ < VOID_NAME ATTRIBUTES? /? >						↦return { fn.element_selector($$sym2, $$sym3, null, env, lex ) }
 
 
@@ -55,6 +55,8 @@
 
 <> TAG_BODY_ITEM → TEXT_NODE  						
 	│ TAG 											
+	#│ DTD 											
+	
 
 <> ATTRIBUTES → ATTRIBUTES ATTRIBUTE  					↦return { sym[0].push(sym[1]), sym[0] }
 	│ ATTRIBUTE 										↦return { [sym[0]] }
@@ -62,8 +64,8 @@
 <> ATTRIBUTE → ATTRIBUTE_HEAD = ATTRIBUTE_BODY 	 		↦cstr ^attribute
  	│ ATTRIBUTE_HEAD 									↦cstr ^attribute
 
-<> ATTRIBUTE_HEAD → ' identifier? '						↦return { $$sym2 }
-	│ " identifier? "									↦return { $$sym2 }
+<> ATTRIBUTE_HEAD → ' identifier? '								↦return { sym[1] }
+	│ " identifier? "											↦return { sym[1] }
 	│ identifier
 
 
@@ -72,11 +74,13 @@
 
 <> TAGNAME → identifier
 
-<> identifier → (θid) ( θid │ \- │ \_ │ \: )(*") 		↦r { $sym1 + $sym2 } 
 
-<> TEXT_NODE → BODY_SYMBOLS(+") 						↦cstr ^text
+<> identifier → (θid) ( θid │ \- │ \_ │ \: )(*") (θws │ θnl)?  ↦ r { $sym1 + $sym2 } 
 
-<> BODY_SYMBOLS → θid │ θsym │ θop │ θob │ θcb │ θnum
+
+<> TEXT_NODE → BODY_SYMBOLS(+") 							↦cstr ^text
+
+<> BODY_SYMBOLS → θid │ θws │ θsym │ θop │ θob │ θcb │ θnum
 
 
 
