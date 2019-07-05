@@ -17,8 +17,8 @@ export default {
     input: "./source/wick.mjs",
     output,
     plugins: [
-    resolve({jail:"",modulesOnly: true}),  
-    terser({mangle:true, module:true}), 
-    gzipPlugin()
+        resolve({jail:"",modulesOnly: true}),  
+        terser({mangle:true, module:true}), 
+        gzipPlugin()
     ]
 };

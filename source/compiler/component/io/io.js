@@ -1,5 +1,5 @@
 import { EXPORT } from "../tap/tap.js";
-
+import { types } from "@candlefw/js";
 export class IOBase {
 
     constructor(parent, element = null) {
@@ -130,6 +130,8 @@ export class AttribIO extends IOBase {
 
 export class DataNodeIO extends IOBase {
     constructor(scope, tap, element, default_val) {
+        if(!tap)  return {};
+
         super(tap, element);
         
         this.ele = element;
@@ -151,6 +153,8 @@ export class DataNodeIO extends IOBase {
 */
 export class TextNodeIO extends DataNodeIO {
     constructor(scope, tap, element, default_val) {
+        if(!tap) return {};
+
         super(scope, tap, element, default_val);
         
         this.ELEMENT_IS_TEXT = element instanceof Text;
@@ -215,19 +219,37 @@ export class EventIO extends IOBase {
 export class InputIO extends IOBase {
 
     constructor(scope, errors, tap, attrib_name, element, default_val) {
-
-        super(tap);
+        if(tap)
+            super(tap);
+        else if(default_val)
+            super(scope);
+        else
+            return;
 
         this.ele = element;
+        this.event = null;
 
-        const up_tap = default_val ? scope.getTap(default_val) : tap;
+        let up_tap = tap;
 
-        if (element.type == "checkbox")
-            this.event = (e) => { up_tap.up(e.target.checked, { event: e }) };
-        else
-            this.event = (e) => { up_tap.up(e.target.value, { event: e }) };
+        if(default_val){
+            switch(default_val.type){
+                case types.identifier:
+                    up_tap = scope.getTap(default_val.name);
+                break;
+                case types.null_literal:
+                    up_tap = null;
+                break;
+            }
+        }
 
-        this.ele.addEventListener("input", this.event);
+        if(up_tap){
+            if (element.type == "checkbox")
+                this.event = (e) => { up_tap.up(e.target.checked, { event: e }) };
+            else
+                this.event = (e) => { up_tap.up(e.target.value, { event: e }) };
+            
+            this.ele.addEventListener("input", this.event);
+        }
     }
 
     destroy() {

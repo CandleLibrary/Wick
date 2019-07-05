@@ -148,7 +148,7 @@ export default class ElementNode {
         } catch (e) {
             error(error.RESOURCE_FETCHED_FROM_NODE_FAILURE, e, this);
         }
-
+        
         if (text_data)
             try {
                 ast = wick_compile(whind(text_data), own_env);

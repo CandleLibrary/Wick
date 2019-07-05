@@ -1,4 +1,4 @@
-import { identifier, member_expression, return_statement } from "@candlefw/js";
+import { identifier, member_expression, return_statement, types } from "@candlefw/js";
 import { GetOutGlobals, AddEmit } from "./script_functions.js";
 import FUNCTION_CACHE from "./function_cache.js";
 import ExpressionIO from "../component/io/expression_io.js";
@@ -20,7 +20,7 @@ export default class Binding {
         this.METHOD = IDENTIFIER;
 
         this.ast = exprA;
-        this.prop = exprB;
+        this.ast_other = exprB;
 
         this.function = null;
         this.args = null;
@@ -36,9 +36,9 @@ export default class Binding {
     }
 
     toString() {
-        
-        if (this.prop)
-            return `((${this.ast + ""})(${this.prop + ""}))`;
+
+        if (this.ast_other)
+            return `((${this.ast + ""})(${this.ast_other + ""}))`;
         else
             return `((${this.ast + ""}))`;
     }
@@ -68,12 +68,15 @@ export default class Binding {
     }
 
     bind(scope, element, pinned, node = this) {
-        if (this.METHOD == EXPRESSION) {
-            return new ExpressionIO(element, scope, node, scope, this, this.lex, pinned);
-        } else if (this.METHOD == CONTAINER)
-            return new ContainerIO(element, scope, node, scope, this, this.lex, pinned);
-        else
-            return scope.getTap(this.val);
+        if (this.ast) {
+            if (this.METHOD == EXPRESSION) {
+                return new ExpressionIO(element, scope, node, scope, this, this.lex, pinned);
+            } else if (this.METHOD == CONTAINER)
+                return new ContainerIO(element, scope, node, scope, this, this.lex, pinned);
+            else
+                return scope.getTap(this.val);
+        }
+        return null;
     }
 }
 

@@ -76,6 +76,8 @@ describe("Basic", function() {
             constructor() {
                 super("<div></div>");
             }
+
+
         }
 
         const comp = await (new D).pending;
@@ -84,28 +86,58 @@ describe("Basic", function() {
     });
 });
 
-describe("Merging", function() {
-
-    it("Merging elements pulls statics from the merged-from tag", async function() {
-        let presets = wick.presets();
-        await wick(`<scope component="mergedto" temp=false>test</scope>`, presets).pending;
-        let comp = await wick(`<div><mergedto temp=true>test false</mergedto></div>`, presets).pending;
-        let component = comp.mount();
-    });
-
-    it("Merging pulls attribute data from both merging-component and merged-element. Merged elements attributes are preferred", async function() {
+describe("Composition", function() {
+    it("Components can be defined and referenced by name within other components.", async function() {
         const presets = wick.presets();
-        await wick(`<scope element="div" component="mergedto" temp="false" foo="biz">test</scope>`, presets).pending;
-        const comp = await wick(`<div><mergedto temp="true" bar="buz">test false</mergedto></div>`, presets).pending;
-        const mount = new HTMLElement();
-        mount.tag = "div";
-        const scope = await comp.mount(mount);
-        const sub_ele = scope.ele.firstChild;
-        sub_ele.getAttribute("temp").should.equal("true");
-        sub_ele.getAttribute("foo").should.equal("biz");
-        sub_ele.getAttribute("bar").should.equal("buz");
+
+        const { comp: compA, ele: eleA } = await createComponent(`<div component='test'>test</div>`, presets);
+        const { comp: compB, ele: eleB } = await createComponent(`<scope><div><a><test/></a></div></scope>`, presets);
+
+        eleB.fch.fch.fch.fch.fch.data.should.equal("test");
+    })
+
+    it.only("Components can be imported from a remote resource using the [url] attribute on <import> or <link> elements", async function() {
+        const presets = wick.presets();
+        const { comp, ele } = await createComponent(`<import url="./test/data/import.1.html"/><scope><test/></scope>`, presets);
+        await sleep(5)
+        ele.fch.fch.innerHTML.should.equal("I've been imported!");
+    })
+
+    describe("Merging", function() {
+
+        it("Merging elements pulls statics from the merged-from tag", async function() {
+            let presets = wick.presets();
+            await wick(`<scope component="mergedto" temp=false>test</scope>`, presets).pending;
+            let comp = await wick(`<div><mergedto temp=true>test false</mergedto></div>`, presets).pending;
+            let component = comp.mount();
+        });
+
+        it("Merging pulls attribute data from both merging-component and merged-element. Merged elements attributes are preferred", async function() {
+            const presets = wick.presets();
+            await wick(`<scope element="div" component="mergedto" temp="false" foo="biz">test</scope>`, presets).pending;
+            const comp = await wick(`<div><mergedto temp="true" bar="buz">test false</mergedto></div>`, presets).pending;
+            const mount = new HTMLElement();
+            mount.tag = "div";
+            const scope = await comp.mount(mount);
+            const sub_ele = scope.ele.firstChild;
+            sub_ele.getAttribute("temp").should.equal("true");
+            sub_ele.getAttribute("foo").should.equal("biz");
+            sub_ele.getAttribute("bar").should.equal("buz");
+        });
     });
-});
+
+    describe("Slots", function() {
+
+        it("Slots can be defined within components and referenced by mounting elements [slot] value that matches the slot's [name] attribute", async function() {
+            const presets = wick.presets();
+
+            const { comp: compA, ele: eleA } = await createComponent(`<div component='test'>Test this <slot name="test">out</slot> now!</div>`, presets);
+            const { comp: compB, ele: eleB } = await createComponent(`<scope><div><a><test><scope slot="test">2+4/22</scope></test></a></div></scope>`, presets);
+            eleB.fch.fch.fch.fch.innerHTML.should.equal("Test this 2+4/22 now!");
+        })
+    });
+
+})
 
 describe("Errors", function() {
     it("Throws an error if it encounters incorrect syntax.", async function() {
@@ -152,22 +184,26 @@ describe("Binding Methods", function() {
                 "<scope export='a b'>" +
                 "<input type='text' value=(( a )( b )) />" +
                 "</scope>"
-            ), [a, b] = ele.children[0].children;
+            ), [a] = ele.children[0].children;
 
             var DID_RUN = false;
-            a.value = "testAfalse";
             scope.parent = {
                 upImport: (prop_name, data, meta) => {
-                    prop_name.should.equal("c");
-                    data.sould.equal("testAtrue");
+                    prop_name.should.equal("b");
+                    scope.update({ a: "testCtrue" })
+                    scope.update({
+                        [prop_name]: "testCfalse" })
+                    data.should.equal("testA_user_input");
                     DID_RUN = true;
                 }
             };
             scope.update({ a: "testAtrue", c: "failed" });
             await sleep(2);
             a.value.should.equal('testAtrue');
-            a.runEvent("updated", {});
+            a.value = "testA_user_input";
+            a.runEvent("input", { target: a });
             await sleep(2);
+            a.value.should.equal('testCtrue');
             DID_RUN.should.be.true;
         })
 
@@ -182,17 +218,19 @@ describe("Binding Methods", function() {
             b.value = "testBfalse";
             scope.parent = {
                 upImport: (prop_name, data, meta) => {
-                    prop_name.should.equal("f");
-                    data.sould.equal("testBfalse");
+                    prop_name.should.equal("b");
+                    scope.update({
+                        [prop_name]: "testCfalse" })
                     DID_RUN = true;
                 }
             };
-            scope.update({ f: "testAtrue", e: "failed" });
-            await sleep(2);
+            scope.update({ b: "testAtrue", e: "failed" });
+            await sleep(1);
             b.value.should.equal('testBfalse');
-            b.runEvent("updated", {});
+            b.value = "testCtrue";
+            b.runEvent("input", { target: b });
             await sleep(2);
-            b.value.should.equal('testBfalse');
+            b.value.should.equal('testCtrue');
             DID_RUN.should.be.true;
         })
 
@@ -208,7 +246,9 @@ describe("Binding Methods", function() {
             scope.parent = {
                 upImport: (prop_name, data, meta) => {
                     prop_name.should.equal("a");
-                    data.sould.equal("testBfalse");
+                    data.should.equal("testBfalse");
+                    scope.update({
+                        [prop_name]: "testCtrue" })
                     DID_RUN = true;
                 }
             };
@@ -217,37 +257,36 @@ describe("Binding Methods", function() {
             await sleep(1);
             a.value.should.equal('testAtrue');
             a.value = "testBfalse";
-            a.runEvent("updated", {});
-            await sleep(1);
-            a.value.should.equal('testBfalse');
+            a.runEvent("input", { target: a });
+            await sleep(5);
+            a.value.should.equal('testCtrue');
             DID_RUN.should.be.true;
         })
 
-        it("((A)()) : Scope data received on A and user input ignored", async function() {
+        it("((A)(null)) : Scope data received on A and user input ignored", async function() {
             const { scope, ele } = await createComponent(
                 "<scope export='a'>" +
-                "<input type='text' value=(( d )(   )) />" +
+                "<input type='text' value=(( a )( null )) />" +
                 "</scope>"
             ), [a] = ele.children[0].children;
 
             var DID_RUN = false;
-            c.value = "testC";
+            a.value = "testBfalse";
             scope.parent = {
                 upImport: (prop_name, data, meta) => {
-                    prop_name.should.equal("c");
-                    data.sould.equal("testCnewer");
+                    console.log(prop_name)
                     DID_RUN = true;
                 }
             };
-            scope.update({ c: "testCnew", e: "failed" });
-            await sleep(2);
-            c.value.should.equal('testCnew');
-            c.value = "testCnewer";
-            c.runEvent("updated", {})
-            await sleep(2);
-            DID_RUN.should.be.true;
+            a.value.should.equal('testBfalse');
+            scope.update({ a: "testAtrue", e: "failed" });
+            await sleep(1);
+            a.value.should.equal('testAtrue');
+            a.value = "testBfalse";
+            a.runEvent("input", { target: a });
+            await sleep(5);
+            DID_RUN.should.be.false;
         })
-
     });
 
 
@@ -351,6 +390,5 @@ describe("[IO] Processing", function() {
         await sleep(5);
 
         counts.reduce((r, v) => v + r, 0).should.equal(length * 2);
-
     });
 });
