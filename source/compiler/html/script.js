@@ -29,6 +29,7 @@ export default class ScriptNode extends ElementNode {
     processJSAST(presets = { custom: {} }) {
         const { args, ids } = GetOutGlobals(this.ast, presets);
         this.args = args;
+        //console.log(args)
         addEmitExpression(ids, presets, this.args.reduce((r, a) => ((a.IS_TAPPED) ? null : r.push(a.name), r), []));
         this.val = this.ast + "";
     }

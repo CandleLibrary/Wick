@@ -259,6 +259,56 @@ describe("Scoped data flow", function() {
 
 describe("Binding Methods", function() {
 
+    it("Simple binding within element updates text node", async function(){
+        const {scope, ele} = await createComponent(`<scope>((test))</scope>`)
+
+        scope.update({test:"success"});
+
+        await sleep(1);
+
+        ele.fch.fch.data.should.equal("success");
+    });
+
+    it("Expressions can be defined within binding", async function(){
+        const {scope, ele} = await createComponent(`<scope>((testA + testB + (2 * testC) ))</scope>`)
+
+        scope.update({testA:"successfull", testB: " times ", testC: 4});
+
+        await sleep(1);
+
+        ele.fch.fch.data.should.equal("successfull times 8");
+    })
+
+    it("Expressions are evaluated ONLY once all dependent variables have received a value", async function(){
+        const {scope, ele} = await createComponent(`<scope>((testA + testB + (2 * testC) ))</scope>`)
+
+        scope.update({testA:"successfull"});
+        await sleep(1);
+        ele.fch.fch.data.should.equal("");
+
+        scope.update({testB: " times "});
+        await sleep(1);
+        ele.fch.fch.data.should.equal("");
+
+        scope.update({testC: 4});
+        await sleep(1);
+        ele.fch.fch.data.should.equal("successfull times 8");
+    })
+
+    it("Binding to a script tags [on] attributes causes that script to run", async function(){
+        const test = {RESULT:false}
+        const {scope, ele} = await createComponent(
+            `<scope><script on=((test))> testdata.RESULT = true </script></scope>`
+            ,{custom:{testdata:test}}
+        )
+
+        scope.update({test:"success"});
+
+        await sleep(1);
+
+        test.RESULT.should.be.true;
+    })
+
     it("Scripts can define arguments using on=((id)(arg_list)) syntax");
 
     describe("Bindings on <input> [value] attribute.", function() {
@@ -372,7 +422,6 @@ describe("Binding Methods", function() {
             DID_RUN.should.be.false;
         })
     });
-
 
     it("HTML element should appear in the scoped DOM when an ExpressionIO, piped to a TextIO, yields a HTML object.", async function() {
 

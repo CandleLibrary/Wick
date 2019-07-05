@@ -16,6 +16,7 @@ class ArgumentIO extends IO {
     }
 
     down(value) {
+
         this.ele.updateProp(this, value);
     }
 }
@@ -55,6 +56,7 @@ export default class ScriptIO extends IOBase {
         this.initProps(script.args, tap, node, pinned);
 
         this.arg_props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value) } }));
+
     }
 
     /*
@@ -79,8 +81,8 @@ export default class ScriptIO extends IOBase {
 
     initProps(arg_array, tap, errors, pinned) {
         for (let i = 0; i < arg_array.length; i++) {
-
             const a = arg_array[i];
+            
             if (a.IS_ELEMENT) {
                 this.arg_props.push(pinned[a.name]);
             } else if (a.IS_TAPPED) {
@@ -94,7 +96,7 @@ export default class ScriptIO extends IOBase {
                     this.TAP_BINDING_INDEX = i;
                 }
 
-                this.ACTIVE_IOS++;
+                this.IO_ACTIVATIONS++;
 
                 this.arg_ios[name] = new ArgumentIO(this.scope, errors, this.scope.getTap(name), this, i);
 
@@ -147,6 +149,7 @@ export default class ScriptIO extends IOBase {
     down(value, meta) {
         if (value)
             this.setValue(value);
+        
 
         if(meta){
             this.setValue(meta);
@@ -155,7 +158,7 @@ export default class ScriptIO extends IOBase {
             }
         }
 
-                if (this.ACTIVE_IOS < this.IO_ACTIVATIONS)
+        if (this.ACTIVE_IOS < this.IO_ACTIVATIONS)
             return;
 
         if (!this._SCHD_)

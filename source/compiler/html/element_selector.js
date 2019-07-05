@@ -11,8 +11,7 @@ import PreNode from "./pre.js";
 import FilterNode from "./filter.js";
 import ImportNode from "./import.js";
 
-export default function es(tag, attribs, children, env, lex, meta = 0) {  
-    env.off = lex.off;
+export default function es(tag, attribs, children, env, lex, meta = 0) {    
 
     const
         FULL = !!children;

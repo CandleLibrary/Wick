@@ -20,20 +20,27 @@ export function GetOutGlobals(ast, presets) {
     JS.getClosureVariableNames(ast).forEach(out => {
 
         const name = out.name;
-
-        if (!arg_lu.has(name)) {
+        if (out.parent &&
+            out.type == types.identifier &&
+            out.parent.type == types.assignment_expression &&
+            out == out.parent.left
+        ) {
+            // Expression name = expre would overwrite any value that "name" referenced, so there's no 
+            // reason to count it among the global values.
+        } else if (!arg_lu.has(name)) {
             arg_lu.add(name);
 
             const out_object = { name, val: null, IS_TAPPED: false, IS_ELEMENT: false };
+
             if (presets.custom[name])
                 out_object.val = presets.custom[name];
             else if (presets[name])
                 out_object.val = presets[name];
-            else if (defaults[name]){
+            else if (defaults[name]) {
                 out_object.val = defaults[name];
-            }else if (root[name]){
+            } else if (root[name]) {
                 out_object.val = root[name];
-            }           else if (name[name.length - 1] == "$") {
+            } else if (name[name.length - 1] == "$") {
                 out_object.IS_ELEMENT = true;
             } else {
                 out_object.IS_TAPPED = true;
@@ -48,6 +55,7 @@ export function GetOutGlobals(ast, presets) {
 
 export function AddEmit(ast, presets, ignore) {
 
+
     ast.forEach(node => {
 
         if (node.parent && node.parent.type == types.assignment_expression && node.type == types.identifier) {
@@ -56,7 +64,6 @@ export function AddEmit(ast, presets, ignore) {
                 const assign = node.parent;
 
                 const k = node.name;
-
 
                 if ((root[k] && !(root[k] instanceof HTMLElement)) || presets.custom[k] || presets[k] || defaults[k] || ignore.includes(k))
                     return;
