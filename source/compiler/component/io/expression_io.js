@@ -21,7 +21,7 @@ export default class ExpressionIO extends ScriptIO {
 
         this.val = super.scheduledUpdate();
 
-        if(this.old_val === null || this.val !== this.old_val){
+        if(this.val !== this.old_val){
             this.old_val = this.val;
             this.ele.data = this.val;
         }

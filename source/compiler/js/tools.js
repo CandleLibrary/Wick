@@ -2,13 +2,6 @@ import { types, identifier } from "@candlefw/js";
 const env = {};
 export default {
 
-    processType(type, ast, fn) {
-        for (const a of ast.traverseDepthFirst()) {
-            if (a.type == type)
-                fn(a);
-        }
-    },
-
     getFirst(ast, type) {
         const tvrs = ast.traverseDepthFirst();
         let node = null;
@@ -88,52 +81,6 @@ export default {
 
             return red;
         }, []);
-    },
-
-    getRootVariables(ast) {
-        const tvrs = ast.traverseDepthFirst();
-        let node = null;
-        var vars = [];
-        while ((node = tvrs.next().value)) {
-            if (node.type == types.function_declaration || node.type == types.arrow_function_declaration) {
-                return node.args.map(e => e.name);
-            }
-        }
-        return vars;
-    },
-
-    //Returns the argument names of the first function declaration defined in the ast
-    getFunctionDeclarationArgumentNames(ast) {
-
-        const tvrs = ast.traverseDepthFirst();
-        let node = null;
-
-        while ((node = tvrs.next().value)) {
-            if (node.type == types.function_declaration || node.type == types.arrow_function_declaration) {
-                return node.args.map(e => e.name);
-            }
-        }
-        return [];
-    },
-
-    getRootVariables(lex) {
-        let l = lex.copy();
-
-        let ids = new Set();
-        let closure = new Set();
-
-        try {
-            let result = JSParser(lex, env);
-
-            if (result instanceof identifier) {
-                ids.add(result.val);
-            } else
-                result.getRootIds(ids, closure);
-
-            return { ids, ast: result, SUCCESS: true };
-        } catch (e) {
-            return { ids, ast: null, SUCCESS: false };
-        }
     },
 
     types: types

@@ -475,7 +475,7 @@ export default class ScopeContainer extends Observer {
             output[j].transitionIn(trs_in, (direction) ? "arrange" : "arrange");
             j++;
         }
-
+        
         this.ele.style.position = this.ele.style.position;
 
         this.dom_scopes = output;

@@ -90,13 +90,13 @@ describe("Composition", function() {
     it("Components can be defined and referenced by name within other components.", async function() {
         const presets = wick.presets();
 
-        const { comp: compA, ele: eleA } = await createComponent(`<div component='test'>test</div>`, presets);
-        const { comp: compB, ele: eleB } = await createComponent(`<scope><div><a><test/></a></div></scope>`, presets);
+        const { ele: eleA } = await createComponent(`<div component='test'>test</div>`, presets);
+        const { scope, ele: eleB } = await createComponent(`<scope><div><a><test/></a></div></scope>`, presets);
 
         eleB.fch.fch.fch.fch.fch.data.should.equal("test");
     })
 
-    it.only("Components can be imported from a remote resource using the [url] attribute on <import> or <link> elements", async function() {
+    it("Components can be imported from a remote resource using the [url] attribute on <import> or <link> elements", async function() {
         const presets = wick.presets();
         const { comp, ele } = await createComponent(`<import url="./test/data/import.1.html"/><scope><test/></scope>`, presets);
         await sleep(5)
@@ -131,12 +131,96 @@ describe("Composition", function() {
         it("Slots can be defined within components and referenced by mounting elements [slot] value that matches the slot's [name] attribute", async function() {
             const presets = wick.presets();
 
-            const { comp: compA, ele: eleA } = await createComponent(`<div component='test'>Test this <slot name="test">out</slot> now!</div>`, presets);
-            const { comp: compB, ele: eleB } = await createComponent(`<scope><div><a><test><scope slot="test">2+4/22</scope></test></a></div></scope>`, presets);
+            const { ele: eleA } = await createComponent(`<div component='test'>Test this <slot name="test">out</slot> now!</div>`, presets);
+            const { scope, ele: eleB } = await createComponent(`<scope><div><a><test><scope slot="test">2+4/22</scope></test></a></div></scope>`, presets);
             eleB.fch.fch.fch.fch.innerHTML.should.equal("Test this 2+4/22 now!");
         })
     });
 
+})
+
+describe("Containers", function(){
+    it("Create collection of components binding to data objects within an array.", async function() {
+        const presets = wick.presets();
+
+        await createComponent(`<scope component='test'>My name is ((name))</scope>`, presets);
+        const { scope, ele } = await createComponent(`<scope><container>((names))<test/></container></scope>`, presets);
+
+        const names = [{name:"A"},{name:"B"},{name:"C"},{name:"D"}]
+
+        scope.update({names});
+        await sleep(5);
+
+        const children = ele.fch.fch.children;
+
+        for(var i = 0; i < names. length; i++)
+            children[i].innerHTML.should.equal(`My name is ${names[i].name}`)
+    })
+
+    it("Filter [filter] attribute can be used to filter out components", async function() {
+        const presets = wick.presets();
+
+        await createComponent(`<scope component='test'>My name is ((name))</scope>`, presets);
+        const { scope, ele } = await createComponent(`<scope><container><f filter=(( obj.model.name == "A" ))/>((names))<test/></container></scope>`, presets);
+
+        const names = [{name:"A"},{name:"B"},{name:"C"},{name:"D"}]
+
+        scope.update({names});
+        await sleep(5);
+        const children = ele.fch.fch.children;
+        children.should.have.lengthOf(1);
+        children[0].innerHTML.should.equal(`My name is A`)
+    })
+
+    it("Filter [filter] attribute can reference scope binding variables.", async function() {
+        const presets = wick.presets();
+
+        await createComponent(`<scope component='test'>My name is ((name))</scope>`, presets);
+        const { scope, ele } = await createComponent(`<scope><container><f filter=(( obj.model.name == filter_data ))/>((names))<test/></container></scope>`, presets);
+
+        const names = [{name:"A"},{name:"B"},{name:"C"},{name:"D"}]
+        for(var i = 0; i < names. length; i++){
+            scope.update({names, filter_data:names[i].name});
+            await sleep(2);
+            const children = ele.fch.fch.children;
+            children.should.have.lengthOf(1);
+            children[0].innerHTML.should.equal(`My name is ${names[i].name}`)
+        }
+    })
+
+    describe("Scrubbing", function(){
+
+
+    d: "Introducing new offset and set of elements does not visually change elements order.",
+        t: async function () {
+            this.slow(200000)
+            this.timeout(10000)
+
+            const 
+                component = await wick("/test/data/scrubbing2.js", wick.presets()),
+                ele = document.createElement("div"),
+                mgr = component.mount(ele),
+                src = mgr.scopes[0],
+                sc = src.containers[0];
+                await pause(16);
+                //Add incremental scrubs that add up to 5
+                const 
+                    amount = 0.05, 
+                    limit = Math.floor(6.5 / amount);
+
+                for(let i = 0; i < limit; i++){
+                    src.update({scrub:amount})
+                    await pause(5); //Pausing for one frame in a 60f/1s mode. 
+                }
+
+                src.update({scrub:Infinity})
+
+                await pause(200)
+
+                console.log(sc.activeScopes.map(e=>e.scopes[0].model))
+                sc.activeScopes.map((m,i)=>({ index:i, top: m.scopes[0]._top, off:m.scopes[0].model.data}))[11].off.should.equal(17);
+        }
+    })
 })
 
 describe("Errors", function() {
