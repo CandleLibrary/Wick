@@ -52,7 +52,7 @@ export default class ScriptNode extends ElementNode {
                 this.READY = true;
                 FUNCTION_CACHE.set(this.val, this.function);
             } catch (e) {
-                error(error.SCRIPT_FUNCTION_CREATE_FAILURE, e, this);
+                throw error(error.SCRIPT_FUNCTION_CREATE_FAILURE, e, this);
             }
 
         } else {
@@ -67,5 +67,22 @@ export default class ScriptNode extends ElementNode {
             const tap = this.on.bind(scope, null, null, this);
             new ScriptIO(scope, this, tap, this, {}, pinned);
         }
+    }
+
+    toString(off = 0) {
+
+        var o = offset.repeat(off),
+            str = `${o}<${this.tag}`;
+
+        for (const attr of this.attribs.values()) {
+            if (attr.name)
+                str += ` ${attr.name}="${attr.value}"`;
+        }
+
+        str += ">\n";
+
+        str += this.ast.render();
+
+        return str + `${o}</${this.tag}>\n`;
     }
 }

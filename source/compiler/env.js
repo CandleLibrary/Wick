@@ -50,6 +50,7 @@ import {
     new_expression,
     empty_statement,
     null_literal,
+    lexical_expression,
     numeric_literal,
     object_literal,
     or_expression,
@@ -164,6 +165,7 @@ const env = {
 
         //*        //JS
         super_literal,
+        lexical_expression,
         add_expression,
         and_expression,
         argument_list,

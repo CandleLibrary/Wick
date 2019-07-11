@@ -40,14 +40,13 @@ export default class ScriptIO extends IOBase {
         const func_bound = this.emit.bind(this);
         func_bound.onTick = this.onTick.bind(this);
 
-        //TODO: only needed if emit is called in function. Though highly probably. 
+        //TODO: only needed if emit is called in function. Though highly probable. 
         this.arg_props = [];
         this.arg_ios = {};
 
         this.initProps(script.args, tap, node, pinned);
 
         this.arg_props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value) } }));
-
     }
 
     /*
@@ -137,7 +136,7 @@ export default class ScriptIO extends IOBase {
             try {
                 return this.function.apply(this, this.arg_props);
             } catch (e) {
-                error(error.IO_FUNCTION_FAIL, e, this.node);
+                throw error(error.IO_FUNCTION_FAIL, e, this.node);
             }
         }
     }

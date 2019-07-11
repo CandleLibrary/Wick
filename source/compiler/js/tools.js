@@ -42,7 +42,13 @@ export default {
                 }
             }
 
-            if (ast !== node && node.type == types.arrow_function_declaration) {
+            if (ast !== node 
+                    &&(
+                    (node.type == types.arrow_function_declaration) 
+                    || (node.type == types.for_of_statement) 
+                    )
+                    ) {
+
 
                 const glbl = new Set;
                 const closure = new Set;
@@ -50,7 +56,7 @@ export default {
                 node.getRootIds(glbl, closure);
 
                 const g = this.getClosureVariableNames(node, ...[...closure.values(), ...non_global.values()]);
-
+                
                 g.forEach(v => {
                     if (Array.isArray(v)) debugger;
                     globals.add(v);
