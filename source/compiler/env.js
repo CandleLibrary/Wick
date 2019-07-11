@@ -87,6 +87,7 @@ import {
     template_middle,
     template_tail,
     class_declaration,
+    for_of_statement,
     super_literal
 } from "@candlefw/js";
 //*/
@@ -167,6 +168,7 @@ const env = {
         and_expression,
         argument_list,
         array_literal,
+        for_of_statement,
         arrow: arrow_function_declaration,
         arrow_function_declaration,
         assignment_expression,
