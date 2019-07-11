@@ -201,6 +201,7 @@ export class EventIO extends IOBase {
             e.stopPropagation();
             e.stopImmediatePropagation();
             up_tap.up(e.target.value, { event: e }); 
+            return false;
         };
 
         this.event_name = attrib_name.replace("on", "");
