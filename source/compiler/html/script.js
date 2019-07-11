@@ -19,8 +19,8 @@ export default class ScriptNode extends ElementNode {
             this.processJSAST(presets);
     }
 
-    loadAST(ast){
-        if(ast && !this.ast){
+    loadAST(ast) {
+        if (ast && !this.ast) {
             this.ast = ast;
             this.processJSAST(this.presets);
         }
@@ -36,6 +36,7 @@ export default class ScriptNode extends ElementNode {
 
     finalize() {
         if (!this.ast) return this;
+
 
         if (true || !FUNCTION_CACHE.has(this.val)) {
 

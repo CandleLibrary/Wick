@@ -70,7 +70,8 @@
 
 
 <> ATTRIBUTE_BODY → string::normal_string 						
-	│ identifier 											
+	│ identifier
+	│ θnum 											
 
 <> TAGNAME → identifier
 

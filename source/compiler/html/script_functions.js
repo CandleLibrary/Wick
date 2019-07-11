@@ -8,7 +8,7 @@ const defaults = {
         const out = scope.ast.presets.components[id].mount(null, scope, scope.ast.presets, undefined, undefined, true);
         return out;
     }
-}
+};
 
 const root = typeof(global) == "object" ? global : window;
 

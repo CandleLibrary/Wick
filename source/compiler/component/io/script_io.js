@@ -24,8 +24,6 @@ class ArgumentIO extends IO {
 export default class ScriptIO extends IOBase {
 
     constructor(scope, node, tap, script, lex, pinned) {
-        
-        const HAVE_CLOSURE = false;
 
         super(tap);
 
@@ -35,15 +33,7 @@ export default class ScriptIO extends IOBase {
         this.IO_ACTIVATIONS = 0;
         this._SCHD_ = 0;
         this.node = node;
-
-        this.function = null;
-
-        this.HAVE_CLOSURE = HAVE_CLOSURE;
-        
-        if (this.HAVE_CLOSURE)
-            this.function = script.function;
-        else
-            this.function = script.function.bind(scope);
+        this.function = script.function.bind(scope);
 
         //Embedded emit functions
         const func_bound = this.emit.bind(this);
@@ -82,7 +72,7 @@ export default class ScriptIO extends IOBase {
     initProps(arg_array, tap, errors, pinned) {
         for (let i = 0; i < arg_array.length; i++) {
             const a = arg_array[i];
-            
+
             if (a.IS_ELEMENT) {
                 this.arg_props.push(pinned[a.name]);
             } else if (a.IS_TAPPED) {
@@ -123,23 +113,19 @@ export default class ScriptIO extends IOBase {
                 if (this.arg_ios[a])
                     this.arg_ios[a].down(value[a]);
             }
-        } else {
-            if (this.TAP_BINDING_INDEX !== -1){
-                this.arg_props[this.TAP_BINDING_INDEX] = value;
-            }
+        } else if (this.TAP_BINDING_INDEX !== -1) {
+            this.arg_props[this.TAP_BINDING_INDEX] = value;
         }
+
     }
 
     scheduledUpdate() {
         // Check to make sure the function reference is still. May not be if the IO was destroyed between
         // a down update and spark subsequently calling the io's scheduledUpdate method
-        
-        if (this.function) { 
+
+        if (this.function) {
             try {
-                if (this.HAVE_CLOSURE)
-                    return this.function.apply(this, this.arg_props);
-                else
-                    return this.function.apply(this, this.arg_props);
+                return this.function.apply(this, this.arg_props);
             } catch (e) {
                 error(error.IO_FUNCTION_FAIL, e, this.node);
             }
@@ -147,17 +133,17 @@ export default class ScriptIO extends IOBase {
     }
 
     down(value, meta) {
+
         if (value)
             this.setValue(value);
-        
 
-        if(meta){
+        if (meta) {
             this.setValue(meta);
-            if(meta.IMMEDIATE && this.ACTIVE_IOS >= this.IO_ACTIVATIONS){
+            if (meta.IMMEDIATE && this.ACTIVE_IOS >= this.IO_ACTIVATIONS) {
                 return this.scheduledUpdate();
             }
         }
-
+        
         if (this.ACTIVE_IOS < this.IO_ACTIVATIONS)
             return;
 

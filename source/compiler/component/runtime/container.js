@@ -40,8 +40,6 @@ export default class ScopeContainer extends Observer {
         this.prop = null;
         this.component = null;
         this.transition_in = 0;
-        this.limit = 0;
-        this.shift_amount = 1;
         this.dom_dn = [];
         this.dom_up = [];
         this.trs_ascending = null;
@@ -49,12 +47,14 @@ export default class ScopeContainer extends Observer {
         this.UPDATE_FILTER = false;
         this.dom_up_appended = false;
         this.dom_dn_appended = false;
-        this.root = 0;
         this.AUTO_SCRUB = false;
+        this.root = 0;
         this.taps = {};
 
         this.scrub_velocity = 0;
 
+        this.shift_amount = 1;
+        this.limit = 0;
         this.offset = 0;
         this.offset_diff = 0;
         this.offset_fractional = 0;
@@ -67,7 +67,6 @@ export default class ScopeContainer extends Observer {
     get data() {}
 
     set data(container) {
-
         if (container instanceof ModelContainerBase) {
             container.pin();
             container.addObserver(this);
@@ -93,8 +92,8 @@ export default class ScopeContainer extends Observer {
         // }
     }
 
-    loadAcknowledged(){
-        if(!this.LOADED){
+    loadAcknowledged() {
+        if (!this.LOADED) {
             this.LOADED = true;
             this.parent.loadAcknowledged();
         }
@@ -443,7 +442,9 @@ export default class ScopeContainer extends Observer {
                     j++;
                 }
             } else if (as.index < 0) {
+
                 trs_out.pos = getColumnRow(i, 0, this.shift_amount);
+
                 if (!NO_TRANSITION) {
                     switch (as.index) {
                         case -2:
@@ -462,7 +463,9 @@ export default class ScopeContainer extends Observer {
                 continue;
             }
             trs_in.pos = getColumnRow(j++, 0, this.shift_amount);
-            as.update({ arrange: trs_in });
+
+            as.update({ arrange: trs_in }, null, false, { IMMEDIATE: true });
+
             as._TRANSITION_STATE_ = true;
             as.index = -1;
         }
@@ -470,24 +473,28 @@ export default class ScopeContainer extends Observer {
         while (j < output.length) {
             output[j].appendToDOM(this.ele);
             output[j].index = -1;
-            trs_in.pos = getColumnRow(j, this.offset, this.shift_amount);
 
+            trs_in.pos = getColumnRow(j, this.offset, this.shift_amount);
             output[j].transitionIn(trs_in, (direction) ? "arrange" : "arrange");
+
             j++;
         }
-        
+
         this.ele.style.position = this.ele.style.position;
 
-        this.dom_scopes = output;
+        this.dom_scopes = output;   
 
-        this.parent.upImport("template_count_changed", {
-            displayed: output_length,
-            offset: offset,
-            count: this.activeScopes.length,
-            pages: this.max,
-            ele: this.ele,
-            template: this,
-            trs: transition.in
+        this.parent.update({
+            "template_count_changed": {
+
+                displayed: output_length,
+                offset: offset,
+                count: this.activeScopes.length,
+                pages: this.max,
+                ele: this.ele,
+                template: this,
+                trs: transition.in
+            }
         });
 
         if (OWN_TRANSITION) {
@@ -662,7 +669,10 @@ export default class ScopeContainer extends Observer {
             //TODO: Make sure both of there references are removed when the scope is destroyed.
             this.scopes.push(scope);
             this.parent.addScope(scope);
+
+            scope.update({ loaded: true });
         }
+
 
 
         if (OWN_TRANSITION)
@@ -696,7 +706,7 @@ export default class ScopeContainer extends Observer {
             } else console.warn("No index value provided for MultiIndexedContainer!");
         } else {
 
-            const  scope = this.model.scope,
+            const scope = this.model.scope,
                 terms = this.getTerms();
             if (scope) {
                 this.model.destroy();

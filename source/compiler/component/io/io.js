@@ -15,7 +15,8 @@ export class IOBase {
     }
 
     destroy() {
-        this.parent.removeIO(this);
+        if(this.parent)
+            this.parent.removeIO(this);
 
         this.parent = null;
     }
@@ -195,7 +196,12 @@ export class EventIO extends IOBase {
 
         const up_tap = default_val ? scope.getTap(default_val) : tap;
 
-        this.event = (e) => { up_tap.up(e.target.value, { event: e }); };
+        this.event = (e) => { 
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            up_tap.up(e.target.value, { event: e }); 
+        };
 
         this.event_name = attrib_name.replace("on", "");
 

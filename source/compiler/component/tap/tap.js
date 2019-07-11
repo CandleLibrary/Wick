@@ -61,12 +61,15 @@ export class Tap {
     }
 
     down(value, meta) {
+
         for (let i = 0, l = this.ios.length; i < l; i++) {
+
             this.ios[i].down(value, meta);
         }
     }
 
     downS(model, IMPORTED = false, meta = null) {
+
         const value = model[this.prop];
 
         if (typeof(value) !== "undefined") {
@@ -144,7 +147,7 @@ export class Tap {
     }
 
     removeIO(io) {
-        if (removeFromArray(this.ios, io)[0])
+        if (removeFromArray(this.ios || [], io)[0])
             io.parent = null;
     }
 

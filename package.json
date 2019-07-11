@@ -82,9 +82,6 @@
       "sourceType": "module",
       "ecmaVersion": 2018
     },
-    "ignore":[
-      "./test"
-    ],
     "env": {
       "es6": true,
       "browser": true,

@@ -94,14 +94,14 @@ describe("Composition", function() {
         const { scope, ele: eleB } = await createComponent(`<scope><div><a><test/></a></div></scope>`, presets);
 
         eleB.fch.fch.fch.fch.fch.data.should.equal("test");
-    })
+    });
 
     it("Components can be imported from a remote resource using the [url] attribute on <import> or <link> elements", async function() {
         const presets = wick.presets();
         const { comp, ele } = await createComponent(`<import url="./test/data/import.1.html"/><scope><test/></scope>`, presets);
-        await sleep(5)
+        await sleep(5);
         ele.fch.fch.innerHTML.should.equal("I've been imported!");
-    })
+    });
 
     describe("Merging", function() {
 
@@ -134,28 +134,27 @@ describe("Composition", function() {
             const { ele: eleA } = await createComponent(`<div component='test'>Test this <slot name="test">out</slot> now!</div>`, presets);
             const { scope, ele: eleB } = await createComponent(`<scope><div><a><test><scope slot="test">2+4/22</scope></test></a></div></scope>`, presets);
             eleB.fch.fch.fch.fch.innerHTML.should.equal("Test this 2+4/22 now!");
-        })
+        });
     });
+});
 
-})
-
-describe("Containers", function(){
+describe("Containers", function() {
     it("Create collection of components binding to data objects within an array.", async function() {
         const presets = wick.presets();
 
         await createComponent(`<scope component='test'>My name is ((name))</scope>`, presets);
         const { scope, ele } = await createComponent(`<scope><container>((names))<test/></container></scope>`, presets);
 
-        const names = [{name:"A"},{name:"B"},{name:"C"},{name:"D"}]
+        const names = [{ name: "A" }, { name: "B" }, { name: "C" }, { name: "D" }];
 
-        scope.update({names});
+        scope.update({ names });
         await sleep(5);
 
         const children = ele.fch.fch.children;
 
-        for(var i = 0; i < names. length; i++)
-            children[i].innerHTML.should.equal(`My name is ${names[i].name}`)
-    })
+        for (var i = 0; i < names.length; i++)
+            children[i].innerHTML.should.equal(`My name is ${names[i].name}`);
+    });
 
     it("Filter [filter] attribute can be used to filter out components", async function() {
         const presets = wick.presets();
@@ -163,14 +162,14 @@ describe("Containers", function(){
         await createComponent(`<scope component='test'>My name is ((name))</scope>`, presets);
         const { scope, ele } = await createComponent(`<scope><container><f filter=(( obj.model.name == "A" ))/>((names))<test/></container></scope>`, presets);
 
-        const names = [{name:"A"},{name:"B"},{name:"C"},{name:"D"}]
+        const names = [{ name: "A" }, { name: "B" }, { name: "C" }, { name: "D" }];
 
-        scope.update({names});
+        scope.update({ names });
         await sleep(5);
         const children = ele.fch.fch.children;
         children.should.have.lengthOf(1);
-        children[0].innerHTML.should.equal(`My name is A`)
-    })
+        children[0].innerHTML.should.equal(`My name is A`);
+    });
 
     it("Filter [filter] attribute can reference scope binding variables.", async function() {
         const presets = wick.presets();
@@ -178,57 +177,54 @@ describe("Containers", function(){
         await createComponent(`<scope component='test'>My name is ((name))</scope>`, presets);
         const { scope, ele } = await createComponent(`<scope><container><f filter=(( obj.model.name == filter_data ))/>((names))<test/></container></scope>`, presets);
 
-        const names = [{name:"A"},{name:"B"},{name:"C"},{name:"D"}]
-        for(var i = 0; i < names. length; i++){
-            scope.update({names, filter_data:names[i].name});
+        const names = [{ name: "A" }, { name: "B" }, { name: "C" }, { name: "D" }];
+        for (var i = 0; i < names.length; i++) {
+            scope.update({ names, filter_data: names[i].name });
             await sleep(2);
             const children = ele.fch.fch.children;
             children.should.have.lengthOf(1);
-            children[0].innerHTML.should.equal(`My name is ${names[i].name}`)
+            children[0].innerHTML.should.equal(`My name is ${names[i].name}`);
         }
-    })
+    });
 
-    describe("Scrubbing", function(){
+    describe.only("Scrubbing", function() {
 
+        it("Introducing new offset and set of elements does not visually change element order.", async function() {
+            this.slow(200000);
+            this.timeout(10000);
 
-    d: "Introducing new offset and set of elements does not visually change elements order.",
-        t: async function () {
-            this.slow(200000)
-            this.timeout(10000)
+            const { scope, ele } = await createComponent(`./test/data/scrubbing2.js`, wick.presets()),
+                sc = scope.containers[0];
 
-            const 
-                component = await wick("/test/data/scrubbing2.js", wick.presets()),
-                ele = document.createElement("div"),
-                mgr = component.mount(ele),
-                src = mgr.scopes[0],
-                sc = src.containers[0];
-                await pause(16);
-                //Add incremental scrubs that add up to 5
-                const 
-                    amount = 0.05, 
-                    limit = Math.floor(6.5 / amount);
+            scope.update({ mounted: true });
 
-                for(let i = 0; i < limit; i++){
-                    src.update({scrub:amount})
-                    await pause(5); //Pausing for one frame in a 60f/1s mode. 
-                }
+            await sleep(5);
+            //Add incremental scrubs that add up to 5
+            const
+                amount = 0.05,
+                limit = Math.floor(6.5 / amount);
 
-                src.update({scrub:Infinity})
+            for (let i = 0; i < limit; i++) {
 
-                await pause(200)
+                scope.update({ scrub: amount });
+                await sleep(5); //Pausing for one frame in a 60f/1s mode. 
+            }
 
-                console.log(sc.activeScopes.map(e=>e.scopes[0].model))
-                sc.activeScopes.map((m,i)=>({ index:i, top: m.scopes[0]._top, off:m.scopes[0].model.data}))[11].off.should.equal(17);
-        }
-    })
-})
+            scope.update({ scrub: Infinity });
+
+            await sleep(100);
+            console.log(sc.activeScopes.map((scope, i) => ({ index: i, top: scope._top, off: scope.model.data }))[11])
+            sc.activeScopes.map((scope, i) => ({ index: i, top: scope._top, off: scope.model.data }))[11].off.should.equal(17);
+        });
+    });
+});
 
 describe("Errors", function() {
     it("Throws an error if it encounters incorrect syntax.", async function() {
-        await wick(`<scope><script on=((mounted))> ((test dm = 2)) </script> </scope>`).pending.should.be.rejected;
-        await wick(`<scope><script on=((mounted)> ((test dm = 2)) </script> </scope>`).pending.should.be.rejected;
-        await wick(`<scope><script on=((mounted)> ((test dm = 2)) <script> </scope>`).pending.should.be.rejected;
-        await wick(`<scope><script on=((mounted)> ((testdm 2=3 2)) <script> </scope>`).pending.should.be.rejected;
+        wick(`<scope><script on=((mounted))> ((test dm = 2)) </script> </scope>`).pending.should.eventually.be.rejected;
+        wick(`<scope><script on=((mounted)> ((test dm = 2)) </script> </scope>`).pending.should.eventually.be.rejected;
+        wick(`<scope><script on=((mounted)> ((test dm = 2)) <script> </scope>`).pending.should.eventually.be.rejected;
+        wick(`<scope><script on=((mounted))> ((testdm 2=3 2)) <script> </scope>`).pending.should.eventually.be.rejected;
     });
 });
 
@@ -247,67 +243,66 @@ describe("Scoped data flow", function() {
         const scope = await comp.mount(mount);
         var UPIMPORTED = false;
 
-        scope.parent = { upImport: (prop_name, data, meta) => UPIMPORTED = data == "myvalue" && prop_name == "out_test" }
+        scope.parent = { upImport: (prop_name, data, meta) => UPIMPORTED = data == "myvalue" && prop_name == "out_test" };
 
         scope.update({ in_test: true });
 
         await sleep(10);
 
         UPIMPORTED.should.equal(true);
-    })
-})
+    });
+});
 
 describe("Binding Methods", function() {
 
-    it("Simple binding within element updates text node", async function(){
-        const {scope, ele} = await createComponent(`<scope>((test))</scope>`)
+    it("Simple binding within element updates text node", async function() {
+        const { scope, ele } = await createComponent(`<scope>((test))</scope>`);
 
-        scope.update({test:"success"});
+        scope.update({ test: "success" });
 
         await sleep(1);
 
         ele.fch.fch.data.should.equal("success");
     });
 
-    it("Expressions can be defined within binding", async function(){
-        const {scope, ele} = await createComponent(`<scope>((testA + testB + (2 * testC) ))</scope>`)
+    it("Expressions can be defined within binding", async function() {
+        const { scope, ele } = await createComponent(`<scope>((testA + testB + (2 * testC) ))</scope>`);
 
-        scope.update({testA:"successfull", testB: " times ", testC: 4});
+        scope.update({ testA: "successfull", testB: " times ", testC: 4 });
 
         await sleep(1);
 
         ele.fch.fch.data.should.equal("successfull times 8");
-    })
+    });
 
-    it("Expressions are evaluated ONLY once all dependent variables have received a value", async function(){
-        const {scope, ele} = await createComponent(`<scope>((testA + testB + (2 * testC) ))</scope>`)
+    it("Expressions are evaluated ONLY once all dependent variables have received a value", async function() {
+        const { scope, ele } = await createComponent(`<scope>((testA + testB + (2 * testC) ))</scope>`);
 
-        scope.update({testA:"successfull"});
+        scope.update({ testA: "successfull" });
         await sleep(1);
         ele.fch.fch.data.should.equal("");
 
-        scope.update({testB: " times "});
+        scope.update({ testB: " times " });
         await sleep(1);
         ele.fch.fch.data.should.equal("");
 
-        scope.update({testC: 4});
+        scope.update({ testC: 4 });
         await sleep(1);
         ele.fch.fch.data.should.equal("successfull times 8");
-    })
+    });
 
-    it("Binding to a script tags [on] attributes causes that script to run", async function(){
-        const test = {RESULT:false}
-        const {scope, ele} = await createComponent(
-            `<scope><script on=((test))> testdata.RESULT = true </script></scope>`
-            ,{custom:{testdata:test}}
-        )
+    it("Binding to a script tags [on] attributes causes that script to run", async function() {
+        const test = { RESULT: false };
+        const { scope, ele } = await createComponent(
+            `<scope><script on=((test))> testdata.RESULT = true </script></scope>`, { custom: { testdata: test } }
+        );
 
-        scope.update({test:"success"});
+        scope.update({ test: "success" });
 
         await sleep(1);
 
         test.RESULT.should.be.true;
-    })
+    });
 
     it("Scripts can define arguments using on=((id)(arg_list)) syntax");
 
@@ -324,9 +319,10 @@ describe("Binding Methods", function() {
             scope.parent = {
                 upImport: (prop_name, data, meta) => {
                     prop_name.should.equal("b");
-                    scope.update({ a: "testCtrue" })
+                    scope.update({ a: "testCtrue" });
                     scope.update({
-                        [prop_name]: "testCfalse" })
+                        [prop_name]: "testCfalse"
+                    });
                     data.should.equal("testA_user_input");
                     DID_RUN = true;
                 }
@@ -339,7 +335,7 @@ describe("Binding Methods", function() {
             await sleep(2);
             a.value.should.equal('testCtrue');
             DID_RUN.should.be.true;
-        })
+        });
 
         it("(()(A)) : Scope data ignored and user input pushed out through binding A", async function() {
             const { scope, ele } = await createComponent(
@@ -354,7 +350,8 @@ describe("Binding Methods", function() {
                 upImport: (prop_name, data, meta) => {
                     prop_name.should.equal("b");
                     scope.update({
-                        [prop_name]: "testCfalse" })
+                        [prop_name]: "testCfalse"
+                    });
                     DID_RUN = true;
                 }
             };
@@ -366,7 +363,7 @@ describe("Binding Methods", function() {
             await sleep(2);
             b.value.should.equal('testCtrue');
             DID_RUN.should.be.true;
-        })
+        });
 
         it("((A)) : Scope data received on A and user input pushed out through binding A", async function() {
             const { scope, ele } = await createComponent(
@@ -382,7 +379,8 @@ describe("Binding Methods", function() {
                     prop_name.should.equal("a");
                     data.should.equal("testBfalse");
                     scope.update({
-                        [prop_name]: "testCtrue" })
+                        [prop_name]: "testCtrue"
+                    });
                     DID_RUN = true;
                 }
             };
@@ -395,7 +393,7 @@ describe("Binding Methods", function() {
             await sleep(5);
             a.value.should.equal('testCtrue');
             DID_RUN.should.be.true;
-        })
+        });
 
         it("((A)(null)) : Scope data received on A and user input ignored", async function() {
             const { scope, ele } = await createComponent(
@@ -408,7 +406,7 @@ describe("Binding Methods", function() {
             a.value = "testBfalse";
             scope.parent = {
                 upImport: (prop_name, data, meta) => {
-                    console.log(prop_name)
+                    console.log(prop_name);
                     DID_RUN = true;
                 }
             };
@@ -420,7 +418,7 @@ describe("Binding Methods", function() {
             a.runEvent("input", { target: a });
             await sleep(5);
             DID_RUN.should.be.false;
-        })
+        });
     });
 
     it("HTML element should appear in the scoped DOM when an ExpressionIO, piped to a TextIO, yields a HTML object.", async function() {

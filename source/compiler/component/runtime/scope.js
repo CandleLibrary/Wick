@@ -147,6 +147,7 @@ export default class Scope extends Observer {
 
     getTap(name) {
 
+
         if (!name) return null;
 
         let tap = this.taps.get(name);
@@ -312,9 +313,8 @@ export default class Scope extends Observer {
     }
 
     transitionIn(transition, transition_name = "trs_in") {
-
         if (transition)
-            this.update({ trs: transition, [transition_name]: transition }, null, false, { IMMEDIATE: true });
+            this.update({ [transition_name]: transition }, null, false, { IMMEDIATE: true });
 
         this.TRANSITIONED_IN = true;
     }
@@ -333,7 +333,7 @@ export default class Scope extends Observer {
 
         if (transition) {
 
-            this.update({ trs: transition, [transition_name]: transition }, null, false, { IMMEDIATE: true });
+            this.update({ [transition_name]: transition }, null, false, { IMMEDIATE: true });
 
             if (transition.trs)
                 transition_time = transition.trs.out_duration;
