@@ -146,8 +146,6 @@ export default class Scope extends Observer {
     }
 
     getTap(name) {
-
-
         if (!name) return null;
 
         let tap = this.taps.get(name);

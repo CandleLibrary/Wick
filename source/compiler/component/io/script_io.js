@@ -34,6 +34,7 @@ export default class ScriptIO extends IOBase {
         this._SCHD_ = 0;
         this.node = node;
         this.function = script.function.bind(scope);
+        this.AWAITING_DEPENDENCIES = true;
 
         //Embedded emit functions
         const func_bound = this.emit.bind(this);
@@ -104,6 +105,16 @@ export default class ScriptIO extends IOBase {
             io.ACTIVE = true;
             this.ACTIVE_IOS++;
         }
+
+        if(this.AWAITING_DEPENDENCIES){
+            if (this.ACTIVE_IOS < this.IO_ACTIVATIONS)
+                return;
+
+            this.AWAITING_DEPENDENCIES = false;
+
+            if (!this._SCHD_)
+                spark.queueUpdate(this);
+        }
     }
 
     setValue(value, meta) {
@@ -116,7 +127,6 @@ export default class ScriptIO extends IOBase {
         } else if (this.TAP_BINDING_INDEX !== -1) {
             this.arg_props[this.TAP_BINDING_INDEX] = value;
         }
-
     }
 
     scheduledUpdate() {
@@ -144,8 +154,11 @@ export default class ScriptIO extends IOBase {
             }
         }
         
-        if (this.ACTIVE_IOS < this.IO_ACTIVATIONS)
+        if (this.ACTIVE_IOS < this.IO_ACTIVATIONS){
+            this.AWAITING_DEPENDENCIES = true;
             return;
+        }
+        
 
         if (!this._SCHD_)
             spark.queueUpdate(this);
