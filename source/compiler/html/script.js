@@ -4,6 +4,8 @@ import FUNCTION_CACHE from "./function_cache.js";
 import { GetOutGlobals, AddEmit as addEmitExpression } from "./script_functions.js";
 import error from "../../utils/error.js";
 
+const offset =  "    ";
+
 export default class ScriptNode extends ElementNode {
 
     constructor(env, tag, ast, attribs, presets) {
