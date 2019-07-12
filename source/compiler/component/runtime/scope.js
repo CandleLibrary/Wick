@@ -78,8 +78,10 @@ export default class Scope extends Observer {
     }
 
     destroy() {
+        if(this.DESTROYED)
+            return;
 
-        this.update({ destroying: true }); //Lifecycle Events: Destroying <======================================================================
+        this.update({ destroying: true }, null, false, {IMMEDIATE:true}); //Lifecycle Events: Destroying <======================================================================
 
         this.DESTROYED = true;
         this.LOADED = false;
@@ -101,7 +103,7 @@ export default class Scope extends Observer {
             tap.destroy();
 
         this.taps = null;
-        //this.ios = null;
+        this.ios = null;
         this.ele = null;
 
         while (this.scopes[0])
@@ -206,8 +208,6 @@ export default class Scope extends Observer {
             tap.load(this.model, false);
 
         this.update({ loading: true }); //Lifecycle Events: Loading <======================================================================
-        //this.update({loaded:true});  //Lifecycle Events: Loaded <======================================================================
-        //this.LOADED = true
 
         //Allow one tick to happen before acknowledging load
         setTimeout(this.loadAcknowledged.bind(this), 1);
