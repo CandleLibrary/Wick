@@ -34,7 +34,7 @@ export default class ScriptIO extends IOBase {
         this._SCHD_ = 0;
         this.node = node;
         this.function = script.function.bind(scope);
-        this.AWAITING_DEPENDENCIES = true;
+        this.AWAITING_DEPENDENCIES = false;
 
         //Embedded emit functions
         const func_bound = this.emit.bind(this);
