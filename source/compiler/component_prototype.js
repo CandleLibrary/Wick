@@ -28,19 +28,19 @@ export default class d {
     }
 
     //Mounts component data to new HTMLElement object.
-    async mount(HTMLElement_, bound_data_object, USE_SHADOW) {
+    async mount(HTMLElement_, data_object, USE_SHADOW) {
 
         if (this.READY !== true) {
             if (!this.__pending)
                 this.__pending = [];
 
-            return new Promise(res =>this.__pending.push([HTMLElement_, bound_data_object, USE_SHADOW, res]));
+            return new Promise(res =>this.__pending.push([HTMLElement_, data_object, USE_SHADOW, res]));
         }
 
-        return this.nonAsyncMount(HTMLElement_, bound_data_object, USE_SHADOW);
+        return this.nonAsyncMount(HTMLElement_, data_object, USE_SHADOW);
     }
 
-    nonAsyncMount(HTMLElement_, bound_data_object = null, USE_SHADOW = true){
+    nonAsyncMount(HTMLElement_, data_object = null, USE_SHADOW = true){
         let element = HTMLElement_;
 
         if ((HTMLElement_ instanceof HTMLElement) && USE_SHADOW) {
@@ -51,7 +51,7 @@ export default class d {
 
         const scope = this.ast.mount(element);
 
-        scope.load(bound_data_object);
+        scope.load(data_object);
 
         return scope;
     }
