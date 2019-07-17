@@ -98,6 +98,30 @@ export default class scp extends ElementNode {
         }
     }
 
+    createRuntimeTaplist(scope) {
+
+        const tap_list = this.tap_list,
+            taps = scope.taps;
+
+        for (let i = 0, l = tap_list.length; i < l; i++) {
+            const tap = tap_list[i],
+                name = tap.name,
+                bool = name == "update";
+
+            if (scope.taps.has(name)) continue;
+
+            scope.taps.set(name,
+                bool ?
+                (scope.update_tap = scope.taps[name],
+                    new UpdateTap(scope, name, tap.modes)) :
+                new Tap(scope, name, tap.modes)
+            )
+
+            if (bool)
+            ;
+        }
+    }
+
     createElement(scope) {
         if (!scope.ele || this.getAttribute("element")) {
             const ele = createElement(this.element || "div");
@@ -116,29 +140,9 @@ export default class scp extends ElementNode {
     mount(own_element, outer_scope, presets = this.presets, slots = {}, pinned = {}) {
 
         const scope = new Scope(outer_scope, presets, own_element, this);
-
-        if (this.HAS_TAPS) {
-            const tap_list = this.tap_list,
-                taps = scope.taps;
-
-            for (let i = 0, l = tap_list.length; i < l; i++) {
-                const tap = tap_list[i],
-                    name = tap.name,
-                    bool = name == "update";
-
-                if (scope.taps.has(name)) continue;
-
-                scope.taps.set(name,
-                    bool 
-                    ? (scope.update_tap = scope.taps[name],
-                        new UpdateTap(scope, name, tap.modes)) 
-                    : new Tap(scope, name, tap.modes)
-                )
-
-                if (bool)
-                ;
-            }
-        }
+        
+        if (this.HAS_TAPS)
+            this.createRuntimeTaplist(scope)
 
         scope._model_name_ = this.model_name;
         scope._schema_name_ = this.schema_name;
@@ -147,5 +151,13 @@ export default class scp extends ElementNode {
         pinned = {};
 
         return super.mount(null, scope, presets, slots, pinned);
+    }
+
+    toString() {
+        const tag = this.tag;
+        this.tag = "scope";
+        const val = super.toString();
+        this.tag = tag;
+        return val;
     }
 }

@@ -37,6 +37,7 @@ wick.astCompiler = function(string){
 	return wick_compile(whind(string), CompilerEnv);
 };
 
+wick.compiler_environment = CompilerEnv;
 export default wick;
 
 

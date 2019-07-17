@@ -77,6 +77,27 @@ export default class Scope extends Observer {
             ele.wick_scope.destroy();
     }
 
+    purge(){
+        if (this.parent && this.parent.removeScope)
+            this.parent.removeScope(this);
+
+        if (this.ele && this.ele.parentNode)
+            this.ele.parentNode.removeChild(this.ele);
+
+        for (const tap of this.taps.values())
+            tap.destroy();
+
+        while (this.scopes[0])
+            this.scopes[0].destroy();
+
+        //while (this.containers[0])
+        //    this.containers[0].destroy();
+        
+        this.taps = new Map;
+        this.scopes.length = 0;
+        this.containers.length = 0;
+    }
+
     destroy() {
         if(this.DESTROYED)
             return;
@@ -86,28 +107,12 @@ export default class Scope extends Observer {
         this.DESTROYED = true;
         this.LOADED = false;
 
-        if (this.parent && this.parent.removeScope)
-            this.parent.removeScope(this);
+        this.purge();
 
-        //this.children.forEach((c) => c.destroy());
-        //this.children.length = 0;
         this.data = null;
-
-        if (this.ele && this.ele.parentElement)
-            this.ele.parentElement.removeChild(this.ele);
-
-        //for(const io of this.ios)
-        //    io.destroy();
-
-        for (const tap of this.taps.values())
-            tap.destroy();
-
         this.taps = null;
         this.ios = null;
         this.ele = null;
-
-        while (this.scopes[0])
-            this.scopes[0].destroy();
 
         super.destroy();
     }

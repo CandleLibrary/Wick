@@ -28,6 +28,7 @@ export default class Binding {
 
         this.origin_url = env.url;
 
+        this.origin_val = this.ast + "";
         this.val = this.ast + "";
 
         if (this.ast && !(this.ast instanceof identifier))
@@ -38,9 +39,9 @@ export default class Binding {
     toString() {
 
         if (this.ast_other)
-            return `((${this.ast + ""})(${this.ast_other + ""}))`;
+            return `((${this.origin_val + ""})(${this.ast_other + ""}))`;
         else
-            return `((${this.ast + ""}))`;
+            return `((${this.origin_val + ""}))`;
     }
 
     processJSAST(presets = { custom: {} }) {

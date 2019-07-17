@@ -111,13 +111,15 @@ export default class ElementNode {
 
         for (const attr of this.attribs.values()) {
             if (attr.name)
-                str += ` ${attr.name}="${attr.value}"`;
+                str += ` ${attr.name}=${typeof attr.value == "object" ? attr.value + "" : `"${attr.value}"`}`;
         }
+
+        if (this.SINGLE)
+            return str + "/>";
+
 
         str += ">\n";
 
-        if (this.SINGLE)
-            return str;
 
         str += this.innerToString(off + 1);
 

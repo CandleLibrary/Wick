@@ -15,10 +15,13 @@ export default class ScriptNode extends ElementNode {
         this.ast = ast[0];
         this.READY = false;
         this.val = "";
+        this.original_val = "";
         this.on = this.getAttrib("on").value;
 
-        if (this.ast)
+        if (this.ast){
+            this.original_val = this.ast.render();
             this.processJSAST(presets);
+        }
     }
 
     loadAST(ast) {
@@ -83,7 +86,7 @@ export default class ScriptNode extends ElementNode {
 
         str += ">\n";
 
-        str += this.ast.render();
+        str += this.original_val; //this.ast.render();
 
         return str + `${o}</${this.tag}>\n`;
     }
