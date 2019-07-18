@@ -104,8 +104,13 @@ export default class Scope extends Observer {
     destroy() {
         if(this.DESTROYED)
             return;
+        
+        try{
+            this.update({ destroying: true }, null, false, {IMMEDIATE:true}); //Lifecycle Events: Destroying <======================================================================
+        }catch(e){
+            console.throw(e);
+        }
 
-        this.update({ destroying: true }, null, false, {IMMEDIATE:true}); //Lifecycle Events: Destroying <======================================================================
 
         this.DESTROYED = true;
         this.LOADED = false;
