@@ -32,7 +32,7 @@ export class Tap {
     }
 
     destroy() {
-        this.ios.forEach(io => io.destroy());
+        this.ios && this.ios.forEach(io => io.destroy());
         this.ios = null;
         this.scope = null;
         this.prop = null;

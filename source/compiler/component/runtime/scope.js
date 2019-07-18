@@ -42,6 +42,7 @@ export default class Scope extends Observer {
         this.CONNECTED = false;
         this.TRANSITIONED_IN = false;
         this.PENDING_LOADS = 1; //set to one for self
+        this.temp_data_cache = null;
 
         this.addToParent(parent);
     }
@@ -96,6 +97,8 @@ export default class Scope extends Observer {
         this.taps = new Map;
         this.scopes.length = 0;
         this.containers.length = 0;
+        this.temp_data_cache = null;
+        this.css.length = 0;
     }
 
     destroy() {
