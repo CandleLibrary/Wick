@@ -115,7 +115,7 @@ export default class scp extends ElementNode {
                 (scope.update_tap = scope.taps[name],
                     new UpdateTap(scope, name, tap.modes)) :
                 new Tap(scope, name, tap.modes)
-            )
+            );
 
             if (bool)
             ;
@@ -124,7 +124,7 @@ export default class scp extends ElementNode {
 
     createElement(scope) {
         if (!scope.ele || this.getAttribute("element")) {
-            const ele = createElement(this.element || "div");
+            const ele = createElement(this.tag || "div");
 
             if (scope.ele) {
                 appendChild(scope.ele, ele);

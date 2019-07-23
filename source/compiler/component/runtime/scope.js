@@ -191,7 +191,7 @@ export default class Scope extends Observer {
             model_name = this.ast.model_name,
             scheme_name = this.ast.scheme_name;
 
-        if (model_name && this.presets.models)
+        if (model_name && presets.models)
             m = presets.models[model_name];
         if (scheme_name && presets.schemas) {
             SchemedConstructor = presets.schemas[scheme_name];

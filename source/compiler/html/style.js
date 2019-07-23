@@ -1,6 +1,5 @@
-
+import { appendChild } from "../../short_names.js";
 import ElementNode from "./element.js";
-//import css from "@candlefw/css";
 
 export default class sty extends ElementNode{
 	constructor(env, tag, children, attribs, presets){
@@ -13,7 +12,18 @@ export default class sty extends ElementNode{
 
 	render(){}
 
-	mount(element, scope, presets, slots, pinned){
-		scope.css.push(this.data);
+	mount(element, scope, presets){
+
+		if(presets.options.USE_SHADOWED_STYLE){
+
+			const own_element = this.createElement(scope);
+
+			own_element.innerHTML = this.data.toString();
+
+			appendChild(element, own_element);
+		}
+
+		else
+			scope.css.push(this.data);
 	}
 }

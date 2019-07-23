@@ -29,8 +29,6 @@ class Presets {
          * {Object} Store for optional parameters used in the app
          */
         this.options = {
-            USE_SECURE: true,
-            USE_SHADOW: false,
             INJECT_ERROR_HANDLER_INTO_SUBFUNCTIONS: false,
         };
 
@@ -100,13 +98,7 @@ class Presets {
          */
         this.models = {};
 
-        /**
-         * Configured by `preset_options.USE_SHADOW`. If set to true, and if the browser supports it, compiled and rendered template elements will be bound to a `<component>` shadow DOM, instead being appended as a child node.
-         * @instance
-         * @readonly
-         */
-        this.USE_SHADOW = false;
-
+        
         /**
          * { Object } Contains all user defined HTMLElement templates 
          */
@@ -151,9 +143,13 @@ class Presets {
             for (let cn in c)
                 if (ModelBase.isPrototypeOf(c[cn]))
                     this.schemas[cn] = c[cn];
-
-        this.options.USE_SHADOW = (this.options.USE_SHADOW) ? (DOC.head.createShadowRoot || DOC.head.attachShadow) : false;
-
+        /**
+         * Configured by `preset_options.USE_SHADOW`. If set to true, and if the browser supports it, compiled and rendered template elements will be bound to a `<component>` shadow DOM, instead being appended as a child node.
+         * @instance
+         * @readonly
+         */
+        this.options.USE_SHADOW = (preset_options.USE_SHADOW) ? (DOC.head.createShadowRoot || DOC.head.attachShadow) : false;
+        this.options.USE_SHADOWED_STYLE = ((preset_options.USE_SHADOWED_STYLE) && (this.options.USE_SHADOW));
         this.url = URL;
 
         Object.freeze(this.options);

@@ -40,8 +40,11 @@ export default class d {
         return this.nonAsyncMount(HTMLElement_, data_object, USE_SHADOW);
     }
 
-    nonAsyncMount(HTMLElement_, data_object = null, USE_SHADOW = true){
+    nonAsyncMount(HTMLElement_, data_object = null, USE_SHADOW){
         let element = HTMLElement_;
+
+        if(USE_SHADOW == undefined)
+            USE_SHADOW = this.ast.presets.options.USE_SHADOW;
 
         if ((HTMLElement_ instanceof HTMLElement) && USE_SHADOW) {
             //throw new Error("HTMLElement_ argument is not an instance of HTMLElement. Cannot mount component");
