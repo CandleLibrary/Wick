@@ -1,4 +1,9 @@
 *.sublime*
 build/config/
 test/
-index.html
+tests/
+doc/
+docs/
+.git/
+
+
