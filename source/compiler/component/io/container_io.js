@@ -89,11 +89,11 @@ export default class ContainerIO extends ScriptIO {
     }
 
     filter(array) {
-        return array.filter((a) => (this.setValue([a]), super.scheduledUpdate()));
+        return array.filter((a) => (this.setValue([a.model]), super.scheduledUpdate()));
     }
 
     sort(array) {
-        return array.sort((a, b) => (this.setValue([a, b]), super.scheduledUpdate()));
+        return array.sort((a, b) => (this.setValue([a.model, b.model]), super.scheduledUpdate()));
     }
 
     scrub() {
