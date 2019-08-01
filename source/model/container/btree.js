@@ -208,14 +208,13 @@ class BtreeNode {
 
     destroy() {
 
-        this.nodes = null;
-        this.keys = null;
-
-        if (!this.LEAF) {
+        if (!this.LEAF)
             for (let i = 0, l = this.nodes.length; i < l; i++)
                 this.nodes[i].destroy();
-        }
+        
 
+        this.nodes = null;
+        this.keys = null;
     }
 
     balanceInsert(max_size, IS_ROOT = false) {
