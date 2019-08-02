@@ -83,7 +83,8 @@ export default class ScopeContainer extends Observer {
     }
 
     update(container) {
-        if (container instanceof ModelContainerBase) container = container.get();
+        
+        if (container instanceof ModelContainerBase) container = container.get(undefined, []);
         if (!container) return;
         //let results = container.get(this.getTerms());
         // if (container.length > 0) {

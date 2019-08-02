@@ -31,6 +31,8 @@ export default class Binding {
         this.origin_val = this.ast + "";
         this.val = this.ast + "";
 
+        this.on = true;
+
         if (this.ast && !(this.ast instanceof identifier))
             this.processJSAST(env.presets);
 

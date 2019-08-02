@@ -1,4 +1,5 @@
 import ElementNode from "./element.js";
+import Binding from "./binding.js";
 import ScriptIO from "../component/io/script_io.js";
 import FUNCTION_CACHE from "./function_cache.js";
 import { GetOutGlobals, AddEmit as addEmitExpression } from "./script_functions.js";
@@ -16,9 +17,16 @@ export default class ScriptNode extends ElementNode {
         this.READY = false;
         this.val = "";
         this.original_val = "";
-        this.on = this.getAttrib("on").value;
+        
+        const on = this.getAttrib("on").value;
 
-        if (this.ast){
+        if(!(on instanceof Binding))
+            console.warn("No binding set for this script's [on] attribute. This script will have no effect.");
+        else 
+            this.on = on;
+
+
+        if (this.ast && on){
             this.original_val = this.ast.render();
             this.processJSAST(presets);
         }
@@ -40,7 +48,7 @@ export default class ScriptNode extends ElementNode {
     }
 
     finalize() {
-        if (!this.ast) return this;
+        if (!this.ast || !this.on) return this;
 
 
         if (true || !FUNCTION_CACHE.has(this.val)) {
@@ -62,6 +70,7 @@ export default class ScriptNode extends ElementNode {
 
         } else {
             this.function = FUNCTION_CACHE.get(this.val);
+            this.READY = true;
         }
 
         return this;
