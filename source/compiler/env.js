@@ -89,6 +89,7 @@ import {
     template_tail,
     class_declaration,
     for_of_statement,
+    for_in_statement,
     super_literal
 } from "@candlefw/js";
 //*/
@@ -225,6 +226,7 @@ const env = {
         null_literal,
         numeric_literal,
         object_literal,
+        for_in_statement,
         or_expression,
         parenthasized,
         plus_expression,
