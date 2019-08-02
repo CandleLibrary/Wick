@@ -3,6 +3,8 @@ import Container from "../component/runtime/container.js";
 import proto from "../component_prototype.js";
 
 import ElementNode from "./element.js";
+import Style from "./style.js";
+import Script from "./script.js";
 import Filter from "./filter.js";
 import TextNode from "./text.js";
 
@@ -26,6 +28,11 @@ export default class ctr extends ElementNode {
     
     constructor(env, tag, children, attribs, presets) {
         super(env, "container", children, attribs, presets);
+        //Warn about any children that are css / script
+
+        for(const child of children)
+            if(child.tag && (child.tag == "script" || child.tag == "style"))
+                console.warn(`Element of type <${child.tag}> will have no effect inside a <container> element`);
 
         this.filters = null;
         this.property_bind = null;
