@@ -142,10 +142,7 @@ export default class scp extends ElementNode {
         const scope = new Scope(outer_scope, presets, own_element, this);
         
         if (this.HAS_TAPS)
-            this.createRuntimeTaplist(scope)
-
-        scope._model_name_ = this.model_name;
-        scope._schema_name_ = this.schema_name;
+            this.createRuntimeTaplist(scope);
 
         //Reset pinned
         pinned = {};
