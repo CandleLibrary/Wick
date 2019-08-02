@@ -284,7 +284,7 @@ class BtreeNode {
                     let keyr = o.key;
                     let newnode = o.newnode;
 
-                    if (keyr == undefined) debugger
+                    //if (keyr == undefined) debugger;
 
                     if (newnode != node) {
                         this.keys.splice(i, 0, keyr);
@@ -302,7 +302,7 @@ class BtreeNode {
                 key
             } = node.insert(identifier, model, unique_key, max_size, false, result);
 
-            if (key == undefined) debugger
+            //if (key == undefined) debugger;
 
             if (newnode != node) {
                 this.keys.push(key);

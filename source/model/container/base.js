@@ -138,7 +138,7 @@ export class ModelContainerBase extends ModelBase {
 
         @returns {(ModelContainerBase|Array)} Returns a Model container or an Array of Models matching the search terms. 
     */
-    get(term, __return_data__) {
+    get(term = this._filters_, __return_data__ = null) {
 
         let out = null;
 
