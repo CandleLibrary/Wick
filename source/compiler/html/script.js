@@ -1,5 +1,4 @@
 import ElementNode from "./element.js";
-import Binding from "./binding.js";
 import ScriptIO from "../component/io/script_io.js";
 import FUNCTION_CACHE from "./function_cache.js";
 import { GetOutGlobals, AddEmit as addEmitExpression } from "./script_functions.js";
@@ -20,7 +19,7 @@ export default class ScriptNode extends ElementNode {
         
         const on = this.getAttrib("on").value;
 
-        if(!(on instanceof Binding))
+        if(typeof on == "string")
             console.warn("No binding set for this script's [on] attribute. This script will have no effect.");
         else 
             this.on = on;

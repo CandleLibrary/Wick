@@ -1,8 +1,9 @@
 {
   "name": "@candlefw/wick",
-  "version": "0.8.4-0",
+  "version": "0.8.4",
   "description": "Web Component Builder",
-  "main": "./source/wick.mjs",
+  "main": "./source/wick.js",
+  "type": "module",
   "scripts": {
     "build_js_parser": "hydrocarbon compile -n js -o ./source/js -t 'mjs' ./source/js/hc_files/js.hcg -e ./source/js/js.env.mjs",
     "build_js_parser.table": "hydrocarbon table ./source/js/wick_js.hcg",

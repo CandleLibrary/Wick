@@ -2664,7 +2664,7 @@ var wick = (function () {
 
             @returns {(ModelContainerBase|Array)} Returns a Model container or an Array of Models matching the search terms. 
         */
-        get(term, __return_data__) {
+        get(term = this._filters_, __return_data__ = null) {
 
             let out = null;
 
@@ -3642,14 +3642,13 @@ var wick = (function () {
 
         destroy() {
 
-            this.nodes = null;
-            this.keys = null;
-
-            if (!this.LEAF) {
+            if (!this.LEAF)
                 for (let i = 0, l = this.nodes.length; i < l; i++)
                     this.nodes[i].destroy();
-            }
+            
 
+            this.nodes = null;
+            this.keys = null;
         }
 
         balanceInsert(max_size, IS_ROOT = false) {
@@ -3719,7 +3718,7 @@ var wick = (function () {
                         let keyr = o.key;
                         let newnode = o.newnode;
 
-                        if (keyr == undefined) debugger
+                        //if (keyr == undefined) debugger;
 
                         if (newnode != node) {
                             this.keys.splice(i, 0, keyr);
@@ -3737,7 +3736,7 @@ var wick = (function () {
                     key
                 } = node.insert(identifier, model, unique_key, max_size, false, result);
 
-                if (key == undefined) debugger
+                //if (key == undefined) debugger;
 
                 if (newnode != node) {
                     this.keys.push(key);
@@ -11930,7 +11929,7 @@ var wick = (function () {
         render() { return `[${this.exprs.map(a=>a.render()).join(",")}]` }
     }
 
-    class function_declaration extends base {
+    class function_declaration extends statement {
         constructor(id, args, body) {
 
             super(id, args || null, body || null);
@@ -12036,10 +12035,14 @@ var wick = (function () {
         get type() { return types$1.arrow_function_declaration }
 
         render() {
+            
             const
                 body_str = ((this.body) ?
                     ((this.body.IS_STATEMENT || (this.body.type == types$1.statements && this.body.stmts.length > 1)) ?
                         `{${this.body.render()}}` :
+                        (this.body.type == types$1.object_literal) ?
+                            `(${this.body.render()})`
+                            :
                         this.body.render()) :
                     "{}"),
                 args_str = this.args.render(this.args.length !== 1);
@@ -12319,6 +12322,8 @@ var wick = (function () {
             //This is a declaration and id cannot be a closure variable. 
             if (this.id)
                 this.id.root = false;
+
+            this.IS_STATEMENT = true;
         }
 
         get id() { return this.vals[0] }
@@ -12414,7 +12419,7 @@ var wick = (function () {
 
     /** DEBUGGER STATEMENT  **/
 
-    class debugger_statement extends base {
+    class debugger_statement extends statement {
         constructor() {
             super();
         }
@@ -12917,6 +12922,7 @@ var wick = (function () {
         constructor(sym) {
             super(sym[1]);
             this.mode = sym[0];
+            this.IS_STATEMENT = true;
         }
 
         get bindings() { return this.vals[0] }
@@ -13071,7 +13077,7 @@ var wick = (function () {
         constructor(id, args) { 
             super([id, args]);
             this.root = false;
-            this.id.root = false;
+            //this.id.root = false;
         }
 
         get type(){return types$1.new_expression}
@@ -13103,7 +13109,7 @@ var wick = (function () {
         }
     }
 
-    /** OBJECT **/
+    /** OBJECT LITERAL **/
 
     class object_literal extends base {
         constructor(props) {
@@ -13112,22 +13118,16 @@ var wick = (function () {
 
         get props() { return this.vals[0] }
 
-        * traverseDepthFirst(p) {
-            this.parent = p;
-            yield this;
-            for (const prop of this.props)
-                yield* prop.traverseDepthFirst(this);
-        }
-
         getRootIds(ids, closure) {
-            for(const id of this.props)
-                if(id && id.getRootIds)
-                    id.getRootIds(ids, closure);
+            if(this.props)
+                for(const id of this.props)
+                    if(id && id.getRootIds)
+                        id.getRootIds(ids, closure);
         }
 
         get type() { return types$1.object_literal }
 
-        render() { return `{${this.props.map(p=>p.render()).join(",")}}` }
+        render() { return `{${this.props ? this.props.map(p=>p.render()).join(","): ""}}` }
     }
 
     /** OR **/
@@ -13403,7 +13403,7 @@ var wick = (function () {
 
     class template_head extends base {
     	
-        constructor(sym) { super(sym); }
+        constructor(sym) { super(sym|| ""); }
 
         get string() { return this.vals[0] }
 
@@ -13420,7 +13420,7 @@ var wick = (function () {
 
     class template_middle extends base {
 
-        constructor(sym) { super(sym); }
+        constructor(sym) { super(sym || ""); }
 
         get string() { return this.vals[0] }
 
@@ -13436,6 +13436,8 @@ var wick = (function () {
     /** TEMPLATE MIDDLE **/
 
     class template_tail extends base {
+
+    	constructor(sym) { super(sym|| ""); }
 
         get string() { return this.vals[0] }
 
@@ -13620,12 +13622,33 @@ var wick = (function () {
         }
     }
 
+    /** FOR IN **/
+    class for_in_statement extends statement {
+
+        get binding() { return this.vals[0] }
+        get expression() { return this.vals[1] }
+        get body() { return this.vals[2] }
+
+        get type() { return types$1.for_in_statement }
+
+        render() {
+            let binding, expression, body;
+
+            if (this.binding) binding = this.binding.render();
+            if (this.expression) expression = this.expression.render();
+            if (this.body) body = this.body.render();
+
+            return `for(${binding} in ${expression} ) ${body}`;
+        }
+    }
+
     /** LEXICAL EXPRESSION **/
     //Like lexical declaration except omiting the semi-colon within the render() output.
     class lexical_expression extends lexical_declaration {
     	constructor(sym) {
             super(sym);
             this.vals[0] = [new binding([this.vals[0]])];
+            this.IS_STATEMENT = false;
         }
         render() { 
         	return super.render().slice(0, -1);
@@ -23293,7 +23316,7 @@ in file ${o.url || o.origin_url}`,e);
 
     	/* https://www.w3.org/TR/css-fonts-4 */
     		font_display: "auto|block|swap|fallback|optional",
-    		font_family: `[[<generic_family>|<family_name>],]*[<generic_family>|<family_name>]`,
+    		font_family: `[<generic_family>|<family_name>]#`,
     		font_language_override:"normal|<string>",
     		font: `[[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>]|caption|icon|menu|message-box|small-caption|status-bar`,
     		font_max_size: `<absolute_size>|<relative_size>|<length>|<percentage>|infinity`,
@@ -23464,7 +23487,7 @@ in file ${o.url || o.origin_url}`,e);
             korean_counter_style:`korean-hangul-formal|korean-hanja-informal|and korean-hanja-formal`,
             chinese_counter_style:`simp-chinese-informal|simp-chinese-formal|trad-chinese-informal|and trad-chinese-formal`,
 
-    	/* https://drafts.csswg.org/css-content-3/ */
+    	/* https://drafts.csswg.org/css-conte-3/ */
     		content_list:"[<string>|contents|<image>|<quote>|<target>|<leader()>]+",
     		content_replacement:"<image>",
 
@@ -23484,14 +23507,15 @@ in file ${o.url || o.origin_url}`,e);
     	absolute_size: `xx-small|x-small|small|medium|large|x-large|xx-large`,
     	relative_size: `larger|smaller`,
 
-    	/*https://www.w3.org/TR/css-backgrounds-3/*/
+    	/*https://www.w3.org/TR/css-backgrounds-3/#property-index*/
 
     	bg_layer: `<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
     	final_bg_layer: `<background_color>||<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
     	bg_image: `<url>|<gradient>|none`,
     	repeat_style: `repeat-x|repeat-y|[repeat|space|round|no-repeat]{1,2}`,
     	background_attachment: `<attachment>#`,
-    	bg_size: `<length_percentage>|auto]{1,2}|cover|contain`,
+    	bg_size: `[<length_percentage>|auto]{1,2}|cover
+	|contain`,
     	bg_position: `[[left|center|right|top|bottom|<length_percentage>]|[left|center|right|<length_percentage>][top|center|bottom|<length_percentage>]|[center|[left|right]<length_percentage>?]&&[center|[top|bottom]<length_percentage>?]]`,
     	attachment: `scroll|fixed|local`,
     	line_style: `none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset`,
@@ -23507,7 +23531,7 @@ in file ${o.url || o.origin_url}`,e);
 
     	identifier: `<id>`,
     	custom_ident: `<id>`,
-
+    	
     	/* https://drafts.csswg.org/css-timing-1/#typedef-timing-function */
 
     	timing_function: `linear|<cubic_bezier_timing_function>|<step_timing_function>|<frames_timing_function>`,
@@ -23645,7 +23669,7 @@ in file ${o.url || o.origin_url}`,e);
             return !(isNaN(this.r[0]) && isNaN(this.r[1]));
         }
 
-        parse(data){
+        parse(data) {
             const prop_data = [];
 
             this.parseLVL1(data instanceof whind$1.constructor ? data : whind$1(data + ""), prop_data);
@@ -23656,7 +23680,7 @@ in file ${o.url || o.origin_url}`,e);
 
 
         parseLVL1(lx, out_val = [], ROOT = true) {
-                
+
             if (typeof(lx) == "string")
                 lx = whind$1(lx);
 
@@ -23677,30 +23701,42 @@ in file ${o.url || o.origin_url}`,e);
             return bool;
         }
 
-        checkForComma(lx) {
+        checkForComma(lx, out_val, temp_val = [], j = 0) {
             if (this.REQUIRE_COMMA) {
-                if (lx.ch == ",")
-                    lx.next();
-                else return false;
-            }
+                if (out_val) {
+                    if (j > 0)
+                        out_val.push(",", ...temp_val);
+                    else
+                        out_val.push(...temp_val);
+                }
+
+                if (lx.ch !== ",")
+                    return false;
+
+                lx.next();
+            } else if(out_val)
+                out_val.push(...temp_val);
+
             return true;
         }
 
         parseLVL2(lx, out_val, start, end) {
 
-            let bool = false;
+            let bool = false,
+                copy = lx.copy(),
+                temp_val = [];
 
             repeat:
                 for (let j = 0; j < end && !lx.END; j++) {
 
-                    const copy = lx.copy();
+                    //const copy = lx.copy();
 
                     const temp = [];
 
                     for (let i = 0, l = this.terms.length; i < l; i++) {
 
                         const term = this.terms[i];
-                        
+
                         if (!term.parseLVL1(copy, temp, false)) {
                             if (!term.OPTIONAL) {
                                 break repeat;
@@ -23708,13 +23744,13 @@ in file ${o.url || o.origin_url}`,e);
                         }
                     }
 
-                    out_val.push(...temp);
+                    temp_val.push(...temp);
 
                     lx.sync(copy);
 
                     bool = true;
 
-                    if (!this.checkForComma(lx))
+                    if (!this.checkForComma(copy, out_val, temp_val, j))
                         break;
                 }
 
@@ -23742,18 +23778,19 @@ in file ${o.url || o.origin_url}`,e);
                 PROTO = new Array(this.terms.length),
                 l = this.terms.length;
 
-            let bool = false;
+            let bool = false,
+                temp_val = [],
+                copy = lx.copy();
 
             repeat:
                 for (let j = 0; j < end && !lx.END; j++) {
 
                     const
-                        HIT = PROTO.fill(0),
-                        copy = lx.copy();
-                        //temp_r = [];
+                        HIT = PROTO.fill(0);
+                    //temp_r = [];
 
                     and:
-                        while (true) {
+                        while (!copy.END) {
                             let FAILED = false;
 
 
@@ -23770,7 +23807,7 @@ in file ${o.url || o.origin_url}`,e);
                                     if (term.OPTIONAL)
                                         HIT[i] = 1;
                                 } else {
-                                    out_val.push(...temp);
+                                    temp_val.push(...temp);
                                     HIT[i] = 2;
                                     continue and;
                                 }
@@ -23782,16 +23819,11 @@ in file ${o.url || o.origin_url}`,e);
                             break
                         }
 
-
-
                     lx.sync(copy);
-
-                    // if (temp_r.length > 0)
-                    //     r.push(...temp);
 
                     bool = true;
 
-                    if (!this.checkForComma(lx))
+                    if (!this.checkForComma(copy, out_val, temp_val, j))
                         break;
                 }
 
@@ -23808,17 +23840,18 @@ in file ${o.url || o.origin_url}`,e);
 
             let
                 bool = false,
-                NO_HIT = true;
+                NO_HIT = true,
+                copy = lx.copy(),
+                temp_val = [];
 
             repeat:
                 for (let j = 0; j < end && !lx.END; j++) {
 
                     const HIT = PROTO.fill(0);
-                    let copy = lx.copy();
                     let temp_r = { v: null };
 
                     or:
-                        while (true) {
+                        while (!copy.END) {
                             let FAILED = false;
                             for (let i = 0; i < l; i++) {
 
@@ -23826,7 +23859,7 @@ in file ${o.url || o.origin_url}`,e);
 
                                 let term = this.terms[i];
 
-                                if (term.parseLVL1(copy, out_val, false)) {
+                                if (term.parseLVL1(copy, temp_val, false)) {
                                     NO_HIT = false;
                                     HIT[i] = 2;
                                     continue or;
@@ -23845,7 +23878,7 @@ in file ${o.url || o.origin_url}`,e);
 
                     bool = true;
 
-                    if (!this.checkForComma(lx))
+                    if (!this.checkForComma(copy, out_val, temp_val, j))
                         break;
                 }
 
@@ -23859,17 +23892,19 @@ in file ${o.url || o.origin_url}`,e);
         parseLVL2(lx, out_val, start, end) {
 
             let BOOL = false;
+            const
+                copy = lx.copy(), 
+                temp_val = [];
 
             for (let j = 0; j < end && !lx.END; j++) {
 
-                const 
-                    copy = lx.copy(),
+                const
                     temp_r = [];
-                
+
                 let bool = false;
 
                 for (let i = 0, l = this.terms.length; i < l; i++) {
-                    if (this.terms[i].parseLVL1(copy, out_val, false)) {
+                    if (this.terms[i].parseLVL1(copy, temp_val, false)) {
                         bool = true;
                         break;
                     }
@@ -23882,7 +23917,7 @@ in file ${o.url || o.origin_url}`,e);
 
                 BOOL = true;
 
-                if (!this.checkForComma(lx))
+                if (!this.checkForComma(copy, out_val, temp_val, j))
                     break;
             }
 
@@ -24249,6 +24284,8 @@ in file ${o.url || o.origin_url}`,e);
     }
 
     function checkExtensions(l, term, productions) {
+        const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
+
         outer: while (true) {
 
             switch (l.ch) {
@@ -24292,8 +24329,12 @@ in file ${o.url || o.origin_url}`,e);
                     l.next();
                     break;
                 case "#":
-                    term = foldIntoProduction(productions, term);
-                    term.terms.push(new SymbolTerm(","));
+
+                    let nr = new productions.JUX();
+                    //nr.terms.push(new SymbolTerm(","));
+                    nr.terms.push(term);
+                    term = nr;
+                    //term = foldIntoProduction(productions, term);
                     term.r[0] = 1;
                     term.r[1] = Infinity;
                     term.REQUIRE_COMMA = true;
@@ -24395,104 +24436,46 @@ in file ${o.url || o.origin_url}`,e);
 
     Object.freeze(observer_mixin);
 
-    class styleprop {
-        
-    	constructor(name, original_value, val){
-    		this.val = val;
-            this.name = name.replace(/\-/g, "_");
-            this.original_value = original_value;
-            this.rule = null;
-            this.ver = 0;
-    	}
+    /* 
+        Parses a string value of a css property. Returns result of parse or null.
 
-        destroy(){
-            this.val = null;
-            this.name = "";
-            this.original_value = "";
-            this.rule = null;
-            observer_mixin.destroy(this);
-        }
-        
-        get css_type(){
-            return "styleprop"
-        }
+        Arg - Array - An array with values:
+            0 :  string name of css rule that should be used to parse the value string.
+            1 :  string value of the css rule.
+            2 :  BOOL value for the presence of the "important" value in the original string. 
 
-        updated() {
-            this.updateObservers();
-
-            if(this.parent)
-                this.parent.update();
-        }
-
-        get value(){
-            return this.val.length > 1 ? this.val : this.val[0];
-        }
-
-        get value_string(){
-            return this.val.join(" ");        
-        }
-
-        toString(offset = 0){
-            const 
-                str = [],
-                off = ("    ").repeat(offset);
-
-            return `${off+this.name.replace(/\_/g, "-")}:${this.value_string}`;
-        }
-
-        setValueFromString(value){
-            let val = parseDeclaration([this.name, null, value]);
-            if(val)
-                this.setValue(...val.val);
-        }
-
-        setValue(...values){
-
-            let i = 0;
-
-            for(const value of values){
-                const own_val = this.val[i];
+        Returns object containing:
+            rule_name : the string name of the rule used to parse the value.
+            body_string : the original string value
+            prop : An array of CSS type instances that are the parsed values.
+            important : boolean value indicating the presence of "important" value.
+    */
 
 
-                if(own_val && value instanceof own_val.constructor)
-                    this.val[i] = value;
-                else
-                    this.val[i] = value;
-                i++;
-            }
 
-            this.val.length = values.length;
-
-            this.ver++;
-
-            this.updated();
-        }
-    }
-
-    observer_mixin("updatedCSSStyleProperty", styleprop.prototype);
 
     function parseDeclaration(sym) {
         if(sym.length == 0)
             return null;
-
-        let rule_name = sym[0];
-        let body_data = sym[2];
-        let important = sym[3] ? true : false;
+        
         let prop = null;
 
-        const IS_VIRTUAL = { is: false };
+        const
+            rule_name = sym[0],
+            body_string = sym[2],
+            important = sym[3] ? true : false,
+            IS_VIRTUAL = { is: false },
+            parser = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
 
-        const parser = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
+        if (parser && !IS_VIRTUAL.is) 
 
-        if (parser && !IS_VIRTUAL.is) {
+            prop = parser.parse(whind$1(body_string).useExtendedId());
 
-            prop = parser.parse(whind$1(body_data).useExtendedId());
-
-        } else
+        else
             //Need to know what properties have not been defined
             console.warn(`Unable to get parser for CSS property ${rule_name}`);
 
-        return new styleprop(rule_name, body_data, prop);
+        return {rule_name, body_string, prop, important};
     }
 
     function setParent(array, parent) {
@@ -24823,6 +24806,82 @@ in file ${o.url || o.origin_url}`,e);
 
     observer_mixin("updatedCSS", stylesheet.prototype);
 
+    class styleprop {
+
+        constructor(name, original_value, val) {
+            this.val = val;
+            this.name = name.replace(/\-/g, "_");
+            this.original_value = original_value;
+            this.rule = null;
+            this.ver = 0;
+        }
+        destroy() {
+            this.val = null;
+            this.name = "";
+            this.original_value = "";
+            this.rule = null;
+            observer_mixin.destroy(this);
+        }
+
+        get css_type() {
+            return "styleprop"
+        }
+
+        updated() {
+            this.updateObservers();
+
+            if (this.parent)
+                this.parent.update();
+        }
+
+        get value() {
+            return this.val.length > 1 ? this.val : this.val[0];
+        }
+
+        get value_string() {
+            return this.val.join(" ");
+        }
+
+        toString(offset = 0) {
+            const
+                str = [],
+                off = ("    ").repeat(offset);
+
+            return `${off+this.name.replace(/\_/g, "-")}:${this.value_string}`;
+        }
+
+        setValueFromString(value) {
+            const result = parseDeclaration([this.name, null, value]);
+
+            if (result) 
+                this.setValue(...result.prop);
+        }
+
+        setValue(...values) {
+
+            let i = 0;
+
+            for (const value of values) {
+                const own_val = this.val[i];
+
+
+                if (own_val && value instanceof own_val.constructor)
+                    this.val[i] = value;
+                else
+                    this.val[i] = value;
+                i++;
+            }
+
+            this.val.length = values.length;
+
+            this.ver++;
+
+            this.updated();
+        }
+    }
+
+    observer_mixin("updatedCSSStyleProperty", styleprop.prototype);
+
     class compoundSelector {
         constructor(sym, env) {
 
@@ -25084,6 +25143,23 @@ in file ${o.url || o.origin_url}`,e);
     	}
     }
 
+    /* 	Wraps parseDeclaration with a function that returns a styleprop object or null. 
+    	Uses same args as parseDeclaration */
+
+    function parseDeclaration$1 (...v){
+
+    	const result = parseDeclaration(...v);
+
+    	if(result)
+    		return new styleprop(
+    			result.rule_name,
+    			result.body_string,
+    			result.prop
+    		)
+
+    	return null;
+    }
+
     const env$2 = {
         functions: {
             compoundSelector,
@@ -25095,7 +25171,7 @@ in file ${o.url || o.origin_url}`,e);
             attribSelector,
             pseudoClassSelector,
             pseudoElementSelector,
-            parseDeclaration,
+            parseDeclaration: parseDeclaration$1,
             stylerule,
             ruleset,
             stylesheet
@@ -26181,9 +26257,16 @@ in file ${o.url || o.origin_url}`,e);
             this.READY = false;
             this.val = "";
             this.original_val = "";
-            this.on = this.getAttrib("on").value;
+            
+            const on = this.getAttrib("on").value;
 
-            if (this.ast){
+            if(typeof on == "string")
+                console.warn("No binding set for this script's [on] attribute. This script will have no effect.");
+            else 
+                this.on = on;
+
+
+            if (this.ast && on){
                 this.original_val = this.ast.render();
                 this.processJSAST(presets);
             }
@@ -26205,7 +26288,7 @@ in file ${o.url || o.origin_url}`,e);
         }
 
         finalize() {
-            if (!this.ast) return this;
+            if (!this.ast || !this.on) return this;
 
 
             if (true || !FUNCTION_CACHE.has(this.val)) {
@@ -26227,6 +26310,7 @@ in file ${o.url || o.origin_url}`,e);
 
             } else {
                 this.function = FUNCTION_CACHE.get(this.val);
+                this.READY = true;
             }
 
             return this;
@@ -26388,9 +26472,6 @@ in file ${o.url || o.origin_url}`,e);
             if (this.HAS_TAPS)
                 this.createRuntimeTaplist(scope);
 
-            scope._model_name_ = this.model_name;
-            scope._schema_name_ = this.schema_name;
-
             //Reset pinned
             pinned = {};
 
@@ -26495,7 +26576,8 @@ in file ${o.url || o.origin_url}`,e);
         }
 
         update(container) {
-            if (container instanceof ModelContainerBase) container = container.get();
+            
+            if (container instanceof ModelContainerBase) container = container.get(undefined, []);
             if (!container) return;
             //let results = container.get(this.getTerms());
             // if (container.length > 0) {
@@ -27212,6 +27294,33 @@ in file ${o.url || o.origin_url}`,e);
         };
     };
 
+    class sty extends ElementNode{
+    	constructor(env, tag, children, attribs, presets){
+    		super(env, "style", children, attribs, presets);	
+    	}
+
+    	get data(){return this.children[0]}
+
+    	finalize(){return this}
+
+    	render(){}
+
+    	mount(element, scope, presets){
+
+    		if(presets.options.USE_SHADOWED_STYLE){
+
+    			const own_element = this.createElement(scope);
+
+    			own_element.innerHTML = this.data.toString();
+
+    			appendChild(element, own_element);
+    		}
+
+    		else
+    			scope.css.push(this.data);
+    	}
+    }
+
     /******************** Expressions **********************/
 
     class ExpressionIO extends ScriptIO {
@@ -27328,11 +27437,11 @@ in file ${o.url || o.origin_url}`,e);
         }
 
         filter(array) {
-            return array.filter((a) => (this.setValue([a]), super.scheduledUpdate()));
+            return array.filter((a) => (this.setValue([a.model]), super.scheduledUpdate()));
         }
 
         sort(array) {
-            return array.sort((a, b) => (this.setValue([a, b]), super.scheduledUpdate()));
+            return array.sort((a, b) => (this.setValue([a.model, b.model]), super.scheduledUpdate()));
         }
 
         scrub() {
@@ -27379,6 +27488,8 @@ in file ${o.url || o.origin_url}`,e);
 
             this.origin_val = this.ast + "";
             this.val = this.ast + "";
+
+            this.on = true;
 
             if (this.ast && !(this.ast instanceof identifier$1))
                 this.processJSAST(env.presets);
@@ -27519,6 +27630,11 @@ in file ${o.url || o.origin_url}`,e);
         
         constructor(env, tag, children, attribs, presets) {
             super(env, "container", children, attribs, presets);
+            //Warn about any children that are css / script
+
+            for(const child of children)
+                if(child.tag && (child.tag == "script" || child.tag == "style"))
+                    console.warn(`Element of type <${child.tag}> will have no effect inside a <container> element`);
 
             this.filters = null;
             this.property_bind = null;
@@ -27591,33 +27707,6 @@ in file ${o.url || o.origin_url}`,e);
 
             return scope;
         }
-    }
-
-    class sty extends ElementNode{
-    	constructor(env, tag, children, attribs, presets){
-    		super(env, "style", children, attribs, presets);	
-    	}
-
-    	get data(){return this.children[0]}
-
-    	finalize(){return this}
-
-    	render(){}
-
-    	mount(element, scope, presets){
-
-    		if(presets.options.USE_SHADOWED_STYLE){
-
-    			const own_element = this.createElement(scope);
-
-    			own_element.innerHTML = this.data.toString();
-
-    			appendChild(element, own_element);
-    		}
-
-    		else
-    			scope.css.push(this.data);
-    	}
     }
 
     class v$1 extends ElementNode{
@@ -27880,7 +27969,7 @@ in file ${o.url || o.origin_url}`,e);
             attribSelector,
             pseudoClassSelector,
             pseudoElementSelector,
-            parseDeclaration,
+            parseDeclaration: parseDeclaration$1,
             stylesheet,
             stylerule,
             ruleset,
@@ -27947,6 +28036,7 @@ in file ${o.url || o.origin_url}`,e);
             null_literal,
             numeric_literal,
             object_literal,
+            for_in_statement,
             or_expression,
             parenthasized: argument_list$1,
             plus_expression,
