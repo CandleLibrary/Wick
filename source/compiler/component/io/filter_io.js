@@ -9,6 +9,7 @@ let expr_check = (expr) => {
 
 export class FilterIO extends IOBase {
     constructor(scope, errors, taps, container, activation, sort, filter, limit, offset, scrub, shift) {
+     
         super(container, errors);
 
         this.container = container;
@@ -21,7 +22,7 @@ export class FilterIO extends IOBase {
         this._CAN_OFFSET_ = false;
         this.CAN_SORT = false;
         this._SCHD_ = 0;
-
+        
         if (activation && activation.binding) {
             this._activation_function_ = activation.binding._bind_(scope, errors, taps, this);
         } else {
@@ -64,6 +65,8 @@ export class FilterIO extends IOBase {
         } else
 
         if (scrub && scrub.binding) {
+            
+        
             let expr = scrub.binding;
             expr.method = (expr.method == 1) ? -1 : expr.method;
             this._scrub_function_ = expr._bind_(scope, errors, taps, this);

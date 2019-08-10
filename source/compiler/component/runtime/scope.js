@@ -82,8 +82,9 @@ export default class Scope extends Observer {
         if (this.parent && this.parent.removeScope)
             this.parent.removeScope(this);
 
-        if (this.ele && this.ele.parentNode)
+        if (this.ele && this.ele.parentNode){
             this.ele.parentNode.removeChild(this.ele);
+        }
 
         for (const tap of this.taps.values())
             tap.destroy();
@@ -269,7 +270,7 @@ export default class Scope extends Observer {
     }
 
     update(data, changed_values, IMPORTED = false, meta = null) {
-
+        if(this.DESTROYED) return;
         this.temp_data_cache = data;
 
         (this.update_tap && this.update_tap.downS(data, IMPORTED));
@@ -331,7 +332,7 @@ export default class Scope extends Observer {
     }
 
     transitionOut(transition, transition_name = "trs_out", DESTROY_AFTER_TRANSITION = false) {
-
+        
         this.CONNECTED = false;
 
         if (this.TRANSITIONED_IN === false) {

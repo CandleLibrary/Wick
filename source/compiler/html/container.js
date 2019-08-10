@@ -85,8 +85,9 @@ export default class ctr extends ElementNode {
         if(this.component_constructor)
             container.component = this.component_constructor;
 
-        for (let i = 0; i < this.filters.length; i++)
+        for (let i = 0; i < this.filters.length; i++){
             this.filters[i].mount(scope, container);
+        }
 
         for (let i = 0, l = this.attribs.length; i < l; i++)
             this.attribs[i].bind(ele, scope, pinned);

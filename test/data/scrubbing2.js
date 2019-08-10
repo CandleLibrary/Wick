@@ -1,10 +1,8 @@
 import wick from "/home/anthony/work/active/apps/cfw/wick/source/wick.js";
 
-class scrubbing extends wick{
+class Scrubbing extends wick{
     
-    constructor(p){
-        super("<scope element=div class=item>Test ((data)) ((offset))</scope>", p);
-    }
+    constructor(p){super("<scope element=div class=item>Test ((data)) ((offset))</scope>", p)}
 
     loaded() {
         this._top = 0;
@@ -69,14 +67,12 @@ class scrubbing extends wick{
             ]
         });
     }
-};
-
-
+}
 
 export default class extends wick {
     constructor(presets) {
         
-        new scrubbing(presets);
+        new Scrubbing(presets);
 
         super(`<scope element=div component=test style="height:300px" import="template_count_changed">
                 <container>
@@ -86,7 +82,7 @@ export default class extends wick {
                     <f scrub=((scrub)) >
                     <f sort=((m1.data<m2.data?-1:1))>
                     ((data)) 
-                    <scrubbing/>
+                    <Scrubbing/>
                 </container>
             </scope>`, presets);
 
@@ -98,7 +94,6 @@ export default class extends wick {
     }
 
     seta() {
-
         let d = [];
 
         const off = this.offset;
@@ -107,21 +102,18 @@ export default class extends wick {
             d.push({ data: i + off, offset: off + "" });
 
         offset = 10;
-
         data = d;
     }
 
     template_count_changed() {
-
-        //let offset = template_count_changed.offset;
         if (offset < 5) {
             this.offset -= 6;
-            seta = null;
+            seta.emit();
         }
 
         if (offset > 15) {
             this.offset += 6;
-            seta = null;
+            seta.emit();
         }
     }
 

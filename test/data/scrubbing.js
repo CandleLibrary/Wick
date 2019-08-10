@@ -101,7 +101,7 @@ wick({
         const offset = this.offset;
 
         for (let i = 0; i < 50; i++) 
-            data.push({ data: i + offset, offset: offset + "" })
+            data.push({ data: i + offset, offset: offset + "" });
 
         emit.offset = 10;
         emit.data = data;

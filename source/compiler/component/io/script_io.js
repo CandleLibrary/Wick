@@ -16,7 +16,6 @@ class ArgumentIO extends IO {
     }
 
     down(value) {
-
         this.ele.updateProp(this, value);
     }
 }
@@ -37,8 +36,7 @@ export default class ScriptIO extends IOBase {
         this.AWAITING_DEPENDENCIES = false;
 
         //Embedded emit functions
-        const func_bound = this.emit.bind(this);
-        func_bound.onTick = this.onTick.bind(this);
+
 
         //TODO: only needed if emit is called in function. Though highly probable. 
         this.arg_props = [];
@@ -46,7 +44,9 @@ export default class ScriptIO extends IOBase {
 
         this.initProps(script.args, tap, node, pinned);
 
-        this.arg_props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value) } }));
+        const func_bound = this.emit.bind(this);
+        func_bound.onTick = this.onTick.bind(this);
+        this.arg_props.push(func_bound);
     }
 
     /*
@@ -98,7 +98,9 @@ export default class ScriptIO extends IOBase {
     }
 
     updateProp(io, val) {
-        this.arg_props[io.id] = val;
+
+        if(typeof(val) !== undefined)
+            this.arg_props[io.id] = val;
 
         if (!io.ACTIVE) {
             io.ACTIVE = true;
@@ -142,7 +144,7 @@ export default class ScriptIO extends IOBase {
     }
 
     down(value, meta) {
-
+        
         if (value)
             this.setValue(value);
 
@@ -157,7 +159,6 @@ export default class ScriptIO extends IOBase {
             this.AWAITING_DEPENDENCIES = true;
             return;
         }
-        
 
         if (!this._SCHD_)
             spark.queueUpdate(this);
@@ -165,8 +166,7 @@ export default class ScriptIO extends IOBase {
 
     emit(name, value) {
         if (
-            typeof(name) !== "undefined" &&
-            typeof(value) !== "undefined"
+            typeof(name) !== "undefined"
         ) {
             this.scope.upImport(name, value, this.meta);
         }

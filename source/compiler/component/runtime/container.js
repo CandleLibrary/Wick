@@ -83,7 +83,6 @@ export default class ScopeContainer extends Observer {
     }
 
     update(container) {
-        
         if (container instanceof ModelContainerBase) container = container.get(undefined, []);
         if (!container) return;
         //let results = container.get(this.getTerms());
@@ -107,7 +106,6 @@ export default class ScopeContainer extends Observer {
      * @protected
      */
     scheduledUpdate() {
-
         if (this.SCRUBBING) {
 
             if (!this.AUTO_SCRUB) {
@@ -192,6 +190,7 @@ export default class ScopeContainer extends Observer {
         }
 
         let delta_offset = scrub_delta + this.offset_fractional;
+
         if (scrub_delta !== Infinity) {
 
             if (Math.abs(delta_offset) > 1) {
@@ -331,13 +330,15 @@ export default class ScopeContainer extends Observer {
     render(transition, output = this.activeScopes, NO_TRANSITION = false) {
 
 
-        let
+        const
             active_window_size = this.limit,
-            offset = this.offset,
+            active_length = this.dom_scopes.length;
+
+        let
             j = 0,
-            output_length = output.length,
-            active_length = this.dom_scopes.length,
             direction = 1,
+            offset = this.offset,
+            output_length = output.length,
             OWN_TRANSITION = false;
 
         if (!transition) transition = glow.createTransition(), OWN_TRANSITION = true;
@@ -354,7 +355,9 @@ export default class ScopeContainer extends Observer {
 
             let
                 i = 0,
-                oa = 0,
+                oa = 0;
+
+            const 
                 ein = [],
                 shift_points = Math.ceil(output_length / this.shift_amount);
 
@@ -423,8 +426,9 @@ export default class ScopeContainer extends Observer {
             this.limit = 0;
         }
 
-        let trs_in = { trs: transition.in, index: 0 };
-        let trs_out = { trs: transition.out, index: 0 };
+        const 
+            trs_in = { trs: transition.in, index: 0 },
+            trs_out = { trs: transition.out, index: 0 };
 
         for (let i = 0; i < output_length; i++) output[i].index = i;
 
@@ -450,6 +454,8 @@ export default class ScopeContainer extends Observer {
                     switch (as.index) {
                         case -2:
                         case -3:
+
+                
                             as.transitionOut(trs_out, (direction > 0) ? "trs_asc_out" : "trs_dec_out");
                             break;
                         default:
@@ -483,8 +489,8 @@ export default class ScopeContainer extends Observer {
 
         this.ele.style.position = this.ele.style.position;
 
-        this.dom_scopes = output;   
-
+        this.dom_scopes = output.slice();   
+        
         this.parent.update({
             "template_count_changed": {
 
@@ -508,7 +514,7 @@ export default class ScopeContainer extends Observer {
     }
 
     /**
-     * Filters stored Scopes with search terms and outputs the matching Scopes to the DOM.
+     * Filters stored Scopes with search terms and outputs an array of passing Scops.
      * 
      * @protected
      */
@@ -535,7 +541,6 @@ export default class ScopeContainer extends Observer {
     filterExpressionUpdate(transition = glow.createTransition()) {
         // Filter the current components. 
         this.filterUpdate();
-
         this.limitExpressionUpdate(transition);
     }
 

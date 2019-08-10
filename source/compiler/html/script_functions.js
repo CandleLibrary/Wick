@@ -1,6 +1,6 @@
 import JS from "../js/tools.js";
 import glow from "@candlefw/glow";
-import { types, identifier, member_expression } from "@candlefw/js";
+import { types, identifier, member_expression, call_expression, string, parenthasized, this_literal } from "@candlefw/js";
 
 const defaults = {
     glow,
@@ -25,7 +25,7 @@ export function GetOutGlobals(ast, presets) {
             out.parent.type == types.assignment_expression &&
             out == out.parent.left
         ) {
-            // Expression name = expre would overwrite any value that "name" referenced, so there's no 
+            // Expression name = expr would overwrite any value that "name" referenced, so there's no 
             // reason to count it among the global values.
         } else if (!arg_lu.has(name)) {
             arg_lu.add(name);
@@ -58,18 +58,55 @@ export function AddEmit(ast, presets, ignore) {
 
     ast.forEach(node => {
 
-        if (node.parent && node.parent.type == types.assignment_expression && node.type == types.identifier) {
-            if (node == node.parent.left) {
 
-                const assign = node.parent;
+        if (
+            node.parent &&
+            node.parent.type == types.assignment_expression &&
+            node.type == types.identifier
+        ) {
+            if (node == node.parent.left) {
 
                 const k = node.name;
 
                 if ((root[k] && !(root[k] instanceof HTMLElement)) || presets.custom[k] || presets[k] || defaults[k] || ignore.includes(k))
                     return;
-
-                node.replace(new member_expression(new identifier(["emit"]), node));
+                
+                node.parent.replace(new call_expression(
+                    [
+                        new identifier(["emit"]),
+                        new parenthasized(new string([null, node.name, null]), node.parent.right),
+                    ]
+                ));
             }
+            return;
+        }
+        if (
+            node.type == types.member_expression &&
+            node.mem.name == "emit" &&
+            node.parent.type == types.call_expression
+        ) {
+//*
+            const k = node.parent.name;
+
+            if ((root[k] && !(root[k] instanceof HTMLElement)) || presets.custom[k] || presets[k] || defaults[k] || ignore.includes(k))
+                return;
+            //*
+            const args = [new string([null, node.name, null])];
+
+            if(node.parent.args)
+                args.push(...node.parent.args.vals);
+
+            node.parent.replace(
+                new call_expression(
+                    [
+                        new identifier(["emit"]),
+                        new parenthasized(...args)
+                    ]
+                )
+            );
+
+            return;
+            //*/
         }
     });
 }

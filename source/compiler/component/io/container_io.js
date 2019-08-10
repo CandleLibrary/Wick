@@ -76,13 +76,16 @@ export default class ContainerIO extends ScriptIO {
     }
 
     scheduledUpdate() {
+
         const old = this.val;
 
         this.val = super.scheduledUpdate();
 
-        if (this.ARRAY_ACTION) {
+        if(this.action == this.scrub){
+            this.container.scrub(this.val);
+        }else if (this.ARRAY_ACTION) {
             this.container.filterExpressionUpdate();
-        } else if (this.val !== undefined && this.val !== old) {
+        } else if (this.val !== undefined) {
             this.action();
             this.container.limitExpressionUpdate();
         }
@@ -97,7 +100,7 @@ export default class ContainerIO extends ScriptIO {
     }
 
     scrub() {
-        this.container.scrub = this.val;
+        //this.container.scrub = this.val;
     }
 
     offset() {

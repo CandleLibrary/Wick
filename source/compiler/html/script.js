@@ -4,7 +4,7 @@ import FUNCTION_CACHE from "./function_cache.js";
 import { GetOutGlobals, AddEmit as addEmitExpression } from "./script_functions.js";
 import error from "../../utils/error.js";
 
-const offset =  "    ";
+const offset = "    ";
 
 export default class ScriptNode extends ElementNode {
 
@@ -16,22 +16,23 @@ export default class ScriptNode extends ElementNode {
         this.READY = false;
         this.val = "";
         this.original_val = "";
-        
+
         const on = this.getAttrib("on").value;
 
-        if(typeof on == "string")
+        if (typeof on == "string")
             console.warn("No binding set for this script's [on] attribute. This script will have no effect.");
-        else 
+        else
             this.on = on;
 
 
-        if (this.ast && on){
+        if (this.ast && on) {
             this.original_val = this.ast.render();
             this.processJSAST(presets);
         }
     }
 
     loadAST(ast) {
+
         if (ast && !this.ast) {
             this.ast = ast;
             this.processJSAST(this.presets);
@@ -39,14 +40,18 @@ export default class ScriptNode extends ElementNode {
     }
 
     processJSAST(presets = { custom: {} }) {
+
         const { args, ids } = GetOutGlobals(this.ast, presets);
+
         this.args = args;
-        //console.log(args)
+
         addEmitExpression(ids, presets, this.args.reduce((r, a) => ((a.IS_TAPPED) ? null : r.push(a.name), r), []));
+
         this.val = this.ast + "";
     }
 
     finalize() {
+
         if (!this.ast || !this.on) return this;
 
 
@@ -76,6 +81,7 @@ export default class ScriptNode extends ElementNode {
     }
 
     mount(element, scope, presets, slots, pinned) {
+
         if (this.READY) {
             const tap = this.on.bind(scope, null, null, this);
             new ScriptIO(scope, this, tap, this, {}, pinned);
@@ -94,7 +100,7 @@ export default class ScriptNode extends ElementNode {
 
         str += ">\n";
 
-        str += this.original_val; //this.ast.render();
+        str += this.original_val;
 
         return str + `${o}</${this.tag}>\n`;
     }

@@ -18,7 +18,6 @@ export default class ExpressionIO extends ScriptIO {
     }
 
     scheduledUpdate() {
-
         this.val = super.scheduledUpdate();
 
         if(this.val !== this.old_val){

@@ -61,11 +61,8 @@ export class Tap {
     }
 
     down(value, meta) {
-
-        for (let i = 0, l = this.ios.length; i < l; i++) {
-
+        for (let i = 0, l = this.ios.length; i < l; i++) 
             this.ios[i].down(value, meta);
-        }
     }
 
     downS(model, IMPORTED = false, meta = null) {
@@ -114,8 +111,6 @@ export class Tap {
         }
 
         if (this.modes & EXPORT){
-
-            
             this.scope.up(this, value, meta);
         }
     }
