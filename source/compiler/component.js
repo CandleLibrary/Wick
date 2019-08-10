@@ -90,7 +90,7 @@ const
 
 
 
-            try {
+           try {
 
                 return await (new Promise(res => {
 
@@ -143,13 +143,18 @@ const
 
                 
 
-                this.pending = ((async () => {
+                this.pending = ((async ()=>{
+                    var obj;
 
                     const
                         compiler_env = new CompilerEnv(presets, env),
-                        obj = await compile(component_data, presets, compiler_env),
                         return_obj = this;
 
+                        try{
+                            obj = await compile(component_data, presets, compiler_env);
+                        }catch(e){
+                            throw(e)
+                        }
 
 
                     if (obj instanceof proto) {
@@ -186,8 +191,10 @@ const
                         this.__pending = null;
                     }
 
-                    return return_obj;
+                    return (return_obj);
                 })());
+
+
 
             } else
                 return new Component(...data);

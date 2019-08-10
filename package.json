@@ -1,6 +1,6 @@
 {
   "name": "@candlefw/wick",
-  "version": "0.8.7",
+  "version": "0.8.8",
   "description": "Web Component Builder",
   "main": "./source/wick.js",
   "type": "module",
@@ -11,10 +11,10 @@
     "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
     "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/html.hcg",
     "compile.test": "node --experimental-modules ./test/config.mjs",
-    "test.coverage": "nyc npm run test",
+    "test.coverage": "nyc yarn run test",
     "test.watch": "mocha -r esm -w --watch-extensions mjs test/test.js test.js",
     "test": "mocha --require esm --watch-extensions mjs ./test/test.js",
-    "prepublishOnly": "yarn test && npm run build",
+    "prepublishOnly": "yarn test && yarn run build",
     "build": "rollup --config ./build/config/main.config.js",
     "build.watch": "rollup --config ./build/config/main.config.js --watch"
   },
