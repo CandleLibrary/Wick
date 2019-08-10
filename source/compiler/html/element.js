@@ -50,9 +50,9 @@ export default class ElementNode {
         return this;
     }
 
-    // Traverse the contructed AST and apply any necessary transforms. 
+    // Applies any necessary transformations to the node in preparaton of rendering the final AST. 
+    // Transforms include mappings slots, linking imported components and sorting child nodes. 
     finalize(slots_in = {}) {
-
 
         if (this.slot) {
 
@@ -72,8 +72,10 @@ export default class ElementNode {
 
         const slots_out = Object.assign({}, slots_in);
 
-        if (this.presets.components[this.tag])
+            
+        if (this.presets.components[this.tag]){
             this.proxied = this.presets.components[this.tag].merge(this);
+        }
 
         if (this.proxied) {
             const ele = this.proxied.finalize(slots_out);
@@ -197,7 +199,6 @@ export default class ElementNode {
 
         const own_element = this.createElement(scope);
         
-
         appendChild(element, own_element);
 
         if (this.slots)

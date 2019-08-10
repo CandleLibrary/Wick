@@ -13,7 +13,7 @@
     "compile.test": "node --experimental-modules ./test/config.mjs",
     "test.coverage": "nyc npm run test",
     "test.watch": "mocha -r esm -w --watch-extensions mjs test/test.js test.js",
-    "test": "mocha --require esm --watch-extensions mjs test/test.js",
+    "test": "mocha --require esm --watch-extensions mjs ./test/test.js",
     "prepublishOnly": "npm run build",
     "build": "rollup --config ./build/config/main.config.js",
     "build.watch": "rollup --config ./build/config/main.config.js --watch"

@@ -65,6 +65,8 @@ parsing(createComponent);
 console.log("----------------------------------------------------START----------------------------------------------------");
 
 describe("Basic", function() {
+
+
     it("Creates compiled components using HTML syntax", async function() {
         const comp = await wick(`<scope element=div>test</scope>`).pending;
         comp.should.be.instanceOf(Component);
@@ -86,21 +88,36 @@ describe("Basic", function() {
     });
 });
 
-describe("Composition", function() {
+describe.only("Composition", function() {
     it("Components can be defined and referenced by name within other components.", async function() {
         const presets = wick.presets();
 
         const { ele: eleA } = await createComponent(`<div component='test'>test</div>`, presets);
         const { scope, ele: eleB } = await createComponent(`<scope><div><a><test/></a></div></scope>`, presets);
 
-        eleB.fch.fch.fch.fch.fch.data.should.equal("test");
+        eleB.fch.fch.fch.fch.data.should.equal("test");
     });
 
     it("Components can be imported from a remote resource using the [url] attribute on <import> or <link> elements", async function() {
         const presets = wick.presets();
         const { comp, ele } = await createComponent(`<import url="./test/data/import.1.html"/><scope><test/></scope>`, presets);
         await sleep(5);
-        ele.fch.fch.innerHTML.should.equal("I've been imported!");
+        ele.fch.innerHTML.should.equal("I've been imported!");
+    });
+
+    it.only("Multiple imported components", async function() {
+        const presets = wick.presets();
+        const { comp, ele } = await createComponent(`
+            <import url="./test/data/import.1.html"/>
+            <import url="./test/data/import.2.html"/>
+            <import url="./test/data/import.3.html"/>
+            <scope><test/><test2/><test3/></scope>`, presets);
+        
+        await sleep(5);
+
+        ele.children[0].fch.innerHTML.should.equal("I've been imported!");
+        ele.children[1].fch.innerHTML.should.equal("I've been imported! version 2");
+        ele.children[2].fch.innerHTML.should.equal("I've been imported! version 3");
     });
 
     describe("Merging", function() {
@@ -133,7 +150,7 @@ describe("Composition", function() {
 
             const { ele: eleA } = await createComponent(`<div component='test'>Test this <slot name="test">out</slot> now!</div>`, presets);
             const { scope, ele: eleB } = await createComponent(`<scope><div><a><test><scope slot="test">2+4/22</scope></test></a></div></scope>`, presets);
-            eleB.fch.fch.fch.fch.innerHTML.should.equal("Test this 2+4/22 now!");
+            eleB.fch.fch.fch.innerHTML.should.equal("Test this 2+4/22 now!");
         });
     });
 });
@@ -187,7 +204,7 @@ describe("Containers", function() {
         }
     });
 
-    describe.only("Scrubbing", function() {
+    describe("Scrubbing", function() {
 
         it("Introducing new offset and set of elements does not visually change element order.", async function() {
             this.slow(200000);
@@ -523,3 +540,4 @@ describe("[IO] Processing", function() {
         counts.reduce((r, v) => v + r, 0).should.equal(length * 2);
     });
 });
+

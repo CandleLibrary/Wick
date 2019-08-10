@@ -137,17 +137,26 @@ export default class scp extends ElementNode {
         return scope.ele;
     }
 
-    mount(own_element, outer_scope, presets = this.presets, slots = {}, pinned = {}) {
+    mount(par_element, outer_scope, presets = this.presets, slots = {}, pinned = {}) {
 
-        const scope = new Scope(outer_scope, presets, own_element, this);
-        
+        const HAVE_OUTER_SCOPE = !!outer_scope,
+            scope = new Scope(
+                outer_scope,
+                presets,
+
+                // If there is no higher level scope, 
+                // then bind to the element that the component is attaching to. 
+                !HAVE_OUTER_SCOPE ? par_element : null,
+                this
+            );
+
         if (this.HAS_TAPS)
             this.createRuntimeTaplist(scope);
 
         //Reset pinned
         pinned = {};
 
-        return super.mount(null, scope, presets, slots, pinned);
+        return super.mount(HAVE_OUTER_SCOPE ? par_element : null, scope, presets, slots, pinned);
     }
 
     toString() {
