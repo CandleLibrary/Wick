@@ -1,6 +1,6 @@
 {
   "name": "@candlefw/wick",
-  "version": "0.8.6",
+  "version": "0.8.7",
   "description": "Web Component Builder",
   "main": "./source/wick.js",
   "type": "module",
@@ -14,7 +14,7 @@
     "test.coverage": "nyc npm run test",
     "test.watch": "mocha -r esm -w --watch-extensions mjs test/test.js test.js",
     "test": "mocha --require esm --watch-extensions mjs ./test/test.js",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn test && npm run build",
     "build": "rollup --config ./build/config/main.config.js",
     "build.watch": "rollup --config ./build/config/main.config.js --watch"
   },
