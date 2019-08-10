@@ -58,35 +58,55 @@ export default function(createComponent) {
             ele.fch.tag.should.equal("pre");
         });
 
-        it(`<h2>(())</h2`, () =>
-            wick(`<h2>(())</h2>`).pending.should.eventually.be.fulfilled
-        );
-        it(`<h2>(( 2+2 ))</h2`, () =>
-            wick(`<h2>(( 2+2 ))</h2>`).pending.should.eventually.be.fulfilled
-        );
-        it(`<h2>(( alpha ? douglas : "rainbow" ))</h2`, () =>
-            wick(`<h2>(( alpha ? douglas : "rainbow" ))</h2>`).pending.should.eventually.be.fulfilled
-        );
-        it(`<h2>(( test && <a>rainbow</a> ))</h2`, () =>
-            wick(`<h2>(( test && <a>rainbow</a> ))</h2>`).pending.should.eventually.be.fulfilled
-        );
-        it(`<h2>(( [tree, dog, cat] ))</h2>`, () =>
-            wick(`<h2>(( [tree, dog, cat] ))</h2>`).pending.should.eventually.be.fulfilled
-        );
-        it(`<h2>(( {pine:box, ["salamander"]: test}))</h2>`, () =>
-            wick(`<h2>(( {pine:box, ["salamander"]: test}))</h2>`).pending.should.eventually.be.fulfilled
-        );
-        it(`<h2>(( id ))</h2`, () =>
-            wick(`<h2>(( id ))</h2>`).pending.should.eventually.be.fulfilled
-        );
-        it(`<h2>(( 1 || 2 && 3 ))</h2`, () =>
-            wick(`<h2>(( 1 || 2 && 3 ))</h2>`).pending.should.eventually.be.fulfilled
-        );
-        it(`<h2>(( 1 && 2 || 3 ))</h2`, () =>
-            wick(`<h2>(( 1 && 2 || 3 ))</h2>`).pending.should.eventually.be.fulfilled
-        );
-        it(`<h2>(( return t;))</h2>`, () =>
-            wick(`<h2>(( return t;))</h2>`).pending.should.be.rejected
-        );
+        function AcceptRejectAssertion(string, ACCEPTED = false) {
+            it(string, () =>
+                wick(string).pending.should.eventually.be[ACCEPTED ? "fulfilled" : "rejected"]
+            );
+        }
+        
+        AcceptRejectAssertion(`<h2>(())</h2>`, true);
+        
+        AcceptRejectAssertion(`<h2>(( 2+2 ))</h2>`, true);
+        
+        AcceptRejectAssertion(`<h2>(( alpha ? douglas : "rainbow" ))</h2>`, true);
+        
+        AcceptRejectAssertion(`<h2>(( test && <a>rainbow</a> ))</h2>`, true);
+        
+        AcceptRejectAssertion(`<h2>(( [tree, dog, cat] ))</h2>`, true);
+        
+        AcceptRejectAssertion(`<h2>(( {pine:box, ["salamander"]: test}))</h2>`, true);
+        
+        AcceptRejectAssertion(`<h2>(( id ))</h2>`, true);
+        
+        AcceptRejectAssertion(`<h2>(( 1 || 2 && 3 ))</h2>`, true);
+        
+        AcceptRejectAssertion(`<h2>(( 1 && 2 || 3 ))</h2>`, true);
+        
+        AcceptRejectAssertion(`<h2>(( return t;))</h2>`, false);
+
+        AcceptRejectAssertion(`<div><style>;</style></div>`, false);
+
+        AcceptRejectAssertion(`<div><style></style></div>`, true);
+
+        AcceptRejectAssertion(`<div>
+            <script>
+        `, false);
+
+        AcceptRejectAssertion(`<div>
+            <script>;</script></div>
+        `, true);
+
+        AcceptRejectAssertion(`<div>
+            <script></script></div>
+        `, true);
+        
+        AcceptRejectAssertion(`<div><script>
+            /* dfsf
+            ****
+            */ </script></div>`, true);
+        AcceptRejectAssertion(`<div><script>
+            //* dfsf
+            ****
+            */ </script></div>`, false);
     });
 }

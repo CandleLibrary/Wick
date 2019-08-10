@@ -275,17 +275,17 @@ const env = {
 
         defaultError: (tk, env, output, lex, prv_lex, ss, lu) => {
             if (lex.tx == "//" || lex.tx == "/*") {
-                if (lex.tx == "//")
+                if (lex.tx == "//") {
                     while (!lex.END && lex.ty !== lex.types.nl)
                         lex.next();
-
-                if (lex.tx == "/*")
-                    while (!lex.END && lex.tx !== "*/")
+                } else
+                if (lex.tx == "/*") {
+                    while (!lex.END && (lex.tx !== "*" || lex.pk.tx !== "/"))
                         lex.next();
+                    lex.next(); //"*"
+                }
 
                 lex.next();
-
-                return lu(lex);
             }
 
             /*USED for ASI*/
