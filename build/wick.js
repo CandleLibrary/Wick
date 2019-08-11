@@ -19833,6 +19833,11 @@ var wick = (function () {
             if (this.taps.has(prop_name)){
                 this.taps.get(prop_name).up(data, meta);
             }
+
+            for (const scope of this.scopes) {
+                scope.update({[prop_name]:data}, null, true);
+                // /scope.getBadges(this);
+            }
         }
 
         update(data, changed_values, IMPORTED = false, meta = null) {

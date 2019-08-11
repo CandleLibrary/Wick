@@ -94,12 +94,16 @@ class ModelBase {
         observer.update(this);
     }
 
+    removeObserver(observer) {
+        this.removeView(observer);
+    }
+
     /**
      * Removes observer from set of observers if the passed in observer is a member of model. 
      * @param {View} observer - The observer to unbind from ModelBase
      */
     removeView(observer) {
-        
+
 
         if (observer.model == this) {
             if (observer == this.fv)
@@ -191,8 +195,8 @@ class ModelBase {
 
 
     _deferUpdateToRoot_(data, MUTATION_ID = this.MUTATION_ID) {
-        
-        if(!this.root)
+
+        if (!this.root)
             return this;
 
         return this.root._setThroughRoot_(data, this.address, 0, this.address.length, MUTATION_ID);

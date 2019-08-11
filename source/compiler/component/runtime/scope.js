@@ -23,8 +23,8 @@ export default class Scope extends Observer {
 
         this.ast = ast;
         this.ele = element;
-        
-        if(element)
+
+        if (element)
             element.wick_scope = this;
 
         this.parent = null;
@@ -69,8 +69,8 @@ export default class Scope extends Observer {
         }
 
         const children = ele.children;
-        
-        if(children)
+
+        if (children)
             for (let i = 0; i < children.length; i++)
                 this.discardElement(children[i], ios);
 
@@ -78,11 +78,11 @@ export default class Scope extends Observer {
             ele.wick_scope.destroy();
     }
 
-    purge(){
+    purge() {
         if (this.parent && this.parent.removeScope)
             this.parent.removeScope(this);
 
-        if (this.ele && this.ele.parentNode){
+        if (this.ele && this.ele.parentNode) {
             this.ele.parentNode.removeChild(this.ele);
         }
 
@@ -94,7 +94,7 @@ export default class Scope extends Observer {
 
         //while (this.containers[0])
         //    this.containers[0].destroy();
-        
+
         this.taps = new Map;
         this.scopes.length = 0;
         this.containers.length = 0;
@@ -103,15 +103,17 @@ export default class Scope extends Observer {
     }
 
     destroy() {
-        if(this.DESTROYED)
+        if (this.DESTROYED)
             return;
-        
-        try{
-            this.update({ destroying: true }, null, false, {IMMEDIATE:true}); //Lifecycle Events: Destroying <======================================================================
-        }catch(e){
+
+        try {
+            this.update({ destroying: true }, null, false, { IMMEDIATE: true }); //Lifecycle Events: Destroying <======================================================================
+        } catch (e) {
             console.throw(e);
         }
 
+        if (this.model && this.model.removeObserver)
+            this.model.removeObserver(this);
 
         this.DESTROYED = true;
         this.LOADED = false;
@@ -263,14 +265,20 @@ export default class Scope extends Observer {
 
     upImport(prop_name, data, meta) {
 
-        
-        if (this.taps.has(prop_name)){
+
+        if (this.taps.has(prop_name)) {
             this.taps.get(prop_name).up(data, meta);
+        }
+
+        for (const scope of this.scopes) {
+            scope.update({
+                [prop_name]: data }, null, true);
+            // /scope.getBadges(this);
         }
     }
 
     update(data, changed_values, IMPORTED = false, meta = null) {
-        if(this.DESTROYED) return;
+        if (this.DESTROYED) return;
         this.temp_data_cache = data;
 
         (this.update_tap && this.update_tap.downS(data, IMPORTED));
@@ -279,7 +287,7 @@ export default class Scope extends Observer {
             for (let name in changed_values)
                 if (this.taps.has(name))
                     this.taps.get(name).downS(data, IMPORTED, meta);
-        } else 
+        } else
             for (const tap of this.taps.values())
                 tap.downS(data, IMPORTED, meta);
 
@@ -326,13 +334,14 @@ export default class Scope extends Observer {
 
     transitionIn(transition, transition_name = "trs_in") {
         if (transition)
-            this.update({ [transition_name]: transition }, null, false, { IMMEDIATE: true });
+            this.update({
+                [transition_name]: transition }, null, false, { IMMEDIATE: true });
 
         this.TRANSITIONED_IN = true;
     }
 
     transitionOut(transition, transition_name = "trs_out", DESTROY_AFTER_TRANSITION = false) {
-        
+
         this.CONNECTED = false;
 
         if (this.TRANSITIONED_IN === false) {
@@ -345,7 +354,8 @@ export default class Scope extends Observer {
 
         if (transition) {
 
-            this.update({ [transition_name]: transition }, null, false, { IMMEDIATE: true });
+            this.update({
+                [transition_name]: transition }, null, false, { IMMEDIATE: true });
 
             if (transition.trs)
                 transition_time = transition.trs.out_duration;
