@@ -186,6 +186,8 @@ export default class Scope extends Observer {
         Makes the scope a observer of the given Model. If no model passed, then the scope will bind to another model depending on its `scheme` or `model` attributes. 
     */
     load(model) {
+        //Called before model is loaded
+        this.update({ loading: true }); //Lifecycle Events: Loading <====================================================================== 
 
         let
             m = null,
@@ -220,10 +222,11 @@ export default class Scope extends Observer {
 
         this.model = model;
 
+        //Called before model properties are disseminated
+        this.update({ model_loaded: true }); //Lifecycle Events: Model Loaded <====================================================================== 
+
         for (const tap of this.taps.values())
             tap.load(this.model, false);
-
-        this.update({ loading: true }); //Lifecycle Events: Loading <======================================================================
 
         //Allow one tick to happen before acknowledging load
         setTimeout(this.loadAcknowledged.bind(this), 1);
@@ -278,7 +281,9 @@ export default class Scope extends Observer {
     }
 
     update(data, changed_values, IMPORTED = false, meta = null) {
+
         if (this.DESTROYED) return;
+        
         this.temp_data_cache = data;
 
         (this.update_tap && this.update_tap.downS(data, IMPORTED));

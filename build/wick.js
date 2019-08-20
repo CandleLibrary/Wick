@@ -2279,12 +2279,16 @@ var wick = (function () {
             observer.update(this);
         }
 
+        removeObserver(observer) {
+            this.removeView(observer);
+        }
+
         /**
          * Removes observer from set of observers if the passed in observer is a member of model. 
          * @param {View} observer - The observer to unbind from ModelBase
          */
         removeView(observer) {
-            
+
 
             if (observer.model == this) {
                 if (observer == this.fv)
@@ -2376,8 +2380,8 @@ var wick = (function () {
 
 
         _deferUpdateToRoot_(data, MUTATION_ID = this.MUTATION_ID) {
-            
-            if(!this.root)
+
+            if (!this.root)
                 return this;
 
             return this.root._setThroughRoot_(data, this.address, 0, this.address.length, MUTATION_ID);
@@ -19589,8 +19593,8 @@ var wick = (function () {
 
             this.ast = ast;
             this.ele = element;
-            
-            if(element)
+
+            if (element)
                 element.wick_scope = this;
 
             this.parent = null;
@@ -19635,8 +19639,8 @@ var wick = (function () {
             }
 
             const children = ele.children;
-            
-            if(children)
+
+            if (children)
                 for (let i = 0; i < children.length; i++)
                     this.discardElement(children[i], ios);
 
@@ -19644,11 +19648,11 @@ var wick = (function () {
                 ele.wick_scope.destroy();
         }
 
-        purge(){
+        purge() {
             if (this.parent && this.parent.removeScope)
                 this.parent.removeScope(this);
 
-            if (this.ele && this.ele.parentNode){
+            if (this.ele && this.ele.parentNode) {
                 this.ele.parentNode.removeChild(this.ele);
             }
 
@@ -19660,7 +19664,7 @@ var wick = (function () {
 
             //while (this.containers[0])
             //    this.containers[0].destroy();
-            
+
             this.taps = new Map;
             this.scopes.length = 0;
             this.containers.length = 0;
@@ -19669,15 +19673,17 @@ var wick = (function () {
         }
 
         destroy() {
-            if(this.DESTROYED)
+            if (this.DESTROYED)
                 return;
-            
-            try{
-                this.update({ destroying: true }, null, false, {IMMEDIATE:true}); //Lifecycle Events: Destroying <======================================================================
-            }catch(e){
+
+            try {
+                this.update({ destroying: true }, null, false, { IMMEDIATE: true }); //Lifecycle Events: Destroying <======================================================================
+            } catch (e) {
                 console.throw(e);
             }
 
+            if (this.model && this.model.removeObserver)
+                this.model.removeObserver(this);
 
             this.DESTROYED = true;
             this.LOADED = false;
@@ -19750,6 +19756,8 @@ var wick = (function () {
             Makes the scope a observer of the given Model. If no model passed, then the scope will bind to another model depending on its `scheme` or `model` attributes. 
         */
         load(model) {
+            //Called before model is loaded
+            this.update({ loading: true }); //Lifecycle Events: Loading <====================================================================== 
 
             let
                 m = null,
@@ -19784,10 +19792,11 @@ var wick = (function () {
 
             this.model = model;
 
+            //Called before model properties are disseminated
+            this.update({ model_loaded: true }); //Lifecycle Events: Model Loaded <====================================================================== 
+
             for (const tap of this.taps.values())
                 tap.load(this.model, false);
-
-            this.update({ loading: true }); //Lifecycle Events: Loading <======================================================================
 
             //Allow one tick to happen before acknowledging load
             setTimeout(this.loadAcknowledged.bind(this), 1);
@@ -19829,19 +19838,22 @@ var wick = (function () {
 
         upImport(prop_name, data, meta) {
 
-            
-            if (this.taps.has(prop_name)){
+
+            if (this.taps.has(prop_name)) {
                 this.taps.get(prop_name).up(data, meta);
             }
 
             for (const scope of this.scopes) {
-                scope.update({[prop_name]:data}, null, true);
+                scope.update({
+                    [prop_name]: data }, null, true);
                 // /scope.getBadges(this);
             }
         }
 
         update(data, changed_values, IMPORTED = false, meta = null) {
-            if(this.DESTROYED) return;
+
+            if (this.DESTROYED) return;
+            
             this.temp_data_cache = data;
 
             (this.update_tap && this.update_tap.downS(data, IMPORTED));
@@ -19850,7 +19862,7 @@ var wick = (function () {
                 for (let name in changed_values)
                     if (this.taps.has(name))
                         this.taps.get(name).downS(data, IMPORTED, meta);
-            } else 
+            } else
                 for (const tap of this.taps.values())
                     tap.downS(data, IMPORTED, meta);
 
@@ -19897,13 +19909,14 @@ var wick = (function () {
 
         transitionIn(transition, transition_name = "trs_in") {
             if (transition)
-                this.update({ [transition_name]: transition }, null, false, { IMMEDIATE: true });
+                this.update({
+                    [transition_name]: transition }, null, false, { IMMEDIATE: true });
 
             this.TRANSITIONED_IN = true;
         }
 
         transitionOut(transition, transition_name = "trs_out", DESTROY_AFTER_TRANSITION = false) {
-            
+
             this.CONNECTED = false;
 
             if (this.TRANSITIONED_IN === false) {
@@ -19916,7 +19929,8 @@ var wick = (function () {
 
             if (transition) {
 
-                this.update({ [transition_name]: transition }, null, false, { IMMEDIATE: true });
+                this.update({
+                    [transition_name]: transition }, null, false, { IMMEDIATE: true });
 
                 if (transition.trs)
                     transition_time = transition.trs.out_duration;
