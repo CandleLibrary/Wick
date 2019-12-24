@@ -1,5 +1,44 @@
 /* Turns a wick compnent into a self contained html component  */
+const wickStub  = function(){
+    
+    let active_component = null;
 
+    return{
+        registerTextExpression(){}
+    }
+}
+
+function scope(){
+    let html = "", script = "", id = [-1], top = 0,
+    id_activation = new Set(), id_map = new Map();
+
+    return {
+        get HTML(){return html},
+        get SCRIPT(){return `const ${[...id_activation.values()].join(";")};${script}`},
+        get ID(){
+            const public_id = `_s${id.join("")}_`;
+            id_activation.add(`const ${public_id} = ge(${id})`);
+            return public_id;
+        },
+        writeHTML(text){
+            html += text;
+        },
+        writeScript(text){
+            script += text;
+        },
+        incrementID(){
+            id[top]++;
+        },
+        pushID(){
+            top++;
+            id.push(0);
+            id[top] = -1;
+        },
+        popID(){
+            id.pop();
+        }
+    }
+}
 
 export default async function stamp(component, options = { type: "html" }) {
     /*
@@ -13,78 +52,10 @@ export default async function stamp(component, options = { type: "html" }) {
 
     switch (options.type) {
         case "html":
-            const id = Math.random() * 0x34FA2Af5;
-            const result = stampHTML(ast);
-            console.log(result);
-            return result;
-            break;
+            const s = scope();
+            ast.stamp(s)
+            console.log(s.HTML)
+            console.log(s.SCRIPT)
+            return "";
     }
 }
-
-function stampHTML(ast, output = "", script = "") {
-
-    if (ast.tag == "text") {
-        if(ast.IS_BINDING){
-            var d = textBinding(ast);
-            output += d.output;
-            script += d.script;
-        }else
-            output += ast.data;
-    } else {
-        output += `<${ast.tag}`;
-
-        const id = "random_name";
-
-        if (ast.attribs) {
-            for (const attr of ast.attribs.values()) {
-                output += ` ${writeAttribute(attr, id)}`;
-                script += ` ${writeAttributeScript(attr, id)}`;
-            }
-        }
-
-        output += `>`;
-
-        if (ast.children) {
-            for (const child of ast.children) {
-                var d = stampHTML(child);
-                output += d.output;
-                script += d.script;
-            }
-        }
-
-        output += `</${ast.tag}>`;
-
-    }
-        return { output, script };
-}
-
-function writeAttribute(attr, script = "") {
-    //on attributes are handled by script. 
-    //bound attributes are modified by script. 
-    if (attr.name.slice(0, 2) == "on" || attr.isBINDING)
-        return "";
-
-    return `${attr.name} = "${attr.value}"`;
-
-    console.log(attr);
-}
-
-function writeAttributeScript(attr, id) {
-    let script = "";
-
-    if (attr.isBINDING) {
-        script += `registerEvent(ele1, ()=>output({${attr.value.val}:${true})})`;
-        console.log(attr);
-    }
-
-    return script;
-}
-
-function textBinding(ast, output = "", script = ""){
-    return {output, script};
-}
-
-`
-registerComponent(comp)
-registerEvent();
-`

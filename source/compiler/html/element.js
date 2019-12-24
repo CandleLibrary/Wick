@@ -1,5 +1,4 @@
-import { appendChild, createElement } from "../../short_names.js";
-import Scope from "../component/runtime/scope.js";
+import { appendChild, createElement } from "../../short_names.js";import Scope from "../component/runtime/scope.js";
 import CompilerEnv from "../compiler_env.js";
 import wick_compile from "../wick.js";
 import error from "../../utils/error.js";
@@ -239,6 +238,32 @@ export default class ElementNode {
 
 
         return (RETURN_ELEMENT) ? own_element : scope;
+    }
+
+    stamp(scope, presets = this.presets, slots = {}, pinned = {}) {
+        
+        scope.incrementID();
+        
+        scope.writeHTML(`<${this.tag}`)
+
+        for (const attr of this.attribs.values())
+            attr.stamp(scope, presets, pinned);
+
+        scope.writeHTML(`>`);
+
+            if(this.children.length > 0){
+
+            scope.pushID();
+
+            for (let i = 0; i < this.children.length; i++) {
+                const node = this.children[i];
+                node.stamp(scope, presets, slots, pinned);
+            }
+
+            scope.popID();
+        }
+
+        scope.writeHTML(`</${this.tag}>`)
     }
 }
 

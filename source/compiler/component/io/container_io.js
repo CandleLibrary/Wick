@@ -4,6 +4,10 @@ import spark from "@candlefw/spark";
 /******************** Expressions **********************/
 
 export default class ContainerIO extends ScriptIO {
+    static stamp(id, binding){
+        return `registerExpression(${id}, ${binding}, ()=>output({${this.val}:${true})})`;
+    }
+
     constructor(container, scope, node, tap, binding, lex, pinned) {
         super(scope, node, tap, binding, lex, pinned);
 

@@ -55,6 +55,10 @@ export class IOBase {
  */
 export class IO extends IOBase {
 
+    static stamp(scope, binding, default_val){
+        
+    }
+
     constructor(scope, errors, tap, element = null, default_val = null) {
 
         super(tap, element);
@@ -76,6 +80,10 @@ export class IO extends IOBase {
 }
 
 class RedirectAttribIO extends IOBase {
+
+    static stamp(scope, binding, default_val){
+        
+    }
     constructor(scope, errors, down_tap, up_tap) {
         super(down_tap);
         this.up_tap = up_tap;
@@ -90,6 +98,11 @@ class RedirectAttribIO extends IOBase {
     This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
 */
 export class AttribIO extends IOBase {
+
+    static stamp(scope, binding, default_val){
+        
+    }
+
     constructor(scope, errors, tap, attr, element, default_val) {
 
         if (element.io) {
@@ -130,6 +143,11 @@ export class AttribIO extends IOBase {
 }
 
 export class DataNodeIO extends IOBase {
+
+    static stamp(scope, binding, default_val){
+        
+    }
+
     constructor(scope, tap, element, default_val) {
         if(!tap)  return {};
 
@@ -153,6 +171,11 @@ export class DataNodeIO extends IOBase {
     This io updates the value of a TextNode or it replaces the TextNode with another element if it is passed an HTMLElement
 */
 export class TextNodeIO extends DataNodeIO {
+
+    static stamp(scope, binding, default_val){
+        scope.writeScript(`registerTextExpression(${scope.ID},${binding},()=>output({${this.val}:${true})});`)
+    }
+
     constructor(scope, tap, element, default_val) {
         if(!tap) return {};
 
@@ -187,6 +210,10 @@ export class TextNodeIO extends DataNodeIO {
 }
 
 export class EventIO extends IOBase {
+
+    static stamp(scope, binding, default_val){
+        
+    }
 
     constructor(scope, errors, tap, attrib_name, element, default_val) {
 
@@ -224,6 +251,9 @@ export class EventIO extends IOBase {
 }
 
 export class InputIO extends IOBase {
+
+    static stamp(scope, binding, default_val){
+    }
 
     constructor(scope, errors, tap, attrib_name, element, default_val) {
         if(tap)

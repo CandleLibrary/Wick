@@ -2,6 +2,7 @@ import compiler from "./compiler/component.js";
 import stamp from "./stamp/stamp.js";
 
 import wick_compile from "./compiler/wick.js";
+import stamp from "./stamp/stamp.js";
 import CompilerEnv from "./compiler/compiler_env.js";
 //Models
 import { Store } from "./model/store.js";

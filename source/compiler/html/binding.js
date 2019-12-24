@@ -81,6 +81,19 @@ export default class Binding {
         }
         return null;
     }
+
+    //Stamps the binding to an output string. 
+    stamp(scope, attr, id){
+        if (this.ast) {
+            if (this.METHOD == EXPRESSION) {
+                return ExpressionIO.stamp(id, this);
+            } else if (this.METHOD == CONTAINER)
+                return ContainerIO.stamp(id, scope, node, scope, this, this.lex, pinned);
+            else{
+                return this.val;
+            }
+        }
+    }
 }
 
 Binding.type = {

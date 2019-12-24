@@ -26,6 +26,7 @@ export default class TextNode {
 
     mount(element, scope, presets, statics, pinned, ele = document.createTextNode("")) {
         const IS_TEXT_NODE = ele instanceof Text;
+
         if (IS_TEXT_NODE)
             element.appendChild(ele);
 
@@ -33,5 +34,19 @@ export default class TextNode {
             return new (IS_TEXT_NODE ? TextNodeIO : DataNodeIO)(scope, this.data.bind(scope, null, pinned), ele, this.data.exprb);
         else
             ele.data = this.data;
+    }
+
+    stamp(scope, presets = this.presets, slots = {}, pinned = {}) {
+        const IS_TEXT_NODE = true;
+
+
+        if (this.IS_BINDING){
+            scope.incrementID();
+            scope.writeHTML(`<span id=${Math.random()}>`);
+            (IS_TEXT_NODE ? TextNodeIO : DataNodeIO).stamp(scope, this.data.stamp(scope, null, pinned), this.data.exprb);
+            scope.writeHTML("</span>");
+        }
+        else
+            scope.writeHTML(this.data);
     }
 }

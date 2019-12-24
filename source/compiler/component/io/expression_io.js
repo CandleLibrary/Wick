@@ -4,6 +4,11 @@ import ScriptIO from "./script_io.js";
 
 export default class ExpressionIO extends ScriptIO {
 
+    static stamp(id, binding){
+        debugger
+        return `registerExpression(${id},${false}, ()=>output({${this.val}:${true})})`;
+    }
+
     constructor(ele, scope, errors, tap, binding, lex, pinned) {
         super(scope, errors, tap, binding, lex, pinned);
         this.ele = ele;
