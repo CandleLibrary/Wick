@@ -1,4 +1,5 @@
 import compiler from "./compiler/component.js";
+import stamp from "./stamp/stamp.js";
 
 import wick_compile from "./compiler/wick.js";
 import CompilerEnv from "./compiler/compiler_env.js";
@@ -32,6 +33,7 @@ model.container = {
 model.store = (data) => new Store(data);
 wick.scheme = model.scheme;
 wick.model = model;
+wick.stamp = stamp; //Compiles wick component into standalone components. 
 wick.presets = d=>new Presets(d);
 wick.astCompiler = function(string){
 	return wick_compile(whind(string), CompilerEnv);
