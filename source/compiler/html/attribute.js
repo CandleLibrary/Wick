@@ -51,28 +51,10 @@ export default class Attribute {
 
             else 
 
-            {
-                const bind = this.value.bind(scope, pinned);
-                new this.io_constr(scope, this, bind, this.name, element, this.value.ast_other);
-            }
-    }
-
-    stamp(scope, presets, pinned){
-        if (this.RENDER)
-            if (!this.isBINDING)
-
             {   
-                if(this.name == "class")
-                   this.value.split(" ").map(c => c ? element.classList.add(c) : {});
-                else    
-                    element.setAttribute(this.name, this.value);
-            }
-
-            else 
-
-            {
-                const bind = this.value.stamp(scope, pinned);
-                //new this.io_constr(scope, this, bind, this.name, element, this.value.ast_other);
+                //Binding sends value over. 
+                const bind = this.value.bind(scope, pinned);
+                const discarded = new this.io_constr(scope, this, bind, this.name, element, this.value.ast_other);
             }
     }
 }

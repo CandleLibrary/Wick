@@ -98,12 +98,8 @@ class RedirectAttribIO extends IOBase {
     This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
 */
 export class AttribIO extends IOBase {
-
-    static stamp(scope, binding, default_val){
-        
-    }
-
-    constructor(scope, errors, tap, attr, element, default_val) {
+    
+    constructor(scope, binding, tap, attr, element, default_val) {
 
         if (element.io) {
             let down_tap = element.io.parent;
@@ -114,6 +110,8 @@ export class AttribIO extends IOBase {
 
         super(tap, element);
 
+
+        this.binding = binding;
         this.attrib = attr;
         this.ele.io = this;
 
@@ -144,10 +142,6 @@ export class AttribIO extends IOBase {
 
 export class DataNodeIO extends IOBase {
 
-    static stamp(scope, binding, default_val){
-        
-    }
-
     constructor(scope, tap, element, default_val) {
         if(!tap)  return {};
 
@@ -171,10 +165,6 @@ export class DataNodeIO extends IOBase {
     This io updates the value of a TextNode or it replaces the TextNode with another element if it is passed an HTMLElement
 */
 export class TextNodeIO extends DataNodeIO {
-
-    static stamp(scope, binding, default_val){
-        scope.writeScript(`registerTextExpression(${scope.ID},${binding},()=>output({${this.val}:${true})});`)
-    }
 
     constructor(scope, tap, element, default_val) {
         if(!tap) return {};
@@ -211,13 +201,10 @@ export class TextNodeIO extends DataNodeIO {
 
 export class EventIO extends IOBase {
 
-    static stamp(scope, binding, default_val){
-        
-    }
-
-    constructor(scope, errors, tap, attrib_name, element, default_val) {
-
+    constructor(scope, binding, tap, attrib_name, element, default_val) {
         super(tap);
+
+        this.binding = binding;
 
         this.ele = element;
 

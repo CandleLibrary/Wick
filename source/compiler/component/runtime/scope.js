@@ -57,7 +57,6 @@ export default class Scope extends Observer {
                         io = io.ele;
                     ios.push(io);
                 }
-
         }
 
         for (let i = 0; i < ios.length; i++) {

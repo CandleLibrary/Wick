@@ -42,8 +42,10 @@ export default class TextNode {
 
         if (this.IS_BINDING){
             scope.incrementID();
-            scope.writeHTML(`<span id=${Math.random()}>`);
+            scope.writeHTML(`<span>`);
+            scope.beginActivation();
             (IS_TEXT_NODE ? TextNodeIO : DataNodeIO).stamp(scope, this.data.stamp(scope, null, pinned), this.data.exprb);
+            scope.endActivation();
             scope.writeHTML("</span>");
         }
         else

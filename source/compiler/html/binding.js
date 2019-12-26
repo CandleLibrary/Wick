@@ -86,10 +86,11 @@ export default class Binding {
     stamp(scope, attr, id){
         if (this.ast) {
             if (this.METHOD == EXPRESSION) {
-                return ExpressionIO.stamp(id, this);
+                return ExpressionIO.stamp(id, scope, this);
             } else if (this.METHOD == CONTAINER)
-                return ContainerIO.stamp(id, scope, node, scope, this, this.lex, pinned);
+                return ContainerIO.stamp(id, scope, this);
             else{
+                scope.addActivation(this.val);
                 return this.val;
             }
         }

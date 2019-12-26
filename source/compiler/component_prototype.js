@@ -1,3 +1,5 @@
+import StampScope from "../stamp/stamp.js";
+
 export default class d {
     // Compiles the component to a HTML file. 
     // Returns a string representing the file data.
@@ -34,10 +36,48 @@ export default class d {
             if (!this.__pending)
                 this.__pending = [];
 
-            return new Promise(res =>this.__pending.push([HTMLElement_, data_object, USE_SHADOW, res]));
+            return new Promise(res =>this.__pending.push([false, HTMLElement_, data_object, USE_SHADOW, res]));
         }
 
         return this.nonAsyncMount(HTMLElement_, data_object, USE_SHADOW);
+    }
+
+    //Creates a standalone component string
+    async stamp(data_object) {
+
+        if (this.READY !== true) {
+            if (!this.__pending)
+                this.__pending = [];
+
+            return new Promise(res =>this.__pending.push([true, data_object, null, res]));
+        }
+
+        return this.nonAsyncStamp(data_object);
+    }
+
+    nonAsyncStamp(data_object = null){
+
+
+        const scope = this.ast.mount(null);
+
+        //pull out tap and io data and build a dependency graph
+
+        //element data is already available in the form of a working DOM. 
+
+        const taps = [...scope.taps.entries()].map((v) => ({ios:v[1].ios, v:v[0], mode: v[1].modes}));
+
+        //Convert
+
+        //Pull out io information from each tap. 
+
+        //Each tap will sit at the top of a stamped component as a gate
+        //For data transfer. Additionally, if a tap supports redirect and export,
+        //then the tap will be used as part of the stamp components emit function to push data
+        //into an export object to be consumed by the component's parent / children.
+
+        debugger
+
+        return scope;
     }
 
     nonAsyncMount(HTMLElement_, data_object = null, USE_SHADOW){

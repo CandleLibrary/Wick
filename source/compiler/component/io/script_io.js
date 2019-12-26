@@ -22,6 +22,11 @@ class ArgumentIO extends IO {
 
 export default class ScriptIO extends IOBase {
 
+    static stamp(id, scope, binding){
+        scope.addActivation(binding.args.map(e=>e.name), binding.origin_val);
+        return `registerExpression(${id},${false}, ()=>output({${this.val}:${true})})`;
+    }
+
     constructor(scope, node, tap, script, lex, pinned) {
 
         super(tap);
@@ -34,6 +39,7 @@ export default class ScriptIO extends IOBase {
         this.node = node;
         this.function = script.function.bind(scope);
         this.AWAITING_DEPENDENCIES = false;
+        this.script = script;
 
         //Embedded emit functions
 
