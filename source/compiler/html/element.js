@@ -239,32 +239,6 @@ export default class ElementNode {
 
         return (RETURN_ELEMENT) ? own_element : scope;
     }
-
-    stamp(scope, presets = this.presets, slots = {}, pinned = {}) {
-        
-        scope.incrementID();
-        
-        scope.writeHTML(`<${this.tag}`)
-
-        for (const attr of this.attribs.values())
-            attr.stamp(scope, presets, pinned);
-
-        scope.writeHTML(`>`);
-
-            if(this.children.length > 0){
-
-            scope.pushID();
-
-            for (let i = 0; i < this.children.length; i++) {
-                const node = this.children[i];
-                node.stamp(scope, presets, slots, pinned);
-            }
-
-            scope.popID();
-        }
-
-        scope.writeHTML(`</${this.tag}>`)
-    }
 }
 
 //Node that allows the combination of two sets of children from separate nodes that are merged together

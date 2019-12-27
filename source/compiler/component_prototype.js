@@ -1,4 +1,5 @@
 import StampScope from "../stamp/stamp.js";
+import {IOBase} from "./component/io/io.js";
 
 export default class d {
     // Compiles the component to a HTML file. 
@@ -65,17 +66,54 @@ export default class d {
         //element data is already available in the form of a working DOM. 
 
         const taps = [...scope.taps.entries()].map((v) => ({ios:v[1].ios, v:v[0], mode: v[1].modes}));
+        const ios = [];
+
+        const eles = {
+            getElement(ele) {
+                return ele.tag;
+            }
+        }
+
+        console.log(scope.ios[0].toString(eles))
+        taps[0].ios[0].getTapDependencies();
+        function map_ios(io, par){
+            const i = {};
+            i.self = io;
+            i.par = par;
+            if(io.ele instanceof IOBase){
+                i.io = map_ios(io.ele, io);
+            }else{
+                i.ele = io.ele;
+            }
+            return i;
+        }
 
         //Convert
 
         //Pull out io information from each tap. 
+
+        for(const tap of taps){
+            for(const io of tap.ios)
+                ios.push(map_ios(io, tap));
+        }
 
         //Each tap will sit at the top of a stamped component as a gate
         //For data transfer. Additionally, if a tap supports redirect and export,
         //then the tap will be used as part of the stamp components emit function to push data
         //into an export object to be consumed by the component's parent / children.
 
+        //For each io set, compile all taps the io needs
+
+        function getTaps(io){
+
+        }
+
+        for(const io of ios)
+            console.log(getTaps(io));
+
         debugger
+
+
 
         return scope;
     }

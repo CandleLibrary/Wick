@@ -1,4 +1,5 @@
 import { IOBase, IO } from "./io.js";
+import { Tap } from "../tap/tap.js";
 import spark from "@candlefw/spark";
 import error from "../../../utils/error.js";
 
@@ -17,6 +18,12 @@ class ArgumentIO extends IO {
 
     down(value) {
         this.ele.updateProp(this, value);
+    }
+
+    getTapDependencies(dependencies = []){
+        if(this.parent instanceof Tap)
+            dependencies.push(this.parent.prop);
+        return dependencies;
     }
 }
 
@@ -53,6 +60,19 @@ export default class ScriptIO extends IOBase {
         const func_bound = this.emit.bind(this);
         func_bound.onTick = this.onTick.bind(this);
         this.arg_props.push(func_bound);
+    }
+
+    toString(){
+        return this.script.ast.render();
+    }
+
+    getTapDependencies(dependencies = []){
+        if(this.parent instanceof Tap)
+            dependencies.push(this.parent.prop);
+
+        for(const arg_name in this.arg_ios)
+            this.arg_ios[arg_name].getTapDependencies(dependencies);
+        return dependencies;
     }
 
     /*

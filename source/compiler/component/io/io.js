@@ -1,4 +1,4 @@
-import { EXPORT } from "../tap/tap.js";
+import { EXPORT, Tap } from "../tap/tap.js";
 import { types } from "@candlefw/js";
 export class IOBase {
 
@@ -7,7 +7,8 @@ export class IOBase {
         this.parent = null;
         this.ele = element;
 
-        parent.addIO(this);
+        if(parent instanceof Tap || parent instanceof IOBase)
+            parent.addIO(this);
     }
 
     discardElement(ele){
@@ -40,6 +41,18 @@ export class IOBase {
 
     removeIO() {
         this.ele = null;
+    }
+
+    toString(eles){
+        return "";
+    }
+
+    getTapDependencies(dependencies = []){
+        if(this.parent instanceof Tap)
+            dependencies.push(this.parent.prop);
+        if(this.ele instanceof IOBase)
+            this.ele.getTapDependencies(dependencies);
+        return dependencies;
     }
 }
 
@@ -77,6 +90,10 @@ export class IO extends IOBase {
     down(value) {
         this.ele.data = value;
     }
+
+    toString(eles){
+        return `${eles.getElement(this.ele)}.data = ${this.parent.prop}`;
+    }
 }
 
 class RedirectAttribIO extends IOBase {
@@ -91,6 +108,10 @@ class RedirectAttribIO extends IOBase {
 
     down(value) {
         this.up_tap.up(value);
+    }
+
+    toString(eles){
+        return `${eles.getElement(this.ele)}.data = ${this.parent.prop}`;
     }
 }
 
@@ -131,6 +152,10 @@ export class AttribIO extends IOBase {
         this.ele.setAttribute(this.attrib, value);
     }
 
+    toString(eles){
+        return `${eles.getElement(this.ele)}.setAttribute(${this.attrib}, ${this.parent.prop})`;
+    }
+
     set data(v) {
         this.down(v);
     }
@@ -155,6 +180,7 @@ export class DataNodeIO extends IOBase {
         this.attrib = null;
         super.destroy();
     }
+
     down(value) {
         
         this.ele.data = value;
@@ -197,6 +223,10 @@ export class TextNodeIO extends DataNodeIO {
             this.ele.data = value;
         }
     }
+
+    toString(eles){
+        return `${eles.getElement(this.ele)}.setAttribute(${this.attrib}, ${this.parent.prop})`;
+    }
 }
 
 export class EventIO extends IOBase {
@@ -208,7 +238,9 @@ export class EventIO extends IOBase {
 
         this.ele = element;
 
-        const up_tap = default_val ? scope.getTap(default_val) : tap;
+        this.up_tap = default_val ? scope.getTap(default_val + "") : tap;
+
+        const up_tap = this.up_tap;
 
         this.event = (e) => { 
             e.preventDefault();
@@ -235,20 +267,40 @@ export class EventIO extends IOBase {
     down(value) {
         this.ele.value = value;
     }
+
+    toString(eles){
+        let str = "";
+
+        if(this.parent instanceof IOBase){
+            str += this.parent.toString(eles);
+        }
+
+        const ele = eles.getElement(this.ele);
+
+        return `${ele}.addEventListener("${this.event_name}", (e)=>{if(${str})update(${this.up_tap.prop}, e)})`;
+    }
+
+    getTapDependencies(dependencies = []){
+        if(this.parent instanceof Tap)
+            dependencies.push(this.parent.prop);
+        else{
+            dependencies.push(this.up_tap.prop)
+            return this.parent.getTapDependencies(dependencies);
+        }
+        return dependencies;
+    }
 }
 
 export class InputIO extends IOBase {
 
-    static stamp(scope, binding, default_val){
-    }
-
     constructor(scope, errors, tap, attrib_name, element, default_val) {
+
         if(tap)
             super(tap);
         else if(default_val)
             super(scope);
         else
-            return;
+            return null;
 
         this.ele = element;
         this.event = null;

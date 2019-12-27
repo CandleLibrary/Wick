@@ -30,25 +30,12 @@ export default class TextNode {
         if (IS_TEXT_NODE)
             element.appendChild(ele);
 
-        if (this.IS_BINDING)
-            return new (IS_TEXT_NODE ? TextNodeIO : DataNodeIO)(scope, this.data.bind(scope, null, pinned), ele, this.data.exprb);
-        else
-            ele.data = this.data;
-    }
-
-    stamp(scope, presets = this.presets, slots = {}, pinned = {}) {
-        const IS_TEXT_NODE = true;
-
-
         if (this.IS_BINDING){
-            scope.incrementID();
-            scope.writeHTML(`<span>`);
-            scope.beginActivation();
-            (IS_TEXT_NODE ? TextNodeIO : DataNodeIO).stamp(scope, this.data.stamp(scope, null, pinned), this.data.exprb);
-            scope.endActivation();
-            scope.writeHTML("</span>");
+            const io =  new (IS_TEXT_NODE ? TextNodeIO : DataNodeIO)(scope, this.data.bind(scope, null, pinned), ele, this.data.exprb);
+            scope.ios.push(io);
+            return io;
         }
         else
-            scope.writeHTML(this.data);
+            ele.data = this.data;
     }
 }

@@ -19241,7 +19241,8 @@ var wick = (function () {
             this.parent = null;
             this.ele = element;
 
-            parent.addIO(this);
+            if(parent instanceof Tap || parent instanceof IOBase)
+                parent.addIO(this);
         }
 
         discardElement(ele){
@@ -19274,6 +19275,18 @@ var wick = (function () {
 
         removeIO() {
             this.ele = null;
+        }
+
+        toString(eles){
+            return "";
+        }
+
+        getTapDependencies(dependencies = []){
+            if(this.parent instanceof Tap)
+                dependencies.push(this.parent.prop);
+            if(this.ele instanceof IOBase)
+                this.ele.getTapDependencies(dependencies);
+            return dependencies;
         }
     }
 
@@ -19311,6 +19324,10 @@ var wick = (function () {
         down(value) {
             this.ele.data = value;
         }
+
+        toString(eles){
+            return `${eles.getElement(this.ele)}.data = ${this.parent.prop}`;
+        }
     }
 
     class RedirectAttribIO extends IOBase {
@@ -19325,6 +19342,10 @@ var wick = (function () {
 
         down(value) {
             this.up_tap.up(value);
+        }
+
+        toString(eles){
+            return `${eles.getElement(this.ele)}.data = ${this.parent.prop}`;
         }
     }
 
@@ -19365,6 +19386,10 @@ var wick = (function () {
             this.ele.setAttribute(this.attrib, value);
         }
 
+        toString(eles){
+            return `${eles.getElement(this.ele)}.setAttribute(${this.attrib}, ${this.parent.prop})`;
+        }
+
         set data(v) {
             this.down(v);
         }
@@ -19389,6 +19414,7 @@ var wick = (function () {
             this.attrib = null;
             super.destroy();
         }
+
         down(value) {
             
             this.ele.data = value;
@@ -19431,6 +19457,10 @@ var wick = (function () {
                 this.ele.data = value;
             }
         }
+
+        toString(eles){
+            return `${eles.getElement(this.ele)}.setAttribute(${this.attrib}, ${this.parent.prop})`;
+        }
     }
 
     class EventIO extends IOBase {
@@ -19442,7 +19472,9 @@ var wick = (function () {
 
             this.ele = element;
 
-            const up_tap = default_val ? scope.getTap(default_val) : tap;
+            this.up_tap = default_val ? scope.getTap(default_val + "") : tap;
+
+            const up_tap = this.up_tap;
 
             this.event = (e) => { 
                 e.preventDefault();
@@ -19469,20 +19501,40 @@ var wick = (function () {
         down(value) {
             this.ele.value = value;
         }
+
+        toString(eles){
+            let str = "";
+
+            if(this.parent instanceof IOBase){
+                str += this.parent.toString(eles);
+            }
+
+            const ele = eles.getElement(this.ele);
+
+            return `${ele}.addEventListener("${this.event_name}", (e)=>{if(${str})update(${this.up_tap.prop}, e)})`;
+        }
+
+        getTapDependencies(dependencies = []){
+            if(this.parent instanceof Tap)
+                dependencies.push(this.parent.prop);
+            else{
+                dependencies.push(this.up_tap.prop);
+                return this.parent.getTapDependencies(dependencies);
+            }
+            return dependencies;
+        }
     }
 
     class InputIO extends IOBase {
 
-        static stamp(scope, binding, default_val){
-        }
-
         constructor(scope, errors, tap, attrib_name, element, default_val) {
+
             if(tap)
                 super(tap);
             else if(default_val)
                 super(scope);
             else
-                return;
+                return null;
 
             this.ele = element;
             this.event = null;
@@ -20266,32 +20318,6 @@ in file ${o.url || o.origin_url}`,e);
 
             return (RETURN_ELEMENT) ? own_element : scope;
         }
-
-        stamp(scope, presets = this.presets, slots = {}, pinned = {}) {
-            
-            scope.incrementID();
-            
-            scope.writeHTML(`<${this.tag}`);
-
-            for (const attr of this.attribs.values())
-                attr.stamp(scope, presets, pinned);
-
-            scope.writeHTML(`>`);
-
-                if(this.children.length > 0){
-
-                scope.pushID();
-
-                for (let i = 0; i < this.children.length; i++) {
-                    const node = this.children[i];
-                    node.stamp(scope, presets, slots, pinned);
-                }
-
-                scope.popID();
-            }
-
-            scope.writeHTML(`</${this.tag}>`);
-        }
     }
 
     //Node that allows the combination of two sets of children from separate nodes that are merged together
@@ -20336,6 +20362,12 @@ in file ${o.url || o.origin_url}`,e);
         down(value) {
             this.ele.updateProp(this, value);
         }
+
+        getTapDependencies(dependencies = []){
+            if(this.parent instanceof Tap)
+                dependencies.push(this.parent.prop);
+            return dependencies;
+        }
     }
 
     class ScriptIO extends IOBase {
@@ -20371,6 +20403,19 @@ in file ${o.url || o.origin_url}`,e);
             const func_bound = this.emit.bind(this);
             func_bound.onTick = this.onTick.bind(this);
             this.arg_props.push(func_bound);
+        }
+
+        toString(){
+            return this.script.ast.render();
+        }
+
+        getTapDependencies(dependencies = []){
+            if(this.parent instanceof Tap)
+                dependencies.push(this.parent.prop);
+
+            for(const arg_name in this.arg_ios)
+                this.arg_ios[arg_name].getTapDependencies(dependencies);
+            return dependencies;
         }
 
         /*
@@ -30709,17 +30754,54 @@ in file ${o.url || o.origin_url}`,e);
             //element data is already available in the form of a working DOM. 
 
             const taps = [...scope.taps.entries()].map((v) => ({ios:v[1].ios, v:v[0], mode: v[1].modes}));
+            const ios = [];
+
+            const eles = {
+                getElement(ele) {
+                    return ele.tag;
+                }
+            };
+
+            console.log(scope.ios[0].toString(eles));
+            taps[0].ios[0].getTapDependencies();
+            function map_ios(io, par){
+                const i = {};
+                i.self = io;
+                i.par = par;
+                if(io.ele instanceof IOBase){
+                    i.io = map_ios(io.ele, io);
+                }else{
+                    i.ele = io.ele;
+                }
+                return i;
+            }
 
             //Convert
 
             //Pull out io information from each tap. 
+
+            for(const tap of taps){
+                for(const io of tap.ios)
+                    ios.push(map_ios(io, tap));
+            }
 
             //Each tap will sit at the top of a stamped component as a gate
             //For data transfer. Additionally, if a tap supports redirect and export,
             //then the tap will be used as part of the stamp components emit function to push data
             //into an export object to be consumed by the component's parent / children.
 
+            //For each io set, compile all taps the io needs
+
+            function getTaps(io){
+
+            }
+
+            for(const io of ios)
+                console.log(getTaps(io));
+
             debugger
+
+
 
             return scope;
         }
@@ -31095,26 +31177,13 @@ in file ${o.url || o.origin_url}`,e);
             if (IS_TEXT_NODE)
                 element.appendChild(ele);
 
-            if (this.IS_BINDING)
-                return new (IS_TEXT_NODE ? TextNodeIO : DataNodeIO)(scope, this.data.bind(scope, null, pinned), ele, this.data.exprb);
-            else
-                ele.data = this.data;
-        }
-
-        stamp(scope, presets = this.presets, slots = {}, pinned = {}) {
-            const IS_TEXT_NODE = true;
-
-
             if (this.IS_BINDING){
-                scope.incrementID();
-                scope.writeHTML(`<span>`);
-                scope.beginActivation();
-                (IS_TEXT_NODE ? TextNodeIO : DataNodeIO).stamp(scope, this.data.stamp(scope, null, pinned), this.data.exprb);
-                scope.endActivation();
-                scope.writeHTML("</span>");
+                const io =  new (IS_TEXT_NODE ? TextNodeIO : DataNodeIO)(scope, this.data.bind(scope, null, pinned), ele, this.data.exprb);
+                scope.ios.push(io);
+                return io;
             }
             else
-                scope.writeHTML(this.data);
+                ele.data = this.data;
         }
     }
 
@@ -31387,7 +31456,8 @@ in file ${o.url || o.origin_url}`,e);
                 {   
                     //Binding sends value over. 
                     const bind = this.value.bind(scope, pinned);
-                    const discarded = new this.io_constr(scope, this, bind, this.name, element, this.value.ast_other);
+                    const io = new this.io_constr(scope, this, bind, this.name, element, this.value.ast_other);
+                    scope.ios.push(io);
                 }
         }
     }
