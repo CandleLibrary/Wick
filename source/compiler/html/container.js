@@ -23,6 +23,7 @@ function BaseComponent(ast, presets) {
 
 Object.assign(BaseComponent.prototype,proto.prototype);
 BaseComponent.prototype.mount = proto.prototype.nonAsyncMount;
+BaseComponent.prototype.stamp = proto.prototype.nonAsyncStamp;
 
 export default class ctr extends ElementNode {
     
@@ -62,6 +63,7 @@ export default class ctr extends ElementNode {
     }
 
     merge(node) {
+            scope.update({ loaded: true });
         const merged_node = super.merge(node);
         merged_node.filters = this.filters;
         merged_node.nodes = this.filters;
@@ -96,7 +98,7 @@ export default class ctr extends ElementNode {
             for (let i = 0; i < this.binds.length; i++)
                 this.binds[i].mount(null, scope, presets, slots, pinned, container);
         }else{ 
-            //If there is no binding, then there is no potential to have ModelContainer borne components.
+            //If there is no binding, then there is no potential to have ModelContainer host components.
             //Instead, load any existing children as component entries for the container element. 
             for (let i = 0; i < this.nodes.length; i++)
                 container.scopes.push(this.nodes[i].mount(null, null, presets, slots));

@@ -187,6 +187,8 @@ export class DataNodeIO extends IOBase {
     }
 }
 
+export class ContainerLinkIO extends DataNodeIO {}
+
 /**
     This io updates the value of a TextNode or it replaces the TextNode with another element if it is passed an HTMLElement
 */
@@ -268,23 +270,11 @@ export class EventIO extends IOBase {
         this.ele.value = value;
     }
 
-    toString(eles){
-        let str = "";
-
-        if(this.parent instanceof IOBase){
-            str += this.parent.toString(eles);
-        }
-
-        const ele = eles.getElement(this.ele);
-
-        return `${ele}.addEventListener("${this.event_name}", (e)=>{if(${str})update(${this.up_tap.prop}, e)})`;
-    }
-
     getTapDependencies(dependencies = []){
         if(this.parent instanceof Tap)
             dependencies.push(this.parent.prop);
         else{
-            dependencies.push(this.up_tap.prop)
+            dependencies.push(this.up_tap.prop);
             return this.parent.getTapDependencies(dependencies);
         }
         return dependencies;
@@ -304,6 +294,8 @@ export class InputIO extends IOBase {
 
         this.ele = element;
         this.event = null;
+
+        this.up_tap = tap;
 
         let up_tap = tap;
 

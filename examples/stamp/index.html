@@ -9,7 +9,18 @@
 <body>
     <div id="test"></div>
     <script>
-    wick("./test_component.html").stamp();
+
+
+
+    wick("./test_component.html").stamp().then(d=>{
+    	const fun = new Function("ele", "wl", d.js);
+    	const div = document.createElement("div")
+    	div.innerHTML = d.html;
+    	const ele = div.firstChild;
+    	document.body.appendChild(ele);
+    	const component = fun(ele, wick.lite)
+    	component.update({trees : {data:[{jeans:2},{jeans:22}]}})
+    });
     
     </script>
 </body>

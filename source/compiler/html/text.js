@@ -1,6 +1,6 @@
 import Binding from "./binding.js";
 
-import { DataNodeIO, TextNodeIO } from "../component/io/io.js";
+import { ContainerLinkIO, TextNodeIO } from "../component/io/io.js";
 
 const offset = "";
 
@@ -31,7 +31,7 @@ export default class TextNode {
             element.appendChild(ele);
 
         if (this.IS_BINDING){
-            const io =  new (IS_TEXT_NODE ? TextNodeIO : DataNodeIO)(scope, this.data.bind(scope, null, pinned), ele, this.data.exprb);
+            const io =  new (IS_TEXT_NODE ? TextNodeIO : ContainerLinkIO)(scope, this.data.bind(scope, null, pinned), ele, this.data.exprb);
             scope.ios.push(io);
             return io;
         }

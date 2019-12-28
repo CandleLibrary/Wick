@@ -3,7 +3,6 @@ import { Tap, UpdateTap } from "../tap/tap.js";
 import { IOBase } from "../io/io.js";
 import Observer from "../../../observer/observer.js";
 
-
 export default class Scope extends Observer {
 
     /**
