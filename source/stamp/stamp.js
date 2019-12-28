@@ -1,4 +1,4 @@
-import html from "@candlefw/html";
+
 
 /* Turns a wick compnent into a self contained html component  */
 const wick_lite = function() {

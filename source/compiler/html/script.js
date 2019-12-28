@@ -84,7 +84,7 @@ export default class ScriptNode extends ElementNode {
 
         if (this.READY) {
             const tap = this.on.bind(scope, null, null, this);
-            new ScriptIO(scope, this, tap, this, {}, pinned);
+            scope.ios.push(new ScriptIO(scope, this, tap, this, {}, pinned));
         }
     }
 

@@ -1,5 +1,7 @@
 import StampScope from "../stamp/stamp.js";
-import {IOBase} from "./component/io/io.js";
+import {IOBase, EventIO, InputIO} from "./component/io/io.js";
+import ScriptIO from "./component/io/script_io.js";
+import {Tap} from "./component/tap/tap.js";
 
 export default class d {
     // Compiles the component to a HTML file. 
@@ -63,10 +65,166 @@ export default class d {
 
         //pull out tap and io data and build a dependency graph
 
-        //element data is already available in the form of a working DOM. 
+        // Graph is built from Tap info at top - IO data connecting to one of {tap, ele, io} - Ele id holders.
 
-        const taps = [...scope.taps.entries()].map((v) => ({ios:v[1].ios, v:v[0], mode: v[1].modes}));
-        const ios = [];
+        //Creating the graph
+        
+        const root_ios = [];
+
+        function createIONode(io){
+            return {
+                TAP_PARENT: (io.parent instanceof Tap), 
+                par: (io.parent instanceof Tap) ? taps.get(io.parent) : io.parent, 
+                IS_INPUT: (io instanceof EventIO || io instanceof InputIO), 
+                ele : (io.ele instanceof IOBase) ? createIONode(io.ele) : io.ele,
+                io
+            }
+        }
+
+
+        function recurseIO(io){
+            if(io.io instanceof ScriptIO){
+                for(const arg_name in io.io.arg_ios){
+                    const aio = createIONode(io.io.arg_ios[arg_name]);
+                    aio.ele = io;
+                    recurseIO(aio);
+                }
+            }else if(io.par instanceof IOBase){
+                io.par = createIONode(io.par);
+                recurseIO(io.par);
+            }else{
+                root_ios.push(io);
+            }
+        }
+
+        const taps = new Map([...scope.taps.entries()].map((v) => [v[1], {ios:v[1].ios, v:v[0], mode: v[1].modes}]));
+        const ios = scope.ios.map(createIONode);
+        ios.forEach(recurseIO)
+        /*
+        for(const tap of taps.values()){
+            for(let i = 0; i < tap.ios.length; i++){
+                for(let j = 0; j < root_ios.length; j++){
+                    if(tap.ios[i] == ios[j].io){
+                        tap.ios[i] = ios[j]
+                        break;
+                    }
+                }
+            }
+        }
+        */
+        // Activation conditions. {tap, or_prop}
+
+        function buildIO(io, obj = {cds:new Set, str:""}){
+            if(io.io instanceof ScriptIO){
+                
+                obj.str = io.io.script.ast.render() +";"+ obj.str;
+
+                for(const arg_name in io.io.arg_ios){
+                    obj.cds.add(arg_name)
+                    //const arg = io.io.arg_ios[arg_name];
+                    //str = buildIO(createIONode(arg), str)
+                }
+
+                if(io.par)
+                    obj.cds.add(io.par.v)
+            }else if(io.io instanceof EventIO){
+
+                obj.cds.add(io.io.up_tap.prop);
+
+                obj.str += `emit("${io.io.up_tap.prop}", ${io.io.up_tap.prop})`;
+
+                if(!io.TAP_PARENT)
+                     buildIO(io.par, obj);
+
+                 obj.event = io.io.event_name;
+                 obj.ele = io.ele;
+                 obj.str = `${obj.str}`;
+            }else{
+                if(!io.TAP_PARENT){
+                    obj.str += io.io + "";
+                    return buildIO(io.par, obj);
+                }
+                if(!((io.ele instanceof Element) || (io.ele instanceof Text))){
+                    obj.cds.add(io.par.v)
+                }
+                else{
+                    obj.ele = io.ele;
+                    obj.cds.add(io.par.v)
+                    obj.str += `${io.ele.nodeName}.${io.io.prop} = ${io.par.v};`
+                }
+            }
+
+            return obj;
+        }
+
+        const actions = [];
+
+        for(const io of ios){
+            actions.push(buildIO(io));
+        }
+
+        //combine actions if we can
+        for(let i = 0; i < actions.length; i++){
+            let act1 = actions[i];
+            for(let j = 0; j < actions.length; j++){
+                if(j == i)
+                    continue
+                let act2 = actions[j];
+
+                if(act1.cds.valueOf() == act2.cds.valueOf() && (act1.type & act2.type)){
+                    //compress
+                }
+            }
+        }
+
+        actions.sort((a,b)=>{(a.type<b.type)?-1:1})
+
+        for(let i = 0; i < actions.length; i++){
+            const action = actions[i];
+            switch(action.type){
+                case 1: // Input
+                case 2: // Event
+                case 4: // Element prop
+                case 12: // Scripts & Expressions
+                case 4: // Scripts
+            }
+        }
+
+        //Build component based on actions.
+
+        /*
+            function Component(element, wick_lite){
+                //Get References to the necessary elements
+                const 
+                    ela = wick_lite.ge(element, 0,0,0,0,);
+                    eleb
+                    elec
+                    eled
+                    ...
+                
+            }
+        */
+
+
+        //group IOs with same ele into a super IO
+
+
+
+        debugger
+        //Optimizing the graph. 
+        
+        //Map all taps that can be grouped into a cluster
+        //These are taps that share a subset of the same ios. 
+        /*
+        for(let i = 0; i < taps.length; i++){
+            const tap_a
+            for(let j = 0; j < taps.length; j++){
+
+            }
+        }*/
+
+        //Building the component. 
+
 
         const eles = {
             getElement(ele) {
