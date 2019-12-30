@@ -1,6 +1,5 @@
 import stamp from "../stamp/stamp.js";
 
-
 export default class d {
 
     //Registers the component as a Web Component.

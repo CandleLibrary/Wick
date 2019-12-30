@@ -99,6 +99,9 @@ export class CSSRuleTemplateString {
 
 
 export class StyleIO extends IOBase {
+
+    get type () { return "StyleIO"}
+
     constructor(scope, errors, taps, element, props = []) {
 
         super(scope);

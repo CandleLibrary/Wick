@@ -4,6 +4,9 @@ import spark from "@candlefw/spark";
 import error from "../../../utils/error.js";
 
 class ArgumentIO extends IO {
+
+    get type () { return "ArgumentIO"}
+
     constructor(scope, errors, tap, script, id) {
         super(scope, errors, tap);
         this.ele = script;
@@ -28,6 +31,8 @@ class ArgumentIO extends IO {
 }
 
 export default class ScriptIO extends IOBase {
+
+    get type () { return "ScriptIO"}
 
     static stamp(id, scope, binding){
         scope.addActivation(binding.args.map(e=>e.name), binding.origin_val);

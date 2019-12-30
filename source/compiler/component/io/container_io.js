@@ -4,9 +4,8 @@ import spark from "@candlefw/spark";
 /******************** Expressions **********************/
 
 export default class ContainerIO extends ScriptIO {
-    static stamp(id, binding){
-        return `registerExpression(${id}, ${binding}, ()=>output({${this.val}:${true})})`;
-    }
+
+    get type () { return "ContainerIO"}
 
     constructor(container, scope, node, tap, binding, lex, pinned) {
         super(scope, node, tap, binding, lex, pinned);
@@ -21,6 +20,7 @@ export default class ContainerIO extends ScriptIO {
 
     bindToContainer(type, container) {
         this.container = container;
+        this.filter_type = type;
 
         const STATIC = this.IO_ACTIVATIONS == 0;
 
@@ -48,6 +48,7 @@ export default class ContainerIO extends ScriptIO {
                 this.action = this.shift_amount;
                 break;
         }
+
         
         if (STATIC)
             this.down();

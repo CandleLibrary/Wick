@@ -2,6 +2,8 @@ import { EXPORT, Tap } from "../tap/tap.js";
 import { types } from "@candlefw/js";
 export class IOBase {
 
+    get type () { return "IOBase"}
+
     constructor(parent, element = null) {
 
         this.parent = null;
@@ -68,6 +70,8 @@ export class IOBase {
  */
 export class IO extends IOBase {
 
+    get type () { return "IO"}
+
     static stamp(scope, binding, default_val){
         
     }
@@ -119,6 +123,8 @@ class RedirectAttribIO extends IOBase {
     This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
 */
 export class AttribIO extends IOBase {
+
+    get type () { return "AttribIO"}
     
     constructor(scope, binding, tap, attr, element, default_val) {
 
@@ -167,6 +173,8 @@ export class AttribIO extends IOBase {
 
 export class DataNodeIO extends IOBase {
 
+    get type () { return "DataNodeIO"}
+
     constructor(scope, tap, element, default_val) {
         if(!tap)  return {};
 
@@ -187,12 +195,16 @@ export class DataNodeIO extends IOBase {
     }
 }
 
-export class ContainerLinkIO extends DataNodeIO {}
+export class ContainerLinkIO extends DataNodeIO {
+    get type () { return "ContainerLinkIO"}
+}
 
 /**
     This io updates the value of a TextNode or it replaces the TextNode with another element if it is passed an HTMLElement
 */
 export class TextNodeIO extends DataNodeIO {
+
+    get type () { return "TextNodeIO"}
 
     constructor(scope, tap, element, default_val) {
         if(!tap) return {};
@@ -232,6 +244,8 @@ export class TextNodeIO extends DataNodeIO {
 }
 
 export class EventIO extends IOBase {
+
+    get type () { return "EventIO"}
 
     constructor(scope, binding, tap, attrib_name, element, default_val) {
         super(tap);
@@ -282,6 +296,8 @@ export class EventIO extends IOBase {
 }
 
 export class InputIO extends IOBase {
+
+    get type () { return "InputIO"}
 
     constructor(scope, errors, tap, attrib_name, element, default_val) {
 

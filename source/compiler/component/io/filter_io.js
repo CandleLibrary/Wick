@@ -8,6 +8,9 @@ let expr_check = (expr) => {
 
 
 export class FilterIO extends IOBase {
+
+    get type () { return "FilterIO"}
+
     constructor(scope, errors, taps, container, activation, sort, filter, limit, offset, scrub, shift) {
      
         super(container, errors);

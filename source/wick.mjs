@@ -1,7 +1,8 @@
+import lite from "./wick_lite.js";
 import compiler from "./compiler/component.js";
-import stamp from "./stamp/stamp.js";
 
 import wick_compile from "./compiler/wick.js";
+import stamp from "./stamp/stamp.js";
 import CompilerEnv from "./compiler/compiler_env.js";
 //Models
 import { Store } from "./model/store.js";
@@ -14,7 +15,6 @@ import { BTreeModelContainer } from "./model/container/btree.js";
 import { ArrayModelContainer } from "./model/container/array.js";
 import { Presets } from "./presets.js";
 import whind from "@candlefw/whind";
-import lite from "./wick_lite.mjs";
 const wick = compiler;
 
 const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);

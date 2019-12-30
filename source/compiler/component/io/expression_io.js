@@ -4,6 +4,8 @@ import ScriptIO from "./script_io.js";
 
 export default class ExpressionIO extends ScriptIO {
 
+    get type () { return "ExpressionIO"}
+
     static stamp(id, scope, binding){
         (binding.args.map(e=>scope.addActivation(e.name)));
         return scope.addExpressionConst(binding.origin_val);

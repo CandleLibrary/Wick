@@ -43,7 +43,8 @@ function* recurseIONodes(io) {
         yield* recurseIO(io.ele);
 }
 
-async function createComponent(value, presets) {
+async function createComponent(value, presets, STATIC = false) {
+    
     let comp;
     try {
         comp = await wick(value, presets).pending;
@@ -54,6 +55,25 @@ async function createComponent(value, presets) {
     const mount = new HTMLElement();
 
     mount.tag = "div";
+
+    return { scope: await comp.mount(mount), ele: mount };
+}
+
+async function createComponentLite(value, presets, STATIC = false) {
+    
+    let comp, stamped;
+    try {
+        comp = await wick(value, presets).pending;
+        stamped = await comp.stamp();
+    } catch (e) {
+        throw e;
+    }
+
+    const mount = new HTMLElement();
+
+    mount.tag = "div";
+
+    wick.lite.createComponent(stamped)
 
     return { scope: await comp.mount(mount), ele: mount };
 }
@@ -87,6 +107,9 @@ describe("Basic", function() {
         comp.should.be.instanceOf(Component);
     });
 });
+
+function CompositionTests(createComponent){
+
 
 describe("Composition", function() {
     it("Components can be defined and referenced by name within other components.", async function() {
@@ -234,6 +257,10 @@ describe("Containers", function() {
         });
     });
 });
+}
+
+CompositionTests(createComponent);
+CompositionTests(createComponentLite);
 
 describe("Errors", function() {
     it("Throws an error if it encounters incorrect syntax.", async function() {

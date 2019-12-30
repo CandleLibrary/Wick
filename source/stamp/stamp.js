@@ -1,149 +1,9 @@
-import { EventIO, InputIO, ContainerLinkIO } from "../compiler/component/io/io.js";
-import ScriptIO from "../compiler/component/io/script_io.js";
-import { Tap } from "../compiler/component/tap/tap.js";
-import lite from "../wick_lite.mjs";
+import lite from "../wick_lite.js";
+import insertData from "./insert_data.js";
+import getContainer from "./get_container.js";
+import getElement from "./get_element.js"
+import buildIO from "./build_io.js"
 
-function insertData(template_str, str) {
-    if (template_str.includes("%%%%"))
-        return template_str.replace("%%%%", str);
-    return template_str + str;
-}
-
-/* Returns an array that respresents the index position of a given element and it's ancestor nodes. */
-function getRootOffset(ele, array = []) {
-    let i = 0;
-
-    const parent = ele.parentElement;
-
-    if (!parent) {
-        return array;
-    }
-
-    while (ele != parent.firstChild) {
-        i++;
-        ele = ele.previousSibling;
-    }
-
-    array.unshift(i);
-
-    return getRootOffset(parent, array);
-}
-
-function getElement(ele, mapped_elements) {
-
-    if (mapped_elements.has(ele))
-        return mapped_elements.get(ele).name;
-
-    let offset = null;
-
-    if (ele instanceof Text) {
-        const span = document.createElement("span");
-        span.innerHTML = ele.data;
-        ele.parentElement.insertBefore(span, ele);
-        ele.parentElement.removeChild(ele);
-        offset = getRootOffset(span);
-    } else {
-        offset = getRootOffset(ele);
-    }
-
-    mapped_elements.set(ele, { name: `e_${mapped_elements.size}`, offset });
-
-    return getElement(ele, mapped_elements);
-}
-
-function getContainer(ctr,  containers, mapped_elements){
-
-    if (containers.has(ctr))
-        return containers.get(ctr).name;
-
-    let offset = getRootOffset(ctr);   
-
-    containers.set(ctr, { name: `c_${containers.size}`, offset, ele : getElement(ctr.ele, mapped_elements), comp: ctr.component });
-
-    return getElement(ctr, containers, mapped_elements);
-}
-
-// Activation conditions. {tap, or_prop}
-function buildIO(io, ctx, obj = { cds: new Set, str: "", type: 0 }) {
-    if (io instanceof ScriptIO) {
-        if (!obj.type)
-            obj.type = 12;
-
-        if (io.script.ast.type == 47)
-            obj.str = insertData(obj.str, io.script.ast.expr.render());
-        else
-            obj.str = insertData(obj.str, io.script.ast.render());
-
-        for (const arg_name in io.arg_ios) {
-            obj.cds.add(arg_name);
-            //const arg = io.io.arg_ios[arg_name];
-            //str = buildIO(createIONode(arg), str)
-        }
-
-        if (io.parent)
-            obj.cds.add(io.parent.prop);
-
-    } else if (io instanceof EventIO) {
-
-        const type = 2;
-
-        obj.cds.add(io.up_tap.prop);
-        obj.type = type;
-        obj.str += `emit("${io.up_tap.prop}", ${io.up_tap.prop}); `;
-
-        if (!(io.parent instanceof Tap))
-            buildIO(io.parent, ctx, obj);
-
-        obj.event = io.event_name;
-        obj.ele = io.ele;
-        obj.str = `${obj.str}`;
-
-    } else if (io instanceof InputIO) {
-        const type = 1;
-        //obj.cds.add(io.up_tap.prop);
-        obj.type = type;
-        obj.str += `emit("${io.up_tap.prop}", e.target.value); `;
-
-        if (!(io.parent instanceof Tap))
-            buildIO(io.parent, ctx, obj);
-
-        obj.event = io.event_name;
-        obj.ele = io.ele;
-        obj.str = `${obj.str}`;
-
-    } else if (io instanceof ContainerLinkIO) {
-        if (!obj.type) obj.type = 16;
-        obj.str += `wl.ctr_upd(${getContainer(io.ele, ctx.containers, ctx.mapped_elements)},%%%%)`;
-
-        if (!(io.parent instanceof Tap)) {
-            return buildIO(io.parent, ctx, obj);
-        } else {
-            obj.str = insertData(obj.str, io.parent.prop);
-        }
-
-        obj.cds.add(io.parent.prop);
-    } else {
-        if (io.ele instanceof Element) {
-            if (!obj.type) obj.type = 4;
-            obj.str += `${getElement(io.ele, ctx.mapped_elements)}.${io.attrib} =`;
-        } else if (io.ele instanceof Text) {
-            if (!obj.type) obj.type = 8;
-            obj.str += `${getElement(io.ele, ctx.mapped_elements)}.innerHTML =`;
-        } else {
-            if (!obj.type) obj.type = 4;
-            obj.cds.add(io.parent.prop);
-        }
-
-        if (!(io.parent instanceof Tap)) {
-            return buildIO(io.parent, ctx, obj);
-        } else {
-            obj.str += io.parent.prop;
-        }
-
-        obj.cds.add(io.parent.prop);
-    }
-    return obj;
-}
 
 function getCondition(condition, conditions) {
     if (conditions.has(condition))
@@ -168,6 +28,8 @@ export default function stamp(ast) {
         containers = new Map(),
         actions = [];
 
+    console.log(scope);
+
     //pull out tap and io data and build a dependency graph
     for (const io of scope.ios) {
         const ele = buildIO(io, { mapped_elements, containers });
@@ -185,7 +47,9 @@ export default function stamp(ast) {
 
             if (act1.id == act2.id && (act1.type & act2.type)) {
                 //compress
-                debugger;
+                actions.splice(j,1);
+                j--;
+                act1.str += ";" + act2.str;
             }
         }
     }
@@ -221,18 +85,22 @@ ${getElement(action.ele, mapped_elements)}.addEventListener("${action.event}", a
 
     const component_html = scope.ele.outerHTML;
     const component_script = `
-const ${[...mapped_elements.values()].map(v=>`${v.name}=wl.ge(ele, ${v.offset.join(",")})`).join(",")};
-${containers.size > 0 ? `${[...containers.values()].map(c=>`${c.name}=wl.ctr(${c.ele},"${c.comp.stamp().hash}")`).join(",")};` : ""}
 var ${[...conditions.keys()].map(e=>`${e}`).join()}, gf = 0;
 
-
-function emit(name, val){
-    output.update({[name]:val});
+const ${[...mapped_elements.values()].map(v=>`${v.name}=wl.ge(ele, ${v.offset.join(",")})`).join(",")}
+${
+    containers.size > 0 ? `, ${
+        [...containers.values()].map(c=>`${c.name}=wl.ctr(${c.ele},"${
+            c.comp.stamp().hash}" ${
+                c.filters ? "," +c.filters.map(f=>`{action:${f.fn_str},type:"${f.type}"}`).join(",") : ""
+            })`).join(",")
+    };` : ";"
 }
 
-const u = undefined;
 
-output = {
+function emit(name, val){output.update({[name]:val});}
+
+const u = undefined, output = {
     update : function(data){
         f = ${[...conditions.entries()].map(e=>`+((data.${e[0]} != u && !void (${e[0]} = data.${e[0]}))${(e[1] > 1) ? "<<" + Math.log(e[1])/Math.log(2): ""})`).join("|")};
         ${element_str};
@@ -244,8 +112,6 @@ output = {
     get ele(){
         return ele;
     },
-    transitionIn(){},
-    transitionOut(){}
 }
 
 ${event_str}
@@ -253,9 +119,17 @@ ${event_str}
 return output;
 `;
 
-    const output = { js: component_script, html: component_html, hash: ((component_script.length ^ component_html.length) * 0x456) +"" };
-    
+    const output = {
+        js: component_script,
+        html: component_html,
+        hash: ((component_script.length ^ component_html.length) * 0x456) + ""
+    };
+
+    // Add component internal store. This can later be used to genereate a 
+    // component graph that can be used in final applications.
     lite.addComponent(output);
+
+    console.log(output.js)
 
     return output;
 }
