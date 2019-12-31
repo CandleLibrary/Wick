@@ -17,7 +17,8 @@
     "prepublishOnly": "yarn test && yarn run build",
     "build": "rollup --config ./build/config/main.config.js",
     "build.lite": "rollup --config ./build/config/lite.config.js",
-    "build.watch": "rollup --config ./build/config/main.config.js --watch"
+    "build.watch": "rollup --config ./build/config/main.config.js --watch",
+    "build.lite.watch": "rollup --config ./build/config/lite.config.js --watch"
   },
   "repository": {
     "type": "git",

@@ -1,9 +1,8 @@
-import lite from "../wick_lite.js";
+import lite from "../lite/lite.js";
 import insertData from "./insert_data.js";
 import getContainer from "./get_container.js";
 import getElement from "./get_element.js"
 import buildIO from "./build_io.js"
-
 
 function getCondition(condition, conditions) {
     if (conditions.has(condition))
@@ -105,13 +104,7 @@ const u = undefined, output = {
         f = ${[...conditions.entries()].map(e=>`+((data.${e[0]} != u && !void (${e[0]} = data.${e[0]}))${(e[1] > 1) ? "<<" + Math.log(e[1])/Math.log(2): ""})`).join("|")};
         ${element_str};
         gf |= f;
-    },
-    destroy : function(){
-
-    },
-    get ele(){
-        return ele;
-    },
+    }
 }
 
 ${event_str}

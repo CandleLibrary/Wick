@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="../../../build/wick.lite.js"></script>
+</head>
+
+<body>
+	<template id="435120"><div><span></span></div></template><template id="1172160"><div>         <span></span>    <labels></labels>        <span></span> Lets talk tacos!     <input type="text">    <ul></ul>            <like-button>            </like-button></div></template>
+	<script>
+    	const wick_lite = wick;
+    	const main = wick_lite.load(document.getElementById("435120"), function (ele,wl
+) {
+
+var jeans, gf = 0;
+
+const e_0=wl.ge(ele, 0)
+;
+
+function emit(name, val){output.update({[name]:val});}
+
+const u = undefined, output = {
+    update : function(data){
+        f = +((data.jeans != u && !void (jeans = data.jeans)));
+        
+if((f & 1) == 1){e_0.innerHTML =jeans};;
+        gf |= f;
+    }
+}
+return output;
+
+});wick_lite.load(document.getElementById("1172160"), function (ele,wl
+) {
+
+var click,property,dragons,trees, gf = 0;
+
+const e_0=wl.ge(ele, ),e_1=wl.ge(ele, 1),e_2=wl.ge(ele, 5),e_3=wl.ge(ele, 9),e_4=wl.ge(ele, 7)
+, c_0=wl.ctr(e_3,"435120" ,{action:(scope)=>scope.model.name == property,type:"filter"});
+
+
+function emit(name, val){output.update({[name]:val});}
+
+const u = undefined, output = {
+    update : function(data){
+        f = +((data.click != u && !void (click = data.click)))|+((data.property != u && !void (property = data.property))<<1)|+((data.dragons != u && !void (dragons = data.dragons))<<2)|+((data.trees != u && !void (trees = data.trees))<<3);
+        
+if((f & 2) == 2){e_0.style ="color:" + property;e_2.innerHTML =property};
+if((f & 4) == 4){e_1.innerHTML =dragons};
+if((f & 8) == 8){wl.ctr_upd(c_0,trees)};
+if((f & 1) == 1){emit("property","test");console.log("mayday!");};
+if((f & 2) == 2){wl.ctr_fltr(c_0, "fi")};;
+        gf |= f;
+    }
+}
+function a_0(e){emit("property", e.target.value); };
+e_4.addEventListener("input", a_0)
+function a_1(e){if((gf & 1) == 1){emit("click", click); }};
+e_0.addEventListener("mouseover", a_1)
+
+return output;
+
+})
+document.body.appendChild(wick.createComponent("1172160", {trees : {data:[{jeans:2, name:"tom"},{jeans:22, name:"joe"}]}}).ele)
+    </script>
+</body>
+
+</html>

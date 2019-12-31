@@ -7,9 +7,9 @@ const output = [{
 }];
 
 export default {
-    input: "./source/wick_lite.mjs",
+    input: "./source/lite/lite.js",
     output,
-    treeshake: false,
+    treeshake: true,
     plugins: [
         resolve({jail:"",modulesOnly: true}),  
         //terser({mangle:true, module:true}), 

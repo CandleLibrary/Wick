@@ -14,7 +14,7 @@ import { BTreeModelContainer } from "./model/container/btree.js";
 import { ArrayModelContainer } from "./model/container/array.js";
 import { Presets } from "./presets.js";
 import whind from "@candlefw/whind";
-import lite from "./wick_lite.js";
+import lite_tools from "./lite/tools.js"
 const wick = compiler;
 
 const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);
@@ -36,7 +36,7 @@ wick.presets = d=>new Presets(d);
 wick.astCompiler = function(string){
 	return wick_compile(whind(string), CompilerEnv);
 };
-wick.lite = lite;
+wick.lite = lite_tools;
 wick.compiler_environment = CompilerEnv;
 export default wick;
 
