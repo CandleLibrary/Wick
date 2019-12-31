@@ -1,5 +1,6 @@
 /* Returns an array that respresents the index position of a given element and it's ancestor nodes. */
 function getRootOffset(ele, array = []) {
+
     let i = 0;
 
     const parent = ele.parentElement;
@@ -8,9 +9,9 @@ function getRootOffset(ele, array = []) {
         return array;
     }
 
-    while (ele != parent.firstChild) {
+    while (ele != parent.firstElementChild) {
         i++;
-        ele = ele.previousSibling;
+        ele = ele.previousElementSibling;
     }
 
     array.unshift(i);

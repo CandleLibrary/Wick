@@ -8,8 +8,9 @@ function ge(ele, ...indices) {
 	if (indices.length == 0)
 		return ele;
 	else
-		return ge(ele.childNodes[indices[0]], ...(indices.slice(1)));
+		return ge(ele.children[indices[0]], ...(indices.slice(1)));
 }
+
 const wick_lite = {
 	ge,
 	ctr,

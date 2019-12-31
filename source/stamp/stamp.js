@@ -1,8 +1,8 @@
 import lite from "../lite/lite.js";
 import insertData from "./insert_data.js";
 import getContainer from "./get_container.js";
-import getElement from "./get_element.js"
-import buildIO from "./build_io.js"
+import getElement from "./get_element.js";
+import buildIO from "./build_io.js";
 
 function getCondition(condition, conditions) {
     if (conditions.has(condition))
