@@ -9,17 +9,18 @@
 <body>
     <div id="test"></div>
     <script>
+        async function start(){
+            console.log(await wick("./test_component.html").pending)
+            wick.lite.createSelfContainedPage(wick("./test_component.html")).then(e=>{
+                console.log(e);
+                //convert to data uri
+                const ifr = document.createElement("iframe")
+                ifr.srcdoc = e;
+                document.body.appendChild(ifr);
 
-    wick("./test_component.html").stamp().then(d=>{
-    	const fun = new Function("ele", "wl", d.js);
-    	const div = document.createElement("div")
-    	div.innerHTML = d.html;
-    	const ele = div.firstChild;
-    	document.body.appendChild(ele);
-    	const component = fun(ele, wick.lite)
-    	component.update({trees : {data:[{jeans:2, name:"tom"},{jeans:22, name:"joe"}]}})
-        wick.lite.export();
-    });
+            });
+        }
+        start()
     
     </script>
 </body>

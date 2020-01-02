@@ -101,6 +101,7 @@ function emit(name, val){output.update({[name]:val});}
 
 const u = undefined, output = {
     update : function(data){
+        if(!data) return;
         f = ${[...conditions.entries()].map(e=>`+((data.${e[0]} != u && !void (${e[0]} = data.${e[0]}))${(e[1] > 1) ? "<<" + Math.log(e[1])/Math.log(2): ""})`).join("|")};
         ${element_str};
         gf |= f;
