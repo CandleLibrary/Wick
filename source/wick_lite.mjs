@@ -33,7 +33,7 @@ function ctr_upd(ctr, data_objs) {
 }
 
 
-const component_map = new Map();
+
 
 /* Create a wick container */
 function ctr(ele, component) {
@@ -105,17 +105,52 @@ function createComponent(name, data) {
 	return null;
 }
 
+class liteScope{
+	constructor(e){
+		this.wl = wick_lite;
+		this.ele = e;
+		this.containers = [];
+		this.scopes = [];
+	}
+
+	emit(name, obj){
+		this.update({[name]:obj});
+	}
+
+	update(data){
+		let flag = 0;
+
+		for(let i = 0, l = this.ug.length;i<l; i++){
+			const name = this.ug[i];
+			if(data[name] !== undefined){
+				this.uc = data[name];
+				flag |= 1 << (i+1);
+			}
+		}
+
+		for(let i = 0;  i < this.uf.length; i++){
+			const uf = this.uf[i].f;
+			if((uf & flag) == uf)
+				this.uf[i].m();
+		}
+
+		this.global_flag |= flag;
+	}
+}
+
 const wick_lite = {
 	ge,
 	ctr,
 	ctr_upd,
 	createComponent,
-	addComponent(obj) {
-		if (obj.html && obj.js) {
-			const template = document.createElement("template");
-			template.innerHTML = obj.html;
-			component_map.set(obj.hash, { fn: new Function("ele", "wl", obj.js), template });
-		}
+	scope:liteScope,
+	component_map : new Map(),
+	component_templates : new Map(),
+	addComponentTemplate(name, obj){
+		this.component_templates.set(name, obj);
+	},
+	addComponent(name, template, component_class) {
+		this.component_map.set(name, {component_class, template });
 	}
 };
 

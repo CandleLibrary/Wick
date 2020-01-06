@@ -37,7 +37,7 @@ export default function getElement(ele, mapped_elements) {
         offset = getRootOffset(ele);
     }
 
-    mapped_elements.set(ele, { name: `e_${mapped_elements.size}`, offset });
+    mapped_elements.set(ele, { name: `e${mapped_elements.size}`, offset });
 
     return getElement(ele, mapped_elements);
 }

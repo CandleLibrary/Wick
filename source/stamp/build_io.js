@@ -2,70 +2,90 @@ import { EventIO, InputIO, ContainerLinkIO } from "../compiler/component/io/io.j
 import ScriptIO from "../compiler/component/io/script_io.js";
 import { Tap } from "../compiler/component/tap/tap.js";
 
+import { assignment_expression, types, identifier, member_expression, call_expression, string, parenthasized, this_literal, expression_list, parse as JSParse } from "@candlefw/js";
+
 import insertData from "./insert_data.js";
 import getContainer from "./get_container.js";
-import {setContainerSortFN} from "./get_container.js";
-import getElement from "./get_element.js"
+import { setContainerSortFN } from "./get_container.js";
+import getElement from "./get_element.js";
 
-// Activation conditions. {tap, or_prop}
-export default function buildIO(io, ctx, obj = { cds: new Set, str: "", type: 0 }) {
+import tools from "../compiler/js/tools.js";
+
+/* Returns the first expression statment node in the resultant ast of the parse tree of string argument. */
+function buildExpression(string) {
+    const js_ast = JSParse(string);
+    return js_ast.vals[0];
+}
+
+/* Should return a deep of the ast node */
+function cloneAST(ast) {
+    console.log(JSParse(ast.render()).vals[0].vals[0].connect, ast)
+    return JSParse(ast.render()).vals[0].vals[0].connect;
+}
+
+function createIONode(io, ctx, obj = { args: new Set, expr: [], type: 0 }) {
+    const expr = obj.expr;
 
     switch (io.type) {
         case "ContainerIO":
+
             const ctr = getContainer(io.container, ctx.containers, ctx.mapped_elements);
 
-            `wick_lite.ctr_upd("filter", value)`
             if (!obj.type)
-                obj.type = 16;
+                obj.type = 12;
 
             let action = "",
                 name_length = 0;
 
             switch (io.filter_type) {
                 case "sort":
-                    action = `(%%%%)=>${io.script.ast.expr.render()}`;
-                    obj.str = `wl.ctr_fltr(${ctr}, "so")`;
+                    action = io.script.ast;
+                    expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "so")`));
                     name_length = 2;
                     break;
                 case "filter":
-                    action = `(%%%%)=>${io.script.ast.expr.render()}`;
-                    obj.str = `wl.ctr_fltr(${ctr}, "fi")`;
+                    action = io.script.ast;
+                    expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "fi")`));
                     name_length = 1;
                     break;
                 case "scrub":
-                    obj.str = `wl.ctr_fltr(${ctr}, "sc", ${io.script.ast.render()})`;
+                    expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "sc", ${io.script.ast.render()})`));
                     break;
                 case "offset":
-                    obj.str = `wl.ctr_fltr(${ctr}, "of", ${io.script.ast.render()})`;
+                    expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "of", ${io.script.ast.render()})`));
                     break;
                 case "limit":
-                    obj.str = `wl.ctr_fltr(${ctr}, "li", ${io.script.ast.render()})`;
+                    expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "li", ${io.script.ast.render()})`));
                     break;
                 case "shift_amount":
-                    obj.str = `wl.ctr_fltr(${ctr}, "sa", ${io.script.ast.render()})`;
+                    expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "sa", ${io.script.ast.render()})`));
                     break;
             }
 
             const arg_names = [];
-
             let i = 0;
 
             for (const arg_name in io.arg_ios)
                 if (i++ < name_length)
                     arg_names.push(arg_name);
                 else
-                    obj.cds.add(arg_name);
-            
-            if (name_length > 0)
-                action = insertData(action, arg_names.join(","));
+                    obj.args.add(arg_name);
+
+            if (name_length > 0) {
+                tools.getClosureVariableNames(action, ...arg_names).forEach(e => {
+                    e.replace(new member_expression(new this_literal, e));
+                });
+
+                action = JSParse(`((${arg_names})=>${action.expr}).bind(this)`).vals[0].vals[0];
+            }
 
             if (io.parent)
-                obj.cds.add(io.parent.prop);
+                obj.args.add(io.parent.prop);
 
-            if(io.filter_type == "filter")
-                setContainerSortFN(io.container, ctx.containers,"filter", action);
-            if(io.filter_type == "sort")
-                setContainerSortFN(io.container, ctx.containers,"sort", action);
+            if (io.filter_type == "filter")
+                setContainerSortFN(io.container, ctx.containers, "filter", action);
+            if (io.filter_type == "sort")
+                setContainerSortFN(io.container, ctx.containers, "sort", action);
 
             break;
         case "ScriptIO":
@@ -73,76 +93,115 @@ export default function buildIO(io, ctx, obj = { cds: new Set, str: "", type: 0 
             if (!obj.type)
                 obj.type = 12;
 
-            if (io.script.ast.type == 47)
-                obj.str = insertData(obj.str, io.script.ast.expr.render());
-            else
-                obj.str = insertData(obj.str, io.script.ast.render());
+            const ast = (io.script.ast.type == 47) ? cloneAST(io.script.ast.expr) : cloneAST(io.script.ast);
 
-            for (const arg_name in io.arg_ios) {
-                obj.cds.add(arg_name);
-                //const arg = io.io.arg_ios[arg_name];
-                //str = buildIO(createIONode(arg), str)
+            tools.getClosureVariableNames(ast).forEach(e => {
+                e.replace(new member_expression(new this_literal, e));
+            });
+
+            if (expr.length > 0) {
+                const last = expr.length - 1,
+                    assign = new assignment_expression([null, "=", null]);
+                assign.vals[0] = expr[last].vals[0]; // Extract expression from expression statement
+                expr[last].vals[0] = assign;
+
+
+                //replace the last expression with an assignment expression
+                if (io.script.ast.type == 47) {
+                    assign.vals[1] = ast;
+                } else {
+                    assign.vals[1] = ast;
+                }
+
+                for (const arg_name in io.arg_ios) {
+                    obj.args.add(arg_name);
+                    //const arg = io.io.arg_ios[arg_name];
+                    //str = createIONode(createIONode(arg), str)
+                }
+            } else {
+                expr.push(ast);
             }
 
             if (io.parent)
-                obj.cds.add(io.parent.prop);
+                obj.args.add(io.parent.prop);
             break;
         case "EventIO":
-            obj.cds.add(io.up_tap.prop);
+            obj.args.add(io.up_tap.prop);
             obj.type = 2;
-            obj.str += `emit("${io.up_tap.prop}", ${io.parent.prop}); `;
+            expr.push(buildExpression(`this.emit("${io.up_tap.prop}", this.${io.parent.prop});`));
 
             if (!(io.parent instanceof Tap))
-                buildIO(io.parent, ctx, obj);
+                createIONode(io.parent, ctx, obj);
 
             obj.event = io.event_name;
             obj.ele = io.ele;
-            obj.str = `${obj.str}`;
+            //expr.push(`${obj.str}`);
             break;
         case "InputIO":
-            //obj.cds.add(io.up_tap.prop);
+            //obj.args.add(io.up_tap.prop);
             obj.type = 1;
-            obj.str += `emit("${io.up_tap.prop}", e.target.value); `;
+            expr.push(buildExpression(`this.emit("${io.up_tap.prop}", e.target.value);`));
 
             if (!(io.parent instanceof Tap))
-                buildIO(io.parent, ctx, obj);
+                createIONode(io.parent, ctx, obj);
 
-            obj.event = io.event_name;
+            obj.event = "input";
             obj.ele = io.ele;
-            obj.str = `${obj.str}`;
+            //expr.push(`${obj.str}`);
             break;
         case "ContainerLinkIO":
             if (!obj.type) obj.type = 12;
-            obj.str += `wl.ctr_upd(${getContainer(io.ele, ctx.containers, ctx.mapped_elements)},%%%%)`;
+
+            const ctr_expr = buildExpression(`this.w.ctr_upd(this.${getContainer(io.ele, ctx.containers, ctx.mapped_elements)})`);
+
+            expr.push(ctr_expr);
 
             if (!(io.parent instanceof Tap)) {
-                return buildIO(io.parent, ctx, obj);
+                return createIONode(io.parent, ctx, obj);
             } else {
-                obj.str = insertData(obj.str, io.parent.prop);
+                const last = expr.length - 1;
+                expr[last].expression.args.vals.push(buildExpression("this." + io.parent.prop).expression);
             }
 
-            obj.cds.add(io.parent.prop);
+            obj.args.add(io.parent.prop);
             break;
         default:
             if (io.ele instanceof Element) {
                 if (!obj.type) obj.type = 12;
-                obj.str += `${getElement(io.ele, ctx.mapped_elements)}.${io.attrib} =`;
+                expr.push(buildExpression(`this.${getElement(io.ele, ctx.mapped_elements)}.${io.attrib}`));
             } else if (io.ele instanceof Text) {
                 if (!obj.type) obj.type = 12;
-                obj.str += `${getElement(io.ele, ctx.mapped_elements)}.innerHTML =`;
+                expr.push(buildExpression(`this.${getElement(io.ele, ctx.mapped_elements)}.innerHTML`));
             } else {
                 if (!obj.type) obj.type = 12;
-                obj.cds.add(io.parent.prop);
+                obj.args.add(io.parent.prop);
             }
 
             if (!(io.parent instanceof Tap)) {
-                return buildIO(io.parent, ctx, obj);
+                return createIONode(io.parent, ctx, obj);
             } else {
-                obj.str += io.parent.prop;
+                const last = expr.length - 1,
+                    assign = new assignment_expression([null, "=", null]);
+                assign.vals[0] = expr[last].vals[0]; // Extract expression from expression statement
+                expr[last].vals[0] = assign;
+                assign.vals[1] = buildExpression("this." + io.parent.prop).expression;
             }
 
-            obj.cds.add(io.parent.prop);
+            obj.args.add(io.parent.prop);
             break;
     }
     return obj;
+}
+
+/* Converts IO object hiearchies into self contained nodes with js ast structures defining the io logic. */
+export default function(io, ctx) {
+
+    const node = createIONode(io, ctx);
+
+    node.expr = new expression_list([node.expr]);
+
+    console.log(node.expr.render());
+
+
+    return node;
 }

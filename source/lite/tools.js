@@ -10,13 +10,11 @@ const tools =  (function(){
 
 		const html = `
 	${[...map.entries()].map(v=>(v[1].template.id = v[0] + "", v[1].template.outerHTML)).join("")}
-		`
+		`;
 		const js = `
 		${[...map.entries()].map(v=>`wick_lite.load(document.getElementById("${v[0]}"), ${v[1].fn.toString().replace("anonymous(", "(")})`).join(";")}
-		`
-		console.log(html, js, createComponent.map)
-		debugger
-	}
+		`;
+	};
 
 	lite.createSelfContainedComponent;
 
@@ -26,7 +24,7 @@ const tools =  (function(){
 		// Root component is the main component that hosts all other components.
 		
 		//clear componnet map and and create a new stamped component repository. 
-		let map = (createComponent.map = new Map);
+		const map = (lite.component_templates = new Map);
 
 		const root = await root_component.stamp();
 
@@ -38,18 +36,18 @@ const tools =  (function(){
 		file.push("<script src=\"../../build/wick.lite.js\"></script>");
 		file.push("</head>");
 		file.push("<body>");
-		file.push([...map.entries()].map(v=>(v[1].template.id = v[0] + "", v[1].template.outerHTML)).join(""));
+		file.push([...map.entries()].map(v=>(`<template id="${v[0]}">${v[1].html}</template>`)).join(""));
 		file.push("<script>");
-		file.push([...map.entries()].map(v=>`wick.load(document.getElementById("${v[0]}"), ${v[1].fn.toString().replace("anonymous(", "(")})`).join(";"))
-		file.push(`document.body.appendChild(wick.createComponent("${root.hash}").ele)`)
+		file.push([...map.entries()].map(v=>`wick.lc("${v[0]}", wick.gt("${v[0]}"),${v[1].js})`).join(";\n"));
+		file.push(`document.body.appendChild(wick.cc("${root.hash}").ele)`);
 		file.push("</script>");
 		file.push("</body>");
-		file.push("</html>")
+		file.push("</html>");
 
 		return file.join("\n");
-	}
+	};
 
 	return lite;
-}())
+}());
 
-export default tools
+export default tools;

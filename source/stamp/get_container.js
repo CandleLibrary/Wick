@@ -7,17 +7,17 @@ export default function getContainer(ctr, containers, mapped_elements) {
 
     //let offset = getRootOffset(ctr);
 
-    containers.set(ctr, { name: `c_${containers.size}`, ele: getElement(ctr.ele, mapped_elements), comp: ctr.component });
+    containers.set(ctr, { name: `c${containers.size}`, ele: getElement(ctr.ele, mapped_elements), comp: ctr.component });
 
     return getContainer(ctr, containers, mapped_elements);
 }
 
-export function setContainerSortFN(ctr, containers, type, fn_str){
+export function setContainerSortFN(ctr, containers, type, expr){
 	if(containers.has(ctr)){
 		const c = containers.get(ctr);
 		if(!c.filters)
 			c.filters = [];
-		c.filters.push({type, fn_str});
+		c.filters.push({type, expr});
 	}else
 		return setContainerSortFN(getContainer(ctr),containers);
 }
