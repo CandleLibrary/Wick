@@ -14,7 +14,7 @@ import { BTreeModelContainer } from "./model/container/btree.js";
 import { ArrayModelContainer } from "./model/container/array.js";
 import { Presets } from "./presets.js";
 import whind from "@candlefw/whind";
-import lite_tools from "./lite/tools.js"
+import lite_tools from "./lite/tools.js";
 const wick = compiler;
 
 const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);

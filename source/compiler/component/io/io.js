@@ -258,13 +258,24 @@ export class EventIO extends IOBase {
 
         const up_tap = this.up_tap;
 
-        this.event = (e) => { 
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
+        const PreventPropagation = (attrib_name.slice(-1) == "_");
+        
+        if(PreventPropagation)
+            attrib_name = attrib_name.slice(0,-1);
+
+        this.event = (e) => {
+
             up_tap.up(e.target.value, { event: e }); 
-            return false;
+            
+            if(PreventPropagation){
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
+            }
         };
+
+        
 
         this.event_name = attrib_name.replace("on", "");
 
