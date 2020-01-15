@@ -56,6 +56,15 @@ export default class Scope extends Observer {
             }
         }
 
+        for(let i = 0; i < this.containers.length; i++){
+            const ctr = this.containers.length;
+
+            if(ctr.ele == ele){
+                this.containers.splice(i--, 1);
+                ctr.destroy();
+            }
+        }
+
         const children = ele.childNodes;
 
         if (children)
@@ -88,6 +97,11 @@ export default class Scope extends Observer {
         this.containers.length = 0;
         this.temp_data_cache = null;
         this.css.length = 0;
+    }
+
+    updateCachedData(){
+        for(const tap of this.taps.values())
+            tap.updateCached();
     }
 
     destroy() {

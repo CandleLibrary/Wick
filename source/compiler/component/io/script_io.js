@@ -85,6 +85,7 @@ export default class ScriptIO extends IOBase {
         Calls destroy on any child objects.
      */
     destroy() {
+        
         this.function = null;
         this.scope = null;
         this._bound_emit_function_ = null;
@@ -92,8 +93,9 @@ export default class ScriptIO extends IOBase {
         this.arg_props = null;
         this.props = null;
 
-        for (const a in this.arg_ios)
+        for (const a in this.arg_ios){
             this.arg_ios[a].destroy();
+        }
 
         this.arg_ios = null;
 
@@ -212,5 +214,9 @@ export default class ScriptIO extends IOBase {
             _SCHD_: 0, // Meta value for spark;
             scheduledUpdate: (s, d) => this.emit(name, { step: s, diff: d })
         });
+    }
+
+    removeIO(io) {
+        this.destroy();
     }
 }

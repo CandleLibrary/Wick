@@ -76,6 +76,10 @@ export default class ctr extends ElementNode {
         
         scope = scope || new Scope(null, presets, element, this);
 
+        //Only create a container if it is able to generate components. 
+        if(!this.component_constructor)
+            return scope;
+
         const
             ele = createElement(this.element),
             container = new Container(scope, presets, ele);

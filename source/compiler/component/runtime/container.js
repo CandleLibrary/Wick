@@ -64,6 +64,13 @@ export default class ScopeContainer extends Observer {
         parent.addTemplate(this);
     }
 
+    destroyed(){
+        this.cull();
+
+        for(const fltr of this.filters)
+            fltr.destroy();
+    }
+
     get data() {}
 
     set data(container) {

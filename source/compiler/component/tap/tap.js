@@ -60,6 +60,11 @@ export class Tap {
             this.scope.up(this, data[this.prop]);
     }
 
+    updateCached() {
+        if(this.value !== undefined)
+            this.down(this.value);
+    }
+
     down(value, meta) {
         for (let i = 0, l = this.ios.length; i < l; i++) 
             this.ios[i].down(value, meta);
@@ -135,10 +140,6 @@ export class Tap {
         this.ios.push(io);
 
         io.parent = this;
-
-        if(this.value !== undefined)
-            io.down(this.value);
-        
     }
 
     removeIO(io) {

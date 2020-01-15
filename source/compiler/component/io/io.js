@@ -227,10 +227,6 @@ export class TextNodeIO extends DataNodeIO {
             }
         } else {
 
-            if(this.ELEMENT_IS_TEXT !== undefined)
-                this.ELEMENT_IS_TEXT = ele instanceof Text;
-            
-
             if (!this.ELEMENT_IS_TEXT) {
                 this.ELEMENT_IS_TEXT = true;
                 this.ele = new Text();

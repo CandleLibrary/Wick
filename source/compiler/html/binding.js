@@ -74,22 +74,22 @@ export default class Binding {
         if (this.ast) {
             if (this.METHOD == EXPRESSION) {
                 return new ExpressionIO(element, scope, node, scope, this, this.lex, pinned);
-            } else if (this.METHOD == CONTAINER)
+            } else if (this.METHOD == CONTAINER) {
                 return new ContainerIO(element, scope, node, scope, this, this.lex, pinned);
-            else
+            } else
                 return scope.getTap(this.val);
         }
         return null;
     }
 
     //Stamps the binding to an output string. 
-    stamp(scope, attr, id){
+    stamp(scope, attr, id) {
         if (this.ast) {
             if (this.METHOD == EXPRESSION) {
                 return ExpressionIO.stamp(id, scope, this);
             } else if (this.METHOD == CONTAINER)
                 return ContainerIO.stamp(id, scope, this);
-            else{
+            else {
                 scope.addActivation(this.val);
                 return this.val;
             }
