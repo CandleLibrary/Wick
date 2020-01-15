@@ -46,6 +46,7 @@ export default {
                     &&(
                     (node.type == types.arrow_function_declaration) 
                     || (node.type == types.for_of_statement) 
+                    || (node.type == types.catch_statement) 
                     )
                     ) {
 

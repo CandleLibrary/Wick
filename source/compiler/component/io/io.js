@@ -179,8 +179,6 @@ export class DataNodeIO extends IOBase {
         if(!tap)  return {};
 
         super(tap, element);
-        
-        this.ele = element;
     }
 
     destroy() {
@@ -219,8 +217,8 @@ export class TextNodeIO extends DataNodeIO {
     down(value) {
 
         const ele = this.ele;
+
         if (value instanceof HTMLElement) {
-            
             if (value !== this.ele) {
                 this.ELEMENT_IS_TEXT = false;
                 this.ele = value;
@@ -228,12 +226,18 @@ export class TextNodeIO extends DataNodeIO {
                 this.discardElement(ele);
             }
         } else {
+
+            if(this.ELEMENT_IS_TEXT !== undefined)
+                this.ELEMENT_IS_TEXT = ele instanceof Text;
+            
+
             if (!this.ELEMENT_IS_TEXT) {
                 this.ELEMENT_IS_TEXT = true;
                 this.ele = new Text();
                 ele.parentElement.replaceChild(this.ele, ele);
                 this.discardElement(ele);
             }
+
             this.ele.data = value;
         }
     }

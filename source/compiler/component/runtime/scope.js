@@ -46,17 +46,7 @@ export default class Scope extends Observer {
         this.addToParent(parent);
     }
 
-    discardElement(ele, ios) {
-        if (!ios) {
-            ios = [];
-
-            for (const tap of this.taps.values())
-                for (let io of tap.ios) {
-                    while (io.ele instanceof IOBase)
-                        io = io.ele;
-                    ios.push(io);
-                }
-        }
+    discardElement(ele, ios = this.ios) {
 
         for (let i = 0; i < ios.length; i++) {
             const io = ios[i];
@@ -66,7 +56,7 @@ export default class Scope extends Observer {
             }
         }
 
-        const children = ele.children;
+        const children = ele.childNodes;
 
         if (children)
             for (let i = 0; i < children.length; i++)
