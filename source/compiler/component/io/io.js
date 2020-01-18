@@ -14,7 +14,8 @@ export class IOBase {
     }
 
     discardElement(ele){
-        this.parent.discardElement(ele);
+        if(this.parent)
+            this.parent.discardElement(ele);
     }
 
     destroy() {

@@ -1,5 +1,4 @@
 import createComponent from "./component.js";
-import { ModelContainerBase } from "../../model/container/base.js";
 
 import glow from "@candlefw/glow";
 import spark from "@candlefw/spark";
@@ -15,8 +14,14 @@ function getColumnRow(index, offset, set_size) {
 export function ctr_upd(ctr, data_objs) {
 	if (!data_objs) return;
 
-	if (data_objs instanceof ModelContainerBase) {
-		data_objs.pin();
+	if (data_objs.observering) {
+		if (ctr.observering.removeObserver)
+			ctr.observering.removeObserver(ctr);
+		ctr.observering = null;
+	}
+
+	if (data_objs.addObserver) {
+		ctr.observering = data_objs;
 		data_objs.addObserver(ctr);
 		return;
 	}
@@ -27,9 +32,9 @@ export function ctr_upd(ctr, data_objs) {
 
 /* Update container filters. */
 export function ctr_fltr(ctr, type, val) {
-	switch(type){
+	switch (type) {
 		case "fl":
-		break;
+			break;
 	}
 	filterUpdate(ctr);
 	limitExpressionUpdate(ctr);
@@ -37,7 +42,7 @@ export function ctr_fltr(ctr, type, val) {
 
 /* Create a wick container */
 export function ctr(ele, component, ...filters) {
-	
+
 	const ctr = {
 		component: { mount: (ele, data) => createComponent(component, data) },
 		ele,
@@ -172,12 +177,12 @@ export function filterUpdate(ctr) {
 	for (let i = 0, l = ctr.filters.length; i < l; i++) {
 		const filter = ctr.filters[i];
 		//if(filter.active){
-			switch(filter.type){
-				case "sort":
-					output = output.sort(filter.action);
-				case "filter":
-					output = output.filter(filter.action);
-			}
+		switch (filter.type) {
+			case "sort":
+				output = output.sort(filter.action);
+			case "filter":
+				output = output.filter(filter.action);
+		}
 		//}
 	}
 
@@ -585,7 +590,3 @@ function added(ctr, items, transition) {
 	if (OWN_TRANSITION)
 		filterExpressionUpdate(ctr, transition);
 }
-
-
-export default wick_lite;
-

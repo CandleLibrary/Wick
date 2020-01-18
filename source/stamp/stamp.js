@@ -16,14 +16,13 @@ function replaceDataPoints(ast, dps) {
             node.parent.type == types.member_expression &&
             node.parent.id.type == types.this_literal
         ) {
-            console.log(node.name)
             if (dps.has(node.name)) {
                 const dp = dps.get(node.name);
                 node.replace(JSParse(`uc[${dp.id}]`).vals[0].vals[0]);
                 // /debugger 
             }
         }
-    };
+    }
 
     return ast;
 }
@@ -136,7 +135,7 @@ export default function stamp(ast) {
             case 12: // Scripts & Expressions
             case 16: //Container
                 fun = fun_id++;
-                bound.push({ f: action.flag, fn: fun })
+                bound.push({ f: action.flag, fn: fun });
                 output_ast.body.push(JSParse(`class{f${fun}(){${replaceDataPoints(action.expr, data_points)}}}`).vals[0].body[0]);
                 break;
         }
@@ -154,11 +153,9 @@ export default function stamp(ast) {
     //build the rest of the functions
     //*/
     /* Add condition values to constructor function */
-    const component_html = scope.ele.outerHTML;
+    const component_html = scope.ele.outerHTML || "";
 
     const hash = ((output_ast.render().length ^ component_html.length) * 0x456) + "";
-
-    console.log(output_ast.render());
 
     output_ast.vals[0] = null;
 

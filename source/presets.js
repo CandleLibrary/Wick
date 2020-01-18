@@ -1,8 +1,5 @@
 //import { CustomComponent } from "../page/component"
 import { DOC } from "./short_names";
-import { ModelBase } from "./model/base";
-import { Model } from "./model/model";
-import { Store } from "./model/store";
 import URL from "@candlefw/url";
 
 let CachedPresets = null;
@@ -18,11 +15,6 @@ class Presets {
     constructor(preset_options) {
         if (!preset_options)
             preset_options = {};
-
-        //if(Presets.global.v)
-        //    return Presets.global.v;
-
-        this.store = (preset_options.store instanceof Store) ? preset_options.store : null;
 
         /**
          * {Object} Store for optional parameters used in the app
@@ -78,7 +70,7 @@ class Presets {
          * @instance
          * @readonly
          */
-        this.schemas = { any: Model };
+        this.schemes = {};
 
         /**
          * { Object } Store of user defined Model instances that serve as global models, which are available to the whole application. Multiple Scopes will be able to _bind_ to the Models. `<w-scope>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets .model whose property name matches the "model" attribute.
@@ -134,14 +126,13 @@ class Presets {
 
         if (c)
             for (let cn in c)
-                if (c[cn] instanceof ModelBase)
-                    this.models[cn] = c[cn];
+                this.models[cn] = c[cn];
 
         c = preset_options.schemas;
+
         if (c)
             for (let cn in c)
-                if (ModelBase.isPrototypeOf(c[cn]))
-                    this.schemas[cn] = c[cn];
+                this.schemas[cn] = c[cn];
         /**
          * Configured by `preset_options.USE_SHADOW`. If set to true, and if the browser supports it, compiled and rendered template elements will be bound to a `<component>` shadow DOM, instead being appended as a child node.
          * @instance

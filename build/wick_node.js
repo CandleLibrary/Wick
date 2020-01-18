@@ -1,32 +1,131 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-function _interopNamespace(e) {
-    if (e && e.__esModule) { return e; } else {
-        var n = {};
-        if (e) {
-            Object.keys(e).forEach(function (k) {
-                var d = Object.getOwnPropertyDescriptor(e, k);
-                Object.defineProperty(n, k, d.get ? d : {
-                    enumerable: true,
-                    get: function () {
-                        return e[k];
-                    }
-                });
-            });
-        }
-        n['default'] = e;
-        return n;
-    }
-}
-
-var spark = _interopDefault(require('@candlefw/spark'));
-
+const A = 65;
+const a = 97;
+const ACKNOWLEDGE = 6;
+const AMPERSAND = 38;
+const ASTERISK = 42;
+const AT = 64;
+const B = 66;
+const b = 98;
+const BACKSLASH = 92;
+const BACKSPACE = 8;
+const BELL = 7;
+const C = 67;
+const c = 99;
+const CANCEL = 24;
+const CARET = 94;
+const CARRIAGE_RETURN = 13;
+const CLOSE_CURLY = 125;
+const CLOSE_PARENTH = 41;
+const CLOSE_SQUARE = 93;
+const COLON = 58;
+const COMMA = 44;
+const d = 100;
+const D = 68;
+const DATA_LINK_ESCAPE = 16;
+const DELETE = 127;
+const DEVICE_CTRL_1 = 17;
+const DEVICE_CTRL_2 = 18;
+const DEVICE_CTRL_3 = 19;
+const DEVICE_CTRL_4 = 20;
+const DOLLAR = 36;
+const DOUBLE_QUOTE = 34;
+const e$1 = 101;
+const E = 69;
+const EIGHT = 56;
+const END_OF_MEDIUM = 25;
+const END_OF_TRANSMISSION = 4;
+const END_OF_TRANSMISSION_BLOCK = 23;
+const END_OF_TXT = 3;
+const ENQUIRY = 5;
+const EQUAL = 61;
+const ESCAPE = 27;
+const EXCLAMATION = 33;
+const f = 102;
+const F = 70;
+const FILE_SEPERATOR = 28;
+const FIVE = 53;
+const FORM_FEED = 12;
+const FORWARD_SLASH = 47;
+const FOUR = 52;
+const g = 103;
+const G = 71;
+const GRAVE = 96;
+const GREATER_THAN = 62;
+const GROUP_SEPERATOR = 29;
+const h = 104;
+const H = 72;
+const HASH = 35;
 const HORIZONTAL_TAB = 9;
+const HYPHEN = 45;
+const i = 105;
+const I = 73;
+const j = 106;
+const J = 74;
+const k = 107;
+const K = 75;
+const l = 108;
+const L = 76;
+const LESS_THAN = 60;
+const LINE_FEED = 10;
+const m = 109;
+const M = 77;
+const n = 110;
+const N = 78;
+const NEGATIVE_ACKNOWLEDGE = 21;
+const NINE = 57;
+const NULL = 0;
+const o = 111;
+const O = 79;
+const ONE = 49;
+const OPEN_CURLY = 123;
+const OPEN_PARENTH = 40;
+const OPEN_SQUARE = 91;
+const p = 112;
+const P = 80;
+const PERCENT = 37;
+const PERIOD = 46;
+const PLUS = 43;
+const q = 113;
+const Q = 81;
+const QMARK = 63;
+const QUOTE = 39;
+const r$1 = 114;
+const R = 82;
+const RECORD_SEPERATOR = 30;
+const s = 115;
+const S = 83;
+const SEMICOLON = 59;
+const SEVEN = 55;
+const SHIFT_IN = 15;
+const SHIFT_OUT = 14;
+const SIX = 54;
 const SPACE = 32;
+const START_OF_HEADER = 1;
+const START_OF_TEXT = 2;
+const SUBSTITUTE = 26;
+const SYNCH_IDLE = 22;
+const t = 116;
+const T = 84;
+const THREE = 51;
+const TILDE = 126;
+const TWO = 50;
+const u = 117;
+const U = 85;
+const UNDER_SCORE = 95;
+const UNIT_SEPERATOR = 31;
+const v = 118;
+const V = 86;
+const VERTICAL_BAR = 124;
+const VERTICAL_TAB = 11;
+const w = 119;
+const W = 87;
+const x = 120;
+const X = 88;
+const y = 121;
+const Y = 89;
+const z = 122;
+const Z = 90;
+const ZERO = 48;
 
 /**
  * Lexer Jump table reference 
@@ -229,7 +328,7 @@ const number_and_identifier_table = [
 0,		/* PLUS */
 0,		/* COMMA */
 0,		/* HYPHEN */
-4,		/* PERIOD */
+0,		/* PERIOD */
 0,		/* FORWARD_SLASH */
 8,		/* ZERO */
 8,		/* ONE */
@@ -623,6 +722,7 @@ class Lexer {
             let off2 = off;
             let map = this.symbol_map,
                 m;
+            let i = 0;
 
             while (code == 32 && IWS)
                 (code = str.charCodeAt(++off2), off++);
@@ -641,9 +741,7 @@ class Lexer {
             }
         }
 
-        if (NORMAL_PARSE) {
-
-            for (;;) {
+        while (NORMAL_PARSE) {
 
                 base = off;
 
@@ -732,10 +830,14 @@ class Lexer {
                         type = symbol;
                         //off += length;
                         continue;
+                    } else {
+                        //Trim white space from end of string
+                        //base = l - off;
+                        //marker.sl -= off;
+                        //length = 0;
                     }
                 }
                 break;
-            }
         }
 
         marker.type = type;
@@ -1218,6 +1320,8 @@ class URL {
         let URL_new = (URL_or_url_new instanceof URL) ? URL_or_url_new : new URL(URL_or_url_new);
 
         if (!(URL_old + "") || !(URL_new + "")) return null;
+
+        let new_path = "";
         if (URL_new.path[0] != "/") {
 
             let a = URL_old.path.split("/");
@@ -1406,6 +1510,7 @@ class URL {
                     lfv = lex.n.pos;
                     continue;
             }
+            lex.n;
         }
 
         if (lfv > 0) class_map.set(key_val, lex.s(lfv));
@@ -1491,7 +1596,7 @@ class URL {
             }
 
             //set query
-            let null_class, str = "";
+            let class_, null_class, str = "";
 
             if ((null_class = map.get(""))) {
                 if (null_class.size > 0) {
@@ -1755,8 +1860,8 @@ URL.polyfill = async function() {
     if (typeof(global) !== "undefined") {
 
         const 
-            fs = (await new Promise(function (resolve) { resolve(_interopNamespace(require('fs'))); })).promises,
-            path = (await new Promise(function (resolve) { resolve(_interopNamespace(require('path'))); }));
+            fs = (await import('fs')).promises,
+            path = (await import('path'));
 
 
         global.Location = (class extends URL {});
@@ -1802,6 +1907,24 @@ Object.seal(URL);
 const DOC = (typeof(document) !== "undefined") ? document : ()=>{};
 
 /**
+ * Global Window Instance short name
+ * @property WIN
+ * @package
+ * @memberof module:wick~internals
+ * @type 	{Window}
+ */
+const WIN = (typeof(window) !== "undefined") ? window : ()=>{};
+
+/**
+ * Global HTMLElement class short name
+ * @property EL
+ * @package
+ * @memberof module:wick~internals
+ * @type 	{HTMLElement}
+ */
+const EL = (typeof(HTMLElement) !== "undefined") ? HTMLElement : ()=>{};
+
+/**
  * Global Object class short name
  * @property OB
  * @package
@@ -1809,6 +1932,51 @@ const DOC = (typeof(document) !== "undefined") ? document : ()=>{};
  * @type Object
  */
 const OB = Object;
+
+/**
+ * Global String class short name
+ * @property STR
+ * @package
+ * @memberof module:wick~internals
+ * @type String
+ */
+const STR = String;
+
+/**
+ * Global Array class short name
+ * @property AR
+ * @package
+ * @memberof module:wick~internals
+ * @type 	{Array}
+ */
+const AR = Array;
+
+/**
+ * Global Number class short name
+ * @property NUM
+ * @package
+ * @memberof module:wick~internals
+ * @type 	{Number}
+ */
+const NUM = Number;
+
+/**
+ * Global Date class short name
+ * @property DT
+ * @package
+ * @memberof module:wick~internals
+ * @type 	{Date}
+ */
+const DT = Date;
+
+/**
+ * Global Boolean class short name
+ * @property BO
+ * @package
+ * @memberof module:wick~internals
+ * @type 	{Boolean}
+ */
+const BO = Boolean;
 
 /***************** Functions ********************/
 
@@ -1832,2201 +2000,38 @@ const createElement = (e) => document.createElement(e);
  */
 const appendChild = (el, ch_el) => el && el.appendChild(ch_el);
 
+/**
+ *  Element.prototype.cloneNode short name wrapper.
+ * @method cloneNode
+ * @package
+ * @memberof module:wick~internals
+ * @param 	{HTMLElement}  		el   - HTMLElement to clone.
+ * @return  {Boolean}  			bool - Switch for deep clone
+ */
+const cloneNode = (el, bool) => el.cloneNode(bool);
+
+/**
+ *  Element.prototype.getElementsByTagName short name wrapper.
+ * @method _getElementByTag_
+ * @package
+ * @memberof module:wick~internals
+ * @param 	{HTMLElement}  		el   - HTMLElement to find tags on.
+ * @return  {String}  			tag - tagnames of elements to find.
+ */
+const _getElementByTag_ = (el, tag) => el.getElementsByTagName(tag);
+
+/**
+ *  Shortname for `instanceof` expression
+ * @method _instanceOf_
+ * @package
+ * @param      {object}  inst    The instance
+ * @param      {object}  constr  The constructor
+ * @return     {boolean}  the result of `inst instanceof constr`
+ */
+const _instanceOf_ = (inst, constr) => inst instanceof constr;
+
 const _SealedProperty_ = (object, name, value) => OB.defineProperty(object, name, {value, configurable: false, enumerable: false, writable: true});
 const _FrozenProperty_ = (object, name, value) => OB.defineProperty(object, name, {value, configurable: false, enumerable: false, writable: false});
-
-/**
- * The base class which all Model classes extend.
- * @memberof module:wick~internal .model
- * @alias ModelBase
- */
-class ModelBase {
-    constructor(root = null, address = []) {
-        _SealedProperty_(this, "_cv_", []);
-        _SealedProperty_(this, "fv", null);
-        _SealedProperty_(this, "par", null);
-        _SealedProperty_(this, "MUTATION_ID", 0);
-        _SealedProperty_(this, "address", address);
-        _SealedProperty_(this, "root", root || this);
-        _SealedProperty_(this, "prop_name", "");
-    }
-
-
-    /**
-     *   Remove all references to any objects still held by this object.
-     *   @protected
-     *   @instance
-     */
-    destroy() {
-
-        //inform observers of the models demise
-        var observer = this.fv;
-
-        while (observer) {
-            let nx = observer.nx;
-            observer.unsetModel();
-            observer = nx;
-        }
-
-        this._cv_ = null;
-    }
-
-    setHook(prop_name, data) { return data; }
-
-    getHook(prop_name, data) { return data; }
-
-
-    /**
-     * Called by a class that extends ModelBase when on of its property values changes.
-     * @param      {string}  changed_value  The changed value
-     * @private
-     */
-    scheduleUpdate(changed_value) {
-        if (!this.fv)
-            return;
-
-
-        this._cv_.push(changed_value);
-
-        spark.queueUpdate(this);
-    }
-
-
-    getChanged(prop_name) {
-
-
-        for (let i = 0, l = this._cv_.length; i < l; i++)
-            if (this._cv_[i] == prop_name)
-                return this[prop_name];
-
-        return null;
-    }
-
-    addListener(listener) {
-        return this.addObserver(listener);
-    }
-
-
-    /**
-     * Adds a observer to the linked list of observers on the model. argument observer MUST be an instance of View. 
-     * @param {View} observer - The observer to _bind_ to the ModelBase
-     * @throws {Error} throws an error if the value of `observer` is not an instance of {@link View}.
-     */
-    addObserver(observer) {
-        if (observer.model)
-            if (observer.model !== this) {
-                observer.model.removeView(observer);
-            } else return;
-
-        if (this.fv) this.fv.pv = observer;
-        observer.nx = this.fv;
-        this.fv = observer;
-
-        observer.pv = null;
-        observer.model = this;
-        observer.update(this);
-    }
-
-    /**
-     * Removes observer from set of observers if the passed in observer is a member of model. 
-     * @param {View} observer - The observer to unbind from ModelBase
-     */
-    removeView(observer) {
-        
-
-        if (observer.model == this) {
-            if (observer == this.fv)
-                this.fv = observer.nx;
-
-            if (observer.nx)
-                observer.nx.pv = observer.pv;
-            if (observer.pv)
-                observer.pv.nx = observer.nx;
-
-            observer.nx = null;
-            observer.pv = null;
-        }
-    }
-
-
-    /**
-        Should return the value of the property if it is in the model and has been updated since the last cycle. Null otherwise.
-        This should be overridden by a more efficient version by inheriting objects
-    */
-    isUpdated(prop_name) {
-
-        let changed_properties = this._cv_;
-
-        for (var i = 0, l = changed_properties.length; i < l; i++)
-            if (changed_properties[i] == prop_name)
-                if (this[prop_name] !== undefined)
-                    return this[prop_name];
-
-        return null;
-    }
-
-
-
-    /**
-     * Called by the {@link spark} when if the ModelBase is scheduled for an update
-     * @param      {number}  step    The step
-     */
-    scheduledUpdate(step) { this.updateViews(); }
-
-
-
-    /**
-     * Calls View#update on every bound View, passing the current state of the ModelBase.
-     */
-    updateViews() {
-
-        let o = {};
-
-        for (let p = null, i = 0, l = this._cv_.length; i < l; i++)
-            (p = this._cv_[i], o[p] = this[p]);
-
-        this._cv_.length = 0;
-
-        var observer = this.fv;
-
-        while (observer) {
-
-            observer.update(this, o);
-            observer = observer.nx;
-        }
-
-        return;
-    }
-
-
-
-    /**
-     * Updates observers with a list of models that have been removed. 
-     * Primarily used in conjunction with container based observers, such as Templates.
-     * @private
-     */
-    updateViewsRemoved(data) {
-
-        var observer = this.fv;
-
-        while (observer) {
-
-            observer.removed(data);
-
-            observer = observer.nx;
-        }
-    }
-
-
-
-    /** MUTATION FUNCTIONS **************************************************************************************/
-
-
-
-    _deferUpdateToRoot_(data, MUTATION_ID = this.MUTATION_ID) {
-        
-        if(!this.root)
-            return this;
-
-        return this.root._setThroughRoot_(data, this.address, 0, this.address.length, MUTATION_ID);
-    }
-
-
-
-    _setThroughRoot_(data, address, index, len, m_id) {
-
-        if (index >= len) {
-
-            if (m_id !== this.MUTATION_ID) {
-                let clone = this.clone();
-                clone.set(data, true);
-                clone.MUTATION_ID = (this.par) ? this.par.MUTATION_ID : this.MUTATION_ID + 1;
-                return clone;
-            }
-
-            this.set(data, true);
-            return this;
-        }
-
-        let i = address[index++];
-
-        let model_prop = this.prop_array[i];
-
-        if (model_prop.MUTATION_ID !== this.MUTATION_ID) {
-
-            model_prop = model_prop.clone();
-
-            model_prop.MUTATION_ID = this.MUTATION_ID;
-        }
-
-        this.prop_array[i] = model_prop;
-
-        return model_prop._setThroughRoot_(data, address, index, len, model_prop.MUTATION_ID);
-    }
-
-    seal() {
-
-        let clone = this._deferUpdateToRoot_(null, this.MUTATION_ID + 1);
-
-        return clone;
-    }
-
-    clone() {
-
-        let clone = new this.constructor(this);
-
-        clone.prop_name = this.prop_name;
-        clone._cv_ = this._cv_;
-        clone.fv = this.fv;
-        clone.par = this.par;
-        clone.MUTATION_ID = this.MUTATION_ID;
-        clone.address = this.address;
-        clone.prop_name = this.prop_name;
-
-        clone.root = (this.root == this) ? clone : this.root;
-
-        return clone;
-    }
-
-    /**
-     * Updates observers with a list of models that have been added. 
-     * Primarily used in conjunction with container based observers, such as Templates.
-     * @private
-     */
-    updateViewsAdded(data) {
-
-        var observer = this.fv;
-
-        while (observer) {
-
-            observer.added(data);
-
-            observer = observer.nx;
-        }
-    }
-
-    toJSON() { return JSON.stringify(this, null, '\t'); }
-
-
-    /**
-     * This will update the branch state of the data tree with a new branch if the MUTATION_ID is higher or lower than the current branch's parent level.
-     * In this case, the new branch will stem from the root node, and all ancestor nodes from the originating child will be cloned.
-     *
-     * @param      {Object}         child_obj    The child object
-     * @param      {(Object|number)}  MUTATION_ID  The mutation id
-     * @return     {Object}         { description_of_the_return_value }
-     */
-    setMutation(child_obj, MUTATION_ID = child_obj.MUTATION_ID) {
-        let clone = child_obj,
-            result = this;
-
-        if (MUTATION_ID == this.MUTATION_ID) return child_obj;
-
-        if (this.par)
-            result = this.par.setMutation(this, MUTATION_ID);
-
-        if (MUTATION_ID > this.MUTATION_ID) {
-            result = this.clone();
-            result.MUTATION_ID = this.MUTATION_ID + 1;
-        }
-
-        clone = child_obj.clone();
-        clone.MUTATION_ID = result.MUTATION_ID;
-        result[clone.prop_name] = clone;
-
-        return clone;
-    }
-}
-
-/**
-    Schema type. Handles the parsing, validation, and filtering of Model data properties. 
-*/
-class SchemeConstructor {
-
-    constructor() {
-
-        this.start_value = undefined;
-    }
-
-    /**
-        Parses value returns an appropriate transformed value
-    */
-    parse(value) {
-
-        return value;
-    }
-
-    /**
-
-    */
-    verify(value, result) {
-
-        result.valid = true;
-    }
-
-    filter(id, filters) {
-        for (let i = 0, l = filters.length; i < l; i++)
-            if (id === filters[i]) return true;
-        return false;
-    }
-
-    string(value) {
-
-        return value + "";
-    }
-}
-
-class MCArray extends Array {
-
-    constructor() {
-        super();
-    }
-
-    push(...item) {
-        item.forEach(item => {
-            if (item instanceof Array)
-                item.forEach((i) => {
-                    super.push(i);
-                });
-            else
-                super.push(item);
-        });
-    }
-
-    //For compatibility
-    __setFilters__() {
-
-    }
-
-    getChanged() {
-
-    }
-
-    toJSON() { return this; }
-
-    toJson() { return JSON.stringify(this, null, '\t'); }
-}
-
-// A no op function
-let EmptyFunction = () => {};
-
-class ModelContainerBase extends ModelBase {
-
-    constructor(root = null, address = []) {
-
-        super(root, address);
-
-        _SealedProperty_(this, "scope", null);
-        _SealedProperty_(this, "first_link", null);
-
-        //For keeping the container from garbage collection.
-        _SealedProperty_(this, "pin", EmptyFunction);
-
-        //For Linking to original 
-        _SealedProperty_(this, "next", null);
-        _SealedProperty_(this, "prev", null);
-
-        //Filters are a series of strings or number selectors used to determine if a model should be inserted into or retrieved from the container.
-        _SealedProperty_(this, "_filters_", null);
-
-        this.validator = new SchemeConstructor();
-
-        return this;
-    }
-
-    setByIndex(index) { /* NO OP **/ }
-
-    getByIndex(index, value) { /* NO OP **/ }
-
-    destroy() {
-
-
-        this._filters_ = null;
-
-        if (this.scope) {
-            this.scope.__unlink__(this);
-        }
-
-        super.destroy();
-    }
-
-    /**
-        Get the number of Models held in this._mContainerBase
-
-        @returns {Number}
-    */
-    get length() { return 0; }
-
-    set length(e) { /* NO OP */ }
-
-    /** 
-        Returns a ModelContainerBase type to store the results of a get().
-    */
-    __defaultReturn__(USE_ARRAY) {
-        if (USE_ARRAY) return new MCArray;
-
-        let n = new this.constructor();
-
-        n.key = this.key;
-        n.validator = this.validator;
-        n.model = this.model;
-
-        this.__link__(n);
-
-        return n;
-    }
-
-    /**
-        Array emulating kludge
-
-        @returns The result of calling this.insert
-    */
-    push(...item) {
-        item.forEach(item => {
-            if (this.scope) {
-                if (item instanceof Array)
-                    item.forEach((i) => {
-                        this.insert(i, true, true);
-                    });
-                else
-                    this.insert(item, true, true);
-
-            } else {
-                if (item instanceof Array)
-                    item.forEach((i) => {
-                        this.insert(i);
-                    });
-                else
-                    this.insert(item);
-
-            }
-        });
-    }
-
-    /**
-        Retrieves a list of items that match the term/terms. 
-
-        @param {(Array|SearchTerm)} term - A single term or a set of terms to look for in the ModelContainerBase. 
-        @param {Array} __return_data__ - Set to true by a scope Container if it is calling a SubContainer insert function. 
-
-        @returns {(ModelContainerBase|Array)} Returns a Model container or an Array of Models matching the search terms. 
-    */
-    get(term, __return_data__) {
-
-        let out = null;
-
-        term = this.getHook("term", term);
-
-        let USE_ARRAY = (__return_data__ === null) ? false : true;
-
-        if (term) {
-
-            if (__return_data__) {
-                out = __return_data__;
-            } else {
-
-                if (!this.scope)
-                    USE_ARRAY = false;
-
-                out = this.__defaultReturn__(USE_ARRAY);
-                out.__setFilters__(term);
-            }
-        } else
-            out = (__return_data__) ? __return_data__ : this.__defaultReturn__(USE_ARRAY);
-
-        if (!term)
-            this.__getAll__(out);
-        else {
-
-            let terms = term;
-
-            if (!Array.isArray(term))
-                terms = [term];
-
-            //Need to convert terms into a form that will work for the identifier type
-            terms = terms.map(t => this.validator.parse(t));
-
-            this.__get__(terms, out);
-        }
-
-        return out;
-    }
-
-    set(item, from_root = false) {
-        if (!from_root)
-            return this._deferUpdateToRoot_(item).insert(item, true);
-        else
-            this.insert(item, true);
-    }
-
-    /**
-        Inserts an item into the container. If the item is not a {Model}, an attempt will be made to convert the data in the Object into a Model.
-        If the item is an array of objects, each object in the array will be considered separately. 
-
-        @param {Object} item - An Object to insert into the container. On of the properties of the object MUST have the same name as the ModelContainerBase's 
-        @param {Array} item - An array of Objects to insert into the container.
-        @param {Boolean} __FROM_SCOPE__ - Set to true by a scope Container if it is calling a SubContainer insert function. 
-
-        @returns {Boolean} Returns true if an insertion into the ModelContainerBase occurred, false otherwise.
-    */
-    insert(item, from_root = false, __FROM_SCOPE__ = false) {
-
-
-        item = this.setHook("", item);
-
-        if (!from_root)
-            return this._deferUpdateToRoot_(item).insert(item, true);
-
-        let add_list = (this.fv) ? [] : null;
-
-        let out_data = false;
-
-        if (!__FROM_SCOPE__ && this.scope)
-            return this.scope.insert(item);
-
-
-        if (item instanceof Array) {
-            for (var i = 0; i < item.length; i++)
-                if (this.__insertSub__(item[i], out_data, add_list))
-                    out_data = true;
-        } else if (item)
-            out_data = this.__insertSub__(item, out_data, add_list);
-
-
-        if (out_data) {
-            if (this.par)
-                this.par.scheduleUpdate(this.prop_name);
-
-
-            if (add_list && add_list.length > 0) {
-                this.updateViewsAdded(add_list);
-                this.scheduleUpdate();
-            }
-        }
-
-        return out_data;
-    }
-
-    /**
-        A subset of the insert function. Handles the testing of presence of an identifier value, the conversion of an Object into a Model, and the calling of the implementation specific __insert__ function.
-    */
-    __insertSub__(item, out, add_list) {
-
-        let model = item;
-
-        var identifier = this._gI_(item);
-
-        if (identifier !== undefined) {
-
-            if (!(model instanceof ModelBase)) {
-                model = new this.model(item);
-                model.MUTATION_ID = this.MUTATION_ID;
-            }
-
-            identifier = this._gI_(model, this._filters_);
-
-            if (identifier !== undefined) {
-                out = this.__insert__(model, add_list, identifier);
-                this.__linksInsert__(model);
-            }
-        }
-
-        return out;
-    }
-
-    delete(term, from_root = false) {
-        if (!from_root)
-            return this._deferUpdateToRoot_(term).remove(term);
-        else
-            this.remove(term);
-    }
-
-    /**
-        Removes an item from the container. 
-    */
-    remove(term, from_root = false, __FROM_SCOPE__ = false) {
-
-        if (!from_root)
-            return this._deferUpdateToRoot_(term).remove(term, true);
-
-        //term = this.getHook("term", term);
-
-        if (!__FROM_SCOPE__ && this.scope) {
-
-            if (!term)
-                return this.scope.remove(this._filters_);
-            else
-                return this.scope.remove(term);
-        }
-
-        let out_container = [];
-
-        if (!term)
-            this.__removeAll__();
-
-        else {
-
-            let terms = (Array.isArray(term)) ? term : [term];
-
-            //Need to convert terms into a form that will work for the identifier type
-            terms = terms.map(t => (t instanceof ModelBase) ? t : this.validator.parse(t));
-
-            this.__remove__(terms, out_container);
-        }
-
-        if (out_container.length > 0) {
-            if (this.par)
-                this.par.scheduleUpdate(this.prop_name);
-
-
-            if (out_container && out_container.length > 0) {
-                this.updateViewsRemoved(out_container);
-                this.scheduleUpdate();
-            }
-        }
-
-        return out_container;
-    }
-
-    /**
-        Removes a ModelContainerBase from list of linked containers. 
-
-        @param {ModelContainerBase} container - The ModelContainerBase instance to remove from the set of linked containers. Must be a member of the linked containers. 
-    */
-    __unlink__(container) {
-
-        if (container instanceof ModelContainerBase && container.scope == this) {
-
-            if (container == this.first_link)
-                this.first_link = container.next;
-
-            if (container.next)
-                container.next.prev = container.prev;
-
-            if (container.prev)
-                container.prev.next = container.next;
-
-            container.scope = null;
-        }
-    }
-
-    /**
-        Adds a container to the list of tracked containers. 
-
-        @param {ModelContainerBase} container - The ModelContainerBase instance to add the set of linked containers.
-    */
-    __link__(container) {
-        if (container instanceof ModelContainerBase && !container.scope) {
-
-            container.scope = this;
-
-            container.next = this.first_link;
-
-            if (this.first_link)
-                this.first_link.prev = container;
-
-            this.first_link = container;
-
-            container.pin = ((container) => {
-                let id = setTimeout(() => {
-                    container.__unlink__();
-                }, 50);
-
-                return () => {
-                    clearTimeout(id);
-                    if (!container.scope)
-                        console.warn("failed to clear the destruction of container in time!");
-                };
-            })(container);
-        }
-    }
-
-    /**
-     * Remove items from linked ModelContainers according to the terms provided.
-     * @param      {Array}  terms   Array of terms.
-     * @private
-     */
-    __linksRemove__(item) {
-        let a = this.first_link;
-        while (a) {
-            for (let i = 0; i < item.length; i++)
-                if (a._gI_(item[i], a._filters_)) {
-                    a.scheduleUpdate();
-                    a.__linksRemove__(item);
-                    break;
-                }
-
-            a = a.next;
-        }
-    }
-
-    /**
-     * Add items to linked ModelContainers.
-     * @param      {Model}  item   Item to add.
-     * @private
-     */
-    __linksInsert__(item) {
-        let a = this.first_link;
-        while (a) {
-            if (a._gI_(item, a._filters_))
-                a.scheduleUpdate();
-            a = a.next;
-        }
-    }
-
-    /**
-        Removes any items in the ModelConatiner not included in the array "items", and adds any item in `items` not already in the ModelContainerBase.
-        @param {Array} items - An array of identifiable Models or objects. 
-    */
-    cull(items) {
-        let existing_items = __getAll__([], true);
-
-        let loadHash = (item) => {
-            if (item instanceof Array)
-                return item.forEach((e) => loadHash(e));
-
-            let identifier = this._gI_(item);
-
-        };
-
-        loadHash(items);
-
-        for (let i = 0; i < existing_items.lenth; i++) {
-            let e_item = existing_items[i];
-            if (!existing_items[this._gI_(e_item)])
-                this.__remove__(e_item);
-        }
-
-        this.insert(items);
-    }
-
-    __setFilters__(term) {
-
-        if (!this._filters_) this._filters_ = [];
-
-        if (Array.isArray(term))
-            this._filters_ = this._filters_.concat(term.map(t => this.validator.parse(t)));
-        else
-            this._filters_.push(this.validator.parse(term));
-
-    }
-
-    /**
-        Returns true if the identifier matches a predefined filter pattern, which is evaluated by this.parser. If a 
-        parser was not present the ModelContainers schema, then the function will return true upon every evaluation.
-    */
-    __filterIdentifier__(identifier, filters) {
-        if (filters.length > 0) {
-            return this.validator.filter(identifier, filters);
-        }
-        return true;
-    }
-
-    _gIf_(item, term) {
-        let t = this._gI_(item, this.filters);
-    }
-
-    /**
-        Returns the Identifier property value if it exists in the item. If an array value for filters is passed, then undefined is returned if the identifier value does not pass filtering criteria.
-        @param {(Object|Model)} item
-        @param {Array} filters - An array of filter terms to test whether the identifier meets the criteria to be handled by the ModelContainerBase.
-    */
-    _gI_(item, filters = null) {
-
-        let identifier;
-
-        if (typeof(item) == "object" && this.key)
-            identifier = item[this.key];
-        else
-            identifier = item;
-
-        if (identifier && this.validator)
-            identifier = this.validator.parse(identifier);
-
-        if (filters && identifier)
-            return (this.__filterIdentifier__(identifier, filters)) ? identifier : undefined;
-
-        return identifier;
-    }
-
-    /** 
-        OVERRIDE SECTION ********************************************************************
-        
-        All of these functions should be overridden by inheriting classes
-    */
-
-    __insert__() { return this; }
-
-    __get__(item, __return_data__) { return __return_data__; }
-
-    __getAll__(__return_data__) { return __return_data__; }
-
-    __removeAll__() { return []; }
-
-    __remove__() { return []; }
-
-    clone() {
-        let clone = super.clone();
-        clone.key = this.key;
-        clone.model = this.model;
-        clone.validator = this.validator;
-        clone.first_link = this.first_link;
-        return clone;
-    }
-
-    // END OVERRIDE *************************************************************************
-}
-
-const proto = ModelContainerBase.prototype;
-_SealedProperty_(proto, "model", null);
-_SealedProperty_(proto, "key", "");
-_SealedProperty_(proto, "validator", null);
-
-class MultiIndexedContainer extends ModelContainerBase {
-
-    constructor(data = [], root = null, address = []) {
-
-        super(root, address);
-
-        this.secondary_indexes = {};
-        this.primary_index = null;
-        this.primary_key = "";
-
-        if (data[0] && data[0].key) {
-
-            let key = data[0].key;
-
-            if (data[0].model)
-                this.model = data[0].model;
-
-            if (Array.isArray(key))
-                key.forEach((k) => (this.addKey(k)));
-
-            data = data.slice(1);
-        }
-
-        if (Array.isArray(data) && data.length > 0)
-            this.insert(data);
-    }
-
-    /**
-        Returns the length of the first index in this container. 
-    */
-    get length() { return this.primary_index.length; }
-
-    /**
-        Insert a new ModelContainerBase into the index through the key.  
-    */
-    addKey(key) {
-        let name = key.name;
-
-        let container = new MultiIndexedContainer.array([{ key, model: this.model }]);
-
-        if (this.primary_index) {
-            this.secondary_indexes[name] = container;
-            this.secondary_indexes[name].insert(this.primary_index.__getAll__());
-        } else {
-            this.primary_key = name;
-            this.primary_index = container;
-        }
-    }
-
-    get(item, __return_data__) {
-        
-        item = this.getHook("query", item);
-
-        if (item) {
-            for (let name in item) {
-                if (name == this.primary_key)
-                    return this.primary_index.get(item[name], __return_data__);
-
-                else if (this.secondary_indexes[name])
-                    return this.secondary_indexes[name].get(item[name], __return_data__);
-
-            }
-        } else
-            return this.primary_index.get(null, __return_data__);
-    }
-
-    __insert__(model, add_list, identifier) {
-
-        let out = false;
-
-        model.par = this;
-
-        if ((out = this.primary_index.insert(model))) {
-            for (let name in this.secondary_indexes) {
-
-                let index = this.secondary_indexes[name];
-
-                index.insert(model);
-            }
-        }
-
-        if (out)
-            this.updateViews(this.primary_index.get());
-
-        return out;
-    }
-    /**
-        @private 
-    */
-    __remove__(term, out_container) {
-
-        let out = false;
-
-        if ((out = this.primary_index.__remove__(term, out_container))) {
-
-            for (let name in this.secondary_indexes) {
-
-                let index = this.secondary_indexes[name];
-
-                index.__remove__(out_container);
-            }
-        }
-
-        return out;
-    }
-
-    __removeAll__() {
-
-        let out = false;
-
-        out = this.primary_index.__removeAll__();
-
-        for (let name in this.secondary_indexes) {
-
-            let index = this.secondary_indexes[name];
-
-            if (index.__removeAll__())
-                out = true;
-        }
-
-        return out;
-    }
-
-
-    /**
-        Overrides Model container default _gI_ to force item to pass.
-        @private 
-    */
-    _gI_(item, filters = null) {
-        return true;
-    }
-
-    toJSON() {
-        return this.primary_index.toJSON();
-    }
-
-    clone() {
-        let clone = super.clone();
-        clone.secondary_indexes = this.secondary_indexes;
-        clone.primary_index = this.primary_index;
-        return clone;
-    }
-}
-
-class NumberSchemeConstructor extends SchemeConstructor {
-
-    constructor() {
-
-        super();
-
-        this.start_value = 0;
-    }
-
-    parse(value) {
-
-        return parseFloat(value);
-    }
-
-    verify(value, result) {
-
-        result.valid = true;
-
-        if (value == NaN || value == undefined) {
-            result.valid = false;
-            result.reason = "Invalid number type.";
-        }
-    }
-
-    filter(identifier, filters) {
-
-        for (let i = 0, l = filters.length; i < l; i++)
-            if (identifier == filters[i])
-                return true;
-
-        return false;
-    }
-}
-
-let number$1 = new NumberSchemeConstructor();
-
-let scape_date = new Date();
-scape_date.setHours(0);
-scape_date.setMilliseconds(0);
-scape_date.setSeconds(0);
-scape_date.setTime(0);
-
-class DateSchemeConstructor extends NumberSchemeConstructor {
-
-    parse(value) {
-
-        if(!value)
-            return undefined;
-
-        if(value instanceof Date)
-            return value.valueOf();
-
-        if (!isNaN(value))
-            return parseInt(value);
-
-        let date = (new Date(value)).valueOf();
-
-        if(date) return date;
-
-        let lex = whind$1(value);
-
-        let year = parseInt(lex.text);
-
-        if (year) {
-
-            scape_date.setHours(0);
-            scape_date.setMilliseconds(0);
-            scape_date.setSeconds(0);
-            scape_date.setTime(0);
-
-            lex.next();
-            lex.next();
-            let month = parseInt(lex.text) - 1;
-            lex.next();
-            lex.next();
-            let day = parseInt(lex.text);
-            scape_date.setFullYear(year);
-            scape_date.setDate(day);
-            scape_date.setMonth(month);
-
-            lex.next();
-
-            if (lex.pos > -1) {
-
-                let hours = parseInt(lex.text);
-                lex.next();
-                lex.next();
-                let minutes = parseInt(lex.text);
-
-                scape_date.setHours(hours);
-                scape_date.setMinutes(minutes);
-            }
-
-
-
-            return scape_date.valueOf();
-        } 
-    }
-
-    /**
-     
-     */
-    verify(value, result) {
-
-        value = this.parse(value);
-
-        super.verify(value, result);
-    }
-
-    filter(identifier, filters) {
-
-        if (filters.length > 1) {
-
-            for (let i = 0, l = filters.length - 1; i < l; i += 2) {
-                let start = filters[i];
-                let end = filters[i + 1];
-
-                if (start <= identifier && identifier <= end) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    string(value) {
-        
-        return (new Date(value)) + "";
-    }
-}
-
-let date = new DateSchemeConstructor();
-
-class TimeSchemeConstructor extends NumberSchemeConstructor {
-
-    parse(value) {
-        if (!isNaN(value))
-            return parseFloat(value);
-        try {
-            var hour = parseInt(value.split(":")[0]);
-            var min = parseInt(value.split(":")[1].split(" ")[0]);
-            if (value.split(":")[1].split(" ")[1])
-                half = (value.split(":")[1].split(" ")[1].toLowerCase() == "pm");
-            else
-                half = 0;
-        } catch (e) {
-            var hour = 0;
-            var min = 0;
-            var half = 0;
-        }
-        
-        return parseFloat((hour + ((half) ? 12 : 0) + (min / 60)));
-    }
-
-    verify(value, result) {
-        this.parse(value);
-        super.verify(value, result);
-    }
-
-    filter(identifier, filters) {
-        return true
-    }
-
-    string(value) {
-        return (new Date(value)) + "";
-    }
-}
-
-let time = new TimeSchemeConstructor();
-
-class StringSchemeConstructor extends SchemeConstructor {
-    
-    constructor() {
-
-        super();
-
-        this.start_value = "";
-    }
-    parse(value) {
-
-        return value + "";
-    }
-
-    verify(value, result) {
-        result.valid = true;
-
-        if (value === undefined) {
-            result.valid = false;
-            result.reason = " value is undefined";
-        } else if (!value instanceof String) {
-            result.valid = false;
-            result.reason = " value is not a string.";
-        }
-    }
-
-    filter(identifier, filters) {
-
-        for (let i = 0, l = filters.length; i < l; i++)
-            if (identifier.match(filters[i] + ""))
-                return true;
-
-        return false;
-    }
-}
-
-let string$1 = new StringSchemeConstructor();
-
-class BoolSchemeConstructor extends SchemeConstructor {
-
-    constructor() {
-
-        super();
-
-        this.start_value = false;
-    }
-
-    parse(value) {
-
-        return (value) ? true : false;
-    }
-
-    verify(value, result) {
-
-        result.valid = true;
-
-        if (value === undefined) {
-            result.valid = false;
-            result.reason = " value is undefined";
-        } else if (!value instanceof Boolean) {
-            result.valid = false;
-            result.reason = " value is not a Boolean.";
-        }
-    }
-
-    filter(identifier, filters) {
-
-        if (value instanceof Boolean)
-            return true;
-
-        return false;
-    }
-}
-
-let bool = new BoolSchemeConstructor();
-
-let schemes = { date, string: string$1, number: number$1, bool, time };
-
-class BTreeModelContainer extends ModelContainerBase {
-
-    constructor(data = [], root = null, address = []) {
-
-        super(root, address);
-
-        this.validator = schemes.number;
-
-        if (data[0] && data[0].key) {
-
-            let key = data[0].key;
-
-            if (typeof key == "object") {
-
-                if (key.type)
-                    this.validator = (key.type instanceof NumberSchemeConstructor) ? key.type : this.validator;
-
-                if (key.name)
-                    this.key = key.name;
-
-                if (key.unique_key)
-                    this.unique_key = key.unique_key;
-            } else
-                this.key = key;
-
-            if (data[0].model)
-                this.model = data[0].model;
-
-            data = data.slice(1);
-        }
-
-        this.min = 10;
-        this.max = 20;
-        this.size = 0;
-        this.btree = null;
-
-        if (Array.isArray(data) && data.length > 0)
-            this.insert(data);
-    }
-
-    destroy() {
-        if (this.btree)
-            this.btree.destroy();
-
-        super.destroy();
-    }
-
-    get length() {
-        return this.size;
-    }
-
-    __insert__(model, add_list, identifier) {
-
-        let result = {
-            added: false
-        };
-
-        if (!this.btree)
-            this.btree = new BtreeNode(true);
-
-        this.btree = this.btree.insert(identifier, model, this.unique_key, this.max, true, result).newnode;
-
-        if (add_list) add_list.push(model);
-
-        if (result.added) {
-            this.size++;
-            this.__updateLinks__();
-        }
-
-        return result.added;
-    }
-
-    __get__(terms, __return_data__) {
-
-        if(!this.btree) return __return_data__;
-
-        if (__return_data__ instanceof BTreeModelContainer){
-            __return_data__.btree = this.btree;
-            return __return_data__;
-        }
-
-        let out = [];
-
-        for (let i = 0, l = terms.length; i < l; i++) {
-            let b, a = terms[i];
-
-            if (a instanceof ModelBase)
-                continue;
-
-            if (i < l-1 && !(terms[i + 1] instanceof ModelBase)) {
-                b = terms[++i];
-            } else
-                b = a;
-
-            this.btree.get(a, b, out);
-        }
-
-        if (this._filters_) {
-            for (let i = 0, l = out.length; i < l; i++) {
-                let model = out[i];
-
-                if (this._gI_(model, this._filters_))
-                    __return_data__.push(model);
-            }
-        } else
-            for (let i = 0, l = out.length; i < l; i++)
-                __return_data__.push(out[i]);
-
-
-
-        return __return_data__;
-    }
-
-    __remove__(terms, out_container = []) {
-
-        if(!this.btree) return false;
-
-        let result = 0;
-
-        for (let i = 0, l = terms.length; i < l; i++) {
-            let b, a = terms[i];
-
-            if ((a instanceof ModelBase)) {
-                let v = this._gI_(a);
-                let o = this.btree.remove(v, v, this.unique_key, this.unique_key ? a[this.unique_key] : "", true, this.min, out_container);
-                result += o.out;
-                this.btree = o.out_node;
-                continue;
-            }
-
-            if (i < l-1 && !(terms[i + 1] instanceof ModelBase)) {
-                b = terms[++i];
-            } else
-                b = a;
-
-            let o = this.btree.remove(a, b, "", "", true, this.min, out_container);
-            result += o.out;
-            this.btree = o.out_node;
-        }
-
-        if (result > 0) {
-            this.size -= result;
-            this.__updateLinks__();
-            this.__linksRemove__(out_container);
-        }
-
-
-        return result !== 0;
-    }
-
-    __updateLinks__() {
-        let a = this.first_link;
-        while (a) {
-            a.btree = this.btree;
-            a = a.next;
-        }
-    }
-
-    __getAll__(__return_data__) {
-
-        if (this._filters_) {
-            this.__get__(this._filters_, __return_data__);
-        } else if (this.btree)
-            this.btree.get(-Infinity, Infinity, __return_data__);
-
-        return __return_data__;
-    }
-
-    __removeAll__() {
-        if (this.btree)
-            this.btree.destroy();
-        this.btree = null;
-    }
-
-    toJSON() {
-        let out_data = [];
-
-        if (this.btree) {
-
-            this.btree.get(this.min, this.max, out_data);
-        }
-
-        return out_data;
-    }
-
-    clone() {
-        let clone = super.clone();
-        clone.btree = this.btree;
-        return clone;
-    }
-}
-
-class BtreeNode {
-    constructor(IS_LEAF = false) {
-        this.LEAF = IS_LEAF;
-        this.nodes = [];
-        this.keys = [];
-        this.items = 0;
-    }
-
-    destroy() {
-
-        this.nodes = null;
-        this.keys = null;
-
-        if (!this.LEAF) {
-            for (let i = 0, l = this.nodes.length; i < l; i++)
-                this.nodes[i].destroy();
-        }
-
-    }
-
-    balanceInsert(max_size, IS_ROOT = false) {
-        if (this.keys.length >= max_size) {
-            //need to split this up!
-
-            let newnode = new BtreeNode(this.LEAF);
-
-            let split = (max_size >> 1) | 0;
-
-            let key = this.keys[split];
-
-            let left_keys = this.keys.slice(0, split);
-            let left_nodes = this.nodes.slice(0, (this.LEAF) ? split : split + 1);
-
-            let right_keys = this.keys.slice((this.LEAF) ? split : split + 1);
-            let right_nodes = this.nodes.slice((this.LEAF) ? split : split + 1);
-
-            newnode.keys = right_keys;
-            newnode.nodes = right_nodes;
-
-            this.keys = left_keys;
-            this.nodes = left_nodes;
-
-            if (IS_ROOT) {
-
-                let root = new BtreeNode();
-
-                root.keys.push(key);
-                root.nodes.push(this, newnode);
-
-                return {
-                    newnode: root,
-                    key: key
-                };
-            }
-
-            return {
-                newnode: newnode,
-                key: key
-            };
-        }
-
-        return {
-            newnode: this,
-            key: 0
-        };
-    }
-
-    /**
-        Inserts model into the tree, sorted by identifier. 
-    */
-    insert(identifier, model, unique_key, max_size, IS_ROOT = false, result) {
-
-        let l = this.keys.length;
-
-        if (!this.LEAF) {
-
-            for (var i = 0; i < l; i++) {
-
-                let key = this.keys[i];
-
-                if (identifier < key) {
-                    let node = this.nodes[i];
-
-                    let o = node.insert(identifier, model, unique_key, max_size, false, result);
-                    let keyr = o.key;
-                    let newnode = o.newnode;
-
-                    if (keyr == undefined) debugger
-
-                    if (newnode != node) {
-                        this.keys.splice(i, 0, keyr);
-                        this.nodes.splice(i + 1, 0, newnode);
-                    }
-
-                    return this.balanceInsert(max_size, IS_ROOT);
-                }
-            }
-
-            let node = this.nodes[i];
-
-            let {
-                newnode,
-                key
-            } = node.insert(identifier, model, unique_key, max_size, false, result);
-
-            if (key == undefined) debugger
-
-            if (newnode != node) {
-                this.keys.push(key);
-                this.nodes.push(newnode);
-            }
-
-            return this.balanceInsert(max_size, IS_ROOT);
-
-        } else {
-
-            for (let i = 0, l = this.keys.length; i < l; i++) {
-                let key = this.keys[i];
-
-                if (identifier == key) {
-
-                    if (unique_key) {
-                        if (this.nodes[i][unique_key] !== model[unique_key]) { continue; }
-                    } else
-                        this.nodes[i].set(model);
-                    
-
-                    result.added = false;
-
-                    return {
-                        newnode: this,
-                        key: identifier
-                    };
-                } else if (identifier < key) {
-
-                    this.keys.splice(i, 0, identifier);
-                    this.nodes.splice(i, 0, model);
-
-                    result.added = true;
-
-                    return this.balanceInsert(max_size, IS_ROOT);
-                }
-            }
-
-            this.keys.push(identifier);
-            this.nodes.push(model);
-
-            result.added = true;
-
-            return this.balanceInsert(max_size, IS_ROOT);
-        }
-
-        return {
-            newnode: this,
-            key: identifier,
-        };
-    }
-
-    balanceRemove(index, min_size) {
-        let left = this.nodes[index - 1];
-        let right = this.nodes[index + 1];
-        let node = this.nodes[index];
-
-        //Left rotate
-        if (left && left.keys.length > min_size) {
-
-            let lk = left.keys.length;
-            let ln = left.nodes.length;
-
-            node.keys.unshift((node.LEAF) ? left.keys[lk - 1] : this.keys[index - 1]);
-            node.nodes.unshift(left.nodes[ln - 1]);
-
-            this.keys[index - 1] = left.keys[lk - 1];
-
-            left.keys.length = lk - 1;
-            left.nodes.length = ln - 1;
-
-            return false;
-        } else
-            //Right rotate
-            if (right && right.keys.length > min_size) {
-
-                node.keys.push((node.LEAF) ? right.keys[0] : this.keys[index]);
-                node.nodes.push(right.nodes[0]);
-
-                right.keys.splice(0, 1);
-                right.nodes.splice(0, 1);
-
-                this.keys[index] = (node.LEAF) ? right.keys[1] : right.keys[0];
-
-                return false;
-
-            } else {
-
-                //Left or Right Merge
-                if (!left) {
-                    index++;
-                    left = node;
-                    node = right;
-                }
-
-                let key = this.keys[index - 1];
-                this.keys.splice(index - 1, 1);
-                this.nodes.splice(index, 1);
-
-                left.nodes = left.nodes.concat(node.nodes);
-                if (!left.LEAF) left.keys.push(key);
-                left.keys = left.keys.concat(node.keys);
-
-
-                if (left.LEAF)
-                    for (let i = 0; i < left.keys.length; i++)
-                        if (left.keys[i] != left.nodes[i].id)
-                            ;
-                return true;
-            }
-
-    }
-
-    remove(start, end, unique_key, unique_id, IS_ROOT = false, min_size, out_container) {
-        let l = this.keys.length,
-            out = 0,
-            out_node = this;
-
-        if (!this.LEAF) {
-
-            for (var i = 0; i < l; i++) {
-
-                let key = this.keys[i];
-
-                if (start <= key)
-                    out += this.nodes[i].remove(start, end, unique_key, unique_id, false, min_size, out_container).out;
-            }
-
-            out += this.nodes[i].remove(start, end, unique_key, unique_id, false, min_size, out_container).out;
-
-            for (var i = 0; i < this.nodes.length; i++) {
-                if (this.nodes[i].keys.length < min_size) {
-                    if (this.balanceRemove(i, min_size)) {
-                        l--;
-                        i--;
-                    }
-                }
-            }
-
-            if (this.nodes.length == 1)
-                out_node = this.nodes[0];
-
-        } else {
-
-            for (let i = 0, l = this.keys.length; i < l; i++) {
-                let key = this.keys[i];
-
-                if (key <= end && key >= start) {
-                    if (unique_id && this.nodes[i][unique_key] !== unique_id) continue;
-                    out_container.push(this.nodes[i]);
-                    out++;
-                    this.keys.splice(i, 1);
-                    this.nodes.splice(i, 1);
-                    l--;
-                    i--;
-                }
-            }
-        }
-
-        return {
-            out_node,
-            out
-        };
-    }
-
-    get(start, end, out_container) {
-
-        if (!start || !end)
-            return false;
-
-        if (!this.LEAF) {
-
-            for (var i = 0, l = this.keys.length; i < l; i++) {
-
-                let key = this.keys[i];
-
-                if (start <= key)
-                    this.nodes[i].get(start, end, out_container);
-            }
-
-            this.nodes[i].get(start, end, out_container);
-
-        } else {
-
-            for (let i = 0, l = this.keys.length; i < l; i++) {
-                let key = this.keys[i];
-
-                if (key <= end && key >= start)
-                    out_container.push(this.nodes[i]);
-            }
-        }
-    }
-}
-
-MultiIndexedContainer.btree = BTreeModelContainer;
-
-const ArrayContainerProxySettings = {
-
-    set: function(obj, prop, val) {
-
-        if (prop in obj && obj[prop] == val)
-            return true;
-
-        let property = obj[prop];
-
-        if (property && typeof(property) == "object")
-            property.set(val);
-        else
-            obj[prop] = val;
-
-        obj.scheduleUpdate(prop);
-
-        return true;
-    },
-
-    get: function(obj, prop, val) {
-
-        if (prop in obj)
-            return obj[prop];
-
-        if (!isNaN(prop))
-            return obj.data[prop];
-
-        let term = {};
-
-        term[obj.key] = prop;
-
-        return obj.get(prop, [])[0];
-    }
-};
-
-/**
-    Stores models in random order inside an internal array object. 
- */
-
-class ArrayModelContainer extends ModelContainerBase {
-
-    constructor(data = [], root = null, address = []) {
-
-        super(root, address);
-
-        if (data[0] && data[0].key) {
-
-            let key = data[0].key;
-
-            /* Custom selection of container types happens here. 
-             * If there are multiple keys present, then a MultiIndexedContainer is used.
-             * If the value of the key is a Numerical type, then a BtreeModelContainer is used.
-             **/
-            if (typeof(key) == "object") {
-
-                if (Array.isArray(key))
-                    return new MultiIndexedContainer(data, root, address);
-
-                if (key.type) {
-                    if (key.type instanceof NumberSchemeConstructor)
-                        return new BTreeModelContainer(data, root, address);
-                    this.validator = (key.type instanceof SchemeConstructor) ? key.type : this.validator;
-                }
-
-                if (key.name)
-                    this.key = key.name;
-            } else
-                this.key = key;
-
-            if (data[0].model)
-                this.model = data[0].model;
-
-            data = data.slice(1);
-        }
-
-        this.data = [];
-
-        if (Array.isArray(data) && data.length > 0)
-            this.insert(data, true);
-    }
-
-    destroy() {
-
-        this.data = null;
-
-        super.destroy();
-    }
-
-    get proxy() { return new Proxy(this, ArrayContainerProxySettings); }
-
-    set proxy(v) {}
-
-    get length() { return this.data.length; }
-
-    __defaultReturn__(USE_ARRAY) {
-
-        if (USE_ARRAY) return new MCArray();
-
-        let n = this.clone();
-
-        this.__link__(n);
-
-        return n;
-    }
-
-    __insert__(model, add_list, identifier) {
-
-        for (var i = 0, l = this.data.length; i < l; i++) {
-
-            var obj = this.data[i];
-
-            if (this._gI_(obj) == identifier) {
-
-                if (obj.MUTATION_ID !== this.MUTATION_ID) {
-                    obj = obj.clone();
-                    obj.MUTATION_ID = this.MUTATION_ID;
-                }
-
-                obj.set(model, true);
-
-                this.data[i] = obj;
-
-                return false; //Model not added to Container. Model just updated.
-            }
-        }
-
-        this.data.push(model);
-
-        model.address = this.address.slice();
-        model.address.push(this.data.length - 1);
-
-        model.root = this.root;
-
-        if (add_list) add_list.push(model);
-
-        return true; // Model added to Container.
-    }
-
-    getByIndex(i) {
-        return this.data[i];
-    }
-
-    setByIndex(i, m) {
-        this.data[i] = m;
-    }
-
-    __get__(term, return_data) {
-
-        let terms = null;
-
-        if (term)
-            if (term instanceof Array)
-                terms = term;
-            else
-                terms = [term];
-
-        for (let i = 0, l = this.data.length; i < l; i++) {
-            let obj = this.data[i];
-            if (this._gI_(obj, terms)) {
-                return_data.push(obj);
-            }
-        }
-
-        return return_data;
-    }
-
-    __getAll__(return_data) {
-
-        this.data.forEach((m) => {
-            return_data.push(m);
-        });
-
-        return return_data;
-    }
-
-    __removeAll__() {
-        let items = this.data.map(d => d) || [];
-
-        this.data.length = 0;
-
-        return items;
-    }
-
-    _setThroughRoot_(data, address, index, len, m_id) {
-
-        if (index >= len)
-            return this;
-
-        let i = address[index++];
-
-        let model_prop = this.data[i];
-
-        if (model_prop.MUTATION_ID !== this.MUTATION_ID) {
-            model_prop = model_prop.clone();
-            model_prop.MUTATION_ID = this.MUTATION_ID;
-        }
-
-        this.data[i] = model_prop;
-
-        return model_prop._setThroughRoot_(data, address, index, len, model_prop.MUTATION_ID);
-    }
-
-    __remove__(term, out_container) {
-
-        let result = false;
-
-        term = term.map(t => (t instanceof ModelBase) ? this._gI_(t) : t);
-        
-        for (var i = 0, l = this.data.length; i < l; i++) {
-            var obj = this.data[i];
-
-            if (this._gI_(obj, term)) {
-
-                result = true;
-
-                this.data.splice(i, 1);
-
-                l--;
-                i--;
-
-                out_container.push(obj);
-
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    toJSON() { return this.data; }
-
-    clone() {
-        let clone = super.clone();
-        clone.data = this.data.slice();
-        return clone;
-    }
-}
-
-MultiIndexedContainer.array = ArrayModelContainer;
-
-Object.freeze(ArrayModelContainer);
-
-class Model extends ModelBase {
-
-    constructor(data, root = null, address = []) {
-
-        super(root, address);
-
-        _SealedProperty_(this, "prop_array", []);
-        _SealedProperty_(this, "prop_offset", 0);
-        _SealedProperty_(this, "look_up", {});
-
-        if (data)
-            for (let name in data)
-                this.createProp(name, data[name]);
-
-    }
-
-    get proxy() { return this;}
-
-    set(data, FROM_ROOT = false) {
-
-        if (!FROM_ROOT)
-            return this._deferUpdateToRoot_(data).set(data, true);
-
-        if (!data)
-            return false;
-
-        let out = false;
-
-        for (let prop_name in data) {
-
-            let index = this.look_up[prop_name];
-
-            if (index !== undefined) {
-
-                let prop = this.prop_array[index];
-
-                if (typeof(prop) == "object") {
-
-                    if (prop.MUTATION_ID !== this.MUTATION_ID) {
-                        prop = prop.clone();
-                        prop.MUTATION_ID = this.MUTATION_ID;
-                        this.prop_array[index] = prop;
-                    }
-
-                    if (prop.set(data[prop_name], true)){
-                        this.scheduleUpdate(prop_name);
-                        out = true;
-                    }
-
-                } else if (prop !== data[prop_name]) {
-                    this.prop_array[index] = data[prop_name];
-                     this.scheduleUpdate(prop_name);
-                     out = true;
-                }
-            } else{
-                this.createProp(prop_name, data[prop_name]);
-                out = true;
-            }
-        }
-
-        return out;
-    }
-    createProp(name, value) {
-
-        let index = this.prop_offset++;
-
-        this.look_up[name] = index;
-        var address = this.address.slice();
-        address.push(index);
-
-        switch (typeof(value)) {
-
-            case "object":
-                if (Array.isArray(value))
-                    this.prop_array.push(new ArrayModelContainer(value, this.root, address));
-                else {
-                    if (value instanceof ModelBase) {
-                        value.address = address;
-                        this.prop_array.push(value);
-                    } else
-                        this.prop_array.push(new Model(value, this.root, address));
-                }
-
-                this.prop_array[index].prop_name = name;
-                this.prop_array[index].par = this;
-
-                Object.defineProperty(this, name, {
-
-                    configurable: false,
-
-                    enumerable: true,
-
-                    get: function() { return this.getHook(name, this.prop_array[index]); },
-
-                    set: (v) => {}
-                });
-
-                break;
-
-            case "function":
-
-                let object = new value(null, this.root, address);
-
-                object.par = this;
-                object.prop_name = name;
-
-                this.prop_array.push(object);
-
-                Object.defineProperty(this, name, {
-
-                    configurable: false,
-
-                    enumerable: true,
-
-                    get: function() { return this.getHook(name, this.prop_array[index]); },
-
-                    set: (v) => {}
-                });
-
-                break;
-
-            default:
-                this.prop_array.push(value);
-
-                Object.defineProperty(this, name, {
-
-                    configurable: false,
-
-                    enumerable: true,
-
-                    get: function() { return this.getHook(name, this.prop_array[index]); },
-
-                    set: function(value) {
-
-                        let val = this.prop_array[index];
-
-                        if (val !== value) {
-                            this.prop_array[index] = this.setHook(name, value);
-                            this.scheduleUpdate(name);
-                        }
-                    }
-                });
-        }
-
-        this.scheduleUpdate(name);
-    }
-
-    toJSON(HOST = true){
-        let data = {};
-
-        for(let name in this.look_up){
-            let index = this.look_up[name];
-            let prop = this.prop_array[index];
-
-            if(prop){
-                if(prop instanceof ModelBase)
-                    data[name] = prop.toJSON(false);
-                else
-                    data[name] = prop;
-            }
-        }
-
-        return HOST ? JSON.stringify(data) : data;    
-    }
-}
-
-ModelContainerBase.prototype.model = Model;
-
-class Store {
-    constructor(data) {
-
-        this.history = [{ model: new Model(data, this), actions: [{ d: data, a: null }] }];
-        this.MUTATION_ID = 0;
-    }
-
-    seal() { this.MUTATION_ID++; }
-
-    getHistory(index) { return (this.history[index]) ? this.history[index].model : null; }
-
-    get current() { return this.history[this.history.length - 1].model; }
-
-    set current(v) {}
-
-    get(data){
-        return this.current.get(data);
-    }
-
-    set(data){
-        return this.current.set(data);
-    }
-
-    _getParentMutationID_() { return this.MUTATION_ID; }
-
-    _setThroughRoot_(data, address, index, len_minus_1, m_id) {
-
-        let model_prop = this.current;
-
-        if (m_id !== this.MUTATION_ID) {
-
-            if (m_id > this.MUTATION_ID)
-                this.MUTATION_ID = this.MUTATION_ID + 1;
-            else
-                this.MUTATION_ID = this.MUTATION_ID;
-
-            model_prop = model_prop.clone();
-
-            model_prop.MUTATION_ID = this.MUTATION_ID;
-
-            this.history.push({ model: model_prop, actions: [] });
-        }
-
-        if (data)
-            this.history[this.history.length - 1].actions.push({ d: data, a: address });
-
-        return model_prop._setThroughRoot_(data, address, index, len_minus_1, this.MUTATION_ID);
-    }
-}
 
 //import { CustomComponent } from "../page/component"
 
@@ -4041,14 +2046,8 @@ let CachedPresets = null;
  */
 class Presets {
     constructor(preset_options) {
-
         if (!preset_options)
             preset_options = {};
-
-        //if(Presets.global.v)
-        //    return Presets.global.v;
-
-        this.store = (preset_options.store instanceof Store) ? preset_options.store : null;
 
         /**
          * {Object} Store for optional parameters used in the app
@@ -4104,7 +2103,7 @@ class Presets {
          * @instance
          * @readonly
          */
-        this.schemas = { any: Model };
+        this.schemes = {};
 
         /**
          * { Object } Store of user defined Model instances that serve as global models, which are available to the whole application. Multiple Scopes will be able to _bind_ to the Models. `<w-scope>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets .model whose property name matches the "model" attribute.
@@ -4160,14 +2159,13 @@ class Presets {
 
         if (c)
             for (let cn in c)
-                if (c[cn] instanceof ModelBase)
-                    this.models[cn] = c[cn];
+                this.models[cn] = c[cn];
 
         c = preset_options.schemas;
+
         if (c)
             for (let cn in c)
-                if (ModelBase.isPrototypeOf(c[cn]))
-                    this.schemas[cn] = c[cn];
+                this.schemas[cn] = c[cn];
         /**
          * Configured by `preset_options.USE_SHADOW`. If set to true, and if the browser supports it, compiled and rendered template elements will be bound to a `<component>` shadow DOM, instead being appended as a child node.
          * @instance
@@ -4214,7 +2212,7 @@ class Presets {
 
 Presets.global = {get v(){return CachedPresets}, set v(e){}};
 
-let fn = {}; const  
+let fn = {}; const 
 /************** Maps **************/
 
     /* Symbols To Inject into the Lexer */
@@ -5583,6 +3581,9 @@ sm1007=[0,-1,1236,-2,0,-1,-1,-2,0,-21,1236,1236,-83,1236],
     // Symbol Lookup map
     lu = new Map([[1,1],[2,2],[4,3],[8,4],[16,5],[32,6],[64,7],[128,8],[256,9],[512,10],[3,11],[264,11],[200,13],[201,14],["</",15],["import",16],[">",17],["<",18],["/",19],["(",20],[")",21],[null,6],[",",23],["{",24],[";",68],["}",116],["supports",27],["@",28],["keyframes",29],["id",30],["from",31],["to",32],["and",33],["or",34],["not",35],["media",37],["only",38],[":",71],["<=",41],[">=",42],["=",43],["%",45],["px",46],["in",47],["rad",48],["url",49],["\"",152],["'",153],["+",52],["~",53],["||",54],["*",56],["|",57],["#",58],[".",59],["[",61],["]",62],["^=",63],["$=",64],["*=",65],["i",66],["s",67],["!",149],["important",70],["-",144],["_",74],["as",76],["export",77],["default",78],["if",80],["else",81],["var",82],["do",83],["while",84],["for",85],["await",86],["of",87],["continue",88],["break",89],["return",90],["throw",91],["with",92],["switch",93],["case",94],["try",95],["catch",96],["finally",97],["debugger",98],["let",99],["const",100],["function",101],["=>",102],["async",103],["class",104],["extends",105],["static",106],["get",107],["set",108],["new",109],["super",110],["target",111],["...",112],["this",113],["`",114],["${",115],["/=",122],["%=",123],["+=",124],["-=",125],["<<=",126],[">>=",127],[">>>=",128],["&=",129],["|=",130],["**=",131],["?",132],["&&",133],["^",134],["&",135],["==",136],["!=",137],["===",138],["!==",139],["instanceof",140],["<<",141],[">>",142],[">>>",143],["**",145],["delete",146],["void",147],["typeof",148],["++",150],["--",151],["null",154],["true",155],["false",156],["$",157],["f",158],["filter",159],["input",160],["area",161],["base",162],["br",163],["col",164],["command",165],["embed",166],["hr",167],["img",168],["keygen",169],["link",170],["meta",171],["param",172],["source",173],["track",174],["wbr",175],["style",176],["script",177],["js",178]]),
 
+    //Reverse Symbol Lookup map
+    rlu = new Map([[1,1],[2,2],[3,4],[4,8],[5,16],[6,32],[7,64],[8,128],[9,256],[10,512],[11,3],[11,264],[13,200],[14,201],[15,"</"],[16,"import"],[17,">"],[18,"<"],[19,"/"],[20,"("],[21,")"],[6,null],[23,","],[24,"{"],[68,";"],[116,"}"],[27,"supports"],[28,"@"],[29,"keyframes"],[30,"id"],[31,"from"],[32,"to"],[33,"and"],[34,"or"],[35,"not"],[37,"media"],[38,"only"],[71,":"],[41,"<="],[42,">="],[43,"="],[45,"%"],[46,"px"],[47,"in"],[48,"rad"],[49,"url"],[152,"\""],[153,"'"],[52,"+"],[53,"~"],[54,"||"],[56,"*"],[57,"|"],[58,"#"],[59,"."],[61,"["],[62,"]"],[63,"^="],[64,"$="],[65,"*="],[66,"i"],[67,"s"],[149,"!"],[70,"important"],[144,"-"],[74,"_"],[76,"as"],[77,"export"],[78,"default"],[80,"if"],[81,"else"],[82,"var"],[83,"do"],[84,"while"],[85,"for"],[86,"await"],[87,"of"],[88,"continue"],[89,"break"],[90,"return"],[91,"throw"],[92,"with"],[93,"switch"],[94,"case"],[95,"try"],[96,"catch"],[97,"finally"],[98,"debugger"],[99,"let"],[100,"const"],[101,"function"],[102,"=>"],[103,"async"],[104,"class"],[105,"extends"],[106,"static"],[107,"get"],[108,"set"],[109,"new"],[110,"super"],[111,"target"],[112,"..."],[113,"this"],[114,"`"],[115,"${"],[122,"/="],[123,"%="],[124,"+="],[125,"-="],[126,"<<="],[127,">>="],[128,">>>="],[129,"&="],[130,"|="],[131,"**="],[132,"?"],[133,"&&"],[134,"^"],[135,"&"],[136,"=="],[137,"!="],[138,"==="],[139,"!=="],[140,"instanceof"],[141,"<<"],[142,">>"],[143,">>>"],[145,"**"],[146,"delete"],[147,"void"],[148,"typeof"],[150,"++"],[151,"--"],[154,"null"],[155,"true"],[156,"false"],[157,"$"],[158,"f"],[159,"filter"],[160,"input"],[161,"area"],[162,"base"],[163,"br"],[164,"col"],[165,"command"],[166,"embed"],[167,"hr"],[168,"img"],[169,"keygen"],[170,"link"],[171,"meta"],[172,"param"],[173,"source"],[174,"track"],[175,"wbr"],[176,"style"],[177,"script"],[178,"js"]]),
+
     // States 
     state = [sm0,
 sm1,
@@ -6942,1363 +4943,1365 @@ sm1007],
 
 /************ Functions *************/
 
-    max = Math.max, //Error Functions
-    e$1 = (...d)=>fn.defaultError(...d), 
-    eh = [e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1,
-e$1],
+    max = Math.max, min = Math.min,
+
+    //Error Functions
+    e$2 = (...d)=>fn.defaultError(...d), 
+    eh = [e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2,
+e$2],
 
     //Empty Function
     nf = ()=>-1, 
@@ -8322,6 +6325,7 @@ R81_CALL_BINDING=(sym,env,lex)=>(((env.off = lex.off,new fn.wick_binding(null,sy
 R140_css_STYLE_SHEET=sym=>new fn.ruleset(sym[0],sym[1]),
 R141_css_STYLE_SHEET=sym=>new fn.ruleset(null,sym[0]),
 R142_css_STYLE_SHEET=sym=>new fn.ruleset(sym[0],null),
+R143_css_STYLE_SHEET=()=>new fn.ruleset(null,null),
 R150_css_COMPLEX_SELECTOR_list=sym=>(((sym[1] !== null) ? sym[0].push(sym[2]) : null,sym[0])),
 R160_css_STYLE_RULE=sym=>new fn.stylerule(sym[0],sym[2]),
 R161_css_STYLE_RULE=sym=>new fn.stylerule(null,sym[1]),
@@ -8512,12 +6516,12 @@ e=>386,
 e=>378,
 e=>382,
 e=>350,
-(...v)=>redv(5,R00_S,1,0),
-(...v)=>redn(1031,1),
-(...v)=>redn(302087,1),
-(...v)=>redn(303111,1),
-(...v)=>redv(3079,R31_undefined501_group_list,1,0),
-(...v)=>redn(2055,1),
+(...v)=>redv(5,R00_S,1,0,...v),
+(...v)=>redn(1031,1,...v),
+(...v)=>redn(302087,1,...v),
+(...v)=>redn(303111,1,...v),
+(...v)=>redv(3079,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(2055,1,...v),
 e=>590,
 e=>570,
 e=>594,
@@ -8538,32 +6542,32 @@ e=>650,
 e=>654,
 e=>658,
 e=>662,
-(...v)=>redn(304135,1),
-(...v)=>redv(229383,R2240_js_primary_expression,1,0),
-(...v)=>(redv(118791,R00_S,1,0),shftf(118791,I1160_js_javascript)),
-(...v)=>redv(119815,R1170_js_start,1,0),
-(...v)=>redn(120839,1),
-(...v)=>rednv(123911,fn.statements,1,0),
+(...v)=>redn(304135,1,...v),
+(...v)=>redv(229383,R2240_js_primary_expression,1,0,...v),
+(...v)=>(redv(118791,R00_S,1,0,...v),shftf(118791,I1160_js_javascript,...v)),
+(...v)=>redv(119815,R1170_js_start,1,0,...v),
+(...v)=>redn(120839,1,...v),
+(...v)=>rednv(123911,fn.statements,1,0,...v),
 e=>674,
-(...v)=>redv(122887,R31_undefined501_group_list,1,0),
-(...v)=>redn(121863,1),
-(...v)=>(redn(124935,1),shftf(124935,I1220_js_module_item)),
-(...v)=>redn(124935,1),
+(...v)=>redv(122887,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(121863,1,...v),
+(...v)=>(redn(124935,1,...v),shftf(124935,I1220_js_module_item,...v)),
+(...v)=>redn(124935,1,...v),
 e=>710,
 e=>706,
 e=>738,
 e=>718,
 e=>734,
-(...v)=>redn(147463,1),
-(...v)=>redn(148487,1),
-(...v)=>redn(152583,1),
+(...v)=>redn(147463,1,...v),
+(...v)=>redn(148487,1,...v),
+(...v)=>redn(152583,1,...v),
 e=>758,
-(...v)=>rednv(216071,fn.expression_list,1,0),
+(...v)=>rednv(216071,fn.expression_list,1,0,...v),
 e=>762,
-(...v)=>redv(215047,R31_undefined501_group_list,1,0),
-(...v)=>redn(214023,1),
-(...v)=>redn(253959,1),
-(...v)=>redn(269319,1),
+(...v)=>redv(215047,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(214023,1,...v),
+(...v)=>redn(253959,1,...v),
+(...v)=>redn(269319,1,...v),
 e=>766,
 e=>818,
 e=>782,
@@ -8579,66 +6583,66 @@ e=>822,
 e=>826,
 e=>774,
 e=>778,
-(...v)=>redn(256007,1),
+(...v)=>redn(256007,1,...v),
 e=>834,
 e=>830,
-(...v)=>redn(257031,1),
+(...v)=>redn(257031,1,...v),
 e=>838,
-(...v)=>redn(258055,1),
+(...v)=>redn(258055,1,...v),
 e=>842,
-(...v)=>redn(259079,1),
+(...v)=>redn(259079,1,...v),
 e=>846,
-(...v)=>redn(260103,1),
+(...v)=>redn(260103,1,...v),
 e=>850,
-(...v)=>redn(261127,1),
+(...v)=>redn(261127,1,...v),
 e=>854,
 e=>858,
 e=>862,
 e=>866,
-(...v)=>redn(262151,1),
+(...v)=>redn(262151,1,...v),
 e=>874,
 e=>870,
 e=>878,
 e=>882,
 e=>890,
 e=>886,
-(...v)=>redn(263175,1),
+(...v)=>redn(263175,1,...v),
 e=>894,
 e=>898,
 e=>902,
-(...v)=>redn(264199,1),
+(...v)=>redn(264199,1,...v),
 e=>906,
 e=>910,
-(...v)=>redn(265223,1),
+(...v)=>redn(265223,1,...v),
 e=>918,
 e=>922,
 e=>914,
-(...v)=>redn(266247,1),
-(...v)=>redn(267271,1),
-(...v)=>redn(268295,1),
+(...v)=>redn(266247,1,...v),
+(...v)=>redn(267271,1,...v),
+(...v)=>redn(268295,1,...v),
 e=>926,
 e=>962,
 e=>966,
 e=>970,
-(...v)=>redn(217095,1),
+(...v)=>redn(217095,1,...v),
 e=>1022,
 e=>1006,
 e=>1014,
-(...v)=>redn(218119,1),
+(...v)=>redn(218119,1,...v),
 e=>1030,
 e=>1026,
 e=>1050,
 e=>1054,
-(...v)=>redn(219143,1),
-(...v)=>rednv(229383,fn.this_literal,1,0),
-(...v)=>redn(229383,1),
-(...v)=>redn(198663,1),
-(...v)=>redn(292871,1),
-(...v)=>redn(291847,1),
-(...v)=>redn(293895,1),
-(...v)=>redn(294919,1),
-(...v)=>rednv(295943,fn.identifier,1,0),
-(...v)=>redv(301063,R00_S,1,0),
+(...v)=>redn(219143,1,...v),
+(...v)=>rednv(229383,fn.this_literal,1,0,...v),
+(...v)=>redn(229383,1,...v),
+(...v)=>redn(198663,1,...v),
+(...v)=>redn(292871,1,...v),
+(...v)=>redn(291847,1,...v),
+(...v)=>redn(293895,1,...v),
+(...v)=>redn(294919,1,...v),
+(...v)=>rednv(295943,fn.identifier,1,0,...v),
+(...v)=>redv(301063,R00_S,1,0,...v),
 e=>1086,
 e=>1082,
 e=>1094,
@@ -8647,10 +6651,10 @@ e=>1078,
 e=>1070,
 e=>1090,
 e=>1074,
-(...v)=>redn(296967,1),
-(...v)=>redn(283655,1),
-(...v)=>rednv(290823,fn.bool_literal,1,0),
-(...v)=>rednv(289799,fn.null_literal,1,0),
+(...v)=>redn(296967,1,...v),
+(...v)=>redn(283655,1,...v),
+(...v)=>rednv(290823,fn.bool_literal,1,0,...v),
+(...v)=>rednv(289799,fn.null_literal,1,0,...v),
 e=>1126,
 e=>1118,
 e=>1114,
@@ -8660,11 +6664,11 @@ e=>1130,
 e=>1122,
 e=>1106,
 e=>1146,
-(...v)=>rednv(288775,fn.numeric_literal,1,0),
+(...v)=>rednv(288775,fn.numeric_literal,1,0,...v),
 e=>1178,
 e=>1158,
 e=>1174,
-(...v)=>redn(230407,1),
+(...v)=>redn(230407,1,...v),
 e=>1234,
 e=>1238,
 e=>1242,
@@ -8682,18 +6686,18 @@ e=>1250,
 e=>1258,
 e=>1262,
 e=>1266,
-(...v)=>redn(221191,1),
-(...v)=>redn(223239,1),
+(...v)=>redn(221191,1,...v),
+(...v)=>redn(223239,1,...v),
 e=>1278,
-(...v)=>redv(198663,R1870_js_formal_parameters,1,0),
+(...v)=>redv(198663,R1870_js_formal_parameters,1,0,...v),
 e=>1286,
 e=>1318,
 e=>1322,
-(...v)=>rednv(154631,fn.empty_statement,1,0),
+(...v)=>rednv(154631,fn.empty_statement,1,0,...v),
 e=>1326,
-(...v)=>redn(151559,1),
+(...v)=>redn(151559,1,...v),
 e=>1334,
-(...v)=>shftf(1338,I1561_js_iteration_statement),
+(...v)=>shftf(1338,I1561_js_iteration_statement,...v),
 e=>1342,
 e=>1346,
 e=>1354,
@@ -8701,15 +6705,15 @@ e=>1366,
 e=>1374,
 e=>1378,
 e=>1390,
-(...v)=>redn(149511,1),
+(...v)=>redn(149511,1,...v),
 e=>1406,
 e=>1410,
-(...v)=>redn(150535,1),
+(...v)=>redn(150535,1,...v),
 e=>1418,
-(...v)=>redv(185351,R1810_js_let_or_const,1,0),
-(...v)=>redv(185351,R1811_js_let_or_const,1,0),
-(...v)=>redv(303115,R2960_html_BODY,2,0),
-(...v)=>redv(3083,R30_undefined501_group_list,2,0),
+(...v)=>redv(185351,R1810_js_let_or_const,1,0,...v),
+(...v)=>redv(185351,R1811_js_let_or_const,1,0,...v),
+(...v)=>redv(303115,R2960_html_BODY,2,0,...v),
+(...v)=>redv(3083,R30_undefined501_group_list,2,0,...v),
 e=>1446,
 e=>1442,
 e=>1462,
@@ -8718,40 +6722,40 @@ e=>1474,
 e=>1478,
 e=>1486,
 e=>1490,
-(...v)=>redn(314375,1),
+(...v)=>redn(314375,1,...v),
 e=>1506,
 e=>1522,
 e=>1526,
-(...v)=>redv(319495,R00_S,1,0),
+(...v)=>redv(319495,R00_S,1,0,...v),
 e=>1518,
 e=>1514,
 e=>1510,
-(...v)=>redn(315399,1),
-(...v)=>redn(306183,1),
-(...v)=>redv(122891,R30_undefined501_group_list,2,0),
+(...v)=>redn(315399,1,...v),
+(...v)=>redn(306183,1,...v),
+(...v)=>redv(122891,R30_undefined501_group_list,2,0,...v),
 e=>1534,
 e=>1538,
 e=>1542,
-(...v)=>redn(126983,1),
-(...v)=>rednv(128007,fn.default_import,1,0),
-(...v)=>redn(136199,1),
+(...v)=>redn(126983,1,...v),
+(...v)=>rednv(128007,fn.default_import,1,0,...v),
+(...v)=>redn(136199,1,...v),
 e=>1546,
 e=>1554,
 e=>1558,
-(...v)=>redn(135175,1),
+(...v)=>redn(135175,1,...v),
 e=>1586,
-(...v)=>redv(137227,R1342_js_export_declaration,2,0),
+(...v)=>redv(137227,R1342_js_export_declaration,2,0,...v),
 e=>1606,
 e=>1610,
 e=>1626,
-(...v)=>rednv(146439,fn.statements,1,0),
-(...v)=>redv(145415,R31_undefined501_group_list,1,0),
-(...v)=>redn(144391,1),
-(...v)=>rednv(155659,fn.expression_statement,2,0),
-(...v)=>rednv(269323,fn.post_increment_expression,2,0),
-(...v)=>rednv(269323,fn.post_decrement_expression,2,0),
-(...v)=>redn(254983,1),
-(...v)=>rednv(268299,fn.delete_expression,2,0),
+(...v)=>rednv(146439,fn.statements,1,0,...v),
+(...v)=>redv(145415,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(144391,1,...v),
+(...v)=>rednv(155659,fn.expression_statement,2,0,...v),
+(...v)=>rednv(269323,fn.post_increment_expression,2,0,...v),
+(...v)=>rednv(269323,fn.post_decrement_expression,2,0,...v),
+(...v)=>redn(254983,1,...v),
+(...v)=>rednv(268299,fn.delete_expression,2,0,...v),
 e=>1750,
 e=>1810,
 e=>1786,
@@ -8759,61 +6763,61 @@ e=>1790,
 e=>1774,
 e=>1754,
 e=>1818,
-(...v)=>rednv(268299,fn.void_expression,2,0),
-(...v)=>rednv(268299,fn.typeof_expression,2,0),
-(...v)=>rednv(268299,fn.plus_expression,2,0),
-(...v)=>rednv(268299,fn.negate_expression,2,0),
-(...v)=>rednv(268299,fn.unary_or_expression,2,0),
-(...v)=>rednv(268299,fn.unary_not_expression,2,0),
-(...v)=>rednv(269323,fn.pre_increment_expression,2,0),
-(...v)=>rednv(269323,fn.pre_decrement_expression,2,0),
-(...v)=>rednv(223243,fn.call_expression,2,0),
-(...v)=>redv(223243,R2180_js_call_expression,2,0),
+(...v)=>rednv(268299,fn.void_expression,2,0,...v),
+(...v)=>rednv(268299,fn.typeof_expression,2,0,...v),
+(...v)=>rednv(268299,fn.plus_expression,2,0,...v),
+(...v)=>rednv(268299,fn.negate_expression,2,0,...v),
+(...v)=>rednv(268299,fn.unary_or_expression,2,0,...v),
+(...v)=>rednv(268299,fn.unary_not_expression,2,0,...v),
+(...v)=>rednv(269323,fn.pre_increment_expression,2,0,...v),
+(...v)=>rednv(269323,fn.pre_decrement_expression,2,0,...v),
+(...v)=>rednv(223243,fn.call_expression,2,0,...v),
+(...v)=>redv(223243,R2180_js_call_expression,2,0,...v),
 e=>1846,
 e=>1842,
 e=>1862,
-(...v)=>redv(219147,R2142_js_member_expression,2,0),
-(...v)=>rednv(203787,fn.call_expression,2,0),
-(...v)=>redv(218123,R2130_js_new_expression,2,0),
+(...v)=>redv(219147,R2142_js_member_expression,2,0,...v),
+(...v)=>rednv(203787,fn.call_expression,2,0,...v),
+(...v)=>redv(218123,R2130_js_new_expression,2,0,...v),
 e=>1878,
-(...v)=>redv(301067,R590_css_undefined6202_group_list,2,0),
-(...v)=>redv(301067,R00_S,2,0),
-(...v)=>redv(299015,R591_css_undefined6202_group_list,1,0),
-(...v)=>redn(297991,1),
-(...v)=>redn(300039,1),
+(...v)=>redv(301067,R590_css_undefined6202_group_list,2,0,...v),
+(...v)=>redv(301067,R00_S,2,0,...v),
+(...v)=>redv(299015,R591_css_undefined6202_group_list,1,0,...v),
+(...v)=>redn(297991,1,...v),
+(...v)=>redn(300039,1,...v),
 e=>1890,
-(...v)=>rednv(287755,fn.string_literal,2,0),
-(...v)=>redv(286727,R591_css_undefined6202_group_list,1,0),
-(...v)=>redn(284679,1),
+(...v)=>rednv(287755,fn.string_literal,2,0,...v),
+(...v)=>redv(286727,R591_css_undefined6202_group_list,1,0,...v),
+(...v)=>redn(284679,1,...v),
 e=>1898,
 e=>1910,
 e=>1906,
 e=>1926,
 e=>1914,
-(...v)=>redv(249867,R2441_js_array_literal,2,0),
-(...v)=>redv(250887,R911_css_WQ_NAME,1,0),
-(...v)=>redn(251911,1),
+(...v)=>redv(249867,R2441_js_array_literal,2,0,...v),
+(...v)=>redv(250887,R911_css_WQ_NAME,1,0,...v),
+(...v)=>redn(251911,1,...v),
 e=>1934,
 e=>1938,
-(...v)=>redv(231435,R2261_js_no_substitute_template,2,0),
-(...v)=>redv(235531,R2301_js_template_head,2,0),
-(...v)=>redn(240647,1),
-(...v)=>redv(239623,R591_css_undefined6202_group_list,1,0),
-(...v)=>redn(238599,1),
+(...v)=>redv(231435,R2261_js_no_substitute_template,2,0,...v),
+(...v)=>redv(235531,R2301_js_template_head,2,0,...v),
+(...v)=>redn(240647,1,...v),
+(...v)=>redv(239623,R591_css_undefined6202_group_list,1,0,...v),
+(...v)=>redn(238599,1,...v),
 e=>1958,
-(...v)=>redv(271371,R2650_js_cover_parenthesized_expression_and_arrow_parameter_list,2,0),
+(...v)=>redv(271371,R2650_js_cover_parenthesized_expression_and_arrow_parameter_list,2,0,...v),
 e=>1966,
 e=>1970,
-(...v)=>redv(224267,R2190_js_super_call,2,0),
-(...v)=>rednv(270347,fn.await_expression,2,0),
+(...v)=>redv(224267,R2190_js_super_call,2,0,...v),
+(...v)=>rednv(270347,fn.await_expression,2,0,...v),
 e=>1998,
-(...v)=>rednv(173067,fn.label_statement,2,0),
+(...v)=>rednv(173067,fn.label_statement,2,0,...v),
 e=>2018,
 e=>2014,
-(...v)=>redv(182279,R911_css_WQ_NAME,1,0),
-(...v)=>rednv(183303,fn.binding,1,0),
+(...v)=>redv(182279,R911_css_WQ_NAME,1,0,...v),
+(...v)=>rednv(183303,fn.binding,1,0,...v),
 e=>2026,
-(...v)=>redn(272391,1),
+(...v)=>redn(272391,1,...v),
 e=>2046,
 e=>2034,
 e=>2066,
@@ -8823,16 +6827,16 @@ e=>2126,
 e=>2134,
 e=>2150,
 e=>2158,
-(...v)=>redv(162827,R1591_js_continue_statement,2,0),
+(...v)=>redv(162827,R1591_js_continue_statement,2,0,...v),
 e=>2162,
-(...v)=>redv(163851,R1601_js_break_statement,2,0),
+(...v)=>redv(163851,R1601_js_break_statement,2,0,...v),
 e=>2166,
-(...v)=>redv(164875,R1611_js_return_statement,2,0),
+(...v)=>redv(164875,R1611_js_return_statement,2,0,...v),
 e=>2174,
 e=>2186,
 e=>2190,
-(...v)=>rednv(180235,fn.debugger_statement,2,0),
-(...v)=>redv(204811,R2001_js_class_declaration,2,0),
+(...v)=>rednv(180235,fn.debugger_statement,2,0,...v),
+(...v)=>redv(204811,R2001_js_class_declaration,2,0,...v),
 e=>2198,
 e=>2226,
 e=>2222,
@@ -8841,18 +6845,18 @@ e=>2242,
 e=>2250,
 e=>2278,
 e=>2274,
-(...v)=>redv(186375,R911_css_WQ_NAME,1,0),
+(...v)=>redv(186375,R911_css_WQ_NAME,1,0,...v),
 e=>2294,
 e=>2290,
 e=>2302,
 e=>2310,
-(...v)=>redv(5135,R51_IMPORT_TAG,3,0),
-(...v)=>redv(310279,R911_css_WQ_NAME,1,0),
-(...v)=>rednv(311303,fn.attribute,1,0),
+(...v)=>redv(5135,R51_IMPORT_TAG,3,0,...v),
+(...v)=>redv(310279,R911_css_WQ_NAME,1,0,...v),
+(...v)=>rednv(311303,fn.attribute,1,0,...v),
 e=>2314,
 e=>2322,
 e=>2330,
-(...v)=>redn(312327,1),
+(...v)=>redn(312327,1,...v),
 e=>2334,
 e=>2338,
 e=>2418,
@@ -8868,132 +6872,132 @@ e=>2386,
 e=>2422,
 e=>2426,
 e=>2430,
-(...v)=>redv(305167,R51_IMPORT_TAG,3,0),
+(...v)=>redv(305167,R51_IMPORT_TAG,3,0,...v),
 e=>2434,
 e=>2438,
-(...v)=>redv(319499,R590_css_undefined6202_group_list,2,0),
-(...v)=>redv(319499,R00_S,2,0),
-(...v)=>redv(317447,R591_css_undefined6202_group_list,1,0),
-(...v)=>redn(316423,1),
-(...v)=>redn(318471,1),
+(...v)=>redv(319499,R590_css_undefined6202_group_list,2,0,...v),
+(...v)=>redv(319499,R00_S,2,0,...v),
+(...v)=>redv(317447,R591_css_undefined6202_group_list,1,0,...v),
+(...v)=>redn(316423,1,...v),
+(...v)=>redn(318471,1,...v),
 e=>2450,
-(...v)=>redv(125967,R1231_js_import_declaration,3,0),
+(...v)=>redv(125967,R1231_js_import_declaration,3,0,...v),
 e=>2470,
 e=>2474,
 e=>2478,
-(...v)=>redv(132107,R1291_js_named_imports,2,0),
-(...v)=>redv(131079,R31_undefined501_group_list,1,0),
-(...v)=>redn(130055,1),
-(...v)=>redv(134151,R1310_js_import_specifier,1,0),
+(...v)=>redv(132107,R1291_js_named_imports,2,0,...v),
+(...v)=>redv(131079,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(130055,1,...v),
+(...v)=>redv(134151,R1310_js_import_specifier,1,0,...v),
 e=>2482,
 e=>2486,
 e=>2490,
-(...v)=>redv(137231,R1342_js_export_declaration,3,0),
-(...v)=>redv(137231,R1343_js_export_declaration,3,0),
+(...v)=>redv(137231,R1342_js_export_declaration,3,0,...v),
+(...v)=>redv(137231,R1343_js_export_declaration,3,0,...v),
 e=>2494,
 e=>2498,
 e=>2502,
-(...v)=>redv(140299,R1371_js_export_clause,2,0),
-(...v)=>redv(139271,R31_undefined501_group_list,1,0),
-(...v)=>redn(138247,1),
-(...v)=>redv(141319,R1380_js_export_specifier,1,0),
+(...v)=>redv(140299,R1371_js_export_clause,2,0,...v),
+(...v)=>redv(139271,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(138247,1,...v),
+(...v)=>redv(141319,R1380_js_export_specifier,1,0,...v),
 e=>2506,
-(...v)=>rednv(153615,fn.block_statement,3,0),
-(...v)=>redv(145419,R30_undefined501_group_list,2,0),
-(...v)=>redv(215055,R150_css_COMPLEX_SELECTOR_list,3,0),
-(...v)=>rednv(253967,fn.assignment_expression,3,0),
+(...v)=>rednv(153615,fn.block_statement,3,0,...v),
+(...v)=>redv(145419,R30_undefined501_group_list,2,0,...v),
+(...v)=>redv(215055,R150_css_COMPLEX_SELECTOR_list,3,0,...v),
+(...v)=>rednv(253967,fn.assignment_expression,3,0,...v),
 e=>2510,
-(...v)=>rednv(257039,fn.or_expression,3,0),
-(...v)=>rednv(258063,fn.and_expression,3,0),
-(...v)=>rednv(259087,fn.bit_or_expression,3,0),
-(...v)=>rednv(260111,fn.bit_xor_expression,3,0),
-(...v)=>rednv(261135,fn.bit_and_expression,3,0),
-(...v)=>rednv(262159,fn.equality_expression,3,0),
-(...v)=>rednv(263183,fn.equality_expression,3,0),
-(...v)=>rednv(263183,fn.instanceof_expression,3,0),
-(...v)=>rednv(263183,fn.in_expression,3,0),
-(...v)=>rednv(264207,fn.left_shift_expression,3,0),
-(...v)=>rednv(264207,fn.right_shift_expression,3,0),
-(...v)=>rednv(264207,fn.right_shift_fill_expression,3,0),
-(...v)=>rednv(265231,fn.add_expression,3,0),
-(...v)=>rednv(265231,fn.subtract_expression,3,0),
-(...v)=>rednv(266255,fn.multiply_expression,3,0),
-(...v)=>rednv(266255,fn.divide_expression,3,0),
-(...v)=>rednv(266255,fn.modulo_expression,3,0),
-(...v)=>rednv(267279,fn.exponent_expression,3,0),
+(...v)=>rednv(257039,fn.or_expression,3,0,...v),
+(...v)=>rednv(258063,fn.and_expression,3,0,...v),
+(...v)=>rednv(259087,fn.bit_or_expression,3,0,...v),
+(...v)=>rednv(260111,fn.bit_xor_expression,3,0,...v),
+(...v)=>rednv(261135,fn.bit_and_expression,3,0,...v),
+(...v)=>rednv(262159,fn.equality_expression,3,0,...v),
+(...v)=>rednv(263183,fn.equality_expression,3,0,...v),
+(...v)=>rednv(263183,fn.instanceof_expression,3,0,...v),
+(...v)=>rednv(263183,fn.in_expression,3,0,...v),
+(...v)=>rednv(264207,fn.left_shift_expression,3,0,...v),
+(...v)=>rednv(264207,fn.right_shift_expression,3,0,...v),
+(...v)=>rednv(264207,fn.right_shift_fill_expression,3,0,...v),
+(...v)=>rednv(265231,fn.add_expression,3,0,...v),
+(...v)=>rednv(265231,fn.subtract_expression,3,0,...v),
+(...v)=>rednv(266255,fn.multiply_expression,3,0,...v),
+(...v)=>rednv(266255,fn.divide_expression,3,0,...v),
+(...v)=>rednv(266255,fn.modulo_expression,3,0,...v),
+(...v)=>rednv(267279,fn.exponent_expression,3,0,...v),
 e=>2514,
 e=>2518,
 e=>2522,
-(...v)=>redv(242699,R2371_js_object_literal,2,0),
-(...v)=>redv(241671,R31_undefined501_group_list,1,0),
-(...v)=>redn(243719,1),
+(...v)=>redv(242699,R2371_js_object_literal,2,0,...v),
+(...v)=>redv(241671,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(243719,1,...v),
 e=>2538,
 e=>2534,
-(...v)=>redn(245767,1),
-(...v)=>redn(244743,1),
+(...v)=>redn(245767,1,...v),
+(...v)=>redn(244743,1,...v),
 e=>2554,
 e=>2562,
-(...v)=>redv(205835,R2001_js_class_declaration,2,0),
-(...v)=>redv(223247,R2141_js_member_expression,3,0),
+(...v)=>redv(205835,R2001_js_class_declaration,2,0,...v),
+(...v)=>redv(223247,R2141_js_member_expression,3,0,...v),
 e=>2570,
 e=>2578,
 e=>2574,
 e=>2582,
-(...v)=>redv(225291,R2201_js_arguments,2,0),
-(...v)=>redn(228359,1),
+(...v)=>redv(225291,R2201_js_arguments,2,0,...v),
+(...v)=>redn(228359,1,...v),
 e=>2586,
-(...v)=>redv(227335,R31_undefined501_group_list,1,0),
-(...v)=>redn(226311,1),
+(...v)=>redv(227335,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(226311,1,...v),
 e=>2594,
-(...v)=>redv(219151,R2141_js_member_expression,3,0),
-(...v)=>redv(219151,R2143_js_member_expression,3,0),
-(...v)=>rednv(222223,fn.new_target_expression,3,0),
-(...v)=>redv(301071,R590_css_undefined6202_group_list,3,0),
-(...v)=>redv(299019,R590_css_undefined6202_group_list,2,0),
-(...v)=>rednv(287759,fn.string_literal,3,0),
-(...v)=>redv(286731,R590_css_undefined6202_group_list,2,0),
+(...v)=>redv(219151,R2141_js_member_expression,3,0,...v),
+(...v)=>redv(219151,R2143_js_member_expression,3,0,...v),
+(...v)=>rednv(222223,fn.new_target_expression,3,0,...v),
+(...v)=>redv(301071,R590_css_undefined6202_group_list,3,0,...v),
+(...v)=>redv(299019,R590_css_undefined6202_group_list,2,0,...v),
+(...v)=>rednv(287759,fn.string_literal,3,0,...v),
+(...v)=>redv(286731,R590_css_undefined6202_group_list,2,0,...v),
 e=>2598,
-(...v)=>redv(249871,R2440_js_array_literal,3,0),
-(...v)=>redv(249871,R2441_js_array_literal,3,0),
-(...v)=>redv(250891,R2450_js_element_list,2,0),
-(...v)=>redn(251915,2),
-(...v)=>rednv(252939,fn.spread_element,2,0),
-(...v)=>redv(231439,R2260_js_no_substitute_template,3,0),
-(...v)=>redv(235535,R2300_js_template_head,3,0),
-(...v)=>redv(239627,R590_css_undefined6202_group_list,2,0),
-(...v)=>redv(232463,R2270_js_substitute_template,3,0),
-(...v)=>redv(233479,R911_css_WQ_NAME,1,0),
+(...v)=>redv(249871,R2440_js_array_literal,3,0,...v),
+(...v)=>redv(249871,R2441_js_array_literal,3,0,...v),
+(...v)=>redv(250891,R2450_js_element_list,2,0,...v),
+(...v)=>redn(251915,2,...v),
+(...v)=>rednv(252939,fn.spread_element,2,0,...v),
+(...v)=>redv(231439,R2260_js_no_substitute_template,3,0,...v),
+(...v)=>redv(235535,R2300_js_template_head,3,0,...v),
+(...v)=>redv(239627,R590_css_undefined6202_group_list,2,0,...v),
+(...v)=>redv(232463,R2270_js_substitute_template,3,0,...v),
+(...v)=>redv(233479,R911_css_WQ_NAME,1,0,...v),
 e=>2626,
 e=>2630,
-(...v)=>redv(271375,R2651_js_cover_parenthesized_expression_and_arrow_parameter_list,3,0),
+(...v)=>redv(271375,R2651_js_cover_parenthesized_expression_and_arrow_parameter_list,3,0,...v),
 e=>2638,
 e=>2642,
 e=>2646,
 e=>2650,
-(...v)=>redv(220175,R2150_js_super_property,3,0),
+(...v)=>redv(220175,R2150_js_super_property,3,0,...v),
 e=>2654,
-(...v)=>redv(197647,R1930_js_arrow_function,3,0),
-(...v)=>redn(199687,1),
-(...v)=>redv(174091,R1300_js_from_clause,2,0),
-(...v)=>redn(175111,1),
-(...v)=>rednv(181263,fn.variable_statement,3,0),
-(...v)=>rednv(183307,fn.binding,2,0),
-(...v)=>redn(273419,2),
+(...v)=>redv(197647,R1930_js_arrow_function,3,0,...v),
+(...v)=>redn(199687,1,...v),
+(...v)=>redv(174091,R1300_js_from_clause,2,0,...v),
+(...v)=>redn(175111,1,...v),
+(...v)=>rednv(181263,fn.variable_statement,3,0,...v),
+(...v)=>rednv(183307,fn.binding,2,0,...v),
+(...v)=>redn(273419,2,...v),
 e=>2674,
 e=>2682,
 e=>2678,
-(...v)=>redn(276487,1),
-(...v)=>redn(279559,1),
+(...v)=>redn(276487,1,...v),
+(...v)=>redn(279559,1,...v),
 e=>2690,
-(...v)=>redn(281607,1),
-(...v)=>redn(274443,2),
+(...v)=>redn(281607,1,...v),
+(...v)=>redn(274443,2,...v),
 e=>2702,
 e=>2710,
 e=>2718,
 e=>2714,
-(...v)=>redn(277511,1),
-(...v)=>redn(278535,1),
-(...v)=>redn(280583,1),
+(...v)=>redn(277511,1,...v),
+(...v)=>redn(278535,1,...v),
+(...v)=>redn(280583,1,...v),
 e=>2734,
 e=>2738,
 e=>2742,
@@ -9002,85 +7006,85 @@ e=>2754,
 e=>2758,
 e=>2762,
 e=>2770,
-(...v)=>redn(157703,1),
-(...v)=>redn(158727,1),
+(...v)=>redn(157703,1,...v),
+(...v)=>redn(158727,1,...v),
 e=>2810,
 e=>2818,
-(...v)=>redv(162831,R1590_js_continue_statement,3,0),
-(...v)=>redv(163855,R1600_js_break_statement,3,0),
-(...v)=>redv(164879,R1610_js_return_statement,3,0),
+(...v)=>redv(162831,R1590_js_continue_statement,3,0,...v),
+(...v)=>redv(163855,R1600_js_break_statement,3,0,...v),
+(...v)=>redv(164879,R1610_js_return_statement,3,0,...v),
 e=>2822,
-(...v)=>redv(165903,R1620_js_throw_statement,3,0),
-(...v)=>redv(176143,R1720_js_try_statement,3,0),
-(...v)=>redv(176143,R1721_js_try_statement,3,0),
+(...v)=>redv(165903,R1620_js_throw_statement,3,0,...v),
+(...v)=>redv(176143,R1720_js_try_statement,3,0,...v),
+(...v)=>redv(176143,R1721_js_try_statement,3,0,...v),
 e=>2830,
-(...v)=>redv(204815,R2000_js_class_declaration,3,0),
+(...v)=>redv(204815,R2000_js_class_declaration,3,0,...v),
 e=>2842,
 e=>2846,
-(...v)=>redv(206859,R2023_js_class_tail,2,0),
-(...v)=>redn(208903,1),
-(...v)=>redv(209927,R911_css_WQ_NAME,1,0),
-(...v)=>redn(210951,1),
-(...v)=>redv(207883,R1300_js_from_clause,2,0),
+(...v)=>redv(206859,R2023_js_class_tail,2,0,...v),
+(...v)=>redn(208903,1,...v),
+(...v)=>redv(209927,R911_css_WQ_NAME,1,0,...v),
+(...v)=>redn(210951,1,...v),
+(...v)=>redv(207883,R1300_js_from_clause,2,0,...v),
 e=>2862,
 e=>2866,
 e=>2870,
-(...v)=>redv(191495,R1870_js_formal_parameters,1,0),
-(...v)=>redv(191495,R1871_js_formal_parameters,1,0),
+(...v)=>redv(191495,R1870_js_formal_parameters,1,0,...v),
+(...v)=>redv(191495,R1871_js_formal_parameters,1,0,...v),
 e=>2874,
-(...v)=>redn(193543,1),
-(...v)=>redv(192519,R911_css_WQ_NAME,1,0),
-(...v)=>redn(194567,1),
-(...v)=>rednv(184335,fn.lexical,3,0),
-(...v)=>rednv(187403,fn.binding,2,0),
+(...v)=>redn(193543,1,...v),
+(...v)=>redv(192519,R911_css_WQ_NAME,1,0,...v),
+(...v)=>redn(194567,1,...v),
+(...v)=>rednv(184335,fn.lexical,3,0,...v),
+(...v)=>rednv(187403,fn.binding,2,0,...v),
 e=>2882,
-(...v)=>redv(5139,R50_IMPORT_TAG,4,0),
-(...v)=>redv(310283,R1050_css_declaration_list,2,0),
-(...v)=>redv(5139,R51_IMPORT_TAG,4,0),
+(...v)=>redv(5139,R50_IMPORT_TAG,4,0,...v),
+(...v)=>redv(310283,R1050_css_declaration_list,2,0,...v),
+(...v)=>redv(5139,R51_IMPORT_TAG,4,0,...v),
 e=>2894,
 e=>2918,
 e=>2906,
 e=>2922,
 e=>2926,
-(...v)=>redv(312331,R1300_js_from_clause,2,0),
+(...v)=>redv(312331,R1300_js_from_clause,2,0,...v),
 e=>2930,
 e=>2938,
 e=>2942,
 e=>2946,
-(...v)=>redn(308231,1),
-(...v)=>redv(307207,R31_undefined501_group_list,1,0),
+(...v)=>redn(308231,1,...v),
+(...v)=>redv(307207,R31_undefined501_group_list,1,0,...v),
 e=>2958,
 e=>2962,
 e=>2966,
-(...v)=>redn(309255,1),
-(...v)=>rednv(321543,fn.text,1,0),
-(...v)=>redn(6151,1),
-(...v)=>shftf(2974,I71_BASIC_BINDING),
-(...v)=>redv(320519,R591_css_undefined6202_group_list,1,0),
-(...v)=>redn(322567,1),
-(...v)=>redv(305171,R51_IMPORT_TAG,4,0),
-(...v)=>redv(305171,R50_IMPORT_TAG,4,0),
+(...v)=>redn(309255,1,...v),
+(...v)=>rednv(321543,fn.text,1,0,...v),
+(...v)=>redn(6151,1,...v),
+(...v)=>shftf(2974,I71_BASIC_BINDING,...v),
+(...v)=>redv(320519,R591_css_undefined6202_group_list,1,0,...v),
+(...v)=>redn(322567,1,...v),
+(...v)=>redv(305171,R51_IMPORT_TAG,4,0,...v),
+(...v)=>redv(305171,R50_IMPORT_TAG,4,0,...v),
 e=>2978,
 e=>2982,
-(...v)=>redv(319503,R590_css_undefined6202_group_list,3,0),
-(...v)=>redv(317451,R590_css_undefined6202_group_list,2,0),
-(...v)=>redv(125971,R1230_js_import_declaration,4,0),
-(...v)=>redv(133131,R1300_js_from_clause,2,0),
-(...v)=>redv(126991,R1240_js_import_clause,3,0),
-(...v)=>rednv(129039,fn.name_space_import,3,0),
+(...v)=>redv(319503,R590_css_undefined6202_group_list,3,0,...v),
+(...v)=>redv(317451,R590_css_undefined6202_group_list,2,0,...v),
+(...v)=>redv(125971,R1230_js_import_declaration,4,0,...v),
+(...v)=>redv(133131,R1300_js_from_clause,2,0,...v),
+(...v)=>redv(126991,R1240_js_import_clause,3,0,...v),
+(...v)=>rednv(129039,fn.name_space_import,3,0,...v),
 e=>2990,
-(...v)=>redv(132111,R1290_js_named_imports,3,0),
-(...v)=>redv(132111,R1291_js_named_imports,3,0),
-(...v)=>redv(137235,R1340_js_export_declaration,4,0),
-(...v)=>redv(137235,R1341_js_export_declaration,4,0),
+(...v)=>redv(132111,R1290_js_named_imports,3,0,...v),
+(...v)=>redv(132111,R1291_js_named_imports,3,0,...v),
+(...v)=>redv(137235,R1340_js_export_declaration,4,0,...v),
+(...v)=>redv(137235,R1341_js_export_declaration,4,0,...v),
 e=>3002,
-(...v)=>redv(140303,R1370_js_export_clause,3,0),
-(...v)=>redv(140303,R1371_js_export_clause,3,0),
+(...v)=>redv(140303,R1370_js_export_clause,3,0,...v),
+(...v)=>redv(140303,R1371_js_export_clause,3,0,...v),
 e=>3018,
-(...v)=>redv(242703,R2370_js_object_literal,3,0),
-(...v)=>redv(242703,R2371_js_object_literal,3,0),
-(...v)=>rednv(247819,fn.binding,2,0),
-(...v)=>rednv(243723,fn.spread_element,2,0),
+(...v)=>redv(242703,R2370_js_object_literal,3,0,...v),
+(...v)=>redv(242703,R2371_js_object_literal,3,0,...v),
+(...v)=>rednv(247819,fn.binding,2,0,...v),
+(...v)=>rednv(243723,fn.spread_element,2,0,...v),
 e=>3034,
 e=>3042,
 e=>3046,
@@ -9088,67 +7092,67 @@ e=>3050,
 e=>3058,
 e=>3062,
 e=>3066,
-(...v)=>redv(205839,R2000_js_class_declaration,3,0),
-(...v)=>redv(223251,R2140_js_member_expression,4,0),
+(...v)=>redv(205839,R2000_js_class_declaration,3,0,...v),
+(...v)=>redv(223251,R2140_js_member_expression,4,0,...v),
 e=>3070,
-(...v)=>redv(225295,R2200_js_arguments,3,0),
-(...v)=>redv(225295,R2201_js_arguments,3,0),
-(...v)=>rednv(226315,fn.spread_element,2,0),
-(...v)=>redv(219155,R2140_js_member_expression,4,0),
-(...v)=>redv(249875,R2440_js_array_literal,4,0),
-(...v)=>redv(250895,R2451_js_element_list,3,0),
-(...v)=>redv(233483,R2280_js_template_spans,2,0),
+(...v)=>redv(225295,R2200_js_arguments,3,0,...v),
+(...v)=>redv(225295,R2201_js_arguments,3,0,...v),
+(...v)=>rednv(226315,fn.spread_element,2,0,...v),
+(...v)=>redv(219155,R2140_js_member_expression,4,0,...v),
+(...v)=>redv(249875,R2440_js_array_literal,4,0,...v),
+(...v)=>redv(250895,R2451_js_element_list,3,0,...v),
+(...v)=>redv(233483,R2280_js_template_spans,2,0,...v),
 e=>3086,
 e=>3090,
-(...v)=>redv(237579,R2321_js_template_tail,2,0),
-(...v)=>redv(236555,R2311_js_template_middle,2,0),
-(...v)=>redv(234507,R2280_js_template_spans,2,0),
-(...v)=>redv(271379,R2651_js_cover_parenthesized_expression_and_arrow_parameter_list,4,0),
-(...v)=>redv(271379,R2652_js_cover_parenthesized_expression_and_arrow_parameter_list,4,0),
-(...v)=>redv(220179,R2151_js_super_property,4,0),
+(...v)=>redv(237579,R2321_js_template_tail,2,0,...v),
+(...v)=>redv(236555,R2311_js_template_middle,2,0,...v),
+(...v)=>redv(234507,R2280_js_template_spans,2,0,...v),
+(...v)=>redv(271379,R2651_js_cover_parenthesized_expression_and_arrow_parameter_list,4,0,...v),
+(...v)=>redv(271379,R2652_js_cover_parenthesized_expression_and_arrow_parameter_list,4,0,...v),
+(...v)=>redv(220179,R2151_js_super_property,4,0,...v),
 e=>3102,
-(...v)=>redn(196615,1),
-(...v)=>redv(182287,R1780_js_variable_declaration_list,3,0),
-(...v)=>redv(248843,R1300_js_from_clause,2,0),
-(...v)=>redn(273423,3),
+(...v)=>redn(196615,1,...v),
+(...v)=>redv(182287,R1780_js_variable_declaration_list,3,0,...v),
+(...v)=>redv(248843,R1300_js_from_clause,2,0,...v),
+(...v)=>redn(273423,3,...v),
 e=>3110,
-(...v)=>redn(275467,2),
-(...v)=>redn(281611,2),
+(...v)=>redn(275467,2,...v),
+(...v)=>redn(281611,2,...v),
 e=>3122,
-(...v)=>redn(274447,3),
-(...v)=>redn(278539,2),
+(...v)=>redn(274447,3,...v),
+(...v)=>redn(278539,2,...v),
 e=>3126,
-(...v)=>redn(282635,2),
-(...v)=>redn(280587,2),
+(...v)=>redn(282635,2,...v),
+(...v)=>redn(280587,2,...v),
 e=>3158,
 e=>3162,
-(...v)=>shftf(3170,I1562_js_iteration_statement),
+(...v)=>shftf(3170,I1562_js_iteration_statement,...v),
 e=>3182,
-(...v)=>shftf(3190,I1562_js_iteration_statement),
-(...v)=>rednv(157707,fn.variable_statement,2,0),
-(...v)=>redv(158731,R1300_js_from_clause,2,0),
-(...v)=>redn(161799,1),
-(...v)=>rednv(160779,fn.lexical_expression,2,0),
+(...v)=>shftf(3190,I1562_js_iteration_statement,...v),
+(...v)=>rednv(157707,fn.variable_statement,2,0,...v),
+(...v)=>redv(158731,R1300_js_from_clause,2,0,...v),
+(...v)=>redn(161799,1,...v),
+(...v)=>rednv(160779,fn.lexical_expression,2,0,...v),
 e=>3194,
 e=>3210,
-(...v)=>redv(176147,R1722_js_try_statement,4,0),
-(...v)=>rednv(178187,fn.finally_statement,2,0),
+(...v)=>redv(176147,R1722_js_try_statement,4,0,...v),
+(...v)=>rednv(178187,fn.finally_statement,2,0,...v),
 e=>3230,
-(...v)=>redv(206863,R2022_js_class_tail,3,0),
-(...v)=>redv(206863,R2021_js_class_tail,3,0),
-(...v)=>redv(209931,R1050_css_declaration_list,2,0),
-(...v)=>redv(210955,R2060_js_class_element,2,0),
+(...v)=>redv(206863,R2022_js_class_tail,3,0,...v),
+(...v)=>redv(206863,R2021_js_class_tail,3,0,...v),
+(...v)=>redv(209931,R1050_css_declaration_list,2,0,...v),
+(...v)=>redv(210955,R2060_js_class_element,2,0,...v),
 e=>3234,
 e=>3238,
 e=>3242,
 e=>3250,
-(...v)=>redv(191499,R1871_js_formal_parameters,2,0),
-(...v)=>redv(186383,R1780_js_variable_declaration_list,3,0),
-(...v)=>redv(5143,R50_IMPORT_TAG,5,0),
-(...v)=>redv(5143,R51_IMPORT_TAG,5,0),
+(...v)=>redv(191499,R1871_js_formal_parameters,2,0,...v),
+(...v)=>redv(186383,R1780_js_variable_declaration_list,3,0,...v),
+(...v)=>redv(5143,R50_IMPORT_TAG,5,0,...v),
+(...v)=>redv(5143,R51_IMPORT_TAG,5,0,...v),
 e=>3270,
-(...v)=>rednv(311311,fn.attribute,3,0),
-(...v)=>redn(313351,1),
+(...v)=>rednv(311311,fn.attribute,3,0,...v),
+(...v)=>redn(313351,1,...v),
 e=>3294,
 e=>3298,
 e=>3318,
@@ -9156,93 +7160,93 @@ e=>3314,
 e=>3310,
 e=>3306,
 e=>3302,
-(...v)=>redv(312335,R1300_js_from_clause,3,0),
+(...v)=>redv(312335,R1300_js_from_clause,3,0,...v),
 e=>3326,
-(...v)=>redv(305175,R50_IMPORT_TAG,5,0),
+(...v)=>redv(305175,R50_IMPORT_TAG,5,0,...v),
 e=>3338,
-(...v)=>redv(307211,R30_undefined501_group_list,2,0),
+(...v)=>redv(307211,R30_undefined501_group_list,2,0,...v),
 e=>3346,
 e=>3354,
 e=>3362,
-(...v)=>redv(320523,R590_css_undefined6202_group_list,2,0),
+(...v)=>redv(320523,R590_css_undefined6202_group_list,2,0,...v),
 e=>3370,
 e=>3378,
-(...v)=>redv(132115,R1290_js_named_imports,4,0),
-(...v)=>redv(131087,R150_css_COMPLEX_SELECTOR_list,3,0),
-(...v)=>redv(134159,R1311_js_import_specifier,3,0),
-(...v)=>redv(140307,R1370_js_export_clause,4,0),
-(...v)=>redv(139279,R150_css_COMPLEX_SELECTOR_list,3,0),
-(...v)=>redv(141327,R1381_js_export_specifier,3,0),
-(...v)=>rednv(256023,fn.condition_expression,5,0),
-(...v)=>redv(242707,R2370_js_object_literal,4,0),
-(...v)=>redv(241679,R150_css_COMPLEX_SELECTOR_list,3,0),
-(...v)=>rednv(243727,fn.property_binding,3,0),
+(...v)=>redv(132115,R1290_js_named_imports,4,0,...v),
+(...v)=>redv(131087,R150_css_COMPLEX_SELECTOR_list,3,0,...v),
+(...v)=>redv(134159,R1311_js_import_specifier,3,0,...v),
+(...v)=>redv(140307,R1370_js_export_clause,4,0,...v),
+(...v)=>redv(139279,R150_css_COMPLEX_SELECTOR_list,3,0,...v),
+(...v)=>redv(141327,R1381_js_export_specifier,3,0,...v),
+(...v)=>rednv(256023,fn.condition_expression,5,0,...v),
+(...v)=>redv(242707,R2370_js_object_literal,4,0,...v),
+(...v)=>redv(241679,R150_css_COMPLEX_SELECTOR_list,3,0,...v),
+(...v)=>rednv(243727,fn.property_binding,3,0,...v),
 e=>3382,
 e=>3386,
-(...v)=>redn(190471,1),
+(...v)=>redn(190471,1,...v),
 e=>3390,
-(...v)=>redv(246799,R1300_js_from_clause,3,0),
+(...v)=>redv(246799,R1300_js_from_clause,3,0,...v),
 e=>3402,
 e=>3406,
 e=>3410,
 e=>3418,
-(...v)=>redv(225299,R2200_js_arguments,4,0),
-(...v)=>redv(227343,R150_css_COMPLEX_SELECTOR_list,3,0),
-(...v)=>redv(250899,R2451_js_element_list,4,0),
-(...v)=>redv(234511,R2290_js_template_middle_list,3,0),
-(...v)=>redv(237583,R2320_js_template_tail,3,0),
-(...v)=>redv(236559,R2310_js_template_middle,3,0),
+(...v)=>redv(225299,R2200_js_arguments,4,0,...v),
+(...v)=>redv(227343,R150_css_COMPLEX_SELECTOR_list,3,0,...v),
+(...v)=>redv(250899,R2451_js_element_list,4,0,...v),
+(...v)=>redv(234511,R2290_js_template_middle_list,3,0,...v),
+(...v)=>redv(237583,R2320_js_template_tail,3,0,...v),
+(...v)=>redv(236559,R2310_js_template_middle,3,0,...v),
 e=>3422,
 e=>3426,
-(...v)=>redv(199695,R1300_js_from_clause,3,0),
+(...v)=>redv(199695,R1300_js_from_clause,3,0,...v),
 e=>3430,
-(...v)=>redn(273427,4),
-(...v)=>redn(276495,3),
-(...v)=>redn(279567,3),
-(...v)=>redn(274451,4),
+(...v)=>redn(273427,4,...v),
+(...v)=>redn(276495,3,...v),
+(...v)=>redn(279567,3,...v),
+(...v)=>redn(274451,4,...v),
 e=>3434,
 e=>3442,
-(...v)=>redn(277519,3),
-(...v)=>rednv(156695,fn.if_statement,5,0),
+(...v)=>redn(277519,3,...v),
+(...v)=>rednv(156695,fn.if_statement,5,0,...v),
 e=>3446,
 e=>3450,
-(...v)=>rednv(159767,fn.while_statement,5,0),
+(...v)=>rednv(159767,fn.while_statement,5,0,...v),
 e=>3454,
-(...v)=>shftf(3462,I1562_js_iteration_statement),
-(...v)=>shftf(3470,I1562_js_iteration_statement),
-(...v)=>shftf(3474,I1562_js_iteration_statement),
-(...v)=>shftf(3482,I1562_js_iteration_statement),
-(...v)=>shftf(3486,I1562_js_iteration_statement),
-(...v)=>shftf(3494,I1562_js_iteration_statement),
-(...v)=>shftf(3498,I1562_js_iteration_statement),
-(...v)=>redv(167959,R1640_js_switch_statement,5,0),
+(...v)=>shftf(3462,I1562_js_iteration_statement,...v),
+(...v)=>shftf(3470,I1562_js_iteration_statement,...v),
+(...v)=>shftf(3474,I1562_js_iteration_statement,...v),
+(...v)=>shftf(3482,I1562_js_iteration_statement,...v),
+(...v)=>shftf(3486,I1562_js_iteration_statement,...v),
+(...v)=>shftf(3494,I1562_js_iteration_statement,...v),
+(...v)=>shftf(3498,I1562_js_iteration_statement,...v),
+(...v)=>redv(167959,R1640_js_switch_statement,5,0,...v),
 e=>3530,
 e=>3526,
 e=>3510,
-(...v)=>redv(166935,R1630_js_with_statement,5,0),
+(...v)=>redv(166935,R1630_js_with_statement,5,0,...v),
 e=>3534,
-(...v)=>redn(179207,1),
-(...v)=>redv(206867,R2020_js_class_tail,4,0),
+(...v)=>redn(179207,1,...v),
+(...v)=>redv(206867,R2020_js_class_tail,4,0,...v),
 e=>3538,
 e=>3546,
 e=>3554,
 e=>3558,
-(...v)=>redv(189463,R1847_js_function_expression,5,0),
-(...v)=>redn(195591,1),
-(...v)=>redv(191503,R1872_js_formal_parameters,3,0),
-(...v)=>redv(192527,R1780_js_variable_declaration_list,3,0),
-(...v)=>redv(5147,R50_IMPORT_TAG,6,0),
-(...v)=>redn(4111,3),
+(...v)=>redv(189463,R1847_js_function_expression,5,0,...v),
+(...v)=>redn(195591,1,...v),
+(...v)=>redv(191503,R1872_js_formal_parameters,3,0,...v),
+(...v)=>redv(192527,R1780_js_variable_declaration_list,3,0,...v),
+(...v)=>redv(5147,R50_IMPORT_TAG,6,0,...v),
+(...v)=>redn(4111,3,...v),
 e=>3562,
 e=>3566,
-(...v)=>redn(326663,1),
-(...v)=>redv(325639,R591_css_undefined6202_group_list,1,0),
-(...v)=>redn(324615,1),
-(...v)=>redn(327687,1),
+(...v)=>redn(326663,1,...v),
+(...v)=>redv(325639,R591_css_undefined6202_group_list,1,0,...v),
+(...v)=>redn(324615,1,...v),
+(...v)=>redn(327687,1,...v),
 e=>3574,
 e=>3582,
 e=>3586,
-(...v)=>redv(305179,R51_IMPORT_TAG,6,0),
+(...v)=>redv(305179,R51_IMPORT_TAG,6,0,...v),
 e=>3590,
 e=>3694,
 e=>3598,
@@ -9262,149 +7266,149 @@ e=>3786,
 e=>3790,
 e=>3794,
 e=>3798,
-(...v)=>redv(305179,R2983_html_TAG,6,0),
+(...v)=>redv(305179,R2983_html_TAG,6,0,...v),
 e=>3802,
 e=>3810,
 e=>3814,
 e=>3818,
-(...v)=>redn(212999,1),
+(...v)=>redn(212999,1,...v),
 e=>3822,
 e=>3830,
 e=>3838,
 e=>3842,
-(...v)=>redv(188439,R1847_js_function_expression,5,0),
-(...v)=>redv(271387,R2653_js_cover_parenthesized_expression_and_arrow_parameter_list,6,0),
-(...v)=>redn(273431,5),
-(...v)=>redn(274455,5),
+(...v)=>redv(188439,R1847_js_function_expression,5,0,...v),
+(...v)=>redv(271387,R2653_js_cover_parenthesized_expression_and_arrow_parameter_list,6,0,...v),
+(...v)=>redn(273431,5,...v),
+(...v)=>redn(274455,5,...v),
 e=>3846,
 e=>3854,
-(...v)=>shftf(3862,I1562_js_iteration_statement),
-(...v)=>shftf(3866,I1562_js_iteration_statement),
-(...v)=>shftf(3874,I1562_js_iteration_statement),
-(...v)=>redv(159771,R15615_js_iteration_statement,6,0),
-(...v)=>shftf(3894,I1562_js_iteration_statement),
-(...v)=>redv(159771,R15616_js_iteration_statement,6,0),
-(...v)=>shftf(3906,I1562_js_iteration_statement),
-(...v)=>redv(168971,R1650_js_case_block,2,0),
+(...v)=>shftf(3862,I1562_js_iteration_statement,...v),
+(...v)=>shftf(3866,I1562_js_iteration_statement,...v),
+(...v)=>shftf(3874,I1562_js_iteration_statement,...v),
+(...v)=>redv(159771,R15615_js_iteration_statement,6,0,...v),
+(...v)=>shftf(3894,I1562_js_iteration_statement,...v),
+(...v)=>redv(159771,R15616_js_iteration_statement,6,0,...v),
+(...v)=>shftf(3906,I1562_js_iteration_statement,...v),
+(...v)=>redv(168971,R1650_js_case_block,2,0,...v),
 e=>3914,
 e=>3926,
-(...v)=>redv(169991,R911_css_WQ_NAME,1,0),
+(...v)=>redv(169991,R911_css_WQ_NAME,1,0,...v),
 e=>3934,
 e=>3946,
 e=>3950,
-(...v)=>redv(189467,R1846_js_function_expression,6,0),
+(...v)=>redv(189467,R1846_js_function_expression,6,0,...v),
 e=>3954,
-(...v)=>redv(189467,R1845_js_function_expression,6,0),
-(...v)=>redv(189467,R1844_js_function_expression,6,0),
-(...v)=>redv(313359,R1300_js_from_clause,3,0),
-(...v)=>redv(323599,R1300_js_from_clause,3,0),
-(...v)=>redv(325643,R590_css_undefined6202_group_list,2,0),
+(...v)=>redv(189467,R1845_js_function_expression,6,0,...v),
+(...v)=>redv(189467,R1844_js_function_expression,6,0,...v),
+(...v)=>redv(313359,R1300_js_from_clause,3,0,...v),
+(...v)=>redv(323599,R1300_js_from_clause,3,0,...v),
+(...v)=>redv(325643,R590_css_undefined6202_group_list,2,0,...v),
 e=>3958,
-(...v)=>redv(305183,R50_IMPORT_TAG,7,0),
-(...v)=>redv(305183,R2982_html_TAG,7,0),
+(...v)=>redv(305183,R50_IMPORT_TAG,7,0,...v),
+(...v)=>redv(305183,R2982_html_TAG,7,0,...v),
 e=>3966,
 e=>3970,
 e=>3974,
-(...v)=>rednv(9223,fn.stylesheet,1,0),
-(...v)=>redv(14343,R142_css_STYLE_SHEET,1,0),
-(...v)=>redv(14343,R141_css_STYLE_SHEET,1,0),
-(...v)=>redv(11271,R31_undefined501_group_list,1,0),
-(...v)=>redn(10247,1),
+(...v)=>rednv(9223,fn.stylesheet,1,0,...v),
+(...v)=>redv(14343,R142_css_STYLE_SHEET,1,0,...v),
+(...v)=>redv(14343,R141_css_STYLE_SHEET,1,0,...v),
+(...v)=>redv(11271,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(10247,1,...v),
 e=>3994,
 e=>3998,
 e=>4010,
 e=>4006,
 e=>4002,
-(...v)=>redv(13319,R31_undefined501_group_list,1,0),
-(...v)=>redn(12295,1),
+(...v)=>redv(13319,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(12295,1,...v),
 e=>4018,
 e=>4014,
-(...v)=>redv(15367,R31_undefined501_group_list,1,0),
+(...v)=>redv(15367,R31_undefined501_group_list,1,0,...v),
 e=>4062,
-(...v)=>rednv(82951,fn.selector,1,0),
+(...v)=>rednv(82951,fn.selector,1,0,...v),
 e=>4066,
 e=>4070,
 e=>4074,
-(...v)=>rednv(88071,fn.compoundSelector,1,0),
+(...v)=>rednv(88071,fn.compoundSelector,1,0,...v),
 e=>4098,
-(...v)=>rednv(90119,fn.typeselector,1,0),
+(...v)=>rednv(90119,fn.typeselector,1,0,...v),
 e=>4102,
-(...v)=>redv(90119,R881_css_TYPE_SELECTOR,1,0),
-(...v)=>redn(91143,1),
-(...v)=>redv(93191,R911_css_WQ_NAME,1,0),
+(...v)=>redv(90119,R881_css_TYPE_SELECTOR,1,0,...v),
+(...v)=>redn(91143,1,...v),
+(...v)=>redv(93191,R911_css_WQ_NAME,1,0,...v),
 e=>4110,
-(...v)=>redn(92167,1),
+(...v)=>redn(92167,1,...v),
 e=>4126,
 e=>4138,
 e=>4142,
-(...v)=>redv(117767,R00_S,1,0),
+(...v)=>redv(117767,R00_S,1,0,...v),
 e=>4134,
 e=>4130,
-(...v)=>redn(113671,1),
-(...v)=>redv(83975,R31_undefined501_group_list,1,0),
-(...v)=>redn(94215,1),
+(...v)=>redn(113671,1,...v),
+(...v)=>redv(83975,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(94215,1,...v),
 e=>4162,
 e=>4174,
-(...v)=>redv(87047,R31_undefined501_group_list,1,0),
-(...v)=>redn(86023,1),
+(...v)=>redv(87047,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(86023,1,...v),
 e=>4186,
 e=>4190,
 e=>4194,
 e=>4202,
 e=>4206,
 e=>4210,
-(...v)=>rednv(142343,fn.script,1,0),
-(...v)=>redn(143367,1),
+(...v)=>rednv(142343,fn.script,1,0,...v),
+(...v)=>redn(143367,1,...v),
 e=>4218,
 e=>4222,
 e=>4226,
 e=>4230,
 e=>4234,
 e=>4242,
-(...v)=>redv(7187,R72_BASIC_BINDING,4,0),
-(...v)=>redv(305183,R2981_html_TAG,7,0),
+(...v)=>redv(7187,R72_BASIC_BINDING,4,0,...v),
+(...v)=>redv(305183,R2981_html_TAG,7,0,...v),
 e=>4250,
 e=>4254,
-(...v)=>redv(211991,R2077_js_method_definition,5,0),
+(...v)=>redv(211991,R2077_js_method_definition,5,0,...v),
 e=>4262,
 e=>4266,
 e=>4274,
 e=>4278,
-(...v)=>redv(188443,R1846_js_function_expression,6,0),
+(...v)=>redv(188443,R1846_js_function_expression,6,0,...v),
 e=>4282,
-(...v)=>redv(188443,R1845_js_function_expression,6,0),
-(...v)=>redv(188443,R1844_js_function_expression,6,0),
-(...v)=>redn(274459,6),
-(...v)=>rednv(156703,fn.if_statement,7,0),
-(...v)=>rednv(159775,fn.do_while_statement,7,0),
-(...v)=>shftf(4286,I1562_js_iteration_statement),
-(...v)=>redv(159775,R15614_js_iteration_statement,7,0),
-(...v)=>redv(159775,R15610_js_iteration_statement,7,0),
-(...v)=>redv(159775,R1569_js_iteration_statement,7,0),
-(...v)=>redv(159775,R1564_js_iteration_statement,7,0),
-(...v)=>redv(159775,R15611_js_iteration_statement,7,0),
-(...v)=>redv(159775,R15613_js_iteration_statement,7,0),
-(...v)=>redv(159775,R15612_js_iteration_statement,7,0),
+(...v)=>redv(188443,R1845_js_function_expression,6,0,...v),
+(...v)=>redv(188443,R1844_js_function_expression,6,0,...v),
+(...v)=>redn(274459,6,...v),
+(...v)=>rednv(156703,fn.if_statement,7,0,...v),
+(...v)=>rednv(159775,fn.do_while_statement,7,0,...v),
+(...v)=>shftf(4286,I1562_js_iteration_statement,...v),
+(...v)=>redv(159775,R15614_js_iteration_statement,7,0,...v),
+(...v)=>redv(159775,R15610_js_iteration_statement,7,0,...v),
+(...v)=>redv(159775,R1569_js_iteration_statement,7,0,...v),
+(...v)=>redv(159775,R1564_js_iteration_statement,7,0,...v),
+(...v)=>redv(159775,R15611_js_iteration_statement,7,0,...v),
+(...v)=>redv(159775,R15613_js_iteration_statement,7,0,...v),
+(...v)=>redv(159775,R15612_js_iteration_statement,7,0,...v),
 e=>4314,
-(...v)=>redv(168975,R1300_js_from_clause,3,0),
-(...v)=>redv(169995,R1660_js_case_clauses,2,0),
+(...v)=>redv(168975,R1300_js_from_clause,3,0,...v),
+(...v)=>redv(169995,R1660_js_case_clauses,2,0,...v),
 e=>4318,
 e=>4322,
-(...v)=>redv(172043,R1681_js_default_clause,2,0),
-(...v)=>rednv(177175,fn.catch_statement,5,0),
+(...v)=>redv(172043,R1681_js_default_clause,2,0,...v),
+(...v)=>rednv(177175,fn.catch_statement,5,0,...v),
 e=>4330,
-(...v)=>redv(189471,R1843_js_function_expression,7,0),
-(...v)=>redv(189471,R1842_js_function_expression,7,0),
-(...v)=>redv(189471,R1841_js_function_expression,7,0),
-(...v)=>redv(305187,R2980_html_TAG,8,0),
+(...v)=>redv(189471,R1843_js_function_expression,7,0,...v),
+(...v)=>redv(189471,R1842_js_function_expression,7,0,...v),
+(...v)=>redv(189471,R1841_js_function_expression,7,0,...v),
+(...v)=>redv(305187,R2980_html_TAG,8,0,...v),
 e=>4334,
 e=>4338,
 e=>4342,
 e=>4346,
-(...v)=>redv(14347,R140_css_STYLE_SHEET,2,0),
-(...v)=>redv(11275,R30_undefined501_group_list,2,0),
-(...v)=>redv(13323,R30_undefined501_group_list,2,0),
-(...v)=>redn(19467,2),
+(...v)=>redv(14347,R140_css_STYLE_SHEET,2,0,...v),
+(...v)=>redv(11275,R30_undefined501_group_list,2,0,...v),
+(...v)=>redv(13323,R30_undefined501_group_list,2,0,...v),
+(...v)=>redn(19467,2,...v),
 e=>4358,
 e=>4378,
 e=>4370,
@@ -9418,39 +7422,39 @@ e=>4470,
 e=>4462,
 e=>4506,
 e=>4510,
-(...v)=>redv(107527,R00_S,1,0),
+(...v)=>redv(107527,R00_S,1,0,...v),
 e=>4522,
-(...v)=>redv(106503,R31_undefined501_group_list,1,0),
-(...v)=>redn(104455,1),
+(...v)=>redv(106503,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(104455,1,...v),
 e=>4526,
-(...v)=>rednv(82955,fn.selector,2,0),
-(...v)=>redv(81927,R31_undefined501_group_list,1,0),
-(...v)=>rednv(80903,fn.comboSelector,1,0),
-(...v)=>redn(89095,1),
-(...v)=>rednv(88075,fn.compoundSelector,2,0),
-(...v)=>redv(83979,R30_undefined501_group_list,2,0),
-(...v)=>redv(87051,R30_undefined501_group_list,2,0),
-(...v)=>redv(90123,R880_css_TYPE_SELECTOR,2,0),
-(...v)=>redv(93195,R910_css_WQ_NAME,2,0),
-(...v)=>redn(92171,2),
-(...v)=>redv(117771,R590_css_undefined6202_group_list,2,0),
-(...v)=>redv(117771,R00_S,2,0),
-(...v)=>redv(115719,R591_css_undefined6202_group_list,1,0),
-(...v)=>redn(114695,1),
-(...v)=>redn(116743,1),
-(...v)=>rednv(95243,fn.idSelector,2,0),
-(...v)=>rednv(96267,fn.classSelector,2,0),
+(...v)=>rednv(82955,fn.selector,2,0,...v),
+(...v)=>redv(81927,R31_undefined501_group_list,1,0,...v),
+(...v)=>rednv(80903,fn.comboSelector,1,0,...v),
+(...v)=>redn(89095,1,...v),
+(...v)=>rednv(88075,fn.compoundSelector,2,0,...v),
+(...v)=>redv(83979,R30_undefined501_group_list,2,0,...v),
+(...v)=>redv(87051,R30_undefined501_group_list,2,0,...v),
+(...v)=>redv(90123,R880_css_TYPE_SELECTOR,2,0,...v),
+(...v)=>redv(93195,R910_css_WQ_NAME,2,0,...v),
+(...v)=>redn(92171,2,...v),
+(...v)=>redv(117771,R590_css_undefined6202_group_list,2,0,...v),
+(...v)=>redv(117771,R00_S,2,0,...v),
+(...v)=>redv(115719,R591_css_undefined6202_group_list,1,0,...v),
+(...v)=>redn(114695,1,...v),
+(...v)=>redn(116743,1,...v),
+(...v)=>rednv(95243,fn.idSelector,2,0,...v),
+(...v)=>rednv(96267,fn.classSelector,2,0,...v),
 e=>4574,
 e=>4558,
 e=>4550,
 e=>4562,
 e=>4566,
 e=>4570,
-(...v)=>rednv(102411,fn.pseudoClassSelector,2,0),
+(...v)=>rednv(102411,fn.pseudoClassSelector,2,0,...v),
 e=>4582,
-(...v)=>rednv(103435,fn.pseudoElementSelector,2,0),
-(...v)=>redn(86027,2),
-(...v)=>redv(84999,R31_undefined501_group_list,1,0),
+(...v)=>rednv(103435,fn.pseudoElementSelector,2,0,...v),
+(...v)=>redn(86027,2,...v),
+(...v)=>redv(84999,R31_undefined501_group_list,1,0,...v),
 e=>4590,
 e=>4594,
 e=>4598,
@@ -9460,87 +7464,87 @@ e=>4610,
 e=>4614,
 e=>4618,
 e=>4626,
-(...v)=>redv(7191,R70_BASIC_BINDING,5,0),
+(...v)=>redv(7191,R70_BASIC_BINDING,5,0,...v),
 e=>4630,
 e=>4634,
 e=>4638,
-(...v)=>redv(211995,R2074_js_method_definition,6,0),
-(...v)=>redv(211995,R2073_js_method_definition,6,0),
+(...v)=>redv(211995,R2074_js_method_definition,6,0,...v),
+(...v)=>redv(211995,R2073_js_method_definition,6,0,...v),
 e=>4642,
-(...v)=>redv(211995,R2075_js_method_definition,6,0),
+(...v)=>redv(211995,R2075_js_method_definition,6,0,...v),
 e=>4650,
 e=>4654,
-(...v)=>redv(188447,R1843_js_function_expression,7,0),
-(...v)=>redv(188447,R1842_js_function_expression,7,0),
-(...v)=>redv(188447,R1841_js_function_expression,7,0),
-(...v)=>redv(159779,R1568_js_iteration_statement,8,0),
-(...v)=>redv(159779,R1567_js_iteration_statement,8,0),
-(...v)=>redv(159779,R1563_js_iteration_statement,8,0),
-(...v)=>redv(159779,R1566_js_iteration_statement,8,0),
-(...v)=>redv(159779,R1565_js_iteration_statement,8,0),
+(...v)=>redv(188447,R1843_js_function_expression,7,0,...v),
+(...v)=>redv(188447,R1842_js_function_expression,7,0,...v),
+(...v)=>redv(188447,R1841_js_function_expression,7,0,...v),
+(...v)=>redv(159779,R1568_js_iteration_statement,8,0,...v),
+(...v)=>redv(159779,R1567_js_iteration_statement,8,0,...v),
+(...v)=>redv(159779,R1563_js_iteration_statement,8,0,...v),
+(...v)=>redv(159779,R1566_js_iteration_statement,8,0,...v),
+(...v)=>redv(159779,R1565_js_iteration_statement,8,0,...v),
 e=>4662,
-(...v)=>redv(168979,R1652_js_case_block,4,0),
-(...v)=>redv(171023,R1671_js_case_clause,3,0),
-(...v)=>redv(172047,R1680_js_default_clause,3,0),
-(...v)=>redv(189475,R1840_js_function_expression,8,0),
+(...v)=>redv(168979,R1652_js_case_block,4,0,...v),
+(...v)=>redv(171023,R1671_js_case_clause,3,0,...v),
+(...v)=>redv(172047,R1680_js_default_clause,3,0,...v),
+(...v)=>redv(189475,R1840_js_function_expression,8,0,...v),
 e=>4670,
 e=>4674,
 e=>4678,
-(...v)=>redv(309275,R51_IMPORT_TAG,6,0),
+(...v)=>redv(309275,R51_IMPORT_TAG,6,0,...v),
 e=>4686,
-(...v)=>redn(25615,3),
+(...v)=>redn(25615,3,...v),
 e=>4698,
-(...v)=>redv(78855,R591_css_undefined6202_group_list,1,0),
-(...v)=>redn(21511,1),
+(...v)=>redv(78855,R591_css_undefined6202_group_list,1,0,...v),
+(...v)=>redn(21511,1,...v),
 e=>4710,
 e=>4718,
 e=>4714,
-(...v)=>redv(41991,R31_undefined501_group_list,1,0),
-(...v)=>redn(46087,1),
+(...v)=>redv(41991,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(46087,1,...v),
 e=>4734,
-(...v)=>redn(48135,1),
-(...v)=>redn(47111,1),
+(...v)=>redn(48135,1,...v),
+(...v)=>redn(47111,1,...v),
 e=>4750,
 e=>4758,
 e=>4802,
 e=>4778,
-(...v)=>redn(56327,1),
-(...v)=>redn(71687,1),
+(...v)=>redn(56327,1,...v),
+(...v)=>redn(71687,1,...v),
 e=>4814,
-(...v)=>redn(44039,1),
+(...v)=>redn(44039,1,...v),
 e=>4818,
-(...v)=>redn(28679,1),
+(...v)=>redn(28679,1,...v),
 e=>4822,
-(...v)=>redn(36871,1),
+(...v)=>redn(36871,1,...v),
 e=>4842,
 e=>4846,
-(...v)=>redn(37895,1),
-(...v)=>redn(38919,1),
+(...v)=>redn(37895,1,...v),
+(...v)=>redn(38919,1,...v),
 e=>4862,
 e=>4866,
 e=>4870,
-(...v)=>redv(15375,R150_css_COMPLEX_SELECTOR_list,3,0),
+(...v)=>redv(15375,R150_css_COMPLEX_SELECTOR_list,3,0,...v),
 e=>4874,
-(...v)=>redv(16399,R161_css_STYLE_RULE,3,0),
-(...v)=>redv(107531,R1050_css_declaration_list,2,0),
-(...v)=>redv(107531,R1051_css_declaration_list,2,0),
+(...v)=>redv(16399,R161_css_STYLE_RULE,3,0,...v),
+(...v)=>redv(107531,R1050_css_declaration_list,2,0,...v),
+(...v)=>redv(107531,R1051_css_declaration_list,2,0,...v),
 e=>4878,
-(...v)=>redv(107531,R00_S,2,0),
+(...v)=>redv(107531,R00_S,2,0,...v),
 e=>4910,
 e=>4902,
 e=>4906,
 e=>4894,
-(...v)=>redv(81931,R30_undefined501_group_list,2,0),
-(...v)=>rednv(80907,fn.comboSelector,2,0),
-(...v)=>rednv(88079,fn.compoundSelector,3,0),
-(...v)=>redv(117775,R590_css_undefined6202_group_list,3,0),
-(...v)=>redv(115723,R590_css_undefined6202_group_list,2,0),
-(...v)=>rednv(98319,fn.attribSelector,3,0),
+(...v)=>redv(81931,R30_undefined501_group_list,2,0,...v),
+(...v)=>rednv(80907,fn.comboSelector,2,0,...v),
+(...v)=>rednv(88079,fn.compoundSelector,3,0,...v),
+(...v)=>redv(117775,R590_css_undefined6202_group_list,3,0,...v),
+(...v)=>redv(115723,R590_css_undefined6202_group_list,2,0,...v),
+(...v)=>rednv(98319,fn.attribSelector,3,0,...v),
 e=>4922,
 e=>4926,
-(...v)=>redn(99335,1),
-(...v)=>rednv(102415,fn.pseudoClassSelector,3,0),
-(...v)=>redv(85003,R30_undefined501_group_list,2,0),
+(...v)=>redn(99335,1,...v),
+(...v)=>rednv(102415,fn.pseudoClassSelector,3,0,...v),
+(...v)=>redv(85003,R30_undefined501_group_list,2,0,...v),
 e=>4934,
 e=>4938,
 e=>4942,
@@ -9550,44 +7554,44 @@ e=>4954,
 e=>4958,
 e=>4962,
 e=>4966,
-(...v)=>redv(8219,R72_BASIC_BINDING,6,0),
-(...v)=>redv(211999,R2070_js_method_definition,7,0),
-(...v)=>redv(211999,R2071_js_method_definition,7,0),
+(...v)=>redv(8219,R72_BASIC_BINDING,6,0,...v),
+(...v)=>redv(211999,R2070_js_method_definition,7,0,...v),
+(...v)=>redv(211999,R2071_js_method_definition,7,0,...v),
 e=>4970,
-(...v)=>redv(211999,R2076_js_method_definition,7,0),
-(...v)=>redv(188451,R1840_js_function_expression,8,0),
-(...v)=>redv(159783,R1560_js_iteration_statement,9,0),
-(...v)=>redv(168983,R1651_js_case_block,5,0),
-(...v)=>redv(171027,R1670_js_case_clause,4,0),
+(...v)=>redv(211999,R2076_js_method_definition,7,0,...v),
+(...v)=>redv(188451,R1840_js_function_expression,8,0,...v),
+(...v)=>redv(159783,R1560_js_iteration_statement,9,0,...v),
+(...v)=>redv(168983,R1651_js_case_block,5,0,...v),
+(...v)=>redv(171027,R1670_js_case_clause,4,0,...v),
 e=>4974,
-(...v)=>redv(309279,R50_IMPORT_TAG,7,0),
-(...v)=>redv(309279,R2982_html_TAG,7,0),
-(...v)=>redn(25619,4),
-(...v)=>redv(78859,R590_css_undefined6202_group_list,2,0),
+(...v)=>redv(309279,R50_IMPORT_TAG,7,0,...v),
+(...v)=>redv(309279,R2982_html_TAG,7,0,...v),
+(...v)=>redn(25619,4,...v),
+(...v)=>redv(78859,R590_css_undefined6202_group_list,2,0,...v),
 e=>4990,
 e=>4994,
 e=>4998,
-(...v)=>(redn(18435,0)),
-(...v)=>redn(46091,2),
-(...v)=>redn(52235,2),
-(...v)=>redn(55307,2),
-(...v)=>redv(51207,R31_undefined501_group_list,1,0),
-(...v)=>redv(54279,R31_undefined501_group_list,1,0),
-(...v)=>redn(49163,2),
+(...v)=>(redn(18435,0,...v)),
+(...v)=>redn(46091,2,...v),
+(...v)=>redn(52235,2,...v),
+(...v)=>redn(55307,2,...v),
+(...v)=>redv(51207,R31_undefined501_group_list,1,0,...v),
+(...v)=>redv(54279,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(49163,2,...v),
 e=>5050,
 e=>5054,
 e=>5074,
 e=>5070,
-(...v)=>redn(70663,1),
+(...v)=>redn(70663,1,...v),
 e=>5062,
-(...v)=>redn(57351,1),
+(...v)=>redn(57351,1,...v),
 e=>5106,
 e=>5098,
 e=>5102,
 e=>5110,
 e=>5094,
 e=>5078,
-(...v)=>redn(68615,1),
+(...v)=>redn(68615,1,...v),
 e=>5130,
 e=>5134,
 e=>5138,
@@ -9596,111 +7600,111 @@ e=>5150,
 e=>5182,
 e=>5170,
 e=>5174,
-(...v)=>redn(36875,2),
-(...v)=>redv(35847,R31_undefined501_group_list,1,0),
-(...v)=>redn(33799,1),
+(...v)=>redn(36875,2,...v),
+(...v)=>redv(35847,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(33799,1,...v),
 e=>5198,
 e=>5202,
 e=>5210,
-(...v)=>redv(16403,R160_css_STYLE_RULE,4,0),
-(...v)=>redv(16403,R161_css_STYLE_RULE,4,0),
-(...v)=>redv(107535,R1051_css_declaration_list,3,0),
-(...v)=>redv(106511,R150_css_COMPLEX_SELECTOR_list,3,0),
-(...v)=>redv(109583,fn.parseDeclaration,3,0),
+(...v)=>redv(16403,R160_css_STYLE_RULE,4,0,...v),
+(...v)=>redv(16403,R161_css_STYLE_RULE,4,0,...v),
+(...v)=>redv(107535,R1051_css_declaration_list,3,0,...v),
+(...v)=>redv(106511,R150_css_COMPLEX_SELECTOR_list,3,0,...v),
+(...v)=>redv(109583,fn.parseDeclaration,3,0,...v),
 e=>5222,
-(...v)=>redn(112647,1),
-(...v)=>redv(111623,R591_css_undefined6202_group_list,1,0),
-(...v)=>redn(110599,1),
+(...v)=>redn(112647,1,...v),
+(...v)=>redv(111623,R591_css_undefined6202_group_list,1,0,...v),
+(...v)=>redn(110599,1,...v),
 e=>5238,
 e=>5242,
 e=>5246,
-(...v)=>redn(97287,1),
-(...v)=>redn(99339,2),
+(...v)=>redn(97287,1,...v),
+(...v)=>redn(99339,2,...v),
 e=>5250,
 e=>5254,
 e=>5258,
 e=>5262,
-(...v)=>redv(8223,R70_BASIC_BINDING,7,0),
-(...v)=>redv(8223,R81_CALL_BINDING,7,0),
-(...v)=>redv(212003,R2072_js_method_definition,8,0),
-(...v)=>redv(309283,R2980_html_TAG,8,0),
-(...v)=>redn(25623,5),
-(...v)=>redn(79887,3),
+(...v)=>redv(8223,R70_BASIC_BINDING,7,0,...v),
+(...v)=>redv(8223,R81_CALL_BINDING,7,0,...v),
+(...v)=>redv(212003,R2072_js_method_definition,8,0,...v),
+(...v)=>redv(309283,R2980_html_TAG,8,0,...v),
+(...v)=>redn(25623,5,...v),
+(...v)=>redn(79887,3,...v),
 e=>5286,
 e=>5290,
-(...v)=>redn(18439,1),
-(...v)=>redv(17415,R31_undefined501_group_list,1,0),
-(...v)=>redv(41999,R150_css_COMPLEX_SELECTOR_list,3,0),
-(...v)=>redn(46095,3),
-(...v)=>redn(45067,2),
-(...v)=>redv(51211,R30_undefined501_group_list,2,0),
-(...v)=>redv(54283,R30_undefined501_group_list,2,0),
-(...v)=>redn(50187,2),
-(...v)=>redn(53259,2),
-(...v)=>redn(56335,3),
-(...v)=>redn(58383,3),
+(...v)=>redn(18439,1,...v),
+(...v)=>redv(17415,R31_undefined501_group_list,1,0,...v),
+(...v)=>redv(41999,R150_css_COMPLEX_SELECTOR_list,3,0,...v),
+(...v)=>redn(46095,3,...v),
+(...v)=>redn(45067,2,...v),
+(...v)=>redv(51211,R30_undefined501_group_list,2,0,...v),
+(...v)=>redv(54283,R30_undefined501_group_list,2,0,...v),
+(...v)=>redn(50187,2,...v),
+(...v)=>redn(53259,2,...v),
+(...v)=>redn(56335,3,...v),
+(...v)=>redn(58383,3,...v),
 e=>5298,
-(...v)=>redn(62479,3),
-(...v)=>redv(61447,R591_css_undefined6202_group_list,1,0),
-(...v)=>redn(59399,1),
-(...v)=>redn(66567,1),
-(...v)=>redn(64519,1),
-(...v)=>redn(65543,1),
-(...v)=>redn(75787,2),
+(...v)=>redn(62479,3,...v),
+(...v)=>redv(61447,R591_css_undefined6202_group_list,1,0,...v),
+(...v)=>redn(59399,1,...v),
+(...v)=>redn(66567,1,...v),
+(...v)=>redn(64519,1,...v),
+(...v)=>redn(65543,1,...v),
+(...v)=>redn(75787,2,...v),
 e=>5334,
-(...v)=>redn(74759,1),
+(...v)=>redn(74759,1,...v),
 e=>5338,
 e=>5342,
-(...v)=>redv(26631,R31_undefined501_group_list,1,0),
+(...v)=>redv(26631,R31_undefined501_group_list,1,0,...v),
 e=>5354,
 e=>5350,
-(...v)=>redv(29703,R31_undefined501_group_list,1,0),
-(...v)=>redn(31751,1),
+(...v)=>redv(29703,R31_undefined501_group_list,1,0,...v),
+(...v)=>redn(31751,1,...v),
 e=>5358,
 e=>5362,
-(...v)=>redv(35851,R30_undefined501_group_list,2,0),
-(...v)=>redn(34827,2),
-(...v)=>redn(37903,3),
-(...v)=>redn(39951,3),
+(...v)=>redv(35851,R30_undefined501_group_list,2,0,...v),
+(...v)=>redn(34827,2,...v),
+(...v)=>redn(37903,3,...v),
+(...v)=>redn(39951,3,...v),
 e=>5366,
-(...v)=>redv(16407,R160_css_STYLE_RULE,5,0),
-(...v)=>redv(109587,fn.parseDeclaration,4,0),
-(...v)=>redv(112651,R1100_css_declaration_values,2,0),
+(...v)=>redv(16407,R160_css_STYLE_RULE,5,0,...v),
+(...v)=>redv(109587,fn.parseDeclaration,4,0,...v),
+(...v)=>redv(112651,R1100_css_declaration_values,2,0,...v),
 e=>5370,
-(...v)=>redv(111627,R590_css_undefined6202_group_list,2,0),
+(...v)=>redv(111627,R590_css_undefined6202_group_list,2,0,...v),
 e=>5374,
 e=>5378,
-(...v)=>rednv(98327,fn.attribSelector,5,0),
-(...v)=>redn(100359,1),
-(...v)=>redn(101391,3),
-(...v)=>redv(8227,R80_CALL_BINDING,8,0),
-(...v)=>redn(25627,6),
+(...v)=>rednv(98327,fn.attribSelector,5,0,...v),
+(...v)=>redn(100359,1,...v),
+(...v)=>redn(101391,3,...v),
+(...v)=>redv(8227,R80_CALL_BINDING,8,0,...v),
+(...v)=>redn(25627,6,...v),
 e=>5382,
-(...v)=>redn(22535,1),
-(...v)=>redn(76819,4),
-(...v)=>redn(43035,6),
-(...v)=>redv(17419,R30_undefined501_group_list,2,0),
-(...v)=>redn(62483,4),
-(...v)=>redv(61451,R590_css_undefined6202_group_list,2,0),
-(...v)=>redn(63503,3),
-(...v)=>redn(67599,3),
-(...v)=>redn(72719,3),
-(...v)=>rednv(27675,C270_css_keyframes,6,0),
-(...v)=>redv(26635,R30_undefined501_group_list,2,0),
-(...v)=>redn(73739,2),
-(...v)=>redn(32795,6),
-(...v)=>redn(40979,4),
-(...v)=>redn(108555,2),
-(...v)=>redv(112655,R1100_css_declaration_values,3,0),
-(...v)=>rednv(98331,fn.attribSelector,6,0),
-(...v)=>redn(23571,4),
+(...v)=>redn(22535,1,...v),
+(...v)=>redn(76819,4,...v),
+(...v)=>redn(43035,6,...v),
+(...v)=>redv(17419,R30_undefined501_group_list,2,0,...v),
+(...v)=>redn(62483,4,...v),
+(...v)=>redv(61451,R590_css_undefined6202_group_list,2,0,...v),
+(...v)=>redn(63503,3,...v),
+(...v)=>redn(67599,3,...v),
+(...v)=>redn(72719,3,...v),
+(...v)=>rednv(27675,C270_css_keyframes,6,0,...v),
+(...v)=>redv(26635,R30_undefined501_group_list,2,0,...v),
+(...v)=>redn(73739,2,...v),
+(...v)=>redn(32795,6,...v),
+(...v)=>redn(40979,4,...v),
+(...v)=>redn(108555,2,...v),
+(...v)=>redv(112655,R1100_css_declaration_values,3,0,...v),
+(...v)=>rednv(98331,fn.attribSelector,6,0,...v),
+(...v)=>redn(23571,4,...v),
 e=>5410,
 e=>5414,
-(...v)=>redv(29711,R150_css_COMPLEX_SELECTOR_list,3,0),
-(...v)=>redn(67607,5),
+(...v)=>redv(29711,R150_css_COMPLEX_SELECTOR_list,3,0,...v),
+(...v)=>redn(67607,5,...v),
 e=>5418,
-(...v)=>rednv(30739,C300_css_keyframes_blocks,4,0),
-(...v)=>rednv(30743,C300_css_keyframes_blocks,5,0)],
+(...v)=>rednv(30739,C300_css_keyframes_blocks,4,0,...v),
+(...v)=>rednv(30743,C300_css_keyframes_blocks,5,0,...v)],
 
     //Goto Lookup Functions
     goto = [v=>lsm(v,gt0),
@@ -11101,16 +9105,20 @@ function parser(l, e = {}) {
         l.next();
     }
 
+    const recovery_chain = [];
+
     const o = [],
         ss = [0, 0];
 
     let time = 1000000,
         RECOVERING = 100,
+        RESTARTED = true,
         tk = getToken(l, lu),
         p = l.copy(),
         sp = 1,
         len = 0,
         reduceStack = (e.reduceStack = []),
+        ROOT = 10000,
         off = 0;
 
     outer:
@@ -11200,6 +9208,8 @@ function parser(l, e = {}) {
                     break;
 
                 case 3:
+                    /* REDUCE */
+                    RESTARTED = true;
 
                     len = (r & 0x3FC) >> 1;
 
@@ -11231,7 +9241,7 @@ function parser(l, e = {}) {
             }
         }
     return o[0];
-}
+};
 
 // This prevents env variable access conflicts when concurrent compilation
 // are processing text data. 
@@ -11363,9 +9373,9 @@ class base {
         for (let i = 0; i < vals.length; i++) {
             if (vals[i] === original)
                 if (_new === null) {
-                    return i;
+                    return -(i+1);
                 } else
-                    return vals[i] = _new, -1;
+                    return vals[i] = _new, i;
         }
     }
 
@@ -11412,7 +9422,8 @@ class base {
 
     spin(trvs) {
         let val = trvs.next().value;
-        while (val !== undefined && val !== this) { val = trvs.next().value; }    }
+        while (val !== undefined && val !== this) { val = trvs.next().value; };
+    }
 
     toString() { return this.render() }
 
@@ -11451,8 +9462,8 @@ class operator$1 extends base {
     replaceNode(original, _new = null) {
         var index;
 
-        if ((index = super.replaceNode(original, _new)) > -1){
-            this.replace(this.vals[(index+1)%2]);
+        if ((index = super.replaceNode(original, _new)) < 0){
+            this.replace(this.vals[(-(index))%2]);
         }
     }
 
@@ -11503,8 +9514,8 @@ class argument_list extends base {
 
     replaceNode(original, _new = null) {
         let index = -1;
-        if ((index = super.replaceNode(original, _new, this.vals[0])) > -1) {
-            this.vals[0].splice(index, 1);
+        if ((index = super.replaceNode(original, _new, this.vals[0])) < 0) {
+            this.vals[0].splice(-(index+1), 1);
         }
     }
 
@@ -11538,8 +9549,8 @@ class array_literal extends base {
 
     replaceNode(original, _new = null) {
         let index = 0;
-        if ((index = super.replaceNode(original, _new, this.vals[0])) > -1) {
-            this.vals[0].splice(index, 1);
+        if ((index = super.replaceNode(original, _new, this.vals[0])) < 0) {
+            this.vals[0].splice((-(index+1)), 1);
         }
     }
 
@@ -11548,7 +9559,7 @@ class array_literal extends base {
     render() { return `[${this.exprs.map(a=>a.render()).join(",")}]` }
 }
 
-class function_declaration extends base {
+class function_declaration extends statement {
     constructor(id, args, body) {
 
         super(id, args || null, body || null);
@@ -11654,10 +9665,14 @@ class arrow_function_declaration extends function_declaration {
     get type() { return types$1.arrow_function_declaration }
 
     render() {
+        
         const
             body_str = ((this.body) ?
                 ((this.body.IS_STATEMENT || (this.body.type == types$1.statements && this.body.stmts.length > 1)) ?
                     `{${this.body.render()}}` :
+                    (this.body.type == types$1.object_literal) ?
+                        `(${this.body.render()})`
+                        :
                     this.body.render()) :
                 "{}"),
             args_str = this.args.render(this.args.length !== 1);
@@ -11704,7 +9719,7 @@ class unary_pre extends base {
             this.vals[0] = _new;
     }
 
-    render() { return `${this.op}${this.expr.render()}` }
+    render() { return `${this.op} ${this.expr.render()}` }
 }
 
 /** VOID **/
@@ -11781,10 +9796,10 @@ class statements extends statement {
         if (sym[0].length == 1)
             return sym[0][0];
         
-        super(sym[0]);
+        super(...sym[0]);
     }
 
-    get stmts() { return this.vals[0] }
+    get stmts() { return this.vals }
 
     getRootIds(ids, closure) {
         this.stmts.forEach(s => s.getRootIds(ids, closure));
@@ -11792,13 +9807,13 @@ class statements extends statement {
 
     replaceNode(original, _new = null) {
         let index = -1;
-        if ((index = super.replaceNode(original, _new, this.vals[0])) > -1) {
-            this.vals[0].splice(index, 1);
+        if ((index = super.replaceNode(original, _new, this.vals)) < 0) {
+            this.vals.splice(-(index+1), 1);
         }
     }
 
     * traverseDepthFirst(p) {
-        yield * super.traverseDepthFirst(p, this.vals[0]);
+        yield * super.traverseDepthFirst(p, this.vals);
     }
 
     get type() { return types$1.statements }
@@ -11815,7 +9830,7 @@ class block_statement extends statements {
         if (!(sym[1] instanceof statements))
             return sym[1];
 
-        super(sym[1].vals);
+        super([sym[1].vals]);
     }
 
     getRootIds(ids, closure) {
@@ -11874,7 +9889,7 @@ class call_expression extends base {
 
     replaceNode(original, _new = null) {
         let index = 0;
-        if ((index = super.replaceNode(original, _new, this.vals)) > -1) {
+        if ((index = super.replaceNode(original, _new, this.vals)) < 0) {
             if(index == 0)
                 this.replace(_new);
             else
@@ -11914,18 +9929,18 @@ class catch_statement extends statement {
         super(sym[2], sym[4]);
     }
 
-    get expression() { return this.vals[0] }
+    get variable() { return this.vals[0] }
     get body() { return this.vals[1] }
 
     getRootIds(ids, closure) {
-        this.expression.getRootIds(ids, closure);
+        closure.add(this.variable.val);
         this.body.getRootIds(ids, closure);
     }
 
     get type() { return types$1.catch_statement }
 
     render(){
-        return `catch (${this.expression})${this.body.type == types$1.block_statement ? this.body : `{${this.body}}`}`
+        return `catch (${this.variable})${this.body.type == types$1.block_statement ? this.body : `{${this.body}}`}`
     }
 }
 
@@ -11937,6 +9952,8 @@ class class_declaration extends base {
         //This is a declaration and id cannot be a closure variable. 
         if (this.id)
             this.id.root = false;
+
+        this.IS_STATEMENT = true;
     }
 
     get id() { return this.vals[0] }
@@ -12032,7 +10049,7 @@ class continue_statement extends base {
 
 /** DEBUGGER STATEMENT  **/
 
-class debugger_statement extends base {
+class debugger_statement extends statement {
     constructor() {
         super();
     }
@@ -12118,7 +10135,7 @@ class empty_statement extends base {
         super();
     }
     get type() { return types$1.empty }
-    render() { return ";" }
+    render() { return "" }
 }
 
 /** EQ **/
@@ -12238,8 +10255,8 @@ class expression_list extends base {
 
     replaceNode(original, _new = null) {
         let index = -1;
-        if ((index = super.replaceNode(original, _new, this.vals[0])) > -1) {
-            this.vals[0].splice(index, 1);
+        if ((index = super.replaceNode(original, _new, this.vals[0])) < 0) {
+            this.vals[0].splice(-(index+1), 1);
         }
     }
 
@@ -12267,7 +10284,7 @@ class expression_statement extends statement {
     }
 
     replaceNode(original, _new = null) {
-        if(!super.replaceNode(original, _new, this.vals[0]))
+        if(super.replaceNode(original, _new, this.vals) < 0)
             this.replace();
     }
 
@@ -12287,12 +10304,8 @@ class for_statement extends base {
     getRootIds(ids, closure) {  
         if (this.init) this.init.getRootIds(ids, closure);
         if (this.bool) this.bool.getRootIds(ids, closure);
-        if (this.iter) this.iter.getRootIds(ids, closure);
-
-       // closure = new Set([...closure.values()]);
-        
+        if (this.iter) this.iter.getRootIds(ids, closure);        
         if (this.body) this.body.getRootIds(ids, new Set);
-
     }
 
     * traverseDepthFirst(p) {
@@ -12427,7 +10440,6 @@ class import_clause extends base {
 class import_declaration extends base {
 
     constructor(specifier, import_clause = null) {
-        console.log(import_clause);
         super((Array.isArray(import_clause)) ? new base(import_clause) : import_clause , specifier);
     }
 
@@ -12535,6 +10547,7 @@ class lexical_declaration extends base {
     constructor(sym) {
         super(sym[1]);
         this.mode = sym[0];
+        this.IS_STATEMENT = true;
     }
 
     get bindings() { return this.vals[0] }
@@ -12567,8 +10580,8 @@ class member_expression extends base {
 
     replaceNode(original, _new = null) {
         let index = 0;
-        if ((index = super.replaceNode(original, _new, this.vals)) > -1) {
-            if(index == 0)
+        if ((index = super.replaceNode(original, _new, this.vals)) < 0) {
+            if(-(index+1) == 0)
                 this.replace(_new);
             else
                 this.replace(null);
@@ -12589,7 +10602,7 @@ class member_expression extends base {
 
 /** MODULE TL  **/
 
-class module$1 extends base {
+class module extends base {
     constructor(sym) {
         super(sym);
     }
@@ -12689,7 +10702,7 @@ class new_expression extends call_expression {
     constructor(id, args) { 
         super([id, args]);
         this.root = false;
-        this.id.root = false;
+        //this.id.root = false;
     }
 
     get type(){return types$1.new_expression}
@@ -12721,7 +10734,7 @@ class numeric_literal extends base {
     }
 }
 
-/** OBJECT **/
+/** OBJECT LITERAL **/
 
 class object_literal extends base {
     constructor(props) {
@@ -12730,22 +10743,16 @@ class object_literal extends base {
 
     get props() { return this.vals[0] }
 
-    * traverseDepthFirst(p) {
-        this.parent = p;
-        yield this;
-        for (const prop of this.props)
-            yield* prop.traverseDepthFirst(this);
-    }
-
     getRootIds(ids, closure) {
-        for(const id of this.props)
-            if(id && id.getRootIds)
-                id.getRootIds(ids, closure);
+        if(this.props)
+            for(const id of this.props)
+                if(id && id.getRootIds)
+                    id.getRootIds(ids, closure);
     }
 
     get type() { return types$1.object_literal }
 
-    render() { return `{${this.props.map(p=>p.render()).join(",")}}` }
+    render() { return `{${this.props ? this.props.map(p=>p.render()).join(","): ""}}` }
 }
 
 /** OR **/
@@ -12935,7 +10942,7 @@ class spread_element extends unary_pre {
 
 /** STRING **/
 
-class string$2 extends base {
+class string$1 extends base {
     constructor(sym) { super(sym.length === 3 ? sym[1]: ""); }
 
     get val() { return this.vals[0] }
@@ -12996,7 +11003,7 @@ class template extends base {
     	const NO_SUBSTITUTE = typeof sym == "string";
 
         if (NO_SUBSTITUTE)
-            super(new string$2(sym));
+            super(new string$1(sym));
         else
             super(...sym);
 
@@ -13021,7 +11028,7 @@ class template extends base {
 
 class template_head extends base {
 	
-    constructor(sym) { super(sym); }
+    constructor(sym) { super(sym|| ""); }
 
     get string() { return this.vals[0] }
 
@@ -13038,7 +11045,7 @@ class template_head extends base {
 
 class template_middle extends base {
 
-    constructor(sym) { super(sym); }
+    constructor(sym) { super(sym || ""); }
 
     get string() { return this.vals[0] }
 
@@ -13054,6 +11061,8 @@ class template_middle extends base {
 /** TEMPLATE MIDDLE **/
 
 class template_tail extends base {
+
+	constructor(sym) { super(sym|| ""); }
 
     get string() { return this.vals[0] }
 
@@ -13124,7 +11133,7 @@ class try_statement extends statement {
     get type() { return types$1.try_statement }
 
     render(){
-        return `try ${this.body}${this.catch ? " "+ this.catch : ""}${this.finally ? " "+this.finally : ""}`
+        return `try ${this.body.type == types$1.block_statement ? this.body : `{${this.body}}`} ${this.catch ? " "+ this.catch : ""}${this.finally ? " "+this.finally : ""}`
     }
 }
 
@@ -13218,7 +11227,7 @@ class super_literal extends base {
 }
 
 /** FOR OF **/
-class for_of_statement extends base {
+class for_of_statement extends statement {
 
     get await() { return this.vals[0] }
     get binding() { return this.vals[1] }
@@ -13226,6 +11235,12 @@ class for_of_statement extends base {
     get body() { return this.vals[3] }
 
     get type() { return types$1.for_of_statement }
+
+    getRootIds(ids, closure) {  
+        if (this.binding) this.binding.getRootIds(ids, closure);
+        if (this.expression) this.expression.getRootIds(ids, closure);
+        if (this.body) this.body.getRootIds(ids, new Set);
+    }
 
     render() {
         let binding, expression, body;
@@ -13238,17 +11253,4570 @@ class for_of_statement extends base {
     }
 }
 
+/** FOR IN **/
+class for_in_statement extends statement {
+
+    get binding() { return this.vals[0] }
+    get expression() { return this.vals[1] }
+    get body() { return this.vals[2] }
+
+    get type() { return types$1.for_in_statement }
+
+    getRootIds(ids, closure) {  
+        if (this.binding) this.binding.getRootIds(ids, closure);
+        if (this.expression) this.expression.getRootIds(ids, closure);
+        if (this.body) this.body.getRootIds(ids, new Set);
+    }
+
+
+    render() {
+        let binding, expression, body;
+
+        if (this.binding) binding = this.binding.render();
+        if (this.expression) expression = this.expression.render();
+        if (this.body) body = this.body.render();
+
+        return `for(${binding} in ${expression} ) ${body}`;
+    }
+}
+
 /** LEXICAL EXPRESSION **/
 //Like lexical declaration except omiting the semi-colon within the render() output.
 class lexical_expression extends lexical_declaration {
 	constructor(sym) {
         super(sym);
         this.vals[0] = [new binding([this.vals[0]])];
+        this.IS_STATEMENT = false;
     }
     render() { 
     	return super.render().slice(0, -1);
    	}
     get type(){return types$1.lexical_expression}
+}
+
+//with_statement
+//switch_statement
+//label_statement
+//finally_statement
+//variable_statement
+//class_statement
+
+
+const env = {
+    table: {},
+    ASI: true,
+    functions: {
+
+        //JS
+        script,
+        module,
+        template,
+        lexical_expression,
+template_head,
+template_middle,
+template_tail,
+super_literal,
+for_of_statement,
+        class_method,
+        throw_statement,
+        empty_statement,
+        switch_statement,
+        break_statement,
+        case_statement,
+        default_case_statement,
+        continue_statement,
+        import_declaration,
+        import_clause,
+        default_import,
+        name_space_import,
+        named_imports,
+        import_specifier,
+        export_declaration,
+        export_clause,
+        export_specifier,
+        parenthasized: argument_list$1,
+        label_statement,
+        plus_expression,
+        add_expression,
+        and_expression,
+        array_literal,
+        class_declaration,
+        arrow_function_declaration,
+        assignment_expression,
+        await_expression,
+        await_expression,
+        binding,
+        bit_and_expression: bitwise_and_espression,
+        bit_or_expression: bitwise_or_espression,
+        bit_xor_expression: bitwise_xor_espression,
+        block_statement,
+        bool_literal,
+        call_expression,
+        catch_statement,
+        condition_expression,
+        debugger_statement,
+        delete_expression,
+        divide_expression,
+        equality_expression,
+        exponent_expression: equality_expression$1,
+        expression_list,
+        expression_statement,
+        for_statement,
+        function_declaration,
+        identifier: identifier$1,
+        if_statement,
+        in_expression,
+        instanceof_expression,
+        left_shift_expression,
+        lexical: lexical_declaration,
+        member_expression,
+        modulo_expression,
+        multiply_expression,
+        negate_expression,
+        new_expression,
+        null_literal,
+        numeric_literal,
+        object_literal,
+        or_expression,
+        post_decrement_expression,
+        post_increment_expression,
+        pre_decrement_expression,
+        pre_increment_expression,
+        property_binding,
+        return_statement,
+        right_shift_expression,
+        right_shift_fill_expression,
+        spread_element,
+        statements,
+        string_literal: string$1,
+        subtract_expression,
+        this_literal,
+        try_statement,
+        typeof_expression,
+        unary_not_expression,
+        unary_not_expression,
+        unary_or_expression,
+        void_expression,
+        argument_list,
+        variable_statement: variable_declaration,
+        while_stmt: function(sym) {
+            this.bool = sym[1];
+            this.body = sym[3];
+        },
+        var_stmt: function(sym) { this.declarations = sym[1]; },
+        unary_plus: function(sym) {
+            this.expr = sym[1];
+            this.ty = "PRE INCR";
+        },
+        unary_minus: function(sym) {
+            this.expr = sym[1];
+            this.ty = "PRE INCR";
+        },
+        pre_inc_expr: function(sym) {
+            this.expr = sym[1];
+            this.ty = "PRE INCR";
+        },
+        pre_dec_expr: function(sym) {
+            this.expr = sym[1];
+            this.ty = "PRE DEC";
+        },
+
+        label_stmt: function(sym) {
+            this.label = sym[0];
+            this.stmt = sym[1];
+        },
+
+        defaultError: (tk, env, output, lex, prv_lex, ss, lu) => {
+            /*USED for ASI*/
+
+            if (env.ASI && lex.tx !== ")" && !lex.END) {
+
+                let ENCOUNTERED_END_CHAR = (lex.tx == "}" || lex.END || lex.tx == "</");
+
+                while (!ENCOUNTERED_END_CHAR && !prv_lex.END && prv_lex.off < lex.off) {
+                    prv_lex.next();
+                    if (prv_lex.ty == prv_lex.types.nl)
+                        ENCOUNTERED_END_CHAR = true;
+                }
+
+                if (ENCOUNTERED_END_CHAR) {
+                    lex.tl = 0;
+                    return lu({ tx: ";" });
+                }
+            }
+
+            if (lex.END) {
+                lex.tl = 0;
+                return lu({ tx: ";" });
+            }
+        }
+    },
+
+    options: {
+        integrate: false,
+        onstart: () => {
+            env.table = {};
+            env.ASI = true;
+        }
+    }
+};
+
+let fn$1 = {}; const 
+/************** Maps **************/
+
+    /* Symbols To Inject into the Lexer */
+    symbols$1 = ["...","<",">","<=",">=","==","!=","===","!==","**","++","--","<<",">>",">>>","&&","||","+=","-=","*=","%=","/=","**=","<<=",">>=",">>>=","&=","|=","^=","=>","//","/*","${"],
+
+    /* Goto lookup maps */
+    gt0$1 = [0,-1,1,2,5,4,3,6,7,-10,8,-9,9,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-7,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt1$1 = [0,-3,130,-2,6,7,-10,8,-9,9,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-7,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt2$1 = [0,-8,131,133,134,-2,135,-2,132,136,-148,140,-8,137,74,76,-3,75],
+gt3$1 = [0,-21,142,-8,144,122,-29,143,-2,123,127,-3,125,-14,121],
+gt4$1 = [0,-25,149,148,147,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-7,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt5$1 = [0,-133,154],
+gt6$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-17,194,195,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt7$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-17,205,195,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt8$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-17,206,195,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt9$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-17,207,195,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt10$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-17,208,195,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt11$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-17,209,195,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt12$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-17,210,195,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt13$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-17,211,195,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt14$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-17,212,195,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt15$1 = [0,-104,214,-4,216,92,93,-2,95],
+gt16$1 = [0,-104,221,-4,220,92,93,-2,95],
+gt17$1 = [0,-68,198,-16,199,-11,222,223,65,66,98,-6,64,71,92,93,-2,95,-6,197,-6,70,-20,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt18$1 = [0,-178,228,226,227],
+gt19$1 = [0,-162,238,236],
+gt20$1 = [0,-164,249,247],
+gt21$1 = [0,-168,258],
+gt22$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,260,261,264,263,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt23$1 = [0,-117,272,271,268],
+gt24$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,286,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt25$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,288,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt26$1 = [0,-104,292],
+gt27$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-17,293,195,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt28$1 = [0,-54,295],
+gt29$1 = [0,-62,297,298,-86,300,302,303,-21,299,301,74,76,-3,75],
+gt30$1 = [0,-29,307,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt31$1 = [0,-172,312,-2,314,74,76,-3,75],
+gt32$1 = [0,-172,315,-2,314,74,76,-3,75],
+gt33$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,317,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt34$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,320,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt35$1 = [0,-34,321],
+gt36$1 = [0,-86,324,325,-86,323,301,74,76,-3,75],
+gt37$1 = [0,-174,328,301,74,76,-3,75],
+gt38$1 = [0,-66,330,331,-82,333,302,303,-21,332,301,74,76,-3,75],
+gt39$1 = [0,-14,334],
+gt40$1 = [0,-11,342,339,-2,343,-1,344,-157,345,74,76,-3,75],
+gt41$1 = [0,-14,346],
+gt42$1 = [0,-14,347],
+gt43$1 = [0,-31,349,-37,125,-7,35,102,-4,100,350,-11,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,351,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt44$1 = [0,-19,355,352,-1,356,-152,357,74,76,-3,75],
+gt45$1 = [0,-25,359,-2,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-7,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt46$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,360,-2,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt47$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,361,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt48$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,362,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt49$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,363,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt50$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-7,364,39,40,41,42,43,44,45,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt51$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-8,365,40,41,42,43,44,45,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt52$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-9,366,41,42,43,44,45,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt53$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-10,367,42,43,44,45,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt54$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-11,368,43,44,45,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt55$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-12,369,44,45,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt56$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-12,370,44,45,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt57$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-12,371,44,45,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt58$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-12,372,44,45,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt59$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-13,373,45,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt60$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-13,374,45,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt61$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-13,375,45,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt62$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-13,376,45,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt63$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-13,377,45,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt64$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-13,378,45,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt65$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-14,379,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt66$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-14,380,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt67$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-14,381,46,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt68$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-15,382,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt69$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-15,383,47,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt70$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-16,384,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt71$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-16,385,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt72$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-16,386,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt73$1 = [0,-68,198,-14,100,-1,199,-10,196,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-16,387,48,49,57,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt74$1 = [0,-91,394,-28,388,-1,391,396,400,401,392,-39,402,403,-1,89,-3,393,-1,201,397,76,-3,75],
+gt75$1 = [0,-174,405,301,74,76,-3,75],
+gt76$1 = [0,-86,408,325,-86,407,301,74,76,-3,75],
+gt77$1 = [0,-176,409,76,-3,75],
+gt78$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,410,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt79$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-1,415,414,411,64,71,92,93,-2,95,-6,197,-6,70,-3,416,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt80$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,418,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt81$1 = [0,-176,419,76,-3,75],
+gt82$1 = [0,-104,420,-4,220,92,93,-2,95],
+gt83$1 = [0,-178,423,-1,422],
+gt84$1 = [0,-162,425],
+gt85$1 = [0,-164,427],
+gt86$1 = [0,-130,429],
+gt87$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-2,434,433,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt88$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,436,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt89$1 = [0,-117,439],
+gt90$1 = [0,-112,440,442,-1,444,441],
+gt91$1 = [0,-150,448,302,303,-21,447,301,74,76,-3,75],
+gt92$1 = [0,-176,449,76,-3,75],
+gt93$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,450,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt94$1 = [0,-68,198,-8,35,102,451,-3,100,-1,199,-10,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,452,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt95$1 = [0,-29,455,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-1,454,26,-3,27,17,-7,456,-7,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt96$1 = [0,-127,459],
+gt97$1 = [0,-127,461],
+gt98$1 = [0,-123,468,400,401,-27,463,464,-2,466,-1,467,-6,402,403,-1,89,-4,469,301,397,76,-3,75],
+gt99$1 = [0,-130,471,-19,478,302,303,-2,473,475,-1,476,477,472,-13,469,301,74,76,-3,75],
+gt100$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,479,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt101$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,481,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt102$1 = [0,-38,482,484,-1,490,-22,483,489,-2,198,-8,35,102,-4,100,-1,199,-7,32,31,486,488,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt103$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,492,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt104$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,496,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt105$1 = [0,-57,498,499],
+gt106$1 = [0,-86,502,325],
+gt107$1 = [0,-88,504,506,507,508,-31,511,400,401,-40,402,403,-1,89,-6,512,76,-3,75],
+gt108$1 = [0,-68,198,-14,100,-1,199,-10,513,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-20,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt109$1 = [0,-71,515,518,517,520,-75,478,302,303,-5,521,477,519,-13,469,301,74,76,-3,75],
+gt110$1 = [0,-127,524],
+gt111$1 = [0,-127,525],
+gt112$1 = [0,-16,527,-149,140],
+gt113$1 = [0,-10,528,-2,529],
+gt114$1 = [0,-17,530,-157,137,74,76,-3,75],
+gt115$1 = [0,-127,545],
+gt116$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,546,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt117$1 = [0,-123,549,400,401,-40,402,403,-1,89,-6,512,76,-3,75],
+gt118$1 = [0,-123,550,400,401,-40,402,403,-1,89,-6,512,76,-3,75],
+gt119$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,551,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt120$1 = [0,-71,553,518,517,520,-75,478,302,303,-5,521,477,519,-13,469,301,74,76,-3,75],
+gt121$1 = [0,-86,555,325],
+gt122$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,561,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt123$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-1,566,565,564,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt124$1 = [0,-115,568,567],
+gt125$1 = [0,-117,272,271,569],
+gt126$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,572,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt127$1 = [0,-25,149,148,579,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-6,578,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt128$1 = [0,-63,580,-86,300,302,303,-21,299,301,74,76,-3,75],
+gt129$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,581,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt130$1 = [0,-174,585,301,74,76,-3,75],
+gt131$1 = [0,-127,587],
+gt132$1 = [0,-150,478,302,303,-5,590,477,588,-13,469,301,74,76,-3,75],
+gt133$1 = [0,-150,595,302,303,-21,594,301,74,76,-3,75],
+gt134$1 = [0,-127,596],
+gt135$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,601,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt136$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,605,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt137$1 = [0,-42,608,-19,607,298,-86,610,302,303,-21,609,301,74,76,-3,75],
+gt138$1 = [0,-42,611,-23,330,331,-82,613,302,303,-21,612,301,74,76,-3,75],
+gt139$1 = [0,-39,614,-1,490,-23,617,-2,198,-14,100,-1,199,-10,615,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-20,200,-11,69,-4,82,83,-1,89,81,80,-1,68,-1,201,74,76,-3,75],
+gt140$1 = [0,-58,620],
+gt141$1 = [0,-34,622],
+gt142$1 = [0,-88,623,506,507,508,-31,511,400,401,-40,402,403,-1,89,-6,512,76,-3,75],
+gt143$1 = [0,-90,626,508,-31,511,400,401,-40,402,403,-1,89,-6,512,76,-3,75],
+gt144$1 = [0,-91,627,-31,511,400,401,-40,402,403,-1,89,-6,512,76,-3,75],
+gt145$1 = [0,-71,628,518,517,520,-75,478,302,303,-5,521,477,519,-13,469,301,74,76,-3,75],
+gt146$1 = [0,-67,633,-82,333,302,303,-21,332,301,74,76,-3,75],
+gt147$1 = [0,-11,635,-3,343,-1,344,-157,345,74,76,-3,75],
+gt148$1 = [0,-17,636,-157,137,74,76,-3,75],
+gt149$1 = [0,-19,638,-2,356,-152,357,74,76,-3,75],
+gt150$1 = [0,-175,639,74,76,-3,75],
+gt151$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,640,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt152$1 = [0,-91,394,-30,642,396,400,401,392,-39,402,403,-1,89,-3,393,-1,201,397,76,-3,75],
+gt153$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,643,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt154$1 = [0,-70,644,646,518,517,520,-75,478,302,303,-5,521,477,519,-13,469,301,74,76,-3,75],
+gt155$1 = [0,-71,650,518,517,520,-75,478,302,303,-5,521,477,519,-13,469,301,74,76,-3,75],
+gt156$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-1,655,-2,64,71,92,93,-2,95,-6,197,-6,70,-3,416,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt157$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-10,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,656,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt158$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,657,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt159$1 = [0,-150,661,302,303,-21,660,301,74,76,-3,75],
+gt160$1 = [0,-123,468,400,401,-27,663,-3,665,-1,467,-6,402,403,-1,89,-4,469,301,397,76,-3,75],
+gt161$1 = [0,-150,478,302,303,-5,666,477,-14,469,301,74,76,-3,75],
+gt162$1 = [0,-130,669,-19,478,302,303,-3,671,-1,476,477,670,-13,469,301,74,76,-3,75],
+gt163$1 = [0,-29,672,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt164$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,673,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt165$1 = [0,-29,674,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt166$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,675,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt167$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,678,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt168$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,680,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt169$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,681,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt170$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,683,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt171$1 = [0,-42,608,-107,687,302,303,-21,686,301,74,76,-3,75],
+gt172$1 = [0,-42,611,-107,687,302,303,-21,686,301,74,76,-3,75],
+gt173$1 = [0,-49,688],
+gt174$1 = [0,-29,690,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt175$1 = [0,-59,691,-90,693,302,303,-21,692,301,74,76,-3,75],
+gt176$1 = [0,-25,149,148,579,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-5,698,700,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt177$1 = [0,-73,701,702,-75,478,302,303,-5,521,477,519,-13,469,301,74,76,-3,75],
+gt178$1 = [0,-74,707,-17,706,-57,478,302,303,-5,521,477,-14,469,301,74,76,-3,75],
+gt179$1 = [0,-25,149,148,579,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-5,711,700,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt180$1 = [0,-150,478,302,303,-5,590,477,717,-13,469,301,74,76,-3,75],
+gt181$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,722,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt182$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,724,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt183$1 = [0,-29,727,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt184$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,730,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt185$1 = [0,-29,733,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt186$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,734,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt187$1 = [0,-50,736,738,737],
+gt188$1 = [0,-25,149,148,579,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-5,743,700,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt189$1 = [0,-25,149,148,579,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-5,745,700,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt190$1 = [0,-25,149,148,579,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-5,749,700,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt191$1 = [0,-25,149,148,579,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-5,754,700,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt192$1 = [0,-25,149,148,579,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-5,756,700,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt193$1 = [0,-29,760,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt194$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,762,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt195$1 = [0,-29,765,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt196$1 = [0,-29,767,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt197$1 = [0,-29,768,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt198$1 = [0,-29,769,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt199$1 = [0,-29,770,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt200$1 = [0,-29,772,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt201$1 = [0,-29,773,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt202$1 = [0,-51,777,775],
+gt203$1 = [0,-50,778,738],
+gt204$1 = [0,-68,198,-8,35,102,-4,100,-1,199,-7,32,31,780,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-6,197,-6,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,-1,68,103,265,74,76,-3,75],
+gt205$1 = [0,-34,782],
+gt206$1 = [0,-25,149,148,579,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-5,783,700,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt207$1 = [0,-25,149,148,579,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-5,787,700,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt208$1 = [0,-25,149,148,579,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-5,790,700,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt209$1 = [0,-25,149,148,579,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-5,793,700,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt210$1 = [0,-29,798,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt211$1 = [0,-29,799,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt212$1 = [0,-29,800,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt213$1 = [0,-29,801,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt214$1 = [0,-29,802,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt215$1 = [0,-51,803],
+gt216$1 = [0,-51,777],
+gt217$1 = [0,-25,149,148,807,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-7,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt218$1 = [0,-25,149,148,579,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-5,811,700,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt219$1 = [0,-29,814,-2,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-15,35,102,-4,100,-9,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+gt220$1 = [0,-25,149,148,816,150,12,13,122,20,14,28,18,15,19,-2,108,-2,21,22,23,25,24,109,-4,16,-2,26,-3,27,17,-2,123,127,-3,125,-7,35,102,-4,100,121,-8,32,31,30,36,60,62,65,66,98,61,99,-4,64,71,92,93,-2,95,-13,70,-3,33,-1,34,37,38,39,40,41,42,43,44,45,46,47,48,49,57,72,-11,69,-4,82,83,-1,89,81,80,104,68,103,73,74,76,-3,75],
+
+    // State action lookup maps
+    sm0$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,3,4,-1,-1,-1,5,-1,-1,6,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm1$1=[0,47,-1,-1,-1,0,-1,-1,-1,-1,0],
+sm2$1=[0,48,-1,-1,-1,0,-1,-1,-1,-1,0],
+sm3$1=[0,49,-1,-1,-1,0,-1,-1,-1,-1,0],
+sm4$1=[0,50,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,3,4,-1,-1,-1,5,-1,-1,6,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm5$1=[0,51,51,51,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,51,51,-1,-1,-1,51,-1,-1,51,-1,-1,51,51,-1,-1,51,51,51,51,-1,51,-1,51,51,51,51,51,51,-1,-1,51,-1,-1,51,51,51,51,-1,-1,51,-1,-1,-1,-1,51,51,-1,-1,51,-1,-1,51,51,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,51,51,-1,-1,-1,51,51,51,51,51,51,51,51,51,-1,51,51,51,51,51],
+sm6$1=[0,52,52,52,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,52,52,-1,-1,-1,52,-1,-1,52,-1,-1,52,52,-1,-1,52,52,52,52,-1,52,-1,52,52,52,52,52,52,-1,-1,52,-1,-1,52,52,52,52,-1,-1,52,-1,-1,-1,-1,52,52,-1,-1,52,-1,-1,52,52,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,52,52,-1,-1,-1,52,52,52,52,52,52,52,52,52,-1,52,52,52,52,52],
+sm7$1=[0,53,53,53,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,53,53,-1,-1,-1,53,-1,-1,53,-1,-1,53,53,-1,-1,53,53,53,53,-1,53,-1,53,53,53,53,53,53,-1,-1,53,-1,-1,53,53,53,53,-1,-1,53,-1,-1,-1,-1,53,53,-1,-1,53,-1,-1,53,53,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,53,53,-1,-1,-1,53,53,53,53,53,53,53,53,53,-1,53,53,53,53,53],
+sm8$1=[0,54,54,54,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,54,54,-1,-1,-1,54,-1,-1,54,-1,-1,54,54,-1,-1,54,54,54,54,-1,54,-1,54,54,54,54,54,54,-1,-1,54,-1,-1,54,54,54,54,-1,-1,54,-1,-1,-1,-1,54,54,-1,-1,54,-1,-1,54,54,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,54,54,-1,-1,-1,54,54,54,54,54,54,54,54,54,-1,54,54,54,54,54],
+sm9$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,55,-1,56,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,40,41,-1,-1,-1,-1,45,46],
+sm10$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,57,-1,58,-1,-1,-1,59,-1,-1,-1,-1,-1,9,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,22,23,24,-1,-1,25],
+sm11$1=[0,60,60,60,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,60,60,-1,-1,-1,60,-1,-1,60,60,-1,60,60,-1,-1,60,60,60,60,-1,60,-1,60,60,60,60,60,60,60,-1,60,-1,-1,60,60,60,60,-1,-1,60,-1,-1,-1,-1,60,60,-1,-1,60,-1,-1,60,60,-1,60,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,60,60,-1,-1,-1,60,60,60,60,60,60,60,60,60,-1,60,60,60,60,60],
+sm12$1=[0,61,61,61,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,61,61,-1,-1,-1,61,-1,-1,61,61,-1,61,61,-1,61,61,61,61,61,-1,61,-1,61,61,61,61,61,61,61,-1,61,-1,-1,61,61,61,61,-1,-1,61,-1,-1,-1,-1,61,61,-1,-1,61,-1,-1,61,61,-1,61,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,61,61,-1,-1,-1,61,61,61,61,61,61,61,61,61,-1,61,61,61,61,61],
+sm13$1=[0,62,62,62,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,62,62,-1,-1,-1,62,-1,-1,62,62,-1,62,62,-1,62,62,62,62,62,-1,62,-1,62,62,62,62,62,62,62,-1,62,-1,-1,62,62,62,62,-1,-1,62,-1,-1,-1,-1,62,62,-1,-1,62,-1,-1,62,62,-1,62,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,62,62,-1,-1,-1,62,62,62,62,62,62,62,62,62,-1,62,62,62,62,62],
+sm14$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm15$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,63],
+sm16$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,64,65,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,64,-1,-1,-1,-1,-1,-1,-1,64],
+sm17$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,66,66,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,66,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,66,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,66,-1,-1,-1,-1,-1,-1,-1,66],
+sm18$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,67,67,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,67,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,67,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,67,-1,-1,-1,-1,-1,-1,-1,67],
+sm19$1=[0,68,68,68,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,68,68,68,-1,-1,68,-1,-1,68,-1,-1,68,68,68,-1,68,68,68,68,-1,68,-1,68,68,68,68,68,68,-1,68,68,-1,-1,68,68,68,68,-1,-1,68,-1,-1,-1,-1,68,68,68,-1,68,-1,-1,68,68,-1,68,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,68,68,-1,-1,-1,68,68,68,68,68,68,68,68,68,-1,68,68,68,68,68],
+sm20$1=[0,69,69,69,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,69,69,69,69,-1,69,-1,-1,69,-1,-1,69,69,69,-1,69,69,69,69,69,69,-1,69,69,69,69,69,69,-1,69,69,-1,-1,69,69,69,69,-1,-1,69,-1,-1,-1,-1,69,69,69,-1,69,-1,-1,69,69,-1,69,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,70,71,72,73,74,75,76,77,78,79,80,81,82,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,83,84,69,69,-1,69,69,69,69,69],
+sm21$1=[0,85,85,85,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,85,85,85,-1,-1,85,-1,-1,85,-1,-1,85,85,85,-1,85,85,85,85,-1,85,-1,85,85,85,85,85,85,-1,85,85,-1,-1,85,85,85,85,-1,-1,85,-1,-1,-1,-1,85,85,85,-1,85,-1,-1,85,85,-1,85,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,86,87,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,85,85,-1,-1,-1,85,85,85,85,85,85,85,85,85,-1,85,85,85,85,85],
+sm22$1=[0,88,88,88,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,88,88,88,-1,-1,88,-1,-1,88,-1,-1,88,88,88,-1,88,88,88,88,-1,88,-1,88,88,88,88,88,88,-1,88,88,-1,-1,88,88,88,88,-1,-1,88,-1,-1,-1,-1,88,88,88,-1,88,-1,-1,88,88,-1,88,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,88,88,89,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,88,88,-1,-1,-1,88,88,88,88,88,88,88,88,88,-1,88,88,88,88,88],
+sm23$1=[0,90,90,90,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,90,90,90,-1,-1,90,-1,-1,90,-1,-1,90,90,90,-1,90,90,90,90,-1,90,-1,90,90,90,90,90,90,-1,90,90,-1,-1,90,90,90,90,-1,-1,90,-1,-1,-1,-1,90,90,90,-1,90,-1,-1,90,90,-1,90,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,90,90,90,91,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,90,90,-1,-1,-1,90,90,90,90,90,90,90,90,90,-1,90,90,90,90,90],
+sm24$1=[0,92,92,92,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,92,92,92,-1,-1,92,-1,-1,92,-1,-1,92,92,92,-1,92,92,92,92,-1,92,-1,92,92,92,92,92,92,-1,92,92,-1,-1,92,92,92,92,-1,-1,92,-1,-1,-1,-1,92,92,92,-1,92,-1,-1,92,92,-1,92,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,92,92,92,92,93,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,92,92,-1,-1,-1,92,92,92,92,92,92,92,92,92,-1,92,92,92,92,92],
+sm25$1=[0,94,94,94,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,94,94,94,-1,-1,94,-1,-1,94,-1,-1,94,94,94,-1,94,94,94,94,-1,94,-1,94,94,94,94,94,94,-1,94,94,-1,-1,94,94,94,94,-1,-1,94,-1,-1,-1,-1,94,94,94,-1,94,-1,-1,94,94,-1,94,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,94,94,94,94,94,95,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,94,94,-1,-1,-1,94,94,94,94,94,94,94,94,94,-1,94,94,94,94,94],
+sm26$1=[0,96,96,96,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,96,96,96,-1,-1,96,-1,-1,96,-1,-1,96,96,96,-1,96,96,96,96,-1,96,-1,96,96,96,96,96,96,-1,96,96,-1,-1,96,96,96,96,-1,-1,96,-1,-1,-1,-1,96,96,96,-1,96,-1,-1,96,96,-1,96,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,96,96,96,96,96,96,97,98,99,100,-1,-1,-1,-1,-1,-1,-1,-1,96,96,-1,-1,-1,96,96,96,96,96,96,96,96,96,-1,96,96,96,96,96],
+sm27$1=[0,101,101,101,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,101,101,101,-1,-1,101,-1,-1,101,-1,-1,101,101,101,-1,101,101,101,101,102,101,-1,101,101,101,101,101,101,-1,101,101,-1,-1,101,101,101,101,-1,-1,101,-1,-1,-1,-1,101,101,101,-1,101,-1,-1,101,101,-1,101,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,101,101,101,101,101,101,101,101,101,101,103,104,105,106,107,-1,-1,-1,101,101,-1,-1,-1,101,101,101,101,101,101,101,101,101,-1,101,101,101,101,101],
+sm28$1=[0,108,108,108,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,108,108,108,-1,-1,108,-1,-1,108,-1,-1,108,108,108,-1,108,108,108,108,108,108,-1,108,108,108,108,108,108,-1,108,108,-1,-1,108,108,108,108,-1,-1,108,-1,-1,-1,-1,108,108,108,-1,108,-1,-1,108,108,-1,108,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,108,108,108,108,108,108,108,108,108,108,108,108,108,108,108,109,110,111,108,108,-1,-1,-1,108,108,108,108,108,108,108,108,108,-1,108,108,108,108,108],
+sm29$1=[0,112,112,112,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,112,112,112,-1,-1,112,-1,-1,112,-1,-1,112,112,112,-1,112,112,112,112,112,112,-1,112,112,112,112,112,112,-1,112,112,-1,-1,112,112,112,112,-1,-1,112,-1,-1,-1,-1,112,112,112,-1,112,-1,-1,112,112,-1,112,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,112,112,112,112,112,112,112,112,112,112,112,112,112,112,112,112,112,112,113,114,-1,-1,-1,112,112,112,112,112,112,112,112,112,-1,112,112,112,112,112],
+sm30$1=[0,115,115,115,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,115,115,115,116,-1,115,-1,-1,115,-1,-1,115,115,115,-1,115,115,115,115,115,115,-1,115,115,115,115,115,115,-1,115,115,-1,-1,115,115,115,115,-1,-1,115,-1,-1,-1,-1,115,115,115,-1,115,-1,-1,115,115,-1,115,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,115,115,115,115,115,115,115,115,115,115,115,115,115,115,115,115,115,115,115,115,117,118,-1,115,115,115,115,115,115,115,115,115,-1,115,115,115,115,115],
+sm31$1=[0,119,119,119,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,119,119,119,119,-1,119,-1,-1,119,-1,-1,119,119,119,-1,119,119,119,119,119,119,-1,119,119,119,119,119,119,-1,119,119,-1,-1,119,119,119,119,-1,-1,119,-1,-1,-1,-1,119,119,119,-1,119,-1,-1,119,119,-1,119,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,119,-1,119,119,119,119,119,119,119,119,119,-1,119,119,119,119,119],
+sm32$1=[0,120,120,120,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,120,120,120,120,-1,120,-1,-1,120,-1,-1,120,120,120,-1,120,120,120,120,120,120,-1,120,120,120,120,120,120,-1,120,120,-1,-1,120,120,120,120,-1,-1,120,-1,-1,-1,-1,120,120,120,-1,120,-1,-1,120,120,-1,120,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,-1,120,120,120,120,120,120,120,120,120,-1,120,120,120,120,120],
+sm33$1=[0,121,121,121,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,121,121,121,121,-1,121,-1,-1,121,-1,-1,121,121,121,-1,121,121,121,121,121,121,-1,121,121,121,121,121,121,-1,121,121,-1,-1,121,121,121,121,-1,-1,121,-1,-1,-1,-1,121,121,121,-1,121,-1,-1,121,121,-1,121,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,122,121,121,121,121,121,121,121,121,121,-1,121,121,121,121,121],
+sm34$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,-1,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm35$1=[0,121,121,121,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,121,121,121,121,-1,121,-1,-1,121,-1,-1,121,121,121,-1,121,121,121,121,121,121,-1,121,121,121,121,121,121,-1,121,121,-1,-1,121,121,121,121,-1,-1,121,-1,-1,-1,-1,121,121,121,-1,121,-1,-1,121,121,-1,121,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,121,-1,121,121,121,121,121],
+sm36$1=[0,126,126,126,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,126,126,126,126,-1,126,-1,-1,126,-1,-1,126,126,126,-1,126,126,126,126,126,126,126,126,126,126,126,126,126,-1,126,126,-1,-1,126,126,126,126,-1,-1,126,-1,-1,-1,-1,126,126,126,-1,126,-1,-1,126,126,-1,126,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,-1,126,126,126,126,126],
+sm37$1=[0,126,126,126,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,126,126,126,126,-1,126,-1,-1,126,-1,-1,126,127,126,-1,126,126,126,126,126,126,126,126,126,126,126,126,126,-1,126,126,-1,-1,126,126,126,126,-1,-1,126,-1,-1,-1,-1,126,128,126,-1,126,-1,-1,126,30,-1,126,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,126,129,126,126,126,126,126],
+sm38$1=[0,130,130,130,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,130,130,130,130,-1,130,-1,-1,130,-1,-1,130,127,130,-1,130,130,130,130,130,130,130,130,130,130,130,130,130,-1,130,130,-1,-1,130,130,130,130,-1,-1,130,-1,-1,-1,-1,130,131,130,-1,130,-1,-1,130,30,-1,130,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,130,132,130,130,130,130,130],
+sm39$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,133,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,40,41,134,42,43,44,45,46],
+sm40$1=[0,135,135,135,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,135,135,135,135,-1,135,-1,-1,135,-1,-1,135,135,135,-1,135,135,135,135,135,135,135,135,135,135,135,135,135,-1,135,135,-1,-1,135,135,135,135,-1,-1,135,-1,-1,-1,-1,135,135,135,-1,135,-1,-1,135,135,-1,135,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135,135],
+sm41$1=[0,136,136,136,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,136,136,136,136,-1,136,-1,-1,136,-1,-1,136,136,136,-1,136,136,136,136,136,136,136,136,136,136,136,136,136,-1,136,136,-1,-1,136,136,136,136,-1,-1,136,-1,-1,-1,-1,136,136,136,-1,136,-1,-1,136,136,-1,136,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136,136],
+sm42$1=[0,137,137,137,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,137,137,137,137,-1,137,-1,-1,137,-1,-1,137,137,137,-1,137,137,137,137,137,137,137,137,137,137,137,137,137,-1,137,137,-1,-1,137,137,137,137,-1,-1,137,-1,-1,-1,-1,137,137,137,-1,137,-1,-1,137,137,-1,137,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137],
+sm43$1=[0,137,137,137,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,137,137,137,137,-1,137,-1,-1,137,-1,-1,137,137,137,-1,137,137,137,137,137,137,137,137,137,137,137,137,137,-1,137,137,-1,-1,137,137,137,137,138,-1,137,-1,-1,-1,-1,137,137,137,-1,137,-1,-1,137,137,-1,137,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137,137],
+sm44$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,139,139,139,-1,-1,-1,-1,-1,-1,-1,-1,139,-1,-1,-1,-1,-1,-1,139,-1,-1,-1,-1,-1,-1,-1,-1,-1,140,-1,-1,-1,-1,-1,-1,-1,141,-1,-1,-1,-1,-1,-1,-1,139,-1,-1,-1,-1,-1,-1,139,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,-1,-1,-1,-1,-1,139,139,-1,-1,139],
+sm45$1=[0,142,142,142,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,142,142,142,142,142,142,-1,142,142,-1,-1,142,142,142,-1,142,142,142,142,142,142,142,142,142,142,142,142,142,-1,142,142,-1,-1,142,142,142,142,142,-1,142,142,-1,-1,-1,142,142,142,-1,142,-1,-1,142,142,-1,142,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142,142],
+sm46$1=[0,143,143,143,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,143,143,143,143,143,143,-1,143,143,-1,-1,143,143,143,-1,143,143,143,143,143,143,143,143,143,143,143,143,143,-1,143,143,-1,-1,143,143,143,143,143,-1,143,143,-1,-1,-1,143,143,143,-1,143,-1,-1,143,143,-1,143,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143,143],
+sm47$1=[0,144,145,146,-1,147,-1,-1,-1,-1,148,-1,-1,-1,-1,-1,144,144,144,144,144,144,-1,144,144,-1,-1,144,144,144,-1,144,144,144,144,144,144,144,144,144,144,144,144,144,-1,144,144,-1,-1,144,144,144,144,144,-1,144,144,-1,-1,-1,144,144,144,-1,144,-1,-1,144,144,-1,144,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,144,149,150,151],
+sm48$1=[0,152,152,152,-1,152,-1,-1,-1,-1,152,-1,-1,-1,-1,-1,152,152,152,152,152,152,-1,152,152,-1,-1,152,152,152,-1,152,152,152,152,152,152,152,152,152,152,152,152,152,-1,152,152,-1,-1,152,152,152,152,152,-1,152,152,-1,-1,-1,152,152,152,-1,152,-1,-1,152,152,-1,152,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152,152],
+sm49$1=[0,153,153,153,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,153,153,153,153,-1,153,-1,-1,153,-1,-1,153,153,153,-1,153,153,153,153,153,153,153,153,153,153,153,153,153,-1,153,153,-1,-1,153,153,153,153,-1,-1,153,-1,-1,-1,-1,153,153,153,-1,153,-1,-1,153,153,-1,153,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153],
+sm50$1=[0,154,154,154,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,154,154,154,154,-1,154,-1,-1,154,-1,-1,154,154,154,-1,154,154,154,154,154,154,154,154,154,154,154,154,154,-1,154,154,-1,-1,154,154,154,154,-1,-1,154,-1,-1,-1,-1,154,154,154,-1,154,-1,-1,154,154,-1,154,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154],
+sm51$1=[0,155,155,155,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,155,155,155,155,-1,155,-1,-1,155,-1,-1,155,155,155,-1,155,155,155,155,155,155,155,155,155,155,155,155,155,-1,155,155,-1,-1,155,155,155,155,-1,-1,155,-1,-1,-1,-1,155,155,155,-1,155,-1,-1,155,155,-1,155,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155],
+sm52$1=[0,-1,156,157,-1,158,159,160,161,162,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,163,164],
+sm53$1=[0,-1,165,166,-1,167,168,169,170,171,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,172,173],
+sm54$1=[0,174,174,174,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,174,174,174,174,-1,174,-1,-1,174,-1,-1,174,174,174,-1,174,174,174,174,174,174,174,174,174,174,174,174,174,-1,174,174,-1,-1,174,174,174,174,-1,-1,174,-1,-1,-1,-1,174,174,174,-1,174,-1,-1,174,174,-1,174,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174],
+sm55$1=[0,175,175,175,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,175,175,175,175,-1,175,-1,-1,175,-1,-1,175,175,175,-1,175,175,175,175,175,175,175,175,175,175,175,175,175,-1,175,175,-1,-1,175,175,175,175,-1,-1,175,-1,-1,-1,-1,175,175,175,-1,175,-1,-1,175,175,-1,175,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,175,176,175,175,175,175,175],
+sm56$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,177,-1,-1,123,-1,-1,-1,-1,-1,-1,8,-1,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,178,-1,28,-1,179,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm57$1=[0,180,180,180,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,180,180,180,180,-1,180,-1,-1,180,-1,-1,180,180,180,-1,180,180,180,180,180,180,180,180,180,180,180,180,180,-1,180,180,-1,-1,180,180,180,180,-1,-1,180,-1,-1,-1,-1,180,180,180,-1,180,-1,-1,180,180,-1,180,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180],
+sm58$1=[0,-1,181,182,183,184,185,186,187,188,189,-1,-1,-1,190,191,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,192,193,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,194,195],
+sm59$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,196,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,197,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm60$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,127,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,198,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,199],
+sm61$1=[0,200,200,200,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,200,200,200,200,-1,200,-1,-1,200,-1,-1,200,200,200,-1,200,200,200,200,200,200,200,200,200,200,200,200,200,-1,200,200,-1,-1,200,200,200,200,-1,-1,200,-1,-1,-1,-1,200,200,200,-1,200,-1,-1,200,200,-1,200,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200],
+sm62$1=[0,201,201,201,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,201,201,201,201,-1,201,-1,-1,201,-1,-1,201,201,201,-1,201,201,201,201,201,201,201,201,201,201,201,201,201,-1,201,201,-1,-1,201,201,201,201,-1,-1,201,-1,-1,-1,-1,201,201,201,-1,201,-1,-1,201,201,-1,201,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201,201],
+sm63$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,202],
+sm64$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,203],
+sm65$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,204],
+sm66$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,205,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,206,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm67$1=[0,207,207,207,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,207,207,-1,-1,-1,207,-1,-1,207,207,-1,207,207,-1,207,207,207,207,207,-1,207,-1,207,207,207,207,207,207,207,-1,207,-1,-1,207,207,207,207,-1,-1,207,-1,-1,-1,-1,207,207,-1,-1,207,-1,-1,207,207,-1,207,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,207,207,-1,-1,-1,207,207,207,207,207,207,207,207,207,-1,207,207,207,207,207],
+sm68$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,208],
+sm69$1=[0,209,209,209,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,209,209,-1,-1,-1,209,-1,-1,209,209,-1,209,209,-1,209,209,209,209,209,-1,209,-1,209,209,209,209,209,209,209,-1,209,-1,-1,209,209,209,209,-1,-1,209,-1,-1,-1,-1,209,209,-1,-1,209,-1,-1,209,209,-1,209,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,209,209,-1,-1,-1,209,209,209,209,209,209,209,209,209,-1,209,209,209,209,209],
+sm70$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm71$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,210],
+sm72$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,211,-1,-1,-1,-1,-1,-1,-1,212],
+sm73$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,213],
+sm74$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,214,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm75$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,215,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm76$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,216,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,-1,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm77$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,217],
+sm78$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,5],
+sm79$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,218],
+sm80$1=[0,219,219,219,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,219,219,-1,-1,-1,219,-1,-1,219,219,-1,219,219,-1,-1,219,219,219,219,-1,219,-1,219,219,219,219,219,219,219,-1,219,-1,-1,219,219,219,219,-1,-1,219,-1,-1,-1,-1,219,219,-1,-1,219,-1,-1,219,219,-1,219,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,219,219,-1,-1,-1,219,219,219,219,219,219,219,219,219,-1,219,219,219,219,219],
+sm81$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,220,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,221,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm82$1=[0,222,222,222,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,222,222,-1,-1,-1,222,-1,-1,222,222,-1,222,222,-1,-1,222,222,222,222,-1,222,-1,222,222,222,222,222,222,222,-1,222,-1,-1,222,222,222,222,-1,-1,222,-1,-1,-1,-1,222,222,-1,-1,222,-1,-1,222,222,-1,222,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,222,222,-1,-1,-1,222,222,222,222,222,222,222,222,222,-1,222,222,222,222,222],
+sm83$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,223,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm84$1=[0,-1,-1,224,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,224,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,224,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,224,224],
+sm85$1=[0,-1,-1,225,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,225,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,225,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,225,225],
+sm86$1=[0,226,226,226,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,226,226,-1,-1,-1,226,-1,-1,226,-1,-1,226,226,-1,-1,226,226,226,226,-1,226,-1,226,226,226,226,226,226,-1,-1,226,-1,-1,226,226,226,226,-1,-1,226,-1,-1,-1,-1,226,226,-1,-1,226,-1,-1,226,226,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,226,226,-1,-1,-1,226,226,226,226,226,226,226,226,226,-1,226,226,226,226,226],
+sm87$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,227],
+sm88$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,228],
+sm89$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,229,-1,-1,-1,-1,230],
+sm90$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,230],
+sm91$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,231,-1,-1,-1,-1,231],
+sm92$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,232,-1,-1,-1,-1,232,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,232],
+sm93$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,233],
+sm94$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,234,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,235,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm95$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,236],
+sm96$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,237,-1,-1,-1,-1,-1,227],
+sm97$1=[0,238,238,238,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,238,238,-1,-1,-1,238,-1,-1,238,-1,-1,238,238,-1,-1,238,238,238,238,-1,238,-1,238,238,238,238,238,238,-1,-1,238,-1,-1,238,238,238,238,-1,-1,238,-1,-1,-1,-1,238,238,-1,-1,238,-1,-1,238,238,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,238,238,-1,-1,-1,238,238,238,238,238,238,238,238,238,-1,238,238,238,238,238],
+sm98$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,-1,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm99$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,239,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,240,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm100$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,241],
+sm101$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,242,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,242,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,242,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm102$1=[0,-1,243,243,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,243,-1,-1,-1,243,-1,-1,-1,243,-1,243,243,-1,-1,243,243,243,243,-1,243,-1,243,243,243,243,243,243,243,-1,243,-1,-1,243,243,243,243,-1,-1,243,-1,-1,-1,-1,243,243,-1,-1,243,-1,-1,243,243,-1,243,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,243,243,-1,-1,-1,243,243,243,243,243,243,243,243,243,-1,243,243,243,243,243],
+sm103$1=[0,-1,244,244,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,244,-1,-1,-1,244,-1,-1,-1,244,-1,244,244,-1,-1,244,244,244,244,-1,244,-1,244,244,244,244,244,244,244,-1,244,-1,-1,244,244,244,244,-1,-1,244,-1,-1,-1,-1,244,244,-1,-1,244,-1,-1,244,244,-1,244,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,244,244,-1,-1,-1,244,244,244,244,244,244,244,244,244,-1,244,244,244,244,244],
+sm104$1=[0,245,245,245,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,245,245,-1,-1,-1,245,-1,-1,245,245,-1,245,245,-1,245,245,245,245,245,-1,245,-1,245,245,245,245,245,245,245,-1,245,-1,-1,245,245,245,245,-1,-1,245,-1,-1,-1,-1,245,245,-1,-1,245,-1,-1,245,245,-1,245,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,245,245,-1,-1,-1,245,245,245,245,245,245,245,245,245,-1,245,245,245,245,245],
+sm105$1=[0,246,246,246,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,246,246,246,246,-1,246,-1,-1,246,-1,-1,246,246,246,-1,246,246,246,246,246,246,-1,246,246,246,246,246,246,-1,246,246,-1,-1,246,246,246,246,-1,-1,246,-1,-1,-1,-1,246,246,246,-1,246,-1,-1,246,246,-1,246,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,246,-1,246,246,246,246,246],
+sm106$1=[0,247,247,247,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,247,247,247,247,-1,247,-1,-1,247,-1,-1,247,247,247,-1,247,247,247,247,247,247,-1,247,247,247,247,247,247,-1,247,247,-1,-1,247,247,247,247,-1,-1,247,-1,-1,-1,-1,247,247,247,-1,247,-1,-1,247,247,-1,247,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,247,-1,247,247,247,247,247],
+sm107$1=[0,-1,248,248,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,248,-1,-1,-1,-1,-1,-1,248,-1,-1,-1,-1,-1,-1,-1,248,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,248,-1,-1,248,-1,-1,-1,-1,248,248,-1,-1,248,-1,-1,248,248,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,248,248,-1,-1,-1,248,248,248,248,248,248,248,248,248,-1,248,248,248,248,248],
+sm108$1=[0,249,249,249,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,249,249,249,249,-1,249,-1,-1,249,-1,-1,249,249,249,-1,249,249,249,249,249,249,-1,249,249,249,249,249,249,-1,249,249,-1,-1,249,249,249,249,-1,-1,249,-1,-1,-1,-1,249,249,249,-1,249,-1,-1,249,249,-1,249,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,249,-1,249,249,249,249,249],
+sm109$1=[0,69,69,69,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,69,69,69,69,-1,69,-1,-1,69,-1,-1,69,69,69,-1,69,69,69,69,69,69,-1,69,69,69,69,69,69,-1,69,69,-1,-1,69,69,69,69,-1,-1,69,-1,-1,-1,-1,69,69,69,-1,69,-1,-1,69,69,-1,69,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,83,84,69,69,-1,69,69,69,69,69],
+sm110$1=[0,139,139,139,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,139,139,139,139,-1,139,-1,-1,139,-1,-1,139,139,139,-1,139,139,139,139,139,139,139,139,139,139,139,139,139,-1,139,139,-1,-1,139,139,139,139,-1,-1,139,-1,-1,-1,-1,139,139,139,-1,139,-1,-1,139,139,-1,139,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139],
+sm111$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,250,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,251,252,-1,253,-1,-1,-1,-1,254,-1,-1,-1,255,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,40,41,-1,-1,-1,-1,45,46],
+sm112$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,256,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm113$1=[0,257,257,257,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,257,257,257,257,-1,257,-1,-1,257,-1,-1,257,257,257,-1,257,257,257,257,257,257,-1,257,257,257,257,257,257,-1,257,257,-1,-1,257,257,257,257,-1,-1,257,-1,-1,-1,-1,257,257,257,-1,257,-1,-1,257,257,-1,257,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,257,-1,257,257,257,257,257],
+sm114$1=[0,258,258,258,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,258,258,258,258,-1,258,-1,-1,258,-1,-1,258,258,258,-1,258,258,258,258,258,258,-1,258,258,258,258,258,258,-1,258,258,-1,-1,258,258,258,258,-1,-1,258,-1,-1,-1,-1,258,258,258,-1,258,-1,-1,258,258,-1,258,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,258,-1,258,258,258,258,258],
+sm115$1=[0,259,259,259,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,259,259,259,259,-1,259,-1,-1,259,-1,-1,259,259,259,-1,259,259,259,259,259,259,-1,259,259,259,259,259,259,-1,259,259,-1,-1,259,259,259,259,-1,-1,259,-1,-1,-1,-1,259,259,259,-1,259,-1,-1,259,259,-1,259,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,259,-1,259,259,259,259,259],
+sm116$1=[0,260,260,260,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,260,260,260,260,-1,260,-1,-1,260,-1,-1,260,260,260,-1,260,260,260,260,260,260,-1,260,260,260,260,260,260,-1,260,260,-1,-1,260,260,260,260,-1,-1,260,-1,-1,-1,-1,260,260,260,-1,260,-1,-1,260,260,-1,260,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,-1,260,260,260,260,260],
+sm117$1=[0,261,261,261,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,261,261,261,261,-1,261,-1,-1,261,-1,-1,261,261,261,-1,261,261,261,261,261,261,-1,261,261,261,261,261,261,-1,261,261,-1,-1,261,261,261,261,-1,-1,261,-1,-1,-1,-1,261,261,261,-1,261,-1,-1,261,261,-1,261,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,261,-1,261,261,261,261,261],
+sm118$1=[0,262,262,262,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,262,262,262,262,-1,262,-1,-1,262,-1,-1,262,262,262,-1,262,262,262,262,262,262,-1,262,262,262,262,262,262,-1,262,262,-1,-1,262,262,262,262,-1,-1,262,-1,-1,-1,-1,262,262,262,-1,262,-1,-1,262,262,-1,262,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,262,-1,262,262,262,262,262],
+sm119$1=[0,263,263,263,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,263,263,263,263,-1,263,-1,-1,263,-1,-1,263,263,263,-1,263,263,263,263,263,263,-1,263,263,263,263,263,263,-1,263,263,-1,-1,263,263,263,263,-1,-1,263,-1,-1,-1,-1,263,263,263,-1,263,-1,-1,263,263,-1,263,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,263,-1,263,263,263,263,263],
+sm120$1=[0,264,264,264,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,264,264,264,264,-1,264,-1,-1,264,-1,-1,264,264,264,-1,264,264,264,264,264,264,-1,264,264,264,264,264,264,-1,264,264,-1,-1,264,264,264,264,-1,-1,264,-1,-1,-1,-1,264,264,264,-1,264,-1,-1,264,264,-1,264,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,264,-1,264,264,264,264,264],
+sm121$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm122$1=[0,265,265,265,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,265,265,265,265,-1,265,-1,-1,265,-1,-1,265,265,265,-1,265,265,265,265,265,265,265,265,265,265,265,265,265,-1,265,265,-1,-1,265,265,265,265,-1,-1,265,-1,-1,-1,-1,265,265,265,-1,265,-1,-1,265,265,-1,265,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265,265],
+sm123$1=[0,266,266,266,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,266,266,266,266,-1,266,-1,-1,266,-1,-1,266,266,266,-1,266,266,266,266,266,266,266,266,266,266,266,266,266,-1,266,266,-1,-1,266,266,266,266,-1,-1,266,-1,-1,-1,-1,266,266,266,-1,266,-1,-1,266,266,-1,266,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266,266],
+sm124$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,267,-1,-1,123,-1,-1,-1,-1,-1,-1,8,268,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,269,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm125$1=[0,270,270,270,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,270,270,270,270,-1,270,-1,-1,270,-1,-1,270,270,270,-1,270,270,270,270,270,270,270,270,270,270,270,270,270,-1,270,270,-1,-1,270,270,270,270,-1,-1,270,-1,-1,-1,-1,270,270,270,-1,270,-1,-1,270,270,-1,270,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270,270],
+sm126$1=[0,271,271,271,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,271,271,271,271,-1,271,-1,-1,271,-1,-1,271,271,271,-1,271,271,271,271,271,271,271,271,271,271,271,271,271,-1,271,271,-1,-1,271,271,271,271,-1,-1,271,-1,-1,-1,-1,271,271,271,-1,271,-1,-1,271,271,-1,271,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271,271],
+sm127$1=[0,272,272,272,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,272,272,272,272,-1,272,-1,-1,272,-1,-1,272,272,272,-1,272,272,272,272,272,272,272,272,272,272,272,272,272,-1,272,272,-1,-1,272,272,272,272,-1,-1,272,-1,-1,-1,-1,272,272,272,-1,272,-1,-1,272,272,-1,272,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,272,-1,272,272,272,272,272],
+sm128$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,273],
+sm129$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,198,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,199],
+sm130$1=[0,274,145,146,-1,147,-1,-1,-1,-1,148,-1,-1,-1,-1,-1,274,274,274,274,274,274,-1,274,274,-1,-1,274,274,274,-1,274,274,274,274,274,274,274,274,274,274,274,274,274,-1,274,274,-1,-1,274,274,274,274,274,-1,274,274,-1,-1,-1,274,274,274,-1,274,-1,-1,274,274,-1,274,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,274,149,150,151],
+sm131$1=[0,275,275,275,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,275,275,275,275,275,275,-1,275,275,-1,-1,275,275,275,-1,275,275,275,275,275,275,275,275,275,275,275,275,275,-1,275,275,-1,-1,275,275,275,275,275,-1,275,275,-1,-1,-1,275,275,275,-1,275,-1,-1,275,275,-1,275,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275,275],
+sm132$1=[0,276,276,276,-1,276,-1,-1,-1,-1,276,-1,-1,-1,-1,-1,276,276,276,276,276,276,-1,276,276,-1,-1,276,276,276,-1,276,276,276,276,276,276,276,276,276,276,276,276,276,-1,276,276,-1,-1,276,276,276,276,276,-1,276,276,-1,-1,-1,276,276,276,-1,276,-1,-1,276,276,-1,276,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276,276],
+sm133$1=[0,277,277,277,-1,277,-1,-1,-1,-1,277,-1,-1,-1,-1,-1,277,277,277,277,277,277,-1,277,277,-1,-1,277,277,277,-1,277,277,277,277,277,277,277,277,277,277,277,277,277,-1,277,277,-1,-1,277,277,277,277,277,-1,277,277,-1,-1,-1,277,277,277,-1,277,-1,-1,277,277,-1,277,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277,277],
+sm134$1=[0,278,278,278,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,278,278,278,278,278,278,-1,278,278,-1,-1,278,278,278,-1,278,278,278,278,278,278,278,278,278,278,278,278,278,-1,278,278,-1,-1,278,278,278,278,278,-1,278,278,-1,-1,-1,278,278,278,-1,278,-1,-1,278,278,-1,278,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278],
+sm135$1=[0,-1,156,157,-1,158,159,160,161,162,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,163,279],
+sm136$1=[0,280,280,280,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,280,280,280,280,-1,280,-1,-1,280,-1,-1,280,280,280,-1,280,280,280,280,280,280,280,280,280,280,280,280,280,-1,280,280,-1,-1,280,280,280,280,-1,-1,280,-1,-1,-1,-1,280,280,280,-1,280,-1,-1,280,280,-1,280,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280],
+sm137$1=[0,-1,281,281,-1,281,281,281,281,281,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,281,281],
+sm138$1=[0,-1,282,282,-1,282,282,282,282,282,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,282,282],
+sm139$1=[0,-1,165,166,-1,167,168,169,170,171,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,283,173],
+sm140$1=[0,-1,284,284,-1,284,284,284,284,284,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,284,284],
+sm141$1=[0,-1,285,285,-1,285,285,285,285,285,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,285,285],
+sm142$1=[0,286,286,286,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,286,286,286,286,-1,286,-1,-1,286,-1,-1,286,286,286,-1,286,286,286,286,286,286,286,286,286,286,286,286,286,-1,286,286,-1,-1,286,286,286,286,-1,-1,286,-1,-1,-1,-1,286,286,286,-1,286,-1,-1,286,286,-1,286,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286,286],
+sm143$1=[0,287,288,287,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,287,287,287,287,-1,287,-1,-1,287,-1,-1,287,287,287,-1,287,287,287,287,287,287,287,287,287,287,287,287,287,-1,287,287,-1,-1,287,287,287,287,-1,-1,287,-1,-1,-1,-1,287,287,287,-1,287,-1,-1,287,287,-1,287,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287,287],
+sm144$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,289,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,290],
+sm145$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,291,-1,-1,123,-1,-1,-1,-1,-1,-1,8,-1,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,292,-1,28,-1,179,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm146$1=[0,293,293,293,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,293,293,293,293,-1,293,-1,-1,293,-1,-1,293,293,293,-1,293,293,293,293,293,293,293,293,293,293,293,293,293,-1,293,293,-1,-1,293,293,293,293,-1,-1,293,-1,-1,-1,-1,293,293,293,-1,293,-1,-1,293,293,-1,293,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293,293],
+sm147$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,294,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,294],
+sm148$1=[0,139,139,139,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,139,139,139,139,-1,139,-1,-1,139,-1,-1,139,139,139,-1,139,139,139,139,139,139,139,139,139,139,139,139,139,-1,139,139,-1,-1,139,139,139,139,141,-1,139,-1,-1,-1,-1,139,139,139,-1,139,-1,-1,139,139,-1,139,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139,139],
+sm149$1=[0,-1,295,295,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,295,-1,-1,295,-1,-1,-1,-1,-1,-1,295,-1,-1,-1,-1,-1,-1,-1,295,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,295,-1,-1,295,-1,-1,-1,-1,295,295,295,-1,295,-1,295,295,295,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,295,295,-1,-1,-1,295,295,295,295,295,295,295,295,295,-1,295,295,295,295,295],
+sm150$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,296,297],
+sm151$1=[0,298,298,298,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,298,298,298,298,-1,298,-1,-1,298,-1,-1,298,298,298,-1,298,298,298,298,298,298,298,298,298,298,298,298,298,-1,298,298,-1,-1,298,298,298,298,-1,-1,298,-1,-1,-1,-1,298,298,298,-1,298,-1,-1,298,298,-1,298,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298,298],
+sm152$1=[0,-1,299,299,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,299,-1,-1,-1,-1,-1,-1,299,-1,-1,-1,-1,-1,-1,-1,299,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,299,-1,-1,299,-1,-1,-1,-1,299,299,-1,-1,299,-1,-1,299,299,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,299,299,-1,-1,-1,299,299,299,299,299,299,299,299,299,-1,299,299,299,299,299],
+sm153$1=[0,-1,181,182,183,184,185,186,187,188,189,-1,-1,-1,190,191,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,300,300,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,194,195],
+sm154$1=[0,-1,301,301,301,301,301,301,301,301,301,-1,-1,-1,301,301,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,301,301,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,301,301],
+sm155$1=[0,-1,302,302,302,302,302,302,302,302,302,-1,-1,-1,302,302,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,302,302,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,302,302],
+sm156$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,303],
+sm157$1=[0,304,304,304,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,304,304,304,304,-1,304,-1,-1,304,-1,-1,304,304,304,-1,304,304,304,304,304,304,304,304,304,304,304,304,304,-1,304,304,-1,-1,304,304,304,304,304,-1,304,-1,-1,-1,-1,304,304,304,-1,304,-1,-1,304,304,-1,304,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304,304],
+sm158$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,305,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,306],
+sm159$1=[0,307,307,307,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,307,307,307,307,-1,307,-1,-1,307,-1,-1,307,307,307,-1,307,307,307,307,307,307,307,307,307,307,307,307,307,-1,307,307,-1,-1,307,307,307,307,-1,-1,307,-1,-1,-1,-1,307,307,307,-1,307,-1,-1,307,307,-1,307,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307,307],
+sm160$1=[0,308,308,308,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,308,308,308,308,-1,308,-1,-1,308,-1,-1,308,308,308,-1,308,308,308,308,308,308,-1,308,308,308,308,308,308,-1,308,308,-1,-1,308,308,308,308,-1,-1,308,-1,-1,-1,-1,308,308,308,-1,308,-1,-1,308,308,-1,308,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,308,-1,308,308,308,308,308],
+sm161$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,309,-1,-1,-1,-1,-1,-1,8,-1,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm162$1=[0,310,310,310,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,310,310,-1,-1,-1,310,-1,-1,310,310,-1,310,310,-1,310,310,310,310,310,-1,310,-1,310,310,310,310,310,310,310,-1,310,-1,-1,310,310,310,310,-1,-1,310,-1,-1,-1,-1,310,310,-1,-1,310,-1,-1,310,310,-1,310,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,310,310,-1,-1,-1,310,310,310,310,310,310,310,310,310,-1,310,310,310,310,310],
+sm163$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,-1,-1,24,-1,-1,-1,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm164$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,311,312],
+sm165$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,313,313],
+sm166$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,314,314,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,315],
+sm167$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,315],
+sm168$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,141,141,-1,-1,141,-1,-1,-1,-1,-1,-1,141,141,-1,-1,-1,-1,-1,141,-1,141,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,141,-1,-1,-1,-1,-1,141,-1,-1,-1,-1,-1,-1,-1,141,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,141],
+sm169$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,316,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,316,-1,-1,-1,-1,-1,316,-1,316,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,316,-1,-1,-1,-1,-1,-1,-1,316,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,316],
+sm170$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,253,-1,-1,-1,-1,317,-1,-1,-1,318,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,40,41,-1,-1,-1,-1,45,46],
+sm171$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,177,-1,-1,205,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,206,319,-1,-1,-1,320,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm172$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,321],
+sm173$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,322,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,-1,-1,323,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,22,23,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm174$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,324],
+sm175$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,325],
+sm176$1=[0,326,326,326,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,326,326,-1,-1,-1,326,-1,-1,326,326,-1,326,326,-1,326,326,326,326,326,-1,326,-1,326,326,326,326,326,326,326,-1,326,-1,-1,326,326,326,326,-1,-1,326,-1,-1,-1,-1,326,326,-1,-1,326,-1,-1,326,326,-1,326,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,326,326,-1,-1,-1,326,326,326,326,326,326,326,326,326,-1,326,326,326,326,326],
+sm177$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,140],
+sm178$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,327],
+sm179$1=[0,328,328,328,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,328,328,-1,-1,-1,328,-1,-1,328,328,-1,328,328,-1,328,328,328,328,328,-1,328,-1,328,328,328,328,328,328,328,-1,328,-1,-1,328,328,328,328,-1,-1,328,-1,-1,-1,-1,328,328,-1,-1,328,-1,-1,328,328,-1,328,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,328,328,-1,-1,-1,328,328,328,328,328,328,328,328,328,-1,328,328,328,328,328],
+sm180$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,329],
+sm181$1=[0,330,330,330,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,330,330,-1,-1,-1,330,-1,-1,330,330,-1,330,330,-1,330,330,330,330,330,-1,330,-1,330,330,330,330,330,330,330,-1,330,-1,-1,330,330,330,330,-1,-1,330,-1,-1,-1,-1,330,330,-1,-1,330,-1,-1,330,330,-1,330,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,330,330,-1,-1,-1,330,330,330,330,330,330,330,330,330,-1,330,330,330,330,330],
+sm182$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,331],
+sm183$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,332,333],
+sm184$1=[0,334,334,334,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,334,334,-1,-1,-1,334,-1,-1,334,334,-1,334,334,-1,334,334,334,334,334,-1,334,-1,334,334,334,334,334,334,334,-1,334,-1,-1,334,334,334,334,-1,-1,334,-1,-1,-1,-1,334,334,-1,-1,334,-1,-1,334,334,-1,334,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,334,334,-1,-1,-1,334,334,334,334,334,334,334,334,334,-1,334,334,334,334,334],
+sm185$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,220,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,221],
+sm186$1=[0,335,335,335,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,335,335,-1,-1,-1,335,-1,-1,335,335,-1,335,335,-1,-1,335,335,335,335,-1,335,-1,335,335,335,335,335,335,335,-1,335,-1,-1,335,335,335,335,-1,-1,335,-1,-1,-1,-1,335,335,-1,-1,335,-1,-1,335,335,-1,335,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,335,335,-1,-1,-1,335,335,335,335,335,335,335,335,335,-1,335,335,335,335,335],
+sm187$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,336],
+sm188$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,337,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,338,251,252,-1,253,-1,-1,-1,-1,-1,-1,-1,-1,339,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,40,41,-1,-1,-1,-1,45,46],
+sm189$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,40,41,-1,42,43,44,45,46],
+sm190$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,340],
+sm191$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,205,-1,-1,-1,-1,-1,-1,-1,341,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,206,-1,-1,-1,-1,320,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm192$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,342,343],
+sm193$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,344,344],
+sm194$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,345],
+sm195$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,40,41],
+sm196$1=[0,346,346,346,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,346,346,-1,-1,-1,346,-1,-1,346,-1,-1,346,346,-1,-1,346,346,346,346,-1,346,-1,346,346,346,346,346,346,-1,-1,346,-1,-1,346,346,346,346,-1,-1,346,-1,-1,-1,-1,346,346,-1,-1,346,-1,-1,346,346,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,346,346,-1,-1,-1,346,346,346,346,346,346,346,346,346,-1,346,346,346,346,346],
+sm197$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,55,-1,56],
+sm198$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,347,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,348],
+sm199$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,349],
+sm200$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,350],
+sm201$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,351,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,351],
+sm202$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,352,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,352],
+sm203$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,353,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,353],
+sm204$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,232,-1,354,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,232],
+sm205$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,355],
+sm206$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,356],
+sm207$1=[0,357,357,357,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,357,357,-1,-1,-1,357,-1,-1,357,-1,-1,357,357,-1,-1,357,357,357,357,-1,357,-1,357,357,357,357,357,357,-1,-1,357,-1,-1,357,357,357,357,-1,-1,357,-1,-1,-1,-1,357,357,-1,-1,357,-1,-1,357,357,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,357,357,-1,-1,-1,357,357,357,357,357,357,357,357,357,-1,357,357,357,357,357],
+sm208$1=[0,358,358,358,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,358,358,-1,-1,-1,358,-1,-1,358,-1,-1,358,358,-1,-1,358,358,358,358,-1,358,-1,358,358,358,358,358,358,-1,-1,358,-1,-1,358,358,358,358,-1,-1,358,-1,-1,-1,-1,358,358,-1,-1,358,-1,-1,358,358,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,358,358,-1,-1,-1,358,358,358,358,358,358,358,358,358,-1,358,358,358,358,358],
+sm209$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,359,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,360],
+sm210$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,361],
+sm211$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,362,-1,-1,-1,-1,-1,362],
+sm212$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,363,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,363],
+sm213$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,364,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,364],
+sm214$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,365,-1,366,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,365],
+sm215$1=[0,367,367,367,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,367,367,-1,-1,-1,367,-1,-1,367,367,-1,367,367,-1,367,367,367,367,367,-1,367,-1,367,367,367,367,367,367,367,-1,367,367,367,367,367,367,367,-1,-1,367,-1,-1,-1,-1,367,367,-1,-1,367,-1,-1,367,367,-1,367,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,367,367,-1,-1,-1,367,367,367,367,367,367,367,367,367,-1,367,367,367,367,367],
+sm216$1=[0,-1,368,368,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,368,-1,-1,-1,368,-1,-1,-1,368,-1,368,368,-1,-1,368,368,368,368,-1,368,-1,368,368,368,368,368,368,368,-1,368,-1,-1,368,368,368,368,-1,-1,368,-1,-1,-1,-1,368,368,-1,-1,368,-1,-1,368,368,-1,368,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,368,368,-1,-1,-1,368,368,368,368,368,368,368,368,368,-1,368,368,368,368,368],
+sm217$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,369,369,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,369,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,369,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,369,-1,-1,-1,-1,-1,-1,-1,369],
+sm218$1=[0,370,370,370,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,370,370,370,-1,-1,370,-1,-1,370,-1,-1,370,370,370,-1,370,370,370,370,-1,370,-1,370,370,370,370,370,370,-1,370,370,-1,-1,370,370,370,370,-1,-1,370,-1,-1,-1,-1,370,370,370,-1,370,-1,-1,370,370,-1,370,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,370,370,-1,-1,-1,370,370,370,370,370,370,370,370,370,-1,370,370,370,370,370],
+sm219$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,371],
+sm220$1=[0,372,372,372,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,372,372,372,-1,-1,372,-1,-1,372,-1,-1,372,372,372,-1,372,372,372,372,-1,372,-1,372,372,372,372,372,372,-1,372,372,-1,-1,372,372,372,372,-1,-1,372,-1,-1,-1,-1,372,372,372,-1,372,-1,-1,372,372,-1,372,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,372,372,89,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,372,372,-1,-1,-1,372,372,372,372,372,372,372,372,372,-1,372,372,372,372,372],
+sm221$1=[0,373,373,373,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,373,373,373,-1,-1,373,-1,-1,373,-1,-1,373,373,373,-1,373,373,373,373,-1,373,-1,373,373,373,373,373,373,-1,373,373,-1,-1,373,373,373,373,-1,-1,373,-1,-1,-1,-1,373,373,373,-1,373,-1,-1,373,373,-1,373,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,373,373,373,91,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,373,373,-1,-1,-1,373,373,373,373,373,373,373,373,373,-1,373,373,373,373,373],
+sm222$1=[0,374,374,374,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,374,374,374,-1,-1,374,-1,-1,374,-1,-1,374,374,374,-1,374,374,374,374,-1,374,-1,374,374,374,374,374,374,-1,374,374,-1,-1,374,374,374,374,-1,-1,374,-1,-1,-1,-1,374,374,374,-1,374,-1,-1,374,374,-1,374,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,374,374,374,374,93,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,374,374,-1,-1,-1,374,374,374,374,374,374,374,374,374,-1,374,374,374,374,374],
+sm223$1=[0,375,375,375,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,375,375,375,-1,-1,375,-1,-1,375,-1,-1,375,375,375,-1,375,375,375,375,-1,375,-1,375,375,375,375,375,375,-1,375,375,-1,-1,375,375,375,375,-1,-1,375,-1,-1,-1,-1,375,375,375,-1,375,-1,-1,375,375,-1,375,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,375,375,375,375,375,95,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,375,375,-1,-1,-1,375,375,375,375,375,375,375,375,375,-1,375,375,375,375,375],
+sm224$1=[0,376,376,376,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,376,376,376,-1,-1,376,-1,-1,376,-1,-1,376,376,376,-1,376,376,376,376,-1,376,-1,376,376,376,376,376,376,-1,376,376,-1,-1,376,376,376,376,-1,-1,376,-1,-1,-1,-1,376,376,376,-1,376,-1,-1,376,376,-1,376,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,376,376,376,376,376,376,97,98,99,100,-1,-1,-1,-1,-1,-1,-1,-1,376,376,-1,-1,-1,376,376,376,376,376,376,376,376,376,-1,376,376,376,376,376],
+sm225$1=[0,377,377,377,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,377,377,377,-1,-1,377,-1,-1,377,-1,-1,377,377,377,-1,377,377,377,377,102,377,-1,377,377,377,377,377,377,-1,377,377,-1,-1,377,377,377,377,-1,-1,377,-1,-1,-1,-1,377,377,377,-1,377,-1,-1,377,377,-1,377,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,377,377,377,377,377,377,377,377,377,377,103,104,105,106,107,-1,-1,-1,377,377,-1,-1,-1,377,377,377,377,377,377,377,377,377,-1,377,377,377,377,377],
+sm226$1=[0,378,378,378,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,378,378,378,-1,-1,378,-1,-1,378,-1,-1,378,378,378,-1,378,378,378,378,378,378,-1,378,378,378,378,378,378,-1,378,378,-1,-1,378,378,378,378,-1,-1,378,-1,-1,-1,-1,378,378,378,-1,378,-1,-1,378,378,-1,378,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,378,378,378,378,378,378,378,378,378,378,378,378,378,378,378,109,110,111,378,378,-1,-1,-1,378,378,378,378,378,378,378,378,378,-1,378,378,378,378,378],
+sm227$1=[0,379,379,379,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,379,379,379,-1,-1,379,-1,-1,379,-1,-1,379,379,379,-1,379,379,379,379,379,379,-1,379,379,379,379,379,379,-1,379,379,-1,-1,379,379,379,379,-1,-1,379,-1,-1,-1,-1,379,379,379,-1,379,-1,-1,379,379,-1,379,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,379,379,379,379,379,379,379,379,379,379,379,379,379,379,379,109,110,111,379,379,-1,-1,-1,379,379,379,379,379,379,379,379,379,-1,379,379,379,379,379],
+sm228$1=[0,380,380,380,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,380,380,380,-1,-1,380,-1,-1,380,-1,-1,380,380,380,-1,380,380,380,380,380,380,-1,380,380,380,380,380,380,-1,380,380,-1,-1,380,380,380,380,-1,-1,380,-1,-1,-1,-1,380,380,380,-1,380,-1,-1,380,380,-1,380,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,380,380,380,380,380,380,380,380,380,380,380,380,380,380,380,109,110,111,380,380,-1,-1,-1,380,380,380,380,380,380,380,380,380,-1,380,380,380,380,380],
+sm229$1=[0,381,381,381,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,381,381,381,-1,-1,381,-1,-1,381,-1,-1,381,381,381,-1,381,381,381,381,381,381,-1,381,381,381,381,381,381,-1,381,381,-1,-1,381,381,381,381,-1,-1,381,-1,-1,-1,-1,381,381,381,-1,381,-1,-1,381,381,-1,381,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,381,381,381,381,381,381,381,381,381,381,381,381,381,381,381,381,381,381,113,114,-1,-1,-1,381,381,381,381,381,381,381,381,381,-1,381,381,381,381,381],
+sm230$1=[0,382,382,382,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,382,382,382,-1,-1,382,-1,-1,382,-1,-1,382,382,382,-1,382,382,382,382,382,382,-1,382,382,382,382,382,382,-1,382,382,-1,-1,382,382,382,382,-1,-1,382,-1,-1,-1,-1,382,382,382,-1,382,-1,-1,382,382,-1,382,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,382,382,382,382,382,382,382,382,382,382,382,382,382,382,382,382,382,382,113,114,-1,-1,-1,382,382,382,382,382,382,382,382,382,-1,382,382,382,382,382],
+sm231$1=[0,383,383,383,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,383,383,383,-1,-1,383,-1,-1,383,-1,-1,383,383,383,-1,383,383,383,383,383,383,-1,383,383,383,383,383,383,-1,383,383,-1,-1,383,383,383,383,-1,-1,383,-1,-1,-1,-1,383,383,383,-1,383,-1,-1,383,383,-1,383,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,383,383,383,383,383,383,383,383,383,383,383,383,383,383,383,383,383,383,113,114,-1,-1,-1,383,383,383,383,383,383,383,383,383,-1,383,383,383,383,383],
+sm232$1=[0,384,384,384,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,384,384,384,116,-1,384,-1,-1,384,-1,-1,384,384,384,-1,384,384,384,384,384,384,-1,384,384,384,384,384,384,-1,384,384,-1,-1,384,384,384,384,-1,-1,384,-1,-1,-1,-1,384,384,384,-1,384,-1,-1,384,384,-1,384,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,384,384,384,384,384,384,384,384,384,384,384,384,384,384,384,384,384,384,384,384,117,118,-1,384,384,384,384,384,384,384,384,384,-1,384,384,384,384,384],
+sm233$1=[0,385,385,385,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,385,385,385,116,-1,385,-1,-1,385,-1,-1,385,385,385,-1,385,385,385,385,385,385,-1,385,385,385,385,385,385,-1,385,385,-1,-1,385,385,385,385,-1,-1,385,-1,-1,-1,-1,385,385,385,-1,385,-1,-1,385,385,-1,385,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,385,385,385,385,385,385,385,385,385,385,385,385,385,385,385,385,385,385,385,385,117,118,-1,385,385,385,385,385,385,385,385,385,-1,385,385,385,385,385],
+sm234$1=[0,386,386,386,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,386,386,386,386,-1,386,-1,-1,386,-1,-1,386,386,386,-1,386,386,386,386,386,386,-1,386,386,386,386,386,386,-1,386,386,-1,-1,386,386,386,386,-1,-1,386,-1,-1,-1,-1,386,386,386,-1,386,-1,-1,386,386,-1,386,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,386,386,386,386,386,386,386,386,386,386,386,386,386,386,386,386,386,386,386,386,386,386,-1,386,386,386,386,386,386,386,386,386,-1,386,386,386,386,386],
+sm235$1=[0,387,387,387,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,387,387,387,387,-1,387,-1,-1,387,-1,-1,387,387,387,-1,387,387,387,387,387,387,-1,387,387,387,387,387,387,-1,387,387,-1,-1,387,387,387,387,-1,-1,387,-1,-1,-1,-1,387,387,387,-1,387,-1,-1,387,387,-1,387,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,387,-1,387,387,387,387,387,387,387,387,387,-1,387,387,387,387,387],
+sm236$1=[0,388,388,388,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,388,388,388,388,-1,388,-1,-1,388,-1,-1,388,388,388,-1,388,388,388,388,388,388,-1,388,388,388,388,388,388,-1,388,388,-1,-1,388,388,388,388,-1,-1,388,-1,-1,-1,-1,388,388,388,-1,388,-1,-1,388,388,-1,388,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,388,388,388,388,388,388,388,388,388,388,388,388,388,388,388,388,388,388,388,388,388,388,-1,388,388,388,388,388,388,388,388,388,-1,388,388,388,388,388],
+sm237$1=[0,389,389,389,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,389,389,389,389,-1,389,-1,-1,389,-1,-1,389,389,389,-1,389,389,389,389,389,389,-1,389,389,389,389,389,389,-1,389,389,-1,-1,389,389,389,389,-1,-1,389,-1,-1,-1,-1,389,389,389,-1,389,-1,-1,389,389,-1,389,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,389,389,389,389,389,389,389,389,389,389,389,389,389,389,389,389,389,389,389,389,389,389,-1,389,389,389,389,389,389,389,389,389,-1,389,389,389,389,389],
+sm238$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,390,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,391],
+sm239$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,392],
+sm240$1=[0,393,393,393,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,393,393,393,393,-1,393,-1,-1,393,-1,-1,393,393,393,-1,393,393,393,393,393,393,393,393,393,393,393,393,393,-1,393,393,-1,-1,393,393,393,393,-1,-1,393,-1,-1,-1,-1,393,393,393,-1,393,-1,-1,393,393,-1,393,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393,393],
+sm241$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,394,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,394],
+sm242$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,395,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,395],
+sm243$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,395,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,395,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,315],
+sm244$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,396,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,397],
+sm245$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,142,-1,-1,-1,-1,-1,-1,-1,-1,-1,398,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,398,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,142,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,142],
+sm246$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,253,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,40,41,-1,-1,-1,-1,45,46],
+sm247$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,399,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,399],
+sm248$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,398,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,398],
+sm249$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,400],
+sm250$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,205,-1,-1,-1,-1,-1,-1,-1,401,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,206,-1,-1,-1,-1,320,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm251$1=[0,402,402,402,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,402,402,402,402,-1,402,-1,-1,402,-1,-1,402,402,402,-1,402,402,402,402,402,402,402,402,402,402,402,402,402,-1,402,402,-1,-1,402,402,402,402,-1,-1,402,-1,-1,-1,-1,402,402,402,-1,402,-1,-1,402,402,-1,402,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402,402],
+sm252$1=[0,403,403,403,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,403,403,403,403,-1,403,-1,-1,403,-1,-1,403,403,403,-1,403,403,403,403,403,403,403,403,403,403,403,403,403,-1,403,403,-1,-1,403,403,403,403,-1,-1,403,-1,-1,-1,-1,403,403,403,-1,403,-1,-1,403,403,-1,403,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403,403],
+sm253$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,404],
+sm254$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,405,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,406],
+sm255$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,407],
+sm256$1=[0,408,408,408,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,408,408,408,408,-1,408,-1,-1,408,-1,-1,408,408,408,-1,408,408,408,408,408,408,408,408,408,408,408,408,408,-1,408,408,-1,-1,408,408,408,408,-1,-1,408,-1,-1,-1,-1,408,408,408,-1,408,-1,-1,408,408,-1,408,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408,408],
+sm257$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,409,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,410],
+sm258$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,411,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,411],
+sm259$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,412,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,412],
+sm260$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,413],
+sm261$1=[0,414,414,414,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,414,414,414,414,-1,414,-1,-1,414,-1,-1,414,414,414,-1,414,414,414,414,414,414,414,414,414,414,414,414,414,-1,414,414,-1,-1,414,414,414,414,-1,-1,414,-1,-1,-1,-1,414,414,414,-1,414,-1,-1,414,414,-1,414,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,414],
+sm262$1=[0,415,415,415,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,415,415,415,415,-1,415,-1,-1,415,-1,-1,415,415,415,-1,415,415,415,415,415,415,415,415,415,415,415,415,415,-1,415,415,-1,-1,415,415,415,415,-1,-1,415,-1,-1,-1,-1,415,415,415,-1,415,-1,-1,415,415,-1,415,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415,415],
+sm263$1=[0,416,416,416,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,416,416,416,416,-1,416,-1,-1,416,-1,-1,416,416,416,-1,416,416,416,416,416,416,416,416,416,416,416,416,416,-1,416,416,-1,-1,416,416,416,416,-1,-1,416,-1,-1,-1,-1,416,416,416,-1,416,-1,-1,416,416,-1,416,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416,416],
+sm264$1=[0,417,417,417,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,417,417,417,417,417,417,-1,417,417,-1,-1,417,417,417,-1,417,417,417,417,417,417,417,417,417,417,417,417,417,-1,417,417,-1,-1,417,417,417,417,417,-1,417,417,-1,-1,-1,417,417,417,-1,417,-1,-1,417,417,-1,417,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417,417],
+sm265$1=[0,418,418,418,-1,418,-1,-1,-1,-1,418,-1,-1,-1,-1,-1,418,418,418,418,418,418,-1,418,418,-1,-1,418,418,418,-1,418,418,418,418,418,418,418,418,418,418,418,418,418,-1,418,418,-1,-1,418,418,418,418,418,-1,418,418,-1,-1,-1,418,418,418,-1,418,-1,-1,418,418,-1,418,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418,418],
+sm266$1=[0,419,419,419,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,419,419,419,419,-1,419,-1,-1,419,-1,-1,419,419,419,-1,419,419,419,419,419,419,419,419,419,419,419,419,419,-1,419,419,-1,-1,419,419,419,419,-1,-1,419,-1,-1,-1,-1,419,419,419,-1,419,-1,-1,419,419,-1,419,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419,419],
+sm267$1=[0,-1,420,420,-1,420,420,420,420,420,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,420,420],
+sm268$1=[0,-1,421,421,-1,421,421,421,421,421,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,421,421],
+sm269$1=[0,422,422,422,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,422,422,422,422,-1,422,-1,-1,422,-1,-1,422,422,422,-1,422,422,422,422,422,422,422,422,422,422,422,422,422,-1,422,422,-1,-1,422,422,422,422,-1,-1,422,-1,-1,-1,-1,422,422,422,-1,422,-1,-1,422,422,-1,422,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422,422],
+sm270$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,291,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,423],
+sm271$1=[0,424,424,424,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,424,424,424,424,-1,424,-1,-1,424,-1,-1,424,424,424,-1,424,424,424,424,424,424,424,424,424,424,424,424,424,-1,424,424,-1,-1,424,424,424,424,-1,-1,424,-1,-1,-1,-1,424,424,424,-1,424,-1,-1,424,424,-1,424,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424,424],
+sm272$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,177,-1,-1,123,-1,-1,-1,-1,-1,-1,8,-1,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,295,-1,28,-1,179,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm273$1=[0,425,425,425,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,425,425,425,425,-1,425,-1,-1,425,-1,-1,425,425,425,-1,425,425,425,425,425,425,425,425,425,425,425,425,425,-1,425,425,-1,-1,425,425,425,425,-1,-1,425,-1,-1,-1,-1,425,425,425,-1,425,-1,-1,425,425,-1,425,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425,425],
+sm274$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,426,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,426],
+sm275$1=[0,-1,427,427,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,427,-1,-1,427,-1,-1,-1,-1,-1,-1,427,-1,-1,-1,-1,-1,-1,-1,427,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,427,-1,-1,427,-1,-1,-1,-1,427,427,427,-1,427,-1,427,427,427,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,427,427,-1,-1,-1,427,427,427,427,427,427,427,427,427,-1,427,427,427,427,427],
+sm276$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,428,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,428],
+sm277$1=[0,429,429,429,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,429,429,429,429,-1,429,-1,-1,429,-1,-1,429,429,429,-1,429,429,429,429,429,429,429,429,429,429,429,429,429,-1,429,429,-1,-1,429,429,429,429,-1,-1,429,-1,-1,-1,-1,429,429,429,-1,429,-1,-1,429,429,-1,429,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429],
+sm278$1=[0,-1,430,430,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,430,-1,-1,-1,-1,-1,-1,430,-1,-1,-1,-1,-1,-1,-1,430,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,430,-1,-1,430,-1,-1,-1,-1,430,430,-1,-1,430,-1,-1,430,430,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,430,430,-1,-1,-1,430,430,430,430,430,430,430,430,430,-1,430,430,430,430,430],
+sm279$1=[0,-1,431,431,431,431,431,431,431,431,431,-1,-1,-1,431,431,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,431,431,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,431,431],
+sm280$1=[0,432,432,432,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,432,432,432,432,-1,432,-1,-1,432,-1,-1,432,432,432,-1,432,432,432,432,432,432,432,432,432,432,432,432,432,-1,432,432,-1,-1,432,432,432,432,-1,-1,432,-1,-1,-1,-1,432,432,432,-1,432,-1,-1,432,432,-1,432,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432,432],
+sm281$1=[0,433,433,433,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,433,433,433,433,-1,433,-1,-1,433,-1,-1,433,433,433,-1,433,433,433,433,433,433,433,433,433,433,433,433,433,-1,433,433,-1,-1,433,433,433,433,-1,-1,433,-1,-1,-1,-1,433,433,433,-1,433,-1,-1,433,433,-1,433,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433,433],
+sm282$1=[0,-1,181,182,183,184,185,186,187,188,189,-1,-1,-1,190,191,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,434,435,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,194,195],
+sm283$1=[0,436,436,436,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,436,436,436,436,-1,436,-1,-1,436,-1,-1,436,436,436,-1,436,436,436,436,436,436,436,436,436,436,436,436,436,-1,436,436,-1,-1,436,436,436,436,436,-1,436,-1,-1,-1,-1,436,436,436,-1,436,-1,-1,436,436,-1,436,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436,436],
+sm284$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,437,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,438],
+sm285$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,439],
+sm286$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,440],
+sm287$1=[0,441,441,441,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,441,441,441,441,-1,441,-1,-1,441,-1,-1,441,441,441,-1,441,441,441,441,441,441,441,441,441,441,441,441,441,-1,441,441,-1,-1,441,441,441,441,-1,-1,441,-1,-1,-1,-1,441,441,441,-1,441,-1,-1,441,441,-1,441,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441,441],
+sm288$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,442],
+sm289$1=[0,443,443,443,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,443,443,443,-1,-1,443,-1,-1,443,-1,-1,443,443,443,-1,443,443,443,443,-1,443,-1,443,443,443,443,443,443,-1,443,443,-1,-1,443,443,443,443,-1,-1,443,-1,-1,-1,-1,443,443,443,-1,443,-1,-1,443,443,-1,443,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,443,443,-1,-1,-1,443,443,443,443,443,443,443,443,443,-1,443,443,443,443,443],
+sm290$1=[0,444,444,444,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,444,444,444,-1,-1,444,-1,-1,444,-1,-1,444,444,444,-1,444,444,444,444,-1,444,-1,444,444,444,444,444,444,-1,444,444,-1,-1,444,444,444,444,-1,-1,444,-1,-1,-1,-1,444,444,444,-1,444,-1,-1,444,444,-1,444,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,444,444,-1,-1,-1,444,444,444,444,444,444,444,444,444,-1,444,444,444,444,444],
+sm291$1=[0,445,445,445,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,445,445,-1,-1,-1,445,-1,-1,445,445,-1,445,445,-1,445,445,445,445,445,-1,445,-1,445,445,445,445,445,445,445,-1,445,-1,-1,445,445,445,445,-1,-1,445,-1,-1,-1,-1,445,445,-1,-1,445,-1,-1,445,445,-1,445,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,445,445,-1,-1,-1,445,445,445,445,445,445,445,445,445,-1,445,445,445,445,445],
+sm292$1=[0,446,446,446,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,446,446,-1,-1,-1,446,-1,-1,446,446,-1,446,446,-1,446,446,446,446,446,-1,446,-1,446,446,446,446,446,446,446,-1,446,-1,-1,446,446,446,446,-1,-1,446,-1,-1,-1,-1,446,446,-1,-1,446,-1,-1,446,446,-1,446,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,446,446,-1,-1,-1,446,446,446,446,446,446,446,446,446,-1,446,446,446,446,446],
+sm293$1=[0,447,447,447,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,447,447,-1,-1,-1,447,-1,-1,447,447,-1,447,447,-1,447,447,447,447,447,-1,447,-1,447,447,447,447,447,447,447,-1,447,-1,-1,447,447,447,447,-1,-1,447,-1,-1,-1,-1,447,447,-1,-1,447,-1,-1,447,447,-1,447,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,447,447,-1,-1,-1,447,447,447,447,447,447,447,447,447,-1,447,447,447,447,447],
+sm294$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,448,448],
+sm295$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,449,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,449,-1,-1,-1,-1,-1,449,-1,449,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,449,-1,-1,-1,-1,-1,-1,-1,449,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,449],
+sm296$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,450],
+sm297$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,451,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,452],
+sm298$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,453,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,453],
+sm299$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,454,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,454],
+sm300$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,455],
+sm301$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,456,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,456,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,456,-1,-1,-1,-1,-1,-1,-1,456,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,315],
+sm302$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,457,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,457,-1,-1,-1,-1,-1,457,-1,457,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,457,-1,-1,-1,-1,-1,-1,-1,457,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,457],
+sm303$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,291,-1,-1,205,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,206,458,-1,-1,-1,320,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm304$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,459],
+sm305$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,460,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,461],
+sm306$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,462,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,462],
+sm307$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,463,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,463],
+sm308$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,464,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,464,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,464,-1,-1,-1,-1,-1,-1,-1,464],
+sm309$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,464,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,464,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,464,-1,-1,-1,-1,-1,-1,-1,464,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,315],
+sm310$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,465],
+sm311$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,466],
+sm312$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,467],
+sm313$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,468],
+sm314$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,469,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,-1,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm315$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,470,-1,471],
+sm316$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,472,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,-1,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm317$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,473],
+sm318$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,69,69,69,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,69,-1,474,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,70,71,72,73,74,75,76,77,78,79,80,81,82,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,69,-1,-1,-1,-1,-1,83,84],
+sm319$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,474,-1,474],
+sm320$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,-1,-1,475,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,22,23,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,40,41,-1,42,43,44,45,46],
+sm321$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,476],
+sm322$1=[0,477,477,477,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,477,477,-1,-1,-1,477,-1,-1,477,477,-1,477,477,-1,477,477,477,477,477,-1,477,-1,477,477,477,477,477,477,477,-1,477,-1,-1,477,477,477,477,-1,-1,477,-1,-1,-1,-1,477,477,-1,-1,477,-1,-1,477,477,-1,477,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,477,477,-1,-1,-1,477,477,477,477,477,477,477,477,477,-1,477,477,477,477,477],
+sm323$1=[0,478,478,478,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,478,478,-1,-1,-1,478,-1,-1,478,478,-1,478,478,-1,478,478,478,478,478,-1,478,-1,478,478,478,478,478,478,478,-1,478,-1,-1,478,478,478,478,-1,-1,478,-1,-1,-1,-1,478,478,-1,-1,478,-1,-1,478,478,-1,478,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,478,478,-1,-1,-1,478,478,478,478,478,478,478,478,478,-1,478,478,478,478,478],
+sm324$1=[0,479,479,479,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,479,479,-1,-1,-1,479,-1,-1,479,479,-1,479,479,-1,479,479,479,479,479,-1,479,-1,479,479,479,479,479,479,479,-1,479,-1,-1,479,479,479,479,-1,-1,479,-1,-1,-1,-1,479,479,-1,-1,479,-1,-1,479,479,-1,479,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,479,479,-1,-1,-1,479,479,479,479,479,479,479,479,479,-1,479,479,479,479,479],
+sm325$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,480],
+sm326$1=[0,481,481,481,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,481,481,-1,-1,-1,481,-1,-1,481,481,-1,481,481,-1,481,481,481,481,481,-1,481,-1,481,481,481,481,481,481,481,-1,481,-1,-1,481,481,481,481,-1,-1,481,-1,-1,-1,-1,481,481,-1,-1,481,-1,-1,481,481,-1,481,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,481,481,-1,-1,-1,481,481,481,481,481,481,481,481,481,-1,481,481,481,481,481],
+sm327$1=[0,482,482,482,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,482,482,-1,-1,-1,482,-1,-1,482,482,-1,482,482,-1,482,482,482,482,482,-1,482,-1,482,482,482,482,482,482,482,-1,482,-1,333,482,482,482,482,-1,-1,482,-1,-1,-1,-1,482,482,-1,-1,482,-1,-1,482,482,-1,482,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,482,482,-1,-1,-1,482,482,482,482,482,482,482,482,482,-1,482,482,482,482,482],
+sm328$1=[0,483,483,483,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,483,483,-1,-1,-1,483,-1,-1,483,483,-1,483,483,-1,483,483,483,483,483,-1,483,-1,483,483,483,483,483,483,483,-1,483,-1,-1,483,483,483,483,-1,-1,483,-1,-1,-1,-1,483,483,-1,-1,483,-1,-1,483,483,-1,483,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,483,483,-1,-1,-1,483,483,483,483,483,483,483,483,483,-1,483,483,483,483,483],
+sm329$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,484],
+sm330$1=[0,485,485,485,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,485,485,-1,-1,-1,485,-1,-1,485,485,-1,485,485,-1,-1,485,485,485,485,-1,485,-1,485,485,485,485,485,485,485,-1,485,-1,-1,485,485,485,485,-1,-1,485,-1,-1,-1,-1,485,485,-1,-1,485,-1,-1,485,485,-1,485,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,485,485,-1,-1,-1,485,485,485,485,485,485,485,485,485,-1,485,485,485,485,485],
+sm331$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,337,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,338,251,252,-1,253,-1,-1,-1,-1,-1,-1,-1,-1,486,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,40,41,-1,-1,-1,-1,45,46],
+sm332$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,487],
+sm333$1=[0,488,488,488,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,488,488,488,488,-1,488,-1,-1,488,488,-1,488,488,488,-1,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,-1,-1,488,488,488,488,-1,-1,488,-1,-1,-1,-1,488,488,488,-1,488,-1,-1,488,488,-1,488,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488,488],
+sm334$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,337,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,338,251,252,-1,253,-1,-1,-1,-1,-1,-1,-1,-1,489,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,40,41,-1,-1,-1,-1,45,46],
+sm335$1=[0,-1,490,490,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,490,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,490,490,490,-1,490,-1,-1,-1,-1,-1,-1,-1,-1,490,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,490,490,-1,-1,-1,-1,490,490],
+sm336$1=[0,-1,491,491,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,491,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,491,491,491,-1,491,-1,-1,-1,-1,-1,-1,-1,-1,491,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,491,491,-1,-1,-1,-1,491,491],
+sm337$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,251,252,-1,253,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,40,41,-1,-1,-1,-1,45,46],
+sm338$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,396],
+sm339$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,398],
+sm340$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,492],
+sm341$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,205,-1,-1,-1,-1,-1,-1,-1,493,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,206,-1,-1,-1,-1,320,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm342$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,494],
+sm343$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,495],
+sm344$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,496],
+sm345$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,497,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,498],
+sm346$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,499],
+sm347$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,500,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,500],
+sm348$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,501,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,501],
+sm349$1=[0,502,502,502,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,502,502,-1,-1,-1,502,-1,-1,502,502,-1,502,502,-1,-1,502,502,502,502,-1,502,-1,502,502,502,502,502,502,502,-1,502,-1,-1,502,502,502,502,-1,-1,502,-1,-1,-1,-1,502,502,-1,-1,502,-1,-1,502,502,-1,502,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,502,502,-1,-1,-1,502,502,502,502,502,502,502,502,502,-1,502,502,502,502,502],
+sm350$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,503,503],
+sm351$1=[0,504,504,504,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,504,504,-1,-1,-1,504,-1,-1,504,-1,-1,504,504,-1,-1,504,504,504,504,-1,504,-1,504,504,504,504,504,504,-1,-1,504,-1,-1,504,504,504,504,-1,-1,504,-1,-1,-1,-1,504,504,-1,-1,504,-1,-1,504,504,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,504,504,-1,-1,-1,504,504,504,504,504,504,504,504,504,-1,504,504,504,504,504],
+sm352$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,505],
+sm353$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,506],
+sm354$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,507],
+sm355$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,508,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm356$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,509],
+sm357$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,510],
+sm358$1=[0,511,511,511,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,511,511,-1,-1,-1,511,-1,-1,511,-1,-1,511,511,-1,-1,511,511,511,511,-1,511,-1,511,511,511,511,511,511,-1,-1,511,-1,-1,511,511,511,511,-1,-1,511,-1,-1,-1,-1,511,511,-1,-1,511,-1,-1,511,511,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,511,511,-1,-1,-1,511,511,511,511,511,511,511,511,511,-1,511,511,511,511,511],
+sm359$1=[0,512,512,512,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,512,512,-1,-1,-1,512,-1,-1,512,-1,-1,512,512,-1,-1,512,512,512,512,-1,512,-1,512,512,512,512,512,512,-1,-1,512,-1,-1,512,512,512,512,-1,-1,512,-1,-1,-1,-1,512,512,-1,-1,512,-1,-1,512,512,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,512,512,-1,-1,-1,512,512,512,512,512,512,512,512,512,-1,512,512,512,512,512],
+sm360$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,513,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm361$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,514,-1,-1,-1,-1,-1,514],
+sm362$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,515,-1,-1,-1,-1,-1,515],
+sm363$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,251,252,-1,253,-1,-1,-1,-1,254,-1,-1,-1,516,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,40,41,-1,-1,-1,-1,45,46],
+sm364$1=[0,517,517,517,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,517,517,517,517,-1,517,-1,-1,517,-1,-1,517,517,517,-1,517,517,517,517,517,517,517,517,517,517,517,517,517,-1,517,517,-1,-1,517,517,517,517,-1,-1,517,-1,-1,-1,-1,517,517,517,-1,517,-1,-1,517,517,-1,517,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517,517],
+sm365$1=[0,518,518,518,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,518,518,518,518,-1,518,-1,-1,518,-1,-1,518,518,518,-1,518,518,518,518,518,518,518,518,518,518,518,518,518,-1,518,518,-1,-1,518,518,518,518,-1,-1,518,-1,-1,-1,-1,518,518,518,-1,518,-1,-1,518,518,-1,518,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518,518],
+sm366$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,519,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,519],
+sm367$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,520,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,520],
+sm368$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,205,-1,-1,-1,-1,-1,-1,-1,521,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,206,-1,-1,-1,-1,320,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm369$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,522],
+sm370$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,523],
+sm371$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,524],
+sm372$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,205,-1,-1,-1,-1,-1,-1,-1,525,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,206,-1,-1,-1,-1,320,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm373$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,526],
+sm374$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,527],
+sm375$1=[0,528,528,528,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,528,528,528,528,-1,528,-1,-1,528,-1,-1,528,528,528,-1,528,528,528,528,528,528,528,528,528,528,528,528,528,-1,528,528,-1,-1,528,528,528,528,-1,-1,528,-1,-1,-1,-1,528,528,528,-1,528,-1,-1,528,528,-1,528,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528,528],
+sm376$1=[0,529,529,529,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,529,529,529,529,-1,529,-1,-1,529,-1,-1,529,529,529,-1,529,529,529,529,529,529,529,529,529,529,529,529,529,-1,529,529,-1,-1,529,529,529,529,-1,-1,529,-1,-1,-1,-1,529,529,529,-1,529,-1,-1,529,529,-1,529,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529,529],
+sm377$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,530],
+sm378$1=[0,531,531,531,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,531,531,531,531,-1,531,-1,-1,531,-1,-1,531,531,531,-1,531,531,531,531,531,531,531,531,531,531,531,531,531,-1,531,531,-1,-1,531,531,531,531,-1,-1,531,-1,-1,-1,-1,531,531,531,-1,531,-1,-1,531,531,-1,531,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531,531],
+sm379$1=[0,532,532,532,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,532,532,532,532,-1,532,-1,-1,532,-1,-1,532,532,532,-1,532,532,532,532,532,532,532,532,532,532,532,532,532,-1,532,532,-1,-1,532,532,532,532,-1,-1,532,-1,-1,-1,-1,532,532,532,-1,532,-1,-1,532,532,-1,532,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532,532],
+sm380$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,-1,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,269,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm381$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,533,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,533],
+sm382$1=[0,534,534,534,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,534,534,534,534,-1,534,-1,-1,534,-1,-1,534,534,534,-1,534,534,534,534,534,534,534,534,534,534,534,534,534,-1,534,534,-1,-1,534,534,534,534,-1,-1,534,-1,-1,-1,-1,534,534,534,-1,534,-1,-1,534,534,-1,534,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534,534],
+sm383$1=[0,535,535,535,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,535,535,535,535,-1,535,-1,-1,535,-1,-1,535,535,535,-1,535,535,535,535,535,535,535,535,535,535,535,535,535,-1,535,535,-1,-1,535,535,535,535,-1,-1,535,-1,-1,-1,-1,535,535,535,-1,535,-1,-1,535,535,-1,535,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535,535],
+sm384$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,536,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,536],
+sm385$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,291,-1,-1,123,-1,-1,-1,-1,-1,-1,8,-1,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm386$1=[0,537,537,537,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,537,537,537,537,-1,537,-1,-1,537,-1,-1,537,537,537,-1,537,537,537,537,537,537,537,537,537,537,537,537,537,-1,537,537,-1,-1,537,537,537,537,-1,-1,537,-1,-1,-1,-1,537,537,537,-1,537,-1,-1,537,537,-1,537,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537,537],
+sm387$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,538,539],
+sm388$1=[0,540,540,540,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,540,540,540,540,-1,540,-1,-1,540,-1,-1,540,540,540,-1,540,540,540,540,540,540,540,540,540,540,540,540,540,-1,540,540,-1,-1,540,540,540,540,-1,-1,540,-1,-1,-1,-1,540,540,540,-1,540,-1,-1,540,540,-1,540,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540,540],
+sm389$1=[0,-1,541,541,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,541,-1,-1,-1,-1,-1,-1,541,-1,-1,-1,-1,-1,-1,-1,541,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,541,-1,-1,541,-1,-1,-1,-1,541,541,-1,-1,541,-1,-1,541,541,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,541,541,-1,-1,-1,541,541,541,541,541,541,541,541,541,-1,541,541,541,541,541],
+sm390$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,542],
+sm391$1=[0,543,543,543,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,543,543,543,543,-1,543,-1,-1,543,-1,-1,543,543,543,-1,543,543,543,543,543,543,543,543,543,543,543,543,543,-1,543,543,-1,-1,543,543,543,543,543,-1,543,-1,-1,-1,-1,543,543,543,-1,543,-1,-1,543,543,-1,543,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543,543],
+sm392$1=[0,544,544,544,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,544,544,544,544,-1,544,-1,-1,544,-1,-1,544,544,544,-1,544,544,544,544,544,544,544,544,544,544,544,544,544,-1,544,544,-1,-1,544,544,544,544,544,-1,544,-1,-1,-1,-1,544,544,544,-1,544,-1,-1,544,544,-1,544,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544,544],
+sm393$1=[0,545,545,545,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,545,545,545,545,-1,545,-1,-1,545,-1,-1,545,545,545,-1,545,545,545,545,545,545,545,545,545,545,545,545,545,-1,545,545,-1,-1,545,545,545,545,-1,-1,545,-1,-1,-1,-1,545,545,545,-1,545,-1,-1,545,545,-1,545,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545,545],
+sm394$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,546],
+sm395$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,547],
+sm396$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,548,548],
+sm397$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,549,549,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,549,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,549,-1,-1,-1,-1,-1,-1,-1,549],
+sm398$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,550,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,550,-1,-1,-1,-1,-1,550,-1,550,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,550,-1,-1,-1,-1,-1,-1,-1,550,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,550],
+sm399$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,253,-1,-1,-1,-1,317,-1,-1,-1,551,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,40,41,-1,-1,-1,-1,45,46],
+sm400$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,552],
+sm401$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,553,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,553,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,553,-1,-1,-1,-1,-1,-1,-1,553],
+sm402$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,554],
+sm403$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,555,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,555,-1,-1,-1,-1,-1,555,-1,555,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,555,-1,-1,-1,-1,-1,-1,-1,555,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,555],
+sm404$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,556,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,556],
+sm405$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,177,-1,-1,205,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,206,557,-1,-1,-1,320,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm406$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,558,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,558],
+sm407$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,559,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,559,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,559,-1,-1,-1,-1,-1,-1,-1,559],
+sm408$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,560,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,-1,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm409$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,561],
+sm410$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,562,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm411$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,563],
+sm412$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,564,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm413$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,565,312],
+sm414$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,566,-1,566],
+sm415$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,314,314,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,567,-1,567,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,315],
+sm416$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,567,-1,567,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,315],
+sm417$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,568,-1,568],
+sm418$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,569],
+sm419$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,474],
+sm420$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,570],
+sm421$1=[0,571,571,571,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,571,571,-1,-1,-1,571,-1,-1,571,571,-1,571,571,-1,571,571,571,571,571,-1,571,-1,571,571,571,571,571,571,571,-1,571,-1,-1,571,571,571,571,-1,-1,571,-1,-1,-1,-1,571,571,-1,-1,571,-1,-1,571,571,-1,571,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,571,571,-1,-1,-1,571,571,571,571,571,571,571,571,571,-1,571,571,571,571,571],
+sm422$1=[0,572,572,572,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,572,572,-1,-1,-1,572,-1,-1,572,572,-1,572,572,-1,572,572,572,572,572,-1,572,-1,572,572,572,572,572,572,572,-1,572,-1,-1,572,572,572,572,-1,-1,572,-1,-1,-1,-1,572,572,-1,-1,572,-1,-1,572,572,-1,572,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,572,572,-1,-1,-1,572,572,572,572,572,572,572,572,572,-1,572,572,572,572,572],
+sm423$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,573],
+sm424$1=[0,574,574,574,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,574,574,574,574,-1,574,-1,-1,574,574,-1,574,574,574,-1,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,-1,-1,574,574,574,574,-1,-1,574,-1,-1,-1,-1,574,574,574,-1,574,-1,-1,574,574,-1,574,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574,574],
+sm425$1=[0,575,575,575,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,575,575,575,575,-1,575,-1,-1,575,575,-1,575,575,575,-1,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,-1,-1,575,575,575,575,-1,-1,575,-1,-1,-1,-1,575,575,575,-1,575,-1,-1,575,575,-1,575,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575,575],
+sm426$1=[0,-1,576,576,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,576,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,576,576,576,-1,576,-1,-1,-1,-1,-1,-1,-1,-1,576,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,576,576,-1,-1,-1,-1,576,576],
+sm427$1=[0,-1,577,577,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,577,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,577,577,577,-1,577,-1,-1,-1,-1,-1,-1,-1,-1,577,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,577,577,-1,-1,-1,-1,577,577],
+sm428$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,578],
+sm429$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,579],
+sm430$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,580],
+sm431$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,581,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm432$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,205,-1,-1,-1,-1,-1,-1,-1,582,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,206,-1,-1,-1,-1,320,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm433$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,583,583],
+sm434$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,584],
+sm435$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,585,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,585],
+sm436$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,586,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,586],
+sm437$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,587,-1,-1,-1,-1,-1,587],
+sm438$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,588,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,588],
+sm439$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,589,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,589],
+sm440$1=[0,590,590,590,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,590,590,590,-1,-1,590,-1,-1,590,-1,-1,590,590,590,-1,590,590,590,590,-1,590,-1,590,590,590,590,590,590,-1,590,590,-1,-1,590,590,590,590,-1,-1,590,-1,-1,-1,-1,590,590,590,-1,590,-1,-1,590,590,-1,590,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,590,590,-1,-1,-1,590,590,590,590,590,590,590,590,590,-1,590,590,590,590,590],
+sm441$1=[0,591,591,591,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,591,591,591,591,-1,591,-1,-1,591,-1,-1,591,591,591,-1,591,591,591,591,591,591,591,591,591,591,591,591,591,-1,591,591,-1,-1,591,591,591,591,-1,-1,591,-1,-1,-1,-1,591,591,591,-1,591,-1,-1,591,591,-1,591,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591,591],
+sm442$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,592,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,592],
+sm443$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,593,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,593],
+sm444$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,594],
+sm445$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,595],
+sm446$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,596],
+sm447$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,597],
+sm448$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,598,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,598],
+sm449$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,599],
+sm450$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,600],
+sm451$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,601],
+sm452$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,602,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm453$1=[0,603,603,603,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,603,603,603,603,-1,603,-1,-1,603,-1,-1,603,603,603,-1,603,603,603,603,603,603,603,603,603,603,603,603,603,-1,603,603,-1,-1,603,603,603,603,-1,-1,603,-1,-1,-1,-1,603,603,603,-1,603,-1,-1,603,603,-1,603,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603,603],
+sm454$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,604,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,604],
+sm455$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,605,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,605],
+sm456$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,606],
+sm457$1=[0,607,607,607,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,607,607,607,607,-1,607,-1,-1,607,-1,-1,607,607,607,-1,607,607,607,607,607,607,607,607,607,607,607,607,607,-1,607,607,-1,-1,607,607,607,607,-1,-1,607,-1,-1,-1,-1,607,607,607,-1,607,-1,-1,607,607,-1,607,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607,607],
+sm458$1=[0,-1,608,608,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,608,-1,-1,-1,-1,-1,-1,608,-1,-1,-1,-1,-1,-1,-1,608,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,608,-1,-1,608,-1,-1,-1,-1,608,608,-1,-1,608,-1,-1,608,608,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,608,608,-1,-1,-1,608,608,608,608,608,608,608,608,608,-1,608,608,608,608,608],
+sm459$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,609],
+sm460$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,610],
+sm461$1=[0,611,611,611,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,611,611,611,-1,-1,611,-1,-1,611,-1,-1,611,611,611,-1,611,611,611,611,-1,611,-1,611,611,611,611,611,611,-1,611,611,-1,-1,611,611,611,611,-1,-1,611,-1,-1,-1,-1,611,611,611,-1,611,-1,-1,611,611,-1,611,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,611,611,-1,-1,-1,611,611,611,611,611,611,611,611,611,-1,611,611,611,611,611],
+sm462$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,612],
+sm463$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,613,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,613,-1,-1,-1,-1,-1,613,-1,613,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,613,-1,-1,-1,-1,-1,-1,-1,613,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,613],
+sm464$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,614,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,614],
+sm465$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,615,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,615],
+sm466$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,616,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,616,-1,-1,-1,-1,-1,616,-1,616,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,616,-1,-1,-1,-1,-1,-1,-1,616,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,616],
+sm467$1=[0,-1,-1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,291,-1,-1,205,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,206,617,-1,-1,-1,320,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,45,46],
+sm468$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,618],
+sm469$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,619,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,619],
+sm470$1=[0,620,620,620,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,620,620,-1,-1,-1,620,-1,-1,620,620,-1,620,620,-1,621,620,620,620,620,-1,620,-1,620,620,620,620,620,620,620,-1,620,-1,-1,620,620,620,620,-1,-1,620,-1,-1,-1,-1,620,620,-1,-1,620,-1,-1,620,620,-1,620,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,620,620,-1,-1,-1,620,620,620,620,620,620,620,620,620,-1,620,620,620,620,620],
+sm471$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,622],
+sm472$1=[0,623,623,623,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,623,623,-1,-1,-1,623,-1,-1,623,623,-1,623,623,-1,623,623,623,623,623,-1,623,-1,623,623,623,623,623,623,623,-1,623,-1,-1,623,623,623,623,-1,-1,623,-1,-1,-1,-1,623,623,-1,-1,623,-1,-1,623,623,-1,623,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,623,623,-1,-1,-1,623,623,623,623,623,623,623,623,623,-1,623,623,623,623,623],
+sm473$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,624],
+sm474$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,625,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm475$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,626,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm476$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,627],
+sm477$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,628],
+sm478$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,629],
+sm479$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,630,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm480$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,631],
+sm481$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,567],
+sm482$1=[0,632,632,632,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,632,632,-1,-1,-1,632,-1,-1,632,632,-1,632,632,-1,632,632,632,632,632,-1,632,-1,632,632,632,632,632,632,632,-1,632,-1,-1,632,632,632,632,-1,-1,632,-1,-1,-1,-1,632,632,-1,-1,632,-1,-1,632,632,-1,632,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,632,632,-1,-1,-1,632,632,632,632,632,632,632,632,632,-1,632,632,632,632,632],
+sm483$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,633,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,634,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,635],
+sm484$1=[0,636,636,636,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,636,636,-1,-1,-1,636,-1,-1,636,636,-1,636,636,-1,636,636,636,636,636,-1,636,-1,636,636,636,636,636,636,636,-1,636,-1,-1,636,636,636,636,-1,-1,636,-1,-1,-1,-1,636,636,-1,-1,636,-1,-1,636,636,-1,636,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,636,636,-1,-1,-1,636,636,636,636,636,636,636,636,636,-1,636,636,636,636,636],
+sm485$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,637],
+sm486$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,638],
+sm487$1=[0,639,639,639,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,639,639,639,639,-1,639,-1,-1,639,639,-1,639,639,639,-1,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,-1,-1,639,639,639,639,-1,-1,639,-1,-1,-1,-1,639,639,639,-1,639,-1,-1,639,639,-1,639,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639,639],
+sm488$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,640],
+sm489$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,641,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm490$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,642,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm491$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,643],
+sm492$1=[0,644,644,644,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,644,644,-1,-1,-1,644,-1,-1,644,644,-1,644,644,-1,644,644,644,644,644,-1,644,-1,644,644,644,644,644,644,644,-1,644,-1,-1,644,644,644,644,-1,-1,644,-1,-1,-1,-1,644,644,-1,-1,644,-1,-1,644,644,-1,644,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,644,644,-1,-1,-1,644,644,644,644,644,644,644,644,644,-1,644,644,644,644,644],
+sm493$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,645],
+sm494$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,646],
+sm495$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,647,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,647],
+sm496$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,648],
+sm497$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,649,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm498$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,650],
+sm499$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,651],
+sm500$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,652],
+sm501$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,653],
+sm502$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,654,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm503$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,655,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm504$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,656],
+sm505$1=[0,657,657,657,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,657,657,657,657,-1,657,-1,-1,657,-1,-1,657,657,657,-1,657,657,657,657,657,657,657,657,657,657,657,657,657,-1,657,657,-1,-1,657,657,657,657,-1,-1,657,-1,-1,-1,-1,657,657,657,-1,657,-1,-1,657,657,-1,657,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657,657],
+sm506$1=[0,658,658,658,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,658,658,658,658,-1,658,-1,-1,658,-1,-1,658,658,658,-1,658,658,658,658,658,658,658,658,658,658,658,658,658,-1,658,658,-1,-1,658,658,658,658,658,-1,658,-1,-1,-1,-1,658,658,658,-1,658,-1,-1,658,658,-1,658,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658,658],
+sm507$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,659,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,659,-1,-1,-1,-1,-1,659,-1,659,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,659,-1,-1,-1,-1,-1,-1,-1,659,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,659],
+sm508$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,660,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,660,-1,-1,-1,-1,-1,660,-1,660,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,660,-1,-1,-1,-1,-1,-1,-1,660,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,660],
+sm509$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,661],
+sm510$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,662],
+sm511$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,123,-1,-1,-1,-1,-1,-1,8,663,-1,-1,-1,-1,-1,-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,124,-1,-1,125,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm512$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,664],
+sm513$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,665],
+sm514$1=[0,666,666,666,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,666,666,-1,-1,-1,666,-1,-1,666,666,-1,666,666,-1,666,666,666,666,666,-1,666,-1,666,666,666,666,666,666,666,-1,666,-1,-1,666,666,666,666,-1,-1,666,-1,-1,-1,-1,666,666,-1,-1,666,-1,-1,666,666,-1,666,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,666,666,-1,-1,-1,666,666,666,666,666,666,666,666,666,-1,666,666,666,666,666],
+sm515$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,667],
+sm516$1=[0,668,668,668,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,668,668,-1,-1,-1,668,-1,-1,668,668,-1,668,668,-1,668,668,668,668,668,-1,668,-1,668,668,668,668,668,668,668,-1,668,-1,-1,668,668,668,668,-1,-1,668,-1,-1,-1,-1,668,668,-1,-1,668,-1,-1,668,668,-1,668,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,668,668,-1,-1,-1,668,668,668,668,668,668,668,668,668,-1,668,668,668,668,668],
+sm517$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,669],
+sm518$1=[0,670,670,670,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,670,670,-1,-1,-1,670,-1,-1,670,670,-1,670,670,-1,670,670,670,670,670,-1,670,-1,670,670,670,670,670,670,670,-1,670,-1,-1,670,670,670,670,-1,-1,670,-1,-1,-1,-1,670,670,-1,-1,670,-1,-1,670,670,-1,670,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,670,670,-1,-1,-1,670,670,670,670,670,670,670,670,670,-1,670,670,670,670,670],
+sm519$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,633,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,634,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,671],
+sm520$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,634,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,672],
+sm521$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,673,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,673,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,673],
+sm522$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,674],
+sm523$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,675,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm524$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,676],
+sm525$1=[0,677,677,677,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,677,677,-1,-1,-1,677,-1,-1,677,677,-1,677,677,-1,677,677,677,677,677,-1,677,-1,677,677,677,677,677,677,677,-1,677,-1,-1,677,677,677,677,-1,-1,677,-1,-1,-1,-1,677,677,-1,-1,677,-1,-1,677,677,-1,677,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,677,677,-1,-1,-1,677,677,677,677,677,677,677,677,677,-1,677,677,677,677,677],
+sm526$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,678],
+sm527$1=[0,679,679,679,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,679,679,-1,-1,-1,679,-1,-1,679,679,-1,679,679,-1,679,679,679,679,679,-1,679,-1,679,679,679,679,679,679,679,-1,679,-1,-1,679,679,679,679,-1,-1,679,-1,-1,-1,-1,679,679,-1,-1,679,-1,-1,679,679,-1,679,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,679,679,-1,-1,-1,679,679,679,679,679,679,679,679,679,-1,679,679,679,679,679],
+sm528$1=[0,680,680,680,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,680,680,-1,-1,-1,680,-1,-1,680,680,-1,680,680,-1,680,680,680,680,680,-1,680,-1,680,680,680,680,680,680,680,-1,680,-1,-1,680,680,680,680,-1,-1,680,-1,-1,-1,-1,680,680,-1,-1,680,-1,-1,680,680,-1,680,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,680,680,-1,-1,-1,680,680,680,680,680,680,680,680,680,-1,680,680,680,680,680],
+sm529$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,681,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm530$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,682],
+sm531$1=[0,-1,683,683,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,683,683,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,683,683,683,-1,683,-1,-1,-1,-1,-1,-1,-1,-1,683,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,683,683,-1,-1,-1,-1,683,683],
+sm532$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,684,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm533$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,685],
+sm534$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,686,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm535$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,687],
+sm536$1=[0,688,688,688,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,688,688,688,688,-1,688,-1,-1,688,-1,-1,688,688,688,-1,688,688,688,688,688,688,688,688,688,688,688,688,688,-1,688,688,-1,-1,688,688,688,688,-1,-1,688,-1,-1,-1,-1,688,688,688,-1,688,-1,-1,688,688,-1,688,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688,688],
+sm537$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,689],
+sm538$1=[0,690,690,690,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,690,690,690,690,-1,690,-1,-1,690,-1,-1,690,690,690,-1,690,690,690,690,690,690,690,690,690,690,690,690,690,-1,690,690,-1,-1,690,690,690,690,-1,-1,690,-1,-1,-1,-1,690,690,690,-1,690,-1,-1,690,690,-1,690,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690,690],
+sm539$1=[0,691,691,691,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,691,691,691,691,-1,691,-1,-1,691,-1,-1,691,691,691,-1,691,691,691,691,691,691,691,691,691,691,691,691,691,-1,691,691,-1,-1,691,691,691,691,-1,-1,691,-1,-1,-1,-1,691,691,691,-1,691,-1,-1,691,691,-1,691,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691,691],
+sm540$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,692,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,692,-1,-1,-1,-1,-1,692,-1,692,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,692,-1,-1,-1,-1,-1,-1,-1,692,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,692],
+sm541$1=[0,693,693,693,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,693,693,-1,-1,-1,693,-1,-1,693,693,-1,693,693,-1,693,693,693,693,693,-1,693,-1,693,693,693,693,693,693,693,-1,693,-1,-1,693,693,693,693,-1,-1,693,-1,-1,-1,-1,693,693,-1,-1,693,-1,-1,693,693,-1,693,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,693,693,-1,-1,-1,693,693,693,693,693,693,693,693,693,-1,693,693,693,693,693],
+sm542$1=[0,694,694,694,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,694,694,-1,-1,-1,694,-1,-1,694,694,-1,694,694,-1,694,694,694,694,694,-1,694,-1,694,694,694,694,694,694,694,-1,694,-1,-1,694,694,694,694,-1,-1,694,-1,-1,-1,-1,694,694,-1,-1,694,-1,-1,694,694,-1,694,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,694,694,-1,-1,-1,694,694,694,694,694,694,694,694,694,-1,694,694,694,694,694],
+sm543$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,695],
+sm544$1=[0,696,696,696,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,696,696,-1,-1,-1,696,-1,-1,696,696,-1,696,696,-1,696,696,696,696,696,-1,696,-1,696,696,696,696,696,696,696,-1,696,-1,-1,696,696,696,696,-1,-1,696,-1,-1,-1,-1,696,696,-1,-1,696,-1,-1,696,696,-1,696,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,696,696,-1,-1,-1,696,696,696,696,696,696,696,696,696,-1,696,696,696,696,696],
+sm545$1=[0,697,697,697,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,697,697,-1,-1,-1,697,-1,-1,697,697,-1,697,697,-1,697,697,697,697,697,-1,697,-1,697,697,697,697,697,697,697,-1,697,-1,-1,697,697,697,697,-1,-1,697,-1,-1,-1,-1,697,697,-1,-1,697,-1,-1,697,697,-1,697,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,697,697,-1,-1,-1,697,697,697,697,697,697,697,697,697,-1,697,697,697,697,697],
+sm546$1=[0,698,698,698,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,698,698,-1,-1,-1,698,-1,-1,698,698,-1,698,698,-1,698,698,698,698,698,-1,698,-1,698,698,698,698,698,698,698,-1,698,-1,-1,698,698,698,698,-1,-1,698,-1,-1,-1,-1,698,698,-1,-1,698,-1,-1,698,698,-1,698,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,698,698,-1,-1,-1,698,698,698,698,698,698,698,698,698,-1,698,698,698,698,698],
+sm547$1=[0,699,699,699,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,699,699,-1,-1,-1,699,-1,-1,699,699,-1,699,699,-1,699,699,699,699,699,-1,699,-1,699,699,699,699,699,699,699,-1,699,-1,-1,699,699,699,699,-1,-1,699,-1,-1,-1,-1,699,699,-1,-1,699,-1,-1,699,699,-1,699,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,699,699,-1,-1,-1,699,699,699,699,699,699,699,699,699,-1,699,699,699,699,699],
+sm548$1=[0,700,700,700,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,700,700,-1,-1,-1,700,-1,-1,700,700,-1,700,700,-1,700,700,700,700,700,-1,700,-1,700,700,700,700,700,700,700,-1,700,-1,-1,700,700,700,700,-1,-1,700,-1,-1,-1,-1,700,700,-1,-1,700,-1,-1,700,700,-1,700,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,700,700,-1,-1,-1,700,700,700,700,700,700,700,700,700,-1,700,700,700,700,700],
+sm549$1=[0,701,701,701,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,701,701,-1,-1,-1,701,-1,-1,701,701,-1,701,701,-1,701,701,701,701,701,-1,701,-1,701,701,701,701,701,701,701,-1,701,-1,-1,701,701,701,701,-1,-1,701,-1,-1,-1,-1,701,701,-1,-1,701,-1,-1,701,701,-1,701,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,701,701,-1,-1,-1,701,701,701,701,701,701,701,701,701,-1,701,701,701,701,701],
+sm550$1=[0,702,702,702,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,702,702,-1,-1,-1,702,-1,-1,702,702,-1,702,702,-1,702,702,702,702,702,-1,702,-1,702,702,702,702,702,702,702,-1,702,-1,-1,702,702,702,702,-1,-1,702,-1,-1,-1,-1,702,702,-1,-1,702,-1,-1,702,702,-1,702,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,702,702,-1,-1,-1,702,702,702,702,702,702,702,702,702,-1,702,702,702,702,702],
+sm551$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,634,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,703],
+sm552$1=[0,704,704,704,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,704,704,-1,-1,-1,704,-1,-1,704,704,-1,704,704,-1,704,704,704,704,704,-1,704,-1,704,704,704,704,704,704,704,-1,704,-1,-1,704,704,704,704,-1,-1,704,-1,-1,-1,-1,704,704,-1,-1,704,-1,-1,704,704,-1,704,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,704,704,-1,-1,-1,704,704,704,704,704,704,704,704,704,-1,704,704,704,704,704],
+sm553$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,705,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,705,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,705],
+sm554$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,634,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,706],
+sm555$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,707],
+sm556$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,708,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,708,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm557$1=[0,709,709,709,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,709,709,-1,-1,-1,709,-1,-1,709,709,-1,709,709,-1,709,709,709,709,709,-1,709,-1,709,709,709,709,709,709,709,-1,709,-1,709,709,709,709,709,-1,-1,709,-1,-1,-1,-1,709,709,-1,-1,709,-1,-1,709,709,-1,709,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,709,709,-1,-1,-1,709,709,709,709,709,709,709,709,709,-1,709,709,709,709,709],
+sm558$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,710],
+sm559$1=[0,711,711,711,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,711,711,-1,-1,-1,711,-1,-1,711,711,-1,711,711,-1,711,711,711,711,711,-1,711,-1,711,711,711,711,711,711,711,-1,711,-1,-1,711,711,711,711,-1,-1,711,-1,-1,-1,-1,711,711,-1,-1,711,-1,-1,711,711,-1,711,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,711,711,-1,-1,-1,711,711,711,711,711,711,711,711,711,-1,711,711,711,711,711],
+sm560$1=[0,712,712,712,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,712,712,-1,-1,-1,712,-1,-1,712,712,-1,712,712,-1,712,712,712,712,712,-1,712,-1,712,712,712,712,712,712,712,-1,712,-1,-1,712,712,712,712,-1,-1,712,-1,-1,-1,-1,712,712,-1,-1,712,-1,-1,712,712,-1,712,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,712,712,-1,-1,-1,712,712,712,712,712,712,712,712,712,-1,712,712,712,712,712],
+sm561$1=[0,713,713,713,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,713,713,-1,-1,-1,713,-1,-1,713,713,-1,713,713,-1,713,713,713,713,713,-1,713,-1,713,713,713,713,713,713,713,-1,713,-1,-1,713,713,713,713,-1,-1,713,-1,-1,-1,-1,713,713,-1,-1,713,-1,-1,713,713,-1,713,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,713,713,-1,-1,-1,713,713,713,713,713,713,713,713,713,-1,713,713,713,713,713],
+sm562$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,714],
+sm563$1=[0,-1,715,715,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,715,715,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,715,715,715,-1,715,-1,-1,-1,-1,-1,-1,-1,-1,715,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,715,715,-1,-1,-1,-1,715,715],
+sm564$1=[0,-1,716,716,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,716,716,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,716,716,716,-1,716,-1,-1,-1,-1,-1,-1,-1,-1,716,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,716,716,-1,-1,-1,-1,716,716],
+sm565$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,717],
+sm566$1=[0,-1,718,718,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,718,718,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,718,718,718,-1,718,-1,-1,-1,-1,-1,-1,-1,-1,718,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,718,718,-1,-1,-1,-1,718,718],
+sm567$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,-1,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,-1,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,719,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm568$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,720],
+sm569$1=[0,721,721,721,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,721,721,721,721,-1,721,-1,-1,721,-1,-1,721,721,721,-1,721,721,721,721,721,721,721,721,721,721,721,721,721,-1,721,721,-1,-1,721,721,721,721,-1,-1,721,-1,-1,-1,-1,721,721,721,-1,721,-1,-1,721,721,-1,721,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721,721],
+sm570$1=[0,722,722,722,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,722,722,722,722,-1,722,-1,-1,722,-1,-1,722,722,722,-1,722,722,722,722,722,722,722,722,722,722,722,722,722,-1,722,722,-1,-1,722,722,722,722,-1,-1,722,-1,-1,-1,-1,722,722,722,-1,722,-1,-1,722,722,-1,722,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722,722],
+sm571$1=[0,723,723,723,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,723,723,723,723,-1,723,-1,-1,723,-1,-1,723,723,723,-1,723,723,723,723,723,723,723,723,723,723,723,723,723,-1,723,723,-1,-1,723,723,723,723,-1,-1,723,-1,-1,-1,-1,723,723,723,-1,723,-1,-1,723,723,-1,723,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723,723],
+sm572$1=[0,724,724,724,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,724,724,-1,-1,-1,724,-1,-1,724,724,-1,724,724,-1,724,724,724,724,724,-1,724,-1,724,724,724,724,724,724,724,-1,724,-1,-1,724,724,724,724,-1,-1,724,-1,-1,-1,-1,724,724,-1,-1,724,-1,-1,724,724,-1,724,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,724,724,-1,-1,-1,724,724,724,724,724,724,724,724,724,-1,724,724,724,724,724],
+sm573$1=[0,725,725,725,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,725,725,-1,-1,-1,725,-1,-1,725,725,-1,725,725,-1,725,725,725,725,725,-1,725,-1,725,725,725,725,725,725,725,-1,725,-1,-1,725,725,725,725,-1,-1,725,-1,-1,-1,-1,725,725,-1,-1,725,-1,-1,725,725,-1,725,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,725,725,-1,-1,-1,725,725,725,725,725,725,725,725,725,-1,725,725,725,725,725],
+sm574$1=[0,726,726,726,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,726,726,-1,-1,-1,726,-1,-1,726,726,-1,726,726,-1,726,726,726,726,726,-1,726,-1,726,726,726,726,726,726,726,-1,726,-1,-1,726,726,726,726,-1,-1,726,-1,-1,-1,-1,726,726,-1,-1,726,-1,-1,726,726,-1,726,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,726,726,-1,-1,-1,726,726,726,726,726,726,726,726,726,-1,726,726,726,726,726],
+sm575$1=[0,727,727,727,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,727,727,-1,-1,-1,727,-1,-1,727,727,-1,727,727,-1,727,727,727,727,727,-1,727,-1,727,727,727,727,727,727,727,-1,727,-1,-1,727,727,727,727,-1,-1,727,-1,-1,-1,-1,727,727,-1,-1,727,-1,-1,727,727,-1,727,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,727,727,-1,-1,-1,727,727,727,727,727,727,727,727,727,-1,727,727,727,727,727],
+sm576$1=[0,728,728,728,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,728,728,-1,-1,-1,728,-1,-1,728,728,-1,728,728,-1,728,728,728,728,728,-1,728,-1,728,728,728,728,728,728,728,-1,728,-1,-1,728,728,728,728,-1,-1,728,-1,-1,-1,-1,728,728,-1,-1,728,-1,-1,728,728,-1,728,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,728,728,-1,-1,-1,728,728,728,728,728,728,728,728,728,-1,728,728,728,728,728],
+sm577$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,729],
+sm578$1=[0,730,730,730,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,730,730,-1,-1,-1,730,-1,-1,730,730,-1,730,730,-1,730,730,730,730,730,-1,730,-1,730,730,730,730,730,730,730,-1,730,-1,-1,730,730,730,730,-1,-1,730,-1,-1,-1,-1,730,730,-1,-1,730,-1,-1,730,730,-1,730,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,730,730,-1,-1,-1,730,730,730,730,730,730,730,730,730,-1,730,730,730,730,730],
+sm579$1=[0,-1,1,2,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,4,-1,-1,-1,5,-1,-1,-1,731,-1,7,8,-1,-1,9,10,11,12,-1,13,-1,14,15,16,17,18,19,731,-1,20,-1,-1,21,22,23,24,-1,-1,25,-1,-1,-1,-1,26,27,-1,-1,28,-1,-1,29,30,-1,731,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,31,32,-1,-1,-1,33,34,35,36,37,38,39,40,41,-1,42,43,44,45,46],
+sm580$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,732,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,732],
+sm581$1=[0,733,733,733,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,733,733,-1,-1,-1,733,-1,-1,733,733,-1,733,733,-1,733,733,733,733,733,-1,733,-1,733,733,733,733,733,733,733,-1,733,-1,-1,733,733,733,733,-1,-1,733,-1,-1,-1,-1,733,733,-1,-1,733,-1,-1,733,733,-1,733,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,733,733,-1,-1,-1,733,733,733,733,733,733,733,733,733,-1,733,733,733,733,733],
+sm582$1=[0,-1,734,734,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,734,734,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,734,734,734,-1,734,-1,-1,-1,-1,-1,-1,-1,-1,734,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,734,734,-1,-1,-1,-1,734,734],
+sm583$1=[0,-1,735,735,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,735,735,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,735,735,735,-1,735,-1,-1,-1,-1,-1,-1,-1,-1,735,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,735,735,-1,-1,-1,-1,735,735],
+sm584$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,736],
+sm585$1=[0,-1,737,737,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,737,737,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,737,737,737,-1,737,-1,-1,-1,-1,-1,-1,-1,-1,737,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,737,737,-1,-1,-1,-1,737,737],
+sm586$1=[0,738,738,738,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,738,738,738,738,-1,738,-1,-1,738,-1,-1,738,738,738,-1,738,738,738,738,738,738,738,738,738,738,738,738,738,-1,738,738,-1,-1,738,738,738,738,-1,-1,738,-1,-1,-1,-1,738,738,738,-1,738,-1,-1,738,738,-1,738,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738,738],
+sm587$1=[0,739,739,739,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,739,739,-1,-1,-1,739,-1,-1,739,739,-1,739,739,-1,739,739,739,739,739,-1,739,-1,739,739,739,739,739,739,739,-1,739,-1,-1,739,739,739,739,-1,-1,739,-1,-1,-1,-1,739,739,-1,-1,739,-1,-1,739,739,-1,739,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,739,739,-1,-1,-1,739,739,739,739,739,739,739,739,739,-1,739,739,739,739,739],
+sm588$1=[0,740,740,740,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,740,740,-1,-1,-1,740,-1,-1,740,740,-1,740,740,-1,740,740,740,740,740,-1,740,-1,740,740,740,740,740,740,740,-1,740,-1,-1,740,740,740,740,-1,-1,740,-1,-1,-1,-1,740,740,-1,-1,740,-1,-1,740,740,-1,740,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,740,740,-1,-1,-1,740,740,740,740,740,740,740,740,740,-1,740,740,740,740,740],
+sm589$1=[0,-1,-1,-1,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,741,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,741,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,741],
+sm590$1=[0,-1,742,742,-1,0,-1,-1,-1,-1,0,-1,-1,-1,-1,-1,-1,742,742,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,742,742,742,-1,742,-1,-1,-1,-1,-1,-1,-1,-1,742,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,742,742,-1,-1,-1,-1,742,742],
+
+    // Symbol Lookup map
+    lu$1 = new Map([[1,1],[2,2],[4,3],[8,4],[16,5],[32,6],[64,7],[128,8],[256,9],[512,10],[3,11],[264,12],[200,13],[201,14],["import",15],[";",16],[",",17],["*",18],["as",19],["{",20],["}",69],["from",22],["export",23],["default",24],[null,3],["if",26],["(",27],[")",28],["else",29],["var",30],["do",31],["while",32],["for",33],["in",34],["await",35],["of",36],["continue",37],["break",38],["return",39],["throw",40],["with",41],["switch",42],["case",43],[":",44],["try",45],["catch",46],["finally",47],["debugger",48],["let",49],["const",50],["function",51],["=>",52],["async",53],["class",54],["extends",55],["static",56],["get",57],["set",58],["new",59],["[",60],["]",61],[".",128],["super",63],["target",64],["...",65],["this",66],["`",67],["${",68],["\"",127],["'",126],["=",83],["*=",84],["/=",85],["%=",86],["+=",87],["-=",88],["<<=",89],[">>=",90],[">>>=",91],["&=",92],["^=",93],["|=",94],["**=",95],["?",96],["||",97],["&&",98],["|",99],["^",100],["&",101],["==",102],["!=",103],["===",104],["!==",105],["<",106],[">",107],["<=",108],[">=",109],["instanceof",110],["<<",111],[">>",112],[">>>",113],["+",114],["-",115],["/",116],["%",117],["**",118],["delete",119],["void",120],["typeof",121],["~",122],["!",123],["++",124],["--",125],["null",129],["true",130],["false",131],["$",132],["_",133],["#",134]]),
+
+    //Reverse Symbol Lookup map
+    rlu$1 = new Map([[1,1],[2,2],[3,4],[4,8],[5,16],[6,32],[7,64],[8,128],[9,256],[10,512],[11,3],[12,264],[13,200],[14,201],[15,"import"],[16,";"],[17,","],[18,"*"],[19,"as"],[20,"{"],[69,"}"],[22,"from"],[23,"export"],[24,"default"],[3,null],[26,"if"],[27,"("],[28,")"],[29,"else"],[30,"var"],[31,"do"],[32,"while"],[33,"for"],[34,"in"],[35,"await"],[36,"of"],[37,"continue"],[38,"break"],[39,"return"],[40,"throw"],[41,"with"],[42,"switch"],[43,"case"],[44,":"],[45,"try"],[46,"catch"],[47,"finally"],[48,"debugger"],[49,"let"],[50,"const"],[51,"function"],[52,"=>"],[53,"async"],[54,"class"],[55,"extends"],[56,"static"],[57,"get"],[58,"set"],[59,"new"],[60,"["],[61,"]"],[128,"."],[63,"super"],[64,"target"],[65,"..."],[66,"this"],[67,"`"],[68,"${"],[127,"\""],[126,"'"],[83,"="],[84,"*="],[85,"/="],[86,"%="],[87,"+="],[88,"-="],[89,"<<="],[90,">>="],[91,">>>="],[92,"&="],[93,"^="],[94,"|="],[95,"**="],[96,"?"],[97,"||"],[98,"&&"],[99,"|"],[100,"^"],[101,"&"],[102,"=="],[103,"!="],[104,"==="],[105,"!=="],[106,"<"],[107,">"],[108,"<="],[109,">="],[110,"instanceof"],[111,"<<"],[112,">>"],[113,">>>"],[114,"+"],[115,"-"],[116,"/"],[117,"%"],[118,"**"],[119,"delete"],[120,"void"],[121,"typeof"],[122,"~"],[123,"!"],[124,"++"],[125,"--"],[129,"null"],[130,"true"],[131,"false"],[132,"$"],[133,"_"],[134,"#"]]),
+
+    // States 
+    state$1 = [sm0$1,
+sm1$1,
+sm2$1,
+sm3$1,
+sm4$1,
+sm5$1,
+sm6$1,
+sm7$1,
+sm7$1,
+sm8$1,
+sm9$1,
+sm10$1,
+sm11$1,
+sm11$1,
+sm12$1,
+sm12$1,
+sm12$1,
+sm12$1,
+sm12$1,
+sm12$1,
+sm12$1,
+sm12$1,
+sm12$1,
+sm12$1,
+sm12$1,
+sm12$1,
+sm12$1,
+sm12$1,
+sm13$1,
+sm14$1,
+sm15$1,
+sm16$1,
+sm17$1,
+sm18$1,
+sm19$1,
+sm19$1,
+sm20$1,
+sm21$1,
+sm22$1,
+sm23$1,
+sm24$1,
+sm25$1,
+sm26$1,
+sm27$1,
+sm28$1,
+sm29$1,
+sm30$1,
+sm31$1,
+sm32$1,
+sm33$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm35$1,
+sm34$1,
+sm34$1,
+sm36$1,
+sm37$1,
+sm38$1,
+sm39$1,
+sm40$1,
+sm40$1,
+sm40$1,
+sm41$1,
+sm42$1,
+sm42$1,
+sm42$1,
+sm42$1,
+sm43$1,
+sm44$1,
+sm45$1,
+sm46$1,
+sm47$1,
+sm48$1,
+sm48$1,
+sm48$1,
+sm49$1,
+sm49$1,
+sm49$1,
+sm49$1,
+sm50$1,
+sm50$1,
+sm51$1,
+sm52$1,
+sm53$1,
+sm54$1,
+sm55$1,
+sm56$1,
+sm57$1,
+sm57$1,
+sm58$1,
+sm34$1,
+sm59$1,
+sm60$1,
+sm61$1,
+sm62$1,
+sm62$1,
+sm34$1,
+sm63$1,
+sm64$1,
+sm65$1,
+sm66$1,
+sm67$1,
+sm68$1,
+sm69$1,
+sm69$1,
+sm70$1,
+sm71$1,
+sm72$1,
+sm73$1,
+sm74$1,
+sm75$1,
+sm76$1,
+sm77$1,
+sm34$1,
+sm78$1,
+sm79$1,
+sm80$1,
+sm80$1,
+sm80$1,
+sm81$1,
+sm82$1,
+sm83$1,
+sm66$1,
+sm84$1,
+sm85$1,
+sm86$1,
+sm87$1,
+sm88$1,
+sm89$1,
+sm90$1,
+sm90$1,
+sm91$1,
+sm92$1,
+sm93$1,
+sm94$1,
+sm95$1,
+sm87$1,
+sm96$1,
+sm97$1,
+sm97$1,
+sm98$1,
+sm99$1,
+sm100$1,
+sm101$1,
+sm102$1,
+sm103$1,
+sm104$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm105$1,
+sm106$1,
+sm107$1,
+sm107$1,
+sm107$1,
+sm107$1,
+sm107$1,
+sm107$1,
+sm107$1,
+sm107$1,
+sm107$1,
+sm107$1,
+sm107$1,
+sm107$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm34$1,
+sm108$1,
+sm35$1,
+sm109$1,
+sm42$1,
+sm42$1,
+sm42$1,
+sm42$1,
+sm110$1,
+sm111$1,
+sm112$1,
+sm81$1,
+sm113$1,
+sm114$1,
+sm115$1,
+sm116$1,
+sm117$1,
+sm118$1,
+sm119$1,
+sm120$1,
+sm121$1,
+sm122$1,
+sm34$1,
+sm123$1,
+sm124$1,
+sm34$1,
+sm121$1,
+sm125$1,
+sm126$1,
+sm127$1,
+sm38$1,
+sm128$1,
+sm129$1,
+sm130$1,
+sm131$1,
+sm132$1,
+sm133$1,
+sm133$1,
+sm133$1,
+sm133$1,
+sm133$1,
+sm134$1,
+sm134$1,
+sm135$1,
+sm136$1,
+sm137$1,
+sm138$1,
+sm138$1,
+sm138$1,
+sm138$1,
+sm138$1,
+sm138$1,
+sm138$1,
+sm138$1,
+sm139$1,
+sm136$1,
+sm140$1,
+sm141$1,
+sm141$1,
+sm141$1,
+sm141$1,
+sm141$1,
+sm141$1,
+sm141$1,
+sm141$1,
+sm142$1,
+sm143$1,
+sm144$1,
+sm145$1,
+sm146$1,
+sm147$1,
+sm147$1,
+sm148$1,
+sm34$1,
+sm149$1,
+sm150$1,
+sm151$1,
+sm152$1,
+sm153$1,
+sm154$1,
+sm155$1,
+sm155$1,
+sm155$1,
+sm155$1,
+sm155$1,
+sm155$1,
+sm155$1,
+sm155$1,
+sm155$1,
+sm155$1,
+sm155$1,
+sm155$1,
+sm155$1,
+sm156$1,
+sm157$1,
+sm158$1,
+sm66$1,
+sm121$1,
+sm34$1,
+sm159$1,
+sm160$1,
+sm161$1,
+sm162$1,
+sm163$1,
+sm164$1,
+sm165$1,
+sm166$1,
+sm167$1,
+sm168$1,
+sm169$1,
+sm169$1,
+sm170$1,
+sm171$1,
+sm34$1,
+sm172$1,
+sm34$1,
+sm173$1,
+sm174$1,
+sm34$1,
+sm175$1,
+sm176$1,
+sm177$1,
+sm178$1,
+sm179$1,
+sm180$1,
+sm181$1,
+sm34$1,
+sm182$1,
+sm183$1,
+sm184$1,
+sm185$1,
+sm186$1,
+sm187$1,
+sm188$1,
+sm189$1,
+sm190$1,
+sm191$1,
+sm192$1,
+sm193$1,
+sm167$1,
+sm167$1,
+sm194$1,
+sm195$1,
+sm196$1,
+sm197$1,
+sm121$1,
+sm198$1,
+sm199$1,
+sm200$1,
+sm201$1,
+sm202$1,
+sm203$1,
+sm204$1,
+sm205$1,
+sm206$1,
+sm207$1,
+sm208$1,
+sm208$1,
+sm208$1,
+sm209$1,
+sm210$1,
+sm211$1,
+sm212$1,
+sm213$1,
+sm214$1,
+sm215$1,
+sm216$1,
+sm217$1,
+sm218$1,
+sm218$1,
+sm219$1,
+sm220$1,
+sm221$1,
+sm222$1,
+sm223$1,
+sm224$1,
+sm225$1,
+sm225$1,
+sm225$1,
+sm225$1,
+sm226$1,
+sm226$1,
+sm226$1,
+sm226$1,
+sm227$1,
+sm228$1,
+sm229$1,
+sm230$1,
+sm231$1,
+sm232$1,
+sm233$1,
+sm234$1,
+sm235$1,
+sm236$1,
+sm237$1,
+sm238$1,
+sm239$1,
+sm240$1,
+sm241$1,
+sm242$1,
+sm243$1,
+sm242$1,
+sm34$1,
+sm244$1,
+sm245$1,
+sm246$1,
+sm246$1,
+sm247$1,
+sm247$1,
+sm248$1,
+sm248$1,
+sm34$1,
+sm249$1,
+sm250$1,
+sm185$1,
+sm251$1,
+sm252$1,
+sm253$1,
+sm254$1,
+sm255$1,
+sm256$1,
+sm257$1,
+sm258$1,
+sm259$1,
+sm34$1,
+sm260$1,
+sm261$1,
+sm262$1,
+sm263$1,
+sm264$1,
+sm265$1,
+sm266$1,
+sm267$1,
+sm266$1,
+sm268$1,
+sm269$1,
+sm270$1,
+sm271$1,
+sm272$1,
+sm273$1,
+sm274$1,
+sm274$1,
+sm275$1,
+sm276$1,
+sm277$1,
+sm278$1,
+sm279$1,
+sm280$1,
+sm281$1,
+sm156$1,
+sm282$1,
+sm34$1,
+sm283$1,
+sm284$1,
+sm285$1,
+sm286$1,
+sm287$1,
+sm288$1,
+sm289$1,
+sm290$1,
+sm14$1,
+sm291$1,
+sm292$1,
+sm292$1,
+sm293$1,
+sm66$1,
+sm294$1,
+sm34$1,
+sm294$1,
+sm295$1,
+sm296$1,
+sm297$1,
+sm121$1,
+sm298$1,
+sm299$1,
+sm300$1,
+sm301$1,
+sm302$1,
+sm303$1,
+sm304$1,
+sm305$1,
+sm66$1,
+sm306$1,
+sm307$1,
+sm308$1,
+sm309$1,
+sm310$1,
+sm311$1,
+sm312$1,
+sm313$1,
+sm314$1,
+sm315$1,
+sm316$1,
+sm317$1,
+sm66$1,
+sm318$1,
+sm66$1,
+sm319$1,
+sm320$1,
+sm321$1,
+sm322$1,
+sm323$1,
+sm324$1,
+sm325$1,
+sm326$1,
+sm327$1,
+sm328$1,
+sm329$1,
+sm78$1,
+sm330$1,
+sm331$1,
+sm332$1,
+sm333$1,
+sm334$1,
+sm335$1,
+sm336$1,
+sm337$1,
+sm336$1,
+sm338$1,
+sm339$1,
+sm340$1,
+sm341$1,
+sm342$1,
+sm343$1,
+sm344$1,
+sm345$1,
+sm346$1,
+sm347$1,
+sm348$1,
+sm349$1,
+sm66$1,
+sm350$1,
+sm350$1,
+sm351$1,
+sm352$1,
+sm353$1,
+sm353$1,
+sm354$1,
+sm355$1,
+sm356$1,
+sm357$1,
+sm121$1,
+sm358$1,
+sm359$1,
+sm360$1,
+sm361$1,
+sm362$1,
+sm121$1,
+sm34$1,
+sm363$1,
+sm364$1,
+sm365$1,
+sm366$1,
+sm367$1,
+sm34$1,
+sm368$1,
+sm369$1,
+sm370$1,
+sm371$1,
+sm372$1,
+sm373$1,
+sm374$1,
+sm375$1,
+sm376$1,
+sm377$1,
+sm378$1,
+sm379$1,
+sm380$1,
+sm381$1,
+sm382$1,
+sm383$1,
+sm384$1,
+sm384$1,
+sm385$1,
+sm386$1,
+sm34$1,
+sm387$1,
+sm388$1,
+sm389$1,
+sm390$1,
+sm391$1,
+sm66$1,
+sm392$1,
+sm392$1,
+sm393$1,
+sm394$1,
+sm395$1,
+sm396$1,
+sm397$1,
+sm398$1,
+sm398$1,
+sm399$1,
+sm400$1,
+sm66$1,
+sm401$1,
+sm402$1,
+sm403$1,
+sm404$1,
+sm403$1,
+sm403$1,
+sm405$1,
+sm406$1,
+sm406$1,
+sm407$1,
+sm70$1,
+sm34$1,
+sm70$1,
+sm408$1,
+sm409$1,
+sm410$1,
+sm34$1,
+sm34$1,
+sm411$1,
+sm412$1,
+sm413$1,
+sm414$1,
+sm415$1,
+sm416$1,
+sm417$1,
+sm416$1,
+sm416$1,
+sm418$1,
+sm419$1,
+sm66$1,
+sm66$1,
+sm420$1,
+sm70$1,
+sm421$1,
+sm66$1,
+sm422$1,
+sm423$1,
+sm424$1,
+sm425$1,
+sm426$1,
+sm427$1,
+sm428$1,
+sm429$1,
+sm430$1,
+sm431$1,
+sm432$1,
+sm433$1,
+sm434$1,
+sm435$1,
+sm436$1,
+sm437$1,
+sm438$1,
+sm439$1,
+sm440$1,
+sm441$1,
+sm442$1,
+sm443$1,
+sm444$1,
+sm445$1,
+sm446$1,
+sm447$1,
+sm66$1,
+sm448$1,
+sm449$1,
+sm450$1,
+sm451$1,
+sm452$1,
+sm453$1,
+sm454$1,
+sm455$1,
+sm456$1,
+sm457$1,
+sm458$1,
+sm459$1,
+sm460$1,
+sm461$1,
+sm462$1,
+sm463$1,
+sm464$1,
+sm465$1,
+sm466$1,
+sm466$1,
+sm467$1,
+sm468$1,
+sm469$1,
+sm470$1,
+sm471$1,
+sm472$1,
+sm473$1,
+sm474$1,
+sm475$1,
+sm476$1,
+sm70$1,
+sm477$1,
+sm478$1,
+sm479$1,
+sm480$1,
+sm70$1,
+sm34$1,
+sm481$1,
+sm481$1,
+sm482$1,
+sm483$1,
+sm484$1,
+sm485$1,
+sm486$1,
+sm486$1,
+sm487$1,
+sm488$1,
+sm489$1,
+sm490$1,
+sm491$1,
+sm492$1,
+sm493$1,
+sm494$1,
+sm495$1,
+sm496$1,
+sm497$1,
+sm498$1,
+sm499$1,
+sm500$1,
+sm501$1,
+sm502$1,
+sm503$1,
+sm504$1,
+sm505$1,
+sm506$1,
+sm506$1,
+sm507$1,
+sm508$1,
+sm509$1,
+sm508$1,
+sm70$1,
+sm510$1,
+sm511$1,
+sm512$1,
+sm70$1,
+sm513$1,
+sm70$1,
+sm70$1,
+sm514$1,
+sm70$1,
+sm70$1,
+sm515$1,
+sm70$1,
+sm70$1,
+sm516$1,
+sm517$1,
+sm518$1,
+sm519$1,
+sm520$1,
+sm521$1,
+sm34$1,
+sm522$1,
+sm78$1,
+sm523$1,
+sm524$1,
+sm525$1,
+sm526$1,
+sm527$1,
+sm528$1,
+sm529$1,
+sm530$1,
+sm531$1,
+sm532$1,
+sm533$1,
+sm534$1,
+sm535$1,
+sm536$1,
+sm537$1,
+sm538$1,
+sm539$1,
+sm540$1,
+sm541$1,
+sm542$1,
+sm543$1,
+sm70$1,
+sm70$1,
+sm544$1,
+sm70$1,
+sm545$1,
+sm546$1,
+sm547$1,
+sm548$1,
+sm70$1,
+sm549$1,
+sm550$1,
+sm70$1,
+sm551$1,
+sm552$1,
+sm553$1,
+sm554$1,
+sm552$1,
+sm555$1,
+sm556$1,
+sm557$1,
+sm558$1,
+sm559$1,
+sm560$1,
+sm561$1,
+sm562$1,
+sm563$1,
+sm564$1,
+sm565$1,
+sm566$1,
+sm567$1,
+sm568$1,
+sm569$1,
+sm570$1,
+sm571$1,
+sm70$1,
+sm572$1,
+sm573$1,
+sm574$1,
+sm575$1,
+sm576$1,
+sm577$1,
+sm578$1,
+sm578$1,
+sm579$1,
+sm580$1,
+sm581$1,
+sm582$1,
+sm583$1,
+sm584$1,
+sm585$1,
+sm586$1,
+sm587$1,
+sm588$1,
+sm589$1,
+sm590$1],
+
+/************ Functions *************/
+
+    max$1 = Math.max, min$1 = Math.min,
+
+    //Error Functions
+    e$3 = (...d)=>fn$1.defaultError(...d), 
+    eh$1 = [e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3,
+e$3],
+
+    //Empty Function
+    nf$1 = ()=>-1, 
+
+    //Environment Functions
+    
+redv$1 = (ret, fn, plen, ln, t, e, o, l, s) => {        ln = max$1(o.length - plen, 0);        const slice = o.slice(-plen);        o.length = ln + 1;        o[ln] = fn(slice, e, l, s, o, plen);        return ret;    },
+rednv$1 = (ret, Fn, plen, ln, t, e, o, l, s) => {        ln = max$1(o.length - plen, 0);        const slice = o.slice(-plen);        o.length = ln + 1;        o[ln] = new Fn(slice, e, l, s, o, plen);        return ret;    },
+redn$1 = (ret, plen, t, e, o) => {        if (plen > 0) {            let ln = max$1(o.length - plen, 0);            o[ln] = o[o.length - 1];            o.length = ln + 1;        }        return ret;    },
+shftf$1 = (ret, fn, t, e, o, l, s) => (fn(o, e, l, s), ret),
+R00_javascript=sym=>sym[0],
+I01_javascript=function (sym,env){env.IS_MODULE = false;},
+R10_start=(sym,env)=>(env.IS_MODULE) ? new fn$1.module(sym[0]) : new fn$1.script(sym[0]),
+R40_undefined401_group_list=sym=>(((sym[1] !== null) ? sym[0].push(sym[1]) : null,sym[0])),
+R41_undefined401_group_list=sym=>(sym[0] !== null) ? [sym[0]] : [],
+I60_module_item=function (sym,env){env.IS_MODULE = true;},
+R70_import_declaration=sym=>new fn$1.import_declaration(sym[2],sym[1]),
+R71_import_declaration=sym=>new fn$1.import_declaration(sym[1]),
+R80_import_clause=sym=>[sym[0],sym[2]],
+R120_undefined1801_group_list=sym=>(((sym[1] !== null) ? sym[0].push(sym[2]) : null,sym[0])),
+R130_named_imports=sym=>new fn$1.named_imports(sym[1]),
+R131_named_imports=()=>new fn$1.named_imports(null),
+R140_from_clause=sym=>sym[1],
+R150_import_specifier=sym=>new fn$1.import_specifier(sym[0]),
+R151_import_specifier=sym=>new fn$1.import_specifier(sym[0],sym[2]),
+R180_export_declaration=sym=>new fn$1.export_declaration(null,sym[2],false),
+R181_export_declaration=sym=>new fn$1.export_declaration(sym[1],sym[2],false),
+R182_export_declaration=sym=>new fn$1.export_declaration(sym[1],null,false),
+R183_export_declaration=sym=>new fn$1.export_declaration(sym[2],null,true),
+R210_export_clause=sym=>new fn$1.export_clause(sym[1]),
+R211_export_clause=()=>new fn$1.export_clause(null),
+R220_export_specifier=sym=>new fn$1.export_specifier(sym[0]),
+R221_export_specifier=sym=>new fn$1.export_specifier(sym[0],sym[2]),
+R400_iteration_statement=sym=>(new fn$1.for_statement(sym[2],sym[4],sym[6],sym[8])),
+I401_iteration_statement=function (sym,env){env.ASI = false;},
+I402_iteration_statement=function (sym,env){env.ASI = true;},
+R403_iteration_statement=sym=>(new fn$1.for_statement(sym[2],sym[3],sym[5],sym[7])),
+R404_iteration_statement=sym=>(new fn$1.for_in_statement(sym[2],sym[4],sym[6])),
+R405_iteration_statement=sym=>(new fn$1.for_of_statement(sym[1],sym[3],sym[5],sym[7])),
+R406_iteration_statement=sym=>(new fn$1.for_statement(null,sym[3],sym[5],sym[7])),
+R407_iteration_statement=sym=>(new fn$1.for_statement(sym[2],null,sym[5],sym[7])),
+R408_iteration_statement=sym=>(new fn$1.for_statement(sym[2],sym[4],null,sym[7])),
+R409_iteration_statement=sym=>(new fn$1.for_statement(sym[2],null,sym[4],sym[6])),
+R4010_iteration_statement=sym=>(new fn$1.for_statement(sym[2],sym[3],null,sym[6])),
+R4011_iteration_statement=sym=>(new fn$1.for_of_statement(null,sym[2],sym[4],sym[6])),
+R4012_iteration_statement=sym=>(new fn$1.for_statement(null,null,sym[4],sym[6])),
+R4013_iteration_statement=sym=>(new fn$1.for_statement(null,sym[3],null,sym[6])),
+R4014_iteration_statement=sym=>(new fn$1.for_statement(sym[2],null,null,sym[6])),
+R4015_iteration_statement=sym=>(new fn$1.for_statement(sym[2],null,null,sym[5])),
+R4016_iteration_statement=sym=>(new fn$1.for_statement(null,null,null,sym[5])),
+R430_continue_statement=sym=>(new fn$1.continue_statement(sym[1])),
+R431_continue_statement=()=>(new fn$1.continue_statement(null)),
+R440_break_statement=sym=>(new fn$1.break_statement(sym[1])),
+R441_break_statement=()=>(new fn$1.break_statement(null)),
+R450_return_statement=sym=>new fn$1.return_statement(sym[1]),
+R451_return_statement=()=>new fn$1.return_statement(null),
+R460_throw_statement=sym=>new fn$1.throw_statement(sym[1]),
+R470_with_statement=sym=>new fn$1.with_statement(sym[2],sym[4]),
+R480_switch_statement=sym=>new fn$1.switch_statement(sym[2],sym[4]),
+R490_case_block=()=>[],
+R491_case_block=sym=>sym[1].concat(sym[2].concat(sym[3])),
+R492_case_block=sym=>sym[1].concat(sym[2]),
+R500_case_clauses=sym=>[sym[0]],
+R501_case_clauses=sym=>sym[0].concat(sym[1]),
+R510_case_clause=sym=>(new fn$1.case_statement(sym[1],sym[3])),
+R511_case_clause=sym=>(new fn$1.case_statement(sym[1],null)),
+R520_default_clause=sym=>(new fn$1.default_case_statement(sym[2])),
+R521_default_clause=()=>(new fn$1.default_case_statement(null)),
+R560_try_statement=sym=>(new fn$1.try_statement(sym[1],sym[2])),
+R561_try_statement=sym=>(new fn$1.try_statement(sym[1],null,sym[2])),
+R562_try_statement=sym=>(new fn$1.try_statement(sym[1],sym[2],sym[3])),
+R620_variable_declaration_list=sym=>((sym[0].push(sym[2]),sym[0])),
+R650_let_or_const=()=>"let",
+R651_let_or_const=()=>"const",
+R680_function_expression=sym=>new fn$1.function_declaration(sym[1],sym[3],sym[6]),
+R681_function_expression=sym=>new fn$1.function_declaration(null,sym[2],sym[5]),
+R682_function_expression=sym=>new fn$1.function_declaration(sym[1],null,sym[5]),
+R683_function_expression=sym=>new fn$1.function_declaration(sym[1],sym[3],null),
+R684_function_expression=sym=>new fn$1.function_declaration(null,null,sym[4]),
+R685_function_expression=sym=>new fn$1.function_declaration(null,sym[2],null),
+R686_function_expression=sym=>new fn$1.function_declaration(sym[1],null,null),
+R687_function_expression=()=>new fn$1.function_declaration(null,null,null),
+R710_formal_parameters=sym=>new fn$1.parenthasized(sym[0]),
+R711_formal_parameters=sym=>new fn$1.parenthasized(...sym[0]),
+R712_formal_parameters=sym=>new fn$1.parenthasized(...sym[0],sym[2]),
+R770_arrow_function=sym=>new fn$1.arrow_function_declaration(null,sym[0],sym[2]),
+R840_class_declaration=sym=>new fn$1.class_declaration(sym[1],sym[2].h,sym[2].t),
+R841_class_declaration=sym=>new fn$1.class_declaration(null,sym[1].h,sym[1].t),
+R860_class_tail=sym=>({h : sym[0],t : sym[2]}),
+R861_class_tail=sym=>({h : null,t : sym[1]}),
+R862_class_tail=sym=>({h : sym[0],t : null}),
+R863_class_tail=()=>({h : null,t : null}),
+R890_class_element_list=sym=>(((sym[0].push(sym[1]),sym[0]))),
+R900_class_element=sym=>(((sym[1].static = true,sym[1]))),
+R910_method_definition=sym=>new fn$1.class_method(sym[0],sym[2],sym[5]),
+R911_method_definition=sym=>new fn$1.class_method(sym[1],null,sym[5],"get"),
+R912_method_definition=sym=>new fn$1.class_method(sym[1],sym[3],sym[6],"set"),
+R913_method_definition=sym=>new fn$1.class_method(sym[0],null,sym[4]),
+R914_method_definition=sym=>new fn$1.class_method(sym[0],sym[2],null),
+R915_method_definition=sym=>new fn$1.class_method(sym[1],null,null,"get"),
+R916_method_definition=sym=>new fn$1.class_method(sym[1],sym[3],null,"set"),
+R917_method_definition=sym=>new fn$1.class_method(sym[0],null,null),
+R970_new_expression=sym=>new fn$1.new_expression(sym[1],null),
+R980_member_expression=sym=>new fn$1.member_expression(sym[0],sym[2],true),
+R981_member_expression=sym=>new fn$1.member_expression(sym[0],sym[2],false),
+R982_member_expression=sym=>new fn$1.member_expression(sym[0],sym[1],false),
+R983_member_expression=sym=>new fn$1.new_expression(sym[1],sym[2]),
+R990_super_property=sym=>new fn$1.member_expression(new fn$1.super_literal(),sym[2],true),
+R991_super_property=sym=>new fn$1.member_expression(new fn$1.super_literal(),sym[2],false),
+R1020_call_expression=sym=>new fn$1.member_expression(sym[0],sym[1],true),
+R1030_super_call=sym=>new fn$1.call_expression([new fn$1.super_literal(),sym[1]]),
+R1040_arguments=sym=>new fn$1.parenthasized(...sym[1]),
+R1041_arguments=()=>new fn$1.parenthasized(),
+R1100_no_substitute_template=sym=>new fn$1.template(sym[1]),
+R1101_no_substitute_template=()=>new fn$1.template(null),
+R1110_substitute_template=sym=>((sym[0].vals[1] = sym[1],sym[2].unshift(sym[0]),new fn$1.template(sym[2]))),
+R1120_template_spans=sym=>((sym[0].vals[1] = sym[1],sym[0])),
+R1130_template_middle_list=sym=>((sym[1].vals[1] = sym[2],sym[0].push(sym[1]),sym[0])),
+R1140_template_head=sym=>new fn$1.template_head(sym[1]),
+R1141_template_head=()=>new fn$1.template_head(null),
+R1150_template_middle=sym=>new fn$1.template_middle(sym[1]),
+R1151_template_middle=()=>new fn$1.template_middle(null),
+R1160_template_tail=sym=>new fn$1.template_tail(sym[1]),
+R1161_template_tail=()=>new fn$1.template_tail(null),
+R1180_undefined224013_group_list=sym=>sym[0] + sym[1],
+R1181_undefined224013_group_list=sym=>sym[0] + "",
+R1210_object_literal=sym=>new fn$1.object_literal(sym[1]),
+R1211_object_literal=()=>new fn$1.object_literal(null),
+R1280_array_literal=sym=>new fn$1.array_literal(sym[1]),
+R1281_array_literal=()=>new fn$1.array_literal(null),
+R1290_element_list=sym=>[sym[1]],
+R1291_element_list=sym=>(((sym[0].push(sym[2]),sym[0]))),
+R1490_cover_parenthesized_expression_and_arrow_parameter_list=()=>null,
+R1491_cover_parenthesized_expression_and_arrow_parameter_list=sym=>new fn$1.parenthasized(sym[1]),
+R1492_cover_parenthesized_expression_and_arrow_parameter_list=sym=>new fn$1.parenthasized(new fn$1.spread_element(sym.slice(1,3))),
+R1493_cover_parenthesized_expression_and_arrow_parameter_list=sym=>new fn$1.parenthasized(sym$2,new fn$1.spread_element(sym.slice(3,5))),
+
+    //Sparse Map Lookup
+    lsm$1 = (index, map) => {    if (map[0] == 0xFFFFFFFF) return map[index + 1];    for (let i = 1, ind = 0, l = map.length, n = 0; i < l && ind <= index; i++) {        if (ind !== index) {            if ((n = map[i]) > -1) ind++;            else ind += -n;        } else return map[i];    }    return -1;},
+
+    //State Action Functions
+    state_funct$1 = [e=>362,
+e=>314,
+e=>42,
+e=>426,
+e=>118,
+e=>46,
+e=>430,
+e=>386,
+e=>422,
+e=>442,
+e=>446,
+e=>450,
+e=>406,
+e=>458,
+e=>462,
+e=>466,
+e=>474,
+e=>470,
+e=>454,
+e=>478,
+e=>482,
+e=>514,
+e=>518,
+e=>506,
+e=>498,
+e=>254,
+e=>366,
+e=>390,
+e=>270,
+e=>378,
+e=>214,
+e=>218,
+e=>202,
+e=>206,
+e=>210,
+e=>222,
+e=>226,
+e=>234,
+e=>238,
+e=>354,
+e=>350,
+e=>346,
+e=>338,
+e=>342,
+e=>310,
+e=>318,
+(...v)=>(redv$1(5,R00_javascript,1,0,...v),shftf$1(5,I01_javascript,...v)),
+(...v)=>redv$1(1031,R10_start,1,0,...v),
+(...v)=>redn$1(2055,1,...v),
+(...v)=>rednv$1(5127,fn$1.statements,1,0,...v),
+(...v)=>redv$1(4103,R41_undefined401_group_list,1,0,...v),
+(...v)=>redn$1(3079,1,...v),
+(...v)=>(redn$1(6151,1,...v),shftf$1(6151,I60_module_item,...v)),
+(...v)=>redn$1(6151,1,...v),
+e=>554,
+e=>558,
+e=>566,
+e=>586,
+e=>582,
+(...v)=>redn$1(28679,1,...v),
+(...v)=>redn$1(29703,1,...v),
+(...v)=>redn$1(33799,1,...v),
+e=>606,
+(...v)=>rednv$1(97287,fn$1.expression_list,1,0,...v),
+e=>610,
+(...v)=>redv$1(96263,R41_undefined401_group_list,1,0,...v),
+(...v)=>redn$1(95239,1,...v),
+(...v)=>redn$1(135175,1,...v),
+(...v)=>redn$1(150535,1,...v),
+e=>614,
+e=>630,
+e=>634,
+e=>638,
+e=>642,
+e=>646,
+e=>650,
+e=>654,
+e=>658,
+e=>662,
+e=>666,
+e=>670,
+e=>674,
+e=>622,
+e=>626,
+(...v)=>redn$1(137223,1,...v),
+e=>678,
+e=>682,
+(...v)=>redn$1(138247,1,...v),
+e=>686,
+(...v)=>redn$1(139271,1,...v),
+e=>690,
+(...v)=>redn$1(140295,1,...v),
+e=>694,
+(...v)=>redn$1(141319,1,...v),
+e=>698,
+(...v)=>redn$1(142343,1,...v),
+e=>702,
+e=>706,
+e=>710,
+e=>714,
+(...v)=>redn$1(143367,1,...v),
+e=>738,
+e=>718,
+e=>722,
+e=>726,
+e=>730,
+e=>734,
+(...v)=>redn$1(144391,1,...v),
+e=>742,
+e=>746,
+e=>750,
+(...v)=>redn$1(145415,1,...v),
+e=>754,
+e=>758,
+(...v)=>redn$1(146439,1,...v),
+e=>762,
+e=>766,
+e=>770,
+(...v)=>redn$1(147463,1,...v),
+(...v)=>redn$1(148487,1,...v),
+(...v)=>redn$1(149511,1,...v),
+e=>774,
+e=>810,
+e=>814,
+e=>818,
+(...v)=>redn$1(98311,1,...v),
+e=>870,
+e=>862,
+e=>854,
+(...v)=>redn$1(99335,1,...v),
+e=>874,
+e=>878,
+e=>902,
+e=>898,
+(...v)=>redn$1(100359,1,...v),
+(...v)=>rednv$1(110599,fn$1.this_literal,1,0,...v),
+(...v)=>redn$1(110599,1,...v),
+(...v)=>redn$1(79879,1,...v),
+(...v)=>redn$1(177159,1,...v),
+(...v)=>redn$1(176135,1,...v),
+(...v)=>redn$1(178183,1,...v),
+(...v)=>redn$1(179207,1,...v),
+(...v)=>rednv$1(180231,fn$1.identifier,1,0,...v),
+(...v)=>redv$1(185351,R00_javascript,1,0,...v),
+e=>930,
+e=>926,
+e=>938,
+e=>942,
+e=>922,
+e=>934,
+e=>918,
+(...v)=>redn$1(181255,1,...v),
+(...v)=>redn$1(164871,1,...v),
+(...v)=>rednv$1(175111,fn$1.bool_literal,1,0,...v),
+(...v)=>rednv$1(174087,fn$1.null_literal,1,0,...v),
+e=>970,
+e=>962,
+e=>958,
+e=>978,
+e=>982,
+e=>974,
+e=>966,
+e=>986,
+e=>950,
+e=>1014,
+e=>1006,
+e=>1002,
+e=>1022,
+e=>1026,
+e=>1018,
+e=>1010,
+e=>994,
+e=>1030,
+(...v)=>rednv$1(171015,fn$1.numeric_literal,1,0,...v),
+(...v)=>redv$1(173063,R00_javascript,1,0,...v),
+e=>1038,
+e=>1070,
+e=>1050,
+e=>1066,
+(...v)=>redn$1(111623,1,...v),
+e=>1126,
+e=>1130,
+e=>1134,
+e=>1098,
+e=>1118,
+e=>1122,
+e=>1110,
+e=>1114,
+e=>1102,
+e=>1094,
+e=>1106,
+e=>1078,
+e=>1082,
+e=>1142,
+e=>1138,
+e=>1150,
+e=>1158,
+e=>1166,
+e=>1162,
+(...v)=>redn$1(102407,1,...v),
+(...v)=>redn$1(104455,1,...v),
+e=>1178,
+(...v)=>redv$1(79879,R710_formal_parameters,1,0,...v),
+e=>1186,
+e=>1218,
+e=>1222,
+(...v)=>rednv$1(35847,fn$1.empty_statement,1,0,...v),
+e=>1226,
+(...v)=>redn$1(32775,1,...v),
+e=>1234,
+(...v)=>shftf$1(1238,I401_iteration_statement,...v),
+e=>1242,
+e=>1246,
+e=>1254,
+e=>1266,
+e=>1274,
+e=>1278,
+e=>1290,
+(...v)=>redn$1(30727,1,...v),
+e=>1306,
+e=>1310,
+(...v)=>redn$1(31751,1,...v),
+e=>1318,
+(...v)=>redv$1(66567,R650_let_or_const,1,0,...v),
+(...v)=>redv$1(66567,R651_let_or_const,1,0,...v),
+(...v)=>redv$1(4107,R40_undefined401_group_list,2,0,...v),
+e=>1342,
+e=>1346,
+e=>1350,
+(...v)=>redn$1(8199,1,...v),
+(...v)=>rednv$1(9223,fn$1.default_import,1,0,...v),
+(...v)=>redn$1(17415,1,...v),
+e=>1354,
+e=>1362,
+e=>1366,
+(...v)=>redn$1(16391,1,...v),
+e=>1394,
+(...v)=>redv$1(18443,R182_export_declaration,2,0,...v),
+e=>1414,
+e=>1418,
+e=>1434,
+(...v)=>rednv$1(27655,fn$1.statements,1,0,...v),
+(...v)=>redv$1(26631,R41_undefined401_group_list,1,0,...v),
+(...v)=>redn$1(25607,1,...v),
+(...v)=>rednv$1(36875,fn$1.expression_statement,2,0,...v),
+(...v)=>rednv$1(150539,fn$1.post_increment_expression,2,0,...v),
+(...v)=>rednv$1(150539,fn$1.post_decrement_expression,2,0,...v),
+(...v)=>redn$1(136199,1,...v),
+(...v)=>rednv$1(149515,fn$1.delete_expression,2,0,...v),
+e=>1558,
+e=>1594,
+e=>1598,
+e=>1618,
+e=>1582,
+e=>1562,
+e=>1626,
+(...v)=>rednv$1(149515,fn$1.void_expression,2,0,...v),
+(...v)=>rednv$1(149515,fn$1.typeof_expression,2,0,...v),
+(...v)=>rednv$1(149515,fn$1.plus_expression,2,0,...v),
+(...v)=>rednv$1(149515,fn$1.negate_expression,2,0,...v),
+(...v)=>rednv$1(149515,fn$1.unary_or_expression,2,0,...v),
+(...v)=>rednv$1(149515,fn$1.unary_not_expression,2,0,...v),
+(...v)=>rednv$1(150539,fn$1.pre_increment_expression,2,0,...v),
+(...v)=>rednv$1(150539,fn$1.pre_decrement_expression,2,0,...v),
+(...v)=>rednv$1(104459,fn$1.call_expression,2,0,...v),
+(...v)=>redv$1(104459,R1020_call_expression,2,0,...v),
+e=>1650,
+e=>1654,
+e=>1670,
+(...v)=>redv$1(100363,R982_member_expression,2,0,...v),
+(...v)=>rednv$1(85003,fn$1.call_expression,2,0,...v),
+(...v)=>redv$1(99339,R970_new_expression,2,0,...v),
+e=>1686,
+(...v)=>redv$1(185355,R1180_undefined224013_group_list,2,0,...v),
+(...v)=>redv$1(185355,R00_javascript,2,0,...v),
+(...v)=>redv$1(183303,R1181_undefined224013_group_list,1,0,...v),
+(...v)=>redn$1(182279,1,...v),
+(...v)=>redn$1(184327,1,...v),
+e=>1698,
+(...v)=>rednv$1(169995,fn$1.string_literal,2,0,...v),
+(...v)=>redv$1(166919,R1181_undefined224013_group_list,1,0,...v),
+(...v)=>redn$1(165895,1,...v),
+e=>1706,
+(...v)=>redv$1(168967,R1181_undefined224013_group_list,1,0,...v),
+(...v)=>redn$1(167943,1,...v),
+(...v)=>redv$1(173067,R1180_undefined224013_group_list,2,0,...v),
+(...v)=>redv$1(172039,R00_javascript,1,0,...v),
+e=>1714,
+e=>1726,
+e=>1722,
+e=>1742,
+e=>1730,
+(...v)=>redv$1(131083,R1281_array_literal,2,0,...v),
+(...v)=>redv$1(132103,R500_case_clauses,1,0,...v),
+(...v)=>redn$1(133127,1,...v),
+e=>1750,
+e=>1754,
+(...v)=>redv$1(112651,R1101_no_substitute_template,2,0,...v),
+(...v)=>redv$1(116747,R1141_template_head,2,0,...v),
+(...v)=>redn$1(121863,1,...v),
+(...v)=>redv$1(120839,R1181_undefined224013_group_list,1,0,...v),
+(...v)=>redn$1(119815,1,...v),
+e=>1774,
+(...v)=>redv$1(152587,R1490_cover_parenthesized_expression_and_arrow_parameter_list,2,0,...v),
+e=>1786,
+e=>1782,
+(...v)=>redv$1(105483,R1030_super_call,2,0,...v),
+(...v)=>rednv$1(151563,fn$1.await_expression,2,0,...v),
+e=>1814,
+(...v)=>rednv$1(54283,fn$1.label_statement,2,0,...v),
+e=>1830,
+e=>1834,
+(...v)=>redv$1(63495,R500_case_clauses,1,0,...v),
+(...v)=>rednv$1(64519,fn$1.binding,1,0,...v),
+e=>1842,
+(...v)=>redn$1(153607,1,...v),
+e=>1862,
+e=>1850,
+e=>1882,
+e=>1898,
+e=>1922,
+e=>1942,
+e=>1950,
+e=>1966,
+e=>1974,
+(...v)=>redv$1(44043,R431_continue_statement,2,0,...v),
+e=>1978,
+(...v)=>redv$1(45067,R441_break_statement,2,0,...v),
+e=>1982,
+(...v)=>redv$1(46091,R451_return_statement,2,0,...v),
+e=>1990,
+e=>2002,
+e=>2006,
+(...v)=>rednv$1(61451,fn$1.debugger_statement,2,0,...v),
+(...v)=>redv$1(86027,R841_class_declaration,2,0,...v),
+e=>2014,
+e=>2042,
+e=>2038,
+e=>2022,
+e=>2058,
+e=>2066,
+e=>2090,
+e=>2094,
+(...v)=>redv$1(67591,R500_case_clauses,1,0,...v),
+e=>2106,
+(...v)=>redv$1(7183,R71_import_declaration,3,0,...v),
+e=>2126,
+e=>2130,
+e=>2134,
+(...v)=>redv$1(13323,R131_named_imports,2,0,...v),
+(...v)=>redv$1(12295,R41_undefined401_group_list,1,0,...v),
+(...v)=>redn$1(11271,1,...v),
+(...v)=>redv$1(15367,R150_import_specifier,1,0,...v),
+e=>2138,
+e=>2142,
+e=>2146,
+(...v)=>redv$1(18447,R182_export_declaration,3,0,...v),
+(...v)=>redv$1(18447,R183_export_declaration,3,0,...v),
+e=>2150,
+e=>2154,
+e=>2158,
+(...v)=>redv$1(21515,R211_export_clause,2,0,...v),
+(...v)=>redv$1(20487,R41_undefined401_group_list,1,0,...v),
+(...v)=>redn$1(19463,1,...v),
+(...v)=>redv$1(22535,R220_export_specifier,1,0,...v),
+e=>2162,
+(...v)=>rednv$1(34831,fn$1.block_statement,3,0,...v),
+(...v)=>redv$1(26635,R40_undefined401_group_list,2,0,...v),
+(...v)=>redv$1(96271,R120_undefined1801_group_list,3,0,...v),
+(...v)=>rednv$1(135183,fn$1.assignment_expression,3,0,...v),
+e=>2166,
+(...v)=>rednv$1(138255,fn$1.or_expression,3,0,...v),
+(...v)=>rednv$1(139279,fn$1.and_expression,3,0,...v),
+(...v)=>rednv$1(140303,fn$1.bit_or_expression,3,0,...v),
+(...v)=>rednv$1(141327,fn$1.bit_xor_expression,3,0,...v),
+(...v)=>rednv$1(142351,fn$1.bit_and_expression,3,0,...v),
+(...v)=>rednv$1(143375,fn$1.equality_expression,3,0,...v),
+(...v)=>rednv$1(144399,fn$1.equality_expression,3,0,...v),
+(...v)=>rednv$1(144399,fn$1.instanceof_expression,3,0,...v),
+(...v)=>rednv$1(144399,fn$1.in_expression,3,0,...v),
+(...v)=>rednv$1(145423,fn$1.left_shift_expression,3,0,...v),
+(...v)=>rednv$1(145423,fn$1.right_shift_expression,3,0,...v),
+(...v)=>rednv$1(145423,fn$1.right_shift_fill_expression,3,0,...v),
+(...v)=>rednv$1(146447,fn$1.add_expression,3,0,...v),
+(...v)=>rednv$1(146447,fn$1.subtract_expression,3,0,...v),
+(...v)=>rednv$1(147471,fn$1.multiply_expression,3,0,...v),
+(...v)=>rednv$1(147471,fn$1.divide_expression,3,0,...v),
+(...v)=>rednv$1(147471,fn$1.modulo_expression,3,0,...v),
+(...v)=>rednv$1(148495,fn$1.exponent_expression,3,0,...v),
+e=>2170,
+e=>2174,
+e=>2178,
+(...v)=>redv$1(123915,R1211_object_literal,2,0,...v),
+(...v)=>redv$1(122887,R41_undefined401_group_list,1,0,...v),
+(...v)=>redn$1(124935,1,...v),
+e=>2194,
+e=>2190,
+(...v)=>redn$1(126983,1,...v),
+(...v)=>redn$1(125959,1,...v),
+e=>2210,
+e=>2218,
+(...v)=>redv$1(87051,R841_class_declaration,2,0,...v),
+(...v)=>redv$1(104463,R981_member_expression,3,0,...v),
+e=>2226,
+e=>2230,
+e=>2234,
+e=>2238,
+(...v)=>redv$1(106507,R1041_arguments,2,0,...v),
+e=>2242,
+(...v)=>redn$1(109575,1,...v),
+(...v)=>redv$1(108551,R41_undefined401_group_list,1,0,...v),
+(...v)=>redn$1(107527,1,...v),
+e=>2250,
+(...v)=>redv$1(100367,R981_member_expression,3,0,...v),
+(...v)=>redv$1(100367,R983_member_expression,3,0,...v),
+(...v)=>rednv$1(103439,fn$1.new_target_expression,3,0,...v),
+(...v)=>redv$1(185359,R1180_undefined224013_group_list,3,0,...v),
+(...v)=>redv$1(183307,R1180_undefined224013_group_list,2,0,...v),
+(...v)=>rednv$1(169999,fn$1.string_literal,3,0,...v),
+(...v)=>redv$1(166923,R1180_undefined224013_group_list,2,0,...v),
+(...v)=>redv$1(168971,R1180_undefined224013_group_list,2,0,...v),
+(...v)=>redv$1(172043,R1180_undefined224013_group_list,2,0,...v),
+e=>2254,
+(...v)=>redv$1(131087,R1280_array_literal,3,0,...v),
+(...v)=>redv$1(131087,R1281_array_literal,3,0,...v),
+(...v)=>redv$1(132107,R1290_element_list,2,0,...v),
+(...v)=>redn$1(133131,2,...v),
+(...v)=>rednv$1(134155,fn$1.spread_element,2,0,...v),
+(...v)=>redv$1(112655,R1100_no_substitute_template,3,0,...v),
+(...v)=>redv$1(116751,R1140_template_head,3,0,...v),
+(...v)=>redv$1(120843,R1180_undefined224013_group_list,2,0,...v),
+(...v)=>redv$1(113679,R1110_substitute_template,3,0,...v),
+(...v)=>redv$1(114695,R500_case_clauses,1,0,...v),
+e=>2282,
+e=>2286,
+(...v)=>redv$1(152591,R1491_cover_parenthesized_expression_and_arrow_parameter_list,3,0,...v),
+e=>2294,
+e=>2298,
+e=>2302,
+e=>2306,
+(...v)=>redv$1(101391,R990_super_property,3,0,...v),
+e=>2310,
+(...v)=>redv$1(78863,R770_arrow_function,3,0,...v),
+(...v)=>redn$1(80903,1,...v),
+(...v)=>redv$1(55307,R140_from_clause,2,0,...v),
+(...v)=>redn$1(56327,1,...v),
+(...v)=>rednv$1(62479,fn$1.variable_statement,3,0,...v),
+(...v)=>rednv$1(64523,fn$1.binding,2,0,...v),
+(...v)=>redn$1(154635,2,...v),
+e=>2330,
+e=>2338,
+e=>2334,
+(...v)=>redn$1(157703,1,...v),
+(...v)=>redn$1(160775,1,...v),
+e=>2346,
+(...v)=>redn$1(162823,1,...v),
+(...v)=>redn$1(155659,2,...v),
+e=>2358,
+e=>2366,
+e=>2374,
+e=>2370,
+(...v)=>redn$1(158727,1,...v),
+(...v)=>redn$1(159751,1,...v),
+(...v)=>redn$1(161799,1,...v),
+e=>2390,
+e=>2394,
+e=>2398,
+e=>2402,
+e=>2410,
+e=>2414,
+e=>2418,
+e=>2426,
+(...v)=>redn$1(38919,1,...v),
+(...v)=>redn$1(39943,1,...v),
+e=>2466,
+e=>2474,
+(...v)=>redv$1(44047,R430_continue_statement,3,0,...v),
+(...v)=>redv$1(45071,R440_break_statement,3,0,...v),
+(...v)=>redv$1(46095,R450_return_statement,3,0,...v),
+e=>2478,
+(...v)=>redv$1(47119,R460_throw_statement,3,0,...v),
+(...v)=>redv$1(57359,R560_try_statement,3,0,...v),
+(...v)=>redv$1(57359,R561_try_statement,3,0,...v),
+e=>2486,
+(...v)=>redv$1(86031,R840_class_declaration,3,0,...v),
+e=>2498,
+e=>2502,
+(...v)=>redv$1(88075,R863_class_tail,2,0,...v),
+(...v)=>redn$1(90119,1,...v),
+(...v)=>redv$1(91143,R500_case_clauses,1,0,...v),
+(...v)=>redn$1(92167,1,...v),
+(...v)=>redv$1(89099,R140_from_clause,2,0,...v),
+e=>2518,
+e=>2522,
+e=>2526,
+(...v)=>redv$1(72711,R710_formal_parameters,1,0,...v),
+e=>2530,
+(...v)=>redv$1(72711,R711_formal_parameters,1,0,...v),
+(...v)=>redn$1(74759,1,...v),
+(...v)=>redv$1(73735,R500_case_clauses,1,0,...v),
+(...v)=>redn$1(75783,1,...v),
+(...v)=>rednv$1(65551,fn$1.lexical,3,0,...v),
+(...v)=>rednv$1(68619,fn$1.binding,2,0,...v),
+(...v)=>redv$1(7187,R70_import_declaration,4,0,...v),
+(...v)=>redv$1(14347,R140_from_clause,2,0,...v),
+(...v)=>redv$1(8207,R80_import_clause,3,0,...v),
+(...v)=>rednv$1(10255,fn$1.name_space_import,3,0,...v),
+e=>2538,
+(...v)=>redv$1(13327,R130_named_imports,3,0,...v),
+(...v)=>redv$1(13327,R131_named_imports,3,0,...v),
+(...v)=>redv$1(18451,R180_export_declaration,4,0,...v),
+(...v)=>redv$1(18451,R181_export_declaration,4,0,...v),
+e=>2550,
+(...v)=>redv$1(21519,R210_export_clause,3,0,...v),
+(...v)=>redv$1(21519,R211_export_clause,3,0,...v),
+e=>2566,
+(...v)=>redv$1(123919,R1210_object_literal,3,0,...v),
+(...v)=>redv$1(123919,R1211_object_literal,3,0,...v),
+(...v)=>rednv$1(129035,fn$1.binding,2,0,...v),
+(...v)=>rednv$1(124939,fn$1.spread_element,2,0,...v),
+e=>2582,
+e=>2590,
+e=>2594,
+e=>2598,
+e=>2606,
+e=>2610,
+e=>2614,
+(...v)=>redv$1(87055,R840_class_declaration,3,0,...v),
+(...v)=>redv$1(104467,R980_member_expression,4,0,...v),
+e=>2618,
+(...v)=>redv$1(106511,R1040_arguments,3,0,...v),
+(...v)=>redv$1(106511,R1041_arguments,3,0,...v),
+(...v)=>rednv$1(107531,fn$1.spread_element,2,0,...v),
+(...v)=>redv$1(100371,R980_member_expression,4,0,...v),
+(...v)=>redv$1(131091,R1280_array_literal,4,0,...v),
+(...v)=>redv$1(132111,R1291_element_list,3,0,...v),
+(...v)=>redv$1(114699,R1120_template_spans,2,0,...v),
+e=>2634,
+e=>2638,
+(...v)=>redv$1(118795,R1161_template_tail,2,0,...v),
+(...v)=>redv$1(117771,R1151_template_middle,2,0,...v),
+(...v)=>redv$1(115723,R1120_template_spans,2,0,...v),
+(...v)=>redv$1(152595,R1491_cover_parenthesized_expression_and_arrow_parameter_list,4,0,...v),
+(...v)=>redv$1(152595,R1492_cover_parenthesized_expression_and_arrow_parameter_list,4,0,...v),
+(...v)=>redv$1(101395,R991_super_property,4,0,...v),
+e=>2650,
+(...v)=>redn$1(77831,1,...v),
+(...v)=>redv$1(63503,R620_variable_declaration_list,3,0,...v),
+(...v)=>redv$1(130059,R140_from_clause,2,0,...v),
+(...v)=>redn$1(154639,3,...v),
+e=>2658,
+(...v)=>redn$1(156683,2,...v),
+(...v)=>redn$1(162827,2,...v),
+e=>2670,
+(...v)=>redn$1(155663,3,...v),
+(...v)=>redn$1(159755,2,...v),
+e=>2674,
+(...v)=>redn$1(163851,2,...v),
+(...v)=>redn$1(161803,2,...v),
+e=>2706,
+e=>2710,
+(...v)=>shftf$1(2718,I402_iteration_statement,...v),
+e=>2730,
+(...v)=>shftf$1(2738,I402_iteration_statement,...v),
+(...v)=>rednv$1(38923,fn$1.variable_statement,2,0,...v),
+(...v)=>redv$1(39947,R140_from_clause,2,0,...v),
+(...v)=>redn$1(43015,1,...v),
+(...v)=>rednv$1(41995,fn$1.lexical_expression,2,0,...v),
+e=>2742,
+e=>2758,
+(...v)=>redv$1(57363,R562_try_statement,4,0,...v),
+(...v)=>rednv$1(59403,fn$1.finally_statement,2,0,...v),
+e=>2778,
+(...v)=>redv$1(88079,R862_class_tail,3,0,...v),
+(...v)=>redv$1(88079,R861_class_tail,3,0,...v),
+(...v)=>redv$1(91147,R890_class_element_list,2,0,...v),
+(...v)=>redv$1(92171,R900_class_element,2,0,...v),
+e=>2782,
+e=>2786,
+e=>2790,
+e=>2798,
+(...v)=>redv$1(72715,R711_formal_parameters,2,0,...v),
+(...v)=>redv$1(67599,R620_variable_declaration_list,3,0,...v),
+(...v)=>redv$1(13331,R130_named_imports,4,0,...v),
+(...v)=>redv$1(12303,R120_undefined1801_group_list,3,0,...v),
+(...v)=>redv$1(15375,R151_import_specifier,3,0,...v),
+(...v)=>redv$1(21523,R210_export_clause,4,0,...v),
+(...v)=>redv$1(20495,R120_undefined1801_group_list,3,0,...v),
+(...v)=>redv$1(22543,R221_export_specifier,3,0,...v),
+(...v)=>rednv$1(137239,fn$1.condition_expression,5,0,...v),
+(...v)=>redv$1(123923,R1210_object_literal,4,0,...v),
+(...v)=>redv$1(122895,R120_undefined1801_group_list,3,0,...v),
+(...v)=>rednv$1(124943,fn$1.property_binding,3,0,...v),
+e=>2814,
+e=>2818,
+(...v)=>redn$1(71687,1,...v),
+e=>2822,
+(...v)=>redv$1(128015,R140_from_clause,3,0,...v),
+e=>2834,
+e=>2838,
+e=>2842,
+e=>2850,
+(...v)=>redv$1(106515,R1040_arguments,4,0,...v),
+(...v)=>redv$1(108559,R120_undefined1801_group_list,3,0,...v),
+(...v)=>redv$1(132115,R1291_element_list,4,0,...v),
+(...v)=>redv$1(115727,R1130_template_middle_list,3,0,...v),
+(...v)=>redv$1(118799,R1160_template_tail,3,0,...v),
+(...v)=>redv$1(117775,R1150_template_middle,3,0,...v),
+e=>2854,
+e=>2858,
+(...v)=>redv$1(80911,R140_from_clause,3,0,...v),
+e=>2862,
+(...v)=>redn$1(154643,4,...v),
+(...v)=>redn$1(157711,3,...v),
+(...v)=>redn$1(160783,3,...v),
+(...v)=>redn$1(155667,4,...v),
+e=>2866,
+e=>2874,
+(...v)=>redn$1(158735,3,...v),
+(...v)=>rednv$1(37911,fn$1.if_statement,5,0,...v),
+e=>2878,
+e=>2882,
+(...v)=>rednv$1(40983,fn$1.while_statement,5,0,...v),
+e=>2886,
+(...v)=>shftf$1(2894,I402_iteration_statement,...v),
+(...v)=>shftf$1(2902,I402_iteration_statement,...v),
+(...v)=>shftf$1(2906,I402_iteration_statement,...v),
+(...v)=>shftf$1(2914,I402_iteration_statement,...v),
+(...v)=>shftf$1(2918,I402_iteration_statement,...v),
+(...v)=>shftf$1(2926,I402_iteration_statement,...v),
+(...v)=>shftf$1(2930,I402_iteration_statement,...v),
+(...v)=>redv$1(49175,R480_switch_statement,5,0,...v),
+e=>2962,
+e=>2958,
+e=>2942,
+(...v)=>redv$1(48151,R470_with_statement,5,0,...v),
+e=>2966,
+(...v)=>redn$1(60423,1,...v),
+(...v)=>redv$1(88083,R860_class_tail,4,0,...v),
+e=>2970,
+e=>2978,
+e=>2986,
+e=>2990,
+(...v)=>redv$1(70679,R687_function_expression,5,0,...v),
+(...v)=>redn$1(76807,1,...v),
+(...v)=>redv$1(72719,R712_formal_parameters,3,0,...v),
+(...v)=>redv$1(73743,R620_variable_declaration_list,3,0,...v),
+e=>2994,
+e=>3002,
+e=>3006,
+e=>3010,
+(...v)=>redn$1(94215,1,...v),
+e=>3014,
+e=>3022,
+e=>3030,
+e=>3034,
+(...v)=>redv$1(69655,R687_function_expression,5,0,...v),
+(...v)=>redv$1(152603,R1493_cover_parenthesized_expression_and_arrow_parameter_list,6,0,...v),
+(...v)=>redn$1(154647,5,...v),
+(...v)=>redn$1(155671,5,...v),
+e=>3038,
+e=>3046,
+(...v)=>shftf$1(3054,I402_iteration_statement,...v),
+(...v)=>shftf$1(3058,I402_iteration_statement,...v),
+(...v)=>shftf$1(3066,I402_iteration_statement,...v),
+(...v)=>redv$1(40987,R4015_iteration_statement,6,0,...v),
+(...v)=>shftf$1(3086,I402_iteration_statement,...v),
+(...v)=>redv$1(40987,R4016_iteration_statement,6,0,...v),
+(...v)=>shftf$1(3098,I402_iteration_statement,...v),
+(...v)=>redv$1(50187,R490_case_block,2,0,...v),
+e=>3106,
+e=>3118,
+(...v)=>redv$1(51207,R500_case_clauses,1,0,...v),
+e=>3126,
+e=>3138,
+e=>3142,
+(...v)=>redv$1(70683,R686_function_expression,6,0,...v),
+e=>3146,
+(...v)=>redv$1(70683,R685_function_expression,6,0,...v),
+(...v)=>redv$1(70683,R684_function_expression,6,0,...v),
+e=>3154,
+e=>3158,
+(...v)=>redv$1(93207,R917_method_definition,5,0,...v),
+e=>3166,
+e=>3170,
+e=>3178,
+e=>3182,
+(...v)=>redv$1(69659,R686_function_expression,6,0,...v),
+e=>3186,
+(...v)=>redv$1(69659,R685_function_expression,6,0,...v),
+(...v)=>redv$1(69659,R684_function_expression,6,0,...v),
+(...v)=>redn$1(155675,6,...v),
+(...v)=>rednv$1(37919,fn$1.if_statement,7,0,...v),
+(...v)=>rednv$1(40991,fn$1.do_while_statement,7,0,...v),
+(...v)=>shftf$1(3190,I402_iteration_statement,...v),
+(...v)=>redv$1(40991,R4014_iteration_statement,7,0,...v),
+(...v)=>redv$1(40991,R4010_iteration_statement,7,0,...v),
+(...v)=>redv$1(40991,R409_iteration_statement,7,0,...v),
+(...v)=>redv$1(40991,R404_iteration_statement,7,0,...v),
+(...v)=>redv$1(40991,R4011_iteration_statement,7,0,...v),
+(...v)=>redv$1(40991,R4013_iteration_statement,7,0,...v),
+(...v)=>redv$1(40991,R4012_iteration_statement,7,0,...v),
+e=>3218,
+(...v)=>redv$1(50191,R140_from_clause,3,0,...v),
+(...v)=>redv$1(51211,R501_case_clauses,2,0,...v),
+e=>3222,
+e=>3226,
+(...v)=>redv$1(53259,R521_default_clause,2,0,...v),
+(...v)=>rednv$1(58391,fn$1.catch_statement,5,0,...v),
+e=>3234,
+(...v)=>redv$1(70687,R683_function_expression,7,0,...v),
+(...v)=>redv$1(70687,R682_function_expression,7,0,...v),
+(...v)=>redv$1(70687,R681_function_expression,7,0,...v),
+e=>3238,
+(...v)=>redv$1(93211,R914_method_definition,6,0,...v),
+(...v)=>redv$1(93211,R913_method_definition,6,0,...v),
+e=>3242,
+(...v)=>redv$1(93211,R915_method_definition,6,0,...v),
+e=>3250,
+e=>3254,
+(...v)=>redv$1(69663,R683_function_expression,7,0,...v),
+(...v)=>redv$1(69663,R682_function_expression,7,0,...v),
+(...v)=>redv$1(69663,R681_function_expression,7,0,...v),
+(...v)=>redv$1(40995,R408_iteration_statement,8,0,...v),
+(...v)=>redv$1(40995,R407_iteration_statement,8,0,...v),
+(...v)=>redv$1(40995,R403_iteration_statement,8,0,...v),
+(...v)=>redv$1(40995,R406_iteration_statement,8,0,...v),
+(...v)=>redv$1(40995,R405_iteration_statement,8,0,...v),
+e=>3262,
+(...v)=>redv$1(50195,R492_case_block,4,0,...v),
+(...v)=>redv$1(52239,R511_case_clause,3,0,...v),
+(...v)=>redv$1(53263,R520_default_clause,3,0,...v),
+(...v)=>redv$1(70691,R680_function_expression,8,0,...v),
+(...v)=>redv$1(93215,R910_method_definition,7,0,...v),
+(...v)=>redv$1(93215,R911_method_definition,7,0,...v),
+e=>3270,
+(...v)=>redv$1(93215,R916_method_definition,7,0,...v),
+(...v)=>redv$1(69667,R680_function_expression,8,0,...v),
+(...v)=>redv$1(40999,R400_iteration_statement,9,0,...v),
+(...v)=>redv$1(50199,R491_case_block,5,0,...v),
+(...v)=>redv$1(52243,R510_case_clause,4,0,...v),
+(...v)=>redv$1(93219,R912_method_definition,8,0,...v)],
+
+    //Goto Lookup Functions
+    goto$1 = [v=>lsm$1(v,gt0$1),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt1$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt2$1),
+v=>lsm$1(v,gt3$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt4$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt5$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt6$1),
+v=>lsm$1(v,gt7$1),
+v=>lsm$1(v,gt8$1),
+v=>lsm$1(v,gt9$1),
+v=>lsm$1(v,gt10$1),
+v=>lsm$1(v,gt11$1),
+v=>lsm$1(v,gt12$1),
+nf$1,
+v=>lsm$1(v,gt13$1),
+v=>lsm$1(v,gt14$1),
+nf$1,
+v=>lsm$1(v,gt15$1),
+v=>lsm$1(v,gt16$1),
+v=>lsm$1(v,gt17$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt18$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt19$1),
+v=>lsm$1(v,gt20$1),
+nf$1,
+v=>lsm$1(v,gt21$1),
+v=>lsm$1(v,gt22$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt23$1),
+v=>lsm$1(v,gt24$1),
+v=>lsm$1(v,gt25$1),
+v=>lsm$1(v,gt26$1),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt27$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt28$1),
+v=>lsm$1(v,gt29$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt30$1),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt31$1),
+v=>lsm$1(v,gt32$1),
+v=>lsm$1(v,gt33$1),
+nf$1,
+v=>lsm$1(v,gt34$1),
+v=>lsm$1(v,gt35$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt36$1),
+nf$1,
+v=>lsm$1(v,gt37$1),
+v=>lsm$1(v,gt38$1),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt39$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt40$1),
+nf$1,
+v=>lsm$1(v,gt41$1),
+v=>lsm$1(v,gt42$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt43$1),
+v=>lsm$1(v,gt44$1),
+nf$1,
+v=>lsm$1(v,gt45$1),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt46$1),
+v=>lsm$1(v,gt47$1),
+v=>lsm$1(v,gt48$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt49$1),
+v=>lsm$1(v,gt50$1),
+v=>lsm$1(v,gt51$1),
+v=>lsm$1(v,gt52$1),
+v=>lsm$1(v,gt53$1),
+v=>lsm$1(v,gt54$1),
+v=>lsm$1(v,gt55$1),
+v=>lsm$1(v,gt56$1),
+v=>lsm$1(v,gt57$1),
+v=>lsm$1(v,gt58$1),
+v=>lsm$1(v,gt59$1),
+v=>lsm$1(v,gt60$1),
+v=>lsm$1(v,gt61$1),
+v=>lsm$1(v,gt62$1),
+v=>lsm$1(v,gt63$1),
+v=>lsm$1(v,gt64$1),
+v=>lsm$1(v,gt65$1),
+v=>lsm$1(v,gt66$1),
+v=>lsm$1(v,gt67$1),
+v=>lsm$1(v,gt68$1),
+v=>lsm$1(v,gt69$1),
+v=>lsm$1(v,gt70$1),
+v=>lsm$1(v,gt71$1),
+v=>lsm$1(v,gt72$1),
+v=>lsm$1(v,gt73$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt74$1),
+v=>lsm$1(v,gt75$1),
+v=>lsm$1(v,gt76$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt77$1),
+nf$1,
+v=>lsm$1(v,gt78$1),
+nf$1,
+v=>lsm$1(v,gt79$1),
+v=>lsm$1(v,gt80$1),
+v=>lsm$1(v,gt81$1),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt82$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt83$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt84$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt85$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt86$1),
+v=>lsm$1(v,gt87$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt88$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt89$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt90$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt91$1),
+v=>lsm$1(v,gt92$1),
+v=>lsm$1(v,gt93$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt94$1),
+nf$1,
+v=>lsm$1(v,gt95$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt96$1),
+v=>lsm$1(v,gt97$1),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt98$1),
+v=>lsm$1(v,gt99$1),
+v=>lsm$1(v,gt100$1),
+nf$1,
+v=>lsm$1(v,gt101$1),
+v=>lsm$1(v,gt102$1),
+nf$1,
+v=>lsm$1(v,gt103$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt104$1),
+nf$1,
+v=>lsm$1(v,gt105$1),
+nf$1,
+v=>lsm$1(v,gt106$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt107$1),
+v=>lsm$1(v,gt108$1),
+nf$1,
+v=>lsm$1(v,gt109$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt110$1),
+v=>lsm$1(v,gt111$1),
+nf$1,
+v=>lsm$1(v,gt112$1),
+nf$1,
+v=>lsm$1(v,gt113$1),
+v=>lsm$1(v,gt114$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt115$1),
+nf$1,
+v=>lsm$1(v,gt116$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt117$1),
+v=>lsm$1(v,gt118$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt119$1),
+nf$1,
+v=>lsm$1(v,gt120$1),
+v=>lsm$1(v,gt121$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt122$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt123$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt124$1),
+v=>lsm$1(v,gt125$1),
+v=>lsm$1(v,gt126$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt127$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt128$1),
+nf$1,
+v=>lsm$1(v,gt129$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt130$1),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt131$1),
+nf$1,
+v=>lsm$1(v,gt132$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt133$1),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt134$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt135$1),
+nf$1,
+v=>lsm$1(v,gt136$1),
+nf$1,
+v=>lsm$1(v,gt137$1),
+v=>lsm$1(v,gt5$1),
+v=>lsm$1(v,gt138$1),
+nf$1,
+v=>lsm$1(v,gt139$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt140$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt141$1),
+nf$1,
+v=>lsm$1(v,gt142$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt143$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt144$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt145$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt146$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt147$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt148$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt149$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt150$1),
+v=>lsm$1(v,gt151$1),
+v=>lsm$1(v,gt152$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt153$1),
+v=>lsm$1(v,gt154$1),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt155$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt156$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt157$1),
+nf$1,
+v=>lsm$1(v,gt158$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt159$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt160$1),
+nf$1,
+v=>lsm$1(v,gt161$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt162$1),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt163$1),
+v=>lsm$1(v,gt164$1),
+v=>lsm$1(v,gt165$1),
+v=>lsm$1(v,gt166$1),
+nf$1,
+v=>lsm$1(v,gt167$1),
+v=>lsm$1(v,gt168$1),
+v=>lsm$1(v,gt169$1),
+nf$1,
+v=>lsm$1(v,gt170$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt96$1),
+v=>lsm$1(v,gt97$1),
+nf$1,
+v=>lsm$1(v,gt110$1),
+v=>lsm$1(v,gt111$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt171$1),
+v=>lsm$1(v,gt172$1),
+v=>lsm$1(v,gt173$1),
+v=>lsm$1(v,gt174$1),
+nf$1,
+v=>lsm$1(v,gt175$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt176$1),
+v=>lsm$1(v,gt177$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt178$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt179$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt180$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt181$1),
+v=>lsm$1(v,gt182$1),
+nf$1,
+v=>lsm$1(v,gt183$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt184$1),
+nf$1,
+v=>lsm$1(v,gt185$1),
+v=>lsm$1(v,gt186$1),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt187$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt188$1),
+v=>lsm$1(v,gt189$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt190$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt191$1),
+v=>lsm$1(v,gt192$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt193$1),
+nf$1,
+v=>lsm$1(v,gt194$1),
+nf$1,
+v=>lsm$1(v,gt195$1),
+nf$1,
+v=>lsm$1(v,gt196$1),
+v=>lsm$1(v,gt197$1),
+nf$1,
+v=>lsm$1(v,gt198$1),
+v=>lsm$1(v,gt199$1),
+nf$1,
+v=>lsm$1(v,gt200$1),
+v=>lsm$1(v,gt201$1),
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt202$1),
+v=>lsm$1(v,gt203$1),
+nf$1,
+v=>lsm$1(v,gt204$1),
+nf$1,
+v=>lsm$1(v,gt205$1),
+v=>lsm$1(v,gt206$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt207$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt208$1),
+nf$1,
+v=>lsm$1(v,gt209$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt210$1),
+v=>lsm$1(v,gt211$1),
+nf$1,
+v=>lsm$1(v,gt212$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt213$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt214$1),
+v=>lsm$1(v,gt215$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt216$1),
+nf$1,
+nf$1,
+v=>lsm$1(v,gt217$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt218$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt219$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+v=>lsm$1(v,gt220$1),
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1,
+nf$1];
+
+function getToken$1(l, SYM_LU) {
+    if (l.END) return 0; /*$eof*/
+
+    switch (l.ty) {
+        case 2:
+            //*
+            if (SYM_LU.has(l.tx)) return 14;
+            /*/
+                console.log(l.tx, SYM_LU.has(l.tx), SYM_LU.get(l.tx))
+                if (SYM_LU.has(l.tx)) return SYM_LU.get(l.tx);
+            //*/
+            return 2;
+        case 1:
+            return 1;
+        case 4:
+            return 3;
+        case 256:
+            return 9;
+        case 8:
+            return 4;
+        case 512:
+            return 10;
+        default:
+            return SYM_LU.get(l.tx) || SYM_LU.get(l.ty);
+    }
+}
+
+/************ Parser *************/
+
+function parser$1(l, e = {}) {
+
+    fn$1 = e.functions;
+
+    l.IWS = false;
+    l.PARSE_STRING = true;
+
+    if (symbols$1.length > 0) {
+        symbols$1.forEach(s => { l.addSymbol(s); });
+        l.tl = 0;
+        l.next();
+    }
+
+    const o = [],
+        ss = [0, 0];
+
+    let time = 1000000,
+        RECOVERING = 100,
+        RESTARTED = true,
+        tk = getToken$1(l, lu$1),
+        p = l.copy(),
+        sp = 1,
+        len = 0,
+        reduceStack = (e.reduceStack = []),
+        ROOT = 10000,
+        off = 0;
+
+    outer:
+
+        while (time-- > 0) {
+
+            const fn = lsm$1(tk, state$1[ss[sp]]) || 0;
+
+            let r,
+                gt = -1;
+
+            if (fn == 0) {
+                /*Ignore the token*/
+                tk = getToken$1(l.next(), lu$1);
+                continue;
+            }
+
+            if (fn > 0) {
+                r = state_funct$1[fn - 1](tk, e, o, l, ss[sp - 1]);
+            } else {
+
+                if (tk == 14) {
+                    tk = lu$1.get(l.tx);
+                    continue;
+                }
+
+                if (l.ty == 8 && l.tl > 1) {
+                    // Make sure that special tokens are not getting in the way
+                    l.tl = 0;
+                    // This will skip the generation of a custom symbol
+                    l.next(l, false);
+
+                    if (l.tl == 1)
+                        continue;
+                }
+
+                if (RECOVERING > 1 && !l.END) {
+
+                    if (tk !== lu$1.get(l.ty)) {
+                        tk = lu$1.get(l.ty);
+                        continue;
+                    }
+
+                    if (tk !== 13) {
+                        tk = 13;
+                        RECOVERING = 1;
+                        continue;
+                    }
+                }
+
+                tk = getToken$1(l, lu$1);
+
+                const recovery_token = eh$1[ss[sp]](tk, e, o, l, p, ss[sp], (lex) => getToken$1(lex, lu$1));
+
+                if (RECOVERING > 0 && recovery_token >= 0) {
+                    RECOVERING = -1; /* To prevent infinite recursion */
+                    tk = recovery_token;
+                    l.tl = 0; /*reset current token */
+                    continue;
+                }
+            }
+
+            switch (r & 3) {
+                case 0:
+                    /* ERROR */
+
+                    if (tk == "$eof")
+                        l.throw("Unexpected end of input");
+
+                    l.throw(`Unexpected token [${RECOVERING ? l.next().tx : l.tx}]`);
+                    return [null];
+
+                case 1:
+                    /* ACCEPT */
+                    break outer;
+
+                case 2:
+
+                    /*SHIFT */
+                    o.push(l.tx);
+                    ss.push(off, r >> 2);
+                    sp += 2;
+                    l.next();
+                    off = l.off;
+                    tk = getToken$1(l, lu$1);
+                    RECOVERING++;
+                    break;
+
+                case 3:
+                    /* REDUCE */
+                    RESTARTED = true;
+
+                    len = (r & 0x3FC) >> 1;
+
+                    ss.length -= len;
+                    sp -= len;
+                    gt = goto$1[ss[sp]](r >> 10);
+
+                    if (gt < 0)
+                        l.throw("Invalid state reached!");
+
+                    if (reduceStack.length > 0) {
+                        let i = reduceStack.length - 1;
+                        while (i > -1) {
+                            const item = reduceStack[i--];
+
+                            if (item.index == sp) {
+                                item.action(output);
+                            } else if (item.index > sp) {
+                                reduceStack.length--;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+
+                    ss.push(off, gt);
+                    sp += 2;
+                    break;
+            }
+        }
+    return o[0];
+};
+
+function parse(string) {
+    return parser$1(whind$1(string), env);
 }
 
 const removeFromArray = (array, ...elems) => {
@@ -13329,12 +15897,14 @@ class Tap {
             this.scope.up(this, data[this.prop]);
     }
 
+    updateCached() {
+        if(this.value !== undefined)
+            this.down(this.value);
+    }
+
     down(value, meta) {
-
-        for (let i = 0, l = this.ios.length; i < l; i++) {
-
+        for (let i = 0, l = this.ios.length; i < l; i++) 
             this.ios[i].down(value, meta);
-        }
     }
 
     downS(model, IMPORTED = false, meta = null) {
@@ -13383,8 +15953,6 @@ class Tap {
         }
 
         if (this.modes & EXPORT){
-
-            
             this.scope.up(this, value, meta);
         }
     }
@@ -13409,10 +15977,6 @@ class Tap {
         this.ios.push(io);
 
         io.parent = this;
-
-        if(this.value !== undefined)
-            io.down(this.value);
-        
     }
 
     removeIO(io) {
@@ -13433,344 +15997,11 @@ class UpdateTap extends Tap {
     up() {}
 }
 
-class IOBase {
-
-    constructor(parent, element = null) {
-
-        this.parent = null;
-        this.ele = element;
-
-        parent.addIO(this);
-    }
-
-    discardElement(ele){
-        this.parent.discardElement(ele);
-    }
-
-    destroy() {
-        if(this.parent)
-            this.parent.removeIO(this);
-
-        this.parent = null;
-    }
-
-    init(default_val){
-        ((default_val = (this.parent.value || default_val))
-            && this.down(default_val));
-    }
-
-    down() {}
-
-    up(value, meta) { this.parent.up(value, meta); }
-
-    //For IO composition.
-    set data(data) { this.down(data); }
-
-    addIO(child) {
-        this.ele = child;
-        child.parent = this;
-    }
-
-    removeIO() {
-        this.ele = null;
-    }
-}
-
-/**
- *   The IO is the last link in the Scope chain. It is responsible for putting date into the DOM through the element it binds to. Alternativly, in derived versions of `IO`, it is responsible for retriving values from user inputs from input elements and events.
- *   @param {Scope} tap - The tap {@link Scope}, used internally to build a hierarchy of Scopes.
- *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
- *   @param {Presets} presets - An instance of the {@link Presets} object.
- *   @param {HTMLElement} element - The HTMLElement that the IO will _bind_ to.
- *   @memberof module:wick.core.scope
- *   @alias IO
- *   @extends IOBase
- */
-class IO extends IOBase {
-
-    constructor(scope, errors, tap, element = null, default_val = null) {
-
-        super(tap, element);
-        //Appending the value to a text node prevents abuse from insertion of malicious DOM markup. 
-
-        this.argument = null;
-
-       // if (default_val) this.down(default_val);
-    }
-
-    destroy() {
-        this.ele = null;
-        super.destroy();
-    }
-
-    down(value) {
-        this.ele.data = value;
-    }
-}
-
-class RedirectAttribIO extends IOBase {
-    constructor(scope, errors, down_tap, up_tap) {
-        super(down_tap);
-        this.up_tap = up_tap;
-    }
-
-    down(value) {
-        this.up_tap.up(value);
-    }
-}
-
-/**
-    This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
-*/
-class AttribIO extends IOBase {
-    constructor(scope, errors, tap, attr, element, default_val) {
-
-        if (element.io) {
-            let down_tap = element.io.parent;
-            let root = scope.parent;
-            tap.modes |= EXPORT;
-            return new RedirectAttribIO(scope, errors, element.io.parent, tap);
-        }
-
-        super(tap, element);
-
-        this.attrib = attr;
-        this.ele.io = this;
-
-        this.init(default_val);
-    }
-
-    destroy() {
-        this.ele = null;
-        this.attrib = null;
-        super.destroy();
-    }
-
-    /**
-        Puts data into the watched element's attribute. The default action is to simply update the attribute with data._value_.  
-    */
-    down(value) {
-        this.ele.setAttribute(this.attrib, value);
-    }
-
-    set data(v) {
-        this.down(v);
-    }
-
-    get data() {
-
-    }
-}
-
-class DataNodeIO extends IOBase {
-    constructor(scope, tap, element, default_val) {
-        if(!tap)  return {};
-
-        super(tap, element);
-        
-        this.ele = element;
-    }
-
-    destroy() {
-        this.ele = null;
-        this.attrib = null;
-        super.destroy();
-    }
-    down(value) {
-        
-        this.ele.data = value;
-    }
-}
-
-/**
-    This io updates the value of a TextNode or it replaces the TextNode with another element if it is passed an HTMLElement
-*/
-class TextNodeIO extends DataNodeIO {
-    constructor(scope, tap, element, default_val) {
-        if(!tap) return {};
-
-        super(scope, tap, element, default_val);
-        
-        this.ELEMENT_IS_TEXT = element instanceof Text;
-
-        this.init(default_val);
-    }
-    
-    down(value) {
-
-        const ele = this.ele;
-        if (value instanceof HTMLElement) {
-            
-            if (value !== this.ele) {
-                this.ELEMENT_IS_TEXT = false;
-                this.ele = value;
-                ele.parentElement.replaceChild(value, ele);
-                this.discardElement(ele);
-            }
-        } else {
-            if (!this.ELEMENT_IS_TEXT) {
-                this.ELEMENT_IS_TEXT = true;
-                this.ele = new Text();
-                ele.parentElement.replaceChild(this.ele, ele);
-                this.discardElement(ele);
-            }
-            this.ele.data = value;
-        }
-    }
-}
-
-class EventIO extends IOBase {
-
-    constructor(scope, errors, tap, attrib_name, element, default_val) {
-
-        super(tap);
-
-        this.ele = element;
-
-        const up_tap = default_val ? scope.getTap(default_val) : tap;
-
-        this.event = (e) => { 
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            up_tap.up(e.target.value, { event: e }); 
-            return false;
-        };
-
-        this.event_name = attrib_name.replace("on", "");
-
-        this.ele.addEventListener(this.event_name, this.event);
-    }
-
-    destroy() {
-        this.ele.removeEventListener("input", this.event);
-        this.ele = null;
-        this.event = null;
-        this.event_name = null;
-        this.attrib = null;
-        super.destroy();
-    }
-
-    down(value) {
-        this.ele.value = value;
-    }
-}
-
-class InputIO extends IOBase {
-
-    constructor(scope, errors, tap, attrib_name, element, default_val) {
-        if(tap)
-            super(tap);
-        else if(default_val)
-            super(scope);
-        else
-            return;
-
-        this.ele = element;
-        this.event = null;
-
-        let up_tap = tap;
-
-        if(default_val){
-            switch(default_val.type){
-                case types$1.identifier:
-                    up_tap = scope.getTap(default_val.name);
-                break;
-                case types$1.null_literal:
-                    up_tap = null;
-                break;
-            }
-        }
-
-        if(up_tap){
-            if (element.type == "checkbox")
-                this.event = (e) => { up_tap.up(e.target.checked, { event: e }); };
-            else
-                this.event = (e) => { up_tap.up(e.target.value, { event: e }); };
-            
-            this.ele.addEventListener("input", this.event);
-        }
-    }
-
-    destroy() {
-        this.ele.removeEventListener("input", this.event);
-        this.ele = null;
-        this.event = null;
-        this.attrib = null;
-        super.destroy();
-    }
-
-    down(value) {
-        this.ele.value = value;
-    }
-}
-
-/**
- * Base class for an object that binds to and observes a Model.
- *@alias module:wick.core.observer
- */
-class View{
-
-	constructor(){
-		/**
-		 * property
-		 */
-		this.nx = null;
-		this.pv = null;
-		this.model = null;
-	}
-
-	/**
-     * Unbinds the View from its Model and sets all properties to undefined. Should be called by any class extending View
-	 * ``` js
-	 * class ExtendingView extends wick.core.observer.View{
-	 * 		destroy(){
-	 * 			//... do some stuff ...
-	 * 			super.destroy();
-	 * 		}
-	 * }
-	 * ```
-     * @protected
-     */
-	destroy(){
-		this.unsetModel();
-		this.model = undefined;
-		this.nx = undefined;
-	}	
-	/**
-		Called by a Model when its data has changed.
-	*/
-	update(data){
-
-	}
-	/**
-		Called by a ModelContainerBase when an item has been removed.
-	*/
-	removed(data){
-
-	}
-
-	/**
-		Called by a ModelContainerBase when an item has been added.
-	*/
-	added(data){
-
-	}
-	setModel(model){
-	}
-
-	reset(){
-		
-	}
-	unsetModel(){
-		if(this.model && this.model.removeView)
-			this.model.removeView(this);
-		this.nx = null;
-		this.model = null;
-	}
-}
-
-class Scope extends View {
+// This serves as a NOOP for io methods that expect a Tap with addIO and RemoveIO operations
+const noop = () => {};
+const NOOPTap = { addIO: noop, removeIO: noop, up: noop };
+
+class Scope {
 
     /**
      *   In the Wick dynamic template system, Scopes serve as the primary access to Model data. They, along with {@link ScopeContainer}s, are the only types of objects the directly _bind_ to a Model. When a Model is updated, the Scope will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link ScopeContainer}s.
@@ -13785,12 +16016,10 @@ class Scope extends View {
      */
     constructor(parent, presets, element, ast) {
 
-        super();
-
         this.ast = ast;
         this.ele = element;
-        
-        if(element)
+
+        if (element)
             element.wick_scope = this;
 
         this.parent = null;
@@ -13813,18 +16042,7 @@ class Scope extends View {
         this.addToParent(parent);
     }
 
-    discardElement(ele, ios) {
-        if (!ios) {
-            ios = [];
-
-            for (const tap of this.taps.values())
-                for (let io of tap.ios) {
-                    while (io.ele instanceof IOBase)
-                        io = io.ele;
-                    ios.push(io);
-                }
-
-        }
+    discardElement(ele, ios = this.ios) {
 
         for (let i = 0; i < ios.length; i++) {
             const io = ios[i];
@@ -13834,9 +16052,18 @@ class Scope extends View {
             }
         }
 
-        const children = ele.children;
-        
-        if(children)
+        for(let i = 0; i < this.containers.length; i++){
+            const ctr = this.containers.length;
+
+            if(ctr.ele == ele){
+                this.containers.splice(i--, 1);
+                ctr.destroy();
+            }
+        }
+
+        const children = ele.childNodes;
+
+        if (children)
             for (let i = 0; i < children.length; i++)
                 this.discardElement(children[i], ios);
 
@@ -13844,12 +16071,13 @@ class Scope extends View {
             ele.wick_scope.destroy();
     }
 
-    purge(){
+    purge() {
         if (this.parent && this.parent.removeScope)
             this.parent.removeScope(this);
 
-        if (this.ele && this.ele.parentNode)
+        if (this.ele && this.ele.parentNode) {
             this.ele.parentNode.removeChild(this.ele);
+        }
 
         for (const tap of this.taps.values())
             tap.destroy();
@@ -13859,7 +16087,7 @@ class Scope extends View {
 
         //while (this.containers[0])
         //    this.containers[0].destroy();
-        
+
         this.taps = new Map;
         this.scopes.length = 0;
         this.containers.length = 0;
@@ -13867,16 +16095,23 @@ class Scope extends View {
         this.css.length = 0;
     }
 
+    updateCachedData(){
+        for(const tap of this.taps.values())
+            tap.updateCached();
+    }
+
     destroy() {
-        if(this.DESTROYED)
+        if (this.DESTROYED)
             return;
-        
-        try{
-            this.update({ destroying: true }, null, false, {IMMEDIATE:true}); //Lifecycle Events: Destroying <======================================================================
-        }catch(e){
+
+        try {
+            this.update({ destroying: true }, null, false, { IMMEDIATE: true }); //Lifecycle Events: Destroying <======================================================================
+        } catch (e) {
             console.throw(e);
         }
 
+        if (this.model && this.model.removeObserver)
+            this.model.removeObserver(this);
 
         this.DESTROYED = true;
         this.LOADED = false;
@@ -13949,10 +16184,14 @@ class Scope extends View {
         Makes the scope a observer of the given Model. If no model passed, then the scope will bind to another model depending on its `scheme` or `model` attributes. 
     */
     load(model) {
+        //Called before model is loaded
+        this.update({ loading: true }); //Lifecycle Events: Loading <====================================================================== 
 
         let
             m = null,
-            SchemedConstructor = null,
+            SchemedConstructor = null;
+
+        const
             presets = this.ast.presets,
             model_name = this.ast.model_name,
             scheme_name = this.ast.scheme_name;
@@ -13965,10 +16204,8 @@ class Scope extends View {
 
         if (m)
             model = m;
-        else if (SchemedConstructor) {
+        else if (SchemedConstructor) 
             model = new SchemedConstructor();
-        } else if (!model)
-            model = new Model(model);
 
         if (this.css.length > 0)
             this.loadCSS();
@@ -13983,10 +16220,11 @@ class Scope extends View {
 
         this.model = model;
 
+        //Called before model properties are disseminated
+        this.update({ model_loaded: true }); //Lifecycle Events: Model Loaded <====================================================================== 
+
         for (const tap of this.taps.values())
             tap.load(this.model, false);
-
-        this.update({ loading: true }); //Lifecycle Events: Loading <======================================================================
 
         //Allow one tick to happen before acknowledging load
         setTimeout(this.loadAcknowledged.bind(this), 1);
@@ -14028,14 +16266,22 @@ class Scope extends View {
 
     upImport(prop_name, data, meta) {
 
-        
-        if (this.taps.has(prop_name)){
+
+        if (this.taps.has(prop_name)) {
             this.taps.get(prop_name).up(data, meta);
+        }
+
+        for (const scope of this.scopes) {
+            scope.update({
+                [prop_name]: data }, null, true);
+            // /scope.getBadges(this);
         }
     }
 
     update(data, changed_values, IMPORTED = false, meta = null) {
 
+        if (this.DESTROYED) return;
+        
         this.temp_data_cache = data;
 
         (this.update_tap && this.update_tap.downS(data, IMPORTED));
@@ -14044,7 +16290,7 @@ class Scope extends View {
             for (let name in changed_values)
                 if (this.taps.has(name))
                     this.taps.get(name).downS(data, IMPORTED, meta);
-        } else 
+        } else
             for (const tap of this.taps.values())
                 tap.downS(data, IMPORTED, meta);
 
@@ -14052,7 +16298,7 @@ class Scope extends View {
             container.down(data, changed_values);
     }
 
-    bubbleLink(child) {
+    bubbleLink() {
         if (this.parent)
             this.parent.bubbleLink(this);
     }
@@ -14086,18 +16332,18 @@ class Scope extends View {
             this.ele.parentElement.removeChild(this.ele);
 
         //Lifecycle Events: Disconnected <======================================================================
-        this.update({ disconnectied: true });
+        this.update({ disconnected: true });
     }
 
     transitionIn(transition, transition_name = "trs_in") {
         if (transition)
-            this.update({ [transition_name]: transition }, null, false, { IMMEDIATE: true });
+            this.update({
+                [transition_name]: transition }, null, false, { IMMEDIATE: true });
 
         this.TRANSITIONED_IN = true;
     }
 
     transitionOut(transition, transition_name = "trs_out", DESTROY_AFTER_TRANSITION = false) {
-
         this.CONNECTED = false;
 
         if (this.TRANSITIONED_IN === false) {
@@ -14109,8 +16355,8 @@ class Scope extends View {
         let transition_time = 0;
 
         if (transition) {
-
-            this.update({ [transition_name]: transition }, null, false, { IMMEDIATE: true });
+            this.update({
+                [transition_name]: transition }, null, false, { IMMEDIATE: true });
 
             if (transition.trs)
                 transition_time = transition.trs.out_duration;
@@ -14243,9 +16489,9 @@ class ElementNode {
         return this;
     }
 
-    // Traverse the contructed AST and apply any necessary transforms. 
+    // Applies any necessary transformations to the node in preparaton of rendering the final AST. 
+    // Transforms include mappings slots, linking imported components and sorting child nodes. 
     finalize(slots_in = {}) {
-
 
         if (this.slot) {
 
@@ -14265,8 +16511,10 @@ class ElementNode {
 
         const slots_out = Object.assign({}, slots_in);
 
-        if (this.presets.components[this.tag])
+            
+        if (this.presets.components[this.tag]){
             this.proxied = this.presets.components[this.tag].merge(this);
+        }
 
         if (this.proxied) {
             const ele = this.proxied.finalize(slots_out);
@@ -14390,7 +16638,6 @@ class ElementNode {
 
         const own_element = this.createElement(scope);
         
-
         appendChild(element, own_element);
 
         if (this.slots)
@@ -14434,7 +16681,544 @@ class ElementNode {
     }
 }
 
+//Node that allows the combination of two sets of children from separate nodes that are merged together
+class MergerNode {
+    constructor(...children_arrays) {
+        this.c = [];
+
+        for (let i = 0, l = children_arrays.length; i < l; i++)
+            if (Array.isArray(children_arrays))
+                this.c = this.c.concat(children_arrays[i]);
+    }
+
+    mount(element, scope, presets, statics, pinned) {
+        for (let i = 0, l = this.c.length; i < l; i++) {
+            if (this.c[i].SLOTED == true) continue;
+            this.c[i].build(element, scope, presets, statics, pinned);
+        }
+
+        return scope;
+    }
+
+    linkCSS() {}
+
+    toString(off = 0) {
+        return `${("    ").repeat(off)}${this.binding}\n`;
+    }
+}
+
+class IOBase {
+
+    get type () { return "IOBase"}
+
+    constructor(parent, element = null) {
+
+        this.parent = null;
+        this.ele = element;
+
+        if(parent instanceof Tap || parent instanceof IOBase)
+            parent.addIO(this);
+    }
+
+    discardElement(ele){
+        this.parent.discardElement(ele);
+    }
+
+    destroy() {
+        if(this.parent)
+            this.parent.removeIO(this);
+
+        this.parent = null;
+    }
+
+    init(default_val){
+        ((default_val = (this.parent.value || default_val))
+            && this.down(default_val));
+    }
+
+    down() {}
+
+    up(value, meta) { this.parent.up(value, meta); }
+
+    //For IO composition.
+    set data(data) { this.down(data); }
+
+    addIO(child) {
+        this.ele = child;
+        child.parent = this;
+    }
+
+    removeIO() {
+        this.ele = null;
+    }
+
+    toString(eles){
+        return "";
+    }
+
+    getTapDependencies(dependencies = []){
+        if(this.parent instanceof Tap)
+            dependencies.push(this.parent.prop);
+        if(this.ele instanceof IOBase)
+            this.ele.getTapDependencies(dependencies);
+        return dependencies;
+    }
+}
+
+/**
+ *   The IO is the last link in the Scope chain. It is responsible for putting date into the DOM through the element it binds to. Alternativly, in derived versions of `IO`, it is responsible for retriving values from user inputs from input elements and events.
+ *   @param {Scope} tap - The tap {@link Scope}, used internally to build a hierarchy of Scopes.
+ *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
+ *   @param {Presets} presets - An instance of the {@link Presets} object.
+ *   @param {HTMLElement} element - The HTMLElement that the IO will _bind_ to.
+ *   @memberof module:wick.core.scope
+ *   @alias IO
+ *   @extends IOBase
+ */
+class IO extends IOBase {
+
+    get type () { return "IO"}
+
+    static stamp(scope, binding, default_val){
+        
+    }
+
+    constructor(scope, errors, tap, element = null, default_val = null) {
+
+        super(tap, element);
+        //Appending the value to a text node prevents abuse from insertion of malicious DOM markup. 
+
+        this.argument = null;
+
+       // if (default_val) this.down(default_val);
+    }
+
+    destroy() {
+        this.ele = null;
+        super.destroy();
+    }
+
+    down(value) {
+        this.ele.data = value;
+    }
+
+    toString(eles){
+        return `${eles.getElement(this.ele)}.data = ${this.parent.prop}`;
+    }
+}
+
+class RedirectAttribIO extends IOBase {
+
+    static stamp(scope, binding, default_val){
+        
+    }
+    constructor(scope, errors, down_tap, up_tap) {
+        super(down_tap);
+        this.up_tap = up_tap;
+    }
+
+    down(value) {
+        this.up_tap.up(value);
+    }
+
+    toString(eles){
+        return `${eles.getElement(this.ele)}.data = ${this.parent.prop}`;
+    }
+}
+
+/**
+    This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
+*/
+class AttribIO extends IOBase {
+
+    get type () { return "AttribIO"}
+    
+    constructor(scope, binding, tap, attr, element, default_val) {
+
+        if (element.io) {
+            let down_tap = element.io.parent;
+            let root = scope.parent;
+            tap.modes |= EXPORT;
+            return new RedirectAttribIO(scope, errors, element.io.parent, tap);
+        }
+
+        super(tap, element);
+
+
+        this.binding = binding;
+        this.attrib = attr;
+        this.ele.io = this;
+
+        this.init(default_val);
+    }
+
+    destroy() {
+        this.ele = null;
+        this.attrib = null;
+        super.destroy();
+    }
+
+    /**
+        Puts data into the watched element's attribute. The default action is to simply update the attribute with data._value_.  
+    */
+    down(value) {
+        this.ele.setAttribute(this.attrib, value);
+    }
+
+    toString(eles){
+        return `${eles.getElement(this.ele)}.setAttribute(${this.attrib}, ${this.parent.prop})`;
+    }
+
+    set data(v) {
+        this.down(v);
+    }
+
+    get data() {
+
+    }
+}
+
+class DataNodeIO extends IOBase {
+
+    get type () { return "DataNodeIO"}
+
+    constructor(scope, tap, element, default_val) {
+        if(!tap)  return {};
+
+        super(tap, element);
+    }
+
+    destroy() {
+        this.ele = null;
+        this.attrib = null;
+        super.destroy();
+    }
+
+    down(value) {
+        
+        this.ele.data = value;
+    }
+}
+
+class ContainerLinkIO extends DataNodeIO {
+    get type () { return "ContainerLinkIO"}
+}
+
+/**
+    This io updates the value of a TextNode or it replaces the TextNode with another element if it is passed an HTMLElement
+*/
+class TextNodeIO extends DataNodeIO {
+
+    get type () { return "TextNodeIO"}
+
+    constructor(scope, tap, element, default_val) {
+        if(!tap) return {};
+
+        super(scope, tap, element, default_val);
+        
+        this.ELEMENT_IS_TEXT = element instanceof Text;
+
+        this.init(default_val);
+    }
+    
+    down(value) {
+
+        const ele = this.ele;
+
+        if (value instanceof HTMLElement) {
+            if (value !== this.ele) {
+                this.ELEMENT_IS_TEXT = false;
+                this.ele = value;
+                ele.parentElement.replaceChild(value, ele);
+                this.discardElement(ele);
+            }
+        } else {
+
+            if (!this.ELEMENT_IS_TEXT) {
+                this.ELEMENT_IS_TEXT = true;
+                this.ele = new Text();
+                ele.parentElement.replaceChild(this.ele, ele);
+                this.discardElement(ele);
+            }
+
+            this.ele.data = value;
+        }
+    }
+
+    toString(eles){
+        return `${eles.getElement(this.ele)}.setAttribute(${this.attrib}, ${this.parent.prop})`;
+    }
+}
+
+class EventIO extends IOBase {
+
+    get type () { return "EventIO"}
+
+    constructor(scope, binding, tap, attrib_name, element, default_val) {
+        super(tap);
+
+        this.binding = binding;
+
+        this.ele = element;
+
+        this.up_tap = default_val ? scope.getTap(default_val + "") : tap;
+
+        const up_tap = this.up_tap;
+
+        const PreventPropagation = (attrib_name.slice(-1) == "_");
+        
+        if(PreventPropagation)
+            attrib_name = attrib_name.slice(0,-1);
+
+        this.event = (e) => {
+
+            up_tap.up(e.target.value, { event: e }); 
+            
+            if(PreventPropagation){
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
+            }
+        };
+
+        
+
+        this.event_name = attrib_name.replace("on", "");
+
+        this.ele.addEventListener(this.event_name, this.event);
+    }
+
+    destroy() {
+        this.ele.removeEventListener("input", this.event);
+        this.ele = null;
+        this.event = null;
+        this.event_name = null;
+        this.attrib = null;
+        super.destroy();
+    }
+
+    down(value) {
+        this.ele.value = value;
+    }
+
+    getTapDependencies(dependencies = []){
+        if(this.parent instanceof Tap)
+            dependencies.push(this.parent.prop);
+        else{
+            dependencies.push(this.up_tap.prop);
+            return this.parent.getTapDependencies(dependencies);
+        }
+        return dependencies;
+    }
+}
+
+class InputIO extends IOBase {
+
+    get type () { return "InputIO"}
+
+    constructor(scope, errors, tap, attrib_name, element, default_val) {
+
+        if(tap)
+            super(tap);
+        else if(default_val)
+            super(scope);
+        else
+            return null;
+
+        this.ele = element;
+        this.event = null;
+
+        this.up_tap = tap;
+
+        let up_tap = tap;
+
+        if(default_val){
+            switch(default_val.type){
+                case types$1.identifier:
+                    up_tap = scope.getTap(default_val.name);
+                break;
+                case types$1.null_literal:
+                    up_tap = null;
+                break;
+            }
+        }
+
+        if(up_tap){
+            if (element.type == "checkbox")
+                this.event = (e) => { up_tap.up(e.target.checked, { event: e }); };
+            else
+                this.event = (e) => { up_tap.up(e.target.value, { event: e }); };
+            
+            this.ele.addEventListener("input", this.event);
+        }
+    }
+
+    destroy() {
+        this.ele.removeEventListener("input", this.event);
+        this.ele = null;
+        this.event = null;
+        this.attrib = null;
+        super.destroy();
+    }
+
+    down(value) {
+        this.ele.value = value;
+    }
+}
+
+/**
+ * Used to call the Scheduler after a JavaScript runtime tick.
+ *
+ * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
+ */
+ 
+const caller = (typeof(window) == "object" && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
+    setTimeout(f, 1);
+};
+
+const perf = (typeof(performance) == "undefined") ? { now: () => Date.now() } : performance;
+
+
+/**
+ * Handles updating objects. It does this by splitting up update cycles, to respect the browser event model. 
+ *    
+ * If any object is scheduled to be updated, it will be blocked from scheduling more updates until the next ES VM tick.
+ */
+class Spark {
+    /**
+     * Constructs the object.
+     */
+    constructor() {
+
+        this.update_queue_a = [];
+        this.update_queue_b = [];
+
+        this.update_queue = this.update_queue_a;
+
+        this.queue_switch = 0;
+
+        this.callback = ()=>{};
+
+
+        if(typeof(window) !== "undefined"){
+            window.addEventListener("load",()=>{
+                this.callback = () => this.update();
+                caller(this.callback);
+            });
+        }else{
+            this.callback = () => this.update();
+        }
+
+
+        this.frame_time = perf.now();
+
+        this.SCHEDULE_PENDING = false;
+    }
+
+    /**
+     * Given an object that has a _SCHD_ Boolean property, the Scheduler will queue the object and call its .update function 
+     * the following tick. If the object does not have a _SCHD_ property, the Scheduler will persuade the object to have such a property.
+     * 
+     * If there are currently no queued objects when this is called, then the Scheduler will user caller to schedule an update.
+     */
+    queueUpdate(object, timestart = 1, timeend = 0) {
+
+        if (object._SCHD_ || object._SCHD_ > 0) {
+            if (this.SCHEDULE_PENDING)
+                return;
+            else
+                return caller(this.callback);
+        }
+
+        object._SCHD_ = ((timestart & 0xFFFF) | ((timeend) << 16));
+
+        this.update_queue.push(object);
+
+        if (this._SCHD_)
+            return;
+
+        this.frame_time = perf.now() | 0;
+
+
+        if(!this.SCHEDULE_PENDING){
+            this.SCHEDULE_PENDING = true;
+            caller(this.callback);
+        }
+    }
+
+    removeFromQueue(object){
+
+        if(object._SCHD_)
+            for(let i = 0, l = this.update_queue.length; i < l; i++)
+                if(this.update_queue[i] === object){
+                    this.update_queue.splice(i,1);
+                    object._SCHD_ = 0;
+
+                    if(l == 1)
+                        this.SCHEDULE_PENDING = false;
+
+                    return;
+                }
+    }
+
+    /**
+     * Called by the caller function every tick. Calls .update on any object queued for an update. 
+     */
+    update() {
+
+        this.SCHEDULE_PENDING = false;
+
+        const uq = this.update_queue;
+        const time = perf.now() | 0;
+        const diff = Math.ceil(time - this.frame_time) | 1;
+        const step_ratio = (diff * 0.06); //  step_ratio of 1 = 16.66666666 or 1000 / 60 for 60 FPS
+
+        this.frame_time = time;
+        
+        if (this.queue_switch == 0)
+            (this.update_queue = this.update_queue_b, this.queue_switch = 1);
+        else
+            (this.update_queue = this.update_queue_a, this.queue_switch = 0);
+
+        for (let i = 0, l = uq.length, o = uq[0]; i < l; o = uq[++i]) {
+            let timestart = ((o._SCHD_ & 0xFFFF)) - diff;
+            let timeend = ((o._SCHD_ >> 16) & 0xFFFF);
+
+            o._SCHD_ = 0;
+            
+            if (timestart > 0) {
+                this.queueUpdate(o, timestart, timeend);
+                continue;
+            }
+
+            timestart = 0;
+
+            if (timeend > 0) 
+                this.queueUpdate(o, timestart, timeend - diff);
+
+            /** 
+                To ensure on code path doesn't block any others, 
+                scheduledUpdate methods are called within a try catch block. 
+                Errors by default are printed to console. 
+            **/
+            try {
+                o.scheduledUpdate(step_ratio, diff);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        uq.length = 0;
+    }
+}
+
+const spark = new Spark();
+
 class ArgumentIO extends IO {
+
+    get type () { return "ArgumentIO"}
+
     constructor(scope, errors, tap, script, id) {
         super(scope, errors, tap);
         this.ele = script;
@@ -14448,12 +17232,24 @@ class ArgumentIO extends IO {
     }
 
     down(value) {
-
         this.ele.updateProp(this, value);
+    }
+
+    getTapDependencies(dependencies = []){
+        if(this.parent instanceof Tap)
+            dependencies.push(this.parent.prop);
+        return dependencies;
     }
 }
 
 class ScriptIO extends IOBase {
+
+    get type () { return "ScriptIO"}
+
+    static stamp(id, scope, binding){
+        scope.addActivation(binding.args.map(e=>e.name), binding.origin_val);
+        return `registerExpression(${id},${false}, ()=>output({${this.val}:${true})})`;
+    }
 
     constructor(scope, node, tap, script, lex, pinned) {
 
@@ -14467,10 +17263,10 @@ class ScriptIO extends IOBase {
         this.node = node;
         this.function = script.function.bind(scope);
         this.AWAITING_DEPENDENCIES = false;
+        this.script = script;
 
         //Embedded emit functions
-        const func_bound = this.emit.bind(this);
-        func_bound.onTick = this.onTick.bind(this);
+
 
         //TODO: only needed if emit is called in function. Though highly probable. 
         this.arg_props = [];
@@ -14478,7 +17274,22 @@ class ScriptIO extends IOBase {
 
         this.initProps(script.args, tap, node, pinned);
 
-        this.arg_props.push(new Proxy(func_bound, { set: (obj, name, value) => { obj(name, value); } }));
+        const func_bound = this.emit.bind(this);
+        func_bound.onTick = this.onTick.bind(this);
+        this.arg_props.push(func_bound);
+    }
+
+    toString(){
+        return this.script.ast.render();
+    }
+
+    getTapDependencies(dependencies = []){
+        if(this.parent instanceof Tap)
+            dependencies.push(this.parent.prop);
+
+        for(const arg_name in this.arg_ios)
+            this.arg_ios[arg_name].getTapDependencies(dependencies);
+        return dependencies;
     }
 
     /*
@@ -14486,6 +17297,7 @@ class ScriptIO extends IOBase {
         Calls destroy on any child objects.
      */
     destroy() {
+        
         this.function = null;
         this.scope = null;
         this._bound_emit_function_ = null;
@@ -14493,8 +17305,9 @@ class ScriptIO extends IOBase {
         this.arg_props = null;
         this.props = null;
 
-        for (const a in this.arg_ios)
+        for (const a in this.arg_ios){
             this.arg_ios[a].destroy();
+        }
 
         this.arg_ios = null;
 
@@ -14530,7 +17343,9 @@ class ScriptIO extends IOBase {
     }
 
     updateProp(io, val) {
-        this.arg_props[io.id] = val;
+
+        if(typeof(val) !== undefined)
+            this.arg_props[io.id] = val;
 
         if (!io.ACTIVE) {
             io.ACTIVE = true;
@@ -14574,7 +17389,7 @@ class ScriptIO extends IOBase {
     }
 
     down(value, meta) {
-
+        
         if (value)
             this.setValue(value);
 
@@ -14589,7 +17404,6 @@ class ScriptIO extends IOBase {
             this.AWAITING_DEPENDENCIES = true;
             return;
         }
-        
 
         if (!this._SCHD_)
             spark.queueUpdate(this);
@@ -14597,8 +17411,7 @@ class ScriptIO extends IOBase {
 
     emit(name, value) {
         if (
-            typeof(name) !== "undefined" &&
-            typeof(value) !== "undefined"
+            typeof(name) !== "undefined"
         ) {
             this.scope.upImport(name, value, this.meta);
         }
@@ -14614,11 +17427,16 @@ class ScriptIO extends IOBase {
             scheduledUpdate: (s, d) => this.emit(name, { step: s, diff: d })
         });
     }
+
+    removeIO(io) {
+        this.destroy();
+    }
 }
 
 //Cache for scripts that have already been built. Keys are the final strings of processed ASTs
 var FUNCTION_CACHE = new Map();
 
+const env$1 = {};
 var JS = {
 
     getFirst(ast, type) {
@@ -14653,9 +17471,11 @@ var JS = {
                 if (node.type == types$1.member_expression && !(
                         node.id.type == types$1.identifier ||
                         node.id.type == types$1.member_expression
-                    )) ; else
+                    )) {} else
                 if (node.root && !non_global.has(node.name)) {
                     globals.add(node);
+                } else {
+                    //non_global.add(node.name);
                 }
             }
 
@@ -14663,6 +17483,7 @@ var JS = {
                     &&(
                     (node.type == types$1.arrow_function_declaration) 
                     || (node.type == types$1.for_of_statement) 
+                    || (node.type == types$1.catch_statement) 
                     )
                     ) {
 
@@ -14707,6 +17528,3111 @@ var JS = {
     },
 
     types: types$1
+};
+
+const A$1 = 65;
+const a$1 = 97;
+const ACKNOWLEDGE$1 = 6;
+const AMPERSAND$1 = 38;
+const ASTERISK$1 = 42;
+const AT$1 = 64;
+const B$1 = 66;
+const b$1 = 98;
+const BACKSLASH$1 = 92;
+const BACKSPACE$1 = 8;
+const BELL$1 = 7;
+const C$1 = 67;
+const c$1 = 99;
+const CANCEL$1 = 24;
+const CARET$1 = 94;
+const CARRIAGE_RETURN$1 = 13;
+const CLOSE_CURLY$1 = 125;
+const CLOSE_PARENTH$1 = 41;
+const CLOSE_SQUARE$1 = 93;
+const COLON$1 = 58;
+const COMMA$1 = 44;
+const d$1 = 100;
+const D$1 = 68;
+const DATA_LINK_ESCAPE$1 = 16;
+const DELETE$1 = 127;
+const DEVICE_CTRL_1$1 = 17;
+const DEVICE_CTRL_2$1 = 18;
+const DEVICE_CTRL_3$1 = 19;
+const DEVICE_CTRL_4$1 = 20;
+const DOLLAR$1 = 36;
+const DOUBLE_QUOTE$1 = 34;
+const e$4 = 101;
+const E$1 = 69;
+const EIGHT$1 = 56;
+const END_OF_MEDIUM$1 = 25;
+const END_OF_TRANSMISSION$1 = 4;
+const END_OF_TRANSMISSION_BLOCK$1 = 23;
+const END_OF_TXT$1 = 3;
+const ENQUIRY$1 = 5;
+const EQUAL$1 = 61;
+const ESCAPE$1 = 27;
+const EXCLAMATION$1 = 33;
+const f$1 = 102;
+const F$1 = 70;
+const FILE_SEPERATOR$1 = 28;
+const FIVE$1 = 53;
+const FORM_FEED$1 = 12;
+const FORWARD_SLASH$1 = 47;
+const FOUR$1 = 52;
+const g$1 = 103;
+const G$1 = 71;
+const GRAVE$1 = 96;
+const GREATER_THAN$1 = 62;
+const GROUP_SEPERATOR$1 = 29;
+const h$1 = 104;
+const H$1 = 72;
+const HASH$1 = 35;
+const HORIZONTAL_TAB$1 = 9;
+const HYPHEN$1 = 45;
+const i$1 = 105;
+const I$1 = 73;
+const j$1 = 106;
+const J$1 = 74;
+const k$1 = 107;
+const K$1 = 75;
+const l$1 = 108;
+const L$1 = 76;
+const LESS_THAN$1 = 60;
+const LINE_FEED$1 = 10;
+const m$1 = 109;
+const M$1 = 77;
+const n$1 = 110;
+const N$1 = 78;
+const NEGATIVE_ACKNOWLEDGE$1 = 21;
+const NINE$1 = 57;
+const NULL$1 = 0;
+const o$1 = 111;
+const O$1 = 79;
+const ONE$1 = 49;
+const OPEN_CURLY$1 = 123;
+const OPEN_PARENTH$1 = 40;
+const OPEN_SQUARE$1 = 91;
+const p$1 = 112;
+const P$1 = 80;
+const PERCENT$1 = 37;
+const PERIOD$1 = 46;
+const PLUS$1 = 43;
+const q$1 = 113;
+const Q$1 = 81;
+const QMARK$1 = 63;
+const QUOTE$1 = 39;
+const r$2 = 114;
+const R$1 = 82;
+const RECORD_SEPERATOR$1 = 30;
+const s$1 = 115;
+const S$1 = 83;
+const SEMICOLON$1 = 59;
+const SEVEN$1 = 55;
+const SHIFT_IN$1 = 15;
+const SHIFT_OUT$1 = 14;
+const SIX$1 = 54;
+const SPACE$1 = 32;
+const START_OF_HEADER$1 = 1;
+const START_OF_TEXT$1 = 2;
+const SUBSTITUTE$1 = 26;
+const SYNCH_IDLE$1 = 22;
+const t$1 = 116;
+const T$1 = 84;
+const THREE$1 = 51;
+const TILDE$1 = 126;
+const TWO$1 = 50;
+const u$1 = 117;
+const U$1 = 85;
+const UNDER_SCORE$1 = 95;
+const UNIT_SEPERATOR$1 = 31;
+const v$1 = 118;
+const V$1 = 86;
+const VERTICAL_BAR$1 = 124;
+const VERTICAL_TAB$1 = 11;
+const w$1 = 119;
+const W$1 = 87;
+const x$1 = 120;
+const X$1 = 88;
+const y$1 = 121;
+const Y$1 = 89;
+const z$1 = 122;
+const Z$1 = 90;
+const ZERO$1 = 48;
+
+/**
+ * Lexer Jump table reference 
+ * 0. NUMBER
+ * 1. IDENTIFIER
+ * 2. QUOTE STRING
+ * 3. SPACE SET
+ * 4. TAB SET
+ * 5. CARIAGE RETURN
+ * 6. LINEFEED
+ * 7. SYMBOL
+ * 8. OPERATOR
+ * 9. OPEN BRACKET
+ * 10. CLOSE BRACKET 
+ * 11. DATA_LINK
+ */ 
+const jump_table$1 = [
+7, 	 	/* NULL */
+7, 	 	/* START_OF_HEADER */
+7, 	 	/* START_OF_TEXT */
+7, 	 	/* END_OF_TXT */
+7, 	 	/* END_OF_TRANSMISSION */
+7, 	 	/* ENQUIRY */
+7, 	 	/* ACKNOWLEDGE */
+7, 	 	/* BELL */
+7, 	 	/* BACKSPACE */
+4, 	 	/* HORIZONTAL_TAB */
+6, 	 	/* LINEFEED */
+7, 	 	/* VERTICAL_TAB */
+7, 	 	/* FORM_FEED */
+5, 	 	/* CARRIAGE_RETURN */
+7, 	 	/* SHIFT_OUT */
+7, 		/* SHIFT_IN */
+11,	 	/* DATA_LINK_ESCAPE */
+7, 	 	/* DEVICE_CTRL_1 */
+7, 	 	/* DEVICE_CTRL_2 */
+7, 	 	/* DEVICE_CTRL_3 */
+7, 	 	/* DEVICE_CTRL_4 */
+7, 	 	/* NEGATIVE_ACKNOWLEDGE */
+7, 	 	/* SYNCH_IDLE */
+7, 	 	/* END_OF_TRANSMISSION_BLOCK */
+7, 	 	/* CANCEL */
+7, 	 	/* END_OF_MEDIUM */
+7, 	 	/* SUBSTITUTE */
+7, 	 	/* ESCAPE */
+7, 	 	/* FILE_SEPERATOR */
+7, 	 	/* GROUP_SEPERATOR */
+7, 	 	/* RECORD_SEPERATOR */
+7, 	 	/* UNIT_SEPERATOR */
+3, 	 	/* SPACE */
+8, 	 	/* EXCLAMATION */
+2, 	 	/* DOUBLE_QUOTE */
+7, 	 	/* HASH */
+7, 	 	/* DOLLAR */
+8, 	 	/* PERCENT */
+8, 	 	/* AMPERSAND */
+2, 	 	/* QUOTE */
+9, 	 	/* OPEN_PARENTH */
+10, 	 /* CLOSE_PARENTH */
+8, 	 	/* ASTERISK */
+8, 	 	/* PLUS */
+7, 	 	/* COMMA */
+7, 	 	/* HYPHEN */
+7, 	 	/* PERIOD */
+7, 	 	/* FORWARD_SLASH */
+0, 	 	/* ZERO */
+0, 	 	/* ONE */
+0, 	 	/* TWO */
+0, 	 	/* THREE */
+0, 	 	/* FOUR */
+0, 	 	/* FIVE */
+0, 	 	/* SIX */
+0, 	 	/* SEVEN */
+0, 	 	/* EIGHT */
+0, 	 	/* NINE */
+8, 	 	/* COLON */
+7, 	 	/* SEMICOLON */
+8, 	 	/* LESS_THAN */
+8, 	 	/* EQUAL */
+8, 	 	/* GREATER_THAN */
+7, 	 	/* QMARK */
+7, 	 	/* AT */
+1, 	 	/* A*/
+1, 	 	/* B */
+1, 	 	/* C */
+1, 	 	/* D */
+1, 	 	/* E */
+1, 	 	/* F */
+1, 	 	/* G */
+1, 	 	/* H */
+1, 	 	/* I */
+1, 	 	/* J */
+1, 	 	/* K */
+1, 	 	/* L */
+1, 	 	/* M */
+1, 	 	/* N */
+1, 	 	/* O */
+1, 	 	/* P */
+1, 	 	/* Q */
+1, 	 	/* R */
+1, 	 	/* S */
+1, 	 	/* T */
+1, 	 	/* U */
+1, 	 	/* V */
+1, 	 	/* W */
+1, 	 	/* X */
+1, 	 	/* Y */
+1, 	 	/* Z */
+9, 	 	/* OPEN_SQUARE */
+7, 	 	/* TILDE */
+10, 	/* CLOSE_SQUARE */
+7, 	 	/* CARET */
+7, 	 	/* UNDER_SCORE */
+2, 	 	/* GRAVE */
+1, 	 	/* a */
+1, 	 	/* b */
+1, 	 	/* c */
+1, 	 	/* d */
+1, 	 	/* e */
+1, 	 	/* f */
+1, 	 	/* g */
+1, 	 	/* h */
+1, 	 	/* i */
+1, 	 	/* j */
+1, 	 	/* k */
+1, 	 	/* l */
+1, 	 	/* m */
+1, 	 	/* n */
+1, 	 	/* o */
+1, 	 	/* p */
+1, 	 	/* q */
+1, 	 	/* r */
+1, 	 	/* s */
+1, 	 	/* t */
+1, 	 	/* u */
+1, 	 	/* v */
+1, 	 	/* w */
+1, 	 	/* x */
+1, 	 	/* y */
+1, 	 	/* z */
+9, 	 	/* OPEN_CURLY */
+7, 	 	/* VERTICAL_BAR */
+10,  	/* CLOSE_CURLY */
+7,  	/* TILDE */
+7 		/* DELETE */
+];	
+
+/**
+ * LExer Number and Identifier jump table reference
+ * Number are masked by 12(4|8) and Identifiers are masked by 10(2|8)
+ * entries marked as `0` are not evaluated as either being in the number set or the identifier set.
+ * entries marked as `2` are in the identifier set but not the number set
+ * entries marked as `4` are in the number set but not the identifier set
+ * entries marked as `8` are in both number and identifier sets
+ */
+const number_and_identifier_table$1 = [
+0, 		/* NULL */
+0, 		/* START_OF_HEADER */
+0, 		/* START_OF_TEXT */
+0, 		/* END_OF_TXT */
+0, 		/* END_OF_TRANSMISSION */
+0, 		/* ENQUIRY */
+0,		/* ACKNOWLEDGE */
+0,		/* BELL */
+0,		/* BACKSPACE */
+0,		/* HORIZONTAL_TAB */
+0,		/* LINEFEED */
+0,		/* VERTICAL_TAB */
+0,		/* FORM_FEED */
+0,		/* CARRIAGE_RETURN */
+0,		/* SHIFT_OUT */
+0,		/* SHIFT_IN */
+0,		/* DATA_LINK_ESCAPE */
+0,		/* DEVICE_CTRL_1 */
+0,		/* DEVICE_CTRL_2 */
+0,		/* DEVICE_CTRL_3 */
+0,		/* DEVICE_CTRL_4 */
+0,		/* NEGATIVE_ACKNOWLEDGE */
+0,		/* SYNCH_IDLE */
+0,		/* END_OF_TRANSMISSION_BLOCK */
+0,		/* CANCEL */
+0,		/* END_OF_MEDIUM */
+0,		/* SUBSTITUTE */
+0,		/* ESCAPE */
+0,		/* FILE_SEPERATOR */
+0,		/* GROUP_SEPERATOR */
+0,		/* RECORD_SEPERATOR */
+0,		/* UNIT_SEPERATOR */
+0,		/* SPACE */
+0,		/* EXCLAMATION */
+0,		/* DOUBLE_QUOTE */
+0,		/* HASH */
+0,		/* DOLLAR */
+0,		/* PERCENT */
+0,		/* AMPERSAND */
+0,		/* QUOTE */
+0,		/* OPEN_PARENTH */
+0,		 /* CLOSE_PARENTH */
+0,		/* ASTERISK */
+0,		/* PLUS */
+0,		/* COMMA */
+0,		/* HYPHEN */
+4,		/* PERIOD */
+0,		/* FORWARD_SLASH */
+8,		/* ZERO */
+8,		/* ONE */
+8,		/* TWO */
+8,		/* THREE */
+8,		/* FOUR */
+8,		/* FIVE */
+8,		/* SIX */
+8,		/* SEVEN */
+8,		/* EIGHT */
+8,		/* NINE */
+0,		/* COLON */
+0,		/* SEMICOLON */
+0,		/* LESS_THAN */
+0,		/* EQUAL */
+0,		/* GREATER_THAN */
+0,		/* QMARK */
+0,		/* AT */
+2,		/* A*/
+8,		/* B */
+2,		/* C */
+2,		/* D */
+8,		/* E */
+2,		/* F */
+2,		/* G */
+2,		/* H */
+2,		/* I */
+2,		/* J */
+2,		/* K */
+2,		/* L */
+2,		/* M */
+2,		/* N */
+8,		/* O */
+2,		/* P */
+2,		/* Q */
+2,		/* R */
+2,		/* S */
+2,		/* T */
+2,		/* U */
+2,		/* V */
+2,		/* W */
+8,		/* X */
+2,		/* Y */
+2,		/* Z */
+0,		/* OPEN_SQUARE */
+0,		/* TILDE */
+0,		/* CLOSE_SQUARE */
+0,		/* CARET */
+0,		/* UNDER_SCORE */
+0,		/* GRAVE */
+2,		/* a */
+8,		/* b */
+2,		/* c */
+2,		/* d */
+2,		/* e */
+2,		/* f */
+2,		/* g */
+2,		/* h */
+2,		/* i */
+2,		/* j */
+2,		/* k */
+2,		/* l */
+2,		/* m */
+2,		/* n */
+8,		/* o */
+2,		/* p */
+2,		/* q */
+2,		/* r */
+2,		/* s */
+2,		/* t */
+2,		/* u */
+2,		/* v */
+2,		/* w */
+8,		/* x */
+2,		/* y */
+2,		/* z */
+0,		/* OPEN_CURLY */
+0,		/* VERTICAL_BAR */
+0,		/* CLOSE_CURLY */
+0,		/* TILDE */
+0		/* DELETE */
+];
+
+const extended_number_and_identifier_table$1 = number_and_identifier_table$1.slice();
+extended_number_and_identifier_table$1[45] = 2;
+extended_number_and_identifier_table$1[95] = 2;
+
+const
+    number$1 = 1,
+    identifier$2 = 2,
+    string$2 = 4,
+    white_space$1 = 8,
+    open_bracket$1 = 16,
+    close_bracket$1 = 32,
+    operator$2 = 64,
+    symbol$1 = 128,
+    new_line$1 = 256,
+    data_link$1 = 512,
+    alpha_numeric$1 = (identifier$2 | number$1),
+    white_space_new_line$1 = (white_space$1 | new_line$1),
+    Types$1 = {
+        num: number$1,
+        number: number$1,
+        id: identifier$2,
+        identifier: identifier$2,
+        str: string$2,
+        string: string$2,
+        ws: white_space$1,
+        white_space: white_space$1,
+        ob: open_bracket$1,
+        open_bracket: open_bracket$1,
+        cb: close_bracket$1,
+        close_bracket: close_bracket$1,
+        op: operator$2,
+        operator: operator$2,
+        sym: symbol$1,
+        symbol: symbol$1,
+        nl: new_line$1,
+        new_line: new_line$1,
+        dl: data_link$1,
+        data_link: data_link$1,
+        alpha_numeric: alpha_numeric$1,
+        white_space_new_line: white_space_new_line$1,
+    },
+
+    /*** MASKS ***/
+
+    TYPE_MASK$1 = 0xF,
+    PARSE_STRING_MASK$1 = 0x10,
+    IGNORE_WHITESPACE_MASK$1 = 0x20,
+    CHARACTERS_ONLY_MASK$1 = 0x40,
+    TOKEN_LENGTH_MASK$1 = 0xFFFFFF80,
+
+    //De Bruijn Sequence for finding index of right most bit set.
+    //http://supertech.csail.mit.edu/papers/debruijn.pdf
+    debruijnLUT$1 = [
+        0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
+        31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+    ];
+
+const getNumbrOfTrailingZeroBitsFromPowerOf2$1 = (value) => debruijnLUT$1[(value * 0x077CB531) >>> 27];
+
+class Lexer$1 {
+
+    constructor(string = "", INCLUDE_WHITE_SPACE_TOKENS = false, PEEKING = false) {
+
+        if (typeof(string) !== "string") throw new Error(`String value must be passed to Lexer. A ${typeof(string)} was passed as the \`string\` argument.`);
+
+        /**
+         * The string that the Lexer tokenizes.
+         */
+        this.str = string;
+
+        /**
+         * Reference to the peeking Lexer.
+         */
+        this.p = null;
+
+        /**
+         * The type id of the current token.
+         */
+        this.type = 32768; //Default "non-value" for types is 1<<15;
+
+        /**
+         * The offset in the string of the start of the current token.
+         */
+        this.off = 0;
+
+        this.masked_values = 0;
+
+        /**
+         * The character offset of the current token within a line.
+         */
+        this.char = 0;
+        /**
+         * The line position of the current token.
+         */
+        this.line = 0;
+        /**
+         * The length of the string being parsed
+         */
+        this.sl = string.length;
+        /**
+         * The length of the current token.
+         */
+        this.tl = 0;
+
+        /**
+         * Flag to ignore white spaced.
+         */
+        this.IWS = !INCLUDE_WHITE_SPACE_TOKENS;
+
+        this.USE_EXTENDED_ID = false;
+
+        /**
+         * Flag to force the lexer to parse string contents
+         */
+        this.PARSE_STRING = false;
+
+        this.id_lu = number_and_identifier_table$1;
+
+        if (!PEEKING) this.next();
+    }
+
+    useExtendedId(){
+        this.id_lu = extended_number_and_identifier_table$1;
+        this.tl = 0;
+        this.next();
+        return this;
+    }
+
+    /**
+     * Restricts max parse distance to the other Lexer's current position.
+     * @param      {Lexer}  Lexer   The Lexer to limit parse distance by.
+     */
+    fence(marker = this) {
+        if (marker.str !== this.str)
+            return;
+        this.sl = marker.off;
+        return this;
+    }
+
+    /**
+     * Copies the Lexer.
+     * @return     {Lexer}  Returns a new Lexer instance with the same property values.
+     */
+    copy(destination = new Lexer$1(this.str, false, true)) {
+        destination.off = this.off;
+        destination.char = this.char;
+        destination.line = this.line;
+        destination.sl = this.sl;
+        destination.masked_values = this.masked_values;
+        destination.id_lu = this.id_lu;
+        return destination;
+    }
+
+    /**
+     * Given another Lexer with the same `str` property value, it will copy the state of that Lexer.
+     * @param      {Lexer}  [marker=this.peek]  The Lexer to clone the state from. 
+     * @throws     {Error} Throws an error if the Lexers reference different strings.
+     * @public
+     */
+    sync(marker = this.p) {
+
+        if (marker instanceof Lexer$1) {
+            if (marker.str !== this.str) throw new Error("Cannot sync Lexers with different strings!");
+            this.off = marker.off;
+            this.char = marker.char;
+            this.line = marker.line;
+            this.masked_values = marker.masked_values;
+        }
+
+        return this;
+    }
+
+    /**
+    Creates an error message with a diagram illustrating the location of the error. 
+    */
+    errorMessage(message = "") {
+        const pk = this.copy();
+
+        pk.IWS = false;
+
+        while (!pk.END && pk.ty !== Types$1.nl) { pk.next(); }
+
+        const end = (pk.END) ? this.str.length : pk.off,
+
+            nls = (this.line > 0) ? 1 : 0,
+            number_of_tabs = this.str
+                .slice(this.off - this.char + nls + nls, this.off + nls)
+                .split("")
+                .reduce((r, v) => (r + ((v.charCodeAt(0) == HORIZONTAL_TAB$1) | 0)), 0),
+
+            arrow = String.fromCharCode(0x2b89),
+
+            line = String.fromCharCode(0x2500),
+
+            thick_line = String.fromCharCode(0x2501),
+
+            line_number = `    ${this.line+1}: `,
+
+            line_fill = line_number.length + number_of_tabs,
+
+            line_text = this.str.slice(this.off - this.char + nls + (nls), end).replace(/\t/g, "  "),
+
+            error_border = thick_line.repeat(line_text.length + line_number.length + 2),
+
+            is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "",
+
+            msg =[ `${message} at ${this.line+1}:${this.char - nls}` ,
+            `${error_border}` ,
+            `${line_number+line_text}` ,
+            `${line.repeat(this.char-nls+line_fill-(nls))+arrow}` ,
+            `${error_border}` ,
+            `${is_iws}`].join("\n");
+
+        return msg;
+    }
+
+    /**
+     * Will throw a new Error, appending the parsed string line and position information to the the error message passed into the function.
+     * @instance
+     * @public
+     * @param {String} message - The error message.
+     * @param {Bool} DEFER - if true, returns an Error object instead of throwing.
+     */
+    throw (message, DEFER = false) {
+        const error = new Error(this.errorMessage(message));
+        if (DEFER)
+            return error;
+        throw error;
+    }
+
+    /**
+     * Proxy for Lexer.prototype.reset
+     * @public
+     */
+    r() { return this.reset() }
+
+    /**
+     * Restore the Lexer back to it's initial state.
+     * @public
+     */
+    reset() {
+        this.p = null;
+        this.type = 32768;
+        this.off = 0;
+        this.tl = 0;
+        this.char = 0;
+        this.line = 0;
+        this.n;
+        return this;
+    }
+
+    resetHead() {
+        this.off = 0;
+        this.tl = 0;
+        this.char = 0;
+        this.line = 0;
+        this.p = null;
+        this.type = 32768;
+    }
+
+    /**
+     * Sets the internal state to point to the next token. Sets Lexer.prototype.END to `true` if the end of the string is hit.
+     * @public
+     * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
+     */
+    next(marker = this, USE_CUSTOM_SYMBOLS = !!this.symbol_map) {
+
+        if (marker.sl < 1) {
+            marker.off = 0;
+            marker.type = 32768;
+            marker.tl = 0;
+            marker.line = 0;
+            marker.char = 0;
+            return marker;
+        }
+
+        //Token builder
+        const l = marker.sl,
+            str = marker.str,
+            number_and_identifier_table = this.id_lu,
+            IWS = marker.IWS;
+
+        let length = marker.tl,
+            off = marker.off + length,
+            type = symbol$1,
+            line = marker.line,
+            base = off,
+            char = marker.char,
+            root = marker.off;
+
+        if (off >= l) {
+            length = 0;
+            base = l;
+            //char -= base - off;
+            marker.char = char + (base - marker.off);
+            marker.type = type;
+            marker.off = base;
+            marker.tl = 0;
+            marker.line = line;
+            return marker;
+        }
+
+        let NORMAL_PARSE = true;
+
+        if (USE_CUSTOM_SYMBOLS) {
+
+            let code = str.charCodeAt(off);
+            let off2 = off;
+            let map = this.symbol_map,
+                m;
+            let i = 0;
+
+            while (code == 32 && IWS)
+                (code = str.charCodeAt(++off2), off++);
+
+            while ((m = map.get(code))) {
+                map = m;
+                off2 += 1;
+                code = str.charCodeAt(off2);
+            }
+
+            if (map.IS_SYM) {
+                NORMAL_PARSE = false;
+                base = off;
+                length = off2 - off;
+                //char += length;
+            }
+        }
+
+        if (NORMAL_PARSE) {
+
+            for (;;) {
+
+                base = off;
+
+                length = 1;
+
+                const code = str.charCodeAt(off);
+
+                if (code < 128) {
+
+                    switch (jump_table$1[code]) {
+                        case 0: //NUMBER
+                            while (++off < l && (12 & number_and_identifier_table[str.charCodeAt(off)]));
+
+                            if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off + 1)])) {
+                                off++;
+                                if (str[off] == "-") off++;
+                                marker.off = off;
+                                marker.tl = 0;
+                                marker.next();
+                                off = marker.off + marker.tl;
+                                //Add e to the number string
+                            }
+
+                            type = number$1;
+                            length = off - base;
+
+                            break;
+                        case 1: //IDENTIFIER
+                            while (++off < l && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
+                            type = identifier$2;
+                            length = off - base;
+                            break;
+                        case 2: //QUOTED STRING
+                            if (this.PARSE_STRING) {
+                                type = symbol$1;
+                            } else {
+                                while (++off < l && str.charCodeAt(off) !== code);
+                                type = string$2;
+                                length = off - base + 1;
+                            }
+                            break;
+                        case 3: //SPACE SET
+                            while (++off < l && str.charCodeAt(off) === SPACE$1);
+                            type = white_space$1;
+                            length = off - base;
+                            break;
+                        case 4: //TAB SET
+                            while (++off < l && str[off] === HORIZONTAL_TAB$1);
+                            type = white_space$1;
+                            length = off - base;
+                            break;
+                        case 5: //CARIAGE RETURN
+                            length = 2;
+                            //intentional
+                        case 6: //LINEFEED
+                            type = new_line$1;
+                            line++;
+                            base = off;
+                            root = off;
+                            off += length;
+                            char = 0;
+                            break;
+                        case 7: //SYMBOL
+                            type = symbol$1;
+                            break;
+                        case 8: //OPERATOR
+                            type = operator$2;
+                            break;
+                        case 9: //OPEN BRACKET
+                            type = open_bracket$1;
+                            break;
+                        case 10: //CLOSE BRACKET
+                            type = close_bracket$1;
+                            break;
+                        case 11: //Data Link Escape
+                            type = data_link$1;
+                            length = 4; //Stores two UTF16 values and a data link sentinel
+                            break;
+                    }
+                } else {
+                    break;
+                }
+
+                if (IWS && (type & white_space_new_line$1)) {
+                    if (off < l) {
+                        type = symbol$1;
+                        //off += length;
+                        continue;
+                    } else {
+                        //Trim white space from end of string
+                        //base = l - off;
+                        //marker.sl -= off;
+                        //length = 0;
+                    }
+                }
+                break;
+            }
+        }
+
+        marker.type = type;
+        marker.off = base;
+        marker.tl = (this.masked_values & CHARACTERS_ONLY_MASK$1) ? Math.min(1, length) : length;
+        marker.char = char + base - root;
+        marker.line = line;
+
+        return marker;
+    }
+
+
+    /**
+     * Proxy for Lexer.prototype.assert
+     * @public
+     */
+    a(text) {
+        return this.assert(text);
+    }
+
+    /**
+     * Compares the string value of the current token to the value passed in. Advances to next token if the two are equal.
+     * @public
+     * @throws {Error} - `Expecting "${text}" got "${this.text}"`
+     * @param {String} text - The string to compare.
+     */
+    assert(text) {
+
+        if (this.off < 0) this.throw(`Expecting ${text} got null`);
+
+        if (this.text == text)
+            this.next();
+        else
+            this.throw(`Expecting "${text}" got "${this.text}"`);
+
+        return this;
+    }
+
+    /**
+     * Proxy for Lexer.prototype.assertCharacter
+     * @public
+     */
+    aC(char) { return this.assertCharacter(char) }
+    /**
+     * Compares the character value of the current token to the value passed in. Advances to next token if the two are equal.
+     * @public
+     * @throws {Error} - `Expecting "${text}" got "${this.text}"`
+     * @param {String} text - The string to compare.
+     */
+    assertCharacter(char) {
+
+        if (this.off < 0) this.throw(`Expecting ${char[0]} got null`);
+
+        if (this.ch == char[0])
+            this.next();
+        else
+            this.throw(`Expecting "${char[0]}" got "${this.tx[this.off]}"`);
+
+        return this;
+    }
+
+    /**
+     * Returns the Lexer bound to Lexer.prototype.p, or creates and binds a new Lexer to Lexer.prototype.p. Advences the other Lexer to the token ahead of the calling Lexer.
+     * @public
+     * @type {Lexer}
+     * @param {Lexer} [marker=this] - The marker to originate the peek from. 
+     * @param {Lexer} [peek_marker=this.p] - The Lexer to set to the next token state.
+     * @return {Lexer} - The Lexer that contains the peeked at token.
+     */
+    peek(marker = this, peek_marker = this.p) {
+
+        if (!peek_marker) {
+            if (!marker) return null;
+            if (!this.p) {
+                this.p = new Lexer$1(this.str, false, true);
+                peek_marker = this.p;
+            }
+        }
+        peek_marker.masked_values = marker.masked_values;
+        peek_marker.type = marker.type;
+        peek_marker.off = marker.off;
+        peek_marker.tl = marker.tl;
+        peek_marker.char = marker.char;
+        peek_marker.line = marker.line;
+        this.next(peek_marker);
+        return peek_marker;
+    }
+
+
+    /**
+     * Proxy for Lexer.prototype.slice
+     * @public
+     */
+    s(start) { return this.slice(start) }
+
+    /**
+     * Returns a slice of the parsed string beginning at `start` and ending at the current token.
+     * @param {Number | LexerBeta} start - The offset in this.str to begin the slice. If this value is a LexerBeta, sets the start point to the value of start.off.
+     * @return {String} A substring of the parsed string.
+     * @public
+     */
+    slice(start = this.off) {
+
+        if (start instanceof Lexer$1) start = start.off;
+
+        return this.str.slice(start, (this.off <= start) ? this.sl : this.off);
+    }
+
+    /**
+     * Skips to the end of a comment section.
+     * @param {boolean} ASSERT - If set to true, will through an error if there is not a comment line or block to skip.
+     * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
+     */
+    comment(ASSERT = false, marker = this) {
+
+        if (!(marker instanceof Lexer$1)) return marker;
+
+        if (marker.ch == "/") {
+            if (marker.pk.ch == "*") {
+                marker.sync();
+                while (!marker.END && (marker.next().ch != "*" || marker.pk.ch != "/")) { /* NO OP */ }
+                marker.sync().assert("/");
+            } else if (marker.pk.ch == "/") {
+                const IWS = marker.IWS;
+                while (marker.next().ty != Types$1.new_line && !marker.END) { /* NO OP */ }
+                marker.IWS = IWS;
+                marker.next();
+            } else
+            if (ASSERT) marker.throw("Expecting the start of a comment");
+        }
+
+        return marker;
+    }
+
+    setString(string, RESET = true) {
+        this.str = string;
+        this.sl = string.length;
+        if (RESET) this.resetHead();
+    }
+
+    toString() {
+        return this.slice();
+    }
+
+    /**
+     * Returns new Whind Lexer that has leading and trailing whitespace characters removed from input. 
+     * leave_leading_amount - Maximum amount of leading space caracters to leave behind. Default is zero
+     * leave_trailing_amount - Maximum amount of trailing space caracters to leave behind. Default is zero
+     */
+    trim(leave_leading_amount = 0, leave_trailing_amount = leave_leading_amount) {
+        const lex = this.copy();
+
+        let space_count = 0,
+            off = lex.off;
+
+        for (; lex.off < lex.sl; lex.off++) {
+            const c = jump_table$1[lex.string.charCodeAt(lex.off)];
+
+            if (c > 2 && c < 7) {
+
+                if (space_count >= leave_leading_amount) {
+                    off++;
+                } else {
+                    space_count++;
+                }
+                continue;
+            }
+
+            break;
+        }
+
+        lex.off = off;
+        space_count = 0;
+        off = lex.sl;
+
+        for (; lex.sl > lex.off; lex.sl--) {
+            const c = jump_table$1[lex.string.charCodeAt(lex.sl - 1)];
+
+            if (c > 2 && c < 7) {
+                if (space_count >= leave_trailing_amount) {
+                    off--;
+                } else {
+                    space_count++;
+                }
+                continue;
+            }
+
+            break;
+        }
+
+        lex.sl = off;
+
+        if (leave_leading_amount > 0)
+            lex.IWS = false;
+
+        lex.token_length = 0;
+
+        lex.next();
+
+        return lex;
+    }
+
+    /** Adds symbol to symbol_map. This allows custom symbols to be defined and tokenized by parser. **/
+    addSymbol(sym) {
+        if (!this.symbol_map)
+            this.symbol_map = new Map;
+
+
+        let map = this.symbol_map;
+
+        for (let i = 0; i < sym.length; i++) {
+            let code = sym.charCodeAt(i);
+            let m = map.get(code);
+            if (!m) {
+                m = map.set(code, new Map).get(code);
+            }
+            map = m;
+        }
+        map.IS_SYM = true;
+    }
+
+    /*** Getters and Setters ***/
+    get string() {
+        return this.str;
+    }
+
+    get string_length() {
+        return this.sl - this.off;
+    }
+
+    set string_length(s) {}
+
+    /**
+     * The current token in the form of a new Lexer with the current state.
+     * Proxy property for Lexer.prototype.copy
+     * @type {Lexer}
+     * @public
+     * @readonly
+     */
+    get token() {
+        return this.copy();
+    }
+
+
+    get ch() {
+        return this.str[this.off];
+    }
+
+    /**
+     * Proxy for Lexer.prototype.text
+     * @public
+     * @type {String}
+     * @readonly
+     */
+    get tx() { return this.text }
+
+    /**
+     * The string value of the current token.
+     * @type {String}
+     * @public
+     * @readonly
+     */
+    get text() {
+        return (this.off < 0) ? "" : this.str.slice(this.off, this.off + this.tl);
+    }
+
+    /**
+     * The type id of the current token.
+     * @type {Number}
+     * @public
+     * @readonly
+     */
+    get ty() { return this.type }
+
+    /**
+     * The current token's offset position from the start of the string.
+     * @type {Number}
+     * @public
+     * @readonly
+     */
+    get pos() {
+        return this.off;
+    }
+
+    /**
+     * Proxy for Lexer.prototype.peek
+     * @public
+     * @readonly
+     * @type {Lexer}
+     */
+    get pk() { return this.peek() }
+
+    /**
+     * Proxy for Lexer.prototype.next
+     * @public
+     */
+    get n() { return this.next() }
+
+    get END() { return this.off >= this.sl }
+    set END(v) {}
+
+    get type() {
+        return 1 << (this.masked_values & TYPE_MASK$1);
+    }
+
+    set type(value) {
+        //assuming power of 2 value.
+        this.masked_values = (this.masked_values & ~TYPE_MASK$1) | ((getNumbrOfTrailingZeroBitsFromPowerOf2$1(value)) & TYPE_MASK$1);
+    }
+
+    get tl() {
+        return this.token_length;
+    }
+
+    set tl(value) {
+        this.token_length = value;
+    }
+
+    get token_length() {
+        return ((this.masked_values & TOKEN_LENGTH_MASK$1) >> 7);
+    }
+
+    set token_length(value) {
+        this.masked_values = (this.masked_values & ~TOKEN_LENGTH_MASK$1) | (((value << 7) | 0) & TOKEN_LENGTH_MASK$1);
+    }
+
+    get IGNORE_WHITE_SPACE() {
+        return this.IWS;
+    }
+
+    set IGNORE_WHITE_SPACE(bool) {
+        this.iws = !!bool;
+    }
+
+    get CHARACTERS_ONLY() {
+        return !!(this.masked_values & CHARACTERS_ONLY_MASK$1);
+    }
+
+    set CHARACTERS_ONLY(boolean) {
+        this.masked_values = (this.masked_values & ~CHARACTERS_ONLY_MASK$1) | ((boolean | 0) << 6);
+    }
+
+    get IWS() {
+        return !!(this.masked_values & IGNORE_WHITESPACE_MASK$1);
+    }
+
+    set IWS(boolean) {
+        this.masked_values = (this.masked_values & ~IGNORE_WHITESPACE_MASK$1) | ((boolean | 0) << 5);
+    }
+
+    get PARSE_STRING() {
+        return !!(this.masked_values & PARSE_STRING_MASK$1);
+    }
+
+    set PARSE_STRING(boolean) {
+        this.masked_values = (this.masked_values & ~PARSE_STRING_MASK$1) | ((boolean | 0) << 4);
+    }
+
+    /**
+     * Reference to token id types.
+     */
+    get types() {
+        return Types$1;
+    }
+}
+
+Lexer$1.prototype.addCharacter = Lexer$1.prototype.addSymbol;
+
+function whind$2(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer$1(string, INCLUDE_WHITE_SPACE_TOKENS) }
+
+whind$2.constructor = Lexer$1;
+
+Lexer$1.types = Types$1;
+whind$2.types = Types$1;
+
+let fn$2 = {}; const 
+/************** Maps **************/
+
+    /* Symbols To Inject into the Lexer */
+    symbols$2 = ["||","^=","$=","*=","<=",">="],
+
+    /* Goto lookup maps */
+    gt0$2 = [0,-1,4,2,7,3,1,10,8,-2,9,-5,5,-1,37,-4,38,-9,36,-38,12,15,-1,34,16,13,-1,14,21,18,17,25,26,27,-1,28,-3,29,35,-9,23,-3,20],
+gt1$2 = [0,-1,40,-1,7,39,-1,10,8,-2,9,-5,5,-1,37,-4,38,-9,36,-38,12,15,-1,34,16,13,-1,14,21,18,17,25,26,27,-1,28,-3,29,35,-9,23,-3,20],
+gt2$2 = [0,-3,41,-2,10,8,-2,9,-5,42,-1,37,-4,38,-9,36,-38,12,15,-1,34,16,13,-1,14,21,18,17,25,26,27,-1,28,-3,29,35,-9,23,-3,20],
+gt3$2 = [0,-10,52,-5,42,-1,37,-4,38,-9,36,-59,53,-1,51,50,-1,54,-3,23,-3,55],
+gt4$2 = [0,-70,57,56,-1,15,-1,34,16,59,58,14,21,18,17,25,26,27,-1,28,-3,29,35,-9,23,-3,20],
+gt5$2 = [0,-73,64,-1,34,65,-6,25,26,27,-1,28,-3,29,35],
+gt6$2 = [0,-75,34,66,-6,67,26,27,-1,28,-3,29,35],
+gt7$2 = [0,-75,68,-16,35],
+gt8$2 = [0,-102,23,-3,71],
+gt9$2 = [0,-103,75,73,74],
+gt10$2 = [0,-102,23,-3,81],
+gt11$2 = [0,-102,23,-3,82],
+gt12$2 = [0,-80,21,84,83,-19,23,-3,20],
+gt13$2 = [0,-91,87,-10,23,-3,86],
+gt14$2 = [0,-74,89,-16,90],
+gt15$2 = [0,-11,94,95,-53,98,-2,97],
+gt16$2 = [0,-32,102,-1,105,-1,103,107,104,109,-2,110,-2,108,111,-1,114,-3,115,-8,106,-40,23,-3,116],
+gt17$2 = [0,-19,118,-49,120],
+gt18$2 = [0,-27,121,123,125,128,127,-20,126,-49,23,-3,130],
+gt19$2 = [0,-10,52,-5,42,-1,37,-4,38,-9,36,-59,53,-1,51,131,-1,54,-3,23,-3,55],
+gt20$2 = [0,-72,132,15,-1,34,16,13,-1,14,21,18,17,25,26,27,-1,28,-3,29,35,-9,23,-3,20],
+gt21$2 = [0,-10,135,-5,42,-1,37,-4,38,-9,36,-59,53,-1,136,-2,54,-3,23,-3,55],
+gt22$2 = [0,-70,139,-2,15,-1,34,16,59,58,14,21,18,17,25,26,27,-1,28,-3,29,35,-9,23,-3,20],
+gt23$2 = [0,-73,15,-1,34,16,140,-1,14,21,18,17,25,26,27,-1,28,-3,29,35,-9,23,-3,20],
+gt24$2 = [0,-75,34,141,-6,67,26,27,-1,28,-3,29,35],
+gt25$2 = [0,-91,87],
+gt26$2 = [0,-103,143,-1,142],
+gt27$2 = [0,-88,145],
+gt28$2 = [0,-90,151],
+gt29$2 = [0,-102,23,-3,86],
+gt30$2 = [0,-91,153],
+gt31$2 = [0,-12,154,-53,98,-2,97],
+gt32$2 = [0,-14,156,-17,157,-1,105,-1,103,107,104,109,-2,110,-2,108,111,-1,114,-3,115,-8,106,-40,23,-3,116],
+gt33$2 = [0,-68,159],
+gt34$2 = [0,-68,161],
+gt35$2 = [0,-61,165,-40,23,-3,166],
+gt36$2 = [0,-35,167],
+gt37$2 = [0,-40,171,169,-1,173,170],
+gt38$2 = [0,-46,175,-1,114,-3,115,-49,23,-3,130],
+gt39$2 = [0,-37,107,176,109,-2,110,-2,108,111,177,114,-3,115,180,-3,182,184,181,183,-1,187,-2,186,-36,23,-3,178],
+gt40$2 = [0,-28,191,125,128,127,-20,126,-49,23,-3,130],
+gt41$2 = [0,-24,194,193,192],
+gt42$2 = [0,-27,197,123,125,128,127,-20,126,-45,198,-3,23,-3,199],
+gt43$2 = [0,-93,205,-4,54,-3,23,-3,55],
+gt44$2 = [0,-99,209,207,206],
+gt45$2 = [0,-86,213,-15,23,-3,214],
+gt46$2 = [0,-72,217,15,-1,34,16,13,-1,14,21,18,17,25,26,27,-1,28,-3,29,35,-9,23,-3,20],
+gt47$2 = [0,-14,218,-17,219,-1,105,-1,103,107,104,109,-2,110,-2,108,111,-1,114,-3,115,-8,106,-40,23,-3,116],
+gt48$2 = [0,-32,220,-1,105,-1,103,107,104,109,-2,110,-2,108,111,-1,114,-3,115,-8,106,-40,23,-3,116],
+gt49$2 = [0,-69,225],
+gt50$2 = [0,-6,10,228,227,226,-62,12,15,-1,34,16,13,-1,14,21,18,17,25,26,27,-1,28,-3,29,35,-9,23,-3,20],
+gt51$2 = [0,-34,105,-1,229,107,104,109,-2,110,-2,108,111,-1,114,-3,115,-8,106,-40,23,-3,116],
+gt52$2 = [0,-35,230],
+gt53$2 = [0,-37,231,-1,109,-2,110,-3,232,-1,114,-3,115,-49,23,-3,130],
+gt54$2 = [0,-40,233],
+gt55$2 = [0,-43,234],
+gt56$2 = [0,-46,235,-1,114,-3,115,-49,23,-3,130],
+gt57$2 = [0,-46,236,-1,114,-3,115,-49,23,-3,130],
+gt58$2 = [0,-49,241,-1,239],
+gt59$2 = [0,-54,245],
+gt60$2 = [0,-54,251,252,253],
+gt61$2 = [0,-64,258],
+gt62$2 = [0,-49,241,-1,263],
+gt63$2 = [0,-17,265,-2,267,266,268,-40,271],
+gt64$2 = [0,-6,10,228,227,273,-62,12,15,-1,34,16,13,-1,14,21,18,17,25,26,27,-1,28,-3,29,35,-9,23,-3,20],
+gt65$2 = [0,-24,194,274],
+gt66$2 = [0,-28,275,125,128,127,-20,126,-49,23,-3,130],
+gt67$2 = [0,-72,278,15,-1,34,16,13,-1,14,21,18,17,25,26,27,-1,28,-3,29,35,-9,23,-3,20],
+gt68$2 = [0,-97,280,-1,209,207,281],
+gt69$2 = [0,-99,283],
+gt70$2 = [0,-99,209,207,284],
+gt71$2 = [0,-89,285],
+gt72$2 = [0,-32,290,-1,105,-1,103,107,104,109,-2,110,-2,108,111,-1,114,-3,115,-8,106,-40,23,-3,116],
+gt73$2 = [0,-13,291,-13,292,123,125,128,127,-20,126,-45,293,-3,23,-3,294],
+gt74$2 = [0,-6,10,297,-64,12,15,-1,34,16,13,-1,14,21,18,17,25,26,27,-1,28,-3,29,35,-9,23,-3,20],
+gt75$2 = [0,-40,171,169],
+gt76$2 = [0,-49,299],
+gt77$2 = [0,-58,300,-1,301,-1,187,-2,186,-36,23,-3,302],
+gt78$2 = [0,-58,303,-1,301,-1,187,-2,186,-36,23,-3,302],
+gt79$2 = [0,-60,304,-41,23,-3,302],
+gt80$2 = [0,-102,23,-3,305],
+gt81$2 = [0,-102,23,-3,306],
+gt82$2 = [0,-20,267,310,268,-40,271],
+gt83$2 = [0,-99,209,207,281],
+gt84$2 = [0,-55,320],
+gt85$2 = [0,-56,323],
+gt86$2 = [0,-10,52,-5,42,-1,37,-4,38,-9,36,-59,53,-1,51,326,-1,54,-3,23,-3,55],
+gt87$2 = [0,-22,327,-40,271],
+gt88$2 = [0,-58,328,-1,301,-1,187,-2,186,-36,23,-3,302],
+gt89$2 = [0,-58,329,-1,301,-1,187,-2,186,-36,23,-3,302],
+
+    // State action lookup maps
+    sm0$2=[0,1,-1,2,-1,0,-4,0,-6,3,-6,4,-31,5,6,7,8,-1,9,-9,10],
+sm1$2=[0,11,-3,0,-4,0],
+sm2$2=[0,12,-1,2,-1,0,-4,0,-6,3,-6,4,-31,5,6,7,8,-1,9,-9,10],
+sm3$2=[0,13,-1,2,-1,0,-4,0,-6,3,-6,4,-31,5,6,7,8,-1,9,-9,10],
+sm4$2=[0,14,-1,14,-1,0,-4,0,-6,14,-6,14,-31,14,14,14,14,-1,14,-9,14],
+sm5$2=[0,15,-1,15,-1,0,-4,0,-6,15,-6,15,-31,15,15,15,15,-1,15,-6,16,-2,15],
+sm6$2=[0,-4,0,-4,0,-10,17,-3,18,19,-7,20],
+sm7$2=[0,21,-1,21,-1,0,-4,0,-6,21,-6,21,-31,21,21,21,21,-1,21,-9,21],
+sm8$2=[0,22,-1,22,-1,0,-4,0,-6,22,-6,22,-31,22,22,22,22,-1,22,-9,22],
+sm9$2=[0,-4,0,-4,0,-5,23,24],
+sm10$2=[0,-2,2,-1,0,-4,0,-13,4],
+sm11$2=[0,-4,0,-4,0,-5,25,25],
+sm12$2=[0,-2,2,-1,0,-4,0,-5,26,26,-5,26,-15,27,-12,28,29,30,-1,5,6,7,8,-1,9,-9,10],
+sm13$2=[0,-2,31,-1,0,-4,0,-5,31,31,-5,31,-15,31,-12,31,31,31,-1,31,31,7,8,-1,9,-9,10],
+sm14$2=[0,-2,31,-1,0,-4,0,-5,31,31,-5,31,-15,31,-12,31,31,31,-1,31,31,31,31,-1,31,-9,32],
+sm15$2=[0,-2,33,-1,0,-4,0,-5,33,33,-5,33,-15,33,-12,33,33,33,-1,33,33,33,33,-1,33,-9,33],
+sm16$2=[0,-2,2,-1,0,-4,0,-45,34],
+sm17$2=[0,-2,35,-1,0,-4,0,-5,35,35,-5,35,-15,35,-12,35,35,35,-1,35,36,35,35,-1,35,-9,35],
+sm18$2=[0,-2,37,-1,0,-4,0,-5,37,37,-5,37,-15,37,-2,37,-9,37,37,37,-1,37,36,37,37,-1,37,37,37,37,37,-5,37],
+sm19$2=[0,-4,0,-4,0,-46,38],
+sm20$2=[0,-2,39,-1,0,-4,0,-45,39],
+sm21$2=[0,40,-1,41,-1,42,-4,43,-3,40,-1,40,40,-4,40,40,40,-5,40,-7,40,40,40,40,40,-9,40,40,40,-1,40,40,40,40,-1,40,40,40,40,40,40,40,40,-2,40,-1,44,45],
+sm22$2=[0,46,-1,46,-1,46,-4,46,-3,46,-1,46,46,-4,46,46,46,-5,46,-7,46,46,46,46,46,-9,46,46,46,-1,46,46,46,46,-1,46,46,46,46,46,46,46,46,-2,46,-1,46,46],
+sm23$2=[0,-2,47,-1,0,-4,0,-5,47,47,-5,47,-15,47,-12,47,47,47,-1,47,47,47,47,-1,47,-9,47],
+sm24$2=[0,-2,48,-1,0,-4,0,-5,48,48,-5,48,-15,48,-12,48,48,48,-1,48,48,48,48,-1,48,-9,48],
+sm25$2=[0,-2,2,-1,0,-4,0],
+sm26$2=[0,-2,2,-1,0,-4,0,-45,49,6],
+sm27$2=[0,-2,2,-1,0,-4,0,-60,50],
+sm28$2=[0,-2,51,-1,0,-4,0,-5,51,51,-5,51,-15,51,-12,51,51,51,-1,51,51,51,51,-1,51,-9,51],
+sm29$2=[0,-2,52,-1,0,-4,0,-5,52,52,-5,52,-15,52,-12,52,52,52,-1,52,52,52,52,-1,52,-9,50],
+sm30$2=[0,-4,0,-4,0,-57,53],
+sm31$2=[0,-4,0,-4,0,-57,54],
+sm32$2=[0,-4,0,-4,0,-57,55],
+sm33$2=[0,56,-1,2,-1,0,-4,0,-6,3,-6,4,-31,5,6,7,8,-1,9,-9,10],
+sm34$2=[0,57,-1,57,-1,0,-4,0,-6,57,-6,57,-31,57,57,57,57,-1,57,-9,57],
+sm35$2=[0,58,-1,58,-1,0,-4,0,-6,58,-6,58,-31,58,58,58,58,-1,58,-9,58],
+sm36$2=[0,-4,0,-4,0,-57,16],
+sm37$2=[0,59,-1,59,-1,0,-4,0,-6,59,-1,59,-4,59,-31,59,59,59,59,-1,59,-6,59,-2,59],
+sm38$2=[0,-4,60,-4,0,-38,61,62,63],
+sm39$2=[0,-2,2,-1,0,-4,0,-11,64,-9,65,-2,66],
+sm40$2=[0,-4,0,-4,0,-16,67,-22,62,63],
+sm41$2=[0,-2,2,-1,0,-4,68,-11,69,-9,70],
+sm42$2=[0,-2,2,-1,0,-4,0,-45,5,6,7,8,-1,9,-9,10],
+sm43$2=[0,-2,2,-1,0,-4,0,-8,71,-4,4,-43,72],
+sm44$2=[0,-2,73,-1,0,-4,0,-8,73,-4,73,-43,74],
+sm45$2=[0,-2,73,-1,0,-4,0,-8,73,-4,73,-43,73],
+sm46$2=[0,-2,75,-1,0,-4,0,-8,75,-4,75,-43,75],
+sm47$2=[0,-2,76,-1,0,-4,0,-8,76,-4,76,-43,76],
+sm48$2=[0,-4,0,-4,0,-60,77],
+sm49$2=[0,-2,2,-1,0,-4,0,-5,78,78,-5,78,-15,27,-12,28,29,30,-1,5,6,7,8,-1,9,-9,10],
+sm50$2=[0,-2,79,-1,0,-4,0,-5,79,79,-5,79,-15,79,-12,79,79,79,-1,79,79,79,79,-1,79,-9,79],
+sm51$2=[0,-2,80,-1,0,-4,0,-5,80,80,-5,80,-15,80,-12,80,80,80,-1,80,80,80,80,-1,80,-9,80],
+sm52$2=[0,-2,81,-1,0,-4,0,-45,81,81,81,81,-1,81,-9,81],
+sm53$2=[0,-2,82,-1,0,-4,0,-5,82,82,-5,82,-15,82,-12,82,82,82,-1,82,82,7,8,-1,9,-9,10],
+sm54$2=[0,-2,82,-1,0,-4,0,-5,82,82,-5,82,-15,82,-12,82,82,82,-1,82,82,82,82,-1,82,-9,32],
+sm55$2=[0,-2,83,-1,0,-4,0,-5,83,83,-5,83,-15,83,-12,83,83,83,-1,83,83,83,83,-1,83,-9,83],
+sm56$2=[0,-2,84,-1,0,-4,0,-5,84,84,-5,84,-15,84,-12,84,84,84,-1,84,84,84,84,-1,84,-9,84],
+sm57$2=[0,-4,0,-4,0,-60,50],
+sm58$2=[0,-2,85,-1,0,-4,0,-5,85,85,-5,85,-15,85,-12,85,85,85,-1,85,85,85,85,-1,85,-9,85],
+sm59$2=[0,-2,86,-1,0,-4,0,-5,86,86,-5,86,-15,86,-2,86,-9,86,86,86,-1,86,86,86,86,-1,86,86,86,86,86,-5,86],
+sm60$2=[0,-2,87,-1,0,-4,0,-45,87],
+sm61$2=[0,88,-1,41,-1,42,-4,43,-3,88,-1,88,88,-4,88,88,88,-5,88,-7,88,88,88,88,88,-9,88,88,88,-1,88,88,88,88,-1,88,88,88,88,88,88,88,88,-2,88,-1,44,45],
+sm62$2=[0,89,-1,89,-1,89,-4,0,-3,89,-1,89,89,-4,89,89,89,-5,89,-7,89,89,89,89,89,-9,89,89,89,-1,89,89,89,89,-1,89,89,89,89,89,89,89,89,-2,89],
+sm63$2=[0,90,-1,90,-1,90,-4,90,-3,90,-1,90,90,-4,90,90,90,-5,90,-7,90,90,90,90,90,-9,90,90,90,-1,90,90,90,90,-1,90,90,90,90,90,90,90,90,-2,90,-1,90,90],
+sm64$2=[0,91,-1,91,-1,91,-4,91,-3,91,-1,91,91,-4,91,91,91,-5,91,-7,91,91,91,91,91,-9,91,91,91,-1,91,91,91,91,-1,91,91,91,91,91,91,91,91,-2,91,-1,91,91],
+sm65$2=[0,92,-1,92,-1,92,-4,0,-3,92,-1,92,92,-4,92,92,92,-5,92,-7,92,92,92,92,92,-9,92,92,92,-1,92,92,92,92,-1,92,92,92,92,92,92,92,92,-2,92],
+sm66$2=[0,-2,93,-1,0,-4,0,-5,93,93,-5,93,-15,93,-12,93,93,93,-1,93,93,93,93,-1,93,-9,93],
+sm67$2=[0,-2,94,-1,0,-4,0,-5,94,94,-5,94,-15,94,-12,94,94,94,-1,94,94,94,94,-1,94,-9,94],
+sm68$2=[0,-4,0,-4,0,-31,95,-10,96,-8,97,98,99,100],
+sm69$2=[0,-4,0,-4,0,-46,36],
+sm70$2=[0,-2,101,-1,0,-4,0,-5,101,101,-4,102,101,-15,101,-12,101,101,101,-1,101,101,101,101,-1,101,-9,101],
+sm71$2=[0,-2,103,-1,0,-4,0,-5,103,103,-5,103,-15,103,-12,103,103,103,-1,103,103,103,103,-1,103,-9,103],
+sm72$2=[0,-2,104,-1,0,-4,0,-5,104,104,-5,104,-15,104,-12,104,104,104,-1,104,104,104,104,-1,104,-9,50],
+sm73$2=[0,-2,105,-1,0,-4,0,-5,105,105,-5,105,-15,105,-12,105,105,105,-1,105,105,105,105,-1,105,-9,105],
+sm74$2=[0,-4,106,-4,0,-38,61,62,63],
+sm75$2=[0,107,-1,2,-1,0,-4,0,-6,107,-3,108,64,-1,107,-7,65,-2,66,-20,107,107,107,107,-1,107,-6,107,-2,107],
+sm76$2=[0,-4,109,-4,0,-38,109,109,109],
+sm77$2=[0,110,-1,110,-1,0,-4,0,-6,110,-3,110,110,-1,110,-7,110,-2,110,-20,110,110,110,110,-1,110,-6,110,-2,110],
+sm78$2=[0,-4,0,-4,0,-3,111],
+sm79$2=[0,-4,0,-4,0,-11,112],
+sm80$2=[0,-4,0,-4,0,-5,113,114],
+sm81$2=[0,115,-1,115,-1,0,-4,0,-5,115,115,-6,115,-31,115,115,115,115,-1,115,-6,115,-2,115],
+sm82$2=[0,116,-1,116,-1,0,-4,0,-5,116,116,-6,116,-31,116,116,116,116,-1,116,-6,116,-2,116],
+sm83$2=[0,116,-1,116,-1,0,-4,0,-5,116,116,-6,116,-5,117,-25,116,116,116,116,-1,116,-6,116,-2,116],
+sm84$2=[0,118,-1,118,-1,0,-4,0,-5,118,118,-5,118,118,-31,118,118,118,118,-1,118,-6,118,-2,118],
+sm85$2=[0,119,-1,119,-1,0,-4,0,-5,119,119,-5,119,119,-31,119,119,119,119,-1,119,-6,119,-2,119],
+sm86$2=[0,119,-1,119,-1,0,-4,0,-5,119,119,-5,119,119,-5,120,121,-24,119,119,119,119,-1,119,-6,119,-2,119],
+sm87$2=[0,-2,2,-1,0,-4,0,-11,64],
+sm88$2=[0,-1,122,2,-1,0,-4,0,-11,64,-9,123],
+sm89$2=[0,124,-1,124,-1,0,-4,0,-5,124,124,-5,124,124,-5,124,124,-24,124,124,124,124,-1,124,-6,124,-2,124],
+sm90$2=[0,125,-1,125,-1,0,-4,0,-5,125,125,-4,126,-1,125,-5,125,-25,125,125,125,125,-1,125,-6,125,-2,125],
+sm91$2=[0,-2,127,-1,0,-4,0],
+sm92$2=[0,-4,0,-4,0,-6,128],
+sm93$2=[0,-4,0,-4,0,-6,129],
+sm94$2=[0,-4,0,-4,0,-6,130],
+sm95$2=[0,-2,2,-1,0,-4,68,-11,69],
+sm96$2=[0,-4,0,-4,0,-6,131,-5,131,-6,132,133],
+sm97$2=[0,-4,0,-4,0,-6,134,-5,134,-6,134,134],
+sm98$2=[0,-4,0,-4,0,-6,135,-5,135,-6,135,135],
+sm99$2=[0,-4,0,-4,0,-11,136],
+sm100$2=[0,-4,0,-4,0,-11,126],
+sm101$2=[0,-2,2,-1,0,-4,0,-8,137,-4,4,-43,138],
+sm102$2=[0,-4,0,-4,0,-5,139,139],
+sm103$2=[0,-4,0,-4,0,-8,140],
+sm104$2=[0,141,-1,141,-1,0,-4,0,-6,141,-1,141,-4,141,-31,141,141,141,141,-1,141,-9,141],
+sm105$2=[0,-2,142,-1,0,-4,0,-8,142,-4,142,-43,142],
+sm106$2=[0,-2,143,-1,0,-4,0,-8,143,-4,143,-43,144],
+sm107$2=[0,-2,2,-1,0,-4,0,-8,145,-4,145,-43,145],
+sm108$2=[0,-2,146,-1,147,-4,0,-3,148,-7,149],
+sm109$2=[0,-2,150,-1,0,-4,0,-5,150,150,-5,150,-15,150,-12,150,150,150,-1,150,150,150,150,-1,150,-9,150],
+sm110$2=[0,-2,151,-1,0,-4,0,-5,151,151,-5,151,-15,151,-12,151,151,151,-1,151,151,151,151,-1,151,-9,151],
+sm111$2=[0,-2,152,-1,0,-4,0,-5,152,152,-5,152,-15,152,-12,152,152,152,-1,152,152,152,152,-1,152,-9,32],
+sm112$2=[0,153,-1,153,-1,153,-4,0,-3,153,-1,153,153,-4,153,153,153,-5,153,-7,153,153,153,153,153,-9,153,153,153,-1,153,153,153,153,-1,153,153,153,153,153,153,153,153,-2,153],
+sm113$2=[0,154,-1,154,-1,154,-4,154,-3,154,-1,154,154,-4,154,154,154,-5,154,-7,154,154,154,154,154,-9,154,154,154,-1,154,154,154,154,-1,154,154,154,154,154,154,154,154,-2,154,-1,154,154],
+sm114$2=[0,-2,155,-1,0,-4,0,-5,155,155,-5,155,-15,155,-12,155,155,155,-1,155,155,155,155,-1,155,-9,155],
+sm115$2=[0,-2,2,156,0,-4,0],
+sm116$2=[0,-4,0,-4,0,-31,157],
+sm117$2=[0,-2,158,158,0,-4,0],
+sm118$2=[0,-2,159,-1,0,-4,0,-5,159,159,-5,159,-15,159,-12,159,159,159,-1,159,159,159,159,-1,159,-9,159],
+sm119$2=[0,-2,160,-1,0,-4,0,-5,160,160,-5,160,-15,160,-12,160,160,160,-1,160,160,160,160,-1,160,-9,160],
+sm120$2=[0,161,-1,2,-1,0,-4,0,-6,161,-3,108,64,-1,161,-7,65,-2,66,-20,161,161,161,161,-1,161,-6,161,-2,161],
+sm121$2=[0,-4,162,-4,0,-38,162,162,162],
+sm122$2=[0,161,-1,2,-1,0,-4,0,-6,161,-4,64,-1,161,-7,65,-2,66,-20,161,161,161,161,-1,161,-6,161,-2,161],
+sm123$2=[0,161,-1,161,-1,0,-4,0,-5,113,161,-6,161,-31,161,161,161,161,-1,161,-6,161,-2,161],
+sm124$2=[0,-4,0,-4,0,-11,163],
+sm125$2=[0,-4,0,-4,0,-3,164,-35,165],
+sm126$2=[0,-4,0,-4,0,-3,166,-35,166,166],
+sm127$2=[0,-4,0,-4,0,-3,164,-36,167],
+sm128$2=[0,-4,0,-4,0,-39,62,63],
+sm129$2=[0,-2,2,-1,0,-4,0,-6,3,-1,168,-36,5,6,7,8,-1,9,-9,10],
+sm130$2=[0,169,-1,169,-1,0,-4,0,-5,169,169,-6,169,-5,117,-25,169,169,169,169,-1,169,-6,169,-2,169],
+sm131$2=[0,125,-1,125,-1,0,-4,0,-5,125,125,-6,125,-5,125,-25,125,125,125,125,-1,125,-6,125,-2,125],
+sm132$2=[0,169,-1,169,-1,0,-4,0,-5,169,169,-6,169,-31,169,169,169,169,-1,169,-6,169,-2,169],
+sm133$2=[0,-2,2,-1,0,-4,0,-11,64,-9,123],
+sm134$2=[0,170,-1,170,-1,0,-4,0,-5,170,170,-5,170,170,-5,120,-25,170,170,170,170,-1,170,-6,170,-2,170],
+sm135$2=[0,171,-1,171,-1,0,-4,0,-5,171,171,-5,171,171,-6,121,-24,171,171,171,171,-1,171,-6,171,-2,171],
+sm136$2=[0,172,-1,172,-1,0,-4,0,-5,172,172,-5,172,172,-5,172,-25,172,172,172,172,-1,172,-6,172,-2,172],
+sm137$2=[0,173,-1,173,-1,0,-4,0,-5,173,173,-5,173,173,-6,173,-24,173,173,173,173,-1,173,-6,173,-2,173],
+sm138$2=[0,174,-1,174,-1,0,-4,0,-5,174,174,-5,174,174,-31,174,174,174,174,-1,174,-6,174,-2,174],
+sm139$2=[0,-4,0,-4,0,-12,175],
+sm140$2=[0,-4,0,-4,0,-12,176],
+sm141$2=[0,-4,177,-4,0,-3,178,-7,126,179,-14,180,180,180,180,180,-28,180],
+sm142$2=[0,-4,0,-4,0,-12,181],
+sm143$2=[0,-4,0,-4,0,-27,182,183,184,185,186,-28,187],
+sm144$2=[0,-4,0,-4,0,-27,188,189,190,191,186],
+sm145$2=[0,-4,0,-4,0,-12,192,-14,192,192,192,192,192,-1,193,-1,194,195,196],
+sm146$2=[0,-4,0,-4,0,-12,192,-14,192,192,192,192,192],
+sm147$2=[0,-4,177,-4,0,-3,178,-8,197],
+sm148$2=[0,-1,198,-2,0,-4,0,-17,199,200],
+sm149$2=[0,-4,0,-4,0,-6,201,-5,201],
+sm150$2=[0,-4,0,-4,0,-6,201,-5,201,-6,132,133],
+sm151$2=[0,-4,0,-4,0,-6,202,-5,202,-6,202,202],
+sm152$2=[0,-2,203,-1,0,-4,203,-11,203],
+sm153$2=[0,-4,0,-4,0,-12,204],
+sm154$2=[0,-4,0,-4,0,-12,205],
+sm155$2=[0,-4,177,-4,0,-3,178,-7,126,179,-47,77],
+sm156$2=[0,-4,0,-4,0,-8,206],
+sm157$2=[0,207,-1,207,-1,0,-4,0,-6,207,-1,207,-4,207,-31,207,207,207,207,-1,207,-9,207],
+sm158$2=[0,208,-1,208,-1,0,-4,0,-6,208,-1,208,-4,208,-31,208,208,208,208,-1,208,-9,208],
+sm159$2=[0,-2,2,-1,0,-4,0,-8,209,-4,209,-43,209],
+sm160$2=[0,-2,210,-1,0,-4,0,-8,210,-4,210,-43,210],
+sm161$2=[0,-2,146,-1,147,-4,0,-3,148,-4,211,-2,149,211,211,-43,211,212],
+sm162$2=[0,-2,146,-1,147,-4,0,-3,148,-4,213,-2,213,213,213,-43,213,213],
+sm163$2=[0,-2,214,-1,214,-4,0,-3,214,-4,214,-2,214,214,214,-43,214,214],
+sm164$2=[0,-2,215,-1,215,-4,0,-3,215,-4,215,-2,215,215,215,-43,215,215],
+sm165$2=[0,-4,0,-4,0,-51,216,-3,217,218],
+sm166$2=[0,-4,0,-4,0,-51,219,-3,219,219],
+sm167$2=[0,-2,220,220,0,-4,0],
+sm168$2=[0,-4,0,-4,0,-12,221],
+sm169$2=[0,222,-1,2,-1,0,-4,0,-6,222,-4,64,-1,222,-7,65,-2,66,-20,222,222,222,222,-1,222,-6,222,-2,222],
+sm170$2=[0,222,-1,222,-1,0,-4,0,-5,113,222,-6,222,-31,222,222,222,222,-1,222,-6,222,-2,222],
+sm171$2=[0,223,-1,223,-1,0,-4,0,-6,223,-3,223,223,223,223,-7,223,-2,223,-20,223,223,223,223,-1,223,-6,223,-2,223],
+sm172$2=[0,-4,0,-4,0,-3,224,-35,224,224],
+sm173$2=[0,-4,0,-4,0,-12,225],
+sm174$2=[0,-4,0,-4,0,-8,226],
+sm175$2=[0,-2,2,-1,0,-4,0,-6,3,-1,227,-36,5,6,7,8,-1,9,-9,10],
+sm176$2=[0,-2,228,-1,0,-4,0,-6,228,-1,228,-36,228,228,228,228,-1,228,-9,228],
+sm177$2=[0,229,-1,229,-1,0,-4,0,-5,229,229,-6,229,-31,229,229,229,229,-1,229,-6,229,-2,229],
+sm178$2=[0,230,-1,230,-1,0,-4,0,-5,230,230,-6,230,-31,230,230,230,230,-1,230,-6,230,-2,230],
+sm179$2=[0,231,-1,231,-1,0,-4,0,-5,231,231,-6,231,-31,231,231,231,231,-1,231,-6,231,-2,231],
+sm180$2=[0,119,-1,119,-1,0,-4,0,-5,119,119,-6,119,-5,120,-25,119,119,119,119,-1,119,-6,119,-2,119],
+sm181$2=[0,232,-1,232,-1,0,-4,0,-5,232,232,-5,232,232,-5,232,-25,232,232,232,232,-1,232,-6,232,-2,232],
+sm182$2=[0,233,-1,233,-1,0,-4,0,-5,233,233,-5,233,233,-6,233,-24,233,233,233,233,-1,233,-6,233,-2,233],
+sm183$2=[0,234,-1,234,-1,0,-4,0,-5,234,234,-5,234,234,-5,234,-25,234,234,234,234,-1,234,-6,234,-2,234],
+sm184$2=[0,235,-1,235,-1,0,-4,0,-5,235,235,-5,235,235,-6,235,-24,235,235,235,235,-1,235,-6,235,-2,235],
+sm185$2=[0,236,-1,236,-1,0,-4,0,-5,236,236,-5,236,236,-5,236,236,-24,236,236,236,236,-1,236,-6,236,-2,236],
+sm186$2=[0,237,-1,237,-1,0,-4,0,-5,237,237,-5,237,237,-5,237,237,-24,237,237,237,237,-1,237,-6,237,-2,237],
+sm187$2=[0,-4,177,-4,0,-3,178,-8,238],
+sm188$2=[0,239,-1,239,-1,0,-4,0,-5,239,239,-5,239,239,-5,239,239,-24,239,239,239,239,-1,239,-6,239,-2,239],
+sm189$2=[0,-4,240,-4,0,-3,240,-8,240],
+sm190$2=[0,-4,241,-4,0,-3,241,-8,241],
+sm191$2=[0,-1,122,2,-1,0,-4,0],
+sm192$2=[0,-1,242,242,-1,0,-4,0],
+sm193$2=[0,-2,242,-1,0,-4,0],
+sm194$2=[0,-4,0,-4,0,-12,243,-14,243,243,243,243,243],
+sm195$2=[0,-1,244,-2,0,-4,0],
+sm196$2=[0,-4,0,-4,0,-12,245,-14,245,245,245,245,245],
+sm197$2=[0,-4,177,-4,0,-3,178,-8,246],
+sm198$2=[0,-1,198,-2,0,-4,0,-8,247,-8,199,200],
+sm199$2=[0,-1,248,-2,0,-4,0,-8,248,-8,248,248],
+sm200$2=[0,-4,0,-4,0,-5,249,250],
+sm201$2=[0,-4,0,-4,0,-5,251,251],
+sm202$2=[0,-4,0,-4,0,-5,252,252],
+sm203$2=[0,-4,0,-4,0,-34,253],
+sm204$2=[0,-4,0,-4,0,-8,254],
+sm205$2=[0,-4,0,-4,0,-6,255,-5,255,-6,255,255],
+sm206$2=[0,-4,0,-4,0,-6,256,-5,256,-6,256,256],
+sm207$2=[0,-4,0,-4,0,-6,257,-5,257,-6,257,257],
+sm208$2=[0,-4,0,-4,0,-6,258,-5,258,-6,258,258],
+sm209$2=[0,-4,0,-4,0,-12,259],
+sm210$2=[0,260,-1,260,-1,0,-4,0,-6,260,-1,260,-4,260,-31,260,260,260,260,-1,260,-9,260],
+sm211$2=[0,-2,261,-1,0,-4,0,-8,261,-3,261,261,-43,261],
+sm212$2=[0,-2,146,-1,147,-4,0,-3,148,-4,262,-2,149,262,262,-43,262,262],
+sm213$2=[0,-4,0,-4,0,-59,263],
+sm214$2=[0,-2,264,-1,264,-4,0,-3,264,-4,264,-2,264,264,264,-43,264,264],
+sm215$2=[0,-2,146,-1,147,-4,0,-3,148,-7,149,265],
+sm216$2=[0,-4,0,-4,0,-51,266],
+sm217$2=[0,-2,267,-1,0,-4,0,-5,267,267,-5,267,-15,267,-12,267,267,267,-1,267,267,267,267,-1,267,-9,267],
+sm218$2=[0,-4,0,-4,0,-51,268],
+sm219$2=[0,-2,269,-1,0,-4,0,-5,269,269,-5,269,-15,269,-12,269,269,269,-1,269,269,269,269,-1,269,-9,269],
+sm220$2=[0,270,-1,270,-1,0,-4,0,-5,113,270,-6,270,-31,270,270,270,270,-1,270,-6,270,-2,270],
+sm221$2=[0,-4,0,-4,0,-12,271],
+sm222$2=[0,-4,0,-4,0,-12,272],
+sm223$2=[0,-4,0,-4,0,-11,126,-48,77],
+sm224$2=[0,273,-1,273,-1,0,-4,0,-6,273,-3,273,273,-1,273,-7,273,-2,273,-20,273,273,273,273,-1,273,-6,273,-2,273],
+sm225$2=[0,-4,0,-4,0,-57,274],
+sm226$2=[0,-2,275,-1,0,-4,0,-6,275,-1,275,-36,275,275,275,275,-1,275,-9,275],
+sm227$2=[0,276,-1,276,-1,0,-4,0,-5,276,276,-5,276,276,-5,276,276,-24,276,276,276,276,-1,276,-6,276,-2,276],
+sm228$2=[0,-4,277,-4,0,-3,277,-8,277],
+sm229$2=[0,-4,0,-4,0,-12,278],
+sm230$2=[0,-4,0,-4,0,-12,192],
+sm231$2=[0,-4,0,-4,0,-12,180],
+sm232$2=[0,-4,0,-4,0,-12,279],
+sm233$2=[0,-4,0,-4,0,-28,280,-1,281],
+sm234$2=[0,-4,0,-4,0,-27,282,-1,283],
+sm235$2=[0,-4,0,-4,0,-12,284,-14,284,284,284,284,284],
+sm236$2=[0,-4,0,-4,0,-57,285],
+sm237$2=[0,-1,286,-2,0,-4,0,-8,286,-8,286,286],
+sm238$2=[0,-4,0,-4,0,-5,287,287],
+sm239$2=[0,-4,0,-4,0,-57,288],
+sm240$2=[0,-4,0,-4,0,-6,289,-5,289,-6,289,289],
+sm241$2=[0,-2,290,-1,0,-4,0,-8,290,-3,290,290,-43,290],
+sm242$2=[0,-2,291,-1,291,-4,0,-3,291,-4,291,-2,291,291,291,-43,291,291],
+sm243$2=[0,-2,292,-1,0,-4,0,-5,292,292,-5,292,-15,292,-12,292,292,292,-1,292,292,292,292,-1,292,-9,292],
+sm244$2=[0,293,-1,293,-1,0,-4,0,-6,293,-4,293,-1,293,-7,293,-2,293,-20,293,293,293,293,-1,293,-6,293,-2,293],
+sm245$2=[0,-1,294,294,-1,0,-4,0],
+sm246$2=[0,-1,295,295,-1,0,-4,0],
+sm247$2=[0,-2,2,-1,0,-4,0,-8,296,-4,4,-43,297],
+sm248$2=[0,-4,0,-4,0,-5,298,298],
+sm249$2=[0,-4,0,-4,0,-12,299],
+sm250$2=[0,-4,0,-4,0,-8,300],
+sm251$2=[0,-1,301,-2,0,-4,0,-8,301,-8,301,301],
+sm252$2=[0,-1,302,-2,0,-4,0,-8,302,-8,302,302],
+
+    // Symbol Lookup map
+    lu$2 = new Map([[1,1],[2,2],[4,3],[8,4],[16,5],[32,6],[64,7],[128,8],[256,9],[512,10],[3,11],[264,11],[200,13],[201,14],[",",15],["{",16],[";",67],["}",18],[null,9],["supports",20],["(",21],[")",22],["@",23],["import",24],["keyframes",25],["id",26],["from",27],["to",28],["and",29],["or",30],["not",31],["media",33],["only",34],[":",70],["<",37],[">",38],["<=",39],[">=",40],["=",41],["/",43],["%",44],["px",45],["in",46],["rad",47],["url",48],["\"",49],["'",50],["+",51],["~",52],["||",53],["*",55],["|",56],["#",57],[".",58],["[",60],["]",61],["^=",62],["$=",63],["*=",64],["i",65],["s",66],["!",68],["important",69],["-",72],["_",73]]),
+
+    //Reverse Symbol Lookup map
+    rlu$2 = new Map([[1,1],[2,2],[3,4],[4,8],[5,16],[6,32],[7,64],[8,128],[9,256],[10,512],[11,3],[11,264],[13,200],[14,201],[15,","],[16,"{"],[67,";"],[18,"}"],[9,null],[20,"supports"],[21,"("],[22,")"],[23,"@"],[24,"import"],[25,"keyframes"],[26,"id"],[27,"from"],[28,"to"],[29,"and"],[30,"or"],[31,"not"],[33,"media"],[34,"only"],[70,":"],[37,"<"],[38,">"],[39,"<="],[40,">="],[41,"="],[43,"/"],[44,"%"],[45,"px"],[46,"in"],[47,"rad"],[48,"url"],[49,"\""],[50,"'"],[51,"+"],[52,"~"],[53,"||"],[55,"*"],[56,"|"],[57,"#"],[58,"."],[60,"["],[61,"]"],[62,"^="],[63,"$="],[64,"*="],[65,"i"],[66,"s"],[68,"!"],[69,"important"],[72,"-"],[73,"_"]]),
+
+    // States 
+    state$2 = [sm0$2,
+sm1$2,
+sm2$2,
+sm3$2,
+sm4$2,
+sm5$2,
+sm6$2,
+sm7$2,
+sm8$2,
+sm8$2,
+sm9$2,
+sm10$2,
+sm11$2,
+sm12$2,
+sm13$2,
+sm13$2,
+sm14$2,
+sm15$2,
+sm16$2,
+sm17$2,
+sm18$2,
+sm19$2,
+sm20$2,
+sm21$2,
+sm22$2,
+sm23$2,
+sm24$2,
+sm24$2,
+sm24$2,
+sm24$2,
+sm25$2,
+sm25$2,
+sm26$2,
+sm27$2,
+sm28$2,
+sm29$2,
+sm30$2,
+sm31$2,
+sm32$2,
+sm33$2,
+sm34$2,
+sm35$2,
+sm36$2,
+sm37$2,
+sm38$2,
+sm39$2,
+sm40$2,
+sm41$2,
+sm10$2,
+sm42$2,
+sm43$2,
+sm44$2,
+sm45$2,
+sm46$2,
+sm47$2,
+sm48$2,
+sm49$2,
+sm50$2,
+sm42$2,
+sm51$2,
+sm52$2,
+sm52$2,
+sm52$2,
+sm52$2,
+sm53$2,
+sm54$2,
+sm54$2,
+sm55$2,
+sm56$2,
+sm57$2,
+sm58$2,
+sm59$2,
+sm60$2,
+sm61$2,
+sm62$2,
+sm63$2,
+sm64$2,
+sm64$2,
+sm64$2,
+sm65$2,
+sm65$2,
+sm66$2,
+sm67$2,
+sm68$2,
+sm25$2,
+sm69$2,
+sm70$2,
+sm71$2,
+sm25$2,
+sm72$2,
+sm73$2,
+sm37$2,
+sm37$2,
+sm37$2,
+sm74$2,
+sm75$2,
+sm76$2,
+sm77$2,
+sm77$2,
+sm78$2,
+sm78$2,
+sm79$2,
+sm80$2,
+sm81$2,
+sm82$2,
+sm25$2,
+sm83$2,
+sm84$2,
+sm84$2,
+sm85$2,
+sm85$2,
+sm86$2,
+sm87$2,
+sm88$2,
+sm89$2,
+sm89$2,
+sm90$2,
+sm91$2,
+sm92$2,
+sm93$2,
+sm93$2,
+sm94$2,
+sm95$2,
+sm96$2,
+sm41$2,
+sm97$2,
+sm97$2,
+sm98$2,
+sm98$2,
+sm99$2,
+sm100$2,
+sm101$2,
+sm102$2,
+sm103$2,
+sm104$2,
+sm105$2,
+sm106$2,
+sm107$2,
+sm108$2,
+sm109$2,
+sm110$2,
+sm111$2,
+sm112$2,
+sm113$2,
+sm114$2,
+sm115$2,
+sm116$2,
+sm117$2,
+sm117$2,
+sm117$2,
+sm117$2,
+sm118$2,
+sm42$2,
+sm119$2,
+sm120$2,
+sm121$2,
+sm122$2,
+sm123$2,
+sm124$2,
+sm125$2,
+sm126$2,
+sm127$2,
+sm128$2,
+sm129$2,
+sm39$2,
+sm130$2,
+sm131$2,
+sm132$2,
+sm133$2,
+sm134$2,
+sm135$2,
+sm136$2,
+sm87$2,
+sm137$2,
+sm87$2,
+sm138$2,
+sm139$2,
+sm140$2,
+sm141$2,
+sm87$2,
+sm142$2,
+sm142$2,
+sm142$2,
+sm143$2,
+sm144$2,
+sm145$2,
+sm146$2,
+sm146$2,
+sm147$2,
+sm148$2,
+sm129$2,
+sm149$2,
+sm150$2,
+sm151$2,
+sm95$2,
+sm152$2,
+sm152$2,
+sm153$2,
+sm154$2,
+sm155$2,
+sm42$2,
+sm156$2,
+sm157$2,
+sm158$2,
+sm159$2,
+sm160$2,
+sm161$2,
+sm162$2,
+sm108$2,
+sm163$2,
+sm164$2,
+sm164$2,
+sm164$2,
+sm165$2,
+sm166$2,
+sm166$2,
+sm167$2,
+sm168$2,
+sm169$2,
+sm170$2,
+sm170$2,
+sm41$2,
+sm171$2,
+sm172$2,
+sm171$2,
+sm173$2,
+sm174$2,
+sm175$2,
+sm176$2,
+sm177$2,
+sm178$2,
+sm179$2,
+sm180$2,
+sm181$2,
+sm182$2,
+sm183$2,
+sm184$2,
+sm185$2,
+sm186$2,
+sm187$2,
+sm188$2,
+sm189$2,
+sm190$2,
+sm190$2,
+sm191$2,
+sm191$2,
+sm192$2,
+sm192$2,
+sm192$2,
+sm192$2,
+sm192$2,
+sm25$2,
+sm25$2,
+sm25$2,
+sm193$2,
+sm193$2,
+sm193$2,
+sm193$2,
+sm194$2,
+sm195$2,
+sm196$2,
+sm196$2,
+sm196$2,
+sm197$2,
+sm188$2,
+sm198$2,
+sm199$2,
+sm200$2,
+sm201$2,
+sm202$2,
+sm202$2,
+sm202$2,
+sm203$2,
+sm204$2,
+sm205$2,
+sm206$2,
+sm207$2,
+sm208$2,
+sm209$2,
+sm210$2,
+sm211$2,
+sm212$2,
+sm213$2,
+sm214$2,
+sm215$2,
+sm216$2,
+sm217$2,
+sm218$2,
+sm218$2,
+sm219$2,
+sm220$2,
+sm221$2,
+sm222$2,
+sm222$2,
+sm223$2,
+sm224$2,
+sm225$2,
+sm226$2,
+sm227$2,
+sm228$2,
+sm229$2,
+sm230$2,
+sm231$2,
+sm232$2,
+sm232$2,
+sm233$2,
+sm234$2,
+sm235$2,
+sm227$2,
+sm236$2,
+sm237$2,
+sm10$2,
+sm148$2,
+sm238$2,
+sm239$2,
+sm240$2,
+sm241$2,
+sm242$2,
+sm243$2,
+sm244$2,
+sm191$2,
+sm245$2,
+sm245$2,
+sm191$2,
+sm246$2,
+sm246$2,
+sm247$2,
+sm248$2,
+sm249$2,
+sm249$2,
+sm250$2,
+sm251$2,
+sm252$2],
+
+/************ Functions *************/
+
+    max$2 = Math.max, min$2 = Math.min,
+
+    //Error Functions
+    e$5 = (tk,r,o,l,p)=>{if(l.END)l.throw("Unexpected end of input");else if(l.ty & (264)) l.throw(`Unexpected space character within input "${p.slice(l)}" `) ; else l.throw(`Unexpected token ${l.tx}" `);}, 
+    eh$2 = [e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5,
+e$5],
+
+    //Empty Function
+    nf$2 = ()=>-1, 
+
+    //Environment Functions
+    
+redv$2 = (ret, fn, plen, ln, t, e, o, l, s) => {        ln = max$2(o.length - plen, 0);        const slice = o.slice(-plen);        o.length = ln + 1;        o[ln] = fn(slice, e, l, s, o, plen);        return ret;    },
+rednv$2 = (ret, Fn, plen, ln, t, e, o, l, s) => {        ln = max$2(o.length - plen, 0);        const slice = o.slice(-plen);        o.length = ln + 1;        o[ln] = new Fn(slice, e, l, s, o, plen);        return ret;    },
+redn$2 = (ret, plen, t, e, o) => {        if (plen > 0) {            let ln = max$2(o.length - plen, 0);            o[ln] = o[o.length - 1];            o.length = ln + 1;        }        return ret;    },
+shftf$2 = (ret, fn, t, e, o, l, s) => (fn(o, e, l, s), ret),
+R20_STYLE_SHEET201_group_list=function (sym,env,lex,state,output,len) {return ((sym[1] !== null) ? sym[0].push(sym[1]) : null,sym[0])},
+R21_STYLE_SHEET201_group_list=function (sym,env,lex,state,output,len) {return (sym[0] !== null) ? [sym[0]] : []},
+R50_STYLE_SHEET=function (sym,env,lex,state,output,len) {return new fn$2.ruleset(sym[0],sym[1])},
+R51_STYLE_SHEET=function (sym,env,lex,state,output,len) {return new fn$2.ruleset(null,sym[0])},
+R52_STYLE_SHEET=function (sym,env,lex,state,output,len) {return new fn$2.ruleset(sym[0],null)},
+R53_STYLE_SHEET=function (sym,env,lex,state,output,len) {return new fn$2.ruleset(null,null)},
+R60_COMPLEX_SELECTOR_list=function (sym,env,lex,state,output,len) {return ((sym[1] !== null) ? sym[0].push(sym[2]) : null,sym[0])},
+R70_STYLE_RULE=function (sym,env,lex,state,output,len) {return new fn$2.stylerule(sym[0],sym[2])},
+R71_STYLE_RULE=function (sym,env,lex,state,output,len) {return new fn$2.stylerule(null,sym[1])},
+C180_keyframes=function (sym,env,lex,state,output,len) {this.keyframes = sym[4];},
+C210_keyframes_blocks=function (sym,env,lex,state,output,len) {this.selectors = sym[0];this.props = sym[2].props;},
+R500_general_enclosed6202_group_list=function (sym,env,lex,state,output,len) {return sym[0] + sym[1]},
+R501_general_enclosed6202_group_list=function (sym,env,lex,state,output,len) {return sym[0] + ""},
+R790_TYPE_SELECTOR=function (sym,env,lex,state,output,len) {return new fn$2.type_selector([sym[0],sym[1]])},
+R791_TYPE_SELECTOR=function (sym,env,lex,state,output,len) {return new fn$2.type_selector([sym[0]])},
+R820_WQ_NAME=function (sym,env,lex,state,output,len) {return [sym[0],sym[1]]},
+R821_WQ_NAME=function (sym,env,lex,state,output,len) {return [sym[0]]},
+R960_declaration_list=function (sym,env,lex,state,output,len) {return sym[0]},
+R961_declaration_list=function (sym,env,lex,state,output,len) {return (sym[0].push(sym[1]),sym[0])},
+R962_declaration_list=function (sym,env,lex,state,output,len) {return (sym[0].push(...sym[1]),sym[0])},
+R1010_declaration_values=function (sym,env,lex,state,output,len) {return sym.join("")},
+
+    //Sparse Map Lookup
+    lsm$2 = (index, map) => {    if (map[0] == 0xFFFFFFFF) return map[index + 1];    for (let i = 1, ind = 0, l = map.length, n = 0; i < l && ind <= index; i++) {        if (ind !== index) {            if ((n = map[i]) > -1) ind++;            else ind += -n;        } else return map[i];    }    return -1;},
+
+    //State Action Functions
+    state_funct$2 = [(...v)=>((redn$2(5123,0,...v))),
+()=>(98),
+()=>(46),
+()=>(26),
+()=>(78),
+()=>(90),
+()=>(122),
+()=>(126),
+()=>(130),
+()=>(134),
+(...v)=>(rednv$2(5,fn$2.stylesheet,1,0,...v)),
+(...v)=>(redv$2(5127,R52_STYLE_SHEET,1,0,...v)),
+(...v)=>(redv$2(5127,R51_STYLE_SHEET,1,0,...v)),
+(...v)=>(redv$2(2055,R21_STYLE_SHEET201_group_list,1,0,...v)),
+(...v)=>(redn$2(1031,1,...v)),
+()=>(174),
+()=>(190),
+()=>(178),
+()=>(186),
+()=>(182),
+(...v)=>(redv$2(4103,R21_STYLE_SHEET201_group_list,1,0,...v)),
+(...v)=>(redn$2(3079,1,...v)),
+()=>(198),
+()=>(194),
+(...v)=>(redv$2(6151,R21_STYLE_SHEET201_group_list,1,0,...v)),
+(...v)=>(rednv$2(73735,fn$2.selector,1,0,...v)),
+()=>(242),
+()=>(246),
+()=>(250),
+()=>(254),
+(...v)=>(rednv$2(78855,fn$2.compoundSelector,1,0,...v)),
+()=>(278),
+(...v)=>(rednv$2(80903,fn$2.typeselector,1,0,...v)),
+()=>(282),
+(...v)=>(redv$2(80903,R791_TYPE_SELECTOR,1,0,...v)),
+(...v)=>(redn$2(81927,1,...v)),
+(...v)=>(redv$2(83975,R821_WQ_NAME,1,0,...v)),
+()=>(290),
+(...v)=>(redn$2(82951,1,...v)),
+(...v)=>(redv$2(108551,R960_declaration_list,1,0,...v)),
+()=>(306),
+()=>(318),
+()=>(322),
+()=>(310),
+()=>(314),
+(...v)=>(redn$2(104455,1,...v)),
+(...v)=>(redv$2(74759,R21_STYLE_SHEET201_group_list,1,0,...v)),
+(...v)=>(redn$2(84999,1,...v)),
+()=>(342),
+()=>(354),
+(...v)=>(redv$2(77831,R21_STYLE_SHEET201_group_list,1,0,...v)),
+(...v)=>(redn$2(76807,1,...v)),
+()=>(366),
+()=>(370),
+()=>(374),
+(...v)=>(redv$2(5131,R50_STYLE_SHEET,2,0,...v)),
+(...v)=>(redv$2(2059,R20_STYLE_SHEET201_group_list,2,0,...v)),
+(...v)=>(redv$2(4107,R20_STYLE_SHEET201_group_list,2,0,...v)),
+(...v)=>(redn$2(10251,2,...v)),
+()=>(386),
+()=>(406),
+()=>(398),
+()=>(402),
+()=>(454),
+()=>(450),
+()=>(470),
+()=>(478),
+()=>(518),
+()=>(498),
+()=>(490),
+()=>(538),
+()=>(534),
+(...v)=>(redv$2(98311,R960_declaration_list,1,0,...v)),
+()=>(550),
+(...v)=>(redv$2(97287,R21_STYLE_SHEET201_group_list,1,0,...v)),
+(...v)=>(redn$2(95239,1,...v)),
+()=>(554),
+(...v)=>(rednv$2(73739,fn$2.selector,2,0,...v)),
+(...v)=>(redv$2(72711,R21_STYLE_SHEET201_group_list,1,0,...v)),
+(...v)=>(rednv$2(71687,fn$2.comboSelector,1,0,...v)),
+(...v)=>(redn$2(79879,1,...v)),
+(...v)=>(rednv$2(78859,fn$2.compoundSelector,2,0,...v)),
+(...v)=>(redv$2(74763,R20_STYLE_SHEET201_group_list,2,0,...v)),
+(...v)=>(redv$2(77835,R20_STYLE_SHEET201_group_list,2,0,...v)),
+(...v)=>(redv$2(80907,R790_TYPE_SELECTOR,2,0,...v)),
+(...v)=>(redv$2(83979,R820_WQ_NAME,2,0,...v)),
+(...v)=>(redn$2(82955,2,...v)),
+(...v)=>(redv$2(108555,R500_general_enclosed6202_group_list,2,0,...v)),
+(...v)=>(redv$2(108555,R960_declaration_list,2,0,...v)),
+(...v)=>(redv$2(106503,R501_general_enclosed6202_group_list,1,0,...v)),
+(...v)=>(redn$2(105479,1,...v)),
+(...v)=>(redn$2(107527,1,...v)),
+(...v)=>(rednv$2(86027,fn$2.idSelector,2,0,...v)),
+(...v)=>(rednv$2(87051,fn$2.classSelector,2,0,...v)),
+()=>(602),
+()=>(586),
+()=>(578),
+()=>(590),
+()=>(594),
+()=>(598),
+(...v)=>(rednv$2(93195,fn$2.pseudoClassSelector,2,0,...v)),
+()=>(610),
+(...v)=>(rednv$2(94219,fn$2.pseudoElementSelector,2,0,...v)),
+(...v)=>(redn$2(76811,2,...v)),
+(...v)=>(redv$2(75783,R21_STYLE_SHEET201_group_list,1,0,...v)),
+()=>(622),
+(...v)=>(redn$2(16399,3,...v)),
+()=>(634),
+(...v)=>(redv$2(11271,R21_STYLE_SHEET201_group_list,1,0,...v)),
+(...v)=>(redn$2(12295,1,...v)),
+()=>(642),
+()=>(650),
+()=>(658),
+()=>(654),
+(...v)=>(redv$2(32775,R21_STYLE_SHEET201_group_list,1,0,...v)),
+(...v)=>(redn$2(36871,1,...v)),
+()=>(674),
+(...v)=>(redn$2(38919,1,...v)),
+(...v)=>(redn$2(37895,1,...v)),
+()=>(690),
+()=>(698),
+()=>(742),
+()=>(718),
+(...v)=>(redn$2(47111,1,...v)),
+(...v)=>(redn$2(62471,1,...v)),
+()=>(754),
+(...v)=>(redn$2(34823,1,...v)),
+()=>(758),
+(...v)=>(redn$2(19463,1,...v)),
+()=>(762),
+(...v)=>(redn$2(27655,1,...v)),
+()=>(782),
+()=>(786),
+(...v)=>(redn$2(28679,1,...v)),
+(...v)=>(redn$2(29703,1,...v)),
+()=>(802),
+()=>(810),
+()=>(806),
+(...v)=>(redv$2(6159,R60_COMPLEX_SELECTOR_list,3,0,...v)),
+()=>(814),
+(...v)=>(redv$2(7183,R71_STYLE_RULE,3,0,...v)),
+(...v)=>(redv$2(98315,R961_declaration_list,2,0,...v)),
+(...v)=>(redv$2(98315,R962_declaration_list,2,0,...v)),
+()=>(818),
+(...v)=>(redv$2(98315,R960_declaration_list,2,0,...v)),
+()=>(850),
+()=>(842),
+()=>(846),
+()=>(834),
+(...v)=>(redv$2(72715,R20_STYLE_SHEET201_group_list,2,0,...v)),
+(...v)=>(rednv$2(71691,fn$2.comboSelector,2,0,...v)),
+(...v)=>(rednv$2(78863,fn$2.compoundSelector,3,0,...v)),
+(...v)=>(redv$2(108559,R500_general_enclosed6202_group_list,3,0,...v)),
+(...v)=>(redv$2(106507,R500_general_enclosed6202_group_list,2,0,...v)),
+(...v)=>(rednv$2(89103,fn$2.attribSelector,3,0,...v)),
+()=>(862),
+()=>(866),
+(...v)=>(redn$2(90119,1,...v)),
+(...v)=>(rednv$2(93199,fn$2.pseudoClassSelector,3,0,...v)),
+(...v)=>(redv$2(75787,R20_STYLE_SHEET201_group_list,2,0,...v)),
+(...v)=>(redn$2(16403,4,...v)),
+(...v)=>(redv$2(11275,R20_STYLE_SHEET201_group_list,2,0,...v)),
+()=>(886),
+()=>(894),
+()=>(890),
+(...v)=>(redv$2(69639,R501_general_enclosed6202_group_list,1,0,...v)),
+()=>(898),
+(...v)=>((redn$2(9219,0,...v))),
+(...v)=>(redn$2(36875,2,...v)),
+(...v)=>(redn$2(43019,2,...v)),
+(...v)=>(redn$2(46091,2,...v)),
+(...v)=>(redv$2(41991,R21_STYLE_SHEET201_group_list,1,0,...v)),
+(...v)=>(redv$2(45063,R21_STYLE_SHEET201_group_list,1,0,...v)),
+(...v)=>(redn$2(39947,2,...v)),
+()=>(950),
+()=>(954),
+()=>(974),
+()=>(970),
+()=>(962),
+(...v)=>(redn$2(61447,1,...v)),
+(...v)=>(redn$2(48135,1,...v)),
+()=>(986),
+()=>(990),
+()=>(994),
+()=>(998),
+()=>(1002),
+()=>(978),
+()=>(1018),
+()=>(1022),
+()=>(1026),
+()=>(1030),
+(...v)=>(redn$2(59399,1,...v)),
+()=>(1038),
+()=>(1042),
+()=>(1046),
+()=>(1050),
+()=>(1058),
+()=>(1090),
+()=>(1078),
+()=>(1082),
+(...v)=>(redn$2(27659,2,...v)),
+(...v)=>(redv$2(26631,R21_STYLE_SHEET201_group_list,1,0,...v)),
+(...v)=>(redn$2(24583,1,...v)),
+()=>(1106),
+()=>(1110),
+()=>(1118),
+(...v)=>(redv$2(7187,R70_STYLE_RULE,4,0,...v)),
+(...v)=>(redv$2(7187,R71_STYLE_RULE,4,0,...v)),
+(...v)=>(redv$2(98319,R962_declaration_list,3,0,...v)),
+(...v)=>(redv$2(97295,R60_COMPLEX_SELECTOR_list,3,0,...v)),
+(...v)=>(redv$2(100367,fn$2.parseDeclaration,3,0,...v)),
+()=>(1130),
+(...v)=>(redn$2(103431,1,...v)),
+(...v)=>(redv$2(102407,R501_general_enclosed6202_group_list,1,0,...v)),
+(...v)=>(redn$2(101383,1,...v)),
+()=>(1146),
+()=>(1150),
+()=>(1154),
+(...v)=>(redn$2(88071,1,...v)),
+(...v)=>(redn$2(90123,2,...v)),
+()=>(1158),
+(...v)=>(redn$2(16407,5,...v)),
+(...v)=>(redn$2(70671,3,...v)),
+(...v)=>(redv$2(69643,R500_general_enclosed6202_group_list,2,0,...v)),
+()=>(1182),
+()=>(1186),
+(...v)=>(redn$2(9223,1,...v)),
+(...v)=>(redv$2(8199,R21_STYLE_SHEET201_group_list,1,0,...v)),
+(...v)=>(redv$2(32783,R60_COMPLEX_SELECTOR_list,3,0,...v)),
+(...v)=>(redn$2(36879,3,...v)),
+(...v)=>(redn$2(35851,2,...v)),
+(...v)=>(redv$2(41995,R20_STYLE_SHEET201_group_list,2,0,...v)),
+(...v)=>(redv$2(45067,R20_STYLE_SHEET201_group_list,2,0,...v)),
+(...v)=>(redn$2(40971,2,...v)),
+(...v)=>(redn$2(44043,2,...v)),
+(...v)=>(redn$2(47119,3,...v)),
+(...v)=>(redn$2(49167,3,...v)),
+()=>(1194),
+(...v)=>(redn$2(53263,3,...v)),
+(...v)=>(redv$2(52231,R501_general_enclosed6202_group_list,1,0,...v)),
+(...v)=>(redn$2(50183,1,...v)),
+(...v)=>(redn$2(55303,1,...v)),
+(...v)=>(redn$2(66571,2,...v)),
+()=>(1230),
+(...v)=>(redn$2(65543,1,...v)),
+()=>(1234),
+()=>(1238),
+(...v)=>(redv$2(17415,R21_STYLE_SHEET201_group_list,1,0,...v)),
+()=>(1250),
+()=>(1246),
+(...v)=>(redv$2(20487,R21_STYLE_SHEET201_group_list,1,0,...v)),
+(...v)=>(redn$2(22535,1,...v)),
+()=>(1254),
+()=>(1258),
+(...v)=>(redv$2(26635,R20_STYLE_SHEET201_group_list,2,0,...v)),
+(...v)=>(redn$2(25611,2,...v)),
+(...v)=>(redn$2(28687,3,...v)),
+(...v)=>(redn$2(30735,3,...v)),
+()=>(1262),
+(...v)=>(redv$2(7191,R70_STYLE_RULE,5,0,...v)),
+(...v)=>(redv$2(100371,fn$2.parseDeclaration,4,0,...v)),
+(...v)=>(redv$2(103435,R1010_declaration_values,2,0,...v)),
+()=>(1266),
+(...v)=>(redv$2(102411,R500_general_enclosed6202_group_list,2,0,...v)),
+()=>(1270),
+()=>(1274),
+(...v)=>(rednv$2(89111,fn$2.attribSelector,5,0,...v)),
+(...v)=>(redn$2(91143,1,...v)),
+(...v)=>(redn$2(92175,3,...v)),
+(...v)=>(redn$2(16411,6,...v)),
+()=>(1278),
+(...v)=>(redn$2(13319,1,...v)),
+(...v)=>(redn$2(67603,4,...v)),
+(...v)=>(redn$2(33819,6,...v)),
+(...v)=>(redv$2(8203,R20_STYLE_SHEET201_group_list,2,0,...v)),
+(...v)=>(redn$2(53267,4,...v)),
+(...v)=>(redv$2(52235,R500_general_enclosed6202_group_list,2,0,...v)),
+(...v)=>(redn$2(54287,3,...v)),
+(...v)=>(redn$2(58383,3,...v)),
+()=>(1286),
+()=>(1290),
+()=>(1298),
+()=>(1302),
+(...v)=>(redn$2(63503,3,...v)),
+(...v)=>(rednv$2(18459,C180_keyframes,6,0,...v)),
+(...v)=>(redv$2(17419,R20_STYLE_SHEET201_group_list,2,0,...v)),
+(...v)=>(redn$2(64523,2,...v)),
+(...v)=>(redn$2(23579,6,...v)),
+(...v)=>(redn$2(31763,4,...v)),
+(...v)=>(redn$2(99339,2,...v)),
+(...v)=>(redv$2(103439,R1010_declaration_values,3,0,...v)),
+(...v)=>(rednv$2(89115,fn$2.attribSelector,6,0,...v)),
+(...v)=>(redn$2(14355,4,...v)),
+(...v)=>(redn$2(56327,1,...v)),
+(...v)=>(redn$2(57351,1,...v)),
+()=>(1326),
+()=>(1322),
+(...v)=>(redv$2(20495,R60_COMPLEX_SELECTOR_list,3,0,...v)),
+(...v)=>(redn$2(58391,5,...v)),
+()=>(1330),
+(...v)=>(rednv$2(21523,C210_keyframes_blocks,4,0,...v)),
+(...v)=>(rednv$2(21527,C210_keyframes_blocks,5,0,...v))],
+
+    //Goto Lookup Functions
+    goto$2 = [v=>lsm$2(v,gt0$2),
+nf$2,
+v=>lsm$2(v,gt1$2),
+v=>lsm$2(v,gt2$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt3$2),
+nf$2,
+v=>lsm$2(v,gt4$2),
+v=>lsm$2(v,gt5$2),
+v=>lsm$2(v,gt6$2),
+v=>lsm$2(v,gt7$2),
+nf$2,
+v=>lsm$2(v,gt8$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt9$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt10$2),
+v=>lsm$2(v,gt11$2),
+v=>lsm$2(v,gt12$2),
+v=>lsm$2(v,gt13$2),
+nf$2,
+v=>lsm$2(v,gt14$2),
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt2$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt15$2),
+v=>lsm$2(v,gt16$2),
+v=>lsm$2(v,gt17$2),
+v=>lsm$2(v,gt18$2),
+v=>lsm$2(v,gt19$2),
+v=>lsm$2(v,gt20$2),
+v=>lsm$2(v,gt21$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt22$2),
+nf$2,
+v=>lsm$2(v,gt23$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt24$2),
+v=>lsm$2(v,gt7$2),
+v=>lsm$2(v,gt7$2),
+nf$2,
+nf$2,
+v=>lsm$2(v,gt25$2),
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt26$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt27$2),
+v=>lsm$2(v,gt8$2),
+nf$2,
+v=>lsm$2(v,gt28$2),
+nf$2,
+v=>lsm$2(v,gt29$2),
+v=>lsm$2(v,gt30$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt31$2),
+v=>lsm$2(v,gt32$2),
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt33$2),
+v=>lsm$2(v,gt34$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt35$2),
+v=>lsm$2(v,gt36$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt37$2),
+v=>lsm$2(v,gt38$2),
+v=>lsm$2(v,gt39$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt40$2),
+v=>lsm$2(v,gt41$2),
+v=>lsm$2(v,gt42$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt21$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt43$2),
+v=>lsm$2(v,gt44$2),
+nf$2,
+nf$2,
+v=>lsm$2(v,gt7$2),
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt45$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt46$2),
+nf$2,
+v=>lsm$2(v,gt47$2),
+nf$2,
+v=>lsm$2(v,gt48$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt49$2),
+v=>lsm$2(v,gt50$2),
+v=>lsm$2(v,gt51$2),
+v=>lsm$2(v,gt52$2),
+nf$2,
+nf$2,
+v=>lsm$2(v,gt53$2),
+v=>lsm$2(v,gt54$2),
+v=>lsm$2(v,gt55$2),
+nf$2,
+v=>lsm$2(v,gt56$2),
+nf$2,
+v=>lsm$2(v,gt57$2),
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt58$2),
+v=>lsm$2(v,gt38$2),
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt59$2),
+v=>lsm$2(v,gt60$2),
+v=>lsm$2(v,gt61$2),
+nf$2,
+nf$2,
+v=>lsm$2(v,gt62$2),
+v=>lsm$2(v,gt63$2),
+v=>lsm$2(v,gt64$2),
+nf$2,
+v=>lsm$2(v,gt65$2),
+nf$2,
+v=>lsm$2(v,gt66$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt58$2),
+v=>lsm$2(v,gt67$2),
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt43$2),
+nf$2,
+v=>lsm$2(v,gt68$2),
+v=>lsm$2(v,gt69$2),
+v=>lsm$2(v,gt70$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt71$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt72$2),
+nf$2,
+nf$2,
+v=>lsm$2(v,gt73$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt74$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt75$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt76$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt77$2),
+v=>lsm$2(v,gt78$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt79$2),
+v=>lsm$2(v,gt80$2),
+v=>lsm$2(v,gt81$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt76$2),
+nf$2,
+v=>lsm$2(v,gt82$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt83$2),
+nf$2,
+nf$2,
+v=>lsm$2(v,gt83$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt84$2),
+v=>lsm$2(v,gt85$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt86$2),
+v=>lsm$2(v,gt87$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+v=>lsm$2(v,gt88$2),
+nf$2,
+nf$2,
+v=>lsm$2(v,gt89$2),
+nf$2,
+nf$2,
+v=>lsm$2(v,gt21$2),
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2,
+nf$2];
+
+function getToken$2(l, SYM_LU) {
+    if (l.END) return 0; /*$eof*/
+
+    switch (l.ty) {
+        case 2:
+            //*
+            if (SYM_LU.has(l.tx)) return  14;
+            /*/
+                console.log(l.tx, SYM_LU.has(l.tx), SYM_LU.get(l.tx))
+                if (SYM_LU.has(l.tx)) return SYM_LU.get(l.tx);
+            //*/
+            return 2;
+        case 1:
+            return 1;
+        case 4:
+            return 3;
+        case 256:
+            return 9;
+        case 8:
+            return 4;
+        case 512:
+            return 10;
+        default:
+            return SYM_LU.get(l.tx) || SYM_LU.get(l.ty);
+    }
+}
+
+/************ Parser *************/
+
+function parser$2(l, e = {}) {
+
+    fn$2 = e.functions;
+
+    l.IWS = false;
+    l.PARSE_STRING = true;
+
+    if (symbols$2.length > 0) {
+        symbols$2.forEach(s => { l.addSymbol(s); });
+        l.tl = 0;
+        l.next();
+    }
+
+    const recovery_chain = [];
+
+    const o = [],
+        ss = [0, 0];
+
+    let time = 1000000,
+        RECOVERING = 100,
+        RESTARTED = true,
+        tk = getToken$2(l, lu$2),
+        p = l.copy(),
+        sp = 1,
+        len = 0,
+        reduceStack = (e.reduceStack = []),
+        ROOT = 10000,
+        off = 0;
+
+    outer:
+
+        while (time-- > 0) {
+
+            const fn = lsm$2(tk, state$2[ss[sp]]) || 0;
+
+            let r,
+                gt = -1;
+
+            if (fn == 0) {
+                /*Ignore the token*/
+                tk = getToken$2(l.next(), lu$2);
+                continue;
+            }
+
+            if (fn > 0) {
+                r = state_funct$2[fn - 1](tk, e, o, l, ss[sp - 1]);
+            } else {
+
+                if (tk == 14) {
+                    tk = lu$2.get(l.tx);
+                    continue;
+                }
+
+                if (l.ty == 8 && l.tl > 1) {
+                    // Make sure that special tokens are not getting in the way
+                    l.tl = 0;
+                    // This will skip the generation of a custom symbol
+                    l.next(l, false);
+
+                    if (l.tl == 1)
+                        continue;
+                }
+
+                if (RECOVERING > 1 && !l.END) {
+
+                    if (tk !== lu$2.get(l.ty)) {
+                        tk = lu$2.get(l.ty);
+                        continue;
+                    }
+
+                    if (tk !== 13) {
+                        tk = 13;
+                        RECOVERING = 1;
+                        continue;
+                    }
+                }
+
+                tk = getToken$2(l, lu$2);
+
+                const recovery_token = eh$2[ss[sp]](tk, e, o, l, p, ss[sp], (lex) => getToken$2(lex, lu$2));
+
+                if (RECOVERING > 0 && recovery_token >= 0) {
+                    RECOVERING = -1; /* To prevent infinite recursion */
+                    tk = recovery_token;
+                    l.tl = 0; /*reset current token */
+                    continue;
+                }
+            }
+
+            switch (r & 3) {
+                case 0:
+                    /* ERROR */
+
+                    if (tk == "$eof")
+                        l.throw("Unexpected end of input");
+
+                    l.throw(`Unexpected token [${RECOVERING ? l.next().tx : l.tx}]`);
+                    return [null];
+
+                case 1:
+                    /* ACCEPT */
+                    break outer;
+
+                case 2:
+
+                    /*SHIFT */
+                    o.push(l.tx);
+                    ss.push(off, r >> 2);
+                    sp += 2;
+                    l.next();
+                    off = l.off;
+                    tk = getToken$2(l, lu$2);
+                    RECOVERING++;
+                    break;
+
+                case 3:
+                    /* REDUCE */
+                    RESTARTED = true;
+
+                    len = (r & 0x3FC) >> 1;
+
+                    ss.length -= len;
+                    sp -= len;
+                    gt = goto$2[ss[sp]](r >> 10);
+
+                    if (gt < 0)
+                        l.throw("Invalid state reached!");
+
+                    if (reduceStack.length > 0) {
+                        let i = reduceStack.length - 1;
+                        while (i > -1) {
+                            let item = reduceStack[i--];
+
+                            if (item.index == sp) {
+                                item.action(output);
+                            } else if (item.index > sp) {
+                                reduceStack.length--;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+
+                    ss.push(off, gt);
+                    sp += 2;
+                    break;
+            }
+        }
+    return o[0];
 };
 
 class Color extends Float64Array {
@@ -14858,7 +20784,7 @@ class CSS_Color extends Color {
         let c;
 
         if (typeof(l) == "string")
-            l = whind$1(l);
+            l = whind$2(l);
 
         let out = { r: 0, g: 0, b: 0, a: 1 };
 
@@ -15240,7 +21166,7 @@ class CSS_Length extends Number {
     constructor(v, u = "") {
         
         if (typeof(v) == "string") {
-            let lex = whind$1(v);
+            let lex = whind$2(v);
             let val = CSS_Length.parse(lex);
             if (val) return val;
         }
@@ -15355,7 +21281,691 @@ class DEGLength extends CSS_Length {
     get unit(){return "deg";}
 }
 
-class CSS_URL extends URL {
+const uri_reg_ex$1 = /(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:\/\/))?(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:([^\<\>\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\<\>\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\<\>\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
+
+const STOCK_LOCATION$1 = {
+    protocol: "",
+    host: "",
+    port: "",
+    path: "",
+    hash: "",
+    query: "",
+    search: ""
+};
+
+function fetchLocalText$1(URL, m = "same-origin") {
+    return new Promise((res, rej) => {
+        fetch(URL, {
+            mode: m, // CORs not allowed
+            credentials: m,
+            method: "GET"
+        }).then(r => {
+
+            if (r.status < 200 || r.status > 299)
+                r.text().then(rej);
+            else
+                r.text().then(res);
+        }).catch(e => rej(e));
+    });
+}
+
+function fetchLocalJSON$1(URL, m = "same-origin") {
+    return new Promise((res, rej) => {
+        fetch(URL, {
+            mode: m, // CORs not allowed
+            credentials: m,
+            method: "GET"
+        }).then(r => {
+            if (r.status < 200 || r.status > 299)
+                r.json().then(rej);
+            else
+                r.json().then(res).catch(rej);
+        }).catch(e => rej(e));
+    });
+}
+
+function submitForm$1(URL, form_data, m = "same-origin") {
+    return new Promise((res, rej) => {
+        var form;
+
+        if (form_data instanceof FormData)
+            form = form_data;
+        else {
+            form = new FormData();
+            for (let name in form_data)
+                form.append(name, form_data[name] + "");
+        }
+
+        fetch(URL, {
+            mode: m, // CORs not allowed
+            credentials: m,
+            method: "POST",
+            body: form,
+        }).then(r => {
+            if (r.status < 200 || r.status > 299)
+                r.text().then(rej);
+            else
+                r.json().then(res);
+        }).catch(e => e.text().then(rej));
+    });
+}
+
+function submitJSON$1(URL, json_data, m = "same-origin") {
+    return new Promise((res, rej) => {
+        fetch(URL, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            mode: m, // CORs not allowed
+            credentials: m,
+            method: "POST",
+            body: JSON.stringify(json_data),
+        }).then(r => {
+            if (r.status < 200 || r.status > 299)
+                r.json().then(rej);
+            else
+                r.json().then(res);
+        }).catch(e => e.text().then(rej));
+    });
+}
+
+
+
+/**
+ * Used for processing URLs, handling `document.location`, and fetching data.
+ * @param      {string}   url           The URL string to wrap.
+ * @param      {boolean}  USE_LOCATION  If `true` missing URL parts are filled in with data from `document.location`. 
+ * @return     {URL}   If a falsy value is passed to `url`, and `USE_LOCATION` is `true` a Global URL is returned. This is directly linked to the page and will _update_ the actual page URL when its values are change. Use with caution. 
+ * @alias URL
+ * @memberof module:wick.core.network
+ */
+class URL$1 {
+
+    static resolveRelative(URL_or_url_new, URL_or_url_original = document.location.toString(), ) {
+
+        let URL_old = (URL_or_url_original instanceof URL$1) ? URL_or_url_original : new URL$1(URL_or_url_original);
+        let URL_new = (URL_or_url_new instanceof URL$1) ? URL_or_url_new : new URL$1(URL_or_url_new);
+
+        if (!(URL_old + "") || !(URL_new + "")) return null;
+
+        let new_path = "";
+        if (URL_new.path[0] != "/") {
+
+            let a = URL_old.path.split("/");
+            let b = URL_new.path.split("/");
+
+
+            if (b[0] == "..") a.splice(a.length - 1, 1);
+            for (let i = 0; i < b.length; i++) {
+                switch (b[i]) {
+                    case "..":
+                    case ".":
+                        a.splice(a.length - 1, 1);
+                        break;
+                    default:
+                        a.push(b[i]);
+                }
+            }
+            URL_new.path = a.join("/");
+        }
+
+        return URL_new;
+    }
+
+    constructor(url = "", USE_LOCATION = false) {
+
+        let IS_STRING = true,
+            IS_LOCATION = false;
+
+
+        let location = (typeof(document) !== "undefined") ? document.location : STOCK_LOCATION$1;
+
+        if (typeof(Location) !== "undefined" && url instanceof Location) {
+            location = url;
+            url = "";
+            IS_LOCATION = true;
+        }
+        if (!url || typeof(url) != "string") {
+            IS_STRING = false;
+            IS_LOCATION = true;
+            if (URL$1.GLOBAL && USE_LOCATION)
+                return URL$1.GLOBAL;
+        }
+
+        /**
+         * URL protocol
+         */
+        this.protocol = "";
+
+        /**
+         * Username string
+         */
+        this.user = "";
+
+        /**
+         * Password string
+         */
+        this.pwd = "";
+
+        /**
+         * URL hostname
+         */
+        this.host = "";
+
+        /**
+         * URL network port number.
+         */
+        this.port = 0;
+
+        /**
+         * URL resource path
+         */
+        this.path = "";
+
+        /**
+         * URL query string.
+         */
+        this.query = "";
+
+        /**
+         * Hashtag string
+         */
+        this.hash = "";
+
+        /**
+         * Map of the query data
+         */
+        this.map = null;
+
+        if (IS_STRING) {
+            if (url instanceof URL$1) {
+                this.protocol = url.protocol;
+                this.user = url.user;
+                this.pwd = url.pwd;
+                this.host = url.host;
+                this.port = url.port;
+                this.path = url.path;
+                this.query = url.query;
+                this.hash = url.hash;
+            } else {
+                let part = url.match(uri_reg_ex$1);
+
+                //If the complete string is not matched than we are dealing with something other 
+                //than a pure URL. Thus, no object is returned. 
+                if (part[0] !== url) return null;
+
+                this.protocol = part[1] || ((USE_LOCATION) ? location.protocol : "");
+                this.user = part[2] || "";
+                this.pwd = part[3] || "";
+                this.host = part[4] || part[5] || part[6] || ((USE_LOCATION) ? location.hostname : "");
+                this.port = parseInt(part[7] || ((USE_LOCATION) ? location.port : 0));
+                this.path = part[8] || ((USE_LOCATION) ? location.pathname : "");
+                this.query = part[9] || ((USE_LOCATION) ? location.search.slice(1) : "");
+                this.hash = part[10] || ((USE_LOCATION) ? location.hash.slice(1) : "");
+
+            }
+        } else if (IS_LOCATION) {
+            this.protocol = location.protocol.replace(/\:/g, "");
+            this.host = location.hostname;
+            this.port = location.port;
+            this.path = location.pathname;
+            this.hash = location.hash.slice(1);
+            this.query = location.search.slice(1);
+            this._getQuery_(this.query);
+
+            if (USE_LOCATION) {
+                URL$1.G = this;
+                return URL$1.R;
+            }
+        }
+        this._getQuery_(this.query);
+    }
+
+
+    /**
+    URL Query Syntax
+
+    root => [root_class] [& [class_list]]
+         => [class_list]
+
+    root_class = key_list
+
+    class_list [class [& key_list] [& class_list]]
+
+    class => name & key_list
+
+    key_list => [key_val [& key_list]]
+
+    key_val => name = val
+
+    name => ALPHANUMERIC_ID
+
+    val => NUMBER
+        => ALPHANUMERIC_ID
+    */
+
+    /**
+     * Pulls query string info into this.map
+     * @private
+     */
+    _getQuery_() {
+        let map = (this.map) ? this.map : (this.map = new Map());
+
+        let lex = whind$1(this.query);
+
+
+        const get_map = (k, m) => (m.has(k)) ? m.get(k) : m.set(k, new Map).get(k);
+
+        let key = 0,
+            key_val = "",
+            class_map = get_map(key_val, map),
+            lfv = 0;
+
+        while (!lex.END) {
+            switch (lex.tx) {
+                case "&": //At new class or value
+                    if (lfv > 0)
+                        key = (class_map.set(key_val, lex.s(lfv)), lfv = 0, lex.n.pos);
+                    else {
+                        key_val = lex.s(key);
+                        key = (class_map = get_map(key_val, map), lex.n.pos);
+                    }
+                    continue;
+                case "=":
+                    //looking for a value now
+                    key_val = lex.s(key);
+                    lfv = lex.n.pos;
+                    continue;
+            }
+            lex.n;
+        }
+
+        if (lfv > 0) class_map.set(key_val, lex.s(lfv));
+    }
+
+    setPath(path) {
+
+        this.path = path;
+
+        return new URL$1(this);
+    }
+
+    setLocation() {
+        history.replaceState({}, "replaced state", `${this}`);
+        window.onpopstate();
+    }
+
+    toString() {
+        let str = [];
+
+        if (this.host) {
+
+            if (this.protocol)
+                str.push(`${this.protocol}://`);
+
+            str.push(`${this.host}`);
+        }
+
+        if (this.port)
+            str.push(`:${this.port}`);
+
+        if (this.path)
+            str.push(`${this.path[0] == "/" ? "" : "/"}${this.path}`);
+
+        if (this.query)
+            str.push(((this.query[0] == "?" ? "" : "?") + this.query));
+
+        if (this.hash)
+            str.push("#" + this.hash);
+
+
+        return str.join("");
+    }
+
+    /**
+     * Pulls data stored in query string into an object an returns that.
+     * @param      {string}  class_name  The class name
+     * @return     {object}  The data.
+     */
+    getData(class_name = "") {
+        if (this.map) {
+            let out = {};
+            let _c = this.map.get(class_name);
+            if (_c) {
+                for (let [key, val] of _c.entries())
+                    out[key] = val;
+                return out;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Sets the data in the query string. Wick data is added after a second `?` character in the query field, and appended to the end of any existing data.
+     * @param      {string}  class_name  Class name to use in query string. Defaults to root, no class 
+     * @param      {object | Model | AnyModel}  data        The data
+     */
+    setData(data = null, class_name = "") {
+
+        if (data) {
+
+            let map = this.map = new Map();
+
+            let store = (map.has(class_name)) ? map.get(class_name) : (map.set(class_name, new Map()).get(class_name));
+
+            //If the data is a falsy value, delete the association.
+
+            for (let n in data) {
+                if (data[n] !== undefined && typeof data[n] !== "object")
+                    store.set(n, data[n]);
+                else
+                    store.delete(n);
+            }
+
+            //set query
+            let class_, null_class, str = "";
+
+            if ((null_class = map.get(""))) {
+                if (null_class.size > 0) {
+                    for (let [key, val] of null_class.entries())
+                        str += `&${key}=${val}`;
+
+                }
+            }
+
+            for (let [key, class_] of map.entries()) {
+                if (key === "")
+                    continue;
+                if (class_.size > 0) {
+                    str += `&${key}`;
+                    for (let [key, val] of class_.entries())
+                        str += `&${key}=${val}`;
+                }
+            }
+            
+            str = str.slice(1);
+
+            this.query = this.query.split("?")[0] + "?" + str;
+
+            if (URL$1.G == this)
+                this.goto();
+        } else {
+            this.query = "";
+        }
+
+        return this;
+
+    }
+
+    /**
+     * Fetch a string value of the remote resource. 
+     * Just uses path component of URL. Must be from the same origin.
+     * @param      {boolean}  [ALLOW_CACHE=true]  If `true`, the return string will be cached. If it is already cached, that will be returned instead. If `false`, a network fetch will always occur , and the result will not be cached.
+     * @return     {Promise}  A promise object that resolves to a string of the fetched value.
+     */
+    fetchText(ALLOW_CACHE = true) {
+
+        if (ALLOW_CACHE) {
+
+            let resource = URL$1.RC.get(this.path);
+
+            if (resource)
+                return new Promise((res) => {
+                    res(resource);
+                });
+        }
+
+        return fetchLocalText$1(this.path).then(res => (URL$1.RC.set(this.path, res), res));
+    }
+
+    /**
+     * Fetch a JSON value of the remote resource. 
+     * Just uses path component of URL. Must be from the same origin.
+     * @param      {boolean}  [ALLOW_CACHE=true]  If `true`, the return string will be cached. If it is already cached, that will be returned instead. If `false`, a network fetch will always occur , and the result will not be cached.
+     * @return     {Promise}  A promise object that resolves to a string of the fetched value.
+     */
+    fetchJSON(ALLOW_CACHE = true) {
+
+        let string_url = this.toString();
+
+        if (ALLOW_CACHE) {
+
+            let resource = URL$1.RC.get(string_url);
+
+            if (resource)
+                return new Promise((res) => {
+                    res(resource);
+                });
+        }
+
+        return fetchLocalJSON$1(string_url).then(res => (URL$1.RC.set(this.path, res), res));
+    }
+
+    /**
+     * Cache a local resource at the value 
+     * @param    {object}  resource  The resource to store at this URL path value.
+     * @returns {boolean} `true` if a resource was already cached for this URL, false otherwise.
+     */
+    cacheResource(resource) {
+
+        let occupied = URL$1.RC.has(this.path);
+
+        URL$1.RC.set(this.path, resource);
+
+        return occupied;
+    }
+
+    submitForm(form_data) {
+        return submitForm$1(this.toString(), form_data);
+    }
+
+    submitJSON(json_data, mode) {
+        return submitJSON$1(this.toString(), json_data, mode);
+    }
+    /**
+     * Goes to the current URL.
+     */
+    goto() {
+        return;
+        let url = this.toString();
+        history.pushState({}, "ignored title", url);
+        window.onpopstate();
+        URL$1.G = this;
+    }
+    //Returns the last segment of the path
+    get file() {
+        return this.path.split("/").pop();
+    }
+    //returns the name of the file less the extension
+    get filename() {
+        return this.file.split(".").shift();
+    }
+
+
+
+    //Returns the all but the last segment of the path
+    get dir() {
+        return this.path.split("/").slice(0, -1).join("/") || "/";
+    }
+
+    get pathname() {
+        return this.path;
+    }
+
+    get href() {
+        return this.toString();
+    }
+
+    get ext() {
+        const m = this.path.match(/\.([^\.]*)$/);
+        return m ? m[1] : "";
+    }
+
+    get search() {
+        return this.query;
+    }
+}
+
+/**
+ * The fetched resource cache.
+ */
+URL$1.RC = new Map();
+
+/**
+ * The Default Global URL object. 
+ */
+URL$1.G = null;
+
+/**
+ * The Global object Proxy.
+ */
+URL$1.R = {
+    get protocol() {
+        return URL$1.G.protocol;
+    },
+    set protocol(v) {
+        return;
+        URL$1.G.protocol = v;
+    },
+    get user() {
+        return URL$1.G.user;
+    },
+    set user(v) {
+        return;
+        URL$1.G.user = v;
+    },
+    get pwd() {
+        return URL$1.G.pwd;
+    },
+    set pwd(v) {
+        return;
+        URL$1.G.pwd = v;
+    },
+    get host() {
+        return URL$1.G.host;
+    },
+    set host(v) {
+        return;
+        URL$1.G.host = v;
+    },
+    get port() {
+        return URL$1.G.port;
+    },
+    set port(v) {
+        return;
+        URL$1.G.port = v;
+    },
+    get path() {
+        return URL$1.G.path;
+    },
+    set path(v) {
+        return;
+        URL$1.G.path = v;
+    },
+    get query() {
+        return URL$1.G.query;
+    },
+    set query(v) {
+        return;
+        URL$1.G.query = v;
+    },
+    get hash() {
+        return URL$1.G.hash;
+    },
+    set hash(v) {
+        return;
+        URL$1.G.hash = v;
+    },
+    get map() {
+        return URL$1.G.map;
+    },
+    set map(v) {
+        return;
+        URL$1.G.map = v;
+    },
+    setPath(path) {
+        return URL$1.G.setPath(path);
+    },
+    setLocation() {
+        return URL$1.G.setLocation();
+    },
+    toString() {
+        return URL$1.G.toString();
+    },
+    getData(class_name = "") {
+        return URL$1.G.getData(class_name = "");
+    },
+    setData(class_name = "", data = null) {
+        return URL$1.G.setData(class_name, data);
+    },
+    fetchText(ALLOW_CACHE = true) {
+        return URL$1.G.fetchText(ALLOW_CACHE);
+    },
+    cacheResource(resource) {
+        return URL$1.G.cacheResource(resource);
+    }
+};
+
+
+
+
+
+let SIMDATA$1 = null;
+
+/* Replaces the fetch actions with functions that simulate network fetches. Resources are added by the user to a Map object. */
+URL$1.simulate = function() {
+    SIMDATA$1 = new Map;
+    URL$1.prototype.fetchText = async d => ((d = this.toString()), SIMDATA$1.get(d)) ? SIMDATA$1.get(d) : "";
+    URL$1.prototype.fetchJSON = async d => ((d = this.toString()), SIMDATA$1.get(d)) ? JSON.parse(SIMDATA$1.get(d).toString()) : {};
+};
+
+//Allows simulated resources to be added as a key value pair, were the key is a URI string and the value is string data.
+URL$1.addResource = (n, v) => (n && v && (SIMDATA$1 || (SIMDATA$1 = new Map())) && SIMDATA$1.set(n.toString(), v.toString));
+
+URL$1.polyfill = async function() {
+
+    if (typeof(global) !== "undefined") {
+
+        const 
+            fs = (await import('fs')).promises,
+            path = (await import('path'));
+
+
+        global.Location = (class extends URL$1 {});
+
+        global.document = global.document || {};
+
+        global.document.location = new URL$1(process.cwd() + "/");
+        /**
+         * Global `fetch` polyfill - basic support
+         */
+        global.fetch = async (url, data) => {
+            let
+                p = path.resolve(process.cwd(), "" + url),
+                d = await fs.readFile(p, "utf8");
+
+            try {
+                return {
+                    status: 200,
+                    text: () => {
+                        return {
+                            then: (f) => f(d)
+                        }
+                    }
+                };
+            } catch (err) {
+                throw err;
+            }
+        };
+    }
+};
+
+Object.freeze(URL$1.R);
+Object.freeze(URL$1.RC);
+Object.seal(URL$1);
+
+class CSS_URL extends URL$1 {
     static parse(l) {
         if (l.tx == "url" || l.tx == "uri") {
             l.next().a("(");
@@ -15486,6 +22096,11 @@ const cos = Math.cos;
 const acos = Math.acos;
 const PI = Math.PI; 
 const pow = Math.pow;
+
+// A helper function to filter for values in the [0,1] interval:
+function accept(t) {
+  return 0<=t && t <=1;
+}
 
 // A real-cuberoots-only function:
 function cuberoot(v) {
@@ -15706,6 +22321,269 @@ class CBezier extends Float64Array{
 	}
 }
 
+function curvePoint(curve, t) {
+    var point = {
+        x: 0,
+        y: 0
+    };
+    point.x = posOnCurve(t, curve[0], curve[2], curve[4]);
+    point.y = posOnCurve(t, curve[1], curve[3], curve[5]);
+    return point;
+}
+
+function posOnCurve(t, p1, p2, p3) {
+    var ti = 1 - t;
+    return ti * ti * p1 + 2 * ti * t * p2 + t * t * p3;
+}
+
+function splitCurve(bp, t) {
+    var left = [];
+    var right = [];
+
+    function drawCurve(bp, t) {
+        if (bp.length == 2) {
+            left.push(bp[0], bp[1]);
+            right.push(bp[0], bp[1]);
+        } else {
+            var new_bp = []; //bp.slice(0,-2);
+            for (var i = 0; i < bp.length - 2; i += 2) {
+                if (i == 0) {
+                    left.push(bp[i], bp[i + 1]);
+                }
+                if (i == bp.length - 4) {
+                    right.push(bp[i + 2], bp[i + 3]);
+                }
+                new_bp.push((1 - t) * bp[i] + t * bp[i + 2]);
+                new_bp.push((1 - t) * bp[i + 1] + t * bp[i + 3]);
+            }
+            drawCurve(new_bp, t);
+        }
+    }
+
+    drawCurve(bp, t);
+
+    return {
+        x: new QBezier(right),
+        y: new QBezier(left)
+    };
+}
+
+function curveIntersections(p1, p2, p3) {
+    var intersections = {
+        a: Infinity,
+        b: Infinity
+    };
+
+    var a = p1 - 2 * p2 + p3;
+
+    var b = 2 * (p2 - p1);
+
+    var c = p1;
+
+    if (b == 0) {} else if (Math.abs(a) < 0.00000000005) {
+        intersections.a = (-c / b); //c / b;
+    } else {
+
+        intersections.a = ((-b - Math.sqrt((b * b) - 4 * a * c)) / (2 * a));
+        intersections.b = ((-b + Math.sqrt((b * b) - 4 * a * c)) / (2 * a));
+    }
+    return intersections
+}
+
+class QBezier {
+    constructor(x1, y1, x2, y2, x3, y3) {
+        this.x1 = 0;
+        this.x2 = 0;
+        this.x3 = 0;
+        this.y1 = 0;
+        this.y2 = 0;
+        this.y3 = 0;
+
+        if (typeof(x1) == "number") {
+            this.x1 = x1;
+            this.x2 = x2;
+            this.x3 = x3;
+            this.y1 = y1;
+            this.y2 = y2;
+            this.y3 = y3;
+            return;
+        }
+
+        if (x1 instanceof QBezier) {
+            this.x1 = x1.x1;
+            this.x2 = x1.x2;
+            this.x3 = x1.x3;
+            this.y1 = x1.y1;
+            this.y2 = x1.y2;
+            this.y3 = x1.y3;
+            return;
+        }
+
+        if (x1 instanceof Array) {
+            this.x1 = x1[0];
+            this.y1 = x1[1];
+            this.x2 = x1[2];
+            this.y2 = x1[3];
+            this.x3 = x1[4];
+            this.y3 = x1[5];
+            return;
+        }
+    }
+
+    reverse() {
+        return new QBezier(
+            this.x3,
+            this.y3,
+            this.x2,
+            this.y2,
+            this.x1,
+            this.y1
+        )
+    }
+
+    point(t) {
+        return new Point2D(
+            posOnCurve(t, this.x1, this.x2, this.x3),
+            posOnCurve(t, this.y1, this.y2, this.y3))
+
+    }
+
+    tangent(t) {
+        var tan = {
+            x: 0,
+            y: 0
+        };
+
+        var px1 = this.x2 - this.x1;
+        var py1 = this.y2 - this.y1;
+
+        var px2 = this.x3 - this.x2;
+        var py2 = this.y3 - this.y2;
+
+        tan.x = (1 - t) * px1 + t * px2;
+        tan.y = (1 - t) * py1 + t * py2;
+
+        return tan;
+    }
+
+    toArray() {
+        return [this.x1, this.y1, this.x2, this.y2, this.x3, this.y3];
+    }
+
+    split(t) {
+        return splitCurve(this.toArray(), t);
+    }
+
+    rootsX() {
+        return this.roots(
+            this.x1,
+            this.x2,
+            this.x3
+        )
+
+    }
+
+    roots(p1, p2, p3) {
+        var curve = this.toArray();
+
+        var c = p1 - (2 * p2) + p3;
+        var b = 2 * (p2 - p1);
+        var a = p1;
+        var a2 = a * 2;
+        var sqrt = Math.sqrt(b * b - (a * 4 * c));
+        var t1 = (-b + sqrt) / a2;
+        var t2 = (-b - sqrt) / a2;
+
+        return [t1, t2];
+    }
+
+    rootsa() {
+        var curve = this.toArray();
+
+        var p1 = curve[1];
+        var p2 = curve[3];
+        var p3 = curve[5];
+        var x1 = curve[0];
+        var x2 = curve[2];
+        var x3 = curve[4];
+
+        var py1d = 2 * (p2 - p1);
+        var py2d = 2 * (p3 - p2);
+        var ad1 = -py1d + py2d;
+        var bd1 = py1d;
+
+        var px1d = 2 * (x2 - x1);
+        var px2d = 2 * (x3 - x2);
+        var ad2 = -px1d + px2d;
+        var bd2 = px1d;
+
+        var t1 = -bd1 / ad1;
+        var t2 = -bd2 / ad2;
+
+        return [t1, t2];
+    }
+
+    boundingBox() {
+        var x1 = curve[0];
+        var y1 = curve[1];
+        var x2 = curve[2];
+        var y2 = curve[3];
+        var x3 = curve[4];
+        var y3 = curve[5];
+        var roots = getRootsClamped(curve);
+        var min_x = Math.min(x1, x2, x3, roots.y[0] || Infinity, roots.x[0] || Infinity);
+        var min_y = Math.min(y1, y2, y3, roots.y[1] || Infinity, roots.x[1] || Infinity);
+        var max_x = Math.max(x1, x2, x3, roots.y[0] || -Infinity, roots.x[0] || -Infinity);
+        var max_y = Math.max(y1, y2, y3, roots.y[1] || -Infinity, roots.x[1] || -Infinity);
+
+        return {
+            min: {
+                x: min_x,
+                y: min_y
+            },
+            max: {
+                x: max_x,
+                y: max_y
+            }
+        };
+    }
+
+    rotate(angle, offset) {
+        angle = (angle / 180) * Math.PI;
+
+        var new_curve = this.toArray();
+
+        for (var i = 0; i < 6; i += 2) {
+            var x = curve[i] - offset.x;
+            var y = curve[i + 1] - offset.y;
+            new_curve[i] = ((x * Math.cos(angle) - y * Math.sin(angle))) + offset.x;
+            new_curve[i + 1] = ((x * Math.sin(angle) + y * Math.cos(angle))) + offset.y;
+        }
+
+        return new QBezier(new_curve);
+    }
+
+    intersects() {
+        return {
+            x: curveIntersections(this.x1, this.x2, this.x3),
+            y: curveIntersections(this.y1, this.y2, this.y3)
+        }
+    }
+
+    add(x, y) {
+        if (typeof(x) == "number") {
+            return new QBezier(
+                this.x1 + x,
+                this.y1 + y,
+                this.x2 + x,
+                this.y2 + y,
+                this.x3 + x,
+                this.y3 + y,
+            )
+        }
+    }
+}
+
 class CSS_Bezier extends CBezier {
 	static parse(l) {
 
@@ -15767,8 +22645,10 @@ class CSS_Gradient{
             switch(l.tx){
                 case "linear-gradient":
                 l.next().a("(");
-                let num,type ="deg";
-                if(l.tx == "to");else if(l.ty == l.types.num){
+                let dir,num,type ="deg";
+                if(l.tx == "to"){
+
+                }else if(l.ty == l.types.num){
                     num = parseFloat(l.ty);
                     type = l.next().tx;
                     l.next().a(',');
@@ -15895,7 +22775,7 @@ function ParseString(string, transform) {
     lex = string;
 
     if(typeof(string) == "string")
-        lex = whind$1(string);
+        lex = whind$2(string);
     
     while (!lex.END) {
         let tx = lex.tx;
@@ -15931,34 +22811,34 @@ function ParseString(string, transform) {
             case "matrix3d":
                 break;
             case "translate":
-                transform.px = getValue(lex.a("("));
+                transform.px = getValue(lex.a("("), "left");
                 lex.a(",");
-                transform.py = getValue(lex);
+                transform.py = getValue(lex, "left");
                 lex.a(")");
                 continue;
             case "translateX":
-                transform.px = getValue(lex.a("("));
+                transform.px = getValue(lex.a("("), "left");
                 lex.a(")");
                 continue;
             case "translateY":
-                transform.py = getValue(lex.a("("));
+                transform.py = getValue(lex.a("("), "left");
                 lex.a(")");
                 continue;
             case "scale":
-                transform.sx = getValue(lex.a("("));
+                transform.sx = getValue(lex.a("("), "left");
                 if(lex.ch ==","){
                     lex.a(",");
-                    transform.sy = getValue(lex);
+                    transform.sy = getValue(lex, "left");
                 }
                 else transform.sy = transform.sx;
                 lex.a(")");
                 continue;
             case "scaleX":
-                transform.sx = getValue(lex.a("("));
+                transform.sx = getValue(lex.a("("), "left");
                 lex.a(")");
                 continue;
             case "scaleY":
-                transform.sy = getValue(lex.a("("));
+                transform.sy = getValue(lex.a("("), "left");
                 lex.a(")");
                 continue;
             case "scaleZ":
@@ -16489,7 +23369,7 @@ const property_definitions = {
 		opacity: `<alphavalue>`,
 
 	/* https://www.w3.org/TR/css-backgrounds-3/ */
-		background_color: `<color>`,
+		background_color: `<color>|red`,
 		background_image: `<bg_image>#`,
 		background_repeat: `<repeat_style>#`,
 		background_attachment: `scroll|fixed|local`,
@@ -16541,7 +23421,7 @@ const property_definitions = {
 
 	/* https://www.w3.org/TR/css-fonts-4 */
 		font_display: "auto|block|swap|fallback|optional",
-		font_family: `[[<generic_family>|<family_name>],]*[<generic_family>|<family_name>]`,
+		font_family: `[<generic_family>|<family_name>]#`,
 		font_language_override:"normal|<string>",
 		font: `[[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>]|caption|icon|menu|message-box|small-caption|status-bar`,
 		font_max_size: `<absolute_size>|<relative_size>|<length>|<percentage>|infinity`,
@@ -16712,7 +23592,7 @@ const virtual_property_definitions = {
         korean_counter_style:`korean-hangul-formal|korean-hanja-informal|and korean-hanja-formal`,
         chinese_counter_style:`simp-chinese-informal|simp-chinese-formal|trad-chinese-informal|and trad-chinese-formal`,
 
-	/* https://drafts.csswg.org/css-content-3/ */
+	/* https://drafts.csswg.org/css-conte-3/ */
 		content_list:"[<string>|contents|<image>|<quote>|<target>|<leader()>]+",
 		content_replacement:"<image>",
 
@@ -16732,14 +23612,14 @@ const virtual_property_definitions = {
 	absolute_size: `xx-small|x-small|small|medium|large|x-large|xx-large`,
 	relative_size: `larger|smaller`,
 
-	/*https://www.w3.org/TR/css-backgrounds-3/*/
+	/*https://www.w3.org/TR/css-backgrounds-3/#property-index*/
 
 	bg_layer: `<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
 	final_bg_layer: `<background_color>||<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
 	bg_image: `<url>|<gradient>|none`,
 	repeat_style: `repeat-x|repeat-y|[repeat|space|round|no-repeat]{1,2}`,
 	background_attachment: `<attachment>#`,
-	bg_size: `<length_percentage>|auto]{1,2}|cover|contain`,
+	bg_size: `[<length_percentage>|auto]{1,2}|cover|contain`,
 	bg_position: `[[left|center|right|top|bottom|<length_percentage>]|[left|center|right|<length_percentage>][top|center|bottom|<length_percentage>]|[center|[left|right]<length_percentage>?]&&[center|[top|bottom]<length_percentage>?]]`,
 	attachment: `scroll|fixed|local`,
 	line_style: `none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset`,
@@ -16755,7 +23635,7 @@ const virtual_property_definitions = {
 
 	identifier: `<id>`,
 	custom_ident: `<id>`,
-
+	
 	/* https://drafts.csswg.org/css-timing-1/#typedef-timing-function */
 
 	timing_function: `linear|<cubic_bezier_timing_function>|<step_timing_function>|<frames_timing_function>`,
@@ -16807,6 +23687,36 @@ const virtual_property_definitions = {
 	display_legacy   : `inline-block | inline-table | inline-flex | inline-grid`,
 };
 
+const media_feature_definitions = {
+	width: "<m_width>",
+	min_width: "<m_max_width>",
+	max_width: "<m_min_width>",
+	height: "<m_height>",
+	min_height: "<m_min_height>",
+	max_height: "<m_max_height>",
+	orientation: "portrait  | landscape",
+	aspect_ratio: "<ratio>",
+	min_aspect_ratio: "<ratio>",
+	max_aspect_ratio: "<ratio>",
+	resolution: "<length>",
+	min_resolution: "<length>",
+	max_resolution: "<length>",
+	scan: "progressive|interlace",
+	grid: "",
+	monochrome: "",
+	min_monochrome: "<integer>",
+	max_monochrome: "<integer>",
+	color: "",
+	min_color: "<integer>",
+	max_color: "<integer>",
+	color_index: "",
+	min_color_index: "<integer>",
+	max_color_index: "<integer>",
+
+};
+
+var step = 0;
+
 function checkDefaults(lx) {
     const tx = lx.tx;
     /* https://drafts.csswg.org/css-cascade/#inherited-property */
@@ -16818,10 +23728,15 @@ function checkDefaults(lx) {
             if (!lx.pk.pk.END) // These values should be the only ones present. Failure otherwise.
                 return 0; // Default value present among other values. Invalid
             return 1; // Default value present only. Valid
-    }    return 2; // Default value not present. Ignore
+    };
+    return 2; // Default value not present. Ignore
 }
 
 class JUX { /* Juxtaposition */
+
+    get type(){
+        return "jux";
+    }
 
     constructor() {
         this.id = JUX.step++;
@@ -16862,10 +23777,10 @@ class JUX { /* Juxtaposition */
         return !(isNaN(this.r[0]) && isNaN(this.r[1]));
     }
 
-    parse(data){
+    parse(data) {
         const prop_data = [];
 
-        this.parseLVL1(data instanceof whind$1.constructor ? data : whind$1(data + ""), prop_data);
+        this.parseLVL1(data instanceof whind$2.constructor ? data : whind$2(data + ""), prop_data);
 
         return prop_data;
     }
@@ -16873,9 +23788,9 @@ class JUX { /* Juxtaposition */
 
 
     parseLVL1(lx, out_val = [], ROOT = true) {
-            
+
         if (typeof(lx) == "string")
-            lx = whind$1(lx);
+            lx = whind$2(lx);
 
         let bool = false;
 
@@ -16894,30 +23809,42 @@ class JUX { /* Juxtaposition */
         return bool;
     }
 
-    checkForComma(lx) {
+    checkForComma(lx, out_val, temp_val = [], j = 0) {
         if (this.REQUIRE_COMMA) {
-            if (lx.ch == ",")
-                lx.next();
-            else return false;
-        }
+            if (out_val) {
+                if (j > 0)
+                    out_val.push(",", ...temp_val);
+                else
+                    out_val.push(...temp_val);
+            }
+
+            if (lx.ch !== ",")
+                return false;
+
+            lx.next();
+        } else if(out_val)
+            out_val.push(...temp_val);
+
         return true;
     }
 
     parseLVL2(lx, out_val, start, end) {
 
-        let bool = false;
+        let bool = false,
+            copy = lx.copy(),
+            temp_val = [];
 
         repeat:
             for (let j = 0; j < end && !lx.END; j++) {
 
-                const copy = lx.copy();
+                //const copy = lx.copy();
 
                 const temp = [];
 
                 for (let i = 0, l = this.terms.length; i < l; i++) {
 
                     const term = this.terms[i];
-                    
+
                     if (!term.parseLVL1(copy, temp, false)) {
                         if (!term.OPTIONAL) {
                             break repeat;
@@ -16925,13 +23852,13 @@ class JUX { /* Juxtaposition */
                     }
                 }
 
-                out_val.push(...temp);
+                temp_val.push(...temp);
 
                 lx.sync(copy);
 
                 bool = true;
 
-                if (!this.checkForComma(lx))
+                if (!this.checkForComma(copy, out_val, temp_val, j))
                     break;
             }
 
@@ -16953,24 +23880,30 @@ class JUX { /* Juxtaposition */
 }
 JUX.step = 0;
 class AND extends JUX {
+
+    get type(){
+        return "and";
+    }
     parseLVL2(lx, out_val, start, end) {
 
         const
             PROTO = new Array(this.terms.length),
             l = this.terms.length;
 
-        let bool = false;
+        let bool = false,
+            temp_val = [],
+            copy = lx.copy();
 
         repeat:
             for (let j = 0; j < end && !lx.END; j++) {
 
                 const
-                    HIT = PROTO.fill(0),
-                    copy = lx.copy();
-                    //temp_r = [];
+                    HIT = PROTO.fill(0);
+                //temp_r = [];
 
                 and:
-                    while (true) {
+                    while (!copy.END) {
+                        let FAILED = false;
 
 
 
@@ -16986,7 +23919,7 @@ class AND extends JUX {
                                 if (term.OPTIONAL)
                                     HIT[i] = 1;
                             } else {
-                                out_val.push(...temp);
+                                temp_val.push(...temp);
                                 HIT[i] = 2;
                                 continue and;
                             }
@@ -16998,16 +23931,11 @@ class AND extends JUX {
                         break
                     }
 
-
-
                 lx.sync(copy);
-
-                // if (temp_r.length > 0)
-                //     r.push(...temp);
 
                 bool = true;
 
-                if (!this.checkForComma(lx))
+                if (!this.checkForComma(copy, out_val, temp_val, j))
                     break;
             }
 
@@ -17016,6 +23944,9 @@ class AND extends JUX {
 }
 
 class OR extends JUX {
+    get type(){
+        return "or";
+    }
     parseLVL2(lx, out_val, start, end) {
 
         const
@@ -17024,23 +23955,26 @@ class OR extends JUX {
 
         let
             bool = false,
-            NO_HIT = true;
+            NO_HIT = true,
+            copy = lx.copy(),
+            temp_val = [];
 
         repeat:
             for (let j = 0; j < end && !lx.END; j++) {
 
                 const HIT = PROTO.fill(0);
-                let copy = lx.copy();
+                let temp_r = { v: null };
 
                 or:
-                    while (true) {
+                    while (!copy.END) {
+                        let FAILED = false;
                         for (let i = 0; i < l; i++) {
 
                             if (HIT[i] === 2) continue;
 
                             let term = this.terms[i];
 
-                            if (term.parseLVL1(copy, out_val, false)) {
+                            if (term.parseLVL1(copy, temp_val, false)) {
                                 NO_HIT = false;
                                 HIT[i] = 2;
                                 continue or;
@@ -17059,7 +23993,7 @@ class OR extends JUX {
 
                 bool = true;
 
-                if (!this.checkForComma(lx))
+                if (!this.checkForComma(copy, out_val, temp_val, j))
                     break;
             }
 
@@ -17070,19 +24004,25 @@ class OR extends JUX {
 OR.step = 0;
 
 class ONE_OF extends JUX {
+    get type(){
+        return "one_of";
+    }
     parseLVL2(lx, out_val, start, end) {
 
         let BOOL = false;
+        const
+            copy = lx.copy(), 
+            temp_val = [];
 
         for (let j = 0; j < end && !lx.END; j++) {
 
-            const  
-                copy = lx.copy();
-            
+            const
+                temp_r = [];
+
             let bool = false;
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                if (this.terms[i].parseLVL1(copy, out_val, false)) {
+                if (this.terms[i].parseLVL1(copy, temp_val, false)) {
                     bool = true;
                     break;
                 }
@@ -17095,7 +24035,7 @@ class ONE_OF extends JUX {
 
             BOOL = true;
 
-            if (!this.checkForComma(lx))
+            if (!this.checkForComma(copy, out_val, temp_val, j))
                 break;
         }
 
@@ -17107,9 +24047,13 @@ ONE_OF.step = 0;
 
 class LiteralTerm{
 
+    get type (){
+        return "term";
+    }
+
     constructor(value, type) {
         
-        if(type == whind$1.types.string)
+        if(type == whind$2.types.string)
             value = value.slice(1,-1);
 
         this.value = value;
@@ -17121,7 +24065,7 @@ class LiteralTerm{
     parse(data){
         const prop_data = [];
 
-        this.parseLVL1(data instanceof whind$1.constructor ? data : whind$1(data + ""), prop_data);
+        this.parseLVL1(data instanceof whind$2.constructor ? data : whind$2(data + ""), prop_data);
 
         return prop_data;
     }
@@ -17129,7 +24073,7 @@ class LiteralTerm{
     parseLVL1(l, r, root = true) {
 
         if (typeof(l) == "string")
-            l = whind$1(l);
+            l = whind$2(l);
 
         if (root) {
             switch(checkDefaults(l)){
@@ -17191,7 +24135,7 @@ class ValueTerm extends LiteralTerm{
 
     parseLVL1(l, r, ROOT = true) {
         if (typeof(l) == "string")
-            l = whind$1(l);
+            l = whind$2(l);
 
         if (ROOT) {
             switch(checkDefaults(l)){
@@ -17234,7 +24178,7 @@ class ValueTerm extends LiteralTerm{
 class SymbolTerm extends LiteralTerm {
     parseLVL1(l, rule, r) {
         if (typeof(l) == "string")
-            l = whind$1(l);
+            l = whind$2(l);
 
         if (l.tx == this.value) {
             l.next();
@@ -17244,7 +24188,7 @@ class SymbolTerm extends LiteralTerm {
 
         return false;
     }
-}
+};
 
 //import util from "util"
 const standard_productions = {
@@ -17262,7 +24206,7 @@ function getExtendedIdentifier(l) {
 
     let id = "";
 
-    while (!pk.END && (pk.ty & (whind$1.types.id | whind$1.types.num)) || pk.tx == "-" || pk.tx == "_") { pk.next(); }
+    while (!pk.END && (pk.ty & (whind$2.types.id | whind$2.types.num)) || pk.tx == "-" || pk.tx == "_") { pk.next(); }
 
     id = pk.slice(l);
 
@@ -17310,12 +24254,12 @@ function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definition
 
 function CreatePropertyParser(notation, name, definitions, productions) {
 
-    const l = whind$1(notation);
+    const l = whind$2(notation);
     l.useExtendedId();
     
     const important = { is: false };
 
-    let n = d(l, definitions, productions);
+    let n = d$2(l, definitions, productions);
 
     n.seal();
 
@@ -17334,9 +24278,11 @@ function CreatePropertyParser(notation, name, definitions, productions) {
     return n;
 }
 
-function d(l, definitions, productions, super_term = false, oneof_group = false, or_group = false, and_group = false, important = null) {
+function d$2(l, definitions, productions, super_term = false, oneof_group = false, or_group = false, and_group = false, important = null) {
     let term, nt, v;
     const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
+
+    let GROUP_BREAK = false;
 
     while (!l.END) {
 
@@ -17346,7 +24292,7 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
                 break;
             case "[":
 
-                v = d(l.next(), definitions, productions, true);
+                v = d$2(l.next(), definitions, productions, true);
                 l.assert("]");
                 v = checkExtensions(l, v, productions);
 
@@ -17390,7 +24336,7 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
                     l.sync().next();
 
                     while (!l.END) {
-                        nt.terms.push(d(l, definitions, productions, super_term, oneof_group, or_group, true, important));
+                        nt.terms.push(d$2(l, definitions, productions, super_term, oneof_group, or_group, true, important));
                         if (l.ch !== "&" || l.pk.ch !== "&") break;
                         l.a("&").a("&");
                     }
@@ -17413,7 +24359,7 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
                         l.sync().next();
 
                         while (!l.END) {
-                            nt.terms.push(d(l, definitions, productions, super_term, oneof_group, true, and_group, important));
+                            nt.terms.push(d$2(l, definitions, productions, super_term, oneof_group, true, and_group, important));
                             if (l.ch !== "|" || l.pk.ch !== "|") break;
                             l.a("|").a("|");
                         }
@@ -17432,7 +24378,7 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
                         l.next();
 
                         while (!l.END) {
-                            nt.terms.push(d(l, definitions, productions, super_term, true, or_group, and_group, important));
+                            nt.terms.push(d$2(l, definitions, productions, super_term, true, or_group, and_group, important));
                             if (l.ch !== "|") break;
                             l.a("|");
                         }
@@ -17460,6 +24406,8 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
 }
 
 function checkExtensions(l, term, productions) {
+    const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
+
     outer: while (true) {
 
         switch (l.ch) {
@@ -17503,8 +24451,12 @@ function checkExtensions(l, term, productions) {
                 l.next();
                 break;
             case "#":
-                term = foldIntoProduction(productions, term);
-                term.terms.push(new SymbolTerm(","));
+
+                let nr = new productions.JUX();
+                //nr.terms.push(new SymbolTerm(","));
+                nr.terms.push(term);
+                term = nr;
+                //term = foldIntoProduction(productions, term);
                 term.r[0] = 1;
                 term.r[1] = Infinity;
                 term.REQUIRE_COMMA = true;
@@ -17606,65 +24558,108 @@ observer_mixin.mixin_symbol = observer_mixin_symbol;
 
 Object.freeze(observer_mixin);
 
-class styleprop {
+/* 
+    Parses a string value of a css property. Returns result of parse or null.
+
+    Arg - Array - An array with values:
+        0 :  string name of css rule that should be used to parse the value string.
+        1 :  string value of the css rule.
+        2 :  BOOL value for the presence of the "important" value in the original string. 
+
+    Returns object containing:
+        rule_name : the string name of the rule used to parse the value.
+        body_string : the original string value
+        prop : An array of CSS type instances that are the parsed values.
+        important : boolean value indicating the presence of "important" value.
+*/
+
+
+
+
+function parseDeclaration(sym) {
+    if(sym.length == 0)
+        return null;
     
-	constructor(name, original_value, val){
-		this.val = val;
+    let prop = null;
+
+    const
+        rule_name = sym[0],
+        body_string = sym[2],
+        important = sym[3] ? true : false,
+        IS_VIRTUAL = { is: false },
+        parser = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
+
+    if (parser && !IS_VIRTUAL.is) 
+
+        prop = parser.parse(whind$2(body_string).useExtendedId());
+
+    else
+        //Need to know what properties have not been defined
+        console.warn(`Unable to get parser for CSS property ${rule_name}`);
+
+    return {name:rule_name, body_string, prop, important};
+}
+
+class styleprop {
+
+    constructor(name, original_value, val) {
+        this.val = val;
         this.name = name.replace(/\-/g, "_");
         this.original_value = original_value;
         this.rule = null;
         this.ver = 0;
-	}
-
-    destroy(){
+    }
+    destroy() {
         this.val = null;
         this.name = "";
         this.original_value = "";
         this.rule = null;
         observer_mixin.destroy(this);
     }
-    
-    get css_type(){
+
+    get css_type() {
         return "styleprop"
     }
 
     updated() {
         this.updateObservers();
 
-        if(this.parent)
+        if (this.parent)
             this.parent.update();
     }
 
-    get value(){
+    get value() {
         return this.val.length > 1 ? this.val : this.val[0];
     }
 
-    get value_string(){
-        return this.val.join(" ");        
+    get value_string() {
+        return this.val.join(" ");
     }
 
-    toString(offset = 0){
-        const  
+    toString(offset = 0) {
+        const
+            str = [],
             off = ("    ").repeat(offset);
 
         return `${off+this.name.replace(/\_/g, "-")}:${this.value_string}`;
     }
 
-    setValueFromString(value){
-        let val = parseDeclaration([this.name, null, value]);
-        if(val)
-            this.setValue(...val.val);
+    setValueFromString(value) {
+        const result = parseDeclaration([this.name, null, value]);
+
+        if (result) 
+            this.setValue(...result.prop);
     }
 
-    setValue(...values){
+    setValue(...values) {
 
         let i = 0;
 
-        for(const value of values){
+        for (const value of values) {
             const own_val = this.val[i];
 
 
-            if(own_val && value instanceof own_val.constructor)
+            if (own_val && value instanceof own_val.constructor)
                 this.val[i] = value;
             else
                 this.val[i] = value;
@@ -17681,28 +24676,21 @@ class styleprop {
 
 observer_mixin("updatedCSSStyleProperty", styleprop.prototype);
 
-function parseDeclaration(sym) {
-    if(sym.length == 0)
-        return null;
+/* 	Wraps parseDeclaration with a function that returns a styleprop object or null. 
+	Uses same args as parseDeclaration */
 
-    let rule_name = sym[0];
-    let body_data = sym[2];
-    let important = sym[3] ? true : false;
-    let prop = null;
+function parseDeclaration$1 (...v){
 
-    const IS_VIRTUAL = { is: false };
+	const result = parseDeclaration(...v);
 
-    const parser = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
+	if(result)
+		return new styleprop(
+			result.name,
+			result.body_string,
+			result.prop
+		)
 
-    if (parser && !IS_VIRTUAL.is) {
-
-        prop = parser.parse(whind$1(body_data).useExtendedId());
-
-    } else
-        //Need to know what properties have not been defined
-        console.warn(`Unable to get parser for CSS property ${rule_name}`);
-
-    return new styleprop(rule_name, body_data, prop);
+	return null;
 }
 
 function setParent(array, parent) {
@@ -17786,7 +24774,7 @@ class stylerule {
                 props.split(";")
                 .filter(e => e !== "")
                 .map((e, a) => (a = e.split(":"), a.splice(1, 0, null), a))
-                .map(parseDeclaration)
+                .map(parseDeclaration$1)
             )
         }
 
@@ -17795,7 +24783,6 @@ class stylerule {
         else
         if (!Array.isArray(props))
             props = [props];
-
 
        // this.UPDATE_LOOP_GAURD = true;
         for (const prop of props)
@@ -17841,7 +24828,8 @@ class stylerule {
 
     toString(off = 0, rule = "") {
 
-        let str = [];
+        let str = [],
+            offset = ("    ").repeat(off);
 
         for (const prop of this.properties.values())
             str.push(prop.toString(off));
@@ -18293,11 +25281,33 @@ class pseudoElementSelector{
 	}
 }
 
-const 
+const env$2 = {
+    functions: {
+        compoundSelector,
+        comboSelector: combination_selector_part,
+        typeselector: type_selector_part,
+        selector,
+        idSelector,
+        classSelector,
+        attribSelector,
+        pseudoClassSelector,
+        pseudoElementSelector,
+        parseDeclaration: parseDeclaration$1,
+        stylerule,
+        ruleset,
+        stylesheet
+    },
+    body: null
+};
+
+const parse$1 = function (string_data) { return parser$2(whind$2(string_data), env$2) };
+
+const
     CSS_Length$1 = types$2.length,
     CSS_Percentage$1 = types$2.percentage,
     CSS_Color$1 = types$2.color,
     CSS_Transform2D$1 = types$2.transform2D,
+    CSS_Path$1 = types$2.path,
     CSS_Bezier$1 = types$2.cubic_bezier,
 
     Animation = (function anim() {
@@ -18661,6 +25671,8 @@ const
 
             toCSSString(keyfram_id) {
 
+                const easing = "linear";
+
                 const strings = [`.${keyfram_id}{animation:${keyfram_id} ${this.duration}ms ${Animation.ease_out.toString()}}`, `@keyframes ${keyfram_id}{`];
 
                 // TODO: Use some function to determine the number of steps that should be taken
@@ -18857,6 +25869,21 @@ const
         return GlowFunction;
     })();
 
+const CSS_Transform2D$2 = types$2.transform2D;
+
+function setToWithTransform(box_a, box_b, seq){
+    const start_width_as_percentage = box_a.width / box_b.width;
+    const start_height_as_percentage = box_a.height / box_b.height;
+    const pos_x_diff = -(box_b.x - box_a.x);
+    const pos_y_diff = -(box_b.y - box_a.y);
+
+    let ATransform = new CSS_Transform2D$2(pos_x_diff, pos_y_diff, start_width_as_percentage, start_height_as_percentage, 0);
+    let BTransform = new CSS_Transform2D$2(0, 0, 1, 1, 0);
+
+    seq.props.transform.keys[0].val = ATransform;
+    seq.props.transform.keys[1].val = BTransform;
+}
+
 function setTo(to, seq, duration, easing, from){
 
     const cs = window.getComputedStyle(to, null);
@@ -18874,7 +25901,15 @@ function setTo(to, seq, duration, easing, from){
 
     //Use width and height a per
 
-    {
+    if(false){
+        setToWithTransform(from_rect, rect, seq);
+        //left.keys[0].val = new left.type(start_left, "px");
+        //left.keys[1].val = new left.type(final_left,"px");
+        seq.props.transform.keys[1].dur = duration;
+        seq.props.transform.keys[1].len = duration;
+        seq.props.transform.keys[1].ease = easing;
+        seq.props.transform.duration = duration;
+    }else{
         ////////////////////// LEFT ////////////////////// 
 
         const left = seq.props.left;
@@ -19006,6 +26041,7 @@ function TransformTo(element_from, element_to, duration = 500, easing = Animatio
 const Transitioneer = (function() {
 
     let obj_map = new Map();
+    let ActiveTransition = null;
 
     function $in(...data) {
         
@@ -19056,7 +26092,8 @@ const Transitioneer = (function() {
     function $out(...data) {
         //Every time an animating component is added to the Animation stack delay and duration need to be calculated.
         //The highest in_delay value will determine how much time is afforded before the animations for the in portion are started.
-        let 
+        let
+            seq = null,
             length = data.length,
             delay = 0,
             in_delay = 0;
@@ -19118,6 +26155,8 @@ const Transitioneer = (function() {
             this.out_seq = [];
 
             this.TT = {};
+            //Final transition time is given by max(start_len+in_delay, end_len);\
+            ActiveTransition = this;
 
             this.out = $out.bind(this);
             this.in = $in.bind(this);
@@ -19166,6 +26205,8 @@ const Transitioneer = (function() {
 
             if (this.reverse)
                 this.speed = -this.speed;
+
+            const t = Math.random();
 
             return new Promise((res, rej) => {
                 
@@ -19275,7 +26316,10 @@ function GetOutGlobals(ast, presets) {
             out.type == types$1.identifier &&
             out.parent.type == types$1.assignment_expression &&
             out == out.parent.left
-        ) ; else if (!arg_lu.has(name)) {
+        ) {
+            // Expression name = expr would overwrite any value that "name" referenced, so there's no 
+            // reason to count it among the global values.
+        } else if (!arg_lu.has(name)) {
             arg_lu.add(name);
 
             const out_object = { name, val: null, IS_TAPPED: false, IS_ELEMENT: false };
@@ -19306,23 +26350,60 @@ function AddEmit(ast, presets, ignore) {
 
     ast.forEach(node => {
 
-        if (node.parent && node.parent.type == types$1.assignment_expression && node.type == types$1.identifier) {
-            if (node == node.parent.left) {
 
-                const assign = node.parent;
+        if (
+            node.parent &&
+            node.parent.type == types$1.assignment_expression &&
+            node.type == types$1.identifier
+        ) {
+            if (node == node.parent.left) {
 
                 const k = node.name;
 
                 if ((root[k] && !(root[k] instanceof HTMLElement)) || presets.custom[k] || presets[k] || defaults$1[k] || ignore.includes(k))
                     return;
-
-                node.replace(new member_expression(new identifier$1(["emit"]), node));
+                
+                node.parent.replace(new call_expression(
+                    [
+                        new identifier$1(["emit"]),
+                        new argument_list$1(new string$1([null, node.name, null]), node.parent.right),
+                    ]
+                ));
             }
+            return;
+        }
+        if (
+            node.type == types$1.member_expression &&
+            node.mem.name == "emit" &&
+            node.parent.type == types$1.call_expression
+        ) {
+//*
+            const k = node.parent.name;
+
+            if ((root[k] && !(root[k] instanceof HTMLElement)) || presets.custom[k] || presets[k] || defaults$1[k] || ignore.includes(k))
+                return;
+            //*
+            const args = [new string$1([null, node.name, null])];
+
+            if(node.parent.args)
+                args.push(...node.parent.args.vals);
+
+            node.parent.replace(
+                new call_expression(
+                    [
+                        new identifier$1(["emit"]),
+                        new argument_list$1(...args)
+                    ]
+                )
+            );
+
+            return;
+            //*/
         }
     });
 }
 
-const offset$1 =  "    ";
+const offset$1 = "    ";
 
 class ScriptNode extends ElementNode {
 
@@ -19334,15 +26415,23 @@ class ScriptNode extends ElementNode {
         this.READY = false;
         this.val = "";
         this.original_val = "";
-        this.on = this.getAttrib("on").value;
 
-        if (this.ast){
+        const on = this.getAttrib("on").value;
+
+        if (typeof on == "string")
+            console.warn("No binding set for this script's [on] attribute. This script will have no effect.");
+        else
+            this.on = on;
+
+
+        if (this.ast && on) {
             this.original_val = this.ast.render();
             this.processJSAST(presets);
         }
     }
 
     loadAST(ast) {
+
         if (ast && !this.ast) {
             this.ast = ast;
             this.processJSAST(this.presets);
@@ -19350,18 +26439,22 @@ class ScriptNode extends ElementNode {
     }
 
     processJSAST(presets = { custom: {} }) {
+
         const { args, ids } = GetOutGlobals(this.ast, presets);
+
         this.args = args;
-        //console.log(args)
+
         AddEmit(ids, presets, this.args.reduce((r, a) => ((a.IS_TAPPED) ? null : r.push(a.name), r), []));
+
         this.val = this.ast + "";
     }
 
     finalize() {
-        if (!this.ast) return this;
+
+        if (!this.ast || !this.on) return this;
 
 
-        {
+        if (true || !FUNCTION_CACHE.has(this.val)) {
 
             const
                 args = this.args,
@@ -19378,15 +26471,19 @@ class ScriptNode extends ElementNode {
                 throw error(error.SCRIPT_FUNCTION_CREATE_FAILURE, e, this);
             }
 
+        } else {
+            this.function = FUNCTION_CACHE.get(this.val);
+            this.READY = true;
         }
 
         return this;
     }
 
     mount(element, scope, presets, slots, pinned) {
+
         if (this.READY) {
             const tap = this.on.bind(scope, null, null, this);
-            new ScriptIO(scope, this, tap, this, {}, pinned);
+            scope.ios.push(new ScriptIO(scope, this, tap, this, {}, pinned));
         }
     }
 
@@ -19402,7 +26499,7 @@ class ScriptNode extends ElementNode {
 
         str += ">\n";
 
-        str += this.original_val; //this.ast.render();
+        str += this.original_val;
 
         return str + `${o}</${this.tag}>\n`;
     }
@@ -19511,6 +26608,9 @@ class scp extends ElementNode {
                     new UpdateTap(scope, name, tap.modes)) :
                 new Tap(scope, name, tap.modes)
             );
+
+            if (bool)
+            ;
         }
     }
 
@@ -19529,20 +26629,26 @@ class scp extends ElementNode {
         return scope.ele;
     }
 
-    mount(own_element, outer_scope, presets = this.presets, slots = {}, pinned = {}) {
+    mount(par_element, outer_scope, presets = this.presets, slots = {}, pinned = {}) {
 
-        const scope = new Scope(outer_scope, presets, own_element, this);
-        
+        const HAVE_OUTER_SCOPE = !!outer_scope,
+            scope = new Scope(
+                outer_scope,
+                presets,
+
+                // If there is no higher level scope, 
+                // then bind to the element that the component is attaching to. 
+                !HAVE_OUTER_SCOPE ? par_element : null,
+                this
+            );
+
         if (this.HAS_TAPS)
             this.createRuntimeTaplist(scope);
-
-        scope._model_name_ = this.model_name;
-        scope._schema_name_ = this.schema_name;
 
         //Reset pinned
         pinned = {};
 
-        return super.mount(null, scope, presets, slots, pinned);
+        return super.mount(HAVE_OUTER_SCOPE ? par_element : null, scope, presets, slots, pinned);
     }
 
     toString() {
@@ -19554,7 +26660,7 @@ class scp extends ElementNode {
     }
 }
 
-class a extends ElementNode{
+class a$2 extends ElementNode{
 	constructor(env, tag, children, attribs, presets){
 		super(env, "a", children, attribs, presets);
 	}
@@ -19581,75 +26687,100 @@ function getColumnRow(index, offset, set_size) {
  * @param      {Object}  presets  The global presets object.
  * @param      {HTMLElement}  element  The element that the Scope will _bind_ to. 
  */
-class ScopeContainer extends View {
+class ScopeContainer {
 
     constructor(parent, presets, element) {
 
-        super();
-
         this.ele = element;
-        this.parent = null;
+
+        this.taps = {};
+
         this.activeScopes = [];
         this.dom_scopes = [];
         this.filters = [];
         this.ios = [];
         this.terms = [];
         this.scopes = [];
-        this.range = null;
-        this._SCHD_ = 0;
-        this.prop = null;
-        this.component = null;
-        this.transition_in = 0;
         this.dom_dn = [];
         this.dom_up = [];
-        this.trs_ascending = null;
-        this.trs_descending = null;
-        this.UPDATE_FILTER = false;
-        this.dom_up_appended = false;
-        this.dom_dn_appended = false;
-        this.AUTO_SCRUB = false;
+
+        this.transition_in = 0;
+        this._SCHD_ = 0;
         this.root = 0;
-        this.taps = {};
-
-        this.scrub_velocity = 0;
-
         this.shift_amount = 1;
         this.limit = 0;
         this.offset = 0;
         this.offset_diff = 0;
         this.offset_fractional = 0;
+        this.scrub_velocity = 0;
 
+        this.observering = null;
+        this.parent = null;
+        this.range = null;
+        this.prop = null;
+        this.component = null;
+        this.trs_ascending = null;
+        this.trs_descending = null;
+
+        this.UPDATE_FILTER = false;
+        this.DOM_UP_APPENDED = false;
+        this.DOM_DN_APPENDED = false;
+        this.AUTO_SCRUB = false;
         this.LOADED = false;
 
         parent.addTemplate(this);
     }
 
+    destroy() {
+        this.destroyed();
+
+        if(this.observering){
+            this.observering.removeObserver(this);
+            this.observering = null;
+        }
+    }
+
+    destroyed() {
+        
+        this.cull();
+
+        for (const fltr of this.filters)
+            fltr.destroy();
+    }
+
     get data() {}
 
     set data(container) {
-        if (container instanceof ModelContainerBase) {
-            container.pin();
-            container.addObserver(this);
-            return;
-        } else {
-            this.unsetModel();
+
+        if(this.observering){
+            this.observering.removeObserver(this);
+            this.observering = null;
+        }
+
+        if (container.addObserver){
+            this.observering = container;
+            return container.addObserver(this);
         }
 
         if (!container) return;
-        if (Array.isArray(container)) this.cull(container);
-        else this.cull(container.data);
+
+        if (Array.isArray(container))
+            this.cull(container);
+        else
+            this.cull(container.data);
 
         this.loadAcknowledged();
     }
 
     update(container) {
-        if (container instanceof ModelContainerBase) container = container.get();
+        if (container.CFW_DATA_STRUCTURE) container = container.get(undefined, []);
+
         if (!container) return;
-        //let results = container.get(this.getTerms());
-        // if (container.length > 0) {
-        if (Array.isArray(container)) this.cull(container);
-        else this.cull(container.data);
-        // }
+
+        if (Array.isArray(container))
+            this.cull(container);
+        else
+            this.cull(container.data);
     }
 
     loadAcknowledged() {
@@ -19666,7 +26797,6 @@ class ScopeContainer extends View {
      * @protected
      */
     scheduledUpdate() {
-
         if (this.SCRUBBING) {
 
             if (!this.AUTO_SCRUB) {
@@ -19751,6 +26881,7 @@ class ScopeContainer extends View {
         }
 
         let delta_offset = scrub_delta + this.offset_fractional;
+
         if (scrub_delta !== Infinity) {
 
             if (Math.abs(delta_offset) > 1) {
@@ -19787,7 +26918,7 @@ class ScopeContainer extends View {
 
                 if (this.offset + delta_offset >= this.max - 1) delta_offset = 0;
 
-                if (!this.dom_up_appended) {
+                if (!this.DOM_UP_APPENDED) {
 
                     for (let i = 0; i < this.dom_up.length; i++) {
                         this.dom_up[i].appendToDOM(this.ele);
@@ -19795,7 +26926,7 @@ class ScopeContainer extends View {
                         this.dom_scopes.push(this.dom_up[i]);
                     }
 
-                    this.dom_up_appended = true;
+                    this.DOM_UP_APPENDED = true;
                 }
 
                 this.trs_ascending.play(delta_offset);
@@ -19803,7 +26934,7 @@ class ScopeContainer extends View {
 
                 if (this.offset < 1) delta_offset = 0;
 
-                if (!this.dom_dn_appended) {
+                if (!this.DOM_DN_APPENDED) {
 
                     for (let i = 0; i < this.dom_dn.length; i++) {
                         this.dom_dn[i].appendToDOM(this.ele, this.dom_scopes[0].ele);
@@ -19812,7 +26943,7 @@ class ScopeContainer extends View {
 
                     this.dom_scopes = this.dom_dn.concat(this.dom_scopes);
 
-                    this.dom_dn_appended = true;
+                    this.DOM_DN_APPENDED = true;
                 }
 
                 this.trs_descending.play(-delta_offset);
@@ -19890,13 +27021,15 @@ class ScopeContainer extends View {
     render(transition, output = this.activeScopes, NO_TRANSITION = false) {
 
 
-        let
+        const
             active_window_size = this.limit,
-            offset = this.offset,
+            active_length = this.dom_scopes.length;
+
+        let
             j = 0,
-            output_length = output.length,
-            active_length = this.dom_scopes.length,
             direction = 1,
+            offset = this.offset,
+            output_length = output.length,
             OWN_TRANSITION = false;
 
         if (!transition) transition = Animation.createTransition(), OWN_TRANSITION = true;
@@ -19913,7 +27046,9 @@ class ScopeContainer extends View {
 
             let
                 i = 0,
-                oa = 0,
+                oa = 0;
+
+            const
                 ein = [],
                 shift_points = Math.ceil(output_length / this.shift_amount);
 
@@ -19926,8 +27061,8 @@ class ScopeContainer extends View {
 
             this.dom_dn.length = 0;
             this.dom_up.length = 0;
-            this.dom_up_appended = false;
-            this.dom_dn_appended = false;
+            this.DOM_UP_APPENDED = false;
+            this.DOM_DN_APPENDED = false;
 
             //Scopes preceeding the transition window
             while (i < active_window_start - this.shift_amount) output[i++].index = -2;
@@ -19982,8 +27117,9 @@ class ScopeContainer extends View {
             this.limit = 0;
         }
 
-        let trs_in = { trs: transition.in, index: 0 };
-        let trs_out = { trs: transition.out, index: 0 };
+        const
+            trs_in = { trs: transition.in, index: 0 },
+            trs_out = { trs: transition.out, index: 0 };
 
         for (let i = 0; i < output_length; i++) output[i].index = i;
 
@@ -20009,6 +27145,8 @@ class ScopeContainer extends View {
                     switch (as.index) {
                         case -2:
                         case -3:
+
+
                             as.transitionOut(trs_out, (direction > 0) ? "trs_asc_out" : "trs_dec_out");
                             break;
                         default:
@@ -20042,7 +27180,7 @@ class ScopeContainer extends View {
 
         this.ele.style.position = this.ele.style.position;
 
-        this.dom_scopes = output;   
+        this.dom_scopes = output.slice();
 
         this.parent.update({
             "template_count_changed": {
@@ -20067,7 +27205,7 @@ class ScopeContainer extends View {
     }
 
     /**
-     * Filters stored Scopes with search terms and outputs the matching Scopes to the DOM.
+     * Filters stored Scopes with search terms and outputs an array of passing Scops.
      * 
      * @protected
      */
@@ -20094,7 +27232,6 @@ class ScopeContainer extends View {
     filterExpressionUpdate(transition = Animation.createTransition()) {
         // Filter the current components. 
         this.filterUpdate();
-
         this.limitExpressionUpdate(transition);
     }
 
@@ -20243,6 +27380,7 @@ class ScopeContainer extends View {
         if (this.cache) this.update(this.cache);
     }
 
+    /* Is this needed?
     getTerms() {
         const out_terms = [];
 
@@ -20270,14 +27408,14 @@ class ScopeContainer extends View {
                 terms = this.getTerms();
             if (scope) {
                 this.model.destroy();
-                const model = scope.get(terms, null);
-                model.pin();
+                const model = scope.get(terms, null);;
                 model.addObserver(this);
             }
             return this.model.get(terms);
         }
         return [];
     }
+    */
 
     down(data, changed_values) {
         for (let i = 0, l = this.activeScopes.length; i < l; i++) this.activeScopes[i].down(data, changed_values);
@@ -20287,18 +27425,1142 @@ class ScopeContainer extends View {
 ScopeContainer.prototype.removeIO = Tap.prototype.removeIO;
 ScopeContainer.prototype.addIO = Tap.prototype.addIO;
 
-class d$1 {
-    // Compiles the component to a HTML file. 
-    // Returns a string representing the file data.
-    compileToHTML(bound_data_object) {
+const component_map = new Map();
 
+function createComponent(name, data) {
+	if(typeof name == "object")
+		name = object.hash;
+	
+	if (component_map.has(name)) {
+
+		const component_constructor = component_map.get(name);
+
+		const ele = document.importNode(component_constructor.template.content.firstChild, true);
+
+		const obj = component_constructor.fn(ele, createComponent.lite);
+		obj.ast = {};
+		obj.css = [];
+		obj.scopes = [];
+		obj.taps = [];
+		obj.loadAcknowledged = Scope.prototype.loadAcknowledged;
+		obj.load = Scope.prototype.load;
+		obj.appendToDOM = Scope.prototype.appendToDOM;
+		obj.removeFromDOM = Scope.prototype.removeFromDOM;
+		obj.transitionOut = Scope.prototype.transitionOut;
+		obj.transitionIn = Scope.prototype.transitionIn;
+		obj.load(data);
+		obj.update(data);
+		obj.ele = ele;
+		return obj;
+	}
+
+	return null;
+}
+
+createComponent.map = component_map;
+
+function getColumnRow$1(index, offset, set_size) {
+	const adjusted_index = index - offset * set_size;
+	const row = Math.floor(adjusted_index / set_size);
+	const col = (index) % (set_size);
+	return { row, col };
+}
+
+/* Update container scopes. */
+function ctr_upd(ctr, data_objs) {
+	if (!data_objs) return;
+
+	if (data_objs.observering) {
+		if (ctr.observering.removeObserver)
+			ctr.observering.removeObserver(ctr);
+		ctr.observering = null;
+	}
+
+	if (data_objs.addObserver) {
+		ctr.observering = data_objs;
+		data_objs.addObserver(ctr);
+		return;
+	}
+
+	if (Array.isArray(data_objs)) cull(ctr, data_objs);
+	else cull(ctr, data_objs.data);
+}
+
+/* Update container filters. */
+function ctr_fltr(ctr, type, val) {
+	switch (type) {
+		case "fl":
+			break;
+	}
+	filterUpdate(ctr);
+	limitExpressionUpdate(ctr);
+}
+
+/* Create a wick container */
+function ctr(ele, component, ...filters) {
+
+	const ctr = {
+		component: { mount: (ele, data) => createComponent(component, data) },
+		ele,
+		SCRUBBING: false,
+		scopes: [],
+		active_scopes: [],
+		dom_scopes: [],
+		filters,
+		scrub_velocity: 0,
+		shift_amount: 1,
+		limit: 0,
+		offset: 0,
+		offset_diff: 0,
+
+		offset_fractional: 0,
+		scheduledUpdate() {
+			if (ctr.SCRUBBING) {
+
+				if (!ctr.AUTO_SCRUB) { return (ctr.SCRUBBING = false) }
+
+				if (Math.abs(ctr.scrub_velocity) > 0.0001) {
+					if (scrub(ctr, ctr.scrub_velocity)) {
+
+						ctr.scrub_velocity *= (ctr.drag);
+
+						const pos = ctr.offset + ctr.scrub_velocity;
+
+						if (pos < 0 || pos > ctr.max)
+							ctr.scrub_velocity = 0;
+
+						spark.queueUpdate(ctr);
+					}
+
+				} else {
+					ctr.scrub_velocity = 0;
+					scrub(ctr, Infinity);
+					ctr.SCRUBBING = false;
+				}
+			} else {
+				forceMount(ctr);
+				arrange(ctr);
+				render(ctr);
+				ctr.offset_diff = 0;
+			}
+		}
+	};
+
+	return ctr;
+}
+
+function cull(ctr, new_items = []) {
+	const transition = Animation.createTransition();
+
+	if (new_items.length == 0) {
+
+		const sl = ctr.scopes.length;
+
+		for (let i = 0; i < sl; i++) ctr.scopes[i].transitionOut(transition, "", true);
+
+		ctr.scopes.length = 0;
+		ctr.active_scopes.length = 0;
+		/*
+		ctr.parent.upImport("template_count_changed", {
+			displayed: 0,
+			offset: 0,
+			count: 0,
+			pages: 0,
+			ele: ctr.ele,
+			template: ctr,
+			trs: transition.in
+		});
+		*/
+
+		if (!ctr.SCRUBBING)
+			transition.start();
+
+	} else {
+
+		const
+			exists = new Map(new_items.map(e => [e, true])),
+			out = [];
+
+		for (let i = 0, l = ctr.active_scopes.length; i < l; i++)
+			if (exists.has(ctr.active_scopes[i].model))
+				exists.set(ctr.active_scopes[i].model, false);
+
+
+		for (let i = 0, l = ctr.scopes.length; i < l; i++)
+			if (!exists.has(ctr.scopes[i].model)) {
+				ctr.scopes[i].transitionOut(transition, "dismounting", true);
+				ctr.scopes[i].index = -1;
+				ctr.scopes.splice(i, 1);
+				l--;
+				i--;
+			} else
+				exists.set(ctr.scopes[i].model, false);
+
+		exists.forEach((v, k) => { if (v) out.push(k); });
+
+		if (out.length > 0) {
+			// Wrap models into components
+			added(ctr, out, transition);
+
+		} else {
+			for (let i = 0, j = 0, l = ctr.active_scopes.length; i < l; i++, j++) {
+
+				if (ctr.active_scopes[i]._TRANSITION_STATE_) {
+					if (j !== i) {
+						ctr.active_scopes[i].update({
+							arrange: {
+								pos: getColumnRow$1(i, ctr.offset, ctr.shift_amount),
+								trs: transition.in
+							}
+						});
+					}
+				} else
+					ctr.active_scopes.splice(i, 1), i--, l--;
+			}
+		}
+
+		filterUpdate(ctr);
+		limitExpressionUpdate(ctr, transition);
+	}
+}
+
+function filterUpdate(ctr) {
+
+	let output = ctr.scopes.slice();
+
+	if (output.length < 1) return;
+
+	for (let i = 0, l = ctr.filters.length; i < l; i++) {
+		const filter = ctr.filters[i];
+		//if(filter.active){
+		switch (filter.type) {
+			case "sort":
+				output = output.sort(filter.action);
+			case "filter":
+				output = output.filter(filter.action);
+		}
+		//}
+	}
+
+	ctr.active_scopes = output;
+
+	ctr.UPDATE_FILTER = false;
+
+	return output;
+}
+
+function limitExpressionUpdate(ctr, transition = Animation.createTransition()) {
+
+	//Preset the positions of initial components. 
+	arrange(ctr);
+	render(ctr, transition);
+
+	// If scrubbing is currently occuring, if the transition were to auto play then the results 
+	// would interfere with the expected behavior of scrubbing. So the transition
+	// is instead set to it's end state, and scrub is called to set intermittent 
+	// position. 
+	if (!ctr.SCRUBBING)
+		transition.start();
+}
+
+function arrange(ctr, output = ctr.active_scopes) {
+
+	//Arranges active scopes according to their arrange handler.
+	const
+		limit = ctr.limit,
+		offset = ctr.offset,
+		transition = Animation.createTransition(),
+		output_length = output.length,
+		active_window_start = offset * ctr.shift_amount;
+
+
+
+	let i = 0;
+
+	//Scopes on the ascending edge of the transition window
+	while (i < active_window_start && i < output_length)
+		output[i].update({ trs_asc_out: { trs: transition.in, pos: getColumnRow$1(i, offset, ctr.shift_amount) } }), i++;
+
+	//Scopes in the transtion window
+	while (i < active_window_start + limit && i < output_length)
+		output[i].update({ arrange: { trs: transition.in, pos: getColumnRow$1(i, offset, ctr.shift_amount) } }), i++;
+
+	//Scopes on the descending edge of the transition window
+	while (i < output_length)
+		output[i].update({ trs_dec_out: { trs: transition.in, pos: getColumnRow$1(i, offset, ctr.shift_amount) } }), i++;
+
+	transition.play(1);
+
+}
+
+
+function render(ctr, transition, output = ctr.active_scopes, NO_TRANSITION = false) {
+
+
+	const
+		active_window_size = ctr.limit,
+		active_length = ctr.dom_scopes.length;
+
+	let
+		j = 0,
+		direction = 1,
+		offset = ctr.offset,
+		output_length = output.length,
+		OWN_TRANSITION = false;
+
+	if (!transition) transition = Animation.createTransition(), OWN_TRANSITION = true;
+
+	offset = Math.max(0, offset);
+
+	const active_window_start = offset * ctr.shift_amount;
+
+	direction = Math.sign(ctr.offset_diff);
+
+	if (active_window_size > 0) {
+
+		ctr.shift_amount = Math.max(1, Math.min(active_window_size, ctr.shift_amount));
+
+		let
+			i = 0,
+			oa = 0;
+
+		const
+			ein = [],
+			shift_points = Math.ceil(output_length / ctr.shift_amount);
+
+		ctr.max = shift_points - 1;
+		ctr.offset = Math.max(0, Math.min(shift_points - 1, offset));
+
+		//Two transitions to support scrubbing from an offset in either direction
+		ctr.trs_ascending = Animation.createTransition(false);
+		ctr.trs_descending = Animation.createTransition(false);
+
+		ctr.dom_dn.length = 0;
+		ctr.dom_up.length = 0;
+		ctr.dom_up_appended = false;
+		ctr.dom_dn_appended = false;
+
+		//Scopes preceeding the transition window
+		while (i < active_window_start - ctr.shift_amount) output[i++].index = -2;
+
+		//Scopes entering the transition window ascending
+		while (i < active_window_start) {
+			ctr.dom_dn.push(output[i]);
+			output[i].update({ trs_dec_in: { trs: ctr.trs_descending.in, pos: getColumnRow$1(i, ctr.offset - 1, ctr.shift_amount) } });
+			output[i++].index = -2;
+		}
+
+		//Scopes in the transition window
+		while (i < active_window_start + active_window_size && i < output_length) {
+			//Scopes on the descending edge of the transition window
+			if (oa < ctr.shift_amount && ++oa) {
+				//console.log("pos",i, getColumnRow(i, ctr.offset+1, ctr.shift_amount), output[i].scopes[0].ele.style.transform)
+				output[i].update({ trs_asc_out: { trs: ctr.trs_ascending.out, pos: getColumnRow$1(i, ctr.offset + 1, ctr.shift_amount) } });
+			} else
+				output[i].update({ arrange: { trs: ctr.trs_ascending.in, pos: getColumnRow$1(i, ctr.offset + 1, ctr.shift_amount) } });
+
+
+			//Scopes on the ascending edge of the transition window
+			if (i >= active_window_start + active_window_size - ctr.shift_amount)
+				output[i].update({ trs_dec_out: { trs: ctr.trs_descending.out, pos: getColumnRow$1(i, ctr.offset - 1, ctr.shift_amount) } });
+			else
+				output[i].update({ arrange: { trs: ctr.trs_descending.in, pos: getColumnRow$1(i, ctr.offset - 1, ctr.shift_amount) } });
+
+
+			output[i].index = i;
+			ein.push(output[i++]);
+		}
+
+		//Scopes entering the transition window while offset is descending
+		while (i < active_window_start + active_window_size + ctr.shift_amount && i < output_length) {
+			ctr.dom_up.push(output[i]);
+			output[i].update({
+				trs_asc_in: {
+					pos: getColumnRow$1(i, ctr.offset + 1, ctr.shift_amount),
+					trs: ctr.trs_ascending.in
+				}
+			});
+			output[i++].index = -3;
+		}
+
+		//Scopes following the transition window
+		while (i < output_length) output[i++].index = -3;
+
+		output = ein;
+		output_length = ein.length;
+	} else {
+		ctr.max = 0;
+		ctr.limit = 0;
+	}
+
+	const
+		trs_in = { trs: transition.in, index: 0 },
+		trs_out = { trs: transition.out, index: 0 };
+
+	for (let i = 0; i < output_length; i++) output[i].index = i;
+
+	for (let i = 0; i < active_length; i++) {
+
+		const as = ctr.dom_scopes[i];
+
+		if (as.index > j) {
+			while (j < as.index && j < output_length) {
+				const os = output[j];
+				os.index = -1;
+				trs_in.pos = getColumnRow$1(j, ctr.offset, ctr.shift_amount);
+
+				os.appendToDOM(ctr.ele, as.ele);
+				os.transitionIn(trs_in, (direction) ? "trs_asc_in" : "trs_dec_in");
+				j++;
+			}
+		} else if (as.index < 0) {
+
+			trs_out.pos = getColumnRow$1(i, 0, ctr.shift_amount);
+
+			if (!NO_TRANSITION) {
+				switch (as.index) {
+					case -2:
+					case -3:
+						as.transitionOut(trs_out, (direction > 0) ? "trs_asc_out" : "trs_dec_out");
+						break;
+					default:
+						as.transitionOut(trs_out);
+				}
+			} else
+				as.transitionOut();
+
+			continue;
+		}
+		trs_in.pos = getColumnRow$1(j++, 0, ctr.shift_amount);
+
+		as.update({ arrange: trs_in }, null, false, { IMMEDIATE: true });
+
+		as._TRANSITION_STATE_ = true;
+		as.index = -1;
+	}
+
+	while (j < output.length) {
+		output[j].appendToDOM(ctr.ele);
+		output[j].index = -1;
+		trs_in.pos = getColumnRow$1(j, ctr.offset, ctr.shift_amount);
+		output[j].transitionIn(trs_in, (direction) ? "arrange" : "arrange");
+		j++;
+	}
+
+	ctr.ele.style.position = ctr.ele.style.position;
+	ctr.dom_scopes = output.slice();
+
+	/*
+	ctr.parent.update({
+		"template_count_changed": {
+
+			displayed: output_length,
+			offset: offset,
+			count: ctr.active_scopes.length,
+			pages: ctr.max,
+			ele: ctr.ele,
+			template: ctr,
+			trs: transition.in
+		}
+	});
+	//*/
+
+	if (OWN_TRANSITION) {
+		if (NO_TRANSITION)
+			return transition;
+		transition.start();
+	}
+
+	return transition;
+}
+
+function forceMount(ctr) {
+	const active_window_size = ctr.limit;
+	const offset = ctr.offset;
+
+
+	const min = Math.min(offset + ctr.offset_diff, offset) * ctr.shift_amount;
+	const max = Math.max(offset + ctr.offset_diff, offset) * ctr.shift_amount + active_window_size;
+
+
+	let i = min;
+
+	ctr.ele.innerHTML = "";
+	const output_length = ctr.active_scopes.length;
+	ctr.dom_scopes.length = 0;
+
+	while (i < max && i < output_length) {
+		const node = ctr.active_scopes[i++];
+		ctr.dom_scopes.push(node);
+		ctr.ele.appendChild(node.ele);
+	}
+}
+
+/**
+ * Scrub provides a mechanism to scroll through components of a container that have been limited through the limit filter.
+ * @param  {Number} scrub_amount [description]
+ */
+function scrub(ctr, scrub_delta, SCRUBBING = true) {
+	// scrub_delta is the relative ammunt of change from the previous offset. 
+
+	if (!ctr.SCRUBBING)
+		render(ctr, null, ctr.active_scopes, true);
+
+	ctr.SCRUBBING = true;
+
+	if (ctr.AUTO_SCRUB && !SCRUBBING && scrub_delta != Infinity) {
+		ctr.scrub_velocity = 0;
+		ctr.AUTO_SCRUB = false;
+	}
+
+	let delta_offset = scrub_delta + ctr.offset_fractional;
+
+	if (scrub_delta !== Infinity) {
+
+		if (Math.abs(delta_offset) > 1) {
+			if (delta_offset > 1) {
+
+				delta_offset = delta_offset % 1;
+				ctr.offset_fractional = delta_offset;
+				ctr.scrub_velocity = scrub_delta;
+
+				if (ctr.offset < ctr.max)
+					ctr.trs_ascending.play(1);
+
+				ctr.offset++;
+				ctr.offset_diff = 1;
+				render(ctr, null, ctr.active_scopes, true).play(1);
+			} else {
+				delta_offset = delta_offset % 1;
+				ctr.offset_fractional = delta_offset;
+				ctr.scrub_velocity = scrub_delta;
+
+				if (ctr.offset >= 1)
+					ctr.trs_descending.play(1);
+				ctr.offset--;
+				ctr.offset_diff = -1;
+
+				render(ctr, null, ctr.active_scopes, true).play(1);
+			}
+
+		}
+
+		//Make Sure the the transition animation is completed before moving on to new animation sequences.
+
+		if (delta_offset > 0) {
+
+			if (ctr.offset + delta_offset >= ctr.max - 1) delta_offset = 0;
+
+			if (!ctr.dom_up_appended) {
+
+				for (let i = 0; i < ctr.dom_up.length; i++) {
+					ctr.dom_up[i].appendToDOM(ctr.ele);
+					ctr.dom_up[i].index = -1;
+					ctr.dom_scopes.push(ctr.dom_up[i]);
+				}
+
+				ctr.dom_up_appended = true;
+			}
+
+			ctr.trs_ascending.play(delta_offset);
+		} else {
+
+			if (ctr.offset < 1) delta_offset = 0;
+
+			if (!ctr.dom_dn_appended) {
+
+				for (let i = 0; i < ctr.dom_dn.length; i++) {
+					ctr.dom_dn[i].appendToDOM(ctr.ele, ctr.dom_scopes[0].ele);
+					ctr.dom_dn[i].index = -1;
+				}
+
+				ctr.dom_scopes = ctr.dom_dn.concat(ctr.dom_scopes);
+
+				ctr.dom_dn_appended = true;
+			}
+
+			ctr.trs_descending.play(-delta_offset);
+		}
+
+		ctr.offset_fractional = delta_offset;
+		ctr.scrub_velocity = scrub_delta;
+
+		return true;
+	} else {
+
+		if (Math.abs(ctr.scrub_velocity) > 0.0001) {
+			const sign = Math.sign(ctr.scrub_velocity);
+
+			if (Math.abs(ctr.scrub_velocity) < 0.1) ctr.scrub_velocity = 0.1 * sign;
+			if (Math.abs(ctr.scrub_velocity) > 0.5) ctr.scrub_velocity = 0.5 * sign;
+
+			ctr.AUTO_SCRUB = true;
+
+			//Determine the distance traveled with normal drag decay of 0.5
+			let dist = ctr.scrub_velocity * (1 / (-0.5 + 1));
+			//get the distance to nearest page given the distance traveled
+			let nearest = (ctr.offset + ctr.offset_fractional + dist);
+			nearest = (ctr.scrub_velocity > 0) ? Math.min(ctr.max, Math.ceil(nearest)) : Math.max(0, Math.floor(nearest));
+			//get the ratio of the distance from the current position and distance to the nearest 
+			let nearest_dist = nearest - (ctr.offset + ctr.offset_fractional);
+			let drag = Math.abs(1 - (1 / (nearest_dist / ctr.scrub_velocity)));
+
+			ctr.drag = drag;
+			ctr.SCRUBBING = true;
+			spark.queueUpdate(ctr);
+			return true;
+		} else {
+			ctr.offset += Math.round(ctr.offset_fractional);
+			ctr.scrub_velocity = 0;
+			ctr.offset_fractional = 0;
+			render(ctr, null, ctr.active_scopes, true).play(1);
+			ctr.SCRUBBING = false;
+			return false;
+		}
+	}
+}
+
+/**
+ * Called by the ModelContainer when Models have been added to its set.
+ *
+ * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
+ */
+function added(ctr, items, transition) {
+	let OWN_TRANSITION = false;
+
+	if (!transition)
+		transition = Animation.createTransition(), OWN_TRANSITION = true;
+
+	for (let i = 0; i < items.length; i++) {
+		const scope = ctr.component.mount(null, items[i]);
+
+		//TODO: Make sure both of there references are removed when the scope is destroyed.
+		ctr.scopes.push(scope);
+		//ctr.parent.addScope(scope);
+
+		scope.update({ loaded: true });
+	}
+
+
+
+	if (OWN_TRANSITION)
+		filterExpressionUpdate(ctr, transition);
+}
+
+/* Given an argument list of element indices, returns the element at the last index location.  */
+function ge(ele, ...indices) {
+	if (indices.length == 0)
+		return ele;
+	else
+		return ge(ele.children[indices[0]], ...(indices.slice(1)));
+}
+
+class liteScope {
+	constructor(e) {
+		this.wl = wick_lite$1;
+		this.ele = e;
+		this.scopes = [];
+	}
+
+	emit(name, obj) {
+		this.update({
+			[name]: obj
+		});
+	}
+
+	update(data) {
+		let flag = 0;
+
+		for (let i = 0, l = this.ug.length; i < l; i++) {
+			const name = this.ug[i];
+			if (data[name] !== undefined) {
+				this.uc[i] = data[name];
+				flag |= 1 << (i);
+			}
+		}
+
+		this.global_flag |= flag;
+
+		if (flag > 0) {
+			for (let i = 0; i < this.uf.length; i++) {
+				const uf = this.uf[i].f;
+				if ((uf & this.global_flag) == uf)
+					this.uf[i].m();
+			}
+		}
+	}
+}
+
+const wick_lite$1 = {
+	ge,
+	ctr,
+	ctr_upd,
+	ctr_fltr,
+	createComponent,
+	sc: liteScope,
+	component_map: new Map(),
+	component_templates: new Map(),
+	addComponentTemplate(name, obj) {
+		this.component_templates.set(name, obj);
+	},
+	gt(id){
+		return document.getElementById(id);
+	},
+	lc(name, template, component_class) {
+		this.component_map.set(name, { class: component_class, template });
+	},
+	cc(name) {
+		if (this.component_map.has(name)) {
+			const comp_blueprint = this.component_map.get(name);
+
+			const ele = document.importNode(comp_blueprint.template.content.firstChild, true);
+
+			return new comp_blueprint.class(ele, this);
+		}
+		return null;
+	}
+};
+
+createComponent.lite = wick_lite$1;
+
+function insertData(template_str, str) {
+    if (template_str.includes("%%%%"))
+        return template_str.replace("%%%%", str);
+    return template_str + str;
+}
+
+/* Returns an array that respresents the index position of a given element and it's ancestor nodes. */
+function getRootOffset(ele, array = []) {
+
+    let i = 0;
+
+    const parent = ele.parentElement;
+
+    if (!parent) {
+        return array;
     }
 
-    // Compiles the component to a JS file
-    // Returns a string representing the file data.
-    compileToJS(bound_data_object) {
-
+    while (ele != parent.firstElementChild) {
+        i++;
+        ele = ele.previousElementSibling;
     }
+
+    array.unshift(i);
+
+    return getRootOffset(parent, array);
+
+}
+
+function getElement(ele, mapped_elements) {
+
+    if (mapped_elements.has(ele))
+        return mapped_elements.get(ele).name;
+
+    let offset = null;
+
+    if (ele instanceof Text) {
+        const span = document.createElement("span");
+        span.innerHTML = ele.data;
+        ele.parentElement.insertBefore(span, ele);
+        ele.parentElement.removeChild(ele);
+        offset = getRootOffset(span);
+    } else {
+        offset = getRootOffset(ele);
+    }
+
+    mapped_elements.set(ele, { name: `e${mapped_elements.size}`, offset });
+
+    return getElement(ele, mapped_elements);
+}
+
+function getContainer(ctr, containers, mapped_elements) {
+
+    if (containers.has(ctr))
+        return containers.get(ctr).name;
+
+    //let offset = getRootOffset(ctr);
+
+    containers.set(ctr, { name: `c${containers.size}`, ele: getElement(ctr.ele, mapped_elements), comp: ctr.component });
+
+    return getContainer(ctr, containers, mapped_elements);
+}
+
+function setContainerSortFN(ctr, containers, type, expr){
+	if(containers.has(ctr)){
+		const c = containers.get(ctr);
+		if(!c.filters)
+			c.filters = [];
+		c.filters.push({type, expr});
+	}else
+		return setContainerSortFN(getContainer(ctr),containers);
+}
+
+/* Returns the first expression statment node in the resultant ast of the parse tree of string argument. */
+function buildExpression(string) {
+    const js_ast = parse(string);
+    return js_ast.vals[0];
+}
+
+/* Should return a deep of the ast node */
+function cloneAST(ast) {
+    console.log(parse(ast.render()).vals[0].vals[0].connect, ast);
+    return parse(ast.render()).vals[0].vals[0].connect;
+}
+
+function createIONode(io, ctx, obj = { args: new Set, expr: [], type: 0 }) {
+    const expr = obj.expr;
+
+    switch (io.type) {
+        case "ContainerIO":
+
+            const ctr = getContainer(io.container, ctx.containers, ctx.mapped_elements);
+
+            if (!obj.type)
+                obj.type = 12;
+
+            let action = "",
+                name_length = 0;
+
+            switch (io.filter_type) {
+                case "sort":
+                    action = io.script.ast;
+                    expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "so")`));
+                    name_length = 2;
+                    break;
+                case "filter":
+                    action = io.script.ast;
+                    expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "fi")`));
+                    name_length = 1;
+                    break;
+                case "scrub":
+                    expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "sc", ${io.script.ast.render()})`));
+                    break;
+                case "offset":
+                    expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "of", ${io.script.ast.render()})`));
+                    break;
+                case "limit":
+                    expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "li", ${io.script.ast.render()})`));
+                    break;
+                case "shift_amount":
+                    expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "sa", ${io.script.ast.render()})`));
+                    break;
+            }
+
+            const arg_names = [];
+            let i = 0;
+
+            for (const arg_name in io.arg_ios)
+                if (i++ < name_length)
+                    arg_names.push(arg_name);
+                else
+                    obj.args.add(arg_name);
+
+            if (name_length > 0) {
+                JS.getClosureVariableNames(action, ...arg_names).forEach(e => {
+                    e.replace(new member_expression(new this_literal, e));
+                });
+
+                action = parse(`((${arg_names})=>${action.expr}).bind(this)`).vals[0].vals[0];
+            }
+
+            if (io.parent)
+                obj.args.add(io.parent.prop);
+
+            if (io.filter_type == "filter")
+                setContainerSortFN(io.container, ctx.containers, "filter", action);
+            if (io.filter_type == "sort")
+                setContainerSortFN(io.container, ctx.containers, "sort", action);
+
+            break;
+        case "ScriptIO":
+        case "ExpressionIO":
+            if (!obj.type)
+                obj.type = 12;
+
+            const ast = (io.script.ast.type == 47) ? cloneAST(io.script.ast.expr) : cloneAST(io.script.ast);
+
+            JS.getClosureVariableNames(ast).forEach(e => {
+                e.replace(new member_expression(new this_literal, e));
+            });
+
+            if (expr.length > 0) {
+                const last = expr.length - 1,
+                    assign = new assignment_expression([null, "=", null]);
+                assign.vals[0] = expr[last].vals[0]; // Extract expression from expression statement
+                expr[last].vals[0] = assign;
+
+
+                //replace the last expression with an assignment expression
+                if (io.script.ast.type == 47) {
+                    assign.vals[1] = ast;
+                } else {
+                    assign.vals[1] = ast;
+                }
+
+                for (const arg_name in io.arg_ios) {
+                    obj.args.add(arg_name);
+                    //const arg = io.io.arg_ios[arg_name];
+                    //str = createIONode(createIONode(arg), str)
+                }
+            } else {
+                expr.push(ast);
+            }
+
+            if (io.parent)
+                obj.args.add(io.parent.prop);
+            break;
+        case "EventIO":
+            obj.args.add(io.up_tap.prop);
+            obj.type = 2;
+            expr.push(buildExpression(`this.emit("${io.up_tap.prop}", this.${io.parent.prop});`));
+
+            if (!(io.parent instanceof Tap))
+                createIONode(io.parent, ctx, obj);
+
+            obj.event = io.event_name;
+            obj.ele = io.ele;
+            //expr.push(`${obj.str}`);
+            break;
+        case "InputIO":
+            //obj.args.add(io.up_tap.prop);
+            obj.type = 1;
+            expr.push(buildExpression(`this.emit("${io.up_tap.prop}", e.target.value);`));
+
+            if (!(io.parent instanceof Tap))
+                createIONode(io.parent, ctx, obj);
+
+            obj.event = "input";
+            obj.ele = io.ele;
+            //expr.push(`${obj.str}`);
+            break;
+        case "ContainerLinkIO":
+            if (!obj.type) obj.type = 12;
+
+            const ctr_expr = buildExpression(`this.w.ctr_upd(this.${getContainer(io.ele, ctx.containers, ctx.mapped_elements)})`);
+
+            expr.push(ctr_expr);
+
+            if (!(io.parent instanceof Tap)) {
+                return createIONode(io.parent, ctx, obj);
+            } else {
+                const last = expr.length - 1;
+                expr[last].expression.args.vals.push(buildExpression("this." + io.parent.prop).expression);
+            }
+
+            obj.args.add(io.parent.prop);
+            break;
+        default:
+            if (io.ele instanceof Element) {
+                if (!obj.type) obj.type = 12;
+                expr.push(buildExpression(`this.${getElement(io.ele, ctx.mapped_elements)}.${io.attrib}`));
+            } else if (io.ele instanceof Text) {
+                if (!obj.type) obj.type = 12;
+                expr.push(buildExpression(`this.${getElement(io.ele, ctx.mapped_elements)}.innerHTML`));
+            } else {
+                if (!obj.type) obj.type = 12;
+                obj.args.add(io.parent.prop);
+            }
+
+            if (!(io.parent instanceof Tap)) {
+                return createIONode(io.parent, ctx, obj);
+            } else {
+                const last = expr.length - 1,
+                    assign = new assignment_expression([null, "=", null]);
+                assign.vals[0] = expr[last].vals[0]; // Extract expression from expression statement
+                expr[last].vals[0] = assign;
+                assign.vals[1] = buildExpression("this." + io.parent.prop).expression;
+            }
+
+            obj.args.add(io.parent.prop);
+            break;
+    }
+    return obj;
+}
+
+/* Converts IO object hiearchies into self contained nodes with js ast structures defining the io logic. */
+function buildIO(io, ctx) {
+
+    const node = createIONode(io, ctx);
+
+    node.expr = new expression_list([node.expr]);
+
+    console.log(node.expr.render());
+
+
+    return node;
+}
+
+function replaceDataPoints(ast, dps) {
+    const tvrs = ast.traverseDepthFirst();
+    let node = null;
+
+    while ((node = tvrs.next().value)) {
+        if (
+            node.type == types$1.identifier &&
+            node.parent &&
+            node.parent.type == types$1.member_expression &&
+            node.parent.id.type == types$1.this_literal
+        ) {
+            console.log(node.name);
+            if (dps.has(node.name)) {
+                const dp = dps.get(node.name);
+                node.replace(parse(`uc[${dp.id}]`).vals[0].vals[0]);
+                // /debugger 
+            }
+        }
+    };
+
+    return ast;
+}
+
+function getCondition(condition, conditions) {
+    if (conditions.has(condition))
+        return conditions.get(condition);
+
+    conditions.set(condition, 1 << conditions.size);
+
+    return getCondition(condition, conditions);
+}
+
+function createGate(conditions, str, condition_map, flag_name = "f") {
+    const val = [...conditions.values()].map(c => getCondition(c, condition_map)).reduce((r, v) => r | v, 0);
+    if (val == 0)
+        return str;
+    return `if((${flag_name} & ${val}) == ${val}){${str}}`;
+}
+
+function stamp(ast) {
+
+    const scope = ast.mount(null),
+        mapped_elements = new Map(),
+        containers = new Map(),
+        data_points = new Map(),
+        actions = [],
+        output_ast = parse("class component extends wick.sc {constructor(e,w){super(e);;} destroy(){;;}}").vals[0];
+
+    //pull out tap and io data and build a dependency graph
+    let dp_offset = 0;
+
+    for (const io of scope.ios) {
+        const ele = buildIO(io, { mapped_elements, containers });
+
+        let flag = 0;
+
+        for (const dp of ele.args.values()) {
+            if (!data_points.has(dp))
+                data_points.set(dp, { flag: 1 << (dp_offset), name: dp, id: dp_offset++ });
+            flag |= data_points.get(dp).flag;
+        }
+
+        ele.flag = flag;
+
+        actions.push(ele);
+    }
+
+    /* for each data point add an class member */
+    let update_code = "let flag = 0",
+        fun_id = 0;
+    const update_groups = [],
+        bound = [];
+
+    for (const dp of data_points.values()) {
+        //output_ast.body[0].body.vals.push(JSParse("this.d"  + dp.id + " = null").vals[0]);
+        update_groups[dp.id] = dp.name;
+    }
+
+    
+    output_ast.body[0].body.vals.push(parse(`this.uc = [${update_groups.map(e=>`null`)}]`).vals[0]);
+    output_ast.body[0].body.vals.push(parse(`this.ug = [${update_groups.map(e=>`"${e}"`)}]`).vals[0]);
+    //*
+    //combine actions if we can
+    for (let i = 0; i < actions.length; i++) {
+        const act1 = actions[i];
+        for (let j = 0; j < actions.length; j++) {
+            if (j == i)
+                continue;
+
+            const act2 = actions[j];
+
+            if (act1.flag == act2.flag && (act1.type & act2.type)) {
+                //compress
+                actions.splice(j, 1);
+                j--;
+
+                const t = types$1.expression_statement,
+                    list = ((act2.expr.type == t) ? [act2.expr] : act2.expr.vals);
+
+                if (act1.expr.type == t) {
+                    act1.expr = new statements([[act1.expr, ...list]]);
+                } else {
+                    act1.expr.vals.push(...list);
+                }
+            }
+        }
+
+        const action = actions[i];
+        let ele = null;
+        let fun = null;
+        switch (action.type) {
+            case 1: // Input
+            case 2: // Event
+                //Create event listener in constructor
+                ele = getElement(action.ele, mapped_elements);
+                fun = fun_id++;
+                output_ast.body[0].body.vals.push(...parse(`
+                        this.b${fun} = this.f${fun}.bind(this); 
+                        this.${ele}.addEventListener("${action.event}", this.b${fun})`).vals[0].vals);
+                output_ast.body[1].body.vals.push(parse(`this.${ele}.removeEventListener("input", this.b${fun})`).vals[0]);
+                output_ast.body.push(parse(`class{f${fun}(e){${replaceDataPoints(action.expr, data_points)}}}`).vals[0].body[0]);
+                break;
+                /*                event_str +=
+                                    `\nfunction a_${i}(e){${createGate(action.cds, action.str, conditions, "gf")}};
+                ${getElement(action.ele, mapped_elements)}.addEventListener("${action.event}", a_${i})`;*/
+
+            case 4: // Element prop
+            case 8: // Text node;
+            case 12: // Scripts & Expressions
+            case 16: //Container
+                fun = fun_id++;
+                bound.push({ f: action.flag, fn: fun });
+                output_ast.body.push(parse(`class{f${fun}(){${replaceDataPoints(action.expr, data_points)}}}`).vals[0].body[0]);
+                break;
+        }
+    }
+
+    output_ast.body[0].body.vals.push(parse(`this.uf = [${bound.map(e=>`{f:${e.f},m:this.f${e.fn}.bind(this)}`)}]`).vals[0]);
+    output_ast.body[0].body.vals.splice(1,0,...parse(`${[...mapped_elements.values()].map(v=>`this.${v.name}=w.ge(e ${v.offset.length >  0 ? ","+v.offset.join(",") : ""})`).join(";")};;`).vals[0].vals);
+    for (const ctr of containers.values()) {
+        output_ast.body[0].body.vals.push(parse(`this.${ctr.name}= w.ctr(this.${ctr.ele},"${
+            ctr.comp.stamp().hash}" ${
+                ctr.filters ? "," +ctr.filters.map(f=>`{action:${replaceDataPoints(f.expr, data_points)},type:"${f.type}"}`).join(",") : ""
+            })`).vals[0]);
+        output_ast.body[1].body.vals.push(parse(`this.${ctr.name}.destroy()`).vals[0]);
+    }
+    //build the rest of the functions
+    //*/
+    /* Add condition values to constructor function */
+    const component_html = scope.ele.outerHTML;
+
+    const hash = ((output_ast.render().length ^ component_html.length) * 0x456) + "";
+
+    console.log(output_ast.render());
+
+    output_ast.vals[0] = null;
+
+    const output = {
+        js: output_ast,
+        html: scope.ele.outerHTML,
+        hash
+    };
+
+    // Add component internal store. This can later be used to genereate a 
+    // component graph that can be used in final applications.
+    wick_lite$1.addComponentTemplate(hash, output);
+
+    return output;
+}
+
+class d$3 {
 
     //Registers the component as a Web Component.
     //Herafter the Web Component API will be used to mount this component. 
@@ -20312,7 +28574,7 @@ class d$1 {
 
         customElements.define(
             this.name,
-            d$1.web_component_constructor(this, bound_data_object), {}
+            d$3.web_component_constructor(this, bound_data_object), {}
         );
     }
 
@@ -20323,16 +28585,33 @@ class d$1 {
             if (!this.__pending)
                 this.__pending = [];
 
-            return new Promise(res =>this.__pending.push([HTMLElement_, data_object, USE_SHADOW, res]));
+            return new Promise(res => this.__pending.push([false, HTMLElement_, data_object, USE_SHADOW, res]));
         }
 
         return this.nonAsyncMount(HTMLElement_, data_object, USE_SHADOW);
     }
 
-    nonAsyncMount(HTMLElement_, data_object = null, USE_SHADOW){
+    //Creates a standalone component string
+    async stamp(data_object) {
+
+        if (this.READY !== true) {
+            if (!this.__pending)
+                this.__pending = [];
+
+            return new Promise(res => this.__pending.push([true, data_object, null, res]));
+        }
+
+        return this.nonAsyncStamp(data_object);
+    }
+
+    nonAsyncStamp(data_object = null) {
+        return stamp(this.ast);
+    }
+
+    nonAsyncMount(HTMLElement_, data_object = null, USE_SHADOW) {
         let element = HTMLElement_;
 
-        if(USE_SHADOW == undefined)
+        if (USE_SHADOW == undefined)
             USE_SHADOW = this.ast.presets.options.USE_SHADOW;
 
         if ((HTMLElement_ instanceof HTMLElement) && USE_SHADOW) {
@@ -20351,7 +28630,7 @@ class d$1 {
     connect(h, b) { return this.mount(h, b) }
 }
 
-d$1.web_component_constructor = function(wick_component, bound_data) {
+d$3.web_component_constructor = function(wick_component, bound_data) {
     return class extends HTMLElement {
         constructor() {
             super();
@@ -20360,9 +28639,43 @@ d$1.web_component_constructor = function(wick_component, bound_data) {
     };
 };
 
+class sty extends ElementNode{
+	constructor(env, tag, children, attribs, presets){
+		super(env, "style", children, attribs, presets);	
+	}
+
+	get data(){return this.children[0]}
+
+	finalize(){return this}
+
+	render(){}
+
+	mount(element, scope, presets){
+
+		if(presets.options.USE_SHADOWED_STYLE){
+
+			const own_element = this.createElement(scope);
+
+			own_element.innerHTML = this.data.toString();
+
+			appendChild(element, own_element);
+		}
+
+		else
+			scope.css.push(this.data);
+	}
+}
+
 /******************** Expressions **********************/
 
 class ExpressionIO extends ScriptIO {
+
+    get type () { return "ExpressionIO"}
+
+    static stamp(id, scope, binding){
+        (binding.args.map(e=>scope.addActivation(e.name)));
+        return scope.addExpressionConst(binding.origin_val);
+    }
 
     constructor(ele, scope, errors, tap, binding, lex, pinned) {
         super(scope, errors, tap, binding, lex, pinned);
@@ -20378,7 +28691,6 @@ class ExpressionIO extends ScriptIO {
     }
 
     scheduledUpdate() {
-
         this.val = super.scheduledUpdate();
 
         if(this.val !== this.old_val){
@@ -20391,6 +28703,9 @@ class ExpressionIO extends ScriptIO {
 /******************** Expressions **********************/
 
 class ContainerIO extends ScriptIO {
+
+    get type () { return "ContainerIO"}
+
     constructor(container, scope, node, tap, binding, lex, pinned) {
         super(scope, node, tap, binding, lex, pinned);
 
@@ -20404,6 +28719,7 @@ class ContainerIO extends ScriptIO {
 
     bindToContainer(type, container) {
         this.container = container;
+        this.filter_type = type;
 
         const STATIC = this.IO_ACTIVATIONS == 0;
 
@@ -20431,6 +28747,7 @@ class ContainerIO extends ScriptIO {
                 this.action = this.shift_amount;
                 break;
         }
+
         
         if (STATIC)
             this.down();
@@ -20463,28 +28780,31 @@ class ContainerIO extends ScriptIO {
     }
 
     scheduledUpdate() {
+
         const old = this.val;
 
         this.val = super.scheduledUpdate();
 
-        if (this.ARRAY_ACTION) {
+        if(this.action == this.scrub){
+            this.container.scrub(this.val);
+        }else if (this.ARRAY_ACTION) {
             this.container.filterExpressionUpdate();
-        } else if (this.val !== undefined && this.val !== old) {
+        } else if (this.val !== undefined) {
             this.action();
             this.container.limitExpressionUpdate();
         }
     }
 
     filter(array) {
-        return array.filter((a) => (this.setValue([a]), super.scheduledUpdate()));
+        return array.filter((a) => (this.setValue([a.model]), super.scheduledUpdate()));
     }
 
     sort(array) {
-        return array.sort((a, b) => (this.setValue([a, b]), super.scheduledUpdate()));
+        return array.sort((a, b) => (this.setValue([a.model, b.model]), super.scheduledUpdate()));
     }
 
     scrub() {
-        this.container.scrub = this.val;
+        //this.container.scrub = this.val;
     }
 
     offset() {
@@ -20504,6 +28824,7 @@ class ContainerIO extends ScriptIO {
 const EXPRESSION = 5;
 const IDENTIFIER = 6;
 const CONTAINER = 7;
+const BOOL = 8;
 
 class Binding {
 
@@ -20526,6 +28847,8 @@ class Binding {
 
         this.origin_val = this.ast + "";
         this.val = this.ast + "";
+
+        this.on = true;
 
         if (this.ast && !(this.ast instanceof identifier$1))
             this.processJSAST(env.presets);
@@ -20568,12 +28891,26 @@ class Binding {
         if (this.ast) {
             if (this.METHOD == EXPRESSION) {
                 return new ExpressionIO(element, scope, node, scope, this, this.lex, pinned);
-            } else if (this.METHOD == CONTAINER)
+            } else if (this.METHOD == CONTAINER) {
                 return new ContainerIO(element, scope, node, scope, this, this.lex, pinned);
-            else
+            } else
                 return scope.getTap(this.val);
         }
         return null;
+    }
+
+    //Stamps the binding to an output string. 
+    stamp(scope, attr, id) {
+        if (this.ast) {
+            if (this.METHOD == EXPRESSION) {
+                return ExpressionIO.stamp(id, scope, this);
+            } else if (this.METHOD == CONTAINER)
+                return ContainerIO.stamp(id, scope, this);
+            else {
+                scope.addActivation(this.val);
+                return this.val;
+            }
+        }
     }
 }
 
@@ -20598,7 +28935,9 @@ class fltr extends ElementNode {
         for (const attr of this.attribs.values()){
 
             if(attr.value instanceof Binding){
-                attr.value.bind(scope, null, null, this).bindToContainer(attr.name, container);
+                const io = attr.value.bind(scope, null, null, this);
+                io.bindToContainer(attr.name, container);
+                scope.ios.push(io);
             }else{
                 const val  = parseFloat(attr.value) || 0;
                 switch(attr.name){
@@ -20641,11 +28980,15 @@ class TextNode {
 
     mount(element, scope, presets, statics, pinned, ele = document.createTextNode("")) {
         const IS_TEXT_NODE = ele instanceof Text;
+
         if (IS_TEXT_NODE)
             element.appendChild(ele);
 
-        if (this.IS_BINDING)
-            return new (IS_TEXT_NODE ? TextNodeIO : DataNodeIO)(scope, this.data.bind(scope, null, pinned), ele, this.data.exprb);
+        if (this.IS_BINDING){
+            const io =  new (IS_TEXT_NODE ? TextNodeIO : ContainerLinkIO)(scope, this.data.bind(scope, null, pinned), ele, this.data.exprb);
+            scope.ios.push(io);
+            return io;
+        }
         else
             ele.data = this.data;
     }
@@ -20659,13 +29002,19 @@ function BaseComponent(ast, presets) {
     this.name = "";
 }
 
-Object.assign(BaseComponent.prototype,d$1.prototype);
-BaseComponent.prototype.mount = d$1.prototype.nonAsyncMount;
+Object.assign(BaseComponent.prototype,d$3.prototype);
+BaseComponent.prototype.mount = d$3.prototype.nonAsyncMount;
+BaseComponent.prototype.stamp = d$3.prototype.nonAsyncStamp;
 
-class ctr extends ElementNode {
+class ctr$1 extends ElementNode {
     
     constructor(env, tag, children, attribs, presets) {
         super(env, "container", children, attribs, presets);
+        //Warn about any children that are css / script
+
+        for(const child of children)
+            if(child.tag && (child.tag == "script" || child.tag == "style"))
+                console.warn(`Element of type <${child.tag}> will have no effect inside a <container> element`);
 
         this.filters = null;
         this.property_bind = null;
@@ -20695,6 +29044,7 @@ class ctr extends ElementNode {
     }
 
     merge(node) {
+            scope.update({ loaded: true });
         const merged_node = super.merge(node);
         merged_node.filters = this.filters;
         merged_node.nodes = this.filters;
@@ -20707,6 +29057,10 @@ class ctr extends ElementNode {
         
         scope = scope || new Scope(null, presets, element, this);
 
+        //Only create a container if it is able to generate components. 
+        if(!this.component_constructor)
+            return scope;
+
         const
             ele = createElement(this.element),
             container = new ScopeContainer(scope, presets, ele);
@@ -20718,8 +29072,9 @@ class ctr extends ElementNode {
         if(this.component_constructor)
             container.component = this.component_constructor;
 
-        for (let i = 0; i < this.filters.length; i++)
+        for (let i = 0; i < this.filters.length; i++){
             this.filters[i].mount(scope, container);
+        }
 
         for (let i = 0, l = this.attribs.length; i < l; i++)
             this.attribs[i].bind(ele, scope, pinned);
@@ -20728,7 +29083,7 @@ class ctr extends ElementNode {
             for (let i = 0; i < this.binds.length; i++)
                 this.binds[i].mount(null, scope, presets, slots, pinned, container);
         }else{ 
-            //If there is no binding, then there is no potential to have ModelContainer borne components.
+            //If there is no binding, then there is no potential to have ModelContainer host components.
             //Instead, load any existing children as component entries for the container element. 
             for (let i = 0; i < this.nodes.length; i++)
                 container.scopes.push(this.nodes[i].mount(null, null, presets, slots));
@@ -20740,34 +29095,7 @@ class ctr extends ElementNode {
     }
 }
 
-class sty extends ElementNode{
-	constructor(env, tag, children, attribs, presets){
-		super(env, "style", children, attribs, presets);	
-	}
-
-	get data(){return this.children[0]}
-
-	finalize(){return this}
-
-	render(){}
-
-	mount(element, scope, presets){
-
-		if(presets.options.USE_SHADOWED_STYLE){
-
-			const own_element = this.createElement(scope);
-
-			own_element.innerHTML = this.data.toString();
-
-			appendChild(element, own_element);
-		}
-
-		else
-			scope.css.push(this.data);
-	}
-}
-
-class v extends ElementNode{
+class v$2 extends ElementNode{
 	constructor(env, tag, children, attribs, presets){
 		super(env, tag, children, attribs, presets);
 	}
@@ -20833,11 +29161,11 @@ function es(tag, attribs, children, env, lex, meta = 0) {
             Constructor = fltr;
             break;
         case "a":
-            Constructor = a;
+            Constructor = a$2;
             break;
             /** void elements **/
         case "template":
-            Constructor = v;
+            Constructor = v$2;
             break;
         case "css":
         case "style":
@@ -20852,7 +29180,7 @@ function es(tag, attribs, children, env, lex, meta = 0) {
             Constructor = svg;
             break;
         case "container":
-            Constructor = ctr;
+            Constructor = ctr$1;
             break;
         case "scope":
             Constructor = scp;
@@ -20938,9 +29266,11 @@ class Attribute {
 
             else 
 
-            {
+            {   
+                //Binding sends value over. 
                 const bind = this.value.bind(scope, pinned);
-                new this.io_constr(scope, this, bind, this.name, element, this.value.ast_other);
+                const io = new this.io_constr(scope, this, bind, this.name, element, this.value.ast_other);
+                scope.ios.push(io);
             }
     }
 }
@@ -20995,18 +29325,18 @@ function create_ordered_list(sym, offset = 0, level = -1, env, lex) {
             li = s.li;
 
         if (lvl > level) {
-            create_ordered_list(sym, i, lvl, env);
+            create_ordered_list(sym, i, lvl, env, lex);
         } else if (lvl < level) {
-            sym[offset] = es("ul", null, sym.splice(offset, i - offset), env);
+            sym[offset] = es("ul", null, sym.splice(offset, i - offset), env, lex);
             return;
         } else
             sym[i] = li;
     }
 
-    return sym[offset] = es("span", null, sym.splice(offset, sym.length - offset), env);
+    return sym[offset] = es("span", null, sym.splice(offset, sym.length - offset), env, lex);
 }
 
-const env = {
+const env$3 = {
     table: {},
     ASI: true,
     functions: {
@@ -21027,7 +29357,7 @@ const env = {
         attribSelector,
         pseudoClassSelector,
         pseudoElementSelector,
-        parseDeclaration,
+        parseDeclaration: parseDeclaration$1,
         stylesheet,
         stylerule,
         ruleset,
@@ -21084,7 +29414,7 @@ const env = {
         left_shift_expression,
         lexical: lexical_declaration,
         member_expression,
-        module: module$1,
+        module,
         modulo_expression,
         multiply_expression,
         name_space_import,
@@ -21094,6 +29424,7 @@ const env = {
         null_literal,
         numeric_literal,
         object_literal,
+        for_in_statement,
         or_expression,
         parenthasized: argument_list$1,
         plus_expression,
@@ -21108,8 +29439,8 @@ const env = {
         script,
         spread_element,
         statements,
-        string: string$2,
-        string_literal: string$2,
+        string: string$1,
+        string_literal: string$1,
         subtract_expression,
         switch_statement,
         template,
@@ -21142,17 +29473,17 @@ const env = {
 
         defaultError: (tk, env, output, lex, prv_lex, ss, lu) => {
             if (lex.tx == "//" || lex.tx == "/*") {
-                if (lex.tx == "//")
+                if (lex.tx == "//") {
                     while (!lex.END && lex.ty !== lex.types.nl)
                         lex.next();
-
-                if (lex.tx == "/*")
-                    while (!lex.END && lex.tx !== "*/")
+                } else
+                if (lex.tx == "/*") {
+                    while (!lex.END && (lex.tx !== "*" || lex.pk.tx !== "/"))
                         lex.next();
+                    lex.next(); //"*"
+                }
 
                 lex.next();
-
-                return lu(lex);
             }
 
             /*USED for ASI*/
@@ -21184,20 +29515,20 @@ const env = {
 
     prst: [],
     pushPresets(prst) {
-        env.prst.push(prst);
+        env$3.prst.push(prst);
     },
     popPresets() {
-        return env.prst.pop();
+        return env$3.prst.pop();
     },
     get presets() {
-        return env.prst[env.prst.length - 1] || null;
+        return env$3.prst[env$3.prst.length - 1] || null;
     },
 
     options: {
         integrate: false,
         onstart: () => {
-            env.table = {};
-            env.ASI = true;
+            env$3.table = {};
+            env$3.ASI = true;
         }
     }
 };
@@ -21220,6 +29551,19 @@ function processJSComponent(url){
     //Extract the template string from the classes. Use the wick compiler to turn this into a component ast. 
 
     //The Classes 
+
+}
+
+//Processes imports from the stmts list. 
+function processImport(import_stmt){
+
+}
+
+function processExport(export_stmt){
+
+}
+
+function processClass(class_declaration){
 
 }
 
@@ -21259,7 +29603,7 @@ const
                         try {
                             if (url.ext == "mjs" || url.ext == "js") {
 
-                                const module = await new Promise(function (resolve) { resolve(_interopNamespace(require(url + ""))); });
+                                const module = await import(url + "");
 
                                 let comp = null;
 
@@ -21298,7 +29642,7 @@ const
 
 
 
-            try {
+           try {
 
                 return await (new Promise(res => {
 
@@ -21308,7 +29652,7 @@ const
 
                     ast = parser(whind$1(string_data), compiler_env);
 
-                    if (ast instanceof module$1)
+                    if (ast instanceof module)
                         ast = processJSComponent(ast);
 
                     compiler_env.resolve();
@@ -21351,16 +29695,21 @@ const
 
                 
 
-                this.pending = ((async () => {
+                this.pending = ((async ()=>{
+                    var obj;
 
                     const
-                        compiler_env = new CompilerEnvironment(presets, env),
-                        obj = await compile(component_data, presets, compiler_env),
+                        compiler_env = new CompilerEnvironment(presets, env$3),
                         return_obj = this;
 
+                        try{
+                            obj = await compile(component_data, presets, compiler_env);
+                        }catch(e){
+                            throw(e)
+                        }
 
 
-                    if (obj instanceof d$1) {
+                    if (obj instanceof d$3) {
 
                         this.ast = obj.ast;
 
@@ -21390,12 +29739,14 @@ const
                     this.READY = true;
 
                     if (this.__pending) {
-                        this.__pending.forEach(e => e[3](this.mount(...e.slice(0, 3))));
+                        this.__pending.forEach(e => e[0] ? e[3](this.stamp(...e.slice(1, 3))) : e[4](this.mount(...e.slice(1, 4))));
                         this.__pending = null;
                     }
 
-                    return return_obj;
+                    return (return_obj);
                 })());
+
+
 
             } else
                 return new Component(...data);
@@ -21404,6 +29755,8 @@ const
         // If compilation fails, failure component is generated that provides 
         // error information. Should be fancy though.
         integrate = function(this_obj, from_obj = this_obj, presets, env) {
+
+            const extrascripts = [];
 
             if (this_obj.ast && from_obj.constructor.prototype !== Component.prototype) {
 
@@ -21435,254 +29788,88 @@ const
             }
         };
 
-Component.prototype = d$1.prototype;
+Component.prototype = d$3.prototype;
 
 //TODO: Fancy schmancy to string method.
 Component.toString = function() {
-    return "WICK 2019";
+    return  `WICK 2020 
+Copyright (c) MMXX Anthony C Weathersby
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.`;
 };
 
-/**
- *   This is used by Model to create custom property getter and setters on non-ModelContainerBase and non-Model properties of the Model constructor.
- *   @protected
- *   @memberof module:wick~internals.model
- */
-function CreateSchemedProperty(object, scheme, schema_name, index) {
-    if (object[schema_name])
-        return;
+const tools =  (function(){
 
-    Object.defineProperty(object, schema_name, {
-        configurable: false,
-        enumerable: true,
-        get: function() {
-            return this.getHook(schema_name, this.prop_array[index]);
-        },
-        set: function(value) {
+	/* Exports built in components into a self contained page. */
+	wick_lite$1.export = function(){
+		const map = createComponent.map;
 
-            let result = { valid: false };
+		const html = `
+	${[...map.entries()].map(v=>(v[1].template.id = v[0] + "", v[1].template.outerHTML)).join("")}
+		`;
+		const js = `
+		${[...map.entries()].map(v=>`wick_lite.load(document.getElementById("${v[0]}"), ${v[1].fn.toString().replace("anonymous(", "(")})`).join(";")}
+		`;
+	};
 
-            let val = scheme.parse(value);
+	wick_lite$1.createSelfContainedComponent;
 
-            scheme.verify(val, result);
+	/* Creates a single file formatted as HTML capable of running as a single page. */
+	wick_lite$1.createSelfContainedPage = async function(root_component, headers, scripts){
 
-            if (result.valid && this.prop_array[index] != val) {
-                this.prop_array[index] = this.setHook(schema_name, val);
-                this.scheduleUpdate(schema_name);
-                this._changed_ = true;
-            }
-        }
-    });
-}
+		// Root component is the main component that hosts all other components.
+		
+		//clear componnet map and and create a new stamped component repository. 
+		const map = (wick_lite$1.component_templates = new Map);
 
-/**
-    This is used by Model to create custom property getter and setters on Model properties of the Model constructor.
-    @protected
-    @memberof module:wick~internals.model
-*/
-function CreateModelProperty(object, model, schema_name, index) {
+		const root = await root_component.stamp();
 
-    Object.defineProperty(object, schema_name, {
-        configurable: false,
-        enumerable: true,
-        get: function() {
+		const file = [];
 
-            let m = this.prop_array[index];
+		file.push("<!DOCTYPE html>");
+		file.push("<html>");
+		file.push("<head>");
+		file.push("<script src=\"../../build/wick.lite.js\"></script>");
+		file.push("</head>");
+		file.push("<body>");
+		file.push([...map.entries()].map(v=>(`<template id="${v[0]}">${v[1].html}</template>`)).join(""));
+		file.push("<script>");
+		file.push([...map.entries()].map(v=>`wick.lc("${v[0]}", wick.gt("${v[0]}"),${v[1].js})`).join(";\n"));
+		file.push(`document.body.appendChild(wick.cc("${root.hash}").ele)`);
+		file.push("</script>");
+		file.push("</body>");
+		file.push("</html>");
 
-            if (!m) {
-                let address = this.address.slice();
-                address.push(index);
-                m = new model(null, this.root, address);
-                m.par = this;
-                m.prop_name = schema_name;
-                m.MUTATION_ID = this.MUTATION_ID;
-                this.prop_array[index] = m;
-            }
+		return file.join("\n");
+	};
 
-            return this.getHook(schema_name, m);
-        }
-    });
-}
-
-class SchemedModel extends ModelBase {
-
-    constructor(data, root = null, address = [], _schema_ = null) {
-
-        super(root, address);
-
-        if (this.constructor === SchemedModel)
-            this.constructor = (class extends SchemedModel {});
-
-        if (!this.schema) {
-
-            let schema = this.constructor.schema || _schema_;
-
-            this.constructor.schema = schema;
-
-            if (schema) {
-
-                let __FinalConstructor__ = schema.__FinalConstructor__;
-
-                let constructor = this.constructor;
-                let prototype = constructor.prototype;
-
-                if (!__FinalConstructor__) {
-                    let count = 0;
-                    let look_up = {};
-
-                    for (let schema_name in schema) {
-                        let scheme = schema[schema_name];
-
-                        if (schema_name == "self" && Array.isArray(scheme)) 
-                            return new SchemedContainer(schema, root, address);
-                        
-
-                        if (schema_name == "getHook") {
-                            prototype.getHook = scheme;
-                            continue;
-                        }
-
-                        if (schema_name == "setHook") {
-                            prototype.setHook = scheme;
-                            continue;
-                        }
-
-                        if (schema_name == "proto") {
-                            for (let name in schema.proto)
-                                _SealedProperty_(prototype, name, schema.proto[name]);
-                            continue;
-                        }
-
-                        if (typeof(scheme) == "function") {
-                            CreateModelProperty(prototype, scheme, schema_name, count);
-                        } else if (typeof(scheme) == "object") {
-                            if (Array.isArray(scheme)) {
-                                if (scheme[0] && scheme[0].container && scheme[0].schema)
-                                    CreateModelProperty(prototype, scheme[0], schema_name, count);
-                                else if (scheme[0] instanceof ModelContainerBase)
-                                    CreateModelProperty(prototype, scheme[0].constructor, schema_name, count);
-                                else
-                                    CreateModelProperty(prototype, Model, schema_name, count);
-                            } else if (scheme instanceof SchemeConstructor)
-                                CreateSchemedProperty(prototype, scheme, schema_name, count);
-                            else {
-                                CreateModelProperty(prototype, scheme.constructor, schema_name, count);
-                            }
-                        } else {
-                            console.warn(`Could not create property ${schema_name}.`);
-
-                            continue;
-                        }
-
-                        look_up[schema_name] = count;
-                        count++;
-                    }
-
-                    _SealedProperty_(prototype, "prop_offset", count);
-                    _SealedProperty_(prototype, "look_up", look_up);
-                    _SealedProperty_(prototype, "changed", false);
-
-                    Object.seal(constructor);
-
-                    schema.__FinalConstructor__ = constructor;
-                    //_FrozenProperty_(schema, "__FinalConstructor__", constructor);
-
-                    //Start the process over with a newly minted Model that has the properties defined in the Schema
-                    return new schema.__FinalConstructor__(data, root, address);
-                }
-
-                _FrozenProperty_(prototype, "schema", schema);
-            } else
-                return new Model(data, root, address);
-        }
-
-        Object.defineProperty(this, "prop_array", { value: new Array(this.prop_offset), enumerable: false, configurable: false, writable: true });
-
-        if (data)
-            this.set(data, true);
-    }
-
-    destroy() { this.root = null; }
-
-    set(data, FROM_ROOT = false) {
-
-        if (!FROM_ROOT)
-            return this._deferUpdateToRoot_(data).set(data, true);
-
-        if (!data)
-            return false;
-
-        this._changed_ = false;
-
-        for (let prop_name in data) {
-
-            let data_prop = data[prop_name];
-
-            let index = this.look_up[prop_name];
-
-            if (index !== undefined) {
-
-                let prop = this[prop_name];
-
-                if (typeof(prop) == "object") {
-
-                    if (prop.MUTATION_ID !== this.MUTATION_ID) {
-                        prop = prop.clone();
-                        prop.MUTATION_ID = this.MUTATION_ID;
-                        this.prop_array[index] = prop;
-                    }
-
-                    if (prop.set(data_prop, true))
-                        this.scheduleUpdate(prop_name);
-
-                } else {
-                    this[prop_name] = data_prop;
-                }
-            }
-        }
-
-        return this._changed_;
-    }
-
-    createProp() {}
-}
-SchemedModel.prototype.toJSON = Model.prototype.toJSON;
-
-class SchemedContainer extends ArrayModelContainer {
-    
-    constructor(schema, root, address) {
-
-        super(schema.self, root, address);
-
-        if (schema.proto)
-            for (let name in schema.proto)
-                _SealedProperty_(this, name, schema.proto[name]);
-    }
-}
+	return wick_lite$1;
+}());
 
 const wick = Component;
 
-
-
-
-const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);
-model.scheme = Object.assign((s, scheme) => (scheme = class extends SchemedModel {}, scheme.schema = s, scheme), schemes);
-model.constr = SchemedModel;
-model.any = (data) => new Model(data);
-model.any.constr = Model;
-model.container = {
-    multi: MultiIndexedContainer,
-    array: ArrayModelContainer,
-    btree: BTreeModelContainer,
-    constr: ModelContainerBase
-};
-model.store = (data) => new Store(data);
-wick.scheme = model.scheme;
-wick.model = model;
+wick.stamp = stamp; //Compiles wick component into standalone components. 
 wick.presets = d=>new Presets(d);
 wick.astCompiler = function(string){
 	return parser(whind$1(string), CompilerEnvironment);
 };
-
+wick.lite = tools;
 wick.compiler_environment = CompilerEnvironment;
 
-exports.default = wick;
+export default wick;

@@ -2036,2367 +2036,6 @@ var wick = (function () {
     const _SealedProperty_ = (object, name, value) => OB.defineProperty(object, name, {value, configurable: false, enumerable: false, writable: true});
     const _FrozenProperty_ = (object, name, value) => OB.defineProperty(object, name, {value, configurable: false, enumerable: false, writable: false});
 
-    /**
-     * Used to call the Scheduler after a JavaScript runtime tick.
-     *
-     * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
-     */
-     
-    const caller = (typeof(window) == "object" && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
-        setTimeout(f, 1);
-    };
-
-    const perf = (typeof(performance) == "undefined") ? { now: () => Date.now() } : performance;
-
-
-    /**
-     * Handles updating objects. It does this by splitting up update cycles, to respect the browser event model. 
-     *    
-     * If any object is scheduled to be updated, it will be blocked from scheduling more updates until the next ES VM tick.
-     */
-    class Spark {
-        /**
-         * Constructs the object.
-         */
-        constructor() {
-
-            this.update_queue_a = [];
-            this.update_queue_b = [];
-
-            this.update_queue = this.update_queue_a;
-
-            this.queue_switch = 0;
-
-            this.callback = ()=>{};
-
-
-            if(typeof(window) !== "undefined"){
-                window.addEventListener("load",()=>{
-                    this.callback = () => this.update();
-                    caller(this.callback);
-                });
-            }else{
-                this.callback = () => this.update();
-            }
-
-
-            this.frame_time = perf.now();
-
-            this.SCHEDULE_PENDING = false;
-        }
-
-        /**
-         * Given an object that has a _SCHD_ Boolean property, the Scheduler will queue the object and call its .update function 
-         * the following tick. If the object does not have a _SCHD_ property, the Scheduler will persuade the object to have such a property.
-         * 
-         * If there are currently no queued objects when this is called, then the Scheduler will user caller to schedule an update.
-         */
-        queueUpdate(object, timestart = 1, timeend = 0) {
-
-            if (object._SCHD_ || object._SCHD_ > 0) {
-                if (this.SCHEDULE_PENDING)
-                    return;
-                else
-                    return caller(this.callback);
-            }
-
-            object._SCHD_ = ((timestart & 0xFFFF) | ((timeend) << 16));
-
-            this.update_queue.push(object);
-
-            if (this._SCHD_)
-                return;
-
-            this.frame_time = perf.now() | 0;
-
-
-            if(!this.SCHEDULE_PENDING){
-                this.SCHEDULE_PENDING = true;
-                caller(this.callback);
-            }
-        }
-
-        removeFromQueue(object){
-
-            if(object._SCHD_)
-                for(let i = 0, l = this.update_queue.length; i < l; i++)
-                    if(this.update_queue[i] === object){
-                        this.update_queue.splice(i,1);
-                        object._SCHD_ = 0;
-
-                        if(l == 1)
-                            this.SCHEDULE_PENDING = false;
-
-                        return;
-                    }
-        }
-
-        /**
-         * Called by the caller function every tick. Calls .update on any object queued for an update. 
-         */
-        update() {
-
-            this.SCHEDULE_PENDING = false;
-
-            const uq = this.update_queue;
-            const time = perf.now() | 0;
-            const diff = Math.ceil(time - this.frame_time) | 1;
-            const step_ratio = (diff * 0.06); //  step_ratio of 1 = 16.66666666 or 1000 / 60 for 60 FPS
-
-            this.frame_time = time;
-            
-            if (this.queue_switch == 0)
-                (this.update_queue = this.update_queue_b, this.queue_switch = 1);
-            else
-                (this.update_queue = this.update_queue_a, this.queue_switch = 0);
-
-            for (let i = 0, l = uq.length, o = uq[0]; i < l; o = uq[++i]) {
-                let timestart = ((o._SCHD_ & 0xFFFF)) - diff;
-                let timeend = ((o._SCHD_ >> 16) & 0xFFFF);
-
-                o._SCHD_ = 0;
-                
-                if (timestart > 0) {
-                    this.queueUpdate(o, timestart, timeend);
-                    continue;
-                }
-
-                timestart = 0;
-
-                if (timeend > 0) 
-                    this.queueUpdate(o, timestart, timeend - diff);
-
-                /** 
-                    To ensure on code path doesn't block any others, 
-                    scheduledUpdate methods are called within a try catch block. 
-                    Errors by default are printed to console. 
-                **/
-                try {
-                    o.scheduledUpdate(step_ratio, diff);
-                } catch (e) {
-                    console.error(e);
-                }
-            }
-
-            uq.length = 0;
-        }
-    }
-
-    const spark = new Spark();
-
-    /**
-     * The base class which all Model classes extend.
-     * @memberof module:wick~internal .model
-     * @alias ModelBase
-     */
-    class ModelBase {
-        constructor(root = null, address = []) {
-            _SealedProperty_(this, "_cv_", []);
-            _SealedProperty_(this, "fv", null);
-            _SealedProperty_(this, "par", null);
-            _SealedProperty_(this, "MUTATION_ID", 0);
-            _SealedProperty_(this, "address", address);
-            _SealedProperty_(this, "root", root || this);
-            _SealedProperty_(this, "prop_name", "");
-        }
-
-
-        /**
-         *   Remove all references to any objects still held by this object.
-         *   @protected
-         *   @instance
-         */
-        destroy() {
-
-            //inform observers of the models demise
-            var observer = this.fv;
-
-            while (observer) {
-                let nx = observer.nx;
-                observer.unsetModel();
-                observer = nx;
-            }
-
-            this._cv_ = null;
-        }
-
-        setHook(prop_name, data) { return data; }
-
-        getHook(prop_name, data) { return data; }
-
-
-        /**
-         * Called by a class that extends ModelBase when on of its property values changes.
-         * @param      {string}  changed_value  The changed value
-         * @private
-         */
-        scheduleUpdate(changed_value) {
-            if (!this.fv)
-                return;
-
-
-            this._cv_.push(changed_value);
-
-            spark.queueUpdate(this);
-        }
-
-
-        getChanged(prop_name) {
-
-
-            for (let i = 0, l = this._cv_.length; i < l; i++)
-                if (this._cv_[i] == prop_name)
-                    return this[prop_name];
-
-            return null;
-        }
-
-        addListener(listener) {
-            return this.addObserver(listener);
-        }
-
-
-        /**
-         * Adds a observer to the linked list of observers on the model. argument observer MUST be an instance of View. 
-         * @param {View} observer - The observer to _bind_ to the ModelBase
-         * @throws {Error} throws an error if the value of `observer` is not an instance of {@link View}.
-         */
-        addObserver(observer) {
-            if (observer.model)
-                if (observer.model !== this) {
-                    observer.model.removeView(observer);
-                } else return;
-
-            if (this.fv) this.fv.pv = observer;
-            observer.nx = this.fv;
-            this.fv = observer;
-
-            observer.pv = null;
-            observer.model = this;
-            observer.update(this);
-        }
-
-        removeObserver(observer) {
-            this.removeView(observer);
-        }
-
-        /**
-         * Removes observer from set of observers if the passed in observer is a member of model. 
-         * @param {View} observer - The observer to unbind from ModelBase
-         */
-        removeView(observer) {
-
-
-            if (observer.model == this) {
-                if (observer == this.fv)
-                    this.fv = observer.nx;
-
-                if (observer.nx)
-                    observer.nx.pv = observer.pv;
-                if (observer.pv)
-                    observer.pv.nx = observer.nx;
-
-                observer.nx = null;
-                observer.pv = null;
-            }
-        }
-
-
-        /**
-            Should return the value of the property if it is in the model and has been updated since the last cycle. Null otherwise.
-            This should be overridden by a more efficient version by inheriting objects
-        */
-        isUpdated(prop_name) {
-
-            let changed_properties = this._cv_;
-
-            for (var i = 0, l = changed_properties.length; i < l; i++)
-                if (changed_properties[i] == prop_name)
-                    if (this[prop_name] !== undefined)
-                        return this[prop_name];
-
-            return null;
-        }
-
-
-
-        /**
-         * Called by the {@link spark} when if the ModelBase is scheduled for an update
-         * @param      {number}  step    The step
-         */
-        scheduledUpdate(step) { this.updateViews(); }
-
-
-
-        /**
-         * Calls View#update on every bound View, passing the current state of the ModelBase.
-         */
-        updateViews() {
-
-            let o = {};
-
-            for (let p = null, i = 0, l = this._cv_.length; i < l; i++)
-                (p = this._cv_[i], o[p] = this[p]);
-
-            this._cv_.length = 0;
-
-            var observer = this.fv;
-
-            while (observer) {
-
-                observer.update(this, o);
-                observer = observer.nx;
-            }
-
-            return;
-        }
-
-
-
-        /**
-         * Updates observers with a list of models that have been removed. 
-         * Primarily used in conjunction with container based observers, such as Templates.
-         * @private
-         */
-        updateViewsRemoved(data) {
-
-            var observer = this.fv;
-
-            while (observer) {
-
-                observer.removed(data);
-
-                observer = observer.nx;
-            }
-        }
-
-
-
-        /** MUTATION FUNCTIONS **************************************************************************************/
-
-
-
-        _deferUpdateToRoot_(data, MUTATION_ID = this.MUTATION_ID) {
-
-            if (!this.root)
-                return this;
-
-            return this.root._setThroughRoot_(data, this.address, 0, this.address.length, MUTATION_ID);
-        }
-
-
-
-        _setThroughRoot_(data, address, index, len, m_id) {
-
-            if (index >= len) {
-
-                if (m_id !== this.MUTATION_ID) {
-                    let clone = this.clone();
-                    clone.set(data, true);
-                    clone.MUTATION_ID = (this.par) ? this.par.MUTATION_ID : this.MUTATION_ID + 1;
-                    return clone;
-                }
-
-                this.set(data, true);
-                return this;
-            }
-
-            let i = address[index++];
-
-            let model_prop = this.prop_array[i];
-
-            if (model_prop.MUTATION_ID !== this.MUTATION_ID) {
-
-                model_prop = model_prop.clone();
-
-                model_prop.MUTATION_ID = this.MUTATION_ID;
-            }
-
-            this.prop_array[i] = model_prop;
-
-            return model_prop._setThroughRoot_(data, address, index, len, model_prop.MUTATION_ID);
-        }
-
-        seal() {
-
-            let clone = this._deferUpdateToRoot_(null, this.MUTATION_ID + 1);
-
-            return clone;
-        }
-
-        clone() {
-
-            let clone = new this.constructor(this);
-
-            clone.prop_name = this.prop_name;
-            clone._cv_ = this._cv_;
-            clone.fv = this.fv;
-            clone.par = this.par;
-            clone.MUTATION_ID = this.MUTATION_ID;
-            clone.address = this.address;
-            clone.prop_name = this.prop_name;
-
-            clone.root = (this.root == this) ? clone : this.root;
-
-            return clone;
-        }
-
-        /**
-         * Updates observers with a list of models that have been added. 
-         * Primarily used in conjunction with container based observers, such as Templates.
-         * @private
-         */
-        updateViewsAdded(data) {
-
-            var observer = this.fv;
-
-            while (observer) {
-
-                observer.added(data);
-
-                observer = observer.nx;
-            }
-        }
-
-        toJSON() { return JSON.stringify(this, null, '\t'); }
-
-
-        /**
-         * This will update the branch state of the data tree with a new branch if the MUTATION_ID is higher or lower than the current branch's parent level.
-         * In this case, the new branch will stem from the root node, and all ancestor nodes from the originating child will be cloned.
-         *
-         * @param      {Object}         child_obj    The child object
-         * @param      {(Object|number)}  MUTATION_ID  The mutation id
-         * @return     {Object}         { description_of_the_return_value }
-         */
-        setMutation(child_obj, MUTATION_ID = child_obj.MUTATION_ID) {
-            let clone = child_obj,
-                result = this;
-
-            if (MUTATION_ID == this.MUTATION_ID) return child_obj;
-
-            if (this.par)
-                result = this.par.setMutation(this, MUTATION_ID);
-
-            if (MUTATION_ID > this.MUTATION_ID) {
-                result = this.clone();
-                result.MUTATION_ID = this.MUTATION_ID + 1;
-            }
-
-            clone = child_obj.clone();
-            clone.MUTATION_ID = result.MUTATION_ID;
-            result[clone.prop_name] = clone;
-
-            return clone;
-        }
-    }
-
-    /**
-        Schema type. Handles the parsing, validation, and filtering of Model data properties. 
-    */
-    class SchemeConstructor {
-
-        constructor() {
-
-            this.start_value = undefined;
-        }
-
-        /**
-            Parses value returns an appropriate transformed value
-        */
-        parse(value) {
-
-            return value;
-        }
-
-        /**
-
-        */
-        verify(value, result) {
-
-            result.valid = true;
-        }
-
-        filter(id, filters) {
-            for (let i = 0, l = filters.length; i < l; i++)
-                if (id === filters[i]) return true;
-            return false;
-        }
-
-        string(value) {
-
-            return value + "";
-        }
-    }
-
-    class MCArray extends Array {
-
-        constructor() {
-            super();
-        }
-
-        push(...item) {
-            item.forEach(item => {
-                if (item instanceof Array)
-                    item.forEach((i) => {
-                        super.push(i);
-                    });
-                else
-                    super.push(item);
-            });
-        }
-
-        //For compatibility
-        __setFilters__() {
-
-        }
-
-        getChanged() {
-
-        }
-
-        toJSON() { return this; }
-
-        toJson() { return JSON.stringify(this, null, '\t'); }
-    }
-
-    // A no op function
-    let EmptyFunction = () => {};
-    let EmptyArray = [];
-
-    class ModelContainerBase extends ModelBase {
-
-        constructor(root = null, address = []) {
-
-            super(root, address);
-
-            _SealedProperty_(this, "scope", null);
-            _SealedProperty_(this, "first_link", null);
-
-            //For keeping the container from garbage collection.
-            _SealedProperty_(this, "pin", EmptyFunction);
-
-            //For Linking to original 
-            _SealedProperty_(this, "next", null);
-            _SealedProperty_(this, "prev", null);
-
-            //Filters are a series of strings or number selectors used to determine if a model should be inserted into or retrieved from the container.
-            _SealedProperty_(this, "_filters_", null);
-
-            this.validator = new SchemeConstructor();
-
-            return this;
-        }
-
-        setByIndex(index) { /* NO OP **/ }
-
-        getByIndex(index, value) { /* NO OP **/ }
-
-        destroy() {
-
-
-            this._filters_ = null;
-
-            if (this.scope) {
-                this.scope.__unlink__(this);
-            }
-
-            super.destroy();
-        }
-
-        /**
-            Get the number of Models held in this._mContainerBase
-
-            @returns {Number}
-        */
-        get length() { return 0; }
-
-        set length(e) { /* NO OP */ }
-
-        /** 
-            Returns a ModelContainerBase type to store the results of a get().
-        */
-        __defaultReturn__(USE_ARRAY) {
-            if (USE_ARRAY) return new MCArray;
-
-            let n = new this.constructor();
-
-            n.key = this.key;
-            n.validator = this.validator;
-            n.model = this.model;
-
-            this.__link__(n);
-
-            return n;
-        }
-
-        /**
-            Array emulating kludge
-
-            @returns The result of calling this.insert
-        */
-        push(...item) {
-            item.forEach(item => {
-                if (this.scope) {
-                    if (item instanceof Array)
-                        item.forEach((i) => {
-                            this.insert(i, true, true);
-                        });
-                    else
-                        this.insert(item, true, true);
-
-                } else {
-                    if (item instanceof Array)
-                        item.forEach((i) => {
-                            this.insert(i);
-                        });
-                    else
-                        this.insert(item);
-
-                }
-            });
-        }
-
-        /**
-            Retrieves a list of items that match the term/terms. 
-
-            @param {(Array|SearchTerm)} term - A single term or a set of terms to look for in the ModelContainerBase. 
-            @param {Array} __return_data__ - Set to true by a scope Container if it is calling a SubContainer insert function. 
-
-            @returns {(ModelContainerBase|Array)} Returns a Model container or an Array of Models matching the search terms. 
-        */
-        get(term = this._filters_, __return_data__ = null) {
-
-            let out = null;
-
-            term = this.getHook("term", term);
-
-            let USE_ARRAY = (__return_data__ === null) ? false : true;
-
-            if (term) {
-
-                if (__return_data__) {
-                    out = __return_data__;
-                } else {
-
-                    if (!this.scope)
-                        USE_ARRAY = false;
-
-                    out = this.__defaultReturn__(USE_ARRAY);
-                    out.__setFilters__(term);
-                }
-            } else
-                out = (__return_data__) ? __return_data__ : this.__defaultReturn__(USE_ARRAY);
-
-            if (!term)
-                this.__getAll__(out);
-            else {
-
-                let terms = term;
-
-                if (!Array.isArray(term))
-                    terms = [term];
-
-                //Need to convert terms into a form that will work for the identifier type
-                terms = terms.map(t => this.validator.parse(t));
-
-                this.__get__(terms, out);
-            }
-
-            return out;
-        }
-
-        set(item, from_root = false) {
-            if (!from_root)
-                return this._deferUpdateToRoot_(item).insert(item, true);
-            else
-                this.insert(item, true);
-        }
-
-        /**
-            Inserts an item into the container. If the item is not a {Model}, an attempt will be made to convert the data in the Object into a Model.
-            If the item is an array of objects, each object in the array will be considered separately. 
-
-            @param {Object} item - An Object to insert into the container. On of the properties of the object MUST have the same name as the ModelContainerBase's 
-            @param {Array} item - An array of Objects to insert into the container.
-            @param {Boolean} __FROM_SCOPE__ - Set to true by a scope Container if it is calling a SubContainer insert function. 
-
-            @returns {Boolean} Returns true if an insertion into the ModelContainerBase occurred, false otherwise.
-        */
-        insert(item, from_root = false, __FROM_SCOPE__ = false) {
-
-
-            item = this.setHook("", item);
-
-            if (!from_root)
-                return this._deferUpdateToRoot_(item).insert(item, true);
-
-            let add_list = (this.fv) ? [] : null;
-
-            let out_data = false;
-
-            if (!__FROM_SCOPE__ && this.scope)
-                return this.scope.insert(item);
-
-
-            if (item instanceof Array) {
-                for (var i = 0; i < item.length; i++)
-                    if (this.__insertSub__(item[i], out_data, add_list))
-                        out_data = true;
-            } else if (item)
-                out_data = this.__insertSub__(item, out_data, add_list);
-
-
-            if (out_data) {
-                if (this.par)
-                    this.par.scheduleUpdate(this.prop_name);
-
-
-                if (add_list && add_list.length > 0) {
-                    this.updateViewsAdded(add_list);
-                    this.scheduleUpdate();
-                }
-            }
-
-            return out_data;
-        }
-
-        /**
-            A subset of the insert function. Handles the testing of presence of an identifier value, the conversion of an Object into a Model, and the calling of the implementation specific __insert__ function.
-        */
-        __insertSub__(item, out, add_list) {
-
-            let model = item;
-
-            var identifier = this._gI_(item);
-
-            if (identifier !== undefined) {
-
-                if (!(model instanceof ModelBase)) {
-                    model = new this.model(item);
-                    model.MUTATION_ID = this.MUTATION_ID;
-                }
-
-                identifier = this._gI_(model, this._filters_);
-
-                if (identifier !== undefined) {
-                    out = this.__insert__(model, add_list, identifier);
-                    this.__linksInsert__(model);
-                }
-            }
-
-            return out;
-        }
-
-        delete(term, from_root = false) {
-            if (!from_root)
-                return this._deferUpdateToRoot_(term).remove(term);
-            else
-                this.remove(term);
-        }
-
-        /**
-            Removes an item from the container. 
-        */
-        remove(term, from_root = false, __FROM_SCOPE__ = false) {
-
-            if (!from_root)
-                return this._deferUpdateToRoot_(term).remove(term, true);
-
-            //term = this.getHook("term", term);
-
-            if (!__FROM_SCOPE__ && this.scope) {
-
-                if (!term)
-                    return this.scope.remove(this._filters_);
-                else
-                    return this.scope.remove(term);
-            }
-
-            let out_container = [];
-
-            if (!term)
-                this.__removeAll__();
-
-            else {
-
-                let terms = (Array.isArray(term)) ? term : [term];
-
-                //Need to convert terms into a form that will work for the identifier type
-                terms = terms.map(t => (t instanceof ModelBase) ? t : this.validator.parse(t));
-
-                this.__remove__(terms, out_container);
-            }
-
-            if (out_container.length > 0) {
-                if (this.par)
-                    this.par.scheduleUpdate(this.prop_name);
-
-
-                if (out_container && out_container.length > 0) {
-                    this.updateViewsRemoved(out_container);
-                    this.scheduleUpdate();
-                }
-            }
-
-            return out_container;
-        }
-
-        /**
-            Removes a ModelContainerBase from list of linked containers. 
-
-            @param {ModelContainerBase} container - The ModelContainerBase instance to remove from the set of linked containers. Must be a member of the linked containers. 
-        */
-        __unlink__(container) {
-
-            if (container instanceof ModelContainerBase && container.scope == this) {
-
-                if (container == this.first_link)
-                    this.first_link = container.next;
-
-                if (container.next)
-                    container.next.prev = container.prev;
-
-                if (container.prev)
-                    container.prev.next = container.next;
-
-                container.scope = null;
-            }
-        }
-
-        /**
-            Adds a container to the list of tracked containers. 
-
-            @param {ModelContainerBase} container - The ModelContainerBase instance to add the set of linked containers.
-        */
-        __link__(container) {
-            if (container instanceof ModelContainerBase && !container.scope) {
-
-                container.scope = this;
-
-                container.next = this.first_link;
-
-                if (this.first_link)
-                    this.first_link.prev = container;
-
-                this.first_link = container;
-
-                container.pin = ((container) => {
-                    let id = setTimeout(() => {
-                        container.__unlink__();
-                    }, 50);
-
-                    return () => {
-                        clearTimeout(id);
-                        if (!container.scope)
-                            console.warn("failed to clear the destruction of container in time!");
-                    };
-                })(container);
-            }
-        }
-
-        /**
-         * Remove items from linked ModelContainers according to the terms provided.
-         * @param      {Array}  terms   Array of terms.
-         * @private
-         */
-        __linksRemove__(item) {
-            let a = this.first_link;
-            while (a) {
-                for (let i = 0; i < item.length; i++)
-                    if (a._gI_(item[i], a._filters_)) {
-                        a.scheduleUpdate();
-                        a.__linksRemove__(item);
-                        break;
-                    }
-
-                a = a.next;
-            }
-        }
-
-        /**
-         * Add items to linked ModelContainers.
-         * @param      {Model}  item   Item to add.
-         * @private
-         */
-        __linksInsert__(item) {
-            let a = this.first_link;
-            while (a) {
-                if (a._gI_(item, a._filters_))
-                    a.scheduleUpdate();
-                a = a.next;
-            }
-        }
-
-        /**
-            Removes any items in the ModelConatiner not included in the array "items", and adds any item in `items` not already in the ModelContainerBase.
-            @param {Array} items - An array of identifiable Models or objects. 
-        */
-        cull(items) {
-
-            let hash_table = {};
-            let existing_items = __getAll__([], true);
-
-            let loadHash = (item) => {
-                if (item instanceof Array)
-                    return item.forEach((e) => loadHash(e));
-
-                let identifier = this._gI_(item);
-
-                if (identifier !== undefined)
-                    hash_table[identifier] = item;
-
-            };
-
-            loadHash(items);
-
-            for (let i = 0; i < existing_items.lenth; i++) {
-                let e_item = existing_items[i];
-                if (!existing_items[this._gI_(e_item)])
-                    this.__remove__(e_item);
-            }
-
-            this.insert(items);
-        }
-
-        __setFilters__(term) {
-
-            if (!this._filters_) this._filters_ = [];
-
-            if (Array.isArray(term))
-                this._filters_ = this._filters_.concat(term.map(t => this.validator.parse(t)));
-            else
-                this._filters_.push(this.validator.parse(term));
-
-        }
-
-        /**
-            Returns true if the identifier matches a predefined filter pattern, which is evaluated by this.parser. If a 
-            parser was not present the ModelContainers schema, then the function will return true upon every evaluation.
-        */
-        __filterIdentifier__(identifier, filters) {
-            if (filters.length > 0) {
-                return this.validator.filter(identifier, filters);
-            }
-            return true;
-        }
-
-        _gIf_(item, term) {
-            let t = this._gI_(item, this.filters);
-        }
-
-        /**
-            Returns the Identifier property value if it exists in the item. If an array value for filters is passed, then undefined is returned if the identifier value does not pass filtering criteria.
-            @param {(Object|Model)} item
-            @param {Array} filters - An array of filter terms to test whether the identifier meets the criteria to be handled by the ModelContainerBase.
-        */
-        _gI_(item, filters = null) {
-
-            let identifier;
-
-            if (typeof(item) == "object" && this.key)
-                identifier = item[this.key];
-            else
-                identifier = item;
-
-            if (identifier && this.validator)
-                identifier = this.validator.parse(identifier);
-
-            if (filters && identifier)
-                return (this.__filterIdentifier__(identifier, filters)) ? identifier : undefined;
-
-            return identifier;
-        }
-
-        /** 
-            OVERRIDE SECTION ********************************************************************
-            
-            All of these functions should be overridden by inheriting classes
-        */
-
-        __insert__() { return this; }
-
-        __get__(item, __return_data__) { return __return_data__; }
-
-        __getAll__(__return_data__) { return __return_data__; }
-
-        __removeAll__() { return []; }
-
-        __remove__() { return []; }
-
-        clone() {
-            let clone = super.clone();
-            clone.key = this.key;
-            clone.model = this.model;
-            clone.validator = this.validator;
-            clone.first_link = this.first_link;
-            return clone;
-        }
-
-        // END OVERRIDE *************************************************************************
-    }
-
-    const proto = ModelContainerBase.prototype;
-    _SealedProperty_(proto, "model", null);
-    _SealedProperty_(proto, "key", "");
-    _SealedProperty_(proto, "validator", null);
-
-    class MultiIndexedContainer extends ModelContainerBase {
-
-        constructor(data = [], root = null, address = []) {
-
-            super(root, address);
-
-            this.secondary_indexes = {};
-            this.primary_index = null;
-            this.primary_key = "";
-
-            if (data[0] && data[0].key) {
-
-                let key = data[0].key;
-
-                if (data[0].model)
-                    this.model = data[0].model;
-
-                if (Array.isArray(key))
-                    key.forEach((k) => (this.addKey(k)));
-
-                data = data.slice(1);
-            }
-
-            if (Array.isArray(data) && data.length > 0)
-                this.insert(data);
-        }
-
-        /**
-            Returns the length of the first index in this container. 
-        */
-        get length() { return this.primary_index.length; }
-
-        /**
-            Insert a new ModelContainerBase into the index through the key.  
-        */
-        addKey(key) {
-            let name = key.name;
-
-            let container = new MultiIndexedContainer.array([{ key, model: this.model }]);
-
-            if (this.primary_index) {
-                this.secondary_indexes[name] = container;
-                this.secondary_indexes[name].insert(this.primary_index.__getAll__());
-            } else {
-                this.primary_key = name;
-                this.primary_index = container;
-            }
-        }
-
-        get(item, __return_data__) {
-            
-            item = this.getHook("query", item);
-
-            if (item) {
-                for (let name in item) {
-                    if (name == this.primary_key)
-                        return this.primary_index.get(item[name], __return_data__);
-
-                    else if (this.secondary_indexes[name])
-                        return this.secondary_indexes[name].get(item[name], __return_data__);
-
-                }
-            } else
-                return this.primary_index.get(null, __return_data__);
-        }
-
-        __insert__(model, add_list, identifier) {
-
-            let out = false;
-
-            model.par = this;
-
-            if ((out = this.primary_index.insert(model))) {
-                for (let name in this.secondary_indexes) {
-
-                    let index = this.secondary_indexes[name];
-
-                    index.insert(model);
-                }
-            }
-
-            if (out)
-                this.updateViews(this.primary_index.get());
-
-            return out;
-        }
-        /**
-            @private 
-        */
-        __remove__(term, out_container) {
-
-            let out = false;
-
-            if ((out = this.primary_index.__remove__(term, out_container))) {
-
-                for (let name in this.secondary_indexes) {
-
-                    let index = this.secondary_indexes[name];
-
-                    index.__remove__(out_container);
-                }
-            }
-
-            return out;
-        }
-
-        __removeAll__() {
-
-            let out = false;
-
-            out = this.primary_index.__removeAll__();
-
-            for (let name in this.secondary_indexes) {
-
-                let index = this.secondary_indexes[name];
-
-                if (index.__removeAll__())
-                    out = true;
-            }
-
-            return out;
-        }
-
-
-        /**
-            Overrides Model container default _gI_ to force item to pass.
-            @private 
-        */
-        _gI_(item, filters = null) {
-            return true;
-        }
-
-        toJSON() {
-            return this.primary_index.toJSON();
-        }
-
-        clone() {
-            let clone = super.clone();
-            clone.secondary_indexes = this.secondary_indexes;
-            clone.primary_index = this.primary_index;
-            return clone;
-        }
-    }
-
-    class NumberSchemeConstructor extends SchemeConstructor {
-
-        constructor() {
-
-            super();
-
-            this.start_value = 0;
-        }
-
-        parse(value) {
-
-            return parseFloat(value);
-        }
-
-        verify(value, result) {
-
-            result.valid = true;
-
-            if (value == NaN || value == undefined) {
-                result.valid = false;
-                result.reason = "Invalid number type.";
-            }
-        }
-
-        filter(identifier, filters) {
-
-            for (let i = 0, l = filters.length; i < l; i++)
-                if (identifier == filters[i])
-                    return true;
-
-            return false;
-        }
-    }
-
-    let number$1 = new NumberSchemeConstructor();
-
-    let scape_date = new Date();
-    scape_date.setHours(0);
-    scape_date.setMilliseconds(0);
-    scape_date.setSeconds(0);
-    scape_date.setTime(0);
-
-    class DateSchemeConstructor extends NumberSchemeConstructor {
-
-        parse(value) {
-
-            if(!value)
-                return undefined;
-
-            if(value instanceof Date)
-                return value.valueOf();
-
-            if (!isNaN(value))
-                return parseInt(value);
-
-            let date = (new Date(value)).valueOf();
-
-            if(date) return date;
-
-            let lex = whind$1(value);
-
-            let year = parseInt(lex.text);
-
-            if (year) {
-
-                scape_date.setHours(0);
-                scape_date.setMilliseconds(0);
-                scape_date.setSeconds(0);
-                scape_date.setTime(0);
-
-                lex.next();
-                lex.next();
-                let month = parseInt(lex.text) - 1;
-                lex.next();
-                lex.next();
-                let day = parseInt(lex.text);
-                scape_date.setFullYear(year);
-                scape_date.setDate(day);
-                scape_date.setMonth(month);
-
-                lex.next();
-
-                if (lex.pos > -1) {
-
-                    let hours = parseInt(lex.text);
-                    lex.next();
-                    lex.next();
-                    let minutes = parseInt(lex.text);
-
-                    scape_date.setHours(hours);
-                    scape_date.setMinutes(minutes);
-                }
-
-
-
-                return scape_date.valueOf();
-            } 
-        }
-
-        /**
-         
-         */
-        verify(value, result) {
-
-            value = this.parse(value);
-
-            super.verify(value, result);
-        }
-
-        filter(identifier, filters) {
-
-            if (filters.length > 1) {
-
-                for (let i = 0, l = filters.length - 1; i < l; i += 2) {
-                    let start = filters[i];
-                    let end = filters[i + 1];
-
-                    if (start <= identifier && identifier <= end) {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        string(value) {
-            
-            return (new Date(value)) + "";
-        }
-    }
-
-    let date = new DateSchemeConstructor();
-
-    class TimeSchemeConstructor extends NumberSchemeConstructor {
-
-        parse(value) {
-            if (!isNaN(value))
-                return parseFloat(value);
-            try {
-                var hour = parseInt(value.split(":")[0]);
-                var min = parseInt(value.split(":")[1].split(" ")[0]);
-                if (value.split(":")[1].split(" ")[1])
-                    half = (value.split(":")[1].split(" ")[1].toLowerCase() == "pm");
-                else
-                    half = 0;
-            } catch (e) {
-                var hour = 0;
-                var min = 0;
-                var half = 0;
-            }
-            
-            return parseFloat((hour + ((half) ? 12 : 0) + (min / 60)));
-        }
-
-        verify(value, result) {
-            this.parse(value);
-            super.verify(value, result);
-        }
-
-        filter(identifier, filters) {
-            return true
-        }
-
-        string(value) {
-            return (new Date(value)) + "";
-        }
-    }
-
-    let time = new TimeSchemeConstructor();
-
-    class StringSchemeConstructor extends SchemeConstructor {
-        
-        constructor() {
-
-            super();
-
-            this.start_value = "";
-        }
-        parse(value) {
-
-            return value + "";
-        }
-
-        verify(value, result) {
-            result.valid = true;
-
-            if (value === undefined) {
-                result.valid = false;
-                result.reason = " value is undefined";
-            } else if (!value instanceof String) {
-                result.valid = false;
-                result.reason = " value is not a string.";
-            }
-        }
-
-        filter(identifier, filters) {
-
-            for (let i = 0, l = filters.length; i < l; i++)
-                if (identifier.match(filters[i] + ""))
-                    return true;
-
-            return false;
-        }
-    }
-
-    let string$1 = new StringSchemeConstructor();
-
-    class BoolSchemeConstructor extends SchemeConstructor {
-
-        constructor() {
-
-            super();
-
-            this.start_value = false;
-        }
-
-        parse(value) {
-
-            return (value) ? true : false;
-        }
-
-        verify(value, result) {
-
-            result.valid = true;
-
-            if (value === undefined) {
-                result.valid = false;
-                result.reason = " value is undefined";
-            } else if (!value instanceof Boolean) {
-                result.valid = false;
-                result.reason = " value is not a Boolean.";
-            }
-        }
-
-        filter(identifier, filters) {
-
-            if (value instanceof Boolean)
-                return true;
-
-            return false;
-        }
-    }
-
-    let bool = new BoolSchemeConstructor();
-
-    let schemes = { date, string: string$1, number: number$1, bool, time };
-
-
-    /**
-     * Used by Models to ensure conformance to a predefined data structure. Becomes immutable once created.
-     * @param {Object} data - An Object of `key`:`value` pairs used to define the Scheme. `value`s must be instances of or SchemeConstructor or classes that extend SchemeConstructor.
-     * @readonly
-     */
-    class Schema {}
-
-    class BTreeModelContainer extends ModelContainerBase {
-
-        constructor(data = [], root = null, address = []) {
-
-            super(root, address);
-
-            this.validator = schemes.number;
-
-            if (data[0] && data[0].key) {
-
-                let key = data[0].key;
-
-                if (typeof key == "object") {
-
-                    if (key.type)
-                        this.validator = (key.type instanceof NumberSchemeConstructor) ? key.type : this.validator;
-
-                    if (key.name)
-                        this.key = key.name;
-
-                    if (key.unique_key)
-                        this.unique_key = key.unique_key;
-                } else
-                    this.key = key;
-
-                if (data[0].model)
-                    this.model = data[0].model;
-
-                data = data.slice(1);
-            }
-
-            this.min = 10;
-            this.max = 20;
-            this.size = 0;
-            this.btree = null;
-
-            if (Array.isArray(data) && data.length > 0)
-                this.insert(data);
-        }
-
-        destroy() {
-            if (this.btree)
-                this.btree.destroy();
-
-            super.destroy();
-        }
-
-        get length() {
-            return this.size;
-        }
-
-        __insert__(model, add_list, identifier) {
-
-            let result = {
-                added: false
-            };
-
-            if (!this.btree)
-                this.btree = new BtreeNode(true);
-
-            this.btree = this.btree.insert(identifier, model, this.unique_key, this.max, true, result).newnode;
-
-            if (add_list) add_list.push(model);
-
-            if (result.added) {
-                this.size++;
-                this.__updateLinks__();
-            }
-
-            return result.added;
-        }
-
-        __get__(terms, __return_data__) {
-
-            if(!this.btree) return __return_data__;
-
-            if (__return_data__ instanceof BTreeModelContainer){
-                __return_data__.btree = this.btree;
-                return __return_data__;
-            }
-
-            let out = [];
-
-            for (let i = 0, l = terms.length; i < l; i++) {
-                let b, a = terms[i];
-
-                if (a instanceof ModelBase)
-                    continue;
-
-                if (i < l-1 && !(terms[i + 1] instanceof ModelBase)) {
-                    b = terms[++i];
-                } else
-                    b = a;
-
-                this.btree.get(a, b, out);
-            }
-
-            if (this._filters_) {
-                for (let i = 0, l = out.length; i < l; i++) {
-                    let model = out[i];
-
-                    if (this._gI_(model, this._filters_))
-                        __return_data__.push(model);
-                }
-            } else
-                for (let i = 0, l = out.length; i < l; i++)
-                    __return_data__.push(out[i]);
-
-
-
-            return __return_data__;
-        }
-
-        __remove__(terms, out_container = []) {
-
-            if(!this.btree) return false;
-
-            let result = 0;
-
-            for (let i = 0, l = terms.length; i < l; i++) {
-                let b, a = terms[i];
-
-                if ((a instanceof ModelBase)) {
-                    let v = this._gI_(a);
-                    let o = this.btree.remove(v, v, this.unique_key, this.unique_key ? a[this.unique_key] : "", true, this.min, out_container);
-                    result += o.out;
-                    this.btree = o.out_node;
-                    continue;
-                }
-
-                if (i < l-1 && !(terms[i + 1] instanceof ModelBase)) {
-                    b = terms[++i];
-                } else
-                    b = a;
-
-                let o = this.btree.remove(a, b, "", "", true, this.min, out_container);
-                result += o.out;
-                this.btree = o.out_node;
-            }
-
-            if (result > 0) {
-                this.size -= result;
-                this.__updateLinks__();
-                this.__linksRemove__(out_container);
-            }
-
-
-            return result !== 0;
-        }
-
-        __updateLinks__() {
-            let a = this.first_link;
-            while (a) {
-                a.btree = this.btree;
-                a = a.next;
-            }
-        }
-
-        __getAll__(__return_data__) {
-
-            if (this._filters_) {
-                this.__get__(this._filters_, __return_data__);
-            } else if (this.btree)
-                this.btree.get(-Infinity, Infinity, __return_data__);
-
-            return __return_data__;
-        }
-
-        __removeAll__() {
-            if (this.btree)
-                this.btree.destroy();
-            this.btree = null;
-        }
-
-        toJSON() {
-            let out_data = [];
-
-            if (this.btree) {
-
-                this.btree.get(this.min, this.max, out_data);
-            }
-
-            return out_data;
-        }
-
-        clone() {
-            let clone = super.clone();
-            clone.btree = this.btree;
-            return clone;
-        }
-    }
-
-    class BtreeNode {
-        constructor(IS_LEAF = false) {
-            this.LEAF = IS_LEAF;
-            this.nodes = [];
-            this.keys = [];
-            this.items = 0;
-        }
-
-        destroy() {
-
-            if (!this.LEAF)
-                for (let i = 0, l = this.nodes.length; i < l; i++)
-                    this.nodes[i].destroy();
-            
-
-            this.nodes = null;
-            this.keys = null;
-        }
-
-        balanceInsert(max_size, IS_ROOT = false) {
-            if (this.keys.length >= max_size) {
-                //need to split this up!
-
-                let newnode = new BtreeNode(this.LEAF);
-
-                let split = (max_size >> 1) | 0;
-
-                let key = this.keys[split];
-
-                let left_keys = this.keys.slice(0, split);
-                let left_nodes = this.nodes.slice(0, (this.LEAF) ? split : split + 1);
-
-                let right_keys = this.keys.slice((this.LEAF) ? split : split + 1);
-                let right_nodes = this.nodes.slice((this.LEAF) ? split : split + 1);
-
-                newnode.keys = right_keys;
-                newnode.nodes = right_nodes;
-
-                this.keys = left_keys;
-                this.nodes = left_nodes;
-
-                if (IS_ROOT) {
-
-                    let root = new BtreeNode();
-
-                    root.keys.push(key);
-                    root.nodes.push(this, newnode);
-
-                    return {
-                        newnode: root,
-                        key: key
-                    };
-                }
-
-                return {
-                    newnode: newnode,
-                    key: key
-                };
-            }
-
-            return {
-                newnode: this,
-                key: 0
-            };
-        }
-
-        /**
-            Inserts model into the tree, sorted by identifier. 
-        */
-        insert(identifier, model, unique_key, max_size, IS_ROOT = false, result) {
-
-            let l = this.keys.length;
-
-            if (!this.LEAF) {
-
-                for (var i = 0; i < l; i++) {
-
-                    let key = this.keys[i];
-
-                    if (identifier < key) {
-                        let node = this.nodes[i];
-
-                        let o = node.insert(identifier, model, unique_key, max_size, false, result);
-                        let keyr = o.key;
-                        let newnode = o.newnode;
-
-                        //if (keyr == undefined) debugger;
-
-                        if (newnode != node) {
-                            this.keys.splice(i, 0, keyr);
-                            this.nodes.splice(i + 1, 0, newnode);
-                        }
-
-                        return this.balanceInsert(max_size, IS_ROOT);
-                    }
-                }
-
-                let node = this.nodes[i];
-
-                let {
-                    newnode,
-                    key
-                } = node.insert(identifier, model, unique_key, max_size, false, result);
-
-                //if (key == undefined) debugger;
-
-                if (newnode != node) {
-                    this.keys.push(key);
-                    this.nodes.push(newnode);
-                }
-
-                return this.balanceInsert(max_size, IS_ROOT);
-
-            } else {
-
-                for (let i = 0, l = this.keys.length; i < l; i++) {
-                    let key = this.keys[i];
-
-                    if (identifier == key) {
-
-                        if (unique_key) {
-                            if (this.nodes[i][unique_key] !== model[unique_key]) { continue; }
-                        } else
-                            this.nodes[i].set(model);
-                        
-
-                        result.added = false;
-
-                        return {
-                            newnode: this,
-                            key: identifier
-                        };
-                    } else if (identifier < key) {
-
-                        this.keys.splice(i, 0, identifier);
-                        this.nodes.splice(i, 0, model);
-
-                        result.added = true;
-
-                        return this.balanceInsert(max_size, IS_ROOT);
-                    }
-                }
-
-                this.keys.push(identifier);
-                this.nodes.push(model);
-
-                result.added = true;
-
-                return this.balanceInsert(max_size, IS_ROOT);
-            }
-
-            return {
-                newnode: this,
-                key: identifier,
-            };
-        }
-
-        balanceRemove(index, min_size) {
-            let left = this.nodes[index - 1];
-            let right = this.nodes[index + 1];
-            let node = this.nodes[index];
-
-            //Left rotate
-            if (left && left.keys.length > min_size) {
-
-                let lk = left.keys.length;
-                let ln = left.nodes.length;
-
-                node.keys.unshift((node.LEAF) ? left.keys[lk - 1] : this.keys[index - 1]);
-                node.nodes.unshift(left.nodes[ln - 1]);
-
-                this.keys[index - 1] = left.keys[lk - 1];
-
-                left.keys.length = lk - 1;
-                left.nodes.length = ln - 1;
-
-                return false;
-            } else
-                //Right rotate
-                if (right && right.keys.length > min_size) {
-
-                    node.keys.push((node.LEAF) ? right.keys[0] : this.keys[index]);
-                    node.nodes.push(right.nodes[0]);
-
-                    right.keys.splice(0, 1);
-                    right.nodes.splice(0, 1);
-
-                    this.keys[index] = (node.LEAF) ? right.keys[1] : right.keys[0];
-
-                    return false;
-
-                } else {
-
-                    //Left or Right Merge
-                    if (!left) {
-                        index++;
-                        left = node;
-                        node = right;
-                    }
-
-                    let key = this.keys[index - 1];
-                    this.keys.splice(index - 1, 1);
-                    this.nodes.splice(index, 1);
-
-                    left.nodes = left.nodes.concat(node.nodes);
-                    if (!left.LEAF) left.keys.push(key);
-                    left.keys = left.keys.concat(node.keys);
-
-
-                    if (left.LEAF)
-                        for (let i = 0; i < left.keys.length; i++)
-                            if (left.keys[i] != left.nodes[i].id)
-                                {/*debugger*/};
-
-                    return true;
-                }
-
-        }
-
-        remove(start, end, unique_key, unique_id, IS_ROOT = false, min_size, out_container) {
-            let l = this.keys.length,
-                out = 0,
-                out_node = this;
-
-            if (!this.LEAF) {
-
-                for (var i = 0; i < l; i++) {
-
-                    let key = this.keys[i];
-
-                    if (start <= key)
-                        out += this.nodes[i].remove(start, end, unique_key, unique_id, false, min_size, out_container).out;
-                }
-
-                out += this.nodes[i].remove(start, end, unique_key, unique_id, false, min_size, out_container).out;
-
-                for (var i = 0; i < this.nodes.length; i++) {
-                    if (this.nodes[i].keys.length < min_size) {
-                        if (this.balanceRemove(i, min_size)) {
-                            l--;
-                            i--;
-                        }
-                    }
-                }
-
-                if (this.nodes.length == 1)
-                    out_node = this.nodes[0];
-
-            } else {
-
-                for (let i = 0, l = this.keys.length; i < l; i++) {
-                    let key = this.keys[i];
-
-                    if (key <= end && key >= start) {
-                        if (unique_key, unique_id && this.nodes[i][unique_key] !== unique_id) continue;
-                        out_container.push(this.nodes[i]);
-                        out++;
-                        this.keys.splice(i, 1);
-                        this.nodes.splice(i, 1);
-                        l--;
-                        i--;
-                    }
-                }
-            }
-
-            return {
-                out_node,
-                out
-            };
-        }
-
-        get(start, end, out_container) {
-
-            if (!start || !end)
-                return false;
-
-            if (!this.LEAF) {
-
-                for (var i = 0, l = this.keys.length; i < l; i++) {
-
-                    let key = this.keys[i];
-
-                    if (start <= key)
-                        this.nodes[i].get(start, end, out_container);
-                }
-
-                this.nodes[i].get(start, end, out_container);
-
-            } else {
-
-                let out = false;
-
-                for (let i = 0, l = this.keys.length; i < l; i++) {
-                    let key = this.keys[i];
-
-                    if (key <= end && key >= start)
-                        out_container.push(this.nodes[i]);
-                }
-            }
-        }
-    }
-
-    MultiIndexedContainer.btree = BTreeModelContainer;
-
-    const ArrayContainerProxySettings = {
-
-        set: function(obj, prop, val) {
-
-            if (prop in obj && obj[prop] == val)
-                return true;
-
-            let property = obj[prop];
-
-            if (property && typeof(property) == "object")
-                property.set(val);
-            else
-                obj[prop] = val;
-
-            obj.scheduleUpdate(prop);
-
-            return true;
-        },
-
-        get: function(obj, prop, val) {
-
-            if (prop in obj)
-                return obj[prop];
-
-            if (!isNaN(prop))
-                return obj.data[prop];
-
-            let term = {};
-
-            term[obj.key] = prop;
-
-            return obj.get(prop, [])[0];
-        }
-    };
-
-    /**
-        Stores models in random order inside an internal array object. 
-     */
-
-    class ArrayModelContainer extends ModelContainerBase {
-
-        constructor(data = [], root = null, address = []) {
-
-            super(root, address);
-
-            if (data[0] && data[0].key) {
-
-                let key = data[0].key;
-
-                /* Custom selection of container types happens here. 
-                 * If there are multiple keys present, then a MultiIndexedContainer is used.
-                 * If the value of the key is a Numerical type, then a BtreeModelContainer is used.
-                 **/
-                if (typeof(key) == "object") {
-
-                    if (Array.isArray(key))
-                        return new MultiIndexedContainer(data, root, address);
-
-                    if (key.type) {
-                        if (key.type instanceof NumberSchemeConstructor)
-                            return new BTreeModelContainer(data, root, address);
-                        this.validator = (key.type instanceof SchemeConstructor) ? key.type : this.validator;
-                    }
-
-                    if (key.name)
-                        this.key = key.name;
-                } else
-                    this.key = key;
-
-                if (data[0].model)
-                    this.model = data[0].model;
-
-                data = data.slice(1);
-            }
-
-            this.data = [];
-
-            if (Array.isArray(data) && data.length > 0)
-                this.insert(data, true);
-        }
-
-        destroy() {
-
-            this.data = null;
-
-            super.destroy();
-        }
-
-        get proxy() { return new Proxy(this, ArrayContainerProxySettings); }
-
-        set proxy(v) {}
-
-        get length() { return this.data.length; }
-
-        __defaultReturn__(USE_ARRAY) {
-
-            if (USE_ARRAY) return new MCArray();
-
-            let n = this.clone();
-
-            this.__link__(n);
-
-            return n;
-        }
-
-        __insert__(model, add_list, identifier) {
-
-            for (var i = 0, l = this.data.length; i < l; i++) {
-
-                var obj = this.data[i];
-
-                if (this._gI_(obj) == identifier) {
-
-                    if (obj.MUTATION_ID !== this.MUTATION_ID) {
-                        obj = obj.clone();
-                        obj.MUTATION_ID = this.MUTATION_ID;
-                    }
-
-                    obj.set(model, true);
-
-                    this.data[i] = obj;
-
-                    return false; //Model not added to Container. Model just updated.
-                }
-            }
-
-            this.data.push(model);
-
-            model.address = this.address.slice();
-            model.address.push(this.data.length - 1);
-
-            model.root = this.root;
-
-            if (add_list) add_list.push(model);
-
-            return true; // Model added to Container.
-        }
-
-        getByIndex(i) {
-            return this.data[i];
-        }
-
-        setByIndex(i, m) {
-            this.data[i] = m;
-        }
-
-        __get__(term, return_data) {
-
-            let terms = null;
-
-            if (term)
-                if (term instanceof Array)
-                    terms = term;
-                else
-                    terms = [term];
-
-            for (let i = 0, l = this.data.length; i < l; i++) {
-                let obj = this.data[i];
-                if (this._gI_(obj, terms)) {
-                    return_data.push(obj);
-                }
-            }
-
-            return return_data;
-        }
-
-        __getAll__(return_data) {
-
-            this.data.forEach((m) => {
-                return_data.push(m);
-            });
-
-            return return_data;
-        }
-
-        __removeAll__() {
-            let items = this.data.map(d => d) || [];
-
-            this.data.length = 0;
-
-            return items;
-        }
-
-        _setThroughRoot_(data, address, index, len, m_id) {
-
-            if (index >= len)
-                return this;
-
-            let i = address[index++];
-
-            let model_prop = this.data[i];
-
-            if (model_prop.MUTATION_ID !== this.MUTATION_ID) {
-                model_prop = model_prop.clone();
-                model_prop.MUTATION_ID = this.MUTATION_ID;
-            }
-
-            this.data[i] = model_prop;
-
-            return model_prop._setThroughRoot_(data, address, index, len, model_prop.MUTATION_ID);
-        }
-
-        __remove__(term, out_container) {
-
-            let result = false;
-
-            term = term.map(t => (t instanceof ModelBase) ? this._gI_(t) : t);
-            
-            for (var i = 0, l = this.data.length; i < l; i++) {
-                var obj = this.data[i];
-
-                if (this._gI_(obj, term)) {
-
-                    result = true;
-
-                    this.data.splice(i, 1);
-
-                    l--;
-                    i--;
-
-                    out_container.push(obj);
-
-                    break;
-                }
-            }
-
-            return result;
-        }
-
-        toJSON() { return this.data; }
-
-        clone() {
-            let clone = super.clone();
-            clone.data = this.data.slice();
-            return clone;
-        }
-    }
-
-    MultiIndexedContainer.array = ArrayModelContainer;
-
-    Object.freeze(ArrayModelContainer);
-
-    class Model extends ModelBase {
-
-        constructor(data, root = null, address = []) {
-
-            super(root, address);
-
-            _SealedProperty_(this, "prop_array", []);
-            _SealedProperty_(this, "prop_offset", 0);
-            _SealedProperty_(this, "look_up", {});
-
-            if (data)
-                for (let name in data)
-                    this.createProp(name, data[name]);
-
-        }
-
-        get proxy() { return this;}
-
-        set(data, FROM_ROOT = false) {
-
-            if (!FROM_ROOT)
-                return this._deferUpdateToRoot_(data).set(data, true);
-
-            if (!data)
-                return false;
-
-            let out = false;
-
-            for (let prop_name in data) {
-
-                let index = this.look_up[prop_name];
-
-                if (index !== undefined) {
-
-                    let prop = this.prop_array[index];
-
-                    if (typeof(prop) == "object") {
-
-                        if (prop.MUTATION_ID !== this.MUTATION_ID) {
-                            prop = prop.clone();
-                            prop.MUTATION_ID = this.MUTATION_ID;
-                            this.prop_array[index] = prop;
-                        }
-
-                        if (prop.set(data[prop_name], true)){
-                            this.scheduleUpdate(prop_name);
-                            out = true;
-                        }
-
-                    } else if (prop !== data[prop_name]) {
-                        this.prop_array[index] = data[prop_name];
-                         this.scheduleUpdate(prop_name);
-                         out = true;
-                    }
-                } else{
-                    this.createProp(prop_name, data[prop_name]);
-                    out = true;
-                }
-            }
-
-            return out;
-        }
-        createProp(name, value) {
-
-            let index = this.prop_offset++;
-
-            this.look_up[name] = index;
-            var address = this.address.slice();
-            address.push(index);
-
-            switch (typeof(value)) {
-
-                case "object":
-                    if (Array.isArray(value))
-                        this.prop_array.push(new ArrayModelContainer(value, this.root, address));
-                    else {
-                        if (value instanceof ModelBase) {
-                            value.address = address;
-                            this.prop_array.push(value);
-                        } else
-                            this.prop_array.push(new Model(value, this.root, address));
-                    }
-
-                    this.prop_array[index].prop_name = name;
-                    this.prop_array[index].par = this;
-
-                    Object.defineProperty(this, name, {
-
-                        configurable: false,
-
-                        enumerable: true,
-
-                        get: function() { return this.getHook(name, this.prop_array[index]); },
-
-                        set: (v) => {}
-                    });
-
-                    break;
-
-                case "function":
-
-                    let object = new value(null, this.root, address);
-
-                    object.par = this;
-                    object.prop_name = name;
-
-                    this.prop_array.push(object);
-
-                    Object.defineProperty(this, name, {
-
-                        configurable: false,
-
-                        enumerable: true,
-
-                        get: function() { return this.getHook(name, this.prop_array[index]); },
-
-                        set: (v) => {}
-                    });
-
-                    break;
-
-                default:
-                    this.prop_array.push(value);
-
-                    Object.defineProperty(this, name, {
-
-                        configurable: false,
-
-                        enumerable: true,
-
-                        get: function() { return this.getHook(name, this.prop_array[index]); },
-
-                        set: function(value) {
-
-                            let val = this.prop_array[index];
-
-                            if (val !== value) {
-                                this.prop_array[index] = this.setHook(name, value);
-                                this.scheduleUpdate(name);
-                            }
-                        }
-                    });
-            }
-
-            this.scheduleUpdate(name);
-        }
-
-        toJSON(HOST = true){
-            let data = {};
-
-            for(let name in this.look_up){
-                let index = this.look_up[name];
-                let prop = this.prop_array[index];
-
-                if(prop){
-                    if(prop instanceof ModelBase)
-                        data[name] = prop.toJSON(false);
-                    else
-                        data[name] = prop;
-                }
-            }
-
-            return HOST ? JSON.stringify(data) : data;    
-        }
-    }
-
-    ModelContainerBase.prototype.model = Model;
-
-    class Store {
-        constructor(data) {
-
-            this.history = [{ model: new Model(data, this), actions: [{ d: data, a: null }] }];
-            this.MUTATION_ID = 0;
-        }
-
-        seal() { this.MUTATION_ID++; }
-
-        getHistory(index) { return (this.history[index]) ? this.history[index].model : null; }
-
-        get current() { return this.history[this.history.length - 1].model; }
-
-        set current(v) {}
-
-        get(data){
-            return this.current.get(data);
-        }
-
-        set(data){
-            return this.current.set(data);
-        }
-
-        _getParentMutationID_() { return this.MUTATION_ID; }
-
-        _setThroughRoot_(data, address, index, len_minus_1, m_id) {
-
-            let model_prop = this.current;
-
-            if (m_id !== this.MUTATION_ID) {
-
-                if (m_id > this.MUTATION_ID)
-                    this.MUTATION_ID = this.MUTATION_ID + 1;
-                else
-                    this.MUTATION_ID = this.MUTATION_ID;
-
-                model_prop = model_prop.clone();
-
-                model_prop.MUTATION_ID = this.MUTATION_ID;
-
-                this.history.push({ model: model_prop, actions: [] });
-            }
-
-            if (data)
-                this.history[this.history.length - 1].actions.push({ d: data, a: address });
-
-            return model_prop._setThroughRoot_(data, address, index, len_minus_1, this.MUTATION_ID);
-        }
-    }
-
     //import { CustomComponent } from "../page/component"
 
     let CachedPresets = null;
@@ -4412,11 +2051,6 @@ var wick = (function () {
         constructor(preset_options) {
             if (!preset_options)
                 preset_options = {};
-
-            //if(Presets.global.v)
-            //    return Presets.global.v;
-
-            this.store = (preset_options.store instanceof Store) ? preset_options.store : null;
 
             /**
              * {Object} Store for optional parameters used in the app
@@ -4472,7 +2106,7 @@ var wick = (function () {
              * @instance
              * @readonly
              */
-            this.schemas = { any: Model };
+            this.schemes = {};
 
             /**
              * { Object } Store of user defined Model instances that serve as global models, which are available to the whole application. Multiple Scopes will be able to _bind_ to the Models. `<w-scope>` tags in templates that have a value set for the  `model` attribute, e.g. `<w-s model="my_global_model">...</w-s>`, will be bound to the model in presets .model whose property name matches the "model" attribute.
@@ -4528,14 +2162,13 @@ var wick = (function () {
 
             if (c)
                 for (let cn in c)
-                    if (c[cn] instanceof ModelBase)
-                        this.models[cn] = c[cn];
+                    this.models[cn] = c[cn];
 
             c = preset_options.schemas;
+
             if (c)
                 for (let cn in c)
-                    if (ModelBase.isPrototypeOf(c[cn]))
-                        this.schemas[cn] = c[cn];
+                    this.schemas[cn] = c[cn];
             /**
              * Configured by `preset_options.USE_SHADOW`. If set to true, and if the browser supports it, compiled and rendered template elements will be bound to a `<component>` shadow DOM, instead being appended as a child node.
              * @instance
@@ -12299,18 +9932,18 @@ var wick = (function () {
             super(sym[2], sym[4]);
         }
 
-        get expression() { return this.vals[0] }
+        get variable() { return this.vals[0] }
         get body() { return this.vals[1] }
 
         getRootIds(ids, closure) {
-            this.expression.getRootIds(ids, closure);
+            closure.add(this.variable.val);
             this.body.getRootIds(ids, closure);
         }
 
         get type() { return types$1.catch_statement }
 
         render(){
-            return `catch (${this.expression})${this.body.type == types$1.block_statement ? this.body : `{${this.body}}`}`
+            return `catch (${this.variable})${this.body.type == types$1.block_statement ? this.body : `{${this.body}}`}`
         }
     }
 
@@ -12674,12 +10307,8 @@ var wick = (function () {
         getRootIds(ids, closure) {  
             if (this.init) this.init.getRootIds(ids, closure);
             if (this.bool) this.bool.getRootIds(ids, closure);
-            if (this.iter) this.iter.getRootIds(ids, closure);
-
-           // closure = new Set([...closure.values()]);
-            
+            if (this.iter) this.iter.getRootIds(ids, closure);        
             if (this.body) this.body.getRootIds(ids, new Set);
-
         }
 
         * traverseDepthFirst(p) {
@@ -13316,7 +10945,7 @@ var wick = (function () {
 
     /** STRING **/
 
-    class string$2 extends base {
+    class string$1 extends base {
         constructor(sym) { super(sym.length === 3 ? sym[1]: ""); }
 
         get val() { return this.vals[0] }
@@ -13377,7 +11006,7 @@ var wick = (function () {
         	const NO_SUBSTITUTE = typeof sym == "string";
 
             if (NO_SUBSTITUTE)
-                super(new string$2(sym));
+                super(new string$1(sym));
             else
                 super(...sym);
 
@@ -13507,7 +11136,7 @@ var wick = (function () {
         get type() { return types$1.try_statement }
 
         render(){
-            return `try ${this.body}${this.catch ? " "+ this.catch : ""}${this.finally ? " "+this.finally : ""}`
+            return `try ${this.body.type == types$1.block_statement ? this.body : `{${this.body}}`} ${this.catch ? " "+ this.catch : ""}${this.finally ? " "+this.finally : ""}`
         }
     }
 
@@ -13601,7 +11230,7 @@ var wick = (function () {
     }
 
     /** FOR OF **/
-    class for_of_statement extends base {
+    class for_of_statement extends statement {
 
         get await() { return this.vals[0] }
         get binding() { return this.vals[1] }
@@ -13609,6 +11238,12 @@ var wick = (function () {
         get body() { return this.vals[3] }
 
         get type() { return types$1.for_of_statement }
+
+        getRootIds(ids, closure) {  
+            if (this.binding) this.binding.getRootIds(ids, closure);
+            if (this.expression) this.expression.getRootIds(ids, closure);
+            if (this.body) this.body.getRootIds(ids, new Set);
+        }
 
         render() {
             let binding, expression, body;
@@ -13629,6 +11264,13 @@ var wick = (function () {
         get body() { return this.vals[2] }
 
         get type() { return types$1.for_in_statement }
+
+        getRootIds(ids, closure) {  
+            if (this.binding) this.binding.getRootIds(ids, closure);
+            if (this.expression) this.expression.getRootIds(ids, closure);
+            if (this.body) this.body.getRootIds(ids, new Set);
+        }
+
 
         render() {
             let binding, expression, body;
@@ -13749,7 +11391,7 @@ var wick = (function () {
             right_shift_fill_expression,
             spread_element,
             statements,
-            string_literal: string$2,
+            string_literal: string$1,
             subtract_expression,
             this_literal,
             try_statement,
@@ -18258,6 +15900,11 @@ var wick = (function () {
                 this.scope.up(this, data[this.prop]);
         }
 
+        updateCached() {
+            if(this.value !== undefined)
+                this.down(this.value);
+        }
+
         down(value, meta) {
             for (let i = 0, l = this.ios.length; i < l; i++) 
                 this.ios[i].down(value, meta);
@@ -18333,10 +15980,6 @@ var wick = (function () {
             this.ios.push(io);
 
             io.parent = this;
-
-            if(this.value !== undefined)
-                io.down(this.value);
-            
         }
 
         removeIO(io) {
@@ -18361,432 +16004,7 @@ var wick = (function () {
     const noop = () => {};
     const NOOPTap = { addIO: noop, removeIO: noop, up: noop };
 
-    class IOBase {
-
-        get type () { return "IOBase"}
-
-        constructor(parent, element = null) {
-
-            this.parent = null;
-            this.ele = element;
-
-            if(parent instanceof Tap || parent instanceof IOBase)
-                parent.addIO(this);
-        }
-
-        discardElement(ele){
-            this.parent.discardElement(ele);
-        }
-
-        destroy() {
-            if(this.parent)
-                this.parent.removeIO(this);
-
-            this.parent = null;
-        }
-
-        init(default_val){
-            ((default_val = (this.parent.value || default_val))
-                && this.down(default_val));
-        }
-
-        down() {}
-
-        up(value, meta) { this.parent.up(value, meta); }
-
-        //For IO composition.
-        set data(data) { this.down(data); }
-
-        addIO(child) {
-            this.ele = child;
-            child.parent = this;
-        }
-
-        removeIO() {
-            this.ele = null;
-        }
-
-        toString(eles){
-            return "";
-        }
-
-        getTapDependencies(dependencies = []){
-            if(this.parent instanceof Tap)
-                dependencies.push(this.parent.prop);
-            if(this.ele instanceof IOBase)
-                this.ele.getTapDependencies(dependencies);
-            return dependencies;
-        }
-    }
-
-    /**
-     *   The IO is the last link in the Scope chain. It is responsible for putting date into the DOM through the element it binds to. Alternativly, in derived versions of `IO`, it is responsible for retriving values from user inputs from input elements and events.
-     *   @param {Scope} tap - The tap {@link Scope}, used internally to build a hierarchy of Scopes.
-     *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
-     *   @param {Presets} presets - An instance of the {@link Presets} object.
-     *   @param {HTMLElement} element - The HTMLElement that the IO will _bind_ to.
-     *   @memberof module:wick.core.scope
-     *   @alias IO
-     *   @extends IOBase
-     */
-    class IO extends IOBase {
-
-        get type () { return "IO"}
-
-        static stamp(scope, binding, default_val){
-            
-        }
-
-        constructor(scope, errors, tap, element = null, default_val = null) {
-
-            super(tap, element);
-            //Appending the value to a text node prevents abuse from insertion of malicious DOM markup. 
-
-            this.argument = null;
-
-           // if (default_val) this.down(default_val);
-        }
-
-        destroy() {
-            this.ele = null;
-            super.destroy();
-        }
-
-        down(value) {
-            this.ele.data = value;
-        }
-
-        toString(eles){
-            return `${eles.getElement(this.ele)}.data = ${this.parent.prop}`;
-        }
-    }
-
-    class RedirectAttribIO extends IOBase {
-
-        static stamp(scope, binding, default_val){
-            
-        }
-        constructor(scope, errors, down_tap, up_tap) {
-            super(down_tap);
-            this.up_tap = up_tap;
-        }
-
-        down(value) {
-            this.up_tap.up(value);
-        }
-
-        toString(eles){
-            return `${eles.getElement(this.ele)}.data = ${this.parent.prop}`;
-        }
-    }
-
-    /**
-        This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
-    */
-    class AttribIO extends IOBase {
-
-        get type () { return "AttribIO"}
-        
-        constructor(scope, binding, tap, attr, element, default_val) {
-
-            if (element.io) {
-                let down_tap = element.io.parent;
-                let root = scope.parent;
-                tap.modes |= EXPORT;
-                return new RedirectAttribIO(scope, errors, element.io.parent, tap);
-            }
-
-            super(tap, element);
-
-
-            this.binding = binding;
-            this.attrib = attr;
-            this.ele.io = this;
-
-            this.init(default_val);
-        }
-
-        destroy() {
-            this.ele = null;
-            this.attrib = null;
-            super.destroy();
-        }
-
-        /**
-            Puts data into the watched element's attribute. The default action is to simply update the attribute with data._value_.  
-        */
-        down(value) {
-            this.ele.setAttribute(this.attrib, value);
-        }
-
-        toString(eles){
-            return `${eles.getElement(this.ele)}.setAttribute(${this.attrib}, ${this.parent.prop})`;
-        }
-
-        set data(v) {
-            this.down(v);
-        }
-
-        get data() {
-
-        }
-    }
-
-    class DataNodeIO extends IOBase {
-
-        get type () { return "DataNodeIO"}
-
-        constructor(scope, tap, element, default_val) {
-            if(!tap)  return {};
-
-            super(tap, element);
-            
-            this.ele = element;
-        }
-
-        destroy() {
-            this.ele = null;
-            this.attrib = null;
-            super.destroy();
-        }
-
-        down(value) {
-            
-            this.ele.data = value;
-        }
-    }
-
-    class ContainerLinkIO extends DataNodeIO {
-        get type () { return "ContainerLinkIO"}
-    }
-
-    /**
-        This io updates the value of a TextNode or it replaces the TextNode with another element if it is passed an HTMLElement
-    */
-    class TextNodeIO extends DataNodeIO {
-
-        get type () { return "TextNodeIO"}
-
-        constructor(scope, tap, element, default_val) {
-            if(!tap) return {};
-
-            super(scope, tap, element, default_val);
-            
-            this.ELEMENT_IS_TEXT = element instanceof Text;
-
-            this.init(default_val);
-        }
-        
-        down(value) {
-
-            const ele = this.ele;
-            if (value instanceof HTMLElement) {
-                
-                if (value !== this.ele) {
-                    this.ELEMENT_IS_TEXT = false;
-                    this.ele = value;
-                    ele.parentElement.replaceChild(value, ele);
-                    this.discardElement(ele);
-                }
-            } else {
-                if (!this.ELEMENT_IS_TEXT) {
-                    this.ELEMENT_IS_TEXT = true;
-                    this.ele = new Text();
-                    ele.parentElement.replaceChild(this.ele, ele);
-                    this.discardElement(ele);
-                }
-                this.ele.data = value;
-            }
-        }
-
-        toString(eles){
-            return `${eles.getElement(this.ele)}.setAttribute(${this.attrib}, ${this.parent.prop})`;
-        }
-    }
-
-    class EventIO extends IOBase {
-
-        get type () { return "EventIO"}
-
-        constructor(scope, binding, tap, attrib_name, element, default_val) {
-            super(tap);
-
-            this.binding = binding;
-
-            this.ele = element;
-
-            this.up_tap = default_val ? scope.getTap(default_val + "") : tap;
-
-            const up_tap = this.up_tap;
-
-            const PreventPropagation = (attrib_name.slice(-1) == "_");
-            
-            if(PreventPropagation)
-                attrib_name = attrib_name.slice(0,-1);
-
-            this.event = (e) => {
-
-                up_tap.up(e.target.value, { event: e }); 
-                
-                if(PreventPropagation){
-                    e.preventDefault();
-                    e.stopPropagation();
-                    e.stopImmediatePropagation();
-                    return false;
-                }
-            };
-
-            
-
-            this.event_name = attrib_name.replace("on", "");
-
-            this.ele.addEventListener(this.event_name, this.event);
-        }
-
-        destroy() {
-            this.ele.removeEventListener("input", this.event);
-            this.ele = null;
-            this.event = null;
-            this.event_name = null;
-            this.attrib = null;
-            super.destroy();
-        }
-
-        down(value) {
-            this.ele.value = value;
-        }
-
-        getTapDependencies(dependencies = []){
-            if(this.parent instanceof Tap)
-                dependencies.push(this.parent.prop);
-            else{
-                dependencies.push(this.up_tap.prop);
-                return this.parent.getTapDependencies(dependencies);
-            }
-            return dependencies;
-        }
-    }
-
-    class InputIO extends IOBase {
-
-        get type () { return "InputIO"}
-
-        constructor(scope, errors, tap, attrib_name, element, default_val) {
-
-            if(tap)
-                super(tap);
-            else if(default_val)
-                super(scope);
-            else
-                return null;
-
-            this.ele = element;
-            this.event = null;
-
-            this.up_tap = tap;
-
-            let up_tap = tap;
-
-            if(default_val){
-                switch(default_val.type){
-                    case types$1.identifier:
-                        up_tap = scope.getTap(default_val.name);
-                    break;
-                    case types$1.null_literal:
-                        up_tap = null;
-                    break;
-                }
-            }
-
-            if(up_tap){
-                if (element.type == "checkbox")
-                    this.event = (e) => { up_tap.up(e.target.checked, { event: e }); };
-                else
-                    this.event = (e) => { up_tap.up(e.target.value, { event: e }); };
-                
-                this.ele.addEventListener("input", this.event);
-            }
-        }
-
-        destroy() {
-            this.ele.removeEventListener("input", this.event);
-            this.ele = null;
-            this.event = null;
-            this.attrib = null;
-            super.destroy();
-        }
-
-        down(value) {
-            this.ele.value = value;
-        }
-    }
-
-    /**
-     * Base class for an object that binds to and observes a Model.
-     *@alias module:wick.core.observer
-     */
-    class View{
-
-    	constructor(){
-    		/**
-    		 * property
-    		 */
-    		this.nx = null;
-    		this.pv = null;
-    		this.model = null;
-    	}
-
-    	/**
-         * Unbinds the View from its Model and sets all properties to undefined. Should be called by any class extending View
-    	 * ``` js
-    	 * class ExtendingView extends wick.core.observer.View{
-    	 * 		destroy(){
-    	 * 			//... do some stuff ...
-    	 * 			super.destroy();
-    	 * 		}
-    	 * }
-    	 * ```
-         * @protected
-         */
-    	destroy(){
-    		this.unsetModel();
-    		this.model = undefined;
-    		this.nx = undefined;
-    	}	
-    	/**
-    		Called by a Model when its data has changed.
-    	*/
-    	update(data){
-
-    	}
-    	/**
-    		Called by a ModelContainerBase when an item has been removed.
-    	*/
-    	removed(data){
-
-    	}
-
-    	/**
-    		Called by a ModelContainerBase when an item has been added.
-    	*/
-    	added(data){
-
-    	}
-    	setModel(model){
-    	}
-
-    	reset(){
-    		
-    	}
-    	unsetModel(){
-    		if(this.model && this.model.removeView)
-    			this.model.removeView(this);
-    		this.nx = null;
-    		this.model = null;
-    	}
-    }
-
-    class Scope extends View {
+    class Scope {
 
         /**
          *   In the Wick dynamic template system, Scopes serve as the primary access to Model data. They, along with {@link ScopeContainer}s, are the only types of objects the directly _bind_ to a Model. When a Model is updated, the Scope will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link ScopeContainer}s.
@@ -18800,8 +16018,6 @@ var wick = (function () {
          *   @extends ScopeBase
          */
         constructor(parent, presets, element, ast) {
-
-            super();
 
             this.ast = ast;
             this.ele = element;
@@ -18829,17 +16045,7 @@ var wick = (function () {
             this.addToParent(parent);
         }
 
-        discardElement(ele, ios) {
-            if (!ios) {
-                ios = [];
-
-                for (const tap of this.taps.values())
-                    for (let io of tap.ios) {
-                        while (io.ele instanceof IOBase)
-                            io = io.ele;
-                        ios.push(io);
-                    }
-            }
+        discardElement(ele, ios = this.ios) {
 
             for (let i = 0; i < ios.length; i++) {
                 const io = ios[i];
@@ -18849,7 +16055,16 @@ var wick = (function () {
                 }
             }
 
-            const children = ele.children;
+            for(let i = 0; i < this.containers.length; i++){
+                const ctr = this.containers.length;
+
+                if(ctr.ele == ele){
+                    this.containers.splice(i--, 1);
+                    ctr.destroy();
+                }
+            }
+
+            const children = ele.childNodes;
 
             if (children)
                 for (let i = 0; i < children.length; i++)
@@ -18881,6 +16096,11 @@ var wick = (function () {
             this.containers.length = 0;
             this.temp_data_cache = null;
             this.css.length = 0;
+        }
+
+        updateCachedData(){
+            for(const tap of this.taps.values())
+                tap.updateCached();
         }
 
         destroy() {
@@ -18972,7 +16192,9 @@ var wick = (function () {
 
             let
                 m = null,
-                SchemedConstructor = null,
+                SchemedConstructor = null;
+
+            const
                 presets = this.ast.presets,
                 model_name = this.ast.model_name,
                 scheme_name = this.ast.scheme_name;
@@ -18985,10 +16207,8 @@ var wick = (function () {
 
             if (m)
                 model = m;
-            else if (SchemedConstructor) {
+            else if (SchemedConstructor) 
                 model = new SchemedConstructor();
-            } else if (!model)
-                model = new Model(model);
 
             if (this.css.length > 0)
                 this.loadCSS();
@@ -19081,7 +16301,7 @@ var wick = (function () {
                 container.down(data, changed_values);
         }
 
-        bubbleLink(child) {
+        bubbleLink() {
             if (this.parent)
                 this.parent.bubbleLink(this);
         }
@@ -19490,6 +16710,514 @@ in file ${o.url || o.origin_url}`,e);
         }
     }
 
+    class IOBase {
+
+        get type () { return "IOBase"}
+
+        constructor(parent, element = null) {
+
+            this.parent = null;
+            this.ele = element;
+
+            if(parent instanceof Tap || parent instanceof IOBase)
+                parent.addIO(this);
+        }
+
+        discardElement(ele){
+            this.parent.discardElement(ele);
+        }
+
+        destroy() {
+            if(this.parent)
+                this.parent.removeIO(this);
+
+            this.parent = null;
+        }
+
+        init(default_val){
+            ((default_val = (this.parent.value || default_val))
+                && this.down(default_val));
+        }
+
+        down() {}
+
+        up(value, meta) { this.parent.up(value, meta); }
+
+        //For IO composition.
+        set data(data) { this.down(data); }
+
+        addIO(child) {
+            this.ele = child;
+            child.parent = this;
+        }
+
+        removeIO() {
+            this.ele = null;
+        }
+
+        toString(eles){
+            return "";
+        }
+
+        getTapDependencies(dependencies = []){
+            if(this.parent instanceof Tap)
+                dependencies.push(this.parent.prop);
+            if(this.ele instanceof IOBase)
+                this.ele.getTapDependencies(dependencies);
+            return dependencies;
+        }
+    }
+
+    /**
+     *   The IO is the last link in the Scope chain. It is responsible for putting date into the DOM through the element it binds to. Alternativly, in derived versions of `IO`, it is responsible for retriving values from user inputs from input elements and events.
+     *   @param {Scope} tap - The tap {@link Scope}, used internally to build a hierarchy of Scopes.
+     *   @param {Object} data - An object containing HTMLELement attribute values and any other values produced by the template parser.
+     *   @param {Presets} presets - An instance of the {@link Presets} object.
+     *   @param {HTMLElement} element - The HTMLElement that the IO will _bind_ to.
+     *   @memberof module:wick.core.scope
+     *   @alias IO
+     *   @extends IOBase
+     */
+    class IO extends IOBase {
+
+        get type () { return "IO"}
+
+        static stamp(scope, binding, default_val){
+            
+        }
+
+        constructor(scope, errors, tap, element = null, default_val = null) {
+
+            super(tap, element);
+            //Appending the value to a text node prevents abuse from insertion of malicious DOM markup. 
+
+            this.argument = null;
+
+           // if (default_val) this.down(default_val);
+        }
+
+        destroy() {
+            this.ele = null;
+            super.destroy();
+        }
+
+        down(value) {
+            this.ele.data = value;
+        }
+
+        toString(eles){
+            return `${eles.getElement(this.ele)}.data = ${this.parent.prop}`;
+        }
+    }
+
+    class RedirectAttribIO extends IOBase {
+
+        static stamp(scope, binding, default_val){
+            
+        }
+        constructor(scope, errors, down_tap, up_tap) {
+            super(down_tap);
+            this.up_tap = up_tap;
+        }
+
+        down(value) {
+            this.up_tap.up(value);
+        }
+
+        toString(eles){
+            return `${eles.getElement(this.ele)}.data = ${this.parent.prop}`;
+        }
+    }
+
+    /**
+        This IO object will update the attribute value of the watched element, using the "prop" property to select the attribute to update.
+    */
+    class AttribIO extends IOBase {
+
+        get type () { return "AttribIO"}
+        
+        constructor(scope, binding, tap, attr, element, default_val) {
+
+            if (element.io) {
+                let down_tap = element.io.parent;
+                let root = scope.parent;
+                tap.modes |= EXPORT;
+                return new RedirectAttribIO(scope, errors, element.io.parent, tap);
+            }
+
+            super(tap, element);
+
+
+            this.binding = binding;
+            this.attrib = attr;
+            this.ele.io = this;
+
+            this.init(default_val);
+        }
+
+        destroy() {
+            this.ele = null;
+            this.attrib = null;
+            super.destroy();
+        }
+
+        /**
+            Puts data into the watched element's attribute. The default action is to simply update the attribute with data._value_.  
+        */
+        down(value) {
+            this.ele.setAttribute(this.attrib, value);
+        }
+
+        toString(eles){
+            return `${eles.getElement(this.ele)}.setAttribute(${this.attrib}, ${this.parent.prop})`;
+        }
+
+        set data(v) {
+            this.down(v);
+        }
+
+        get data() {
+
+        }
+    }
+
+    class DataNodeIO extends IOBase {
+
+        get type () { return "DataNodeIO"}
+
+        constructor(scope, tap, element, default_val) {
+            if(!tap)  return {};
+
+            super(tap, element);
+        }
+
+        destroy() {
+            this.ele = null;
+            this.attrib = null;
+            super.destroy();
+        }
+
+        down(value) {
+            
+            this.ele.data = value;
+        }
+    }
+
+    class ContainerLinkIO extends DataNodeIO {
+        get type () { return "ContainerLinkIO"}
+    }
+
+    /**
+        This io updates the value of a TextNode or it replaces the TextNode with another element if it is passed an HTMLElement
+    */
+    class TextNodeIO extends DataNodeIO {
+
+        get type () { return "TextNodeIO"}
+
+        constructor(scope, tap, element, default_val) {
+            if(!tap) return {};
+
+            super(scope, tap, element, default_val);
+            
+            this.ELEMENT_IS_TEXT = element instanceof Text;
+
+            this.init(default_val);
+        }
+        
+        down(value) {
+
+            const ele = this.ele;
+
+            if (value instanceof HTMLElement) {
+                if (value !== this.ele) {
+                    this.ELEMENT_IS_TEXT = false;
+                    this.ele = value;
+                    ele.parentElement.replaceChild(value, ele);
+                    this.discardElement(ele);
+                }
+            } else {
+
+                if (!this.ELEMENT_IS_TEXT) {
+                    this.ELEMENT_IS_TEXT = true;
+                    this.ele = new Text();
+                    ele.parentElement.replaceChild(this.ele, ele);
+                    this.discardElement(ele);
+                }
+
+                this.ele.data = value;
+            }
+        }
+
+        toString(eles){
+            return `${eles.getElement(this.ele)}.setAttribute(${this.attrib}, ${this.parent.prop})`;
+        }
+    }
+
+    class EventIO extends IOBase {
+
+        get type () { return "EventIO"}
+
+        constructor(scope, binding, tap, attrib_name, element, default_val) {
+            super(tap);
+
+            this.binding = binding;
+
+            this.ele = element;
+
+            this.up_tap = default_val ? scope.getTap(default_val + "") : tap;
+
+            const up_tap = this.up_tap;
+
+            const PreventPropagation = (attrib_name.slice(-1) == "_");
+            
+            if(PreventPropagation)
+                attrib_name = attrib_name.slice(0,-1);
+
+            this.event = (e) => {
+
+                up_tap.up(e.target.value, { event: e }); 
+                
+                if(PreventPropagation){
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    return false;
+                }
+            };
+
+            
+
+            this.event_name = attrib_name.replace("on", "");
+
+            this.ele.addEventListener(this.event_name, this.event);
+        }
+
+        destroy() {
+            this.ele.removeEventListener("input", this.event);
+            this.ele = null;
+            this.event = null;
+            this.event_name = null;
+            this.attrib = null;
+            super.destroy();
+        }
+
+        down(value) {
+            this.ele.value = value;
+        }
+
+        getTapDependencies(dependencies = []){
+            if(this.parent instanceof Tap)
+                dependencies.push(this.parent.prop);
+            else{
+                dependencies.push(this.up_tap.prop);
+                return this.parent.getTapDependencies(dependencies);
+            }
+            return dependencies;
+        }
+    }
+
+    class InputIO extends IOBase {
+
+        get type () { return "InputIO"}
+
+        constructor(scope, errors, tap, attrib_name, element, default_val) {
+
+            if(tap)
+                super(tap);
+            else if(default_val)
+                super(scope);
+            else
+                return null;
+
+            this.ele = element;
+            this.event = null;
+
+            this.up_tap = tap;
+
+            let up_tap = tap;
+
+            if(default_val){
+                switch(default_val.type){
+                    case types$1.identifier:
+                        up_tap = scope.getTap(default_val.name);
+                    break;
+                    case types$1.null_literal:
+                        up_tap = null;
+                    break;
+                }
+            }
+
+            if(up_tap){
+                if (element.type == "checkbox")
+                    this.event = (e) => { up_tap.up(e.target.checked, { event: e }); };
+                else
+                    this.event = (e) => { up_tap.up(e.target.value, { event: e }); };
+                
+                this.ele.addEventListener("input", this.event);
+            }
+        }
+
+        destroy() {
+            this.ele.removeEventListener("input", this.event);
+            this.ele = null;
+            this.event = null;
+            this.attrib = null;
+            super.destroy();
+        }
+
+        down(value) {
+            this.ele.value = value;
+        }
+    }
+
+    /**
+     * Used to call the Scheduler after a JavaScript runtime tick.
+     *
+     * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
+     */
+     
+    const caller = (typeof(window) == "object" && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
+        setTimeout(f, 1);
+    };
+
+    const perf = (typeof(performance) == "undefined") ? { now: () => Date.now() } : performance;
+
+
+    /**
+     * Handles updating objects. It does this by splitting up update cycles, to respect the browser event model. 
+     *    
+     * If any object is scheduled to be updated, it will be blocked from scheduling more updates until the next ES VM tick.
+     */
+    class Spark {
+        /**
+         * Constructs the object.
+         */
+        constructor() {
+
+            this.update_queue_a = [];
+            this.update_queue_b = [];
+
+            this.update_queue = this.update_queue_a;
+
+            this.queue_switch = 0;
+
+            this.callback = ()=>{};
+
+
+            if(typeof(window) !== "undefined"){
+                window.addEventListener("load",()=>{
+                    this.callback = () => this.update();
+                    caller(this.callback);
+                });
+            }else{
+                this.callback = () => this.update();
+            }
+
+
+            this.frame_time = perf.now();
+
+            this.SCHEDULE_PENDING = false;
+        }
+
+        /**
+         * Given an object that has a _SCHD_ Boolean property, the Scheduler will queue the object and call its .update function 
+         * the following tick. If the object does not have a _SCHD_ property, the Scheduler will persuade the object to have such a property.
+         * 
+         * If there are currently no queued objects when this is called, then the Scheduler will user caller to schedule an update.
+         */
+        queueUpdate(object, timestart = 1, timeend = 0) {
+
+            if (object._SCHD_ || object._SCHD_ > 0) {
+                if (this.SCHEDULE_PENDING)
+                    return;
+                else
+                    return caller(this.callback);
+            }
+
+            object._SCHD_ = ((timestart & 0xFFFF) | ((timeend) << 16));
+
+            this.update_queue.push(object);
+
+            if (this._SCHD_)
+                return;
+
+            this.frame_time = perf.now() | 0;
+
+
+            if(!this.SCHEDULE_PENDING){
+                this.SCHEDULE_PENDING = true;
+                caller(this.callback);
+            }
+        }
+
+        removeFromQueue(object){
+
+            if(object._SCHD_)
+                for(let i = 0, l = this.update_queue.length; i < l; i++)
+                    if(this.update_queue[i] === object){
+                        this.update_queue.splice(i,1);
+                        object._SCHD_ = 0;
+
+                        if(l == 1)
+                            this.SCHEDULE_PENDING = false;
+
+                        return;
+                    }
+        }
+
+        /**
+         * Called by the caller function every tick. Calls .update on any object queued for an update. 
+         */
+        update() {
+
+            this.SCHEDULE_PENDING = false;
+
+            const uq = this.update_queue;
+            const time = perf.now() | 0;
+            const diff = Math.ceil(time - this.frame_time) | 1;
+            const step_ratio = (diff * 0.06); //  step_ratio of 1 = 16.66666666 or 1000 / 60 for 60 FPS
+
+            this.frame_time = time;
+            
+            if (this.queue_switch == 0)
+                (this.update_queue = this.update_queue_b, this.queue_switch = 1);
+            else
+                (this.update_queue = this.update_queue_a, this.queue_switch = 0);
+
+            for (let i = 0, l = uq.length, o = uq[0]; i < l; o = uq[++i]) {
+                let timestart = ((o._SCHD_ & 0xFFFF)) - diff;
+                let timeend = ((o._SCHD_ >> 16) & 0xFFFF);
+
+                o._SCHD_ = 0;
+                
+                if (timestart > 0) {
+                    this.queueUpdate(o, timestart, timeend);
+                    continue;
+                }
+
+                timestart = 0;
+
+                if (timeend > 0) 
+                    this.queueUpdate(o, timestart, timeend - diff);
+
+                /** 
+                    To ensure on code path doesn't block any others, 
+                    scheduledUpdate methods are called within a try catch block. 
+                    Errors by default are printed to console. 
+                **/
+                try {
+                    o.scheduledUpdate(step_ratio, diff);
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+
+            uq.length = 0;
+        }
+    }
+
+    const spark = new Spark();
+
     class ArgumentIO extends IO {
 
         get type () { return "ArgumentIO"}
@@ -19572,6 +17300,7 @@ in file ${o.url || o.origin_url}`,e);
             Calls destroy on any child objects.
          */
         destroy() {
+            
             this.function = null;
             this.scope = null;
             this._bound_emit_function_ = null;
@@ -19579,8 +17308,9 @@ in file ${o.url || o.origin_url}`,e);
             this.arg_props = null;
             this.props = null;
 
-            for (const a in this.arg_ios)
+            for (const a in this.arg_ios){
                 this.arg_ios[a].destroy();
+            }
 
             this.arg_ios = null;
 
@@ -19700,6 +17430,10 @@ in file ${o.url || o.origin_url}`,e);
                 scheduledUpdate: (s, d) => this.emit(name, { step: s, diff: d })
             });
         }
+
+        removeIO(io) {
+            this.destroy();
+        }
     }
 
     //Cache for scripts that have already been built. Keys are the final strings of processed ASTs
@@ -19752,6 +17486,7 @@ in file ${o.url || o.origin_url}`,e);
                         &&(
                         (node.type == types$1.arrow_function_declaration) 
                         || (node.type == types$1.for_of_statement) 
+                        || (node.type == types$1.catch_statement) 
                         )
                         ) {
 
@@ -20217,9 +17952,9 @@ in file ${o.url || o.origin_url}`,e);
     extended_number_and_identifier_table$1[95] = 2;
 
     const
-        number$2 = 1,
+        number$1 = 1,
         identifier$2 = 2,
-        string$3 = 4,
+        string$2 = 4,
         white_space$1 = 8,
         open_bracket$1 = 16,
         close_bracket$1 = 32,
@@ -20227,15 +17962,15 @@ in file ${o.url || o.origin_url}`,e);
         symbol$1 = 128,
         new_line$1 = 256,
         data_link$1 = 512,
-        alpha_numeric$1 = (identifier$2 | number$2),
+        alpha_numeric$1 = (identifier$2 | number$1),
         white_space_new_line$1 = (white_space$1 | new_line$1),
         Types$1 = {
-            num: number$2,
-            number: number$2,
+            num: number$1,
+            number: number$1,
             id: identifier$2,
             identifier: identifier$2,
-            str: string$3,
-            string: string$3,
+            str: string$2,
+            string: string$2,
             ws: white_space$1,
             white_space: white_space$1,
             ob: open_bracket$1,
@@ -20567,7 +18302,7 @@ in file ${o.url || o.origin_url}`,e);
                                     //Add e to the number string
                                 }
 
-                                type = number$2;
+                                type = number$1;
                                 length = off - base;
 
                                 break;
@@ -20581,7 +18316,7 @@ in file ${o.url || o.origin_url}`,e);
                                     type = symbol$1;
                                 } else {
                                     while (++off < l && str.charCodeAt(off) !== code);
-                                    type = string$3;
+                                    type = string$2;
                                     length = off - base + 1;
                                 }
                                 break;
@@ -28634,7 +26369,7 @@ in file ${o.url || o.origin_url}`,e);
                     node.parent.replace(new call_expression(
                         [
                             new identifier$1(["emit"]),
-                            new argument_list$1(new string$2([null, node.name, null]), node.parent.right),
+                            new argument_list$1(new string$1([null, node.name, null]), node.parent.right),
                         ]
                     ));
                 }
@@ -28651,7 +26386,7 @@ in file ${o.url || o.origin_url}`,e);
                 if ((root[k] && !(root[k] instanceof HTMLElement)) || presets.custom[k] || presets[k] || defaults$1[k] || ignore.includes(k))
                     return;
                 //*
-                const args = [new string$2([null, node.name, null])];
+                const args = [new string$1([null, node.name, null])];
 
                 if(node.parent.args)
                     args.push(...node.parent.args.vals);
@@ -28955,75 +26690,100 @@ in file ${o.url || o.origin_url}`,e);
      * @param      {Object}  presets  The global presets object.
      * @param      {HTMLElement}  element  The element that the Scope will _bind_ to. 
      */
-    class ScopeContainer extends View {
+    class ScopeContainer {
 
         constructor(parent, presets, element) {
 
-            super();
-
             this.ele = element;
-            this.parent = null;
+
+            this.taps = {};
+
             this.activeScopes = [];
             this.dom_scopes = [];
             this.filters = [];
             this.ios = [];
             this.terms = [];
             this.scopes = [];
-            this.range = null;
-            this._SCHD_ = 0;
-            this.prop = null;
-            this.component = null;
-            this.transition_in = 0;
             this.dom_dn = [];
             this.dom_up = [];
-            this.trs_ascending = null;
-            this.trs_descending = null;
-            this.UPDATE_FILTER = false;
-            this.dom_up_appended = false;
-            this.dom_dn_appended = false;
-            this.AUTO_SCRUB = false;
+
+            this.transition_in = 0;
+            this._SCHD_ = 0;
             this.root = 0;
-            this.taps = {};
-
-            this.scrub_velocity = 0;
-
             this.shift_amount = 1;
             this.limit = 0;
             this.offset = 0;
             this.offset_diff = 0;
             this.offset_fractional = 0;
+            this.scrub_velocity = 0;
 
+            this.observering = null;
+            this.parent = null;
+            this.range = null;
+            this.prop = null;
+            this.component = null;
+            this.trs_ascending = null;
+            this.trs_descending = null;
+
+            this.UPDATE_FILTER = false;
+            this.DOM_UP_APPENDED = false;
+            this.DOM_DN_APPENDED = false;
+            this.AUTO_SCRUB = false;
             this.LOADED = false;
 
             parent.addTemplate(this);
         }
 
+        destroy() {
+            this.destroyed();
+
+            if(this.observering){
+                this.observering.removeObserver(this);
+                this.observering = null;
+            }
+        }
+
+        destroyed() {
+            
+            this.cull();
+
+            for (const fltr of this.filters)
+                fltr.destroy();
+        }
+
         get data() {}
 
         set data(container) {
-            if (container instanceof ModelContainerBase) {
-                container.pin();
-                container.addObserver(this);
-                return;
-            } else {
-                this.unsetModel();
+
+            if(this.observering){
+                this.observering.removeObserver(this);
+                this.observering = null;
+            }
+
+            if (container.addObserver){
+                this.observering = container;
+                return container.addObserver(this);
             }
 
             if (!container) return;
-            if (Array.isArray(container)) this.cull(container);
-            else this.cull(container.data);
+
+            if (Array.isArray(container))
+                this.cull(container);
+            else
+                this.cull(container.data);
 
             this.loadAcknowledged();
         }
 
         update(container) {
-            if (container instanceof ModelContainerBase) container = container.get(undefined, []);
+            if (container.CFW_DATA_STRUCTURE) container = container.get(undefined, []);
+
             if (!container) return;
-            //let results = container.get(this.getTerms());
-            // if (container.length > 0) {
-            if (Array.isArray(container)) this.cull(container);
-            else this.cull(container.data);
-            // }
+
+            if (Array.isArray(container))
+                this.cull(container);
+            else
+                this.cull(container.data);
         }
 
         loadAcknowledged() {
@@ -29161,7 +26921,7 @@ in file ${o.url || o.origin_url}`,e);
 
                     if (this.offset + delta_offset >= this.max - 1) delta_offset = 0;
 
-                    if (!this.dom_up_appended) {
+                    if (!this.DOM_UP_APPENDED) {
 
                         for (let i = 0; i < this.dom_up.length; i++) {
                             this.dom_up[i].appendToDOM(this.ele);
@@ -29169,7 +26929,7 @@ in file ${o.url || o.origin_url}`,e);
                             this.dom_scopes.push(this.dom_up[i]);
                         }
 
-                        this.dom_up_appended = true;
+                        this.DOM_UP_APPENDED = true;
                     }
 
                     this.trs_ascending.play(delta_offset);
@@ -29177,7 +26937,7 @@ in file ${o.url || o.origin_url}`,e);
 
                     if (this.offset < 1) delta_offset = 0;
 
-                    if (!this.dom_dn_appended) {
+                    if (!this.DOM_DN_APPENDED) {
 
                         for (let i = 0; i < this.dom_dn.length; i++) {
                             this.dom_dn[i].appendToDOM(this.ele, this.dom_scopes[0].ele);
@@ -29186,7 +26946,7 @@ in file ${o.url || o.origin_url}`,e);
 
                         this.dom_scopes = this.dom_dn.concat(this.dom_scopes);
 
-                        this.dom_dn_appended = true;
+                        this.DOM_DN_APPENDED = true;
                     }
 
                     this.trs_descending.play(-delta_offset);
@@ -29291,7 +27051,7 @@ in file ${o.url || o.origin_url}`,e);
                     i = 0,
                     oa = 0;
 
-                const 
+                const
                     ein = [],
                     shift_points = Math.ceil(output_length / this.shift_amount);
 
@@ -29304,8 +27064,8 @@ in file ${o.url || o.origin_url}`,e);
 
                 this.dom_dn.length = 0;
                 this.dom_up.length = 0;
-                this.dom_up_appended = false;
-                this.dom_dn_appended = false;
+                this.DOM_UP_APPENDED = false;
+                this.DOM_DN_APPENDED = false;
 
                 //Scopes preceeding the transition window
                 while (i < active_window_start - this.shift_amount) output[i++].index = -2;
@@ -29360,7 +27120,7 @@ in file ${o.url || o.origin_url}`,e);
                 this.limit = 0;
             }
 
-            const 
+            const
                 trs_in = { trs: transition.in, index: 0 },
                 trs_out = { trs: transition.out, index: 0 };
 
@@ -29389,7 +27149,7 @@ in file ${o.url || o.origin_url}`,e);
                             case -2:
                             case -3:
 
-                    
+
                                 as.transitionOut(trs_out, (direction > 0) ? "trs_asc_out" : "trs_dec_out");
                                 break;
                             default:
@@ -29423,8 +27183,8 @@ in file ${o.url || o.origin_url}`,e);
 
             this.ele.style.position = this.ele.style.position;
 
-            this.dom_scopes = output.slice();   
-            
+            this.dom_scopes = output.slice();
+
             this.parent.update({
                 "template_count_changed": {
 
@@ -29623,6 +27383,7 @@ in file ${o.url || o.origin_url}`,e);
             if (this.cache) this.update(this.cache);
         }
 
+        /* Is this needed?
         getTerms() {
             const out_terms = [];
 
@@ -29650,14 +27411,14 @@ in file ${o.url || o.origin_url}`,e);
                     terms = this.getTerms();
                 if (scope) {
                     this.model.destroy();
-                    const model = scope.get(terms, null);
-                    model.pin();
+                    const model = scope.get(terms, null);;
                     model.addObserver(this);
                 }
                 return this.model.get(terms);
             }
             return [];
         }
+        */
 
         down(data, changed_values) {
             for (let i = 0, l = this.activeScopes.length; i < l; i++) this.activeScopes[i].down(data, changed_values);
@@ -29712,8 +27473,14 @@ in file ${o.url || o.origin_url}`,e);
     function ctr_upd(ctr, data_objs) {
     	if (!data_objs) return;
 
-    	if (data_objs instanceof ModelContainerBase) {
-    		data_objs.pin();
+    	if (data_objs.observering) {
+    		if (ctr.observering.removeObserver)
+    			ctr.observering.removeObserver(ctr);
+    		ctr.observering = null;
+    	}
+
+    	if (data_objs.addObserver) {
+    		ctr.observering = data_objs;
     		data_objs.addObserver(ctr);
     		return;
     	}
@@ -29724,9 +27491,9 @@ in file ${o.url || o.origin_url}`,e);
 
     /* Update container filters. */
     function ctr_fltr(ctr, type, val) {
-    	switch(type){
+    	switch (type) {
     		case "fl":
-    		break;
+    			break;
     	}
     	filterUpdate(ctr);
     	limitExpressionUpdate(ctr);
@@ -29734,7 +27501,7 @@ in file ${o.url || o.origin_url}`,e);
 
     /* Create a wick container */
     function ctr(ele, component, ...filters) {
-    	
+
     	const ctr = {
     		component: { mount: (ele, data) => createComponent(component, data) },
     		ele,
@@ -29869,12 +27636,12 @@ in file ${o.url || o.origin_url}`,e);
     	for (let i = 0, l = ctr.filters.length; i < l; i++) {
     		const filter = ctr.filters[i];
     		//if(filter.active){
-    			switch(filter.type){
-    				case "sort":
-    					output = output.sort(filter.action);
-    				case "filter":
-    					output = output.filter(filter.action);
-    			}
+    		switch (filter.type) {
+    			case "sort":
+    				output = output.sort(filter.action);
+    			case "filter":
+    				output = output.filter(filter.action);
+    		}
     		//}
     	}
 
@@ -31127,22 +28894,22 @@ in file ${o.url || o.origin_url}`,e);
             if (this.ast) {
                 if (this.METHOD == EXPRESSION) {
                     return new ExpressionIO(element, scope, node, scope, this, this.lex, pinned);
-                } else if (this.METHOD == CONTAINER)
+                } else if (this.METHOD == CONTAINER) {
                     return new ContainerIO(element, scope, node, scope, this, this.lex, pinned);
-                else
+                } else
                     return scope.getTap(this.val);
             }
             return null;
         }
 
         //Stamps the binding to an output string. 
-        stamp(scope, attr, id){
+        stamp(scope, attr, id) {
             if (this.ast) {
                 if (this.METHOD == EXPRESSION) {
                     return ExpressionIO.stamp(id, scope, this);
                 } else if (this.METHOD == CONTAINER)
                     return ContainerIO.stamp(id, scope, this);
-                else{
+                else {
                     scope.addActivation(this.val);
                     return this.val;
                 }
@@ -31292,6 +29059,10 @@ in file ${o.url || o.origin_url}`,e);
         mount(element, scope, presets, slots, pinned) {
             
             scope = scope || new Scope(null, presets, element, this);
+
+            //Only create a container if it is able to generate components. 
+            if(!this.component_constructor)
+                return scope;
 
             const
                 ele = createElement(this.element),
@@ -31671,8 +29442,8 @@ in file ${o.url || o.origin_url}`,e);
             script,
             spread_element,
             statements,
-            string: string$2,
-            string_literal: string$2,
+            string: string$1,
+            string_literal: string$1,
             subtract_expression,
             switch_statement,
             template,
@@ -32046,223 +29817,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.`;
     };
 
-    /**
-     *   This is used by Model to create custom property getter and setters on non-ModelContainerBase and non-Model properties of the Model constructor.
-     *   @protected
-     *   @memberof module:wick~internals.model
-     */
-    function CreateSchemedProperty(object, scheme, schema_name, index) {
-        if (object[schema_name])
-            return;
-
-        Object.defineProperty(object, schema_name, {
-            configurable: false,
-            enumerable: true,
-            get: function() {
-                return this.getHook(schema_name, this.prop_array[index]);
-            },
-            set: function(value) {
-
-                let result = { valid: false };
-
-                let val = scheme.parse(value);
-
-                scheme.verify(val, result);
-
-                if (result.valid && this.prop_array[index] != val) {
-                    this.prop_array[index] = this.setHook(schema_name, val);
-                    this.scheduleUpdate(schema_name);
-                    this._changed_ = true;
-                }
-            }
-        });
-    }
-
-    /**
-        This is used by Model to create custom property getter and setters on Model properties of the Model constructor.
-        @protected
-        @memberof module:wick~internals.model
-    */
-    function CreateModelProperty(object, model, schema_name, index) {
-
-        Object.defineProperty(object, schema_name, {
-            configurable: false,
-            enumerable: true,
-            get: function() {
-
-                let m = this.prop_array[index];
-
-                if (!m) {
-                    let address = this.address.slice();
-                    address.push(index);
-                    m = new model(null, this.root, address);
-                    m.par = this;
-                    m.prop_name = schema_name;
-                    m.MUTATION_ID = this.MUTATION_ID;
-                    this.prop_array[index] = m;
-                }
-
-                return this.getHook(schema_name, m);
-            }
-        });
-    }
-
-    class SchemedModel extends ModelBase {
-
-        constructor(data, root = null, address = [], _schema_ = null) {
-
-            super(root, address);
-
-            if (this.constructor === SchemedModel)
-                this.constructor = (class extends SchemedModel {});
-
-            if (!this.schema) {
-
-                let schema = this.constructor.schema || _schema_;
-
-                this.constructor.schema = schema;
-
-                if (schema) {
-
-                    let __FinalConstructor__ = schema.__FinalConstructor__;
-
-                    let constructor = this.constructor;
-                    let prototype = constructor.prototype;
-
-                    if (!__FinalConstructor__) {
-                        let count = 0;
-                        let look_up = {};
-
-                        for (let schema_name in schema) {
-                            let scheme = schema[schema_name];
-
-                            if (schema_name == "self" && Array.isArray(scheme)) 
-                                return new SchemedContainer(schema, root, address);
-                            
-
-                            if (schema_name == "getHook") {
-                                prototype.getHook = scheme;
-                                continue;
-                            }
-
-                            if (schema_name == "setHook") {
-                                prototype.setHook = scheme;
-                                continue;
-                            }
-
-                            if (schema_name == "proto") {
-                                for (let name in schema.proto)
-                                    _SealedProperty_(prototype, name, schema.proto[name]);
-                                continue;
-                            }
-
-                            if (typeof(scheme) == "function") {
-                                CreateModelProperty(prototype, scheme, schema_name, count);
-                            } else if (typeof(scheme) == "object") {
-                                if (Array.isArray(scheme)) {
-                                    if (scheme[0] && scheme[0].container && scheme[0].schema)
-                                        CreateModelProperty(prototype, scheme[0], schema_name, count);
-                                    else if (scheme[0] instanceof ModelContainerBase)
-                                        CreateModelProperty(prototype, scheme[0].constructor, schema_name, count);
-                                    else
-                                        CreateModelProperty(prototype, Model, schema_name, count);
-                                } else if (scheme instanceof SchemeConstructor)
-                                    CreateSchemedProperty(prototype, scheme, schema_name, count);
-                                else {
-                                    CreateModelProperty(prototype, scheme.constructor, schema_name, count);
-                                }
-                            } else {
-                                console.warn(`Could not create property ${schema_name}.`);
-
-                                continue;
-                            }
-
-                            look_up[schema_name] = count;
-                            count++;
-                        }
-
-                        _SealedProperty_(prototype, "prop_offset", count);
-                        _SealedProperty_(prototype, "look_up", look_up);
-                        _SealedProperty_(prototype, "changed", false);
-
-                        Object.seal(constructor);
-
-                        schema.__FinalConstructor__ = constructor;
-                        //_FrozenProperty_(schema, "__FinalConstructor__", constructor);
-
-                        //Start the process over with a newly minted Model that has the properties defined in the Schema
-                        return new schema.__FinalConstructor__(data, root, address);
-                    }
-
-                    _FrozenProperty_(prototype, "schema", schema);
-                } else
-                    return new Model(data, root, address);
-            }
-
-            Object.defineProperty(this, "prop_array", { value: new Array(this.prop_offset), enumerable: false, configurable: false, writable: true });
-
-            if (data)
-                this.set(data, true);
-        }
-
-        destroy() { this.root = null; }
-
-        set(data, FROM_ROOT = false) {
-
-            if (!FROM_ROOT)
-                return this._deferUpdateToRoot_(data).set(data, true);
-
-            if (!data)
-                return false;
-
-            this._changed_ = false;
-
-            for (let prop_name in data) {
-
-                let data_prop = data[prop_name];
-
-                let index = this.look_up[prop_name];
-
-                if (index !== undefined) {
-
-                    let prop = this[prop_name];
-
-                    if (typeof(prop) == "object") {
-
-                        if (prop.MUTATION_ID !== this.MUTATION_ID) {
-                            prop = prop.clone();
-                            prop.MUTATION_ID = this.MUTATION_ID;
-                            this.prop_array[index] = prop;
-                        }
-
-                        if (prop.set(data_prop, true))
-                            this.scheduleUpdate(prop_name);
-
-                    } else {
-                        this[prop_name] = data_prop;
-                    }
-                }
-            }
-
-            return this._changed_;
-        }
-
-        createProp() {}
-    }
-    SchemedModel.prototype.toJSON = Model.prototype.toJSON;
-
-    class SchemedContainer extends ArrayModelContainer {
-        
-        constructor(schema, root, address) {
-
-            super(schema.self, root, address);
-
-            if (schema.proto)
-                for (let name in schema.proto)
-                    _SealedProperty_(this, name, schema.proto[name]);
-        }
-    }
-
     const tools =  (function(){
 
     	/* Exports built in components into a self contained page. */
@@ -32313,20 +29867,6 @@ SOFTWARE.`;
 
     const wick = Component;
 
-    const model = (data, schema) => new SchemedModel(data, undefined, undefined, schema);
-    model.scheme = Object.assign((s, scheme) => (scheme = class extends SchemedModel {}, scheme.schema = s, scheme), schemes);
-    model.constr = SchemedModel;
-    model.any = (data) => new Model(data);
-    model.any.constr = Model;
-    model.container = {
-        multi: MultiIndexedContainer,
-        array: ArrayModelContainer,
-        btree: BTreeModelContainer,
-        constr: ModelContainerBase
-    };
-    model.store = (data) => new Store(data);
-    wick.scheme = model.scheme;
-    wick.model = model;
     wick.stamp = stamp; //Compiles wick component into standalone components. 
     wick.presets = d=>new Presets(d);
     wick.astCompiler = function(string){

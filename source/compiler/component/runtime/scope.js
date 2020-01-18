@@ -1,9 +1,6 @@
-import { Model } from "../../../model/model.js";
 import { Tap, UpdateTap } from "../tap/tap.js";
-import { IOBase } from "../io/io.js";
-import Observer from "../../../observer/observer.js";
 
-export default class Scope extends Observer {
+export default class Scope {
 
     /**
      *   In the Wick dynamic template system, Scopes serve as the primary access to Model data. They, along with {@link ScopeContainer}s, are the only types of objects the directly _bind_ to a Model. When a Model is updated, the Scope will transmit the updated data to their descendants, which are comprised of {@link Tap}s and {@link ScopeContainer}s.
@@ -17,8 +14,6 @@ export default class Scope extends Observer {
      *   @extends ScopeBase
      */
     constructor(parent, presets, element, ast) {
-
-        super();
 
         this.ast = ast;
         this.ele = element;
@@ -56,10 +51,10 @@ export default class Scope extends Observer {
             }
         }
 
-        for(let i = 0; i < this.containers.length; i++){
+        for (let i = 0; i < this.containers.length; i++) {
             const ctr = this.containers.length;
 
-            if(ctr.ele == ele){
+            if (ctr.ele == ele) {
                 this.containers.splice(i--, 1);
                 ctr.destroy();
             }
@@ -99,8 +94,8 @@ export default class Scope extends Observer {
         this.css.length = 0;
     }
 
-    updateCachedData(){
-        for(const tap of this.taps.values())
+    updateCachedData() {
+        for (const tap of this.taps.values())
             tap.updateCached();
     }
 
@@ -126,8 +121,6 @@ export default class Scope extends Observer {
         this.taps = null;
         this.ios = null;
         this.ele = null;
-
-        super.destroy();
     }
 
     addToParent(parent) {
@@ -193,7 +186,9 @@ export default class Scope extends Observer {
 
         let
             m = null,
-            SchemedConstructor = null,
+            SchemedConstructor = null;
+
+        const
             presets = this.ast.presets,
             model_name = this.ast.model_name,
             scheme_name = this.ast.scheme_name;
@@ -206,29 +201,30 @@ export default class Scope extends Observer {
 
         if (m)
             model = m;
-        else if (SchemedConstructor) {
+        else if (SchemedConstructor)
             model = new SchemedConstructor();
-        } else if (!model)
-            model = new Model(model);
+
 
         if (this.css.length > 0)
             this.loadCSS();
 
-        for (const scope of this.scopes) {
+        for (const scope of this.scopes)
             scope.load(model);
-            // /scope.getBadges(this);
+
+        if (model) {
+
+            if (model.addObserver)
+                model.addObserver(this);
+
+            this.model = model;
+
+            //Called before model properties are disseminated
+            this.update({ model_loaded: true }); //Lifecycle Events: Model Loaded <====================================================================== 
+
+            for (const tap of this.taps.values())
+                tap.load(this.model, false);
+
         }
-
-        if (model.addObserver)
-            model.addObserver(this);
-
-        this.model = model;
-
-        //Called before model properties are disseminated
-        this.update({ model_loaded: true }); //Lifecycle Events: Model Loaded <====================================================================== 
-
-        for (const tap of this.taps.values())
-            tap.load(this.model, false);
 
         //Allow one tick to happen before acknowledging load
         setTimeout(this.loadAcknowledged.bind(this), 1);
@@ -277,7 +273,8 @@ export default class Scope extends Observer {
 
         for (const scope of this.scopes) {
             scope.update({
-                [prop_name]: data }, null, true);
+                [prop_name]: data
+            }, null, true);
             // /scope.getBadges(this);
         }
     }
@@ -285,7 +282,7 @@ export default class Scope extends Observer {
     update(data, changed_values, IMPORTED = false, meta = null) {
 
         if (this.DESTROYED) return;
-        
+
         this.temp_data_cache = data;
 
         (this.update_tap && this.update_tap.downS(data, IMPORTED));
@@ -302,7 +299,7 @@ export default class Scope extends Observer {
             container.down(data, changed_values);
     }
 
-    bubbleLink(child) {
+    bubbleLink() {
         if (this.parent)
             this.parent.bubbleLink(this);
     }
@@ -342,7 +339,8 @@ export default class Scope extends Observer {
     transitionIn(transition, transition_name = "trs_in") {
         if (transition)
             this.update({
-                [transition_name]: transition }, null, false, { IMMEDIATE: true });
+                [transition_name]: transition
+            }, null, false, { IMMEDIATE: true });
 
         this.TRANSITIONED_IN = true;
     }
@@ -360,7 +358,8 @@ export default class Scope extends Observer {
 
         if (transition) {
             this.update({
-                [transition_name]: transition }, null, false, { IMMEDIATE: true });
+                [transition_name]: transition
+            }, null, false, { IMMEDIATE: true });
 
             if (transition.trs)
                 transition_time = transition.trs.out_duration;

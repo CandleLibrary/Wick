@@ -4,6 +4,11 @@ const output = [{
     file: "./build/wick.js",
     format: "iife",
     exports: "default",
+},{
+    name: "wick",
+    file: "./build/wick_node.js",
+    format: "module",
+    exports: "default",
 }];
 
 export default {

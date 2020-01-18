@@ -3,8 +3,6 @@ import Container from "../component/runtime/container.js";
 import proto from "../component_prototype.js";
 
 import ElementNode from "./element.js";
-import Style from "./style.js";
-import Script from "./script.js";
 import Filter from "./filter.js";
 import TextNode from "./text.js";
 

@@ -1,9 +1,5 @@
 import glow from "@candlefw/glow";
 import spark from "@candlefw/spark";
-
-import { ModelContainerBase } from "../../../model/container/base.js";
-import { MultiIndexedContainer } from "../../../model/container/multi.js";
-import Observer from "../../../observer/observer.js";
 import { Tap } from "../tap/tap.js";
 
 function getColumnRow(index, offset, set_size) {
@@ -21,82 +17,100 @@ function getColumnRow(index, offset, set_size) {
  * @param      {Object}  presets  The global presets object.
  * @param      {HTMLElement}  element  The element that the Scope will _bind_ to. 
  */
-export default class ScopeContainer extends Observer {
+export default class ScopeContainer {
 
     constructor(parent, presets, element) {
 
-        super();
-
         this.ele = element;
-        this.parent = null;
+
+        this.taps = {};
+
         this.activeScopes = [];
         this.dom_scopes = [];
         this.filters = [];
         this.ios = [];
         this.terms = [];
         this.scopes = [];
-        this.range = null;
-        this._SCHD_ = 0;
-        this.prop = null;
-        this.component = null;
-        this.transition_in = 0;
         this.dom_dn = [];
         this.dom_up = [];
-        this.trs_ascending = null;
-        this.trs_descending = null;
-        this.UPDATE_FILTER = false;
-        this.dom_up_appended = false;
-        this.dom_dn_appended = false;
-        this.AUTO_SCRUB = false;
+
+        this.transition_in = 0;
+        this._SCHD_ = 0;
         this.root = 0;
-        this.taps = {};
-
-        this.scrub_velocity = 0;
-
         this.shift_amount = 1;
         this.limit = 0;
         this.offset = 0;
         this.offset_diff = 0;
         this.offset_fractional = 0;
+        this.scrub_velocity = 0;
 
+        this.observering = null;
+        this.parent = null;
+        this.range = null;
+        this.prop = null;
+        this.component = null;
+        this.trs_ascending = null;
+        this.trs_descending = null;
+
+        this.UPDATE_FILTER = false;
+        this.DOM_UP_APPENDED = false;
+        this.DOM_DN_APPENDED = false;
+        this.AUTO_SCRUB = false;
         this.LOADED = false;
 
         parent.addTemplate(this);
     }
 
-    destroyed(){
+    destroy() {
+        this.destroyed();
+
+        if(this.observering){
+            this.observering.removeObserver(this);
+            this.observering = null;
+        }
+    }
+
+    destroyed() {
+        
         this.cull();
 
-        for(const fltr of this.filters)
+        for (const fltr of this.filters)
             fltr.destroy();
     }
 
     get data() {}
 
     set data(container) {
-        if (container instanceof ModelContainerBase) {
-            container.pin();
-            container.addObserver(this);
-            return;
-        } else {
-            this.unsetModel();
+
+        if(this.observering){
+            this.observering.removeObserver(this);
+            this.observering = null;
+        }
+
+        if (container.addObserver){
+            this.observering = container;
+            return container.addObserver(this);
         }
 
         if (!container) return;
-        if (Array.isArray(container)) this.cull(container);
-        else this.cull(container.data);
+
+        if (Array.isArray(container))
+            this.cull(container);
+        else
+            this.cull(container.data);
 
         this.loadAcknowledged();
     }
 
     update(container) {
-        if (container instanceof ModelContainerBase) container = container.get(undefined, []);
+        if (container.CFW_DATA_STRUCTURE) container = container.get(undefined, []);
+
         if (!container) return;
-        //let results = container.get(this.getTerms());
-        // if (container.length > 0) {
-        if (Array.isArray(container)) this.cull(container);
-        else this.cull(container.data);
-        // }
+
+        if (Array.isArray(container))
+            this.cull(container);
+        else
+            this.cull(container.data);
     }
 
     loadAcknowledged() {
@@ -234,7 +248,7 @@ export default class ScopeContainer extends Observer {
 
                 if (this.offset + delta_offset >= this.max - 1) delta_offset = 0;
 
-                if (!this.dom_up_appended) {
+                if (!this.DOM_UP_APPENDED) {
 
                     for (let i = 0; i < this.dom_up.length; i++) {
                         this.dom_up[i].appendToDOM(this.ele);
@@ -242,7 +256,7 @@ export default class ScopeContainer extends Observer {
                         this.dom_scopes.push(this.dom_up[i]);
                     }
 
-                    this.dom_up_appended = true;
+                    this.DOM_UP_APPENDED = true;
                 }
 
                 this.trs_ascending.play(delta_offset);
@@ -250,7 +264,7 @@ export default class ScopeContainer extends Observer {
 
                 if (this.offset < 1) delta_offset = 0;
 
-                if (!this.dom_dn_appended) {
+                if (!this.DOM_DN_APPENDED) {
 
                     for (let i = 0; i < this.dom_dn.length; i++) {
                         this.dom_dn[i].appendToDOM(this.ele, this.dom_scopes[0].ele);
@@ -259,7 +273,7 @@ export default class ScopeContainer extends Observer {
 
                     this.dom_scopes = this.dom_dn.concat(this.dom_scopes);
 
-                    this.dom_dn_appended = true;
+                    this.DOM_DN_APPENDED = true;
                 }
 
                 this.trs_descending.play(-delta_offset);
@@ -364,7 +378,7 @@ export default class ScopeContainer extends Observer {
                 i = 0,
                 oa = 0;
 
-            const 
+            const
                 ein = [],
                 shift_points = Math.ceil(output_length / this.shift_amount);
 
@@ -377,8 +391,8 @@ export default class ScopeContainer extends Observer {
 
             this.dom_dn.length = 0;
             this.dom_up.length = 0;
-            this.dom_up_appended = false;
-            this.dom_dn_appended = false;
+            this.DOM_UP_APPENDED = false;
+            this.DOM_DN_APPENDED = false;
 
             //Scopes preceeding the transition window
             while (i < active_window_start - this.shift_amount) output[i++].index = -2;
@@ -433,7 +447,7 @@ export default class ScopeContainer extends Observer {
             this.limit = 0;
         }
 
-        const 
+        const
             trs_in = { trs: transition.in, index: 0 },
             trs_out = { trs: transition.out, index: 0 };
 
@@ -462,7 +476,7 @@ export default class ScopeContainer extends Observer {
                         case -2:
                         case -3:
 
-                
+
                             as.transitionOut(trs_out, (direction > 0) ? "trs_asc_out" : "trs_dec_out");
                             break;
                         default:
@@ -496,8 +510,8 @@ export default class ScopeContainer extends Observer {
 
         this.ele.style.position = this.ele.style.position;
 
-        this.dom_scopes = output.slice();   
-        
+        this.dom_scopes = output.slice();
+
         this.parent.update({
             "template_count_changed": {
 
@@ -696,6 +710,7 @@ export default class ScopeContainer extends Observer {
         if (this.cache) this.update(this.cache);
     }
 
+    /* Is this needed?
     getTerms() {
         const out_terms = [];
 
@@ -723,14 +738,14 @@ export default class ScopeContainer extends Observer {
                 terms = this.getTerms();
             if (scope) {
                 this.model.destroy();
-                const model = scope.get(terms, null);
-                model.pin();
+                const model = scope.get(terms, null);;
                 model.addObserver(this);
             }
             return this.model.get(terms);
         }
         return [];
     }
+    */
 
     down(data, changed_values) {
         for (let i = 0, l = this.activeScopes.length; i < l; i++) this.activeScopes[i].down(data, changed_values);

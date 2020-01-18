@@ -73,7 +73,7 @@ async function createComponentLite(value, presets, STATIC = false) {
 
     mount.tag = "div";
 
-    wick.lite.createComponent(stamped)
+    wick.lite.createComponent(stamped);
 
     return { scope: await comp.mount(mount), ele: mount };
 }
@@ -260,7 +260,7 @@ describe("Containers", function() {
 }
 
 CompositionTests(createComponent);
-CompositionTests(createComponentLite);
+//CompositionTests(createComponentLite);
 
 describe("Errors", function() {
     it("Throws an error if it encounters incorrect syntax.", async function() {
