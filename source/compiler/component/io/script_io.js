@@ -45,13 +45,16 @@ export default class ScriptIO extends IOBase {
 
         this.scope = scope;
         this.TAP_BINDING_INDEX = script.args.reduce((r, a, i) => (a.name == tap.prop) ? i : r, -1);
+        this.node = node;
+        this.function = script.function.bind(scope);
+        this.script = script;
+
         this.ACTIVE_IOS = 0;
         this.IO_ACTIVATIONS = 0;
         this._SCHD_ = 0;
-        this.node = node;
-        this.function = script.function.bind(scope);
+        
         this.AWAITING_DEPENDENCIES = false;
-        this.script = script;
+        this.IMMEDIATE_NEEDED = false;
 
         //Embedded emit functions
 
@@ -146,7 +149,10 @@ export default class ScriptIO extends IOBase {
 
             this.AWAITING_DEPENDENCIES = false;
 
-            if (!this._SCHD_)
+            if(this.IMMEDIATE_NEEDED){
+                this.IMMEDIATE_NEEDED = false;
+                this.scheduledUpdate();
+            }else if (!this._SCHD_)
                 spark.queueUpdate(this);
         }
     }
@@ -183,9 +189,11 @@ export default class ScriptIO extends IOBase {
 
         if (meta) {
             this.setValue(meta);
-            if (meta.IMMEDIATE && this.ACTIVE_IOS >= this.IO_ACTIVATIONS) {
+
+            if (meta.IMMEDIATE && this.ACTIVE_IOS >= this.IO_ACTIVATIONS) 
                 return this.scheduledUpdate();
-            }
+
+            this.IMMEDIATE_NEEDED = !!meta.IMMEDIATE;
         }
         
         if (this.ACTIVE_IOS < this.IO_ACTIVATIONS){
