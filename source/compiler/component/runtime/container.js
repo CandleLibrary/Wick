@@ -464,7 +464,7 @@ export default class ScopeContainer {
                     trs_in.pos = getColumnRow(j, this.offset, this.shift_amount);
 
                     os.appendToDOM(this.ele, as.ele);
-                    os.transitionIn(trs_in, (direction) ? "trs_asc_in" : "trs_dec_in");
+                    os.transitionIn(Object.assign({},trs_in), (direction) ? "trs_asc_in" : "trs_dec_in");
                     j++;
                 }
             } else if (as.index < 0) {
@@ -477,12 +477,10 @@ export default class ScopeContainer {
                         case -3:
 
 
-                            as.transitionOut(trs_out, (direction > 0) ? "trs_asc_out" : "trs_dec_out");
+                            as.transitionOut(Object.assign({},trs_out), (direction > 0) ? "trs_asc_out" : "trs_dec_out");
                             break;
                         default:
-                            {
-                                as.transitionOut(trs_out);
-                            }
+                            as.transitionOut(Object.assign({},trs_out));
                     }
                 } else {
                     as.transitionOut();
@@ -492,7 +490,7 @@ export default class ScopeContainer {
             }
             trs_in.pos = getColumnRow(j++, 0, this.shift_amount);
 
-            as.update({ arrange: trs_in }, null, false, { IMMEDIATE: true });
+            as.update({ arrange: Object.assign({},trs_out) }, null, false, { IMMEDIATE: true });
 
             as._TRANSITION_STATE_ = true;
             as.index = -1;
@@ -501,9 +499,8 @@ export default class ScopeContainer {
         while (j < output.length) {
             output[j].appendToDOM(this.ele);
             output[j].index = -1;
-
             trs_in.pos = getColumnRow(j, this.offset, this.shift_amount);
-            output[j].transitionIn(trs_in, (direction) ? "arrange" : "arrange");
+            output[j].transitionIn(Object.assign({},trs_in), (direction) ? "arrange" : "arrange");
 
             j++;
         }

@@ -24862,9 +24862,8 @@ class ScopeContainer {
         while (j < output.length) {
             output[j].appendToDOM(this.ele);
             output[j].index = -1;
-
             trs_in.pos = getColumnRow(j, this.offset, this.shift_amount);
-            output[j].transitionIn(trs_in, (direction) ? "arrange" : "arrange");
+            output[j].transitionIn(Object.assign({},trs_in), (direction) ? "arrange" : "arrange");
 
             j++;
         }
