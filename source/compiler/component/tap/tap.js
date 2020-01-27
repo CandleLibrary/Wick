@@ -123,7 +123,7 @@ export class Tap {
             this.scope.up(this, value, meta);
         }
     }
-    
+    /*
     pruneIO(ele){
         const pending_delete = [];
 
@@ -132,7 +132,7 @@ export class Tap {
                 pending_delete = io;
 
         pending_delete.forEach(io=>io.destroy());
-    }
+    }*/
 
     addIO(io) {
         if (io.parent === this)
