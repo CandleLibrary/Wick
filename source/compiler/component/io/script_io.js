@@ -5,7 +5,7 @@ import error from "../../../utils/error.js";
 
 class ArgumentIO extends IO {
 
-    get type () { return "ArgumentIO"}
+    get type() { return "ArgumentIO" }
 
     constructor(scope, errors, tap, script, id) {
         super(scope, errors, tap);
@@ -23,8 +23,8 @@ class ArgumentIO extends IO {
         this.ele.updateProp(this, value);
     }
 
-    getTapDependencies(dependencies = []){
-        if(this.parent instanceof Tap)
+    getTapDependencies(dependencies = []) {
+        if (this.parent instanceof Tap)
             dependencies.push(this.parent.prop);
         return dependencies;
     }
@@ -32,10 +32,10 @@ class ArgumentIO extends IO {
 
 export default class ScriptIO extends IOBase {
 
-    get type () { return "ScriptIO"}
+    get type() { return "ScriptIO" }
 
-    static stamp(id, scope, binding){
-        scope.addActivation(binding.args.map(e=>e.name), binding.origin_val);
+    static stamp(id, scope, binding) {
+        scope.addActivation(binding.args.map(e => e.name), binding.origin_val);
         return `registerExpression(${id},${false}, ()=>output({${this.val}:${true})})`;
     }
 
@@ -52,7 +52,7 @@ export default class ScriptIO extends IOBase {
         this.ACTIVE_IOS = 0;
         this.IO_ACTIVATIONS = 0;
         this._SCHD_ = 0;
-        
+
         this.AWAITING_DEPENDENCIES = false;
         this.IMMEDIATE_NEEDED = false;
 
@@ -70,15 +70,15 @@ export default class ScriptIO extends IOBase {
         this.arg_props.push(func_bound);
     }
 
-    toString(){
+    toString() {
         return this.script.ast.render();
     }
 
-    getTapDependencies(dependencies = []){
-        if(this.parent instanceof Tap)
+    getTapDependencies(dependencies = []) {
+        if (this.parent instanceof Tap)
             dependencies.push(this.parent.prop);
 
-        for(const arg_name in this.arg_ios)
+        for (const arg_name in this.arg_ios)
             this.arg_ios[arg_name].getTapDependencies(dependencies);
         return dependencies;
     }
@@ -88,7 +88,7 @@ export default class ScriptIO extends IOBase {
         Calls destroy on any child objects.
      */
     destroy() {
-        
+
         this.function = null;
         this.scope = null;
         this._bound_emit_function_ = null;
@@ -96,7 +96,7 @@ export default class ScriptIO extends IOBase {
         this.arg_props = null;
         this.props = null;
 
-        for (const a in this.arg_ios){
+        for (const a in this.arg_ios) {
             this.arg_ios[a].destroy();
         }
 
@@ -135,7 +135,7 @@ export default class ScriptIO extends IOBase {
 
     updateProp(io, val) {
 
-        if(typeof(val) !== undefined)
+        if (typeof(val) !== undefined)
             this.arg_props[io.id] = val;
 
         if (!io.ACTIVE) {
@@ -143,16 +143,16 @@ export default class ScriptIO extends IOBase {
             this.ACTIVE_IOS++;
         }
 
-        if(this.AWAITING_DEPENDENCIES){
+        if (this.AWAITING_DEPENDENCIES) {
             if (this.ACTIVE_IOS < this.IO_ACTIVATIONS)
                 return;
 
             this.AWAITING_DEPENDENCIES = false;
 
-            if(this.IMMEDIATE_NEEDED){
+            if (this.IMMEDIATE_NEEDED) {
                 this.IMMEDIATE_NEEDED = false;
                 this.scheduledUpdate();
-            }else if (!this._SCHD_)
+            } else if (!this._SCHD_)
                 spark.queueUpdate(this);
         }
     }
