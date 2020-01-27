@@ -183,26 +183,23 @@ export default class ScriptIO extends IOBase {
     }
 
     down(value, meta) {
-        
+
         if (value)
             this.setValue(value);
 
         if (meta) {
             this.setValue(meta);
-
-            if (meta.IMMEDIATE && this.ACTIVE_IOS >= this.IO_ACTIVATIONS) 
-                return this.scheduledUpdate();
-
             this.IMMEDIATE_NEEDED = !!meta.IMMEDIATE;
         }
-        
-        if (this.ACTIVE_IOS < this.IO_ACTIVATIONS){
-            this.AWAITING_DEPENDENCIES = true;
-            return;
-        }
 
-        if (!this._SCHD_)
-            spark.queueUpdate(this);
+        if (this.ACTIVE_IOS >= this.IO_ACTIVATIONS) {
+            if (this.IMMEDIATE_NEEDED) {
+                this.IMMEDIATE_NEEDED = false;
+                return this.scheduledUpdate();
+            } else if (!this._SCHD_)
+                spark.queueUpdate(this);
+        } else
+            this.AWAITING_DEPENDENCIES = true;
     }
 
     emit(name, value) {
