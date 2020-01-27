@@ -334,15 +334,16 @@ export default class ScopeContainer {
 
         //Scopes on the ascending edge of the transition window
         while (i < active_window_start && i < output_length)
-            output[i].update({ trs_asc_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }), i++;
+            output[i].update({ trs_asc_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }, null, false, { IMMEDIATE: true }), i++;
 
-        //Scopes in the transtion window
+        //Scopes in the transition window
         while (i < active_window_start + limit && i < output_length)
-            output[i].update({ arrange: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }), i++;
+            output[i].update({ arrange: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }, null, false, { IMMEDIATE: true }), i++;
 
         //Scopes on the descending edge of the transition window
-        while (i < output_length)
-            output[i].update({ trs_dec_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }), i++;
+        while (i < output_length){
+            output[i].update({ trs_dec_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }, null, false, { IMMEDIATE: true }), i++;
+        }
 
         transition.play(1);
 
@@ -463,6 +464,7 @@ export default class ScopeContainer {
                     os.index = -1;
                     trs_in.pos = getColumnRow(j, this.offset, this.shift_amount);
 
+                
                     os.appendToDOM(this.ele, as.ele);
                     os.transitionIn(Object.assign({},trs_in), (direction) ? "trs_asc_in" : "trs_dec_in");
                     j++;
@@ -470,14 +472,11 @@ export default class ScopeContainer {
             } else if (as.index < 0) {
 
                 trs_out.pos = getColumnRow(i, 0, this.shift_amount);
-
                 if (!NO_TRANSITION) {
                     switch (as.index) {
                         case -2:
                         case -3:
-
-
-                            as.transitionOut(Object.assign({},trs_out), (direction > 0) ? "trs_asc_out" : "trs_dec_out");
+                            as.transitionOut(Object.assign({},trs_out), false, (direction > 0) ? "trs_asc_out" : "trs_dec_out");
                             break;
                         default:
                             as.transitionOut(Object.assign({},trs_out));
@@ -590,9 +589,14 @@ export default class ScopeContainer {
 
         if (new_items.length == 0) {
 
-            const sl = this.scopes.length;
+            const sl = this.activeScopes.length;
+            
+            let trs = {trs:transition.out, pos:null};
 
-            for (let i = 0; i < sl; i++) this.scopes[i].transitionOut(transition, "", true);
+            for (let i = 0; i < sl; i++) {
+                trs.pos = getColumnRow(i, this.offset, this.shift_amount);
+                this.activeScopes[i].transitionOut(trs, true);
+            }
 
             this.scopes.length = 0;
             this.activeScopes.length = 0;
@@ -622,7 +626,7 @@ export default class ScopeContainer {
 
             for (let i = 0, l = this.scopes.length; i < l; i++)
                 if (!exists.has(this.scopes[i].model)) {
-                    this.scopes[i].transitionOut(transition, "dismounting", true);
+                    this.scopes[i].transitionOut(transition, true, "dismounting");
                     this.scopes[i].index = -1;
                     this.scopes.splice(i, 1);
                     l--;
@@ -668,7 +672,7 @@ export default class ScopeContainer {
                 let Scope = this.scopes[j];
                 if (Scope.model == item) {
                     this.scopes.splice(j, 1);
-                    Scope.transitionOut(transition, "", true);
+                    Scope.transitionOut(transition, true);
                     break;
                 }
             }

@@ -345,7 +345,7 @@ export default class Scope {
         this.TRANSITIONED_IN = true;
     }
 
-    transitionOut(transition, transition_name = "trs_out", DESTROY_AFTER_TRANSITION = false) {
+    transitionOut(transition, DESTROY_AFTER_TRANSITION = false, transition_name = "trs_out") {
         this.CONNECTED = false;
 
         if (this.TRANSITIONED_IN === false) {
