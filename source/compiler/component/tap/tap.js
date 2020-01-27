@@ -31,6 +31,10 @@ export class Tap {
         this.value;
     }
 
+    setRedirect(name){
+        this.redirect = name;
+    }
+
     destroy() {
         this.ios && this.ios.forEach(io => io.destroy());
         this.ios = null;
@@ -149,6 +153,23 @@ export class Tap {
 
     discardElement(ele){
         this.scope.discardElement(ele);
+    }
+}
+
+export class RedirectTap extends Tap{
+     constructor(scope, prop, redirect_name){
+        super(scope, prop);
+        this.redirect_name = redirect_name;
+        this.redirect = scope.getTap(redirect_name);
+     }
+
+     downS(model, i, m) {
+        if(model[this.prop])
+            this.redirect.downS({[this.redirect_name] : model[this.prop]}, i, m);
+    }
+
+    up(value, meta){
+        this.redirect.up(value, meta);
     }
 }
 

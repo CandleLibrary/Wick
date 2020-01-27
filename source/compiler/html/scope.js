@@ -3,6 +3,7 @@ import ElementNode from "./element.js";
 import {
     Tap,
     UpdateTap,
+    RedirectTap,
     KEEP,
     IMPORT,
     EXPORT,
@@ -73,6 +74,9 @@ export default class scp extends ElementNode {
 
         if (!name) return;
 
+        const extern = name.split(":")[0],
+            intern = name.split(":")[1] || extern;
+
         let tap_mode = KEEP;
 
         let SET_TAP_METHOD = false;
@@ -93,32 +97,38 @@ export default class scp extends ElementNode {
 
 
         if (SET_TAP_METHOD) {
-            this.getTap(name).modes |= tap_mode;
+            if (extern !== intern)
+                this.checkTapMethod(type, intern);
+
+            const tap = this.getTap(extern);
+
+            tap.modes |= tap_mode;
+
+            tap.redirect = (extern !== intern) ? intern : "";
+
             return true;
         }
     }
 
     createRuntimeTaplist(scope) {
 
-        const tap_list = this.tap_list,
-            taps = scope.taps;
+        const tap_list = this.tap_list;
 
-        for (let i = 0, l = tap_list.length; i < l; i++) {
-            const tap = tap_list[i],
-                name = tap.name,
-                bool = name == "update";
+        for (const tap of tap_list) {
+            const name = tap.name,
+                REDIRECT_FLAG = !!tap.redirect,
+                UPDATE_FLAG = name == "update";
 
             if (scope.taps.has(name)) continue;
 
             scope.taps.set(name,
-                bool ?
+                UPDATE_FLAG ?
                 (scope.update_tap = scope.taps[name],
                     new UpdateTap(scope, name, tap.modes)) :
+                REDIRECT_FLAG ?
+                new RedirectTap(scope, name, tap.redirect) :
                 new Tap(scope, name, tap.modes)
             );
-
-            if (bool)
-            ;
         }
     }
 
