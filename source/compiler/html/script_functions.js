@@ -12,6 +12,23 @@ const defaults = {
 
 const root = typeof(global) == "object" ? global : window;
 
+/* Returns true if await is found within the givin ast's closure. Will not enter closures of function, class, or object definitions */
+export function AsyncInClosure(ast){
+    for(const node of ast.traverseDepthFirst()){
+        if(
+            node.type == types.function_declaration ||
+            node.type == types.class_declaration ||
+            node.type == types.object_literal
+        ) {
+            node.skip();
+        }
+
+        if(node.type == types.await_expression){
+            return true;
+        }
+    }
+}
+
 export function GetOutGlobals(ast, presets) {
     const args = [];
     const ids = [];
