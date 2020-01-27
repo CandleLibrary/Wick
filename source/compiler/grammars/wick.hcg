@@ -31,7 +31,6 @@
 <> IMPORT_TAG → < τimport html::ATTRIBUTES? /? > ( </ τimport > )?  							↦return { fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
 
 +> html::VOID_NAME →  τf
-		│ τfilter
 
 +> html::ATTRIBUTE_BODY → WICK_BINDING 									
 	│ " WICK_BINDING " 																		↦return { $sym2 }
