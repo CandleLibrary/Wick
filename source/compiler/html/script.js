@@ -1,10 +1,11 @@
 import ElementNode from "./element.js";
 import ScriptIO from "../component/io/script_io.js";
 import FUNCTION_CACHE from "./function_cache.js";
-import { GetOutGlobals, AddEmit as addEmitExpression } from "./script_functions.js";
+import { GetOutGlobals, AddEmit as addEmitExpression, AsyncInClosure } from "./script_functions.js";
 import error from "../../utils/error.js";
 
 const offset = "    ";
+const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
 
 export default class ScriptNode extends ElementNode {
 
@@ -13,6 +14,7 @@ export default class ScriptNode extends ElementNode {
         this.function = null;
         this.args = null;
         this.ast = ast[0];
+        this.IS_ASYNC = false;
         this.READY = false;
         this.val = "";
         this.original_val = "";
@@ -43,6 +45,8 @@ export default class ScriptNode extends ElementNode {
 
         const { args, ids } = GetOutGlobals(this.ast, presets);
 
+        this.IS_ASYNC = AsyncInClosure(this.ast);
+
         this.args = args;
 
         addEmitExpression(ids, presets, this.args.reduce((r, a) => ((a.IS_TAPPED) ? null : r.push(a.name), r), []));
@@ -65,8 +69,14 @@ export default class ScriptNode extends ElementNode {
             names.push("emit");
 
             try {
-                this.function = Function.apply(Function, names.concat([this.val]));
+
+                if(this.IS_ASYNC)
+                   this.function = AsyncFunction.apply(AsyncFunction, names.concat([this.val]));
+                else 
+                    this.function = Function.apply(Function, names.concat([this.val]));
+
                 this.READY = true;
+
                 FUNCTION_CACHE.set(this.val, this.function);
             } catch (e) {
                 throw error(error.SCRIPT_FUNCTION_CREATE_FAILURE, e, this);
