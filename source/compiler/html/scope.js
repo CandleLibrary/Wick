@@ -23,12 +23,16 @@ export default class scp extends ElementNode {
         this.HAS_TAPS = false;
         this.tap_list = [];
 
-        (this.getAttrib("put").value || "").split(" ").forEach(e => this.checkTapMethod("put", e));
-        (this.getAttrib("export").value || "").split(" ").forEach(e => this.checkTapMethod("export", e));
-        (this.getAttrib("import").value || "").split(" ").forEach(e => this.checkTapMethod("import", e));
+        this.loadAttribs(this);
+    }
 
-        this.model_name = this.getAttrib("model").value;
-        this.schema_name = this.getAttrib("scheme").value;
+    loadAttribs(n) {
+        (n.getAttrib("put").value || "").split(" ").forEach(e => this.checkTapMethod("put", e));
+        (n.getAttrib("export").value || "").split(" ").forEach(e => this.checkTapMethod("export", e));
+        (n.getAttrib("import").value || "").split(" ").forEach(e => this.checkTapMethod("import", e));
+
+        this.model_name = this.model_name || n.getAttrib("model").value;
+        this.schema_name = this.schema_name || n.getAttrib("scheme").value;
 
         if (this.schema_name)
             this.getAttrib("scheme").RENDER = false;
@@ -45,9 +49,20 @@ export default class scp extends ElementNode {
         if (this.getAttrib("export"))
             this.getAttrib("export").RENDER = false;
 
-        this.tag = this.getAttrib("element").value || "div";
+        if (this.getAttrib("component"))
+            this.getAttrib("component").RENDER = false;
+
+        this.tag = n.getAttrib("element").value || "div";
     }
 
+    merge(node, merged_node) {
+        const merged = super.merge(node, merged_node);
+
+        if (!(node instanceof scp))
+            merged.loadAttribs(node);
+
+        return merged;
+    }
 
     getTap(tap_name) {
 
@@ -164,9 +179,12 @@ export default class scp extends ElementNode {
             this.createRuntimeTaplist(scope);
 
         //Reset pinned
-        pinned = {};
+        const s = super.mount(HAVE_OUTER_SCOPE ? par_element : null, scope, presets, slots, {});
 
-        return super.mount(HAVE_OUTER_SCOPE ? par_element : null, scope, presets, slots, pinned);
+        if (this.pinned)
+            pinned[this.pinned] = s.ele;
+
+        return s;
     }
 
     toString() {

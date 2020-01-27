@@ -203,7 +203,8 @@ export default class ElementNode {
         if (this.slots)
             slots = Object.assign({}, slots, this.slots);
 
-        pinned[this.pinned] = own_element;
+        if(this.pinned)
+            pinned[this.pinned] = own_element;
 
         if (!scope)
             scope = new Scope(null, presets || this.presets, own_element, this);

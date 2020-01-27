@@ -26,9 +26,10 @@ BaseComponent.prototype.stamp = proto.prototype.nonAsyncStamp;
 export default class ctr extends ElementNode {
     
     constructor(env, tag, children, attribs, presets) {
+
         super(env, "container", children, attribs, presets);
         //Warn about any children that are css / script
-
+        if(children)
         for(const child of children)
             if(child.tag && (child.tag == "script" || child.tag == "style"))
                 console.warn(`Element of type <${child.tag}> will have no effect inside a <container> element`);
@@ -60,9 +61,8 @@ export default class ctr extends ElementNode {
         return this;
     }
 
-    merge(node) {
-            scope.update({ loaded: true });
-        const merged_node = super.merge(node);
+    merge(...d) {
+        const merged_node = super.merge(...d);
         merged_node.filters = this.filters;
         merged_node.nodes = this.filters;
         merged_node.binds = this.binds;
@@ -93,8 +93,8 @@ export default class ctr extends ElementNode {
             this.filters[i].mount(scope, container);
         }
 
-        for (let i = 0, l = this.attribs.length; i < l; i++)
-            this.attribs[i].bind(ele, scope, pinned);
+        for (const attr of this.attribs.values())
+            attr.bind(ele, scope, pinned);
 
         if (this.binds.length > 0) {
             for (let i = 0; i < this.binds.length; i++)
