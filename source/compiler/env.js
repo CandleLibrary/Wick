@@ -285,14 +285,11 @@ const env = {
                     lex.next(); //"*"
                 }
 
-                lex.next();
+                return lu(lex.next());
             }
 
             /*USED for ASI*/
             if (env.ASI && lex.tx !== ")" && !lex.END) {
-
-                if (lex.tx == "</") // As in "<script> script body => (</)script>"
-                    return lu({ tx: ";" });
 
                 let ENCOUNTERED_END_CHAR = (lex.tx == "}" || lex.END || lex.tx == "</");
 
@@ -300,6 +297,12 @@ const env = {
                     prv_lex.next();
                     if (prv_lex.ty == prv_lex.types.nl)
                         ENCOUNTERED_END_CHAR = true;
+                }
+
+                if (lex.tx == "</") // As in "<script> script body => (</)script>"
+                {
+                    lex.tl = 0;
+                    return lu({ tx: ";" });
                 }
 
                 if (ENCOUNTERED_END_CHAR) {
