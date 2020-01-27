@@ -3,6 +3,7 @@ import binding from "./binding.js";
 
 export default class fltr extends ElementNode {
     constructor(env, tag, children, attribs, presets) {
+
         super(env, "f", null, attribs, presets);
 
         this.type = 0;

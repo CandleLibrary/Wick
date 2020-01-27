@@ -244,10 +244,11 @@ export default class Scope {
 
     loadAcknowledged() {
         //This is called when all elements of responded with a loaded signal.
-
         if (!this.LOADED && --this.PENDING_LOADS <= 0) {
             this.LOADED = true;
+
             this.update({ loaded: true }); //Lifecycle Events: Loaded <======================================================================
+            
             if (this.parent && this.parent.loadAcknowledged)
                 this.parent.loadAcknowledged();
         }

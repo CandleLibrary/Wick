@@ -228,7 +228,6 @@ export default class ElementNode {
             example elemnts = img, svg
         */
         if(this.pending_load_attrib && this.getAttrib(this.pending_load_attrib).value){
-            debugger
             const fn = e=>{
                 scope.acknowledgePending();
                 own_element.removeEventListener("load", fn);
