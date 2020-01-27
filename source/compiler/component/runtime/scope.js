@@ -128,10 +128,10 @@ export default class Scope {
             parent.addScope(this);
     }
 
-    addTemplate(template) {
-        template.parent = this;
-        this.PENDING_LOADS++;
-        this.containers.push(template);
+    addContainer(container) {
+        container.parent = this;    
+       this.PENDING_LOADS++;
+        this.containers.push(container);
     }
 
     addScope(scope) {

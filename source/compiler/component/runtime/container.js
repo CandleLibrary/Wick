@@ -58,7 +58,7 @@ export default class ScopeContainer {
         this.AUTO_SCRUB = false;
         this.LOADED = false;
 
-        parent.addTemplate(this);
+        parent.addContainer(this);
     }
 
     destroy() {
