@@ -78,7 +78,7 @@ export default class ScopeContainer {
             fltr.destroy();
     }
 
-    get data() {}
+    get data() {return null}
 
     set data(container) {
 
