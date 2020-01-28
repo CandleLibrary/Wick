@@ -1,7 +1,7 @@
 import ElementNode from "./element.js";
 import ScriptIO from "../component/io/script_io.js";
-import FUNCTION_CACHE from "./function_cache.js";
-import { GetOutGlobals, AddEmit as addEmitExpression, AsyncInClosure } from "./script_functions.js";
+import FUNCTION_CACHE from "../js/function_cache.js";
+import { GetOutGlobals, AddEmit as addEmitExpression, AsyncInClosure, copyAST } from "../js/script_functions.js";
 import error from "../../utils/error.js";
 
 const offset = "    ";

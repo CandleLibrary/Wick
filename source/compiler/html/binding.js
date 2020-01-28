@@ -1,6 +1,6 @@
 import { identifier, member_expression, return_statement, types } from "@candlefw/js";
-import { GetOutGlobals, AddEmit } from "./script_functions.js";
-import FUNCTION_CACHE from "./function_cache.js";
+import { GetOutGlobals, AddEmit } from "../js/script_functions.js";
+import FUNCTION_CACHE from "../js/function_cache.js";
 import ExpressionIO from "../component/io/expression_io.js";
 import ContainerIO from "../component/io/container_io.js";
 import script from "./script.js";
@@ -80,20 +80,6 @@ export default class Binding {
                 return scope.getTap(this.val);
         }
         return null;
-    }
-
-    //Stamps the binding to an output string. 
-    stamp(scope, attr, id) {
-        if (this.ast) {
-            if (this.METHOD == EXPRESSION) {
-                return ExpressionIO.stamp(id, scope, this);
-            } else if (this.METHOD == CONTAINER)
-                return ContainerIO.stamp(id, scope, this);
-            else {
-                scope.addActivation(this.val);
-                return this.val;
-            }
-        }
     }
 }
 
