@@ -5,7 +5,7 @@ import wick from "../source/wick.mjs";
 import { IOBase } from "../source/compiler/component/io/io.mjs";
 import Component from "../source/compiler/component_prototype.mjs";
 /*/
-import wick from "../source/wick.js";
+import wick from "../source/wick.node.mjs";
 import { IOBase } from "../source/compiler/component/io/io.js";
 import Component from "../source/compiler/component_prototype.js";
 //*/

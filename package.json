@@ -2,22 +2,27 @@
   "name": "@candlefw/wick",
   "version": "0.8.10",
   "description": "Web Component Builder",
-  "main": "./source/wick.js",
+  "main": "./source/wick.node.mjs",
   "type": "module",
+  "bin": {
+    "wick": "./source/cli.mjs"
+  },
   "scripts": {
-    "build_js_parser": "hydrocarbon compile -n js -o ./source/js -t 'mjs' ./source/js/hc_files/js.hcg -e ./source/js/js.env.mjs",
-    "build_js_parser.table": "hydrocarbon table ./source/js/wick_js.hcg",
+
+    "prepublishOnly": "yarn test && yarn run build && yarn run build.lite",
+    
     "compile": "hydrocarbon compile -u -o ./source/compiler/ -e ./source/compiler/env_proxy.mjs -t mjs.js ./source/compiler/grammars/wick.hcg",
     "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
     "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/html.hcg",
     "compile.test": "node --experimental-modules ./test/config.mjs",
+    
     "test.coverage": "nyc yarn run test",
-    "test.watch": "mocha -r esm -w --watch-extensions mjs ./test/test.js",
-    "test": "mocha --require esm --watch-extensions mjs ./test/test.js",
-    "prepublishOnly": "yarn test && yarn run build",
+    "test": "mocha --require esm ./test/test.js",
+    "test.watch": "mocha -r esm -w --watch-extensions js ./test/test.js",
+    
     "build": "rollup --config ./build/config/main.config.js",
-    "build.lite": "rollup --config ./build/config/lite.config.js",
     "build.watch": "rollup --config ./build/config/main.config.js --watch",
+    "build.lite": "rollup --config ./build/config/lite.config.js",
     "build.lite.watch": "rollup --config ./build/config/lite.config.js --watch"
   },
   "repository": {
@@ -50,12 +55,11 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "esm": "latest",
-    "mocha": "^5.2.0",
+    "mocha": "latest",
     "mocha-logger": "^1.0.6",
     "node-fetch": "^2.3.0",
-    "nyc": "^14.1.1",
-    "rollup": "^1.18.0",
-    "rollup-plugin-commonjs": "^10.0.1",
+    "rollup": "latest",
+    "rollup-plugin-commonjs": "latest",
     "rollup-plugin-gzip": "latest",
     "rollup-plugin-node-resolve": "latest",
     "rollup-plugin-resolve": "latest",
@@ -71,6 +75,7 @@
     "@candlefw/spark": "^0.0.8",
     "@candlefw/url": "latest",
     "@candlefw/whind": "latest",
+    "commander": "^4.1.0",
     "env": "^0.0.2",
     "latest": "^0.2.0"
   },

@@ -60,7 +60,7 @@ var wick = (function () {
     const HASH = 35;
     const HORIZONTAL_TAB = 9;
     const HYPHEN = 45;
-    const i = 105;
+    const i$1 = 105;
     const I = 73;
     const j = 106;
     const J = 74;
@@ -1315,12 +1315,12 @@ var wick = (function () {
      * @alias URL
      * @memberof module:wick.core.network
      */
-    class URL {
+    class URL$1 {
 
-        static resolveRelative(URL_or_url_new, URL_or_url_original = document.location.toString(), ) {
+        static resolveRelative(URL_or_url_new, URL_or_url_original = (URL$1.G) ? URL$1.G : document.location.toString()) {
 
-            let URL_old = (URL_or_url_original instanceof URL) ? URL_or_url_original : new URL(URL_or_url_original);
-            let URL_new = (URL_or_url_new instanceof URL) ? URL_or_url_new : new URL(URL_or_url_new);
+            let URL_old = (URL_or_url_original instanceof URL$1) ? URL_or_url_original : new URL$1(URL_or_url_original);
+            let URL_new = (URL_or_url_new instanceof URL$1) ? URL_or_url_new : new URL$1(URL_or_url_new);
 
             if (!(URL_old + "") || !(URL_new + "")) return null;
 
@@ -1364,8 +1364,8 @@ var wick = (function () {
             if (!url || typeof(url) != "string") {
                 IS_STRING = false;
                 IS_LOCATION = true;
-                if (URL.GLOBAL && USE_LOCATION)
-                    return URL.GLOBAL;
+                if (URL$1.GLOBAL && USE_LOCATION)
+                    return URL$1.GLOBAL;
             }
 
             /**
@@ -1414,7 +1414,7 @@ var wick = (function () {
             this.map = null;
 
             if (IS_STRING) {
-                if (url instanceof URL) {
+                if (url instanceof URL$1) {
                     this.protocol = url.protocol;
                     this.user = url.user;
                     this.pwd = url.pwd;
@@ -1450,8 +1450,8 @@ var wick = (function () {
                 this._getQuery_(this.query);
 
                 if (USE_LOCATION) {
-                    URL.G = this;
-                    return URL.R;
+                    URL$1.G = this;
+                    return URL$1.R;
                 }
             }
             this._getQuery_(this.query);
@@ -1523,7 +1523,7 @@ var wick = (function () {
 
             this.path = path;
 
-            return new URL(this);
+            return new URL$1(this);
         }
 
         setLocation() {
@@ -1623,7 +1623,7 @@ var wick = (function () {
 
                 this.query = this.query.split("?")[0] + "?" + str;
 
-                if (URL.G == this)
+                if (URL$1.G == this)
                     this.goto();
             } else {
                 this.query = "";
@@ -1643,7 +1643,7 @@ var wick = (function () {
 
             if (ALLOW_CACHE) {
 
-                let resource = URL.RC.get(this.path);
+                let resource = URL$1.RC.get(this.path);
 
                 if (resource)
                     return new Promise((res) => {
@@ -1651,7 +1651,7 @@ var wick = (function () {
                     });
             }
 
-            return fetchLocalText(this.path).then(res => (URL.RC.set(this.path, res), res));
+            return fetchLocalText(this.path).then(res => (URL$1.RC.set(this.path, res), res));
         }
 
         /**
@@ -1666,7 +1666,7 @@ var wick = (function () {
 
             if (ALLOW_CACHE) {
 
-                let resource = URL.RC.get(string_url);
+                let resource = URL$1.RC.get(string_url);
 
                 if (resource)
                     return new Promise((res) => {
@@ -1674,7 +1674,7 @@ var wick = (function () {
                     });
             }
 
-            return fetchLocalJSON(string_url).then(res => (URL.RC.set(this.path, res), res));
+            return fetchLocalJSON(string_url).then(res => (URL$1.RC.set(this.path, res), res));
         }
 
         /**
@@ -1684,9 +1684,9 @@ var wick = (function () {
          */
         cacheResource(resource) {
 
-            let occupied = URL.RC.has(this.path);
+            let occupied = URL$1.RC.has(this.path);
 
-            URL.RC.set(this.path, resource);
+            URL$1.RC.set(this.path, resource);
 
             return occupied;
         }
@@ -1706,7 +1706,7 @@ var wick = (function () {
             let url = this.toString();
             history.pushState({}, "ignored title", url);
             window.onpopstate();
-            URL.G = this;
+            URL$1.G = this;
         }
         //Returns the last segment of the path
         get file() {
@@ -1716,8 +1716,6 @@ var wick = (function () {
         get filename() {
             return this.file.split(".").shift();
         }
-
-
 
         //Returns the all but the last segment of the path
         get dir() {
@@ -1745,120 +1743,118 @@ var wick = (function () {
     /**
      * The fetched resource cache.
      */
-    URL.RC = new Map();
+    URL$1.RC = new Map();
 
     /**
      * The Default Global URL object. 
      */
-    URL.G = null;
+    URL$1.G = null;
 
     /**
      * The Global object Proxy.
      */
-    URL.R = {
+    URL$1.R = {
         get protocol() {
-            return URL.G.protocol;
+            return URL$1.G.protocol;
         },
         set protocol(v) {
             return;
-            URL.G.protocol = v;
+            URL$1.G.protocol = v;
         },
         get user() {
-            return URL.G.user;
+            return URL$1.G.user;
         },
         set user(v) {
             return;
-            URL.G.user = v;
+            URL$1.G.user = v;
         },
         get pwd() {
-            return URL.G.pwd;
+            return URL$1.G.pwd;
         },
         set pwd(v) {
             return;
-            URL.G.pwd = v;
+            URL$1.G.pwd = v;
         },
         get host() {
-            return URL.G.host;
+            return URL$1.G.host;
         },
         set host(v) {
             return;
-            URL.G.host = v;
+            URL$1.G.host = v;
         },
         get port() {
-            return URL.G.port;
+            return URL$1.G.port;
         },
         set port(v) {
             return;
-            URL.G.port = v;
+            URL$1.G.port = v;
         },
         get path() {
-            return URL.G.path;
+            return URL$1.G.path;
         },
         set path(v) {
             return;
-            URL.G.path = v;
+            URL$1.G.path = v;
         },
         get query() {
-            return URL.G.query;
+            return URL$1.G.query;
         },
         set query(v) {
             return;
-            URL.G.query = v;
+            URL$1.G.query = v;
         },
         get hash() {
-            return URL.G.hash;
+            return URL$1.G.hash;
         },
         set hash(v) {
             return;
-            URL.G.hash = v;
+            URL$1.G.hash = v;
         },
         get map() {
-            return URL.G.map;
+            return URL$1.G.map;
         },
         set map(v) {
             return;
-            URL.G.map = v;
+            URL$1.G.map = v;
         },
         setPath(path) {
-            return URL.G.setPath(path);
+            return URL$1.G.setPath(path);
         },
         setLocation() {
-            return URL.G.setLocation();
+            return URL$1.G.setLocation();
         },
         toString() {
-            return URL.G.toString();
+            return URL$1.G.toString();
         },
         getData(class_name = "") {
-            return URL.G.getData(class_name = "");
+            return URL$1.G.getData(class_name = "");
         },
         setData(class_name = "", data = null) {
-            return URL.G.setData(class_name, data);
+            return URL$1.G.setData(class_name, data);
         },
         fetchText(ALLOW_CACHE = true) {
-            return URL.G.fetchText(ALLOW_CACHE);
+            return URL$1.G.fetchText(ALLOW_CACHE);
         },
         cacheResource(resource) {
-            return URL.G.cacheResource(resource);
+            return URL$1.G.cacheResource(resource);
         }
     };
-
-
 
 
 
     let SIMDATA = null;
 
     /* Replaces the fetch actions with functions that simulate network fetches. Resources are added by the user to a Map object. */
-    URL.simulate = function() {
+    URL$1.simulate = function() {
         SIMDATA = new Map;
-        URL.prototype.fetchText = async d => ((d = this.toString()), SIMDATA.get(d)) ? SIMDATA.get(d) : "";
-        URL.prototype.fetchJSON = async d => ((d = this.toString()), SIMDATA.get(d)) ? JSON.parse(SIMDATA.get(d).toString()) : {};
+        URL$1.prototype.fetchText = async d => ((d = this.toString()), SIMDATA.get(d)) ? SIMDATA.get(d) : "";
+        URL$1.prototype.fetchJSON = async d => ((d = this.toString()), SIMDATA.get(d)) ? JSON.parse(SIMDATA.get(d).toString()) : {};
     };
 
     //Allows simulated resources to be added as a key value pair, were the key is a URI string and the value is string data.
-    URL.addResource = (n, v) => (n && v && (SIMDATA || (SIMDATA = new Map())) && SIMDATA.set(n.toString(), v.toString));
+    URL$1.addResource = (n, v) => (n && v && (SIMDATA || (SIMDATA = new Map())) && SIMDATA.set(n.toString(), v.toString));
 
-    URL.polyfill = async function() {
+    URL$1.polyfill = async function() {
 
         if (typeof(global) !== "undefined") {
 
@@ -1867,11 +1863,11 @@ var wick = (function () {
                 path = (await import('path'));
 
 
-            global.Location = (class extends URL {});
+            global.Location = (class extends URL$1 {});
 
             global.document = global.document || {};
 
-            global.document.location = new URL(process.cwd() + "/");
+            global.document.location = new URL$1(process.cwd() + "/");
             /**
              * Global `fetch` polyfill - basic support
              */
@@ -1896,9 +1892,9 @@ var wick = (function () {
         }
     };
 
-    Object.freeze(URL.R);
-    Object.freeze(URL.RC);
-    Object.seal(URL);
+    Object.freeze(URL$1.R);
+    Object.freeze(URL$1.RC);
+    Object.seal(URL$1);
 
     /**
      * Global Document instance short name
@@ -2047,7 +2043,7 @@ var wick = (function () {
      // Note: *This object is made immutable once created. There may only be one instance of Presets*
      * 
      */
-    class Presets {
+    class Presets$1 {
         constructor(preset_options) {
             if (!preset_options)
                 preset_options = {};
@@ -2176,7 +2172,7 @@ var wick = (function () {
              */
             this.options.USE_SHADOW = (preset_options.USE_SHADOW) ? (DOC.head.createShadowRoot || DOC.head.attachShadow) : false;
             this.options.USE_SHADOWED_STYLE = ((preset_options.USE_SHADOWED_STYLE) && (this.options.USE_SHADOW));
-            this.url = URL;
+            this.url = URL$1;
 
             Object.freeze(this.options);
             Object.freeze(this.custom_scopes);
@@ -9387,7 +9383,7 @@ var wick = (function () {
         constructor(presets, env, url) {
             this.functions = env.functions;
             this.prst = [presets];
-            this.url = url || new URL;
+            this.url = url || new URL$1;
             this.pending = 0;
             this.parent = null;
             this.ASI = true; // Automatic Semi-Colon Insertion
@@ -11152,9 +11148,7 @@ var wick = (function () {
             }
             else
                 super(...sym);
-
-            console.log(this.render());
-
+            
             this.NO_SUBSTITUTE = NO_SUBSTITUTE;
         }
 
@@ -16108,17 +16102,7 @@ var wick = (function () {
                 this.scope.up(this, value, meta);
             }
         }
-        /*
-        pruneIO(ele){
-            const pending_delete = [];
-
-            for(const io of this.ios)
-                if(io.ele === ele)
-                    pending_delete = io;
-
-            pending_delete.forEach(io=>io.destroy());
-        }*/
-
+        
         addIO(io) {
             if (io.parent === this)
                 return;
@@ -16650,7 +16634,8 @@ in file ${o.url || o.origin_url}`,e);
             if (this.component)
                 presets.components[this.component] = this;
 
-            this.url = this.getAttribute("url") ? URL.resolveRelative(this.getAttribute("url"), env.url) : null;
+            this.url = this.getAttribute("url") ? URL$1.resolveRelative(this.getAttribute("url"), env.url) : null;
+
             this.id = this.getAttribute("id");
             this.class = this.getAttribute("id");
             this.name = this.getAttribute("name");
@@ -16828,11 +16813,9 @@ in file ${o.url || o.origin_url}`,e);
             for (const attr of this.attribs.values())
                 attr.bind(own_element, scope, pinned);
 
-            for (let i = 0; i < this.children.length; i++) {
-                const node = this.children[i];
-                node.mount(own_element, scope, presets, slots, pinned);
-            }
-
+            for (const child of this.children) 
+                child.mount(own_element, scope, presets, slots, pinned);
+            
             /* 
                 If there is an attribute that will cause the browser to fetch a resource that is 
                 is subsequently loaded in to the element, then create a listener that will 
@@ -17858,1224 +17841,6 @@ in file ${o.url || o.origin_url}`,e);
 
     const spark$1 = new Spark$1();
 
-    const A$1 = 65;
-    const a$1 = 97;
-    const ACKNOWLEDGE$1 = 6;
-    const AMPERSAND$1 = 38;
-    const ASTERISK$1 = 42;
-    const AT$1 = 64;
-    const B$1 = 66;
-    const b$1 = 98;
-    const BACKSLASH$1 = 92;
-    const BACKSPACE$1 = 8;
-    const BELL$1 = 7;
-    const C$1 = 67;
-    const c$1 = 99;
-    const CANCEL$1 = 24;
-    const CARET$1 = 94;
-    const CARRIAGE_RETURN$1 = 13;
-    const CLOSE_CURLY$1 = 125;
-    const CLOSE_PARENTH$1 = 41;
-    const CLOSE_SQUARE$1 = 93;
-    const COLON$1 = 58;
-    const COMMA$1 = 44;
-    const d$1 = 100;
-    const D$1 = 68;
-    const DATA_LINK_ESCAPE$1 = 16;
-    const DELETE$1 = 127;
-    const DEVICE_CTRL_1$1 = 17;
-    const DEVICE_CTRL_2$1 = 18;
-    const DEVICE_CTRL_3$1 = 19;
-    const DEVICE_CTRL_4$1 = 20;
-    const DOLLAR$1 = 36;
-    const DOUBLE_QUOTE$1 = 34;
-    const e$4 = 101;
-    const E$1 = 69;
-    const EIGHT$1 = 56;
-    const END_OF_MEDIUM$1 = 25;
-    const END_OF_TRANSMISSION$1 = 4;
-    const END_OF_TRANSMISSION_BLOCK$1 = 23;
-    const END_OF_TXT$1 = 3;
-    const ENQUIRY$1 = 5;
-    const EQUAL$1 = 61;
-    const ESCAPE$1 = 27;
-    const EXCLAMATION$1 = 33;
-    const f$1 = 102;
-    const F$1 = 70;
-    const FILE_SEPERATOR$1 = 28;
-    const FIVE$1 = 53;
-    const FORM_FEED$1 = 12;
-    const FORWARD_SLASH$1 = 47;
-    const FOUR$1 = 52;
-    const g$1 = 103;
-    const G$1 = 71;
-    const GRAVE$1 = 96;
-    const GREATER_THAN$1 = 62;
-    const GROUP_SEPERATOR$1 = 29;
-    const h$1 = 104;
-    const H$1 = 72;
-    const HASH$1 = 35;
-    const HORIZONTAL_TAB$1 = 9;
-    const HYPHEN$1 = 45;
-    const i$1 = 105;
-    const I$1 = 73;
-    const j$1 = 106;
-    const J$1 = 74;
-    const k$1 = 107;
-    const K$1 = 75;
-    const l$1 = 108;
-    const L$1 = 76;
-    const LESS_THAN$1 = 60;
-    const LINE_FEED$1 = 10;
-    const m$1 = 109;
-    const M$1 = 77;
-    const n$1 = 110;
-    const N$1 = 78;
-    const NEGATIVE_ACKNOWLEDGE$1 = 21;
-    const NINE$1 = 57;
-    const NULL$1 = 0;
-    const o$1 = 111;
-    const O$1 = 79;
-    const ONE$1 = 49;
-    const OPEN_CURLY$1 = 123;
-    const OPEN_PARENTH$1 = 40;
-    const OPEN_SQUARE$1 = 91;
-    const p$1 = 112;
-    const P$1 = 80;
-    const PERCENT$1 = 37;
-    const PERIOD$1 = 46;
-    const PLUS$1 = 43;
-    const q$1 = 113;
-    const Q$1 = 81;
-    const QMARK$1 = 63;
-    const QUOTE$1 = 39;
-    const r$2 = 114;
-    const R$1 = 82;
-    const RECORD_SEPERATOR$1 = 30;
-    const s$1 = 115;
-    const S$1 = 83;
-    const SEMICOLON$1 = 59;
-    const SEVEN$1 = 55;
-    const SHIFT_IN$1 = 15;
-    const SHIFT_OUT$1 = 14;
-    const SIX$1 = 54;
-    const SPACE$1 = 32;
-    const START_OF_HEADER$1 = 1;
-    const START_OF_TEXT$1 = 2;
-    const SUBSTITUTE$1 = 26;
-    const SYNCH_IDLE$1 = 22;
-    const t$1 = 116;
-    const T$1 = 84;
-    const THREE$1 = 51;
-    const TILDE$1 = 126;
-    const TWO$1 = 50;
-    const u$1 = 117;
-    const U$1 = 85;
-    const UNDER_SCORE$1 = 95;
-    const UNIT_SEPERATOR$1 = 31;
-    const v$1 = 118;
-    const V$1 = 86;
-    const VERTICAL_BAR$1 = 124;
-    const VERTICAL_TAB$1 = 11;
-    const w$1 = 119;
-    const W$1 = 87;
-    const x$1 = 120;
-    const X$1 = 88;
-    const y$1 = 121;
-    const Y$1 = 89;
-    const z$1 = 122;
-    const Z$1 = 90;
-    const ZERO$1 = 48;
-
-    /**
-     * Lexer Jump table reference 
-     * 0. NUMBER
-     * 1. IDENTIFIER
-     * 2. QUOTE STRING
-     * 3. SPACE SET
-     * 4. TAB SET
-     * 5. CARIAGE RETURN
-     * 6. LINEFEED
-     * 7. SYMBOL
-     * 8. OPERATOR
-     * 9. OPEN BRACKET
-     * 10. CLOSE BRACKET 
-     * 11. DATA_LINK
-     */ 
-    const jump_table$1 = [
-    7, 	 	/* NULL */
-    7, 	 	/* START_OF_HEADER */
-    7, 	 	/* START_OF_TEXT */
-    7, 	 	/* END_OF_TXT */
-    7, 	 	/* END_OF_TRANSMISSION */
-    7, 	 	/* ENQUIRY */
-    7, 	 	/* ACKNOWLEDGE */
-    7, 	 	/* BELL */
-    7, 	 	/* BACKSPACE */
-    4, 	 	/* HORIZONTAL_TAB */
-    6, 	 	/* LINEFEED */
-    7, 	 	/* VERTICAL_TAB */
-    7, 	 	/* FORM_FEED */
-    5, 	 	/* CARRIAGE_RETURN */
-    7, 	 	/* SHIFT_OUT */
-    7, 		/* SHIFT_IN */
-    11,	 	/* DATA_LINK_ESCAPE */
-    7, 	 	/* DEVICE_CTRL_1 */
-    7, 	 	/* DEVICE_CTRL_2 */
-    7, 	 	/* DEVICE_CTRL_3 */
-    7, 	 	/* DEVICE_CTRL_4 */
-    7, 	 	/* NEGATIVE_ACKNOWLEDGE */
-    7, 	 	/* SYNCH_IDLE */
-    7, 	 	/* END_OF_TRANSMISSION_BLOCK */
-    7, 	 	/* CANCEL */
-    7, 	 	/* END_OF_MEDIUM */
-    7, 	 	/* SUBSTITUTE */
-    7, 	 	/* ESCAPE */
-    7, 	 	/* FILE_SEPERATOR */
-    7, 	 	/* GROUP_SEPERATOR */
-    7, 	 	/* RECORD_SEPERATOR */
-    7, 	 	/* UNIT_SEPERATOR */
-    3, 	 	/* SPACE */
-    8, 	 	/* EXCLAMATION */
-    2, 	 	/* DOUBLE_QUOTE */
-    7, 	 	/* HASH */
-    7, 	 	/* DOLLAR */
-    8, 	 	/* PERCENT */
-    8, 	 	/* AMPERSAND */
-    2, 	 	/* QUOTE */
-    9, 	 	/* OPEN_PARENTH */
-    10, 	 /* CLOSE_PARENTH */
-    8, 	 	/* ASTERISK */
-    8, 	 	/* PLUS */
-    7, 	 	/* COMMA */
-    7, 	 	/* HYPHEN */
-    7, 	 	/* PERIOD */
-    7, 	 	/* FORWARD_SLASH */
-    0, 	 	/* ZERO */
-    0, 	 	/* ONE */
-    0, 	 	/* TWO */
-    0, 	 	/* THREE */
-    0, 	 	/* FOUR */
-    0, 	 	/* FIVE */
-    0, 	 	/* SIX */
-    0, 	 	/* SEVEN */
-    0, 	 	/* EIGHT */
-    0, 	 	/* NINE */
-    8, 	 	/* COLON */
-    7, 	 	/* SEMICOLON */
-    8, 	 	/* LESS_THAN */
-    8, 	 	/* EQUAL */
-    8, 	 	/* GREATER_THAN */
-    7, 	 	/* QMARK */
-    7, 	 	/* AT */
-    1, 	 	/* A*/
-    1, 	 	/* B */
-    1, 	 	/* C */
-    1, 	 	/* D */
-    1, 	 	/* E */
-    1, 	 	/* F */
-    1, 	 	/* G */
-    1, 	 	/* H */
-    1, 	 	/* I */
-    1, 	 	/* J */
-    1, 	 	/* K */
-    1, 	 	/* L */
-    1, 	 	/* M */
-    1, 	 	/* N */
-    1, 	 	/* O */
-    1, 	 	/* P */
-    1, 	 	/* Q */
-    1, 	 	/* R */
-    1, 	 	/* S */
-    1, 	 	/* T */
-    1, 	 	/* U */
-    1, 	 	/* V */
-    1, 	 	/* W */
-    1, 	 	/* X */
-    1, 	 	/* Y */
-    1, 	 	/* Z */
-    9, 	 	/* OPEN_SQUARE */
-    7, 	 	/* TILDE */
-    10, 	/* CLOSE_SQUARE */
-    7, 	 	/* CARET */
-    7, 	 	/* UNDER_SCORE */
-    2, 	 	/* GRAVE */
-    1, 	 	/* a */
-    1, 	 	/* b */
-    1, 	 	/* c */
-    1, 	 	/* d */
-    1, 	 	/* e */
-    1, 	 	/* f */
-    1, 	 	/* g */
-    1, 	 	/* h */
-    1, 	 	/* i */
-    1, 	 	/* j */
-    1, 	 	/* k */
-    1, 	 	/* l */
-    1, 	 	/* m */
-    1, 	 	/* n */
-    1, 	 	/* o */
-    1, 	 	/* p */
-    1, 	 	/* q */
-    1, 	 	/* r */
-    1, 	 	/* s */
-    1, 	 	/* t */
-    1, 	 	/* u */
-    1, 	 	/* v */
-    1, 	 	/* w */
-    1, 	 	/* x */
-    1, 	 	/* y */
-    1, 	 	/* z */
-    9, 	 	/* OPEN_CURLY */
-    7, 	 	/* VERTICAL_BAR */
-    10,  	/* CLOSE_CURLY */
-    7,  	/* TILDE */
-    7 		/* DELETE */
-    ];	
-
-    /**
-     * LExer Number and Identifier jump table reference
-     * Number are masked by 12(4|8) and Identifiers are masked by 10(2|8)
-     * entries marked as `0` are not evaluated as either being in the number set or the identifier set.
-     * entries marked as `2` are in the identifier set but not the number set
-     * entries marked as `4` are in the number set but not the identifier set
-     * entries marked as `8` are in both number and identifier sets
-     */
-    const number_and_identifier_table$1 = [
-    0, 		/* NULL */
-    0, 		/* START_OF_HEADER */
-    0, 		/* START_OF_TEXT */
-    0, 		/* END_OF_TXT */
-    0, 		/* END_OF_TRANSMISSION */
-    0, 		/* ENQUIRY */
-    0,		/* ACKNOWLEDGE */
-    0,		/* BELL */
-    0,		/* BACKSPACE */
-    0,		/* HORIZONTAL_TAB */
-    0,		/* LINEFEED */
-    0,		/* VERTICAL_TAB */
-    0,		/* FORM_FEED */
-    0,		/* CARRIAGE_RETURN */
-    0,		/* SHIFT_OUT */
-    0,		/* SHIFT_IN */
-    0,		/* DATA_LINK_ESCAPE */
-    0,		/* DEVICE_CTRL_1 */
-    0,		/* DEVICE_CTRL_2 */
-    0,		/* DEVICE_CTRL_3 */
-    0,		/* DEVICE_CTRL_4 */
-    0,		/* NEGATIVE_ACKNOWLEDGE */
-    0,		/* SYNCH_IDLE */
-    0,		/* END_OF_TRANSMISSION_BLOCK */
-    0,		/* CANCEL */
-    0,		/* END_OF_MEDIUM */
-    0,		/* SUBSTITUTE */
-    0,		/* ESCAPE */
-    0,		/* FILE_SEPERATOR */
-    0,		/* GROUP_SEPERATOR */
-    0,		/* RECORD_SEPERATOR */
-    0,		/* UNIT_SEPERATOR */
-    0,		/* SPACE */
-    0,		/* EXCLAMATION */
-    0,		/* DOUBLE_QUOTE */
-    0,		/* HASH */
-    0,		/* DOLLAR */
-    0,		/* PERCENT */
-    0,		/* AMPERSAND */
-    0,		/* QUOTE */
-    0,		/* OPEN_PARENTH */
-    0,		 /* CLOSE_PARENTH */
-    0,		/* ASTERISK */
-    0,		/* PLUS */
-    0,		/* COMMA */
-    0,		/* HYPHEN */
-    4,		/* PERIOD */
-    0,		/* FORWARD_SLASH */
-    8,		/* ZERO */
-    8,		/* ONE */
-    8,		/* TWO */
-    8,		/* THREE */
-    8,		/* FOUR */
-    8,		/* FIVE */
-    8,		/* SIX */
-    8,		/* SEVEN */
-    8,		/* EIGHT */
-    8,		/* NINE */
-    0,		/* COLON */
-    0,		/* SEMICOLON */
-    0,		/* LESS_THAN */
-    0,		/* EQUAL */
-    0,		/* GREATER_THAN */
-    0,		/* QMARK */
-    0,		/* AT */
-    2,		/* A*/
-    8,		/* B */
-    2,		/* C */
-    2,		/* D */
-    8,		/* E */
-    2,		/* F */
-    2,		/* G */
-    2,		/* H */
-    2,		/* I */
-    2,		/* J */
-    2,		/* K */
-    2,		/* L */
-    2,		/* M */
-    2,		/* N */
-    8,		/* O */
-    2,		/* P */
-    2,		/* Q */
-    2,		/* R */
-    2,		/* S */
-    2,		/* T */
-    2,		/* U */
-    2,		/* V */
-    2,		/* W */
-    8,		/* X */
-    2,		/* Y */
-    2,		/* Z */
-    0,		/* OPEN_SQUARE */
-    0,		/* TILDE */
-    0,		/* CLOSE_SQUARE */
-    0,		/* CARET */
-    0,		/* UNDER_SCORE */
-    0,		/* GRAVE */
-    2,		/* a */
-    8,		/* b */
-    2,		/* c */
-    2,		/* d */
-    2,		/* e */
-    2,		/* f */
-    2,		/* g */
-    2,		/* h */
-    2,		/* i */
-    2,		/* j */
-    2,		/* k */
-    2,		/* l */
-    2,		/* m */
-    2,		/* n */
-    8,		/* o */
-    2,		/* p */
-    2,		/* q */
-    2,		/* r */
-    2,		/* s */
-    2,		/* t */
-    2,		/* u */
-    2,		/* v */
-    2,		/* w */
-    8,		/* x */
-    2,		/* y */
-    2,		/* z */
-    0,		/* OPEN_CURLY */
-    0,		/* VERTICAL_BAR */
-    0,		/* CLOSE_CURLY */
-    0,		/* TILDE */
-    0		/* DELETE */
-    ];
-
-    const extended_number_and_identifier_table$1 = number_and_identifier_table$1.slice();
-    extended_number_and_identifier_table$1[45] = 2;
-    extended_number_and_identifier_table$1[95] = 2;
-
-    const
-        number$1 = 1,
-        identifier$2 = 2,
-        string$2 = 4,
-        white_space$1 = 8,
-        open_bracket$1 = 16,
-        close_bracket$1 = 32,
-        operator$2 = 64,
-        symbol$1 = 128,
-        new_line$1 = 256,
-        data_link$1 = 512,
-        alpha_numeric$1 = (identifier$2 | number$1),
-        white_space_new_line$1 = (white_space$1 | new_line$1),
-        Types$1 = {
-            num: number$1,
-            number: number$1,
-            id: identifier$2,
-            identifier: identifier$2,
-            str: string$2,
-            string: string$2,
-            ws: white_space$1,
-            white_space: white_space$1,
-            ob: open_bracket$1,
-            open_bracket: open_bracket$1,
-            cb: close_bracket$1,
-            close_bracket: close_bracket$1,
-            op: operator$2,
-            operator: operator$2,
-            sym: symbol$1,
-            symbol: symbol$1,
-            nl: new_line$1,
-            new_line: new_line$1,
-            dl: data_link$1,
-            data_link: data_link$1,
-            alpha_numeric: alpha_numeric$1,
-            white_space_new_line: white_space_new_line$1,
-        },
-
-        /*** MASKS ***/
-
-        TYPE_MASK$1 = 0xF,
-        PARSE_STRING_MASK$1 = 0x10,
-        IGNORE_WHITESPACE_MASK$1 = 0x20,
-        CHARACTERS_ONLY_MASK$1 = 0x40,
-        TOKEN_LENGTH_MASK$1 = 0xFFFFFF80,
-
-        //De Bruijn Sequence for finding index of right most bit set.
-        //http://supertech.csail.mit.edu/papers/debruijn.pdf
-        debruijnLUT$1 = [
-            0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
-            31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
-        ];
-
-    const getNumbrOfTrailingZeroBitsFromPowerOf2$1 = (value) => debruijnLUT$1[(value * 0x077CB531) >>> 27];
-
-    class Lexer$1 {
-
-        constructor(string = "", INCLUDE_WHITE_SPACE_TOKENS = false, PEEKING = false) {
-
-            if (typeof(string) !== "string") throw new Error(`String value must be passed to Lexer. A ${typeof(string)} was passed as the \`string\` argument.`);
-
-            /**
-             * The string that the Lexer tokenizes.
-             */
-            this.str = string;
-
-            /**
-             * Reference to the peeking Lexer.
-             */
-            this.p = null;
-
-            /**
-             * The type id of the current token.
-             */
-            this.type = 32768; //Default "non-value" for types is 1<<15;
-
-            /**
-             * The offset in the string of the start of the current token.
-             */
-            this.off = 0;
-
-            this.masked_values = 0;
-
-            /**
-             * The character offset of the current token within a line.
-             */
-            this.char = 0;
-            /**
-             * The line position of the current token.
-             */
-            this.line = 0;
-            /**
-             * The length of the string being parsed
-             */
-            this.sl = string.length;
-            /**
-             * The length of the current token.
-             */
-            this.tl = 0;
-
-            /**
-             * Flag to ignore white spaced.
-             */
-            this.IWS = !INCLUDE_WHITE_SPACE_TOKENS;
-
-            this.USE_EXTENDED_ID = false;
-
-            /**
-             * Flag to force the lexer to parse string contents
-             */
-            this.PARSE_STRING = false;
-
-            this.id_lu = number_and_identifier_table$1;
-
-            if (!PEEKING) this.next();
-        }
-
-        useExtendedId(){
-            this.id_lu = extended_number_and_identifier_table$1;
-            this.tl = 0;
-            this.next();
-            return this;
-        }
-
-        /**
-         * Restricts max parse distance to the other Lexer's current position.
-         * @param      {Lexer}  Lexer   The Lexer to limit parse distance by.
-         */
-        fence(marker = this) {
-            if (marker.str !== this.str)
-                return;
-            this.sl = marker.off;
-            return this;
-        }
-
-        /**
-         * Copies the Lexer.
-         * @return     {Lexer}  Returns a new Lexer instance with the same property values.
-         */
-        copy(destination = new Lexer$1(this.str, false, true)) {
-            destination.off = this.off;
-            destination.char = this.char;
-            destination.line = this.line;
-            destination.sl = this.sl;
-            destination.masked_values = this.masked_values;
-            destination.id_lu = this.id_lu;
-            return destination;
-        }
-
-        /**
-         * Given another Lexer with the same `str` property value, it will copy the state of that Lexer.
-         * @param      {Lexer}  [marker=this.peek]  The Lexer to clone the state from. 
-         * @throws     {Error} Throws an error if the Lexers reference different strings.
-         * @public
-         */
-        sync(marker = this.p) {
-
-            if (marker instanceof Lexer$1) {
-                if (marker.str !== this.str) throw new Error("Cannot sync Lexers with different strings!");
-                this.off = marker.off;
-                this.char = marker.char;
-                this.line = marker.line;
-                this.masked_values = marker.masked_values;
-            }
-
-            return this;
-        }
-
-        /**
-        Creates an error message with a diagram illustrating the location of the error. 
-        */
-        errorMessage(message = "") {
-            const pk = this.copy();
-
-            pk.IWS = false;
-
-            while (!pk.END && pk.ty !== Types$1.nl) { pk.next(); }
-
-            const end = (pk.END) ? this.str.length : pk.off,
-
-                nls = (this.line > 0) ? 1 : 0,
-                number_of_tabs = this.str
-                    .slice(this.off - this.char + nls + nls, this.off + nls)
-                    .split("")
-                    .reduce((r, v) => (r + ((v.charCodeAt(0) == HORIZONTAL_TAB$1) | 0)), 0),
-
-                arrow = String.fromCharCode(0x2b89),
-
-                line = String.fromCharCode(0x2500),
-
-                thick_line = String.fromCharCode(0x2501),
-
-                line_number = `    ${this.line+1}: `,
-
-                line_fill = line_number.length + number_of_tabs,
-
-                line_text = this.str.slice(this.off - this.char + nls + (nls), end).replace(/\t/g, "  "),
-
-                error_border = thick_line.repeat(line_text.length + line_number.length + 2),
-
-                is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "",
-
-                msg =[ `${message} at ${this.line+1}:${this.char - nls}` ,
-                `${error_border}` ,
-                `${line_number+line_text}` ,
-                `${line.repeat(this.char-nls+line_fill-(nls))+arrow}` ,
-                `${error_border}` ,
-                `${is_iws}`].join("\n");
-
-            return msg;
-        }
-
-        /**
-         * Will throw a new Error, appending the parsed string line and position information to the the error message passed into the function.
-         * @instance
-         * @public
-         * @param {String} message - The error message.
-         * @param {Bool} DEFER - if true, returns an Error object instead of throwing.
-         */
-        throw (message, DEFER = false) {
-            const error = new Error(this.errorMessage(message));
-            if (DEFER)
-                return error;
-            throw error;
-        }
-
-        /**
-         * Proxy for Lexer.prototype.reset
-         * @public
-         */
-        r() { return this.reset() }
-
-        /**
-         * Restore the Lexer back to it's initial state.
-         * @public
-         */
-        reset() {
-            this.p = null;
-            this.type = 32768;
-            this.off = 0;
-            this.tl = 0;
-            this.char = 0;
-            this.line = 0;
-            this.n;
-            return this;
-        }
-
-        resetHead() {
-            this.off = 0;
-            this.tl = 0;
-            this.char = 0;
-            this.line = 0;
-            this.p = null;
-            this.type = 32768;
-        }
-
-        /**
-         * Sets the internal state to point to the next token. Sets Lexer.prototype.END to `true` if the end of the string is hit.
-         * @public
-         * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
-         */
-        next(marker = this, USE_CUSTOM_SYMBOLS = !!this.symbol_map) {
-
-            if (marker.sl < 1) {
-                marker.off = 0;
-                marker.type = 32768;
-                marker.tl = 0;
-                marker.line = 0;
-                marker.char = 0;
-                return marker;
-            }
-
-            //Token builder
-            const l = marker.sl,
-                str = marker.str,
-                number_and_identifier_table = this.id_lu,
-                IWS = marker.IWS;
-
-            let length = marker.tl,
-                off = marker.off + length,
-                type = symbol$1,
-                line = marker.line,
-                base = off,
-                char = marker.char,
-                root = marker.off;
-
-            if (off >= l) {
-                length = 0;
-                base = l;
-                //char -= base - off;
-                marker.char = char + (base - marker.off);
-                marker.type = type;
-                marker.off = base;
-                marker.tl = 0;
-                marker.line = line;
-                return marker;
-            }
-
-            let NORMAL_PARSE = true;
-
-            if (USE_CUSTOM_SYMBOLS) {
-
-                let code = str.charCodeAt(off);
-                let off2 = off;
-                let map = this.symbol_map,
-                    m;
-                let i = 0;
-
-                while (code == 32 && IWS)
-                    (code = str.charCodeAt(++off2), off++);
-
-                while ((m = map.get(code))) {
-                    map = m;
-                    off2 += 1;
-                    code = str.charCodeAt(off2);
-                }
-
-                if (map.IS_SYM) {
-                    NORMAL_PARSE = false;
-                    base = off;
-                    length = off2 - off;
-                    //char += length;
-                }
-            }
-
-            if (NORMAL_PARSE) {
-
-                for (;;) {
-
-                    base = off;
-
-                    length = 1;
-
-                    const code = str.charCodeAt(off);
-
-                    if (code < 128) {
-
-                        switch (jump_table$1[code]) {
-                            case 0: //NUMBER
-                                while (++off < l && (12 & number_and_identifier_table[str.charCodeAt(off)]));
-
-                                if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off + 1)])) {
-                                    off++;
-                                    if (str[off] == "-") off++;
-                                    marker.off = off;
-                                    marker.tl = 0;
-                                    marker.next();
-                                    off = marker.off + marker.tl;
-                                    //Add e to the number string
-                                }
-
-                                type = number$1;
-                                length = off - base;
-
-                                break;
-                            case 1: //IDENTIFIER
-                                while (++off < l && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
-                                type = identifier$2;
-                                length = off - base;
-                                break;
-                            case 2: //QUOTED STRING
-                                if (this.PARSE_STRING) {
-                                    type = symbol$1;
-                                } else {
-                                    while (++off < l && str.charCodeAt(off) !== code);
-                                    type = string$2;
-                                    length = off - base + 1;
-                                }
-                                break;
-                            case 3: //SPACE SET
-                                while (++off < l && str.charCodeAt(off) === SPACE$1);
-                                type = white_space$1;
-                                length = off - base;
-                                break;
-                            case 4: //TAB SET
-                                while (++off < l && str[off] === HORIZONTAL_TAB$1);
-                                type = white_space$1;
-                                length = off - base;
-                                break;
-                            case 5: //CARIAGE RETURN
-                                length = 2;
-                                //intentional
-                            case 6: //LINEFEED
-                                type = new_line$1;
-                                line++;
-                                base = off;
-                                root = off;
-                                off += length;
-                                char = 0;
-                                break;
-                            case 7: //SYMBOL
-                                type = symbol$1;
-                                break;
-                            case 8: //OPERATOR
-                                type = operator$2;
-                                break;
-                            case 9: //OPEN BRACKET
-                                type = open_bracket$1;
-                                break;
-                            case 10: //CLOSE BRACKET
-                                type = close_bracket$1;
-                                break;
-                            case 11: //Data Link Escape
-                                type = data_link$1;
-                                length = 4; //Stores two UTF16 values and a data link sentinel
-                                break;
-                        }
-                    } else {
-                        break;
-                    }
-
-                    if (IWS && (type & white_space_new_line$1)) {
-                        if (off < l) {
-                            type = symbol$1;
-                            //off += length;
-                            continue;
-                        } else {
-                            //Trim white space from end of string
-                            //base = l - off;
-                            //marker.sl -= off;
-                            //length = 0;
-                        }
-                    }
-                    break;
-                }
-            }
-
-            marker.type = type;
-            marker.off = base;
-            marker.tl = (this.masked_values & CHARACTERS_ONLY_MASK$1) ? Math.min(1, length) : length;
-            marker.char = char + base - root;
-            marker.line = line;
-
-            return marker;
-        }
-
-
-        /**
-         * Proxy for Lexer.prototype.assert
-         * @public
-         */
-        a(text) {
-            return this.assert(text);
-        }
-
-        /**
-         * Compares the string value of the current token to the value passed in. Advances to next token if the two are equal.
-         * @public
-         * @throws {Error} - `Expecting "${text}" got "${this.text}"`
-         * @param {String} text - The string to compare.
-         */
-        assert(text) {
-
-            if (this.off < 0) this.throw(`Expecting ${text} got null`);
-
-            if (this.text == text)
-                this.next();
-            else
-                this.throw(`Expecting "${text}" got "${this.text}"`);
-
-            return this;
-        }
-
-        /**
-         * Proxy for Lexer.prototype.assertCharacter
-         * @public
-         */
-        aC(char) { return this.assertCharacter(char) }
-        /**
-         * Compares the character value of the current token to the value passed in. Advances to next token if the two are equal.
-         * @public
-         * @throws {Error} - `Expecting "${text}" got "${this.text}"`
-         * @param {String} text - The string to compare.
-         */
-        assertCharacter(char) {
-
-            if (this.off < 0) this.throw(`Expecting ${char[0]} got null`);
-
-            if (this.ch == char[0])
-                this.next();
-            else
-                this.throw(`Expecting "${char[0]}" got "${this.tx[this.off]}"`);
-
-            return this;
-        }
-
-        /**
-         * Returns the Lexer bound to Lexer.prototype.p, or creates and binds a new Lexer to Lexer.prototype.p. Advences the other Lexer to the token ahead of the calling Lexer.
-         * @public
-         * @type {Lexer}
-         * @param {Lexer} [marker=this] - The marker to originate the peek from. 
-         * @param {Lexer} [peek_marker=this.p] - The Lexer to set to the next token state.
-         * @return {Lexer} - The Lexer that contains the peeked at token.
-         */
-        peek(marker = this, peek_marker = this.p) {
-
-            if (!peek_marker) {
-                if (!marker) return null;
-                if (!this.p) {
-                    this.p = new Lexer$1(this.str, false, true);
-                    peek_marker = this.p;
-                }
-            }
-            peek_marker.masked_values = marker.masked_values;
-            peek_marker.type = marker.type;
-            peek_marker.off = marker.off;
-            peek_marker.tl = marker.tl;
-            peek_marker.char = marker.char;
-            peek_marker.line = marker.line;
-            this.next(peek_marker);
-            return peek_marker;
-        }
-
-
-        /**
-         * Proxy for Lexer.prototype.slice
-         * @public
-         */
-        s(start) { return this.slice(start) }
-
-        /**
-         * Returns a slice of the parsed string beginning at `start` and ending at the current token.
-         * @param {Number | LexerBeta} start - The offset in this.str to begin the slice. If this value is a LexerBeta, sets the start point to the value of start.off.
-         * @return {String} A substring of the parsed string.
-         * @public
-         */
-        slice(start = this.off) {
-
-            if (start instanceof Lexer$1) start = start.off;
-
-            return this.str.slice(start, (this.off <= start) ? this.sl : this.off);
-        }
-
-        /**
-         * Skips to the end of a comment section.
-         * @param {boolean} ASSERT - If set to true, will through an error if there is not a comment line or block to skip.
-         * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
-         */
-        comment(ASSERT = false, marker = this) {
-
-            if (!(marker instanceof Lexer$1)) return marker;
-
-            if (marker.ch == "/") {
-                if (marker.pk.ch == "*") {
-                    marker.sync();
-                    while (!marker.END && (marker.next().ch != "*" || marker.pk.ch != "/")) { /* NO OP */ }
-                    marker.sync().assert("/");
-                } else if (marker.pk.ch == "/") {
-                    const IWS = marker.IWS;
-                    while (marker.next().ty != Types$1.new_line && !marker.END) { /* NO OP */ }
-                    marker.IWS = IWS;
-                    marker.next();
-                } else
-                if (ASSERT) marker.throw("Expecting the start of a comment");
-            }
-
-            return marker;
-        }
-
-        setString(string, RESET = true) {
-            this.str = string;
-            this.sl = string.length;
-            if (RESET) this.resetHead();
-        }
-
-        toString() {
-            return this.slice();
-        }
-
-        /**
-         * Returns new Whind Lexer that has leading and trailing whitespace characters removed from input. 
-         * leave_leading_amount - Maximum amount of leading space caracters to leave behind. Default is zero
-         * leave_trailing_amount - Maximum amount of trailing space caracters to leave behind. Default is zero
-         */
-        trim(leave_leading_amount = 0, leave_trailing_amount = leave_leading_amount) {
-            const lex = this.copy();
-
-            let space_count = 0,
-                off = lex.off;
-
-            for (; lex.off < lex.sl; lex.off++) {
-                const c = jump_table$1[lex.string.charCodeAt(lex.off)];
-
-                if (c > 2 && c < 7) {
-
-                    if (space_count >= leave_leading_amount) {
-                        off++;
-                    } else {
-                        space_count++;
-                    }
-                    continue;
-                }
-
-                break;
-            }
-
-            lex.off = off;
-            space_count = 0;
-            off = lex.sl;
-
-            for (; lex.sl > lex.off; lex.sl--) {
-                const c = jump_table$1[lex.string.charCodeAt(lex.sl - 1)];
-
-                if (c > 2 && c < 7) {
-                    if (space_count >= leave_trailing_amount) {
-                        off--;
-                    } else {
-                        space_count++;
-                    }
-                    continue;
-                }
-
-                break;
-            }
-
-            lex.sl = off;
-
-            if (leave_leading_amount > 0)
-                lex.IWS = false;
-
-            lex.token_length = 0;
-
-            lex.next();
-
-            return lex;
-        }
-
-        /** Adds symbol to symbol_map. This allows custom symbols to be defined and tokenized by parser. **/
-        addSymbol(sym) {
-            if (!this.symbol_map)
-                this.symbol_map = new Map;
-
-
-            let map = this.symbol_map;
-
-            for (let i = 0; i < sym.length; i++) {
-                let code = sym.charCodeAt(i);
-                let m = map.get(code);
-                if (!m) {
-                    m = map.set(code, new Map).get(code);
-                }
-                map = m;
-            }
-            map.IS_SYM = true;
-        }
-
-        /*** Getters and Setters ***/
-        get string() {
-            return this.str;
-        }
-
-        get string_length() {
-            return this.sl - this.off;
-        }
-
-        set string_length(s) {}
-
-        /**
-         * The current token in the form of a new Lexer with the current state.
-         * Proxy property for Lexer.prototype.copy
-         * @type {Lexer}
-         * @public
-         * @readonly
-         */
-        get token() {
-            return this.copy();
-        }
-
-
-        get ch() {
-            return this.str[this.off];
-        }
-
-        /**
-         * Proxy for Lexer.prototype.text
-         * @public
-         * @type {String}
-         * @readonly
-         */
-        get tx() { return this.text }
-
-        /**
-         * The string value of the current token.
-         * @type {String}
-         * @public
-         * @readonly
-         */
-        get text() {
-            return (this.off < 0) ? "" : this.str.slice(this.off, this.off + this.tl);
-        }
-
-        /**
-         * The type id of the current token.
-         * @type {Number}
-         * @public
-         * @readonly
-         */
-        get ty() { return this.type }
-
-        /**
-         * The current token's offset position from the start of the string.
-         * @type {Number}
-         * @public
-         * @readonly
-         */
-        get pos() {
-            return this.off;
-        }
-
-        /**
-         * Proxy for Lexer.prototype.peek
-         * @public
-         * @readonly
-         * @type {Lexer}
-         */
-        get pk() { return this.peek() }
-
-        /**
-         * Proxy for Lexer.prototype.next
-         * @public
-         */
-        get n() { return this.next() }
-
-        get END() { return this.off >= this.sl }
-        set END(v) {}
-
-        get type() {
-            return 1 << (this.masked_values & TYPE_MASK$1);
-        }
-
-        set type(value) {
-            //assuming power of 2 value.
-            this.masked_values = (this.masked_values & ~TYPE_MASK$1) | ((getNumbrOfTrailingZeroBitsFromPowerOf2$1(value)) & TYPE_MASK$1);
-        }
-
-        get tl() {
-            return this.token_length;
-        }
-
-        set tl(value) {
-            this.token_length = value;
-        }
-
-        get token_length() {
-            return ((this.masked_values & TOKEN_LENGTH_MASK$1) >> 7);
-        }
-
-        set token_length(value) {
-            this.masked_values = (this.masked_values & ~TOKEN_LENGTH_MASK$1) | (((value << 7) | 0) & TOKEN_LENGTH_MASK$1);
-        }
-
-        get IGNORE_WHITE_SPACE() {
-            return this.IWS;
-        }
-
-        set IGNORE_WHITE_SPACE(bool) {
-            this.iws = !!bool;
-        }
-
-        get CHARACTERS_ONLY() {
-            return !!(this.masked_values & CHARACTERS_ONLY_MASK$1);
-        }
-
-        set CHARACTERS_ONLY(boolean) {
-            this.masked_values = (this.masked_values & ~CHARACTERS_ONLY_MASK$1) | ((boolean | 0) << 6);
-        }
-
-        get IWS() {
-            return !!(this.masked_values & IGNORE_WHITESPACE_MASK$1);
-        }
-
-        set IWS(boolean) {
-            this.masked_values = (this.masked_values & ~IGNORE_WHITESPACE_MASK$1) | ((boolean | 0) << 5);
-        }
-
-        get PARSE_STRING() {
-            return !!(this.masked_values & PARSE_STRING_MASK$1);
-        }
-
-        set PARSE_STRING(boolean) {
-            this.masked_values = (this.masked_values & ~PARSE_STRING_MASK$1) | ((boolean | 0) << 4);
-        }
-
-        /**
-         * Reference to token id types.
-         */
-        get types() {
-            return Types$1;
-        }
-    }
-
-    Lexer$1.prototype.addCharacter = Lexer$1.prototype.addSymbol;
-
-    function whind$2(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer$1(string, INCLUDE_WHITE_SPACE_TOKENS) }
-
-    whind$2.constructor = Lexer$1;
-
-    Lexer$1.types = Types$1;
-    whind$2.types = Types$1;
-
     let fn$2 = {}; const 
     /************** Maps **************/
 
@@ -19775,340 +18540,340 @@ in file ${o.url || o.origin_url}`,e);
         max$2 = Math.max, min$2 = Math.min,
 
         //Error Functions
-        e$5 = (tk,r,o,l,p)=>{if(l.END)l.throw("Unexpected end of input");else if(l.ty & (264)) l.throw(`Unexpected space character within input "${p.slice(l)}" `) ; else l.throw(`Unexpected token ${l.tx}" `);}, 
-        eh$2 = [e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5,
-    e$5],
+        e$4 = (tk,r,o,l,p)=>{if(l.END)l.throw("Unexpected end of input");else if(l.ty & (264)) l.throw(`Unexpected space character within input "${p.slice(l)}" `) ; else l.throw(`Unexpected token ${l.tx}" `);}, 
+        eh$2 = [e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4,
+    e$4],
 
         //Empty Function
         nf$2 = ()=>-1, 
@@ -21112,7 +19877,7 @@ in file ${o.url || o.origin_url}`,e);
             let c;
 
             if (typeof(l) == "string")
-                l = whind$2(l);
+                l = whind$1(l);
 
             let out = { r: 0, g: 0, b: 0, a: 1 };
 
@@ -21494,7 +20259,7 @@ in file ${o.url || o.origin_url}`,e);
         constructor(v, u = "") {
             
             if (typeof(v) == "string") {
-                let lex = whind$2(v);
+                let lex = whind$1(v);
                 let val = CSS_Length.parse(lex);
                 if (val) return val;
             }
@@ -21608,688 +20373,6 @@ in file ${o.url || o.origin_url}`,e);
     class DEGLength extends CSS_Length {
         get unit(){return "deg";}
     }
-
-    const uri_reg_ex$1 = /(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:\/\/))?(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:([^\<\>\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\<\>\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\<\>\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
-
-    const STOCK_LOCATION$1 = {
-        protocol: "",
-        host: "",
-        port: "",
-        path: "",
-        hash: "",
-        query: "",
-        search: ""
-    };
-
-    function fetchLocalText$1(URL, m = "same-origin") {
-        return new Promise((res, rej) => {
-            fetch(URL, {
-                mode: m, // CORs not allowed
-                credentials: m,
-                method: "GET"
-            }).then(r => {
-
-                if (r.status < 200 || r.status > 299)
-                    r.text().then(rej);
-                else
-                    r.text().then(res);
-            }).catch(e => rej(e));
-        });
-    }
-
-    function fetchLocalJSON$1(URL, m = "same-origin") {
-        return new Promise((res, rej) => {
-            fetch(URL, {
-                mode: m, // CORs not allowed
-                credentials: m,
-                method: "GET"
-            }).then(r => {
-                if (r.status < 200 || r.status > 299)
-                    r.json().then(rej);
-                else
-                    r.json().then(res).catch(rej);
-            }).catch(e => rej(e));
-        });
-    }
-
-    function submitForm$1(URL, form_data, m = "same-origin") {
-        return new Promise((res, rej) => {
-            var form;
-
-            if (form_data instanceof FormData)
-                form = form_data;
-            else {
-                form = new FormData();
-                for (let name in form_data)
-                    form.append(name, form_data[name] + "");
-            }
-
-            fetch(URL, {
-                mode: m, // CORs not allowed
-                credentials: m,
-                method: "POST",
-                body: form,
-            }).then(r => {
-                if (r.status < 200 || r.status > 299)
-                    r.text().then(rej);
-                else
-                    r.json().then(res);
-            }).catch(e => e.text().then(rej));
-        });
-    }
-
-    function submitJSON$1(URL, json_data, m = "same-origin") {
-        return new Promise((res, rej) => {
-            fetch(URL, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                mode: m, // CORs not allowed
-                credentials: m,
-                method: "POST",
-                body: JSON.stringify(json_data),
-            }).then(r => {
-                if (r.status < 200 || r.status > 299)
-                    r.json().then(rej);
-                else
-                    r.json().then(res);
-            }).catch(e => e.text().then(rej));
-        });
-    }
-
-
-
-    /**
-     * Used for processing URLs, handling `document.location`, and fetching data.
-     * @param      {string}   url           The URL string to wrap.
-     * @param      {boolean}  USE_LOCATION  If `true` missing URL parts are filled in with data from `document.location`. 
-     * @return     {URL}   If a falsy value is passed to `url`, and `USE_LOCATION` is `true` a Global URL is returned. This is directly linked to the page and will _update_ the actual page URL when its values are change. Use with caution. 
-     * @alias URL
-     * @memberof module:wick.core.network
-     */
-    class URL$1 {
-
-        static resolveRelative(URL_or_url_new, URL_or_url_original = document.location.toString(), ) {
-
-            let URL_old = (URL_or_url_original instanceof URL$1) ? URL_or_url_original : new URL$1(URL_or_url_original);
-            let URL_new = (URL_or_url_new instanceof URL$1) ? URL_or_url_new : new URL$1(URL_or_url_new);
-
-            if (!(URL_old + "") || !(URL_new + "")) return null;
-
-            let new_path = "";
-            if (URL_new.path[0] != "/") {
-
-                let a = URL_old.path.split("/");
-                let b = URL_new.path.split("/");
-
-
-                if (b[0] == "..") a.splice(a.length - 1, 1);
-                for (let i = 0; i < b.length; i++) {
-                    switch (b[i]) {
-                        case "..":
-                        case ".":
-                            a.splice(a.length - 1, 1);
-                            break;
-                        default:
-                            a.push(b[i]);
-                    }
-                }
-                URL_new.path = a.join("/");
-            }
-
-            return URL_new;
-        }
-
-        constructor(url = "", USE_LOCATION = false) {
-
-            let IS_STRING = true,
-                IS_LOCATION = false;
-
-
-            let location = (typeof(document) !== "undefined") ? document.location : STOCK_LOCATION$1;
-
-            if (typeof(Location) !== "undefined" && url instanceof Location) {
-                location = url;
-                url = "";
-                IS_LOCATION = true;
-            }
-            if (!url || typeof(url) != "string") {
-                IS_STRING = false;
-                IS_LOCATION = true;
-                if (URL$1.GLOBAL && USE_LOCATION)
-                    return URL$1.GLOBAL;
-            }
-
-            /**
-             * URL protocol
-             */
-            this.protocol = "";
-
-            /**
-             * Username string
-             */
-            this.user = "";
-
-            /**
-             * Password string
-             */
-            this.pwd = "";
-
-            /**
-             * URL hostname
-             */
-            this.host = "";
-
-            /**
-             * URL network port number.
-             */
-            this.port = 0;
-
-            /**
-             * URL resource path
-             */
-            this.path = "";
-
-            /**
-             * URL query string.
-             */
-            this.query = "";
-
-            /**
-             * Hashtag string
-             */
-            this.hash = "";
-
-            /**
-             * Map of the query data
-             */
-            this.map = null;
-
-            if (IS_STRING) {
-                if (url instanceof URL$1) {
-                    this.protocol = url.protocol;
-                    this.user = url.user;
-                    this.pwd = url.pwd;
-                    this.host = url.host;
-                    this.port = url.port;
-                    this.path = url.path;
-                    this.query = url.query;
-                    this.hash = url.hash;
-                } else {
-                    let part = url.match(uri_reg_ex$1);
-
-                    //If the complete string is not matched than we are dealing with something other 
-                    //than a pure URL. Thus, no object is returned. 
-                    if (part[0] !== url) return null;
-
-                    this.protocol = part[1] || ((USE_LOCATION) ? location.protocol : "");
-                    this.user = part[2] || "";
-                    this.pwd = part[3] || "";
-                    this.host = part[4] || part[5] || part[6] || ((USE_LOCATION) ? location.hostname : "");
-                    this.port = parseInt(part[7] || ((USE_LOCATION) ? location.port : 0));
-                    this.path = part[8] || ((USE_LOCATION) ? location.pathname : "");
-                    this.query = part[9] || ((USE_LOCATION) ? location.search.slice(1) : "");
-                    this.hash = part[10] || ((USE_LOCATION) ? location.hash.slice(1) : "");
-
-                }
-            } else if (IS_LOCATION) {
-                this.protocol = location.protocol.replace(/\:/g, "");
-                this.host = location.hostname;
-                this.port = location.port;
-                this.path = location.pathname;
-                this.hash = location.hash.slice(1);
-                this.query = location.search.slice(1);
-                this._getQuery_(this.query);
-
-                if (USE_LOCATION) {
-                    URL$1.G = this;
-                    return URL$1.R;
-                }
-            }
-            this._getQuery_(this.query);
-        }
-
-
-        /**
-        URL Query Syntax
-
-        root => [root_class] [& [class_list]]
-             => [class_list]
-
-        root_class = key_list
-
-        class_list [class [& key_list] [& class_list]]
-
-        class => name & key_list
-
-        key_list => [key_val [& key_list]]
-
-        key_val => name = val
-
-        name => ALPHANUMERIC_ID
-
-        val => NUMBER
-            => ALPHANUMERIC_ID
-        */
-
-        /**
-         * Pulls query string info into this.map
-         * @private
-         */
-        _getQuery_() {
-            let map = (this.map) ? this.map : (this.map = new Map());
-
-            let lex = whind$1(this.query);
-
-
-            const get_map = (k, m) => (m.has(k)) ? m.get(k) : m.set(k, new Map).get(k);
-
-            let key = 0,
-                key_val = "",
-                class_map = get_map(key_val, map),
-                lfv = 0;
-
-            while (!lex.END) {
-                switch (lex.tx) {
-                    case "&": //At new class or value
-                        if (lfv > 0)
-                            key = (class_map.set(key_val, lex.s(lfv)), lfv = 0, lex.n.pos);
-                        else {
-                            key_val = lex.s(key);
-                            key = (class_map = get_map(key_val, map), lex.n.pos);
-                        }
-                        continue;
-                    case "=":
-                        //looking for a value now
-                        key_val = lex.s(key);
-                        lfv = lex.n.pos;
-                        continue;
-                }
-                lex.n;
-            }
-
-            if (lfv > 0) class_map.set(key_val, lex.s(lfv));
-        }
-
-        setPath(path) {
-
-            this.path = path;
-
-            return new URL$1(this);
-        }
-
-        setLocation() {
-            history.replaceState({}, "replaced state", `${this}`);
-            window.onpopstate();
-        }
-
-        toString() {
-            let str = [];
-
-            if (this.host) {
-
-                if (this.protocol)
-                    str.push(`${this.protocol}://`);
-
-                str.push(`${this.host}`);
-            }
-
-            if (this.port)
-                str.push(`:${this.port}`);
-
-            if (this.path)
-                str.push(`${this.path[0] == "/" ? "" : "/"}${this.path}`);
-
-            if (this.query)
-                str.push(((this.query[0] == "?" ? "" : "?") + this.query));
-
-            if (this.hash)
-                str.push("#" + this.hash);
-
-
-            return str.join("");
-        }
-
-        /**
-         * Pulls data stored in query string into an object an returns that.
-         * @param      {string}  class_name  The class name
-         * @return     {object}  The data.
-         */
-        getData(class_name = "") {
-            if (this.map) {
-                let out = {};
-                let _c = this.map.get(class_name);
-                if (_c) {
-                    for (let [key, val] of _c.entries())
-                        out[key] = val;
-                    return out;
-                }
-            }
-            return null;
-        }
-
-        /**
-         * Sets the data in the query string. Wick data is added after a second `?` character in the query field, and appended to the end of any existing data.
-         * @param      {string}  class_name  Class name to use in query string. Defaults to root, no class 
-         * @param      {object | Model | AnyModel}  data        The data
-         */
-        setData(data = null, class_name = "") {
-
-            if (data) {
-
-                let map = this.map = new Map();
-
-                let store = (map.has(class_name)) ? map.get(class_name) : (map.set(class_name, new Map()).get(class_name));
-
-                //If the data is a falsy value, delete the association.
-
-                for (let n in data) {
-                    if (data[n] !== undefined && typeof data[n] !== "object")
-                        store.set(n, data[n]);
-                    else
-                        store.delete(n);
-                }
-
-                //set query
-                let class_, null_class, str = "";
-
-                if ((null_class = map.get(""))) {
-                    if (null_class.size > 0) {
-                        for (let [key, val] of null_class.entries())
-                            str += `&${key}=${val}`;
-
-                    }
-                }
-
-                for (let [key, class_] of map.entries()) {
-                    if (key === "")
-                        continue;
-                    if (class_.size > 0) {
-                        str += `&${key}`;
-                        for (let [key, val] of class_.entries())
-                            str += `&${key}=${val}`;
-                    }
-                }
-                
-                str = str.slice(1);
-
-                this.query = this.query.split("?")[0] + "?" + str;
-
-                if (URL$1.G == this)
-                    this.goto();
-            } else {
-                this.query = "";
-            }
-
-            return this;
-
-        }
-
-        /**
-         * Fetch a string value of the remote resource. 
-         * Just uses path component of URL. Must be from the same origin.
-         * @param      {boolean}  [ALLOW_CACHE=true]  If `true`, the return string will be cached. If it is already cached, that will be returned instead. If `false`, a network fetch will always occur , and the result will not be cached.
-         * @return     {Promise}  A promise object that resolves to a string of the fetched value.
-         */
-        fetchText(ALLOW_CACHE = true) {
-
-            if (ALLOW_CACHE) {
-
-                let resource = URL$1.RC.get(this.path);
-
-                if (resource)
-                    return new Promise((res) => {
-                        res(resource);
-                    });
-            }
-
-            return fetchLocalText$1(this.path).then(res => (URL$1.RC.set(this.path, res), res));
-        }
-
-        /**
-         * Fetch a JSON value of the remote resource. 
-         * Just uses path component of URL. Must be from the same origin.
-         * @param      {boolean}  [ALLOW_CACHE=true]  If `true`, the return string will be cached. If it is already cached, that will be returned instead. If `false`, a network fetch will always occur , and the result will not be cached.
-         * @return     {Promise}  A promise object that resolves to a string of the fetched value.
-         */
-        fetchJSON(ALLOW_CACHE = true) {
-
-            let string_url = this.toString();
-
-            if (ALLOW_CACHE) {
-
-                let resource = URL$1.RC.get(string_url);
-
-                if (resource)
-                    return new Promise((res) => {
-                        res(resource);
-                    });
-            }
-
-            return fetchLocalJSON$1(string_url).then(res => (URL$1.RC.set(this.path, res), res));
-        }
-
-        /**
-         * Cache a local resource at the value 
-         * @param    {object}  resource  The resource to store at this URL path value.
-         * @returns {boolean} `true` if a resource was already cached for this URL, false otherwise.
-         */
-        cacheResource(resource) {
-
-            let occupied = URL$1.RC.has(this.path);
-
-            URL$1.RC.set(this.path, resource);
-
-            return occupied;
-        }
-
-        submitForm(form_data) {
-            return submitForm$1(this.toString(), form_data);
-        }
-
-        submitJSON(json_data, mode) {
-            return submitJSON$1(this.toString(), json_data, mode);
-        }
-        /**
-         * Goes to the current URL.
-         */
-        goto() {
-            return;
-            let url = this.toString();
-            history.pushState({}, "ignored title", url);
-            window.onpopstate();
-            URL$1.G = this;
-        }
-        //Returns the last segment of the path
-        get file() {
-            return this.path.split("/").pop();
-        }
-        //returns the name of the file less the extension
-        get filename() {
-            return this.file.split(".").shift();
-        }
-
-        //Returns the all but the last segment of the path
-        get dir() {
-            return this.path.split("/").slice(0, -1).join("/") || "/";
-        }
-
-        get pathname() {
-            return this.path;
-        }
-
-        get href() {
-            return this.toString();
-        }
-
-        get ext() {
-            const m = this.path.match(/\.([^\.]*)$/);
-            return m ? m[1] : "";
-        }
-
-        get search() {
-            return this.query;
-        }
-    }
-
-    /**
-     * The fetched resource cache.
-     */
-    URL$1.RC = new Map();
-
-    /**
-     * The Default Global URL object. 
-     */
-    URL$1.G = null;
-
-    /**
-     * The Global object Proxy.
-     */
-    URL$1.R = {
-        get protocol() {
-            return URL$1.G.protocol;
-        },
-        set protocol(v) {
-            return;
-            URL$1.G.protocol = v;
-        },
-        get user() {
-            return URL$1.G.user;
-        },
-        set user(v) {
-            return;
-            URL$1.G.user = v;
-        },
-        get pwd() {
-            return URL$1.G.pwd;
-        },
-        set pwd(v) {
-            return;
-            URL$1.G.pwd = v;
-        },
-        get host() {
-            return URL$1.G.host;
-        },
-        set host(v) {
-            return;
-            URL$1.G.host = v;
-        },
-        get port() {
-            return URL$1.G.port;
-        },
-        set port(v) {
-            return;
-            URL$1.G.port = v;
-        },
-        get path() {
-            return URL$1.G.path;
-        },
-        set path(v) {
-            return;
-            URL$1.G.path = v;
-        },
-        get query() {
-            return URL$1.G.query;
-        },
-        set query(v) {
-            return;
-            URL$1.G.query = v;
-        },
-        get hash() {
-            return URL$1.G.hash;
-        },
-        set hash(v) {
-            return;
-            URL$1.G.hash = v;
-        },
-        get map() {
-            return URL$1.G.map;
-        },
-        set map(v) {
-            return;
-            URL$1.G.map = v;
-        },
-        setPath(path) {
-            return URL$1.G.setPath(path);
-        },
-        setLocation() {
-            return URL$1.G.setLocation();
-        },
-        toString() {
-            return URL$1.G.toString();
-        },
-        getData(class_name = "") {
-            return URL$1.G.getData(class_name = "");
-        },
-        setData(class_name = "", data = null) {
-            return URL$1.G.setData(class_name, data);
-        },
-        fetchText(ALLOW_CACHE = true) {
-            return URL$1.G.fetchText(ALLOW_CACHE);
-        },
-        cacheResource(resource) {
-            return URL$1.G.cacheResource(resource);
-        }
-    };
-
-
-
-
-
-    let SIMDATA$1 = null;
-
-    /* Replaces the fetch actions with functions that simulate network fetches. Resources are added by the user to a Map object. */
-    URL$1.simulate = function() {
-        SIMDATA$1 = new Map;
-        URL$1.prototype.fetchText = async d => ((d = this.toString()), SIMDATA$1.get(d)) ? SIMDATA$1.get(d) : "";
-        URL$1.prototype.fetchJSON = async d => ((d = this.toString()), SIMDATA$1.get(d)) ? JSON.parse(SIMDATA$1.get(d).toString()) : {};
-    };
-
-    //Allows simulated resources to be added as a key value pair, were the key is a URI string and the value is string data.
-    URL$1.addResource = (n, v) => (n && v && (SIMDATA$1 || (SIMDATA$1 = new Map())) && SIMDATA$1.set(n.toString(), v.toString));
-
-    URL$1.polyfill = async function() {
-
-        if (typeof(global) !== "undefined") {
-
-            const 
-                fs = (await import('fs')).promises,
-                path = (await import('path'));
-
-
-            global.Location = (class extends URL$1 {});
-
-            global.document = global.document || {};
-
-            global.document.location = new URL$1(process.cwd() + "/");
-            /**
-             * Global `fetch` polyfill - basic support
-             */
-            global.fetch = async (url, data) => {
-                let
-                    p = path.resolve(process.cwd(), "" + url),
-                    d = await fs.readFile(p, "utf8");
-
-                try {
-                    return {
-                        status: 200,
-                        text: () => {
-                            return {
-                                then: (f) => f(d)
-                            }
-                        }
-                    };
-                } catch (err) {
-                    throw err;
-                }
-            };
-        }
-    };
-
-    Object.freeze(URL$1.R);
-    Object.freeze(URL$1.RC);
-    Object.seal(URL$1);
 
     class CSS_URL extends URL$1 {
         static parse(l) {
@@ -23067,6 +21150,12 @@ in file ${o.url || o.origin_url}`,e);
         if (v == "-")
             v = lex.n.tx, mult = -1;
 
+        if (lex.pk.tx == ".")
+            lex.next(), (v += lex.tx);
+
+        if(lex.pk.ty == lex.types.number)
+            lex.next(), (v += lex.tx);
+
         let n = parseFloat(v) * mult;
 
         lex.next();
@@ -23101,7 +21190,7 @@ in file ${o.url || o.origin_url}`,e);
         lex = string;
 
         if(typeof(string) == "string")
-            lex = whind$2(string);
+            lex = whind$1(string);
         
         while (!lex.END) {
             let tx = lex.tx;
@@ -24106,7 +22195,7 @@ in file ${o.url || o.origin_url}`,e);
         parse(data) {
             const prop_data = [];
 
-            this.parseLVL1(data instanceof whind$2.constructor ? data : whind$2(data + ""), prop_data);
+            this.parseLVL1(data instanceof whind$1.constructor ? data : whind$1(data + ""), prop_data);
 
             return prop_data;
         }
@@ -24116,7 +22205,7 @@ in file ${o.url || o.origin_url}`,e);
         parseLVL1(lx, out_val = [], ROOT = true) {
 
             if (typeof(lx) == "string")
-                lx = whind$2(lx);
+                lx = whind$1(lx);
 
             let bool = false;
 
@@ -24379,7 +22468,7 @@ in file ${o.url || o.origin_url}`,e);
 
         constructor(value, type) {
             
-            if(type == whind$2.types.string)
+            if(type == whind$1.types.string)
                 value = value.slice(1,-1);
 
             this.value = value;
@@ -24391,7 +22480,7 @@ in file ${o.url || o.origin_url}`,e);
         parse(data){
             const prop_data = [];
 
-            this.parseLVL1(data instanceof whind$2.constructor ? data : whind$2(data + ""), prop_data);
+            this.parseLVL1(data instanceof whind$1.constructor ? data : whind$1(data + ""), prop_data);
 
             return prop_data;
         }
@@ -24399,7 +22488,7 @@ in file ${o.url || o.origin_url}`,e);
         parseLVL1(l, r, root = true) {
 
             if (typeof(l) == "string")
-                l = whind$2(l);
+                l = whind$1(l);
 
             if (root) {
                 switch(checkDefaults(l)){
@@ -24461,7 +22550,7 @@ in file ${o.url || o.origin_url}`,e);
 
         parseLVL1(l, r, ROOT = true) {
             if (typeof(l) == "string")
-                l = whind$2(l);
+                l = whind$1(l);
 
             if (ROOT) {
                 switch(checkDefaults(l)){
@@ -24504,7 +22593,7 @@ in file ${o.url || o.origin_url}`,e);
     class SymbolTerm extends LiteralTerm {
         parseLVL1(l, rule, r) {
             if (typeof(l) == "string")
-                l = whind$2(l);
+                l = whind$1(l);
 
             if (l.tx == this.value) {
                 l.next();
@@ -24532,7 +22621,7 @@ in file ${o.url || o.origin_url}`,e);
 
         let id = "";
 
-        while (!pk.END && (pk.ty & (whind$2.types.id | whind$2.types.num)) || pk.tx == "-" || pk.tx == "_") { pk.next(); }
+        while (!pk.END && (pk.ty & (whind$1.types.id | whind$1.types.num)) || pk.tx == "-" || pk.tx == "_") { pk.next(); }
 
         id = pk.slice(l);
 
@@ -24580,12 +22669,12 @@ in file ${o.url || o.origin_url}`,e);
 
     function CreatePropertyParser(notation, name, definitions, productions) {
 
-        const l = whind$2(notation);
+        const l = whind$1(notation);
         l.useExtendedId();
         
         const important = { is: false };
 
-        let n = d$2(l, definitions, productions);
+        let n = d$1(l, definitions, productions);
 
         n.seal();
 
@@ -24604,7 +22693,7 @@ in file ${o.url || o.origin_url}`,e);
         return n;
     }
 
-    function d$2(l, definitions, productions, super_term = false, oneof_group = false, or_group = false, and_group = false, important = null) {
+    function d$1(l, definitions, productions, super_term = false, oneof_group = false, or_group = false, and_group = false, important = null) {
         let term, nt, v;
         const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
 
@@ -24618,7 +22707,7 @@ in file ${o.url || o.origin_url}`,e);
                     break;
                 case "[":
 
-                    v = d$2(l.next(), definitions, productions, true);
+                    v = d$1(l.next(), definitions, productions, true);
                     l.assert("]");
                     v = checkExtensions(l, v, productions);
 
@@ -24662,7 +22751,7 @@ in file ${o.url || o.origin_url}`,e);
                         l.sync().next();
 
                         while (!l.END) {
-                            nt.terms.push(d$2(l, definitions, productions, super_term, oneof_group, or_group, true, important));
+                            nt.terms.push(d$1(l, definitions, productions, super_term, oneof_group, or_group, true, important));
                             if (l.ch !== "&" || l.pk.ch !== "&") break;
                             l.a("&").a("&");
                         }
@@ -24685,7 +22774,7 @@ in file ${o.url || o.origin_url}`,e);
                             l.sync().next();
 
                             while (!l.END) {
-                                nt.terms.push(d$2(l, definitions, productions, super_term, oneof_group, true, and_group, important));
+                                nt.terms.push(d$1(l, definitions, productions, super_term, oneof_group, true, and_group, important));
                                 if (l.ch !== "|" || l.pk.ch !== "|") break;
                                 l.a("|").a("|");
                             }
@@ -24704,7 +22793,7 @@ in file ${o.url || o.origin_url}`,e);
                             l.next();
 
                             while (!l.END) {
-                                nt.terms.push(d$2(l, definitions, productions, super_term, true, or_group, and_group, important));
+                                nt.terms.push(d$1(l, definitions, productions, super_term, true, or_group, and_group, important));
                                 if (l.ch !== "|") break;
                                 l.a("|");
                             }
@@ -24917,7 +23006,7 @@ in file ${o.url || o.origin_url}`,e);
 
         if (parser && !IS_VIRTUAL.is) 
 
-            prop = parser.parse(whind$2(body_string).useExtendedId());
+            prop = parser.parse(whind$1(body_string).useExtendedId());
 
         else
             //Need to know what properties have not been defined
@@ -25626,7 +23715,7 @@ in file ${o.url || o.origin_url}`,e);
         body: null
     };
 
-    const parse$1 = function (string_data) { return parser$2(whind$2(string_data), env$2) };
+    const parse$1 = function (string_data) { return parser$2(whind$1(string_data), env$2) };
 
     const
         CSS_Length$1 = types$2.length,
@@ -25635,7 +23724,6 @@ in file ${o.url || o.origin_url}`,e);
         CSS_Transform2D$1 = types$2.transform2D,
         CSS_Path$1 = types$2.path,
         CSS_Bezier$1 = types$2.cubic_bezier,
-
         Animation = (function anim() {
 
             var USE_TRANSFORM = false;
@@ -25659,6 +23747,7 @@ in file ${o.url || o.origin_url}`,e);
 
             // Class to linearly interpolate number.
             class lerpNumber extends Number { lerp(to, t, from = 0) { return this + (to - this) * t; } copy(val) { return new lerpNumber(val); } }
+
             class lerpNonNumeric {
                 constructor(v) { this.v = v; } lerp(to, t, from) {
                     return from.v
@@ -25681,12 +23770,10 @@ in file ${o.url || o.origin_url}`,e);
                         k0 = IS_ARRAY ? keys[0] : keys,
                         k0_val = typeof(k0.value) !== "undefined" ? k0.value : k0.v;
 
-                    if (prop_name == "transform"){
+                    if (prop_name == "transform")
                         this.type = CSS_Transform2D$1;
-                    }
-                    else {
+                    else
                         this.type = this.getType(k0_val);
-                    }
 
                     this.getValue(obj, prop_name, type, k0_val);
 
@@ -25838,12 +23925,15 @@ in file ${o.url || o.origin_url}`,e);
                     this.time = 0;
                     this.obj = null;
                     this.type = setType(obj);
+
                     this.DESTROYED = false;
                     this.FINISHED = false;
-                    this.CSS_ANIMATING = false;
-                    this.events = {};
                     this.SHUTTLE = false;
                     this.REPEAT = 0;
+
+                    this.events = {};
+
+                    this.CSS_ANIMATING = false;
                     this.SCALE = 1;
 
                     switch (this.type) {
@@ -25924,94 +24014,6 @@ in file ${o.url || o.origin_url}`,e);
                     return true;
                 }
 
-                scheduledUpdate(a, t) {
-
-                    this.time += t * this.SCALE;
-                    if (this.run(this.time)) {
-                        spark$1.queueUpdate(this);
-                    } else if (this.REPEAT) {
-                        let scale = this.SCALE;
-
-                        this.REPEAT--;
-
-                        if (this.SHUTTLE)
-                            scale = -scale;
-
-                        let from = (scale > 0) ? 0 : this.duration;
-
-                        this.play(scale, from);
-                    } else
-                        this.issueEvent("stopped");
-
-                }
-
-                //TODO: use repeat to continually play back numation 
-                repeat(count = 1) {
-                    this.REPEAT = Math.max(0, parseFloat(count));
-                    return this;
-                }
-                //TODO: allow scale to control playback speed and direction
-                play(scale = 1, from = 0) {
-                    this.SCALE = scale;
-                    this.time = from;
-                    spark$1.queueUpdate(this);
-                    this.issueEvent("started");
-                    return this;
-                }
-
-                set(i = 0) {
-                    if (i >= 0)
-                        this.run(i * this.duration);
-                    else
-                        this.run(this.duration - i * this.duration);
-                }
-
-                async await () {
-                    return this.observeStop(() => {})
-                }
-
-                observeStop(fun) {
-                    return (new Promise((res => {
-                        const fn = ()=>{
-                            res();
-                            this.removeEventListener(fn);
-                        };
-                        this.addEventListener("stopped",fn);
-                    }))).then(fun);
-                }
-
-
-                shuttle(SHUTTLE = true) {
-                    this.SHUTTLE = !!SHUTTLE;
-                    return this;
-                }
-
-                addEventListener(event, listener) {
-                    if (typeof(listener) === "function") {
-                        if (!this.events[event])
-                            this.events[event] = [];
-                        this.events[event].push(listener);
-                    }
-                }
-
-                removeEventListener(event, listener) {
-                    if (typeof(listener) === "function") {
-                        let events = this.events[event];
-                        if (events) {
-                            for (let i = 0; i < events.length; i++)
-                                if (events[i] === listener)
-                                    return e(vents.splice(i, 1), true);
-                        }
-                    }
-                    return false;
-                }
-
-                issueEvent(event) {
-                    let events = this.events[event];
-
-                    if (events)
-                        events.forEach(e => e(this));
-                }
 
                 toCSSString(keyfram_id) {
 
@@ -26067,29 +24069,26 @@ in file ${o.url || o.origin_url}`,e);
                 }
             }
 
+
             class AnimGroup {
 
                 constructor(sequences) {
+
                     this.seq = [];
                     this.time = 0;
                     this.duration = 0;
+
+                    this.DESTROYED = false;
+                    this.FINISHED = false;
                     this.SHUTTLE = false;
                     this.REPEAT = 0;
-                    this.SCALE = 1;
+
+                    this.events = {};
+
                     this.ANIM_COMPLETE_FUNCTIONS = [];
 
                     for (const seq of sequences)
                         this.add(seq);
-                }
-
-                async await () {
-                    return this.observeStop(() => {})
-                }
-
-                observeStop(fun) {
-                    if (typeof fun == "function")
-                        return (new Promise((res => this.ANIM_COMPLETE_FUNCTIONS.push(res)))).then(fun);
-                    return this;
                 }
 
                 destroy() {
@@ -26108,19 +24107,35 @@ in file ${o.url || o.origin_url}`,e);
                         seq.run(t);
                     }
 
-                    if (t >= this.duration) 
+                    if (t >= this.duration)
                         return false;
-                    
+
 
                     return true;
                 }
 
+                stop() {
+                    return this;
+                }
+            }
+
+            /** SHARED METHODS **/
+            
+            const common_functions = {
+                issueEvent(event) {
+                    const events = this.events[event];
+
+                    if (events)
+                        events.forEach(e => e(this));
+                },
+
                 scheduledUpdate(a, t) {
+
                     this.time += t * this.SCALE;
-                    if (this.run(this.time))
+                    if (this.run(this.time)) {
                         spark$1.queueUpdate(this);
-                    else if (this.REPEAT) {
-                        let scale = this.scale;
+                    } else if (this.REPEAT) {
+                        let scale = this.SCALE;
 
                         this.REPEAT--;
 
@@ -26130,43 +24145,74 @@ in file ${o.url || o.origin_url}`,e);
                         let from = (scale > 0) ? 0 : this.duration;
 
                         this.play(scale, from);
-                    } else {
-                        for (const fn of this.ANIM_COMPLETE_FUNCTIONS)
-                            fn();
+                    } else
+                        this.issueEvent("stopped");
+                },
 
-                        this.ANIM_COMPLETE_FUNCTIONS.length = 0;
-                    }
-                }
+                await: async function() {
+                    return this.observeStop(() => {})
+                },
+
+                observeStop(fun) {
+                    return (new Promise((res => {
+                        const fn = () => {
+                            res();
+                            this.removeEventListener(fn);
+                        };
+                        this.addEventListener("stopped", fn);
+                    }))).then(fun);
+                },
 
                 shuttle(SHUTTLE = true) {
                     this.SHUTTLE = !!SHUTTLE;
                     return this;
-                }
+                },
 
-                stop() {
-                    return this;
-                }
-
-                set(i = 0) {
+                set(count = 1) {
                     if (i >= 0)
                         this.run(i * this.duration);
                     else
                         this.run(this.duration - i * this.duration);
-                }
+                },
 
-                //TODO: allow scale to control playback speed and direction
+                repeat(count = 1) {
+                    this.REPEAT = Math.max(0, parseFloat(count));
+                    return this;
+                },
+
                 play(scale = 1, from = 0) {
                     this.SCALE = scale;
                     this.time = from;
                     spark$1.queueUpdate(this);
+                    this.issueEvent("started");
                     return this;
+                },
+
+                addEventListener(event, listener) {
+                    if (typeof(listener) === "function") {
+                        if (!this.events[event])
+                            this.events[event] = [];
+                        this.events[event].push(listener);
+                    }
+                },
+
+                removeEventListener(event, listener) {
+                    if (typeof(listener) === "function") {
+                        let events = this.events[event];
+                        if (events) {
+                            for (let i = 0; i < events.length; i++)
+                                if (events[i] === listener)
+                                    return e(vents.splice(i, 1), true);
+                        }
+                    }
+                    return false;
                 }
-                //TODO: use repeat to continually play back numation 
-                repeat(count = 0) {
-                    this.REPEAT = Math.max(0, parseInt(count));
-                    return this;
-                }
-            }
+            };
+
+            Object.assign(AnimGroup.prototype, common_functions);
+            Object.assign(AnimSequence.prototype, common_functions);
+
+            /** END SHARED METHODS **/
 
             const GlowFunction = function(...args) {
 
@@ -27059,7 +25105,7 @@ in file ${o.url || o.origin_url}`,e);
         }
     }
 
-    class a$2 extends ElementNode{
+    class a$1 extends ElementNode{
     	constructor(env, tag, children, attribs, presets){
     		super(env, "a", children, attribs, presets);
     	}
@@ -27825,1139 +25871,7 @@ in file ${o.url || o.origin_url}`,e);
     ScopeContainer.prototype.removeIO = Tap.prototype.removeIO;
     ScopeContainer.prototype.addIO = Tap.prototype.addIO;
 
-    const component_map = new Map();
-
-    function createComponent(name, data) {
-    	if(typeof name == "object")
-    		name = object.hash;
-    	
-    	if (component_map.has(name)) {
-
-    		const component_constructor = component_map.get(name);
-
-    		const ele = document.importNode(component_constructor.template.content.firstChild, true);
-
-    		const obj = component_constructor.fn(ele, createComponent.lite);
-    		obj.ast = {};
-    		obj.css = [];
-    		obj.scopes = [];
-    		obj.taps = [];
-    		obj.loadAcknowledged = Scope.prototype.loadAcknowledged;
-    		obj.load = Scope.prototype.load;
-    		obj.appendToDOM = Scope.prototype.appendToDOM;
-    		obj.removeFromDOM = Scope.prototype.removeFromDOM;
-    		obj.transitionOut = Scope.prototype.transitionOut;
-    		obj.transitionIn = Scope.prototype.transitionIn;
-    		obj.load(data);
-    		obj.update(data);
-    		obj.ele = ele;
-    		return obj;
-    	}
-
-    	return null;
-    }
-
-    createComponent.map = component_map;
-
-    function getColumnRow$1(index, offset, set_size) {
-    	const adjusted_index = index - offset * set_size;
-    	const row = Math.floor(adjusted_index / set_size);
-    	const col = (index) % (set_size);
-    	return { row, col };
-    }
-
-    /* Update container scopes. */
-    function ctr_upd(ctr, data_objs) {
-    	if (!data_objs) return;
-
-    	if (data_objs.observering) {
-    		if (ctr.observering.removeObserver)
-    			ctr.observering.removeObserver(ctr);
-    		ctr.observering = null;
-    	}
-
-    	if (data_objs.addObserver) {
-    		ctr.observering = data_objs;
-    		data_objs.addObserver(ctr);
-    		return;
-    	}
-
-    	if (Array.isArray(data_objs)) cull(ctr, data_objs);
-    	else cull(ctr, data_objs.data);
-    }
-
-    /* Update container filters. */
-    function ctr_fltr(ctr, type, val) {
-    	switch (type) {
-    		case "fl":
-    			break;
-    	}
-    	filterUpdate(ctr);
-    	limitExpressionUpdate(ctr);
-    }
-
-    /* Create a wick container */
-    function ctr(ele, component, ...filters) {
-
-    	const ctr = {
-    		component: { mount: (ele, data) => createComponent(component, data) },
-    		ele,
-    		SCRUBBING: false,
-    		scopes: [],
-    		active_scopes: [],
-    		dom_scopes: [],
-    		filters,
-    		scrub_velocity: 0,
-    		shift_amount: 1,
-    		limit: 0,
-    		offset: 0,
-    		offset_diff: 0,
-
-    		offset_fractional: 0,
-    		scheduledUpdate() {
-    			if (ctr.SCRUBBING) {
-
-    				if (!ctr.AUTO_SCRUB) { return (ctr.SCRUBBING = false) }
-
-    				if (Math.abs(ctr.scrub_velocity) > 0.0001) {
-    					if (scrub(ctr, ctr.scrub_velocity)) {
-
-    						ctr.scrub_velocity *= (ctr.drag);
-
-    						const pos = ctr.offset + ctr.scrub_velocity;
-
-    						if (pos < 0 || pos > ctr.max)
-    							ctr.scrub_velocity = 0;
-
-    						spark.queueUpdate(ctr);
-    					}
-
-    				} else {
-    					ctr.scrub_velocity = 0;
-    					scrub(ctr, Infinity);
-    					ctr.SCRUBBING = false;
-    				}
-    			} else {
-    				forceMount(ctr);
-    				arrange(ctr);
-    				render(ctr);
-    				ctr.offset_diff = 0;
-    			}
-    		}
-    	};
-
-    	return ctr;
-    }
-
-    function cull(ctr, new_items = []) {
-    	const transition = Animation.createTransition();
-
-    	if (new_items.length == 0) {
-
-    		const sl = ctr.scopes.length;
-
-    		for (let i = 0; i < sl; i++) ctr.scopes[i].transitionOut(transition, "", true);
-
-    		ctr.scopes.length = 0;
-    		ctr.active_scopes.length = 0;
-    		/*
-    		ctr.parent.upImport("template_count_changed", {
-    			displayed: 0,
-    			offset: 0,
-    			count: 0,
-    			pages: 0,
-    			ele: ctr.ele,
-    			template: ctr,
-    			trs: transition.in
-    		});
-    		*/
-
-    		if (!ctr.SCRUBBING)
-    			transition.start();
-
-    	} else {
-
-    		const
-    			exists = new Map(new_items.map(e => [e, true])),
-    			out = [];
-
-    		for (let i = 0, l = ctr.active_scopes.length; i < l; i++)
-    			if (exists.has(ctr.active_scopes[i].model))
-    				exists.set(ctr.active_scopes[i].model, false);
-
-
-    		for (let i = 0, l = ctr.scopes.length; i < l; i++)
-    			if (!exists.has(ctr.scopes[i].model)) {
-    				ctr.scopes[i].transitionOut(transition, "dismounting", true);
-    				ctr.scopes[i].index = -1;
-    				ctr.scopes.splice(i, 1);
-    				l--;
-    				i--;
-    			} else
-    				exists.set(ctr.scopes[i].model, false);
-
-    		exists.forEach((v, k) => { if (v) out.push(k); });
-
-    		if (out.length > 0) {
-    			// Wrap models into components
-    			added(ctr, out, transition);
-
-    		} else {
-    			for (let i = 0, j = 0, l = ctr.active_scopes.length; i < l; i++, j++) {
-
-    				if (ctr.active_scopes[i]._TRANSITION_STATE_) {
-    					if (j !== i) {
-    						ctr.active_scopes[i].update({
-    							arrange: {
-    								pos: getColumnRow$1(i, ctr.offset, ctr.shift_amount),
-    								trs: transition.in
-    							}
-    						});
-    					}
-    				} else
-    					ctr.active_scopes.splice(i, 1), i--, l--;
-    			}
-    		}
-
-    		filterUpdate(ctr);
-    		limitExpressionUpdate(ctr, transition);
-    	}
-    }
-
-    function filterUpdate(ctr) {
-
-    	let output = ctr.scopes.slice();
-
-    	if (output.length < 1) return;
-
-    	for (let i = 0, l = ctr.filters.length; i < l; i++) {
-    		const filter = ctr.filters[i];
-    		//if(filter.active){
-    		switch (filter.type) {
-    			case "sort":
-    				output = output.sort(filter.action);
-    			case "filter":
-    				output = output.filter(filter.action);
-    		}
-    		//}
-    	}
-
-    	ctr.active_scopes = output;
-
-    	ctr.UPDATE_FILTER = false;
-
-    	return output;
-    }
-
-    function limitExpressionUpdate(ctr, transition = Animation.createTransition()) {
-
-    	//Preset the positions of initial components. 
-    	arrange(ctr);
-    	render(ctr, transition);
-
-    	// If scrubbing is currently occuring, if the transition were to auto play then the results 
-    	// would interfere with the expected behavior of scrubbing. So the transition
-    	// is instead set to it's end state, and scrub is called to set intermittent 
-    	// position. 
-    	if (!ctr.SCRUBBING)
-    		transition.start();
-    }
-
-    function arrange(ctr, output = ctr.active_scopes) {
-
-    	//Arranges active scopes according to their arrange handler.
-    	const
-    		limit = ctr.limit,
-    		offset = ctr.offset,
-    		transition = Animation.createTransition(),
-    		output_length = output.length,
-    		active_window_start = offset * ctr.shift_amount;
-
-
-
-    	let i = 0;
-
-    	//Scopes on the ascending edge of the transition window
-    	while (i < active_window_start && i < output_length)
-    		output[i].update({ trs_asc_out: { trs: transition.in, pos: getColumnRow$1(i, offset, ctr.shift_amount) } }), i++;
-
-    	//Scopes in the transtion window
-    	while (i < active_window_start + limit && i < output_length)
-    		output[i].update({ arrange: { trs: transition.in, pos: getColumnRow$1(i, offset, ctr.shift_amount) } }), i++;
-
-    	//Scopes on the descending edge of the transition window
-    	while (i < output_length)
-    		output[i].update({ trs_dec_out: { trs: transition.in, pos: getColumnRow$1(i, offset, ctr.shift_amount) } }), i++;
-
-    	transition.play(1);
-
-    }
-
-
-    function render(ctr, transition, output = ctr.active_scopes, NO_TRANSITION = false) {
-
-
-    	const
-    		active_window_size = ctr.limit,
-    		active_length = ctr.dom_scopes.length;
-
-    	let
-    		j = 0,
-    		direction = 1,
-    		offset = ctr.offset,
-    		output_length = output.length,
-    		OWN_TRANSITION = false;
-
-    	if (!transition) transition = Animation.createTransition(), OWN_TRANSITION = true;
-
-    	offset = Math.max(0, offset);
-
-    	const active_window_start = offset * ctr.shift_amount;
-
-    	direction = Math.sign(ctr.offset_diff);
-
-    	if (active_window_size > 0) {
-
-    		ctr.shift_amount = Math.max(1, Math.min(active_window_size, ctr.shift_amount));
-
-    		let
-    			i = 0,
-    			oa = 0;
-
-    		const
-    			ein = [],
-    			shift_points = Math.ceil(output_length / ctr.shift_amount);
-
-    		ctr.max = shift_points - 1;
-    		ctr.offset = Math.max(0, Math.min(shift_points - 1, offset));
-
-    		//Two transitions to support scrubbing from an offset in either direction
-    		ctr.trs_ascending = Animation.createTransition(false);
-    		ctr.trs_descending = Animation.createTransition(false);
-
-    		ctr.dom_dn.length = 0;
-    		ctr.dom_up.length = 0;
-    		ctr.dom_up_appended = false;
-    		ctr.dom_dn_appended = false;
-
-    		//Scopes preceeding the transition window
-    		while (i < active_window_start - ctr.shift_amount) output[i++].index = -2;
-
-    		//Scopes entering the transition window ascending
-    		while (i < active_window_start) {
-    			ctr.dom_dn.push(output[i]);
-    			output[i].update({ trs_dec_in: { trs: ctr.trs_descending.in, pos: getColumnRow$1(i, ctr.offset - 1, ctr.shift_amount) } });
-    			output[i++].index = -2;
-    		}
-
-    		//Scopes in the transition window
-    		while (i < active_window_start + active_window_size && i < output_length) {
-    			//Scopes on the descending edge of the transition window
-    			if (oa < ctr.shift_amount && ++oa) {
-    				//console.log("pos",i, getColumnRow(i, ctr.offset+1, ctr.shift_amount), output[i].scopes[0].ele.style.transform)
-    				output[i].update({ trs_asc_out: { trs: ctr.trs_ascending.out, pos: getColumnRow$1(i, ctr.offset + 1, ctr.shift_amount) } });
-    			} else
-    				output[i].update({ arrange: { trs: ctr.trs_ascending.in, pos: getColumnRow$1(i, ctr.offset + 1, ctr.shift_amount) } });
-
-
-    			//Scopes on the ascending edge of the transition window
-    			if (i >= active_window_start + active_window_size - ctr.shift_amount)
-    				output[i].update({ trs_dec_out: { trs: ctr.trs_descending.out, pos: getColumnRow$1(i, ctr.offset - 1, ctr.shift_amount) } });
-    			else
-    				output[i].update({ arrange: { trs: ctr.trs_descending.in, pos: getColumnRow$1(i, ctr.offset - 1, ctr.shift_amount) } });
-
-
-    			output[i].index = i;
-    			ein.push(output[i++]);
-    		}
-
-    		//Scopes entering the transition window while offset is descending
-    		while (i < active_window_start + active_window_size + ctr.shift_amount && i < output_length) {
-    			ctr.dom_up.push(output[i]);
-    			output[i].update({
-    				trs_asc_in: {
-    					pos: getColumnRow$1(i, ctr.offset + 1, ctr.shift_amount),
-    					trs: ctr.trs_ascending.in
-    				}
-    			});
-    			output[i++].index = -3;
-    		}
-
-    		//Scopes following the transition window
-    		while (i < output_length) output[i++].index = -3;
-
-    		output = ein;
-    		output_length = ein.length;
-    	} else {
-    		ctr.max = 0;
-    		ctr.limit = 0;
-    	}
-
-    	const
-    		trs_in = { trs: transition.in, index: 0 },
-    		trs_out = { trs: transition.out, index: 0 };
-
-    	for (let i = 0; i < output_length; i++) output[i].index = i;
-
-    	for (let i = 0; i < active_length; i++) {
-
-    		const as = ctr.dom_scopes[i];
-
-    		if (as.index > j) {
-    			while (j < as.index && j < output_length) {
-    				const os = output[j];
-    				os.index = -1;
-    				trs_in.pos = getColumnRow$1(j, ctr.offset, ctr.shift_amount);
-
-    				os.appendToDOM(ctr.ele, as.ele);
-    				os.transitionIn(trs_in, (direction) ? "trs_asc_in" : "trs_dec_in");
-    				j++;
-    			}
-    		} else if (as.index < 0) {
-
-    			trs_out.pos = getColumnRow$1(i, 0, ctr.shift_amount);
-
-    			if (!NO_TRANSITION) {
-    				switch (as.index) {
-    					case -2:
-    					case -3:
-    						as.transitionOut(trs_out, (direction > 0) ? "trs_asc_out" : "trs_dec_out");
-    						break;
-    					default:
-    						as.transitionOut(trs_out);
-    				}
-    			} else
-    				as.transitionOut();
-
-    			continue;
-    		}
-    		trs_in.pos = getColumnRow$1(j++, 0, ctr.shift_amount);
-
-    		as.update({ arrange: trs_in }, null, false, { IMMEDIATE: true });
-
-    		as._TRANSITION_STATE_ = true;
-    		as.index = -1;
-    	}
-
-    	while (j < output.length) {
-    		output[j].appendToDOM(ctr.ele);
-    		output[j].index = -1;
-    		trs_in.pos = getColumnRow$1(j, ctr.offset, ctr.shift_amount);
-    		output[j].transitionIn(trs_in, (direction) ? "arrange" : "arrange");
-    		j++;
-    	}
-
-    	ctr.ele.style.position = ctr.ele.style.position;
-    	ctr.dom_scopes = output.slice();
-
-    	/*
-    	ctr.parent.update({
-    		"template_count_changed": {
-
-    			displayed: output_length,
-    			offset: offset,
-    			count: ctr.active_scopes.length,
-    			pages: ctr.max,
-    			ele: ctr.ele,
-    			template: ctr,
-    			trs: transition.in
-    		}
-    	});
-    	//*/
-
-    	if (OWN_TRANSITION) {
-    		if (NO_TRANSITION)
-    			return transition;
-    		transition.start();
-    	}
-
-    	return transition;
-    }
-
-    function forceMount(ctr) {
-    	const active_window_size = ctr.limit;
-    	const offset = ctr.offset;
-
-
-    	const min = Math.min(offset + ctr.offset_diff, offset) * ctr.shift_amount;
-    	const max = Math.max(offset + ctr.offset_diff, offset) * ctr.shift_amount + active_window_size;
-
-
-    	let i = min;
-
-    	ctr.ele.innerHTML = "";
-    	const output_length = ctr.active_scopes.length;
-    	ctr.dom_scopes.length = 0;
-
-    	while (i < max && i < output_length) {
-    		const node = ctr.active_scopes[i++];
-    		ctr.dom_scopes.push(node);
-    		ctr.ele.appendChild(node.ele);
-    	}
-    }
-
-    /**
-     * Scrub provides a mechanism to scroll through components of a container that have been limited through the limit filter.
-     * @param  {Number} scrub_amount [description]
-     */
-    function scrub(ctr, scrub_delta, SCRUBBING = true) {
-    	// scrub_delta is the relative ammunt of change from the previous offset. 
-
-    	if (!ctr.SCRUBBING)
-    		render(ctr, null, ctr.active_scopes, true);
-
-    	ctr.SCRUBBING = true;
-
-    	if (ctr.AUTO_SCRUB && !SCRUBBING && scrub_delta != Infinity) {
-    		ctr.scrub_velocity = 0;
-    		ctr.AUTO_SCRUB = false;
-    	}
-
-    	let delta_offset = scrub_delta + ctr.offset_fractional;
-
-    	if (scrub_delta !== Infinity) {
-
-    		if (Math.abs(delta_offset) > 1) {
-    			if (delta_offset > 1) {
-
-    				delta_offset = delta_offset % 1;
-    				ctr.offset_fractional = delta_offset;
-    				ctr.scrub_velocity = scrub_delta;
-
-    				if (ctr.offset < ctr.max)
-    					ctr.trs_ascending.play(1);
-
-    				ctr.offset++;
-    				ctr.offset_diff = 1;
-    				render(ctr, null, ctr.active_scopes, true).play(1);
-    			} else {
-    				delta_offset = delta_offset % 1;
-    				ctr.offset_fractional = delta_offset;
-    				ctr.scrub_velocity = scrub_delta;
-
-    				if (ctr.offset >= 1)
-    					ctr.trs_descending.play(1);
-    				ctr.offset--;
-    				ctr.offset_diff = -1;
-
-    				render(ctr, null, ctr.active_scopes, true).play(1);
-    			}
-
-    		}
-
-    		//Make Sure the the transition animation is completed before moving on to new animation sequences.
-
-    		if (delta_offset > 0) {
-
-    			if (ctr.offset + delta_offset >= ctr.max - 1) delta_offset = 0;
-
-    			if (!ctr.dom_up_appended) {
-
-    				for (let i = 0; i < ctr.dom_up.length; i++) {
-    					ctr.dom_up[i].appendToDOM(ctr.ele);
-    					ctr.dom_up[i].index = -1;
-    					ctr.dom_scopes.push(ctr.dom_up[i]);
-    				}
-
-    				ctr.dom_up_appended = true;
-    			}
-
-    			ctr.trs_ascending.play(delta_offset);
-    		} else {
-
-    			if (ctr.offset < 1) delta_offset = 0;
-
-    			if (!ctr.dom_dn_appended) {
-
-    				for (let i = 0; i < ctr.dom_dn.length; i++) {
-    					ctr.dom_dn[i].appendToDOM(ctr.ele, ctr.dom_scopes[0].ele);
-    					ctr.dom_dn[i].index = -1;
-    				}
-
-    				ctr.dom_scopes = ctr.dom_dn.concat(ctr.dom_scopes);
-
-    				ctr.dom_dn_appended = true;
-    			}
-
-    			ctr.trs_descending.play(-delta_offset);
-    		}
-
-    		ctr.offset_fractional = delta_offset;
-    		ctr.scrub_velocity = scrub_delta;
-
-    		return true;
-    	} else {
-
-    		if (Math.abs(ctr.scrub_velocity) > 0.0001) {
-    			const sign = Math.sign(ctr.scrub_velocity);
-
-    			if (Math.abs(ctr.scrub_velocity) < 0.1) ctr.scrub_velocity = 0.1 * sign;
-    			if (Math.abs(ctr.scrub_velocity) > 0.5) ctr.scrub_velocity = 0.5 * sign;
-
-    			ctr.AUTO_SCRUB = true;
-
-    			//Determine the distance traveled with normal drag decay of 0.5
-    			let dist = ctr.scrub_velocity * (1 / (-0.5 + 1));
-    			//get the distance to nearest page given the distance traveled
-    			let nearest = (ctr.offset + ctr.offset_fractional + dist);
-    			nearest = (ctr.scrub_velocity > 0) ? Math.min(ctr.max, Math.ceil(nearest)) : Math.max(0, Math.floor(nearest));
-    			//get the ratio of the distance from the current position and distance to the nearest 
-    			let nearest_dist = nearest - (ctr.offset + ctr.offset_fractional);
-    			let drag = Math.abs(1 - (1 / (nearest_dist / ctr.scrub_velocity)));
-
-    			ctr.drag = drag;
-    			ctr.SCRUBBING = true;
-    			spark.queueUpdate(ctr);
-    			return true;
-    		} else {
-    			ctr.offset += Math.round(ctr.offset_fractional);
-    			ctr.scrub_velocity = 0;
-    			ctr.offset_fractional = 0;
-    			render(ctr, null, ctr.active_scopes, true).play(1);
-    			ctr.SCRUBBING = false;
-    			return false;
-    		}
-    	}
-    }
-
-    /**
-     * Called by the ModelContainer when Models have been added to its set.
-     *
-     * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
-     */
-    function added(ctr, items, transition) {
-    	let OWN_TRANSITION = false;
-
-    	if (!transition)
-    		transition = Animation.createTransition(), OWN_TRANSITION = true;
-
-    	for (let i = 0; i < items.length; i++) {
-    		const scope = ctr.component.mount(null, items[i]);
-
-    		//TODO: Make sure both of there references are removed when the scope is destroyed.
-    		ctr.scopes.push(scope);
-    		//ctr.parent.addScope(scope);
-
-    		scope.update({ loaded: true });
-    	}
-
-
-
-    	if (OWN_TRANSITION)
-    		filterExpressionUpdate(ctr, transition);
-    }
-
-    /* Given an argument list of element indices, returns the element at the last index location.  */
-    function ge(ele, ...indices) {
-    	if (indices.length == 0)
-    		return ele;
-    	else
-    		return ge(ele.children[indices[0]], ...(indices.slice(1)));
-    }
-
-    class liteScope {
-    	constructor(e) {
-    		this.wl = wick_lite;
-    		this.ele = e;
-    		this.scopes = [];
-    	}
-
-    	emit(name, obj) {
-    		this.update({
-    			[name]: obj
-    		});
-    	}
-
-    	update(data) {
-    		let flag = 0;
-
-    		for (let i = 0, l = this.ug.length; i < l; i++) {
-    			const name = this.ug[i];
-    			if (data[name] !== undefined) {
-    				this.uc[i] = data[name];
-    				flag |= 1 << (i);
-    			}
-    		}
-
-    		this.global_flag |= flag;
-
-    		if (flag > 0) {
-    			for (let i = 0; i < this.uf.length; i++) {
-    				const uf = this.uf[i].f;
-    				if ((uf & this.global_flag) == uf)
-    					this.uf[i].m();
-    			}
-    		}
-    	}
-    }
-
-    const wick_lite = {
-    	ge,
-    	ctr,
-    	ctr_upd,
-    	ctr_fltr,
-    	createComponent,
-    	sc: liteScope,
-    	component_map: new Map(),
-    	component_templates: new Map(),
-    	addComponentTemplate(name, obj) {
-    		this.component_templates.set(name, obj);
-    	},
-    	gt(id){
-    		return document.getElementById(id);
-    	},
-    	lc(name, template, component_class) {
-    		this.component_map.set(name, { class: component_class, template });
-    	},
-    	cc(name) {
-    		if (this.component_map.has(name)) {
-    			const comp_blueprint = this.component_map.get(name);
-
-    			const ele = document.importNode(comp_blueprint.template.content.firstChild, true);
-
-    			return new comp_blueprint.class(ele, this);
-    		}
-    		return null;
-    	}
-    };
-
-    createComponent.lite = wick_lite;
-
-    function insertData(template_str, str) {
-        if (template_str.includes("%%%%"))
-            return template_str.replace("%%%%", str);
-        return template_str + str;
-    }
-
-    /* Returns an array that respresents the index position of a given element and it's ancestor nodes. */
-    function getRootOffset(ele, array = []) {
-
-        let i = 0;
-
-        const parent = ele.parentElement;
-
-        if (!parent) {
-            return array;
-        }
-
-        while (ele != parent.firstElementChild) {
-            i++;
-            ele = ele.previousElementSibling;
-        }
-
-        array.unshift(i);
-
-        return getRootOffset(parent, array);
-
-    }
-
-    function getElement(ele, mapped_elements) {
-
-        if (mapped_elements.has(ele))
-            return mapped_elements.get(ele).name;
-
-        let offset = null;
-
-        if (ele instanceof Text) {
-            const span = document.createElement("span");
-            span.innerHTML = ele.data;
-            ele.parentElement.insertBefore(span, ele);
-            ele.parentElement.removeChild(ele);
-            offset = getRootOffset(span);
-        } else {
-            offset = getRootOffset(ele);
-        }
-
-        mapped_elements.set(ele, { name: `e${mapped_elements.size}`, offset });
-
-        return getElement(ele, mapped_elements);
-    }
-
-    function getContainer(ctr, containers, mapped_elements) {
-
-        if (containers.has(ctr))
-            return containers.get(ctr).name;
-
-        //let offset = getRootOffset(ctr);
-
-        containers.set(ctr, { name: `c${containers.size}`, ele: getElement(ctr.ele, mapped_elements), comp: ctr.component });
-
-        return getContainer(ctr, containers, mapped_elements);
-    }
-
-    function setContainerSortFN(ctr, containers, type, expr){
-    	if(containers.has(ctr)){
-    		const c = containers.get(ctr);
-    		if(!c.filters)
-    			c.filters = [];
-    		c.filters.push({type, expr});
-    	}else
-    		return setContainerSortFN(getContainer(ctr),containers);
-    }
-
-    /* Returns the first expression statment node in the resultant ast of the parse tree of string argument. */
-    function buildExpression(string) {
-        const js_ast = parse(string);
-        return js_ast.vals[0];
-    }
-
-    /* Should return a deep of the ast node */
-    function cloneAST(ast) {
-        console.log(parse(ast.render()).vals[0].vals[0].connect, ast);
-        return parse(ast.render()).vals[0].vals[0].connect;
-    }
-
-    function createIONode(io, ctx, obj = { args: new Set, expr: [], type: 0 }) {
-        const expr = obj.expr;
-
-        switch (io.type) {
-            case "ContainerIO":
-
-                const ctr = getContainer(io.container, ctx.containers, ctx.mapped_elements);
-
-                if (!obj.type)
-                    obj.type = 12;
-
-                let action = "",
-                    name_length = 0;
-
-                switch (io.filter_type) {
-                    case "sort":
-                        action = io.script.ast;
-                        expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "so")`));
-                        name_length = 2;
-                        break;
-                    case "filter":
-                        action = io.script.ast;
-                        expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "fi")`));
-                        name_length = 1;
-                        break;
-                    case "scrub":
-                        expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "sc", ${io.script.ast.render()})`));
-                        break;
-                    case "offset":
-                        expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "of", ${io.script.ast.render()})`));
-                        break;
-                    case "limit":
-                        expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "li", ${io.script.ast.render()})`));
-                        break;
-                    case "shift_amount":
-                        expr.push(buildExpression(`this.wl.ctr_fltr(this.${ctr}, "sa", ${io.script.ast.render()})`));
-                        break;
-                }
-
-                const arg_names = [];
-                let i = 0;
-
-                for (const arg_name in io.arg_ios)
-                    if (i++ < name_length)
-                        arg_names.push(arg_name);
-                    else
-                        obj.args.add(arg_name);
-
-                if (name_length > 0) {
-                    JS.getClosureVariableNames(action, ...arg_names).forEach(e => {
-                        e.replace(new member_expression(new this_literal, e));
-                    });
-
-                    action = parse(`((${arg_names})=>${action.expr}).bind(this)`).vals[0].vals[0];
-                }
-
-                if (io.parent)
-                    obj.args.add(io.parent.prop);
-
-                if (io.filter_type == "filter")
-                    setContainerSortFN(io.container, ctx.containers, "filter", action);
-                if (io.filter_type == "sort")
-                    setContainerSortFN(io.container, ctx.containers, "sort", action);
-
-                break;
-            case "ScriptIO":
-            case "ExpressionIO":
-                if (!obj.type)
-                    obj.type = 12;
-
-                const ast = (io.script.ast.type == 47) ? cloneAST(io.script.ast.expr) : cloneAST(io.script.ast);
-
-                JS.getClosureVariableNames(ast).forEach(e => {
-                    e.replace(new member_expression(new this_literal, e));
-                });
-
-                if (expr.length > 0) {
-                    const last = expr.length - 1,
-                        assign = new assignment_expression([null, "=", null]);
-                    assign.vals[0] = expr[last].vals[0]; // Extract expression from expression statement
-                    expr[last].vals[0] = assign;
-
-
-                    //replace the last expression with an assignment expression
-                    if (io.script.ast.type == 47) {
-                        assign.vals[1] = ast;
-                    } else {
-                        assign.vals[1] = ast;
-                    }
-
-                    for (const arg_name in io.arg_ios) {
-                        obj.args.add(arg_name);
-                        //const arg = io.io.arg_ios[arg_name];
-                        //str = createIONode(createIONode(arg), str)
-                    }
-                } else {
-                    expr.push(ast);
-                }
-
-                if (io.parent)
-                    obj.args.add(io.parent.prop);
-                break;
-            case "EventIO":
-                obj.args.add(io.up_tap.prop);
-                obj.type = 2;
-                expr.push(buildExpression(`this.emit("${io.up_tap.prop}", this.${io.parent.prop});`));
-
-                if (!(io.parent instanceof Tap))
-                    createIONode(io.parent, ctx, obj);
-
-                obj.event = io.event_name;
-                obj.ele = io.ele;
-                //expr.push(`${obj.str}`);
-                break;
-            case "InputIO":
-                //obj.args.add(io.up_tap.prop);
-                obj.type = 1;
-                expr.push(buildExpression(`this.emit("${io.up_tap.prop}", e.target.value);`));
-
-                if (!(io.parent instanceof Tap))
-                    createIONode(io.parent, ctx, obj);
-
-                obj.event = "input";
-                obj.ele = io.ele;
-                //expr.push(`${obj.str}`);
-                break;
-            case "ContainerLinkIO":
-                if (!obj.type) obj.type = 12;
-
-                const ctr_expr = buildExpression(`this.w.ctr_upd(this.${getContainer(io.ele, ctx.containers, ctx.mapped_elements)})`);
-
-                expr.push(ctr_expr);
-
-                if (!(io.parent instanceof Tap)) {
-                    return createIONode(io.parent, ctx, obj);
-                } else {
-                    const last = expr.length - 1;
-                    expr[last].expression.args.vals.push(buildExpression("this." + io.parent.prop).expression);
-                }
-
-                obj.args.add(io.parent.prop);
-                break;
-            default:
-                if (io.ele instanceof Element) {
-                    if (!obj.type) obj.type = 12;
-                    expr.push(buildExpression(`this.${getElement(io.ele, ctx.mapped_elements)}.${io.attrib}`));
-                } else if (io.ele instanceof Text) {
-                    if (!obj.type) obj.type = 12;
-                    expr.push(buildExpression(`this.${getElement(io.ele, ctx.mapped_elements)}.innerHTML`));
-                } else {
-                    if (!obj.type) obj.type = 12;
-                    obj.args.add(io.parent.prop);
-                }
-
-                if (!(io.parent instanceof Tap)) {
-                    return createIONode(io.parent, ctx, obj);
-                } else {
-                    const last = expr.length - 1,
-                        assign = new assignment_expression([null, "=", null]);
-                    assign.vals[0] = expr[last].vals[0]; // Extract expression from expression statement
-                    expr[last].vals[0] = assign;
-                    assign.vals[1] = buildExpression("this." + io.parent.prop).expression;
-                }
-
-                obj.args.add(io.parent.prop);
-                break;
-        }
-        return obj;
-    }
-
-    /* Converts IO object hiearchies into self contained nodes with js ast structures defining the io logic. */
-    function buildIO(io, ctx) {
-
-        const node = createIONode(io, ctx);
-
-        node.expr = new expression_list([node.expr]);
-
-        console.log(node.expr.render());
-
-
-        return node;
-    }
-
-    function replaceDataPoints(ast, dps) {
-        const tvrs = ast.traverseDepthFirst();
-        let node = null;
-
-        while ((node = tvrs.next().value)) {
-            if (
-                node.type == types$1.identifier &&
-                node.parent &&
-                node.parent.type == types$1.member_expression &&
-                node.parent.id.type == types$1.this_literal
-            ) {
-                if (dps.has(node.name)) {
-                    const dp = dps.get(node.name);
-                    node.replace(parse(`uc[${dp.id}]`).vals[0].vals[0]);
-                    // /debugger 
-                }
-            }
-        }
-
-        return ast;
-    }
-
-    function getCondition(condition, conditions) {
-        if (conditions.has(condition))
-            return conditions.get(condition);
-
-        conditions.set(condition, 1 << conditions.size);
-
-        return getCondition(condition, conditions);
-    }
-
-    function createGate(conditions, str, condition_map, flag_name = "f") {
-        const val = [...conditions.values()].map(c => getCondition(c, condition_map)).reduce((r, v) => r | v, 0);
-        if (val == 0)
-            return str;
-        return `if((${flag_name} & ${val}) == ${val}){${str}}`;
-    }
-
-    function stamp(ast) {
-
-        const scope = ast.mount(null),
-            mapped_elements = new Map(),
-            containers = new Map(),
-            data_points = new Map(),
-            actions = [],
-            output_ast = parse("class component extends wick.sc {constructor(e,w){super(e);;} destroy(){;;}}").vals[0];
-
-        //pull out tap and io data and build a dependency graph
-        let dp_offset = 0;
-
-        for (const io of scope.ios) {
-            const ele = buildIO(io, { mapped_elements, containers });
-
-            let flag = 0;
-
-            for (const dp of ele.args.values()) {
-                if (!data_points.has(dp))
-                    data_points.set(dp, { flag: 1 << (dp_offset), name: dp, id: dp_offset++ });
-                flag |= data_points.get(dp).flag;
-            }
-
-            ele.flag = flag;
-
-            actions.push(ele);
-        }
-
-        /* for each data point add an class member */
-        let update_code = "let flag = 0",
-            fun_id = 0;
-        const update_groups = [],
-            bound = [];
-
-        for (const dp of data_points.values()) {
-            //output_ast.body[0].body.vals.push(JSParse("this.d"  + dp.id + " = null").vals[0]);
-            update_groups[dp.id] = dp.name;
-        }
-
-        
-        output_ast.body[0].body.vals.push(parse(`this.uc = [${update_groups.map(e=>`null`)}]`).vals[0]);
-        output_ast.body[0].body.vals.push(parse(`this.ug = [${update_groups.map(e=>`"${e}"`)}]`).vals[0]);
-        //*
-        //combine actions if we can
-        for (let i = 0; i < actions.length; i++) {
-            const act1 = actions[i];
-            for (let j = 0; j < actions.length; j++) {
-                if (j == i)
-                    continue;
-
-                const act2 = actions[j];
-
-                if (act1.flag == act2.flag && (act1.type & act2.type)) {
-                    //compress
-                    actions.splice(j, 1);
-                    j--;
-
-                    const t = types$1.expression_statement,
-                        list = ((act2.expr.type == t) ? [act2.expr] : act2.expr.vals);
-
-                    if (act1.expr.type == t) {
-                        act1.expr = new statements([[act1.expr, ...list]]);
-                    } else {
-                        act1.expr.vals.push(...list);
-                    }
-                }
-            }
-
-            const action = actions[i];
-            let ele = null;
-            let fun = null;
-            switch (action.type) {
-                case 1: // Input
-                case 2: // Event
-                    //Create event listener in constructor
-                    ele = getElement(action.ele, mapped_elements);
-                    fun = fun_id++;
-                    output_ast.body[0].body.vals.push(...parse(`
-                        this.b${fun} = this.f${fun}.bind(this); 
-                        this.${ele}.addEventListener("${action.event}", this.b${fun})`).vals[0].vals);
-                    output_ast.body[1].body.vals.push(parse(`this.${ele}.removeEventListener("input", this.b${fun})`).vals[0]);
-                    output_ast.body.push(parse(`class{f${fun}(e){${replaceDataPoints(action.expr, data_points)}}}`).vals[0].body[0]);
-                    break;
-                    /*                event_str +=
-                                        `\nfunction a_${i}(e){${createGate(action.cds, action.str, conditions, "gf")}};
-                    ${getElement(action.ele, mapped_elements)}.addEventListener("${action.event}", a_${i})`;*/
-
-                case 4: // Element prop
-                case 8: // Text node;
-                case 12: // Scripts & Expressions
-                case 16: //Container
-                    fun = fun_id++;
-                    bound.push({ f: action.flag, fn: fun });
-                    output_ast.body.push(parse(`class{f${fun}(){${replaceDataPoints(action.expr, data_points)}}}`).vals[0].body[0]);
-                    break;
-            }
-        }
-
-        output_ast.body[0].body.vals.push(parse(`this.uf = [${bound.map(e=>`{f:${e.f},m:this.f${e.fn}.bind(this)}`)}]`).vals[0]);
-        output_ast.body[0].body.vals.splice(1,0,...parse(`${[...mapped_elements.values()].map(v=>`this.${v.name}=w.ge(e ${v.offset.length >  0 ? ","+v.offset.join(",") : ""})`).join(";")};;`).vals[0].vals);
-        for (const ctr of containers.values()) {
-            output_ast.body[0].body.vals.push(parse(`this.${ctr.name}= w.ctr(this.${ctr.ele},"${
-            ctr.comp.stamp().hash}" ${
-                ctr.filters ? "," +ctr.filters.map(f=>`{action:${replaceDataPoints(f.expr, data_points)},type:"${f.type}"}`).join(",") : ""
-            })`).vals[0]);
-            output_ast.body[1].body.vals.push(parse(`this.${ctr.name}.destroy()`).vals[0]);
-        }
-        //build the rest of the functions
-        //*/
-        /* Add condition values to constructor function */
-        const component_html = scope.ele.outerHTML || "";
-
-        const hash = ((output_ast.render().length ^ component_html.length) * 0x456) + "";
-
-        output_ast.vals[0] = null;
-
-        const output = {
-            js: output_ast,
-            html: scope.ele.outerHTML,
-            hash
-        };
-
-        // Add component internal store. This can later be used to genereate a 
-        // component graph that can be used in final applications.
-        wick_lite.addComponentTemplate(hash, output);
-
-        return output;
-    }
-
-    class d$3 {
+    class d$2 {
 
         //Registers the component as a Web Component.
         //Herafter the Web Component API will be used to mount this component. 
@@ -28971,7 +25885,7 @@ in file ${o.url || o.origin_url}`,e);
 
             customElements.define(
                 this.name,
-                d$3.web_component_constructor(this, bound_data_object), {}
+                d$2.web_component_constructor(this, bound_data_object), {}
             );
         }
 
@@ -28986,23 +25900,6 @@ in file ${o.url || o.origin_url}`,e);
             }
 
             return this.nonAsyncMount(HTMLElement_, data_object, USE_SHADOW);
-        }
-
-        //Creates a standalone component string
-        async stamp(data_object) {
-
-            if (this.READY !== true) {
-                if (!this.__pending)
-                    this.__pending = [];
-
-                return new Promise(res => this.__pending.push([true, data_object, null, res]));
-            }
-
-            return this.nonAsyncStamp(data_object);
-        }
-
-        nonAsyncStamp(data_object = null) {
-            return stamp(this.ast);
         }
 
         nonAsyncMount(HTMLElement_, data_object = null, USE_SHADOW) {
@@ -29027,7 +25924,7 @@ in file ${o.url || o.origin_url}`,e);
         connect(h, b) { return this.mount(h, b) }
     }
 
-    d$3.web_component_constructor = function(wick_component, bound_data) {
+    d$2.web_component_constructor = function(wick_component, bound_data) {
         return class extends HTMLElement {
             constructor() {
                 super();
@@ -29373,11 +26270,11 @@ in file ${o.url || o.origin_url}`,e);
         this.name = "";
     }
 
-    Object.assign(BaseComponent.prototype,d$3.prototype);
-    BaseComponent.prototype.mount = d$3.prototype.nonAsyncMount;
-    BaseComponent.prototype.stamp = d$3.prototype.nonAsyncStamp;
+    Object.assign(BaseComponent.prototype,d$2.prototype);
+    BaseComponent.prototype.mount = d$2.prototype.nonAsyncMount;
+    BaseComponent.prototype.stamp = d$2.prototype.nonAsyncStamp;
 
-    class ctr$1 extends ElementNode {
+    class ctr extends ElementNode {
         
         constructor(env, tag, children, attribs, presets) {
 
@@ -29493,7 +26390,7 @@ in file ${o.url || o.origin_url}`,e);
     	}
     }
 
-    class v$2 extends ElementNode{
+    class v$1 extends ElementNode{
     	constructor(env, tag, children, attribs, presets){
     		super(env, tag, children, attribs, presets);
     	}
@@ -29537,9 +26434,9 @@ in file ${o.url || o.origin_url}`,e);
     		super(env, "import", null, attribs, presets);
     	}
     	
-    	loadAST(){/*intentional*/return;}
+    	loadAST(){/*intentional*/return}
     		
-    	loadURL(){/*intentional*/return;}
+    	loadURL(){/*intentional*/return}
     }
 
     function es(tag, attribs, children, env, lex, meta = 0) {    
@@ -29564,11 +26461,11 @@ in file ${o.url || o.origin_url}`,e);
                 Constructor = fltr;
                 break;
             case "a":
-                Constructor = a$2;
+                Constructor = a$1;
                 break;
                 /** void elements **/
             case "template":
-                Constructor = v$2;
+                Constructor = v$1;
                 break;
             case "css":
             case "style":
@@ -29583,7 +26480,7 @@ in file ${o.url || o.origin_url}`,e);
                 Constructor = svg;
                 break;
             case "container":
-                Constructor = ctr$1;
+                Constructor = ctr;
                 break;
             case "scope":
                 Constructor = scp;
@@ -29975,9 +26872,13 @@ in file ${o.url || o.origin_url}`,e);
 
     const
 
-        default_presets = new Presets,
+        default_presets = new Presets$1,
 
         compile = async (component_data, presets, compiler_env) => {
+
+            console.log(component_data);
+
+            console.log({component_data});
 
                 var
                     ast = null,
@@ -30003,9 +26904,9 @@ in file ${o.url || o.origin_url}`,e);
                                 first_char == "."
                             )
                         );
-
                         //Not sure if the string is a URL, but we can try fetching as a resource, and suppress erros if it comes up short.
-                        if (IS_POTENTIAL_URL && (url = URL.resolveRelative(component_data, ""))) {
+                        if (IS_POTENTIAL_URL && (url = URL$1.resolveRelative(component_data))) {
+
                             try {
                                 if (url.ext == "mjs" || url.ext == "js") {
 
@@ -30029,7 +26930,7 @@ in file ${o.url || o.origin_url}`,e);
                         break;
 
                     case "object":
-                        if (component_data instanceof URL) {
+                        if (component_data instanceof URL$1) {
                             string_data = await url.fetchText();
                         } else if (component_data instanceof HTMLElement) {
 
@@ -30079,7 +26980,7 @@ in file ${o.url || o.origin_url}`,e);
                 let presets = default_presets;
 
                 if (data.length > 1)
-                    presets = (data[1] instanceof Presets) ? data[1] : new Presets(data[1]);
+                    presets = (data[1] instanceof Presets$1) ? data[1] : new Presets$1(data[1]);
 
                 if (data.length === 0)
                     throw new Error("This function requires arguments. Please refer to wick docs on what arguments may be passed to this function.");
@@ -30115,7 +27016,7 @@ in file ${o.url || o.origin_url}`,e);
                             }
 
 
-                        if (obj instanceof d$3) {
+                        if (obj instanceof d$2) {
 
                             this.ast = obj.ast;
 
@@ -30194,7 +27095,7 @@ in file ${o.url || o.origin_url}`,e);
                 }
             };
 
-    Component.prototype = d$3.prototype;
+    Component.prototype = d$2.prototype;
 
     //TODO: Fancy schmancy to string method.
     Component.toString = function() {
@@ -30220,62 +27121,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.`;
     };
 
-    const tools =  (function(){
-
-    	/* Exports built in components into a self contained page. */
-    	wick_lite.export = function(){
-    		const map = createComponent.map;
-
-    		const html = `
-	${[...map.entries()].map(v=>(v[1].template.id = v[0] + "", v[1].template.outerHTML)).join("")}
-		`;
-    		const js = `
-		${[...map.entries()].map(v=>`wick_lite.load(document.getElementById("${v[0]}"), ${v[1].fn.toString().replace("anonymous(", "(")})`).join(";")}
-		`;
-    	};
-
-    	wick_lite.createSelfContainedComponent;
-
-    	/* Creates a single file formatted as HTML capable of running as a single page. */
-    	wick_lite.createSelfContainedPage = async function(root_component, headers, scripts){
-
-    		// Root component is the main component that hosts all other components.
-    		
-    		//clear componnet map and and create a new stamped component repository. 
-    		const map = (wick_lite.component_templates = new Map);
-
-    		const root = await root_component.stamp();
-
-    		const file = [];
-
-    		file.push("<!DOCTYPE html>");
-    		file.push("<html>");
-    		file.push("<head>");
-    		file.push("<script src=\"../../build/wick.lite.js\"></script>");
-    		file.push("</head>");
-    		file.push("<body>");
-    		file.push([...map.entries()].map(v=>(`<template id="${v[0]}">${v[1].html}</template>`)).join(""));
-    		file.push("<script>");
-    		file.push([...map.entries()].map(v=>`wick.lc("${v[0]}", wick.gt("${v[0]}"),${v[1].js})`).join(";\n"));
-    		file.push(`document.body.appendChild(wick.cc("${root.hash}").ele)`);
-    		file.push("</script>");
-    		file.push("</body>");
-    		file.push("</html>");
-
-    		return file.join("\n");
-    	};
-
-    	return wick_lite;
-    }());
-
     const wick = Component;
 
-    wick.stamp = stamp; //Compiles wick component into standalone components. 
-    wick.presets = d=>new Presets(d);
-    wick.astCompiler = function(string){
-    	return parser(whind$1(string), CompilerEnvironment);
-    };
-    wick.lite = tools;
+    wick.presets = d=>new Presets$1(d);
+
+    wick.astCompiler = (string) => parser(whind$1(string), CompilerEnvironment);
+
     wick.compiler_environment = CompilerEnvironment;
 
     return wick;

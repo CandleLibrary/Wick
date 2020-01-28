@@ -1,6 +1,8 @@
 import resolve from 'rollup-plugin-node-resolve';
+import { terser } from 'rollup-plugin-terser';
+
 const output = [{
-    name: "wick",
+    name: "wl",
     file: "./build/wick.lite.js",
     format: "iife",
     exports: "default",
@@ -12,7 +14,7 @@ export default {
     treeshake: true,
     plugins: [
         resolve({jail:"",modulesOnly: true}),  
-        //terser({mangle:true, module:true}), 
+        //terser({mangle:true, module:false}), 
         //gzipPlugin()
     ]
 };
