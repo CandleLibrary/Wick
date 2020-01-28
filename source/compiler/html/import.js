@@ -5,7 +5,7 @@ export default class Import extends ElementNode{
 		super(env, "import", null, attribs, presets);
 	}
 	
-	loadAST(){/*intentional*/return;}
+	loadAST(){/*intentional*/return}
 		
-	loadURL(){/*intentional*/return;}
+	loadURL(){/*intentional*/return}
 }

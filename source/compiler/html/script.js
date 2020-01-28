@@ -14,6 +14,7 @@ export default class ScriptNode extends ElementNode {
         this.function = null;
         this.args = null;
         this.ast = ast[0];
+        this.original_ast = copyAST(ast[0]);
         this.IS_ASYNC = false;
         this.READY = false;
         this.val = "";
@@ -34,9 +35,9 @@ export default class ScriptNode extends ElementNode {
     }
 
     loadAST(ast) {
-
         if (ast && !this.ast) {
             this.ast = ast;
+            this.original_val = this.ast.render();
             this.processJSAST(this.presets);
         }
     }
@@ -48,6 +49,8 @@ export default class ScriptNode extends ElementNode {
         this.IS_ASYNC = AsyncInClosure(this.ast);
 
         this.args = args;
+
+        this.ids = ids;
 
         addEmitExpression(ids, presets, this.args.reduce((r, a) => ((a.IS_TAPPED) ? null : r.push(a.name), r), []));
 

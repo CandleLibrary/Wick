@@ -1,5 +1,3 @@
-import stamp from "../stamp/stamp.js";
-
 export default class d {
 
     //Registers the component as a Web Component.
@@ -29,23 +27,6 @@ export default class d {
         }
 
         return this.nonAsyncMount(HTMLElement_, data_object, USE_SHADOW);
-    }
-
-    //Creates a standalone component string
-    async stamp(data_object) {
-
-        if (this.READY !== true) {
-            if (!this.__pending)
-                this.__pending = [];
-
-            return new Promise(res => this.__pending.push([true, data_object, null, res]));
-        }
-
-        return this.nonAsyncStamp(data_object);
-    }
-
-    nonAsyncStamp(data_object = null) {
-        return stamp(this.ast);
     }
 
     nonAsyncMount(HTMLElement_, data_object = null, USE_SHADOW) {

@@ -19,7 +19,6 @@ function buildExpression(string) {
 
 /* Should return a deep of the ast node */
 function cloneAST(ast) {
-    console.log(JSParse(ast.render()).vals[0].vals[0].connect, ast)
     return JSParse(ast.render()).vals[0].vals[0].connect;
 }
 
@@ -199,9 +198,6 @@ export default function(io, ctx) {
     const node = createIONode(io, ctx);
 
     node.expr = new expression_list([node.expr]);
-
-    console.log(node.expr.render());
-
 
     return node;
 }

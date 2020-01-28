@@ -1,7 +1,9 @@
-import createComponent from "./component.js";
-
 import glow from "@candlefw/glow";
 import spark from "@candlefw/spark";
+
+function createComponent(){
+
+}
 
 function getColumnRow(index, offset, set_size) {
 	const adjusted_index = index - offset * set_size;
