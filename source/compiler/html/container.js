@@ -89,21 +89,20 @@ export default class ctr extends ElementNode {
         if(this.component_constructor)
             container.component = this.component_constructor;
 
-        for (let i = 0; i < this.filters.length; i++){
-            this.filters[i].mount(scope, container);
-        }
-
+        for (const fltr of this.filters)
+            fltr.mount(scope, container);
+        
         for (const attr of this.attribs.values())
             attr.bind(ele, scope, pinned);
 
         if (this.binds.length > 0) {
-            for (let i = 0; i < this.binds.length; i++)
-                this.binds[i].mount(null, scope, presets, slots, pinned, container);
+            for (const bind of this.binds)
+                bind.mount(null, scope, presets, slots, pinned, container);
         }else{ 
-            //If there is no binding, then there is no potential to have ModelContainer host components.
+            //If there is no binding, then there is no potential to have a data array host generate components.
             //Instead, load any existing children as component entries for the container element. 
-            for (let i = 0; i < this.nodes.length; i++)
-                container.scopes.push(this.nodes[i].mount(null, null, presets, slots));
+            for (const node of this.nodes)
+                container.scopes.push(node.mount(null, null, presets, slots));
             container.filterUpdate();
             container.render();
         }

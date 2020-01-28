@@ -37,6 +37,7 @@ export default class ElementNode {
             presets.components[this.component] = this;
 
         this.url = this.getAttribute("url") ? URL.resolveRelative(this.getAttribute("url"), env.url) : null;
+
         this.id = this.getAttribute("id");
         this.class = this.getAttribute("id");
         this.name = this.getAttribute("name");
@@ -214,10 +215,8 @@ export default class ElementNode {
         for (const attr of this.attribs.values())
             attr.bind(own_element, scope, pinned);
 
-        for (let i = 0; i < this.children.length; i++) {
-            const node = this.children[i];
-            node.mount(own_element, scope, presets, slots, pinned);
-        }
+        for (const child of this.children) 
+            child.mount(own_element, scope, presets, slots, pinned);
 
         /* 
             If there is an attribute that will cause the browser to fetch a resource that is 
