@@ -3,7 +3,8 @@ import stamp from "./stamp/stamp.js";
 
 import wick_compile from "./compiler/wick.js";
 import CompilerEnv from "./compiler/compiler_env.js";
-import { Presets } from "./presets.js";
+
+import Presets from "./presets.js";
 import whind from "@candlefw/whind";
 import lite_tools from "./lite/tools.js";
 const wick = compiler;

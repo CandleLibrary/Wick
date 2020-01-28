@@ -1,5 +1,5 @@
 //import { CustomComponent } from "../page/component"
-import { DOC } from "./short_names";
+import { DOC } from "./short_names.js";
 import URL from "@candlefw/url";
 
 let CachedPresets = null;
@@ -11,7 +11,7 @@ let CachedPresets = null;
  // Note: *This object is made immutable once created. There may only be one instance of Presets*
  * 
  */
-class Presets {
+export default class P {
     constructor(preset_options) {
         if (!preset_options)
             preset_options = {};
@@ -169,7 +169,7 @@ class Presets {
                 obj[a] = this[a];
         }
 
-        const presets = new Presets(obj);
+        const presets = new P(obj);
 
         presets.processLink = this.processLink.bind(this);
 
@@ -177,6 +177,4 @@ class Presets {
     }
 }
 
-Presets.global = {get v(){return CachedPresets}, set v(e){}};
-
-export { Presets };
+P.global = {get v(){return CachedPresets}, set v(e){}};

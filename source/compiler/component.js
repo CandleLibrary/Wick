@@ -1,7 +1,7 @@
 import whind from "@candlefw/whind";
 import URL from "@candlefw/url";
 
-import { Presets } from "../presets.js";
+import Presets from "../presets.js";
 import wick_compile from "./wick.js";
 import CompilerEnv from "./compiler_env.js";
 import env from "./env.js";
