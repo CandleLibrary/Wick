@@ -45,9 +45,9 @@ const
                             first_char == "."
                         )
                     );
-
                     //Not sure if the string is a URL, but we can try fetching as a resource, and suppress erros if it comes up short.
-                    if (IS_POTENTIAL_URL && (url = URL.resolveRelative(component_data, ""))) {
+                    if (IS_POTENTIAL_URL && (url = URL.resolveRelative(component_data))) {
+
                         try {
                             if (url.ext == "mjs" || url.ext == "js") {
 
@@ -169,6 +169,9 @@ const
                     } else {
 
                         const ast = obj;
+
+                        if(!ast.finalize)
+                            throw error(error.COMPONENT_PARSE_FAILURE, new Error("Component blueprint is not html"), compiler_env);
 
                         const constructor_name = this.constructor.name;
 
