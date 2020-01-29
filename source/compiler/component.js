@@ -21,6 +21,7 @@ const
 
     compile = async (component_data, presets, compiler_env) => {
 
+
             var
                 ast = null,
                 string_data = "";
@@ -63,6 +64,8 @@ const
 
                             string_data = await url.fetchText();
 
+                            compiler_env.url = url;
+                            
                         } catch (e) {
                             console.log(e);
                         }
@@ -90,7 +93,7 @@ const
 
 
 
-           try {
+            try {
 
                 return await (new Promise(res => {
 
@@ -141,21 +144,18 @@ const
                 //Reference to the component name. Used with the Web Component API
                 this.name = "";
 
-                
-
-                this.pending = ((async ()=>{
+                this.pending = ((async () => {
                     var obj;
 
                     const
                         compiler_env = new CompilerEnv(presets, env),
                         return_obj = this;
 
-                        try{
-                            obj = await compile(component_data, presets, compiler_env);
-                        }catch(e){
-                            throw(e)
-                        }
-
+                    try {
+                        obj = await compile(component_data, presets, compiler_env);
+                    } catch (e) {
+                        throw (e)
+                    }
 
                     if (obj instanceof proto) {
 
@@ -170,14 +170,14 @@ const
 
                         const ast = obj;
 
-                        if(!ast.finalize)
+                        if (!ast.finalize)
                             throw error(error.COMPONENT_PARSE_FAILURE, new Error("Component blueprint is not html"), compiler_env);
 
                         const constructor_name = this.constructor.name;
 
-                        if (constructor_name !== "default" || constructor_name !== "Anonymous") 
+                        if (constructor_name !== "default" || constructor_name !== "Anonymous")
                             presets.components[constructor_name] = ast;
-                        
+
                         this.ast = ast;
                         this.ast.finalize();
 
@@ -243,7 +243,7 @@ Component.prototype = proto.prototype;
 
 //TODO: Fancy schmancy to string method.
 Component.toString = function() {
-    return  `WICK 2020 
+    return `WICK 2020 
 Copyright (c) MMXX Anthony C Weathersby
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
