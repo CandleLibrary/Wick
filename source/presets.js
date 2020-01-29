@@ -2,6 +2,8 @@
 import { DOC } from "./short_names.js";
 import URL from "@candlefw/url";
 
+import glow from "@candlefw/glow";
+
 let CachedPresets = null;
 /**
  // There are a number of configurable options and global objects that can be passed to wick to be used throughout the PWA. The instances of the Presets class are objects that hosts all these global properties. 
@@ -98,7 +100,7 @@ export default class P {
         /**
          * Custom objects that can be used throughout component scripts. User defined. 
          */
-        this.custom = preset_options.custom || {};
+        this.custom = preset_options.custom || {glow};
 
         let c = preset_options.options;
         if (c)
