@@ -1,6 +1,5 @@
-import { identifier, member_expression, return_statement, types } from "@candlefw/js";
-import { GetOutGlobals, AddEmit } from "../js/script_functions.js";
-import FUNCTION_CACHE from "../js/function_cache.js";
+import { identifier, return_statement } from "@candlefw/js";
+import { GetOutGlobals, AddEmit, copyAST } from "../js/script_functions.js";
 import ExpressionIO from "../component/io/expression_io.js";
 import ContainerIO from "../component/io/container_io.js";
 import script from "./script.js";
@@ -19,7 +18,10 @@ export default class Binding {
 
         this.METHOD = IDENTIFIER;
 
+        this.original_ast = exprA;
         this.ast = exprA;
+
+        this.original_ast_other = exprB;
         this.ast_other = exprB;
 
         this.function = null;
@@ -33,7 +35,7 @@ export default class Binding {
 
         this.on = true;
 
-        if (this.ast && !(this.ast instanceof identifier))
+        if (this.original_ast && !(this.original_ast instanceof identifier))
             this.processJSAST(env.presets);
 
     }
@@ -47,6 +49,8 @@ export default class Binding {
     }
 
     processJSAST(presets = { custom: {} }) {
+        this.ast = copyAST(this.original_ast);
+
         const { args, ids } = GetOutGlobals(this.ast, presets);
 
         this.args = args;

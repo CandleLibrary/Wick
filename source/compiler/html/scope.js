@@ -113,7 +113,7 @@ export default class scp extends ElementNode {
 
         if (SET_TAP_METHOD) {
             if (extern !== intern)
-                this.checkTapMethod(type, intern);
+                this.checkTapMethod("", intern);
 
             const tap = this.getTap(extern);
 

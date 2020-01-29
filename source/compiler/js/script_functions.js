@@ -1,6 +1,6 @@
 import JS from "../js/tools.js";
 import glow from "@candlefw/glow";
-import { types, identifier, member_expression, call_expression, string, parenthasized, parse } from "@candlefw/js";
+import { types, identifier, call_expression, string, parenthasized, parse } from "@candlefw/js";
 
 const defaults = {
     glow,
@@ -13,7 +13,10 @@ const defaults = {
 const root = typeof(global) == "object" ? global : window;
 
 export function copyAST(ast){
-    return parse(ast.render()).vals[0].connect;
+    for(const node of parse(ast.render()).traverseDepthFirst()){
+        if(node.type == ast.type)
+            return node;
+    }
 }
 
 export function * getTypeInClosure(ast, ...types){

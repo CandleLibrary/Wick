@@ -17,7 +17,7 @@ export default class fltr extends ElementNode {
         for (const attr of this.attribs.values()){
 
             if(attr.value instanceof binding){
-                const io = attr.value.bind(scope, null, null, this)
+                const io = attr.value.bind(scope, null, null, this);
                 io.bindToContainer(attr.name, container);
                 scope.ios.push(io);
             }else{

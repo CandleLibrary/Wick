@@ -40,8 +40,7 @@ export default class ctr extends ElementNode {
 
         //Tag name of HTMLElement the container will create;
         this.element = this.getAttribute("element") || "ul";
-
-        this.filters = null;
+        
         this.nodes = null;
         this.binds = null;
     }

@@ -1,4 +1,5 @@
-import { appendChild, createElement } from "../../short_names.js";import Scope from "../component/runtime/scope.js";
+import { appendChild, createElement } from "../../short_names.js";
+import Scope from "../component/runtime/scope.js";
 import CompilerEnv from "../compiler_env.js";
 import wick_compile from "../wick.js";
 import error from "../../utils/error.js";
@@ -26,7 +27,7 @@ export default class ElementNode {
         this.origin_url = env.url;
         this.attribs = new Map((attribs || []).map(a => (a.link(this), [a.name, a])));
 
-        if(this.attribs.has(""))
+        if (this.attribs.has(""))
             this.attribs.delete("");
 
         this.pending_load_attrib = USE_PENDING_LOAD_ATTRIB;
@@ -42,7 +43,15 @@ export default class ElementNode {
         this.class = this.getAttribute("id");
         this.name = this.getAttribute("name");
         this.slot = this.getAttribute("slot");
-        this.pinned = (this.getAttribute("pin")) ? this.getAttribute("pin") + "$" : "";
+
+        const pin = this.getAttrib("pin");
+
+        if (pin.value) {
+            pin.RENDER = false;
+            this.pinned = pin.value + "$";
+        } else {
+            this.pinned = "";
+        }
 
         if (this.url)
             this.loadAndParseUrl(env);
@@ -72,8 +81,8 @@ export default class ElementNode {
 
         const slots_out = Object.assign({}, slots_in);
 
-            
-        if (this.presets.components[this.tag]){
+
+        if (this.presets.components[this.tag]) {
             this.proxied = this.presets.components[this.tag].merge(this);
         }
 
@@ -136,7 +145,7 @@ export default class ElementNode {
 
     loadAST(ast) {
         if (ast instanceof ElementNode)
-            this.proxied = ast;//.merge();
+            this.proxied = ast; //.merge();
     }
 
     async loadAndParseUrl(env) {
@@ -146,17 +155,27 @@ export default class ElementNode {
 
         own_env.setParent(env);
 
+
         try {
             own_env.pending++;
             text_data = await this.url.fetchText();
+
+
         } catch (e) {
+            console.log(this.url, text_data)
             error(error.RESOURCE_FETCHED_FROM_NODE_FAILURE, e, this);
         }
-        
-        if (text_data)
+
+        if (text_data) {
+            const lex = whind(text_data);
             try {
-                ast = wick_compile(whind(text_data), own_env);
-            } catch (e) { error(error.ELEMENT_PARSE_FAILURE, e, this) }
+
+                ast = wick_compile(lex, own_env);
+            } catch (e) {
+                console.log("error", e, this.url+"" )
+                error(error.ELEMENT_PARSE_FAILURE, e, this)
+            }
+        }
 
         this.loadAST(ast);
 
@@ -198,13 +217,13 @@ export default class ElementNode {
     mount(element, scope, presets = this.presets, slots = {}, pinned = {}, RETURN_ELEMENT = false) {
 
         const own_element = this.createElement(scope);
-        
+
         appendChild(element, own_element);
 
         if (this.slots)
             slots = Object.assign({}, slots, this.slots);
 
-        if(this.pinned)
+        if (this.pinned)
             pinned[this.pinned] = own_element;
 
         if (!scope)
@@ -215,7 +234,7 @@ export default class ElementNode {
         for (const attr of this.attribs.values())
             attr.bind(own_element, scope, pinned);
 
-        for (const child of this.children) 
+        for (const child of this.children)
             child.mount(own_element, scope, presets, slots, pinned);
 
         /* 
@@ -226,14 +245,14 @@ export default class ElementNode {
 
             example elemnts = img, svg
         */
-        if(this.pending_load_attrib && this.getAttrib(this.pending_load_attrib).value){
-            const fn = e=>{
+        if (this.pending_load_attrib && this.getAttrib(this.pending_load_attrib).value) {
+            const fn = e => {
                 scope.acknowledgePending();
                 own_element.removeEventListener("load", fn);
             };
             own_element.addEventListener("load", fn);
             scope.PENDING_LOADS++;
-        } 
+        }
 
 
         return (RETURN_ELEMENT) ? own_element : scope;

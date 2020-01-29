@@ -13,8 +13,8 @@ export default class ScriptNode extends ElementNode {
         super(env, "script", null, attribs, presets);
         this.function = null;
         this.args = null;
-        this.ast = ast[0];
-        this.original_ast = copyAST(ast[0]);
+        this.original_ast = ast[0];
+        this.ast = null;
         this.IS_ASYNC = false;
         this.READY = false;
         this.val = "";
@@ -28,8 +28,8 @@ export default class ScriptNode extends ElementNode {
             this.on = on;
 
 
-        if (this.ast && on) {
-            this.original_val = this.ast.render();
+        if (this.original_ast && on) {
+            this.original_val = this.original_ast.render();
             this.processJSAST(presets);
         }
     }
@@ -43,6 +43,8 @@ export default class ScriptNode extends ElementNode {
     }
 
     processJSAST(presets = { custom: {} }) {
+
+        this.ast = copyAST(this.original_ast);
 
         const { args, ids } = GetOutGlobals(this.ast, presets);
 
@@ -67,6 +69,7 @@ export default class ScriptNode extends ElementNode {
             const
                 args = this.args,
                 names = args.map(a => a.name);
+
 
             // For the injected emit function
             names.push("emit");

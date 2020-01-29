@@ -1,7 +1,7 @@
 import container from "../../compiler/html/container.js";
 import Attribute from "../../compiler/html/attribute.js";
 
-container.prototype.stamp = function(tools, output, indent_level = 0, eleid = [0]) {
+container.prototype.stamp = async function(tools, output, indent_level = 0, eleid = [0]) {
 
 	const str = [`<${this.element}`],
 		child_eleid = eleid.concat([0]);
@@ -10,16 +10,29 @@ container.prototype.stamp = function(tools, output, indent_level = 0, eleid = [0
 	if (!this.component_constructor)
 		return;
 	else {
-		var { component } = tools.stamp(this.component_constructor);
+		var component = await tools.stamp(this.component_constructor);
 	}
 
-	this.attribs.set("is-cntr", (new Attribute(["is-cntr", "", ""])));
+	const id = output.containers.length + 1;
+
+	output.containers.push({
+		ele : tools.getElement(output, eleid).id,
+		id,
+		component : component.hash
+	});
 
 	for (const attr of this.attribs.values())
-		attr.stamp(tools, output, pinned, str);
+		attr.stamp(tools, output, str, eleid, this);
+
 
 	output.html.push(tools.indent(str.join(" ") + ">", indent_level));
 
+	for (const bind of this.binds) {
+		bind.stamp(tools, output, indent_level + 1, eleid, id);
+	}
+
+	if(this.pinned)
+        output.pinned[this.pinned] = tools.getElement(output, eleid);
 	/*
 	for (const fltr of this.filters)
             fltr.mount(scope, container);
@@ -38,7 +51,7 @@ container.prototype.stamp = function(tools, output, indent_level = 0, eleid = [0
             container.render();
         }
 */
-	output.html.push(tools.indent(`<\\${this.element}>`, indent_level));
+	output.html.push(tools.indent(`</${this.element}>`, indent_level));
 
 	eleid[eleid.length - 1]++;
 };
