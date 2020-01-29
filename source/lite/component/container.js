@@ -1,10 +1,3 @@
-import glow from "@candlefw/glow";
-import spark from "@candlefw/spark";
-
-function createComponent(){
-
-}
-
 function getColumnRow(index, offset, set_size) {
 	const adjusted_index = index - offset * set_size;
 	const row = Math.floor(adjusted_index / set_size);
@@ -12,583 +5,663 @@ function getColumnRow(index, offset, set_size) {
 	return { row, col };
 }
 
-/* Update container scopes. */
-export function ctr_upd(ctr, data_objs) {
-	if (!data_objs) return;
+class WickLiteContainer{
+	constructor(scope, ele, component, filter, lite){
+		this.wl = lite;
+		this.scope = scope;
+        this.parent = scope;
+		this.component = component;
+		this.ele = ele;
+		this.activeScopes = [];
+        this.dom_scopes = [];
+        this.filters = [];
+        this.ios = [];
+        this.terms = [];
+        this.scopes = [];
+        this.dom_dn = [];
+        this.dom_up = [];
 
-	if (data_objs.observering) {
-		if (ctr.observering.removeObserver)
-			ctr.observering.removeObserver(ctr);
-		ctr.observering = null;
+        this.transition_in = 0;
+        this._SCHD_ = 0;
+        this.root = 0;
+        this.shift_amount = 1;
+        this.limit = 0;
+        this.offset = 0;
+        this.offset_diff = 0;
+        this.offset_fractional = 0;
+        this.scrub_velocity = 0;
+
+        this.observering = null;
+        this.trs_ascending = null;
+        this.trs_descending = null;
+
+        this.UPDATE_FILTER = false;
+        this.DOM_UP_APPENDED = false;
+        this.DOM_DN_APPENDED = false;
+        this.AUTO_SCRUB = false;
+        this.LOADED = false;
+
+        this.glow = lite.glow;
+        this.spark = lite.spark;
 	}
 
-	if (data_objs.addObserver) {
-		ctr.observering = data_objs;
-		data_objs.addObserver(ctr);
-		return;
-	}
 
-	if (Array.isArray(data_objs)) cull(ctr, data_objs);
-	else cull(ctr, data_objs.data);
+    destroy() {
+        this.destroyed();
+
+        if(this.observering){
+            this.observering.removeObserver(this);
+            this.observering = null;
+        }
+    }
+
+    destroyed() {
+        
+        this.cull();
+
+        for (const fltr of this.filters)
+            fltr.destroy();
+    }
+
+    load (container) {
+
+        if(this.observering){
+            this.observering.removeObserver(this);
+            this.observering = null;
+        }
+
+        if (container.addObserver){
+            this.observering = container;
+            return container.addObserver(this);
+        }
+
+        if (!container) return;
+
+        if (Array.isArray(container))
+            this.cull(container);
+        else
+            this.cull(container.data);
+
+        this.loadAcknowledged();
+    }
+
+    loadAcknowledged() {
+        if (!this.LOADED) {
+            this.LOADED = true;
+            this.parent.loadAcknowledged();
+        }
+    }
+
+
+    /**
+     * Called by Spark when a change is made to the Template HTML structure. 
+     * 
+     * @protected
+     */
+    scheduledUpdate() {
+        if (this.SCRUBBING) {
+
+            if (!this.AUTO_SCRUB) {
+                this.SCRUBBING = false;
+                return;
+            }
+
+            if (
+                Math.abs(this.scrub_velocity) > 0.0001
+            ) {
+                if (this.scrub(this.scrub_velocity)) {
+
+                    this.scrub_velocity *= (this.drag);
+
+                    const pos = this.offset + this.scrub_velocity;
+
+                    if (pos < 0 || pos > this.max)
+                        this.scrub_velocity = 0;
+
+                    this.spark.queueUpdate(this);
+                }
+
+            } else {
+                this.scrub_velocity = 0;
+                this.scrub(Infinity);
+                this.SCRUBBING = false;
+            }
+        } else {
+
+            this.forceMount();
+            this.arrange();
+            this.render();
+            this.offset_diff = 0;
+        }
+    }
+
+    forceMount() {
+        const active_window_size = this.limit;
+        const offset = this.offset;
+
+
+        const min = Math.min(offset + this.offset_diff, offset) * this.shift_amount;
+        const max = Math.max(offset + this.offset_diff, offset) * this.shift_amount + active_window_size;
+
+
+        let i = min;
+
+        this.ele.innerHTML = "";
+        const output_length = this.activeScopes.length;
+        this.dom_scopes.length = 0;
+
+        while (i < max && i < output_length) {
+            const node = this.activeScopes[i++];
+            this.dom_scopes.push(node);
+            node.appendToDOM(this.ele);
+        }
+    }
+
+    /**
+     * Scrub provides a mechanism to scroll through components of a container that have been limited through the limit filter.
+     * @param  {Number} scrub_amount [description]
+     */
+    scrub(scrub_delta, SCRUBBING = true) {
+        // scrub_delta is the relative ammunt of change from the previous offset. 
+
+        if (!this.SCRUBBING)
+            this.render(null, this.activeScopes, true);
+
+        this.SCRUBBING = true;
+
+        if (this.AUTO_SCRUB && !SCRUBBING && scrub_delta != Infinity) {
+            this.scrub_velocity = 0;
+            this.AUTO_SCRUB = false;
+        }
+
+        let delta_offset = scrub_delta + this.offset_fractional;
+
+        if (scrub_delta !== Infinity) {
+
+            if (Math.abs(delta_offset) > 1) {
+                if (delta_offset > 1) {
+
+                    delta_offset = delta_offset % 1;
+                    this.offset_fractional = delta_offset;
+                    this.scrub_velocity = scrub_delta;
+
+                    if (this.offset < this.max)
+                        this.trs_ascending.play(1);
+
+                    this.offset++;
+                    this.offset_diff = 1;
+                    this.render(null, this.activeScopes, true).play(1);
+                } else {
+                    delta_offset = delta_offset % 1;
+                    this.offset_fractional = delta_offset;
+                    this.scrub_velocity = scrub_delta;
+
+                    if (this.offset >= 1)
+                        this.trs_descending.play(1);
+                    this.offset--;
+                    this.offset_diff = -1;
+
+                    this.render(null, this.activeScopes, true).play(1);
+                }
+
+            }
+
+            //Make Sure the the transition animation is completed before moving on to new animation sequences.
+
+            if (delta_offset > 0) {
+
+                if (this.offset + delta_offset >= this.max - 1) delta_offset = 0;
+
+                if (!this.DOM_UP_APPENDED) {
+
+                    for (let i = 0; i < this.dom_up.length; i++) {
+                        this.dom_up[i].appendToDOM(this.ele);
+                        this.dom_up[i].index = -1;
+                        this.dom_scopes.push(this.dom_up[i]);
+                    }
+
+                    this.DOM_UP_APPENDED = true;
+                }
+
+                this.trs_ascending.play(delta_offset);
+            } else {
+
+                if (this.offset < 1) delta_offset = 0;
+
+                if (!this.DOM_DN_APPENDED) {
+
+                    for (let i = 0; i < this.dom_dn.length; i++) {
+                        this.dom_dn[i].appendToDOM(this.ele, this.dom_scopes[0].ele);
+                        this.dom_dn[i].index = -1;
+                    }
+
+                    this.dom_scopes = this.dom_dn.concat(this.dom_scopes);
+
+                    this.DOM_DN_APPENDED = true;
+                }
+
+                this.trs_descending.play(-delta_offset);
+            }
+
+            this.offset_fractional = delta_offset;
+            this.scrub_velocity = scrub_delta;
+
+            return true;
+        } else {
+
+            if (Math.abs(this.scrub_velocity) > 0.0001) {
+                const sign = Math.sign(this.scrub_velocity);
+
+                if (Math.abs(this.scrub_velocity) < 0.1) this.scrub_velocity = 0.1 * sign;
+                if (Math.abs(this.scrub_velocity) > 0.5) this.scrub_velocity = 0.5 * sign;
+
+                this.AUTO_SCRUB = true;
+
+                //Determine the distance traveled with normal drag decay of 0.5
+                const dist = this.scrub_velocity * (1 / (-0.5 + 1));
+                //get the distance to nearest page given the distance traveled
+                let nearest = (this.offset + this.offset_fractional + dist);
+                nearest = (this.scrub_velocity > 0) ? Math.min(this.max, Math.ceil(nearest)) : Math.max(0, Math.floor(nearest));
+                //get the ratio of the distance from the current position and distance to the nearest 
+                const nearest_dist = nearest - (this.offset + this.offset_fractional);
+                const drag = Math.abs(1 - (1 / (nearest_dist / this.scrub_velocity)));
+
+                this.drag = drag;
+                this.scrub_velocity = this.scrub_velocity;
+                this.SCRUBBING = true;
+                this.spark.queueUpdate(this);
+                return true;
+            } else {
+                this.offset += Math.round(this.offset_fractional);
+                this.scrub_velocity = 0;
+                this.offset_fractional = 0;
+                this.render(null, this.activeScopes, true).play(1);
+                this.SCRUBBING = false;
+                return false;
+            }
+        }
+    }
+
+    arrange(output = this.activeScopes) {
+
+        //Arranges active scopes according to their arrange handler.
+        const
+            limit = this.limit,
+            offset = this.offset,
+            transition = this.glow.createTransition(),
+            output_length = output.length,
+            active_window_start = offset * this.shift_amount;
+
+
+
+        let i = 0;
+
+        //Scopes on the ascending edge of the transition window
+        while (i < active_window_start && i < output_length)
+            output[i].update({ trs_asc_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }, null, false, { IMMEDIATE: true }), i++;
+
+        //Scopes in the transition window
+        while (i < active_window_start + limit && i < output_length)
+            output[i].update({ arrange: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }, null, false, { IMMEDIATE: true }), i++;
+
+        //Scopes on the descending edge of the transition window
+        while (i < output_length){
+            output[i].update({ trs_dec_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }, null, false, { IMMEDIATE: true }), i++;
+        }
+
+        transition.play(1);
+
+    }
+
+    render(transition, output = this.activeScopes, NO_TRANSITION = false) {
+
+
+        const
+            active_window_size = this.limit,
+            active_length = this.dom_scopes.length;
+
+        let
+            j = 0,
+            direction = 1,
+            offset = this.offset,
+            output_length = output.length,
+            OWN_TRANSITION = false;
+
+        if (!transition) transition = this.glow.createTransition(), OWN_TRANSITION = true;
+
+        offset = Math.max(0, offset);
+
+        const active_window_start = offset * this.shift_amount;
+
+        direction = Math.sign(this.offset_diff);
+
+        if (active_window_size > 0) {
+
+            this.shift_amount = Math.max(1, Math.min(active_window_size, this.shift_amount));
+
+            let
+                i = 0,
+                oa = 0;
+
+            const
+                ein = [],
+                shift_points = Math.ceil(output_length / this.shift_amount);
+
+            this.max = shift_points - 1;
+            this.offset = Math.max(0, Math.min(shift_points - 1, offset));
+
+            //Two transitions to support scrubbing from an offset in either direction
+            this.trs_ascending = glow.createTransition(false);
+            this.trs_descending = glow.createTransition(false);
+
+            this.dom_dn.length = 0;
+            this.dom_up.length = 0;
+            this.DOM_UP_APPENDED = false;
+            this.DOM_DN_APPENDED = false;
+
+            //Scopes preceeding the transition window
+            while (i < active_window_start - this.shift_amount) output[i++].index = -2;
+
+            //Scopes entering the transition window ascending
+            while (i < active_window_start) {
+                this.dom_dn.push(output[i]);
+                output[i].update({ trs_dec_in: { trs: this.trs_descending.in, pos: getColumnRow(i, this.offset - 1, this.shift_amount) } });
+                output[i++].index = -2;
+            }
+
+            //Scopes in the transtion window
+            while (i < active_window_start + active_window_size && i < output_length) {
+                //Scopes on the descending edge of the transition window
+                if (oa < this.shift_amount && ++oa) {
+                    //console.log("pos",i, getColumnRow(i, this.offset+1, this.shift_amount), output[i].scopes[0].ele.style.transform)
+                    output[i].update({ trs_asc_out: { trs: this.trs_ascending.out, pos: getColumnRow(i, this.offset + 1, this.shift_amount) } });
+                } else
+                    output[i].update({ arrange: { trs: this.trs_ascending.in, pos: getColumnRow(i, this.offset + 1, this.shift_amount) } });
+
+
+                //Scopes on the ascending edge of the transition window
+                if (i >= active_window_start + active_window_size - this.shift_amount)
+                    output[i].update({ trs_dec_out: { trs: this.trs_descending.out, pos: getColumnRow(i, this.offset - 1, this.shift_amount) } });
+                else
+                    output[i].update({ arrange: { trs: this.trs_descending.in, pos: getColumnRow(i, this.offset - 1, this.shift_amount) } });
+
+
+                output[i].index = i;
+                ein.push(output[i++]);
+            }
+
+            //Scopes entering the transition window while offset is descending
+            while (i < active_window_start + active_window_size + this.shift_amount && i < output_length) {
+                this.dom_up.push(output[i]);
+                output[i].update({
+                    trs_asc_in: {
+                        pos: getColumnRow(i, this.offset + 1, this.shift_amount),
+                        trs: this.trs_ascending.in
+                    }
+                });
+                output[i++].index = -3;
+            }
+
+            //Scopes following the transition window
+            while (i < output_length) output[i++].index = -3;
+
+            output = ein;
+            output_length = ein.length;
+        } else {
+            this.max = 0;
+            this.limit = 0;
+        }
+
+        const
+            trs_in = { trs: transition.in, index: 0 },
+            trs_out = { trs: transition.out, index: 0 };
+
+        for (let i = 0; i < output_length; i++) output[i].index = i;
+
+        for (let i = 0; i < active_length; i++) {
+
+            const as = this.dom_scopes[i];
+
+            if (as.index > j) {
+                while (j < as.index && j < output_length) {
+                    const os = output[j];
+                    os.index = -1;
+                    trs_in.pos = getColumnRow(j, this.offset, this.shift_amount);
+
+                
+                    os.appendToDOM(this.ele, as.ele);
+                    os.transitionIn(Object.assign({},trs_in), (direction) ? "trs_asc_in" : "trs_dec_in");
+                    j++;
+                }
+            } else if (as.index < 0) {
+
+                trs_out.pos = getColumnRow(i, 0, this.shift_amount);
+                if (!NO_TRANSITION) {
+                    switch (as.index) {
+                        case -2:
+                        case -3:
+                            as.transitionOut(Object.assign({},trs_out), false, (direction > 0) ? "trs_asc_out" : "trs_dec_out");
+                            break;
+                        default:
+                            as.transitionOut(Object.assign({},trs_out));
+                    }
+                } else {
+                    as.transitionOut();
+                }
+
+                continue;
+            }
+            trs_in.pos = getColumnRow(j++, 0, this.shift_amount);
+
+            as.update({ arrange: Object.assign({},trs_out) }, null, false, { IMMEDIATE: true });
+
+            as._TRANSITION_STATE_ = true;
+            as.index = -1;
+        }
+
+        while (j < output.length) {
+            output[j].appendToDOM(this.ele);
+            output[j].index = -1;
+            trs_in.pos = getColumnRow(j, this.offset, this.shift_amount);
+            output[j].transitionIn(Object.assign({},trs_in), (direction) ? "arrange" : "arrange");
+
+            j++;
+        }
+
+        this.ele.style.position = this.ele.style.position;
+
+        this.dom_scopes = output.slice();
+
+        this.parent.update({
+            "template_count_changed": {
+
+                displayed: output_length,
+                offset: offset,
+                count: this.activeScopes.length,
+                pages: this.max,
+                ele: this.ele,
+                template: this,
+                trs: transition.in
+            }
+        });
+
+        if (OWN_TRANSITION) {
+            if (NO_TRANSITION)
+                return transition;
+            transition.start();
+        }
+
+        return transition;
+    }
+
+    /**
+     * Filters stored Scopes with search terms and outputs an array of passing Scops.
+     * 
+     * @protected
+     */
+    filterUpdate() {
+
+        let output = this.scopes.slice();
+
+        if (output.length < 1) return;
+
+        for (let i = 0, l = this.filters.length; i < l; i++) {
+            const filter = this.filters[i];
+
+            if (filter.ARRAY_ACTION)
+                output = filter.action(output);
+        }
+
+        this.activeScopes = output;
+
+        this.UPDATE_FILTER = false;
+
+        return output;
+    }
+
+    filterExpressionUpdate(transition = this.glow.createTransition()) {
+        // Filter the current components. 
+        this.filterUpdate();
+        this.limitExpressionUpdate(transition);
+    }
+
+    limitExpressionUpdate(transition = this.glow.createTransition()) {
+
+        //Preset the positions of initial components. 
+        this.arrange();
+
+        this.render(transition);
+
+        // If scrubbing is currently occuring, if the transition were to auto play then the results 
+        // would interfere with the expected behavior of scrubbing. So the transition
+        // is instead set to it's end state, and scrub is called to set intermittent 
+        // position. 
+        if (!this.SCRUBBING)
+            transition.start();
+    }
+
+    cull(new_items = []) {
+
+        const transition = this.wl.glow.createTransition();
+
+        if (new_items.length == 0) {
+
+            const sl = this.activeScopes.length;
+            
+            let trs = {trs:transition.out, pos:null};
+
+            for (let i = 0; i < sl; i++) {
+                trs.pos = getColumnRow(i, this.offset, this.shift_amount);
+                this.activeScopes[i].transitionOut(trs, true);
+            }
+
+            this.scopes.length = 0;
+            this.activeScopes.length = 0;
+            this.parent.e("template_count_changed", {
+                displayed: 0,
+                offset: 0,
+                count: 0,
+                pages: 0,
+                ele: this.ele,
+                template: this,
+                trs: transition.in
+            });
+
+            if (!this.SCRUBBING)
+                transition.start();
+
+        } else {
+
+            const
+                exists = new Map(new_items.map(e => [e, true])),
+                out = [];
+
+            for (let i = 0, l = this.activeScopes.length; i < l; i++)
+                if (exists.has(this.activeScopes[i].model))
+                    exists.set(this.activeScopes[i].model, false);
+
+
+            for (let i = 0, l = this.scopes.length; i < l; i++)
+                if (!exists.has(this.scopes[i].model)) {
+                    this.scopes[i].transitionOut(transition, true, "dismounting");
+                    this.scopes[i].index = -1;
+                    this.scopes.splice(i, 1);
+                    l--;
+                    i--;
+                } else
+                    exists.set(this.scopes[i].model, false);
+
+            exists.forEach((v, k) => { if (v) out.push(k); });
+
+            if (out.length > 0) {
+                // Wrap models into components
+                this.added(out, transition);
+
+            } else {
+                for (let i = 0, j = 0, l = this.activeScopes.length; i < l; i++, j++) {
+
+                    if (this.activeScopes[i]._TRANSITION_STATE_) {
+                        if (j !== i) {
+                            this.activeScopes[i].update({
+                                arrange: {
+                                    pos: getColumnRow(i, this.offset, this.shift_amount),
+                                    trs: transition.in
+                                }
+                            });
+                        }
+                    } else
+                        this.activeScopes.splice(i, 1), i--, l--;
+                }
+            }
+
+            this.filterExpressionUpdate(transition);
+        }
+    }
+
+    removed(items, transition = this.glow.createTransition()) {
+        for (const item of items) {
+            let j = 0;
+
+            for (const scope of this.scopes) {
+                if (scope.model == item) {
+                    this.scopes.splice(j++, 1);
+                    scope.transitionOut(transition, true);
+                    break;
+                }
+            }
+        }
+
+        this.filterExpressionUpdate(transition);
+    }
+
+    added(items, transition) {
+        let OWN_TRANSITION = false;
+
+        if (!transition)
+            transition = this.glow.createTransition(), OWN_TRANSITION = true;
+
+        for (let i = 0; i < items.length; i++) {
+            const scope = this.component.mount(null, items[i]);
+
+            //TODO: Make sure both of there references are removed when the scope is destroyed.
+            this.scopes.push(scope);
+            this.parent.addScope(scope);
+
+            scope.update({ loaded: true });
+        }
+
+        if (OWN_TRANSITION)
+            this.filterExpressionUpdate(transition);
+    }
+
+    down(data, changed_values) {
+        for (let i = 0, l = this.activeScopes.length; i < l; i++) this.activeScopes[i].down(data, changed_values);
+    }
 }
 
-/* Update container filters. */
-export function ctr_fltr(ctr, type, val) {
-	switch (type) {
-		case "fl":
-			break;
-	}
-	filterUpdate(ctr);
-	limitExpressionUpdate(ctr);
-}
+WickLiteContainer.prototype.l = WickLiteContainer.prototype.load;
 
 /* Create a wick container */
-export function ctr(ele, component, ...filters) {
-
-	const ctr = {
-		component: { mount: (ele, data) => createComponent(component, data) },
-		ele,
-		SCRUBBING: false,
-		scopes: [],
-		active_scopes: [],
-		dom_scopes: [],
-		filters,
-		scrub_velocity: 0,
-		shift_amount: 1,
-		limit: 0,
-		offset: 0,
-		offset_diff: 0,
-
-		offset_fractional: 0,
-		scheduledUpdate() {
-			if (ctr.SCRUBBING) {
-
-				if (!ctr.AUTO_SCRUB) { return (ctr.SCRUBBING = false) }
-
-				if (Math.abs(ctr.scrub_velocity) > 0.0001) {
-					if (scrub(ctr, ctr.scrub_velocity)) {
-
-						ctr.scrub_velocity *= (ctr.drag);
-
-						const pos = ctr.offset + ctr.scrub_velocity;
-
-						if (pos < 0 || pos > ctr.max)
-							ctr.scrub_velocity = 0;
-
-						spark.queueUpdate(ctr);
-					}
-
-				} else {
-					ctr.scrub_velocity = 0;
-					scrub(ctr, Infinity);
-					ctr.SCRUBBING = false;
-				}
-			} else {
-				forceMount(ctr);
-				arrange(ctr);
-				render(ctr);
-				ctr.offset_diff = 0;
-			}
-		}
-	};
-
-	return ctr;
-}
-
-export function cull(ctr, new_items = []) {
-	const transition = glow.createTransition();
-
-	if (new_items.length == 0) {
-
-		const sl = ctr.scopes.length;
-
-		for (let i = 0; i < sl; i++) ctr.scopes[i].transitionOut(transition, "", true);
-
-		ctr.scopes.length = 0;
-		ctr.active_scopes.length = 0;
-		/*
-		ctr.parent.upImport("template_count_changed", {
-			displayed: 0,
-			offset: 0,
-			count: 0,
-			pages: 0,
-			ele: ctr.ele,
-			template: ctr,
-			trs: transition.in
-		});
-		*/
-
-		if (!ctr.SCRUBBING)
-			transition.start();
-
-	} else {
-
-		const
-			exists = new Map(new_items.map(e => [e, true])),
-			out = [];
-
-		for (let i = 0, l = ctr.active_scopes.length; i < l; i++)
-			if (exists.has(ctr.active_scopes[i].model))
-				exists.set(ctr.active_scopes[i].model, false);
-
-
-		for (let i = 0, l = ctr.scopes.length; i < l; i++)
-			if (!exists.has(ctr.scopes[i].model)) {
-				ctr.scopes[i].transitionOut(transition, "dismounting", true);
-				ctr.scopes[i].index = -1;
-				ctr.scopes.splice(i, 1);
-				l--;
-				i--;
-			} else
-				exists.set(ctr.scopes[i].model, false);
-
-		exists.forEach((v, k) => { if (v) out.push(k); });
-
-		if (out.length > 0) {
-			// Wrap models into components
-			added(ctr, out, transition);
-
-		} else {
-			for (let i = 0, j = 0, l = ctr.active_scopes.length; i < l; i++, j++) {
-
-				if (ctr.active_scopes[i]._TRANSITION_STATE_) {
-					if (j !== i) {
-						ctr.active_scopes[i].update({
-							arrange: {
-								pos: getColumnRow(i, ctr.offset, ctr.shift_amount),
-								trs: transition.in
-							}
-						});
-					}
-				} else
-					ctr.active_scopes.splice(i, 1), i--, l--;
-			}
-		}
-
-		filterUpdate(ctr);
-		limitExpressionUpdate(ctr, transition);
-	}
-}
-
-export function filterUpdate(ctr) {
-
-	let output = ctr.scopes.slice();
-
-	if (output.length < 1) return;
-
-	for (let i = 0, l = ctr.filters.length; i < l; i++) {
-		const filter = ctr.filters[i];
-		//if(filter.active){
-		switch (filter.type) {
-			case "sort":
-				output = output.sort(filter.action);
-			case "filter":
-				output = output.filter(filter.action);
-		}
-		//}
-	}
-
-	ctr.active_scopes = output;
-
-	ctr.UPDATE_FILTER = false;
-
-	return output;
-}
-
-export function limitExpressionUpdate(ctr, transition = glow.createTransition()) {
-
-	//Preset the positions of initial components. 
-	arrange(ctr);
-	render(ctr, transition);
-
-	// If scrubbing is currently occuring, if the transition were to auto play then the results 
-	// would interfere with the expected behavior of scrubbing. So the transition
-	// is instead set to it's end state, and scrub is called to set intermittent 
-	// position. 
-	if (!ctr.SCRUBBING)
-		transition.start();
-}
-
-function arrange(ctr, output = ctr.active_scopes) {
-
-	//Arranges active scopes according to their arrange handler.
-	const
-		limit = ctr.limit,
-		offset = ctr.offset,
-		transition = glow.createTransition(),
-		output_length = output.length,
-		active_window_start = offset * ctr.shift_amount;
-
-
-
-	let i = 0;
-
-	//Scopes on the ascending edge of the transition window
-	while (i < active_window_start && i < output_length)
-		output[i].update({ trs_asc_out: { trs: transition.in, pos: getColumnRow(i, offset, ctr.shift_amount) } }), i++;
-
-	//Scopes in the transtion window
-	while (i < active_window_start + limit && i < output_length)
-		output[i].update({ arrange: { trs: transition.in, pos: getColumnRow(i, offset, ctr.shift_amount) } }), i++;
-
-	//Scopes on the descending edge of the transition window
-	while (i < output_length)
-		output[i].update({ trs_dec_out: { trs: transition.in, pos: getColumnRow(i, offset, ctr.shift_amount) } }), i++;
-
-	transition.play(1);
-
-}
-
-
-function render(ctr, transition, output = ctr.active_scopes, NO_TRANSITION = false) {
-
-
-	const
-		active_window_size = ctr.limit,
-		active_length = ctr.dom_scopes.length;
-
-	let
-		j = 0,
-		direction = 1,
-		offset = ctr.offset,
-		output_length = output.length,
-		OWN_TRANSITION = false;
-
-	if (!transition) transition = glow.createTransition(), OWN_TRANSITION = true;
-
-	offset = Math.max(0, offset);
-
-	const active_window_start = offset * ctr.shift_amount;
-
-	direction = Math.sign(ctr.offset_diff);
-
-	if (active_window_size > 0) {
-
-		ctr.shift_amount = Math.max(1, Math.min(active_window_size, ctr.shift_amount));
-
-		let
-			i = 0,
-			oa = 0;
-
-		const
-			ein = [],
-			shift_points = Math.ceil(output_length / ctr.shift_amount);
-
-		ctr.max = shift_points - 1;
-		ctr.offset = Math.max(0, Math.min(shift_points - 1, offset));
-
-		//Two transitions to support scrubbing from an offset in either direction
-		ctr.trs_ascending = glow.createTransition(false);
-		ctr.trs_descending = glow.createTransition(false);
-
-		ctr.dom_dn.length = 0;
-		ctr.dom_up.length = 0;
-		ctr.dom_up_appended = false;
-		ctr.dom_dn_appended = false;
-
-		//Scopes preceeding the transition window
-		while (i < active_window_start - ctr.shift_amount) output[i++].index = -2;
-
-		//Scopes entering the transition window ascending
-		while (i < active_window_start) {
-			ctr.dom_dn.push(output[i]);
-			output[i].update({ trs_dec_in: { trs: ctr.trs_descending.in, pos: getColumnRow(i, ctr.offset - 1, ctr.shift_amount) } });
-			output[i++].index = -2;
-		}
-
-		//Scopes in the transition window
-		while (i < active_window_start + active_window_size && i < output_length) {
-			//Scopes on the descending edge of the transition window
-			if (oa < ctr.shift_amount && ++oa) {
-				//console.log("pos",i, getColumnRow(i, ctr.offset+1, ctr.shift_amount), output[i].scopes[0].ele.style.transform)
-				output[i].update({ trs_asc_out: { trs: ctr.trs_ascending.out, pos: getColumnRow(i, ctr.offset + 1, ctr.shift_amount) } });
-			} else
-				output[i].update({ arrange: { trs: ctr.trs_ascending.in, pos: getColumnRow(i, ctr.offset + 1, ctr.shift_amount) } });
-
-
-			//Scopes on the ascending edge of the transition window
-			if (i >= active_window_start + active_window_size - ctr.shift_amount)
-				output[i].update({ trs_dec_out: { trs: ctr.trs_descending.out, pos: getColumnRow(i, ctr.offset - 1, ctr.shift_amount) } });
-			else
-				output[i].update({ arrange: { trs: ctr.trs_descending.in, pos: getColumnRow(i, ctr.offset - 1, ctr.shift_amount) } });
-
-
-			output[i].index = i;
-			ein.push(output[i++]);
-		}
-
-		//Scopes entering the transition window while offset is descending
-		while (i < active_window_start + active_window_size + ctr.shift_amount && i < output_length) {
-			ctr.dom_up.push(output[i]);
-			output[i].update({
-				trs_asc_in: {
-					pos: getColumnRow(i, ctr.offset + 1, ctr.shift_amount),
-					trs: ctr.trs_ascending.in
-				}
-			});
-			output[i++].index = -3;
-		}
-
-		//Scopes following the transition window
-		while (i < output_length) output[i++].index = -3;
-
-		output = ein;
-		output_length = ein.length;
-	} else {
-		ctr.max = 0;
-		ctr.limit = 0;
-	}
-
-	const
-		trs_in = { trs: transition.in, index: 0 },
-		trs_out = { trs: transition.out, index: 0 };
-
-	for (let i = 0; i < output_length; i++) output[i].index = i;
-
-	for (let i = 0; i < active_length; i++) {
-
-		const as = ctr.dom_scopes[i];
-
-		if (as.index > j) {
-			while (j < as.index && j < output_length) {
-				const os = output[j];
-				os.index = -1;
-				trs_in.pos = getColumnRow(j, ctr.offset, ctr.shift_amount);
-
-				os.appendToDOM(ctr.ele, as.ele);
-				os.transitionIn(trs_in, (direction) ? "trs_asc_in" : "trs_dec_in");
-				j++;
-			}
-		} else if (as.index < 0) {
-
-			trs_out.pos = getColumnRow(i, 0, ctr.shift_amount);
-
-			if (!NO_TRANSITION) {
-				switch (as.index) {
-					case -2:
-					case -3:
-						as.transitionOut(trs_out, (direction > 0) ? "trs_asc_out" : "trs_dec_out");
-						break;
-					default:
-						as.transitionOut(trs_out);
-				}
-			} else
-				as.transitionOut();
-
-			continue;
-		}
-		trs_in.pos = getColumnRow(j++, 0, ctr.shift_amount);
-
-		as.update({ arrange: trs_in }, null, false, { IMMEDIATE: true });
-
-		as._TRANSITION_STATE_ = true;
-		as.index = -1;
-	}
-
-	while (j < output.length) {
-		output[j].appendToDOM(ctr.ele);
-		output[j].index = -1;
-		trs_in.pos = getColumnRow(j, ctr.offset, ctr.shift_amount);
-		output[j].transitionIn(trs_in, (direction) ? "arrange" : "arrange");
-		j++;
-	}
-
-	ctr.ele.style.position = ctr.ele.style.position;
-	ctr.dom_scopes = output.slice();
-
-	/*
-	ctr.parent.update({
-		"template_count_changed": {
-
-			displayed: output_length,
-			offset: offset,
-			count: ctr.active_scopes.length,
-			pages: ctr.max,
-			ele: ctr.ele,
-			template: ctr,
-			trs: transition.in
-		}
-	});
-	//*/
-
-	if (OWN_TRANSITION) {
-		if (NO_TRANSITION)
-			return transition;
-		transition.start();
-	}
-
-	return transition;
-}
-
-function forceMount(ctr) {
-	const active_window_size = ctr.limit;
-	const offset = ctr.offset;
-
-
-	const min = Math.min(offset + ctr.offset_diff, offset) * ctr.shift_amount;
-	const max = Math.max(offset + ctr.offset_diff, offset) * ctr.shift_amount + active_window_size;
-
-
-	let i = min;
-
-	ctr.ele.innerHTML = "";
-	const output_length = ctr.active_scopes.length;
-	ctr.dom_scopes.length = 0;
-
-	while (i < max && i < output_length) {
-		const node = ctr.active_scopes[i++];
-		ctr.dom_scopes.push(node);
-		ctr.ele.appendChild(node.ele);
-	}
-}
-
-/**
- * Scrub provides a mechanism to scroll through components of a container that have been limited through the limit filter.
- * @param  {Number} scrub_amount [description]
- */
-function scrub(ctr, scrub_delta, SCRUBBING = true) {
-	// scrub_delta is the relative ammunt of change from the previous offset. 
-
-	if (!ctr.SCRUBBING)
-		render(ctr, null, ctr.active_scopes, true);
-
-	ctr.SCRUBBING = true;
-
-	if (ctr.AUTO_SCRUB && !SCRUBBING && scrub_delta != Infinity) {
-		ctr.scrub_velocity = 0;
-		ctr.AUTO_SCRUB = false;
-	}
-
-	let delta_offset = scrub_delta + ctr.offset_fractional;
-
-	if (scrub_delta !== Infinity) {
-
-		if (Math.abs(delta_offset) > 1) {
-			if (delta_offset > 1) {
-
-				delta_offset = delta_offset % 1;
-				ctr.offset_fractional = delta_offset;
-				ctr.scrub_velocity = scrub_delta;
-
-				if (ctr.offset < ctr.max)
-					ctr.trs_ascending.play(1);
-
-				ctr.offset++;
-				ctr.offset_diff = 1;
-				render(ctr, null, ctr.active_scopes, true).play(1);
-			} else {
-				delta_offset = delta_offset % 1;
-				ctr.offset_fractional = delta_offset;
-				ctr.scrub_velocity = scrub_delta;
-
-				if (ctr.offset >= 1)
-					ctr.trs_descending.play(1);
-				ctr.offset--;
-				ctr.offset_diff = -1;
-
-				render(ctr, null, ctr.active_scopes, true).play(1);
-			}
-
-		}
-
-		//Make Sure the the transition animation is completed before moving on to new animation sequences.
-
-		if (delta_offset > 0) {
-
-			if (ctr.offset + delta_offset >= ctr.max - 1) delta_offset = 0;
-
-			if (!ctr.dom_up_appended) {
-
-				for (let i = 0; i < ctr.dom_up.length; i++) {
-					ctr.dom_up[i].appendToDOM(ctr.ele);
-					ctr.dom_up[i].index = -1;
-					ctr.dom_scopes.push(ctr.dom_up[i]);
-				}
-
-				ctr.dom_up_appended = true;
-			}
-
-			ctr.trs_ascending.play(delta_offset);
-		} else {
-
-			if (ctr.offset < 1) delta_offset = 0;
-
-			if (!ctr.dom_dn_appended) {
-
-				for (let i = 0; i < ctr.dom_dn.length; i++) {
-					ctr.dom_dn[i].appendToDOM(ctr.ele, ctr.dom_scopes[0].ele);
-					ctr.dom_dn[i].index = -1;
-				}
-
-				ctr.dom_scopes = ctr.dom_dn.concat(ctr.dom_scopes);
-
-				ctr.dom_dn_appended = true;
-			}
-
-			ctr.trs_descending.play(-delta_offset);
-		}
-
-		ctr.offset_fractional = delta_offset;
-		ctr.scrub_velocity = scrub_delta;
-
-		return true;
-	} else {
-
-		if (Math.abs(ctr.scrub_velocity) > 0.0001) {
-			const sign = Math.sign(ctr.scrub_velocity);
-
-			if (Math.abs(ctr.scrub_velocity) < 0.1) ctr.scrub_velocity = 0.1 * sign;
-			if (Math.abs(ctr.scrub_velocity) > 0.5) ctr.scrub_velocity = 0.5 * sign;
-
-			ctr.AUTO_SCRUB = true;
-
-			//Determine the distance traveled with normal drag decay of 0.5
-			let dist = ctr.scrub_velocity * (1 / (-0.5 + 1));
-			//get the distance to nearest page given the distance traveled
-			let nearest = (ctr.offset + ctr.offset_fractional + dist);
-			nearest = (ctr.scrub_velocity > 0) ? Math.min(ctr.max, Math.ceil(nearest)) : Math.max(0, Math.floor(nearest));
-			//get the ratio of the distance from the current position and distance to the nearest 
-			let nearest_dist = nearest - (ctr.offset + ctr.offset_fractional);
-			let drag = Math.abs(1 - (1 / (nearest_dist / ctr.scrub_velocity)));
-
-			ctr.drag = drag;
-			ctr.SCRUBBING = true;
-			spark.queueUpdate(ctr);
-			return true;
-		} else {
-			ctr.offset += Math.round(ctr.offset_fractional);
-			ctr.scrub_velocity = 0;
-			ctr.offset_fractional = 0;
-			render(ctr, null, ctr.active_scopes, true).play(1);
-			ctr.SCRUBBING = false;
-			return false;
-		}
-	}
-}
-
-/**
- * Called by the ModelContainer when Models have been added to its set.
- *
- * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
- */
-function added(ctr, items, transition) {
-	let OWN_TRANSITION = false;
-
-	if (!transition)
-		transition = glow.createTransition(), OWN_TRANSITION = true;
-
-	for (let i = 0; i < items.length; i++) {
-		const scope = ctr.component.mount(null, items[i]);
-
-		//TODO: Make sure both of there references are removed when the scope is destroyed.
-		ctr.scopes.push(scope);
-		//ctr.parent.addScope(scope);
-
-		scope.update({ loaded: true });
-	}
-
-
-
-	if (OWN_TRANSITION)
-		filterExpressionUpdate(ctr, transition);
+export default function createContainer(scope, ele, hash, lite, ...filters) {
+	return new WickLiteContainer(scope, ele, { mount: (ele, data, c) => (c = lite.cc(hash), c.load(data), c) }, filters, lite);
 }
