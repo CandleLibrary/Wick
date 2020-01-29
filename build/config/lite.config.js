@@ -1,5 +1,6 @@
 import resolve from 'rollup-plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
+//import { gzipPlugin } from 'rollup-plugin-gzip';
 
 const output = [{
     name: "wl",
@@ -14,7 +15,7 @@ export default {
     treeshake: true,
     plugins: [
         resolve({jail:"",modulesOnly: true}),  
-        //terser({mangle:true, module:false}), 
-        //gzipPlugin()
+        terser({mangle:true, module:false}), 
+        // /gzipPlugin()
     ]
 };

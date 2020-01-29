@@ -27275,11 +27275,9 @@ in file ${o.url || o.origin_url}`,e);
                             compiler_env = new CompilerEnvironment(presets, env$3),
                             return_obj = this;
 
-                        console.log("ASDASD", compiler_env.url + "");
                         try {
                             obj = await compile(component_data, presets, compiler_env);
                         } catch (e) {
-                            console.throw("FINALIZING", e);
                             throw (e)
                         }
 
