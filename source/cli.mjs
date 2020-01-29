@@ -41,32 +41,60 @@ const fsp = fs.promises;
 const program = commander.default;
 
 program
-	.version("0.8.10")
+	.version("0.8.11")
 	.parse(process.argv);
 
 program
 	.command("compile <wick_component_js_or_html>")
 	.description(" Compiles a wick component into standalone HTML, CSS, and JS files that can largely run without the bulk of the wick library. ")
+	.option("-o, --output <path>", "Optional output location. Defaults to CWD.")
+	.option("-s, --head <head>", "An optional file containing a <head> HTML template")
+	.option("-s, --body <body>", "An optional file containing HTML content to append to the <body>")
+	.option("-n, --name <output_name>", "The name to give to the output file. Defaults to index.html")
+	.option("--place-root-in-body <maininbodyid>", "Append the root component HTML to the body instead of rendering from template.")
 	.action(async (wick_component_js_or_html, cmd) => {
-			const file = wick_component_js_or_html;
+		const file = wick_component_js_or_html,
+			dir = cmd.path ? path.resolve(cmd.path) : process.cwd(),
+			name = cmd.output_name ? cmd.output_name : "index.html",
+			maininbodyid = cmd.placeRootInBody || "";
 
-			//Load wick component
-			const component = wick(file);
+		let
+			head = cmd.head ? path.resolve(cmd.head) : "",
+			body = cmd.body ? path.resolve(cmd.body) : "";
 
-			//Stamp Component
-			const root = await wick.stamp(component);
+		if (head)
+			try {
+				head = await fsp.readFile(path.resolve(head), { encoding: "utf8" });
+			} catch (e) {
+				console.log(e);
+			}
 
-			await fsp.writeFile(path.join(process.cwd(), "test_index.html"), wick.lite.createSelfContainedPage(root), { encoding: "utf8", flags: "w+" });
+		if (body)
+			try {
+				body = await fsp.readFile(path.resolve(body), { encoding: "utf8" });
+			} catch (e) {
+				console.log(e);
+			}
 
-			//Export stamp data
+		//Stamp Component
+		const root = await wick.stamp(wick(file)),
+			options = {
+				head,
+				body,
+				set_root_in_body: maininbodyid
+			};
+		await fsp.writeFile(path.join(dir, name), wick.lite.createSelfContainedPage(root, options), { encoding: "utf8", flags: "w+" });
+
+		//Export stamp data
 	});
 
 (async () => {
 	//Fill the window object with shims objects that match objects found on the browser 
 	global.window = {
-		getComputedStyle : ()=>({getPropertyValue:()=>"0"}),
+		getComputedStyle: () => ({ getPropertyValue: () => "0" }),
 		console: {},
 		Math: {},
+		alert: () => {},
 		document: {},
 	};
 	await html.polyfill();
