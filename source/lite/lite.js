@@ -1,129 +1,58 @@
-import { ctr, ctr_upd, ctr_fltr } from "./component/container.js";
+import glow from "@candlefw/glow";
+import spark from "@candlefw/spark";
+import Presets from "../presets.js";
 
-/* Given an argument list of element indices, returns the element at the last index location.  */
-function getElement(ele, indices) {
-	if (indices.length == 1)
-		return ele;
-	else
-		return getElement(ele.children[indices[0]], indices.slice(1));
-}
+import createContainer from "./component/container.js";
+import liteScope from "./component/scope.js";
 
-function getNameFlags(data, names, vals, IMPORTED) {
-	let i = 0,
-		flag = 0;
-	for (const n of names) {
-		if (data[n] !== undefined) {
-			vals[i] = data[n];
-			flag |= 1 << i;
-		}
-		i++;
-	}
-	return flag;
-}
+let pr = new Presets();
 
-class liteScope {
+const 
+	component_map = new Map(),
+	wicklite = {
 
-	constructor(e, ...ele_ids) {
-		this.m = e;
-		this.wl = wicklite;
-		this.el = ele_ids.map(id=>getElement(e,id));
-		this.n = [];
-		this.v = [];
-		this.f = [];
-		this.scopes = [];
-		this.gates = [];
-		this.pen = new Set;
-		this.gf = 0; // Global Flag
-		this.parent = null;
-	}
+		set presets(data){
+			pr = new Presets(data);
+		},
 
-	destroy(){
-		for(const scope of this.scopes)
-			scope.destroy();
-		this.scopes = null;
-		this.nm = null;
-		this.gates = null;
-		this.vals = null;
-		this.pen = null;
-	}
+		get c(){
+			return pr.custom; 
+		},
 
-	get element (){
-		return this.m;
-	}
+		glow,
 
-	set element(e){}
+		spark,
 
-	e(obj) { this.down(obj) }
+		sc: liteScope,
 
-	up() {}
-
-	down(data, IMPORTED = false) {
-		const o = this,
-			v = o.v,
-			n = o.n,
-			p = o.pen,
-			flag = getNameFlags(data, n, v, IMPORTED);
-
-		let gf = o.gf |= flag;
+		//Get Element Template
+		gt(id) {
+			return document.getElementById(id);
+		},
 		
-		/******************
-		// *.r = required
-		// *.a = activate
-		******************/
+		//Load Component Template
+		lc(hash, template, component_class) {
+			component_map.set(hash, { constructor: component_class, template });
+		},
 
-		for (const fn of o.f) {
-			const r = fn.r, a = fn.a;
-			if (fn.S) {
-				if ((a & flag) > 0 || p.has(fn)) {
-					const prop = n[fn.o];
-					
-					if (typeof data[prop] == "object")
-						gf |= getNameFlags(data[prop], n, v, IMPORTED);
-					if ((r & gf) == r) {
-						fn.f.call(o);
-						if (p.has(fn))
-							p.delete(fn);
-					}else
-						p.add(fn);
-				}
-			} else if ((r & flag) > 0 && (gf & r) == r)
-				fn.f.call(o, o);
+		//Create Runtime Component
+		cc(hash, element = null) {
+
+			if (component_map.has(hash)) {
+				const 
+					comp_blueprint = component_map.get(hash),
+					ele = element || document.importNode(comp_blueprint.template.content.firstElementChild, true);
+
+				return new comp_blueprint.constructor(ele, this);
+			}
+
+			return null;
+		},
+
+		//Create Container 
+		ctr(parent , ele, component_hash, ...fltrs) {
+			return createContainer(parent, ele, component_hash, this, ...fltrs);
 		}
-
-		o.gf = gf;
-	}
-
-	update(data) {
-		this.down(data, false);
-	}
-}
-
-const wicklite = {
-	ctr,
-	ctr_upd,
-	ctr_fltr,
-	sc: liteScope,
-	component_map: new Map(),
-
-	//Get Template
-	gt(id) {
-		return document.getElementById(id);
-	},
-	//Load Component
-	lc(name, template, component_class) {
-		this.component_map.set(name, { class: component_class, template });
-	},
-	//Create Runtime Component
-	cc(name) {
-		if (this.component_map.has(name)) {
-			const comp_blueprint = this.component_map.get(name);
-
-			const ele = document.importNode(comp_blueprint.template.content.firstElementChild, true);
-
-			return new comp_blueprint.class(ele, this);
-		}
-		return null;
-	}
-};
+	};
 
 export default wicklite;
