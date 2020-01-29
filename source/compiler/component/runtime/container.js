@@ -711,43 +711,6 @@ export default class ScopeContainer {
         if (this.cache) this.update(this.cache);
     }
 
-    /* Is this needed?
-    getTerms() {
-        const out_terms = [];
-
-        for (let i = 0, l = this.terms.length; i < l; i++) {
-
-            const term = this.terms[i].term;
-
-            if (term) out_terms.push(term);
-        }
-        if (out_terms.length == 0) return null;
-        return out_terms;
-    }
-
-    get() {
-        if (this.model instanceof MultiIndexedContainer) {
-            if (this.data.index) {
-                const index = this.data.index,
-                    query = {};
-                query[index] = this.getTerms();
-                return this.model.get(query)[index];
-            } else console.warn("No index value provided for MultiIndexedContainer!");
-        } else {
-
-            const scope = this.model.scope,
-                terms = this.getTerms();
-            if (scope) {
-                this.model.destroy();
-                const model = scope.get(terms, null);;
-                model.addObserver(this);
-            }
-            return this.model.get(terms);
-        }
-        return [];
-    }
-    */
-
     down(data, changed_values) {
         for (let i = 0, l = this.activeScopes.length; i < l; i++) this.activeScopes[i].down(data, changed_values);
     }

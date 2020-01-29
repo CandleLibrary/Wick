@@ -1,4 +1,4 @@
-import { Tap, UpdateTap, RedirectTap } from "../tap/tap.js";
+import { Tap, UpdateTap } from "../tap/tap.js";
 
 export default class Scope {
 
