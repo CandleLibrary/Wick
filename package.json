@@ -1,6 +1,6 @@
 {
   "name": "@candlefw/wick",
-  "version": "0.8.10",
+  "version": "0.8.11",
   "description": "Web Component Builder",
   "main": "./source/wick.node.mjs",
   "type": "module",
@@ -8,18 +8,14 @@
     "wick": "./source/cli.mjs"
   },
   "scripts": {
-
-    "prepublishOnly": "yarn test && yarn run build && yarn run build.lite",
-    
+    "prepublishOnly": "yarn run build && yarn run build.lite",
     "compile": "hydrocarbon compile -u -o ./source/compiler/ -e ./source/compiler/env_proxy.mjs -t mjs.js ./source/compiler/grammars/wick.hcg",
     "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
     "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/html.hcg",
     "compile.test": "node --experimental-modules ./test/config.mjs",
-    
     "test.coverage": "nyc yarn run test",
     "test": "mocha --require esm ./test/test.js",
     "test.watch": "mocha -r esm -w --watch-extensions js ./test/test.js",
-    
     "build": "rollup --config ./build/config/main.config.js",
     "build.watch": "rollup --config ./build/config/main.config.js --watch",
     "build.lite": "rollup --config ./build/config/lite.config.js",
@@ -50,7 +46,7 @@
   },
   "homepage": "https://github.com/candlefw/wick#readme",
   "devDependencies": {
-    "@candlefw/hydrocarbon": "latest",
+    "@candlefw/hydrocarbon": "0.1.7",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
@@ -73,8 +69,8 @@
     "@candlefw/css": "latest",
     "@candlefw/glow": "latest",
     "@candlefw/spark": "^0.0.8",
-    "@candlefw/url": "latest",
-    "@candlefw/whind": "latest",
+    "@candlefw/url": "0.0.10",
+    "@candlefw/whind": "0.3.6",
     "commander": "^4.1.0",
     "env": "^0.0.2",
     "latest": "^0.2.0"
