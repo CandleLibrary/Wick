@@ -129,8 +129,8 @@ export default class Scope {
     }
 
     addContainer(container) {
-        container.parent = this;    
-       this.PENDING_LOADS++;
+        container.parent = this;
+        this.PENDING_LOADS++;
         this.containers.push(container);
     }
 
@@ -152,8 +152,9 @@ export default class Scope {
                 return (this.scopes.splice(i, 1), scope.parent = null);
     }
 
-    linkImportTaps(parent_scope) {
+    linkImportTaps(parent_scope = this.parent) {
         for (const tap of this.taps.values()) {
+            
             tap.linkImport(parent_scope);
         }
     }
@@ -183,6 +184,9 @@ export default class Scope {
     load(model) {
         //Called before model is loaded
         this.update({ loading: true }); //Lifecycle Events: Loading <====================================================================== 
+
+        if(this.parent)
+            this.linkImportTaps();
 
         let
             m = null,
@@ -248,7 +252,7 @@ export default class Scope {
             this.LOADED = true;
 
             this.update({ loaded: true }); //Lifecycle Events: Loaded <======================================================================
-            
+
             if (this.parent && this.parent.loadAcknowledged)
                 this.parent.loadAcknowledged();
         }

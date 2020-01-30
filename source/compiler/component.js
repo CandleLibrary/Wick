@@ -190,7 +190,7 @@ const
                     this.READY = true;
 
                     if (this.__pending) {
-                        this.__pending.forEach(e => e[0] ? e[3](this.stamp(...e.slice(1, 3))) : e[4](this.mount(...e.slice(1, 4))));
+                        this.__pending.forEach(e => e[0] ? e[4](this.stamp(...e.slice(1, 4))) : e[5](this.mount(...e.slice(1, 5))));
                         this.__pending = null;
                     }
 

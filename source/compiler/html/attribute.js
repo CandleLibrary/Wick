@@ -32,7 +32,7 @@ export default class Attribute {
 
             else
 
-            if (this.name == "value" && (tag == "input" || tag == "textarea"))
+            if (this.name == "value" && (tag == "select" || tag == "input" || tag == "textarea"))
                 this.io_constr = InputIO;
         }
 

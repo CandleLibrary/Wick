@@ -692,11 +692,11 @@ export default class ScopeContainer {
             transition = glow.createTransition(), OWN_TRANSITION = true;
 
         for (let i = 0; i < items.length; i++) {
-            const scope = this.component.mount(null, items[i]);
+            const scope = this.component.mount(null, items[i], undefined, this.parent);
 
             //TODO: Make sure both of there references are removed when the scope is destroyed.
             this.scopes.push(scope);
-            this.parent.addScope(scope);
+            //this.parent.addScope(scope);
 
             scope.update({ loaded: true });
         }

@@ -247,7 +247,7 @@ export default class ElementNode {
         */
         if (this.pending_load_attrib && this.getAttrib(this.pending_load_attrib).value) {
             const fn = e => {
-                scope.acknowledgePending();
+                scope.loadAcknowledged();
                 own_element.removeEventListener("load", fn);
             };
             own_element.addEventListener("load", fn);

@@ -134,6 +134,9 @@ export class Tap {
         this.ios.push(io);
 
         io.parent = this;
+
+        if(this.value !== undefined)
+            io.down(this.value);
     }
 
     removeIO(io) {

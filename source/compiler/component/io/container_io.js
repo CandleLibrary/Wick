@@ -67,7 +67,7 @@ export default class ContainerIO extends ScriptIO {
     setValue(value) {
         if (Array.isArray(value)) {
             value.forEach((v, i) => this.arg_props[i] = v);
-            this.active_IOS = this.IO_ACTIVATIONS;
+            this.ACTIVE_IOS = this.IO_ACTIVATIONS;
         } else if (typeof(value) == "object") {
             //Distribute iterable properties amongst the IO_Script's own props.
             for (const a in value) {
