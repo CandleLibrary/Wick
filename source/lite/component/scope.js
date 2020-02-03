@@ -150,6 +150,7 @@ export default class liteScopeConstructor {
 
 	/*************** DATA HANDLING CODE **************************************/
 	e(data) {
+		debugger
 		//Check gates and see if the item needs to go up. 
 		const l = this.g.length,
 			exp = {},

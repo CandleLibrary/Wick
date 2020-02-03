@@ -32,9 +32,11 @@ attribute.prototype.stamp = function(tools, output, str, eleid, node) {
 						inputs: this.value.args.map(id => ({ name: id.name })),
 						outputs: []
 					});
-					
-					value = "e.target." + node.getAttribute("type") == "checkbox" ? "checked" : "value";
+
+					//Checkbox Input elements use the checkbox attribute instead of the value attribute 
+					value = "e.target." + (node.getAttribute("type") == "checkbox" ? "checked" : "value");
 					event = "input";
+
 					//intentional
 				case EventIO:
 
