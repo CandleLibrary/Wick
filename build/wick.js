@@ -1216,6 +1216,896 @@ var wick = (function () {
     Lexer.types = Types;
     whind$1.types = Types;
 
+    const uni_id_start=[170,181,186,748,750,895,902,908,1369,1749,1791,1808,1969,2042,2074,2084,2088,2365,2384,2482,2493,2510,2556,2654,2749,2768,2809,2877,2929,2947,2972,3024,3133,3200,3261,3294,3389,3406,3517,3716,3749,3773,3782,3840,4159,4193,4238,4295,4301,4696,4800,6103,6108,6314,6823,7418,8025,8027,8029,8126,8305,8319,8450,8455,8469,8484,8486,8488,8526,11559,11565,11631,11823,13312,19893,19968,40943,43259,43471,43642,43697,43712,43714,44032,55203,64285,64318,67592,67644,68096,69415,69956,70006,70106,70108,70280,70461,70480,70751,70855,71236,71352,71935,72161,72163,72192,72250,72272,72349,72768,73030,73112,94032,94179,94208,100343,119970,119995,120134,123214,125259,126500,126503,126521,126523,126530,126535,126537,126539,126548,126551,126553,126555,126557,126559,126564,126590,131072,173782,173824,177972,177984,178205,178208,183969,183984,191456];
+    const uni_id_start_r=[65,90,97,122,192,214,216,246,248,705,710,721,736,740,880,884,886,887,890,893,904,906,910,929,931,1013,1015,1153,1162,1327,1329,1366,1376,1416,1488,1514,1519,1522,1568,1610,1646,1647,1649,1747,1765,1766,1774,1775,1786,1788,1810,1839,1869,1957,1994,2026,2036,2037,2048,2069,2112,2136,2144,2154,2208,2228,2230,2237,2308,2361,2392,2401,2417,2432,2437,2444,2447,2448,2451,2472,2474,2480,2486,2489,2524,2525,2527,2529,2544,2545,2565,2570,2575,2576,2579,2600,2602,2608,2610,2611,2613,2614,2616,2617,2649,2652,2674,2676,2693,2701,2703,2705,2707,2728,2730,2736,2738,2739,2741,2745,2784,2785,2821,2828,2831,2832,2835,2856,2858,2864,2866,2867,2869,2873,2908,2909,2911,2913,2949,2954,2958,2960,2962,2965,2969,2970,2974,2975,2979,2980,2984,2986,2990,3001,3077,3084,3086,3088,3090,3112,3114,3129,3160,3162,3168,3169,3205,3212,3214,3216,3218,3240,3242,3251,3253,3257,3296,3297,3313,3314,3333,3340,3342,3344,3346,3386,3412,3414,3423,3425,3450,3455,3461,3478,3482,3505,3507,3515,3520,3526,3585,3632,3634,3635,3648,3654,3713,3714,3718,3722,3724,3747,3751,3760,3762,3763,3776,3780,3804,3807,3904,3911,3913,3948,3976,3980,4096,4138,4176,4181,4186,4189,4197,4198,4206,4208,4213,4225,4256,4293,4304,4346,4348,4680,4682,4685,4688,4694,4698,4701,4704,4744,4746,4749,4752,4784,4786,4789,4792,4798,4802,4805,4808,4822,4824,4880,4882,4885,4888,4954,4992,5007,5024,5109,5112,5117,5121,5740,5743,5759,5761,5786,5792,5866,5870,5880,5888,5900,5902,5905,5920,5937,5952,5969,5984,5996,5998,6000,6016,6067,6176,6264,6272,6276,6279,6312,6320,6389,6400,6430,6480,6509,6512,6516,6528,6571,6576,6601,6656,6678,6688,6740,6917,6963,6981,6987,7043,7072,7086,7087,7098,7141,7168,7203,7245,7247,7258,7293,7296,7304,7312,7354,7357,7359,7401,7404,7406,7411,7413,7414,7424,7615,7680,7957,7960,7965,7968,8005,8008,8013,8016,8023,8031,8061,8064,8116,8118,8124,8130,8132,8134,8140,8144,8147,8150,8155,8160,8172,8178,8180,8182,8188,8336,8348,8458,8467,8473,8477,8490,8493,8495,8505,8508,8511,8517,8521,8544,8584,11264,11310,11312,11358,11360,11492,11499,11502,11506,11507,11520,11557,11568,11623,11648,11670,11680,11686,11688,11694,11696,11702,11704,11710,11712,11718,11720,11726,11728,11734,11736,11742,12293,12295,12321,12329,12337,12341,12344,12348,12353,12438,12445,12447,12449,12538,12540,12543,12549,12591,12593,12686,12704,12730,12784,12799,40960,42124,42192,42237,42240,42508,42512,42527,42538,42539,42560,42606,42623,42653,42656,42735,42775,42783,42786,42888,42891,42943,42946,42950,42999,43009,43011,43013,43015,43018,43020,43042,43072,43123,43138,43187,43250,43255,43261,43262,43274,43301,43312,43334,43360,43388,43396,43442,43488,43492,43494,43503,43514,43518,43520,43560,43584,43586,43588,43595,43616,43638,43646,43695,43701,43702,43705,43709,43739,43741,43744,43754,43762,43764,43777,43782,43785,43790,43793,43798,43808,43814,43816,43822,43824,43866,43868,43879,43888,44002,55216,55238,55243,55291,63744,64109,64112,64217,64256,64262,64275,64279,64287,64296,64298,64310,64312,64316,64320,64321,64323,64324,64326,64433,64467,64829,64848,64911,64914,64967,65008,65019,65136,65140,65142,65276,65313,65338,65345,65370,65382,65470,65474,65479,65482,65487,65490,65495,65498,65500,65536,65547,65549,65574,65576,65594,65596,65597,65599,65613,65616,65629,65664,65786,65856,65908,66176,66204,66208,66256,66304,66335,66349,66378,66384,66421,66432,66461,66464,66499,66504,66511,66513,66517,66560,66717,66736,66771,66776,66811,66816,66855,66864,66915,67072,67382,67392,67413,67424,67431,67584,67589,67594,67637,67639,67640,67647,67669,67680,67702,67712,67742,67808,67826,67828,67829,67840,67861,67872,67897,67968,68023,68030,68031,68112,68115,68117,68119,68121,68149,68192,68220,68224,68252,68288,68295,68297,68324,68352,68405,68416,68437,68448,68466,68480,68497,68608,68680,68736,68786,68800,68850,68864,68899,69376,69404,69424,69445,69600,69622,69635,69687,69763,69807,69840,69864,69891,69926,69968,70002,70019,70066,70081,70084,70144,70161,70163,70187,70272,70278,70282,70285,70287,70301,70303,70312,70320,70366,70405,70412,70415,70416,70419,70440,70442,70448,70450,70451,70453,70457,70493,70497,70656,70708,70727,70730,70784,70831,70852,70853,71040,71086,71128,71131,71168,71215,71296,71338,71424,71450,71680,71723,71840,71903,72096,72103,72106,72144,72203,72242,72284,72329,72384,72440,72704,72712,72714,72750,72818,72847,72960,72966,72968,72969,72971,73008,73056,73061,73063,73064,73066,73097,73440,73458,73728,74649,74752,74862,74880,75075,77824,78894,82944,83526,92160,92728,92736,92766,92880,92909,92928,92975,92992,92995,93027,93047,93053,93071,93760,93823,93952,94026,94099,94111,94176,94177,100352,101106,110592,110878,110928,110930,110948,110951,110960,111355,113664,113770,113776,113788,113792,113800,113808,113817,119808,119892,119894,119964,119966,119967,119973,119974,119977,119980,119982,119993,119997,120003,120005,120069,120071,120074,120077,120084,120086,120092,120094,120121,120123,120126,120128,120132,120138,120144,120146,120485,120488,120512,120514,120538,120540,120570,120572,120596,120598,120628,120630,120654,120656,120686,120688,120712,120714,120744,120746,120770,120772,120779,123136,123180,123191,123197,123584,123627,124928,125124,125184,125251,126464,126467,126469,126495,126497,126498,126505,126514,126516,126519,126541,126543,126545,126546,126561,126562,126567,126570,126572,126578,126580,126583,126585,126588,126592,126601,126603,126619,126625,126627,126629,126633,126635,126651];
+    const uni_id_cont=[95,1471,1479,1648,1809,2045,2492,2519,2558,2620,2641,2677,2748,2876,2946,3031,3260,3415,3530,3542,3633,3761,3893,3895,3897,4038,6109,6313,7405,7412,8276,8417,11647,42607,43010,43014,43019,43493,43587,43696,43713,64286,65343,66045,66272,68159,70003,70206,70487,70750,72164,72263,73018,73031,94031,121461,121476];
+    const uni_id_cont_r=[48,57,768,879,1155,1159,1425,1469,1473,1474,1476,1477,1552,1562,1611,1641,1750,1756,1759,1764,1767,1768,1770,1773,1776,1785,1840,1866,1958,1968,1984,1993,2027,2035,2070,2073,2075,2083,2085,2087,2089,2093,2137,2139,2259,2273,2275,2307,2362,2364,2366,2383,2385,2391,2402,2403,2406,2415,2433,2435,2494,2500,2503,2504,2507,2509,2530,2531,2534,2543,2561,2563,2622,2626,2631,2632,2635,2637,2662,2673,2689,2691,2750,2757,2759,2761,2763,2765,2786,2787,2790,2799,2810,2815,2817,2819,2878,2884,2887,2888,2891,2893,2902,2903,2914,2915,2918,2927,3006,3010,3014,3016,3018,3021,3046,3055,3072,3076,3134,3140,3142,3144,3146,3149,3157,3158,3170,3171,3174,3183,3201,3203,3262,3268,3270,3272,3274,3277,3285,3286,3298,3299,3302,3311,3328,3331,3387,3388,3390,3396,3398,3400,3402,3405,3426,3427,3430,3439,3458,3459,3535,3540,3544,3551,3558,3567,3570,3571,3636,3642,3655,3662,3664,3673,3764,3772,3784,3789,3792,3801,3864,3865,3872,3881,3902,3903,3953,3972,3974,3975,3981,3991,3993,4028,4139,4158,4160,4169,4182,4185,4190,4192,4194,4196,4199,4205,4209,4212,4226,4237,4239,4253,4957,4959,5906,5908,5938,5940,5970,5971,6002,6003,6068,6099,6112,6121,6155,6157,6160,6169,6277,6278,6432,6443,6448,6459,6470,6479,6608,6617,6679,6683,6741,6750,6752,6780,6783,6793,6800,6809,6832,6845,6912,6916,6964,6980,6992,7001,7019,7027,7040,7042,7073,7085,7088,7097,7142,7155,7204,7223,7232,7241,7248,7257,7376,7378,7380,7400,7415,7417,7616,7673,7675,7679,8255,8256,8400,8412,8421,8432,11503,11505,11744,11775,12330,12335,12441,12442,42528,42537,42612,42621,42654,42655,42736,42737,43043,43047,43136,43137,43188,43205,43216,43225,43232,43249,43263,43273,43302,43309,43335,43347,43392,43395,43443,43456,43472,43481,43504,43513,43561,43574,43596,43597,43600,43609,43643,43645,43698,43700,43703,43704,43710,43711,43755,43759,43765,43766,44003,44010,44012,44013,44016,44025,65024,65039,65056,65071,65075,65076,65101,65103,65296,65305,66422,66426,66720,66729,68097,68099,68101,68102,68108,68111,68152,68154,68325,68326,68900,68903,68912,68921,69446,69456,69632,69634,69688,69702,69734,69743,69759,69762,69808,69818,69872,69881,69888,69890,69927,69940,69942,69951,69957,69958,70016,70018,70067,70080,70089,70092,70096,70105,70188,70199,70367,70378,70384,70393,70400,70403,70459,70460,70462,70468,70471,70472,70475,70477,70498,70499,70502,70508,70512,70516,70709,70726,70736,70745,70832,70851,70864,70873,71087,71093,71096,71104,71132,71133,71216,71232,71248,71257,71339,71351,71360,71369,71453,71467,71472,71481,71724,71738,71904,71913,72145,72151,72154,72160,72193,72202,72243,72249,72251,72254,72273,72283,72330,72345,72751,72758,72760,72767,72784,72793,72850,72871,72873,72886,73009,73014,73020,73021,73023,73029,73040,73049,73098,73102,73104,73105,73107,73111,73120,73129,73459,73462,92768,92777,92912,92916,92976,92982,93008,93017,94033,94087,94095,94098,113821,113822,119141,119145,119149,119154,119163,119170,119173,119179,119210,119213,119362,119364,120782,120831,121344,121398,121403,121452,121499,121503,121505,121519,122880,122886,122888,122904,122907,122913,122915,122916,122918,122922,123184,123190,123200,123209,123628,123641,125136,125142,125252,125258,125264,125273];
+
+    ///*
+    const j$1 = new Uint16Array(100000);
+
+    j$1.fill(0);
+
+    //Add value to individual indexes
+    function aii(table, value, ...indices) {
+    	for (const i of indices)
+    		table[i] |= value;
+    }
+
+    //Add value to index ranges
+    function air(t, v, ...i_r) {
+    	for (const r of i_r.reduce((r, v, i) => (((i % 2) ? (r[r.length - 1].push(v)) : r.push([v])), r), [])) {
+    		const size = r[1] + 1 - r[0],
+    			a = [];
+    		for (let i = 0; i < size; i++)
+    			a[i] = r[0] + i;
+    		aii(t, v, ...a);
+    	}
+    }
+
+
+    //7. Symbol
+    // Default Value
+
+    //1. Identifier
+    air(j$1, 1, ...uni_id_start_r);
+    aii(j$1, 1, ...uni_id_start);
+
+    //2. QUOTE STRING
+    aii(j$1, 2, 34, 39, 96);
+
+    //3. SPACE SET
+    aii(j$1, 3, 32);
+
+    //4. TAB SET
+    aii(j$1, 4, 9);
+
+    //5. CARIAGE RETURN 
+    aii(j$1, 5, 13);
+
+    //6. CARIAGE RETURN 
+    aii(j$1, 6, 10);
+
+    //7. Number
+    air(j$1, 7, 48, 57);
+
+    //8. Operator
+    aii(j$1, 8, 33, 37, 38, 42, 43, 58, 60, 61, 62);
+
+    //9. Open Bracket
+    aii(j$1, 9, 40, 91, 123);
+
+    //10. Close Bracket
+    aii(j$1, 10, 41, 93, 125);
+
+    //10. Close Bracket
+    aii(j$1, 11, 16);
+
+
+    /**
+     * Lexer Number and Identifier jump table reference
+     * Number are masked by 12(4|8) and Identifiers are masked by 10(2|8)
+     * entries marked as `0` are not evaluated as either being in the number set or the identifier set.
+     * entries marked as `2` are in the identifier set but not the number set
+     * entries marked as `4` are in the number set but not the identifier set
+     * entries marked as `8` are in both number and identifier sets
+     */
+
+    /**
+     * LExer Number and Identifier jump table reference
+     * Number are masked by 12(4|8) and Identifiers are masked by 10(2|8)
+     */
+
+    // entries marked as `2` are in the identifier set but not the number set
+    air(j$1, 2 << 8, 65, 90, 97, 122);
+    air(j$1, 2 << 8, ...uni_id_start_r);
+    aii(j$1, 2 << 8, ...uni_id_start);
+    air(j$1, 2 << 8, ...uni_id_cont_r);
+    aii(j$1, 2 << 8, ...uni_id_cont);
+
+    // entries marked as `8` are in both number and identifier sets
+    air(j$1, 8 << 8, 48, 57);
+
+    const HORIZONTAL_TAB$1 = 9;
+    const SPACE$1 = 32;
+
+
+    const extended_jump_table = j$1.slice();
+    extended_jump_table[45] |= 2 << 8;
+    extended_jump_table[95] |= 2 << 8;
+
+    const
+        number$1 = 1,
+        identifier$1 = 2,
+        string$1 = 4,
+        white_space$1 = 8,
+        open_bracket$1 = 16,
+        close_bracket$1 = 32,
+        operator$1 = 64,
+        symbol$1 = 128,
+        new_line$1 = 256,
+        data_link$1 = 512,
+        alpha_numeric$1 = (identifier$1 | number$1),
+        white_space_new_line$1 = (white_space$1 | new_line$1),
+        Types$1 = {
+            num: number$1,
+            number: number$1,
+            id: identifier$1,
+            identifier: identifier$1,
+            str: string$1,
+            string: string$1,
+            ws: white_space$1,
+            white_space: white_space$1,
+            ob: open_bracket$1,
+            open_bracket: open_bracket$1,
+            cb: close_bracket$1,
+            close_bracket: close_bracket$1,
+            op: operator$1,
+            operator: operator$1,
+            sym: symbol$1,
+            symbol: symbol$1,
+            nl: new_line$1,
+            new_line: new_line$1,
+            dl: data_link$1,
+            data_link: data_link$1,
+            alpha_numeric: alpha_numeric$1,
+            white_space_new_line: white_space_new_line$1,
+        },
+
+        /*** MASKS ***/
+
+        TYPE_MASK$1 = 0xF,
+        PARSE_STRING_MASK$1 = 0x10,
+        IGNORE_WHITESPACE_MASK$1 = 0x20,
+        CHARACTERS_ONLY_MASK$1 = 0x40,
+        TOKEN_LENGTH_MASK$1 = 0xFFFFFF80,
+
+        //De Bruijn Sequence for finding index of right most bit set.
+        //http://supertech.csail.mit.edu/papers/debruijn.pdf
+        debruijnLUT$1 = [
+            0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
+            31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+        ];
+
+    const getNumbrOfTrailingZeroBitsFromPowerOf2$1 = (value) => debruijnLUT$1[(value * 0x077CB531) >>> 27];
+
+    class Lexer$1 {
+
+        constructor(string = "", INCLUDE_WHITE_SPACE_TOKENS = false, PEEKING = false) {
+
+            if (typeof(string) !== "string") throw new Error(`String value must be passed to Lexer. A ${typeof(string)} was passed as the \`string\` argument.`);
+
+            /**
+             * The string that the Lexer tokenizes.
+             */
+            this.str = string;
+
+            /**
+             * Reference to the peeking Lexer.
+             */
+            this.p = null;
+
+            /**
+             * The type id of the current token.
+             */
+            this.type = 32768; //Default "non-value" for types is 1<<15;
+
+            /**
+             * The offset in the string of the start of the current token.
+             */
+            this.off = 0;
+
+            this.masked_values = 0;
+
+            /**
+             * The character offset of the current token within a line.
+             */
+            this.char = 0;
+            /**
+             * The line position of the current token.
+             */
+            this.line = 0;
+            /**
+             * The length of the string being parsed
+             */
+            this.sl = string.length;
+            /**
+             * The length of the current token.
+             */
+            this.tl = 0;
+
+            /**
+             * Flag to ignore white spaced.
+             */
+            this.IWS = !INCLUDE_WHITE_SPACE_TOKENS;
+
+            this.USE_EXTENDED_ID = false;
+
+            /**
+             * Flag to force the lexer to parse string contents
+             */
+            this.PARSE_STRING = false;
+
+            this.id_lu = j$1;
+
+            if (!PEEKING) this.next();
+        }
+
+        useExtendedId() {
+            this.id_lu = extended_jump_table;
+            this.tl = 0;
+            this.next();
+            return this;
+        }
+
+        /**
+         * Restricts max parse distance to the other Lexer's current position.
+         * @param      {Lexer}  Lexer   The Lexer to limit parse distance by.
+         */
+        fence(marker = this) {
+            if (marker.str !== this.str)
+                return;
+            this.sl = marker.off;
+            return this;
+        }
+
+        /**
+         * Copies the Lexer.
+         * @return     {Lexer}  Returns a new Lexer instance with the same property values.
+         */
+        copy(destination = new Lexer$1(this.str, false, true)) {
+            destination.off = this.off;
+            destination.char = this.char;
+            destination.line = this.line;
+            destination.sl = this.sl;
+            destination.masked_values = this.masked_values;
+            destination.id_lu = this.id_lu;
+            return destination;
+        }
+
+        /**
+         * Given another Lexer with the same `str` property value, it will copy the state of that Lexer.
+         * @param      {Lexer}  [marker=this.peek]  The Lexer to clone the state from. 
+         * @throws     {Error} Throws an error if the Lexers reference different strings.
+         * @public
+         */
+        sync(marker = this.p) {
+
+            if (marker instanceof Lexer$1) {
+                if (marker.str !== this.str) throw new Error("Cannot sync Lexers with different strings!");
+                this.off = marker.off;
+                this.char = marker.char;
+                this.line = marker.line;
+                this.masked_values = marker.masked_values;
+            }
+
+            return this;
+        }
+
+        /**
+        Creates an error message with a diagram illustrating the location of the error. 
+        */
+        errorMessage(message = "") {
+            const pk = this.copy();
+
+            pk.IWS = false;
+
+            while (!pk.END && pk.ty !== Types$1.nl) { pk.next(); }
+
+            const end = (pk.END) ? this.str.length : pk.off,
+
+                nls = (this.line > 0) ? 1 : 0,
+                number_of_tabs = this.str
+                .slice(this.off - this.char + nls + nls, this.off + nls)
+                .split("")
+                .reduce((r, v) => (r + ((v.charCodeAt(0) == HORIZONTAL_TAB$1) | 0)), 0),
+
+                arrow = String.fromCharCode(0x2b89),
+
+                line = String.fromCharCode(0x2500),
+
+                thick_line = String.fromCharCode(0x2501),
+
+                line_number = `    ${this.line+1}: `,
+
+                line_fill = line_number.length + number_of_tabs,
+
+                line_text = this.str.slice(this.off - this.char + nls + (nls), end).replace(/\t/g, "  "),
+
+                error_border = thick_line.repeat(line_text.length + line_number.length + 2),
+
+                is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "",
+
+                msg = [`${message} at ${this.line+1}:${this.char - nls}`,
+                `${error_border}`,
+                `${line_number+line_text}`,
+                `${line.repeat(this.char-nls+line_fill-(nls))+arrow}`,
+                `${error_border}`,
+                `${is_iws}`].join("\n");
+
+            return msg;
+        }
+
+        /**
+         * Will throw a new Error, appending the parsed string line and position information to the the error message passed into the function.
+         * @instance
+         * @public
+         * @param {String} message - The error message.
+         * @param {Bool} DEFER - if true, returns an Error object instead of throwing.
+         */
+        throw (message, DEFER = false) {
+            const error = new Error(this.errorMessage(message));
+            if (DEFER)
+                return error;
+            throw error;
+        }
+
+        /**
+         * Proxy for Lexer.prototype.reset
+         * @public
+         */
+        r() { return this.reset() }
+
+        /**
+         * Restore the Lexer back to it's initial state.
+         * @public
+         */
+        reset() {
+            this.p = null;
+            this.type = 32768;
+            this.off = 0;
+            this.tl = 0;
+            this.char = 0;
+            this.line = 0;
+            this.n;
+            return this;
+        }
+
+        resetHead() {
+            this.off = 0;
+            this.tl = 0;
+            this.char = 0;
+            this.line = 0;
+            this.p = null;
+            this.type = 32768;
+        }
+
+        /**
+         * Sets the internal state to point to the next token. Sets Lexer.prototype.END to `true` if the end of the string is hit.
+         * @public
+         * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
+         */
+        next(marker = this, USE_CUSTOM_SYMBOLS = !!this.symbol_map) {
+
+            if (marker.sl < 1) {
+                marker.off = 0;
+                marker.type = 32768;
+                marker.tl = 0;
+                marker.line = 0;
+                marker.char = 0;
+                return marker;
+            }
+
+            //Token builder
+            const l = marker.sl,
+                str = marker.str,
+                jump_table = this.id_lu,
+                IWS = marker.IWS;
+
+            let length = marker.tl,
+                off = marker.off + length,
+                type = symbol$1,
+                line = marker.line,
+                base = off,
+                char = marker.char,
+                root = marker.off;
+
+            if (off >= l) {
+                length = 0;
+                base = l;
+                //char -= base - off;
+                marker.char = char + (base - marker.off);
+                marker.type = type;
+                marker.off = base;
+                marker.tl = 0;
+                marker.line = line;
+                return marker;
+            }
+
+            let NORMAL_PARSE = true;
+
+            if (USE_CUSTOM_SYMBOLS) {
+
+                let code = str.charCodeAt(off);
+                let off2 = off;
+                let map = this.symbol_map,
+                    m;
+                let i = 0;
+
+                while (code == 32 && IWS)
+                    (code = str.charCodeAt(++off2), off++);
+
+                while ((m = map.get(code))) {
+                    map = m;
+                    off2 += 1;
+                    code = str.charCodeAt(off2);
+                }
+
+                if (map.IS_SYM) {
+                    NORMAL_PARSE = false;
+                    base = off;
+                    length = off2 - off;
+                    //char += length;
+                }
+            }
+
+            while (NORMAL_PARSE) {
+
+                base = off;
+
+                length = 1;
+
+                const code = str.codePointAt(off);
+
+                switch (jump_table[code] & 255) {
+                    case 0: //SYMBOL
+                        type = symbol$1;
+                        break;
+                    case 1: //IDENTIFIER
+                        while (++off < l && ((10 & (jump_table[str.codePointAt(off)] >> 8))));
+                        type = identifier$1;
+                        length = off - base;
+                        break;
+                    case 2: //QUOTED STRING
+                        if (this.PARSE_STRING) {
+                            type = symbol$1;
+                        } else {
+                            while (++off < l && str.codePointAt(off) !== code);
+                            type = string$1;
+                            length = off - base + 1;
+                        }
+                        break;
+                    case 3: //SPACE SET
+                        while (++off < l && str.codePointAt(off) === SPACE$1);
+                        type = white_space$1;
+                        length = off - base;
+                        break;
+                    case 4: //TAB SET
+                        while (++off < l && str[off] === HORIZONTAL_TAB$1);
+                        type = white_space$1;
+                        length = off - base;
+                        break;
+                    case 5: //CARIAGE RETURN
+                        length = 2;
+                        //intentional
+                    case 6: //LINEFEED
+                        type = new_line$1;
+                        line++;
+                        base = off;
+                        root = off;
+                        off += length;
+                        char = 0;
+                        break;
+                    case 7: //NUMBER
+                        while (++off < l && (12 & (jump_table[str.codePointAt(off)] >> 8)));
+
+                        if ((str[off] == "e" || str[off] == "E") && (12 & (jump_table[str.codePointAt(off + 1)] >> 8))) {
+                            off++;
+                            if (str[off] == "-") off++;
+                            marker.off = off;
+                            marker.tl = 0;
+                            marker.next();
+                            off = marker.off + marker.tl;
+                            //Add e to the number string
+                        }
+
+                        type = number$1;
+                        length = off - base;
+
+                        break;
+                    case 8: //OPERATOR
+                        type = operator$1;
+                        break;
+                    case 9: //OPEN BRACKET
+                        type = open_bracket$1;
+                        break;
+                    case 10: //CLOSE BRACKET
+                        type = close_bracket$1;
+                        break;
+                    case 11: //Data Link Escape
+                        type = data_link$1;
+                        length = 4; //Stores two UTF16 values and a data link sentinel
+                        break;
+                }
+
+                if (IWS && (type & white_space_new_line$1)) {
+                    if (off < l) {
+                        type = symbol$1;
+                        //off += length;
+                        continue;
+                    } else {
+                        //Trim white space from end of string
+                        base = l - off;
+                        marker.sl -= off;
+                        length = 0;
+                    }
+                }
+                break;
+            }
+
+            marker.type = type;
+            marker.off = base;
+            marker.tl = (this.masked_values & CHARACTERS_ONLY_MASK$1) ? Math.min(1, length) : length;
+            marker.char = char + base - root;
+            marker.line = line;
+
+            return marker;
+        }
+
+
+        /**
+         * Proxy for Lexer.prototype.assert
+         * @public
+         */
+        a(text) {
+            return this.assert(text);
+        }
+
+        /**
+         * Compares the string value of the current token to the value passed in. Advances to next token if the two are equal.
+         * @public
+         * @throws {Error} - `Expecting "${text}" got "${this.text}"`
+         * @param {String} text - The string to compare.
+         */
+        assert(text) {
+
+            if (this.off < 0) this.throw(`Expecting ${text} got null`);
+
+            if (this.text == text)
+                this.next();
+            else
+                this.throw(`Expecting "${text}" got "${this.text}"`);
+
+            return this;
+        }
+
+        /**
+         * Proxy for Lexer.prototype.assertCharacter
+         * @public
+         */
+        aC(char) { return this.assertCharacter(char) }
+        /**
+         * Compares the character value of the current token to the value passed in. Advances to next token if the two are equal.
+         * @public
+         * @throws {Error} - `Expecting "${text}" got "${this.text}"`
+         * @param {String} text - The string to compare.
+         */
+        assertCharacter(char) {
+
+            if (this.off < 0) this.throw(`Expecting ${char[0]} got null`);
+
+            if (this.ch == char[0])
+                this.next();
+            else
+                this.throw(`Expecting "${char[0]}" got "${this.tx[this.off]}"`);
+
+            return this;
+        }
+
+        /**
+         * Returns the Lexer bound to Lexer.prototype.p, or creates and binds a new Lexer to Lexer.prototype.p. Advences the other Lexer to the token ahead of the calling Lexer.
+         * @public
+         * @type {Lexer}
+         * @param {Lexer} [marker=this] - The marker to originate the peek from. 
+         * @param {Lexer} [peek_marker=this.p] - The Lexer to set to the next token state.
+         * @return {Lexer} - The Lexer that contains the peeked at token.
+         */
+        peek(marker = this, peek_marker = this.p) {
+
+            if (!peek_marker) {
+                if (!marker) return null;
+                if (!this.p) {
+                    this.p = new Lexer$1(this.str, false, true);
+                    peek_marker = this.p;
+                }
+            }
+            peek_marker.masked_values = marker.masked_values;
+            peek_marker.type = marker.type;
+            peek_marker.off = marker.off;
+            peek_marker.tl = marker.tl;
+            peek_marker.char = marker.char;
+            peek_marker.line = marker.line;
+            this.next(peek_marker);
+            return peek_marker;
+        }
+
+
+        /**
+         * Proxy for Lexer.prototype.slice
+         * @public
+         */
+        s(start) { return this.slice(start) }
+
+        /**
+         * Returns a slice of the parsed string beginning at `start` and ending at the current token.
+         * @param {Number | LexerBeta} start - The offset in this.str to begin the slice. If this value is a LexerBeta, sets the start point to the value of start.off.
+         * @return {String} A substring of the parsed string.
+         * @public
+         */
+        slice(start = this.off) {
+
+            if (start instanceof Lexer$1) start = start.off;
+
+            return this.str.slice(start, (this.off <= start) ? this.sl : this.off);
+        }
+
+        /**
+         * Skips to the end of a comment section.
+         * @param {boolean} ASSERT - If set to true, will through an error if there is not a comment line or block to skip.
+         * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
+         */
+        comment(ASSERT = false, marker = this) {
+
+            if (!(marker instanceof Lexer$1)) return marker;
+
+            if (marker.ch == "/") {
+                if (marker.pk.ch == "*") {
+                    marker.sync();
+                    while (!marker.END && (marker.next().ch != "*" || marker.pk.ch != "/")) { /* NO OP */ }
+                    marker.sync().assert("/");
+                } else if (marker.pk.ch == "/") {
+                    const IWS = marker.IWS;
+                    while (marker.next().ty != Types$1.new_line && !marker.END) { /* NO OP */ }
+                    marker.IWS = IWS;
+                    marker.next();
+                } else
+                if (ASSERT) marker.throw("Expecting the start of a comment");
+            }
+
+            return marker;
+        }
+
+        setString(string, RESET = true) {
+            this.str = string;
+            this.sl = string.length;
+            if (RESET) this.resetHead();
+        }
+
+        toString() {
+            return this.slice();
+        }
+
+        /**
+         * Returns new Whind Lexer that has leading and trailing whitespace characters removed from input. 
+         * leave_leading_amount - Maximum amount of leading space caracters to leave behind. Default is zero
+         * leave_trailing_amount - Maximum amount of trailing space caracters to leave behind. Default is zero
+         */
+        trim(leave_leading_amount = 0, leave_trailing_amount = leave_leading_amount) {
+            const lex = this.copy();
+
+            let space_count = 0,
+                off = lex.off;
+
+            for (; lex.off < lex.sl; lex.off++) {
+                const c = j$1[lex.string.charCodeAt(lex.off)];
+
+                if (c > 2 && c < 7) {
+
+                    if (space_count >= leave_leading_amount) {
+                        off++;
+                    } else {
+                        space_count++;
+                    }
+                    continue;
+                }
+
+                break;
+            }
+
+            lex.off = off;
+            space_count = 0;
+            off = lex.sl;
+
+            for (; lex.sl > lex.off; lex.sl--) {
+                const c = j$1[lex.string.charCodeAt(lex.sl - 1)];
+
+                if (c > 2 && c < 7) {
+                    if (space_count >= leave_trailing_amount) {
+                        off--;
+                    } else {
+                        space_count++;
+                    }
+                    continue;
+                }
+
+                break;
+            }
+
+            lex.sl = off;
+
+            if (leave_leading_amount > 0)
+                lex.IWS = false;
+
+            lex.token_length = 0;
+
+            lex.next();
+
+            return lex;
+        }
+
+        /** Adds symbol to symbol_map. This allows custom symbols to be defined and tokenized by parser. **/
+        addSymbol(sym) {
+            if (!this.symbol_map)
+                this.symbol_map = new Map;
+
+
+            let map = this.symbol_map;
+
+            for (let i = 0; i < sym.length; i++) {
+                let code = sym.charCodeAt(i);
+                let m = map.get(code);
+                if (!m) {
+                    m = map.set(code, new Map).get(code);
+                }
+                map = m;
+            }
+            map.IS_SYM = true;
+        }
+
+        /*** Getters and Setters ***/
+        get string() {
+            return this.str;
+        }
+
+        get string_length() {
+            return this.sl - this.off;
+        }
+
+        set string_length(s) {}
+
+        /**
+         * The current token in the form of a new Lexer with the current state.
+         * Proxy property for Lexer.prototype.copy
+         * @type {Lexer}
+         * @public
+         * @readonly
+         */
+        get token() {
+            return this.copy();
+        }
+
+
+        get ch() {
+            return this.str[this.off];
+        }
+
+        /**
+         * Proxy for Lexer.prototype.text
+         * @public
+         * @type {String}
+         * @readonly
+         */
+        get tx() { return this.text }
+
+        /**
+         * The string value of the current token.
+         * @type {String}
+         * @public
+         * @readonly
+         */
+        get text() {
+            return (this.off < 0) ? "" : this.str.slice(this.off, this.off + this.tl);
+        }
+
+        /**
+         * The type id of the current token.
+         * @type {Number}
+         * @public
+         * @readonly
+         */
+        get ty() { return this.type }
+
+        /**
+         * The current token's offset position from the start of the string.
+         * @type {Number}
+         * @public
+         * @readonly
+         */
+        get pos() {
+            return this.off;
+        }
+
+        /**
+         * Proxy for Lexer.prototype.peek
+         * @public
+         * @readonly
+         * @type {Lexer}
+         */
+        get pk() { return this.peek() }
+
+        /**
+         * Proxy for Lexer.prototype.next
+         * @public
+         */
+        get n() { return this.next() }
+
+        get END() { return this.off >= this.sl }
+        set END(v) {}
+
+        get type() {
+            return 1 << (this.masked_values & TYPE_MASK$1);
+        }
+
+        set type(value) {
+            //assuming power of 2 value.
+            this.masked_values = (this.masked_values & ~TYPE_MASK$1) | ((getNumbrOfTrailingZeroBitsFromPowerOf2$1(value)) & TYPE_MASK$1);
+        }
+
+        get tl() {
+            return this.token_length;
+        }
+
+        set tl(value) {
+            this.token_length = value;
+        }
+
+        get token_length() {
+            return ((this.masked_values & TOKEN_LENGTH_MASK$1) >> 7);
+        }
+
+        set token_length(value) {
+            this.masked_values = (this.masked_values & ~TOKEN_LENGTH_MASK$1) | (((value << 7) | 0) & TOKEN_LENGTH_MASK$1);
+        }
+
+        get IGNORE_WHITE_SPACE() {
+            return this.IWS;
+        }
+
+        set IGNORE_WHITE_SPACE(bool) {
+            this.iws = !!bool;
+        }
+
+        get CHARACTERS_ONLY() {
+            return !!(this.masked_values & CHARACTERS_ONLY_MASK$1);
+        }
+
+        set CHARACTERS_ONLY(boolean) {
+            this.masked_values = (this.masked_values & ~CHARACTERS_ONLY_MASK$1) | ((boolean | 0) << 6);
+        }
+
+        get IWS() {
+            return !!(this.masked_values & IGNORE_WHITESPACE_MASK$1);
+        }
+
+        set IWS(boolean) {
+            this.masked_values = (this.masked_values & ~IGNORE_WHITESPACE_MASK$1) | ((boolean | 0) << 5);
+        }
+
+        get PARSE_STRING() {
+            return !!(this.masked_values & PARSE_STRING_MASK$1);
+        }
+
+        set PARSE_STRING(boolean) {
+            this.masked_values = (this.masked_values & ~PARSE_STRING_MASK$1) | ((boolean | 0) << 4);
+        }
+
+        /**
+         * Reference to token id types.
+         */
+        get types() {
+            return Types$1;
+        }
+    }
+
+    Lexer$1.prototype.addCharacter = Lexer$1.prototype.addSymbol;
+
+    function whind$2(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer$1(string, INCLUDE_WHITE_SPACE_TOKENS) }
+
+    whind$2.constructor = Lexer$1;
+
+    Lexer$1.types = Types$1;
+    whind$2.types = Types$1;
+
     const uri_reg_ex = /(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:\/\/))?(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:([^\<\>\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\<\>\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\<\>\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
 
     const STOCK_LOCATION = {
@@ -1487,7 +2377,7 @@ var wick = (function () {
         _getQuery_() {
             let map = (this.map) ? this.map : (this.map = new Map());
 
-            let lex = whind$1(this.query);
+            let lex = whind$2(this.query);
 
 
             const get_map = (k, m) => (m.has(k)) ? m.get(k) : m.set(k, new Map).get(k);
@@ -1842,6 +2732,8 @@ var wick = (function () {
 
 
 
+
+
     let SIMDATA = null;
 
     /* Replaces the fetch actions with functions that simulate network fetches. Resources are added by the user to a Map object. */
@@ -2179,6 +3071,896 @@ var wick = (function () {
     }
 
     const spark = new Spark();
+
+    const uni_id_start$1=[170,181,186,748,750,895,902,908,1369,1749,1791,1808,1969,2042,2074,2084,2088,2365,2384,2482,2493,2510,2556,2654,2749,2768,2809,2877,2929,2947,2972,3024,3133,3200,3261,3294,3389,3406,3517,3716,3749,3773,3782,3840,4159,4193,4238,4295,4301,4696,4800,6103,6108,6314,6823,7418,8025,8027,8029,8126,8305,8319,8450,8455,8469,8484,8486,8488,8526,11559,11565,11631,11823,13312,19893,19968,40943,43259,43471,43642,43697,43712,43714,44032,55203,64285,64318,67592,67644,68096,69415,69956,70006,70106,70108,70280,70461,70480,70751,70855,71236,71352,71935,72161,72163,72192,72250,72272,72349,72768,73030,73112,94032,94179,94208,100343,119970,119995,120134,123214,125259,126500,126503,126521,126523,126530,126535,126537,126539,126548,126551,126553,126555,126557,126559,126564,126590,131072,173782,173824,177972,177984,178205,178208,183969,183984,191456];
+    const uni_id_start_r$1=[65,90,97,122,192,214,216,246,248,705,710,721,736,740,880,884,886,887,890,893,904,906,910,929,931,1013,1015,1153,1162,1327,1329,1366,1376,1416,1488,1514,1519,1522,1568,1610,1646,1647,1649,1747,1765,1766,1774,1775,1786,1788,1810,1839,1869,1957,1994,2026,2036,2037,2048,2069,2112,2136,2144,2154,2208,2228,2230,2237,2308,2361,2392,2401,2417,2432,2437,2444,2447,2448,2451,2472,2474,2480,2486,2489,2524,2525,2527,2529,2544,2545,2565,2570,2575,2576,2579,2600,2602,2608,2610,2611,2613,2614,2616,2617,2649,2652,2674,2676,2693,2701,2703,2705,2707,2728,2730,2736,2738,2739,2741,2745,2784,2785,2821,2828,2831,2832,2835,2856,2858,2864,2866,2867,2869,2873,2908,2909,2911,2913,2949,2954,2958,2960,2962,2965,2969,2970,2974,2975,2979,2980,2984,2986,2990,3001,3077,3084,3086,3088,3090,3112,3114,3129,3160,3162,3168,3169,3205,3212,3214,3216,3218,3240,3242,3251,3253,3257,3296,3297,3313,3314,3333,3340,3342,3344,3346,3386,3412,3414,3423,3425,3450,3455,3461,3478,3482,3505,3507,3515,3520,3526,3585,3632,3634,3635,3648,3654,3713,3714,3718,3722,3724,3747,3751,3760,3762,3763,3776,3780,3804,3807,3904,3911,3913,3948,3976,3980,4096,4138,4176,4181,4186,4189,4197,4198,4206,4208,4213,4225,4256,4293,4304,4346,4348,4680,4682,4685,4688,4694,4698,4701,4704,4744,4746,4749,4752,4784,4786,4789,4792,4798,4802,4805,4808,4822,4824,4880,4882,4885,4888,4954,4992,5007,5024,5109,5112,5117,5121,5740,5743,5759,5761,5786,5792,5866,5870,5880,5888,5900,5902,5905,5920,5937,5952,5969,5984,5996,5998,6000,6016,6067,6176,6264,6272,6276,6279,6312,6320,6389,6400,6430,6480,6509,6512,6516,6528,6571,6576,6601,6656,6678,6688,6740,6917,6963,6981,6987,7043,7072,7086,7087,7098,7141,7168,7203,7245,7247,7258,7293,7296,7304,7312,7354,7357,7359,7401,7404,7406,7411,7413,7414,7424,7615,7680,7957,7960,7965,7968,8005,8008,8013,8016,8023,8031,8061,8064,8116,8118,8124,8130,8132,8134,8140,8144,8147,8150,8155,8160,8172,8178,8180,8182,8188,8336,8348,8458,8467,8473,8477,8490,8493,8495,8505,8508,8511,8517,8521,8544,8584,11264,11310,11312,11358,11360,11492,11499,11502,11506,11507,11520,11557,11568,11623,11648,11670,11680,11686,11688,11694,11696,11702,11704,11710,11712,11718,11720,11726,11728,11734,11736,11742,12293,12295,12321,12329,12337,12341,12344,12348,12353,12438,12445,12447,12449,12538,12540,12543,12549,12591,12593,12686,12704,12730,12784,12799,40960,42124,42192,42237,42240,42508,42512,42527,42538,42539,42560,42606,42623,42653,42656,42735,42775,42783,42786,42888,42891,42943,42946,42950,42999,43009,43011,43013,43015,43018,43020,43042,43072,43123,43138,43187,43250,43255,43261,43262,43274,43301,43312,43334,43360,43388,43396,43442,43488,43492,43494,43503,43514,43518,43520,43560,43584,43586,43588,43595,43616,43638,43646,43695,43701,43702,43705,43709,43739,43741,43744,43754,43762,43764,43777,43782,43785,43790,43793,43798,43808,43814,43816,43822,43824,43866,43868,43879,43888,44002,55216,55238,55243,55291,63744,64109,64112,64217,64256,64262,64275,64279,64287,64296,64298,64310,64312,64316,64320,64321,64323,64324,64326,64433,64467,64829,64848,64911,64914,64967,65008,65019,65136,65140,65142,65276,65313,65338,65345,65370,65382,65470,65474,65479,65482,65487,65490,65495,65498,65500,65536,65547,65549,65574,65576,65594,65596,65597,65599,65613,65616,65629,65664,65786,65856,65908,66176,66204,66208,66256,66304,66335,66349,66378,66384,66421,66432,66461,66464,66499,66504,66511,66513,66517,66560,66717,66736,66771,66776,66811,66816,66855,66864,66915,67072,67382,67392,67413,67424,67431,67584,67589,67594,67637,67639,67640,67647,67669,67680,67702,67712,67742,67808,67826,67828,67829,67840,67861,67872,67897,67968,68023,68030,68031,68112,68115,68117,68119,68121,68149,68192,68220,68224,68252,68288,68295,68297,68324,68352,68405,68416,68437,68448,68466,68480,68497,68608,68680,68736,68786,68800,68850,68864,68899,69376,69404,69424,69445,69600,69622,69635,69687,69763,69807,69840,69864,69891,69926,69968,70002,70019,70066,70081,70084,70144,70161,70163,70187,70272,70278,70282,70285,70287,70301,70303,70312,70320,70366,70405,70412,70415,70416,70419,70440,70442,70448,70450,70451,70453,70457,70493,70497,70656,70708,70727,70730,70784,70831,70852,70853,71040,71086,71128,71131,71168,71215,71296,71338,71424,71450,71680,71723,71840,71903,72096,72103,72106,72144,72203,72242,72284,72329,72384,72440,72704,72712,72714,72750,72818,72847,72960,72966,72968,72969,72971,73008,73056,73061,73063,73064,73066,73097,73440,73458,73728,74649,74752,74862,74880,75075,77824,78894,82944,83526,92160,92728,92736,92766,92880,92909,92928,92975,92992,92995,93027,93047,93053,93071,93760,93823,93952,94026,94099,94111,94176,94177,100352,101106,110592,110878,110928,110930,110948,110951,110960,111355,113664,113770,113776,113788,113792,113800,113808,113817,119808,119892,119894,119964,119966,119967,119973,119974,119977,119980,119982,119993,119997,120003,120005,120069,120071,120074,120077,120084,120086,120092,120094,120121,120123,120126,120128,120132,120138,120144,120146,120485,120488,120512,120514,120538,120540,120570,120572,120596,120598,120628,120630,120654,120656,120686,120688,120712,120714,120744,120746,120770,120772,120779,123136,123180,123191,123197,123584,123627,124928,125124,125184,125251,126464,126467,126469,126495,126497,126498,126505,126514,126516,126519,126541,126543,126545,126546,126561,126562,126567,126570,126572,126578,126580,126583,126585,126588,126592,126601,126603,126619,126625,126627,126629,126633,126635,126651];
+    const uni_id_cont$1=[95,1471,1479,1648,1809,2045,2492,2519,2558,2620,2641,2677,2748,2876,2946,3031,3260,3415,3530,3542,3633,3761,3893,3895,3897,4038,6109,6313,7405,7412,8276,8417,11647,42607,43010,43014,43019,43493,43587,43696,43713,64286,65343,66045,66272,68159,70003,70206,70487,70750,72164,72263,73018,73031,94031,121461,121476];
+    const uni_id_cont_r$1=[48,57,768,879,1155,1159,1425,1469,1473,1474,1476,1477,1552,1562,1611,1641,1750,1756,1759,1764,1767,1768,1770,1773,1776,1785,1840,1866,1958,1968,1984,1993,2027,2035,2070,2073,2075,2083,2085,2087,2089,2093,2137,2139,2259,2273,2275,2307,2362,2364,2366,2383,2385,2391,2402,2403,2406,2415,2433,2435,2494,2500,2503,2504,2507,2509,2530,2531,2534,2543,2561,2563,2622,2626,2631,2632,2635,2637,2662,2673,2689,2691,2750,2757,2759,2761,2763,2765,2786,2787,2790,2799,2810,2815,2817,2819,2878,2884,2887,2888,2891,2893,2902,2903,2914,2915,2918,2927,3006,3010,3014,3016,3018,3021,3046,3055,3072,3076,3134,3140,3142,3144,3146,3149,3157,3158,3170,3171,3174,3183,3201,3203,3262,3268,3270,3272,3274,3277,3285,3286,3298,3299,3302,3311,3328,3331,3387,3388,3390,3396,3398,3400,3402,3405,3426,3427,3430,3439,3458,3459,3535,3540,3544,3551,3558,3567,3570,3571,3636,3642,3655,3662,3664,3673,3764,3772,3784,3789,3792,3801,3864,3865,3872,3881,3902,3903,3953,3972,3974,3975,3981,3991,3993,4028,4139,4158,4160,4169,4182,4185,4190,4192,4194,4196,4199,4205,4209,4212,4226,4237,4239,4253,4957,4959,5906,5908,5938,5940,5970,5971,6002,6003,6068,6099,6112,6121,6155,6157,6160,6169,6277,6278,6432,6443,6448,6459,6470,6479,6608,6617,6679,6683,6741,6750,6752,6780,6783,6793,6800,6809,6832,6845,6912,6916,6964,6980,6992,7001,7019,7027,7040,7042,7073,7085,7088,7097,7142,7155,7204,7223,7232,7241,7248,7257,7376,7378,7380,7400,7415,7417,7616,7673,7675,7679,8255,8256,8400,8412,8421,8432,11503,11505,11744,11775,12330,12335,12441,12442,42528,42537,42612,42621,42654,42655,42736,42737,43043,43047,43136,43137,43188,43205,43216,43225,43232,43249,43263,43273,43302,43309,43335,43347,43392,43395,43443,43456,43472,43481,43504,43513,43561,43574,43596,43597,43600,43609,43643,43645,43698,43700,43703,43704,43710,43711,43755,43759,43765,43766,44003,44010,44012,44013,44016,44025,65024,65039,65056,65071,65075,65076,65101,65103,65296,65305,66422,66426,66720,66729,68097,68099,68101,68102,68108,68111,68152,68154,68325,68326,68900,68903,68912,68921,69446,69456,69632,69634,69688,69702,69734,69743,69759,69762,69808,69818,69872,69881,69888,69890,69927,69940,69942,69951,69957,69958,70016,70018,70067,70080,70089,70092,70096,70105,70188,70199,70367,70378,70384,70393,70400,70403,70459,70460,70462,70468,70471,70472,70475,70477,70498,70499,70502,70508,70512,70516,70709,70726,70736,70745,70832,70851,70864,70873,71087,71093,71096,71104,71132,71133,71216,71232,71248,71257,71339,71351,71360,71369,71453,71467,71472,71481,71724,71738,71904,71913,72145,72151,72154,72160,72193,72202,72243,72249,72251,72254,72273,72283,72330,72345,72751,72758,72760,72767,72784,72793,72850,72871,72873,72886,73009,73014,73020,73021,73023,73029,73040,73049,73098,73102,73104,73105,73107,73111,73120,73129,73459,73462,92768,92777,92912,92916,92976,92982,93008,93017,94033,94087,94095,94098,113821,113822,119141,119145,119149,119154,119163,119170,119173,119179,119210,119213,119362,119364,120782,120831,121344,121398,121403,121452,121499,121503,121505,121519,122880,122886,122888,122904,122907,122913,122915,122916,122918,122922,123184,123190,123200,123209,123628,123641,125136,125142,125252,125258,125264,125273];
+
+    ///*
+    const j$2 = new Uint16Array(100000);
+
+    j$2.fill(0);
+
+    //Add value to individual indexes
+    function aii$1(table, value, ...indices) {
+    	for (const i of indices)
+    		table[i] |= value;
+    }
+
+    //Add value to index ranges
+    function air$1(t, v, ...i_r) {
+    	for (const r of i_r.reduce((r, v, i) => (((i % 2) ? (r[r.length - 1].push(v)) : r.push([v])), r), [])) {
+    		const size = r[1] + 1 - r[0],
+    			a = [];
+    		for (let i = 0; i < size; i++)
+    			a[i] = r[0] + i;
+    		aii$1(t, v, ...a);
+    	}
+    }
+
+
+    //7. Symbol
+    // Default Value
+
+    //1. Identifier
+    air$1(j$2, 1, ...uni_id_start_r$1);
+    aii$1(j$2, 1, ...uni_id_start$1);
+
+    //2. QUOTE STRING
+    aii$1(j$2, 2, 34, 39, 96);
+
+    //3. SPACE SET
+    aii$1(j$2, 3, 32);
+
+    //4. TAB SET
+    aii$1(j$2, 4, 9);
+
+    //5. CARIAGE RETURN 
+    aii$1(j$2, 5, 13);
+
+    //6. CARIAGE RETURN 
+    aii$1(j$2, 6, 10);
+
+    //7. Number
+    air$1(j$2, 7, 48, 57);
+
+    //8. Operator
+    aii$1(j$2, 8, 33, 37, 38, 42, 43, 58, 60, 61, 62);
+
+    //9. Open Bracket
+    aii$1(j$2, 9, 40, 91, 123);
+
+    //10. Close Bracket
+    aii$1(j$2, 10, 41, 93, 125);
+
+    //10. Close Bracket
+    aii$1(j$2, 11, 16);
+
+
+    /**
+     * Lexer Number and Identifier jump table reference
+     * Number are masked by 12(4|8) and Identifiers are masked by 10(2|8)
+     * entries marked as `0` are not evaluated as either being in the number set or the identifier set.
+     * entries marked as `2` are in the identifier set but not the number set
+     * entries marked as `4` are in the number set but not the identifier set
+     * entries marked as `8` are in both number and identifier sets
+     */
+
+    /**
+     * LExer Number and Identifier jump table reference
+     * Number are masked by 12(4|8) and Identifiers are masked by 10(2|8)
+     */
+
+    // entries marked as `2` are in the identifier set but not the number set
+    air$1(j$2, 2 << 8, 65, 90, 97, 122);
+    air$1(j$2, 2 << 8, ...uni_id_start_r$1);
+    aii$1(j$2, 2 << 8, ...uni_id_start$1);
+    air$1(j$2, 2 << 8, ...uni_id_cont_r$1);
+    aii$1(j$2, 2 << 8, ...uni_id_cont$1);
+
+    // entries marked as `8` are in both number and identifier sets
+    air$1(j$2, 8 << 8, 48, 57);
+
+    const HORIZONTAL_TAB$2 = 9;
+    const SPACE$2 = 32;
+
+
+    const extended_jump_table$1 = j$2.slice();
+    extended_jump_table$1[45] |= 2 << 8;
+    extended_jump_table$1[95] |= 2 << 8;
+
+    const
+        number$2 = 1,
+        identifier$2 = 2,
+        string$2 = 4,
+        white_space$2 = 8,
+        open_bracket$2 = 16,
+        close_bracket$2 = 32,
+        operator$2 = 64,
+        symbol$2 = 128,
+        new_line$2 = 256,
+        data_link$2 = 512,
+        alpha_numeric$2 = (identifier$2 | number$2),
+        white_space_new_line$2 = (white_space$2 | new_line$2),
+        Types$2 = {
+            num: number$2,
+            number: number$2,
+            id: identifier$2,
+            identifier: identifier$2,
+            str: string$2,
+            string: string$2,
+            ws: white_space$2,
+            white_space: white_space$2,
+            ob: open_bracket$2,
+            open_bracket: open_bracket$2,
+            cb: close_bracket$2,
+            close_bracket: close_bracket$2,
+            op: operator$2,
+            operator: operator$2,
+            sym: symbol$2,
+            symbol: symbol$2,
+            nl: new_line$2,
+            new_line: new_line$2,
+            dl: data_link$2,
+            data_link: data_link$2,
+            alpha_numeric: alpha_numeric$2,
+            white_space_new_line: white_space_new_line$2,
+        },
+
+        /*** MASKS ***/
+
+        TYPE_MASK$2 = 0xF,
+        PARSE_STRING_MASK$2 = 0x10,
+        IGNORE_WHITESPACE_MASK$2 = 0x20,
+        CHARACTERS_ONLY_MASK$2 = 0x40,
+        TOKEN_LENGTH_MASK$2 = 0xFFFFFF80,
+
+        //De Bruijn Sequence for finding index of right most bit set.
+        //http://supertech.csail.mit.edu/papers/debruijn.pdf
+        debruijnLUT$2 = [
+            0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
+            31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+        ];
+
+    const getNumbrOfTrailingZeroBitsFromPowerOf2$2 = (value) => debruijnLUT$2[(value * 0x077CB531) >>> 27];
+
+    class Lexer$2 {
+
+        constructor(string = "", INCLUDE_WHITE_SPACE_TOKENS = false, PEEKING = false) {
+
+            if (typeof(string) !== "string") throw new Error(`String value must be passed to Lexer. A ${typeof(string)} was passed as the \`string\` argument.`);
+
+            /**
+             * The string that the Lexer tokenizes.
+             */
+            this.str = string;
+
+            /**
+             * Reference to the peeking Lexer.
+             */
+            this.p = null;
+
+            /**
+             * The type id of the current token.
+             */
+            this.type = 32768; //Default "non-value" for types is 1<<15;
+
+            /**
+             * The offset in the string of the start of the current token.
+             */
+            this.off = 0;
+
+            this.masked_values = 0;
+
+            /**
+             * The character offset of the current token within a line.
+             */
+            this.char = 0;
+            /**
+             * The line position of the current token.
+             */
+            this.line = 0;
+            /**
+             * The length of the string being parsed
+             */
+            this.sl = string.length;
+            /**
+             * The length of the current token.
+             */
+            this.tl = 0;
+
+            /**
+             * Flag to ignore white spaced.
+             */
+            this.IWS = !INCLUDE_WHITE_SPACE_TOKENS;
+
+            this.USE_EXTENDED_ID = false;
+
+            /**
+             * Flag to force the lexer to parse string contents
+             */
+            this.PARSE_STRING = false;
+
+            this.id_lu = j$2;
+
+            if (!PEEKING) this.next();
+        }
+
+        useExtendedId() {
+            this.id_lu = extended_jump_table$1;
+            this.tl = 0;
+            this.next();
+            return this;
+        }
+
+        /**
+         * Restricts max parse distance to the other Lexer's current position.
+         * @param      {Lexer}  Lexer   The Lexer to limit parse distance by.
+         */
+        fence(marker = this) {
+            if (marker.str !== this.str)
+                return;
+            this.sl = marker.off;
+            return this;
+        }
+
+        /**
+         * Copies the Lexer.
+         * @return     {Lexer}  Returns a new Lexer instance with the same property values.
+         */
+        copy(destination = new Lexer$2(this.str, false, true)) {
+            destination.off = this.off;
+            destination.char = this.char;
+            destination.line = this.line;
+            destination.sl = this.sl;
+            destination.masked_values = this.masked_values;
+            destination.id_lu = this.id_lu;
+            return destination;
+        }
+
+        /**
+         * Given another Lexer with the same `str` property value, it will copy the state of that Lexer.
+         * @param      {Lexer}  [marker=this.peek]  The Lexer to clone the state from. 
+         * @throws     {Error} Throws an error if the Lexers reference different strings.
+         * @public
+         */
+        sync(marker = this.p) {
+
+            if (marker instanceof Lexer$2) {
+                if (marker.str !== this.str) throw new Error("Cannot sync Lexers with different strings!");
+                this.off = marker.off;
+                this.char = marker.char;
+                this.line = marker.line;
+                this.masked_values = marker.masked_values;
+            }
+
+            return this;
+        }
+
+        /**
+        Creates an error message with a diagram illustrating the location of the error. 
+        */
+        errorMessage(message = "") {
+            const pk = this.copy();
+
+            pk.IWS = false;
+
+            while (!pk.END && pk.ty !== Types$2.nl) { pk.next(); }
+
+            const end = (pk.END) ? this.str.length : pk.off,
+
+                nls = (this.line > 0) ? 1 : 0,
+                number_of_tabs = this.str
+                .slice(this.off - this.char + nls + nls, this.off + nls)
+                .split("")
+                .reduce((r, v) => (r + ((v.charCodeAt(0) == HORIZONTAL_TAB$2) | 0)), 0),
+
+                arrow = String.fromCharCode(0x2b89),
+
+                line = String.fromCharCode(0x2500),
+
+                thick_line = String.fromCharCode(0x2501),
+
+                line_number = `    ${this.line+1}: `,
+
+                line_fill = line_number.length + number_of_tabs,
+
+                line_text = this.str.slice(this.off - this.char + nls + (nls), end).replace(/\t/g, "  "),
+
+                error_border = thick_line.repeat(line_text.length + line_number.length + 2),
+
+                is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "",
+
+                msg = [`${message} at ${this.line+1}:${this.char - nls}`,
+                `${error_border}`,
+                `${line_number+line_text}`,
+                `${line.repeat(this.char-nls+line_fill-(nls))+arrow}`,
+                `${error_border}`,
+                `${is_iws}`].join("\n");
+
+            return msg;
+        }
+
+        /**
+         * Will throw a new Error, appending the parsed string line and position information to the the error message passed into the function.
+         * @instance
+         * @public
+         * @param {String} message - The error message.
+         * @param {Bool} DEFER - if true, returns an Error object instead of throwing.
+         */
+        throw (message, DEFER = false) {
+            const error = new Error(this.errorMessage(message));
+            if (DEFER)
+                return error;
+            throw error;
+        }
+
+        /**
+         * Proxy for Lexer.prototype.reset
+         * @public
+         */
+        r() { return this.reset() }
+
+        /**
+         * Restore the Lexer back to it's initial state.
+         * @public
+         */
+        reset() {
+            this.p = null;
+            this.type = 32768;
+            this.off = 0;
+            this.tl = 0;
+            this.char = 0;
+            this.line = 0;
+            this.n;
+            return this;
+        }
+
+        resetHead() {
+            this.off = 0;
+            this.tl = 0;
+            this.char = 0;
+            this.line = 0;
+            this.p = null;
+            this.type = 32768;
+        }
+
+        /**
+         * Sets the internal state to point to the next token. Sets Lexer.prototype.END to `true` if the end of the string is hit.
+         * @public
+         * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
+         */
+        next(marker = this, USE_CUSTOM_SYMBOLS = !!this.symbol_map) {
+
+            if (marker.sl < 1) {
+                marker.off = 0;
+                marker.type = 32768;
+                marker.tl = 0;
+                marker.line = 0;
+                marker.char = 0;
+                return marker;
+            }
+
+            //Token builder
+            const l = marker.sl,
+                str = marker.str,
+                jump_table = this.id_lu,
+                IWS = marker.IWS;
+
+            let length = marker.tl,
+                off = marker.off + length,
+                type = symbol$2,
+                line = marker.line,
+                base = off,
+                char = marker.char,
+                root = marker.off;
+
+            if (off >= l) {
+                length = 0;
+                base = l;
+                //char -= base - off;
+                marker.char = char + (base - marker.off);
+                marker.type = type;
+                marker.off = base;
+                marker.tl = 0;
+                marker.line = line;
+                return marker;
+            }
+
+            let NORMAL_PARSE = true;
+
+            if (USE_CUSTOM_SYMBOLS) {
+
+                let code = str.charCodeAt(off);
+                let off2 = off;
+                let map = this.symbol_map,
+                    m;
+                let i = 0;
+
+                while (code == 32 && IWS)
+                    (code = str.charCodeAt(++off2), off++);
+
+                while ((m = map.get(code))) {
+                    map = m;
+                    off2 += 1;
+                    code = str.charCodeAt(off2);
+                }
+
+                if (map.IS_SYM) {
+                    NORMAL_PARSE = false;
+                    base = off;
+                    length = off2 - off;
+                    //char += length;
+                }
+            }
+
+            while (NORMAL_PARSE) {
+
+                base = off;
+
+                length = 1;
+
+                const code = str.codePointAt(off);
+
+                switch (jump_table[code] & 255) {
+                    case 0: //SYMBOL
+                        type = symbol$2;
+                        break;
+                    case 1: //IDENTIFIER
+                        while (++off < l && ((10 & (jump_table[str.codePointAt(off)] >> 8))));
+                        type = identifier$2;
+                        length = off - base;
+                        break;
+                    case 2: //QUOTED STRING
+                        if (this.PARSE_STRING) {
+                            type = symbol$2;
+                        } else {
+                            while (++off < l && str.codePointAt(off) !== code);
+                            type = string$2;
+                            length = off - base + 1;
+                        }
+                        break;
+                    case 3: //SPACE SET
+                        while (++off < l && str.codePointAt(off) === SPACE$2);
+                        type = white_space$2;
+                        length = off - base;
+                        break;
+                    case 4: //TAB SET
+                        while (++off < l && str[off] === HORIZONTAL_TAB$2);
+                        type = white_space$2;
+                        length = off - base;
+                        break;
+                    case 5: //CARIAGE RETURN
+                        length = 2;
+                        //intentional
+                    case 6: //LINEFEED
+                        type = new_line$2;
+                        line++;
+                        base = off;
+                        root = off;
+                        off += length;
+                        char = 0;
+                        break;
+                    case 7: //NUMBER
+                        while (++off < l && (12 & (jump_table[str.codePointAt(off)] >> 8)));
+
+                        if ((str[off] == "e" || str[off] == "E") && (12 & (jump_table[str.codePointAt(off + 1)] >> 8))) {
+                            off++;
+                            if (str[off] == "-") off++;
+                            marker.off = off;
+                            marker.tl = 0;
+                            marker.next();
+                            off = marker.off + marker.tl;
+                            //Add e to the number string
+                        }
+
+                        type = number$2;
+                        length = off - base;
+
+                        break;
+                    case 8: //OPERATOR
+                        type = operator$2;
+                        break;
+                    case 9: //OPEN BRACKET
+                        type = open_bracket$2;
+                        break;
+                    case 10: //CLOSE BRACKET
+                        type = close_bracket$2;
+                        break;
+                    case 11: //Data Link Escape
+                        type = data_link$2;
+                        length = 4; //Stores two UTF16 values and a data link sentinel
+                        break;
+                }
+
+                if (IWS && (type & white_space_new_line$2)) {
+                    if (off < l) {
+                        type = symbol$2;
+                        //off += length;
+                        continue;
+                    } else {
+                        //Trim white space from end of string
+                        base = l - off;
+                        marker.sl -= off;
+                        length = 0;
+                    }
+                }
+                break;
+            }
+
+            marker.type = type;
+            marker.off = base;
+            marker.tl = (this.masked_values & CHARACTERS_ONLY_MASK$2) ? Math.min(1, length) : length;
+            marker.char = char + base - root;
+            marker.line = line;
+
+            return marker;
+        }
+
+
+        /**
+         * Proxy for Lexer.prototype.assert
+         * @public
+         */
+        a(text) {
+            return this.assert(text);
+        }
+
+        /**
+         * Compares the string value of the current token to the value passed in. Advances to next token if the two are equal.
+         * @public
+         * @throws {Error} - `Expecting "${text}" got "${this.text}"`
+         * @param {String} text - The string to compare.
+         */
+        assert(text) {
+
+            if (this.off < 0) this.throw(`Expecting ${text} got null`);
+
+            if (this.text == text)
+                this.next();
+            else
+                this.throw(`Expecting "${text}" got "${this.text}"`);
+
+            return this;
+        }
+
+        /**
+         * Proxy for Lexer.prototype.assertCharacter
+         * @public
+         */
+        aC(char) { return this.assertCharacter(char) }
+        /**
+         * Compares the character value of the current token to the value passed in. Advances to next token if the two are equal.
+         * @public
+         * @throws {Error} - `Expecting "${text}" got "${this.text}"`
+         * @param {String} text - The string to compare.
+         */
+        assertCharacter(char) {
+
+            if (this.off < 0) this.throw(`Expecting ${char[0]} got null`);
+
+            if (this.ch == char[0])
+                this.next();
+            else
+                this.throw(`Expecting "${char[0]}" got "${this.tx[this.off]}"`);
+
+            return this;
+        }
+
+        /**
+         * Returns the Lexer bound to Lexer.prototype.p, or creates and binds a new Lexer to Lexer.prototype.p. Advences the other Lexer to the token ahead of the calling Lexer.
+         * @public
+         * @type {Lexer}
+         * @param {Lexer} [marker=this] - The marker to originate the peek from. 
+         * @param {Lexer} [peek_marker=this.p] - The Lexer to set to the next token state.
+         * @return {Lexer} - The Lexer that contains the peeked at token.
+         */
+        peek(marker = this, peek_marker = this.p) {
+
+            if (!peek_marker) {
+                if (!marker) return null;
+                if (!this.p) {
+                    this.p = new Lexer$2(this.str, false, true);
+                    peek_marker = this.p;
+                }
+            }
+            peek_marker.masked_values = marker.masked_values;
+            peek_marker.type = marker.type;
+            peek_marker.off = marker.off;
+            peek_marker.tl = marker.tl;
+            peek_marker.char = marker.char;
+            peek_marker.line = marker.line;
+            this.next(peek_marker);
+            return peek_marker;
+        }
+
+
+        /**
+         * Proxy for Lexer.prototype.slice
+         * @public
+         */
+        s(start) { return this.slice(start) }
+
+        /**
+         * Returns a slice of the parsed string beginning at `start` and ending at the current token.
+         * @param {Number | LexerBeta} start - The offset in this.str to begin the slice. If this value is a LexerBeta, sets the start point to the value of start.off.
+         * @return {String} A substring of the parsed string.
+         * @public
+         */
+        slice(start = this.off) {
+
+            if (start instanceof Lexer$2) start = start.off;
+
+            return this.str.slice(start, (this.off <= start) ? this.sl : this.off);
+        }
+
+        /**
+         * Skips to the end of a comment section.
+         * @param {boolean} ASSERT - If set to true, will through an error if there is not a comment line or block to skip.
+         * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
+         */
+        comment(ASSERT = false, marker = this) {
+
+            if (!(marker instanceof Lexer$2)) return marker;
+
+            if (marker.ch == "/") {
+                if (marker.pk.ch == "*") {
+                    marker.sync();
+                    while (!marker.END && (marker.next().ch != "*" || marker.pk.ch != "/")) { /* NO OP */ }
+                    marker.sync().assert("/");
+                } else if (marker.pk.ch == "/") {
+                    const IWS = marker.IWS;
+                    while (marker.next().ty != Types$2.new_line && !marker.END) { /* NO OP */ }
+                    marker.IWS = IWS;
+                    marker.next();
+                } else
+                if (ASSERT) marker.throw("Expecting the start of a comment");
+            }
+
+            return marker;
+        }
+
+        setString(string, RESET = true) {
+            this.str = string;
+            this.sl = string.length;
+            if (RESET) this.resetHead();
+        }
+
+        toString() {
+            return this.slice();
+        }
+
+        /**
+         * Returns new Whind Lexer that has leading and trailing whitespace characters removed from input. 
+         * leave_leading_amount - Maximum amount of leading space caracters to leave behind. Default is zero
+         * leave_trailing_amount - Maximum amount of trailing space caracters to leave behind. Default is zero
+         */
+        trim(leave_leading_amount = 0, leave_trailing_amount = leave_leading_amount) {
+            const lex = this.copy();
+
+            let space_count = 0,
+                off = lex.off;
+
+            for (; lex.off < lex.sl; lex.off++) {
+                const c = j$2[lex.string.charCodeAt(lex.off)];
+
+                if (c > 2 && c < 7) {
+
+                    if (space_count >= leave_leading_amount) {
+                        off++;
+                    } else {
+                        space_count++;
+                    }
+                    continue;
+                }
+
+                break;
+            }
+
+            lex.off = off;
+            space_count = 0;
+            off = lex.sl;
+
+            for (; lex.sl > lex.off; lex.sl--) {
+                const c = j$2[lex.string.charCodeAt(lex.sl - 1)];
+
+                if (c > 2 && c < 7) {
+                    if (space_count >= leave_trailing_amount) {
+                        off--;
+                    } else {
+                        space_count++;
+                    }
+                    continue;
+                }
+
+                break;
+            }
+
+            lex.sl = off;
+
+            if (leave_leading_amount > 0)
+                lex.IWS = false;
+
+            lex.token_length = 0;
+
+            lex.next();
+
+            return lex;
+        }
+
+        /** Adds symbol to symbol_map. This allows custom symbols to be defined and tokenized by parser. **/
+        addSymbol(sym) {
+            if (!this.symbol_map)
+                this.symbol_map = new Map;
+
+
+            let map = this.symbol_map;
+
+            for (let i = 0; i < sym.length; i++) {
+                let code = sym.charCodeAt(i);
+                let m = map.get(code);
+                if (!m) {
+                    m = map.set(code, new Map).get(code);
+                }
+                map = m;
+            }
+            map.IS_SYM = true;
+        }
+
+        /*** Getters and Setters ***/
+        get string() {
+            return this.str;
+        }
+
+        get string_length() {
+            return this.sl - this.off;
+        }
+
+        set string_length(s) {}
+
+        /**
+         * The current token in the form of a new Lexer with the current state.
+         * Proxy property for Lexer.prototype.copy
+         * @type {Lexer}
+         * @public
+         * @readonly
+         */
+        get token() {
+            return this.copy();
+        }
+
+
+        get ch() {
+            return this.str[this.off];
+        }
+
+        /**
+         * Proxy for Lexer.prototype.text
+         * @public
+         * @type {String}
+         * @readonly
+         */
+        get tx() { return this.text }
+
+        /**
+         * The string value of the current token.
+         * @type {String}
+         * @public
+         * @readonly
+         */
+        get text() {
+            return (this.off < 0) ? "" : this.str.slice(this.off, this.off + this.tl);
+        }
+
+        /**
+         * The type id of the current token.
+         * @type {Number}
+         * @public
+         * @readonly
+         */
+        get ty() { return this.type }
+
+        /**
+         * The current token's offset position from the start of the string.
+         * @type {Number}
+         * @public
+         * @readonly
+         */
+        get pos() {
+            return this.off;
+        }
+
+        /**
+         * Proxy for Lexer.prototype.peek
+         * @public
+         * @readonly
+         * @type {Lexer}
+         */
+        get pk() { return this.peek() }
+
+        /**
+         * Proxy for Lexer.prototype.next
+         * @public
+         */
+        get n() { return this.next() }
+
+        get END() { return this.off >= this.sl }
+        set END(v) {}
+
+        get type() {
+            return 1 << (this.masked_values & TYPE_MASK$2);
+        }
+
+        set type(value) {
+            //assuming power of 2 value.
+            this.masked_values = (this.masked_values & ~TYPE_MASK$2) | ((getNumbrOfTrailingZeroBitsFromPowerOf2$2(value)) & TYPE_MASK$2);
+        }
+
+        get tl() {
+            return this.token_length;
+        }
+
+        set tl(value) {
+            this.token_length = value;
+        }
+
+        get token_length() {
+            return ((this.masked_values & TOKEN_LENGTH_MASK$2) >> 7);
+        }
+
+        set token_length(value) {
+            this.masked_values = (this.masked_values & ~TOKEN_LENGTH_MASK$2) | (((value << 7) | 0) & TOKEN_LENGTH_MASK$2);
+        }
+
+        get IGNORE_WHITE_SPACE() {
+            return this.IWS;
+        }
+
+        set IGNORE_WHITE_SPACE(bool) {
+            this.iws = !!bool;
+        }
+
+        get CHARACTERS_ONLY() {
+            return !!(this.masked_values & CHARACTERS_ONLY_MASK$2);
+        }
+
+        set CHARACTERS_ONLY(boolean) {
+            this.masked_values = (this.masked_values & ~CHARACTERS_ONLY_MASK$2) | ((boolean | 0) << 6);
+        }
+
+        get IWS() {
+            return !!(this.masked_values & IGNORE_WHITESPACE_MASK$2);
+        }
+
+        set IWS(boolean) {
+            this.masked_values = (this.masked_values & ~IGNORE_WHITESPACE_MASK$2) | ((boolean | 0) << 5);
+        }
+
+        get PARSE_STRING() {
+            return !!(this.masked_values & PARSE_STRING_MASK$2);
+        }
+
+        set PARSE_STRING(boolean) {
+            this.masked_values = (this.masked_values & ~PARSE_STRING_MASK$2) | ((boolean | 0) << 4);
+        }
+
+        /**
+         * Reference to token id types.
+         */
+        get types() {
+            return Types$2;
+        }
+    }
+
+    Lexer$2.prototype.addCharacter = Lexer$2.prototype.addSymbol;
+
+    function whind$3(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer$2(string, INCLUDE_WHITE_SPACE_TOKENS) }
+
+    whind$3.constructor = Lexer$2;
+
+    Lexer$2.types = Types$2;
+    whind$3.types = Types$2;
 
     let fn = {}; const 
     /************** Maps **************/
@@ -4216,7 +5998,7 @@ var wick = (function () {
             let c;
 
             if (typeof(l) == "string")
-                l = whind$1(l);
+                l = whind$3(l);
 
             let out = { r: 0, g: 0, b: 0, a: 1 };
 
@@ -4598,7 +6380,7 @@ var wick = (function () {
         constructor(v, u = "") {
             
             if (typeof(v) == "string") {
-                let lex = whind$1(v);
+                let lex = whind$3(v);
                 let val = CSS_Length.parse(lex);
                 if (val) return val;
             }
@@ -4713,7 +6495,717 @@ var wick = (function () {
         get unit(){return "deg";}
     }
 
-    class CSS_URL extends URL$1 {
+    const uri_reg_ex$1 = /(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:\/\/))?(?:([a-zA-Z][\dA-Za-z\+\.\-]*)(?:\:([^\<\>\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\<\>\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\<\>\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
+
+    const STOCK_LOCATION$1 = {
+        protocol: "",
+        host: "",
+        port: "",
+        path: "",
+        hash: "",
+        query: "",
+        search: ""
+    };
+
+    function getCORSModes(url) {
+        const IS_CORS = (URL$2.G.host !== url.host && !!url.host);
+        return {
+            IS_CORS,
+            mode: IS_CORS ? "cors" : "same-origin", // CORs not allowed
+            credentials: IS_CORS ? "omit" : "include",
+        }
+    }
+
+    function fetchLocalText$1(url, m = "cors") {
+
+        return new Promise((res, rej) => {
+            fetch(url + "", Object.assign({
+                method: "GET"
+            }, getCORSModes(url))).then(r => {
+
+                if (r.status < 200 || r.status > 299)
+                    r.text().then(rej);
+                else
+                    r.text().then(res);
+            }).catch(e => rej(e));
+        });
+    }
+
+    function fetchLocalJSON$1(url, m = "cors") {
+        return new Promise((res, rej) => {
+            fetch(url + "", Object.assign({
+                method: "GET"
+            }, getCORSModes(url))).then(r => {
+                if (r.status < 200 || r.status > 299)
+                    r.json().then(rej);
+                else
+                    r.json().then(res).catch(rej);
+            }).catch(e => rej(e));
+        });
+    }
+
+    function submitForm$1(url, form_data, m = "same-origin") {
+        return new Promise((res, rej) => {
+            var form;
+
+            if (form_data instanceof FormData)
+                form = form_data;
+            else {
+                form = new FormData();
+                for (let name in form_data)
+                    form.append(name, form_data[name] + "");
+            }
+
+            fetch(url + "", Object.assign({
+                method: "POST",
+                body: form
+            }, getCORSModes(url))).then(r => {
+                if (r.status < 200 || r.status > 299)
+                    r.text().then(rej);
+                else
+                    r.json().then(res);
+            }).catch(e => e.text().then(rej));
+        });
+    }
+
+    function submitJSON$1(url, json_data, m = "same-origin") {
+        return new Promise((res, rej) => {
+            fetch(url + "", Object.assign({
+                method: "POST",
+                body: JSON.stringify(json_data),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                }
+            }, getCORSModes(url))).then(r => {
+                if (r.status < 200 || r.status > 299)
+                    r.json().then(rej);
+                else
+                    r.json().then(res);
+            }).catch(e => e.text().then(rej));
+        });
+    }
+
+
+
+    /**
+     * Used for processing URLs, handling `document.location`, and fetching data.
+     * @param      {string}   url           The URL string to wrap.
+     * @param      {boolean}  USE_LOCATION  If `true` missing URL parts are filled in with data from `document.location`. 
+     * @return     {URL}   If a falsy value is passed to `url`, and `USE_LOCATION` is `true` a Global URL is returned. This is directly linked to the page and will _update_ the actual page URL when its values are change. Use with caution. 
+     * @alias URL
+     * @memberof module:wick.core.network
+     */
+    class URL$2 {
+
+        static resolveRelative(URL_or_url_new, URL_or_url_original = (URL$2.G) ? URL$2.G : document.location.toString()) {
+
+            let URL_old = (URL_or_url_original instanceof URL$2) ? URL_or_url_original : new URL$2(URL_or_url_original);
+            let URL_new = (URL_or_url_new instanceof URL$2) ? URL_or_url_new : new URL$2(URL_or_url_new);
+
+            if (!(URL_old + "") || !(URL_new + "")) return null;
+
+            let new_path = "";
+            if (URL_new.path[0] != "/") {
+
+                let a = URL_old.path.split("/");
+                let b = URL_new.path.split("/");
+
+
+                if (b[0] == "..") a.splice(a.length - 1, 1);
+                for (let i = 0; i < b.length; i++) {
+                    switch (b[i]) {
+                        case "..":
+                        case ".":
+                            a.splice(a.length - 1, 1);
+                            break;
+                        default:
+                            a.push(b[i]);
+                    }
+                }
+                URL_new.path = a.join("/");
+            }
+
+            return URL_new;
+        }
+
+        constructor(url = "", USE_LOCATION = false) {
+
+            let IS_STRING = true,
+                IS_LOCATION = false;
+
+
+            let location = (typeof(document) !== "undefined") ? document.location : STOCK_LOCATION$1;
+
+            if (typeof(Location) !== "undefined" && url instanceof Location) {
+                location = url;
+                url = "";
+                IS_LOCATION = true;
+            }
+            if (!url || typeof(url) != "string") {
+                IS_STRING = false;
+                IS_LOCATION = true;
+                if (URL$2.GLOBAL && USE_LOCATION)
+                    return URL$2.GLOBAL;
+            }
+
+            /**
+             * URL protocol
+             */
+            this.protocol = "";
+
+            /**
+             * Username string
+             */
+            this.user = "";
+
+            /**
+             * Password string
+             */
+            this.pwd = "";
+
+            /**
+             * URL hostname
+             */
+            this.host = "";
+
+            /**
+             * URL network port number.
+             */
+            this.port = 0;
+
+            /**
+             * URL resource path
+             */
+            this.path = "";
+
+            /**
+             * URL query string.
+             */
+            this.query = "";
+
+            /**
+             * Hashtag string
+             */
+            this.hash = "";
+
+            /**
+             * Map of the query data
+             */
+            this.map = null;
+
+            if (IS_STRING) {
+                if (url instanceof URL$2) {
+                    this.protocol = url.protocol;
+                    this.user = url.user;
+                    this.pwd = url.pwd;
+                    this.host = url.host;
+                    this.port = url.port;
+                    this.path = url.path;
+                    this.query = url.query;
+                    this.hash = url.hash;
+                } else {
+                    let part = url.match(uri_reg_ex$1);
+
+                    //If the complete string is not matched than we are dealing with something other 
+                    //than a pure URL. Thus, no object is returned. 
+                    if (part[0] !== url) return null;
+
+                    this.protocol = part[1] || ((USE_LOCATION) ? location.protocol : "");
+                    this.user = part[2] || "";
+                    this.pwd = part[3] || "";
+                    this.host = part[4] || part[5] || part[6] || ((USE_LOCATION) ? location.hostname : "");
+                    this.port = parseInt(part[7] || ((USE_LOCATION) ? location.port : 0));
+                    this.path = part[8] || ((USE_LOCATION) ? location.pathname : "");
+                    this.query = part[9] || ((USE_LOCATION) ? location.search.slice(1) : "");
+                    this.hash = part[10] || ((USE_LOCATION) ? location.hash.slice(1) : "");
+
+                }
+            } else if (IS_LOCATION && location) {
+                this.protocol = location.protocol.replace(/\:/g, "");
+                this.host = location.hostname;
+                this.port = location.port;
+                this.path = location.pathname;
+                this.hash = location.hash.slice(1);
+                this.query = location.search.slice(1);
+                this._getQuery_(this.query);
+
+                if (USE_LOCATION) {
+                    URL$2.G = this;
+                    return URL$2.R;
+                }
+            }
+            this._getQuery_(this.query);
+        }
+
+
+        /**
+        URL Query Syntax
+
+        root => [root_class] [& [class_list]]
+             => [class_list]
+
+        root_class = key_list
+
+        class_list [class [& key_list] [& class_list]]
+
+        class => name & key_list
+
+        key_list => [key_val [& key_list]]
+
+        key_val => name = val
+
+        name => ALPHANUMERIC_ID
+
+        val => NUMBER
+            => ALPHANUMERIC_ID
+        */
+
+        /**
+         * Pulls query string info into this.map
+         * @private
+         */
+        _getQuery_() {
+            let map = (this.map) ? this.map : (this.map = new Map());
+
+            let lex = whind$3(this.query);
+
+
+            const get_map = (k, m) => (m.has(k)) ? m.get(k) : m.set(k, new Map).get(k);
+
+            let key = 0,
+                key_val = "",
+                class_map = get_map(key_val, map),
+                lfv = 0;
+
+            while (!lex.END) {
+                switch (lex.tx) {
+                    case "&": //At new class or value
+                        if (lfv > 0)
+                            key = (class_map.set(key_val, lex.s(lfv)), lfv = 0, lex.n.pos);
+                        else {
+                            key_val = lex.s(key);
+                            key = (class_map = get_map(key_val, map), lex.n.pos);
+                        }
+                        continue;
+                    case "=":
+                        //looking for a value now
+                        key_val = lex.s(key);
+                        lfv = lex.n.pos;
+                        continue;
+                }
+                lex.n;
+            }
+
+            if (lfv > 0) class_map.set(key_val, lex.s(lfv));
+        }
+
+        setPath(path) {
+
+            this.path = path;
+
+            return new URL$2(this);
+        }
+
+        setLocation() {
+            history.replaceState({}, "replaced state", `${this}`);
+            window.onpopstate();
+        }
+
+        toString() {
+            let str = [];
+
+            if (this.host) {
+
+                if (this.protocol)
+                    str.push(`${this.protocol}://`);
+
+                str.push(`${this.host}`);
+            }
+
+            if (this.port)
+                str.push(`:${this.port}`);
+
+            if (this.path)
+                str.push(`${this.path[0] == "/" || this.path[0] == "." ? "" : "/"}${this.path}`);
+
+            if (this.query)
+                str.push(((this.query[0] == "?" ? "" : "?") + this.query));
+
+            if (this.hash)
+                str.push("#" + this.hash);
+
+
+            return str.join("");
+        }
+
+        /**
+         * Pulls data stored in query string into an object an returns that.
+         * @param      {string}  class_name  The class name
+         * @return     {object}  The data.
+         */
+        getData(class_name = "") {
+            if (this.map) {
+                let out = {};
+                let _c = this.map.get(class_name);
+                if (_c) {
+                    for (let [key, val] of _c.entries())
+                        out[key] = val;
+                    return out;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Sets the data in the query string. Wick data is added after a second `?` character in the query field, and appended to the end of any existing data.
+         * @param      {string}  class_name  Class name to use in query string. Defaults to root, no class 
+         * @param      {object | Model | AnyModel}  data        The data
+         */
+        setData(data = null, class_name = "") {
+
+            if (data) {
+
+                let map = this.map = new Map();
+
+                let store = (map.has(class_name)) ? map.get(class_name) : (map.set(class_name, new Map()).get(class_name));
+
+                //If the data is a falsy value, delete the association.
+
+                for (let n in data) {
+                    if (data[n] !== undefined && typeof data[n] !== "object")
+                        store.set(n, data[n]);
+                    else
+                        store.delete(n);
+                }
+
+                //set query
+                let class_, null_class, str = "";
+
+                if ((null_class = map.get(""))) {
+                    if (null_class.size > 0) {
+                        for (let [key, val] of null_class.entries())
+                            str += `&${key}=${val}`;
+
+                    }
+                }
+
+                for (let [key, class_] of map.entries()) {
+                    if (key === "")
+                        continue;
+                    if (class_.size > 0) {
+                        str += `&${key}`;
+                        for (let [key, val] of class_.entries())
+                            str += `&${key}=${val}`;
+                    }
+                }
+
+                str = str.slice(1);
+
+                this.query = this.query.split("?")[0] + "?" + str;
+
+                if (URL$2.G == this)
+                    this.goto();
+            } else {
+                this.query = "";
+            }
+
+            return this;
+
+        }
+
+        /**
+         * Fetch a string value of the remote resource. 
+         * Just uses path component of URL. Must be from the same origin.
+         * @param      {boolean}  [ALLOW_CACHE=true]  If `true`, the return string will be cached. If it is already cached, that will be returned instead. If `false`, a network fetch will always occur , and the result will not be cached.
+         * @return     {Promise}  A promise object that resolves to a string of the fetched value.
+         */
+        fetchText(ALLOW_CACHE = true) {
+
+            if (ALLOW_CACHE) {
+
+                let resource = URL$2.RC.get(this.path);
+
+                if (resource)
+                    return new Promise((res) => {
+                        res(resource);
+                    });
+            }
+
+            return fetchLocalText$1(this).then(res => (URL$2.RC.set(this.path, res), res));
+        }
+
+        /**
+         * Fetch a JSON value of the remote resource. 
+         * Just uses path component of URL. Must be from the same origin.
+         * @param      {boolean}  [ALLOW_CACHE=true]  If `true`, the return string will be cached. If it is already cached, that will be returned instead. If `false`, a network fetch will always occur , and the result will not be cached.
+         * @return     {Promise}  A promise object that resolves to a string of the fetched value.
+         */
+        fetchJSON(ALLOW_CACHE = true) {
+
+            if (ALLOW_CACHE) {
+
+                let resource = URL$2.RC.get(this.path);
+
+                if (resource)
+                    return new Promise((res) => {
+                        res(resource);
+                    });
+            }
+
+            return fetchLocalJSON$1(this).then(res => (URL$2.RC.set(this.path, res), res));
+        }
+
+        /**
+         * Cache a local resource at the value 
+         * @param    {object}  resource  The resource to store at this URL path value.
+         * @returns {boolean} `true` if a resource was already cached for this URL, false otherwise.
+         */
+        cacheResource(resource) {
+
+            let occupied = URL$2.RC.has(this.path);
+
+            URL$2.RC.set(this.path, resource);
+
+            return occupied;
+        }
+
+        submitForm(form_data) {
+            return submitForm$1(this, form_data);
+        }
+
+        submitJSON(json_data, mode) {
+            return submitJSON$1(this, json_data, mode);
+        }
+        /**
+         * Goes to the current URL.
+         */
+        goto() {
+            return;
+            let url = this.toString();
+            history.pushState({}, "ignored title", url);
+            window.onpopstate();
+            URL$2.G = this;
+        }
+        //Returns the last segment of the path
+        get file() {
+            return this.path.split("/").pop();
+        }
+        //returns the name of the file less the extension
+        get filename() {
+            return this.file.split(".").shift();
+        }
+
+        //Returns the all but the last segment of the path
+        get dir() {
+            return this.path.split("/").slice(0, -1).join("/") || "/";
+        }
+
+        get pathname() {
+            return this.path;
+        }
+
+        get href() {
+            return this.toString();
+        }
+
+        get ext() {
+            const m = this.path.match(/\.([^\.]*)$/);
+            return m ? m[1] : "";
+        }
+
+        get search() {
+            return this.query;
+        }
+    }
+
+    /**
+     * The fetched resource cache.
+     */
+    URL$2.RC = new Map();
+
+    /**
+     * The Default Global URL object. 
+     */
+    URL$2.G = (typeof location != "undefined") ? new URL$2(location) : null;
+
+    /**
+     * The Global object Proxy.
+     */
+    URL$2.R = {
+        get protocol() {
+            return URL$2.G.protocol;
+        },
+        set protocol(v) {
+            return;
+            URL$2.G.protocol = v;
+        },
+        get user() {
+            return URL$2.G.user;
+        },
+        set user(v) {
+            return;
+            URL$2.G.user = v;
+        },
+        get pwd() {
+            return URL$2.G.pwd;
+        },
+        set pwd(v) {
+            return;
+            URL$2.G.pwd = v;
+        },
+        get host() {
+            return URL$2.G.host;
+        },
+        set host(v) {
+            return;
+            URL$2.G.host = v;
+        },
+        get port() {
+            return URL$2.G.port;
+        },
+        set port(v) {
+            return;
+            URL$2.G.port = v;
+        },
+        get path() {
+            return URL$2.G.path;
+        },
+        set path(v) {
+            return;
+            URL$2.G.path = v;
+        },
+        get query() {
+            return URL$2.G.query;
+        },
+        set query(v) {
+            return;
+            URL$2.G.query = v;
+        },
+        get hash() {
+            return URL$2.G.hash;
+        },
+        set hash(v) {
+            return;
+            URL$2.G.hash = v;
+        },
+        get map() {
+            return URL$2.G.map;
+        },
+        set map(v) {
+            return;
+            URL$2.G.map = v;
+        },
+        setPath(path) {
+            return URL$2.G.setPath(path);
+        },
+        setLocation() {
+            return URL$2.G.setLocation();
+        },
+        toString() {
+            return URL$2.G.toString();
+        },
+        getData(class_name = "") {
+            return URL$2.G.getData(class_name = "");
+        },
+        setData(class_name = "", data = null) {
+            return URL$2.G.setData(class_name, data);
+        },
+        fetchText(ALLOW_CACHE = true) {
+            return URL$2.G.fetchText(ALLOW_CACHE);
+        },
+        cacheResource(resource) {
+            return URL$2.G.cacheResource(resource);
+        }
+    };
+
+
+
+    let SIMDATA$1 = null;
+
+    /* Replaces the fetch actions with functions that simulate network fetches. Resources are added by the user to a Map object. */
+    URL$2.simulate = function() {
+        SIMDATA$1 = new Map;
+        URL$2.prototype.fetchText = async d => ((d = this.toString()), SIMDATA$1.get(d)) ? SIMDATA$1.get(d) : "";
+        URL$2.prototype.fetchJSON = async d => ((d = this.toString()), SIMDATA$1.get(d)) ? JSON.parse(SIMDATA$1.get(d).toString()) : {};
+    };
+
+    //Allows simulated resources to be added as a key value pair, were the key is a URI string and the value is string data.
+    URL$2.addResource = (n, v) => (n && v && (SIMDATA$1 || (SIMDATA$1 = new Map())) && SIMDATA$1.set(n.toString(), v.toString));
+
+    URL$2.polyfill = async function() {
+
+        if (typeof(global) !== "undefined") {
+            const
+                fs = (await import('fs')).promises,
+                path = (await import('path')),
+                http = (await import('http'));
+
+
+            global.document = global.document || {};
+            global.document.location = URL$2.G;
+            global.location = (class extends URL$2 {});
+            URL$2.G = new URL$2(process.cwd() + "/");
+
+            /**
+             * Global `fetch` polyfill - basic support
+             */
+            global.fetch = async (url, data) => {
+                console.log(url);
+                if (data.IS_CORS) { // HTTP Fetch
+                    return new Promise(res => {
+                        http.get(url, data, (req, error) => {
+
+                            let body = "";
+
+                            req.setEncoding('utf8');
+
+                            req.on("data", d => {
+                                body += d;
+                            });
+
+                            req.on("end", () => {
+                                res({
+                                    status: 200,
+                                    text: () => {
+                                        return {
+                                            then: (f) => f(body)
+                                        }
+                                    }
+                                });
+                            });
+                        });
+                    })
+
+
+                } else { //FileSystem Fetch
+                    console.log(process.cwd(), url);
+                    let
+                        p = path.resolve(process.cwd(), "" + url),
+                        d = await fs.readFile(p, "utf8");
+
+                    try {
+                        return {
+                            status: 200,
+                            text: () => {
+                                return {
+                                    then: (f) => f(d)
+                                }
+                            }
+                        };
+                    } catch (err) {
+                        throw err;
+                    }
+                }
+            };
+        }
+    };
+
+    Object.freeze(URL$2.R);
+    Object.freeze(URL$2.RC);
+    Object.seal(URL$2);
+
+    class CSS_URL extends URL$2 {
         static parse(l) {
             if (l.tx == "url" || l.tx == "uri") {
                 l.next().a("(");
@@ -5538,7 +8030,7 @@ var wick = (function () {
         lex = string;
 
         if(typeof(string) == "string")
-            lex = whind$1(string);
+            lex = whind$3(string);
         
         while (!lex.END) {
             let tx = lex.tx;
@@ -6543,7 +9035,7 @@ var wick = (function () {
         parse(data) {
             const prop_data = [];
 
-            this.parseLVL1(data instanceof whind$1.constructor ? data : whind$1(data + ""), prop_data);
+            this.parseLVL1(data instanceof whind$3.constructor ? data : whind$3(data + ""), prop_data);
 
             return prop_data;
         }
@@ -6553,7 +9045,7 @@ var wick = (function () {
         parseLVL1(lx, out_val = [], ROOT = true) {
 
             if (typeof(lx) == "string")
-                lx = whind$1(lx);
+                lx = whind$3(lx);
 
             let bool = false;
 
@@ -6816,7 +9308,7 @@ var wick = (function () {
 
         constructor(value, type) {
             
-            if(type == whind$1.types.string)
+            if(type == whind$3.types.string)
                 value = value.slice(1,-1);
 
             this.value = value;
@@ -6828,7 +9320,7 @@ var wick = (function () {
         parse(data){
             const prop_data = [];
 
-            this.parseLVL1(data instanceof whind$1.constructor ? data : whind$1(data + ""), prop_data);
+            this.parseLVL1(data instanceof whind$3.constructor ? data : whind$3(data + ""), prop_data);
 
             return prop_data;
         }
@@ -6836,7 +9328,7 @@ var wick = (function () {
         parseLVL1(l, r, root = true) {
 
             if (typeof(l) == "string")
-                l = whind$1(l);
+                l = whind$3(l);
 
             if (root) {
                 switch(checkDefaults(l)){
@@ -6898,7 +9390,7 @@ var wick = (function () {
 
         parseLVL1(l, r, ROOT = true) {
             if (typeof(l) == "string")
-                l = whind$1(l);
+                l = whind$3(l);
 
             if (ROOT) {
                 switch(checkDefaults(l)){
@@ -6941,7 +9433,7 @@ var wick = (function () {
     class SymbolTerm extends LiteralTerm {
         parseLVL1(l, rule, r) {
             if (typeof(l) == "string")
-                l = whind$1(l);
+                l = whind$3(l);
 
             if (l.tx == this.value) {
                 l.next();
@@ -6969,7 +9461,7 @@ var wick = (function () {
 
         let id = "";
 
-        while (!pk.END && (pk.ty & (whind$1.types.id | whind$1.types.num)) || pk.tx == "-" || pk.tx == "_") { pk.next(); }
+        while (!pk.END && (pk.ty & (whind$3.types.id | whind$3.types.num)) || pk.tx == "-" || pk.tx == "_") { pk.next(); }
 
         id = pk.slice(l);
 
@@ -7017,7 +9509,7 @@ var wick = (function () {
 
     function CreatePropertyParser(notation, name, definitions, productions) {
 
-        const l = whind$1(notation);
+        const l = whind$3(notation);
         l.useExtendedId();
         
         const important = { is: false };
@@ -7354,7 +9846,7 @@ var wick = (function () {
 
         if (parser && !IS_VIRTUAL.is) 
 
-            prop = parser.parse(whind$1(body_string).useExtendedId());
+            prop = parser.parse(whind$3(body_string).useExtendedId());
 
         else
             //Need to know what properties have not been defined
@@ -8063,7 +10555,7 @@ var wick = (function () {
         body: null
     };
 
-    const parse = function (string_data) { return parser(whind$1(string_data), env) };
+    const parse = function (string_data) { return parser(whind$3(string_data), env) };
 
     const
         CSS_Length$1 = types$1.length,
@@ -16598,7 +19090,7 @@ var wick = (function () {
     class statement extends base {get IS_STATEMENT(){return true}}
 
     /** OPERATOR **/
-    class operator$1 extends base {
+    class operator$3 extends base {
 
         constructor(sym) {
             super(sym[0], sym[2]);
@@ -16625,7 +19117,7 @@ var wick = (function () {
     }
 
     /** ADD **/
-    class add_expression extends operator$1 {
+    class add_expression extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -16636,7 +19128,7 @@ var wick = (function () {
     }
 
     /** AND **/
-    class and_expression extends operator$1 {
+    class and_expression extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -16838,7 +19330,7 @@ var wick = (function () {
 
     /** ASSIGNEMENT EXPRESSION **/
 
-    class assignment_expression extends operator$1 {
+    class assignment_expression extends operator$3 {
         constructor(sym) {
             super(sym);
             this.op = sym[1];
@@ -16912,7 +19404,7 @@ var wick = (function () {
     }
 
     /** BITWISE AND EXPRESSION **/
-    class bitwise_and_espression extends operator$1 {
+    class bitwise_and_espression extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -16923,7 +19415,7 @@ var wick = (function () {
     }
 
     /** BITWISE OR EXPRESSION **/
-    class bitwise_or_espression extends operator$1 {
+    class bitwise_or_espression extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -16934,7 +19426,7 @@ var wick = (function () {
     }
 
     /** BITWISE XOR EXPRESSION **/
-    class bitwise_xor_espression extends operator$1 {
+    class bitwise_xor_espression extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -17274,7 +19766,7 @@ var wick = (function () {
     }
 
     /** DIVIDE EXPRESSION **/
-    class divide_expression extends operator$1 {
+    class divide_expression extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -17294,13 +19786,13 @@ var wick = (function () {
     }
 
     /** EQ **/
-    class equality_expression extends operator$1 {
+    class equality_expression extends operator$3 {
         constructor(sym) {super(sym); this.op = sym[1];  }
         get type() { return types$2.equality_expression }
     }
 
     /** EXPONENT **/
-    class equality_expression$1 extends operator$1 {
+    class equality_expression$1 extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -17490,7 +19982,7 @@ var wick = (function () {
     }
 
     /** IDENTIFIER **/
-    class identifier$1 extends base {
+    class identifier$3 extends base {
         constructor(sym) {
             super(sym[0]);
             this.root = true;
@@ -17646,7 +20138,7 @@ var wick = (function () {
      }
 
     /** IN **/
-    class in_expression extends operator$1 {
+    class in_expression extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -17657,7 +20149,7 @@ var wick = (function () {
     }
 
     /** INSTANCEOF **/
-    class instanceof_expression extends operator$1 {
+    class instanceof_expression extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -17687,7 +20179,7 @@ var wick = (function () {
     }
 
     /** LEFT_SHIFT **/
-    class left_shift_expression extends operator$1 {
+    class left_shift_expression extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -17776,7 +20268,7 @@ var wick = (function () {
     }
 
     /** MODULO **/
-    class modulo_expression extends operator$1 {
+    class modulo_expression extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -17787,7 +20279,7 @@ var wick = (function () {
     }
 
     /** MULTIPLY **/
-    class multiply_expression extends operator$1 {
+    class multiply_expression extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -17911,7 +20403,7 @@ var wick = (function () {
     }
 
     /** OR **/
-    class or_expression extends operator$1 {
+    class or_expression extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -18039,7 +20531,7 @@ var wick = (function () {
     }
 
     /** RIGHT SHIFT **/
-    class right_shift_expression extends operator$1 {
+    class right_shift_expression extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -18050,7 +20542,7 @@ var wick = (function () {
     }
 
     /** RIGHT SHIFT **/
-    class right_shift_fill_expression extends operator$1 {
+    class right_shift_fill_expression extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -18097,7 +20589,7 @@ var wick = (function () {
 
     /** STRING **/
 
-    class string$1 extends base {
+    class string$3 extends base {
         constructor(sym) { super(sym.length === 3 ? sym[1]: ""); }
 
         get val() { return this.vals[0] }
@@ -18116,7 +20608,7 @@ var wick = (function () {
     }
 
     /** SUBTRACT **/
-    class subtract_expression extends operator$1 {
+    class subtract_expression extends operator$3 {
 
         constructor(sym) {
             super(sym);
@@ -18527,7 +21019,7 @@ var wick = (function () {
             expression_statement,
             for_statement,
             function_declaration,
-            identifier: identifier$1,
+            identifier: identifier$3,
             if_statement,
             in_expression,
             instanceof_expression,
@@ -18552,7 +21044,7 @@ var wick = (function () {
             right_shift_fill_expression,
             spread_element,
             statements,
-            string_literal: string$1,
+            string_literal: string$3,
             subtract_expression,
             this_literal,
             try_statement,
@@ -23220,8 +25712,898 @@ var wick = (function () {
         return o[0];
     };
 
+    const uni_id_start$2=[170,181,186,748,750,895,902,908,1369,1749,1791,1808,1969,2042,2074,2084,2088,2365,2384,2482,2493,2510,2556,2654,2749,2768,2809,2877,2929,2947,2972,3024,3133,3200,3261,3294,3389,3406,3517,3716,3749,3773,3782,3840,4159,4193,4238,4295,4301,4696,4800,6103,6108,6314,6823,7418,8025,8027,8029,8126,8305,8319,8450,8455,8469,8484,8486,8488,8526,11559,11565,11631,11823,13312,19893,19968,40943,43259,43471,43642,43697,43712,43714,44032,55203,64285,64318,67592,67644,68096,69415,69956,70006,70106,70108,70280,70461,70480,70751,70855,71236,71352,71935,72161,72163,72192,72250,72272,72349,72768,73030,73112,94032,94179,94208,100343,119970,119995,120134,123214,125259,126500,126503,126521,126523,126530,126535,126537,126539,126548,126551,126553,126555,126557,126559,126564,126590,131072,173782,173824,177972,177984,178205,178208,183969,183984,191456];
+    const uni_id_start_r$2=[65,90,97,122,192,214,216,246,248,705,710,721,736,740,880,884,886,887,890,893,904,906,910,929,931,1013,1015,1153,1162,1327,1329,1366,1376,1416,1488,1514,1519,1522,1568,1610,1646,1647,1649,1747,1765,1766,1774,1775,1786,1788,1810,1839,1869,1957,1994,2026,2036,2037,2048,2069,2112,2136,2144,2154,2208,2228,2230,2237,2308,2361,2392,2401,2417,2432,2437,2444,2447,2448,2451,2472,2474,2480,2486,2489,2524,2525,2527,2529,2544,2545,2565,2570,2575,2576,2579,2600,2602,2608,2610,2611,2613,2614,2616,2617,2649,2652,2674,2676,2693,2701,2703,2705,2707,2728,2730,2736,2738,2739,2741,2745,2784,2785,2821,2828,2831,2832,2835,2856,2858,2864,2866,2867,2869,2873,2908,2909,2911,2913,2949,2954,2958,2960,2962,2965,2969,2970,2974,2975,2979,2980,2984,2986,2990,3001,3077,3084,3086,3088,3090,3112,3114,3129,3160,3162,3168,3169,3205,3212,3214,3216,3218,3240,3242,3251,3253,3257,3296,3297,3313,3314,3333,3340,3342,3344,3346,3386,3412,3414,3423,3425,3450,3455,3461,3478,3482,3505,3507,3515,3520,3526,3585,3632,3634,3635,3648,3654,3713,3714,3718,3722,3724,3747,3751,3760,3762,3763,3776,3780,3804,3807,3904,3911,3913,3948,3976,3980,4096,4138,4176,4181,4186,4189,4197,4198,4206,4208,4213,4225,4256,4293,4304,4346,4348,4680,4682,4685,4688,4694,4698,4701,4704,4744,4746,4749,4752,4784,4786,4789,4792,4798,4802,4805,4808,4822,4824,4880,4882,4885,4888,4954,4992,5007,5024,5109,5112,5117,5121,5740,5743,5759,5761,5786,5792,5866,5870,5880,5888,5900,5902,5905,5920,5937,5952,5969,5984,5996,5998,6000,6016,6067,6176,6264,6272,6276,6279,6312,6320,6389,6400,6430,6480,6509,6512,6516,6528,6571,6576,6601,6656,6678,6688,6740,6917,6963,6981,6987,7043,7072,7086,7087,7098,7141,7168,7203,7245,7247,7258,7293,7296,7304,7312,7354,7357,7359,7401,7404,7406,7411,7413,7414,7424,7615,7680,7957,7960,7965,7968,8005,8008,8013,8016,8023,8031,8061,8064,8116,8118,8124,8130,8132,8134,8140,8144,8147,8150,8155,8160,8172,8178,8180,8182,8188,8336,8348,8458,8467,8473,8477,8490,8493,8495,8505,8508,8511,8517,8521,8544,8584,11264,11310,11312,11358,11360,11492,11499,11502,11506,11507,11520,11557,11568,11623,11648,11670,11680,11686,11688,11694,11696,11702,11704,11710,11712,11718,11720,11726,11728,11734,11736,11742,12293,12295,12321,12329,12337,12341,12344,12348,12353,12438,12445,12447,12449,12538,12540,12543,12549,12591,12593,12686,12704,12730,12784,12799,40960,42124,42192,42237,42240,42508,42512,42527,42538,42539,42560,42606,42623,42653,42656,42735,42775,42783,42786,42888,42891,42943,42946,42950,42999,43009,43011,43013,43015,43018,43020,43042,43072,43123,43138,43187,43250,43255,43261,43262,43274,43301,43312,43334,43360,43388,43396,43442,43488,43492,43494,43503,43514,43518,43520,43560,43584,43586,43588,43595,43616,43638,43646,43695,43701,43702,43705,43709,43739,43741,43744,43754,43762,43764,43777,43782,43785,43790,43793,43798,43808,43814,43816,43822,43824,43866,43868,43879,43888,44002,55216,55238,55243,55291,63744,64109,64112,64217,64256,64262,64275,64279,64287,64296,64298,64310,64312,64316,64320,64321,64323,64324,64326,64433,64467,64829,64848,64911,64914,64967,65008,65019,65136,65140,65142,65276,65313,65338,65345,65370,65382,65470,65474,65479,65482,65487,65490,65495,65498,65500,65536,65547,65549,65574,65576,65594,65596,65597,65599,65613,65616,65629,65664,65786,65856,65908,66176,66204,66208,66256,66304,66335,66349,66378,66384,66421,66432,66461,66464,66499,66504,66511,66513,66517,66560,66717,66736,66771,66776,66811,66816,66855,66864,66915,67072,67382,67392,67413,67424,67431,67584,67589,67594,67637,67639,67640,67647,67669,67680,67702,67712,67742,67808,67826,67828,67829,67840,67861,67872,67897,67968,68023,68030,68031,68112,68115,68117,68119,68121,68149,68192,68220,68224,68252,68288,68295,68297,68324,68352,68405,68416,68437,68448,68466,68480,68497,68608,68680,68736,68786,68800,68850,68864,68899,69376,69404,69424,69445,69600,69622,69635,69687,69763,69807,69840,69864,69891,69926,69968,70002,70019,70066,70081,70084,70144,70161,70163,70187,70272,70278,70282,70285,70287,70301,70303,70312,70320,70366,70405,70412,70415,70416,70419,70440,70442,70448,70450,70451,70453,70457,70493,70497,70656,70708,70727,70730,70784,70831,70852,70853,71040,71086,71128,71131,71168,71215,71296,71338,71424,71450,71680,71723,71840,71903,72096,72103,72106,72144,72203,72242,72284,72329,72384,72440,72704,72712,72714,72750,72818,72847,72960,72966,72968,72969,72971,73008,73056,73061,73063,73064,73066,73097,73440,73458,73728,74649,74752,74862,74880,75075,77824,78894,82944,83526,92160,92728,92736,92766,92880,92909,92928,92975,92992,92995,93027,93047,93053,93071,93760,93823,93952,94026,94099,94111,94176,94177,100352,101106,110592,110878,110928,110930,110948,110951,110960,111355,113664,113770,113776,113788,113792,113800,113808,113817,119808,119892,119894,119964,119966,119967,119973,119974,119977,119980,119982,119993,119997,120003,120005,120069,120071,120074,120077,120084,120086,120092,120094,120121,120123,120126,120128,120132,120138,120144,120146,120485,120488,120512,120514,120538,120540,120570,120572,120596,120598,120628,120630,120654,120656,120686,120688,120712,120714,120744,120746,120770,120772,120779,123136,123180,123191,123197,123584,123627,124928,125124,125184,125251,126464,126467,126469,126495,126497,126498,126505,126514,126516,126519,126541,126543,126545,126546,126561,126562,126567,126570,126572,126578,126580,126583,126585,126588,126592,126601,126603,126619,126625,126627,126629,126633,126635,126651];
+    const uni_id_cont$2=[95,1471,1479,1648,1809,2045,2492,2519,2558,2620,2641,2677,2748,2876,2946,3031,3260,3415,3530,3542,3633,3761,3893,3895,3897,4038,6109,6313,7405,7412,8276,8417,11647,42607,43010,43014,43019,43493,43587,43696,43713,64286,65343,66045,66272,68159,70003,70206,70487,70750,72164,72263,73018,73031,94031,121461,121476];
+    const uni_id_cont_r$2=[48,57,768,879,1155,1159,1425,1469,1473,1474,1476,1477,1552,1562,1611,1641,1750,1756,1759,1764,1767,1768,1770,1773,1776,1785,1840,1866,1958,1968,1984,1993,2027,2035,2070,2073,2075,2083,2085,2087,2089,2093,2137,2139,2259,2273,2275,2307,2362,2364,2366,2383,2385,2391,2402,2403,2406,2415,2433,2435,2494,2500,2503,2504,2507,2509,2530,2531,2534,2543,2561,2563,2622,2626,2631,2632,2635,2637,2662,2673,2689,2691,2750,2757,2759,2761,2763,2765,2786,2787,2790,2799,2810,2815,2817,2819,2878,2884,2887,2888,2891,2893,2902,2903,2914,2915,2918,2927,3006,3010,3014,3016,3018,3021,3046,3055,3072,3076,3134,3140,3142,3144,3146,3149,3157,3158,3170,3171,3174,3183,3201,3203,3262,3268,3270,3272,3274,3277,3285,3286,3298,3299,3302,3311,3328,3331,3387,3388,3390,3396,3398,3400,3402,3405,3426,3427,3430,3439,3458,3459,3535,3540,3544,3551,3558,3567,3570,3571,3636,3642,3655,3662,3664,3673,3764,3772,3784,3789,3792,3801,3864,3865,3872,3881,3902,3903,3953,3972,3974,3975,3981,3991,3993,4028,4139,4158,4160,4169,4182,4185,4190,4192,4194,4196,4199,4205,4209,4212,4226,4237,4239,4253,4957,4959,5906,5908,5938,5940,5970,5971,6002,6003,6068,6099,6112,6121,6155,6157,6160,6169,6277,6278,6432,6443,6448,6459,6470,6479,6608,6617,6679,6683,6741,6750,6752,6780,6783,6793,6800,6809,6832,6845,6912,6916,6964,6980,6992,7001,7019,7027,7040,7042,7073,7085,7088,7097,7142,7155,7204,7223,7232,7241,7248,7257,7376,7378,7380,7400,7415,7417,7616,7673,7675,7679,8255,8256,8400,8412,8421,8432,11503,11505,11744,11775,12330,12335,12441,12442,42528,42537,42612,42621,42654,42655,42736,42737,43043,43047,43136,43137,43188,43205,43216,43225,43232,43249,43263,43273,43302,43309,43335,43347,43392,43395,43443,43456,43472,43481,43504,43513,43561,43574,43596,43597,43600,43609,43643,43645,43698,43700,43703,43704,43710,43711,43755,43759,43765,43766,44003,44010,44012,44013,44016,44025,65024,65039,65056,65071,65075,65076,65101,65103,65296,65305,66422,66426,66720,66729,68097,68099,68101,68102,68108,68111,68152,68154,68325,68326,68900,68903,68912,68921,69446,69456,69632,69634,69688,69702,69734,69743,69759,69762,69808,69818,69872,69881,69888,69890,69927,69940,69942,69951,69957,69958,70016,70018,70067,70080,70089,70092,70096,70105,70188,70199,70367,70378,70384,70393,70400,70403,70459,70460,70462,70468,70471,70472,70475,70477,70498,70499,70502,70508,70512,70516,70709,70726,70736,70745,70832,70851,70864,70873,71087,71093,71096,71104,71132,71133,71216,71232,71248,71257,71339,71351,71360,71369,71453,71467,71472,71481,71724,71738,71904,71913,72145,72151,72154,72160,72193,72202,72243,72249,72251,72254,72273,72283,72330,72345,72751,72758,72760,72767,72784,72793,72850,72871,72873,72886,73009,73014,73020,73021,73023,73029,73040,73049,73098,73102,73104,73105,73107,73111,73120,73129,73459,73462,92768,92777,92912,92916,92976,92982,93008,93017,94033,94087,94095,94098,113821,113822,119141,119145,119149,119154,119163,119170,119173,119179,119210,119213,119362,119364,120782,120831,121344,121398,121403,121452,121499,121503,121505,121519,122880,122886,122888,122904,122907,122913,122915,122916,122918,122922,123184,123190,123200,123209,123628,123641,125136,125142,125252,125258,125264,125273];
+
+    ///*
+    const j$3 = new Uint16Array(100000);
+
+    j$3.fill(0);
+
+    //Add value to individual indexes
+    function aii$2(table, value, ...indices) {
+    	for (const i of indices)
+    		table[i] |= value;
+    }
+
+    //Add value to index ranges
+    function air$2(t, v, ...i_r) {
+    	for (const r of i_r.reduce((r, v, i) => (((i % 2) ? (r[r.length - 1].push(v)) : r.push([v])), r), [])) {
+    		const size = r[1] + 1 - r[0],
+    			a = [];
+    		for (let i = 0; i < size; i++)
+    			a[i] = r[0] + i;
+    		aii$2(t, v, ...a);
+    	}
+    }
+
+
+    //7. Symbol
+    // Default Value
+
+    //1. Identifier
+    air$2(j$3, 1, ...uni_id_start_r$2);
+    aii$2(j$3, 1, ...uni_id_start$2);
+
+    //2. QUOTE STRING
+    aii$2(j$3, 2, 34, 39, 96);
+
+    //3. SPACE SET
+    aii$2(j$3, 3, 32);
+
+    //4. TAB SET
+    aii$2(j$3, 4, 9);
+
+    //5. CARIAGE RETURN 
+    aii$2(j$3, 5, 13);
+
+    //6. CARIAGE RETURN 
+    aii$2(j$3, 6, 10);
+
+    //7. Number
+    air$2(j$3, 7, 48, 57);
+
+    //8. Operator
+    aii$2(j$3, 8, 33, 37, 38, 42, 43, 58, 60, 61, 62);
+
+    //9. Open Bracket
+    aii$2(j$3, 9, 40, 91, 123);
+
+    //10. Close Bracket
+    aii$2(j$3, 10, 41, 93, 125);
+
+    //10. Close Bracket
+    aii$2(j$3, 11, 16);
+
+
+    /**
+     * Lexer Number and Identifier jump table reference
+     * Number are masked by 12(4|8) and Identifiers are masked by 10(2|8)
+     * entries marked as `0` are not evaluated as either being in the number set or the identifier set.
+     * entries marked as `2` are in the identifier set but not the number set
+     * entries marked as `4` are in the number set but not the identifier set
+     * entries marked as `8` are in both number and identifier sets
+     */
+
+    /**
+     * LExer Number and Identifier jump table reference
+     * Number are masked by 12(4|8) and Identifiers are masked by 10(2|8)
+     */
+
+    // entries marked as `2` are in the identifier set but not the number set
+    air$2(j$3, 2 << 8, 65, 90, 97, 122);
+    air$2(j$3, 2 << 8, ...uni_id_start_r$2);
+    aii$2(j$3, 2 << 8, ...uni_id_start$2);
+    air$2(j$3, 2 << 8, ...uni_id_cont_r$2);
+    aii$2(j$3, 2 << 8, ...uni_id_cont$2);
+
+    // entries marked as `8` are in both number and identifier sets
+    air$2(j$3, 8 << 8, 48, 57);
+
+    const HORIZONTAL_TAB$3 = 9;
+    const SPACE$3 = 32;
+
+
+    const extended_jump_table$2 = j$3.slice();
+    extended_jump_table$2[45] |= 2 << 8;
+    extended_jump_table$2[95] |= 2 << 8;
+
+    const
+        number$3 = 1,
+        identifier$4 = 2,
+        string$4 = 4,
+        white_space$3 = 8,
+        open_bracket$3 = 16,
+        close_bracket$3 = 32,
+        operator$4 = 64,
+        symbol$3 = 128,
+        new_line$3 = 256,
+        data_link$3 = 512,
+        alpha_numeric$3 = (identifier$4 | number$3),
+        white_space_new_line$3 = (white_space$3 | new_line$3),
+        Types$3 = {
+            num: number$3,
+            number: number$3,
+            id: identifier$4,
+            identifier: identifier$4,
+            str: string$4,
+            string: string$4,
+            ws: white_space$3,
+            white_space: white_space$3,
+            ob: open_bracket$3,
+            open_bracket: open_bracket$3,
+            cb: close_bracket$3,
+            close_bracket: close_bracket$3,
+            op: operator$4,
+            operator: operator$4,
+            sym: symbol$3,
+            symbol: symbol$3,
+            nl: new_line$3,
+            new_line: new_line$3,
+            dl: data_link$3,
+            data_link: data_link$3,
+            alpha_numeric: alpha_numeric$3,
+            white_space_new_line: white_space_new_line$3,
+        },
+
+        /*** MASKS ***/
+
+        TYPE_MASK$3 = 0xF,
+        PARSE_STRING_MASK$3 = 0x10,
+        IGNORE_WHITESPACE_MASK$3 = 0x20,
+        CHARACTERS_ONLY_MASK$3 = 0x40,
+        TOKEN_LENGTH_MASK$3 = 0xFFFFFF80,
+
+        //De Bruijn Sequence for finding index of right most bit set.
+        //http://supertech.csail.mit.edu/papers/debruijn.pdf
+        debruijnLUT$3 = [
+            0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
+            31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+        ];
+
+    const getNumbrOfTrailingZeroBitsFromPowerOf2$3 = (value) => debruijnLUT$3[(value * 0x077CB531) >>> 27];
+
+    class Lexer$3 {
+
+        constructor(string = "", INCLUDE_WHITE_SPACE_TOKENS = false, PEEKING = false) {
+
+            if (typeof(string) !== "string") throw new Error(`String value must be passed to Lexer. A ${typeof(string)} was passed as the \`string\` argument.`);
+
+            /**
+             * The string that the Lexer tokenizes.
+             */
+            this.str = string;
+
+            /**
+             * Reference to the peeking Lexer.
+             */
+            this.p = null;
+
+            /**
+             * The type id of the current token.
+             */
+            this.type = 32768; //Default "non-value" for types is 1<<15;
+
+            /**
+             * The offset in the string of the start of the current token.
+             */
+            this.off = 0;
+
+            this.masked_values = 0;
+
+            /**
+             * The character offset of the current token within a line.
+             */
+            this.char = 0;
+            /**
+             * The line position of the current token.
+             */
+            this.line = 0;
+            /**
+             * The length of the string being parsed
+             */
+            this.sl = string.length;
+            /**
+             * The length of the current token.
+             */
+            this.tl = 0;
+
+            /**
+             * Flag to ignore white spaced.
+             */
+            this.IWS = !INCLUDE_WHITE_SPACE_TOKENS;
+
+            this.USE_EXTENDED_ID = false;
+
+            /**
+             * Flag to force the lexer to parse string contents
+             */
+            this.PARSE_STRING = false;
+
+            this.id_lu = j$3;
+
+            if (!PEEKING) this.next();
+        }
+
+        useExtendedId() {
+            this.id_lu = extended_jump_table$2;
+            this.tl = 0;
+            this.next();
+            return this;
+        }
+
+        /**
+         * Restricts max parse distance to the other Lexer's current position.
+         * @param      {Lexer}  Lexer   The Lexer to limit parse distance by.
+         */
+        fence(marker = this) {
+            if (marker.str !== this.str)
+                return;
+            this.sl = marker.off;
+            return this;
+        }
+
+        /**
+         * Copies the Lexer.
+         * @return     {Lexer}  Returns a new Lexer instance with the same property values.
+         */
+        copy(destination = new Lexer$3(this.str, false, true)) {
+            destination.off = this.off;
+            destination.char = this.char;
+            destination.line = this.line;
+            destination.sl = this.sl;
+            destination.masked_values = this.masked_values;
+            destination.id_lu = this.id_lu;
+            return destination;
+        }
+
+        /**
+         * Given another Lexer with the same `str` property value, it will copy the state of that Lexer.
+         * @param      {Lexer}  [marker=this.peek]  The Lexer to clone the state from. 
+         * @throws     {Error} Throws an error if the Lexers reference different strings.
+         * @public
+         */
+        sync(marker = this.p) {
+
+            if (marker instanceof Lexer$3) {
+                if (marker.str !== this.str) throw new Error("Cannot sync Lexers with different strings!");
+                this.off = marker.off;
+                this.char = marker.char;
+                this.line = marker.line;
+                this.masked_values = marker.masked_values;
+            }
+
+            return this;
+        }
+
+        /**
+        Creates an error message with a diagram illustrating the location of the error. 
+        */
+        errorMessage(message = "") {
+            const pk = this.copy();
+
+            pk.IWS = false;
+
+            while (!pk.END && pk.ty !== Types$3.nl) { pk.next(); }
+
+            const end = (pk.END) ? this.str.length : pk.off,
+
+                nls = (this.line > 0) ? 1 : 0,
+                number_of_tabs = this.str
+                .slice(this.off - this.char + nls + nls, this.off + nls)
+                .split("")
+                .reduce((r, v) => (r + ((v.charCodeAt(0) == HORIZONTAL_TAB$3) | 0)), 0),
+
+                arrow = String.fromCharCode(0x2b89),
+
+                line = String.fromCharCode(0x2500),
+
+                thick_line = String.fromCharCode(0x2501),
+
+                line_number = `    ${this.line+1}: `,
+
+                line_fill = line_number.length + number_of_tabs,
+
+                line_text = this.str.slice(this.off - this.char + nls + (nls), end).replace(/\t/g, "  "),
+
+                error_border = thick_line.repeat(line_text.length + line_number.length + 2),
+
+                is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "",
+
+                msg = [`${message} at ${this.line+1}:${this.char - nls}`,
+                `${error_border}`,
+                `${line_number+line_text}`,
+                `${line.repeat(this.char-nls+line_fill-(nls))+arrow}`,
+                `${error_border}`,
+                `${is_iws}`].join("\n");
+
+            return msg;
+        }
+
+        /**
+         * Will throw a new Error, appending the parsed string line and position information to the the error message passed into the function.
+         * @instance
+         * @public
+         * @param {String} message - The error message.
+         * @param {Bool} DEFER - if true, returns an Error object instead of throwing.
+         */
+        throw (message, DEFER = false) {
+            const error = new Error(this.errorMessage(message));
+            if (DEFER)
+                return error;
+            throw error;
+        }
+
+        /**
+         * Proxy for Lexer.prototype.reset
+         * @public
+         */
+        r() { return this.reset() }
+
+        /**
+         * Restore the Lexer back to it's initial state.
+         * @public
+         */
+        reset() {
+            this.p = null;
+            this.type = 32768;
+            this.off = 0;
+            this.tl = 0;
+            this.char = 0;
+            this.line = 0;
+            this.n;
+            return this;
+        }
+
+        resetHead() {
+            this.off = 0;
+            this.tl = 0;
+            this.char = 0;
+            this.line = 0;
+            this.p = null;
+            this.type = 32768;
+        }
+
+        /**
+         * Sets the internal state to point to the next token. Sets Lexer.prototype.END to `true` if the end of the string is hit.
+         * @public
+         * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
+         */
+        next(marker = this, USE_CUSTOM_SYMBOLS = !!this.symbol_map) {
+
+            if (marker.sl < 1) {
+                marker.off = 0;
+                marker.type = 32768;
+                marker.tl = 0;
+                marker.line = 0;
+                marker.char = 0;
+                return marker;
+            }
+
+            //Token builder
+            const l = marker.sl,
+                str = marker.str,
+                jump_table = this.id_lu,
+                IWS = marker.IWS;
+
+            let length = marker.tl,
+                off = marker.off + length,
+                type = symbol$3,
+                line = marker.line,
+                base = off,
+                char = marker.char,
+                root = marker.off;
+
+            if (off >= l) {
+                length = 0;
+                base = l;
+                //char -= base - off;
+                marker.char = char + (base - marker.off);
+                marker.type = type;
+                marker.off = base;
+                marker.tl = 0;
+                marker.line = line;
+                return marker;
+            }
+
+            let NORMAL_PARSE = true;
+
+            if (USE_CUSTOM_SYMBOLS) {
+
+                let code = str.charCodeAt(off);
+                let off2 = off;
+                let map = this.symbol_map,
+                    m;
+                let i = 0;
+
+                while (code == 32 && IWS)
+                    (code = str.charCodeAt(++off2), off++);
+
+                while ((m = map.get(code))) {
+                    map = m;
+                    off2 += 1;
+                    code = str.charCodeAt(off2);
+                }
+
+                if (map.IS_SYM) {
+                    NORMAL_PARSE = false;
+                    base = off;
+                    length = off2 - off;
+                    //char += length;
+                }
+            }
+
+            while (NORMAL_PARSE) {
+
+                base = off;
+
+                length = 1;
+
+                const code = str.codePointAt(off);
+
+                switch (jump_table[code] & 255) {
+                    case 0: //SYMBOL
+                        type = symbol$3;
+                        break;
+                    case 1: //IDENTIFIER
+                        while (++off < l && ((10 & (jump_table[str.codePointAt(off)] >> 8))));
+                        type = identifier$4;
+                        length = off - base;
+                        break;
+                    case 2: //QUOTED STRING
+                        if (this.PARSE_STRING) {
+                            type = symbol$3;
+                        } else {
+                            while (++off < l && str.codePointAt(off) !== code);
+                            type = string$4;
+                            length = off - base + 1;
+                        }
+                        break;
+                    case 3: //SPACE SET
+                        while (++off < l && str.codePointAt(off) === SPACE$3);
+                        type = white_space$3;
+                        length = off - base;
+                        break;
+                    case 4: //TAB SET
+                        while (++off < l && str[off] === HORIZONTAL_TAB$3);
+                        type = white_space$3;
+                        length = off - base;
+                        break;
+                    case 5: //CARIAGE RETURN
+                        length = 2;
+                        //intentional
+                    case 6: //LINEFEED
+                        type = new_line$3;
+                        line++;
+                        base = off;
+                        root = off;
+                        off += length;
+                        char = 0;
+                        break;
+                    case 7: //NUMBER
+                        while (++off < l && (12 & (jump_table[str.codePointAt(off)] >> 8)));
+
+                        if ((str[off] == "e" || str[off] == "E") && (12 & (jump_table[str.codePointAt(off + 1)] >> 8))) {
+                            off++;
+                            if (str[off] == "-") off++;
+                            marker.off = off;
+                            marker.tl = 0;
+                            marker.next();
+                            off = marker.off + marker.tl;
+                            //Add e to the number string
+                        }
+
+                        type = number$3;
+                        length = off - base;
+
+                        break;
+                    case 8: //OPERATOR
+                        type = operator$4;
+                        break;
+                    case 9: //OPEN BRACKET
+                        type = open_bracket$3;
+                        break;
+                    case 10: //CLOSE BRACKET
+                        type = close_bracket$3;
+                        break;
+                    case 11: //Data Link Escape
+                        type = data_link$3;
+                        length = 4; //Stores two UTF16 values and a data link sentinel
+                        break;
+                }
+
+                if (IWS && (type & white_space_new_line$3)) {
+                    if (off < l) {
+                        type = symbol$3;
+                        //off += length;
+                        continue;
+                    } else {
+                        //Trim white space from end of string
+                        base = l - off;
+                        marker.sl -= off;
+                        length = 0;
+                    }
+                }
+                break;
+            }
+
+            marker.type = type;
+            marker.off = base;
+            marker.tl = (this.masked_values & CHARACTERS_ONLY_MASK$3) ? Math.min(1, length) : length;
+            marker.char = char + base - root;
+            marker.line = line;
+
+            return marker;
+        }
+
+
+        /**
+         * Proxy for Lexer.prototype.assert
+         * @public
+         */
+        a(text) {
+            return this.assert(text);
+        }
+
+        /**
+         * Compares the string value of the current token to the value passed in. Advances to next token if the two are equal.
+         * @public
+         * @throws {Error} - `Expecting "${text}" got "${this.text}"`
+         * @param {String} text - The string to compare.
+         */
+        assert(text) {
+
+            if (this.off < 0) this.throw(`Expecting ${text} got null`);
+
+            if (this.text == text)
+                this.next();
+            else
+                this.throw(`Expecting "${text}" got "${this.text}"`);
+
+            return this;
+        }
+
+        /**
+         * Proxy for Lexer.prototype.assertCharacter
+         * @public
+         */
+        aC(char) { return this.assertCharacter(char) }
+        /**
+         * Compares the character value of the current token to the value passed in. Advances to next token if the two are equal.
+         * @public
+         * @throws {Error} - `Expecting "${text}" got "${this.text}"`
+         * @param {String} text - The string to compare.
+         */
+        assertCharacter(char) {
+
+            if (this.off < 0) this.throw(`Expecting ${char[0]} got null`);
+
+            if (this.ch == char[0])
+                this.next();
+            else
+                this.throw(`Expecting "${char[0]}" got "${this.tx[this.off]}"`);
+
+            return this;
+        }
+
+        /**
+         * Returns the Lexer bound to Lexer.prototype.p, or creates and binds a new Lexer to Lexer.prototype.p. Advences the other Lexer to the token ahead of the calling Lexer.
+         * @public
+         * @type {Lexer}
+         * @param {Lexer} [marker=this] - The marker to originate the peek from. 
+         * @param {Lexer} [peek_marker=this.p] - The Lexer to set to the next token state.
+         * @return {Lexer} - The Lexer that contains the peeked at token.
+         */
+        peek(marker = this, peek_marker = this.p) {
+
+            if (!peek_marker) {
+                if (!marker) return null;
+                if (!this.p) {
+                    this.p = new Lexer$3(this.str, false, true);
+                    peek_marker = this.p;
+                }
+            }
+            peek_marker.masked_values = marker.masked_values;
+            peek_marker.type = marker.type;
+            peek_marker.off = marker.off;
+            peek_marker.tl = marker.tl;
+            peek_marker.char = marker.char;
+            peek_marker.line = marker.line;
+            this.next(peek_marker);
+            return peek_marker;
+        }
+
+
+        /**
+         * Proxy for Lexer.prototype.slice
+         * @public
+         */
+        s(start) { return this.slice(start) }
+
+        /**
+         * Returns a slice of the parsed string beginning at `start` and ending at the current token.
+         * @param {Number | LexerBeta} start - The offset in this.str to begin the slice. If this value is a LexerBeta, sets the start point to the value of start.off.
+         * @return {String} A substring of the parsed string.
+         * @public
+         */
+        slice(start = this.off) {
+
+            if (start instanceof Lexer$3) start = start.off;
+
+            return this.str.slice(start, (this.off <= start) ? this.sl : this.off);
+        }
+
+        /**
+         * Skips to the end of a comment section.
+         * @param {boolean} ASSERT - If set to true, will through an error if there is not a comment line or block to skip.
+         * @param {Lexer} [marker=this] - If another Lexer is passed into this method, it will advance the token state of that Lexer.
+         */
+        comment(ASSERT = false, marker = this) {
+
+            if (!(marker instanceof Lexer$3)) return marker;
+
+            if (marker.ch == "/") {
+                if (marker.pk.ch == "*") {
+                    marker.sync();
+                    while (!marker.END && (marker.next().ch != "*" || marker.pk.ch != "/")) { /* NO OP */ }
+                    marker.sync().assert("/");
+                } else if (marker.pk.ch == "/") {
+                    const IWS = marker.IWS;
+                    while (marker.next().ty != Types$3.new_line && !marker.END) { /* NO OP */ }
+                    marker.IWS = IWS;
+                    marker.next();
+                } else
+                if (ASSERT) marker.throw("Expecting the start of a comment");
+            }
+
+            return marker;
+        }
+
+        setString(string, RESET = true) {
+            this.str = string;
+            this.sl = string.length;
+            if (RESET) this.resetHead();
+        }
+
+        toString() {
+            return this.slice();
+        }
+
+        /**
+         * Returns new Whind Lexer that has leading and trailing whitespace characters removed from input. 
+         * leave_leading_amount - Maximum amount of leading space caracters to leave behind. Default is zero
+         * leave_trailing_amount - Maximum amount of trailing space caracters to leave behind. Default is zero
+         */
+        trim(leave_leading_amount = 0, leave_trailing_amount = leave_leading_amount) {
+            const lex = this.copy();
+
+            let space_count = 0,
+                off = lex.off;
+
+            for (; lex.off < lex.sl; lex.off++) {
+                const c = j$3[lex.string.charCodeAt(lex.off)];
+
+                if (c > 2 && c < 7) {
+
+                    if (space_count >= leave_leading_amount) {
+                        off++;
+                    } else {
+                        space_count++;
+                    }
+                    continue;
+                }
+
+                break;
+            }
+
+            lex.off = off;
+            space_count = 0;
+            off = lex.sl;
+
+            for (; lex.sl > lex.off; lex.sl--) {
+                const c = j$3[lex.string.charCodeAt(lex.sl - 1)];
+
+                if (c > 2 && c < 7) {
+                    if (space_count >= leave_trailing_amount) {
+                        off--;
+                    } else {
+                        space_count++;
+                    }
+                    continue;
+                }
+
+                break;
+            }
+
+            lex.sl = off;
+
+            if (leave_leading_amount > 0)
+                lex.IWS = false;
+
+            lex.token_length = 0;
+
+            lex.next();
+
+            return lex;
+        }
+
+        /** Adds symbol to symbol_map. This allows custom symbols to be defined and tokenized by parser. **/
+        addSymbol(sym) {
+            if (!this.symbol_map)
+                this.symbol_map = new Map;
+
+
+            let map = this.symbol_map;
+
+            for (let i = 0; i < sym.length; i++) {
+                let code = sym.charCodeAt(i);
+                let m = map.get(code);
+                if (!m) {
+                    m = map.set(code, new Map).get(code);
+                }
+                map = m;
+            }
+            map.IS_SYM = true;
+        }
+
+        /*** Getters and Setters ***/
+        get string() {
+            return this.str;
+        }
+
+        get string_length() {
+            return this.sl - this.off;
+        }
+
+        set string_length(s) {}
+
+        /**
+         * The current token in the form of a new Lexer with the current state.
+         * Proxy property for Lexer.prototype.copy
+         * @type {Lexer}
+         * @public
+         * @readonly
+         */
+        get token() {
+            return this.copy();
+        }
+
+
+        get ch() {
+            return this.str[this.off];
+        }
+
+        /**
+         * Proxy for Lexer.prototype.text
+         * @public
+         * @type {String}
+         * @readonly
+         */
+        get tx() { return this.text }
+
+        /**
+         * The string value of the current token.
+         * @type {String}
+         * @public
+         * @readonly
+         */
+        get text() {
+            return (this.off < 0) ? "" : this.str.slice(this.off, this.off + this.tl);
+        }
+
+        /**
+         * The type id of the current token.
+         * @type {Number}
+         * @public
+         * @readonly
+         */
+        get ty() { return this.type }
+
+        /**
+         * The current token's offset position from the start of the string.
+         * @type {Number}
+         * @public
+         * @readonly
+         */
+        get pos() {
+            return this.off;
+        }
+
+        /**
+         * Proxy for Lexer.prototype.peek
+         * @public
+         * @readonly
+         * @type {Lexer}
+         */
+        get pk() { return this.peek() }
+
+        /**
+         * Proxy for Lexer.prototype.next
+         * @public
+         */
+        get n() { return this.next() }
+
+        get END() { return this.off >= this.sl }
+        set END(v) {}
+
+        get type() {
+            return 1 << (this.masked_values & TYPE_MASK$3);
+        }
+
+        set type(value) {
+            //assuming power of 2 value.
+            this.masked_values = (this.masked_values & ~TYPE_MASK$3) | ((getNumbrOfTrailingZeroBitsFromPowerOf2$3(value)) & TYPE_MASK$3);
+        }
+
+        get tl() {
+            return this.token_length;
+        }
+
+        set tl(value) {
+            this.token_length = value;
+        }
+
+        get token_length() {
+            return ((this.masked_values & TOKEN_LENGTH_MASK$3) >> 7);
+        }
+
+        set token_length(value) {
+            this.masked_values = (this.masked_values & ~TOKEN_LENGTH_MASK$3) | (((value << 7) | 0) & TOKEN_LENGTH_MASK$3);
+        }
+
+        get IGNORE_WHITE_SPACE() {
+            return this.IWS;
+        }
+
+        set IGNORE_WHITE_SPACE(bool) {
+            this.iws = !!bool;
+        }
+
+        get CHARACTERS_ONLY() {
+            return !!(this.masked_values & CHARACTERS_ONLY_MASK$3);
+        }
+
+        set CHARACTERS_ONLY(boolean) {
+            this.masked_values = (this.masked_values & ~CHARACTERS_ONLY_MASK$3) | ((boolean | 0) << 6);
+        }
+
+        get IWS() {
+            return !!(this.masked_values & IGNORE_WHITESPACE_MASK$3);
+        }
+
+        set IWS(boolean) {
+            this.masked_values = (this.masked_values & ~IGNORE_WHITESPACE_MASK$3) | ((boolean | 0) << 5);
+        }
+
+        get PARSE_STRING() {
+            return !!(this.masked_values & PARSE_STRING_MASK$3);
+        }
+
+        set PARSE_STRING(boolean) {
+            this.masked_values = (this.masked_values & ~PARSE_STRING_MASK$3) | ((boolean | 0) << 4);
+        }
+
+        /**
+         * Reference to token id types.
+         */
+        get types() {
+            return Types$3;
+        }
+    }
+
+    Lexer$3.prototype.addCharacter = Lexer$3.prototype.addSymbol;
+
+    function whind$4(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer$3(string, INCLUDE_WHITE_SPACE_TOKENS) }
+
+    whind$4.constructor = Lexer$3;
+
+    Lexer$3.types = Types$3;
+    whind$4.types = Types$3;
+
     function parse$1(string) {
-        return parser$2(whind$1(string), env$1);
+        return parser$2(whind$4(string), env$1);
     }
 
     const removeFromArray = (array, ...elems) => {
@@ -23376,6 +26758,9 @@ var wick = (function () {
             this.ios.push(io);
 
             io.parent = this;
+
+            if(this.value !== undefined)
+                io.down(this.value);
         }
 
         removeIO(io) {
@@ -23546,8 +26931,8 @@ var wick = (function () {
         }
 
         addContainer(container) {
-            container.parent = this;    
-           this.PENDING_LOADS++;
+            container.parent = this;
+            this.PENDING_LOADS++;
             this.containers.push(container);
         }
 
@@ -23569,8 +26954,9 @@ var wick = (function () {
                     return (this.scopes.splice(i, 1), scope.parent = null);
         }
 
-        linkImportTaps(parent_scope) {
+        linkImportTaps(parent_scope = this.parent) {
             for (const tap of this.taps.values()) {
+                
                 tap.linkImport(parent_scope);
             }
         }
@@ -23600,6 +26986,9 @@ var wick = (function () {
         load(model) {
             //Called before model is loaded
             this.update({ loading: true }); //Lifecycle Events: Loading <====================================================================== 
+
+            if(this.parent)
+                this.linkImportTaps();
 
             let
                 m = null,
@@ -23665,7 +27054,7 @@ var wick = (function () {
                 this.LOADED = true;
 
                 this.update({ loaded: true }); //Lifecycle Events: Loaded <======================================================================
-                
+
                 if (this.parent && this.parent.loadAcknowledged)
                     this.parent.loadAcknowledged();
             }
@@ -24107,7 +27496,7 @@ in file ${o.url || o.origin_url}`,e);
             */
             if (this.pending_load_attrib && this.getAttrib(this.pending_load_attrib).value) {
                 const fn = e => {
-                    scope.acknowledgePending();
+                    scope.loadAcknowledged();
                     own_element.removeEventListener("load", fn);
                 };
                 own_element.addEventListener("load", fn);
@@ -24506,154 +27895,6 @@ in file ${o.url || o.origin_url}`,e);
         }
     }
 
-    /**
-     * Used to call the Scheduler after a JavaScript runtime tick.
-     *
-     * Depending on the platform, caller will either map to requestAnimationFrame or it will be a setTimout.
-     */
-     
-    const caller$1 = (typeof(window) == "object" && window.requestAnimationFrame) ? window.requestAnimationFrame : (f) => {
-        setTimeout(f, 1);
-    };
-
-    const perf$1 = (typeof(performance) == "undefined") ? { now: () => Date.now() } : performance;
-
-
-    /**
-     * Handles updating objects. It does this by splitting up update cycles, to respect the browser event model. 
-     *    
-     * If any object is scheduled to be updated, it will be blocked from scheduling more updates until the next ES VM tick.
-     */
-    class Spark$1 {
-        /**
-         * Constructs the object.
-         */
-        constructor() {
-
-            this.update_queue_a = [];
-            this.update_queue_b = [];
-
-            this.update_queue = this.update_queue_a;
-
-            this.queue_switch = 0;
-
-            this.callback = ()=>{};
-
-
-            if(typeof(window) !== "undefined"){
-                window.addEventListener("load",()=>{
-                    this.callback = () => this.update();
-                    caller$1(this.callback);
-                });
-            }else{
-                this.callback = () => this.update();
-            }
-
-
-            this.frame_time = perf$1.now();
-
-            this.SCHEDULE_PENDING = false;
-        }
-
-        /**
-         * Given an object that has a _SCHD_ Boolean property, the Scheduler will queue the object and call its .update function 
-         * the following tick. If the object does not have a _SCHD_ property, the Scheduler will persuade the object to have such a property.
-         * 
-         * If there are currently no queued objects when this is called, then the Scheduler will user caller to schedule an update.
-         */
-        queueUpdate(object, timestart = 1, timeend = 0) {
-
-            if (object._SCHD_ || object._SCHD_ > 0) {
-                if (this.SCHEDULE_PENDING)
-                    return;
-                else
-                    return caller$1(this.callback);
-            }
-
-            object._SCHD_ = ((timestart & 0xFFFF) | ((timeend) << 16));
-
-            this.update_queue.push(object);
-
-            if (this._SCHD_)
-                return;
-
-            this.frame_time = perf$1.now() | 0;
-
-
-            if(!this.SCHEDULE_PENDING){
-                this.SCHEDULE_PENDING = true;
-                caller$1(this.callback);
-            }
-        }
-
-        removeFromQueue(object){
-
-            if(object._SCHD_)
-                for(let i = 0, l = this.update_queue.length; i < l; i++)
-                    if(this.update_queue[i] === object){
-                        this.update_queue.splice(i,1);
-                        object._SCHD_ = 0;
-
-                        if(l == 1)
-                            this.SCHEDULE_PENDING = false;
-
-                        return;
-                    }
-        }
-
-        /**
-         * Called by the caller function every tick. Calls .update on any object queued for an update. 
-         */
-        update() {
-
-            this.SCHEDULE_PENDING = false;
-
-            const uq = this.update_queue;
-            const time = perf$1.now() | 0;
-            const diff = Math.ceil(time - this.frame_time) | 1;
-            const step_ratio = (diff * 0.06); //  step_ratio of 1 = 16.66666666 or 1000 / 60 for 60 FPS
-
-            this.frame_time = time;
-            
-            if (this.queue_switch == 0)
-                (this.update_queue = this.update_queue_b, this.queue_switch = 1);
-            else
-                (this.update_queue = this.update_queue_a, this.queue_switch = 0);
-
-            for (let i = 0, l = uq.length, o = uq[0]; i < l; o = uq[++i]) {
-                let timestart = ((o._SCHD_ & 0xFFFF)) - diff;
-                let timeend = ((o._SCHD_ >> 16) & 0xFFFF);
-
-                o._SCHD_ = 0;
-                
-                if (timestart > 0) {
-                    this.queueUpdate(o, timestart, timeend);
-                    continue;
-                }
-
-                timestart = 0;
-
-                if (timeend > 0) 
-                    this.queueUpdate(o, timestart, timeend - diff);
-
-                /** 
-                    To ensure on code path doesn't block any others, 
-                    scheduledUpdate methods are called within a try catch block. 
-                    Errors by default are printed to console. 
-                **/
-                try {
-                    o.scheduledUpdate(step_ratio, diff);
-                } catch (e) {
-                    console.error(e);
-                }
-            }
-
-            uq.length = 0;
-        }
-    }
-
-    const spark$1 = new Spark$1();
-
     class ArgumentIO extends IO {
 
         get type() { return "ArgumentIO" }
@@ -24804,7 +28045,7 @@ in file ${o.url || o.origin_url}`,e);
                     this.IMMEDIATE_NEEDED = false;
                     this.scheduledUpdate();
                 } else if (!this._SCHD_)
-                    spark$1.queueUpdate(this);
+                    spark.queueUpdate(this);
             }
         }
 
@@ -24848,7 +28089,7 @@ in file ${o.url || o.origin_url}`,e);
                     this.IMMEDIATE_NEEDED = false;
                     return this.scheduledUpdate();
                 } else if (!this._SCHD_)
-                    spark$1.queueUpdate(this);
+                    spark.queueUpdate(this);
             } else
                 this.AWAITING_DEPENDENCIES = true;
         }
@@ -24866,7 +28107,7 @@ in file ${o.url || o.origin_url}`,e);
             Useful for actions which require incremental updates to the UI.
         */
         onTick(name) {
-            spark$1.queueUpdate({
+            spark.queueUpdate({
                 _SCHD_: 0, // Meta value for spark;
                 scheduledUpdate: (s, d) => this.emit(name, { step: s, diff: d })
             });
@@ -25084,8 +28325,8 @@ in file ${o.url || o.origin_url}`,e);
                     
                     node.parent.replace(new call_expression(
                         [
-                            new identifier$1(["emit"]),
-                            new argument_list$1(new string$1([null, node.name, null]), node.parent.right),
+                            new identifier$3(["emit"]),
+                            new argument_list$1(new string$3([null, node.name, null]), node.parent.right),
                         ]
                     ));
                 }
@@ -25102,7 +28343,7 @@ in file ${o.url || o.origin_url}`,e);
                 if ((root[k] && !(root[k] instanceof HTMLElement)) || presets.custom[k] || presets[k] || defaults$1[k] || ignore.includes(k))
                     return;
                 //*
-                const args = [new string$1([null, node.name, null])];
+                const args = [new string$3([null, node.name, null])];
 
                 if(node.parent.args)
                     args.push(...node.parent.args.vals);
@@ -25110,7 +28351,7 @@ in file ${o.url || o.origin_url}`,e);
                 node.parent.replace(
                     new call_expression(
                         [
-                            new identifier$1(["emit"]),
+                            new identifier$3(["emit"]),
                             new argument_list$1(...args)
                         ]
                     )
@@ -25578,7 +28819,7 @@ in file ${o.url || o.origin_url}`,e);
                         if (pos < 0 || pos > this.max)
                             this.scrub_velocity = 0;
 
-                        spark$1.queueUpdate(this);
+                        spark.queueUpdate(this);
                     }
 
                 } else {
@@ -25737,7 +28978,7 @@ in file ${o.url || o.origin_url}`,e);
                     this.drag = drag;
                     this.scrub_velocity = this.scrub_velocity;
                     this.SCRUBBING = true;
-                    spark$1.queueUpdate(this);
+                    spark.queueUpdate(this);
                     return true;
                 } else {
                     this.offset += Math.round(this.offset_fractional);
@@ -26124,11 +29365,11 @@ in file ${o.url || o.origin_url}`,e);
                 transition = Animation.createTransition(), OWN_TRANSITION = true;
 
             for (let i = 0; i < items.length; i++) {
-                const scope = this.component.mount(null, items[i]);
+                const scope = this.component.mount(null, items[i], undefined, this.parent);
 
                 //TODO: Make sure both of there references are removed when the scope is destroyed.
                 this.scopes.push(scope);
-                this.parent.addScope(scope);
+                //this.parent.addScope(scope);
 
                 scope.update({ loaded: true });
             }
@@ -26170,19 +29411,19 @@ in file ${o.url || o.origin_url}`,e);
         }
 
         //Mounts component data to new HTMLElement object.
-        async mount(HTMLElement_, data_object, USE_SHADOW) {
+        async mount(HTMLElement_, data_object, USE_SHADOW, parent_scope) {
 
             if (this.READY !== true) {
                 if (!this.__pending)
                     this.__pending = [];
 
-                return new Promise(res => this.__pending.push([false, HTMLElement_, data_object, USE_SHADOW, res]));
+                return new Promise(res => this.__pending.push([false, HTMLElement_, data_object, USE_SHADOW, parent_scope,  res]));
             }
 
-            return this.nonAsyncMount(HTMLElement_, data_object, USE_SHADOW);
+            return this.nonAsyncMount(HTMLElement_, data_object, USE_SHADOW, parent_scope);
         }
 
-        nonAsyncMount(HTMLElement_, data_object = null, USE_SHADOW) {
+        nonAsyncMount(HTMLElement_, data_object = null, USE_SHADOW, parent_scope = null) {
             let element = HTMLElement_;
 
             if (USE_SHADOW == undefined)
@@ -26194,7 +29435,7 @@ in file ${o.url || o.origin_url}`,e);
                 element = HTMLElement_.attachShadow({ mode: 'open' });
             }
 
-            const scope = this.ast.mount(element);
+            const scope = this.ast.mount(element, parent_scope);
 
             scope.load(data_object);
 
@@ -26313,7 +29554,7 @@ in file ${o.url || o.origin_url}`,e);
         setValue(value) {
             if (Array.isArray(value)) {
                 value.forEach((v, i) => this.arg_props[i] = v);
-                this.active_IOS = this.IO_ACTIVATIONS;
+                this.ACTIVE_IOS = this.IO_ACTIVATIONS;
             } else if (typeof(value) == "object") {
                 //Distribute iterable properties amongst the IO_Script's own props.
                 for (const a in value) {
@@ -26400,7 +29641,7 @@ in file ${o.url || o.origin_url}`,e);
 
             this.on = true;
 
-            if (this.original_ast && !(this.original_ast instanceof identifier$1))
+            if (this.original_ast && !(this.original_ast instanceof identifier$3))
                 this.processJSAST(env.presets);
 
         }
@@ -26816,7 +30057,7 @@ in file ${o.url || o.origin_url}`,e);
 
                 else
 
-                if (this.name == "value" && (tag == "input" || tag == "textarea"))
+                if (this.name == "value" && (tag == "select" || tag == "input" || tag == "textarea"))
                     this.io_constr = InputIO;
             }
 
@@ -26972,7 +30213,7 @@ in file ${o.url || o.origin_url}`,e);
             expression_statement,
             for_statement,
             function_declaration,
-            identifier: identifier$1,
+            identifier: identifier$3,
             if_statement,
             import_clause,
             import_declaration,
@@ -27008,8 +30249,8 @@ in file ${o.url || o.origin_url}`,e);
             script,
             spread_element,
             statements,
-            string: string$1,
-            string_literal: string$1,
+            string: string$3,
+            string_literal: string$3,
             subtract_expression,
             switch_statement,
             template,
@@ -27314,7 +30555,7 @@ in file ${o.url || o.origin_url}`,e);
                         this.READY = true;
 
                         if (this.__pending) {
-                            this.__pending.forEach(e => e[0] ? e[3](this.stamp(...e.slice(1, 3))) : e[4](this.mount(...e.slice(1, 4))));
+                            this.__pending.forEach(e => e[0] ? e[4](this.stamp(...e.slice(1, 4))) : e[5](this.mount(...e.slice(1, 5))));
                             this.__pending = null;
                         }
 

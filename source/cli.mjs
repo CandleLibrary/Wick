@@ -46,7 +46,7 @@ program
 
 program
 	.command("compile <wick_component_js_or_html>")
-	.description(" Compiles a wick component into standalone HTML, CSS, and JS files that can largely run without the bulk of the wick library. ")
+	.description(" Compiles a wick component into standalone HTML, CSS, and JS files that can independent of wick or with wick.lite")
 	.option("-o, --output <path>", "Optional output location. Defaults to CWD.")
 	.option("-s, --head <head>", "An optional file containing a <head> HTML template")
 	.option("-s, --body <body>", "An optional file containing HTML content to append to the <body>")
