@@ -17,7 +17,7 @@
 //CandleFW stuffs
 import URL from "@candlefw/url";
 import html from "@candlefw/html";
-import wick from "@candlefw/wick";
+import wick from "./wick.node.mjs";
 
 //Turn on NodeJS File Handling
 
