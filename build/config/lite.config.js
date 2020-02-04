@@ -10,12 +10,13 @@ const output = [{
 }];
 
 export default {
+    external: ["path", "http", "fs"],
     input: "./source/lite/lite.js",
     output,
-    treeshake: true,
+    treeshake: {moduleSideEffects:false},
     plugins: [
         resolve({jail:"",modulesOnly: true}),  
-        terser({mangle:true, module:false}), 
+        terser({mangle:true, module:true}), 
         // /gzipPlugin()
     ]
 };

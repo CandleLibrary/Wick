@@ -8,12 +8,13 @@ const output = [{
 }];
 
 export default {
+     external: ["path", "http", "fs"],
     input: "./source/wick.js",
     output,
-    treeshake: false,
+    treeshake: {moduleSideEffects:false},
     plugins: [
         resolve({jail:"",modulesOnly: true}),  
-        //terser({mangle:true, module:true}), 
+   //     terser({mangle:true, module:true}), 
         //gzipPlugin()
     ]
 };
