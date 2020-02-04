@@ -26,8 +26,6 @@ export default function es(tag, attribs, children, env, lex, meta = 0) {
         USE_PENDING_LOAD = "";
 
     switch (tag) {
-        case "text":
-            break;
         case "filter":
         case "f":
             Constructor = FilterNode;
