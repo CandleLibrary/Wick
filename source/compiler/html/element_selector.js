@@ -10,6 +10,9 @@ import SlotNode from "./slot.js";
 import PreNode from "./pre.js";
 import FilterNode from "./filter.js";
 import ImportNode from "./import.js";
+import plugin from "../../plugin/system.js";
+
+const plugin_element = plugin.register("element");
 
 export default function es(tag, attribs, children, env, lex, meta = 0) {    
 
@@ -78,6 +81,9 @@ export default function es(tag, attribs, children, env, lex, meta = 0) {
     }
 
     node = new Constructor(env, tag, children, attribs, presets, USE_PENDING_LOAD);
+
+    if(plugin_element[tag])
+        plugin_element[tag].run(node, lex, env);
 
     node.wickup = meta || false;
 

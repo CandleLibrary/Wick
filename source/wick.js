@@ -8,6 +8,8 @@ import Presets from "./presets.js";
 
 import whind from "@candlefw/whind";
 
+import plugin from "./plugin/system.js";
+
 const wick = compiler;
 
 wick.presets = d=>new Presets(d);
@@ -15,6 +17,8 @@ wick.presets = d=>new Presets(d);
 wick.astCompiler = (string) => wick_compile(whind(string), CompilerEnv);
 
 wick.compiler_environment = CompilerEnv;
+
+wick.plugin = plugin;
 
 export default wick;
 
