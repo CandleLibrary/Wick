@@ -13,6 +13,7 @@ export default class svg extends ElementNode{
 
 	constructor(env, tag, children, attribs, presets){
 		super(env, tag, children, attribs, presets);
+		if(children)
 		convertNameSpace(children);
 	}
 
