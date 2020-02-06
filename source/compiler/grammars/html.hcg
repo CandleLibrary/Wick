@@ -57,14 +57,14 @@
 <> TAG_BODY_ITEM → TEXT_NODE  						
 	│ TAG 											
 	
-<> ATTRIBUTES → ATTRIBUTES ATTRIBUTE  					↦return { sym[0].push(sym[1]), sym[0] }
-	│ ATTRIBUTE 										↦return { [sym[0]] }
+<> ATTRIBUTES → ATTRIBUTES ATTRIBUTE  					↦return { $$sym1.push($$sym2), $$sym1 }
+	│ ATTRIBUTE 										↦return { [$$sym1] }
 
 <> ATTRIBUTE → ATTRIBUTE_HEAD = ATTRIBUTE_BODY 	 		↦cstr ^attribute
  	│ ATTRIBUTE_HEAD 									↦cstr ^attribute
 
-<> ATTRIBUTE_HEAD → ' identifier? '								↦return { sym[1] }
-	│ " identifier? "											↦return { sym[1] }
+<> ATTRIBUTE_HEAD → ' identifier? '								↦return { $$sym2 }
+	│ " identifier? "											↦return { $$sym2 }
 	│ identifier
 
 

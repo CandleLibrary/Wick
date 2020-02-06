@@ -21,7 +21,7 @@
 
 +> js::primary_expression → html::TAG 														↦r { new fn.js_wick_node($sym1) }
 
-+> html::BODY →  (IMPORT_TAG)(+) html::GOAL_TAG 												↦return { $sym2.import_list = $sym1, $sym2}
++> html::BODY →  (IMPORT_TAG)(+) html::GOAL_TAG 											↦return { $sym2.import_list = $sym1, $sym2}
 	
 +> html::TAG_BODY_ITEM → < τstyle html::ATTRIBUTES? >  css::CSS?  </ τstyle > 				↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 	│ < τscript html::ATTRIBUTES? > js::script? </ τscript > 								↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
