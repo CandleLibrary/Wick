@@ -83,13 +83,19 @@ export default class ElementNode {
 
 
         if (this.presets.components[this.tag]) {
-            this.proxied = this.presets.components[this.tag].merge(this);
+            return this.presets.components[this.tag].merge(this).finalize(slots_out);
         }
 
         if (this.proxied) {
-            const ele = this.proxied.finalize(slots_out);
+            //*
+            const e =  this.proxied.merge(this).finalize(slots_out);
+            console.log(e)
+            return e;
+            /*
             ele.slots = slots_out;
             this.mount = ele.mount.bind(ele);
+            //*/
+            //return ele//this.proxied.merge(this);
         }
 
         this.children.sort(function(a, b) {
@@ -157,12 +163,11 @@ export default class ElementNode {
 
 
         try {
+            console.log({tag:this.tag, url:this.url +""})
             own_env.pending++;
             text_data = await this.url.fetchText();
-
-
         } catch (e) {
-            console.log(this.url, text_data)
+            console.log(this.url, e, "AASDASD")
             error(error.RESOURCE_FETCHED_FROM_NODE_FAILURE, e, this);
         }
 

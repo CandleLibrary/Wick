@@ -5,6 +5,8 @@ import {
 	PUT
 } from "../../compiler/component/tap/tap.js";
 
+import spark from "@candlefw/spark";
+
 /* Given an argument list of element indices, returns the element at the last index location.  */
 function getElement(ele, indices) {
 	if (indices.length == 1)
@@ -50,9 +52,11 @@ export default class liteScopeConstructor {
 	}
 
 	destroy() {
-		if(this.DESTROYED) return;
+		if (this.DESTROYED) return;
+
 		for (const scope of this.scopes)
 			scope.destroy();
+
 		this.scopes = null;
 		this.nm = null;
 		this.gates = null;
@@ -60,7 +64,13 @@ export default class liteScopeConstructor {
 		this.pen = null;
 		this.DESTROYED = true;
 		this.LOADED = false;
+
+		if (this.model && this.model.removeObserver)
+			this.model.removeObserver(this);
 	}
+
+
+
 
 	/**
         Makes the scope a observer of the given Model. 
@@ -129,11 +139,19 @@ export default class liteScopeConstructor {
 		if (scope.parent == this)
 			return;
 		scope.parent = this;
+
 		this.scopes.push(scope);
+
 		this.PENDING_LOADS++;
 
-		if (this.model && this.model.removeObserver)
-			this.model.removeObserver(this);
+		const payload = {};
+
+		for (let i = 0; i < this.v.length; i++) {
+			if (this.v[i])
+				payload[this.n[i]] = this.v[i];
+		}
+
+		scope.down(payload);
 	}
 
 	addToParent(parent) {
@@ -150,7 +168,6 @@ export default class liteScopeConstructor {
 
 	/*************** DATA HANDLING CODE **************************************/
 	e(data) {
-		debugger
 		//Check gates and see if the item needs to go up. 
 		const l = this.g.length,
 			exp = {},
@@ -160,13 +177,13 @@ export default class liteScopeConstructor {
 
 		for (let i = 0; i < l; i++) {
 
-			const 
+			const
 				name = this.n[i],
 				d = data[name],
 				gate = this.g[i];
 
 			if (d !== undefined) {
-				
+
 
 				if (gate & EXPORT) EXPORT_DATA = true, exp[name] = d;
 				else
@@ -192,7 +209,7 @@ export default class liteScopeConstructor {
 
 		for (let i = 0; i < l; i++) {
 
-			const 
+			const
 				name = this.n[i],
 				d = data[name],
 				gate = this.g[i];
@@ -213,7 +230,7 @@ export default class liteScopeConstructor {
 	update(data, meta) {
 		if (this.DESTROYED) return;
 
-		if(meta)
+		if (meta)
 			this.update(meta);
 
 		const o = this,
@@ -238,21 +255,40 @@ export default class liteScopeConstructor {
 
 					if (typeof data[prop] == "object")
 						gf |= getNameFlags(data[prop], n, v);
+
 					if ((r & gf) == r) {
-						fn.f.call(o);
-						if (p.has(fn))
-							p.delete(fn);
+						if (meta && meta.IMMEDIATE) {
+							o.callFN(fn);
+						} else {
+							fn.P = 1;
+							spark.queueUpdate(this);
+						}
 					} else
 						p.add(fn);
 				}
-			} else if ((r & flag) > 0 && (gf & r) == r)
+			} else if ((r & flag) > 0 && (gf & r) == r){
 				fn.f.call(o, o);
+			}
 		}
 
 		o.gf |= gf;
 
 		for (const scope of this.scopes)
 			scope.down(data);
+	}
+
+	/** called by spark when the scope has a set of actions to perform. Cycles through actions and calls ones that scheduled to be called. */
+	scheduledUpdate() {
+		for (const fn of this.f) 
+			if (fn.P == 1) this.callFN(fn);
+	}
+
+	callFN(fn) {
+		const o = this,
+			p = o.pen;
+		fn.f.call(o);
+		fn.P = 0;
+		if (p.has(fn)) p.delete(fn);
 	}
 
 	/*************** DOM CODE ****************************/
@@ -292,7 +328,7 @@ export default class liteScopeConstructor {
 		if (transition)
 			this.update({
 				[transition_name]: transition
-			}, null, false, { IMMEDIATE: true });
+			},{ IMMEDIATE: true });
 
 		this.TRANSITIONED_IN = true;
 	}
@@ -312,7 +348,7 @@ export default class liteScopeConstructor {
 		if (transition) {
 			this.update({
 				[transition_name]: transition
-			}, null, false, { IMMEDIATE: true });
+			}, { IMMEDIATE: true });
 
 			if (transition.trs)
 				transition_time = transition.trs.out_duration;

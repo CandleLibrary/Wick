@@ -55,7 +55,7 @@ function compileScope(data, presets) {
 				}
 			}
 			
-			if (node.type == types.identifier) {
+			if (node.type == types.identifier && node.root) {
 				if (data.eleMap.has(node.name))
 					node.replace(jsParse(`this.el[${data.eleMap.get(node.name).id}]`).statements.expression);
 				else if (data.pinned[node.name])
@@ -184,7 +184,7 @@ function compileScope(data, presets) {
 		let ast = null;
 		i++;
 		ast =
-			jsParse(`class{${group.IS_ASYNC ? " async " : " "}f${i} () {${group.b.map(b => b.ast.render()).join(";")}}}`)
+			jsParse(`class{${group.IS_ASYNC ? " async " : " "}f${i} () {${group.b.map(b =>  b.ast.render()).join(";")}}}`)
 			.statements
 			.body[0];
 
@@ -205,7 +205,7 @@ export default async function stamp(component) {
 	let ast = null;
 
 	if (component.constructor.prototype.lite == "lite_scope") {
-		ast = component;
+		ast = component.finalize();
 	} else {
 		await component.pending;
 		ast = component.ast;

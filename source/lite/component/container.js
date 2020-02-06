@@ -292,7 +292,7 @@ class WickLiteContainer{
             output_length = output.length,
             active_window_start = offset * this.shift_amount;
 
-
+            
 
         let i = 0;
 
