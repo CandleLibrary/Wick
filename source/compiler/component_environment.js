@@ -1,13 +1,17 @@
 import URL from "@candlefw/url";
+import error from "../utils/error.js";
 
-// This prevents env variable access conflicts when concurrent compilation
-// are processing text data. 
+/*
+    Stores information about a components environemnt,
+    including URL location, errors generated, and loading state of dependency components
+*/
 
 export default class ComponentEnvironment {
     constructor(presets, env, url) {
         
         this.functions = env.functions;
 
+        this.errors = [];
         this.prst = [presets];
         this.url = url || new URL;
         this.parent = null;
@@ -21,10 +25,18 @@ export default class ComponentEnvironment {
         if(env.resolve)
             this.setParent(env);
     }
-    
-    /** Adds error statement to error stack **/
-    error(){
 
+    throw(){
+        throw this.errors.map(e=>e.err + "").join("\n");
+    }
+    
+    /** 
+        Adds error statement to error stack 
+        error_message 
+    **/
+    addParseError(msg, lex, url){
+        const data = {msg, lex, url};
+        this.errors.push({msg:error(error.ELEMENT_PARSE_FAILURE, data), data});
     }
 
     get presets() {

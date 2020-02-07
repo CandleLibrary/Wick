@@ -16,7 +16,6 @@ function integrateErrors(error_list_object) {
 integrateErrors(defaults);
 
 export default new Proxy(function(error_function, error_object, errored_node) {
-	//console.warn(`Encountered error ${error_function.error_name}`);
     return error_function(error_object, errored_node);
 }, {
     get: (obj, prop) => {

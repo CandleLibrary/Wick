@@ -54,7 +54,7 @@ const
                         try {
                             if (url.ext == "mjs" || url.ext == "js") {
 
-                                const module = await import(url + "")
+                                const module = await import(url + "");
 
                                 let comp = null;
 
@@ -99,8 +99,12 @@ const
 
                 const output = wick_compile(whind(string_data), component_env);
 
-                if (output.error)
+                if (output.error){
+                    if(presets.options.THROW_ON_ERRORS)
+                        component_env.throw();
+
                     ast = new ErrorNode(component_env);
+                }
                 else
                     ast = output.result;
 
@@ -111,6 +115,7 @@ const
                 component_env.resolve();
 
                 await component_env.pending;
+
 
                 return ast;
 

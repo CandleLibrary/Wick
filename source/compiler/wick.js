@@ -7139,15 +7139,17 @@ function parser(l, e = {}) {
 					/* ERROR */
 
 					if (tk == "$eof") {
-						if (e.err_eof && (tk = e.err_eof(tk, o, l, p)))
-							continue;
-						else
+						if (e.functions.eofError) {
+							if ((tk = e.functions.eofError(RECOVERING ? l.pk.tx : l.tx, e, o, l, p, ss[sp], (lex) => getToken(lex, lu))))
+								continue;
+						} else
 							l.throw("Unexpected end of input");
 					} else {
-						if (e.err_general && (tk = e.err_general(tk, o, l, p)))
-							continue;
-						else
-							l.throw(`Unexpected token [${RECOVERING ? l.next().tx : l.tx}]`);
+						if (e.functions.generalError) {
+							if ((tk = e.functions.generalError(RECOVERING ? l.pk.tx : l.tx, e, o, l, p, ss[sp], (lex) => getToken(lex, lu))))
+								continue;
+						} else
+							l.throw(`Unexpected token [${RECOVERING ? l.pk().tx : l.tx}]`);
 					}
 
 					return { result: o[0], error: true };

@@ -161,7 +161,7 @@ export default class ElementNode {
             own_env.incrementPendingLoads();
             text_data = await this.url.fetchText();
         } catch (e) {
-            own_error(error.RESOURCE_FETCHED_FROM_NODE_FAILURE, e, this);
+            error(error.RESOURCE_FETCHED_FROM_NODE_FAILURE, e, this);
         }
 
         if (text_data) {

@@ -20,7 +20,7 @@ export default class P {
          * {Object} Store for optional parameters used in the app
          */
         this.options = {
-            INJECT_ERROR_HANDLER_INTO_SUBFUNCTIONS: false,
+            THROW_ON_ERRORS: false
         };
 
         //Declaring the properties upfront to give the VM a chance to build an appropriate virtual class.

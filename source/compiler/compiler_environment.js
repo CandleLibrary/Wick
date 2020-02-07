@@ -266,11 +266,22 @@ const env = {
             this.bool = sym[1];
             this.body = sym[3];
         },
+
         var_stmt: function(sym) { this.declarations = sym[1] },
 
         label_stmt: function(sym) {
             this.label = sym[0];
             this.stmt = sym[1];
+        },
+
+        eofError(tk, env, output, lex, prv_lex, ss, lu){
+            //Unexpected End of Input
+            env.addParseError("Unexpected end of input", lex, env.url);
+        },
+
+        generalError(tk, env, output, lex, prv_lex, ss, lu){
+            //Unexpected value
+            env.addParseError(`Unexpected token [${tk}]`, lex, env.url);
         },
 
         defaultError: (tk, env, output, lex, prv_lex, ss, lu) => {
