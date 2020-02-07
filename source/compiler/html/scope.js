@@ -27,32 +27,32 @@ export default class scp extends ElementNode {
     }
 
     loadAttribs(n) {
-        (n.getAttrib("put").value || "").split(" ").forEach(e => this.checkTapMethod("put", e));
-        (n.getAttrib("export").value || "").split(" ").forEach(e => this.checkTapMethod("export", e));
-        (n.getAttrib("import").value || "").split(" ").forEach(e => this.checkTapMethod("import", e));
+        (n.getAttribObject("put").value || "").split(" ").forEach(e => this.checkTapMethod("put", e));
+        (n.getAttribObject("export").value || "").split(" ").forEach(e => this.checkTapMethod("export", e));
+        (n.getAttribObject("import").value || "").split(" ").forEach(e => this.checkTapMethod("import", e));
 
-        this.model_name = this.model_name || n.getAttrib("model").value;
-        this.schema_name = this.schema_name || n.getAttrib("scheme").value;
+        this.model_name = this.model_name || n.getAttribObject("model").value;
+        this.schema_name = this.schema_name || n.getAttribObject("scheme").value;
 
         if (this.schema_name)
-            this.getAttrib("scheme").RENDER = false;
+            this.getAttribObject("scheme").RENDER = false;
 
         if (this.model_name)
-            this.getAttrib("model").RENDER = false;
+            this.getAttribObject("model").RENDER = false;
 
-        if (this.getAttrib("put"))
-            this.getAttrib("put").RENDER = false;
+        if (this.getAttribObject("put"))
+            this.getAttribObject("put").RENDER = false;
 
-        if (this.getAttrib("import"))
-            this.getAttrib("import").RENDER = false;
+        if (this.getAttribObject("import"))
+            this.getAttribObject("import").RENDER = false;
 
-        if (this.getAttrib("export"))
-            this.getAttrib("export").RENDER = false;
+        if (this.getAttribObject("export"))
+            this.getAttribObject("export").RENDER = false;
 
-        if (this.getAttrib("component"))
-            this.getAttrib("component").RENDER = false;
+        if (this.getAttribObject("component"))
+            this.getAttribObject("component").RENDER = false;
 
-        this.tag = n.getAttrib("element").value || "div";
+        this.tag = n.getAttribObject("element").value || "div";
     }
 
     merge(node, merged_node) {

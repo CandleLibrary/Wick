@@ -20,7 +20,7 @@ export default class ScriptNode extends ElementNode {
         this.val = "";
         this.original_val = "";
 
-        const on = this.getAttrib("on").value;
+        const on = this.getAttribObject("on").value;
 
         if (typeof on == "string")
             console.warn("No binding set for this script's [on] attribute. This script will have no effect.");

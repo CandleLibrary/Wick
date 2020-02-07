@@ -32,25 +32,24 @@ export default class ElementNode {
 
         this.pending_load_attrib = USE_PENDING_LOAD_ATTRIB;
 
-        this.component = this.getAttrib("component").value;
+        this.component = this.getAttribObject("component").value;
 
         if (this.component)
             presets.components[this.component] = this;
 
         this.url = this.getAttribute("url") ? URL.resolveRelative(this.getAttribute("url"), env.url) : null;
 
-        this.id = this.getAttribute("id");
-        this.class = this.getAttribute("id");
-        this.name = this.getAttribute("name");
-        this.slot = this.getAttribute("slot");
+        this.id     = this.getAttribute("id");
+        this.class  = this.getAttribute("id");
+        this.name   = this.getAttribute("name");
+        this.slot   = this.getAttribute("slot");
+        this.pinned = "";
 
-        const pin = this.getAttrib("pin");
+        const pin = this.getAttribObject("pin");
 
         if (pin.value) {
             pin.RENDER = false;
             this.pinned = pin.value + "$";
-        } else {
-            this.pinned = "";
         }
 
         if (this.url)
@@ -89,7 +88,6 @@ export default class ElementNode {
         if (this.proxied) {
             //*
             const e =  this.proxied.merge(this).finalize(slots_out);
-            console.log(e)
             return e;
             /*
             ele.slots = slots_out;
@@ -99,10 +97,8 @@ export default class ElementNode {
         }
 
         this.children.sort(function(a, b) {
-            if (a.tag == "script" && b.tag !== "script")
+            if ((a.tag == "script" && b.tag !== "script") || (a.tag == "style" && b.tag !== "style"))
                 return 1;
-            if (a.tag !== "script" && b.tag == "script")
-                return -1;
             return 0;
         });
 
@@ -110,10 +106,10 @@ export default class ElementNode {
     }
 
     getAttribute(name) {
-        return this.getAttrib(name).value;
+        return this.getAttribObject(name).value;
     }
 
-    getAttrib(name) {
+    getAttribObject(name) {
         return this.attribs.get(name) || { name: "", value: "" };
     }
 
@@ -246,7 +242,7 @@ export default class ElementNode {
 
             example elemnts = img, svg
         */
-        if (this.pending_load_attrib && this.getAttrib(this.pending_load_attrib).value) {
+        if (this.pending_load_attrib && this.getAttribObject(this.pending_load_attrib).value) {
             const fn = e => {
                 scope.loadAcknowledged();
                 own_element.removeEventListener("load", fn);
