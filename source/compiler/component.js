@@ -247,9 +247,19 @@ const
 
 Component.prototype = proto.prototype;
 
-//TODO: Fancy schmancy to string method.
+
 Component.toString = function() {
-    return `WICK 2020 
+    return `
+ 
+      / _|        | |  | |_   _/  __ \\| | / /
+  ___| |___      _| |  | | | | | /  \\/| |/ / 
+ / __|  _\\ \\ /\\ / / |/\\| | | | | |    |    \\ 
+| (__| |  \\ V  V /\\  /\\  /_| |_| \\__/\\| |\\  \\
+ \\___|_|   \\_/\\_(_)\\/  \\/ \\___/ \\____/\\_| \\_/
+
+
+2020 v0.8.11
+
 Copyright (c) MMXX Anthony C Weathersby
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -268,7 +278,16 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.`;
+SOFTWARE.
+
+logo courtesy of http://patorjk.com/software/taag
+
+Font:
+DOOM by Frans P. de Vries <fpv@xymph.iaf.nl>  18 Jun 1996
+based on Big by Glenn Chappell 4/93 -- based on Standard
+figlet release 2.1 -- 12 Aug 1994
+Permission is hereby given to modify this font, as long as the
+modifier's name is placed on a comment line.`;
 };
 
 export default Component;
