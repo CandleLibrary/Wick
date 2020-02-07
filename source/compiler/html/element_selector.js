@@ -81,12 +81,11 @@ export default function es(tag, attribs, children, env, lex, meta = 0) {
     node = new Constructor(env, tag, children, attribs, presets, USE_PENDING_LOAD);
 
     if(plugin_element[tag])
-        plugin_element[tag].run(node, lex, env);
+        node = plugin_element[tag].run(node, lex, env) || node;
 
     node.wickup = meta || false;
 
     node.SINGLE = !FULL;
-
 
     return node;
 }
