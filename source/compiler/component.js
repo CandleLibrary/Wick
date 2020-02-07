@@ -1,26 +1,28 @@
 import whind from "@candlefw/whind";
 import URL from "@candlefw/url";
+import { types, module } from "@candlefw/js";
 
 import Presets from "../presets.js";
 import wick_compile from "./wick.js";
-import CompilerEnv from "./compiler_env.js";
-import env from "./env.js";
+import compiler_env from "./compiler_environment.js";
+
+
+import ComponentEnvironment from "./component_environment.js";
 import proto from "./component_prototype.js";
 
 import JS from "./js/tools.js";
 import processJSComponent from "./js/compiler.js";
-import { types, module } from "@candlefw/js";
 import Script from "./html/script.js";
 import Attribute from "./html/attribute.js";
 import Binding from "./html/binding.js";
 import error from "../utils/error.js";
+import ErrorNode from "./error_node.js";
 
 const
 
     default_presets = new Presets,
 
-    compile = async (component_data, presets, compiler_env) => {
-
+    compile = async function(component_data, presets, component_env) {
 
             var
                 ast = null,
@@ -64,13 +66,12 @@ const
 
                             string_data = await url.fetchText();
 
-                            compiler_env.url = url;
-                            
+                            component_env.url = url;
+
                         } catch (e) {
                             console.log(e);
                         }
                     }
-
                     break;
 
                 case "object":
@@ -92,31 +93,36 @@ const
             }
 
 
-
             try {
 
-                return await (new Promise(res => {
+                component_env.incrementPendingLoads();
 
-                    compiler_env.pending++;
+                const output = wick_compile(whind(string_data), component_env);
 
-                    compiler_env.pendingResolvedFunction = () => { res(ast) };
+                if (output.error)
+                    ast = new ErrorNode(component_env);
+                else
+                    ast = output.result;
 
-                    ast = wick_compile(whind(string_data), compiler_env);
 
-                    if (ast instanceof module)
-                        ast = processJSComponent(ast);
+                if (ast instanceof module)
+                    ast = processJSComponent(ast);
 
-                    compiler_env.resolve();
-                }));
+                component_env.resolve();
+
+                await component_env.pending;
+
+                return ast;
 
             } catch (e) {
-                throw error(error.COMPONENT_PARSE_FAILURE, e, compiler_env);
+                throw error(error.COMPONENT_PARSE_FAILURE, e, component_env);
             }
         },
 
 
         // This is a variadic function that accepts objects, string, and urls, 
         //  and compiles data from the argument sources into a wick component. 
+
         Component = function(...data) {
 
             // The presets object provides global values to this component
@@ -148,11 +154,11 @@ const
                     var obj;
 
                     const
-                        compiler_env = new CompilerEnv(presets, env),
+                        component_env = new ComponentEnvironment(presets, compiler_env),
                         return_obj = this;
 
                     try {
-                        obj = await compile(component_data, presets, compiler_env);
+                        obj = await compile(component_data, presets, component_env);
                     } catch (e) {
                         throw (e)
                     }
@@ -164,14 +170,14 @@ const
                         if (!this.name)
                             this.name = obj.name;
 
-                        integrate(this, this, presets, compiler_env);
+                        integrate(this, this, presets, component_env);
 
                     } else {
 
                         const ast = obj;
 
                         if (!ast.finalize)
-                            throw error(error.COMPONENT_PARSE_FAILURE, new Error("Component blueprint is not html"), compiler_env);
+                            throw error(error.COMPONENT_PARSE_FAILURE, new Error("Component blueprint is not html"), component_env);
 
                         const constructor_name = this.constructor.name;
 
@@ -182,9 +188,9 @@ const
                         this.ast.finalize();
 
                         if (!this.name)
-                            this.name = this.ast.getAttrib("component").value || "undefined-component";
+                            this.name = this.ast.getAttribObject("component").value || "undefined-component";
 
-                        integrate(this, this, presets, compiler_env)
+                        integrate(this, this, presets, component_env)
                     }
 
                     this.READY = true;
@@ -205,7 +211,7 @@ const
 
         // If compilation fails, failure component is generated that provides 
         // error information. Should be fancy though.
-        integrate = function(this_obj, from_obj = this_obj, presets, env) {
+        integrate = function(this_obj, from_obj = this_obj, presets, component_env) {
 
             const extrascripts = [];
 
@@ -223,9 +229,9 @@ const
                         //extract and process function information. 
 
                         const
-                            js_ast = wick_compile(whind("function " + r.toString().trim() + ";"), env),
+                            js_ast = wick_compile(whind("function " + r.toString().trim() + ";"), compiler_env),
                             func_ast = JS.getFirst(js_ast, types.function_declaration),
-                            binding = new Binding(func_ast.id, undefined, env, whind("whin")),
+                            binding = new Binding(func_ast.id, undefined, component_env, whind("whin")),
                             attrib = new Attribute(["on", null, binding], presets),
                             stmt = func_ast.body;
 

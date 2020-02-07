@@ -38,7 +38,7 @@ export default async function (...data){
 			   or incompatible data that should cause a throw.
 		*/
 		const ast = html_compiler(whind(component_data), html_env);
-		console.dir(ast, true)
+
 		break;
 		case "object":
 			// Extract properties from the object that relate to wick component attributes. 
@@ -46,5 +46,5 @@ export default async function (...data){
 
 	}
 
-	return {}
+	return {};
 }

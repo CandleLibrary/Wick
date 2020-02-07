@@ -1,6 +1,6 @@
 import { appendChild, createElement } from "../../short_names.js";
 import Scope from "../component/runtime/scope.js";
-import CompilerEnv from "../compiler_env.js";
+import ComponentEnvironment from "../component_environment.js";
 import wick_compile from "../wick.js";
 import error from "../../utils/error.js";
 import URL from "@candlefw/url";
@@ -155,30 +155,26 @@ export default class ElementNode {
     }
 
     async loadAndParseUrl(env) {
+
         var ast = null,
             text_data = "",
-            own_env = new CompilerEnv(env.presets, env, this.url);
-
-        own_env.setParent(env);
-
+            own_env = new ComponentEnvironment(env.presets, env, this.url);
 
         try {
-            console.log({tag:this.tag, url:this.url +""})
-            own_env.pending++;
+            console.log({tag:this.tag, url:this.url +""});
+            own_env.incrementPendingLoads();
             text_data = await this.url.fetchText();
         } catch (e) {
-            console.log(this.url, e, "AASDASD")
-            error(error.RESOURCE_FETCHED_FROM_NODE_FAILURE, e, this);
+            own_error(error.RESOURCE_FETCHED_FROM_NODE_FAILURE, e, this);
         }
 
         if (text_data) {
             const lex = whind(text_data);
-            try {
 
+            try {
                 ast = wick_compile(lex, own_env);
             } catch (e) {
-                console.log("error", e, this.url+"" )
-                error(error.ELEMENT_PARSE_FAILURE, e, this)
+                error(error.ELEMENT_PARSE_FAILURE, e, this);
             }
         }
 

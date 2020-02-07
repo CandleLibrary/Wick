@@ -2,7 +2,7 @@ import compiler from "./compiler/component.js";
 
 import wick_compile from "./compiler/wick.js";
 
-import CompilerEnv from "./compiler/compiler_env.js";
+import CompilerEnv from "./compiler/compiler_environment.js";
 
 import Presets from "./presets.js";
 
