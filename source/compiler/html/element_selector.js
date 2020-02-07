@@ -7,7 +7,7 @@ import StyleNode from "./style.js";
 import VoidNode from "./void.js";
 import SVGNode from "./svg.js";
 import SlotNode from "./slot.js";
-import PreNode from "./pre.js";
+import NonBindingNode from "./non_binding.js";
 import FilterNode from "./filter.js";
 import ImportNode from "./import.js";
 import plugin from "../../plugin/system.js";
@@ -67,7 +67,8 @@ export default function es(tag, attribs, children, env, lex, meta = 0) {
             break;
             //Elements that should not be parsed for binding points.
         case "pre":
-            Constructor = PreNode;
+        case "textarea":
+            Constructor = NonBindingNode;
             break;
         case "img":
             USE_PENDING_LOAD = "src";
