@@ -158,7 +158,6 @@ export default class ElementNode {
             own_env = new ComponentEnvironment(env.presets, env, this.url);
 
         try {
-            console.log({tag:this.tag, url:this.url +""});
             own_env.incrementPendingLoads();
             text_data = await this.url.fetchText();
         } catch (e) {
