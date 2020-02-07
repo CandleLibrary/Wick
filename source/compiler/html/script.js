@@ -1,11 +1,65 @@
+import { identifier, return_statement } from "@candlefw/js";
 import ElementNode from "./element.js";
 import ScriptIO from "../component/io/script_io.js";
 import FUNCTION_CACHE from "../js/function_cache.js";
-import { GetOutGlobals, AddEmit as addEmitExpression, AsyncInClosure, copyAST } from "../js/script_functions.js";
+import { GetOutGlobals, AddEmit, AsyncInClosure, copyAST } from "../js/script_functions.js";
 import error from "../../utils/error.js";
 
 const offset = "    ";
-const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+const AsyncFunction = Object.getPrototypeOf(async function() {}).constructor;
+
+export function processJSAST(obj, env, ENCLOSE_IN_RETURN_STATEMENT = false) {
+
+    obj.ast = copyAST(obj.original);
+
+    const { args, ids } = GetOutGlobals(obj.ast, env.presets);
+
+    obj.IS_ASYNC = AsyncInClosure(obj.ast, env);
+
+    obj.args = args;
+
+    obj.ids = ids;
+
+    AddEmit(ids, env.presets, obj.args.reduce((r, a) => ((a.IS_TAPPED) ? null : r.push(a.name), r), []));
+
+    if (ENCLOSE_IN_RETURN_STATEMENT) {
+        const r = new return_statement([]);
+        r.vals[0] = obj.ast;
+        obj.ast = r;
+    }
+    
+    obj.val = obj.ast + "";
+}
+
+export function processScriptObject(obj, component_env) {
+    if (true || !FUNCTION_CACHE.has(obj.val)) {
+
+        const
+            args = obj.args,
+            names = args.map(a => a.name);
+
+        // For the injected emit function
+        names.push("emit");
+
+        try {
+
+            if (obj.IS_ASYNC)
+                obj.function = AsyncFunction.apply(AsyncFunction, names.concat([obj.val]));
+            else
+                obj.function = Function.apply(Function, names.concat([obj.val]));
+
+            FUNCTION_CACHE.set(obj.val, obj.function);
+        } catch (e) {
+            component_env.error(error.SCRIPT_FUNCTION_CREATE_FAILURE, e, obj);
+            return false;
+        }
+
+    } else {
+        obj.function = FUNCTION_CACHE.get(obj.val);
+    }
+
+    return true;
+}
 
 export default class ScriptNode extends ElementNode {
 
@@ -13,85 +67,34 @@ export default class ScriptNode extends ElementNode {
         super(env, presets, "script", null, attribs);
         this.function = null;
         this.args = null;
-        this.original_ast = ast[0];
+        this.original = null;
         this.ast = null;
         this.IS_ASYNC = false;
         this.READY = false;
         this.val = "";
-        this.original_val = "";
 
         const on = this.getAttribObject("on").value;
 
         if (typeof on == "string")
             console.warn("No binding set for this script's [on] attribute. This script will have no effect.");
-        else
+        else {
             this.on = on;
-
-
-        if (this.original_ast && on) {
-            this.original_val = this.original_ast.render();
-            this.processJSAST(presets);
+            this.loadAST(ast[0]);
         }
     }
 
     loadAST(ast) {
         if (ast && !this.ast) {
-            this.ast = ast;
-            this.original_val = this.ast.render();
-            this.processJSAST(this.presets);
+            this.original = ast;
+            processJSAST(this, this.env);
         }
-    }
-
-    processJSAST(presets = { custom: {} }) {
-
-        this.ast = copyAST(this.original_ast);
-
-        const { args, ids } = GetOutGlobals(this.ast, presets);
-
-        this.IS_ASYNC = AsyncInClosure(this.ast);
-
-        this.args = args;
-
-        this.ids = ids;
-
-        addEmitExpression(ids, presets, this.args.reduce((r, a) => ((a.IS_TAPPED) ? null : r.push(a.name), r), []));
-
-        this.val = this.ast + "";
     }
 
     finalize() {
 
         if (!this.ast || !this.on) return this;
 
-
-        if (true || !FUNCTION_CACHE.has(this.val)) {
-
-            const
-                args = this.args,
-                names = args.map(a => a.name);
-
-
-            // For the injected emit function
-            names.push("emit");
-
-            try {
-
-                if(this.IS_ASYNC)
-                   this.function = AsyncFunction.apply(AsyncFunction, names.concat([this.val]));
-                else 
-                    this.function = Function.apply(Function, names.concat([this.val]));
-
-                this.READY = true;
-
-                FUNCTION_CACHE.set(this.val, this.function);
-            } catch (e) {
-                throw error(error.SCRIPT_FUNCTION_CREATE_FAILURE, e, this);
-            }
-
-        } else {
-            this.function = FUNCTION_CACHE.get(this.val);
-            this.READY = true;
-        }
+        this.READY = processScriptObject(this, this.component_env);
 
         return this;
     }
@@ -100,7 +103,7 @@ export default class ScriptNode extends ElementNode {
 
         if (this.READY) {
             const tap = this.on.bind(scope, null, null, this);
-            scope.ios.push(new ScriptIO(scope, this, tap, this, {}, pinned));
+            scope.ios.push(new ScriptIO(scope, this, tap.main, this, {}, pinned));
         }
     }
 
@@ -116,7 +119,7 @@ export default class ScriptNode extends ElementNode {
 
         str += ">\n";
 
-        str += this.original_val;
+        str += this.original.render();
 
         return str + `${o}</${this.tag}>\n`;
     }

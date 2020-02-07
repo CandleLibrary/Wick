@@ -16,11 +16,11 @@ export default class TextNode {
         return `${offset.repeat(off)} ${this.data.toString()}\n`;
     }
 
-    finalize(){
+    finalize() {
         return this;
     }
 
-    get IS_WHITESPACE(){
+    get IS_WHITESPACE() {
         return !this.IS_BINDING && (!this.data.toString().trim());
     }
 
@@ -30,12 +30,12 @@ export default class TextNode {
         if (IS_TEXT_NODE)
             element.appendChild(ele);
 
-        if (this.IS_BINDING){
-            const io =  new (IS_TEXT_NODE ? TextNodeIO : ContainerLinkIO)(scope, this.data.bind(scope, null, pinned), ele, this.data.exprb);
+        if (this.IS_BINDING) {
+            const bind = this.data.bind(scope, null, pinned),
+                io = new(IS_TEXT_NODE ? TextNodeIO : ContainerLinkIO)(scope, bind.main, ele, bind.alt);
             scope.ios.push(io);
             return io;
-        }
-        else
+        } else
             ele.data = this.data;
     }
 }

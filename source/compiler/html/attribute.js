@@ -53,8 +53,8 @@ export default class Attribute {
 
             {   
                 //Binding sends value over. 
-                const bind = this.value.bind(scope, pinned);
-                const io = new this.io_constr(scope, this, bind, this.name, element, this.value.ast_other);
+                const bind = this.value.bind(scope, element, pinned);
+                const io = new this.io_constr(scope, this, bind.main, this.name, element, bind.alt);
                 scope.ios.push(io);
             }
     }

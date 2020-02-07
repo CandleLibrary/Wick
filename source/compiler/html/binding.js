@@ -2,7 +2,8 @@ import { identifier, return_statement } from "@candlefw/js";
 import { GetOutGlobals, AddEmit, copyAST } from "../js/script_functions.js";
 import ExpressionIO from "../component/io/expression_io.js";
 import ContainerIO from "../component/io/container_io.js";
-import script from "./script.js";
+import { default as script, processJSAST, processScriptObject } from "./script.js";
+
 export const EXPRESSION = 5;
 export const IDENTIFIER = 6;
 export const CONTAINER = 7;
@@ -18,52 +19,47 @@ export default class Binding {
 
         this.METHOD = IDENTIFIER;
 
-        this.original_ast = exprA;
-        this.ast = exprA;
+        this.astA = {
+            original: exprA,
+            ast: null,
+            IS_ASYNC: false,
+            ids: null,
+            args: null,
+            function: null,
+            val: exprA ? exprA.render() : ""
 
-        this.original_ast_other = exprB;
-        this.ast_other = exprB;
+        };
 
-        this.function = null;
-        this.args = null;
+        this.astB = {
+            original: exprB,
+            ast: null,
+            IS_ASYNC: false,
+            ids: null,
+            args: null,
+            function: null,
+            val: exprB ? exprB.render() : ""
+        };
+
         this.READY = false;
-
         this.origin_url = env.url;
-
-        this.origin_val = this.ast + "";
-        this.val = this.ast + "";
-
         this.on = true;
 
-        if (this.original_ast && !(this.original_ast instanceof identifier))
-            this.processJSAST(env.presets);
+        if (this.astA.original && !(this.astA.original instanceof identifier)) {
+            processJSAST(this.astA, env, 1);
+            this.READY = processScriptObject(this.astA, env);
+            this.METHOD = EXPRESSION;
+        }
 
+        if (this.astB.original && !(this.astB.original instanceof identifier)) {
+            processJSAST(this.astB, env, 1);
+            processScriptObject(this.astB, env);
+        }
     }
 
     toString() {
-
-        if (this.ast_other)
-            return `((${this.origin_val + ""})(${this.ast_other + ""}))`;
-        else
-            return `((${this.origin_val + ""}))`;
-    }
-
-    processJSAST(presets = { custom: {} }) {
-        this.ast = copyAST(this.original_ast);
-
-        const { args, ids } = GetOutGlobals(this.ast, presets);
-
-        this.args = args;
-
-        AddEmit(ids, presets);
-
-        const r = new return_statement([]);
-        r.vals[0] = this.ast;
-        this.ast = r;
-        this.val = r + "";
-        this.METHOD = EXPRESSION;
-
-        script.prototype.finalize.call(this);
+        return (this.astB.val)
+            ? `((${this.astA.original + ""})(${this.astB.original + ""}))`
+            : `((${this.astA.original + ""}))`;
     }
 
     setForContainer(presets) {
@@ -75,15 +71,22 @@ export default class Binding {
     }
 
     bind(scope, element, pinned, node = this) {
-        if (this.ast) {
-            if (this.METHOD == EXPRESSION) {
-                return new ExpressionIO(element, scope, node, scope, this, this.lex, pinned);
-            } else if (this.METHOD == CONTAINER) {
-                return new ContainerIO(element, scope, node, scope, this, this.lex, pinned);
-            } else
-                return scope.getTap(this.val);
-        }
-        return null;
+        const out = { main: null, alt: null };
+
+        if (this.astB.ast)
+            out.alt = new ExpressionIO(element, scope, node, scope, this.astB, this.lex, pinned);
+        else
+            out.alt = this.astB.val;
+
+        if (this.astA.ast) {
+            if (this.METHOD == EXPRESSION)
+                out.main = new ExpressionIO(element, scope, node, scope, this.astA, this.lex, pinned);
+            else if (this.METHOD == CONTAINER)
+                out.main = new ContainerIO(element, scope, node, scope, this.astA, this.lex, pinned);
+        } else
+            out.main = scope.getTap(this.astA.val);
+
+        return out;
     }
 }
 
