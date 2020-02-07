@@ -25,6 +25,7 @@ export default class ElementNode {
         this.proxied = null;
         this.slots = null;
         this.origin_url = env.url;
+        this.env = env;
         this.attribs = new Map((attribs || []).map(a => (a.link(this), [a.name, a])));
 
         if (this.attribs.has(""))
