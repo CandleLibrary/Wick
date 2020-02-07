@@ -16,9 +16,9 @@ import {
 
 export default class scp extends ElementNode {
 
-    constructor(env, tag, children, attribs, presets) {
+    constructor(env, presets, tag, children, attribs) {
 
-        super(env, "scope", children, attribs, presets);
+        super(env, presets, "scope", children, attribs);
 
         this.HAS_TAPS = false;
         this.tap_list = [];
@@ -112,6 +112,7 @@ export default class scp extends ElementNode {
 
 
         if (SET_TAP_METHOD) {
+            
             if (extern !== intern)
                 this.checkTapMethod("", intern);
 

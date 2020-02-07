@@ -1,8 +1,8 @@
 import ElementNode from "./element.js";
 export default class Import extends ElementNode{
 
-	constructor(env, tag, children, attribs, presets){
-		super(env, "import", null, attribs, presets);
+	constructor(env,presets, tag, children, attribs){
+		super(env,presets, "import", null, attribs);
 	}
 	
 	loadAST(){/*intentional*/return}

@@ -2,9 +2,9 @@ import ElementNode from "./element.js";
 import binding from "./binding.js";
 
 export default class fltr extends ElementNode {
-    constructor(env, tag, children, attribs, presets) {
+    constructor(env,presets, tag, children, attribs) {
 
-        super(env, "f", null, attribs, presets);
+        super(env,presets, "f", null, attribs);
 
         this.type = 0;
 

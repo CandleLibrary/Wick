@@ -2,8 +2,8 @@ import { appendChild } from "../../short_names.js";
 import ElementNode from "./element.js";
 
 export default class sty extends ElementNode{
-	constructor(env, tag, children, attribs, presets){
-		super(env, "style", children, attribs, presets);	
+	constructor(env, presets, tag, children, attribs){
+		super(env, presets,  "style", children, attribs);	
 	}
 
 	get data(){return this.children[0]}

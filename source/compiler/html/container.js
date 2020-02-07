@@ -25,9 +25,9 @@ BaseComponent.prototype.stamp = proto.prototype.nonAsyncStamp;
 
 export default class ctr extends ElementNode {
     
-    constructor(env, tag, children, attribs, presets) {
+    constructor(env, presets, tag, children, attribs) {
 
-        super(env, "container", children, attribs, presets);
+        super(env, presets, "container", children, attribs);
         //Warn about any children that are css / script
         if(children)
         for(const child of children)

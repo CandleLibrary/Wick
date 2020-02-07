@@ -78,7 +78,7 @@ export default function es(tag, attribs, children, env, lex, meta = 0) {
             break;
     }
 
-    node = new Constructor(env, tag, children, attribs, presets, USE_PENDING_LOAD);
+    node = new Constructor(env, presets, tag, children, attribs, USE_PENDING_LOAD);
 
     if(plugin_element[tag])
         node = plugin_element[tag].run(node, lex, env) || node;

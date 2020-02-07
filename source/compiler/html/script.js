@@ -9,8 +9,8 @@ const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
 
 export default class ScriptNode extends ElementNode {
 
-    constructor(env, tag, ast, attribs, presets) {
-        super(env, "script", null, attribs, presets);
+    constructor(env, presets, tag, ast, attribs) {
+        super(env, presets, "script", null, attribs);
         this.function = null;
         this.args = null;
         this.original_ast = ast[0];

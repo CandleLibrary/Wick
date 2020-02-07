@@ -1,8 +1,12 @@
 
 import ElementNode from "./element.js";
 
-export default class pre extends ElementNode{
-	constructor(env, tag, children, attribs, presets){
-		super(env, "pre", children, attribs, presets);
+export default class NonBindingElement extends ElementNode{
+	constructor(env,presets, tag, children, attribs){
+		super(env,presets, tag, children, attribs);
+	}
+
+	mount(){
+		
 	}
 }

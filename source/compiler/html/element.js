@@ -10,7 +10,7 @@ const offset = "    ";
 
 export default class ElementNode {
 
-    constructor(env, tag = "", children = [], attribs = [], presets, USE_PENDING_LOAD_ATTRIB) {
+    constructor(env,  presets, tag = "", children = [], attribs = [],  USE_PENDING_LOAD_ATTRIB = true) {
 
         if (children)
             for (const child of children)
@@ -181,7 +181,7 @@ export default class ElementNode {
         return;
     }
 
-    merge(node, merged_node = new this.constructor({}, this.tag, null, null, this.presets)) {
+    merge(node, merged_node = new this.constructor({}, this.presets, this.tag, null, null)) {
 
         merged_node.line = this.line;
         merged_node.char = this.char;
