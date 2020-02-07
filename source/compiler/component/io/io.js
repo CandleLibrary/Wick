@@ -239,44 +239,69 @@ export class TextNodeIO extends DataNodeIO {
         }
     }
 
-    toString(eles){
+    toString(eles) {
         return `${eles.getElement(this.ele)}.setAttribute(${this.attrib}, ${this.parent.prop})`;
     }
 }
 
 export class EventIO extends IOBase {
 
-    get type () { return "EventIO"}
+    get type() { return "EventIO" }
 
     constructor(scope, binding, tap, attrib_name, element, default_val) {
-        super(tap);
+
+        let down_tap = tap;
+
+        /*  
+            If there is a default, where ((up)(down = default_value)), then change the tap binding
+            to either null if the default value is a literal of some type, or to a known
+            tap if the default value is an identifier. If the element is an <input>,
+            and the default value is an identifier with the value of "value", 
+            then leave down tap blank, and let the Browser automatically assign 
+            value to the element. 
+        */
+        if (default_val) {
+            if (typeof default_val == "string")
+                if (default_val == "value" && (element.tagName == "TEXTAREA" || element.tagName == "INPUT")) {
+                    down_tap = null;
+                } else {
+                    down_tap = scope.getTap(default_val.name);
+                }
+            else down_tap = default_val;
+        }
+
+
+        super(down_tap);
 
         this.binding = binding;
 
         this.ele = element;
 
-        this.up_tap = default_val ? scope.getTap(default_val + "") : tap;
+        this.up_tap = tap;
+
+        this.val = null;
 
         const up_tap = this.up_tap;
 
         const PreventPropagation = (attrib_name.slice(-1) == "_");
-        
-        if(PreventPropagation)
-            attrib_name = attrib_name.slice(0,-1);
+
+        if (PreventPropagation)
+            attrib_name = attrib_name.slice(0, -1);
 
         this.event = (e) => {
 
-            up_tap.up(e.target.value, { event: e }); 
-            
-            if(PreventPropagation){
+            if(down_tap.down) //Prime the val property if possible
+                down_tap.down(null, {IMMEDIATE:true});
+
+            up_tap.up(this.val || e.target.value, { event: e });
+
+            if (PreventPropagation) {
                 e.preventDefault();
                 e.stopPropagation();
                 e.stopImmediatePropagation();
                 return false;
             }
         };
-
-        
 
         this.event_name = attrib_name.replace("on", "");
 
@@ -293,13 +318,13 @@ export class EventIO extends IOBase {
     }
 
     down(value) {
-        this.ele.value = value;
+        this.val = value;
     }
 
-    getTapDependencies(dependencies = []){
-        if(this.parent instanceof Tap)
+    getTapDependencies(dependencies = []) {
+        if (this.parent instanceof Tap)
             dependencies.push(this.parent.prop);
-        else{
+        else {
             dependencies.push(this.up_tap.prop);
             return this.parent.getTapDependencies(dependencies);
         }

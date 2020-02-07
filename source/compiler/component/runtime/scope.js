@@ -302,6 +302,9 @@ export default class Scope {
 
         for (const container of this.containers)
             container.down(data, changed_values);
+
+        for (const scope of this.scopes) 
+            scope.update(data, null, true, meta);
     }
 
     bubbleLink() {

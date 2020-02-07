@@ -107,7 +107,7 @@ export class Tap {
     up(value, meta) {
 
         if (!(this.modes & (EXPORT | PUT)))
-            this.down(value, meta);
+            this.scope.update({[this.prop]:value}, null, false, meta);
         
         if ((this.modes & PUT) && typeof(value) !== "undefined") {
 
