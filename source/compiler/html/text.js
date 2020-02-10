@@ -2,14 +2,30 @@ import Binding from "./binding.js";
 
 import { ContainerLinkIO, TextNodeIO } from "../component/io/io.js";
 
-const offset = "";
+const offset = "    ",
+    html_entities = [
+    [/&lt;/g, "<"],
+    [/&gt;/g, ">"],
+    [/&lpar;/g, "("],
+    [/&rpar;/g, ")"],
+    [/&quot;/g, '"'],
+    [/&nbsp;/g, "\u00a0"],
+    [/&amp;/g, '&']
+];
+
+function replaceEntities(text){
+    return html_entities.reduce(((r,e)=>r.replace(e[0],e[1])),text);
+}
 
 export default class TextNode {
 
-    constructor(sym, env) {
+    constructor(sym) {
+        this.IS_BINDING = (sym[0] instanceof Binding);
         this.data = sym[0] || "";
-        this.IS_BINDING = (this.data instanceof Binding);
         this.tag = "text";
+
+        if(!this.IS_BINDING)
+            this.data = replaceEntities(this.data);
     }
 
     toString(off = 0) {
