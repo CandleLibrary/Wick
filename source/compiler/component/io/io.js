@@ -106,7 +106,7 @@ class RedirectAttribIO extends IOBase {
     static stamp(scope, binding, default_val){
         
     }
-    constructor(scope, errors, down_tap, up_tap) {
+    constructor(scope, down_tap, up_tap) {
         super(down_tap);
         this.up_tap = up_tap;
     }
@@ -128,13 +128,14 @@ export class AttribIO extends IOBase {
     get type () { return "AttribIO"}
     
     constructor(scope, binding, tap, attr, element, default_val) {
-
+        /*
         if (element.io) {
             let down_tap = element.io.parent;
             let root = scope.parent;
             tap.modes |= EXPORT;
-            return new RedirectAttribIO(scope, errors, element.io.parent, tap);
+            return new RedirectAttribIO(scope, element.io.parent, tap);
         }
+        */
 
         super(tap, element);
 
@@ -290,8 +291,9 @@ export class EventIO extends IOBase {
 
         this.event = (e) => {
 
-            if(down_tap.down) //Prime the val property if possible
+            if(down_tap && down_tap.down) //Prime the val property if possible
                 down_tap.down(null, {IMMEDIATE:true});
+
 
             up_tap.up(this.val || e.target.value, { event: e });
 
