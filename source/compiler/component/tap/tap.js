@@ -107,8 +107,8 @@ export class Tap {
     up(value, meta) {
 
         if (!(this.modes & (EXPORT | PUT)))
-            this.scope.update({[this.prop]:value}, null, false, meta);
-        
+            this.down(value, meta);
+
         if ((this.modes & PUT) && typeof(value) !== "undefined") {
 
             if (this.scope.model.set)
@@ -161,7 +161,11 @@ export class RedirectTap extends Tap{
             this.redirect.downS({[this.redirect_name] : model[this.prop]}, i, m);
     }
 
-    up(value, meta){
+    down(v, m) {
+        this.redirect.down(v, m);
+    }
+
+    up(value, meta) {
         this.redirect.up(value, meta);
     }
 }
