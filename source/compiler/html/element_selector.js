@@ -1,4 +1,5 @@
 import ElementNode from "./element.js";
+import TextNode from "./text.js";
 import ScriptNode from "./script.js";
 import ScopeNode from "./scope.js";
 import LinkNode from "./link.js";
@@ -11,10 +12,30 @@ import NonBindingNode from "./non_binding.js";
 import FilterNode from "./filter.js";
 import ImportNode from "./import.js";
 import plugin from "../../plugin/system.js";
+import whind from "@candlefw/whind";
+import compile from "../wick.js";
+
+const node_constructors = {
+    element: ElementNode,
+    script: ScriptNode,
+    scope: ScopeNode,
+    link: LinkNode,
+    container: ContainerNode,
+    style: StyleNode,
+    void: VoidNode,
+    svg: SVGNode,
+    slot: SlotNode,
+    nonbinding: NonBindingNode,
+    filter: FilterNode,
+    import: ImportNode,
+    text: TextNode,
+    whind,
+    compile
+};
 
 const plugin_element = plugin.register("element");
 
-export default function es(tag, attribs, children, env, lex, meta = 0) {    
+export default function es(tag, attribs, children, env, lex, meta = 0) {
 
     const
         FULL = !!children;
@@ -52,9 +73,11 @@ export default function es(tag, attribs, children, env, lex, meta = 0) {
         case "path":
             Constructor = SVGNode;
             break;
+        case "wc":
         case "container":
             Constructor = ContainerNode;
             break;
+        case "ws":
         case "scope":
             Constructor = ScopeNode;
             break;
@@ -81,8 +104,8 @@ export default function es(tag, attribs, children, env, lex, meta = 0) {
 
     node = new Constructor(env, presets, tag, children, attribs, USE_PENDING_LOAD);
 
-    if(plugin_element[tag])
-        node = plugin_element[tag].run(node, lex, env) || node;
+    if (plugin_element[tag])
+        node = plugin_element[tag].run(node, lex, env, node_constructors) || node;
 
     node.wickup = meta || false;
 
