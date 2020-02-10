@@ -52,6 +52,9 @@ export default class scp extends ElementNode {
         if (this.getAttribObject("component"))
             this.getAttribObject("component").RENDER = false;
 
+        if (this.getAttribObject("element"))
+            this.getAttribObject("element").RENDER = false;
+        
         this.tag = n.getAttribObject("element").value || "div";
     }
 
