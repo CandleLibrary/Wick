@@ -4,7 +4,7 @@
 
 @EXT html
 
-@SYMBOL </  
+@SYMBOL </ <! -- 
 
 @IGNORE θws θnl 
 
@@ -28,7 +28,7 @@
 		│ < VOID_NAME ATTRIBUTES? /? >						↦return { fn.element_selector($$sym2, $$sym3, null, env, lex ) }
 		│ DTD  												↦return { $$sym2 }	
  	
-	<> DTD → <\! (-- │ - -)  (BODY_SYMBOLS)(+") (-- │ - -) >					    	↦return { null }			 	
+	<> DTD → <! --  (BODY_SYMBOLS)(+")  -- >				↦return { null }			 	
 
 
 ###########################################################################################
@@ -80,7 +80,7 @@
 
 <> TEXT_NODE → BODY_SYMBOLS(+") 							↦cstr ^text
 
-<> BODY_SYMBOLS → θid │ θws │ θsym │ θop │ θob │ θcb │ θnum │ θkeyword 
+<> BODY_SYMBOLS → θid │ θws │ θsym │ θop │ θob │ θcb │ θnum │ θkeyword │ \(
 
 
 
