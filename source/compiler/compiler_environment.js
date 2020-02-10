@@ -285,6 +285,9 @@ const env = {
         },
 
         defaultError: (tk, env, output, lex, prv_lex, ss, lu) => {
+
+            
+
             if (lex.tx == "//" || lex.tx == "/*") {
                 if (lex.tx == "//") {
                     while (!lex.END && lex.ty !== lex.types.nl)
@@ -320,6 +323,13 @@ const env = {
                     lex.tl = 0;
                     return lu({ tx: ";" });
                 }
+            }
+
+            if(lex.ty == lex.types.sym && lex.tx.length > 1){
+                //Try splitting up the symbol
+                lex.tl = 0;
+                lex.next(lex, false);
+                return lu(lex);
             }
 
             if (lex.END) {

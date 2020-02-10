@@ -98,7 +98,7 @@ export default class P {
         /**
          * Custom objects that can be used throughout component scripts. User defined. 
          */
-        this.custom = preset_options.custom || P.default_custom || {};
+        this.custom = Object.assign({}, preset_options.custom, P.default_custom);
 
         let c = preset_options.options;
         if (c)
