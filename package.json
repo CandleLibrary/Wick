@@ -66,12 +66,12 @@
     "unused": true
   },
   "dependencies": {
-    "@candlefw/css": "^0.1.4",
-    "@candlefw/glow": "latest",
+    "@candlefw/css": "^0.1.6",
+    "@candlefw/glow": "0.2.0",
     "@candlefw/html": "^0.0.14",
     "@candlefw/math": "^0.0.3",
     "@candlefw/spark": "^0.0.8",
-    "@candlefw/url": "0.0.10",
+    "@candlefw/url": "0.0.13",
     "@candlefw/whind": "0.3.6",
     "commander": "^4.1.0",
     "env": "^0.0.2",
