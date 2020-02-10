@@ -130,22 +130,8 @@ export default class scp extends ElementNode {
 
         const tap_list = this.tap_list;
 
-        for (const tap of tap_list) {
-            const name = tap.name,
-                REDIRECT_FLAG = !!tap.redirect,
-                UPDATE_FLAG = name == "update";
-
-            if (scope.taps.has(name)) continue;
-
-            scope.taps.set(name,
-                UPDATE_FLAG ?
-                (scope.update_tap = scope.taps[name],
-                    new UpdateTap(scope, name, tap.modes)) :
-                REDIRECT_FLAG ?
-                new RedirectTap(scope, name, tap.redirect) :
-                new Tap(scope, name, tap.modes)
-            );
-        }
+        for (const tap of tap_list) 
+            scope.getTap(tap.name, tap.redirect).modes = tap.modes;
     }
 
     createElement(scope) {
