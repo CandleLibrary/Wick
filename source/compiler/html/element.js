@@ -121,7 +121,7 @@ export default class ElementNode {
     toString(off = 0) {
 
         var o = offset.repeat(off),
-            str = `${o}<${this.tag}`;
+            str = `\n${o}<${this.tag}`;
 
         for (const attr of this.attribs.values()) {
             if (attr.name)
@@ -134,10 +134,9 @@ export default class ElementNode {
 
         str += ">\n";
 
-
         str += this.innerToString(off + 1);
 
-        return str + `${o}</${this.tag}>\n`;
+        return str + `\n${o}</${this.tag}>`;
     }
 
     innerToString(off) {

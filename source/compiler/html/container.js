@@ -27,7 +27,7 @@ export default class ctr extends ElementNode {
     
     constructor(env, presets, tag, children, attribs) {
 
-        super(env, presets, "container", children, attribs);
+        super(env, presets, tag, children, attribs);
         //Warn about any children that are css / script
         if(children)
         for(const child of children)

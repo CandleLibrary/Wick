@@ -29,7 +29,7 @@ export default class TextNode {
     }
 
     toString(off = 0) {
-        return `${offset.repeat(off)} ${this.data.toString()}\n`;
+        return `${offset.repeat(off)} ${this.data.toString()}`;
     }
 
     finalize() {
