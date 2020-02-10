@@ -1,4 +1,4 @@
-import { Tap, UpdateTap } from "../tap/tap.js";
+import { Tap, UpdateTap, RedirectTap } from "../tap/tap.js";
 
 export default class Scope {
 
@@ -154,12 +154,13 @@ export default class Scope {
 
     linkImportTaps(parent_scope = this.parent) {
         for (const tap of this.taps.values()) {
-            
+
             tap.linkImport(parent_scope);
         }
     }
 
-    getTap(name) {
+    getTap(name, REDIRECT = "") {
+
         if (!name) return null;
 
         let tap = this.taps.get(name);
@@ -168,7 +169,7 @@ export default class Scope {
             if (name == "update")
                 tap = this.update_tap = new UpdateTap(this, name);
             else {
-                tap = new Tap(this, name);
+                tap = (REDIRECT) ? new RedirectTap(this, name, REDIRECT) : new Tap(this, name);
                 this.taps.set(name, tap);
             }
 
@@ -185,7 +186,7 @@ export default class Scope {
         //Called before model is loaded
         this.update({ loading: true }); //Lifecycle Events: Loading <====================================================================== 
 
-        if(this.parent)
+        if (this.parent)
             this.linkImportTaps();
 
         let
@@ -303,7 +304,7 @@ export default class Scope {
         for (const container of this.containers)
             container.down(data, changed_values);
 
-        for (const scope of this.scopes) 
+        for (const scope of this.scopes)
             scope.update(data, null, true, meta);
     }
 
@@ -354,37 +355,52 @@ export default class Scope {
     }
 
     transitionOut(transition, DESTROY_AFTER_TRANSITION = false, transition_name = "trs_out") {
+
         this.CONNECTED = false;
 
-        if (this.TRANSITIONED_IN === false) {
-            this.removeFromDOM();
-            if (DESTROY_AFTER_TRANSITION) this.destroy();
-            return;
-        }
+        this.DESTROY_ON_TRANSITION = DESTROY_AFTER_TRANSITION;
+
+        this.TRANSITIONED_IN = false;
 
         let transition_time = 0;
+
+        if(this.out_trs)
+            this.out_trs.trs.removeEventListener("stopped", this.out_trs.fn);
 
         if (transition) {
             this.update({
                 [transition_name]: transition
             }, null, false, { IMMEDIATE: true });
 
-            if (transition.trs)
-                transition_time = transition.trs.out_duration;
-            else
-                transition_time = transition.out_duration;
-        }
+            const trs = transition.trs || transition;
 
-        this.TRANSITIONED_IN = false;
+            this.out_trs = {trs, fn:this.outTransitionStop.bind(this)};
+            
+            transition_time = trs.out_duration;
+
+            trs.addEventListener("stopped", this.out_trs.fn);
+
+        } else {
+            if(!this.out_trs)
+                this.outTransitionStop();
+        }
 
         transition_time = Math.max(transition_time, 0);
 
-        setTimeout(() => {
-            this.removeFromDOM();
-            if (DESTROY_AFTER_TRANSITION) this.destroy();
-        }, transition_time + 2);
-
         return transition_time;
+    }
+
+    outTransitionStop() {
+
+        if (!this.TRANSITIONED_IN) {
+            this.removeFromDOM();
+            if (this.DESTROY_ON_TRANSITION) this.destroy();
+            this.DESTROY_ON_TRANSITION = false;
+        }
+
+        this.out_trs = null;
+
+        return false;
     }
 }
 

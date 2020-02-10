@@ -524,7 +524,7 @@ export default class ScopeContainer {
         if (OWN_TRANSITION) {
             if (NO_TRANSITION)
                 return transition;
-            transition.start();
+            transition.play();
         }
 
         return transition;
@@ -573,7 +573,7 @@ export default class ScopeContainer {
         // is instead set to it's end state, and scrub is called to set intermittent 
         // position. 
         if (!this.SCRUBBING)
-            transition.start();
+            transition.play();
     }
 
     /**
@@ -611,7 +611,7 @@ export default class ScopeContainer {
             });
 
             if (!this.SCRUBBING)
-                transition.start();
+                transition.play();
 
         } else {
 
