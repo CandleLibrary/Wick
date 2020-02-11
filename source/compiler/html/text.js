@@ -22,10 +22,11 @@ export default class TextNode {
     constructor(sym) {
         this.IS_BINDING = (sym[0] instanceof Binding);
         this.data = sym[0] || "";
+        this.unescaped_data = "";
         this.tag = "text";
 
         if(!this.IS_BINDING)
-            this.data = replaceEntities(this.data);
+            this.unescaped_data = replaceEntities(this.data);
     }
 
     toString(off = 0) {
@@ -52,6 +53,6 @@ export default class TextNode {
             scope.ios.push(io);
             return io;
         } else
-            ele.data = this.data;
+            ele.data = this.unescaped_data;
     }
 }
