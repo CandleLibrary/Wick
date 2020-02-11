@@ -1,6 +1,8 @@
-import JS from "../js/tools.js";
+import { types, identifier, call_expression, string, parenthasized } from "@candlefw/js";
+
 import glow from "@candlefw/glow";
-import { types, identifier, call_expression, string, parenthasized, parse } from "@candlefw/js";
+
+import JS from "../js/tools.js";
 
 const defaults = {
     glow,

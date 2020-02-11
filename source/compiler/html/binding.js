@@ -1,8 +1,7 @@
 import { identifier, return_statement } from "@candlefw/js";
-import { GetOutGlobals, AddEmit, copyAST } from "../js/script_functions.js";
 import ExpressionIO from "../component/io/expression_io.js";
 import ContainerIO from "../component/io/container_io.js";
-import { default as script, processJSAST, processScriptObject } from "./script.js";
+import { processJSAST, processScriptObject } from "./script.js";
 
 export const EXPRESSION = 5;
 export const IDENTIFIER = 6;

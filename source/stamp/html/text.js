@@ -1,12 +1,4 @@
 import text from "../../compiler/html/text.js";
-import { parse as JSParse } from "@candlefw/js";
-
-
-/* Returns the first expression statment node in the resultant ast of the parse tree of string argument. */
-function buildExpression(string) {
-    const js_ast = JSParse(string);
-    return js_ast.vals[0];
-}
 
 text.prototype.stamp = function(tools, output, indent_level = 0, eleid = [0], ctr = 0) {
 	
@@ -16,7 +8,7 @@ text.prototype.stamp = function(tools, output, indent_level = 0, eleid = [0], ct
 		
 		if(ctr){
 			output.js.binds.push({
-				ast: buildExpression(`this.c${ctr}.l(${this.data.ast.vals[0]})`),
+				ast: tools.buildExpression(`this.c${ctr}.l(${this.data.ast.vals[0]})`),
 				inputs: this.data.args.map(id => ({ name:id.name })),
 				outputs: []
 			});
@@ -24,7 +16,7 @@ text.prototype.stamp = function(tools, output, indent_level = 0, eleid = [0], ct
 			output.html.push(tools.indent("<span></span>", indent_level));
 
 			output.js.binds.push({
-				ast : buildExpression(`${tools.getElement(output, eleid).name}.innerHTML=${this.data.ast.vals[0]}`),
+				ast : tools.buildExpression(`${tools.getElement(output, eleid).name}.innerHTML=${this.data.ast.vals[0]}`),
 				inputs: this.data.args.map(id => ({ name:id.name })),
 				outputs: []
 			});

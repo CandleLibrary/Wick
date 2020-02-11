@@ -1,12 +1,5 @@
 import attribute from "../../compiler/html/attribute.js";
 import { AttribIO, InputIO, EventIO } from "../../compiler/component/io/io.js";
-import { parse as JSParse } from "@candlefw/js";
-
-/* Returns the first expression statment node in the resultant ast of the parse tree of string argument. */
-function buildExpression(string) {
-	const js_ast = JSParse(string);
-	return js_ast.vals[0];
-}
 
 attribute.prototype.stamp = function(tools, output, str, eleid, node) {
 	if (this.RENDER)
@@ -28,7 +21,7 @@ attribute.prototype.stamp = function(tools, output, str, eleid, node) {
 						up = this.value.ast_other.render();
 
 					output.js.binds.push({
-						ast: buildExpression(`${tools.getElement(output, eleid).name}.value = ${down}`),
+						ast: tools.buildExpression(`${tools.getElement(output, eleid).name}.value = ${down}`),
 						inputs: this.value.args.map(id => ({ name: id.name })),
 						outputs: []
 					});
@@ -52,7 +45,7 @@ attribute.prototype.stamp = function(tools, output, str, eleid, node) {
 				case AttribIO:
 
 					output.js.binds.push({
-						ast: buildExpression(`${tools.getElement(output, eleid).name}.setAttribute("${this.name}",${this.value.ast.vals[0]})`),
+						ast: tools.buildExpression(`${tools.getElement(output, eleid).name}.setAttribute("${this.name}",${this.value.ast.vals[0]})`),
 						inputs: this.value.args.filter(id=>id.IS_TAPPED).map(id => ({ name: id.name })),
 						outputs: []
 					});

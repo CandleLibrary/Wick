@@ -9,9 +9,11 @@ import "./html/container.js";
 import "./html/attribute.js";
 import "./html/binding.js";
 
-import { types, parse as jsParse, statements } from "@candlefw/js";
+import { types, statements } from "@candlefw/js";
 
-import { getTypeInClosure } from "../compiler/js/script_functions.js";
+import { getTypeInClosure} from "../compiler/js/script_functions.js";
+
+const jsParse = tools.jsParse;
 
 function baseSort(a, b) {
 	return (a < b) ? 1 : -1;
@@ -43,8 +45,7 @@ function compileScope(data, presets) {
 
 		for (const node of getTypeInClosure(ast,
 				types.identifier,
-				types.object_literal,
-				types.object_literal,
+				types.object_literal
 			)) {
 
 			if (node.type == types.object_literal) {

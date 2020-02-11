@@ -1,16 +1,16 @@
-import { identifier, return_statement } from "@candlefw/js";
+import { return_statement } from "@candlefw/js";
 import ElementNode from "./element.js";
 import ScriptIO from "../component/io/script_io.js";
 import FUNCTION_CACHE from "../js/function_cache.js";
-import { GetOutGlobals, AddEmit, AsyncInClosure, copyAST } from "../js/script_functions.js";
 import error from "../../utils/error.js";
+import { GetOutGlobals, AddEmit, AsyncInClosure, copyAST } from "../js/script_functions.js";
 
 const offset = "    ";
 const AsyncFunction = Object.getPrototypeOf(async function() {}).constructor;
 
 export function processJSAST(obj, env, ENCLOSE_IN_RETURN_STATEMENT = false) {
 
-    obj.ast = copyAST(obj.original);
+    obj.ast = obj.original.copy();
 
     const { args, ids } = GetOutGlobals(obj.ast, env.presets);
 

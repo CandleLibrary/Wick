@@ -1,11 +1,16 @@
-import { parse } from "@candlefw/js";
-
 import lite from "./lite.js";
+import compiler_environment from "../compiler/compiler_environment.js";
+import compiler from "../compiler/wick.js";
+import whind from "@candlefw/whind";
+
+const jsParse = str => compiler(whind(str), compiler_environment);
 
 const tools = (function() {
 
+	jsParse,
+
 	lite.buildExpression = function(string) {
-		const js_ast = parse(string);
+		const js_ast = jsParse(string);
 		return js_ast.vals[0];
 	};
 
