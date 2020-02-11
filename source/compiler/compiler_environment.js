@@ -118,26 +118,6 @@ import {
     parseDeclaration
 } from "@candlefw/css";
 
-
-function create_ordered_list(sym, offset = 0, level = -1, env, lex) {
-
-    for (let i = offset; i < sym.length; i++) {
-        const s = sym[i],
-            lvl = (s.lvl) ? s.lvl.length : 0,
-            li = s.li;
-
-        if (lvl > level) {
-            create_ordered_list(sym, i, lvl, env, lex);
-        } else if (lvl < level) {
-            sym[offset] = element_selector("ul", null, sym.splice(offset, i - offset), env, lex);
-            return;
-        } else
-            sym[i] = li;
-    }
-
-    return sym[offset] = element_selector("span", null, sym.splice(offset, sym.length - offset), env, lex);
-}
-
 const env = {
     table: {},
     ASI: true,
@@ -259,9 +239,7 @@ const env = {
         variable_statement,
         void_expression,
         //*/
-        //MARKDOWN
-        create_ordered_list,
-
+        
         while_stmt: function(sym) {
             this.bool = sym[1];
             this.body = sym[3];
