@@ -1,6 +1,6 @@
 import lite from "./lite.js";
 import compiler_environment from "../compiler/compiler_environment.js";
-import compiler from "../compiler/wick.js";
+import compiler from "../compiler/wick_parser.js";
 import whind from "@candlefw/whind";
 
 const jsParse = str => compiler(whind(str), compiler_environment);

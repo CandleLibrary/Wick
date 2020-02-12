@@ -2,7 +2,7 @@
 
 @EXT wick
 
-@SYMBOL </ 
+@SYMBOL </ (( ({
 
 @IGNORE θws θnl 
 
@@ -26,7 +26,7 @@
 +> html::TAG_BODY_ITEM → < τstyle html::ATTRIBUTES? >  css::CSS?  </ τstyle > 				↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 	│ < τscript html::ATTRIBUTES? > js::script? </ τscript > 								↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 	│ < τjs html::ATTRIBUTES? > js::script? </ τjs > 										↦return { fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
-	#│ \{ js::expression \{ js::script? \} \}												↦r {fn.element_selector("script", ["on", null, new env.wick_binding(["on",null, $sym2])], $sym4, env, lex) }
+	#│ \({ js::expression \{ js::script? \} \} (ERR θws ) \)								↦r {fn.element_selector("script", ["on", null, new env.wick_binding(["on",null, $sym2])], $sym4, env, lex) }
 
 <> IMPORT_TAG → < τimport html::ATTRIBUTES? /? > ( </ τimport > )?  							↦return { fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
 
@@ -40,5 +40,9 @@
 <> WICK_BINDING → CALL_BINDING  							
  	│ BASIC_BINDING
  
-<> BASIC_BINDING → \( (ERR θws ) \( ↦{ env.start = lex.off+2 } js::expression? \) (ERR θws ) \)   									↦r {(env.off = lex.off, new fn.wick_binding($$sym3, null, env, lex) )}
-<> CALL_BINDING → \( (ERR θws ) \( ↦{ env.start = lex.off+2 } js::expression? \) (ERR θws ) \( js::expression? \) (ERR θws ) \)    	↦r {(env.off = lex.off, new fn.wick_binding($$sym3, $$sym6, env, lex) )}
+<> BASIC_BINDING → \(( \!?  ↦{ env.start = lex.off+2 } js::expression? \) (ERR θws ) \)   									↦r {(env.off = lex.off, new fn.wick_binding($$sym3, null, env, lex,$$sym2) )}
+<> CALL_BINDING →  \(( \!?  ↦{ env.start = lex.off+2 } js::expression? \) (ERR θws ) \( js::expression? \) (ERR θws ) \)    ↦r {(env.off = lex.off, new fn.wick_binding($$sym3, $$sym6, env, lex,$$sym2) )}
+
+#+> html::BODY_SYMBOLS → \( θws ↦r { $sym1 + $sym2 }
+#s	│ \) θws ↦r { $sym1 + $sym2 }
+

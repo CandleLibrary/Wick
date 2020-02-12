@@ -1,6 +1,6 @@
 import compiler from "./compiler/component.js";
 
-import wick_compile from "./compiler/wick.js";
+import wick_compile from "./compiler/wick_parser.js";
 
 import CompilerEnv from "./compiler/compiler_environment.js";
 
