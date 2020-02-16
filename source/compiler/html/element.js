@@ -118,7 +118,7 @@ export default class ElementNode {
         return createElement(this.tag);
     }
 
-    toString(off = 0) {
+    toString(data = null, off = 0) {
 
         var o = offset.repeat(off),
             str = `\n${o}<${this.tag}`;
@@ -134,13 +134,13 @@ export default class ElementNode {
 
         str += ">\n";
 
-        str += this.innerToString(off + 1);
+        str += this.innerToString(data, off + 1);
 
         return str + `\n${o}</${this.tag}>`;
     }
 
-    innerToString(off) {
-        return this.children.map(e => e.toString()).join("");
+    innerToString(data, off) {
+        return this.children.map(e => e.toString(data, off)).join("");
     }
 
     /****************************************** COMPONENTIZATION *****************************************/

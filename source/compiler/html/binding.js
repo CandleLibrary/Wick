@@ -55,7 +55,9 @@ export default class Binding {
         }
     }
 
-    toString() {
+    toString(data) {
+        if(this.METHOD == IDENTIFIER && data && data[this.astA.val])
+            return data[this.astA.val].toString();
         return (this.astB.val)
             ? `((${this.astA.original + ""})(${this.astB.original + ""}))`
             : `((${this.astA.original + ""}))`;

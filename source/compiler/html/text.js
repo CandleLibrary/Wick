@@ -29,8 +29,8 @@ export default class TextNode {
             this.unescaped_data = replaceEntities(this.data);
     }
 
-    toString(off = 0) {
-        return `${offset.repeat(off)} ${this.data.toString()}`;
+    toString(data, off = 0) {
+        return `${offset.repeat(off)} ${this.data.toString(data)}`;
     }
 
     finalize() {
