@@ -15,12 +15,13 @@
 #### HTML / ML
 ##############################################################################################
 ##############################################################################################
-	<> HTML → BODY
+	<> HTML → RESULT
+
+	<> RESULT → DTD(*) BODY  								↦return { $sym2.DTD = $sym1, $sym2 }
 
 	<> BODY → GOAL_TAG
 
 	<> GOAL_TAG → TAG
-
 
 	<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >	↦return { env.fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 		│ < TAGNAME ATTRIBUTES? / >							↦return { env.fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
@@ -28,7 +29,7 @@
 		│ < VOID_NAME ATTRIBUTES? /? >						↦return { env.fn.element_selector($$sym2, $$sym3, null, env, lex ) }
 		│ DTD  												↦return { $$sym2 }	
  	
-	<> DTD → <! --  (BODY_SYMBOLS)(+")  -- >				↦return { null }			 	
+	<> DTD → <! --?  (BODY_SYMBOLS)(*")  --? >				↦return { null }			 	
 
 
 ###########################################################################################
