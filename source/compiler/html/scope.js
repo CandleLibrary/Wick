@@ -1,9 +1,6 @@
 import Scope from "../component/runtime/scope.js";
 import ElementNode from "./element.js";
 import {
-    Tap,
-    UpdateTap,
-    RedirectTap,
     KEEP,
     IMPORT,
     EXPORT,
