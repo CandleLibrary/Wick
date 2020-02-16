@@ -84,7 +84,6 @@ export default function es(tag, attribs, children, env, lex, meta = 0) {
         case "slot":
             Constructor = SlotNode;
             break;
-        case "link":
         case "import":
             Constructor = ImportNode;
             break;

@@ -177,10 +177,10 @@ export default class scp extends ElementNode {
         return s;
     }
 
-    toString() {
+    toString(...v) {
         const tag = this.tag;
         this.tag = "scope";
-        const val = super.toString();
+        const val = super.toString(...v);
         this.tag = tag;
         return val;
     }
