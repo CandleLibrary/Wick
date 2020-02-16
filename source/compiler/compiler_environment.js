@@ -90,7 +90,8 @@ import {
     class_declaration,
     for_of_statement,
     for_in_statement,
-    super_literal
+    super_literal,
+    reg_ex_literal
 } from "@candlefw/js";
 //*/
 
@@ -238,6 +239,7 @@ const env = {
         unary_xor_expression,
         variable_statement,
         void_expression,
+        reg_ex_literal,
         //*/
         
         while_stmt: function(sym) {
