@@ -40,7 +40,7 @@ export default class d {
 
             element = HTMLElement_.attachShadow({ mode: 'open' });
         }
-
+        
         const scope = this.ast.mount(element, parent_scope);
 
         scope.load(data_object);

@@ -13,7 +13,7 @@ import FilterNode from "./filter.js";
 import ImportNode from "./import.js";
 import plugin from "../../plugin/system.js";
 import whind from "@candlefw/whind";
-import compile from "../wick_parser.js";
+import compile from "../parser.js";
 
 const node_constructors = {
     element: ElementNode,

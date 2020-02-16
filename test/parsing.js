@@ -48,16 +48,6 @@ export default function(createComponent) {
             ele.fch.tag.should.equal("a");
         });
 
-        it("<pre></pre>", async function() {
-            const { ele } = await createComponent(`<pre></pre>`);
-            ele.fch.tag.should.equal("pre");
-        });
-
-        it("<pre></pre>", async function() {
-            const { ele } = await createComponent(`<pre></pre>`);
-            ele.fch.tag.should.equal("pre");
-        });
-
         function AcceptRejectAssertion(string, ACCEPTED = false) {
             it(string, () =>
                 wick(string).pending.should.eventually.be[ACCEPTED ? "fulfilled" : "rejected"]

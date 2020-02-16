@@ -1,7 +1,7 @@
 import { appendChild, createElement } from "../../short_names.js";
 import Scope from "../component/runtime/scope.js";
 import ComponentEnvironment from "../component_environment.js";
-import wick_compile from "../wick_parser.js";
+import parseWickSyntax from "../parser.js";
 import error from "../../utils/error.js";
 import URL from "@candlefw/url";
 import whind from "@candlefw/whind";
@@ -167,7 +167,7 @@ export default class ElementNode {
             const lex = whind(text_data);
 
             try {
-                ast = wick_compile(lex, own_env);
+                ast = parseWickSyntax(lex, own_env);
             } catch (e) {
                 error(error.ELEMENT_PARSE_FAILURE, e, this);
             }

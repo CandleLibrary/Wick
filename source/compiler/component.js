@@ -3,7 +3,7 @@ import URL from "@candlefw/url";
 import { types, module } from "@candlefw/js";
 
 import Presets from "../presets.js";
-import wick_parser from "./wick_parser.js";
+import parseWickSyntax from "./parser.js";
 import compiler_env from "./compiler_environment.js";
 
 import ComponentEnvironment from "./component_environment.js";
@@ -96,7 +96,7 @@ const
 
                 component_env.incrementPendingLoads();
 
-                const output = wick_parser(whind(string_data), component_env);
+                const output = parseWickSyntax(whind(string_data), component_env);
 
                 if (output.error){
                     if(presets.options.THROW_ON_ERRORS)
@@ -180,8 +180,12 @@ const
 
                         const ast = obj;
 
-                        if (!ast.finalize)
+
+
+                        if (!ast.finalize){
+                            console.log({ast,component_data})
                             throw error(error.COMPONENT_PARSE_FAILURE, new Error("Component blueprint is not html"), component_env);
+                        }
 
                         const constructor_name = this.constructor.name;
 
@@ -233,7 +237,7 @@ const
                         //extract and process function information. 
 
                         const
-                            js_ast = wick_parser(whind("function " + r.toString().trim() + ";"), compiler_env),
+                            js_ast = parseWickSyntax(whind("function " + r.toString().trim() + ";"), compiler_env),
                             func_ast = JS.getFirst(js_ast, types.function_declaration),
                             binding = new Binding(func_ast.id, undefined, component_env, whind("whin")),
                             attrib = new Attribute(["on", null, binding], presets),

@@ -123,8 +123,9 @@ describe("Composition", function() {
 
     it("Components can be imported from a remote resource using the [url] attribute on <import> or <link> elements", async function() {
         const presets = wick.presets();
-        const { comp, ele } = await createComponent(`<import url="./test/data/import.1.html"/><scope><test/></scope>`, presets);
+        const { scope, ele } = await createComponent(`<import url="./test/data/import.1.html"/><scope><test/></scope>`, presets);
         await sleep(5);
+        console.log(scope.ele.innerHTML);
         ele.fch.fch.innerHTML.should.equal("I've been imported!");
     });
 
@@ -171,8 +172,9 @@ describe("Composition", function() {
         it("Slots can be defined within components and referenced by mounting elements [slot] value that matches the slot's [name] attribute", async function() {
             const presets = wick.presets();
 
-            const { ele: eleA } = await createComponent(`<div component='test'>Test this <slot name="test">out</slot> now!</div>`, presets);
+            const { ele: eleA } = await createComponent(`<scope component='test'>Test this <slot name="test">out</slot> now!</scope>`, presets);
             const { scope, ele: eleB } = await createComponent(`<scope><div><a><test><scope slot="test">2+4/22</scope></test></a></div></scope>`, presets);
+            console.log(eleB.innerHTML)
             eleB.fch.fch.fch.innerText.should.equal("Test this 2+4/22 now!");
         });
     });
@@ -229,8 +231,8 @@ describe("Containers", function() {
     describe("Scrubbing", function() {
 
         it("Introducing new offset and set of elements does not visually change element order.", async function() {
-            this.slow(200000);
-            this.timeout(10000);
+            //this.slow(200000);
+            //this.timeout(10000);
 
             const { scope } = await createComponent(`./test/data/scrubbing2.js`, wick.presets()),
                 sc = scope.containers[0];
