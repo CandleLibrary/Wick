@@ -79,8 +79,9 @@ export default class ScriptNode extends ElementNode {
             console.warn("No binding set for this script's [on] attribute. This script will have no effect.");
         else {
             this.on = on;
-            this.loadAST(ast[0]);
         }
+
+        this.loadAST(ast[0]);
     }
 
     loadAST(ast) {
@@ -118,7 +119,7 @@ export default class ScriptNode extends ElementNode {
         }
 
         str += ">\n";
-
+        if(this.original)
         str += this.original.render();
 
         return str + `${o}</${this.tag}>\n`;
