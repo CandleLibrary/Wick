@@ -10,7 +10,9 @@ export const BOOL = 8;
 
 export default class Binding {
 
-    constructor(exprA, exprB, env, lex) {
+    constructor(exprA, exprB, env, lex, DEBUG =false) {
+        if(DEBUG)
+            console.log(`DEBUGGING binding in ${env.url} at ${lex.line+1}:${lex.char+1}`);
 
         this.lex = lex.copy();
         this.lex.sl = lex.off - 3;
