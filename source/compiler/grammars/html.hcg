@@ -27,8 +27,7 @@
 		│ < TAGNAME ATTRIBUTES? / >							↦return { env.fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
 		│ < VOID_NAME ATTRIBUTES? > </ VOID_NAME > 			↦return { env.fn.element_selector($$sym2, $$sym3, $$sym4, env, lex ) }
 		│ < VOID_NAME ATTRIBUTES? /? >						↦return { env.fn.element_selector($$sym2, $$sym3, null, env, lex ) }
-		│ DTD  												↦return { $$sym2 }	
- 	
+		
 	<> DTD → <! --?  (BODY_SYMBOLS)(*")  --? >				↦return { null }			 	
 
 
@@ -56,7 +55,8 @@
 <> TAG_BODY → TAG_BODY_ITEM(+)
 
 <> TAG_BODY_ITEM → TEXT_NODE  						
-	│ TAG 											
+	│ TAG 	
+	│ DTD  												↦return { $$sym2 }											
 	
 <> ATTRIBUTES → ATTRIBUTES ATTRIBUTE  					↦return { $$sym1.push($$sym2), $$sym1 }
 	│ ATTRIBUTE 										↦return { [$$sym1] }
