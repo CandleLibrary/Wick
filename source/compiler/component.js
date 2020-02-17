@@ -98,13 +98,12 @@ const
 
                 const output = parseWickSyntax(whind(string_data), component_env);
 
-                if (output.error){
-                    if(presets.options.THROW_ON_ERRORS)
+                if (output.error) {
+                    if (presets.options.THROW_ON_ERRORS)
                         component_env.throw();
 
                     ast = new ErrorNode(component_env);
-                }
-                else
+                } else
                     ast = output.result;
 
 
@@ -182,23 +181,24 @@ const
 
 
 
-                        if (!ast.finalize){
-                            console.log({ast,component_data})
-                            throw error(error.COMPONENT_PARSE_FAILURE, new Error("Component blueprint is not html"), component_env);
+                        if (!ast || !ast.finalize) {
+                            console.log({component_data,ast})
+                            error(error.COMPONENT_PARSE_FAILURE, new Error("Component blueprint is not html"), component_env);
+                        } else {
+
+                            const constructor_name = this.constructor.name;
+
+                            if (constructor_name !== "default" || constructor_name !== "Anonymous")
+                                presets.components[constructor_name] = ast;
+
+                            this.ast = ast;
+                            this.ast.finalize();
+
+                            if (!this.name)
+                                this.name = this.ast.getAttribObject("component").value || "undefined-component";
+
+                            integrate(this, this, presets, component_env)
                         }
-
-                        const constructor_name = this.constructor.name;
-
-                        if (constructor_name !== "default" || constructor_name !== "Anonymous")
-                            presets.components[constructor_name] = ast;
-
-                        this.ast = ast;
-                        this.ast.finalize();
-
-                        if (!this.name)
-                            this.name = this.ast.getAttribObject("component").value || "undefined-component";
-
-                        integrate(this, this, presets, component_env)
                     }
 
                     this.READY = true;
