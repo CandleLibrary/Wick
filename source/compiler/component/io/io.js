@@ -220,12 +220,21 @@ export class TextNodeIO extends DataNodeIO {
 
         const ele = this.ele;
 
-        if (value instanceof HTMLElement) {
+        /* 
+            This IO will append document nodes to the DOM if it receives an actual object, 
+            which can only happen programatically. Strings containing markup will 
+            be simply passed into the existing TextNode's data property and will display
+            as text on client displays.
+        */
+        if (value instanceof Node) {
             if (value !== this.ele) {
                 this.ELEMENT_IS_TEXT = false;
                 this.ele = value;
                 ele.parentElement.replaceChild(value, ele);
-                this.discardElement(ele);
+                /* 
+                Need to make sure elements are properly removed from the DOM
+                */
+                this.discardElement(ele);  
             }
         } else {
 
