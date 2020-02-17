@@ -74,8 +74,8 @@ export default class ctr extends ElementNode {
         scope = scope || new Scope(null, presets, element, this);
 
         //Only create a container if it is able to generate components. 
-        if(!this.component_constructor)
-            return scope;
+       // if(!this.component_constructor)
+       //     return scope;
 
         const
             ele = createElement(this.element),
@@ -83,10 +83,7 @@ export default class ctr extends ElementNode {
 
         appendChild(element, ele);
 
-        this.class.split(" ").map(c => c ? ele.classList.add(c) : {});
-
-        if(this.component_constructor)
-            container.component = this.component_constructor;
+        this.class.split(" ").map(c => c ? ele.classList.add(c) : {});           
 
         for (const fltr of this.filters)
             fltr.mount(scope, container);
@@ -94,14 +91,18 @@ export default class ctr extends ElementNode {
         for (const attr of this.attribs.values())
             attr.bind(ele, scope, pinned);
 
-        if (this.binds.length > 0) {
+        if (this.component_constructor && this.binds.length > 0) {
+            
+            container.component = this.component_constructor;
+
             for (const bind of this.binds)
                 bind.mount(null, scope, presets, slots, pinned, container);
         }else{ 
-            //If there is no binding, then there is no potential to have a data array host generate components.
+            //If there is no binding, then there is no potential to have generated components built from array entries.
             //Instead, load any existing children as component entries for the container element. 
             for (const node of this.nodes)
                 container.scopes.push(node.mount(null, null, presets, slots));
+
             container.filterUpdate();
             container.render();
         }
