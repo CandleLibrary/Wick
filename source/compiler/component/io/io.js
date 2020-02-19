@@ -2,30 +2,30 @@ import { EXPORT, Tap } from "../tap/tap.js";
 import { types } from "@candlefw/js";
 export class IOBase {
 
-    get type () { return "IOBase"}
+    get type() { return "IOBase" }
 
     constructor(parent, element = null) {
 
         this.parent = null;
         this.ele = element;
 
-        if(parent instanceof Tap || parent instanceof IOBase)
+        if (parent instanceof Tap || parent instanceof IOBase)
             parent.addIO(this);
     }
 
-    discardElement(ele){
-        if(this.parent)
+    discardElement(ele) {
+        if (this.parent)
             this.parent.discardElement(ele);
     }
 
     destroy() {
-        if(this.parent)
+        if (this.parent)
             this.parent.removeIO(this);
 
         this.parent = null;
     }
 
-    init(default_val){
+    init(default_val) {
         ((default_val = (this.parent.value || default_val))
             && this.down(default_val));
     }
@@ -46,14 +46,14 @@ export class IOBase {
         this.ele = null;
     }
 
-    toString(eles){
+    toString(eles) {
         return "";
     }
 
-    getTapDependencies(dependencies = []){
-        if(this.parent instanceof Tap)
+    getTapDependencies(dependencies = []) {
+        if (this.parent instanceof Tap)
             dependencies.push(this.parent.prop);
-        if(this.ele instanceof IOBase)
+        if (this.ele instanceof IOBase)
             this.ele.getTapDependencies(dependencies);
         return dependencies;
     }
@@ -71,10 +71,10 @@ export class IOBase {
  */
 export class IO extends IOBase {
 
-    get type () { return "IO"}
+    get type() { return "IO" }
 
-    static stamp(scope, binding, default_val){
-        
+    static stamp(scope, binding, default_val) {
+
     }
 
     constructor(scope, errors, tap, element = null, default_val = null) {
@@ -84,7 +84,7 @@ export class IO extends IOBase {
 
         this.argument = null;
 
-       // if (default_val) this.down(default_val);
+        // if (default_val) this.down(default_val);
     }
 
     destroy() {
@@ -96,26 +96,7 @@ export class IO extends IOBase {
         this.ele.data = value;
     }
 
-    toString(eles){
-        return `${eles.getElement(this.ele)}.data = ${this.parent.prop}`;
-    }
-}
-
-class RedirectAttribIO extends IOBase {
-
-    static stamp(scope, binding, default_val){
-        
-    }
-    constructor(scope, down_tap, up_tap) {
-        super(down_tap);
-        this.up_tap = up_tap;
-    }
-
-    down(value) {
-        this.up_tap.up(value);
-    }
-
-    toString(eles){
+    toString(eles) {
         return `${eles.getElement(this.ele)}.data = ${this.parent.prop}`;
     }
 }
@@ -125,17 +106,9 @@ class RedirectAttribIO extends IOBase {
 */
 export class AttribIO extends IOBase {
 
-    get type () { return "AttribIO"}
-    
+    get type() { return "AttribIO" }
+
     constructor(scope, binding, tap, attr, element, default_val) {
-        /*
-        if (element.io) {
-            let down_tap = element.io.parent;
-            let root = scope.parent;
-            tap.modes |= EXPORT;
-            return new RedirectAttribIO(scope, element.io.parent, tap);
-        }
-        */
 
         super(tap, element);
 
@@ -160,7 +133,7 @@ export class AttribIO extends IOBase {
         this.ele.setAttribute(this.attrib, value);
     }
 
-    toString(eles){
+    toString(eles) {
         return `${eles.getElement(this.ele)}.setAttribute(${this.attrib}, ${this.parent.prop})`;
     }
 
@@ -168,19 +141,18 @@ export class AttribIO extends IOBase {
         this.down(v);
     }
 
-    get data() {
-
-    }
 }
 
 export class DataNodeIO extends IOBase {
 
-    get type () { return "DataNodeIO"}
+    get type() { return "DataNodeIO" }
 
-    constructor(scope, tap, element, default_val) {
-        if(!tap)  return {};
+    constructor(scope, tap, element, data_name = "data") {
+        if (!tap) return {};
 
         super(tap, element);
+        
+        this.data_name = data_name;
     }
 
     destroy() {
@@ -190,13 +162,13 @@ export class DataNodeIO extends IOBase {
     }
 
     down(value) {
-        
-        this.ele.data = value;
+        this.ele[this.data_name] = value;
     }
 }
 
 export class ContainerLinkIO extends DataNodeIO {
-    get type () { return "ContainerLinkIO"}
+    constructor(scope, tap, element) { super(scope, tap, element) }
+    get type() { return "ContainerLinkIO" }
 }
 
 /**
@@ -204,18 +176,18 @@ export class ContainerLinkIO extends DataNodeIO {
 */
 export class TextNodeIO extends DataNodeIO {
 
-    get type () { return "TextNodeIO"}
+    get type() { return "TextNodeIO" }
 
     constructor(scope, tap, element, default_val) {
-        if(!tap) return {};
+        if (!tap) return {};
 
-        super(scope, tap, element, default_val);
-        
+        super(scope, tap, element);
+
         this.ELEMENT_IS_TEXT = element instanceof Text;
 
         this.init(default_val);
     }
-    
+
     down(value) {
 
         const ele = this.ele;
@@ -234,7 +206,7 @@ export class TextNodeIO extends DataNodeIO {
                 /* 
                 Need to make sure elements are properly removed from the DOM
                 */
-                this.discardElement(ele);  
+                this.discardElement(ele);
             }
         } else {
 
@@ -300,8 +272,8 @@ export class EventIO extends IOBase {
 
         this.event = (e) => {
 
-            if(down_tap && down_tap.down) //Prime the val property if possible
-                down_tap.down(null, {IMMEDIATE:true});
+            if (down_tap && down_tap.down) //Prime the val property if possible
+                down_tap.down(null, { IMMEDIATE: true });
 
 
             up_tap.up(this.val || e.target.value, { event: e });
@@ -345,13 +317,13 @@ export class EventIO extends IOBase {
 
 export class InputIO extends IOBase {
 
-    get type () { return "InputIO"}
+    get type() { return "InputIO" }
 
     constructor(scope, errors, tap, attrib_name, element, default_val) {
 
-        if(tap)
+        if (tap)
             super(tap);
-        else if(default_val)
+        else if (default_val)
             super(scope);
         else
             return null;
@@ -363,23 +335,23 @@ export class InputIO extends IOBase {
 
         let up_tap = tap;
 
-        if(default_val){
-            switch(default_val.type){
+        if (default_val) {
+            switch (default_val.type) {
                 case types.identifier:
                     up_tap = scope.getTap(default_val.name);
-                break;
+                    break;
                 case types.null_literal:
                     up_tap = null;
-                break;
+                    break;
             }
         }
 
-        if(up_tap){
+        if (up_tap) {
             if (element.type == "checkbox")
                 this.event = (e) => { up_tap.up(e.target.checked, { event: e }) };
             else
                 this.event = (e) => { up_tap.up(e.target.value, { event: e }) };
-            
+
             this.ele.addEventListener("input", this.event);
         }
     }

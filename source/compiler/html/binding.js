@@ -65,11 +65,7 @@ export default class Binding {
             : `((${this.astA.original + ""}))`;
     }
 
-    setForContainer(presets) {
-
-        if (this.METHOD == IDENTIFIER)
-            this.processJSAST(presets);
-
+    setForContainer() {
         this.METHOD = CONTAINER;
     }
 
@@ -80,7 +76,6 @@ export default class Binding {
             out.alt = new ExpressionIO(element, scope, node, scope, this.astB, this.lex, pinned);
         else
             out.alt = this.astB.val;
-
         if (this.astA.ast) {
             if (this.METHOD == EXPRESSION)
                 out.main = new ExpressionIO(element, scope, node, scope, this.astA, this.lex, pinned);

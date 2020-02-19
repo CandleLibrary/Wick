@@ -157,9 +157,9 @@ export default class ScriptIO extends IOBase {
         }
     }
 
-    setValue(value, meta) {
+    setValue(value) {
         if (typeof(value) == "object") {
-            //Distribute iterable properties amongst the IO_Script's own props.
+            //Distribute iterable named properties amongst the IO_Script's own props.
             for (const a in value) {
                 if (this.arg_ios[a])
                     this.arg_ios[a].down(value[a]);
