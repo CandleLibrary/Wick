@@ -15,12 +15,12 @@ export default class P {
     constructor(preset_options) {
         if (!preset_options)
             preset_options = {};
-
         /**
          * {Object} Store for optional parameters used in the app
          */
         this.options = {
-            THROW_ON_ERRORS: false
+            THROW_ON_ERRORS: false,
+            cache_url : true
         };
 
         //Declaring the properties upfront to give the VM a chance to build an appropriate virtual class.
@@ -102,36 +102,40 @@ export default class P {
 
         let c = preset_options.options;
         if (c)
-            for (let cn in c)
-                this.options[cn] = c[cn];
+            for (const cn in c){
+                if(typeof c[cn]  == typeof this.options[cn])
+                    this.options[cn] = c[cn];
+                else 
+                    console.log(`Unexpected option [${cn}]`);
+            }
 
 
         c = preset_options.components;
         if (c)
-            for (let cn in c)
+            for (const cn in c)
                 this.components[cn] = c[cn];
 
         c = preset_options.custom_scopes;
         if (c)
-            for (let cn in c)
+            for (const cn in c)
                 if (cn instanceof CustomComponent)
                     this.custom_scopes[cn] = c[cn];
 
         c = preset_options.custom_components;
         if (c)
-            for (let cn in c)
+            for (const cn in c)
                 this.custom_components[cn] = c[cn];
 
         c = preset_options.models;
 
         if (c)
-            for (let cn in c)
+            for (const cn in c)
                 this.models[cn] = c[cn];
 
         c = preset_options.schemas;
 
         if (c)
-            for (let cn in c)
+            for (const cn in c)
                 this.schemas[cn] = c[cn];
         /**
          * Configured by `preset_options.USE_SHADOW`. If set to true, and if the browser supports it, compiled and rendered template elements will be bound to a `<component>` shadow DOM, instead being appended as a child node.
