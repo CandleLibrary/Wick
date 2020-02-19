@@ -14,7 +14,9 @@ const offset = "    ",
 ];
 
 function replaceEntities(text){
-    return html_entities.reduce(((r,e)=>r.replace(e[0],e[1])),text);
+    return html_entities
+            .reduce(((r,e)=>r.replace(e[0],e[1])),text)
+            .replace(/&#x([a-fA-F\d]{4});/, (d,m)=>String.fromCharCode(parseInt("0x"+m)));
 }
 
 export default class TextNode {
