@@ -40,6 +40,9 @@ export default class ctr extends ElementNode {
 
         //Tag name of HTMLElement the container will create;
         this.element = this.getAttribute("element") || "ul";
+
+        //Used to refence message sent from instances of this container.
+        this.name = this.getAttribute("name") || "container";
         
         this.nodes = null;
         this.binds = null;
@@ -80,6 +83,8 @@ export default class ctr extends ElementNode {
         const
             ele = createElement(this.element),
             container = new Container(scope, presets, ele);
+
+        container.name = this.name;
 
         appendChild(element, ele);
 

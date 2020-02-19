@@ -509,7 +509,7 @@ export default class ScopeContainer {
         this.dom_scopes = output.slice();
 
         this.parent.update({
-            "template_count_changed": {
+            [this.name + "_changed"]: {
 
                 displayed: output_length,
                 offset: offset,
