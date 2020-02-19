@@ -169,7 +169,8 @@ export default class ElementNode {
             try {
                 ast = parseWickSyntax(lex, own_env);
             } catch (e) {
-                error(error.ELEMENT_PARSE_FAILURE, e, this);
+                const data = {ast, lex};
+                error(error.ELEMENT_PARSE_FAILURE, data, this);
             }
         }
 

@@ -21,6 +21,9 @@ const
 
     default_presets = new Presets,
 
+    // This is a variadic function that accepts objects, string, and urls, 
+    //  and compiles data from the argument sources into a wick component. 
+
     compile = async function(component_data, presets, component_env) {
 
             var
@@ -35,7 +38,7 @@ const
                            URL to component resource
                            HTML data
                            JS data
-                           or incompatible data that should throw.
+                           or incompatible data that should cauase an error to be thrown.
                     */
 
                     string_data = component_data;
@@ -53,9 +56,9 @@ const
                         try {
                             if (url.ext == "mjs" || url.ext == "js") {
 
-                                const module = await import(url + "");
-
-                                let comp = null;
+                                const 
+                                    module = await import(url + ""),
+                                    comp = null;
 
                                 if (module.default)
                                     comp = await (new module.default(presets).pending);
@@ -63,7 +66,7 @@ const
                                 return comp;
                             }
 
-                            string_data = await url.fetchText();
+                            string_data = await url.fetchText(presets.options.cache_urls);
 
                             component_env.url = url;
 
@@ -114,18 +117,12 @@ const
 
                 await component_env.pending;
 
-
                 return ast;
 
             } catch (e) {
                 throw error(error.COMPONENT_PARSE_FAILURE, e, component_env);
             }
         },
-
-
-        // This is a variadic function that accepts objects, string, and urls, 
-        //  and compiles data from the argument sources into a wick component. 
-
         Component = function(...data) {
 
             // The presets object provides global values to this component
