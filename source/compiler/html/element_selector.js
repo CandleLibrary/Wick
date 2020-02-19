@@ -58,6 +58,11 @@ export default function es(tag, attribs, children, env, lex, meta = 0) {
             Constructor = LinkNode;
             break;
             /** void elements **/
+        case "img":
+            USE_PENDING_LOAD = "src";
+            /* intentional */
+        case "link":
+        case "input":
         case "template":
             Constructor = VoidNode;
             break;
@@ -92,9 +97,6 @@ export default function es(tag, attribs, children, env, lex, meta = 0) {
         case "textarea":
             Constructor = NonBindingNode;
             break;
-        case "img":
-            USE_PENDING_LOAD = "src";
-            /* intentional */
         case "code":
         default:
             Constructor = ElementNode;
@@ -107,8 +109,6 @@ export default function es(tag, attribs, children, env, lex, meta = 0) {
         node = plugin_element[tag].run(node, lex, env, node_constructors) || node;
 
     node.wickup = meta || false;
-
-    node.SINGLE = !FULL;
 
     return node;
 }

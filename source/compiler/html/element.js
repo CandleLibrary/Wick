@@ -128,7 +128,7 @@ export default class ElementNode {
                 str += ` ${attr.name}=${typeof attr.value == "object" ? attr.value + "" : `"${attr.value}"`}`;
         }
 
-        if (this.SINGLE)
+        if (this.SINGLE && this.children.length < 1)
             return str + "/>";
 
 

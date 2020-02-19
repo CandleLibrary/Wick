@@ -10,6 +10,8 @@ export default class fltr extends ElementNode {
 
         this.type = 0;
 
+        this.SINGLE =true;
+
         for (const attr of this.attribs.values())
             if (attr.value.setForContainer)
                 attr.value.setForContainer(presets);
