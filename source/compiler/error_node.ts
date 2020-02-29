@@ -3,7 +3,7 @@ import ElementNode from "./html/element.js";
 export default class extends ElementNode {
 
 	constructor(env) {
-		super(env, env.presets, "error");
+		super(env, env.presets, "errors");
 		this.env = env;
 	}
 

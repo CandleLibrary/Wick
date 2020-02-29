@@ -25,7 +25,7 @@
 
 	<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >	↦return { env.fn.element_selector($$sym2, $$sym3, $$sym5,  env, lex ) }
 		│ < TAGNAME ATTRIBUTES? / >							↦return { env.fn.element_selector($$sym2, $$sym3, null,  env, lex ) }
-		│ < VOID_NAME ATTRIBUTES? > </ VOID_NAME > 			↦return { env.fn.element_selector($$sym2, $$sym3, $$sym4, env, lex ) }
+#		│ < VOID_NAME ATTRIBUTES? > </ VOID_NAME > 			↦return { env.fn.element_selector($$sym2, $$sym3, $$sym4, env, lex ) }
 		│ < VOID_NAME ATTRIBUTES? /? >						↦return { env.fn.element_selector($$sym2, $$sym3, null, env, lex ) }
 		
 	<> DTD → <! --?  (BODY_SYMBOLS)(*")  --? >				↦return { null }			 	
@@ -56,16 +56,16 @@
 
 <> TAG_BODY_ITEM → TEXT_NODE  						
 	│ TAG 	
-	│ DTD  												↦return { $$sym2 }											
+	│ DTD  															↦return { $$sym2 }											
 	
-<> ATTRIBUTES → ATTRIBUTES ATTRIBUTE  					↦return { $$sym1.push($$sym2), $$sym1 }
-	│ ATTRIBUTE 										↦return { [$$sym1] }
+<> ATTRIBUTES → ATTRIBUTES ATTRIBUTE  								↦return { $$sym1.push($$sym2), $$sym1 }
+	│ ATTRIBUTE 													↦return { [$$sym1] }
 
-<> ATTRIBUTE → ATTRIBUTE_HEAD = ATTRIBUTE_BODY 	 		↦cstr ^attribute
- 	│ ATTRIBUTE_HEAD 									↦cstr ^attribute
+<> ATTRIBUTE → ATTRIBUTE_HEAD = ATTRIBUTE_BODY 	 					↦cstr ^attribute
+ 	│ ATTRIBUTE_HEAD 												↦cstr ^attribute
 
-<> ATTRIBUTE_HEAD → ' identifier? '								↦return { $$sym2 }
-	│ " identifier? "											↦return { $$sym2 }
+<> ATTRIBUTE_HEAD → ' identifier? '									↦return { $$sym2 }
+	│ " identifier? "												↦return { $$sym2 }
 	│ identifier
 
 

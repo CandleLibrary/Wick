@@ -347,7 +347,7 @@ export class InputIO extends IOBase {
         }
 
         if (up_tap) {
-            if (element.type == "checkbox")
+            if (this.ele.getAttribute("type") == "checkbox")
                 this.event = (e) => { up_tap.up(e.target.checked, { event: e }) };
             else
                 this.event = (e) => { up_tap.up(e.target.value, { event: e }) };
@@ -365,6 +365,10 @@ export class InputIO extends IOBase {
     }
 
     down(value) {
-        this.ele.value = value;
+        if(this.ele.getAttribute("type") == "checkbox"){
+            this.ele.checked = !!value;
+        }
+        else
+            this.ele.value = value;
     }
 }

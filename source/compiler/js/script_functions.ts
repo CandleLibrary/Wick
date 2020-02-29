@@ -2,7 +2,7 @@ import { types, identifier, call_expression, string, parenthasized } from "@cand
 
 import glow from "@candlefw/glow";
 
-import JS from "../js/tools.js";
+import JS from "./tools.js";
 
 const defaults = {
     glow,

@@ -105,6 +105,8 @@ const
                     if (presets.options.THROW_ON_ERRORS)
                         component_env.throw();
 
+                    console.log(component_env.url+"", output.error)
+
                     ast = new ErrorNode(component_env);
                 } else
                     ast = output.result;
@@ -159,6 +161,8 @@ const
 
                     try {
                         obj = await compile(component_data, presets, component_env);
+                        if(obj.error)
+                            throw(obj.error)
                     } catch (e) {
                         throw (e)
                     }
