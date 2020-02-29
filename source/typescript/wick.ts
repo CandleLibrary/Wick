@@ -14,9 +14,11 @@ import glow from "@candlefw/glow";
 
 import URL from "@candlefw/url";
 
+import { PresetOptions } from "./types/preset_options.js";
+
 const wick = compiler;
 
-wick.presets = d=>new Presets(d);
+wick.presets = (preset_opt: PresetOptions) => new Presets(preset_opt);
 
 wick.astCompiler = (string) => wick_compile(whind(string), CompilerEnv);
 

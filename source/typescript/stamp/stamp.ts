@@ -11,6 +11,8 @@ import "./html/binding.js";
 
 import { types, statements } from "@candlefw/js";
 
+
+
 import { getTypeInClosure} from "../compiler/js/script_functions.js";
 
 const jsParse = tools.jsParse;
