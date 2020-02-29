@@ -1,6 +1,6 @@
 {
   "name": "@candlefw/wick",
-  "version": "0.8.12",
+  "version": "0.9.0-ts",
   "description": "Web Component Builder",
   "main": "./build/library/wick.node.js",
   "types": "./build/types/wick.node.d.ts",
@@ -10,7 +10,7 @@
   },
   "scripts": {
     "prepublishOnly": "yarn run build && yarn run build.lite",
-    "compile": "hydrocarbon compile --parser glalr -u -o ./source/compiler/ -e ./source/compiler/env_proxy.mjs -t mjs.js ./source/compiler/grammars/wick_parser.hcg",
+    "compile": "hydrocarbon compile --parser glalr -u -o ./source/typescript/compiler/ -t mjs.js ./source/grammars/wick_parser.hcg",
     "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
     "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/html.hcg",
     "compile.test": "node --experimental-modules ./test/config.mjs",
@@ -52,7 +52,7 @@
     "@rollup/plugin-node-resolve": "^7.0.0",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
-    "chai-as-promised": "^7.1.1",
+    "chai-as-promised": "^7.1 .1",
     "esm": "latest",
     "mocha": "latest",
     "mocha-logger": "^1.0.6",
