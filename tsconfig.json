@@ -2,7 +2,7 @@
     "compileOnSave": true,
     "include": ["./source/**/*"],
     "compilerOptions": {
-        "types" : ["@candlefw/whind/build/types"],
+        "types" : ["@types/node"],
         "allowJs": true,
         "baseUrl": "./",
         "alwaysStrict": true,

@@ -2,7 +2,8 @@
   "name": "@candlefw/wick",
   "version": "0.8.12",
   "description": "Web Component Builder",
-  "main": "./source/wick.node.mjs",
+  "main": "./build/library/wick.node.js",
+  "types": "./build/types/wick.node.d.ts",
   "type": "module",
   "bin": {
     "wick": "./source/cli.mjs"
