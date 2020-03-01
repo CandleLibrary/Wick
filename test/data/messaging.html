@@ -5,7 +5,5 @@
     <div onclick="((choose)('Scissors'))">Scissors</div>
     <div>((choose))</div>
 
-	<script on=((choose))>
-		emit("chosen", `Your choice is: ${choose}!`);
-	</script>
+    {{ emit("chosen", `Your choice is: ${choose}!`); }}
 </unit>

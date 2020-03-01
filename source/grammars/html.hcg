@@ -26,11 +26,11 @@
 
 <> GOAL_TAG → TAG
 
-<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >                                     ↦r { { type:"HTML", tag:$sym2.topUpperCase(), attributes:$$sym3 || [], children:$sym5 || [], VOID:false, lex } }
-    │ < TAGNAME ATTRIBUTES? / >                                                             ↦r { { type:"HTML", tag:$sym2.topUpperCase(), attributes:$$sym3 || [], children:[], VOID:false, lex } }
-    │ < VOID_NAME ATTRIBUTES? /? >                                                          ↦r { { type:"HTML", tag:$sym2.topUpperCase(), attributes:$$sym3 || [], children:[], VOID:true, lex } }
+<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >                                     ↦r { { type:"HTML", tag:$sym2.toUpperCase(), attributes:$$sym3 || [], children:$sym5 || [], VOID:false, lex } }
+    │ < TAGNAME ATTRIBUTES? / >                                                             ↦r { { type:"HTML", tag:$sym2.toUpperCase(), attributes:$$sym3 || [], children:[], VOID:false, lex } }
+    │ < VOID_NAME ATTRIBUTES? /? >                                                          ↦r { { type:"HTML", tag:$sym2.toUpperCase(), attributes:$$sym3 || [], children:[], VOID:true, lex } }
     
-<> DTD → <! θid? --?  (BODY_SYMBOLS)(*")  --? >                                             ↦r { { type:"DTD", tag:$sym1,  }  }                
+<> DTD → <! θid? --?  TEXT_NODE_DATA  --? >                                                 ↦r { { type:"DTD", tag:$$sym2|| "", value:$$sym4 }  }                
 
 
 ###########################################################################################
@@ -77,12 +77,12 @@
 <> TAGNAME → (RED θnl) identifier
 
 
-<> identifier → (θid) ( θid │ \- │ \_ │ \: )(*")                                  				↦r { $sym1 + $sym2 } 
+<> identifier → θid ( θid │ \- │ \: )(*")                                  				        ↦r { $sym1 + $sym2 } 
 
+<> TEXT_NODE → TEXT_NODE_DATA                                                                   ↦r { {type:"TEXT", data:$sym1, IS_BINDING:false, lex } }
+<> TEXT_NODE_DATA → BODY_SYMBOLS(+")                                                            
 
-<> TEXT_NODE → BODY_SYMBOLS(+")                                                                 ↦r { {type:"TEXT", data:$sym1, IS_BINDING:false, lex } }
-
-<> BODY_SYMBOLS → θid │ θws │ θsym │ θop │ θob │ θcb │ θnum │ θkeyword │ θany │ \! │ \(
+<> BODY_SYMBOLS → θid │ θnl │ θws │ θsym │ θop │ θob │ θcb │ θnum │ θkeyword │ θany │ \! │ \( 
 
 
 
