@@ -10,7 +10,7 @@
   },
   "scripts": {
     "prepublishOnly": "yarn run build && yarn run build.lite",
-    "compile": "hydrocarbon compile --parser glalr -u -o ./source/typescript/compiler/ -t mjs.js ./source/grammars/wick_parser.hcg",
+    "compile": "hydrocarbon compile --parser glalr -u -o ./source/typescript/parser/ -e ./source/typescript/parser/proxy_parser_environment.js -t module ./source/grammars/wick_parser.hcg",
     "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
     "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/html.hcg",
     "compile.test": "node --experimental-modules ./test/config.mjs",
