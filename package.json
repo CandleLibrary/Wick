@@ -47,7 +47,6 @@
   },
   "homepage": "https://github.com/candlefw/wick#readme",
   "devDependencies": {
-    "@candlefw/hydrocarbon": "0.1.7",
     "@rollup/plugin-commonjs": "^11.0.1",
     "@rollup/plugin-node-resolve": "^7.0.0",
     "benchmark": "^2.1.4",
@@ -67,14 +66,15 @@
     "unused": true
   },
   "dependencies": {
-    "@candlefw/css": "^0.1.6",
-    "@candlefw/glow": "0.2.0",
-    "@candlefw/html": "^0.0.14",
-    "@candlefw/math": "^0.0.3",
-    "@candlefw/spark": "^0.0.8",
-    "@candlefw/url": "0.0.13",
-    "@candlefw/whind": "0.3.6",
-    "@candlefw/conflagrate": "",
+    "@candlefw/hydrocarbon": "latest",
+    "@candlefw/css": "latest",
+    "@candlefw/glow": "latest",
+    "@candlefw/html": "latest",
+    "@candlefw/math": "latest",
+    "@candlefw/spark": "latest",
+    "@candlefw/url": "latest",
+    "@candlefw/whind": "latest",
+    "@candlefw/conflagrate": "latest",
     "commander": "^4.1.0",
     "env": "^0.0.2",
     "latest": "^0.2.0"
@@ -128,6 +128,6 @@
     }
   },
   "engine": {
-    "node": ">=12.0.0"
+    "node": ">=13.6.0"
   }
 }
