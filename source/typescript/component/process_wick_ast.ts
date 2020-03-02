@@ -4,20 +4,25 @@ import Presets from "./presets.js";
 
 import { WickASTNode, WickASTNodeType } from "../types/wick_ast_node.js";
 import { WickComponentErrorStore } from "../types/errors.js";
-import { traverse } from "../tools/traverse.js";
-import { filter } from "../tools/filter.js";
+import { traverse, double_back_traverse, filter } from "@candlefw/conflagrate";
 import { MinTreeNode } from "@candlefw/js";
+import { MinTreeNodeType } from "@candlefw/js/build/types/nodes/mintree_node_type";
 
 
 export interface WickRuntimeConstructor {
 
 }
 /**
- * Returns a list of variable names that are part of the global closure.
- * @param node {MinTreeNode}
+ * Returns a list of variable names that are part of the root node's closure.
+ * @param {MinTreeNode} root - Root MinTreeNode node that determines the global scope.
  */
-function grabScriptGlobals(node: MinTreeNode) {
+function grabScriptGlobals(root: MinTreeNode): { node: MinTreeNode, name: string; }[] {
+    const names = [];
+    for (const node of double_back_traverse(root, "nodes")) {
+        console.log(node);
+    }
 
+    return names;
 }
 
 /**
@@ -49,15 +54,17 @@ export async function processWickAST(
     const goal = {};
 
     const global_requires = [];
+
     /**
      * Grabbing each binding and script to extract global dependencies
      */
-    for (const node of traverse(ast, "children").then(filter("type", WickASTNodeType.TEXT, WickASTNodeType.SCRIPT))) {
+    for (const node of traverse(ast, "children")) {
+
         if (node.type == WickASTNodeType.TEXT) {
             if (node.IS_BINDING)
-                global_requires.push({ node, globals: grabScriptGlobals(<>node.data.primary_ast) });
+                global_requires.push({ node, globals: grabScriptGlobals(<MinTreeNode>node.data.primary_ast) });
         } else {
-            console.log({ node });
+            global_requires.push({ node, globals: grabScriptGlobals(<MinTreeNode>node.ast) });
         }
     }
 
