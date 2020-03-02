@@ -1,18 +1,22 @@
 import { Lexer } from "@candlefw/whind";
-import { lrParse } from "@candlefw/hydrocarbon";
-import { ParserData } from "@candlefw/hydrocarbon/build/types/types/parser_data";
+import { lrParse, ParserData } from "@candlefw/hydrocarbon";
 
 import parser_data from "./wick_parser.js";
 import env from "./parser_environment.js";
 import { WickASTNode } from "../types/wick_ast_node.js";
 
+
+
 /**
  * Parses wick markup files and produces an AST of HTML, JS, and CSS nodes.
+ *
+ * @param {string | Lexer} input
  * 
- * @throws SyntaxError - If the parse fails, a SyntaxError will be thrown indicating
+ * @returns {WickASTNode} - The root node of an
+ * 
+ * @throws {SyntaxError} - If the parse fails, a SyntaxError will be thrown indicating
  * the point where the parser was unable to parse the input string.
- * 
- * @returns WickASTNode - The root node of an AST.
+ *
  */
 export default function (input: string | Lexer): WickASTNode {
 
