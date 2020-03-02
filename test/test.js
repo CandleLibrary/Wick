@@ -258,18 +258,21 @@ describe("Componentization", function () {
 
         const comp = await wick(`
             <unit>
-                <div>((chosen))</div>
+                <div1>((chosen))</div1>
                 
-                <div onclick="((choose)('Rock'))">Rock</div>
-                <div onclick="((choose)('Paper'))">Paper</div>
-                <div onclick="((choose)('Scissors'))">Scissors</div>
+                <div2 onclick="((choose)('Rock'))">Rock</div2>
+                <div3 onclick="((choose)('Paper'))">Paper</div3>
+                <div4 onclick="((choose)('Scissors'))">Scissors</div4>
                 
-                <div>((choose))</div>
+                <div5>((choose))</div5>
 
                 <script>
                     chosen = \`Your choice is: \${ choose }!\`;
                 </script>
             </unit>
         `).pending;
+
+        if (comp.errors)
+            console.log(comp.errors);
     });
 });
