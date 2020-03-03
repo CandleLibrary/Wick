@@ -254,25 +254,210 @@ describe("Traversing", function () {
 });
 
 describe("Componentization", function () {
-    it("Handles onclick methods", async function () {
-
+    /**
+     * Wick is unopinionated regarding whether components are defined
+     * using HTML or JavasScript (TypeScript eventually)
+     */
+    it("Use JS Module to define a component", function(){
         const comp = await wick(`
-            <unit>
-                <div1>((chosen))</div1>
-                
-                <div2 onclick="((choose)('Rock'))">Rock</div2>
-                <div3 onclick="((choose)('Paper'))">Paper</div3>
-                <div4 onclick="((choose)('Scissors'))">Scissors</div4>
-                
-                <div5>((choose))</div5>
+            the_best_color = "green";
 
-                <script>
-                    chosen = \`Your choice is: \${ choose }!\`;
-                </script>
-            </unit>
+            export default const scope = 
+                <scope>
+                    The best color is (( the_best_color )).
+                </scope>        
         `).pending;
 
-        if (comp.errors)
-            console.log(comp.errors);
-    });
+        const ele = comp.mount();
+        
+        ele.innerHTML.trim().should.equal("The best color is green");
+    })
+
+    it("Use HTML syntax to define a component", function(){
+        const comp = await wick(`
+            <scope>
+                <script>
+                    the_best_color = "green";
+                </script>
+                The best color is (( the_best_color )).
+            </scope>      
+        `).pending;
+
+        const ele = comp.mount();
+        
+        ele.innerHTML.trim().should.equal("The best color is green");
+    })
+
+
+    it("Import component into another (HTML)", function(){
+        const comp = await wick(`
+            <import url="./data/import_test_1.html"/>
+            <scope>
+                <import-test/>
+            </scope>      
+        `).pending;
+
+        const ele = comp.mount();
+        
+        ele.children.should.have.lengthOf(1);
+        ele.children[0].innerHTML.trim().should.equal("All the world's a stage.");
+    })
+
+    it("Import component into another (JSX)", function(){
+        const comp = await wick(`
+            import { import_test } from "./data/import_test_1.html";
+
+            export default const = 
+            <scope>
+                <import_test/>
+            </scope>      
+        `).pending;
+
+        const ele = comp.mount();
+        
+        ele.children.should.have.lengthOf(1);
+        ele.children[0].innerHTML.trim().should.equal("All the world's a stage.");
+    })
+
+    it("Import HTML data with URL (HTML - same idea with JSX)", function(){
+        const comp = await wick(`
+            <scope>
+                <div url="./data/import_test_1.html">
+            </scope>       
+        `).pending;
+
+        const ele = comp.mount();
+        
+        ele.children.should.have.lengthOf(1);
+        ele.children[0].innerHTML.trim().should.equal("All the world's a stage.");
+    })
+
+    //Data flow
+
+    it("Retrieve and set model data.", function(){
+        const comp = await wick(`
+            <scope>
+                <script>
+                    import { name } from "$model";
+                    name = "douglas";
+                </script>
+                ((name))
+            </scope>       
+        `).pending;
+
+        const 
+            data = {name: "hubert"},
+            ele = comp.mount(data);
+
+        data.name.should.equal("douglas");
+        ele.children.should.have.lengthOf(1);
+        ele.children[0].innerHTML.trim().should.equal("douglas");
+    })
+
+    it("Send data to parent scope", function(){
+        const comp = await wick(`
+            <scope>
+                <scope bind=((name))>
+                    <script>
+                        name = "douglas";
+                        export { name };
+                    </script>
+                </scope>
+                <div>((name))</div>
+            </scope>       
+        `).pending;
+
+        const ele = comp.mount();
+        ele.children.should.have.lengthOf(2);
+        ele.children[1].innerHTML.trim().should.equal("douglas");
+    })
+
+    it("receive data from parent scope", function(){
+        const comp = await wick(`
+            <scope>
+                
+                <script>
+                    name = "philip";
+                </script>
+
+                <scope>
+                    <script> import "$parent"; </script>
+                    <div>((name))</div>
+                </scope>
+            </scope>       
+        `).pending;
+
+        const ele = comp.mount();
+        ele.children.should.have.lengthOf(2);
+        ele.children[1].innerHTML.trim().should.equal("douglas");
+    })
+
+    /**
+     * Containerization is perfomed by using the bindings (( [] )( <ele/> )) or the bindings 
+     * (( containerize() )( <ele/> )). Wick will recognize these expressions and fill out an
+     * array of elements using the "<ele/>" as a template for each entry.
+     * 
+     * If the <ele/> is a 
+     */
+    it("Create a container using the \"containerize\" function", function(){
+        const comp = await wick(`
+            <div>
+                <script>
+                    container = [{name:"George Washington"}, {name:"Martin Luther"}]
+                </script>
+
+                Famouse People:
+                <ul>
+                (( containerize(container) )( 
+                    <li>((name))</li>
+                ))
+                </ul>
+            </div>
+        `).pending;
+
+        const ele = comp.mount();
+
+        ele.children[0].children[0].children.should.have.lengthOf(2);
+        ele.children[0].children[0].children[0].innerHTML.should.equal("George Washington")
+        ele.children[0].children[0].children[1].innerHTML.should.equal("Martin Luther")
+    })
+
+
+    it("Create a container using an Array Literal", function(){
+        const comp = await wick(`
+            <div>
+                <script>
+                    container = [{name:"George Washington"}, {name:"Martin Luther"}]
+                </script>
+
+                Famouse People:
+                <ul>
+                (( [container] )( 
+                    <li>((name))</li>
+                ))
+                </ul>
+            </div>
+        `).pending;
+
+        const ele = comp.mount();
+
+        ele.children[0].children[0].children.should.have.lengthOf(2);
+        ele.children[0].children[0].children[0].innerHTML.should.equal("George Washington")
+        ele.children[0].children[0].children[1].innerHTML.should.equal("Martin Luther")
+    })
+
+    it("Use JSX syntax to define a component", function(){
+        const comp = await wick(`
+            the_best_color = "green";
+
+            export default const scope = 
+                <scope>
+                    The best color is (( the_best_color )).
+                </scope>        
+        `).pending;
+
+        const ele = comp.mount();
+        
+        ele.innerHTML.trim().should.equal("The best color is green");
+    })
 });
