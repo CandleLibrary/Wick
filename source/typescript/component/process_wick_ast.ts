@@ -4,25 +4,77 @@ import Presets from "./presets.js";
 
 import { WickASTNode, WickASTNodeType } from "../types/wick_ast_node.js";
 import { WickComponentErrorStore } from "../types/errors.js";
-import { traverse, double_back_traverse, filter } from "@candlefw/conflagrate";
-import { MinTreeNode } from "@candlefw/js";
-import { MinTreeNodeType } from "@candlefw/js/build/types/nodes/mintree_node_type";
+import { traverse, double_back_traverse, filter, make_skippable } from "@candlefw/conflagrate";
+import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
 
 
 export interface WickRuntimeConstructor {
 
+}
+
+function makeLocal(value, globals, locals) {
+    if (globals.has(value))
+        globals.delete(value);
+    locals.add(value);
+}
+
+function makeGlobal(value, globals) {
+    globals.add(value);
 }
 /**
  * Returns a list of variable names that are part of the root node's closure.
  * @param {MinTreeNode} root - Root MinTreeNode node that determines the global scope.
  */
 function grabScriptGlobals(root: MinTreeNode): { node: MinTreeNode, name: string; }[] {
-    const names = [];
-    for (const node of double_back_traverse(root, "nodes")) {
-        console.log(node);
+    //While traversing the nodes, mark all nodes encountered within let, const, and 
+    // function args; These represent local variables. Any other variable identifier is fair game.
+
+    const local_list = [];
+
+    const locals = new Set();
+    const globals = new Set();
+
+    for (const node of traverse(root, "nodes")
+        .then(filter("type",
+            MinTreeNodeType.Arguments,
+            MinTreeNodeType.VariableStatement,
+            MinTreeNodeType.LexicalDeclaration,
+            MinTreeNodeType.ArrowFunction,
+            MinTreeNodeType.Class,
+            MinTreeNodeType.Function,
+            MinTreeNodeType.Method,
+            MinTreeNodeType.Identifier,
+            MinTreeNodeType.MemberExpression
+        ))
+        .then(make_skippable())
+    ) {
+        switch (node.type) {
+            case MinTreeNodeType.Identifier:
+                makeGlobal(node.val, globals);
+                break;
+            case MinTreeNodeType.MemberExpression:
+                //Extract any value from calculated accessors
+                node.skip();
+                break;
+            case MinTreeNodeType.Arguments:
+
+                break;
+            case MinTreeNodeType.VariableStatement:
+                //Parse list and extract any values on bindings
+                node.skip();
+                for (const mem_node of traverse(node, "nodes")) {
+                    if (mem_node.type == MinTreeNodeType.BindingExpression)
+                        makeLocal(mem_node.nodes[0].val, globals, locals);
+                }
+                break;
+            case MinTreeNodeType.LexicalDeclaration:
+                break;
+        }
     }
 
-    return names;
+    console.log({ locals, globals });
+
+    return local_list; //Array.from(local_list.reduce(e => (r.add(e.values()), r), local_list[0]));
 }
 
 /**
@@ -51,9 +103,9 @@ export async function processWickAST(
      *      
      */
 
-    const goal = {};
-
-    const global_requires = [];
+    const
+        goal = {},
+        global_requires = [];
 
     /**
      * Grabbing each binding and script to extract global dependencies
@@ -70,4 +122,6 @@ export async function processWickAST(
 
     return {};
 }
+
+
 
