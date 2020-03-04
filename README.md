@@ -84,7 +84,7 @@ comp.mount(document.body);
 ```
 The ``wick`` constructor function can accept both HTML and JavaScript strings and URL's to component  files.
 
-Learn more at [TODO](./#).
+Learn more at [TODO](#).
 
 ## The Binding
 Wick is created around the syntax of the binding `((` `))`. Like other templating systems, a Wick binding allows content to be injected into an otherwise static file. In Wick's case, the content that is injected is the result of a JavaScript expression. 
@@ -140,7 +140,7 @@ Or events:
 </div>
 ```
 
-Learn more at [TODO](./#).
+Learn more at [TODO](#).
 
 ## Data
 
@@ -208,7 +208,7 @@ data.name == "Yulia" // => true
 
 Only object properties that have been explicitly imported into the component scope will have two way binding. 
 
-Learn more at [TODO](./#).
+Learn more at [TODO](#).
 
 ## Containers
 
@@ -282,7 +282,7 @@ Combined with component variables, you can quickly create search forms on large 
 
 </div>
 ```
-Learn more at [TODO](./#).
+Learn more at [TODO](#).
 
 
 ## Composition
@@ -315,7 +315,7 @@ import { myComp } from "./my-comp.html";
 
 export default <div> I need some more <myComp/>. </div>
 ```
-Learn more at [TODO](./#).
+Learn more at [TODO](#).
 
 ### Component Data Flow
 
@@ -373,7 +373,7 @@ Then the parent scope can use the `bind` attribute on the child scope to bind a 
     (( child_name )) <child bind=`(( {name: child_name} ))`/>
 </div>
 ```
-Learn more at [TODO](./#).
+Learn more at [TODO](#).
 
 ---
 
@@ -384,6 +384,7 @@ Topics that will be introduce and expanded on, in addition to the ones covered h
 - Scoped CSS, CSS bindings, and CSS embedded in Javascript.
 - Advanced Component Composition and Slots
 - Observable Data
+- Presets Object, Script Bundling, Data Model Registry
 - Plugins
 
 # Get To Know Wick Better
