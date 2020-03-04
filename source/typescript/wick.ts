@@ -5,13 +5,26 @@ import MakeComponent from "./component/component.js";
 import { WickASTNode } from "./types/wick_ast_node.js";
 import { WickComponentErrorStore } from "./types/errors.js";
 
+/**
+ * A handle to a component that is actively mounted to a DOM.
+ */
+interface WickComponentHandle {
+
+}
+
+/**
+ * A compiled component that can be mounted to a DOM node.
+ */
 interface WickComponent {
     presets: Presets;
+    
     ast: WickASTNode;
 
     errors: WickComponentErrorStore;
 
     pending: Promise<WickComponent>;
+
+    mount : (ele : HTMLElement, data : object) => WickComponentHandle
 }
 
 /**
@@ -25,9 +38,10 @@ function wick(input: string | URL, presets?: Presets): WickComponent {
 
     const promise = MakeComponent(input, presets, URL.G);
 
-    const component = <WickComponent>{
+    const component = <WickComponent><unknown>{
         presets,
-        pending: new Promise(res => promise.then(() => res(component)))
+        pending: new Promise(res => promise.then(() => res(component))),
+        mount: ()=>{throw "Component mount has not yet been implemented! source/wick.ts:44:9"}
     };
 
     promise.then(res => {
