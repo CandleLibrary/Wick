@@ -2,7 +2,7 @@ import URL from "@candlefw/url";
 
 import { WickComponentErrorStore, WickComponentErrorCode } from "../types/errors.js";
 import parser from "../parser/parser.js";
-import { WickASTNode, WickASTNodeType } from "../types/wick_ast_node.js";
+import CompiledWickAST, { WickASTNode, WickASTNodeType } from "../types/wick_ast_node.js";
 import { processWickAST } from "./process_wick_ast.js";
 import Presets from "./presets.js";
 
@@ -15,7 +15,7 @@ interface WickComponentProducer {
     /**
      * The underlying abstract syntax tree that defines the component.
      */
-    AST: WickASTNode;
+    AST: CompiledWickAST;
     /**
      * A URL pointing to the original location of the component. Can be
      * the same as the webpage or working directory if a string was passed
@@ -65,7 +65,7 @@ export default async function MakeComponent(input: URL | string, presets?: Prese
 
 
     //
-    const url = URL.resolveRelative(input + "", root_url || URL);
+    const url = URL.resolveRelative(input + "", root_url || URL.GLOBAL);
 
     if (url && (input instanceof URL || url.path || url.host)) {
         try {
@@ -100,10 +100,10 @@ export default async function MakeComponent(input: URL | string, presets?: Prese
          * Since we were unable to process the input we'll create an error ast that can be used to generate
          * an error report component. 
          */
-        ast = <WickASTNode>{ type: WickASTNodeType.ERROR, errors: error_store };
+        ast = <WickASTNode> { type: WickASTNodeType.ERROR, children:[]};
     }
 
-    const processed_ast = await processWickAST(ast, error_store);
+    const processed_ast = await processWickAST(ast, presets, url, error_store);
 
     return {
         AST: processed_ast,
