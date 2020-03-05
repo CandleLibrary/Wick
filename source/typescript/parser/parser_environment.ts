@@ -18,9 +18,10 @@ import {
 } from "@candlefw/css";
 
 import { ParserEnvironment } from "@candlefw/hydrocarbon";
+import { Lexer } from "@candlefw/whind";
 
-const env = <ParserEnvironment>{
-    table: {},
+const env : ParserEnvironment & {ASI:boolean} = {
+    //table: {},
     ASI: true,
     functions: {
         //CSS
@@ -48,7 +49,7 @@ const env = <ParserEnvironment>{
             env.addParseError(`Unexpected token [${tk}]`, lex, env.url);
         },
 
-        defaultError: (tk, env, output, lex, prv_lex, ss, lu) => {
+        defaultError: (tk, env: ParserEnvironment & {ASI:boolean}, output, lex, prv_lex, ss, lu) => {
 
 
 
@@ -58,6 +59,7 @@ const env = <ParserEnvironment>{
                         lex.next();
                 } else
                     if (lex.tx == "/*") {
+                        //@ts-ignore
                         while (!lex.END && (lex.tx !== "*" || lex.pk.tx !== "/"))
                             lex.next();
                         lex.next(); //"*"
@@ -80,12 +82,12 @@ const env = <ParserEnvironment>{
                 if (lex.tx == "</") // As in "<script> script body => (</)script>"
                 {
                     lex.tl = 0;
-                    return lu({ tx: ";" });
+                    return lu(<Lexer>{ tx: ";" });
                 }
 
                 if (ENCOUNTERED_END_CHAR) {
                     lex.tl = 0;
-                    return lu({ tx: ";" });
+                    return lu(<Lexer>{ tx: ";" });
                 }
             }
 
@@ -98,11 +100,11 @@ const env = <ParserEnvironment>{
 
             if (lex.END) {
                 lex.tl = 0;
-                return lu({ tx: ";" });
+                return lu(<Lexer>{ tx: ";" });
             }
         }
     },
-
+    /*
     prst: [],
 
     pushPresets(prst) {
@@ -116,11 +118,11 @@ const env = <ParserEnvironment>{
     get presets() {
         return env.prst[env.prst.length - 1] || null;
     },
-
+    */
     options: {
         integrate: false,
         onstart: () => {
-            env.table = {};
+            //env.table = {};
             env.ASI = true;
         }
     }
