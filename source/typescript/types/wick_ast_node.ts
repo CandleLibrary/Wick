@@ -39,3 +39,8 @@ export interface WickBinding {
     secondary_ast?: MinTreeNode;
     lex: Lexer;
 }
+
+
+export default interface CompiledWickAST{
+
+}

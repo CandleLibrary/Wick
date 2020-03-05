@@ -2,11 +2,10 @@ import URL from "@candlefw/url";
 
 import Presets from "./presets.js";
 
-import { WickASTNode, WickASTNodeType } from "../types/wick_ast_node.js";
+import CompiledWickAST, { WickASTNode, WickASTNodeType } from "../types/wick_ast_node.js";
 import { WickComponentErrorStore } from "../types/errors.js";
-import { traverse, double_back_traverse, filter, make_skippable } from "@candlefw/conflagrate";
+import { traverse, filter, make_skippable } from "@candlefw/conflagrate";
 import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
-import { p } from "@candlefw/whind/build/types/ascii_code_points";
 
 
 function makeLocal(value, globals, locals) {
@@ -48,12 +47,13 @@ function makeGlobal(value, globals) {
 function grabScriptGlobals(root: MinTreeNode): { node: MinTreeNode, name: string; }[] {
     //While traversing the nodes, mark all nodes encountered within let, const, and 
     // function args; These represent local variables. Any other variable identifier is fair game.
-    console.dir({root}, {depth:null})
+
+    
     const 
         local_list = [],
         locals = new Set(),
         globals = new Set();
-
+        
     for (const node of traverse(root, "nodes")
         .then(filter("type",
             MinTreeNodeType.Arguments,
@@ -69,7 +69,6 @@ function grabScriptGlobals(root: MinTreeNode): { node: MinTreeNode, name: string
         ))
         .then(make_skippable())
     ) {
-        console.log(node)
         
         switch (node.type) {
             case MinTreeNodeType.AssignmentExpression:
@@ -77,7 +76,7 @@ function grabScriptGlobals(root: MinTreeNode): { node: MinTreeNode, name: string
                 node.skip();
                 break;
             case MinTreeNodeType.Identifier:
-                makeGlobal(node.val, globals);
+                makeGlobal(node.value, globals);
                 break;
             case MinTreeNodeType.MemberExpression:
                 //Extract any value from calculated accessors
@@ -109,11 +108,14 @@ function grabScriptGlobals(root: MinTreeNode): { node: MinTreeNode, name: string
 
     return local_list; //Array.from(local_list.reduce(e => (r.add(e.values()), r), local_list[0]));
 }
-interface CompiledWickAST{
 
-}
+
 /**
  * Compiles a WickASTNode and returns a constructor for a runtime Wick component
+ * @param {WickASTNode | MinTreeNode} ast 
+ * @param presets 
+ * @param url 
+ * @param errors 
  */
 export async function processWickAST(
     ast: WickASTNode | MinTreeNode,
