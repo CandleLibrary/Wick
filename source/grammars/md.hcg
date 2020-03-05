@@ -1,0 +1,69 @@
+@NAME CandleFW WICKUP Parser
+
+@EXT md
+
+@SYMBOL ``` `` {{ {{{ }}} }} === ---
+
+@IMPORT ./html.hcg as html
+
++> html::TAG_BODY_ITEM → WICKUP_PLUGIN
+
++> html::TEXT_NODE → WICKUP_INLINE_ELEMENT
+
+<> WICKUP_PLUGIN → PRE_MD_BLK WICKUP_BLOCK 	↦return { ($sym2) ? $sym2.leader = $sym1 : null, $sym2 }
+   │ PRE_MD_BLK html::TEXT_NODE				↦return { $sym2 }
+   │ PRE_MD_BLK html::TAG 					↦return { $sym2 }
+   │ PRE_MD_BLK								↦cstr ^text
+   │ PRE_MD_BLK HORIZONTAL_RULE 			↦return { $sym2 }
+
+<> PRE_MD_BLK → θnl θws(*)					↦return { $sym1 + $sym2.join("")  }
+
+<> WICKUP_BLOCK → HEADER 
+   │ BLOCK_QUOTES				
+   │ CODE_BLOCK					
+   │ UNORDERED_LIST_ITEM
+
+
+# Escaped symbol
++> html::BODY_SYMBOLS → \\ θany 															↦r { $sym2 }
+
+<> HORIZONTAL_RULE → HORIZONTAL_RULE_BODY													↦r { fn.element_selector("hr", null, null,  env, lex, "HRB" ) }
+	│ HORIZONTAL_RULE_BODY (html::TEXT_NODE │ html::TAG)									↦return { $sym2 }
+
+<> HORIZONTAL_RULE_BODY → === ( = │ === )(*)												↦return { $sym1 }
+	│ --- ( - │--- )(*)	 																	↦return { $sym1 }
+
+<> HEADER → \#(+) (IGN θws) html::TEXT_NODE(+)												↦r { fn.element_selector("h" + Math.min($sym1.length, 6), null, $$sym2,  env, lex , "HEADER") }
+
+<> BLOCK_QUOTES → (\> θws)(+) θws(*)  (html::TEXT_NODE │ html::TAG)(+) 		↦r { fn.element_selector("blockquote", null, $sym3, env, lex, $sym1.length) }
+
+<> UNORDERED_LIST_ITEM → (( \+  │ \* │ θnum ) θws )(+) θws(*)  (html::TEXT_NODE │ html::TAG)(+)   ↦r { fn.element_selector("li", null, $sym3, env, lex, $sym1.length) }
+				
+
+<> WICKUP_INLINE_ELEMENT → LINK
+	│ ITALIC_BOLD_EMPHASIS
+	│ CODE_QUOTE		
+
+<> CODE_BLOCK → \``` (IGN θws)  θid?  (IGN θws)  θnl (θnl? (html::BODY_SYMBOLS)(*")  		↦r { fn.element_selector("code", null,[new fn.text([$sym1 + $sym2], env)], env, lex)} )(+) (IGN θws θnl) \```  
+																							↦r { fn.element_selector("pre", null, $$sym4, env, lex) }
+
+<> LINK → \[ html::ATTRIBUTE_BODY \]\( (html::TEXT_NODE │ html::TAG) \) 						↦r { fn.element_selector("a", [new fn.attribute(["href", "", $sym2])], [$sym5], env, lex) }
+
+
+<> ITALIC_BOLD_EMPHASIS → \{{{ html::TEXT_NODE(+) \}}}										↦r { fn.element_selector("i", null, [fn.element_selector("b", null, $sym2, env, lex)], env, lex) }
+	│ BOLD_EMPHASIS
+
+<> BOLD_EMPHASIS → \{{ html::TEXT_NODE(+) \}}												↦r { fn.element_selector("b", null, $sym2, env, lex) }
+	│ EMPHASIS
+
+<> EMPHASIS → \{ html::TEXT_NODE(+) \}														↦r { fn.element_selector("i", null, $sym2, env, lex) }
+
+
+<> CODE_QUOTE → \`` CODE_QUOTE_SYMBOLS \`` 												↦r { fn.element_selector("code", null,  [new fn.text([$$sym2], env)], env, lex) }
+
+<> MD_TEXT_NODE → BODY_SYMBOLS2(+") 														↦cstr ^text
+	│ WICKUP_INLINE_ELEMENT
+
+<> CODE_QUOTE_SYMBOLS → BODY_SYMBOLS2(+")
+
+<> BODY_SYMBOLS2 → θid │ θsym │ θws │ θob │ θcb │ θop │ θnum │ θstr │ \#

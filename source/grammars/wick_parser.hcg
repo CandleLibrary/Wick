@@ -1,0 +1,93 @@
+#####################################################################################################
+# 
+#         __          _    _ _____ _____  _   ________  ___  ______  _____ ___________   _               
+#       / _|        | |  | |_   _/  __ \| | / /| ___ \/ _ \ | ___ \/  ___|  ___| ___ \ | |              
+#   ___| |___      _| |  | | | | | /  \/| |/ / | |_/ / /_\ \| |_/ /\ `--.| |__ | |_/ / | |__   ___ __ _ 
+#  / __|  _\ \ /\ / / |/\| | | | | |    |    \ |  __/|  _  ||    /  `--. \  __||    /  | '_ \ / __/ _` |
+# | (__| |  \ V  V /\  /\  /_| |_| \__/\| |\  \| |   | | | || |\ \ /\__/ / |___| |\ \ _| | | | (_| (_| |
+#  \___|_|   \_/\_(_)\/  \/ \___/ \____/\_| \_/\_|   \_| |_/\_| \_|\____/\____/\_| \_(_)_| |_|\___\__, |
+#                                                                                                  __/ |
+#                                                                                                 |___/ 
+# 
+# 		2020 v2.0
+# 		
+# 		Copyright (c) MMXX Anthony C Weathersby
+# 		
+# 		Permission is hereby granted, free of charge, to any person obtaining a copy
+# 		of this software and associated documentation files (the "Software"), to deal
+# 		in the Software without restriction, including without limitation the rights
+# 		to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# 		copies of the Software, and to permit persons to whom the Software is
+# 		furnished to do so, subject to the following conditions:
+# 		
+# 		The above copyright notice and this permission notice shall be included in all
+# 		copies or substantial portions of the Software.
+# 		
+# 		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# 		IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# 		FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# 		AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# 		LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# 		OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# 		SOFTWARE.
+# 		
+# 		logo courtesy of http://patorjk.com/software/taag
+# 		
+# 		Font:
+# 		DOOM by Frans P. de Vries <fpv@xymph.iaf.nl>  18 Jun 1996
+# 		based on Big by Glenn Chappell 4/93 -- based on Standard
+# 		figlet release 2.1 -- 12 Aug 1994
+# 		Permission is hereby given to modify this font, as long as the
+# 		modifier's name is placed on a comment line.
+# 
+#####################################################################################################
+
+@NAME CFW Wick Parser
+
+@EXT wick
+
+@SYMBOL </ (( (!(
+
+@IGNORE θws θnl 
+
+@IMPORT @candlefw/js/source/grammar/ecmascript.hcg as js
+
+@IMPORT ./html.hcg as html
+
+#@IMPORT ./wickup.hcg as wickup
+
+@IMPORT @candlefw/css/source/grammar/css.hcg as css 
+
+<> WICK → COMPONENT                                                                                											
+
+<> COMPONENT → html::HTML
+     │ js::javascript 
+
+# This allows JSX like html expressions within JS obects. 
++> js::primary_expression → html::TAG                                                       			↦r { { type:"COMPONENT", html:$sym1, lex } }
+
++> html::BODY → IMPORT_TAG_LIST html::GOAL_TAG                                             				↦r { ( $sym2.import_list = $sym1, $sym2 ) }
+    
++> html::TAG_BODY_ITEM → < τstyle html::ATTRIBUTES? >  css::CSS?  </ τstyle >               			↦r { { type:"STYLE",  tag:"STYLE", attributes:$$sym3 || [], ast:$$sym5, lex } }
+    │ < τscript html::ATTRIBUTES? > js::javascript? </ τscript >                                		↦r { { type:"SCRIPT", tag:"JS", attributes:$$sym3 || [], ast:$$sym5, lex } }
+    │ < τjs html::ATTRIBUTES? > js::javascript? </ τjs >                                        		↦r { { type:"SCRIPT", tag:"JS", attributes:$$sym3 || [], ast:$$sym5, lex } }
+    #│ \( \{ js::expression \{ js::script? \} \} (ERR θws ) \)                                			↦r {env.fn.element_selector("script", ["on", null, new env.wick_binding(["on",null, $sym2])], $sym4, env, lex) }
+
+
+<> IMPORT_TAG_LIST → IMPORT_TAG(+)
+
+<> IMPORT_TAG → < τimport html::ATTRIBUTES? /? > ( </ τimport > )?                          			↦r { { type:"HTML", tag:$sym2.toUpperCase(), attributes:$$sym3 || [], children:[], VOID:true, lex } } 
+
++> html::VOID_NAME →  τf
+
++> html::ATTRIBUTE → html::ATTRIBUTE_HEAD = ( " WICK_BINDING " ↦r {$sym2} │ WICK_BINDING )  			↦r { {type:"ATTRIBUTE", name:$sym1, value:$sym3, IS_BINDING:true, lex } }                    
+
++> html::TEXT_NODE → WICK_BINDING                                                           			↦r { {type:"TEXT", data:$sym1, IS_BINDING:true, lex } }
+
+<> WICK_BINDING → CALL_BINDING                              
+    │ BASIC_BINDING
+
+<> BASIC_BINDING →  ( \(( │ \(!( )  js::expression? \) (ERR θws ) \)                                       ↦r { {type:"BINDING", primary_ast:$$sym2, secondary_ast:null, DEBUG: $sym1 == "(!(" , lex } }
+<> CALL_BINDING →   ( \(( │ \(!( )  js::expression? \) (ERR θws ) \( js::expression? \) (ERR θws ) \)      ↦r { {type:"BINDING", primary_ast:$$sym2, secondary_ast:$$sym5, DEBUG: $sym1 == "(!(", lex } }
+
+#<> CALL_BINDING →   \!? \(  \(  ↦{ env.start = lex.off+2 } html::BODY_SYMBOLS(+") \) (ERR θws ) \( html::BODY_SYMBOLS(*") \) (ERR θws ) \)      ↦r {(env.off = lex.off, new env.fn.wick_binding($$sym4, $$sym7, env, lex,$$sym2) )}
