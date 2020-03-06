@@ -64,7 +64,7 @@ export default class Presets implements PresetOptions {
 
         this.models = {};
 
-        this.custom = Object.assign({}, P.default_custom, preset_options.custom);
+        this.custom = Object.assign({}, preset_options.custom);
 
         let c = preset_options.options;
 
@@ -105,9 +105,9 @@ export default class Presets implements PresetOptions {
             for (const cn in c)
                 this.schemes[cn] = c[cn];
 
-        this.options.USE_SHADOW = (preset_options.options.USE_SHADOW)
-            ? (DOC.head.createShadowRoot
-                || DOC.head.attachShadow) : false;
+        //this.options.USE_SHADOW = (preset_options.options.USE_SHADOW)
+        //    ? (DOC.head.createShadowRoot
+        //        || DOC.head.attachShadow) : false;
         this.options.USE_SHADOWED_STYLE = ((preset_options.options.USE_SHADOWED_STYLE) && (this.options.USE_SHADOW));
 
         this.url = new URL;
@@ -126,20 +126,24 @@ export default class Presets implements PresetOptions {
         Copies values of the Presets object into a generic object. The new object is not frozen.
     */
     copy() {
-        const obj = {};
+        const obj = <Presets>{};
 
         for (let a in this) {
             if (a == "components")
                 obj.components = this.components;
             else if (typeof (this[a]) == "object")
+                //@ts-ignore
                 obj[a] = Object.assign({}, this[a]);
+            //@ts-ignore
             else if (typeof (this[a]) == "array")
+                //@ts-ignore
                 obj[a] = this[a].slice();
             else
+                //@ts-ignore
                 obj[a] = this[a];
         }
 
-        const presets = new P(obj);
+        const presets = new Presets(obj);
 
         presets.processLink = this.processLink.bind(this);
 
