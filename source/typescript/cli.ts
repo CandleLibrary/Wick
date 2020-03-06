@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+//@ts-nocheck
 /* 
 	The purpose of the wick command line interface is to provide a simple method to compile 
 	wick components into standalone HTML, CSS, and JS files that can largely run without the 
@@ -90,11 +90,11 @@ program
 
 (async () => {
 	//Fill the window object with shims objects that match objects found on the browser 
-	global.window = {
+	g.window = {
 		getComputedStyle: () => ({ getPropertyValue: () => "0" }),
 		console: {},
 		Math: {},
-		alert: () => {},
+		alert: () => { },
 		document: {},
 	};
 	await html.polyfill();
