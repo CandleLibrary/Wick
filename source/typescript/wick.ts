@@ -36,7 +36,7 @@ function wick(input: string | URL, presets?: Presets): WickComponent {
     if (!presets)
         presets = new Presets();
 
-    const promise = MakeComponent(input, presets, URL.G);
+    const promise = MakeComponent(input, presets, URL.GLOBAL);
 
     const component = <WickComponent><unknown>{
         presets,
