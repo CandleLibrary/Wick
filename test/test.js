@@ -5,7 +5,7 @@ import chai from "chai";
 import { filter, make_replaceable, extract, traverse } from "@candlefw/conflagrate";
 import { parser } from "../build/library/wick.js";
 import { wick } from "../build/library/wick.js";
-import "@candlefw/test"
+
 
 chai.should();
 
@@ -91,7 +91,7 @@ describe("Parser", function () {
         ast.attributes[0].value.type.should.equal("BINDING");
         ast.attributes[0].value.primary_ast.type.should.equal("AssignmentExpression");
         ast.attributes[0].value.secondary_ast.type.should.equal("Identifier");   //value.primary_ast.type.should.equal("Expressio");
-        ast.attributes[0].value.secondary_ast.val.should.equal("thomas");
+        ast.attributes[0].value.secondary_ast.value.should.equal("thomas");
     });
 
     it("<div>((expression))</div>", function () {
@@ -254,24 +254,29 @@ describe("Traversing", function () {
 
 describe("Componentization", function () {
     /**
-     * Wick is unopinionated regarding whether components are defined
+     * Wick is un-opinionated regarding whether components are defined
      * using HTML or JavasScript (TypeScript eventually)
      */
-    it("Use JS Module to define a component",async  function(){
+    it("Use JS Module to define a component", async function () {
         const comp = await wick(`
-            the_best_color = "green";
+            import {  jelly } from "@model";
+            
+            const crab = "maple syrup"
 
-            const test = lovely_bones;
+            the_best_color = "green" + yellow[calendar.mineral[basket]].tree[crab];
             
             //JSX bindings have access to their execution scope.
 
             export default <scope>
-                    The best color is (( the_best_color + test )).
+                    The best color is (( the_best_color )).
                 </scope>        
         `).pending;
 
+        //if (comp.error)
+        console.dir({ error: comp.errors }, { depth: null });
+
         const ele = comp.mount();
-        
+
         ele.innerHTML.trim().should.equal("The best color is green");
-    })
+    });
 });
