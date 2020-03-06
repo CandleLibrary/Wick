@@ -20,8 +20,15 @@ import {
 import { ParserEnvironment } from "@candlefw/hydrocarbon";
 import { Lexer } from "@candlefw/whind";
 
-const env : ParserEnvironment & {ASI:boolean} = {
-    //table: {},
+type WickParserEnvironment = ParserEnvironment & {
+    /**
+     * Toggle for Automatic Semicolon Insertion while error recovering.
+     */
+    ASI: boolean;
+};
+
+const env = <WickParserEnvironment>{
+    table: {},
     ASI: true,
     functions: {
         //CSS
@@ -59,10 +66,10 @@ const env : ParserEnvironment & {ASI:boolean} = {
                         lex.next();
                 } else
                     if (lex.tx == "/*") {
-                        //@ts-ignore
+                        //@ts-ignore lexer state mutates with lex.next in second line
                         while (!lex.END && (lex.tx !== "*" || lex.pk.tx !== "/"))
                             lex.next();
-                        lex.next(); //"*"
+                        lex.assert("*"); //Lex tk == "*"
                     }
 
                 return lu(lex.next());
