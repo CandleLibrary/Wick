@@ -2,7 +2,7 @@ import parser from "./parser/parser.js";
 import URL from "@candlefw/url";
 import Presets from "./component/presets.js";
 import MakeComponent from "./component/component.js";
-import { WickASTNode } from "./types/wick_ast_node.js";
+import CompiledWickAST, { WickASTNode } from "./types/wick_ast_node.js";
 import { WickComponentErrorStore } from "./types/errors.js";
 
 /**
@@ -17,14 +17,14 @@ interface WickComponentHandle {
  */
 interface WickComponent {
     presets: Presets;
-    
-    ast: WickASTNode;
+
+    ast: CompiledWickAST;
 
     errors: WickComponentErrorStore;
 
     pending: Promise<WickComponent>;
 
-    mount : (ele : HTMLElement, data : object) => WickComponentHandle
+    mount: (ele: HTMLElement, data: object) => WickComponentHandle;
 }
 
 /**
@@ -41,7 +41,7 @@ function wick(input: string | URL, presets?: Presets): WickComponent {
     const component = <WickComponent><unknown>{
         presets,
         pending: new Promise(res => promise.then(() => res(component))),
-        mount: ()=>{throw "Component mount has not yet been implemented! source/wick.ts:44:9"}
+        mount: () => { throw "Component mount has not yet been implemented! source/wick.ts:44:9"; }
     };
 
     promise.then(res => {
