@@ -1,10 +1,20 @@
-# cfw.Wick 
-<sub> v0.9.0 </sub>
-## HTML Components on <span style="color:red; color:linear-gradient(180deg, rgba(255,179,0,1) 0%, rgba(255,124,0,1) 49%, rgba(213,46,46,1) 84%, rgba(141,0,205,1) 100%)">FIRE</span>
+<style>
+body{font-family:ubuntu !important}
+h1{margin:50px 0 !important; border:none !important}
+pre{padding:}
+</style>
 
+<h1 align=center style="display:block; width:100%; position:relative;right:22px;font-family:ubuntu, arial, sans-serif; font-size:4em; letter-spacing:-0.02em;border:none; margin-bottom:0 !important; padding-bottom:0">
+    <img src="./flair/cfw.flame.svg" type="text/svg" rel="svg" width=80 height=80 style="background-color:none;position:relative; display:inline-block; left:22px; ">
+    <span style="display:inline-block; position:relative;color:#EB6414;font-size:0.5em;z-index:1">cfw</span><span style="font-size:0.8em;color:#741224">.</span>w<span style="font-size:0.8em;color:#741224">i</span>ck
+</h1>
+<p align=center><sub><b>v0.9.0</b></sub></p>
+
+
+## HTML Components on 
 > This document is in early draft stage. Wick is also currently undergoing a TypeScript conversion and engine rewrite. The features described here are indicative of the future Wick 1.0.0 version and may not be available at this point.
 
-# What is Wick
+# What Is wick
 
 #### Blur the line between HTML and JavaScript.
 Wick is a dynamic component compiler and runtime. It is able to build complex HTML based interfaces that integrate CSS and JavaScript using a simple yet powerful 
@@ -387,7 +397,7 @@ Topics that will be introduce and expanded on, in addition to the ones covered h
 - Presets Object, Script Bundling, Data Model Registry
 - Plugins
 
-# Get To Know Wick Better
+# Get To Know <span style="font-size:1.2em">wick</span> Better
 
 #### Docs - TODO
 
