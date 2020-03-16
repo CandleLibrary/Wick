@@ -1,6 +1,14 @@
-# cfw.Wick 
-<sub> v0.9.0 </sub>
-## HTML Components on <span style="color:red; color:linear-gradient(180deg, rgba(255,179,0,1) 0%, rgba(255,124,0,1) 49%, rgba(213,46,46,1) 84%, rgba(141,0,205,1) 100%)">FIRE</span>
+<h1 align=center>
+    <img src="./flavor/cfw-flame-w-lib.svg" type="text/svg" rel="svg" height=80>
+</h1>
+
+<h3 align=center>HTML Components</h3>
+
+<p align=center> <sub><b>v0.9.0</b></sub> </p>
+
+#
+
+## </span>
 
 > This document is in early draft stage. Wick is also currently undergoing a TypeScript conversion and engine rewrite. The features described here are indicative of the future Wick 1.0.0 version and may not be available at this point.
 
