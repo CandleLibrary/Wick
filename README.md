@@ -1,8 +1,9 @@
-<h1 align=center style="display:block; width:100%; position:relative;right:22px;font-family:ubuntu, arial, sans-serif; font-size:4em; letter-spacing:-0.02em;border:none; margin-bottom:0 !important; padding-bottom:0">
-    <img src="./flair/cfw.flame.svg" type="text/svg" rel="svg" width=80 height=80 style="background-color:none;position:relative; display:inline-block; left:22px; ">
-    <span style="display:inline-block; position:relative;color:#EB6414;font-size:0.5em;z-index:1">cfw</span><span style="font-size:0.8em;color:#741224">.</span>w<span style="font-size:0.8em;color:#741224">i</span>ck
+
+<h1 align=center>
+    <img src="./flair/cfw-flame-w-lib.svg" type="text/svg" rel="svg" height=80>
 </h1>
-<p align=center><sub><b>v0.9.0</b></sub></p>
+<h6 align=center><b>v0.9.0</b></h6>
+
 
 
 ## HTML Components on 
@@ -20,7 +21,7 @@ syntax.
 
 Wick introduces a minimal amount of syntax to handle the problems of data binding, component composition, and asset wrangling. Using already powerful HTML and JavaScript expressions, Wick relies on established conventions to handle common interface problems. If you know HTML, then you know basic Wick, and if you're good with JavaScript, then Wick is the interface wrangler for you.
 
-For example, in order to create a list of items, Wick uses a simple binding expression `((` ### `)(` ### `))` combined with HTML and JavaScript.
+For example, in order to create a list of items, Wick uses a simple binding expression `((` --- `)(` ### `))` combined with HTML and JavaScript.
 ```html
 Things I Like:
 <ol>
