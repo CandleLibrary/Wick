@@ -2,7 +2,7 @@
 # Wick HTML Parser file
 # 
 
-@NAME CandleFW Hyper Text Markup Langauge Parser
+@NAME CandleFW_HTML_Parser
 
 @EXT html
 
@@ -26,9 +26,9 @@
 
 <> GOAL_TAG → TAG
 
-<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >                                     ↦r { { type:"HTML", tag:$sym2.toUpperCase(), attributes:$$sym3 || [], children:$sym5 || [], VOID:false, lex } }
-    │ < TAGNAME ATTRIBUTES? / >                                                             ↦r { { type:"HTML", tag:$sym2.toUpperCase(), attributes:$$sym3 || [], children:[], VOID:false, lex } }
-    │ < VOID_NAME ATTRIBUTES? /? >                                                          ↦r { { type:"HTML", tag:$sym2.toUpperCase(), attributes:$$sym3 || [], children:[], VOID:true, lex } }
+<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >                                     ↦r { { type:env.typ["HTML_"+$sym2[0].toUpperCase() + $sym2.slice(1).toLowerCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:$sym5 || [], VOID:false, pos } }
+    │ < TAGNAME ATTRIBUTES? / >                                                             ↦r { { type:env.typ["HTML_"+$sym2[0].toUpperCase() + $sym2.slice(1).toLowerCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:false, pos } }
+    │ < VOID_NAME ATTRIBUTES? /? >                                                          ↦r { { type:env.typ["HTML_"+$sym2[0].toUpperCase() + $sym2.slice(1).toLowerCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:true, pos } }
     
 <> DTD → <! θid? --?  TEXT_NODE_DATA  --? >                                                 ↦r { { type:"DTD", tag:$$sym2|| "", value:$$sym4 }  }                
 
@@ -62,8 +62,8 @@
     
 <> ATTRIBUTES → ATTRIBUTE(+)                                                                    ↦r { $$sym1 }
 
-<> ATTRIBUTE → ATTRIBUTE_HEAD = ATTRIBUTE_BODY                                                  ↦r { {type:"ATTRIBUTE", name:$sym1, value:$sym3, IS_BINDING:false, lex } }
-    │ ATTRIBUTE_HEAD                                                                            ↦r { {type:"ATTRIBUTE", name:$sym1, value:"", IS_BINDING:false, lex } }
+<> ATTRIBUTE → ATTRIBUTE_HEAD = ATTRIBUTE_BODY                                                  ↦r { {type:env.typ.HTMLAttribute, name:$sym1, value:$sym3, IS_BINDING:false, pos } }
+    │ ATTRIBUTE_HEAD                                                                            ↦r { {type:env.typ.HTMLAttribute, name:$sym1, value:"", IS_BINDING:false, pos } }
 
 <> ATTRIBUTE_HEAD → ' identifier? '                                                             ↦r { $$sym2 }
     │ " identifier? "                                                                           ↦r { $$sym2 }
@@ -79,7 +79,7 @@
 
 <> identifier → θid ( θid │ \- │ \: )(*")                                  				        ↦r { $sym1 + $sym2 } 
 
-<> TEXT_NODE → TEXT_NODE_DATA                                                                   ↦r { {type:"TEXT", data:$sym1, IS_BINDING:false, lex } }
+<> TEXT_NODE → TEXT_NODE_DATA                                                                   ↦r { {type:env.typ.HTMLText, data:$sym1, IS_BINDING:false, pos } }
 <> TEXT_NODE_DATA → BODY_SYMBOLS(+")                                                            
 
 <> BODY_SYMBOLS → θid │ θnl │ θws │ θsym │ θop │ θob │ θcb │ θnum │ θkeyword │ θany │ \! │ \( 

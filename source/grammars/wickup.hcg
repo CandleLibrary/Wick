@@ -1,4 +1,4 @@
-@NAME CandleFW WICKUP Parser
+@NAME CandleFW_WICKUP_Parser
 
 @EXT md
 
@@ -32,18 +32,18 @@
 # Escaped symbol
 # +> html::BODY_SYMBOLS → \\ θany 															↦r { $sym2 }
 
-<> HORIZONTAL_RULE → HORIZONTAL_RULE_BODY											↦r { env.fn.element_selector("hr", null, null,  env, lex ) }
+<> HORIZONTAL_RULE → HORIZONTAL_RULE_BODY													↦r { env.fn.element_selector("hr", null, null,  env, pos ) }
 	│ HORIZONTAL_RULE_BODY WICKUP_COMBO														↦return { $sym2 }
 
 <> HORIZONTAL_RULE_BODY → \_(+)																↦return { $sym1 }
 
-<> HEADER → \#(+) 	 WICKUP_COMBO(+) 														↦r { env.fn.element_selector("h" + Math.min($sym1.length, 6), null, $$sym2,  env, lex) }
+<> HEADER → \#(+) 	 WICKUP_COMBO(+) 														↦r { env.fn.element_selector("h" + Math.min($sym1.length, 6), null, $$sym2,  env, pos) }
 
-<> BLOCK_QUOTES → ( \> )(+)  WICKUP_COMBO_PLUS(+) 									↦r { env.fn.element_selector("blockquote", null, $sym2, env, lex, $sym1.length) }
+<> BLOCK_QUOTES → ( \> )(+)  WICKUP_COMBO_PLUS(+) 											↦r { env.fn.element_selector("blockquote", null, $sym2, env, pos, $sym1.length) }
 
 <> UNORDERED_LIST_ITEM → ( \+  │ \*  )(+) WICKUP_COMBO_PLUS(+)  
 																							
-																							↦r { env.fn.element_selector("li", null, $sym2, env, lex, $sym1.length) }
+																							↦r { env.fn.element_selector("li", null, $sym2, env, pos, $sym1.length) }
 				
 
 <> WICKUP_INLINE_ELEMENT → LINK
@@ -51,23 +51,23 @@
 	│ CODE_QUOTE		
 
 <> CODE_BLOCK → \``` θid?   θnl (θnl? html::TEXT_NODE 
-										↦r { env.fn.element_selector("code", null,[($sym2.data = $sym1 + $sym2.data, $sym2)], env, lex)} )(+) (IGN θws θnl) \```  
+										↦r { env.fn.element_selector("code", null,[($sym2.data = $sym1 + $sym2.data, $sym2)], env, pos)} )(+) (IGN θws θnl) \```  
 																							
-																							↦r { env.fn.element_selector("pre", null, $$sym4, env, lex) }
+																							↦r { env.fn.element_selector("pre", null, $$sym4, env, pos) }
 
-<> LINK → \[ (IGN θws) html::ATTRIBUTE_BODY (IGN θws) \]( WICKUP_COMBO \) 						↦r { env.fn.element_selector("a", [new env.fn.attribute(["href", "", $sym2])], [$sym5], env, lex) }
+<> LINK → \[ (IGN θws) html::ATTRIBUTE_BODY (IGN θws) \]( WICKUP_COMBO \) 					↦r { env.fn.element_selector("a", [new env.fn.attribute(["href", "", $sym2])], [$sym5], env, pos) }
 
 
-<> ITALIC_BOLD_EMPHASIS → \{ \{ \{ html::TEXT_NODE(+) \} \} \}										↦r { env.fn.element_selector("i", null, [env.fn.element_selector("b", null, $sym4, env, lex)], env, lex) }
+<> ITALIC_BOLD_EMPHASIS → \{ \{ \{ html::TEXT_NODE(+) \} \} \}								↦r { env.fn.element_selector("i", null, [env.fn.element_selector("b", null, $sym4, env, pos)], env, pos) }
 	│ BOLD_EMPHASIS
 
-<> BOLD_EMPHASIS → \{ \{ html::TEXT_NODE(+) \} \}												↦r { env.fn.element_selector("b", null, $sym3, env, lex) }
+<> BOLD_EMPHASIS → \{ \{ html::TEXT_NODE(+) \} \}											↦r { env.fn.element_selector("b", null, $sym3, env, pos) }
 	│ EMPHASIS
 
-<> EMPHASIS → \{ html::TEXT_NODE(+) \}														↦r { env.fn.element_selector("i", null, $sym2, env, lex) }
+<> EMPHASIS → \{ html::TEXT_NODE(+) \}														↦r { env.fn.element_selector("i", null, $sym2, env, pos) }
 
 
-<> CODE_QUOTE → \`` CODE_QUOTE_SYMBOLS \`` 												↦r { env.fn.element_selector("code", null,  [new env.fn.text([$$sym2], env)], env, lex) }
+<> CODE_QUOTE → \`` CODE_QUOTE_SYMBOLS \`` 													↦r { env.fn.element_selector("code", null,  [new env.fn.text([$$sym2], env)], env, pos) }
 
 <> MD_TEXT_NODE → BODY_SYMBOLS2(+") 														↦cstr ^text
 	│ WICKUP_INLINE_ELEMENT
