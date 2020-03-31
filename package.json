@@ -1,133 +1,131 @@
 {
-  "name": "@candlefw/wick",
-  "version": "0.9.0-ts",
-  "description": "HTML Component Builder",
-  "main": "./build/library/wick.node.js",
-  "types": "./build/types/wick.node.d.ts",
-  "type": "module",
-  "bin": {
-    "wick": "./source/cli.mjs"
-  },
-  "scripts": {
-    "prepublishOnly": "yarn run build && yarn run build.lite",
-    "compile": "hydrocarbon compile --parser glalr -u -o ./source/typescript/parser/ -e ./source/typescript/parser/proxy_parser_environment.js -t module ./source/grammars/wick_parser.hcg",
-    "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
-    "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/html.hcg",
-    "compile.test": "node --experimental-modules ./test/config.mjs",
-    "test.coverage": "nyc yarn run test",
-    "test": "cfw_test ./test/test.js",
-    "test.watch": "mocha -r esm -w --watch-extensions js ./test/test.js",
-    "build": "rollup --config ./build/config/main.config.js",
-    "build.watch": "rollup --config ./build/config/main.config.js --watch",
-    "build.lite": "rollup --config ./build/config/lite.config.js",
-    "build.lite.watch": "rollup --config ./build/config/lite.config.js --watch"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/candlefw/wick.git"
-  },
-  "keywords": [
-    "SPA",
-    "PWA",
-    "Components",
-    "JavaScript",
-    "Forms",
-    "Website",
-    "REST",
-    "APP"
-  ],
-  "directories": {
-    "lib": "source",
-    "test": "test"
-  },
-  "author": "Anthony Weathersby",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/candlefw/wick/issues"
-  },
-  "homepage": "https://github.com/candlefw/wick#readme",
-  "devDependencies": {
-    "@rollup/plugin-commonjs": "^11.0.1",
-    "@rollup/plugin-node-resolve": "^7.0.0",
-    "benchmark": "^2.1.4",
-    "chai": "^4.2.0",
-    "chai-as-promised": "^7.1 .1",
-    "esm": "latest",
-    "mocha": "latest",
-    "mocha-logger": "^1.0.6",
-    "node-fetch": "^2.3.0",
-    "rollup": "latest",
-    "rollup-plugin-gzip": "latest",
-    "rollup-plugin-resolve": "latest",
-    "rollup-plugin-terser": "latest"
-  },
-  "jshintConfig": {
-    "esversion": 6,
-    "unused": true
-  },
-  "dependencies": {
-    "@candlefw/hydrocarbon": "latest",
-    "@candlefw/css": "latest",
-    "@candlefw/glow": "latest",
-    "@candlefw/html": "latest",
-    "@candlefw/math": "latest",
-    "@candlefw/spark": "latest",
-    "@candlefw/url": "latest",
-    "@candlefw/whind": "latest",
-    "@candlefw/conflagrate": "latest",
-    "commander": "^4.1.0",
-    "env": "^0.0.2",
-    "latest": "^0.2.0"
-  },
-  "esm": {
-    "cjs": {
-      "cache": true
-    }
-  },
-  "eslintConfig": {
-    "parserOptions": {
-      "sourceType": "module",
-      "ecmaVersion": 2018
+    "name": "@candlefw/wick",
+    "version": "0.9.0-ts",
+    "description": "HTML Component Builder",
+    "main": "./build/library/wick.js",
+    "types": "./build/types/wick.node.d.ts",
+    "type": "module",
+    "bin": {
+        "wick": "./source/cli.mjs"
     },
-    "env": {
-      "es6": true,
-      "browser": true,
-      "node": true
+    "scripts": {
+        "prepublishOnly": "yarn run build && yarn run build.lite",
+        "compile": "hydrocarbon compile --parser glalr -u -o ./source/typescript/parser/ -e ./source/typescript/parser/proxy_parser_environment.js -t module ./source/grammars/wick_parser.hcg",
+        "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
+        "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/html.hcg",
+        "compile.test": "node --experimental-modules ./test/config.mjs",
+        "test.coverage": "nyc yarn run test",
+        "test": "cfw.test ./test/candlefw.wick.spec.js",
+        "test.watch": "cfw.test -w ./test/candlefw.wick.spec.js",
+        "build": "rollup --config ./build/config/main.config.js",
+        "build.watch": "rollup --config ./build/config/main.config.js --watch",
+        "build.lite": "rollup --config ./build/config/lite.config.js",
+        "build.lite.watch": "rollup --config ./build/config/lite.config.js --watch"
     },
-    "extends": "eslint:recommended",
-    "rules": {
-      "no-fallthrough": [
-        "error",
-        {
-          "commentPattern": "[iI]ntentional( - [\\w\\W]*){0,1}"
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/candlefw/wick.git"
+    },
+    "keywords": [
+        "SPA",
+        "PWA",
+        "Components",
+        "JavaScript",
+        "Forms",
+        "Website",
+        "REST",
+        "APP"
+    ],
+    "directories": {
+        "lib": "source",
+        "test": "test"
+    },
+    "author": "Anthony Weathersby",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/candlefw/wick/issues"
+    },
+    "homepage": "https://github.com/candlefw/wick#readme",
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^11.0.1",
+        "@rollup/plugin-node-resolve": "^7.0.0",
+        "esm": "latest",
+        "node-fetch": "^2.3.0",
+        "rollup": "latest",
+        "rollup-plugin-gzip": "latest",
+        "rollup-plugin-resolve": "latest",
+        "rollup-plugin-terser": "latest",
+        "@candlefw/test": "0.1.0-alpha"
+    },
+    "jshintConfig": {
+        "esversion": 6,
+        "unused": true
+    },
+    "dependencies": {
+        "@candlefw/conflagrate": "^0.0.5-alpha",
+        "@candlefw/css": "latest",
+        "@candlefw/glow": "latest",
+        "@candlefw/html": "^0.0.14",
+        "@candlefw/hydrocarbon": "^0.3.4-dev-1",
+        "@candlefw/js": "^0.1.6-dev-1",
+        "@candlefw/math": "latest",
+        "@candlefw/spark": "^0.1.0",
+        "@candlefw/test": "^0.0.1",
+        "@candlefw/url": "^0.1.1",
+        "@candlefw/wind": "^0.4.1-dev",
+        "commander": "^4.1.0",
+        "env": "^0.0.2",
+        "latest": "^0.2.0"
+    },
+    "esm": {
+        "cjs": {
+            "cache": true
         }
-      ],
-      "semi-style": [
-        "error",
-        "last"
-      ],
-      "semi": [
-        "warn",
-        "always",
-        {
-          "omitLastInOneLineBlock": true
+    },
+    "eslintConfig": {
+        "parserOptions": {
+            "sourceType": "module",
+            "ecmaVersion": 2018
+        },
+        "env": {
+            "es6": true,
+            "browser": true,
+            "node": true
+        },
+        "extends": "eslint:recommended",
+        "rules": {
+            "no-fallthrough": [
+                "error",
+                {
+                    "commentPattern": "[iI]ntentional( - [\\w\\W]*){0,1}"
+                }
+            ],
+            "semi-style": [
+                "error",
+                "last"
+            ],
+            "semi": [
+                "warn",
+                "always",
+                {
+                    "omitLastInOneLineBlock": true
+                }
+            ],
+            "prefer-const": "warn",
+            "new-cap": [
+                "error"
+            ],
+            "padding-line-between-statements": [
+                "error",
+                {
+                    "blankLine": "always",
+                    "prev": "function",
+                    "next": "*"
+                }
+            ]
         }
-      ],
-      "prefer-const": "warn",
-      "new-cap": [
-        "error"
-      ],
-      "padding-line-between-statements": [
-        "error",
-        {
-          "blankLine": "always",
-          "prev": "function",
-          "next": "*"
-        }
-      ]
+    },
+    "engine": {
+        "node": ">=13.6.0"
     }
-  },
-  "engine": {
-    "node": ">=13.6.0"
-  }
 }
