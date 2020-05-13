@@ -1,179 +1,176 @@
 import URL from "@candlefw/url";
-import { MinTreeNode, MinTreeNodeType, ext } from "@candlefw/js";
-import { traverse, filter, make_skippable, add_parent } from "@candlefw/conflagrate";
+import { MinTreeNode, MinTreeNodeType, exp, stmt, ext } from "@candlefw/js";
+import { traverse, renderCompressed } from "@candlefw/conflagrate";
 
 import Presets from "./presets.js";
-
-import CompiledWickAST, { WickASTNode, WickASTNodeType } from "../types/wick_ast_node.js";
+import CompiledWickAST, { WickASTNode, WickASTNodeType } from "../types/wick_ast_node_types.js";
 import { WickComponentErrorStore } from "../types/errors.js";
+import { processWickHTML_AST } from "./html.js";
+import { processWickJS_AST, VARIABLE_REFERENCE_TYPE } from "./js.js";
+import { handleBindings } from "./bindings.js";
+import { Component, PendingBinding } from "../types/types";
+import { getPropertyAST, getGenericMethodNode, getObjectLiteralAST } from "./js_ast_tools.js";
+import { renderers } from "../format_rules.js";
 
 
-function makeLocal(value: string, globals, locals) {
-    if (globals.has(value))
-        globals.delete(value);
-    locals.add(value);
-}
+function determineSourceType(ast: WickASTNode | MinTreeNode): boolean {
+    if (ast.type == MinTreeNodeType.Script || ast.type == MinTreeNodeType.Module)
+        return true;
+    return false;
+};
 
-function makeGlobal(value: string, globals, locals) {
+function buildExportableDOMNode(
+    ast: WickASTNode & {
+        component_name?: string;
+        slot_name?: string;
+    }) {
 
-    if (!locals.has(value)) {
+    const
+        c = getPropertyAST("c", `[]`),
+        a = getPropertyAST("a", `[]`),
+        cp = getPropertyAST("cp", `""`),
+        ct = getPropertyAST("ct", `true`),
+        sl = getPropertyAST("sl", `""`),
+        nodes = [getPropertyAST("t", `"${ast.tag || ""}"`)];
 
-        if (!globals.has(value)) {
-            globals.set(value, {
-                name: value,
-                assignments: [],
-                accessors: []
-            });
-        }
-
-        return globals.get(value);
+    if (ast.slot_name) {
+        sl.nodes[1].value = ast.slot_name;
+        nodes.push(sl);
     }
 
-    return null;
+    if (ast.component_name) {
+        cp.nodes[1].value = ast.component_name;
+        nodes.push(cp);
+    }
+
+    if (ast.is_container) {
+        nodes.push(ct);
+    }
+
+    if (ast.attributes && ast.attributes.length > 0) {
+        for (const attrib of ast.attributes)
+            a.nodes[1].nodes.push(getObjectLiteralAST(attrib.name, `"${attrib.value}"`));
+        nodes.push(a);
+    }
+
+    if (ast.nodes && ast.nodes.length > 0) {
+        for (const child of ast.nodes)
+            c.nodes[1].nodes.push(buildExportableDOMNode(child));
+        nodes.push(c);
+    }
+
+    nodes.push(getPropertyAST("i", `${ast.id}`));
+
+    if (ast.data)
+        nodes.push(getPropertyAST("d", `"${ast.data.replace(/\n/g, '\\n') || ""}"`));
+    else if (ast.ns > 0)
+        nodes.push(getPropertyAST("ns", `${ast.ns || 0}`));
+
+    const expression = {
+        type: MinTreeNodeType.ObjectLiteral, nodes, pos: ast.pos
+    };
+
+    return expression;
 }
 
-function setGlobalAssignment(value: string, globals, locals, assignment: MinTreeNode) {
-    const global = makeGlobal(value, globals, locals);
 
-    if (global)
-        global.assignments.push({ assignment, line: assignment.pos.line });
-}
+export function setVariableName(name, component_variables) {
 
-function setGlobalAccessor(value: string, globals, locals, accessor: MinTreeNode) {
-    const global = makeGlobal(value, globals, locals);
+    const comp_var = component_variables.get(name);
 
-    if (global)
-        global.accessors.push({ accessor, line: accessor.pos.line });
-}
-
-
-interface ComponentGlobalAccessor {
-    access_level: number;
-    node: MinTreeNode;
-}
-
-interface ComponentGlobal {
-    name: string;
-    type: "MODEL" | "PARENT" | "REGULAR" | "JSX_COMPONENT";
-
-    accessors: ComponentGlobalAccessor[];
-
-    assignments: ComponentGlobalAccessor[];
+    if (comp_var) {
+        if (comp_var.type == VARIABLE_REFERENCE_TYPE.API_VARIABLE) {
+            return `wick.api.${comp_var.external_name}`;
+        } else if (comp_var.type == VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE) {
+            return `this.model.${comp_var.external_name}`;
+        } else {
+            return `this[${comp_var.class_name}]`;
+        }
+    } else {
+        return name;
+    }
 }
 
 /**
- * Returns a list of variable names that are part of the root node's closure.
- * @param {MinTreeNode} root - Root MinTreeNode node that determines the global scope.
+ * Update global variables in ast after all globals have been identified
  */
-function grabComponentGlobals(root: MinTreeNode): { node: MinTreeNode, name: string; }[] {
-    //While traversing the nodes, mark all nodes encountered within let, const, and 
-    // function args; These represent local variables. Any other variable identifier is fair game.
-
-    const
-        local_list = [],
-        locals = new Set(),
-        globals = <Map<string, ComponentGlobal>>new Map(),
-        exports = new Set(),
-        imports = new Set();
-
-    console.dir({ root }, { depth: null });
+function makeComponentMethod(script, component: Component) {
 
 
-    for (const node of traverse(root, "nodes")
-        .then(filter("type",
-            MinTreeNodeType.ImportDeclaration,
-            MinTreeNodeType.ExportDeclaration,
-            MinTreeNodeType.BindingExpression,
-            MinTreeNodeType.MemberExpression,
-            MinTreeNodeType.AssignmentExpression,
-            MinTreeNodeType.Identifier,
-            MinTreeNodeType.Class
-        ))
-        .then(add_parent())
-        .then(make_skippable())
+
+    const { variables: globals, class_methods } = component;
+
+    let { ast } = script;
+
+    const used_values = new Set();
+
+    for (const { node, meta } of traverse(ast, "nodes")
+        .makeMutable()
+        .makeSkippable()
     ) {
-        switch (node.type) {
+        const { skip, mutate, parent } = meta;
 
+        if (node.type == MinTreeNodeType.AssignmentExpression) {
 
-            case MinTreeNodeType.AssignmentExpression: {
-                const id = ext(node).identifier;
+            const [left, right] = node.nodes;
 
-                if (id.value)
-                    setGlobalAssignment(<string>id.value, globals, locals, node);
+            if (left.type == MinTreeNodeType.IdentifierReference) {
 
-                //node.skip(0);
+                const { value } = left;
 
-            } break;
+                if (globals.has(value)) {
 
+                    const global_val = globals.get(value),
+                        mutate_node = exp(`this.u${global_val.class_name}()`);
 
-            case MinTreeNodeType.ImportDeclaration: {
+                    global_val.ASSIGNED = 1;
 
-                const from_decl = ext(node).from;
+                    node.nodes[0] = exp(setVariableName(value, globals));
 
-                console.dir({ node: from_decl }, { depth: null });
+                    mutate_node.nodes[1].nodes = [node];
 
-                for (const import_node of traverse(node, "nodes")
-                    .then(filter(
-                        "type",
-                        MinTreeNodeType.Specifier
-                    ))) {
-                    const name = <string>ext(import_node).local_id.value;
+                    mutate(mutate_node);
 
-                    makeGlobal(name, globals, locals);
-                    //makeImportedGlobal(name, globals, locals);
+                    used_values.add(value);
                 }
-            } break;
 
-
-            case MinTreeNodeType.ExportDeclaration:
-                break;
-
-
-            case MinTreeNodeType.BindingExpression:
-                makeLocal(<string>ext(node).property.value, globals, locals);
-                break;
-
-
-            case MinTreeNodeType.MemberExpression: {
-
-                const ext_node = ext(node);
-
-                if (
-                    ext_node.object.type == MinTreeNodeType.Identifier
-                ) {
-                    const name = <string>ext_node.object.value;
-                    makeGlobal(name, globals, locals);
-                    setGlobalAccessor(name, globals, locals, node.parent);
-                    node.skip(1);
+            } else if (left.type == MinTreeNodeType.MemberExpression) {
+                if (left == MinTreeNodeType.IdentifierReference) {
+                    const { value } = node;
+                    if (globals.has(value)) {
+                        const global_val = globals.get(value);
+                        mutate(exp(setVariableName(value, globals)));
+                    }
                 }
-            } break;
-
-
-            case MinTreeNodeType.Identifier: {
-                const name = <string>node.value;
-
-                // If the identifier is part of a member expression, then ignore it.
-                // It either has already been assigned from its parent node
-                // or it is a member accessor and therefore not qualified to be 
-                // variable.
-                if (
-                    node.parent.type == MinTreeNodeType.MemberExpression
-                    &&
-                    node.parent.COMPUTED == false
-                ) continue;
-
-                //console.warn(node.pos.errorMessage());
-                makeGlobal(name, globals, locals);
-                setGlobalAccessor(name, globals, locals, node.parent);
-            } break;
+            }
         }
 
+        if (node.type == MinTreeNodeType.IdentifierReference) {
+            const { value } = node;
+
+            if (globals.has(value)) {
+
+                const global_val = globals.get(value);
+                mutate(exp(setVariableName(value, globals)));
+            }
+        }
     }
-    //console.dir({ globals, locals }, { depth: 4 });
 
-    return local_list; //Array.from(local_list.reduce(e => (r.add(e.values()), r), local_list[0]));
+    if (script.type == "method")
+        ast.function_type = "method";
+    else
+        ast.function_type = "root";
+
+    switch (ast.function_type) {
+        case "root":
+            const method = exp("({c(){a}})").nodes[0].nodes[0];
+            method.nodes[2].nodes = ast.nodes;
+            ast = method;
+            break;
+    }
+
+    class_methods.push(ast);
 }
-
 
 /**
  * Compiles a WickASTNode and returns a constructor for a runtime Wick component
@@ -188,7 +185,9 @@ export async function processWickAST(
     url: URL,
     errors: WickComponentErrorStore
 ): Promise<CompiledWickAST> {
+
     let out_ast: CompiledWickAST = null;
+
     /**
      * We need to first traverse the AST node structure, locating nodes that need the
      * following action taken:
@@ -204,20 +203,236 @@ export async function processWickAST(
      *      c.  Nodes containing slot attributes will need to resolved.
      *      
      */
-    if (ast.type == MinTreeNodeType.Module) {
-        const jsx_ast: MinTreeNode = <MinTreeNode>ast;
 
-        //Grab globals from the script; 
-        const globals = grabComponentGlobals(jsx_ast);
+    const
+        pending_bindings = [],
 
-    } else if (ast.type == WickASTNodeType.HTML) {
-        const html_ast: WickASTNode = <WickASTNode>ast;
-        //IF SVG or other namespace handle their transforms. 
-    } if (ast.type == WickASTNodeType.HTML) {
-        const css_ast: WickASTNode = <WickASTNode>ast;
-    } if (ast.type == WickASTNodeType.HTML) {
-        const script_ast: WickASTNode = <WickASTNode>ast;
+        component: Component = {
+
+            children: [],
+
+            child_bindings: [],
+
+            original_ast: ast,
+
+            variables: new Map,
+
+            locals: new Set(),
+
+            compiled_ast: null,
+
+            element: null,
+
+            source: url,
+
+            scripts: [],
+
+            //Global component names
+            names: [],
+
+            declarations: [],
+
+            nluf_arrays: [],
+
+            pending_bindings,
+
+            class_methods: [],
+
+            class_initializer_statements: [],
+
+            class_cleanup_statements: [],
+
+            addBinding: (pending_binding: PendingBinding) => pending_bindings.push(pending_binding)
+        },
+
+        IS_SCRIPT = determineSourceType(ast);
+
+
+    if (IS_SCRIPT)
+        component.compiled_ast = await processWickJS_AST(<MinTreeNode>ast, component, presets);
+    else
+        component.compiled_ast = await processWickHTML_AST(<WickASTNode>ast, component, presets);
+
+    //####################################################################
+    // Process Bindings.
+    // 
+    // Each script will have a set of input variables (the script's arguments):
+    //
+    //      - The script's Globals (Specifically global values that referenced)
+    //      - The script's Imports
+    //          parent import args
+    //          import components
+    //          import scripts
+    //
+    // Each script will have a set of outputs:
+    //
+    //      - The scripts child -> parents exports
+    //      - The scripts Globals
+    //      - the scripts arguments), imports
+    //
+    // For imports:
+    //
+    //      - Any Global value represents an event that can potentially cause the
+    //        script code to execute.  
+    //
+    //        If all global values are set and one changes, then the script is run.
+    //
+    //      - Preset imports are referenced by `presets["{import name}"]...` these
+    //        are simply replaced with  
+    //
+    // For exports:
+    //
+    //      - Match globals to bindings. At end of script update bindings from Globals
+    //        that have been assigned. If all the bindings variables are assigned through
+    //        this script then replace the binding call with the code that updates
+    //        the binding's output.
+    // 
+    //      - Assign to the component's runtime events (Global updates)
+    //        Any global value that is read (NOT global values that are only assigned)
+    // 
+
+    let id = 0;
+
+    component.variables.forEach(v => v.class_name = id++);
+
+    //Convert scripts into a class object 
+    const component_class = stmt("class temp extends cfw.wick.Component {c(){}}");
+
+    component_class.nodes.length = 2;
+
+    component.class_methods = component_class.nodes;
+
+
+    //Initializer Method
+    const register_elements_method = getGenericMethodNode("re", "", "const c = this;"),
+
+        [, , { nodes: re_stmts }] = register_elements_method.nodes;
+
+    component.class_initializer_statements = re_stmts;
+
+    //Cleanup Method
+
+    const cleanup_element_method = getGenericMethodNode("re", "", "const c = this;"),
+
+        [, , { nodes: cu_stmts }] = cleanup_element_method.nodes;
+
+    component.class_cleanup_statements = cu_stmts;
+
+
+    /* ---------------------------------------
+     * -- Create LU table for public variables
+     */
+
+    const
+        public_prop_lookup = {},
+        nlu = stmt("c.nlu = {};"), nluf = stmt("c.nluf = [];"),
+        nluf_arrays = component.nluf_arrays,
+        { nodes: [{ nodes: [, nluf_public_variables] }] } = nluf,
+        { nodes: [{ nodes: [, lu_public_variables] }] } = nlu;
+
+    let nlu_index = 0;
+
+    for (const component_variable of component.variables.values()) {
+
+        if (true /* some check for component_variable property of binding*/) {
+
+            lu_public_variables.nodes.push(getPropertyAST(component_variable.external_name, (component_variable.usage_flags << 24) | nlu_index));
+
+            const nluf_array = exp(`c.u${component_variable.class_name}`);
+
+            nluf_arrays.push(nluf_array.nodes);
+
+            nluf_public_variables.nodes.push(nluf_array);
+
+            public_prop_lookup[component_variable.original_name] = nlu_index;
+
+            component_variable.nlui = nlu_index++;
+        }
     }
 
-    return out_ast;
+    component.class_initializer_statements.push(nlu, nluf);
+
+    handleBindings(component, presets);
+
+    for (const id of component.declarations) {
+        if (component.variables.has(<string>id.value)) {
+            id.value = `this[${component.variables.get(<string>id.value).class_name}]`;
+        }
+    }
+
+    //Compile scripts into methods
+
+    for (const script of component.scripts)
+        makeComponentMethod(script, component);
+
+
+    if (component.element) {
+
+
+        const ele_create_method = getGenericMethodNode("ce", "", "return this.me(a);"),
+
+            [, , { nodes: [r_stmt] }] = ele_create_method.nodes;
+
+        r_stmt.nodes[0].nodes[1].nodes[0] = buildExportableDOMNode(component.element);
+
+        //Setup element
+        component.class_methods.push(ele_create_method);
+    }
+
+    // if (component.class_initializer_statements.length > 0)
+    component.class_methods.push(register_elements_method);
+
+    //if (component.class_cleanup_statements.length > 0)
+    //    component.class_methods.push(cleanup_element_method);
+
+    //component_class.nodes.push(...component.class_methods);
+
+    component.compiled_ast = component_class;
+
+    //Handle API values: warn about API invariant invalidations. If API doesnt exist, enter API 
+    //entry 
+
+    for (const variable of [...component.variables.values()].filter(v => v.type == VARIABLE_REFERENCE_TYPE.API_VARIABLE)) {
+        //check to see if this API entry is already registered 
+
+        //If any reference is a sign this will invalidate the rule that API interfaces MUST be methods
+
+        for (const node of variable.references) {
+
+            //if (node.type == MinTreeNodeType.AssignmentExpression)
+            //    console.log("ERRRRRRRRRRRRRRRRRRRORR");
+        }
+
+        const API_ENTRY = {
+            name: variable.external_name,
+            arg_length: 0,
+            returns: false,
+            ASYNC: false,
+            ASSIGNING: false,
+        };
+
+    }
+
+    component.name = createNameHash(renderCompressed(component.compiled_ast, renderers));
+
+    for (const name of component.names)
+        presets.components[name.toUpperCase()] = component;
+
+    presets.components[component.name] = component;
+
+    return component;
+}
+
+function createNameHash(string: string) {
+
+    let number = BigInt(0);
+    const seed = BigInt(0x2F41118294721DA1);
+
+    for (let i = 0; i < string.length; i++) {
+        const val = BigInt(string.charCodeAt(i));
+
+        number = ((val << BigInt(i % 8) ^ seed) << BigInt(i % 64)) ^ (number >> BigInt(i % 4));
+    }
+
+    return number.toString(16);
 }

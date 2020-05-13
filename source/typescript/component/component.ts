@@ -1,10 +1,16 @@
 import URL from "@candlefw/url";
+import { renderWithFormatting } from "@candlefw/conflagrate";
+
 
 import { WickComponentErrorStore, WickComponentErrorCode } from "../types/errors.js";
 import parser from "../parser/parser.js";
-import CompiledWickAST, { WickASTNode, WickASTNodeType } from "../types/wick_ast_node.js";
+import CompiledWickAST, { WickASTNode, WickASTNodeType } from "../types/wick_ast_node_types.js";
 import { processWickAST } from "./process_wick_ast.js";
 import Presets from "./presets.js";
+import { Component } from "../types/types.js";
+import { WickComponent } from "../runtime/component_class.js";
+
+import { renderers, format_rules } from "../format_rules.js";
 
 interface WickComponentProducer {
     /**
@@ -37,7 +43,10 @@ interface WickComponentProducer {
  * @param presets {PresetOptions} - 
  * @param root_url 
  */
-export default async function MakeComponent(input: URL | string, presets?: Presets, root_url?: URL): Promise<WickComponentProducer> {
+export default async function makeComponent(input: URL | string, presets?: Presets, root_url?: URL): Promise<WickComponentProducer> {
+
+    //If this is a node.js environement, make sure URL is able to resolve local files system addresses.
+    if (typeof (window) == "undefined") await URL.polyfill();
 
     const error_store = <WickComponentErrorStore>{ errors: [] };
 
@@ -63,20 +72,22 @@ export default async function MakeComponent(input: URL | string, presets?: Prese
      * we proceed with parsing the string as a wick component. 
      */
 
-
     //
     const url = URL.resolveRelative(input + "", root_url || URL.GLOBAL);
 
     if (url && (input instanceof URL || url.path || url.host)) {
+
         try {
             wick_syntax_string = <string>await url.fetchText(false);
         } catch (e) {
+            console.log({ e });
             error_store.errors.push({
                 message: `Tried to retrieve component data from ${url.toString()} but received error.`,
                 ref: WickComponentErrorCode.FAILED_TO_FETCH_RESOURCE,
                 error_object: e instanceof Error ? e : null,
                 URL: url
             });
+            throw (e);
         }
     }
 
@@ -89,26 +100,47 @@ export default async function MakeComponent(input: URL | string, presets?: Prese
     try {
         ast = parser(wick_syntax_string);
     } catch (e) {
+        console.log({ e });
         error_store.errors.push({
             message: `Failed to parse wick component`,
             ref: WickComponentErrorCode.SYNTAX_ERROR_DURING_PARSE,
             error_object: e instanceof Error ? e : null,
-            URL: url
+            URL: url,
         });
+
 
         /** 
          * Since we were unable to process the input we'll create an error ast that can be used to generate
          * an error report component. 
          */
-        ast = <WickASTNode> { type: WickASTNodeType.ERROR, children:[]};
+        ast = <WickASTNode>{ type: WickASTNodeType.ERROR, nodes: [] };
     }
 
-    const processed_ast = await processWickAST(ast, presets, url, error_store);
+    try {
 
-    return {
-        AST: processed_ast,
-        IS_READY: true,
-        URL: url,
-        errors: error_store
-    };
+        let component_function = null;
+
+        const
+            processed_component = <Component>(await processWickAST(ast, presets, url, error_store)),
+
+            component = {
+                variables: processed_component.variables,
+                AST: processed_component.compiled_ast,
+                IS_READY: true,
+                URL: url,
+                errors: error_store,
+                toString: (): string => renderWithFormatting(processed_component.compiled_ast, renderers, format_rules),
+                toClass: () => {
+
+                    if (!component_function)
+                        component_function = (Function("return " + renderWithFormatting(processed_component.compiled_ast, renderers, format_rules))());
+
+                    return component_function;
+                }
+            };
+
+        return component;
+    } catch (e) {
+        throw e;
+    }
 };

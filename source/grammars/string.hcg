@@ -1,8 +1,8 @@
 ## STRINGS 
 @IGNORE θws θnl 
 
-<> normal_string → \" string_data \"        ↦return { $sym2 }
-	│ \' string_data \' 					↦return { $sym2 }
+<> normal_string → ↦^parseString \" \" 
+	│ ↦^parseString \' \' 
 
 <> string_data → ( string_data_val )(+") 	
 

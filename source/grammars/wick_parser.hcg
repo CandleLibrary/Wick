@@ -46,7 +46,7 @@
 
 @EXT wick
 
-@SYMBOL </ (( (!(
+@SYMBOL </ (! ((
 
 @IGNORE θws θnl 
 
@@ -63,31 +63,37 @@
 <> COMPONENT → html::HTML
      │ js::javascript 
 
-# This allows JSX like html expressions within JS obects. 
-+> js::primary_expression → html::TAG                                                       			    ↦r { { type:env.typ.Component, html:$sym1, pos } }
+# This allows JSX like html expressions within JS objects. 
++> js::primary_expression → html::TAG  
+#   | t:css \: \{ css::CSS \}                                                                              ↦r { $sym4 }       			    
 
 +> html::BODY → IMPORT_TAG_LIST html::GOAL_TAG                                             				    ↦r { ( $sym2.import_list = $sym1, $sym2 ) }
     
-+> html::TAG_BODY_ITEM → < τstyle html::ATTRIBUTES? >  css::CSS?  </ τstyle >               			    ↦r { { type:env.typ.CSSSheet,  attributes:$$sym3 || [], nodes:$$sym5, pos } }
-    │ < τscript html::ATTRIBUTES? > js::javascript? </ τscript >                                		    ↦r { { type:env.typ.JSScript, attributes:$$sym3 || [], nodes:$$sym5, pos } }
-    │ < τjs html::ATTRIBUTES? > js::javascript? </ τjs >                                        		    ↦r { { type:env.typ.JSScript, attributes:$$sym3 || [], nodes:$$sym5, pos } }
++> html::TAG_BODY_ITEM → < τstyle html::ATTRIBUTES? >  css::CSS?  </ τstyle >               			    ↦r { { type:env.typ.HTML_STYLE,  attributes:$$sym3 || [], nodes:[$$sym5], pos } }
+    │ < τscript html::ATTRIBUTES? > js::script? </ τscript >                                		        ↦r { { type:env.typ.HTML_SCRIPT, attributes:$$sym3 || [], nodes:[$$sym5], pos } }
+    │ < τjs html::ATTRIBUTES? > js::script? </ τjs >                                        		        ↦r { { type:env.typ.HTML_SCRIPT, attributes:$$sym3 || [], nodes:[$$sym5], pos } }
     #│ \( \{ js::expression \{ js::script? \} \} (ERR θws ) \)                                			    ↦r {env.fn.element_selector("script", ["on", null, new env.wick_binding(["on",null, $sym2])], $sym4, env, pos) }
 
 
 <> IMPORT_TAG_LIST → IMPORT_TAG(+)
 
-<> IMPORT_TAG → < τimport html::ATTRIBUTES? /? > ( </ τimport > )?                          			    ↦r { { type:env.typ.HTMLImport, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:true, pos } } 
+<> IMPORT_TAG → < τimport html::ATTRIBUTES? /? > ( </ τimport > )?                          			    ↦r { { type:env.typ.HTML_IMPORT, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:true, pos } } 
 
 +> html::VOID_NAME →  τf
 
-+> html::ATTRIBUTE → html::ATTRIBUTE_HEAD = ( " WICK_BINDING " ↦r {$sym2} │ WICK_BINDING )  			    ↦r { {type:env.typ.HTMLAttribute, name:$sym1, value:$sym3, IS_BINDING:true, pos } }                    
++> html::ATTRIBUTE → html::ATTRIBUTE_HEAD = ( " WICK_BINDING? " ↦r {$$sym2} │ WICK_BINDING )  			    ↦r { {type:env.typ.HTMLAttribute, name:$sym1, value:$sym3 || "", IS_BINDING:!!$sym3, pos } }                    
 
-+> html::TEXT_NODE → WICK_BINDING                                                           			    ↦r { {type:env.typ.HTMLText, data:$sym1, IS_BINDING:true, pos } }
++> html::TEXT_NODE → WICK_BINDING  
+
+# Add component scoped variable declaration
+# +> js::lexical_declaration → τcomp js::binding_list ;                                                      ↦r { { type:env.typ.ComponentVariableDeclaration, symbol:$sym1, nodes:$sym2, pos } }
 
 <> WICK_BINDING → CALL_BINDING                              
     │ BASIC_BINDING
 
-<> BASIC_BINDING →  ( \(( │ \(!( )  js::expression? \) (ERR θws ) \)                                       ↦r { {type:env.typ.WickBinding, primary_ast:$$sym2, secondary_ast:null, DEBUG: $sym1 == "(!(" , pos } }
-<> CALL_BINDING →   ( \(( │ \(!( )  js::expression? \) (ERR θws ) \( js::expression? \) (ERR θws ) \)      ↦r { {type:env.typ.WickBinding, primary_ast:$$sym2, secondary_ast:$$sym5, DEBUG: $sym1 == "(!(", pos } }
+<> BASIC_BINDING →  ( BINDING_SYMBOL │ \(!\( )  js::expression? \) (ERR θws ) \)                                       ↦r { {type:env.typ.WickBinding, primary_ast:$$sym2, secondary_ast:null, DEBUG: $sym1 == "(!(" , pos } }
+<> CALL_BINDING →   ( BINDING_SYMBOL │ \(!\( )  js::expression? \) (ERR θws ) \( js::expression? \) (ERR θws ) \)      ↦r { {type:env.typ.WickBinding, primary_ast:$$sym2, secondary_ast:$$sym5, DEBUG: $sym1 == "(!(", pos } }
 
-#<> CALL_BINDING →   \!? \(  \(  ↦{ env.start = pos.off+2 } html::BODY_SYMBOLS(+") \) (ERR θws ) \( html::BODY_SYMBOLS(*") \) (ERR θws ) \)      ↦r {(env.off = pos.off, new env.fn.wick_binding($$sym4, $$sym7, env, pos,$$sym2) )}
+<> BINDING_SYMBOL > \((
+
+#<> CALL_BINDING →   \!? \( \(  ↦{ env.start = pos.off+2 } html::BODY_SYMBOLS(+") \) (ERR θws ) \( html::BODY_SYMBOLS(*") \) (ERR θws ) \)      ↦r {(env.off = pos.off, new env.fn.wick_binding($$sym4, $$sym7, env, pos,$$sym2) )}

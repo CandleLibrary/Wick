@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="/build/wick.js"></script>
+        <script type="module" src="/lantern-poll/?build"></script>
+    </head>
+    <body>
+        <script type="module" async="true">
+
+            (async function(){
+                const data1 = `
+                
+    var name = 2, test = 1, update = null; 
+                
+    setTimeout( ()=>test+=2,100);
+
+    function balloo(){
+        name = "charly";
+    }
+
+    function rainbow(event){
+        test += 4;
+        console.log("hello world" + test);
+    }
+    
+    export default  <div id=2>
+            <h1 onclick=((balloo)) > T (( name )) T</h1>
+            <a onclick=((rainbow)) data=((name)) > Hello World </a>
+            ((2 + test + name))
+        </div>;
+
+    export {update};
+    `;  
+        console.log((await cfw.wick(data1).pending).render)
+    const comp = new (Function("return " + (await cfw.wick(data1).pending).render)()) ;
+
+
+    document.body.appendChild(comp.ele);
+
+    console.log(comp)
+            })()
+
+        </script>
+    </body>
+</html>

@@ -72,8 +72,8 @@ export default class Presets implements PresetOptions {
             for (const cn in c) {
                 if (typeof c[cn] == typeof this.options[cn])
                     this.options[cn] = c[cn];
-                else
-                    console.log(`Unexpected option [${cn}]`);
+                //else
+                //    console.log(`Unexpected option [${cn}]`);
             }
 
 

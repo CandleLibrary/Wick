@@ -1,0 +1,52 @@
+Statement reordering.
+
+Bindings define how data flows between HTML, JS, CSS.
+
+For each script/binding the primary information that is needed is:
+scope inputs and outputs
+module inputs and outputs
+model inputs and outputs
+
+scope inputs are defined by import { **** } from "$scope";
+outputs are defined by assignment to these values.
+
+model inputs are defined by import { **** } from "$model";
+outputs are defined by assignment to these values.
+
+regular variables are defined by global assignments and global reads,
+which are scoped to, ahem, the component scope.
+
+
+Each component will have a list of inputs
+model_bindings : {...{name, read / write} }
+scope_bindings : {...{name, read / write} }
+
+For each component:
+
+    Determine scope variables and their types, plus all assignments.
+    
+    Import $models will create model binding assignments on data objects. Assignments on these variables will push the values
+    to the model. If the model is being observed then let the models 
+    Observable infrastructure handle pushing variable updates back into Wick. If not, then automatic push down into the Components scope will be applied. 
+
+    Import $parent properties will instrument the parent scopes
+    IO bindings to push data into the connected component's scope. 
+    bind needs to be handled as well.
+
+    regular global variables are simple and should be handled easily. Need to find all assignment and access statements for this value.
+
+    The import of JS functions should be hoisted into the preset object. Further instrumentation should handle import statements 
+
+Also JSX components need to be replaced with component constructor statements.
+
+Default Variables / Functions:
+    ## component statics
+    $component_path
+
+    ## Transitions
+    trsInDesc
+    trsInAsc
+    trsOutAsc
+    trsOutDesc
+    ArrangeInPlace
+

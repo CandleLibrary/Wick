@@ -18,9 +18,10 @@
         "test": "cfw.test ./test/candlefw.wick.spec.js",
         "test.watch": "cfw.test -w ./test/candlefw.wick.spec.js",
         "build": "rollup --config ./build/config/main.config.js",
-        "build.watch": "rollup --config ./build/config/main.config.js --watch",
-        "build.lite": "rollup --config ./build/config/lite.config.js",
-        "build.lite.watch": "rollup --config ./build/config/lite.config.js --watch"
+        "build.watch": "rollup --config ./source/config/rollup.config.js --watch",
+        "build.lite": "rollup --config ./source/config/lite.config.js",
+        "build.lite.watch": "rollup --config ./source/config/lite.config.js --watch",
+        "server": "lantern"
     },
     "repository": {
         "type": "git",
@@ -47,15 +48,15 @@
     },
     "homepage": "https://github.com/candlefw/wick#readme",
     "devDependencies": {
+        "@candlefw/test": "0.1.0-alpha",
         "@rollup/plugin-commonjs": "^11.0.1",
         "@rollup/plugin-node-resolve": "^7.0.0",
         "esm": "latest",
         "node-fetch": "^2.3.0",
-        "rollup": "latest",
+        "rollup": "2.6.0",
         "rollup-plugin-gzip": "latest",
         "rollup-plugin-resolve": "latest",
-        "rollup-plugin-terser": "latest",
-        "@candlefw/test": "0.1.0-alpha"
+        "rollup-plugin-terser": "latest"
     },
     "jshintConfig": {
         "esversion": 6,

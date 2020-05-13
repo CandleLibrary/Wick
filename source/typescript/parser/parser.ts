@@ -1,9 +1,10 @@
-import { Lexer } from "@candlefw/whind";
+import { Lexer } from "@candlefw/wind";
+
 import { lrParse, ParserData } from "@candlefw/hydrocarbon";
 
 import parser_data from "./wick_parser.js";
 import env from "./parser_environment.js";
-import { WickASTNode } from "../types/wick_ast_node.js";
+import { WickASTNode } from "../types/wick_ast_node_types.js";
 
 
 

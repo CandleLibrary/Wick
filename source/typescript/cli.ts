@@ -7,10 +7,10 @@
 
 	Certain objects, such as wick container elements, cannot work correctly without some specific wick
 	code that is provided within the wick.lite module. For these elements, the command line will
-	provide relevent information to ensure the user is aware of what to do once components have been
+	provide relevant information to ensure the user is aware of what to do once components have been
 	compiled. 
 
-	In the future, compilation targs such as Java will be provided to allow wick compononts to run in environemnts
+	In the future, compilation args such as Java will be provided to allow wick components to run in environments
 	outside of a browser ecosystem. 
 */
 
