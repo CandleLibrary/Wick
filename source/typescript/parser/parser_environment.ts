@@ -30,7 +30,9 @@ type WickParserEnvironment = ParserEnvironment & JSParserEnv & {
     cls: any;
 };
 const env = <WickParserEnvironment>{
+
     table: {},
+
     ASI: true,
 
     typ: Object.assign(WickASTNodeType, MinTreeNodeType),

@@ -11,7 +11,7 @@ function createBindingName(binding_index_pos: number) {
     return `b${binding_index_pos.toString(36)}`;
 }
 
-export function processBindings(component: Component, presets: Presets) {
+export async function processBindings(component: Component, presets: Presets) {
 
     const {
         class_methods,
@@ -47,7 +47,7 @@ export function processBindings(component: Component, presets: Presets) {
                 const
                     index = pending_binding.html_element_index,
 
-                    binding = handler.prepareBindingObject(
+                    binding = await handler.prepareBindingObject(
                         pending_binding.attribute_name,
                         pending_binding.binding_node,
                         pending_binding.host_node,

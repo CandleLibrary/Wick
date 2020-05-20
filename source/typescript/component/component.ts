@@ -81,7 +81,6 @@ export default async function makeComponent(input: URL | string, presets?: Prese
         try {
             wick_syntax_string = <string>await url.fetchText(false);
         } catch (e) {
-            console.log({ e });
             error_store.errors.push({
                 message: `Tried to retrieve component data from ${url.toString()} but received error.`,
                 ref: WickComponentErrorCode.FAILED_TO_FETCH_RESOURCE,
@@ -101,7 +100,7 @@ export default async function makeComponent(input: URL | string, presets?: Prese
     try {
         ast = parser(wick_syntax_string);
     } catch (e) {
-        console.log({ e });
+
         error_store.errors.push({
             message: `Failed to parse wick component`,
             ref: WickComponentErrorCode.SYNTAX_ERROR_DURING_PARSE,

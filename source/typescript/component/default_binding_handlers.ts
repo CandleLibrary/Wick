@@ -166,7 +166,7 @@ loadBindingHandler({
         return (attribute_name.slice(0, 2) == "on");
     },
 
-    prepareBindingObject(attribute_name, pending_binding, host_node, element_index, component, presets) {
+    async prepareBindingObject(attribute_name, pending_binding, host_node, element_index, component, presets) {
 
         const binding = createBindingObject(BindingType.READONLY),
             component_names = component.variables,
@@ -199,7 +199,7 @@ loadBindingHandler({
 
                     fn.nodes[2].nodes = [primary_ast];
 
-                    processFunctionDeclaration(fn, component, presets);
+                    await processFunctionDeclaration(fn, component, presets);
 
                     expression = stmt(`c.e${element_index}.addEventListener("${attribute_name.slice(2)}",c.${name}.bind(c));`);
                 }
@@ -219,7 +219,6 @@ loadBindingHandler({
     priority: 0,
 
     canHandleBinding(attribute_name, node_type) {
-        console.log(attribute_name);
         return attribute_name == "input_value";
     },
 
@@ -423,7 +422,6 @@ loadBindingHandler({
             { primary_ast, secondary_ast } = pending_binding;
 
         if (primary_ast) {
-
 
             for (const { node, meta } of traverse(primary_ast, "nodes").makeMutable()) {
 

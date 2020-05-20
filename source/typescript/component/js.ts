@@ -4,12 +4,12 @@ import { Component } from "../types/types.js";
 import Presets from "./presets.js";
 import { JS_handlers } from "./default_js_handlers.js";
 
-export function processFunctionDeclaration(node: MinTreeNode, component: Component, presets: Presets, root_name = "") {
+export async function processFunctionDeclaration(node: MinTreeNode, component: Component, presets: Presets, root_name = "") {
 
     //@ts-ignore
     const temp_component = <Component>{ scripts: [], binding_variables: [], locals: new Set, variables: component.variables };
 
-    processWickJS_AST(node, temp_component, presets);
+    await processWickJS_AST(node, temp_component, presets);
 
     component.scripts.push(...temp_component.scripts.map(s => {
 

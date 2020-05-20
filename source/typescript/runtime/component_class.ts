@@ -106,6 +106,8 @@ export class WickComponent {
     update: (data: object) => void;
     constructor(comp_data, presets, model = null) {
 
+        this.class = comp_data.name;
+
         this.nlu = {};
 
         this.ch = [];
@@ -149,6 +151,7 @@ export class WickComponent {
 
 
         rt.OVERRIDABLE_onComponentCreate(comp_data, this);
+
     }
 
     destructor() {
@@ -172,8 +175,10 @@ export class WickComponent {
 
     setCSS(style_string) {
 
+        this.ele.classList.add(this.class);
+
         //@ts-ignore
-        if (this.constructor.css) return;
+        //if (this.constructor.css) return;
 
         const css = document.createElement("style");
         css.innerHTML = style_string;

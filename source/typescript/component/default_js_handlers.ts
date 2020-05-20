@@ -9,6 +9,7 @@ import { processFunctionDeclaration } from "./js.js";
 import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./set_component_variable.js";
 import { processWickHTML_AST } from "./html.js";
 import makeComponent from "./component.js";
+import { processWickCSS_AST } from "./css.js";
 ;
 const default_handler = {
     priority: -Infinity,
@@ -402,11 +403,11 @@ loadJSHandlerInternal(
     {
         priority: 1,
 
-        prepareJSNode(node, parent_node, skip, replace, component, presets) {
+        async prepareJSNode(node, parent_node, skip, replace, component, presets) {
 
             if (node.nodes[0].type == WickASTNodeType.HTML_STYLE) {
 
-                console.log(node.nodes[0]);
+                await processWickCSS_AST(node.nodes[0], component, presets);
 
                 return null;
             }

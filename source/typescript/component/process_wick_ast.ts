@@ -91,11 +91,12 @@ function buildExportableDOMNode(
  */
 function makeComponentMethod(script, component: Component) {
 
-    const { variables, class_methods } = component;
+    const
+        { variables, class_methods } = component,
+        used_values = new Set();
 
     let { ast, root_name } = script;
 
-    const used_values = new Set();
 
     for (const { node, meta } of traverse(ast, "nodes")
         .makeMutable()
@@ -112,8 +113,6 @@ function makeComponentMethod(script, component: Component) {
                 const { value } = left;
 
                 if (variables.has(value)) {
-
-
 
                     const global_val = variables.get(value),
                         mutate_node = exp(`this.u${global_val.class_name}()`);
@@ -250,6 +249,7 @@ export async function processWickAST(
 
         IS_SCRIPT = determineSourceType(ast);
 
+    component.name = createNameHash(source_string);
 
     if (IS_SCRIPT)
         component.compiled_ast = await processWickJS_AST(<MinTreeNode>ast, component, presets);
@@ -299,7 +299,7 @@ export async function processWickAST(
     component.variables.forEach(v => v.class_name = id++);
 
     //Convert scripts into a class object 
-    const component_class = stmt("class temp extends cfw.wick.Component {constructor(s){super(c,p,s);} c(){}}");
+    const component_class = stmt(`class ${component.names[0] || "temp"} extends cfw.wick.Component {constructor(s){super(c,p,s);} c(){}}`);
 
     component_class.nodes.length = 3;
 
@@ -321,7 +321,7 @@ export async function processWickAST(
 
     component.class_cleanup_statements = cu_stmts;
 
-    processBindings(component, presets);
+    await processBindings(component, presets);
 
     /* ---------------------------------------
      * -- Create LU table for public variables
@@ -423,8 +423,6 @@ export async function processWickAST(
 
     }
 
-    component.name = createNameHash(renderCompressed(component.compiled_ast, renderers));
-
     for (const name of component.names)
         presets.components[name.toUpperCase()] = component;
 
@@ -444,5 +442,5 @@ function createNameHash(string: string) {
         number = ((val << BigInt(i % 8) ^ seed) << BigInt(i % 64)) ^ (number >> BigInt(i % 4));
     }
 
-    return number.toString(16);
+    return "W" + number.toString(16);
 }

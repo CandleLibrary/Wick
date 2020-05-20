@@ -57,7 +57,7 @@
 <> TAG_BODY → TAG_BODY_ITEM(+)
 
 <> TAG_BODY_ITEM → TEXT_NODE                        
-    │ TAG   
+    │ TAG
     │ DTD                                                                                                                            
     
 <> ATTRIBUTES → ATTRIBUTE(+)                                                                    ↦r { $$sym1 }
