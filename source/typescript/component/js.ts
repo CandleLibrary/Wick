@@ -4,15 +4,7 @@ import { Component } from "../types/types.js";
 import Presets from "./presets.js";
 import { JS_handlers } from "./default_js_handlers.js";
 
-export const enum VARIABLE_REFERENCE_TYPE {
-    INTERNAL_VARIABLE = 1,
-    MODEL_VARIABLE = 2,
-    API_VARIABLE = 4,
-
-    PARENT_VARIABLE = 8
-}
-
-export function processFunctionDeclaration(node: MinTreeNode, component: Component, presets: Presets) {
+export function processFunctionDeclaration(node: MinTreeNode, component: Component, presets: Presets, root_name = "") {
 
     //@ts-ignore
     const temp_component = <Component>{ scripts: [], binding_variables: [], locals: new Set, variables: component.variables };
@@ -25,6 +17,8 @@ export function processFunctionDeclaration(node: MinTreeNode, component: Compone
 
         s.ast.type = MinTreeNodeType.Method;
 
+        s.root_name = root_name;
+
         return s;
     }));
 }
@@ -32,7 +26,7 @@ export function processFunctionDeclaration(node: MinTreeNode, component: Compone
 export async function processWickJS_AST(ast: MinTreeNode, component: Component, presets: Presets): Promise<MinTreeNode> {
 
     const
-        script = { type: "root", ast: null, binding_variables: [], locals: <Set<string>>new Set() };
+        script = { type: "root", ast: null, binding_variables: [], locals: <Set<string>>new Set(), stylesheets: component.stylesheets };
 
     component.scripts.push(script);
 
@@ -44,7 +38,7 @@ export async function processWickJS_AST(ast: MinTreeNode, component: Component, 
         .extract(script)
     ) {
 
-        let html_node = node;
+        let js_node = node;
 
         for (const handler of JS_handlers[Math.max((node.type >>> 24), 0)]) {
 
@@ -58,18 +52,17 @@ export async function processWickJS_AST(ast: MinTreeNode, component: Component, 
                 result = pending;
 
             if (result != node) {
-                if (result == null || result) {
+                if (result === null || result) {
 
-                    html_node = result;
+                    js_node = result;
 
                     meta.replace(result);
 
-                    if (result == null)
+                    if (result === null)
                         continue main_loop;
 
-                }
-
-                continue;
+                } else
+                    continue;
             }
 
             break;

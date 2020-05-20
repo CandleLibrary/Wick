@@ -5,6 +5,10 @@ export interface WickRuntime {
     registerComponent(arg1: string, arg2: WickComponent): void;
 
     prst: Presets;
+
+    OVERRIDABLE_onComponentCreate(component_meta: WickComponentMeta, component_instance: WickComponent): void;
+
+    OVERRIDABLE_onComponentMetaChange(component_meta: WickComponentMeta): void;
 }
 
 const rt: WickRuntime = (() => {
@@ -21,7 +25,11 @@ const rt: WickRuntime = (() => {
 
         getComponent(component_name): WickComponent {
             return components.get(component_name);
-        }
+        },
+
+        OVERRIDABLE_onComponentCreate(component_meta, component_instance) { },
+
+        OVERRIDABLE_onComponentMetaChange() { }
     };
 
 })();

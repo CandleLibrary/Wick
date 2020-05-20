@@ -1,4 +1,4 @@
-import { wick, parser } from "../build/library/wick.js";
+import wick from "../build/library/wick.js";
 import HTML from "@candlefw/html";
 
 //await HTML.polyfill();

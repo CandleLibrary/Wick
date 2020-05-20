@@ -11,7 +11,6 @@ export default {
     input: "./build/library/wick.js",
     treeshake: { unknownGlobalSideEffects: true },
     output,
-    external: ['worker_threads', "os"],
     plugins: [resolve({ jail: "", modulesOnly: true })],
     shimMissingExports: true
 };

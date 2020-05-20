@@ -76,4 +76,6 @@ export interface PresetOptions {
      * URL of initiating webpage.
      */
     url: URL;
+
+    api: any;
 }

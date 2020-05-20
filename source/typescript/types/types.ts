@@ -49,10 +49,6 @@ export interface Component {
      */
     declarations: MinTreeNode[];
 
-    /**
-     * URL of source file for this component
-     */
-    source: URL;
 
     /**
      * List of class method ASTs to compile into
@@ -82,6 +78,15 @@ export interface Component {
      * Names assigned to the component
      */
     names: string[];
+
+    /**
+     * Original Source string.
+     */
+    source: string;
+    /**
+     * URL of source file for this component
+     */
+    location: URL;
 }
 export interface BindingInfoContainer {
     node_type: string;

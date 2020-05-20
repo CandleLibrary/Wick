@@ -1,16 +1,15 @@
-import { stmt, MinTreeNodeType } from "@candlefw/js";
+import { stmt, MinTreeNodeType, MinTreeNode, renderCompressed, exp } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 
 
-import { WICK_AST_NODE_TYPE_SIZE, WickASTNodeClass } from "../types/wick_ast_node_types.js";
+import { WICK_AST_NODE_TYPE_SIZE, WickASTNodeClass, WickASTNode, WickASTNodeType, WickBindingNode } from "../types/wick_ast_node_types.js";
 import { JSHandler } from "../types/js_handler.js";
 import { DATA_FLOW_FLAG } from "../runtime/component_class.js";
-import { processFunctionDeclaration, VARIABLE_REFERENCE_TYPE } from "./js.js";
-import { setComponentVariable } from "./set_component_variable.js";
+import { processFunctionDeclaration } from "./js.js";
+import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./set_component_variable.js";
 import { processWickHTML_AST } from "./html.js";
 import makeComponent from "./component.js";
-
-
+;
 const default_handler = {
     priority: -Infinity,
     prepareJSNode(node) { return node; }
@@ -100,7 +99,7 @@ loadJSHandlerInternal(
                                 external_name = <string>id.value;
                             }
 
-                            setComponentVariable(VARIABLE_REFERENCE_TYPE.PARENT_VARIABLE, local_name, external_name || local_name, component, DATA_FLOW_FLAG.FROM_PARENT, node);
+                            setComponentVariable(VARIABLE_REFERENCE_TYPE.PARENT_VARIABLE, local_name, component, external_name || local_name, DATA_FLOW_FLAG.FROM_PARENT, <MinTreeNode>node);
 
                             skip();
                         }
@@ -124,7 +123,30 @@ loadJSHandlerInternal(
                                 external_name = <string>id.value;
                             }
 
-                            setComponentVariable(VARIABLE_REFERENCE_TYPE.API_VARIABLE, local_name, external_name || local_name, component, DATA_FLOW_FLAG.FROM_PARENT, node);
+                            setComponentVariable(VARIABLE_REFERENCE_TYPE.API_VARIABLE, local_name, component, external_name || local_name, DATA_FLOW_FLAG.FROM_PARENT, <MinTreeNode>node);
+
+                            skip();
+                        }
+
+                        break;
+
+                    case "@global":
+
+                        for (const { node: id, meta: { skip } } of traverse(node, "nodes", 4)
+                            .filter("type", MinTreeNodeType.Specifier, MinTreeNodeType.IdentifierModule)
+                            .makeSkippable()
+                        ) {
+                            let local_name = "", external_name = "";
+
+                            if (id.type == MinTreeNodeType.Specifier) {
+                                external_name = <string>id.nodes[0].value;
+                                local_name = <string>id.nodes[1].value;
+                            } else {
+                                local_name = <string>id.value;
+                                external_name = <string>id.value;
+                            }
+
+                            setComponentVariable(VARIABLE_REFERENCE_TYPE.GLOBAL_VARIABLE, local_name, component, external_name || local_name, DATA_FLOW_FLAG.FROM_OUTSIDE, <MinTreeNode>node);
 
                             skip();
                         }
@@ -147,7 +169,7 @@ loadJSHandlerInternal(
                                 external_name = <string>id.value;
                             }
 
-                            setComponentVariable(VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE, local_name, external_name || local_name, component, DATA_FLOW_FLAG.FROM_MODEL, node);
+                            setComponentVariable(VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE, local_name, component, external_name || local_name, DATA_FLOW_FLAG.FROM_MODEL, <MinTreeNode>node);
 
                             skip();
                         }
@@ -168,7 +190,7 @@ loadJSHandlerInternal(
                         //TODO: Save data and load into presets. 
 
                         try {
-                            await makeComponent(from_value, presets, component.source);
+                            await makeComponent(from_value, presets, component.location);
                         } catch (e) {
                             console.log({ e });
                         };
@@ -199,6 +221,8 @@ loadJSHandlerInternal(
         priority: 1,
 
         async prepareJSNode(node, parent_node, skip, replace, component, presets) {
+
+
             // If the export is an element then 
             const [export_obj] = node.nodes;
 
@@ -206,10 +230,9 @@ loadJSHandlerInternal(
                 // Don't need this node, it will be assigned to the components
 
                 // Element slot.
-                await processWickHTML_AST(export_obj, component, presets);
+                await processWickHTML_AST(<WickASTNode>export_obj, component, presets);
 
-            }
-            else {
+            } else {
 
                 const [clause] = node.nodes;
 
@@ -217,7 +240,7 @@ loadJSHandlerInternal(
 
                 for (const node of clause.nodes) {
                     const l_name = <string>node.value;
-                    setComponentVariable(VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE, l_name, "", component, DATA_FLOW_FLAG.EXPORT_TO_PARENT, node);
+                    setComponentVariable(VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE, l_name, component, "", DATA_FLOW_FLAG.EXPORT_TO_PARENT, <MinTreeNode>node);
                 }
 
             }
@@ -225,26 +248,6 @@ loadJSHandlerInternal(
             return null;
         }
     }, MinTreeNodeType.ExportDeclaration
-);
-
-// ###################################################################
-// Function Declaration
-// 
-// Root scoped functions are transformed into methods.
-// 
-loadJSHandlerInternal(
-    {
-        priority: 1,
-
-        prepareJSNode(node, parent_node, skip, replace, component, presets) {
-
-            processFunctionDeclaration(node, component, presets);
-
-            skip();
-
-            return null;
-        }
-    }, MinTreeNodeType.FunctionDeclaration
 );
 
 // ###################################################################
@@ -271,13 +274,18 @@ loadJSHandlerInternal(
 
                     const node = id.nodes[0];
                     //Any assignments should be pushed to back into the initializing function
+
                     component.declarations.push(id.nodes[0]);
 
                     const l_name = <string>node.value;
 
-                    setComponentVariable(VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE, l_name, "", component, 0, meta.parent);
+                    const d = setComponentVariable(VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE, l_name, component, "", 0, <MinTreeNode>meta.parent);
 
-                    nodes.push(id);
+                    console;
+
+                    id.type = MinTreeNodeType.CallExpression;
+
+                    nodes.push(exp(`this.u${d.class_name}(${renderCompressed(id.nodes[1])})`));
                 } else {
                     //    / binding_variables.push({ v: id.value, node: id, parent });
 
@@ -301,18 +309,69 @@ loadJSHandlerInternal(
 
         prepareJSNode(node, parent_node, skip, replace, component, presets) {
 
-            const [id] = node.nodes;
-
-            const name = id.value;
+            const [id] = node.nodes,
+                name = <string>id.value;
 
             if (component.variables.has(name)) {
-                setComponentVariable(0, name, name, component, 0, node);
+                setComponentVariable(VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE, name, component, name, 0, <MinTreeNode>node);
             }
 
-
-            return node;
+            return <MinTreeNode>node;
         }
     }, MinTreeNodeType.CallExpression
+);
+
+// ###################################################################
+// Function Declaration
+// 
+// Root scoped functions are transformed into methods.
+// 
+loadJSHandlerInternal(
+    {
+        priority: 1,
+
+        prepareJSNode(node, parent_node, skip, replace, component, presets) {
+
+            const
+                [name_node] = node.nodes;
+            let name = <string>name_node.value;
+            let root_name = name;
+
+
+            if (name[0] == "$") {
+
+                setComponentVariable(0, name, component, "", 0, <MinTreeNode>parent_node);
+
+                root_name = name.slice(1);
+
+                component.addBinding({
+                    attribute_name: "method_call",
+                    binding_node: <WickBindingNode>{
+                        type: WickASTNodeType.WickBinding,
+                        primary_ast: stmt(`if(f<1) this.${name}();`),
+                        value: name.slice(1),
+                        IS_BINDING: true
+                    },
+                    host_node: node,
+                    html_element_index: -1
+                });
+            }
+
+            setComponentVariable(VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE, name, component, "", 0, <MinTreeNode>parent_node);
+
+            if (name[0] == "$") {
+                node.nodes[1] = { type: MinTreeNodeType.Arguments, nodes: [exp("f=0")], pos: node.pos };
+                node.nodes[2].nodes.unshift(stmt(`if(f>0)return 0;`));
+            }
+
+            processFunctionDeclaration(<MinTreeNode>node, component, presets, root_name);
+
+            skip();
+
+            return null;
+        }
+
+    }, MinTreeNodeType.FunctionDeclaration
 );
 
 
@@ -327,12 +386,32 @@ loadJSHandlerInternal(
 
         prepareJSNode(node, parent_node, skip, replace, component, presets) {
 
-            const name = node.value;
+            const name = <string>node.value;
 
             if (component.variables.has(name))
-                setComponentVariable(0, name, name, component, 0, parent_node);
+                setComponentVariable(0, name, component, name, 0, <MinTreeNode>parent_node);
 
-            return node;
+            return <MinTreeNode>node;
         }
     }, MinTreeNodeType.IdentifierReference
+);
+
+// ###################################################################
+// Naked Style Element. Styles whole component.
+loadJSHandlerInternal(
+    {
+        priority: 1,
+
+        prepareJSNode(node, parent_node, skip, replace, component, presets) {
+
+            if (node.nodes[0].type == WickASTNodeType.HTML_STYLE) {
+
+                console.log(node.nodes[0]);
+
+                return null;
+            }
+
+        }
+
+    }, MinTreeNodeType.ExpressionStatement
 );

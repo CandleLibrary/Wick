@@ -56,6 +56,10 @@ export default class Presets implements PresetOptions {
             cache_url: true
         };
 
+        this.api = preset_options.api;
+
+        this.wrapper = null;
+
         this.components = {};
 
         this.custom_components = {};

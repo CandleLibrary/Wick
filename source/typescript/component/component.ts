@@ -8,7 +8,7 @@ import CompiledWickAST, { WickASTNode, WickASTNodeType } from "../types/wick_ast
 import { processWickAST } from "./process_wick_ast.js";
 import Presets from "./presets.js";
 import { Component } from "../types/types.js";
-import { WickComponent } from "../runtime/component_class.js";
+import { WickComponent, componentASTToClass } from "../runtime/component_class.js";
 
 import { renderers, format_rules } from "../format_rules.js";
 
@@ -73,6 +73,7 @@ export default async function makeComponent(input: URL | string, presets?: Prese
      */
 
     //
+
     const url = URL.resolveRelative(input + "", root_url || URL.GLOBAL);
 
     if (url && (input instanceof URL || url.path || url.host)) {
@@ -118,28 +119,15 @@ export default async function makeComponent(input: URL | string, presets?: Prese
 
     try {
 
-        let component_function = null;
+        const processed_component = <Component>(await processWickAST(ast, wick_syntax_string, presets, url, error_store));
 
-        const
-            processed_component = <Component>(await processWickAST(ast, presets, url, error_store)),
+        processed_component.toString = function () { return renderWithFormatting(processed_component.compiled_ast, renderers, format_rules); };
 
-            component = {
-                variables: processed_component.variables,
-                AST: processed_component.compiled_ast,
-                IS_READY: true,
-                URL: url,
-                errors: error_store,
-                toString: (): string => renderWithFormatting(processed_component.compiled_ast, renderers, format_rules),
-                toClass: () => {
+        processed_component.toClass = function () {
+            return componentASTToClass(processed_component);
+        };
 
-                    if (!component_function)
-                        component_function = (Function("return " + renderWithFormatting(processed_component.compiled_ast, renderers, format_rules))());
-
-                    return component_function;
-                }
-            };
-
-        return component;
+        return processed_component;
     } catch (e) {
         throw e;
     }

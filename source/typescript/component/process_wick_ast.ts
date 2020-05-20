@@ -3,14 +3,15 @@ import { MinTreeNode, MinTreeNodeType, exp, stmt, ext } from "@candlefw/js";
 import { traverse, renderCompressed } from "@candlefw/conflagrate";
 
 import Presets from "./presets.js";
-import CompiledWickAST, { WickASTNode, WickASTNodeType } from "../types/wick_ast_node_types.js";
+import CompiledWickAST, { WickASTNode } from "../types/wick_ast_node_types.js";
 import { WickComponentErrorStore } from "../types/errors.js";
 import { processWickHTML_AST } from "./html.js";
-import { processWickJS_AST, VARIABLE_REFERENCE_TYPE } from "./js.js";
-import { handleBindings } from "./bindings.js";
+import { processWickJS_AST } from "./js.js";
+import { processBindings } from "./process_bindings.js";
 import { Component, PendingBinding } from "../types/types";
 import { getPropertyAST, getGenericMethodNode, getObjectLiteralAST } from "./js_ast_tools.js";
 import { renderers } from "../format_rules.js";
+import { setVariableName, VARIABLE_REFERENCE_TYPE } from "./set_component_variable.js";
 
 
 function determineSourceType(ast: WickASTNode | MinTreeNode): boolean {
@@ -18,6 +19,14 @@ function determineSourceType(ast: WickASTNode | MinTreeNode): boolean {
         return true;
     return false;
 };
+
+function buildStyle(ast, stylesheets): string {
+
+    if (stylesheets.length > 0)
+        return stylesheets[0].toString();
+
+    return "";
+}
 
 function buildExportableDOMNode(
     ast: WickASTNode & {
@@ -53,6 +62,10 @@ function buildExportableDOMNode(
         nodes.push(a);
     }
 
+    /***
+     * DOM
+     */
+
     if (ast.nodes && ast.nodes.length > 0) {
         for (const child of ast.nodes)
             c.nodes[1].nodes.push(buildExportableDOMNode(child));
@@ -73,34 +86,14 @@ function buildExportableDOMNode(
     return expression;
 }
 
-
-export function setVariableName(name, component_variables) {
-
-    const comp_var = component_variables.get(name);
-
-    if (comp_var) {
-        if (comp_var.type == VARIABLE_REFERENCE_TYPE.API_VARIABLE) {
-            return `wick.api.${comp_var.external_name}`;
-        } else if (comp_var.type == VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE) {
-            return `this.model.${comp_var.external_name}`;
-        } else {
-            return `this[${comp_var.class_name}]`;
-        }
-    } else {
-        return name;
-    }
-}
-
 /**
  * Update global variables in ast after all globals have been identified
  */
 function makeComponentMethod(script, component: Component) {
 
+    const { variables, class_methods } = component;
 
-
-    const { variables: globals, class_methods } = component;
-
-    let { ast } = script;
+    let { ast, root_name } = script;
 
     const used_values = new Set();
 
@@ -118,16 +111,21 @@ function makeComponentMethod(script, component: Component) {
 
                 const { value } = left;
 
-                if (globals.has(value)) {
+                if (variables.has(value)) {
 
-                    const global_val = globals.get(value),
+
+
+                    const global_val = variables.get(value),
                         mutate_node = exp(`this.u${global_val.class_name}()`);
 
                     global_val.ASSIGNED = 1;
 
-                    node.nodes[0] = exp(setVariableName(value, globals));
+                    node.nodes[0] = exp(setVariableName(value, component));
 
                     mutate_node.nodes[1].nodes = [node];
+
+                    if (root_name == value)
+                        mutate_node.nodes[1].nodes.push(exp("1"));
 
                     mutate(mutate_node);
 
@@ -137,9 +135,9 @@ function makeComponentMethod(script, component: Component) {
             } else if (left.type == MinTreeNodeType.MemberExpression) {
                 if (left == MinTreeNodeType.IdentifierReference) {
                     const { value } = node;
-                    if (globals.has(value)) {
-                        const global_val = globals.get(value);
-                        mutate(exp(setVariableName(value, globals)));
+                    if (variables.has(value)) {
+                        const global_val = variables.get(value);
+                        mutate(exp(setVariableName(value, component)));
                     }
                 }
             }
@@ -148,10 +146,10 @@ function makeComponentMethod(script, component: Component) {
         if (node.type == MinTreeNodeType.IdentifierReference) {
             const { value } = node;
 
-            if (globals.has(value)) {
+            if (variables.has(value)) {
 
-                const global_val = globals.get(value);
-                mutate(exp(setVariableName(value, globals)));
+                const global_val = variables.get(value);
+                mutate(exp(setVariableName(value, component)));
             }
         }
     }
@@ -181,6 +179,7 @@ function makeComponentMethod(script, component: Component) {
  */
 export async function processWickAST(
     ast: WickASTNode | MinTreeNode,
+    source_string: string,
     presets: Presets,
     url: URL,
     errors: WickComponentErrorStore
@@ -209,7 +208,11 @@ export async function processWickAST(
 
         component: Component = {
 
+            location: url,
+
             children: [],
+
+            stylesheets: [],
 
             child_bindings: [],
 
@@ -223,7 +226,7 @@ export async function processWickAST(
 
             element: null,
 
-            source: url,
+            source: source_string,
 
             scripts: [],
 
@@ -296,9 +299,9 @@ export async function processWickAST(
     component.variables.forEach(v => v.class_name = id++);
 
     //Convert scripts into a class object 
-    const component_class = stmt("class temp extends cfw.wick.Component {c(){}}");
+    const component_class = stmt("class temp extends cfw.wick.Component {constructor(s){super(c,p,s);} c(){}}");
 
-    component_class.nodes.length = 2;
+    component_class.nodes.length = 3;
 
     component.class_methods = component_class.nodes;
 
@@ -318,6 +321,7 @@ export async function processWickAST(
 
     component.class_cleanup_statements = cu_stmts;
 
+    processBindings(component, presets);
 
     /* ---------------------------------------
      * -- Create LU table for public variables
@@ -352,7 +356,6 @@ export async function processWickAST(
 
     component.class_initializer_statements.push(nlu, nluf);
 
-    handleBindings(component, presets);
 
     for (const id of component.declarations) {
         if (component.variables.has(<string>id.value)) {
@@ -368,12 +371,19 @@ export async function processWickAST(
 
     if (component.element) {
 
-
         const ele_create_method = getGenericMethodNode("ce", "", "return this.me(a);"),
 
             [, , { nodes: [r_stmt] }] = ele_create_method.nodes;
 
         r_stmt.nodes[0].nodes[1].nodes[0] = buildExportableDOMNode(component.element);
+
+
+        const style = buildStyle(component.element, component.stylesheets);
+
+        if (style) {
+            re_stmts.push(stmt(`this.setCSS(\`${style}\`)`));
+
+        }
 
         //Setup element
         component.class_methods.push(ele_create_method);

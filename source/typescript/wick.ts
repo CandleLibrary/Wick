@@ -12,6 +12,7 @@ import { WickComponentErrorStore } from "./types/errors.js";
 import { renderCompressed, renderWithFormatting } from "@candlefw/conflagrate";
 import { WickComponent } from "./runtime/component_class.js";
 import { rt } from "./runtime/runtime_global.js";
+import { PresetOptions } from "./types/preset_options.js";
 
 
 
@@ -40,7 +41,7 @@ interface WickComponent {
 /**
  * Creates a Wick component.
  */
-function wick(input: string | URL, presets?: Presets): WickComponent {
+function wick(input: string | URL, presets?: Presets = rt.prst): WickComponent {
 
     // Ensure there is a presets object attached to this component.
     if (!presets)
@@ -63,6 +64,7 @@ function wick(input: string | URL, presets?: Presets): WickComponent {
         component.errors = res.errors;
         component.toString = res.toString;
         component.toClass = res.toClass;
+        component.core = res;
     });
 
     Object.defineProperties(component, {
@@ -108,6 +110,54 @@ Object.defineProperty(wick, "api", {
     writable: false
 });
 
+/**
+ * Wrapper is a special sudo element that allows interception,
+ * injection, and modification of existing components by wrapping
+ * it in another component that has full access to the original 
+ * component. This can be used to create adhoc component editors.
+ */
+Object.defineProperty(wick, "setWrapper", {
+    value: async function (url) {
+        //create new component
+
+        if (!rt.prst)
+            rt.prst = new Presets();
+
+        rt.prst.wrapper = wick(url);
+
+        const comp = await rt.prst.wrapper.pending;
+
+        comp.toClass();
+
+    }
+});
+
+
+/**
+ * Sets the presets object.
+ */
+Object.defineProperty(wick, "setPresets", {
+    value: async function (preset_options: PresetOptions) {
+
+        //create new component
+        const presets = new Presets(preset_options);
+
+        if (!rt.prst)
+            rt.prst = presets;
+
+        return presets;
+
+    }
+});
+
+/**
+ * Sets the presets object.
+ */
+Object.defineProperty(wick, "rt", {
+    value: rt,
+    writable: false,
+});
+
 const global_object = (typeof global !== "undefined") ? global : window;
 
 if (global_object) {
@@ -119,6 +169,4 @@ if (global_object) {
     } else Object.assign(global_object.cfw, { wick });
 }
 
-
-
-export { wick, parser };
+export default wick;

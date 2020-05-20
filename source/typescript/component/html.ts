@@ -7,7 +7,7 @@ import Presets from "./presets.js";
 
 
 export async function processWickHTML_AST(ast: WickASTNode, component: Component, presets: Presets): Promise<WickASTNode> {
-    debugger;
+
     //Process the ast and return a node that  
     const receiver = { ast: null },
         attribute_handlers = html_handlers[Math.max((WickASTNodeType.HTMLAttribute >>> 24) - WICK_AST_NODE_TYPE_BASE, 0)];
@@ -35,13 +35,13 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
                 result = pending;
 
             if (result != node) {
-                if (result == null || result) {
+                if (result === null || result) {
 
                     html_node = result;
 
                     meta.replace(result);
 
-                    if (result == null) {
+                    if (result === null) {
 
                         if (node.type & WickASTNodeClass.HTML_NODE)
                             index--;

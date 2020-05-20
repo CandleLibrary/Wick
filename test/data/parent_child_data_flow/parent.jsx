@@ -16,7 +16,7 @@ function testA() {
 export default <div component="parent">
 
     <style>
-        #div {color:red}
+        div {color:red}
         div {color:red}
     </style>
 

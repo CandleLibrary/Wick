@@ -2,6 +2,7 @@ import { WickASTNodeType, WICK_AST_NODE_TYPE_SIZE, WICK_AST_NODE_TYPE_BASE, Wick
 
 import { HTMLHandler } from "../types/html_handler.js";
 import { processWickAST } from "./process_wick_ast.js";
+import { processWickCSS_AST } from "./css.js";
 
 const default_handler = {
     priority: -Infinity,
@@ -79,6 +80,18 @@ loadHTMLHandlerInternal(
 
             if (node.name == "name") {
                 host_node.slot_name = node.value;
+            }
+
+            if (node.name == "value" && node.value.type == WickASTNodeType.WickBinding) {
+
+                component.addBinding({
+                    attribute_name: "input_value",
+                    binding_node: node.value,
+                    host_node: node,
+                    html_element_index: index
+                });
+
+                return null;
             }
 
             return;
@@ -192,8 +205,6 @@ loadHTMLHandlerInternal(
 );
 
 
-
-
 loadHTMLHandlerInternal(
     {
 
@@ -242,7 +253,7 @@ loadHTMLHandlerInternal(
 
 
             if (node.type == WickASTNodeType.HTML_Element) {
-                console.log;
+
                 switch (node.tag.toLowerCase()) {
                     case "style":
 
@@ -270,7 +281,7 @@ loadHTMLHandlerInternal(
 
                                 // ch.children.length = 0;
 
-                                const comp = await processWickAST(ch_new, presets, null, null);
+                                const comp = await processWickAST(ch_new, "auto_generated", presets, null, null);
 
                                 node.component = comp;
 
@@ -314,8 +325,9 @@ loadHTMLHandlerInternal(
         priority: -99999,
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
-            const style_sheet = node.nodes[0];
-            console.log(style_sheet.toString());
+
+            await processWickCSS_AST(node, component, presets);
+
             return null;
         }
     }, WickASTNodeType.HTML_STYLE

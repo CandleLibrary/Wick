@@ -5,7 +5,7 @@ import Presets from "../component/presets";
 import { DOMLiteral } from "../types/dom_literal.js";
 import { renderers, format_rules } from "../format_rules.js";
 import { Component } from "../types/types.js";
-
+import { WickContainer } from "./container_class.js";
 
 type BindingUpdateFunction = () => void;
 
@@ -28,54 +28,17 @@ function componentASTToString(ast) {
     return renderWithFormatting(ast, renderers, format_rules);
 }
 
-function componentASTToClass(component: Component) {
+export function componentASTToClass(component: Component) {
     const name = component.name;
 
     let component_function = cache[name];
 
     if (!component_function) {
-        component_function = (Function("return " + renderWithFormatting(component.compiled_ast, renderers, format_rules))());
+        component_function = (Function("c", "p", "rt", "return " + renderWithFormatting(component.compiled_ast, renderers, format_rules))(component, rt.prst, rt));
         cache[name] = component_function;
     }
 
     return component_function;
-}
-export class WickContainer {
-
-    constructor(component_constructor, ele, par) {
-        this.cstr = component_constructor;
-        this.components = [];
-        this.filter = m1 => true;
-        this.sort = () => -1;
-        this.scrub = () => 1;
-        this.ele = ele;
-        this.par = par;
-    }
-
-    destructor() {
-
-    }
-
-    sd(object) {
-        debugger;
-        const
-            d = new this.cstr(),
-
-            c_ele = d.ele;
-
-        d.setModel(object);
-
-        this.ele.appendChild(c_ele);
-
-        c_ele.par = this.par;
-
-        this.components.push(d);
-    }
-
-    update(data) {
-        for (const c of this.components)
-            c.update(data);
-    }
 }
 
 export const enum DATA_FLOW_FLAG {
@@ -140,10 +103,8 @@ export class WickComponent {
     protected dfm: any[];
 
     //protected ct: WickContainer[];
-
     update: (data: object) => void;
-
-    constructor() {
+    constructor(comp_data, presets, model = null) {
 
         this.nlu = {};
 
@@ -153,7 +114,7 @@ export class WickComponent {
         this.nluf = [];
         this.pui = [];
         this.nui = [];
-        this.model = {};
+        this.model = null;
 
         this.me = makeElement;
         this.update = this.u = updateV2;
@@ -169,7 +130,25 @@ export class WickComponent {
 
         this.ele = this.ce();
         this.re();
-        this.c();
+
+        if (presets.wrapper && presets.wrapper.toClass() !== this.constructor) {
+            this.wrapper = new (presets.wrapper.toClass());
+            this.ele.appendChild(this.wrapper.ele);
+            this.wrapper.setModel({ comp: this, meta: comp_data });
+        }
+
+        if (model) this.setModel(model);
+
+        try {
+            this.c();
+        } catch (e) {
+            console.error(e);
+        }
+
+        this.onLoad();
+
+
+        rt.OVERRIDABLE_onComponentCreate(comp_data, this);
     }
 
     destructor() {
@@ -182,12 +161,38 @@ export class WickComponent {
             this.model = null;
         }
 
+        if (this.wrapper)
+            this.wrapper.destructor();
+
     }
 
     get id() { return "0000-0000-0000-0000"; }
 
-    c() { }
     ce() { this.ele = document.createElement("span"); }
+
+    setCSS(style_string) {
+
+        //@ts-ignore
+        if (this.constructor.css) return;
+
+        const css = document.createElement("style");
+        css.innerHTML = style_string;
+        document.head.appendChild(css);
+
+        //@ts-ignore - Temporary caching the css object. 
+        this.constructor.css = css;
+    }
+
+    appendToDOM(ele) {
+        ele.appendChild(this.ele);
+    }
+
+    /* Abstract Functions */
+    c() { }
+    onLoad() { }
+    onMounted() { }
+    transitionOut() { }
+    transitionIn() { }
 }
 
 
@@ -287,50 +292,6 @@ function makeElement(ele_obj, name_space = "", lookup = this.elu, parent = this)
 
 }
 
-function updateInterests(interest, DATA_FLOW_FLAG: DATA_FLOW_FLAG, getInterestPropIndex, getInterestBindingFunctions) {
-
-    const needs_update = new Set;
-
-    if (typeof interest !== "object")
-        return;
-
-    for (const name in interest) {
-        let interest_index = getInterestPropIndex(name, DATA_FLOW_FLAG);
-        if (interest_index > -1) {
-            this[interest_index] = interest[name];
-
-            for (const interest_binding of getInterestBindingFunctions(interest_index))
-                needs_update.add(interest_binding);
-        }
-    }
-
-    for (const interested_binding of needs_update.values())
-        interested_binding.call(this);
-}
-
-function update(data, DATA_FLOW_FLAGS: DATA_FLOW_FLAG = DATA_FLOW_FLAG.FROM_OUTSIDE) {
-
-    updateInterests.call(this, data, DATA_FLOW_FLAGS, (name: string, DATA_FLOW_FLAGS) => {
-
-        let val = this.nlu[name];
-
-        if (val) {
-
-            const index = val & 0xFFFFFF, flags = val >>> 24;
-
-            if ((flags & DATA_FLOW_FLAGS))
-                return index;
-        }
-        return -1;
-    }, index => {
-        if (index >= 0 && index < this.nluf.length)
-            return [this.nluf[index]];
-        return [() => { }];
-    });
-
-    updateChildren.call(this, data, DATA_FLOW_FLAGS);
-}
-
 const enum DATA_DIRECTION {
     DOWN = 1,
     UP = 2
@@ -341,13 +302,15 @@ function updateV2(data, flags) {
 
     const update_indices: Set<number> = new Set;
 
-    for (const name of data) {
+    for (const name in data) {
 
-        if (typeof data[name] == "undefined") {
+        if (typeof data[name] !== "undefined") {
 
             const val = this.nlu[name];
 
-            if (val > -1 && ((val >> 24) & flags)) {
+            const index = val & 0xFFFFFF;
+
+            if (((val >> 24) & flags)) {
 
                 const index = val & 0xFFFFFF;
 
@@ -361,14 +324,14 @@ function updateV2(data, flags) {
     }
 
     for (const index of update_indices.values())
-        this.nluf[index](DATA_DIRECTION.DOWN);
+        this.nluf[index].call(this, this[index], DATA_DIRECTION.DOWN);
 
     //    updateChildren(data, flags | DATA_FLOW_FLAG.FROM_PARENT);
 }
 
 function updateChildren(data, flags) {
 
-    for (const name of data) {
+    for (const name in data) {
 
         if (typeof data[name] == "undefined") {
 
@@ -412,6 +375,7 @@ function updateFromParent(local_index, v, flags) {
 }
 
 function syncParentMethod(this_index, parent_method_index, child_index) {
+
     this.ci = child_index;
     this.pui[this_index] = this.par["u" + parent_method_index];
 }
@@ -426,7 +390,35 @@ function updateFromChild(local_index, val, flags) {
 
 };
 
+function updateModel() {
+    // Go through the model's props and test whether they are different then the 
+    // currently cached variables
+    const model = this.model;
+
+    for (const name in this.nlu) {
+
+        if ((this.nlu[name] >>> 24) & DATA_FLOW_FLAG.FROM_MODEL) {
+            const index = this.nlu[name] & 0xFFFFFF;
+            const v = this[index];
+
+            if (model[name] && model[name] !== v)
+                this.update({ [name]: model[name] }, DATA_FLOW_FLAG.FROM_MODEL);
+        }
+    }
+}
+
 function registerModel(model) {
+
+    if (this.model) {
+        if (this.polling_id > 0) {
+            clearInterval(this.polling_id);
+            this.polling_id = 0;
+        } else {
+            this.model.unsubscribe(this);
+        }
+    }
+    console.log(model);
+    this.model = model;
 
     if (model.subscribe)
         model.subscribe(data => {
@@ -435,22 +427,9 @@ function registerModel(model) {
 
     else {
         //Create a polling monitor
+        if (this.polling_id <= 0)
+            this.polling_id = setInterval(updateModel.bind(this), 10);
 
-        this.polling_id = setInterval(() => {
-            // Go through the model's props and test whether they are different then the 
-            // currently cached variables
-
-            for (const name of this.nui) {
-
-                if (this.nui[name] & DATA_FLOW_FLAG.FROM_MODEL) {
-                    const index = this.nui[name] >>> 24;
-                    const v = this[index];
-
-                    if (model[name] && model[name] !== v)
-                        this.update({ [name]: model[name] });
-                }
-            }
-        }, 10);
+        updateModel.call(this);
     }
-
 }

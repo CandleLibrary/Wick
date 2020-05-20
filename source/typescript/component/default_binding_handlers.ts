@@ -1,8 +1,9 @@
 import { MinTreeNodeType, exp, stmt, renderCompressed, ext } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 import { BindingObject, BindingHandler, BindingType } from "../types/types.js";
-import { processWickJS_AST, processFunctionDeclaration, VARIABLE_REFERENCE_TYPE } from "./js.js";
+import { processFunctionDeclaration } from "./js.js";
 import { DATA_FLOW_FLAG } from "../runtime/component_class.js";
+import { VARIABLE_REFERENCE_TYPE, setVariableName } from "./set_component_variable.js";
 
 export const binding_handlers: BindingHandler[] = [];
 
@@ -39,16 +40,20 @@ loadBindingHandler({
             { primary_ast, secondary_ast } = pending_binding;
 
         if (primary_ast) {
-
             for (const { node, meta } of traverse(primary_ast, "nodes")) {
 
                 if (node.type == MinTreeNodeType.IdentifierReference) {
-
                     if (!component_variables.has(<string>node.value))
                         continue;
-
                     //Pop any binding names into the binding information container. 
                     binding.component_variables.add(<string>node.value);
+                }
+            }
+
+            for (const { node, meta: { mutate } } of traverse(primary_ast, "nodes").makeMutable()) {
+
+                if (node.type == MinTreeNodeType.IdentifierReference) {
+                    node.value = setVariableName(node.value, component);
                 }
             }
 
@@ -59,6 +64,28 @@ loadBindingHandler({
             expression.nodes[1].nodes.push(primary_ast);
 
             binding.write_ast = expression;
+        }
+
+        return binding;
+    }
+});
+
+loadBindingHandler({
+    priority: -2,
+
+    canHandleBinding(attribute_name, node_type) {
+        return attribute_name == "method_call";
+    },
+
+    prepareBindingObject(attribute_name, pending_binding, host_node, element_index, component) {
+
+        const binding = createBindingObject(BindingType.WRITEONLY),
+            { primary_ast } = pending_binding;
+
+        if (primary_ast) {
+            binding.component_variables.add(pending_binding.value);
+
+            binding.write_ast = primary_ast;
         }
 
         return binding;
@@ -85,20 +112,19 @@ loadBindingHandler({
 
         if (cv && cv.usage_flags & DATA_FLOW_FLAG.EXPORT_TO_PARENT && component.variables.get(local)) {
 
+
             // const variable = comp.variables.get(extern);
 
             binding.read_ast = stmt(`c.ch[${index}].spm(${cv.class_name}, ${component.variables.get(local).class_name}, ${index})`);
 
             binding.component_variables.add(<string>local);
+
             return binding;
+
         } return null;
 
     }
 });
-
-
-
-
 
 // This binding handler deals with event attributes that
 // begin on{event name}.
@@ -111,20 +137,16 @@ loadBindingHandler({
 
     prepareBindingObject(attribute_name, pending_binding, host_node, element_index, component, presets) {
 
-        const binding = createBindingObject(BindingType.WRITE);
-
-        const { local, extern } = pending_binding, index = host_node.child_id, comp = host_node.component;
-
-        const cv = comp.variables.get(extern);
+        const
+            binding = createBindingObject(BindingType.WRITE),
+            { local, extern } = pending_binding,
+            index = host_node.child_id,
+            comp = host_node.component,
+            cv = comp.variables.get(extern);
 
         if (cv && cv.usage_flags & DATA_FLOW_FLAG.FROM_PARENT) {
 
-
-            // const variable = comp.variables.get(extern);
-
-
             binding.write_ast = stmt(`c.ch[${index}].ufp(${cv.class_name}, v, f);`);
-
 
             binding.component_variables.add(<string>local);
         }
@@ -134,7 +156,7 @@ loadBindingHandler({
 });
 
 
-
+var on_count = 0;
 // This binding handler deals with event attributes that
 // begin on{event name}.
 loadBindingHandler({
@@ -152,14 +174,10 @@ loadBindingHandler({
 
         if (primary_ast) {
 
-            for (const { node, meta } of traverse(primary_ast, "nodes")) {
+            for (const { node, meta: { mutate } } of traverse(primary_ast, "nodes").makeMutable()) {
+
                 if (node.type == MinTreeNodeType.IdentifierReference) {
-
-                    if (!component_names.has(<string>node.value))
-                        continue;
-
-                    //Pop any binding names into the binding information container. 
-                    binding.component_variables.add(<string>node.value);
+                    node.value = setVariableName(node.value, component);
                 }
             }
 
@@ -169,14 +187,15 @@ loadBindingHandler({
 
             if (primary_ast) {
 
+
                 if (primary_ast.type == MinTreeNodeType.IdentifierReference)
                     expression = stmt(`c.e${element_index}.addEventListener("${attribute_name.slice(2)}",c.${primary_ast.value}.bind(c));`);
                 else {
 
-                    const name = "testName";
+                    const name = "on" + on_count++,
 
-                    //Create new function method for the component
-                    const fn = stmt(`function ${name}(){;};`);
+                        //Create new function method for the component
+                        fn = stmt(`function ${name}(){;};`);
 
                     fn.nodes[2].nodes = [primary_ast];
 
@@ -196,7 +215,77 @@ loadBindingHandler({
     }
 });
 
+loadBindingHandler({
+    priority: 0,
 
+    canHandleBinding(attribute_name, node_type) {
+        console.log(attribute_name);
+        return attribute_name == "input_value";
+    },
+
+    prepareBindingObject(attribute_name, pending_binding, host_node, element_index, component, presets) {
+
+        const binding = createBindingObject(BindingType.READWRITE),
+            component_names = component.variables,
+            { primary_ast, secondary_ast } = pending_binding;
+
+        if (primary_ast) {
+            // TODO validate ON events. 
+            // TODO create custom events.
+            let expression = null;
+
+            if (primary_ast) {
+                let v = null;
+                if (primary_ast.type == MinTreeNodeType.IdentifierReference) {
+                    v = primary_ast.value;
+                }
+
+
+                for (const { node, meta } of traverse(primary_ast, "nodes").makeMutable()) {
+
+                    if (node.type == MinTreeNodeType.IdentifierReference) {
+
+                        const val = node.value;
+
+                        node.value = setVariableName(val, component);
+
+                        if (!component_names.has(<string>val))
+                            continue;
+
+
+                        //Pop any binding names into the binding information container. 
+                        binding.component_variables.add(<string>val);
+                    }
+                }
+
+
+
+                {
+
+                    if (primary_ast.type == MinTreeNodeType.IdentifierReference) {
+                        expression = stmt(`c.e${element_index}.addEventListener("change",c.$${v}.bind(c));`);
+                        binding.read_ast = expression;
+                    }
+                    else { }
+                }
+
+                {
+
+                    const expression = exp(`c.e${element_index}.value = 1`);
+
+                    expression.nodes[1] = primary_ast;
+
+                    binding.write_ast = expression;
+                }
+            }
+
+            binding.cleanup_ast = null;
+        }
+
+
+        return binding;
+    }
+});
 
 loadBindingHandler({
     priority: -2,
@@ -218,13 +307,26 @@ loadBindingHandler({
 
                 if (node.type == MinTreeNodeType.IdentifierReference) {
 
-                    if (!component_names.has(<string>node.value))
+
+                    const val = node.value;
+
+                    node.value = setVariableName(val, component);
+
+                    if (!component_names.has(<string>val))
                         continue;
 
+
                     //Pop any binding names into the binding information container. 
-                    binding.component_variables.add(<string>node.value);
+                    binding.component_variables.add(<string>val);
                 }
             }
+
+            // for (const { node, meta: { mutate } } of traverse(primary_ast, "nodes").makeMutable()) {
+            //
+            //     if (node.type == MinTreeNodeType.IdentifierReference) {
+            //         node.value = setVariableName(node.value, component);
+            //     }
+            // }
 
             const expression = exp("a=b");
 
@@ -238,7 +340,7 @@ loadBindingHandler({
         //Cleanup -- Compare component_variables with locals and remove any binding that collides with a declared variable.
         //Further Cleanup -- Globals names that are already part of the global scope are removed. 
         // for (const a of container.dependent_variables.values())
-        //     if (global_names.has(a))
+        //     if (global_names.has(a))${attribute_name.slice(2)}
         //         container.dependent_variables.delete(a);
 
         return binding;
@@ -247,7 +349,7 @@ loadBindingHandler({
 
 // container_data
 loadBindingHandler({
-    priority: 100, 
+    priority: 100,
 
     canHandleBinding(attribute_name, node_type) {
         return attribute_name == "data";
@@ -263,6 +365,7 @@ loadBindingHandler({
 
         if (primary_ast) {
 
+
             for (const { node, meta } of traverse(primary_ast, "nodes").makeMutable()) {
 
                 if (node.type == MinTreeNodeType.IdentifierReference) {
@@ -277,6 +380,13 @@ loadBindingHandler({
                 }
             }
 
+
+            for (const { node, meta: { mutate } } of traverse(primary_ast, "nodes").makeMutable()) {
+
+                if (node.type == MinTreeNodeType.IdentifierReference) {
+                    node.value = setVariableName(node.value, component);
+                }
+            }
             const expression = exp(`c.ct[${host_node.container_id}].sd(0)`);
 
             expression.nodes[1].nodes = [primary_ast];
@@ -314,6 +424,7 @@ loadBindingHandler({
 
         if (primary_ast) {
 
+
             for (const { node, meta } of traverse(primary_ast, "nodes").makeMutable()) {
 
                 if (node.type == MinTreeNodeType.IdentifierReference) {
@@ -325,6 +436,13 @@ loadBindingHandler({
 
                     //Pop any binding names into the binding information container. 
                     binding.component_variables.add(<string>node.value);
+                }
+            }
+
+            for (const { node, meta: { mutate } } of traverse(primary_ast, "nodes").makeMutable()) {
+
+                if (node.type == MinTreeNodeType.IdentifierReference) {
+                    node.value = setVariableName(node.value, component);
                 }
             }
 

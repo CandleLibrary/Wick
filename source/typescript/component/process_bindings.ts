@@ -1,19 +1,17 @@
-import { MinTreeNodeType, exp, stmt, renderCompressed } from "@candlefw/js";
-import { traverse } from "@candlefw/conflagrate";
-import { BindingObject, Component, BindingHandler, BindingType } from "../types/types.js";
+import { MinTreeNodeType, exp, stmt } from "@candlefw/js";
+import { BindingObject, Component, BindingType } from "../types/types.js";
 import { getGenericMethodNode } from "./js_ast_tools.js";
 import { binding_handlers } from "./default_binding_handlers.js";
 import { WickASTNodeType } from "../types/wick_ast_node_types.js";
 import { DATA_FLOW_FLAG } from "../runtime/component_class.js";
 import Presets from "./presets.js";
-import { VARIABLE_REFERENCE_TYPE } from "./js.js";
-import { setVariableName } from "./process_wick_ast.js";
+import { VARIABLE_REFERENCE_TYPE } from "./set_component_variable.js";
 
 function createBindingName(binding_index_pos: number) {
     return `b${binding_index_pos.toString(36)}`;
 }
 
-export function handleBindings(component: Component, presets: Presets) {
+export function processBindings(component: Component, presets: Presets) {
 
     const {
         class_methods,
@@ -64,7 +62,6 @@ export function handleBindings(component: Component, presets: Presets) {
                     = binding;
 
 
-
                 binding.pos = pending_binding.binding_node.pos;
 
                 binding.name = createBindingName(binding_count);
@@ -72,10 +69,11 @@ export function handleBindings(component: Component, presets: Presets) {
                 bindings.push(binding);
 
                 const { name: binding_name } = binding;
+
                 /**
                  * register this binding's element if it has not already been done.
                  */
-                if (!registered_elements.has(index)) {
+                if (index > -1 && !registered_elements.has(index)) {
                     initialize_stmts.push(stmt(`c.e${index}=c.elu[${index}]`));
                     registered_elements.add(index);
                 }
@@ -114,21 +112,23 @@ export function handleBindings(component: Component, presets: Presets) {
                     }
                 }
 
-
                 if (type & BindingType.READ && read_ast) {
 
-                    for (const { node, meta: { mutate } } of traverse(read_ast, "nodes").makeMutable())
-                        if (node.type == MinTreeNodeType.IdentifierReference)
-                            node.value = setVariableName(node.value, component.variables);
+                    //for (const { node, meta: { mutate } } of traverse(read_ast, "nodes").makeMutable()) {
+                    //
+                    //    if (node.type == MinTreeNodeType.IdentifierReference) {
+                    //        node.value = setVariableName(node.value, component);
+                    //    }
+                    //}
 
                     binding_inits.push(read_ast);
                 }
 
                 if (cleanup_ast) {
 
-                    for (const { node, meta: { mutate } } of traverse(cleanup_ast, "nodes").makeMutable())
-                        if (node.type == MinTreeNodeType.IdentifierReference)
-                            node.value = setVariableName(node.value, component.variables);
+                    // for (const { node, meta: { mutate } } of traverse(cleanup_ast, "nodes").makeMutable())
+                    //     if (node.type == MinTreeNodeType.IdentifierReference)
+                    //         node.value = setVariableName(node.value, component);
 
                     clean_stmts.push(cleanup_ast);
                 }
@@ -140,7 +140,6 @@ export function handleBindings(component: Component, presets: Presets) {
 
     initialize_stmts.push(...binding_inits);
 
-
     let id = 0;
 
 
@@ -148,8 +147,9 @@ export function handleBindings(component: Component, presets: Presets) {
 
 
         if (v.type & VARIABLE_REFERENCE_TYPE.API_VARIABLE) {
-            console.log({ v });
+            //console.log({ v });
         } else {
+
 
         }
 
@@ -175,9 +175,9 @@ export function handleBindings(component: Component, presets: Presets) {
 
                     if (binding.component_variables.size <= 1) {
 
-                        for (const { node, meta: { mutate } } of traverse(binding.write_ast, "nodes").makeMutable())
-                            if (node.type == MinTreeNodeType.IdentifierReference)
-                                node.value = setVariableName(node.value, component.variables);
+                        //  for (const { node, meta: { mutate } } of traverse(binding.write_ast, "nodes").makeMutable())
+                        //      if (node.type == MinTreeNodeType.IdentifierReference)
+                        //          node.value = setVariableName(node.value, component);
 
                         body.nodes.push({
                             type: MinTreeNodeType.ExpressionStatement,
