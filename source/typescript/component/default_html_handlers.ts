@@ -3,6 +3,7 @@ import { WickASTNodeType, WICK_AST_NODE_TYPE_SIZE, WICK_AST_NODE_TYPE_BASE, Wick
 import { HTMLHandler } from "../types/html_handler.js";
 import { processWickAST } from "./process_wick_ast.js";
 import { processWickCSS_AST } from "./css.js";
+import { compileComponent } from "./component.js";
 
 const default_handler = {
     priority: -Infinity,
@@ -242,6 +243,8 @@ loadHTMLHandlerInternal(
 
             if (presets.components[node.tag]) {
 
+                console.log(node.tag, component.location);
+
                 node.child_id = component.children.push(1) - 1;
 
                 node.component = presets.components[node.tag];
@@ -266,6 +269,7 @@ loadHTMLHandlerInternal(
                             if ((n.type & WickASTNodeClass.HTML_ELEMENT)) { ch = n; break; }
 
                         if (ch) {
+
                             if (ch && presets.components[ch.tag]) {
 
                                 ch.child_id = component.children.push(1) - 1;
@@ -279,9 +283,9 @@ loadHTMLHandlerInternal(
 
                                 ch_new.attributes = [];
 
-                                // ch.children.length = 0;
+                                const comp_data = await processWickAST(ch_new, "auto_generated", presets, null, null);
 
-                                const comp = await processWickAST(ch_new, "auto_generated", presets, null, null);
+                                const comp = await compileComponent(comp_data, presets);
 
                                 node.component = comp;
 
@@ -317,6 +321,7 @@ loadHTMLHandlerInternal(
 
             return node;
         }
+
     }, WickASTNodeType.HTML_Element
 );
 

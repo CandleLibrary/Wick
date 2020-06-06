@@ -65,7 +65,7 @@
 
 # This allows JSX like html expressions within JS objects. 
 +> js::primary_expression → html::TAG  
-#   | t:css \: \{ css::CSS \}                                                                              ↦r { $sym4 }       			    
+#   | t:css \: \{ css::CSS \}                                                                               ↦r { $sym4 }       			    
 
 +> html::BODY → IMPORT_TAG_LIST html::GOAL_TAG                                             				    ↦r { ( $sym2.import_list = $sym1, $sym2 ) }
 

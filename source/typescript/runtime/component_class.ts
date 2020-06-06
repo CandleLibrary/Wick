@@ -149,9 +149,7 @@ export class WickComponent {
 
         this.onLoad();
 
-
         rt.OVERRIDABLE_onComponentCreate(comp_data, this);
-
     }
 
     destructor() {
@@ -174,18 +172,8 @@ export class WickComponent {
     ce() { this.ele = document.createElement("span"); }
 
     setCSS(style_string) {
-
+        rt.__loadCSS__(this, style_string);
         this.ele.classList.add(this.class);
-
-        //@ts-ignore
-        //if (this.constructor.css) return;
-
-        const css = document.createElement("style");
-        css.innerHTML = style_string;
-        document.head.appendChild(css);
-
-        //@ts-ignore - Temporary caching the css object. 
-        this.constructor.css = css;
     }
 
     appendToDOM(ele) {
@@ -243,7 +231,17 @@ function takeParentAddChild(parent: WickComponent, child: WickComponent) {
  */
 function makeElement(ele_obj, name_space = "", lookup = this.elu, parent = this): HTMLElement {
 
-    const { n: name_space_index, t: tag_name, i, a: attributes, c: children, d: data, ct, cp: component_name, sl: slot_name }: DOMLiteral = ele_obj;
+    const {
+        n: name_space_index,
+        t: tag_name,
+        i,
+        a: attributes,
+        c: children,
+        d: data,
+        ct,
+        cp: component_name,
+        sl: slot_name
+    }: DOMLiteral = ele_obj;
 
     if (name_space_index) name_space = getNameSpace(name_space_index);
 
@@ -357,20 +355,6 @@ function updateParent(data) {
         updateFromChild.call(this.par, data);
 }
 
-/*
-function updateFromChild(data) {
-
-    for (const prop in data) {
-
-        const internal_prop = this.nlu[prop];
-
-        if ((internal_prop >>> 24) & DATA_FLOW_FLAG.ALLOW_FROM_CHILD) {
-            this.update({ [prop]: data[prop] }, DATA_FLOW_FLAG.ALLOW_FROM_CHILD);
-        }
-    }
-}
-*/
-
 function updateFromParent(local_index, v, flags) {
 
     if (flags >> 24 == this.ci + 1)
@@ -422,7 +406,7 @@ function registerModel(model) {
             this.model.unsubscribe(this);
         }
     }
-    console.log(model);
+
     this.model = model;
 
     if (model.subscribe)

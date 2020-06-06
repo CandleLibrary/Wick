@@ -71,7 +71,6 @@
         "@candlefw/js": "^0.1.6-dev-1",
         "@candlefw/math": "latest",
         "@candlefw/spark": "^0.1.0",
-        "@candlefw/test": "^0.0.1",
         "@candlefw/url": "^0.1.1",
         "@candlefw/wind": "^0.4.1-dev",
         "commander": "^4.1.0",

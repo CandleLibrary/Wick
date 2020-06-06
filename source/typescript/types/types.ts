@@ -31,7 +31,7 @@ export interface Component {
      * List of component names.
      */
     variables: Map<string, ComponentVariable>;
-    locals: Set<string>;
+
     /**
      * The original syntax tree.
      */

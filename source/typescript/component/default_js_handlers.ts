@@ -8,8 +8,9 @@ import { DATA_FLOW_FLAG } from "../runtime/component_class.js";
 import { processFunctionDeclaration } from "./js.js";
 import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./set_component_variable.js";
 import { processWickHTML_AST } from "./html.js";
-import makeComponent from "./component.js";
+import makeComponent, { acquireComponentASTFromRemoteSource, CreateComponent, compileComponent } from "./component.js";
 import { processWickCSS_AST } from "./css.js";
+import { processWickAST } from "./process_wick_ast.js";
 ;
 const default_handler = {
     priority: -Infinity,
@@ -72,8 +73,6 @@ loadJSHandlerInternal(
                 module = node.nodes[0];
                 from_value = <string>node.nodes[1].nodes[0].value;
             }
-
-
 
             // The @*** values are processed as regular scripts
             // if they have any values other than the ones
@@ -191,11 +190,31 @@ loadJSHandlerInternal(
                         //TODO: Save data and load into presets. 
 
                         try {
-                            await makeComponent(from_value, presets, component.location);
+
+                            //Compile Component Data
+
+                            try {
+
+                                const { ast, string, resolved_url } = await acquireComponentASTFromRemoteSource(from_value, component.location);
+
+                                // If the ast is an HTML_NODE with a single style element, then integrate the 
+                                // css data into the current component. 
+
+                                const comp_data = await processWickAST(ast, string, presets, resolved_url);
+
+                                if (!comp_data.element)
+                                    mergeComponentData(component, comp_data);
+                                else {
+                                    await compileComponent(comp_data, presets);
+                                }
+
+                            } catch (e) {
+                                debugger;
+                            }
+
                         } catch (e) {
                             console.log({ e });
                         };
-
 
                         break;
 
@@ -208,6 +227,22 @@ loadJSHandlerInternal(
         }
     }, MinTreeNodeType.ImportDeclaration
 );
+
+function mergeComponentData(destination_component, source_component) {
+
+    destination_component.stylesheets.push(...source_component.stylesheets);
+
+    for (const [key, data] of source_component.variables.entries())
+        setComponentVariable(data.type, data.name, destination_component, data.external_name, data.flags);
+
+    destination_component.class_methods.push(...source_component.class_methods);
+
+    destination_component.class_initializer_statements.push(...source_component.class_initializer_statements);
+
+    destination_component.class_cleanup_statements.push(...source_component.class_cleanup_statements);
+
+    destination_component.names.push(...source_component.names);
+}
 
 
 // ###################################################################
@@ -261,6 +296,7 @@ loadJSHandlerInternal(
         priority: 1,
 
         prepareJSNode(node, parent_node, skip, replace, component, presets) {
+
             const
                 n = stmt("a,a;"),
                 [{ nodes }] = n.nodes;
@@ -288,7 +324,7 @@ loadJSHandlerInternal(
 
                     nodes.push(exp(`this.u${d.class_name}(${renderCompressed(id.nodes[1])})`));
                 } else {
-                    //    / binding_variables.push({ v: id.value, node: id, parent });
+                    // binding_variables.push({ v: id.value, node: id, parent });
 
                 }
             }
