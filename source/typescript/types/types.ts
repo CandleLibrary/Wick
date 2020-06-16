@@ -5,6 +5,9 @@ import { Lexer } from "@candlefw/wind";
 import Presets from "../component/presets.js";
 
 export interface ComponentVariable {
+    name: string,
+
+    flags: number,
     type: number;
     nlui: number;
     usage_flags: number,
@@ -17,77 +20,77 @@ export interface ComponentVariable {
 
 }
 export interface Component {
-    scripts: {
-        type: string, ast: MinTreeNode, binding_variables: string[], locals: Set<string>;
+    /**
+     * Functions blocks that identify the input and output variables that are consumed
+     * and produced by the function. 
+     */
+    function_blocks: {
+
+        /**
+         * Any binding variable that is referenced within the function.
+         */
+        input_binding_variables: string[],
+
+        /**
+         * Any binding variables that is assigned a value.
+         */
+        output_binding_variables: string[],
+
+        /**
+         * Extracted source AST for this function block
+         */
+        ast: MinTreeNode;
+
+        type: string;
     }[];
 
     /**
-     * List of pending bindings to be
-     * processed.
+     * Globally unique string identifying this particular component. 
      */
-    pending_bindings: PendingBinding[];
+    name: string,
 
     /**
-     * List of component names.
+     * Global string identifiers for this particular component
      */
-    variables: Map<string, ComponentVariable>;
+    names: string[],
 
     /**
-     * The original syntax tree.
+     * A linkage between a binding variable and any element that is 
+     * modified by the binding variable, including HTML attributes, 
+     * CSS attributes, and other binding variables. 
      */
-    original_ast: MinTreeNode | WickASTNode;
-
-    /**
-     * The consumption ready form of the component.
-     */
-    compiled_ast: MinTreeNode;
-
-    /**
-     * List of IdentifierReference nodes that have component
-     * names that need to be replaced with equivalent class
-     * names.
-     */
-    declarations: MinTreeNode[];
+    bindings: PendingBinding[],
 
 
     /**
-     * List of class method ASTs to compile into
-     * the finalized component. 
+     * Any variable within a component that is defined a GLOBAL value that
+     * may be produced as the result of the following declaration/references:
+     *  - a: Declared within the top most scope of component within a var statement. 
+     *  - b: Declared within a components import or export statements. 
+     *  - c: Declared within a components data flow statements describing flow between 
+     *       a component and its relatives. 
+     *  - d: Referenced within a binding expression.  
      */
-    class_methods: MinTreeNode[];
+    binding_variables: Map<string, ComponentVariable>;
+
+    ///**
+    // * The original syntax tree.
+    // */
+    //original_ast: MinTreeNode | WickASTNode;
 
     /**
-     * List of statement ASTs to add to the component
-     * class initializer method.
+     * The virtual DOM as described within a component with a .html extension or with a 
      */
-    class_initializer_statements: MinTreeNode[];
+    HTML: { namespace: number, ele: string, id: number, attributes: { name: string, value: string; }[], children: any[]; }[];
 
-    /**
-     * List of statement ASTs to add to the component
-     * class cleanup method.
-     */
-    class_cleanup_statements: MinTreeNode[];
+    CSS: any[];
 
-    element: WickASTNode;
-
-    nluf_arrays: MinTreeNode[][];
-
-    addBinding: (PendingBinding) => void;
-
-    /**
-     * Names assigned to the component
-     */
-    names: string[];
-
-    /**
-     * Original Source string.
-     */
-    source: string;
     /**
      * URL of source file for this component
      */
     location: URL;
 }
+
 export interface BindingInfoContainer {
     node_type: string;
     type: string;

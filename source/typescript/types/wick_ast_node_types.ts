@@ -1,8 +1,9 @@
 import { MinTreeNode, MinTreeNodeClass } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
 
-// These kept values are between 1<<20 and 1<<23
-// To interop with cfw.js
+
+
+
 export const enum WickASTNodeClass {
     HTML_NODE = (1 << 20),
 
@@ -12,6 +13,10 @@ export const enum WickASTNodeClass {
 export const WICK_AST_NODE_TYPE_BASE = 147;
 export const WICK_AST_NODE_TYPE_SIZE = 85;
 
+
+/**
+ * Wick node values and types. Extends JavaScript nodes described in @candlefw/js, and CSS nodes described in @candlefw/css
+ */
 export enum WickASTNodeType {
     WickBinding = (147 << 24),
     HTML_IMPORT = (148 << 24) | WickASTNodeClass.HTML_NODE | WickASTNodeClass.HTML_ELEMENT,

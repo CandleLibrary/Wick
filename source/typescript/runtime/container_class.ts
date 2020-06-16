@@ -20,6 +20,7 @@ export class WickContainer {
 
     constructor(component_constructor, element, parent) {
 
+
         this.ele = element;
 
         this.activeScopes = [];
@@ -184,7 +185,8 @@ export class WickContainer {
      * @param  {Number} scrub_amount [description]
      */
     scrub(scrub_delta, SCRUBBING = true) {
-        // scrub_delta is the relative ammunt of change from the previous offset. 
+
+        // scrub_delta is the relative amount of change from the previous offset. 
 
         if (!this.SCRUBBING)
             this.render(null, this.activeScopes, true);

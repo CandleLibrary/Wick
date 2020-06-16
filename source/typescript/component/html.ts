@@ -4,7 +4,7 @@ import { WickASTNode, WickASTNodeType, WickASTNodeClass, WICK_AST_NODE_TYPE_SIZE
 import { Component } from "../types/types.js";
 import { html_handlers } from "./default_html_handlers.js";
 import Presets from "./presets.js";
-
+import { getPropertyAST, getGenericMethodNode, getObjectLiteralAST } from "./js_ast_tools.js";
 
 export async function processWickHTML_AST(ast: WickASTNode, component: Component, presets: Presets): Promise<WickASTNode> {
 
@@ -88,7 +88,60 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
         //TODO - Plugin here for analyzing node structure for hinting / warning / errors.
     }
 
-    component.element = receiver.ast;
+    component.HTML = buildExportableDOMNode(receiver.ast);
 
     return receiver.ast;
+}
+
+
+
+
+function buildExportableDOMNode(
+    ast: WickASTNode & {
+        component_name?: string;
+        slot_name?: string;
+    }) {
+
+    const node = {};
+
+    node.t = ast.tag || "";
+
+    if (ast.slot_name) {
+        node.sl = slot_name;
+    }
+
+    if (ast.component_name) {
+        node.cp = ast.component_name;
+    }
+
+    if (ast.is_container) {
+        node.ct = true;
+    }
+
+    if (ast.attributes && ast.attributes.length > 0) {
+        node.a = [];
+        for (const attrib of ast.attributes) {
+            node.a.push({ [attrib.name]: attrib.value });
+        }
+    }
+
+    /***
+     * DOM
+     */
+
+    if (ast.nodes && ast.nodes.length > 0) {
+        node.c = [];
+        for (const child of ast.nodes)
+            node.c.push(buildExportableDOMNode(child));
+    }
+
+    node.i = ast.id;
+
+    if (ast.data) {
+        node.d = ast.data;//.replace(/\n/g, '\\n');
+    } else if (ast.ns > 0) {
+        node.ns = ast.ns || 0;
+    }
+
+    return node;
 }

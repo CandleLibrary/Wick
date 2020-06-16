@@ -1,16 +1,15 @@
-import { WickComponent } from "./component_class.js";
+import { WickComponent, cache } from "./component_class.js";
 import Presets from "../component/presets.js";
 
 export interface WickRuntime {
     registerComponent(arg1: string, arg2: WickComponent): void;
 
-    prst: Presets;
+    presets: Presets;
 
     OVERRIDABLE_onComponentCreate(component_meta: WickComponentMeta, component_instance: WickComponent): void;
 
     OVERRIDABLE_onComponentMetaChange(component_meta: WickComponentMeta): void;
 }
-
 const style_strings = [];
 
 let css_element = null;
@@ -21,9 +20,10 @@ const rt: WickRuntime = (() => {
 
     return {
 
-        presets: {},
+        presets: null,
 
         registerComponent(component_name, component) {
+            rt.presets.component_class.set(component_name, component);
             components.set(component_name, component);
         },
 
@@ -47,7 +47,7 @@ const rt: WickRuntime = (() => {
             style_strings.push(style_string);
 
             if (!css_element) {
-                css_element = document.createElement("style");=
+                css_element = document.createElement("style");
                 document.head.appendChild(css_element);
             }
 

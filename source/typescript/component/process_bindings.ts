@@ -6,24 +6,28 @@ import { WickASTNodeType } from "../types/wick_ast_node_types.js";
 import { DATA_FLOW_FLAG } from "../runtime/component_class.js";
 import Presets from "./presets.js";
 import { VARIABLE_REFERENCE_TYPE } from "./set_component_variable.js";
+import { renderers, format_rules } from "../format_rules.js";
+import { traverse, renderWithFormatting } from "@candlefw/conflagrate";
 
 function createBindingName(binding_index_pos: number) {
     return `b${binding_index_pos.toString(36)}`;
 }
 
-export async function processBindings(component: Component, presets: Presets) {
+export function processBindings(component: Component, class_data, presets: Presets) {
 
-    const {
-        class_methods,
-        class_cleanup_statements: clean_stmts,
-        class_initializer_statements: initialize_stmts,
-        pending_bindings,
-        nluf_arrays
-    } = component,
+    const
+        { bindings: raw_bindings, } = component,
+
+        {
+            methods: class_methods,
+            class_cleanup_statements: clean_stmts,
+            class_initializer_statements: initialize_stmts,
+            nluf_arrays
+        } = class_data,
 
         registered_elements: Set<number> = new Set,
 
-        bindings: BindingObject[] = [],
+        processed_bindings: BindingObject[] = [],
 
         binding_inits = [];
 
@@ -31,7 +35,7 @@ export async function processBindings(component: Component, presets: Presets) {
         binding_count = 0;
 
 
-    for (const pending_binding of pending_bindings) {
+    for (const pending_binding of raw_bindings) {
 
         binding_count++;
 
@@ -47,7 +51,7 @@ export async function processBindings(component: Component, presets: Presets) {
                 const
                     index = pending_binding.html_element_index,
 
-                    binding = await handler.prepareBindingObject(
+                    binding = handler.prepareBindingObject(
                         pending_binding.attribute_name,
                         pending_binding.binding_node,
                         pending_binding.host_node,
@@ -66,7 +70,7 @@ export async function processBindings(component: Component, presets: Presets) {
 
                 binding.name = createBindingName(binding_count);
 
-                bindings.push(binding);
+                processed_bindings.push(binding);
 
                 const { name: binding_name } = binding;
 
@@ -92,10 +96,10 @@ export async function processBindings(component: Component, presets: Presets) {
 
                         for (const name of component_variables.values()) {
 
-                            if (!component.variables.has(name))
+                            if (!component.binding_variables.has(name))
                                 throw (binding.pos.errorMessage(`missing global variable for ${name}`));
 
-                            const { class_name, nlui } = component.variables.get(name);
+                            const { class_name, nlui } = component.binding_variables.get(name);
 
                             let_stmt.nodes.push(exp(`${name}=c[${class_name}]`));
 
@@ -114,21 +118,12 @@ export async function processBindings(component: Component, presets: Presets) {
 
                 if (type & BindingType.READ && read_ast) {
 
-                    //for (const { node, meta: { mutate } } of traverse(read_ast, "nodes").makeMutable()) {
-                    //
-                    //    if (node.type == MinTreeNodeType.IdentifierReference) {
-                    //        node.value = setVariableName(node.value, component);
-                    //    }
-                    //}
+                    console.log(renderWithFormatting(read_ast, renderers, format_rules););
 
                     binding_inits.push(read_ast);
                 }
 
                 if (cleanup_ast) {
-
-                    // for (const { node, meta: { mutate } } of traverse(cleanup_ast, "nodes").makeMutable())
-                    //     if (node.type == MinTreeNodeType.IdentifierReference)
-                    //         node.value = setVariableName(node.value, component);
 
                     clean_stmts.push(cleanup_ast);
                 }
@@ -140,10 +135,7 @@ export async function processBindings(component: Component, presets: Presets) {
 
     initialize_stmts.push(...binding_inits);
 
-    let id = 0;
-
-
-    for (const v of component.variables.values()) {
+    for (const v of component.binding_variables.values()) {
 
 
         if (v.type & VARIABLE_REFERENCE_TYPE.API_VARIABLE) {
@@ -166,7 +158,7 @@ export async function processBindings(component: Component, presets: Presets) {
 
             //body.nodes.length = 0;
 
-            for (const binding of bindings) {
+            for (const binding of processed_bindings) {
 
                 if (
                     (binding.type & BindingType.WRITE)
@@ -174,10 +166,6 @@ export async function processBindings(component: Component, presets: Presets) {
                 )
 
                     if (binding.component_variables.size <= 1) {
-
-                        //  for (const { node, meta: { mutate } } of traverse(binding.write_ast, "nodes").makeMutable())
-                        //      if (node.type == MinTreeNodeType.IdentifierReference)
-                        //          node.value = setVariableName(node.value, component);
 
                         body.nodes.push({
                             type: MinTreeNodeType.ExpressionStatement,
@@ -210,4 +198,6 @@ export async function processBindings(component: Component, presets: Presets) {
             class_methods.push(method);
         }
     }
+
+    return class_methods;
 }

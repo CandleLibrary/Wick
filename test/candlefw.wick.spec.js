@@ -1,4 +1,4 @@
-import wick from "../build/library/wick.js";
+ import wick from "../build/library/wick.js";
 import HTML from "@candlefw/html";
 
 //await HTML.polyfill();
@@ -6,11 +6,12 @@ import HTML from "@candlefw/html";
 "@candlefw/wick test spec";
 "PARSER"; "#";
 {
-
     "TODO: Test wick"; "#";
     (((await wick("export default <div>((2 + test))</div>").pending).render == 2));
-
 }
+
+
+//Loads URLS from 
 {
     "Parent {-} Child data flow"; "#";
 

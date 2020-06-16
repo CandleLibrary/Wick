@@ -6,6 +6,7 @@ import { DOMLiteral } from "../types/dom_literal.js";
 import { renderers, format_rules } from "../format_rules.js";
 import { Component } from "../types/types.js";
 import { WickContainer } from "./container_class.js";
+import { componentDataToClass } from "../component/component_data_to_class.js";
 
 type BindingUpdateFunction = () => void;
 
@@ -21,26 +22,11 @@ const namespaces = [
     "www.w3.org/XML/1998/namespace",    // XML - 4
     "www.w3.org/2000/xmlns/",           // XMLNS - 5
 ];
-
-const cache = {};
-
-function componentASTToString(ast) {
-    return renderWithFormatting(ast, renderers, format_rules);
-}
-
-export function componentASTToClass(component: Component) {
-    const name = component.name;
-
-    let component_function = cache[name];
-
-    if (!component_function) {
-        component_function = (Function("c", "p", "rt", "return " + renderWithFormatting(component.compiled_ast, renderers, format_rules))(component, rt.prst, rt));
-        cache[name] = component_function;
-    }
-
-    return component_function;
-}
-
+/**
+ * Store for all known component configurations.
+ */
+export const cache = {};
+export const class_strings = {};
 export const enum DATA_FLOW_FLAG {
     FROM_PARENT = 1,
 
@@ -77,7 +63,7 @@ export class WickComponent {
 
     protected getID: () => string;
 
-    protected prst: Presets;
+    protected presets: Presets;
 
     protected rt: WickRuntime;
 
@@ -95,6 +81,8 @@ export class WickComponent {
 
     protected ct: WickContainer[];
 
+    protected model: any;
+
     /**
      * Data flow map 
      * 
@@ -104,7 +92,7 @@ export class WickComponent {
 
     //protected ct: WickContainer[];
     update: (data: object) => void;
-    constructor(comp_data, presets, model = null) {
+    constructor(comp_data, presets, model = null, wrapper = null) {
 
         this.class = comp_data.name;
 
@@ -128,15 +116,19 @@ export class WickComponent {
         this.setModel = registerModel;
 
         this.polling_id = -1;
-        this.prst = rt.prst;
+        this.presets = rt.presets;
 
         this.ele = this.ce();
         this.re();
 
-        if (presets.wrapper && presets.wrapper.toClass() !== this.constructor) {
-            this.wrapper = new (presets.wrapper.toClass());
+
+        if (wrapper) {
+            this.wrapper = wrapper;
             this.ele.appendChild(this.wrapper.ele);
             this.wrapper.setModel({ comp: this, meta: comp_data });
+        } else if (presets.wrapper && comp_data.name !== presets.wrapper.name) {
+            this.wrapper = new (presets.component_class.get(presets.wrapper.name))({ comp: this, meta: comp_data });
+            this.ele.appendChild(this.wrapper.ele);
         }
 
         if (model) this.setModel(model);
@@ -153,6 +145,7 @@ export class WickComponent {
     }
 
     destructor() {
+
         if (this.polling_id > -1)
             clearInterval(this.polling_id);
 
@@ -164,7 +157,6 @@ export class WickComponent {
 
         if (this.wrapper)
             this.wrapper.destructor();
-
     }
 
     get id() { return "0000-0000-0000-0000"; }
@@ -186,6 +178,25 @@ export class WickComponent {
     onMounted() { }
     transitionOut() { }
     transitionIn() { }
+
+    /**
+     * Replace this component with the on passed in. 
+     * The new component inherits the old one's element and model.
+     */
+    replace(component: Component) {
+
+        const comp_class = componentDataToClass(component, this.presets);
+
+        const comp = new comp_class(this.model, this.wrapper);
+
+        this.ele.replaceWith(comp.ele);
+
+        this.wrapper = null;
+
+        this.destructor();
+
+        return comp;
+    }
 }
 
 
@@ -249,7 +260,7 @@ function makeElement(ele_obj, name_space = "", lookup = this.elu, parent = this)
 
     if (ct) {
 
-        const comp = (componentASTToClass(rt.prst.components[component_name]));
+        const comp = parent.presets.component_class.get(component_name);
 
         ele = <HTMLElement>createElementNameSpaced(tag_name, name_space, data);
 
@@ -257,10 +268,11 @@ function makeElement(ele_obj, name_space = "", lookup = this.elu, parent = this)
 
         parent.ct.push(ctr);
 
-    } else if (component_name && rt.prst.components[component_name]) {
+    } else if (component_name && rt.presets.components.has(component_name)) {
 
         //Do fancy component linking
-        const comp = new (componentASTToClass(rt.prst.components[component_name]));
+
+        const comp = parent.presets.component_class.get(component_name);
 
         //Perform linking, what not then set element to the components element. 
         takeParentAddChild(parent, comp);

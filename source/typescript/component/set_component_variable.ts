@@ -7,7 +7,6 @@ export const enum VARIABLE_REFERENCE_TYPE {
     API_VARIABLE = 4,
     PARENT_VARIABLE = 8,
     METHOD_VARIABLE = 2,
-
     GLOBAL_VARIABLE = 32,
 
 
@@ -37,16 +36,18 @@ export function getSetOfEnvironmentGlobalNames(): Set<string> {
  * @param usage_flags
  */
 export function setComponentVariable(
-    type: VARIABLE_REFERENCE_TYPE = 0,
+    type: VARIABLE_REFERENCE_TYPE = VARIABLE_REFERENCE_TYPE.GLOBAL_VARIABLE,
     name: string,
     component: Component = null,
     external_name: string = name,
     usage_flags: number = 0,
     node: MinTreeNode = null) {
+
     var variable = null;
 
-    if (!component.variables.has(name)) {
-        let index = component.variables.size;
+    if (!component.binding_variables.has(name)) {
+
+        let index = component.binding_variables.size;
 
         variable = {
             type,
@@ -60,20 +61,17 @@ export function setComponentVariable(
             references: [ext(node, true)],
         };
 
-        component.variables.set(name, variable);
+        component.binding_variables.set(name, variable);
 
     } else {
 
-        variable = component.variables.get(name);
+        variable = component.binding_variables.get(name);
         variable.references.push(ext(node, true));
 
-        if (!variable.type) {
+        if (!variable.type || variable == VARIABLE_REFERENCE_TYPE.GLOBAL_VARIABLE) {
             variable.usage_flags |= usage_flags;
             variable.type = type;
         }
-
-        //if (variable.type > type && type !== 0)
-        //    variable.type = type;
     }
 
     return variable;
@@ -85,19 +83,21 @@ export function setVariableName(name, component) {
 
     // Allow global objects to be accessed if there are no existing
     // component variables that have an identifier that matches [name]
-    if (!component.variables.has(name)) {
+    if (!component.binding_variables.has(name)) {
         const global_names = getSetOfEnvironmentGlobalNames();
-
-        if (global_names.has(name))
+        if (global_names.has(name)) {
             return name;
+        }
     }
 
     const comp_var = setComponentVariable(VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE, name, component, name, DATA_FLOW_FLAG.FROM_MODEL);
 
     if (comp_var) {
+
         switch (comp_var.type) {
+
             case VARIABLE_REFERENCE_TYPE.API_VARIABLE:
-                return `rt.prst.api.${comp_var.external_name}`;
+                return `rt.presets.api.${comp_var.external_name}`;
             case VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE:
                 return `this.model.${comp_var.external_name}`;
             case VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE:

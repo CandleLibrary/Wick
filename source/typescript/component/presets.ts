@@ -18,9 +18,9 @@ export default class Presets implements PresetOptions {
 
     options: {
         THROW_ON_ERRORS?: boolean,
-        cache_url?: boolean;
-        USE_SHADOW?: boolean;
-        USE_SHADOWED_STYLE?: boolean;
+        cache_url?: boolean,
+        USE_SHADOW?: boolean,
+        USE_SHADOWED_STYLE?: boolean,
     };
 
 
@@ -28,9 +28,11 @@ export default class Presets implements PresetOptions {
      * Store for compiled components.
      * @private
      */
-    components?: {};
+    components?: Map<string, any>;
 
     custom_components?: {};
+    component_class: Map<string, any>;
+    component_class_string: Map<string, string>;
 
     schemes?: {};
 
@@ -39,6 +41,8 @@ export default class Presets implements PresetOptions {
     custom?: {};
 
     url: URL;
+
+    wrapper: {};
 
     static global = { get v() { return CachedPresets; }, set v(e) { } };
 
@@ -60,7 +64,11 @@ export default class Presets implements PresetOptions {
 
         this.wrapper = null;
 
-        this.components = {};
+        this.components = new Map;
+
+        this.component_class = new Map;
+
+        this.component_class_string = new Map;
 
         this.custom_components = {};
 

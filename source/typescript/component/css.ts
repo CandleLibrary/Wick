@@ -6,7 +6,7 @@ import Presets from "./presets.js";
 
 
 
-export async function processWickCSS_AST(ast: WickASTNode, component: Component, presets: Presets): Promise<MinTreeNode> {
+export async function processWickCSS_AST(ast: WickASTNode, component: Component, presets: Presets): Promise<void> {
     //Extract style sheet and add to the components stylesheets
-    component.stylesheets.push(ast.nodes[0]);
+    component.CSS.push(ast.nodes[0]);
 }

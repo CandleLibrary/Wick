@@ -1,18 +1,12 @@
 import URL from "@candlefw/url";
-
-import parser from "./parser/parser.js";
-
 import Presets from "./component/presets.js";
-
 import makeComponent from "./component/component.js";
-
 import CompiledWickAST from "./types/wick_ast_node_types.js";
-
 import { WickComponentErrorStore } from "./types/errors.js";
-import { renderCompressed, renderWithFormatting } from "@candlefw/conflagrate";
-import { WickComponent } from "./runtime/component_class.js";
+import { WickComponent, class_strings } from "./runtime/component_class.js";
 import { rt } from "./runtime/runtime_global.js";
 import { PresetOptions } from "./types/preset_options.js";
+import { componentDataToClass, componentDataToClassString } from "./component/component_data_to_class.js";
 
 
 
@@ -38,17 +32,19 @@ interface WickComponent {
     mount: (ele: HTMLElement, data: object) => WickComponentHandle;
 }
 
+const components = {};
+
 /**
  * Creates a Wick component.
  */
-function wick(input: string | URL, presets?: Presets = rt.prst): WickComponent {
+function wick(input: string | URL, presets?: Presets = rt.presets): WickComponent {
 
     // Ensure there is a presets object attached to this component.
     if (!presets)
         presets = new Presets();
 
-    if (!rt.prst)
-        rt.prst = presets;
+    if (!rt.presets)
+        rt.presets = presets;
 
     const
         promise = makeComponent(input, presets),
@@ -59,12 +55,11 @@ function wick(input: string | URL, presets?: Presets = rt.prst): WickComponent {
             mount: () => { throw "Component mount has not yet been implemented! source/wick.ts:44:9"; }
         };
 
-    promise.then(res => {
-        component.ast = res.AST;
-        component.errors = res.errors;
-        component.toString = res.toString;
-        component.toClass = res.toClass;
-        component.core = res;
+    promise.then(async res => {
+        Object.assign(component, res);
+        component.class = componentDataToClass(res, presets);
+        component.class_string = componentDataToClassString(res, presets);
+        components[res.name] = component;
     });
 
     Object.defineProperties(component, {
@@ -86,7 +81,7 @@ function wick(input: string | URL, presets?: Presets = rt.prst): WickComponent {
             get: function () {
                 return this.toString();
             }
-        }
+        },
     });
 
 
@@ -95,8 +90,15 @@ function wick(input: string | URL, presets?: Presets = rt.prst): WickComponent {
     return component;
 }
 
+wick.URL = URL;
+
 Object.defineProperty(wick, "Component", {
     value: WickComponent,
+    writable: false,
+});
+
+Object.defineProperty(wick, "components", {
+    value: components,
     writable: false,
 });
 
@@ -110,6 +112,22 @@ Object.defineProperty(wick, "api", {
     writable: false
 });
 
+Object.defineProperty(wick, "class_strings", {
+    value: class_strings,
+    writable: false
+});
+
+Object.defineProperty(wick, "componentToClass", {
+    value: componentDataToClass,
+    writable: false
+});
+
+Object.defineProperty(wick, "componentToClassString", {
+    value: componentDataToClassString,
+    writable: false
+});
+
+
 /**
  * Wrapper is a special sudo element that allows interception,
  * injection, and modification of existing components by wrapping
@@ -120,15 +138,14 @@ Object.defineProperty(wick, "setWrapper", {
     value: async function (url) {
         //create new component
 
-        if (!rt.prst)
-            rt.prst = new Presets();
+        if (!rt.presets)
+            rt.presets = new Presets();
 
-        rt.prst.wrapper = wick(url);
+        rt.presets.wrapper = wick(url);
 
-        const comp = await rt.prst.wrapper.pending;
+        const comp = await rt.presets.wrapper.pending;
 
-        comp.toClass();
-
+        componentDataToClass(comp, rt.presets);
     }
 });
 
@@ -142,11 +159,20 @@ Object.defineProperty(wick, "setPresets", {
         //create new component
         const presets = new Presets(preset_options);
 
-        if (!rt.prst)
-            rt.prst = presets;
+        if (!rt.presets)
+            rt.presets = presets;
 
         return presets;
 
+    }
+});
+
+/**
+ * Configure wick to run server side.
+ */
+Object.defineProperty(wick, "server", {
+    value: async function (preset_options: PresetOptions) {
+        await URL.polyfill();
     }
 });
 

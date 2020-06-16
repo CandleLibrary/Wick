@@ -1,0 +1,275 @@
+import { MinTreeNodeType, exp, stmt, ext } from "@candlefw/js";
+import { traverse, renderWithFormatting } from "@candlefw/conflagrate";
+import Presets from "./presets.js";
+import { processBindings } from "./process_bindings.js";
+import { Component, } from "../types/types";
+import { getPropertyAST, getGenericMethodNode } from "./js_ast_tools.js";
+import { setVariableName } from "./set_component_variable.js";
+import { classSelector } from "@candlefw/css";
+import { rt } from "../runtime/runtime_global.js";
+import { renderers, format_rules } from "../format_rules.js";
+
+
+
+export function componentDataToClassString(component: Component, presets: Presets): string {
+
+    const name = component.name;
+
+    if (!presets.component_class_string.has(name))
+        componentDataToClass(component, presets);
+
+    return presets.component_class_string.get(name);
+}
+
+export function componentDataToClass(component: Component, presets: Presets): Component {
+
+    try {
+
+        const name = component.name;
+
+        if (presets.component_class.has(name))
+            return presets.component_class.get(name);
+
+        let id = 0;
+
+        const class_information = {
+            binding_init_statements: [],
+            class_initializer_statements: [],
+            class_cleanup_statements: [],
+            compiled_ast: null,
+            nluf_arrays: []
+        };
+
+        //component.binding_variables.forEach(v => v.class_name = id++);
+
+        //Convert scripts into a class object 
+        const component_class = stmt(`class ${component.name || "temp"} extends cfw.wick.Component {constructor(m,w){super(c,p,m,w);}}`);
+
+        component_class.nodes.length = 4;
+
+        class_information.methods = component_class.nodes;
+
+        const init_function = class_information.methods[3];
+
+        //Binding value statements Method
+        const binding_values_init_method = getGenericMethodNode("c", "", ";"),
+
+            [, , { nodes: bi_stmts }] = binding_values_init_method.nodes;
+
+        bi_stmts.length = 0;
+
+        class_information.binding_init_statements = bi_stmts;
+
+
+        //Initializer Method
+        const register_elements_method = getGenericMethodNode("re", "", "const c = this;"),
+
+            [, , { nodes: re_stmts }] = register_elements_method.nodes;
+
+        class_information.class_initializer_statements = re_stmts;
+
+        //Cleanup Method
+        const cleanup_element_method = getGenericMethodNode("cu", "", "const c = this;"),
+
+            [, , { nodes: cu_stmts }] = cleanup_element_method.nodes;
+
+        class_information.class_cleanup_statements = cu_stmts;
+
+        processBindings(component, class_information, presets);
+
+
+        /* ---------------------------------------
+     * -- Create LU table for public variables
+     */
+
+
+        const
+            public_prop_lookup = {},
+            nlu = stmt("c.nlu = {};"), nluf = stmt("c.nluf = [];"),
+            nluf_arrays = class_information.nluf_arrays,
+            { nodes: [{ nodes: [, nluf_public_variables] }] } = nluf,
+            { nodes: [{ nodes: [, lu_public_variables] }] } = nlu;
+
+        let nlu_index = 0;
+
+        for (const component_variable of component.binding_variables.values()) {
+
+            if (true /* some check for component_variable property of binding*/) {
+
+                lu_public_variables.nodes.push(getPropertyAST(component_variable.external_name, (component_variable.usage_flags << 24) | nlu_index));
+
+                const nluf_array = exp(`c.u${component_variable.class_name}`);
+
+                nluf_arrays.push(nluf_array.nodes);
+
+                nluf_public_variables.nodes.push(nluf_array);
+
+                public_prop_lookup[component_variable.original_name] = nlu_index;
+
+                component_variable.nlui = nlu_index++;
+            }
+        }
+
+        class_information.class_initializer_statements.push(nlu, nluf);
+
+        //Compile scripts into methods
+
+        for (const function_block of component.function_blocks)
+            makeComponentMethod(function_block, component, class_information);
+
+
+        if (component.HTML) {
+
+            const ele_create_method = getGenericMethodNode("ce", "", "return this.me(a);"),
+
+                [, , { nodes: [r_stmt] }] = ele_create_method.nodes;
+
+            r_stmt.nodes[0].nodes[1].nodes[0] = { type: MinTreeNodeType.Identifier, value: `${JSON.stringify(component.HTML)}` };
+
+            const style = buildStyle(component, component.CSS);
+
+            if (style)
+                re_stmts.push(stmt(`this.setCSS(\`${style}\`)`));
+
+            //Setup element
+            class_information.methods.push(ele_create_method);
+        }
+
+        if (class_information.binding_init_statements.length > 0)
+            class_information.methods.push(binding_values_init_method);
+
+        class_information.methods.push(register_elements_method);
+
+        class_information.compiled_ast = component_class;
+
+        const class_string = componentASTToString(class_information);
+
+        presets.component_class_string.set(name, class_string);
+
+        //Pre populate the cache    
+        const compiled_component_class = (Function("c", "p", "rt", "return " + class_string)(component, presets, rt));
+
+        presets.component_class.set(name, compiled_component_class);
+
+        return compiled_component_class;
+    } catch (e) {
+        console.error(
+            `Error found in component ${component.name} while
+    converting to a class.
+    location: ${component.location}.
+    `, e);
+    }
+}
+
+export function componentASTToString(class_information) {
+    return renderWithFormatting(class_information.compiled_ast, renderers, format_rules);
+}
+
+
+function buildStyle(component, stylesheets): string {
+
+    for (const stylesheet of stylesheets) {
+
+        const { rules } = stylesheet.ruleset;
+
+        for (const rule of rules) {
+            for (const selector of rule.selectors) {
+
+                if (selector.vals[0].val == "root")
+                    selector.vals.shift();
+
+                selector.vals.unshift(new classSelector([null, component.name]));
+            }
+        }
+    }
+
+    if (stylesheets.length > 0)
+        return stylesheets[0].toString();
+
+    return "";
+}
+
+
+/**
+ * Update global variables in ast after all globals have been identified
+ */
+function makeComponentMethod(function_block, component: Component, class_information) {
+    const
+        { binding_variables: variables } = component,
+        used_values = new Set();
+
+    let { ast, root_name } = function_block;
+
+
+    for (const { node, meta } of traverse(ast, "nodes")
+        .makeMutable()
+        .makeSkippable()
+    ) {
+        const { skip, mutate, parent } = meta;
+
+        if (node.type == MinTreeNodeType.AssignmentExpression) {
+
+            const [left, right] = node.nodes;
+
+            if (left.type == MinTreeNodeType.IdentifierReference) {
+
+                const { value } = left;
+
+                if (variables.has(value)) {
+
+                    const global_val = variables.get(value),
+                        mutate_node = exp(`this.u${global_val.class_name}()`);
+
+                    global_val.ASSIGNED = 1;
+
+                    node.nodes[0] = exp(setVariableName(value, component));
+
+                    mutate_node.nodes[1].nodes = [node];
+
+                    if (root_name == value)
+                        mutate_node.nodes[1].nodes.push(exp("1"));
+
+                    mutate(mutate_node);
+
+                    used_values.add(value);
+                }
+
+            } else if (left.type == MinTreeNodeType.MemberExpression) {
+                if (left == MinTreeNodeType.IdentifierReference) {
+                    const { value } = node;
+                    if (variables.has(value)) {
+                        const global_val = variables.get(value);
+                        mutate(exp(setVariableName(value, component)));
+                    }
+                }
+            }
+        }
+
+        if (node.type == MinTreeNodeType.IdentifierReference) {
+            const { value } = node;
+
+            if (variables.has(value)) {
+
+                const global_val = variables.get(value);
+                mutate(exp(setVariableName(value, component)));
+            }
+        }
+    }
+
+    if (function_block.type == "method")
+        ast.function_type = "method";
+    else
+        ast.function_type = "root";
+
+    switch (ast.function_type) {
+        case "root":
+            class_information.binding_init_statements.push(...ast.nodes);
+            //const method = exp("({c(){a}})").nodes[0].nodes[0];
+            //method.nodes[2].nodes = ast.nodes;
+            //ast = method;
+            break;
+        default:
+            class_information.methods.push(ast);
+    }
+}
+

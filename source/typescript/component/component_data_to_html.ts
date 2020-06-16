@@ -1,23 +1,22 @@
 import { stmt, MinTreeNodeType, MinTreeNode, renderCompressed, exp } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
+
+
 import { WICK_AST_NODE_TYPE_SIZE, WickASTNodeClass, WickASTNode, WickASTNodeType, WickBindingNode } from "../types/wick_ast_node_types.js";
 import { JSHandler } from "../types/js_handler.js";
 import { DATA_FLOW_FLAG } from "../runtime/component_class.js";
 import { processFunctionDeclaration } from "./js.js";
 import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./set_component_variable.js";
 import { processWickHTML_AST } from "./html.js";
-import { acquireComponentASTFromRemoteSource, compileComponent } from "./component.js";
+import makeComponent, { acquireComponentASTFromRemoteSource, CreateComponent, compileComponent } from "./component.js";
 import { processWickCSS_AST } from "./css.js";
+import { processWickAST } from "./process_wick_ast.js";
 import { Component } from "../types/types.js";
-
-
 ;
 const default_handler = {
     priority: -Infinity,
     prepareJSNode(node) { return node; }
 };
-
-
 
 export const JS_handlers: Array<JSHandler[]> = Array(256 - WICK_AST_NODE_TYPE_SIZE).fill(null).map(() => [default_handler]);
 
@@ -54,7 +53,7 @@ function mergeComponentData(destination_component: Component, source_component: 
         console.warn("TODO:Loss of HTML in merged component. Need to determine what with HTML data within this action.");
 
     for (const [key, data] of source_component.binding_variables.entries())
-        setComponentVariable(data.type, data.local_name, destination_component, data.external_name, data.flags);
+        setComponentVariable(data.type, data.name, destination_component, data.external_name, data.flags);
 
     for (const name of source_component.names)
         destination_component.names.push(name);
@@ -220,7 +219,7 @@ loadJSHandlerInternal(
                                 // If the ast is an HTML_NODE with a single style element, then integrate the 
                                 // css data into the current component. 
 
-                                const comp_data = await compileComponent(ast, string, resolved_url, presets);
+                                const comp_data = await processWickAST(ast, string, presets, resolved_url);
 
                                 if (!comp_data.element)
                                     mergeComponentData(component, comp_data);
@@ -312,6 +311,8 @@ loadJSHandlerInternal(
             ) {
                 if (id.type == MinTreeNodeType.BindingExpression) {
 
+                    debugger;
+
                     const node = id.nodes[0];
 
                     //Label this node and it's name to the blocks input variables. 
@@ -330,8 +331,7 @@ loadJSHandlerInternal(
 
                     id.type = MinTreeNodeType.CallExpression;
 
-                    //Add assignment and update expression for bindings. 
-                    nodes.push(exp(`this.u${d.class_name}(${renderCompressed(id.nodes[1])})`));
+                    //nodes.push(exp(`this.u${d.class_name}(${renderCompressed(id.nodes[1])})`));
                 } else {
                     // binding_variables.push({ v: id.value, node: id, parent });
                 }
@@ -381,7 +381,7 @@ loadJSHandlerInternal(
     {
         priority: 1,
 
-        async prepareJSNode(node, parent_node, skip, replace, component, presets, function_block) {
+        prepareJSNode(node, parent_node, skip, replace, component, presets, function_block) {
 
             const
                 [name_node] = node.nodes;
@@ -412,16 +412,16 @@ loadJSHandlerInternal(
 
             skip(1);
 
-            //addNodeToInputList(function_block, name_node);
+            addNodeToInputList(function_block, name_node);
 
-            setComponentVariable(VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE, name, component, "", 0, <MinTreeNode>parent_node);
+            //setComponentVariable(VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE, name, component, "", 0, <MinTreeNode>parent_node);
 
             if (name[0] == "$") {
                 node.nodes[1] = { type: MinTreeNodeType.Arguments, nodes: [exp("f=0")], pos: node.pos };
                 node.nodes[2].nodes.unshift(stmt(`if(f>0)return 0;`));
             }
 
-            await processFunctionDeclaration(<MinTreeNode>node, component, presets, root_name);
+            processFunctionDeclaration(<MinTreeNode>node, component, presets, root_name);
 
             skip();
 
@@ -432,6 +432,11 @@ loadJSHandlerInternal(
 );
 
 
+// ###################################################################
+// Call Expression Identifiers
+//
+// If the identifier is used as the target of a call expression, add the call
+// expression node to the variable's references list.
 loadJSHandlerInternal(
     {
         priority: 1,
@@ -444,7 +449,7 @@ loadJSHandlerInternal(
                 addNodeToInputList(function_block, node);
             }
 
-            setComponentVariable(VARIABLE_REFERENCE_TYPE.GLOBAL_VARIABLE, name, component, name, 0, <MinTreeNode>parent_node);
+            setComponentVariable(0, name, component, name, 0, <MinTreeNode>parent_node);
 
             return <MinTreeNode>node;
         }

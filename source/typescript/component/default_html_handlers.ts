@@ -1,9 +1,8 @@
 import { WickASTNodeType, WICK_AST_NODE_TYPE_SIZE, WICK_AST_NODE_TYPE_BASE, WickASTNode, WickASTNodeClass } from "../types/wick_ast_node_types.js";
-
 import { HTMLHandler } from "../types/html_handler.js";
-import { processWickAST } from "./process_wick_ast.js";
 import { processWickCSS_AST } from "./css.js";
 import { compileComponent } from "./component.js";
+import { componentDataToClass } from "./component_data_to_class.js";
 
 const default_handler = {
     priority: -Infinity,
@@ -270,26 +269,29 @@ loadHTMLHandlerInternal(
 
                         if (ch) {
 
-                            if (ch && presets.components[ch.tag]) {
+                            if (ch && presets.components.has(ch.tag)) {
+
+                                const comp = presets.components.get(ch.tag);
+
+                                //Make sure the component is compiled into a class.
+                                componentDataToClass(comp, presets);
 
                                 ch.child_id = component.children.push(1) - 1;
 
-                                node.component = presets.components[ch.tag];
+                                node.component = comp;
 
-                                node.component_name = node.component.name;
+                                node.component_name = comp.name;
 
                             } else {
                                 const ch_new = Object.assign({}, ch);
 
                                 ch_new.attributes = [];
 
-                                const comp_data = await processWickAST(ch_new, "auto_generated", presets, null, null);
+                                const comp_data = await compileComponent(ch_new, "auto_generated", null, presets, null);
 
-                                const comp = await compileComponent(comp_data, presets);
+                                node.component = comp_data;
 
-                                node.component = comp;
-
-                                node.component_name = comp.name;
+                                node.component_name = comp_data.name;
 
                             }
                         } else return;
