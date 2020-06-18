@@ -103,7 +103,7 @@ export function setVariableName(name, component) {
             case VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE:
                 return name;
             case VARIABLE_REFERENCE_TYPE.GLOBAL_VARIABLE:
-                return `${global_name}.${comp_var.external_name}`;
+                return `window.${comp_var.external_name}`;
             default:
                 return `this[${comp_var.class_name}]`;
         }

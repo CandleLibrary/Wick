@@ -31,7 +31,6 @@ export interface JSHandler {
         node: MinTreeNode | WickASTNode,
         parent_node: MinTreeNode | WickASTNode,
         skip: () => void,
-        replace_element: (arg: MinTreeNode | WickASTNode | null) => void,
         component: Component,
         presets: Presets
     ):

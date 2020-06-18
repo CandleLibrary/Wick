@@ -11,7 +11,7 @@ export async function processFunctionDeclaration(node: MinTreeNode, component: C
 
 
     //@ts-ignore
-    const temp_component = <Component>{ CSS: [], HTML: null, function_blocks: [], location: "", binding_variables: component.binding_variables, names: [] };
+    const temp_component = <Component>{ CSS: [], HTML: null, function_blocks: [], location: "", binding_variables: component.binding_variables, names: [], addBinding: component.addBinding };
 
     await processWickJS_AST(node, temp_component, presets, root_name);
 
@@ -46,7 +46,7 @@ export async function processWickJS_AST(ast: MinTreeNode, component: Component, 
 
         for (const handler of JS_handlers[Math.max((node.type >>> 24), 0)]) {
 
-            const pending = handler.prepareJSNode(node, meta.parent, meta.skip, () => { }, component, presets, function_block);
+            const pending = handler.prepareJSNode(node, meta.parent, meta.skip, component, presets, function_block);
 
             let result = null;
 

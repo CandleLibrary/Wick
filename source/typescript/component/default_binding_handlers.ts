@@ -92,9 +92,6 @@ loadBindingHandler({
     }
 });
 
-
-// This binding handler deals with event attributes that
-// begin on{event name}.
 loadBindingHandler({
     priority: -1,
 
@@ -126,8 +123,6 @@ loadBindingHandler({
     }
 });
 
-// This binding handler deals with event attributes that
-// begin on{event name}.
 loadBindingHandler({
     priority: -1,
 
@@ -344,12 +339,6 @@ loadBindingHandler({
             binding.write_ast = expression;
         }
 
-        //Cleanup -- Compare component_variables with locals and remove any binding that collides with a declared variable.
-        //Further Cleanup -- Globals names that are already part of the global scope are removed. 
-        // for (const a of container.dependent_variables.values())
-        //     if (global_names.has(a))${attribute_name.slice(2)}
-        //         container.dependent_variables.delete(a);
-
         return binding;
     }
 });
@@ -364,8 +353,6 @@ loadBindingHandler({
     },
 
     prepareBindingObject(attribute_name, pending_binding, host_node, element_index, component, presets) {
-
-        // if (host_node.tag == "container") {
 
         const binding = createBindingObject(BindingType.WRITEONLY),
             component_names = component.binding_variables,
@@ -401,14 +388,7 @@ loadBindingHandler({
             binding.write_ast = expression;
         }
 
-        //Cleanup -- Compare component_variables with locals and remove any binding that collides with a declared variable.
-        //Further Cleanup -- Globals names that are already part of the global scope are removed. 
-        // for (const a of container.dependent_variables.values())
-        //     if (global_names.has(a))
-        //         container.dependent_variables.delete(a);
-
         return binding;
-        // } else return;
     }
 });
 
@@ -422,8 +402,6 @@ loadBindingHandler({
     },
 
     prepareBindingObject(attribute_name, pending_binding, host_node, element_index, component, presets) {
-
-        // if (host_node.tag == "container") {
 
         const binding = createBindingObject(BindingType.READONLY),
             component_names = component.binding_variables,
@@ -462,13 +440,41 @@ loadBindingHandler({
             binding.read_ast = stmt_;
         }
 
-        //Cleanup -- Compare component_variables with locals and remove any binding that collides with a declared variable.
-        //Further Cleanup -- Globals names that are already part of the global scope are removed. 
-        // for (const a of container.dependent_variables.values())
-        //     if (global_names.has(a))
-        //         container.dependent_variables.delete(a);
-
         return binding;
-        // } else return;
     }
 });
+
+loadBindingHandler({
+    priority: 100,
+
+    canHandleBinding(attribute_name, node_type) {
+        return attribute_name == "inline_element_id";
+    },
+
+    prepareBindingObject(attribute_name, pending_binding, host_node, element_index, component, presets) {
+
+        const id = getElementById(host_node.value.slice(1), component.HTML);
+
+        if (id >= 0) {
+            const binding = createBindingObject(BindingType.READONLY);
+
+            binding.read_ast = exp(`c.a=c.elu[${id}]`);
+
+            return binding;
+        }
+    }
+});
+
+function getElementById(id, node): number {
+
+    let i = -1;
+    if (node.a)
+        for (let i = 0; i < node.a.length; i += 2)
+            if (node.a[i] == "id" && node.a[i + 1] == id) return node.i;
+
+    if (node.c)
+        for (const c of node.c)
+            if ((i = getElementById(id, c)) >= 0) break;
+
+    return i;
+}

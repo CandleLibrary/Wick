@@ -84,7 +84,7 @@ loadJSHandlerInternal(
     {
         priority: 1,
 
-        async prepareJSNode(node, parent_node, skip, replace, component, presets) {
+        async prepareJSNode(node, parent_node, skip, component, presets) {
             let from_value = "", module = null;
 
             if (!node.nodes[0])
@@ -259,7 +259,7 @@ loadJSHandlerInternal(
     {
         priority: 1,
 
-        async prepareJSNode(node, parent_node, skip, replace, component, presets) {
+        async prepareJSNode(node, parent_node, skip, component, presets) {
 
 
             // If the export is an element then 
@@ -298,7 +298,7 @@ loadJSHandlerInternal(
     {
         priority: 1,
 
-        prepareJSNode(node, parent_node, skip, replace, component, presets, function_block) {
+        prepareJSNode(node, parent_node, skip, component, presets, function_block) {
 
             const
                 n = stmt("a,a;"),
@@ -352,7 +352,7 @@ loadJSHandlerInternal(
     {
         priority: 1,
 
-        prepareJSNode(node, parent_node, skip, replace, component, presets, function_block) {
+        prepareJSNode(node, parent_node, skip, component, presets, function_block) {
 
             const [id] = node.nodes,
                 l_name = <string>id.value;
@@ -381,7 +381,7 @@ loadJSHandlerInternal(
     {
         priority: 1,
 
-        async prepareJSNode(node, parent_node, skip, replace, component, presets, function_block) {
+        async prepareJSNode(node, parent_node, skip, component, presets, function_block) {
 
             const
                 [name_node] = node.nodes;
@@ -436,7 +436,7 @@ loadJSHandlerInternal(
     {
         priority: 1,
 
-        prepareJSNode(node, parent_node, skip, replace, component, presets, function_block) {
+        prepareJSNode(node, parent_node, skip, component, presets, function_block) {
 
             const name = <string>node.value;
 
@@ -451,15 +451,6 @@ loadJSHandlerInternal(
     }, MinTreeNodeType.IdentifierReference
 );
 
-function addNodeToInputList(function_block, node) {
-    node.id = function_block.input_binding_variables.length;
-    function_block.input_binding_variables.push({ name: node.value, node_id: node, node });
-};
-
-function addNodeToOutputList(function_block, node) {
-    node.id = function_block.output_binding_variables.length;
-    function_block.output_binding_variables.push({ name: node.value, node_id: node, node });
-};
 
 // ###################################################################
 // Naked Style Element. Styles whole component.
@@ -467,7 +458,7 @@ loadJSHandlerInternal(
     {
         priority: 1,
 
-        async prepareJSNode(node, parent_node, skip, replace, component, presets) {
+        async prepareJSNode(node, parent_node, skip, component, presets) {
 
             if (node.nodes[0].type == WickASTNodeType.HTML_STYLE) {
 
@@ -487,7 +478,7 @@ loadJSHandlerInternal(
     {
         priority: 1,
 
-        async prepareJSNode(node, parent_node, skip, replace, component, presets, function_block) {
+        async prepareJSNode(node, parent_node, skip, component, presets, function_block) {
 
             skip(1);
 
@@ -501,3 +492,42 @@ loadJSHandlerInternal(
 
     }, MinTreeNodeType.AssignmentExpression
 );
+
+
+// ###################################################################
+// String with identifiers for HTML Elements. 
+loadJSHandlerInternal(
+    {
+        priority: 1,
+
+        async prepareJSNode(node, parent_node, skip, component, presets, function_block) {
+
+
+            if (node.value[0] == "#") {
+                component.addBinding({
+                    attribute_name: "inline_element_id",
+                    binding_node: node,
+                    host_node: node,
+                    html_element_index: 0
+                });
+
+                return {
+                    type: MinTreeNodeType.Identifier,
+                    value: "this.a"
+                };
+            }
+        }
+
+    }, MinTreeNodeType.StringLiteral
+);
+
+
+function addNodeToInputList(function_block, node) {
+    node.id = function_block.input_binding_variables.length;
+    function_block.input_binding_variables.push({ name: node.value, node_id: node, node });
+};
+
+function addNodeToOutputList(function_block, node) {
+    node.id = function_block.output_binding_variables.length;
+    function_block.output_binding_variables.push({ name: node.value, node_id: node, node });
+};

@@ -120,9 +120,10 @@ function buildExportableDOMNode(
 
     if (ast.attributes && ast.attributes.length > 0) {
         node.a = [];
-        for (const attrib of ast.attributes) {
-            node.a.push({ [attrib.name]: attrib.value });
-        }
+
+        for (const attrib of ast.attributes)
+            node.a.push(attrib.name, attrib.value);
+
     }
 
     /***

@@ -51,7 +51,7 @@ function wick(input: string | URL, presets?: Presets = rt.presets): WickComponen
 
         component = <WickComponent><unknown>{
             presets,
-            pending: new Promise(res => promise.then(() => res(component))),
+            pending: promise,
             mount: () => { throw "Component mount has not yet been implemented! source/wick.ts:44:9"; }
         };
 
@@ -60,6 +60,7 @@ function wick(input: string | URL, presets?: Presets = rt.presets): WickComponen
         component.class = componentDataToClass(res, presets);
         component.class_string = componentDataToClassString(res, presets);
         components[res.name] = component;
+        return component;
     });
 
     Object.defineProperties(component, {
@@ -83,9 +84,6 @@ function wick(input: string | URL, presets?: Presets = rt.presets): WickComponen
             }
         },
     });
-
-
-    promise.catch(e => { });
 
     return component;
 }

@@ -95,6 +95,7 @@ export class WickComponent {
     constructor(comp_data, presets, model = null, wrapper = null) {
 
         this.class = comp_data.name;
+        this.name = comp_data.name;
 
         this.nlu = {};
 
@@ -283,9 +284,8 @@ function makeElement(ele_obj, name_space = "", lookup = this.elu, parent = this)
 
 
     if (attributes)
-        for (const a of attributes)
-            for (const i in a)
-                ele.setAttributeNS(name_space, i, a[i]);
+        for (let i = 0; i < attributes.length; i += 2)
+            ele.setAttributeNS(name_space, attributes[i], attributes[i + 1]);
 
     if (children)
         outer: for (const child of children) {

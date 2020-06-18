@@ -42,19 +42,8 @@ export function parseStringAndCreateWickAST(wick_string: string) {
     try {
         ast = parser(wick_string);
     } catch (e) {
-
-        /** 
-         * Since we were unable to process the input we'll create an error ast that can be used to generate
-         * an error report component. 
-         */
-        ast = <WickASTNode>{
-            type: WickASTNodeType.ERROR, nodes: [{
-                message: `Failed to parse wick component`,
-                ref: WickComponentErrorCode.SYNTAX_ERROR_DURING_PARSE,
-                error_object: e instanceof Error ? e : null,
-                URL: url,
-            }]
-        };
+        //intentional
+        throw e;
     }
 
     return ast;
@@ -130,13 +119,8 @@ export default async function makeComponent(input: URL | string, presets?: Prese
         url = resolved_url;
 
     } catch (e) {
-        try {
-            url = "";
-            ast = parseStringAndCreateWickAST(<string>input);
-        } catch (e) {
-            console.log(e);
-            throw e;
-        }
+        url = "";
+        ast = parseStringAndCreateWickAST(<string>input);
     }
 
     return await compileComponent(ast, input_string, url, presets);
