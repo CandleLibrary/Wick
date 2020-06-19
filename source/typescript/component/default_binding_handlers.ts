@@ -101,9 +101,8 @@ loadBindingHandler({
 
     prepareBindingObject(attribute_name, pending_binding, host_node, element_index, component, presets) {
 
-        const binding = createBindingObject(BindingType.READONLY);
-
-        const { local, extern } = pending_binding, index = host_node.child_id, child_comp = host_node.component;
+        const binding = createBindingObject(BindingType.READONLY),
+            { local, extern } = pending_binding, index = host_node.child_id, child_comp = host_node.component;
 
         if (child_comp) {
 
@@ -132,8 +131,7 @@ loadBindingHandler({
 
     prepareBindingObject(attribute_name, pending_binding, host_node, element_index, component, presets) {
 
-        const
-            binding = createBindingObject(BindingType.WRITE),
+        const binding = createBindingObject(BindingType.WRITE),
             { local, extern } = pending_binding,
             index = host_node.child_id,
             comp = host_node.component;
@@ -198,7 +196,6 @@ loadBindingHandler({
                 expression = stmt(`c.e${element_index}.addEventListener("${attribute_name.slice(2)}",c.${ast.value}.bind(c));`);
             else {
 
-                debugger;
                 const name = "on" + on_count++,
 
                     //Create new function method for the component
@@ -448,7 +445,7 @@ loadBindingHandler({
     priority: 100,
 
     canHandleBinding(attribute_name, node_type) {
-        return attribute_name == "inline_element_id";
+        return attribute_name == "inlined_element_id";
     },
 
     prepareBindingObject(attribute_name, pending_binding, host_node, element_index, component, presets) {

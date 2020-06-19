@@ -75,23 +75,32 @@ loadHTMLHandlerInternal(
         priority: -2,
 
         prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
-            if (node.name == "slot") {
-            }
+            switch (node.name) {
 
-            if (node.name == "name") {
-                host_node.slot_name = node.value;
-            }
 
-            if (node.name == "value" && node.value.type == WickASTNodeType.WickBinding) {
+                case "id":
+                    break;
 
-                component.addBinding({
-                    attribute_name: "input_value",
-                    binding_node: node.value,
-                    host_node: node,
-                    html_element_index: index
-                });
+                case "slot":
+                    break;
 
-                return null;
+                case "name":
+                    host_node.slot_name = node.value;
+                    break;
+
+                case "value":
+                    if (node.value.type == WickASTNodeType.WickBinding) {
+
+                        component.addBinding({
+                            attribute_name: "input_value",
+                            binding_node: node.value,
+                            host_node: node,
+                            html_element_index: index
+                        });
+
+                        return null;
+                    }
+                    break;
             }
 
             return;
@@ -240,15 +249,14 @@ loadHTMLHandlerInternal(
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
 
-            if (presets.components[node.tag]) {
 
-                console.log(node.tag, component.location);
+            if (presets.named_components.has(node.tag)) {
 
                 node.child_id = component.children.push(1) - 1;
 
-                node.component = presets.components[node.tag];
+                node.component = presets.named_components.get(node.tag);
 
-                node.component_name = node.tag;
+                node.component_name = node.component.name;
 
                 node.tag = "div";
             }
@@ -269,9 +277,9 @@ loadHTMLHandlerInternal(
 
                         if (ch) {
 
-                            if (ch && presets.components.has(ch.tag)) {
+                            if (ch && presets.named_components.has(ch.tag)) {
 
-                                const comp = presets.components.get(ch.tag);
+                                const comp = presets.named_components.get(ch.tag);
 
                                 //Make sure the component is compiled into a class.
                                 componentDataToClass(comp, presets);

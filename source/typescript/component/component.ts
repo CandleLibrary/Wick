@@ -191,7 +191,7 @@ export async function compileComponent(ast, source_string, url, presets): Promis
             await processWickHTML_AST(<WickASTNode>ast, component, presets);
 
         for (const name of component.names)
-            presets.components.set(name.toUpperCase(), component);
+            presets.named_components.set(name.toUpperCase(), component);
 
         component.binding_variables = new Map();
 

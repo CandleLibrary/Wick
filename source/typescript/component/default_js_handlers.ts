@@ -222,11 +222,10 @@ loadJSHandlerInternal(
 
                                 const comp_data = await compileComponent(ast, string, resolved_url, presets);
 
-                                if (!comp_data.element)
+                                if (!comp_data.HTML)
                                     mergeComponentData(component, comp_data);
-                                else {
-                                    await compileComponent(comp_data, presets);
-                                }
+
+
 
                             } catch (e) {
                                 console.log("TODO: Replace with a temporary warning component."/*, e*/);
@@ -504,8 +503,9 @@ loadJSHandlerInternal(
 
 
             if (node.value[0] == "#") {
+
                 component.addBinding({
-                    attribute_name: "inline_element_id",
+                    attribute_name: "inlined_element_id",
                     binding_node: node,
                     host_node: node,
                     html_element_index: 0

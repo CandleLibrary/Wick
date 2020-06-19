@@ -24,11 +24,11 @@ const rt: WickRuntime = (() => {
 
         registerComponent(component_name, component) {
             rt.presets.component_class.set(component_name, component);
-            components.set(component_name, component);
+            rt.presets.components.set(component_name, component);
         },
 
         getComponent(component_name): WickComponent {
-            return components.get(component_name);
+            return rt.presets.components.get(component_name);
         },
 
         OVERRIDABLE_onComponentCreate(component_meta, component_instance) { },

@@ -270,10 +270,13 @@ function makeElement(ele_obj, name_space = "", lookup = this.elu, parent = this)
         parent.ct.push(ctr);
 
     } else if (component_name && rt.presets.components.has(component_name)) {
+        const comp_constructor = parent.presets.component_class.get(component_name);
 
         //Do fancy component linking
 
-        const comp = parent.presets.component_class.get(component_name);
+        const comp = new comp_constructor();
+
+
 
         //Perform linking, what not then set element to the components element. 
         takeParentAddChild(parent, comp);

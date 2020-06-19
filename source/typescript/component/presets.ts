@@ -64,6 +64,8 @@ export default class Presets implements PresetOptions {
 
         this.wrapper = null;
 
+        this.named_components = new Map;
+
         this.components = new Map;
 
         this.component_class = new Map;
