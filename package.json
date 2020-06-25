@@ -19,8 +19,8 @@
         "test.watch": "cfw.test -w ./test/candlefw.wick.spec.js",
         "build": "rollup --config ./build/config/main.config.js",
         "build.watch": "rollup --config ./source/config/rollup.config.js --watch",
-        "build.lite": "rollup --config ./source/config/lite.config.js",
-        "build.lite.watch": "rollup --config ./source/config/lite.config.js --watch",
+        "build.runtime": "rollup --config ./source/config/rollup.runtime.config.js",
+        "build.runtime.watch": "rollup --config ./source/config/rollup.runtime.config.js --watch",
         "server": "lantern"
     },
     "repository": {

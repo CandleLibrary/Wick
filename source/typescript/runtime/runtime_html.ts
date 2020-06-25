@@ -5,7 +5,7 @@ import Presets from "../presets";
 import { DOMLiteral } from "../types/dom_literal.js";
 import { renderers, format_rules } from "../format_rules.js";
 import { Component } from "../types/types.js";
-import { WickContainer } from "./runtime_container_class.js";
+import { WickContainer } from "./runtime_container.js";
 import { componentDataToClass } from "../component/component_data_to_class.js";
 import parser from "../parser/parser.js";
 

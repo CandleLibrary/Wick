@@ -1,4 +1,4 @@
-import glow from "@candlefw/glow";
+import { cfw } from "@candlefw/candle";
 import spark from "@candlefw/spark";
 
 function getColumnRow(index, offset, set_size) {
@@ -6,6 +6,15 @@ function getColumnRow(index, offset, set_size) {
     const row = Math.floor(adjusted_index / set_size);
     const col = (index) % (set_size);
     return { row, col };
+}
+
+//Poly fill for transitions if glow is not included
+function createTransition(val?: boolean) {
+    if (!cfw.glow)
+        return {
+            in: { add: () => null }, out: { add: () => null }, play: () => null;
+        };
+    else return cfw.createTransition(val);
 }
 
 /**
@@ -312,7 +321,7 @@ export class WickContainer {
         const
             limit = this.limit,
             offset = this.offset,
-            transition = glow.createTransition(),
+            transition = createTransition(),
             output_length = output.length,
             active_window_start = offset * this.shift_amount;
 
@@ -350,7 +359,7 @@ export class WickContainer {
             output_length = output.length,
             OWN_TRANSITION = false;
 
-        if (!transition) transition = glow.createTransition(), OWN_TRANSITION = true;
+        if (!transition) transition = createTransition(), OWN_TRANSITION = true;
 
         offset = Math.max(0, offset);
 
@@ -374,8 +383,8 @@ export class WickContainer {
             this.offset = Math.max(0, Math.min(shift_points - 1, offset));
 
             //Two transitions to support scrubbing from an offset in either direction
-            this.trs_ascending = glow.createTransition(false);
-            this.trs_descending = glow.createTransition(false);
+            this.trs_ascending = createTransition(false);
+            this.trs_descending = createTransition(false);
 
             this.dom_dn.length = 0;
             this.dom_up.length = 0;
@@ -539,13 +548,13 @@ export class WickContainer {
         return output;
     }
 
-    filterExpressionUpdate(transition = glow.createTransition()) {
+    filterExpressionUpdate(transition = createTransition()) {
         // Filter the current components. 
         this.filterUpdate();
         this.limitExpressionUpdate(transition);
     }
 
-    limitExpressionUpdate(transition = glow.createTransition()) {
+    limitExpressionUpdate(transition = createTransition()) {
 
         //Preset the positions of initial components. 
         this.arrange();
@@ -569,7 +578,7 @@ export class WickContainer {
      */
     cull(new_items = []) {
 
-        const transition = glow.createTransition();
+        const transition = createTransition();
 
         if (new_items.length == 0) {
 
@@ -652,7 +661,7 @@ export class WickContainer {
      *
      * @param      {Array}  items   An array of items no longer stored in the ModelContainer. 
      */
-    removed(items, transition = glow.createTransition()) {
+    removed(items, transition = createTransition()) {
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
             for (let j = 0; j < this.scopes.length; j++) {
@@ -676,7 +685,7 @@ export class WickContainer {
         let OWN_TRANSITION = false;
 
         if (!transition)
-            transition = glow.createTransition(), OWN_TRANSITION = true;
+            transition = createTransition(), OWN_TRANSITION = true;
 
         for (let i = 0; i < items.length; i++) {
 

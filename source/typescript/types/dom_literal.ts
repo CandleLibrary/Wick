@@ -4,10 +4,7 @@ export interface DOMLiteral {
     /**Tag name of the element.  */
     t: string;
     /** Array of attribute {name, value} tuples. */
-    a: Array<{
-        n: string;
-        v: string;
-    }>;
+    a: Array<[string, string]>;
     /** Array of DOM children. */
     c: DOMLiteral[];
     /**  String data for TextNodes. If t is an empty string then this data will be

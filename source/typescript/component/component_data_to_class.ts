@@ -1,6 +1,6 @@
 import { MinTreeNodeType, exp, stmt } from "@candlefw/js";
-import { traverse, renderWithFormatting } from "@candlefw/conflagrate";
 import { classSelector } from "@candlefw/css";
+import { traverse, renderWithFormatting, renderCompressed } from "@candlefw/conflagrate";
 
 import Presets from "../presets.js";
 import { processBindings } from "./component_process_bindings.js";
@@ -9,31 +9,48 @@ import { getPropertyAST, getGenericMethodNode } from "./component_js_ast_tools.j
 import { setVariableName } from "./component_set_component_variable.js";
 import { rt } from "../runtime/runtime_global.js";
 import { renderers, format_rules } from "../format_rules.js";
-import { WickRTComponent } from "../runtime/runtime_component_class.js";
+import { WickRTComponent } from "../runtime/runtime_component.js";
+import parser from "../parser/parser.js";
 
 
 
-function buildStyle(component, stylesheets): string {
+export function buildComponentStyleSheet(component): string {
 
-    for (const stylesheet of stylesheets) {
+    const cloned_stylesheets = component.CSS.map(s => parser(`<style>${s}</style>`).nodes[0]);
+
+    for (const stylesheet of cloned_stylesheets) {
 
         const { rules } = stylesheet.ruleset;
 
         for (const rule of rules) {
-            for (const selector of rule.selectors) {
+            let HAS_ROOT = false;
 
-                if (selector.vals[0].val == "root")
-                    selector.vals.shift();
+            rule.selectors = rule.selectors.map(s => s.vals.map(s => {
 
-                selector.vals.unshift(new classSelector([null, component.name]));
-            }
+                switch (s.type) {
+                    case "type":
+                        if (s.val == "root") {
+                            HAS_ROOT = true;
+                            return new classSelector([null, component.name]);
+                        }
+                        break;
+                    case "compound":
+                        if (s.tag.val == "root") {
+                            HAS_ROOT = true;
+                            s.tag = new classSelector([null, component.name]);
+                        }
+                        break;
+                }
+
+                return s;
+            }));
+
+            if (!HAS_ROOT)
+                rule.selectors.unshift(new classSelector([null, component.name]));
         }
     }
 
-    if (stylesheets.length > 0)
-        return stylesheets[0].toString();
-
-    return "";
+    return cloned_stylesheets.join("\n");
 }
 
 
@@ -123,14 +140,14 @@ function componentStringToClass(class_string: string, component: Component, pres
     return (Function("c", "p", "rt", "return " + class_string)(component, presets, rt));
 }
 
-export function componentDataToClassCached(component: Component, presets: Presets, INCLUDE_HTML: boolean = true): WickRTComponent {
+export function componentDataToClassCached(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): WickRTComponent {
 
     const name = component.name;
 
     let comp: WickRTComponent = presets.component_class.get(name);
 
     if (!comp) {
-        const str = componentDataToClassStringCached(component, presets, INCLUDE_HTML);
+        const str = componentDataToClassStringCached(component, presets, INCLUDE_HTML, INCLUDE_CSS);
         comp = componentStringToClass(str, component, presets);
         presets.component_class.set(name, comp);
     }
@@ -138,28 +155,28 @@ export function componentDataToClassCached(component: Component, presets: Preset
     return comp;
 }
 
-export function componentDataToClass(component: Component, presets: Presets, INCLUDE_HTML: boolean = true): string {
+export function componentDataToClass(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): string {
 
-    const class_string = componentDataToClassString(component, presets, INCLUDE_HTML);
+    const class_string = componentDataToClassString(component, presets, INCLUDE_HTML, INCLUDE_CSS);
 
     return componentStringToClass(class_string, component, presets);
 }
 
-export function componentDataToClassStringCached(component: Component, presets: Presets, INCLUDE_HTML: boolean = true): string {
+export function componentDataToClassStringCached(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): string {
 
     const name = component.name;
 
     let str: string = presets.component_class_string.get(name);
 
     if (!str) {
-        str = componentDataToClassString(component, presets, INCLUDE_HTML);
+        str = componentDataToClassString(component, presets, INCLUDE_HTML, INCLUDE_CSS);
         presets.component_class_string.set(name, str);
     }
 
     return str;
 }
 
-export function componentDataToClassString(component: Component, presets: Presets, INCLUDE_HTML: boolean = true): string {
+export function componentDataToClassString(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): string {
 
     try {
 
@@ -255,7 +272,7 @@ export function componentDataToClassString(component: Component, presets: Preset
         }
 
         let style;
-        if ((style = buildStyle(component, component.CSS))) {
+        if (INCLUDE_CSS && (style = buildComponentStyleSheet(component))) {
             re_stmts.push(stmt(`this.setCSS(\`${style}\`)`));
         }
 
@@ -266,7 +283,7 @@ export function componentDataToClassString(component: Component, presets: Preset
 
         class_information.compiled_ast = component_class;
 
-        return renderWithFormatting(class_information.compiled_ast, renderers, format_rules);
+        return renderCompressed(class_information.compiled_ast, renderers);
 
     } catch (e) {
         console.error(

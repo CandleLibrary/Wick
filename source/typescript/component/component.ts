@@ -1,14 +1,16 @@
 import URL from "@candlefw/url";
+import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
+
 import Presets from "../presets.js";
-import CompiledWickAST, { WickASTNode, WickASTNodeType } from "../types/wick_ast_node_types.js";
-import { WickComponentErrorStore, WickComponentErrorCode } from "../types/errors.js";
-import { Component, } from "../types/types";
 import parser from "../parser/parser.js";
 import { processWickJS_AST } from "./component_js.js";
 import { processWickHTML_AST } from "./component_html.js";
-import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
-import { PendingBinding } from "../types/types";
+import { createNameHash } from "./component_create_hash_name.js";
 
+import { PendingBinding } from "../types/types";
+import { WickComponentErrorStore } from "../types/errors.js";
+import { Component, } from "../types/types";
+import CompiledWickAST, { WickASTNode } from "../types/wick_ast_node_types.js";
 export const component_cache = {};
 
 function determineSourceType(ast: WickASTNode | MinTreeNode): boolean {
@@ -17,21 +19,6 @@ function determineSourceType(ast: WickASTNode | MinTreeNode): boolean {
     return false;
 };
 
-function createNameHash(string: string) {
-
-    let number = BigInt(0);
-
-    const seed = BigInt(0x2F41118294721DA1);
-
-    for (let i = 0; i < string.length; i++) {
-
-        const val = BigInt(string.charCodeAt(i));
-
-        number = ((val << BigInt(i % 8) ^ seed) << BigInt(i % 64)) ^ (number >> BigInt(i % 4));
-    }
-
-    return "W" + number.toString(36).toUpperCase();
-}
 export function parseStringAndCreateWickAST(wick_string: string) {
     /**
      * We are now assuming that the input has been converted to a string containing wick markup. 
@@ -180,8 +167,6 @@ export async function compileComponent(ast: WickASTNode | MinTreeNode, source_st
             },
 
             IS_SCRIPT = determineSourceType(ast);
-
-        console.log(component.name);
 
         if (presets.components.has(component.name))
             return presets.components.get(component.name);

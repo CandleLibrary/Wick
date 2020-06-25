@@ -254,8 +254,6 @@ loadHTMLHandlerInternal(
                     name = component.local_component_names.get(node.tag),
                     comp = presets.components.get(name);
 
-                console.log(node.tag, name, comp);
-
                 node.child_id = component.children.push(1) - 1;
 
                 node.component = comp;
@@ -320,7 +318,8 @@ loadHTMLHandlerInternal(
 
                         skip();
 
-                        return node;
+                        //return Object.assign({}, node, { tag: "DIV" });
+                        break;
                     case "svg":
                         node.name_space = 1;
                         break;

@@ -8,5 +8,6 @@ import Presets from "../presets.js";
 
 export async function processWickCSS_AST(ast: WickASTNode, component: Component, presets: Presets): Promise<void> {
     //Extract style sheet and add to the components stylesheets
-    component.CSS.push(ast.nodes[0]);
+    const [stylesheet] = ast.nodes;
+    component.CSS.push(stylesheet);
 }

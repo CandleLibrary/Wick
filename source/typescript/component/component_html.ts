@@ -119,13 +119,17 @@ function buildExportableDOMNode(
 
     if (ast.is_container) {
         node.ct = true;
+
+        if (node.t == "CONTAINER")
+            node.t = "DIV";
     }
 
     if (ast.attributes && ast.attributes.length > 0) {
+
         node.a = [];
 
         for (const attrib of ast.attributes)
-            node.a.push(attrib.name, attrib.value);
+            node.a.push([attrib.name, attrib.value]);
 
     }
 

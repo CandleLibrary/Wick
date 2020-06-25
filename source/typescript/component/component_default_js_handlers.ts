@@ -2,7 +2,7 @@ import { stmt, MinTreeNodeType, MinTreeNode, renderCompressed, exp } from "@cand
 import { traverse } from "@candlefw/conflagrate";
 import { WICK_AST_NODE_TYPE_SIZE, WickASTNodeClass, WickASTNode, WickASTNodeType, WickBindingNode } from "../types/wick_ast_node_types.js";
 import { JSHandler } from "../types/js_handler.js";
-import { DATA_FLOW_FLAG } from "../runtime/runtime_component_class.js";
+import { DATA_FLOW_FLAG } from "../runtime/runtime_component.js";
 import { processFunctionDeclaration } from "./component_js.js";
 import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./component_set_component_variable.js";
 import { processWickHTML_AST } from "./component_html.js";

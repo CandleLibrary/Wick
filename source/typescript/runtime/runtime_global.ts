@@ -1,62 +1,62 @@
-import { WickComponent, cache } from "./runtime_component_class.js";
+
 import Presets from "../presets.js";
 
-export interface WickRuntime {
-    registerComponent(arg1: string, arg2: WickComponent): void;
+import { Component } from "../types/types.js";
+import { PresetOptions } from "../types/preset_options.js";
+import { WickRTComponent } from "./runtime_component.js";
 
+import { cfw } from "@candlefw/cfw";
+
+export interface WickRuntime {
+    glow: any,
+
+    registerComponent(arg1: string, arg2: Component): void;
     presets: Presets;
 
-    OVERRIDABLE_onComponentCreate(component_meta: WickComponentMeta, component_instance: WickComponent): void;
+    OVERRIDABLE_onComponentCreate(component_meta: WickComponentMeta, component_instance: Component): void;
 
     OVERRIDABLE_onComponentMetaChange(component_meta: WickComponentMeta): void;
-}
-const style_strings = [];
 
-let css_element = null;
+    api: { __internal_API_format__: () => void, };
+}
 
 const rt: WickRuntime = (() => {
 
-    const components: Map<string, WickComponent> = new Map();
+    return <WickRuntime>{
 
-    return {
+        get glow() { return cfw.glow; }
+
+        Component: WickRTComponent,
 
         presets: null,
 
-        registerComponent(component_name, component) {
-            rt.presets.component_class.set(component_name, component);
-            //   rt.presets.components.set(component_name, component);
-        },
+        registerComponent: (component_name, component) => void rt.presets.component_class.set(component_name, component),
 
-        getComponent(component_name): WickComponent {
-            return rt.presets.component_class.get(component_name);
-        },
+        getComponent: (component_name): Component => rt.presets.component_class.get(component_name),
 
         OVERRIDABLE_onComponentCreate(component_meta, component_instance) { },
 
         OVERRIDABLE_onComponentMetaChange() { },
 
-        //Private
-        __loadCSS__(comp, style_string) {
+        setPresets: async (preset_options: PresetOptions) => {
 
-            const { constructor } = comp;
+            //create new component
+            const presets = new Presets(preset_options);
 
-            if (!constructor.css)
-                constructor.css = css_element;
-            else return;
+            if (!rt.presets)
+                rt.presets = presets;
 
-            style_strings.push(style_string);
+            return presets;
+        },
 
-            if (!css_element) {
-                css_element = document.createElement("style");
-                document.head.appendChild(css_element);
+        api: {
+            URL,
+            __internal_API_format__: {},
+            getExpectedAPIJSON() {
+                return JSON.stringify(rt.api.__internal_API_format__);
             }
-
-            css_element.innerHTML = style_strings.join("\n");
-
-            console.log(css_element.innerHTML);
         }
     };
-
 })();
 
 

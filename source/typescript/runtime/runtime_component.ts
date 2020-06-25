@@ -1,14 +1,8 @@
-import { renderWithFormatting } from "@candlefw/conflagrate";
-
 import { rt, WickRuntime } from "./runtime_global.js";
-import Presets from "../presets";
+import { WickContainer } from "./runtime_container.js";
 import { DOMLiteral } from "../types/dom_literal.js";
-import { renderers, format_rules } from "../format_rules.js";
-import { Component } from "../types/types.js";
-import { WickContainer } from "./runtime_container_class.js";
-import { componentDataToClass } from "../component/component_data_to_class.js";
-import parser from "../parser/parser.js";
 
+import Presets from "../presets";
 type BindingUpdateFunction = () => void;
 
 
@@ -187,18 +181,20 @@ export class WickRTComponent {
     }
 
     setCSS(style_string) {
+        if (style_string) {
 
-        if (!css_cache[this.name]) {
-            const css_ele = document.createElement("style");
+            if (!css_cache[this.name]) {
+                const css_ele = document.createElement("style");
 
-            css_ele.innerHTML = style_string;
+                css_ele.innerHTML = style_string;
 
-            document.head.appendChild(css_ele);
+                document.head.appendChild(css_ele);
 
-            css_cache[this.name] = css_ele;
+                css_cache[this.name] = css_ele;
+            }
+
+            this.ele.classList.add(this.name);
         }
-
-        this.ele.classList.add(this.name);
     }
 
     appendToDOM(element, before_element = null) {
@@ -270,6 +266,10 @@ export class WickRTComponent {
                 takeParentAddChild(this, comp);
                 this.elu.push(ele);
             }
+
+            if (ele.tagName == "A")
+                rt.presets.processLink(ele);
+
         } else {
             ele.classList.add(this.name);
             this.ele = ele;
@@ -335,8 +335,8 @@ export class WickRTComponent {
 
 
         if (attributes)
-            for (let i = 0; i < attributes.length; i += 2)
-                ele.setAttributeNS(name_space, attributes[i], attributes[i + 1]);
+            for (const [name, value] of attributes)
+                ele.setAttributeNS(name_space, name, value);
 
         if (children)
             outer: for (const child of children) {
@@ -415,27 +415,6 @@ export class WickRTComponent {
 
         this.TRANSITIONED_IN = true;
     }
-
-    /**
-     * Replace this component with the on passed in. 
-     * The new component inherits the old one's element and model.
-     */
-    replace(component: Component) {
-
-        const comp_class = componentDataToClass(component, this.presets);
-
-        const comp = new comp_class(this.model, this.wrapper);
-
-        this.ele.replaceWith(comp.ele);
-
-        this.wrapper = null;
-
-        this.destructor();
-
-        return comp;
-    }
-
-
 
     setModel(model) {
 

@@ -1,12 +1,18 @@
+import { addModuleToCFW } from "@candlefw/cfw";
 import URL from "@candlefw/url";
 import Presets from "./presets.js";
 import makeComponent from "./component/component.js";
-import CompiledWickAST from "./types/wick_ast_node_types.js";
 import { WickComponentErrorStore } from "./types/errors.js";
-import { WickRTComponent, class_strings } from "./runtime/runtime_component_class.js";
+import { WickRTComponent, class_strings } from "./runtime/runtime_component.js";
 import { rt } from "./runtime/runtime_global.js";
 import { PresetOptions } from "./types/preset_options.js";
-import { componentDataToClass, componentDataToClassCached, componentDataToClassStringCached, componentDataToClassString } from "./component/component_data_to_class.js";
+import {
+    componentDataToClass,
+    componentDataToClassCached,
+    componentDataToClassStringCached,
+    componentDataToClassString,
+    buildComponentStyleSheet
+} from "./component/component_data_to_class.js";
 import { Component } from "./types/types.js";
 import { DOMLiteral } from "./types/dom_literal.js";
 
@@ -40,7 +46,6 @@ function wick(input: string | URL, presets: Presets = rt.presets): ExtendedCompo
     const
         promise = new Promise(async res => {
             const comp = await makeComponent(input, presets);
-            console.log(comp.name);
             Object.assign(component, comp);
             componentDataToClassCached(component, presets, true);
             componentDataToClassStringCached(component, presets, true);
@@ -79,23 +84,7 @@ function wick(input: string | URL, presets: Presets = rt.presets): ExtendedCompo
     return component;
 }
 
-wick.URL = URL;
-
-Object.defineProperty(wick, "Component", {
-    value: WickRTComponent,
-    writable: false
-});
-
-
-Object.defineProperty(wick, "api", {
-    value: {
-        __internal_API_format__: {},
-        getExpectedAPIJSON() {
-            return JSON.stringify(wick.api.__internal_API_format__);
-        }
-    },
-    writable: false
-});
+Object.assign(wick, rt);
 
 Object.defineProperty(wick, "class_strings", {
     value: class_strings,
@@ -134,22 +123,27 @@ Object.defineProperty(wick, "setWrapper", {
     }
 });
 
+//Allow a component to be replaced inline
+Object.defineProperty(WickRTComponent.prototype, "replace", {
+    value:
+        /**
+         * Replace this component with the on passed in. 
+         * The new component inherits the old one's element and model.
+         */
+        function (component: Component) {
 
-/**
- * Sets the presets object.
- */
-Object.defineProperty(wick, "setPresets", {
-    value: async function (preset_options: PresetOptions) {
+            const comp_class = componentDataToClass(component, this.presets);
 
-        //create new component
-        const presets = new Presets(preset_options);
+            const comp = new comp_class(this.model, this.wrapper);
 
-        if (!rt.presets)
-            rt.presets = presets;
+            this.ele.replaceWith(comp.ele);
 
-        return presets;
+            this.wrapper = null;
 
-    }
+            this.destructor();
+
+            return comp;
+        }
 });
 
 /**
@@ -169,16 +163,8 @@ Object.defineProperty(wick, "rt", {
     writable: false,
 });
 
-const global_object = (typeof global !== "undefined") ? global : window;
+addModuleToCFW(wick, "wick");
 
-if (global_object) {
-    //@ts-ignore
-    if (typeof global_object.cfw == "undefined") {
-        //@ts-ignore
-        global_object.cfw = { wick };
-        //@ts-ignore
-    } else Object.assign(global_object.cfw, { wick });
-}
 export default wick;
 
-export { Component, Presets, DOMLiteral, componentDataToClass, componentDataToClassString };
+export { Component, Presets, DOMLiteral, componentDataToClass, componentDataToClassString, buildComponentStyleSheet };

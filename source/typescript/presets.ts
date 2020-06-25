@@ -1,7 +1,6 @@
-
 import URL from "@candlefw/url";
+
 import { PresetOptions } from "./types/preset_options.js";
-import { DOC } from "./types/short_names.js";
 
 let CachedPresets = null;
 
