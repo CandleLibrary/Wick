@@ -2,13 +2,14 @@ import { stmt, MinTreeNodeType, MinTreeNode, renderCompressed, exp } from "@cand
 import { traverse } from "@candlefw/conflagrate";
 import { WICK_AST_NODE_TYPE_SIZE, WickASTNodeClass, WickASTNode, WickASTNodeType, WickBindingNode } from "../types/wick_ast_node_types.js";
 import { JSHandler } from "../types/js_handler.js";
-import { DATA_FLOW_FLAG } from "../runtime/component_class.js";
-import { processFunctionDeclaration } from "./js.js";
-import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./set_component_variable.js";
-import { processWickHTML_AST } from "./html.js";
+import { DATA_FLOW_FLAG } from "../runtime/runtime_component_class.js";
+import { processFunctionDeclaration } from "./component_js.js";
+import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./component_set_component_variable.js";
+import { processWickHTML_AST } from "./component_html.js";
 import { acquireComponentASTFromRemoteSource, compileComponent } from "./component.js";
-import { processWickCSS_AST } from "./css.js";
+import { processWickCSS_AST } from "./component_css.js";
 import { Component } from "../types/types.js";
+import { componentDataToClassCached } from "./component_data_to_class.js";
 
 
 ;
@@ -46,7 +47,8 @@ export function loadJSHandler(handler: JSHandler, ...types: MinTreeNodeType[]) {
 
 function mergeComponentData(destination_component: Component, source_component: Component) {
 
-    destination_component.CSS.push(...source_component.CSS);
+    if (source_component.CSS)
+        destination_component.CSS.push(...source_component.CSS);
 
     if (!destination_component.HTML)
         destination_component.HTML = source_component.HTML;
@@ -85,18 +87,21 @@ loadJSHandlerInternal(
         priority: 1,
 
         async prepareJSNode(node, parent_node, skip, component, presets) {
-            let from_value = "", module = null;
+            let url_value = "";
 
-            if (!node.nodes[0])
-                from_value = <string>node.nodes[1].value;
-            else {
-                module = node.nodes[0];
-                from_value = <string>node.nodes[1].nodes[0].value;
-            }
+            const [imports, from] = node.nodes;
+
+            if (!imports)
+                url_value = <string>from.value;
+            else
+                url_value = <string>from.nodes[0].value;
 
             // The @*** values are processed as regular scripts
             // if they have any values other than the ones
             // stated below.
+            const [from_value, meta] = url_value.split(":");
+
+
             if (from_value)
                 switch (from_value) {
 
@@ -189,6 +194,8 @@ loadJSHandlerInternal(
                                 external_name = <string>id.value;
                             }
 
+                            if (meta) component.global_model = meta;
+
                             setComponentVariable(VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE, local_name, component, external_name || local_name, DATA_FLOW_FLAG.FROM_MODEL, <MinTreeNode>node);
 
                             skip();
@@ -202,8 +209,8 @@ loadJSHandlerInternal(
 
                     default:
                         // Read file and determine if we have a component, a script or some other resource. REQUIRING
-                        // extensions would make this whole process 9001% easier. such .html for components,
-                        // .wjs for components, and any other extension type for other kinds of files.
+                        // extensions would make this whole process 9001% easier. such .html for html components,
+                        // .wjs for js components, and any other extension type for other kinds of files.
                         // Also could consider MIME type information for files that served through a web
                         // server.
 
@@ -212,6 +219,7 @@ loadJSHandlerInternal(
                         try {
 
                             //Compile Component Data
+
 
                             try {
 
@@ -222,10 +230,15 @@ loadJSHandlerInternal(
 
                                 const comp_data = await compileComponent(ast, string, resolved_url, presets);
 
+                                componentDataToClassCached(comp_data, presets);
+
+                                if (imports) {
+                                    const name = <string>imports.nodes[0].value;
+                                    component.local_component_names.set(name.toUpperCase(), comp_data.name);
+                                }
+
                                 if (!comp_data.HTML)
                                     mergeComponentData(component, comp_data);
-
-
 
                             } catch (e) {
                                 console.log("TODO: Replace with a temporary warning component."/*, e*/);

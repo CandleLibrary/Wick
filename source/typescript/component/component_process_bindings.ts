@@ -1,11 +1,11 @@
 import { MinTreeNodeType, exp, stmt } from "@candlefw/js";
 import { BindingObject, Component, BindingType } from "../types/types.js";
-import { getGenericMethodNode } from "./js_ast_tools.js";
-import { binding_handlers } from "./default_binding_handlers.js";
+import { getGenericMethodNode } from "./component_js_ast_tools.js";
+import { binding_handlers } from "./component_default_binding_handlers.js";
 import { WickASTNodeType } from "../types/wick_ast_node_types.js";
-import { DATA_FLOW_FLAG } from "../runtime/component_class.js";
-import Presets from "./presets.js";
-import { VARIABLE_REFERENCE_TYPE } from "./set_component_variable.js";
+import { DATA_FLOW_FLAG } from "../runtime/runtime_component_class.js";
+import Presets from "../presets.js";
+import { VARIABLE_REFERENCE_TYPE } from "./component_set_component_variable.js";
 import { renderers, format_rules } from "../format_rules.js";
 import { traverse, renderWithFormatting } from "@candlefw/conflagrate";
 
@@ -116,17 +116,12 @@ export function processBindings(component: Component, class_data, presets: Prese
                     }
                 }
 
-                if (type & BindingType.READ && read_ast) {
-
-                    console.log(renderWithFormatting(read_ast, renderers, format_rules););
-
+                if (type & BindingType.READ && read_ast)
                     binding_inits.push(read_ast);
-                }
 
-                if (cleanup_ast) {
-
+                if (cleanup_ast)
                     clean_stmts.push(cleanup_ast);
-                }
+
                 break;
             }
 

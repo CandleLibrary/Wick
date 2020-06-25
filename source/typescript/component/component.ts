@@ -1,11 +1,11 @@
 import URL from "@candlefw/url";
-import Presets from "./presets.js";
+import Presets from "../presets.js";
 import CompiledWickAST, { WickASTNode, WickASTNodeType } from "../types/wick_ast_node_types.js";
 import { WickComponentErrorStore, WickComponentErrorCode } from "../types/errors.js";
 import { Component, } from "../types/types";
 import parser from "../parser/parser.js";
-import { processWickJS_AST } from "./js.js";
-import { processWickHTML_AST } from "./html.js";
+import { processWickJS_AST } from "./component_js.js";
+import { processWickHTML_AST } from "./component_html.js";
 import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
 import { PendingBinding } from "../types/types";
 
@@ -30,23 +30,19 @@ function createNameHash(string: string) {
         number = ((val << BigInt(i % 8) ^ seed) << BigInt(i % 64)) ^ (number >> BigInt(i % 4));
     }
 
-    return "W" + number.toString(16);
+    return "W" + number.toString(36).toUpperCase();
 }
 export function parseStringAndCreateWickAST(wick_string: string) {
-
-    let ast = null;
     /**
      * We are now assuming that the input has been converted to a string containing wick markup. 
      * We'll let the parser handle any syntax errors.
      */
     try {
-        ast = parser(wick_string);
+        return parser(wick_string);
     } catch (e) {
         //intentional
         throw e;
     }
-
-    return ast;
 }
 
 export async function acquireComponentASTFromRemoteSource(url_source: URL | string, root_url?: URL) {
@@ -102,7 +98,7 @@ export default async function makeComponent(input: URL | string, presets?: Prese
      * 
      * For now, a brute force method will be to use the URL constructor parse the input string. We test for the 
      * presence of a hostname and/or path on the result, and if the string yields values for these, we
-     * assume the string is a URL and proceed to fetch data from the URL. If a resource cannot be fetched,
+     * assume the string is a URL andsetMIME proceed to fetch data from the URL. If a resource cannot be fetched,
      * we proceed with parsing the string as a wick component. 
      */
 
@@ -123,10 +119,10 @@ export default async function makeComponent(input: URL | string, presets?: Prese
         ast = parseStringAndCreateWickAST(<string>input);
     }
 
-    return await compileComponent(ast, input_string, url, presets);
+    return await compileComponent(ast, <string>input_string, url, presets);
 };
 
-export async function compileComponent(ast, source_string, url, presets): Promise<Component> {
+export async function compileComponent(ast: WickASTNode | MinTreeNode, source_string: string, url: string, presets: Presets): Promise<Component> {
     try {
         let out_ast: CompiledWickAST = null;
 
@@ -175,10 +171,17 @@ export async function compileComponent(ast, source_string, url, presets): Promis
 
                 //OLD STUFFS
 
-                addBinding: (pending_binding: PendingBinding) => pending_bindings.push(pending_binding)
+                addBinding: (pending_binding: PendingBinding) => pending_bindings.push(pending_binding),
+
+                //Local names of imported components that are referenced in HTML expressions. 
+                local_component_names: new Map,
+
+                dependency_names: new Set
             },
 
             IS_SCRIPT = determineSourceType(ast);
+
+        console.log(component.name);
 
         if (presets.components.has(component.name))
             return presets.components.get(component.name);

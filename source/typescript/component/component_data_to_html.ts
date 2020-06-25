@@ -4,12 +4,12 @@ import { traverse } from "@candlefw/conflagrate";
 
 import { WICK_AST_NODE_TYPE_SIZE, WickASTNodeClass, WickASTNode, WickASTNodeType, WickBindingNode } from "../types/wick_ast_node_types.js";
 import { JSHandler } from "../types/js_handler.js";
-import { DATA_FLOW_FLAG } from "../runtime/component_class.js";
-import { processFunctionDeclaration } from "./js.js";
-import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./set_component_variable.js";
-import { processWickHTML_AST } from "./html.js";
+import { DATA_FLOW_FLAG } from "../runtime/runtime_component_class.js";
+import { processFunctionDeclaration } from "./component_js.js";
+import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./component_set_component_variable.js";
+import { processWickHTML_AST } from "./component_html.js";
 import makeComponent, { acquireComponentASTFromRemoteSource, CreateComponent, compileComponent } from "./component.js";
-import { processWickCSS_AST } from "./css.js";
+import { processWickCSS_AST } from "./component_css.js";
 import { processWickAST } from "./process_wick_ast.js";
 import { Component } from "../types/types.js";
 ;

@@ -1,9 +1,9 @@
 import { MinTreeNodeType, exp, stmt, renderCompressed, ext } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 import { BindingObject, BindingHandler, BindingType } from "../types/types.js";
-import { processFunctionDeclaration } from "./js.js";
-import { DATA_FLOW_FLAG } from "../runtime/component_class.js";
-import { VARIABLE_REFERENCE_TYPE, setVariableName } from "./set_component_variable.js";
+import { processFunctionDeclaration } from "./component_js.js";
+import { DATA_FLOW_FLAG } from "../runtime/runtime_component_class.js";
+import { VARIABLE_REFERENCE_TYPE, setVariableName } from "./component_set_component_variable.js";
 
 export const binding_handlers: BindingHandler[] = [];
 

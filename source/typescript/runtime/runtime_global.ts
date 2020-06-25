@@ -1,5 +1,5 @@
-import { WickComponent, cache } from "./component_class.js";
-import Presets from "../component/presets.js";
+import { WickComponent, cache } from "./runtime_component_class.js";
+import Presets from "../presets.js";
 
 export interface WickRuntime {
     registerComponent(arg1: string, arg2: WickComponent): void;
@@ -24,11 +24,11 @@ const rt: WickRuntime = (() => {
 
         registerComponent(component_name, component) {
             rt.presets.component_class.set(component_name, component);
-            rt.presets.components.set(component_name, component);
+            //   rt.presets.components.set(component_name, component);
         },
 
         getComponent(component_name): WickComponent {
-            return rt.presets.components.get(component_name);
+            return rt.presets.component_class.get(component_name);
         },
 
         OVERRIDABLE_onComponentCreate(component_meta, component_instance) { },

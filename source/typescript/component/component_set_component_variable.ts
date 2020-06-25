@@ -1,6 +1,6 @@
 import { MinTreeNode, ext } from "@candlefw/js";
 import { Component } from "../types/types.js";
-import { DATA_FLOW_FLAG } from "../runtime/component_class.js";
+import { DATA_FLOW_FLAG } from "../runtime/runtime_component_class.js";
 export const enum VARIABLE_REFERENCE_TYPE {
     INTERNAL_VARIABLE = 1,
     MODEL_VARIABLE = 16,

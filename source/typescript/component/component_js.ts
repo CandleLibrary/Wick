@@ -1,8 +1,8 @@
 import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 import { Component } from "../types/types.js";
-import Presets from "./presets.js";
-import { JS_handlers } from "./default_js_handlers.js";
+import Presets from "../presets.js";
+import { JS_handlers } from "./component_default_js_handlers.js";
 
 
 

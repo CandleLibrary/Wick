@@ -2,7 +2,7 @@ import { MinTreeNode } from "@candlefw/js";
 import { WickASTNode, WickBindingNode, WickTextNode } from "./wick_ast_node_types.js";
 import URL from "@candlefw/url";
 import { Lexer } from "@candlefw/wind";
-import Presets from "../component/presets.js";
+import Presets from "../presets.js";
 
 export interface ComponentVariable {
     name: string,
@@ -89,6 +89,11 @@ export interface Component {
      * URL of source file for this component
      */
     location: URL;
+
+    /**
+     * Mapping between import names and hash names of components that referenced in other components. 
+     */
+    local_component_names: Map<string, string>;
 }
 
 export interface BindingInfoContainer {

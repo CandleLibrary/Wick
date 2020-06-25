@@ -2,9 +2,9 @@ import { MinTreeNode, MinTreeNodeType, ext } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 import { WickASTNode, WickASTNodeType, WickASTNodeClass, WICK_AST_NODE_TYPE_SIZE, WICK_AST_NODE_TYPE_BASE } from "../types/wick_ast_node_types.js";
 import { Component } from "../types/types.js";
-import { html_handlers } from "./default_html_handlers.js";
-import Presets from "./presets.js";
-import { getPropertyAST, getGenericMethodNode, getObjectLiteralAST } from "./js_ast_tools.js";
+import { html_handlers } from "./component_default_html_handlers.js";
+import Presets from "../presets.js";
+import { getPropertyAST, getGenericMethodNode, getObjectLiteralAST } from "./component_js_ast_tools.js";
 
 export async function processWickHTML_AST(ast: WickASTNode, component: Component, presets: Presets): Promise<WickASTNode> {
 
@@ -88,7 +88,8 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
         //TODO - Plugin here for analyzing node structure for hinting / warning / errors.
     }
 
-    component.HTML = buildExportableDOMNode(receiver.ast);
+    if (receiver.ast)
+        component.HTML = buildExportableDOMNode(receiver.ast);
 
     return receiver.ast;
 }

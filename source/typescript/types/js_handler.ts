@@ -2,7 +2,7 @@ import { MinTreeNode } from "@candlefw/js";
 
 import { WickASTNode } from "./wick_ast_node_types.js";
 import { Component } from "./types.js";
-import Presets from "../component/presets.js";
+import Presets from "../presets.js";
 
 export interface JSHandler {
     priority: number;

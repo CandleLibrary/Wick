@@ -1,7 +1,7 @@
 import { types } from "@candlefw/css";
 import { MinTreeNode } from "@candlefw/js";
 import { Component } from "../types/types.js";
-import Presets from "./presets.js";
+import Presets from "../presets.js";
 
 
 

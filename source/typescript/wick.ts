@@ -1,43 +1,34 @@
 import URL from "@candlefw/url";
-import Presets from "./component/presets.js";
+import Presets from "./presets.js";
 import makeComponent from "./component/component.js";
 import CompiledWickAST from "./types/wick_ast_node_types.js";
 import { WickComponentErrorStore } from "./types/errors.js";
-import { WickComponent, class_strings } from "./runtime/component_class.js";
+import { WickRTComponent, class_strings } from "./runtime/runtime_component_class.js";
 import { rt } from "./runtime/runtime_global.js";
 import { PresetOptions } from "./types/preset_options.js";
-import { componentDataToClass, componentDataToClassString } from "./component/component_data_to_class.js";
+import { componentDataToClass, componentDataToClassCached, componentDataToClassStringCached, componentDataToClassString } from "./component/component_data_to_class.js";
+import { Component } from "./types/types.js";
+import { DOMLiteral } from "./types/dom_literal.js";
 
-
-
-/**
- * A handle to a component that is actively mounted to a DOM.
- */
-interface WickComponentHandle {
-
-}
 
 /**
  * A compiled component that can be mounted to a DOM node.
  */
-interface WickComponent {
-    presets: Presets;
-
-    ast: CompiledWickAST;
+interface Extension {
 
     errors: WickComponentErrorStore;
 
-    pending: Promise<WickComponent>;
+    pending: Promise<Extension & Component>;
 
-    mount: (ele: HTMLElement, data: object) => WickComponentHandle;
+    mount: (data?: object, ele?: HTMLElement) => Promise<WickRTComponent>;
 }
 
-const components = {};
+type ExtendedComponent = (Component & Extension);
 
 /**
  * Creates a Wick component.
  */
-function wick(input: string | URL, presets?: Presets = rt.presets): WickComponent {
+function wick(input: string | URL, presets: Presets = rt.presets): ExtendedComponent {
 
     // Ensure there is a presets object attached to this component.
     if (!presets)
@@ -47,21 +38,30 @@ function wick(input: string | URL, presets?: Presets = rt.presets): WickComponen
         rt.presets = presets;
 
     const
-        promise = makeComponent(input, presets),
+        promise = new Promise(async res => {
+            const comp = await makeComponent(input, presets);
+            console.log(comp.name);
+            Object.assign(component, comp);
+            componentDataToClassCached(component, presets, true);
+            componentDataToClassStringCached(component, presets, true);
+            res(component);
+        }),
 
-        component = <WickComponent><unknown>{
-            presets,
+        component = <ExtendedComponent><unknown>{
+            get class() { return componentDataToClassCached(component, presets, true); },
+            get class_string() { return componentDataToClassStringCached(component, presets, true); },
             pending: promise,
-            mount: () => { throw "Component mount has not yet been implemented! source/wick.ts:44:9"; }
-        };
+            mount: async (model: any, ele: HTMLElement) => {
 
-    promise.then(async res => {
-        Object.assign(component, res);
-        component.class = componentDataToClass(res, presets);
-        component.class_string = componentDataToClassString(res, presets);
-        components[res.name] = component;
-        return component;
-    });
+                await this.pending;
+
+                const comp_inst = new this.class(model);
+
+                ele.appendChild(comp_inst.ele);
+
+                return comp_inst;
+            }
+        };
 
     Object.defineProperties(component, {
         /**
@@ -70,17 +70,8 @@ function wick(input: string | URL, presets?: Presets = rt.presets): WickComponen
         createInstance: {
             configurable: false,
             writable: false,
-            value: function (): WickComponent {
-                return <WickComponent>new (this.toClass());
-            }
-        },
-        /** 
-         * Return a JavaScript string object of the component class. 
-         */
-        render: {
-            configurable: false,
-            get: function () {
-                return this.toString();
+            value: function (model = null): ExtendedComponent {
+                return <ExtendedComponent>new this.class(model);
             }
         },
     });
@@ -91,14 +82,10 @@ function wick(input: string | URL, presets?: Presets = rt.presets): WickComponen
 wick.URL = URL;
 
 Object.defineProperty(wick, "Component", {
-    value: WickComponent,
-    writable: false,
+    value: WickRTComponent,
+    writable: false
 });
 
-Object.defineProperty(wick, "components", {
-    value: components,
-    writable: false,
-});
 
 Object.defineProperty(wick, "api", {
     value: {
@@ -143,7 +130,7 @@ Object.defineProperty(wick, "setWrapper", {
 
         const comp = await rt.presets.wrapper.pending;
 
-        componentDataToClass(comp, rt.presets);
+        componentDataToClassCached(comp, rt.presets);
     }
 });
 
@@ -192,5 +179,6 @@ if (global_object) {
         //@ts-ignore
     } else Object.assign(global_object.cfw, { wick });
 }
-
 export default wick;
+
+export { Component, Presets, DOMLiteral, componentDataToClass, componentDataToClassString };

@@ -339,7 +339,6 @@ export class WickContainer {
 
     render(transition, output = this.activeScopes, NO_TRANSITION = false) {
 
-
         const
             active_window_size = this.limit,
             active_length = this.dom_scopes.length;

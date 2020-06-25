@@ -216,8 +216,6 @@ loadHTMLHandlerInternal(
 
 loadHTMLHandlerInternal(
     {
-
-
         priority: -4,
 
         prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
@@ -250,11 +248,17 @@ loadHTMLHandlerInternal(
         async prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
 
 
-            if (presets.named_components.has(node.tag)) {
+            if (component.local_component_names.has(node.tag)) {
+
+                const
+                    name = component.local_component_names.get(node.tag),
+                    comp = presets.components.get(name);
+
+                console.log(node.tag, name, comp);
 
                 node.child_id = component.children.push(1) - 1;
 
-                node.component = presets.named_components.get(node.tag);
+                node.component = comp;
 
                 node.component_name = node.component.name;
 
@@ -277,12 +281,14 @@ loadHTMLHandlerInternal(
 
                         if (ch) {
 
-                            if (ch && presets.named_components.has(ch.tag)) {
+                            if (ch && component.local_component_names.has(ch.tag)) {
 
-                                const comp = presets.named_components.get(ch.tag);
+                                const
+                                    name = component.local_component_names.get(ch.tag),
+                                    comp = presets.components.get(name);
 
                                 //Make sure the component is compiled into a class.
-                                componentDataToClass(comp, presets);
+                                // componentDataToClass(comp, presets);
 
                                 ch.child_id = component.children.push(1) - 1;
 
@@ -291,15 +297,14 @@ loadHTMLHandlerInternal(
                                 node.component_name = comp.name;
 
                             } else {
-                                const ch_new = Object.assign({}, ch);
 
-                                ch_new.attributes = [];
+                                const comp = await compileComponent(Object.assign({}, ch, { attributes: [] }), ch.tag, "auto_generated", presets);
 
-                                const comp_data = await compileComponent(ch_new, "auto_generated", null, presets, null);
+                                node.component = comp;
 
-                                node.component = comp_data;
+                                node.component_name = comp.name;
 
-                                node.component_name = comp_data.name;
+                                component.local_component_names.set(comp.name, comp.name);
 
                             }
                         } else return;
@@ -316,7 +321,6 @@ loadHTMLHandlerInternal(
                         skip();
 
                         return node;
-                        break;
                     case "svg":
                         node.name_space = 1;
                         break;
