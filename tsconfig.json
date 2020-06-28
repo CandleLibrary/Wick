@@ -12,6 +12,7 @@
             "ES2020",
             "DOM"
         ],
+        "allowSyntheticDefaultImports": true,
         "outDir": "./build/library",
         "declarationDir": "./build/types",
         "declaration": true,
