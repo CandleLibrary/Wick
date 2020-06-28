@@ -3,7 +3,7 @@
     "version": "0.9.0-ts",
     "description": "HTML Component Builder",
     "main": "./build/library/wick.js",
-    "types": "./build/types/wick.node.d.ts",
+    "types": "./build/types/wick.d.ts",
     "type": "module",
     "bin": {
         "wick": "./source/cli.mjs"
