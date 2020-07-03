@@ -1,6 +1,8 @@
 import URL from "@candlefw/url";
 
 import { PresetOptions } from "./types/preset_options.js";
+import { WickRTComponent } from "./runtime/runtime_component.js";
+import { ExtendedComponent } from "./types/extended_component.js";
 
 let CachedPresets = null;
 
@@ -41,7 +43,12 @@ export default class Presets implements PresetOptions {
 
     url: URL;
 
-    wrapper: {};
+    api: any;
+
+    wrapper: ExtendedComponent;
+
+    named_components: Map<string, typeof WickRTComponent>;
+
 
     static global = { get v() { return CachedPresets; }, set v(e) { } };
 

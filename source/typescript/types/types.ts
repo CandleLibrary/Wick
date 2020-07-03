@@ -1,8 +1,10 @@
 import { MinTreeNode } from "@candlefw/js";
+import { CSSTreeNode } from "@candlefw/css";
 import { WickASTNode, WickBindingNode, WickTextNode } from "./wick_ast_node_types.js";
 import URL from "@candlefw/url";
 import { Lexer } from "@candlefw/wind";
 import Presets from "../presets.js";
+import { DOMLiteral } from "./dom_literal.js";
 
 export interface ComponentVariable {
     name: string,
@@ -19,30 +21,58 @@ export interface ComponentVariable {
     nodes?: MinTreeNode[];
 
 }
+export interface FunctionFrame {
+    declared_variables: Set<string>;
+    /**
+     * Any binding variable that is referenced within the function.
+     */
+    input_binding_variables: string[];
+    /**
+     * Any binding variables that is assigned a value.
+     */
+    output_binding_variables: string[];
+    /**
+     * Extracted source AST for this function block
+     */
+    ast: MinTreeNode;
+    type: string;
+    prev?: FunctionFrame;
+}
+
 export interface Component {
+
+    /**
+     * Count of number of container tags identified in HTML 
+     */
+    container_count: number;
+
+    /**
+     * Child id counter;
+     */
+    children: number[];
+
+    /**
+     * Add new PendingBinding entry to the component.
+     * @param arg 
+     */
+    addBinding(arg: {
+        attribute_name: string,
+        binding_node: MinTreeNode | WickASTNode | CSSTreeNode,
+        host_node: MinTreeNode | WickASTNode | CSSTreeNode,
+        html_element_index: number;
+    }): void;
+
+    /**
+     * Name of a model defined in presets that will be auto assigned to the 
+     * component instance when it is created.
+     */
+    global_model: string;
+
     /**
      * Functions blocks that identify the input and output variables that are consumed
      * and produced by the function. 
      */
-    function_blocks: {
-
-        /**
-         * Any binding variable that is referenced within the function.
-         */
-        input_binding_variables: string[],
-
-        /**
-         * Any binding variables that is assigned a value.
-         */
-        output_binding_variables: string[],
-
-        /**
-         * Extracted source AST for this function block
-         */
-        ast: MinTreeNode;
-
-        type: string;
-    }[];
+    function_blocks: FunctionFrame[];
 
     /**
      * Globally unique string identifying this particular component. 
@@ -81,9 +111,9 @@ export interface Component {
     /**
      * The virtual DOM as described within a component with a .html extension or with a 
      */
-    HTML: { namespace: number, ele: string, id: number, attributes: { name: string, value: string; }[], children: any[]; }[];
+    HTML: DOMLiteral;
 
-    CSS: any[];
+    CSS: CSSTreeNode[];
 
     /**
      * URL of source file for this component

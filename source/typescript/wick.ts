@@ -2,7 +2,6 @@ import { addModuleToCFW } from "@candlefw/cfw";
 import URL from "@candlefw/url";
 import Presets from "./presets.js";
 import makeComponent from "./component/component.js";
-import { WickComponentErrorStore } from "./types/errors.js";
 import { WickRTComponent, class_strings } from "./runtime/runtime_component.js";
 import { rt } from "./runtime/runtime_global.js";
 import { PresetOptions } from "./types/preset_options.js";
@@ -11,26 +10,14 @@ import {
     componentDataToClassCached,
     componentDataToClassStringCached,
     componentDataToClassString,
-    buildComponentStyleSheet
 } from "./component/component_data_to_class.js";
+import { componentDataToCSS } from "./component/component_data_to_css.js";
 import { Component } from "./types/types.js";
 import { DOMLiteral } from "./types/dom_literal.js";
+import { ExtendedComponent } from "./types/extended_component";
+import { componentDataToHTML } from "./component/component_data_to_html.js";
 
-
-/**
- * A compiled component that can be mounted to a DOM node.
- */
-interface Extension {
-
-    errors: WickComponentErrorStore;
-
-    pending: Promise<Extension & Component>;
-
-    mount: (data?: object, ele?: HTMLElement) => Promise<WickRTComponent>;
-}
-
-type ExtendedComponent = (Component & Extension);
-
+componentDataToCSS;
 /**
  * Creates a Wick component.
  */
@@ -167,4 +154,13 @@ addModuleToCFW(wick, "wick");
 
 export default wick;
 
-export { Component, Presets, DOMLiteral, componentDataToClass, componentDataToClassString, buildComponentStyleSheet };
+export {
+    Presets,
+    Component,
+    WickRTComponent,
+    DOMLiteral,
+    componentDataToHTML,
+    componentDataToCSS,
+    componentDataToClass,
+    componentDataToClassString,
+};

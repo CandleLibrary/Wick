@@ -30,9 +30,10 @@ export interface JSHandler {
     prepareJSNode(
         node: MinTreeNode | WickASTNode,
         parent_node: MinTreeNode | WickASTNode,
-        skip: () => void,
+        skip: (amount?: number) => void,
         component: Component,
-        presets: Presets
+        presets: Presets,
+        function_block: any
     ):
         MinTreeNode
         | void
