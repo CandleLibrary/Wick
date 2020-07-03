@@ -1,5 +1,6 @@
 import { cfw } from "@candlefw/candle";
-import spark from "@candlefw/spark";
+import spark, { Sparky } from "@candlefw/spark";
+import { WickRTComponent } from "./runtime_component";
 
 function getColumnRow(index, offset, set_size) {
     const adjusted_index = index - offset * set_size;
@@ -10,13 +11,18 @@ function getColumnRow(index, offset, set_size) {
 
 //Poly fill for transitions if glow is not included
 function createTransition(val?: boolean) {
-    if (!cfw.glow)
+    if (!cfw.glow) {
+        const trs = { add: () => null, addEventListener: (n, v) => v() };
         return {
-            in: { add: () => null }, out: { add: () => null }, play: () => null;
+            in: trs, out: trs, play: () => null, addEventListener: (n, v) => v()
         };
-    else return cfw.createTransition(val);
+    }
+    else return cfw.glow.createTransition(val);
 }
 
+
+
+type ContainerComponent = WickRTComponent & { index: number; model: any; _TRANSITION_STATE_: boolean; par: ContainerComponent; };
 /**
  * ScopeContainer provide the mechanisms for dealing with lists and sets of components. 
  *
@@ -25,25 +31,91 @@ function createTransition(val?: boolean) {
  * @param      {Object}  presets  The global presets object.
  * @param      {HTMLElement}  element  The element that the Scope will _bind_ to. 
  */
-export class WickContainer {
+export class WickContainer implements Sparky {
+
+    /**
+     * Scrub offset
+     */
+    offset: number;
+    offset_diff: number;
+    offset_fractional: number;
+    scrub_velocity: number;
+    drag: number;
+
+    shift_amount: number;
+
+    max: number;
+
+    _SCHD_: number;
+
+    /**
+     * Number of components to display from full active set
+     */
+    limit: number;
+
+    /**offset_fractional
+     * HTML Element bound to the container. 
+     */
+    ele: HTMLElement;
+
+    /**
+     * Components that meet the filtering requirements and can be
+     * mounted to the DOM on demand. 
+     */
+    activeScopes: ContainerComponent[];
+
+    /**
+     * Components that are currently mounted to the DOM
+     */
+    dom_scopes: ContainerComponent[];
+
+    /**
+     * Components that have been created from model array data. 
+     */
+    scopes: ContainerComponent[];
+
+    dom_dn: ContainerComponent[];
+    dom_up: ContainerComponent[];
+
+    filters: any[];
+
+    component: typeof WickRTComponent;
+
+    /**
+     * Glow transition for elements with low index values increasing to high index values.
+     */
+    trs_ascending: any;
+
+    /**
+     * Glow transition for elements with high index values decreasing to low index values.
+     */
+    trs_descending: any;
+
+    UPDATE_FILTER: boolean;
+    DOM_UP_APPENDED: boolean;
+    DOM_DN_APPENDED: boolean;
+    AUTO_SCRUB: boolean;
+    LOADED: boolean;
+    SCRUBBING: boolean;
+    observering: any;
+
+    parent: WickRTComponent;
+
+    filter: (...args) => boolean;
+    sort: (...args) => number;
 
     constructor(component_constructor, element, parent) {
-
 
         this.ele = element;
 
         this.activeScopes = [];
         this.dom_scopes = [];
         this.filters = [];
-        this.ios = [];
-        this.terms = [];
         this.scopes = [];
         this.dom_dn = [];
         this.dom_up = [];
 
-        this.transition_in = 0;
         this._SCHD_ = 0;
-        this.root = 0;
         this.shift_amount = 1;
         this.limit = 0;
         this.offset = 0;
@@ -51,9 +123,8 @@ export class WickContainer {
         this.offset_fractional = 0;
         this.scrub_velocity = 0;
 
+
         this.observering = null;
-        this.range = null;
-        this.prop = null;
         this.component = component_constructor;
         this.trs_ascending = null;
         this.trs_descending = null;
@@ -64,13 +135,10 @@ export class WickContainer {
         this.AUTO_SCRUB = false;
         this.LOADED = false;
 
-        this.scope = component_constructor;
-
         this.parent = parent;
 
         this.filter = m1 => true;
         this.sort = () => -1;
-        this.scrub = () => 1;
     }
 
     destructor() {
@@ -325,28 +393,26 @@ export class WickContainer {
             output_length = output.length,
             active_window_start = offset * this.shift_amount;
 
-
-
         let i = 0;
 
         //Scopes on the ascending edge of the transition window
         while (i < active_window_start && i < output_length)
-            output[i].update({ trs_asc_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }, null, false, { IMMEDIATE: true }), i++;
+            output[i].update({ trs_asc_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }, 0, true), i++;
 
         //Scopes in the transition window
         while (i < active_window_start + limit && i < output_length)
-            output[i].update({ arrange: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }, null, false, { IMMEDIATE: true }), i++;
+            output[i].update({ arrange: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }, 0, true), i++;
 
         //Scopes on the descending edge of the transition window
         while (i < output_length) {
-            output[i].update({ trs_dec_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }, null, false, { IMMEDIATE: true }), i++;
+            output[i].update({ trs_dec_out: { trs: transition.in, pos: getColumnRow(i, offset, this.shift_amount) } }, 0, true), i++;
         }
 
         transition.play(1);
 
     }
 
-    render(transition, output = this.activeScopes, NO_TRANSITION = false) {
+    render(transition?, output = this.activeScopes, NO_TRANSITION = false) {
 
         const
             active_window_size = this.limit,
@@ -445,8 +511,8 @@ export class WickContainer {
         }
 
         const
-            trs_in = { trs: transition.in, index: 0 },
-            trs_out = { trs: transition.out, index: 0 };
+            trs_in = { trs: transition.in, index: 0, pos: {} },
+            trs_out = { trs: transition.out, index: 0, pos: {} };
 
         for (let i = 0; i < output_length; i++) output[i].index = i;
 
@@ -485,7 +551,7 @@ export class WickContainer {
             }
             trs_in.pos = getColumnRow(j++, 0, this.shift_amount);
 
-            as.update({ arrange: Object.assign({}, trs_out) }, null, false, { IMMEDIATE: true });
+            as.update({ arrange: Object.assign({}, trs_out) }, 0, true);
 
             as._TRANSITION_STATE_ = true;
             as.index = -1;
@@ -689,25 +755,21 @@ export class WickContainer {
 
         for (let i = 0; i < items.length; i++) {
 
-            const scope = new this.component(items[i]);
+            const component = <ContainerComponent>new this.component(items[i]);
 
-            scope.par = this.parent;
+            component.par = <ContainerComponent>this.parent;
 
             //TODO: Make sure both of there references are removed when the scope is destroyed.
-            this.scopes.push(scope);
+            this.scopes.push(component);
 
-            scope.update({ loaded: true });
+            component.update({ loaded: true });
         }
 
         if (OWN_TRANSITION)
             this.filterExpressionUpdate(transition);
     }
 
-    revise() {
-        if (this.cache) this.sd(this.cache);
-    }
-
     down(data, changed_values) {
-        for (let i = 0, l = this.activeScopes.length; i < l; i++) this.activeScopes[i].down(data, changed_values);
+        for (let i = 0, l = this.activeScopes.length; i < l; i++) this.activeScopes[i].update(data);
     }
 }

@@ -10,29 +10,44 @@ import { cfw } from "@candlefw/cfw";
 export interface WickRuntime {
     glow: any,
 
-    registerComponent(arg1: string, arg2: Component): void;
+    /**
+     * Register component CLASS
+     * @param arg1 
+     */
+    rC(arg1: Component): void;
+
+    /**
+     * Retrieve component CLASS
+     * @param name 
+     */
+    gC(name: string): Component,
     presets: Presets;
 
-    OVERRIDABLE_onComponentCreate(component_meta: WickComponentMeta, component_instance: Component): void;
+    OVERRIDABLE_onComponentCreate(component_meta: any, component_instance: WickRTComponent): void;
 
-    OVERRIDABLE_onComponentMetaChange(component_meta: WickComponentMeta): void;
+    OVERRIDABLE_onComponentMetaChange(component_meta: any): void;
 
-    api: { __internal_API_format__: () => void, };
+    api: any;//{ __internal_API_format__: () => void, };
 }
 
 const rt: WickRuntime = (() => {
 
     return <WickRuntime>{
 
-        get glow() { return cfw.glow; }
+        get glow() { return cfw.glow; },
 
-        Component: WickRTComponent,
+        get p() { return rt.presets; },
+
+        /**
+         * Runtime Component Class Constructor
+         */
+        get C() { return WickRTComponent; },
 
         presets: null,
 
-        registerComponent: (component_name, component) => void rt.presets.component_class.set(component_name, component),
+        rC: component => void rt.presets.component_class.set(component.name, component),
 
-        getComponent: (component_name): Component => rt.presets.component_class.get(component_name),
+        gC: component_name => rt.presets.component_class.get(component_name),
 
         OVERRIDABLE_onComponentCreate(component_meta, component_instance) { },
 

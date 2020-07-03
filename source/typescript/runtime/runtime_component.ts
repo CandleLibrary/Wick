@@ -3,20 +3,9 @@ import { WickContainer } from "./runtime_container.js";
 import { DOMLiteral } from "../types/dom_literal.js";
 
 import Presets from "../presets";
+import { makeElement, integrateElement } from "./runtime_html.js";
 type BindingUpdateFunction = () => void;
 
-
-//
-// https://www.w3.org/TR/2011/WD-html5-20110525/namespaces.html
-//
-const namespaces = [
-    "www.w3.org/1999/xhtml",            // Default HTML - 0
-    "www.w3.org/1998/Math/MathML",      // MATHML - 1
-    "www.w3.org/2000/svg",              // SVG - 2
-    "www.w3.org/1999/xlink",            // XLINK - 3
-    "www.w3.org/XML/1998/namespace",    // XML - 4
-    "www.w3.org/2000/xmlns/",           // XMLNS - 5
-];
 /**
  * Store for all known component configurations.
  */
@@ -40,6 +29,20 @@ export const enum DATA_FLOW_FLAG {
     FROM_MODEL = 128
 }
 
+interface ComponentData {
+    /**
+     * Hash name of component
+     */
+    name?: string,
+    /**
+     * Original source string of the component
+     */
+    source?: string,
+    /**
+     * Original URL string for the component data.
+     */
+    location?: string;
+}
 
 export class WickRTComponent {
 
@@ -47,14 +50,7 @@ export class WickRTComponent {
 
     protected elu: HTMLElement[];
 
-    protected me: (arg1: DOMLiteral, arg2: string, arg3?: number[]) => HTMLElement;
-
-    protected ce: () => HTMLElement;
-
-    /**
-     * Register elements.
-     */
-    protected re: () => void;
+    protected CONNECTED: boolean;
 
     protected getID: () => string;
 
@@ -66,7 +62,7 @@ export class WickRTComponent {
 
     protected nluf: BindingUpdateFunction[];
 
-    protected u: (data: object) => void;
+    protected u: any;
 
     //Children
     protected ch: WickRTComponent[];
@@ -76,9 +72,34 @@ export class WickRTComponent {
 
     protected ct: WickContainer[];
 
+    /**
+     * Identifier of interval watcher for non-dynamic models.
+     */
+    protected polling_id?: number;
+
     protected model: any;
 
-    protected name: string;
+    name: string;
+
+    protected wrapper?: WickRTComponent;
+
+    TRANSITIONED_IN: boolean;
+    DESTROY_ON_TRANSITION: boolean;
+
+    out_trs: any;
+
+    pui: any[];
+    nui: any[];
+
+    ie: typeof integrateElement;
+    me: typeof makeElement;
+    up: typeof updateParent;
+    uc: typeof updateChildren;
+    spm: typeof syncParentMethod;
+    pup: typeof updateFromChild;
+    ufp: typeof updateFromParent;
+
+
 
     /**
      * Data flow map 
@@ -87,15 +108,16 @@ export class WickRTComponent {
      */
     protected dfm: any[];
 
-    //protected ct: WickContainer[];
-    update: (data: object) => void;
-    constructor(comp_data, presets: Presets, model = null, existing_element = null, wrapper = null, default_model_name = "") {
+    constructor(model = null, existing_element = null, wrapper = null, default_model_name = "", comp_data: ComponentData = {}) {
+
+        const presets = rt.presets;
+
+        this.name = this.constructor.name;
+
         this.CONNECTED = false;
 
-        this.name = comp_data.name;
 
         this.nlu = {};
-
         this.ch = [];
         this.elu = [];
         this.ct = [];
@@ -104,7 +126,9 @@ export class WickRTComponent {
         this.nui = [];
         this.model = null;
 
-        this.update = this.u = updateV2;
+        this.u = this.update;
+        this.me = makeElement;
+        this.ie = integrateElement;
         this.up = updateParent;
         this.uc = updateChildren;
         this.spm = syncParentMethod;
@@ -116,7 +140,7 @@ export class WickRTComponent {
 
 
         if (existing_element)
-            this.ele = this.ie(existing_element);
+            this.ele = <HTMLElement>this.ie(existing_element);
         else
             this.ele = this.ce();
 
@@ -166,15 +190,17 @@ export class WickRTComponent {
             this.wrapper.destructor();
     }
 
-    ce() {
-        const template: HTMLTemplateElement = document.getElementById(this.name);
+    re() { }
+
+    ce(): HTMLElement {
+        const template: HTMLTemplateElement = <HTMLTemplateElement>document.getElementById(this.name);
 
         if (template) {
             const
                 doc = template.content.cloneNode(true),
-                ele = doc.firstChild;
+                ele = <HTMLElement>doc.firstChild;
 
-            return this.ie(ele);
+            return <HTMLElement>this.ie(ele);
         } else {
             console.warn("NO template element for component: " + this.name);
         }
@@ -230,134 +256,6 @@ export class WickRTComponent {
     c() { }
     onLoad() { }
     onMounted() { }
-    ie(ele: HTMLElement | Text) {
-
-
-        if (ele instanceof Text) {
-            return ele;
-        } else if (this.ele) {
-            if (ele.tagName == "W-B") {
-                const text = document.createTextNode(ele.innerHTML);
-                ele.replaceWith(text);
-                ele = text;
-                this.elu.push(ele);
-            } else if (ele.getAttribute("w-container")) {
-
-                const
-                    name = ele.getAttribute("w-container"),
-                    comp_constructor = this.presets.component_class.get(name);
-
-                if (!comp_constructor) throw new Error(`Could not find component class for ${name} in component ${this.name}`);
-
-                const ctr = new WickContainer(comp_constructor, ele, this);
-
-                this.ct.push(ctr);
-                this.elu.push(ele);
-            } else if (ele.getAttribute("w-component")) {
-
-                const
-                    name = ele.getAttribute("w-component"),
-                    comp_constructor = this.presets.component_class.get(name);
-
-                if (!comp_constructor) throw new Error(`Could not find component class for ${name} in component ${this.name}`);
-
-                const comp = new comp_constructor(null, ele);
-
-                takeParentAddChild(this, comp);
-                this.elu.push(ele);
-            }
-
-            if (ele.tagName == "A")
-                rt.presets.processLink(ele);
-
-        } else {
-            ele.classList.add(this.name);
-            this.ele = ele;
-        }
-
-        for (const child of ele.childNodes)
-            this.ie(child);
-
-        return ele;
-    }
-
-    /**
-  * Make DOM Element tree from JS object
-  * literals. Return list of object ID's and the
-  * root element tree.
-  */
-    me(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
-
-        const {
-            n: name_space_index,
-            t: tag_name,
-            i,
-            a: attributes,
-            c: children,
-            d: data,
-            ct,
-            cp: component_name,
-            sl: slot_name
-        } = ele_obj;
-
-        if (name_space_index) name_space = getNameSpace(name_space_index);
-
-        let ele = null;
-
-        if (ct) {
-
-            const comp_constructor = this.presets.component_class.get(component_name);
-
-            if (!comp_constructor) throw new Error(`Could not find component class for ${component_name} in component ${this.name}`);
-
-            ele = <HTMLElement>createElementNameSpaced(tag_name, name_space, data);
-
-            const ctr = new WickContainer(comp_constructor, ele, this);
-
-            this.ct.push(ctr);
-
-        } else if (component_name && rt.presets.component_class.has(component_name)) {
-
-            const comp_constructor = this.presets.component_class.get(component_name);
-
-            if (!comp_constructor) throw new Error(`Could not find component class for ${component_name} in component ${this.name}`);
-
-            //Do fancy component linking
-
-            const comp = new comp_constructor();
-
-            //Perform linking, what not then set element to the components element. 
-            takeParentAddChild(this, comp);
-
-            ele = comp.ele;
-        } else
-            ele = <HTMLElement>createElementNameSpaced(tag_name, name_space, data);
-
-
-        if (attributes)
-            for (const [name, value] of attributes)
-                ele.setAttributeNS(name_space, name, value);
-
-        if (children)
-            outer: for (const child of children) {
-                if (child.sl) {
-                    for (const c of ele.children) {
-                        if (c.getAttribute("slot") == child.sl) {
-                            ele.replaceElement(this.me(child, name_space));
-                            continue outer;
-                        }
-                    }
-                }
-
-                ele.appendChild(this.me(child, name_space));
-            }
-
-        this.elu[i] = ele;
-
-        return ele;
-    }
-
-
     transitionOut(transition, DESTROY_AFTER_TRANSITION = false, transition_name = "trs_out") {
 
         this.CONNECTED = false;
@@ -398,7 +296,7 @@ export class WickRTComponent {
 
         if (!this.TRANSITIONED_IN) {
             this.removeFromDOM();
-            if (this.DESTROY_ON_TRANSITION) this.destroy();
+            if (this.DESTROY_ON_TRANSITION) this.destructor();
             this.DESTROY_ON_TRANSITION = false;
         }
 
@@ -439,86 +337,46 @@ export class WickRTComponent {
         else {
             //Create a polling monitor
             if (this.polling_id <= 0)
-                this.polling_id = setInterval(updateModel.bind(this), 10);
+                this.polling_id = <number><unknown>setInterval(updateModel.bind(this), 10);
 
             updateModel.call(this);
         }
     }
+
+    update(data, flags: number = 0, IMMEDIATE: boolean = false) {
+
+        const update_indices: Set<number> = new Set;
+
+        for (const name in data) {
+
+            if (typeof data[name] !== "undefined") {
+
+                const val = this.nlu[name];
+
+                if (((val >> 24) & flags)) {
+
+                    const index = val & 0xFFFFFF;
+
+                    this[index] = data[name];
+
+                    update_indices.add(index);
+
+                    let i = 0;
+                }
+            }
+        }
+
+        for (const index of update_indices.values())
+            this.nluf[index].call(this, this[index], DATA_DIRECTION.DOWN);
+
+
+    }
 }
-
-
-function createText(data) {
-    return document.createTextNode(data);
-}
-
-function getNameSpace(name_space_lookup) {
-    return namespaces[name_space_lookup] || "";
-}
-
-/**
- * Used for SVG, MATHML.
- * @param tag_name 
- * @param name_space 
- * 
- */
-function createElementNameSpaced(tag_name, name_space, data = ""): HTMLElement | Text {
-
-    if (!tag_name) /*TextNode*/ return createText(data);
-
-    if (!name_space) return createElement(tag_name);
-
-    return document.createElementNS(tag_name, name_space);
-}
-
-function createElement(tag_name) {
-    return document.createElement(tag_name);
-}
-
-
-function takeParentAddChild(parent: WickRTComponent, child: WickRTComponent) {
-    //@ts-ignore
-    parent.ch.push(child);
-    //@ts-ignore
-    child.par = parent;
-};
-
 
 
 const enum DATA_DIRECTION {
     DOWN = 1,
     UP = 2
-}
-
-//Incoming updates
-function updateV2(data, flags) {
-
-    const update_indices: Set<number> = new Set;
-
-    for (const name in data) {
-
-        if (typeof data[name] !== "undefined") {
-
-            const val = this.nlu[name];
-
-            const index = val & 0xFFFFFF;
-
-            if (((val >> 24) & flags)) {
-
-                const index = val & 0xFFFFFF;
-
-                this[index] = data[name];
-
-                update_indices.add(index);
-
-                let i = 0;
-            }
-        }
-    }
-
-    for (const index of update_indices.values())
-        this.nluf[index].call(this, this[index], DATA_DIRECTION.DOWN);
-
-    //    updateChildren(data, flags | DATA_FLOW_FLAG.FROM_PARENT);
 }
 
 function updateChildren(data, flags) {
