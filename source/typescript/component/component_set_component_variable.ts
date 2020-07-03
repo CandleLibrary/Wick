@@ -1,6 +1,8 @@
 import { MinTreeNode, ext } from "@candlefw/js";
+
 import { Component } from "../types/types.js";
 import { DATA_FLOW_FLAG } from "../runtime/runtime_component.js";
+
 export const enum VARIABLE_REFERENCE_TYPE {
     INTERNAL_VARIABLE = 1,
     MODEL_VARIABLE = 16,
@@ -8,8 +10,6 @@ export const enum VARIABLE_REFERENCE_TYPE {
     PARENT_VARIABLE = 8,
     METHOD_VARIABLE = 2,
     GLOBAL_VARIABLE = 32,
-
-
 }
 
 let SET_ONCE_environment_globals = null;
@@ -77,8 +77,6 @@ export function setComponentVariable(
     return variable;
 }
 
-const global_name = (typeof window != "undefined") ? "window" : "global";
-
 export function setVariableName(name, component) {
 
     // Allow global objects to be accessed if there are no existing
@@ -90,7 +88,7 @@ export function setVariableName(name, component) {
         }
     }
 
-    const comp_var = setComponentVariable(VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE, name, component, name, DATA_FLOW_FLAG.FROM_MODEL);
+    const comp_var = setComponentVariable(VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE, name, component, name, DATA_FLOW_FLAG.FROM_MODEL);
 
     if (comp_var) {
 
