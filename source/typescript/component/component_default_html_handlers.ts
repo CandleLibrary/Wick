@@ -5,6 +5,7 @@ import { compileComponent } from "./component.js";
 import { processFunctionDeclaration, processWickJS_AST } from "./component_js.js";
 import { MinTreeNode, stmt } from "@candlefw/js";
 import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./component_set_component_variable.js";
+import { importResource } from "./component_common.js";
 
 const default_handler = {
     priority: -Infinity,
@@ -12,9 +13,6 @@ const default_handler = {
 };
 
 export const html_handlers: Array<HTMLHandler[]> = Array(WICK_AST_NODE_TYPE_SIZE).fill(null).map(() => [default_handler]);
-
-
-
 
 function loadHTMLHandlerInternal(handler: HTMLHandler, ...types: WickASTNodeType[]) {
 
@@ -85,10 +83,13 @@ loadHTMLHandlerInternal(
                     break;
 
                 case "slot":
+                    host_node.slot_name = <string>node.value;
+                    return null;
                     break;
 
                 case "name":
                     host_node.slot_name = <string>node.value;
+                    return null;
                     break;
 
                 case "value":
@@ -243,7 +244,7 @@ loadHTMLHandlerInternal(
 
 
 /*
- * Undefined HTML elements
+ * HTML Elements lacking a spec tag.
  */
 loadHTMLHandlerInternal(
     {
@@ -267,71 +268,64 @@ loadHTMLHandlerInternal(
                 node.tag = "div";
             }
 
+            switch (node.tag.toLowerCase()) {
+                case "container":
+                    //Turn child into script.   
+                    let ch = null;
 
-            if (node.type == WickASTNodeType.HTML_Element) {
+                    for (const n of node.nodes)
+                        if ((n.type & WickASTNodeClass.HTML_ELEMENT)) { ch = n; break; }
 
-                switch (node.tag.toLowerCase()) {
-                    case "style":
+                    if (ch) {
 
-                        return null;
-                    case "container":
-                        //Turn child into script.   
-                        let ch = null;
+                        if (ch && component.local_component_names.has(ch.tag)) {
 
-                        for (const n of node.nodes)
-                            if ((n.type & WickASTNodeClass.HTML_ELEMENT)) { ch = n; break; }
+                            const
+                                name = component.local_component_names.get(ch.tag),
+                                comp = presets.components.get(name);
 
-                        if (ch) {
+                            //Make sure the component is compiled into a class.
+                            // componentDataToClass(comp, presets);
 
-                            if (ch && component.local_component_names.has(ch.tag)) {
+                            ch.child_id = component.children.push(1) - 1;
 
-                                const
-                                    name = component.local_component_names.get(ch.tag),
-                                    comp = presets.components.get(name);
+                            node.component = comp;
 
-                                //Make sure the component is compiled into a class.
-                                // componentDataToClass(comp, presets);
+                            node.component_name = comp.name;
 
-                                ch.child_id = component.children.push(1) - 1;
+                        } else {
 
-                                node.component = comp;
+                            const comp = await compileComponent(Object.assign({}, ch, { attributes: [] }), ch.tag, "auto_generated", presets);
 
-                                node.component_name = comp.name;
+                            node.component = comp;
 
-                            } else {
+                            node.component_name = comp.name;
 
-                                const comp = await compileComponent(Object.assign({}, ch, { attributes: [] }), ch.tag, "auto_generated", presets);
+                            component.local_component_names.set(comp.name, comp.name);
 
-                                node.component = comp;
+                        }
+                    } else return;
 
-                                node.component_name = comp.name;
+                    node.is_container = true;
 
-                                component.local_component_names.set(comp.name, comp.name);
+                    node.container_id = component.container_count++;
 
-                            }
-                        } else return;
+                    node.nodes.length = 0;
 
-                        node.is_container = true;
+                    skip();
 
-                        node.container_id = component.container_count++;
-
-                        node.nodes.length = 0;
-
-                        skip();
-
-                        //return Object.assign({}, node, { tag: "DIV" });
-                        break;
-                    case "svg":
-                        node.name_space = 1;
-                        break;
-                    case "mathml":
-                        node.name_space = 2;
-                        break;
-                    default:
-                        //TODO Plugin here for custom components.  
-                        break;
-                }
+                    break;
+                case "svg":
+                    node.name_space = 1;
+                    break;
+                case "mathml":
+                    node.name_space = 2;
+                    break;
+                default:
+                    //TODO Plugin here for custom components.  
+                    break;
             }
+
 
             return node;
         }
@@ -374,6 +368,22 @@ loadHTMLHandlerInternal(
         }
 
     }, WickASTNodeType.HTML_SCRIPT
+);
+
+loadHTMLHandlerInternal(
+    {
+        priority: -99999,
+
+        async prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
+            const url = getAttributeValue("url", node) || "",
+                name = getAttributeValue("name", node) || "";
+
+            await importResource(url, component, presets, node, name);
+
+            return null;
+        }
+
+    }, WickASTNodeType.HTML_IMPORT
 );
 
 function getAttributeValue(name, node: WickASTNode) {

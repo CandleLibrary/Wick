@@ -196,8 +196,8 @@ export async function compileComponent(ast: WickASTNode | MinTreeNode, source_st
         else
             await processWickHTML_AST(getHTML_AST(ast), component, presets);
 
-        //for (const name of component.names)
-        //    presets.named_components.set(name.toUpperCase(), component);
+        for (const name of component.names)
+            presets.named_components.set(name.toUpperCase(), component);
 
         component.binding_variables = new Map();
 

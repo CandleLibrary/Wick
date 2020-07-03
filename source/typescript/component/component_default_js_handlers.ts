@@ -8,7 +8,8 @@ import { processFunctionDeclaration } from "./component_js.js";
 import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./component_set_component_variable.js";
 import { processWickHTML_AST } from "./component_html.js";
 import { processWickCSS_AST } from "./component_css.js";
-import { importComponentData } from "./component_common.js";
+import { importComponentData, importResource } from "./component_common.js";
+import { Component, Presets } from "../wick.js";
 
 
 ;
@@ -16,8 +17,6 @@ const default_handler = {
     priority: -Infinity,
     prepareJSNode(node) { return node; }
 };
-
-
 
 export const JS_handlers: Array<JSHandler[]> = Array(512 - WICK_AST_NODE_TYPE_SIZE).fill(null).map(() => [default_handler]);
 
@@ -76,135 +75,41 @@ loadJSHandlerInternal(
             else
                 url_value = <string>from.nodes[0].value;
 
+
+
+
             // The @*** values are processed as regular scripts
             // if they have any values other than the ones
             // stated below.
             const [from_value, meta] = url_value.split(":");
 
 
-            if (from_value)
-                switch (from_value) {
+            if (from_value) {
 
-                    case "@parent":
-                        /* all ids within this node are imported binding_variables from parent */
-                        //Add all elements to global 
+                const names = [];
 
-                        for (const { node: id, meta: { skip } } of traverse(node, "nodes", 4)
-                            .filter("type", MinTreeNodeType.Specifier, MinTreeNodeType.IdentifierModule)
-                            .makeSkippable()
-                        ) {
+                for (const { node: id, meta: { skip } } of traverse(node, "nodes", 4)
+                    .filter("type", MinTreeNodeType.Specifier, MinTreeNodeType.IdentifierModule)
+                    .makeSkippable()
+                ) {
 
-                            let local_name = "", external_name = "";
+                    let local = "", external = "";
 
-                            if (id.type == MinTreeNodeType.Specifier) {
-                                local_name = <string>id.nodes[0].value;
-                                external_name = <string>id.nodes[1].value;
-                            } else {
-                                local_name = <string>id.value;
-                                external_name = <string>id.value;
-                            }
+                    if (id.type == MinTreeNodeType.Specifier) {
+                        local = <string>id.nodes[0].value;
+                        external = <string>id.nodes[1].value;
+                    } else {
+                        local = <string>id.value;
+                        external = <string>id.value;
+                    }
 
-                            setComponentVariable(VARIABLE_REFERENCE_TYPE.PARENT_VARIABLE, local_name, component, external_name || local_name, DATA_FLOW_FLAG.FROM_PARENT, <MinTreeNode>node);
+                    names.push(local, external);
 
-                            skip();
-                        }
-
-
-                        break;
-
-                    case "@api":
-
-                        for (const { node: id, meta: { skip } } of traverse(node, "nodes", 4)
-                            .filter("type", MinTreeNodeType.Specifier, MinTreeNodeType.IdentifierModule)
-                            .makeSkippable()
-                        ) {
-                            let local_name = "", external_name = "";
-
-                            if (id.type == MinTreeNodeType.Specifier) {
-                                external_name = <string>id.nodes[0].value;
-                                local_name = <string>id.nodes[1].value;
-                            } else {
-                                local_name = <string>id.value;
-                                external_name = <string>id.value;
-                            }
-
-                            setComponentVariable(VARIABLE_REFERENCE_TYPE.API_VARIABLE, local_name, component, external_name || local_name, DATA_FLOW_FLAG.FROM_PARENT, <MinTreeNode>node);
-
-                            skip();
-                        }
-
-                        break;
-
-                    case "@global":
-
-                        for (const { node: id, meta: { skip } } of traverse(node, "nodes", 4)
-                            .filter("type", MinTreeNodeType.Specifier, MinTreeNodeType.IdentifierModule)
-                            .makeSkippable()
-                        ) {
-                            let local_name = "", external_name = "";
-
-                            if (id.type == MinTreeNodeType.Specifier) {
-                                external_name = <string>id.nodes[0].value;
-                                local_name = <string>id.nodes[1].value;
-                            } else {
-                                local_name = <string>id.value;
-                                external_name = <string>id.value;
-                            }
-
-                            setComponentVariable(VARIABLE_REFERENCE_TYPE.GLOBAL_VARIABLE, local_name, component, external_name || local_name, DATA_FLOW_FLAG.FROM_OUTSIDE, <MinTreeNode>node);
-
-                            skip();
-                        }
-
-                        break;
-
-                    case "@model":
-
-                        for (const { node: id, meta: { skip } } of traverse(node, "nodes", 4)
-                            .filter("type", MinTreeNodeType.Specifier, MinTreeNodeType.IdentifierModule)
-                            .makeSkippable()
-                        ) {
-                            let local_name = "", external_name = "";
-
-                            if (id.type == MinTreeNodeType.Specifier) {
-                                local_name = <string>id.nodes[0].value;
-                                external_name = <string>id.nodes[1].value;
-                            } else {
-                                local_name = <string>id.value;
-                                external_name = <string>id.value;
-                            }
-
-                            if (meta) component.global_model = meta;
-
-                            setComponentVariable(VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE, local_name, component, external_name || local_name, DATA_FLOW_FLAG.FROM_MODEL, <MinTreeNode>node);
-
-                            skip();
-                        }
-
-                        break;
-
-                    case "@presets":
-                        /* all ids within this node are imported form the presets object */
-                        break;
-
-                    default:
-                        // Read file and determine if we have a component, a script or some other resource. REQUIRING
-                        // extensions would make this whole process 9001% easier. such .html for html components,
-                        // .wjs for js components, and any other extension type for other kinds of files.
-                        // Also could consider MIME type information for files that served through a web
-                        // server.
-
-                        //Compile Component Data
-                        importComponentData(
-                            from_value,
-                            component,
-                            presets,
-                            imports ? <string>imports.nodes[0].value : ""
-                        );
-
-                        break;
-
+                    skip();
                 }
+
+                await importResource(from_value, component, presets, node, imports ? <string>imports.nodes[0].value : "", names);
+            }
 
             //Export and import statements should not showup in the final AST.
             skip();

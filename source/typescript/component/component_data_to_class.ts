@@ -159,7 +159,7 @@ export function componentDataToClassString(component: Component, presets: Preset
 
         //Convert scripts into a class object 
         const
-            component_class = stmt(`class ${component.name || "temp"} extends cfw.wick.rt.C {constructor(m,e,w){super(m,e,w,"${component.global_model || ""}");}}`);
+            component_class = stmt(`class ${component.name || "temp"} extends cfw.wick.rt.C {constructor(m,e,p,w){super(m,e,p,w,"${component.global_model || ""}");}}`);
 
         if (!component.global_model) {
             component_class.nodes.length = 2;

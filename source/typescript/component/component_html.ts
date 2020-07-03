@@ -3,29 +3,9 @@ import { WickASTNode, WickASTNodeType, WickASTNodeClass, WICK_AST_NODE_TYPE_BASE
 import { Component } from "../types/types.js";
 import { html_handlers } from "./component_default_html_handlers.js";
 import Presets from "../presets.js";
-import { importComponentData } from "./component_common.js";
 import { DOMLiteral } from "../wick.js";
-import { t } from "@candlefw/wind/build/types/ascii_code_points";
 
-async function loadHTMLImports(ast: WickASTNode, component: Component, presets: Presets) {
 
-    if (ast.import_list && ast.import_list.length > 0) {
-        //@ts-ignore
-        for (const imp of ast.import_list) {
-
-            let url = "", local_name = "";
-
-            for (const { name, value } of imp.attributes) {
-                if (name == "url")
-                    url = value;
-                else if (name == "name")
-                    local_name = value;
-            }
-
-            await importComponentData(url, component, presets, local_name);
-        }
-    }
-}
 
 function buildExportableDOMNode(
     ast: WickASTNode & {
@@ -90,6 +70,17 @@ function buildExportableDOMNode(
 
     return node;
 }
+
+async function loadHTMLImports(ast: WickASTNode, component: Component, presets: Presets) {
+    if (ast.import_list)
+        for (const import_ of <WickASTNode[]>(ast.import_list)) {
+            for (const handler of html_handlers[(WickASTNodeType.HTML_IMPORT >>> 23) - WICK_AST_NODE_TYPE_BASE]) {
+                if (! await handler.prepareHTMLNode(import_, ast, import_, 0, () => { }, null, component, presets)) break;
+            }
+        }
+}
+
+
 export async function processWickHTML_AST(ast: WickASTNode, component: Component, presets: Presets): Promise<WickASTNode> {
     //Process the import list
     //@ts-ignore
@@ -99,7 +90,7 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
     const receiver = { ast: null },
         attribute_handlers = html_handlers[Math.max((WickASTNodeType.HTMLAttribute >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)];
 
-    let types = [], last_element = null, index = -1;
+    let last_element = null, index = -1;
 
     main_loop:
     for (const { node, meta } of traverse(ast, "nodes")
