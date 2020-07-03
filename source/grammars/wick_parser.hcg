@@ -50,13 +50,13 @@
 
 @IGNORE θws θnl 
 
-@IMPORT @candlefw/js/source/grammar/ecmascript.hcg as js
+@IMPORT ../../node_modules/@candlefw/js/source/grammar/javascript.hcg as js
 
 @IMPORT ./html.hcg as html
 
 #@IMPORT ./wickup.hcg as wickup
 
-@IMPORT @candlefw/css/source/grammar/css.hcg as css 
+@IMPORT ../../node_modules/@candlefw/css/source/grammar/css.hcg as css 
 
 <> WICK → COMPONENT                                                                                											
 
