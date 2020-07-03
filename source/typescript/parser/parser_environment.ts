@@ -1,24 +1,16 @@
-
 //CSS
 import {
-    stylesheet,
-    stylerule,
-    ruleset,
-    compoundSelector,
-    comboSelector,
-    typeselector,
-    selector,
-    idSelector,
-    classSelector,
-    attribSelector,
-    pseudoClassSelector,
-    pseudoElementSelector,
-    parseDeclaration
+    url,
+    percentage,
+    length,
+    parseDeclaration,
+    CSSTreeNodeType
 } from "@candlefw/css";
 
 import { ParserEnvironment } from "@candlefw/hydrocarbon";
 import { Lexer } from "@candlefw/wind";
 import { MinTreeNodeClass, MinTreeNodeType, JSParserEnvironment, JSParserEnv } from "@candlefw/js";
+
 import { WickASTNodeType } from "../types/wick_ast_node_types.js";
 
 type WickParserEnvironment = ParserEnvironment & JSParserEnv & {
@@ -35,26 +27,18 @@ const env = <WickParserEnvironment>{
 
     ASI: true,
 
-    typ: Object.assign(WickASTNodeType, MinTreeNodeType),
+    typ: Object.assign(WickASTNodeType, MinTreeNodeType, CSSTreeNodeType),
 
     cls: Object.assign({}, MinTreeNodeClass),
 
     functions: {
         //CSS
-        compoundSelector,
-        comboSelector,
-        selector,
-        idSelector,
-        classSelector,
-        typeselector,
-        attribSelector,
-        pseudoClassSelector,
-        pseudoElementSelector,
         parseDeclaration,
-        stylesheet,
-        stylerule,
-        ruleset,
+        url,
+        percentage,
+        length,
 
+        //JS
         parseTemplate: JSParserEnvironment.functions.parseTemplate,
         parseString: JSParserEnvironment.functions.parseString,
         reinterpretArrowParameters: JSParserEnvironment.functions.reinterpretArrowParameters,

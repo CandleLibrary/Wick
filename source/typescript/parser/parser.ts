@@ -19,13 +19,16 @@ import { WickASTNode } from "../types/wick_ast_node_types.js";
  * the point where the parser was unable to parse the input string.
  *
  */
-export default function (input: string | Lexer): WickASTNode {
+export default function (input: string | Lexer, source = ""): WickASTNode {
 
     let lex: string | Lexer = null;
 
     if (typeof input == "string")
         lex = new Lexer(input);
     else lex = input;
+
+    if (source)
+        lex.source = source;
 
     const parse_result = lrParse(lex, <ParserData>parser_data, env);
 
