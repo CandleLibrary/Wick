@@ -8,24 +8,36 @@ import { processWickHTML_AST } from "./component_html.js";
 import { createNameHash } from "./component_create_hash_name.js";
 
 import { PendingBinding } from "../types/types";
-import { WickComponentErrorStore } from "../types/errors.js";
 import { Component, } from "../types/types";
-import CompiledWickAST, { WickASTNode } from "../types/wick_ast_node_types.js";
+import { WickASTNodeClass, WickASTNode } from "../types/wick_ast_node_types.js";
 export const component_cache = {};
 
+function getHTML_AST(ast: WickASTNode | MinTreeNode): WickASTNode {
+
+    while (ast && !(ast.type & WickASTNodeClass.HTML_ELEMENT))
+        ast = ast.nodes[0];
+
+    return <WickASTNode>ast;
+}
+
 function determineSourceType(ast: WickASTNode | MinTreeNode): boolean {
-    if (ast.type == MinTreeNodeType.Script || ast.type == MinTreeNodeType.Module)
-        return true;
+
+    if (ast.type == MinTreeNodeType.Script || ast.type == MinTreeNodeType.Module) {
+        if (ast.nodes.length > 1) return true;
+        if (ast.nodes[0].type != MinTreeNodeType.ExpressionStatement) return true;
+        if (!(ast.nodes[0].nodes[0].type & WickASTNodeClass.HTML_ELEMENT)) return true;
+    }
+
     return false;
 };
 
-export function parseStringAndCreateWickAST(wick_string: string) {
+export function parseStringAndCreateWickAST(wick_string: string, source) {
     /**
      * We are now assuming that the input has been converted to a string containing wick markup. 
      * We'll let the parser handle any syntax errors.
      */
     try {
-        return parser(wick_string);
+        return parser(wick_string, source);
     } catch (e) {
         //intentional
         throw e;
@@ -48,7 +60,13 @@ export async function acquireComponentASTFromRemoteSource(url_source: URL | stri
         throw e;
     }
 
-    return { ast: parseStringAndCreateWickAST(string), string, resolved_url: url.toString() };
+    // HACK -- if the source data is a css file, then wrap the source string into a <style></style> element string to enable 
+    // the wick parser to parser the data correctly. 
+
+    if (url.ext == "css")
+        string = `<style>${string}</style>`;
+
+    return { ast: parseStringAndCreateWickAST(string, url.toString()), string, resolved_url: url.toString() };
 }
 
 
@@ -64,10 +82,6 @@ export default async function makeComponent(input: URL | string, presets?: Prese
 
     //If this is a node.js environment, make sure URL is able to resolve local files system addresses.
     if (typeof (window) == "undefined") await URL.polyfill();
-
-    const error_store = <WickComponentErrorStore>{ errors: [] };
-
-    let wick_syntax_string = <string>input;
 
     /**
      * If a string has been passed the we need to determine if it is a wick component
@@ -85,7 +99,7 @@ export default async function makeComponent(input: URL | string, presets?: Prese
      * 
      * For now, a brute force method will be to use the URL constructor parse the input string. We test for the 
      * presence of a hostname and/or path on the result, and if the string yields values for these, we
-     * assume the string is a URL andsetMIME proceed to fetch data from the URL. If a resource cannot be fetched,
+     * assume the string is a URL and set MIME proceed to fetch data from the URL. If a resource cannot be fetched,
      * we proceed with parsing the string as a wick component. 
      */
 
@@ -93,7 +107,8 @@ export default async function makeComponent(input: URL | string, presets?: Prese
 
     try {
 
-        const { string, ast: url_ast, resolved_url } = await acquireComponentASTFromRemoteSource(input, root_url);
+        const { string, ast: url_ast, resolved_url }
+            = await acquireComponentASTFromRemoteSource(input, root_url);
 
         ast = url_ast;
 
@@ -102,16 +117,19 @@ export default async function makeComponent(input: URL | string, presets?: Prese
         url = resolved_url;
 
     } catch (e) {
+
         url = "";
-        ast = parseStringAndCreateWickAST(<string>input);
+
+        ast = parseStringAndCreateWickAST(<string>input, url);
     }
+
+
 
     return await compileComponent(ast, <string>input_string, url, presets);
 };
 
 export async function compileComponent(ast: WickASTNode | MinTreeNode, source_string: string, url: string, presets: Presets): Promise<Component> {
     try {
-        let out_ast: CompiledWickAST = null;
 
         /**
          * We need to first traverse the AST node structure, locating nodes that need the
@@ -136,7 +154,13 @@ export async function compileComponent(ast: WickASTNode | MinTreeNode, source_st
 
             component: Component = {
 
-                location: url,
+                container_count: 0,
+
+                children: [],
+
+                global_model: "",
+
+                location: new URL(url),
 
                 binding_variables,
 
@@ -150,20 +174,14 @@ export async function compileComponent(ast: WickASTNode | MinTreeNode, source_st
 
                 names: [],
 
-                children: [],
-
                 name: createNameHash(source_string),
-
-                source: source_string,
 
                 //OLD STUFFS
 
                 addBinding: (pending_binding: PendingBinding) => pending_bindings.push(pending_binding),
 
                 //Local names of imported components that are referenced in HTML expressions. 
-                local_component_names: new Map,
-
-                dependency_names: new Set
+                local_component_names: new Map
             },
 
             IS_SCRIPT = determineSourceType(ast);
@@ -176,10 +194,10 @@ export async function compileComponent(ast: WickASTNode | MinTreeNode, source_st
         if (IS_SCRIPT)
             await processWickJS_AST(<MinTreeNode>ast, component, presets);
         else
-            await processWickHTML_AST(<WickASTNode>ast, component, presets);
+            await processWickHTML_AST(getHTML_AST(ast), component, presets);
 
-        for (const name of component.names)
-            presets.named_components.set(name.toUpperCase(), component);
+        //for (const name of component.names)
+        //    presets.named_components.set(name.toUpperCase(), component);
 
         component.binding_variables = new Map();
 

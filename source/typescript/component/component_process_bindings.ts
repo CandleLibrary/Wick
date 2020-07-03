@@ -62,7 +62,7 @@ export function processBindings(component: Component, class_data, presets: Prese
 
                 if (!binding) continue;
 
-                const { read_ast, write_ast, cleanup_ast, init_ast, type, DEBUG, annotate, component_variables }
+                const { read_ast, write_ast, cleanup_ast, type, component_variables }
                     = binding;
 
 

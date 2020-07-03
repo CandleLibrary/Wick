@@ -1,5 +1,4 @@
-import { MinTreeNodeType, exp, stmt } from "@candlefw/js";
-import { classSelector } from "@candlefw/css";
+import { MinTreeNodeType, MinTreeNode, exp, stmt } from "@candlefw/js";
 import { traverse, renderWithFormatting, renderCompressed } from "@candlefw/conflagrate";
 
 import Presets from "../presets.js";
@@ -7,52 +6,9 @@ import { processBindings } from "./component_process_bindings.js";
 import { Component, } from "../types/types";
 import { getPropertyAST, getGenericMethodNode } from "./component_js_ast_tools.js";
 import { setVariableName } from "./component_set_component_variable.js";
-import { rt } from "../runtime/runtime_global.js";
 import { renderers, format_rules } from "../format_rules.js";
 import { WickRTComponent } from "../runtime/runtime_component.js";
-import parser from "../parser/parser.js";
-
-
-
-export function buildComponentStyleSheet(component): string {
-
-    const cloned_stylesheets = component.CSS.map(s => parser(`<style>${s}</style>`).nodes[0]);
-
-    for (const stylesheet of cloned_stylesheets) {
-
-        const { rules } = stylesheet.ruleset;
-
-        for (const rule of rules) {
-            let HAS_ROOT = false;
-
-            rule.selectors = rule.selectors.map(s => s.vals.map(s => {
-
-                switch (s.type) {
-                    case "type":
-                        if (s.val == "root") {
-                            HAS_ROOT = true;
-                            return new classSelector([null, component.name]);
-                        }
-                        break;
-                    case "compound":
-                        if (s.tag.val == "root") {
-                            HAS_ROOT = true;
-                            s.tag = new classSelector([null, component.name]);
-                        }
-                        break;
-                }
-
-                return s;
-            }));
-
-            if (!HAS_ROOT)
-                rule.selectors.unshift(new classSelector([null, component.name]));
-        }
-    }
-
-    return cloned_stylesheets.join("\n");
-}
-
+import { componentDataToCSS } from "./component_data_to_css.js";
 
 /**
  * Update global variables in ast after all globals have been identified
@@ -83,7 +39,7 @@ function makeComponentMethod(function_block, component: Component, class_informa
                     const global_val = variables.get(value),
                         mutate_node = exp(`this.u${global_val.class_name}()`);
 
-                    global_val.ASSIGNED = 1;
+                    global_val.ASSIGNED = true;
 
                     node.nodes[0] = exp(setVariableName(value, component));
 
@@ -137,25 +93,33 @@ function makeComponentMethod(function_block, component: Component, class_informa
 }
 
 function componentStringToClass(class_string: string, component: Component, presets: Presets) {
-    return (Function("c", "p", "rt", "return " + class_string)(component, presets, rt));
+    return (Function("c", "return " + class_string)(component));
 }
 
-export function componentDataToClassCached(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): WickRTComponent {
+export function componentDataToClassCached(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): typeof WickRTComponent {
 
     const name = component.name;
 
-    let comp: WickRTComponent = presets.component_class.get(name);
+    let comp: typeof WickRTComponent = presets.component_class.get(name);
 
     if (!comp) {
+
         const str = componentDataToClassStringCached(component, presets, INCLUDE_HTML, INCLUDE_CSS);
+
         comp = componentStringToClass(str, component, presets);
+
         presets.component_class.set(name, comp);
+
+        for (const comp of component.local_component_names.values()) {
+            if (!presets.component_class_string.has(comp))
+                componentDataToClassCached(presets.components.get(comp), presets, INCLUDE_HTML, INCLUDE_CSS);
+        }
     }
 
     return comp;
 }
 
-export function componentDataToClass(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): string {
+export function componentDataToClass(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): typeof WickRTComponent {
 
     const class_string = componentDataToClassString(component, presets, INCLUDE_HTML, INCLUDE_CSS);
 
@@ -169,8 +133,12 @@ export function componentDataToClassStringCached(component: Component, presets: 
     let str: string = presets.component_class_string.get(name);
 
     if (!str) {
+
         str = componentDataToClassString(component, presets, INCLUDE_HTML, INCLUDE_CSS);
+
         presets.component_class_string.set(name, str);
+
+
     }
 
     return str;
@@ -185,13 +153,18 @@ export function componentDataToClassString(component: Component, presets: Preset
             class_initializer_statements: [],
             class_cleanup_statements: [],
             compiled_ast: null,
+            methods: <MinTreeNode[]>[],
             nluf_arrays: []
         };
 
         //Convert scripts into a class object 
-        const component_class = stmt(`class ${component.name || "temp"} extends cfw.wick.Component {constructor(m,e,w){super(c,p,m,e,w,"${component.global_model || ""}");}}`);
+        const
+            component_class = stmt(`class ${component.name || "temp"} extends cfw.wick.rt.C {constructor(m,e,w){super(m,e,w,"${component.global_model || ""}");}}`);
 
-        component_class.nodes.length = 4;
+        if (!component.global_model) {
+            component_class.nodes.length = 2;
+        }
+
 
         class_information.methods = component_class.nodes;
 
@@ -238,7 +211,11 @@ export function componentDataToClassString(component: Component, presets: Preset
 
             if (true /* some check for component_variable property of binding*/) {
 
-                lu_public_variables.nodes.push(getPropertyAST(component_variable.external_name, (component_variable.usage_flags << 24) | nlu_index));
+                lu_public_variables.nodes.push(
+                    getPropertyAST(
+                        component_variable.external_name,
+                        ((component_variable.usage_flags << 24) | nlu_index) + "")
+                );
 
                 const nluf_array = exp(`c.u${component_variable.class_name}`);
 
@@ -265,25 +242,28 @@ export function componentDataToClassString(component: Component, presets: Preset
 
                 [, , { nodes: [r_stmt] }] = ele_create_method.nodes;
 
-            r_stmt.nodes[0].nodes[1].nodes[0] = { type: MinTreeNodeType.Identifier, value: `${JSON.stringify(component.HTML)}` };
+            r_stmt.nodes[0].nodes[1].nodes[0] = <MinTreeNode>{ type: MinTreeNodeType.Identifier, value: `${JSON.stringify(component.HTML)}`, pos: r_stmt.nodes[0].nodes[1].pos };
 
             //Setup element
             class_information.methods.push(ele_create_method);
         }
 
         let style;
-        if (INCLUDE_CSS && (style = buildComponentStyleSheet(component))) {
+        if (INCLUDE_CSS && (style = componentDataToCSS(component))) {
             re_stmts.push(stmt(`this.setCSS(\`${style}\`)`));
         }
 
         if (class_information.binding_init_statements.length > 0)
             class_information.methods.push(binding_values_init_method);
 
-        class_information.methods.push(register_elements_method);
+        if (class_information.class_initializer_statements.length > 3)
+            class_information.methods.push(register_elements_method);
 
         class_information.compiled_ast = component_class;
 
-        return renderCompressed(class_information.compiled_ast, renderers);
+        //return renderCompressed(class_information.compiled_ast, renderers);
+
+        return renderWithFormatting(class_information.compiled_ast, renderers, format_rules);
 
     } catch (e) {
         console.error(

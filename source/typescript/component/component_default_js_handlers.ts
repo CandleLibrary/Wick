@@ -1,15 +1,14 @@
 import { stmt, MinTreeNodeType, MinTreeNode, renderCompressed, exp } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
+
 import { WICK_AST_NODE_TYPE_SIZE, WickASTNodeClass, WickASTNode, WickASTNodeType, WickBindingNode } from "../types/wick_ast_node_types.js";
 import { JSHandler } from "../types/js_handler.js";
 import { DATA_FLOW_FLAG } from "../runtime/runtime_component.js";
 import { processFunctionDeclaration } from "./component_js.js";
 import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./component_set_component_variable.js";
 import { processWickHTML_AST } from "./component_html.js";
-import { acquireComponentASTFromRemoteSource, compileComponent } from "./component.js";
 import { processWickCSS_AST } from "./component_css.js";
-import { Component } from "../types/types.js";
-import { componentDataToClassCached } from "./component_data_to_class.js";
+import { importComponentData } from "./component_common.js";
 
 
 ;
@@ -20,14 +19,14 @@ const default_handler = {
 
 
 
-export const JS_handlers: Array<JSHandler[]> = Array(256 - WICK_AST_NODE_TYPE_SIZE).fill(null).map(() => [default_handler]);
+export const JS_handlers: Array<JSHandler[]> = Array(512 - WICK_AST_NODE_TYPE_SIZE).fill(null).map(() => [default_handler]);
 
 
 function loadJSHandlerInternal(handler: JSHandler, ...types: MinTreeNodeType[]) {
 
     for (const type of types) {
 
-        const handler_array = JS_handlers[Math.max((type >>> 24), 0)];
+        const handler_array = JS_handlers[Math.max((type >>> 23), 0)];
 
         handler_array.push(handler);
 
@@ -43,25 +42,6 @@ export function loadJSHandler(handler: JSHandler, ...types: MinTreeNodeType[]) {
     modified_handler.priority = Math.abs(modified_handler.priority);
 
     return loadJSHandler(modified_handler, ...types);
-}
-
-function mergeComponentData(destination_component: Component, source_component: Component) {
-
-    if (source_component.CSS)
-        destination_component.CSS.push(...source_component.CSS);
-
-    if (!destination_component.HTML)
-        destination_component.HTML = source_component.HTML;
-    else
-        console.warn("TODO:Loss of HTML in merged component. Need to determine what with HTML data within this action.");
-
-    for (const [key, data] of source_component.binding_variables.entries())
-        setComponentVariable(data.type, data.local_name, destination_component, data.external_name, data.flags);
-
-    for (const name of source_component.names)
-        destination_component.names.push(name);
-
-    destination_component.function_blocks.push(...source_component.function_blocks);
 }
 
 
@@ -214,39 +194,13 @@ loadJSHandlerInternal(
                         // Also could consider MIME type information for files that served through a web
                         // server.
 
-                        //TODO: Save data and load into presets. 
-
-                        try {
-
-                            //Compile Component Data
-
-
-                            try {
-
-                                const { ast, string, resolved_url } = await acquireComponentASTFromRemoteSource(from_value, component.location);
-
-                                // If the ast is an HTML_NODE with a single style element, then integrate the 
-                                // css data into the current component. 
-
-                                const comp_data = await compileComponent(ast, string, resolved_url, presets);
-
-                                componentDataToClassCached(comp_data, presets);
-
-                                if (imports) {
-                                    const name = <string>imports.nodes[0].value;
-                                    component.local_component_names.set(name.toUpperCase(), comp_data.name);
-                                }
-
-                                if (!comp_data.HTML)
-                                    mergeComponentData(component, comp_data);
-
-                            } catch (e) {
-                                console.log("TODO: Replace with a temporary warning component."/*, e*/);
-                            }
-
-                        } catch (e) {
-                            console.log({ e });
-                        };
+                        //Compile Component Data
+                        importComponentData(
+                            from_value,
+                            component,
+                            presets,
+                            imports ? <string>imports.nodes[0].value : ""
+                        );
 
                         break;
 
@@ -310,7 +264,7 @@ loadJSHandlerInternal(
     {
         priority: 1,
 
-        prepareJSNode(node, parent_node, skip, component, presets, function_block) {
+        prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
             const
                 n = stmt("a,a;"),
@@ -319,31 +273,27 @@ loadJSHandlerInternal(
             nodes.length = 0;
 
             //Add all elements to global 
-            for (const { node: id, meta } of traverse(node, "nodes", 4)
+            for (const { node: binding, meta } of traverse(node, "nodes", 4)
                 .filter("type", MinTreeNodeType.IdentifierBinding, MinTreeNodeType.BindingExpression)
             ) {
-                if (id.type == MinTreeNodeType.BindingExpression) {
+                if (binding.type == MinTreeNodeType.BindingExpression) {
 
-                    const node = id.nodes[0];
+                    const [identifier] = binding.nodes;
 
                     //Label this node and it's name to the blocks input variables. 
 
-                    node.id = function_block.input_binding_variables.length;
+                    identifier.id = frame.input_binding_variables.length;
 
-                    //component.declarations.push(id.nodes[0]);
+                    const l_name = <string>identifier.value;
 
-                    const l_name = <string>node.value;
-
-                    addNodeToInputList(function_block, node);
+                    addNodeToInputList(frame, node);
 
                     const d = setComponentVariable(VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE, l_name, component, "", 0, <MinTreeNode>meta.parent);
 
-                    console;
-
-                    id.type = MinTreeNodeType.CallExpression;
+                    binding.type = MinTreeNodeType.CallExpression;
 
                     //Add assignment and update expression for bindings. 
-                    nodes.push(exp(`this.u${d.class_name}(${renderCompressed(id.nodes[1])})`));
+                    nodes.push(exp(`this.u${d.class_name}(${renderCompressed(binding.nodes[1])})`));
                 } else {
                     // binding_variables.push({ v: id.value, node: id, parent });
                 }
@@ -524,9 +474,10 @@ loadJSHandlerInternal(
                     html_element_index: 0
                 });
 
-                return {
+                return <MinTreeNode>{
                     type: MinTreeNodeType.Identifier,
-                    value: "this.a"
+                    value: "this.a",
+                    pos: node.pos
                 };
             }
         }

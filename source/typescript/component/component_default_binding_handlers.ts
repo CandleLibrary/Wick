@@ -1,7 +1,7 @@
-import { MinTreeNodeType, exp, stmt, renderCompressed, ext } from "@candlefw/js";
+import { MinTreeNodeType, exp, stmt } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
+
 import { BindingObject, BindingHandler, BindingType } from "../types/types.js";
-import { processFunctionDeclaration } from "./component_js.js";
 import { DATA_FLOW_FLAG } from "../runtime/runtime_component.js";
 import { VARIABLE_REFERENCE_TYPE, setVariableName } from "./component_set_component_variable.js";
 
@@ -455,7 +455,7 @@ loadBindingHandler({
         if (id >= 0) {
             const binding = createBindingObject(BindingType.READONLY);
 
-            binding.read_ast = exp(`c.a=c.elu[${id}]`);
+            binding.read_ast = stmt(`c.a=c.elu[${id}];`);
 
             return binding;
         }
@@ -466,8 +466,8 @@ function getElementById(id, node): number {
 
     let i = -1;
     if (node.a)
-        for (let i = 0; i < node.a.length; i += 2)
-            if (node.a[i] == "id" && node.a[i + 1] == id) return node.i;
+        for (const [key, val] of node.a)
+            if (key == "id" && val == id) return node.i;
 
     if (node.c)
         for (const c of node.c)

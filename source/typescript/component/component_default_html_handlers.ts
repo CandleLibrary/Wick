@@ -1,8 +1,10 @@
 import { WickASTNodeType, WICK_AST_NODE_TYPE_SIZE, WICK_AST_NODE_TYPE_BASE, WickASTNode, WickASTNodeClass } from "../types/wick_ast_node_types.js";
 import { HTMLHandler } from "../types/html_handler.js";
-import { processWickCSS_AST } from "./css.js";
+import { processWickCSS_AST } from "./component_css.js";
 import { compileComponent } from "./component.js";
-import { componentDataToClass } from "./component_data_to_class.js";
+import { processFunctionDeclaration, processWickJS_AST } from "./component_js.js";
+import { MinTreeNode, stmt } from "@candlefw/js";
+import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./component_set_component_variable.js";
 
 const default_handler = {
     priority: -Infinity,
@@ -18,7 +20,7 @@ function loadHTMLHandlerInternal(handler: HTMLHandler, ...types: WickASTNodeType
 
     for (const type of types) {
 
-        const handler_array = html_handlers[Math.max((type >>> 24) - WICK_AST_NODE_TYPE_BASE, 0)];
+        const handler_array = html_handlers[Math.max((type >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)];
 
         handler_array.push(handler);
 
@@ -56,8 +58,9 @@ loadHTMLHandlerInternal(
             // Skip processing this node in the outer scope, 
             // it will be replaced with a CompiledBinding node.
 
-            return {
-                type: WickASTNodeType.HTML_TEXT,
+            return <WickASTNode>{
+                type: WickASTNodeType.HTML_BINDING_ELEMENT,
+                IS_BINDING: true,
                 value: "",
                 pos: node.pos
             };
@@ -85,7 +88,7 @@ loadHTMLHandlerInternal(
                     break;
 
                 case "name":
-                    host_node.slot_name = node.value;
+                    host_node.slot_name = <string>node.value;
                     break;
 
                 case "value":
@@ -152,6 +155,7 @@ loadHTMLHandlerInternal(
         }
     }, WickASTNodeType.HTMLAttribute
 );
+
 
 loadHTMLHandlerInternal(
     {
@@ -309,9 +313,6 @@ loadHTMLHandlerInternal(
 
                         node.is_container = true;
 
-                        if (!component.container_count)
-                            component.container_count = 0;
-
                         node.container_id = component.container_count++;
 
                         node.nodes.length = 0;
@@ -351,3 +352,33 @@ loadHTMLHandlerInternal(
     }, WickASTNodeType.HTML_STYLE
 );
 
+loadHTMLHandlerInternal(
+    {
+        priority: -99999,
+
+        async prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
+
+            const id = getAttributeValue("id", node),
+                [script] = <MinTreeNode[]><unknown>(node.nodes);
+
+            if (id) {
+                const fn_ast = stmt(`function ${id}(){;};`);
+                fn_ast.nodes[2].nodes = script.nodes;
+                setComponentVariable(VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE, id, component, "", 0, node);
+                await processFunctionDeclaration(fn_ast, component, presets);
+            } else {
+                await processWickJS_AST(script, component, presets);
+            }
+
+            return null;
+        }
+
+    }, WickASTNodeType.HTML_SCRIPT
+);
+
+function getAttributeValue(name, node: WickASTNode) {
+    for (const att of node.attributes) {
+        if (att.name == name)
+            return att.value;
+    }
+}

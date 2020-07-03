@@ -1,14 +1,13 @@
 import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
-import { Component } from "../types/types.js";
+
+import { Component, FunctionFrame } from "../types/types.js";
 import Presets from "../presets.js";
 import { JS_handlers } from "./component_default_js_handlers.js";
 
 
 
 export async function processFunctionDeclaration(node: MinTreeNode, component: Component, presets: Presets, root_name = "") {
-
-
 
     //@ts-ignore
     const temp_component = <Component>{ CSS: [], HTML: null, function_blocks: [], location: "", binding_variables: component.binding_variables, names: [], addBinding: component.addBinding };
@@ -27,26 +26,34 @@ export async function processFunctionDeclaration(node: MinTreeNode, component: C
     }));
 }
 
-export async function processWickJS_AST(ast: MinTreeNode, component: Component, presets: Presets, root_name = ""): Promise<MinTreeNode> {
+export async function processWickJS_AST(ast: MinTreeNode, component: Component, presets: Presets, root_name = "", frame = null): Promise<FunctionFrame> {
 
     const
-        function_block = { root_name, type: "root", ast: null, input_binding_variables: [], output_binding_variables: [] };
+        function_frame = <FunctionFrame>{
+            root_name,
+            type: "root",
+            ast: null,
+            declared_variables: new Set(),
+            input_binding_variables: [],
+            output_binding_variables: [],
+            prev: frame
+        };
 
-    component.function_blocks.push(function_block);
+    component.function_blocks.push(function_frame);
 
     main_loop:
     for (const { node, meta } of traverse(ast, "nodes")
         .skipRoot()
         .makeReplaceable()
         .makeSkippable()
-        .extract(function_block)
+        .extract(function_frame)
     ) {
 
         let js_node = node;
 
-        for (const handler of JS_handlers[Math.max((node.type >>> 24), 0)]) {
+        for (const handler of JS_handlers[Math.max((node.type >>> 23), 0)]) {
 
-            const pending = handler.prepareJSNode(node, meta.parent, meta.skip, component, presets, function_block);
+            const pending = handler.prepareJSNode(node, meta.parent, meta.skip, component, presets, function_frame);
 
             let result = null;
 
@@ -73,5 +80,5 @@ export async function processWickJS_AST(ast: MinTreeNode, component: Component, 
         }
     }
 
-    return function_block.ast;
+    return function_frame;
 }
