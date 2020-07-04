@@ -95,7 +95,7 @@ export function setVariableName(name, component) {
         switch (comp_var.type) {
 
             case VARIABLE_REFERENCE_TYPE.API_VARIABLE:
-                return `rt.presets.api.${comp_var.external_name}`;
+                return `cfw.wick.rt.presets.api.${comp_var.external_name}`;
             case VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE:
                 return `this.model.${comp_var.external_name}`;
             case VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE:
