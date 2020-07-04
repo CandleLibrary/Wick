@@ -2,7 +2,7 @@ import URL from "@candlefw/url";
 import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
 
 import Presets from "../presets.js";
-import parser from "../parser/parser.js";
+import parseStringReturnAST from "../parser/parser.js";
 import { processWickJS_AST } from "./component_js.js";
 import { processWickHTML_AST } from "./component_html.js";
 import { createNameHash } from "./component_create_hash_name.js";
@@ -10,6 +10,7 @@ import { createNameHash } from "./component_create_hash_name.js";
 import { PendingBinding } from "../types/types";
 import { Component, } from "../types/types";
 import { WickASTNodeClass, WickASTNode } from "../types/wick_ast_node_types.js";
+import { Lexer } from "@candlefw/wind";
 export const component_cache = {};
 
 function getHTML_AST(ast: WickASTNode | MinTreeNode): WickASTNode {
@@ -31,42 +32,34 @@ function determineSourceType(ast: WickASTNode | MinTreeNode): boolean {
     return false;
 };
 
-export function parseStringAndCreateWickAST(wick_string: string, source) {
-    /**
-     * We are now assuming that the input has been converted to a string containing wick markup. 
-     * We'll let the parser handle any syntax errors.
-     */
-    try {
-        return parser(wick_string, source);
-    } catch (e) {
-        //intentional
-        throw e;
-    }
-}
-
 export async function acquireComponentASTFromRemoteSource(url_source: URL | string, root_url?: URL) {
 
-    const url = URL.resolveRelative(url_source + "", root_url || URL.GLOBAL);
+    const url = URL.resolveRelative(url_source + "", root_url || URL.GLOBAL),
+        error = [];
 
-    let string = "";
+    let ast = null,
+        string = "";
 
     if (!url)
         throw new Error("Could not load URL: " + url_source + "");
 
+    string = <string>await url.fetchText(false);
     //TODO: Can throw
     try {
-        string = <string>await url.fetchText(false);
+
+        // HACK -- if the source data is a css file, then wrap the source string into a <style></style> element string to enable 
+        // the wick parser to parser the data correctly. 
+
+        if (url.ext == "css")
+            string = `<style>${string}</style>`;
+
+        ast = parseStringReturnAST(string, url.toString());
+
     } catch (e) {
-        throw e;
+        error.push(e);
     }
 
-    // HACK -- if the source data is a css file, then wrap the source string into a <style></style> element string to enable 
-    // the wick parser to parser the data correctly. 
-
-    if (url.ext == "css")
-        string = `<style>${string}</style>`;
-
-    return { ast: parseStringAndCreateWickAST(string, url.toString()), string, resolved_url: url.toString() };
+    return { ast, string, resolved_url: url.toString(), error };
 }
 
 
@@ -103,11 +96,11 @@ export default async function makeComponent(input: URL | string, presets?: Prese
      * we proceed with parsing the string as a wick component. 
      */
 
-    let ast = null, url = input, input_string = input;
+    let ast = null, url = input, input_string = input, error = [];
 
     try {
 
-        const { string, ast: url_ast, resolved_url }
+        const { string, ast: url_ast, resolved_url, error: e }
             = await acquireComponentASTFromRemoteSource(input, root_url);
 
         ast = url_ast;
@@ -116,98 +109,124 @@ export default async function makeComponent(input: URL | string, presets?: Prese
 
         url = resolved_url;
 
+        error = e;
+
     } catch (e) {
+        //Illegal URL, try parsing string
+        //error.push(e);
 
         url = "";
 
-        ast = parseStringAndCreateWickAST(<string>input, url);
+        try {
+            ast = parseStringReturnAST(<string>input, url);
+        } catch (e) {
+            error.push(e);
+        }
     }
 
 
-
-    return await compileComponent(ast, <string>input_string, url, presets);
+    return await compileComponent(ast, <string>input_string, url, presets, error);
 };
 
-export async function compileComponent(ast: WickASTNode | MinTreeNode, source_string: string, url: string, presets: Presets): Promise<Component> {
-    try {
+export async function compileComponent(ast: WickASTNode | MinTreeNode, source_string: string, url: string, presets: Presets, error: ExceptionInformation[] = []): Promise<Component> {
 
-        /**
-         * We need to first traverse the AST node structure, locating nodes that need the
-         * following action taken:
-         *      
-         *      a.  Nodes containing a url attribute will need to have that url fetched and
-         *          processed. These nodes will later be merged by the resulting AST
-         *          created from the fetched resource
-         * 
-         *      b.  Global binding variables need to identified and hoisted to a reference
-         *          table that will be used to resolve JS => HTML, JS => CSS, JS => JS
-         *          bindings.
-         * 
-         *      c.  Nodes containing slot attributes will need to resolved.
-         *      
-         */
+    const
+        component: Component = {
 
-        const
-            pending_bindings = [],
+            source: source_string,
 
-            binding_variables = new Map,
+            container_count: 0,
 
-            component: Component = {
+            children: [],
 
-                container_count: 0,
+            global_model: "",
 
-                children: [],
+            binding_variables: new Map,
 
-                global_model: "",
+            location: new URL(url),
 
-                location: new URL(url),
+            bindings: [],
 
-                binding_variables,
+            function_blocks: [],
 
-                bindings: pending_bindings,
+            CSS: [],
 
-                function_blocks: [],
+            HTML: null,
 
-                CSS: [],
+            names: [],
 
-                HTML: null,
+            name: createNameHash(source_string),
 
-                names: [],
+            //OLD STUFFS
 
-                name: createNameHash(source_string),
+            addBinding: (pending_binding: PendingBinding) => component.bindings.push(pending_binding),
 
-                //OLD STUFFS
+            //Local names of imported components that are referenced in HTML expressions. 
+            local_component_names: new Map
+        };
+    if (error.length < 1) {
 
-                addBinding: (pending_binding: PendingBinding) => pending_bindings.push(pending_binding),
+        try {
 
-                //Local names of imported components that are referenced in HTML expressions. 
-                local_component_names: new Map
-            },
+            /**
+             * We need to first traverse the AST node structure, locating nodes that need the
+             * following action taken:
+             *      
+             *      a.  Nodes containing a url attribute will need to have that url fetched and
+             *          processed. These nodes will later be merged by the resulting AST
+             *          created from the fetched resource
+             * 
+             *      b.  Global binding variables need to identified and hoisted to a reference
+             *          table that will be used to resolve JS => HTML, JS => CSS, JS => JS
+             *          bindings.
+             * 
+             *      c.  Nodes containing slot attributes will need to resolved.
+             *      
+             */
 
-            IS_SCRIPT = determineSourceType(ast);
+            const IS_SCRIPT = determineSourceType(ast);
 
-        if (presets.components.has(component.name))
-            return presets.components.get(component.name);
+            if (presets.components.has(component.name))
+                return presets.components.get(component.name);
 
-        presets.components.set(component.name, component);
+            presets.components.set(component.name, component);
 
-        if (IS_SCRIPT)
-            await processWickJS_AST(<MinTreeNode>ast, component, presets);
-        else
-            await processWickHTML_AST(getHTML_AST(ast), component, presets);
+            if (IS_SCRIPT)
+                await processWickJS_AST(<MinTreeNode>ast, component, presets);
+            else
+                await processWickHTML_AST(getHTML_AST(ast), component, presets);
 
-        for (const name of component.names)
-            presets.named_components.set(name.toUpperCase(), component);
+            for (const name of component.names)
+                presets.named_components.set(name.toUpperCase(), component);
 
-        component.binding_variables = new Map();
+            const binding_variables = component.binding_variables;
 
-        for (const [name, value] of binding_variables.entries()) {
-            if (value.type !== 32)
-                component.binding_variables.set(name, value);
+            component.binding_variables = new Map();
+
+            for (const [name, value] of binding_variables.entries()) {
+                if (value.type !== 32)
+                    component.binding_variables.set(name, value);
+            }
+
+            return component;
+        } catch (e) {
+            error.push(e);
         }
 
-        return component;
-    } catch (e) {
-        throw e;
     }
+
+    const error_string = location + "\n" + error.map(e => e + "").join("\n");
+
+    component.HTML = {
+        tag_name: "ERROR",
+        lookup_index: 0,
+        children: [
+            {
+                tag_name: "",
+                data: error_string
+            }
+        ]
+    };
+
+    return component;
 }
