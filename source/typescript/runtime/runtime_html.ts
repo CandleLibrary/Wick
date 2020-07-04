@@ -2,6 +2,7 @@ import { rt } from "./runtime_global.js";
 import { DOMLiteral } from "../types/dom_literal.js";
 import { WickContainer } from "./runtime_container.js";
 import { takeParentAddChild } from "./runtime_common.js";
+import { e } from "@candlefw/wind/build/types/ascii_code_points";
 
 //
 // https://www.w3.org/TR/2011/WD-html5-20110525/namespaces.html
@@ -69,20 +70,41 @@ export function integrateElement(ele: HTMLElement | Text) {
                     const ctr = new WickContainer(comp_constructor, ele, this);
 
                     this.ct.push(ctr);
-                } else if (ele.getAttribute("w-component")) {
+                } else if (ele.hasAttribute("w-s")) {
 
                     const
-                        name = ele.getAttribute("w-component"),
+                        name = ele.classList[0],
                         comp_constructor = this.presets.component_class.get(name);
+
+                    this.elu.push(ele);
 
                     if (!comp_constructor) throw new Error(`Could not find component class for ${name} in component ${this.name}`);
 
-                    const comp = new comp_constructor(null, ele);
+                    const comp = new comp_constructor(null, ele, null, this);
 
                     takeParentAddChild(this, comp);
+
+                    return;
                 }
 
-                this.elu.push(ele);
+                if (ele.hasAttribute("w-o")) {
+                    this.par.elu[+ele.hasAttribute("w-o")] = ele;
+
+                    for (const child of (<HTMLElement>ele).childNodes)
+                        this.par.ie(child);
+
+                    return ele;
+                } else if (ele.hasAttribute("w-r")) {
+
+                    this.par.elu[+ele.hasAttribute("w-r")] = ele;
+
+                    this.elu.push(ele);
+
+                    for (const child of (<HTMLElement>ele).childNodes)
+                        this.par.ie(child);
+
+                    return ele;
+                } else this.elu.push(ele);
 
                 if ((<HTMLElement>ele).tagName == "A")
                     rt.presets.processLink(ele);
@@ -108,15 +130,15 @@ export function integrateElement(ele: HTMLElement | Text) {
 export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
 
     const {
-        n: name_space_index,
-        t: tag_name,
-        i,
-        a: attributes,
-        c: children,
-        d: data,
-        ct,
-        cp: component_name,
-        sl: slot_name
+        namespace_id: name_space_index,
+        tag_name: tag_name,
+        lookup_index: i,
+        attributes: attributes,
+        children: children,
+        data: data,
+        is_container: ct,
+        component_name: component_name,
+        slot_name: slot_name
     } = ele_obj;
 
     if (name_space_index) name_space = getNameSpace(name_space_index);
@@ -159,9 +181,9 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
 
     if (children)
         outer: for (const child of children) {
-            if (child.sl) {
+            if (child.slot_name) {
                 for (const c of ele.children) {
-                    if (c.getAttribute("slot") == child.sl) {
+                    if (c.getAttribute("slot") == child.slot_name) {
                         ele.replaceElement(this.me(child, name_space));
                         continue outer;
                     }
