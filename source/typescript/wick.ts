@@ -16,8 +16,9 @@ import { Component } from "./types/types.js";
 import { DOMLiteral } from "./types/dom_literal.js";
 import { ExtendedComponent } from "./types/extended_component";
 import { componentDataToHTML } from "./component/component_data_to_html.js";
+import parser from "./parser/parser.js";
 
-componentDataToCSS;
+
 /**
  * Creates a Wick component.
  */
@@ -34,14 +35,15 @@ function wick(input: string | URL, presets: Presets = rt.presets): ExtendedCompo
         promise = new Promise(async res => {
             const comp = await makeComponent(input, presets);
             Object.assign(component, comp);
-            componentDataToClassCached(component, presets, true);
-            componentDataToClassStringCached(component, presets, true);
+            componentDataToClassCached(component, presets, true, false);
+            componentDataToClassStringCached(component, presets, true, false);
             res(component);
         }),
 
         component = <ExtendedComponent><unknown>{
-            get class() { return componentDataToClassCached(component, presets, true); },
-            get class_string() { return componentDataToClassStringCached(component, presets, true); },
+            get class() { return componentDataToClassCached(component, presets, true, false); },
+            get classWithIntegratedCSS() { return componentDataToClass(component, presets, true, true); },
+            get class_string() { return componentDataToClassStringCached(component, presets, true, false); },
             pending: promise,
             mount: async (model: any, ele: HTMLElement) => {
 
@@ -114,7 +116,7 @@ Object.defineProperty(wick, "setWrapper", {
 Object.defineProperty(WickRTComponent.prototype, "replace", {
     value:
         /**
-         * Replace this component with the on passed in. 
+         * Replace this component with the one passed in. 
          * The new component inherits the old one's element and model.
          */
         function (component: Component) {
@@ -155,6 +157,7 @@ addModuleToCFW(wick, "wick");
 export default wick;
 
 export {
+    parser,
     Presets,
     Component,
     WickRTComponent,
