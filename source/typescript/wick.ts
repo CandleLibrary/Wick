@@ -6,11 +6,11 @@ import { WickRTComponent, class_strings } from "./runtime/runtime_component.js";
 import { rt } from "./runtime/runtime_global.js";
 import { PresetOptions } from "./types/preset_options.js";
 import {
-    componentDataToClass,
-    componentDataToClassCached,
-    componentDataToClassStringCached,
+    componentDataToJS,
+    componentDataToJSCached,
+    componentDataToJSStringCached,
     componentDataToClassString,
-} from "./component/component_data_to_class.js";
+} from "./component/component_data_to_js.js";
 import { componentDataToCSS } from "./component/component_data_to_css.js";
 import { Component } from "./types/types.js";
 import { DOMLiteral } from "./types/dom_literal.js";
@@ -35,15 +35,15 @@ function wick(input: string | URL, presets: Presets = rt.presets): ExtendedCompo
         promise = new Promise(async res => {
             const comp = await makeComponent(input, presets);
             Object.assign(component, comp);
-            componentDataToClassCached(component, presets, true, false);
-            componentDataToClassStringCached(component, presets, true, false);
+            componentDataToJSCached(component, presets, true, false);
+            componentDataToJSStringCached(component, presets, true, false);
             res(component);
         }),
 
         component = <ExtendedComponent><unknown>{
-            get class() { return componentDataToClassCached(component, presets, true, false); },
-            get classWithIntegratedCSS() { return componentDataToClass(component, presets, true, true); },
-            get class_string() { return componentDataToClassStringCached(component, presets, true, false); },
+            get class() { return componentDataToJSCached(component, presets, true, false); },
+            get classWithIntegratedCSS() { return componentDataToJS(component, presets, true, true); },
+            get class_string() { return componentDataToJSStringCached(component, presets, true, false); },
             pending: promise,
             mount: async (model: any, ele: HTMLElement) => {
 
@@ -81,7 +81,7 @@ Object.defineProperty(wick, "class_strings", {
 });
 
 Object.defineProperty(wick, "componentToClass", {
-    value: componentDataToClass,
+    value: componentDataToJS,
     writable: false
 });
 
@@ -108,7 +108,7 @@ Object.defineProperty(wick, "setWrapper", {
 
         const comp = await rt.presets.wrapper.pending;
 
-        componentDataToClassCached(comp, rt.presets);
+        componentDataToJSCached(comp, rt.presets);
     }
 });
 
@@ -121,7 +121,7 @@ Object.defineProperty(WickRTComponent.prototype, "replace", {
          */
         function (component: Component) {
 
-            const comp_class = componentDataToClass(component, this.presets);
+            const comp_class = componentDataToJS(component, this.presets);
 
             const comp = new comp_class(this.model, this.wrapper);
 
@@ -164,6 +164,6 @@ export {
     DOMLiteral,
     componentDataToHTML,
     componentDataToCSS,
-    componentDataToClass,
+    componentDataToJS as componentDataToClass,
     componentDataToClassString,
 };

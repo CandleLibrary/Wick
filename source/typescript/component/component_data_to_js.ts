@@ -92,11 +92,11 @@ function makeComponentMethod(function_block, component: Component, class_informa
     }
 }
 
-function componentStringToClass(class_string: string, component: Component, presets: Presets) {
+function componentStringToJS(class_string: string, component: Component, presets: Presets) {
     return (Function("c", "return " + class_string)(component));
 }
 
-export function componentDataToClassCached(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): typeof WickRTComponent {
+export function componentDataToJSCached(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): typeof WickRTComponent {
 
     const name = component.name;
 
@@ -104,29 +104,29 @@ export function componentDataToClassCached(component: Component, presets: Preset
 
     if (!comp) {
 
-        const str = componentDataToClassStringCached(component, presets, INCLUDE_HTML, INCLUDE_CSS);
+        const str = componentDataToJSStringCached(component, presets, INCLUDE_HTML, INCLUDE_CSS);
 
-        comp = componentStringToClass(str, component, presets);
+        comp = componentStringToJS(str, component, presets);
 
         presets.component_class.set(name, comp);
 
         for (const comp of component.local_component_names.values()) {
             if (!presets.component_class_string.has(comp))
-                componentDataToClassCached(presets.components.get(comp), presets, INCLUDE_HTML, INCLUDE_CSS);
+                componentDataToJSCached(presets.components.get(comp), presets, INCLUDE_HTML, INCLUDE_CSS);
         }
     }
 
     return comp;
 }
 
-export function componentDataToClass(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): typeof WickRTComponent {
+export function componentDataToJS(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): typeof WickRTComponent {
 
     const class_string = componentDataToClassString(component, presets, INCLUDE_HTML, INCLUDE_CSS);
 
-    return componentStringToClass(class_string, component, presets);
+    return componentStringToJS(class_string, component, presets);
 }
 
-export function componentDataToClassStringCached(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): string {
+export function componentDataToJSStringCached(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): string {
 
     const name = component.name;
 

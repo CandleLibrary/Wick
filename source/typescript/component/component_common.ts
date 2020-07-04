@@ -2,7 +2,7 @@ import { MinTreeNode } from "@candlefw/js";
 import { Component } from "../types/types.js";
 import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./component_set_component_variable.js";
 import { acquireComponentASTFromRemoteSource, compileComponent } from "./component.js";
-import { componentDataToClassCached } from "./component_data_to_class.js";
+import { componentDataToJSCached } from "./component_data_to_js.js";
 import { DATA_FLOW_FLAG } from "../runtime/runtime_component.js";
 import Presets from "../presets.js";
 
@@ -40,7 +40,7 @@ export async function importComponentData(new_component_url, component, presets,
 
         const comp_data = await compileComponent(ast, string, resolved_url, presets);
 
-        componentDataToClassCached(comp_data, presets);
+        componentDataToJSCached(comp_data, presets);
 
         if (local_name) component.local_component_names.set(local_name.toUpperCase(), comp_data.name);
 
