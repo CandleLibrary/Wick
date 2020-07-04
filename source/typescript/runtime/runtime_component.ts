@@ -1,6 +1,5 @@
 import { rt, WickRuntime } from "./runtime_global.js";
 import { WickContainer } from "./runtime_container.js";
-import { DOMLiteral } from "../types/dom_literal.js";
 
 import Presets from "../presets";
 import { makeElement, integrateElement } from "./runtime_html.js";
@@ -52,11 +51,7 @@ export class WickRTComponent {
 
     protected CONNECTED: boolean;
 
-    protected getID: () => string;
-
     protected presets: Presets;
-
-    protected rt: WickRuntime;
 
     protected nlu: object;
 
@@ -71,7 +66,6 @@ export class WickRTComponent {
     protected par: WickRTComponent;
 
     protected ct: WickContainer[];
-
     /**
      * Identifier of interval watcher for non-dynamic models.
      */
@@ -99,23 +93,13 @@ export class WickRTComponent {
     pup: typeof updateFromChild;
     ufp: typeof updateFromParent;
 
-
-
-    /**
-     * Data flow map 
-     * 
-     * Maps child+parent inputs and outputs
-     */
-    protected dfm: any[];
-
-    constructor(model = null, existing_element = null, wrapper = null, default_model_name = "", comp_data: ComponentData = {}) {
+    constructor(model = null, existing_element = null, wrapper = null, parent = null, default_model_name = "") {
 
         const presets = rt.presets;
 
         this.name = this.constructor.name;
 
         this.CONNECTED = false;
-
 
         this.nlu = {};
         this.ch = [];
@@ -138,6 +122,8 @@ export class WickRTComponent {
         this.polling_id = -1;
         this.presets = rt.presets;
 
+        this.par = parent;
+
 
         if (existing_element)
             this.ele = <HTMLElement>this.ie(existing_element);
@@ -158,9 +144,9 @@ export class WickRTComponent {
         if (wrapper) {
             this.wrapper = wrapper;
             this.ele.appendChild(this.wrapper.ele);
-            this.wrapper.setModel({ comp: this, meta: comp_data });
-        } else if (presets.wrapper && comp_data.name !== presets.wrapper.name) {
-            this.wrapper = new (presets.component_class.get(presets.wrapper.name))({ comp: this, meta: comp_data });
+            this.wrapper.setModel({ comp: this });
+        } else if (presets.wrapper && this.name !== presets.wrapper.name /*Prevent recursion, which will be infinite */) {
+            this.wrapper = new (presets.component_class.get(presets.wrapper.name))({ comp: this });
             this.ele.appendChild(this.wrapper.ele);
         }
 
@@ -172,7 +158,7 @@ export class WickRTComponent {
 
         this.onLoad();
 
-        rt.OVERRIDABLE_onComponentCreate(comp_data, this);
+        rt.OVERRIDABLE_onComponentCreate(this);
     }
 
     destructor() {
@@ -335,6 +321,7 @@ export class WickRTComponent {
             });
 
         else {
+
             //Create a polling monitor
             if (this.polling_id <= 0)
                 this.polling_id = <number><unknown>setInterval(updateModel.bind(this), 10);
@@ -349,7 +336,7 @@ export class WickRTComponent {
 
         for (const name in data) {
 
-            if (typeof data[name] !== "undefined") {
+            if (typeof (data[name]) !== "undefined") {
 
                 const val = this.nlu[name];
 
@@ -413,6 +400,7 @@ function updateFromParent(local_index, v, flags) {
 function syncParentMethod(this_index, parent_method_index, child_index) {
 
     this.ci = child_index;
+
     this.pui[this_index] = this.par["u" + parent_method_index];
 }
 
