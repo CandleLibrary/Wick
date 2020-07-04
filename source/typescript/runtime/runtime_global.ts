@@ -23,7 +23,7 @@ export interface WickRuntime {
     gC(name: string): Component,
     presets: Presets;
 
-    OVERRIDABLE_onComponentCreate(component_meta: any, component_instance: WickRTComponent): void;
+    OVERRIDABLE_onComponentCreate(component_instance: WickRTComponent): void;
 
     OVERRIDABLE_onComponentMetaChange(component_meta: any): void;
 
@@ -45,11 +45,11 @@ const rt: WickRuntime = (() => {
 
         presets: null,
 
-        rC: component => void rt.presets.component_class.set(component.name, component),
+        rC: component => (rt.presets.component_class.set(component.name, component), component),
 
         gC: component_name => rt.presets.component_class.get(component_name),
 
-        OVERRIDABLE_onComponentCreate(component_meta, component_instance) { },
+        OVERRIDABLE_onComponentCreate(component_instance) { },
 
         OVERRIDABLE_onComponentMetaChange() { },
 
