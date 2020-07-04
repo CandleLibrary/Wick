@@ -1,6 +1,6 @@
-
-import { render, CSSTreeNodeType, selector } from "@candlefw/css";
+import { render, CSSTreeNodeType, selector, SelectionHelpers } from "@candlefw/css";
 import { traverse } from "@candlefw/conflagrate";
+
 import parser from "../parser/parser.js";
 
 function UpdateSelector(node, name) {
@@ -12,10 +12,10 @@ function UpdateSelector(node, name) {
 
         const [type] = s.nodes[0].nodes;
 
-        if (type.type == CSSTreeNodeType.QualifiedName && type.val == "root") {
+        if (type.type == CSSTreeNodeType.TypeSelector && type.nodes[0].val == "root") {
             HAS_ROOT = true;
             s.nodes[0].nodes[0] = class_selector;
-        } else if (type.type == CSSTreeNodeType.QualifiedName && type.val == "body") {
+        } else if (type.type == CSSTreeNodeType.TypeSelector && type.nodes[0].val == "body") {
             HAS_ROOT = true;
         } if (!HAS_ROOT)
             s.nodes.unshift(class_selector);
