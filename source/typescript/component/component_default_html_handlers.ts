@@ -1,9 +1,10 @@
+import { MinTreeNode, stmt } from "@candlefw/js";
+
 import { WickASTNodeType, WICK_AST_NODE_TYPE_SIZE, WICK_AST_NODE_TYPE_BASE, WickASTNode, WickASTNodeClass } from "../types/wick_ast_node_types.js";
 import { HTMLHandler } from "../types/html_handler.js";
 import { processWickCSS_AST } from "./component_css.js";
 import { compileComponent } from "./component.js";
 import { processFunctionDeclaration, processWickJS_AST } from "./component_js.js";
-import { MinTreeNode, stmt } from "@candlefw/js";
 import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./component_set_component_variable.js";
 import { importResource } from "./component_common.js";
 

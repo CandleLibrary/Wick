@@ -1,9 +1,11 @@
-import { MinTreeNodeType, exp, stmt } from "@candlefw/js";
+import { MinTreeNodeType, exp, stmt, MinTreeNode } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 
 import { BindingObject, BindingHandler, BindingType } from "../types/types.js";
 import { DATA_FLOW_FLAG } from "../runtime/runtime_component.js";
 import { VARIABLE_REFERENCE_TYPE, setVariableName } from "./component_set_component_variable.js";
+import { matchAll, SelectionHelpers } from "@candlefw/css";
+import { DOMLiteral } from "../wick.js";
 
 export const binding_handlers: BindingHandler[] = [];
 
@@ -448,30 +450,45 @@ loadBindingHandler({
         return attribute_name == "inlined_element_id";
     },
 
-    prepareBindingObject(attribute_name, pending_binding, host_node, element_index, component, presets) {
+    prepareBindingObject(attribute_name, pending_binding_node, host_node, element_index, component, presets) {
 
-        const id = getElementById(host_node.value.slice(1), component.HTML);
 
-        if (id >= 0) {
-            const binding = createBindingObject(BindingType.READONLY);
+        const nodes = matchAll<DOMLiteral>(pending_binding_node.value.slice(1), component.HTML, helper);
 
-            binding.read_ast = stmt(`c.a=c.elu[${id}];`);
+        if (nodes.length > 0) {
 
-            return binding;
+            const index = host_node.nodes.indexOf(pending_binding_node);
+            (<MinTreeNode><unknown>host_node).nodes[index] = (nodes.length == 1)
+                ? exp(`this.elu[${nodes[0].lookup_index}];`)
+                : exp(`[${nodes.map(e => `this.elu[${e.lookup_index}]`).join(",")}]`);
         }
+
+        return null;
     }
 });
 
-function getElementById(id, node): number {
 
-    let i = -1;
-    if (node.a)
-        for (const [key, val] of node.a)
-            if (key == "id" && val == id) return node.i;
-
-    if (node.c)
-        for (const c of node.c)
-            if ((i = getElementById(id, c)) >= 0) break;
-
-    return i;
-}
+const helper: SelectionHelpers<DOMLiteral> = {
+    WQmatch: (ele, wq_selector) => wq_selector.val,
+    getChildren: (ele) => (ele.children && ele.children.slice().map(e => Object.assign({}, e)).map(e => ((e.parent = ele), e))) || [],
+    getParent: (ele) => e.parent,
+    hasAttribute: (ele, name, value, sym, modifier) =>
+        ele.attributes && ele.attributes
+            .filter(([key]) => key == name)
+            .filter(([, v]) => !value || v == value)
+            .length > 0,
+    hasClass: (ele, class_) =>
+        ele.attributes && ele.attributes
+            .filter(([key]) => key == "class")
+            .filter(([, v]) => v == class_)
+            .length > 0,
+    hasID: (ele, id) =>
+        ele.attributes && ele.attributes
+            .filter(([key]) => key == "id")
+            .filter(([, v]) => v == id)
+            .length > 0,
+    hasPseudoClass: (ele, id) => false,
+    hasPseudoElement: (ele, id) => false,
+    hasType: (ele, type) => ele.tag_name &&
+        ele.tag_name.toUpperCase() == type.toUpperCase()
+};
