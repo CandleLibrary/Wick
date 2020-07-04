@@ -42,6 +42,13 @@ export interface FunctionFrame {
 export interface Component {
 
     /**
+     * Maps @***** selector strings to nodes that should be replaced with 
+     * a reference or an array of references that match the selector to a
+     * local HTML element or elements. 
+     */
+    selector_map: Map<string, MinTreeNode[]>;
+
+    /**
      * Count of number of container tags identified in HTML 
      */
     container_count: number;
@@ -124,6 +131,11 @@ export interface Component {
      * Mapping between import names and hash names of components that referenced in other components. 
      */
     local_component_names: Map<string, string>;
+
+    /**
+     * Original source string.
+     */
+    source: string;
 }
 
 export interface BindingInfoContainer {
