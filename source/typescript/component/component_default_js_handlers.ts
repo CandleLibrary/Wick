@@ -8,8 +8,7 @@ import { processFunctionDeclaration } from "./component_js.js";
 import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./component_set_component_variable.js";
 import { processWickHTML_AST } from "./component_html.js";
 import { processWickCSS_AST } from "./component_css.js";
-import { importComponentData, importResource } from "./component_common.js";
-import { Component, Presets } from "../wick.js";
+import { importResource } from "./component_common.js";
 
 
 ;
@@ -75,16 +74,7 @@ loadJSHandlerInternal(
             else
                 url_value = <string>from.nodes[0].value;
 
-
-
-
-            // The @*** values are processed as regular scripts
-            // if they have any values other than the ones
-            // stated below.
-            const [from_value, meta] = url_value.split(":");
-
-
-            if (from_value) {
+            if (url_value) {
 
                 const names = [];
 
@@ -103,12 +93,12 @@ loadJSHandlerInternal(
                         external = <string>id.value;
                     }
 
-                    names.push(local, external);
+                    names.push({ local, external });
 
                     skip();
                 }
 
-                await importResource(from_value, component, presets, node, imports ? <string>imports.nodes[0].value : "", names);
+                await importResource(url_value, component, presets, node, imports ? <string>imports.nodes[0].value : "", names);
             }
 
             //Export and import statements should not showup in the final AST.
@@ -347,8 +337,6 @@ loadJSHandlerInternal(
 
         async prepareJSNode(node, parent_node, skip, component, presets, function_block) {
 
-            skip(1);
-
             const [id] = node.nodes,
                 name = id.value;
 
@@ -369,22 +357,18 @@ loadJSHandlerInternal(
 
         async prepareJSNode(node, parent_node, skip, component, presets, function_block) {
 
-
-            if (node.value[0] == "#") {
+            if (node.value[0] == "@") {
 
                 component.addBinding({
                     attribute_name: "inlined_element_id",
                     binding_node: node,
-                    host_node: node,
+                    host_node: parent_node,
                     html_element_index: 0
                 });
 
-                return <MinTreeNode>{
-                    type: MinTreeNodeType.Identifier,
-                    value: "this.a",
-                    pos: node.pos
-                };
             }
+
+            return node;
         }
 
     }, MinTreeNodeType.StringLiteral
