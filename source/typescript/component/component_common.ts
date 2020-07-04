@@ -60,10 +60,13 @@ export async function importResource(
     node,
     local_name: string = "",
     names: { local: string, external: string; }[] = []
-) {
+): Promise<void> {
 
     let flag: DATA_FLOW_FLAG = null, ref_type: VARIABLE_REFERENCE_TYPE = null;
-    switch (from_value) {
+
+    const [url, meta] = from_value.split(":");
+
+    switch (url.trim()) {
         default:
             // Read file and determine if we have a component, a script or some other resource. REQUIRING
             // extensions would make this whole process 9001% easier. such .html for html components,
@@ -86,20 +89,24 @@ export async function importResource(
             if (local_name && presets.named_components.has(comp_name))
                 component.local_component_names.set(comp_name, presets.named_components.get(comp_name).name);
             return;
+
         case "@parent":
             /* all ids within this node are imported binding_variables from parent */
             //Add all elements to global scope
             ref_type = VARIABLE_REFERENCE_TYPE.PARENT_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PARENT;
             break;
+
         case "@api":
-            ref_type = VARIABLE_REFERENCE_TYPE.API_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PARENT;
+            ref_type = VARIABLE_REFERENCE_TYPE.API_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PRESETS;
             break;
+
         case "@global":
             ref_type = VARIABLE_REFERENCE_TYPE.GLOBAL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_OUTSIDE;
             break;
 
         case "@model":
-            ref_type = VARIABLE_REFERENCE_TYPE.GLOBAL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_OUTSIDE;
+            if (meta) component.global_model = meta.trim();
+            ref_type = VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_MODEL;
             break;
 
         case "@presets":
