@@ -36,16 +36,18 @@ export function componentDataToHTML(
         //Convert html to string 
 
         const {
-            t: tag_name = "",
-            a: attributes = [],
-            c: children = [],
-            d: data,
-            i,
-            ct,
-            b: IS_BINDING,
-            cp: component_name,
-            sl: slot_name
-        }: DOMLiteral = html;
+            tag_name: tag_name = "",
+            attributes: attributes = [],
+            children: c = [],
+            data: data,
+            lookup_index: i,
+            is_container: ct,
+            is_bindings: IS_BINDING,
+            component_name: component_name,
+            slot_name: slot_name
+        }: DOMLiteral = html,
+            // Unshare the children array
+            children = c.slice();
 
         if (ct) {
             const
@@ -62,7 +64,7 @@ export function componentDataToHTML(
 
             const c_comp = presets.components.get(component_name);
 
-            return componentDataToHTML(c_comp, presets, template_map, undefined, htmlState.IS_COMPONENT, children, comp);
+            return componentDataToHTML(c_comp, presets, template_map, c_comp.html, htmlState.IS_COMPONENT | state, children, comp);
 
         } else if (tag_name) {
 
@@ -74,7 +76,7 @@ export function componentDataToHTML(
 
                     const c = extern_children[i];
 
-                    if (c.sl == slot_name) {
+                    if (c.slot_name == slot_name) {
                         extern_children.splice(i, 1);
                         child = c;
                         break;

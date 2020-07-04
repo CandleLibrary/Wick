@@ -21,32 +21,32 @@ function buildExportableDOMNode(
 
     const node: DOMLiteral = <DOMLiteral>{};
 
-    node.t = ast.tag || "";
+    node.tag_name = ast.tag || "";
 
     if (ast.slot_name) {
-        node.sl = ast.slot_name;
+        node.slot_name = ast.slot_name;
     }
 
     if (ast.IS_BINDING)
-        node.b = true;
+        node.is_bindings = true;
 
     if (ast.component_name) {
-        node.cp = ast.component_name;
+        node.component_name = ast.component_name;
     }
 
     if (ast.is_container) {
-        node.ct = true;
+        node.is_container = true;
 
-        if (node.t == "CONTAINER")
-            node.t = "DIV";
+        if (node.tag_name == "CONTAINER")
+            node.tag_name = "DIV";
     }
 
     if (ast.attributes && ast.attributes.length > 0) {
 
-        node.a = [];
+        node.attributes = [];
 
         for (const attrib of ast.attributes)
-            node.a.push([attrib.name, attrib.value]);
+            node.attributes.push([attrib.name, attrib.value]);
 
     }
 
@@ -55,17 +55,17 @@ function buildExportableDOMNode(
      */
 
     if (ast.nodes && ast.nodes.length > 0) {
-        node.c = [];
+        node.children = [];
         for (const child of ast.nodes)
-            node.c.push(buildExportableDOMNode(child));
+            node.children.push(buildExportableDOMNode(child));
     }
 
-    node.i = ast.id;
+    node.lookup_index = ast.id;
 
     if (ast.data) {
-        node.d = ast.data;//.replace(/\n/g, '\\n');
+        node.data = ast.data;//.replace(/\n/g, '\\n');
     } else if (ast.ns > 0) {
-        node.ns = ast.ns || 0;
+        node.namespace_id = ast.ns || 0;
     }
 
     return node;
