@@ -22,21 +22,40 @@ export interface ComponentVariable {
 
 }
 export interface FunctionFrame {
-    declared_variables: Set<string>;
     /**
      * Any binding variable that is referenced within the function.
      */
-    input_binding_variables: string[];
+    declared_variables: Set<string>;
+
     /**
-     * Any binding variables that is assigned a value.
+     * Identifiers that have no declaration and thus must be a
+     * binding identifier.
      */
-    output_binding_variables: string[];
+    binding_identifiers: { node: MinTreeNode, parent: MinTreeNode, index: number; }[];
+
+    /**
+     * Binding variable names that are read by the method.
+     */
+    input_names: Set<string>;
+
+    /**
+     * Binding variable names that are written to by the method. 
+     */
+    output_names: Set<string>;
+
     /**
      * Extracted source AST for this function block
      */
     ast: MinTreeNode;
     type: string;
     prev?: FunctionFrame;
+    /**
+     * If this frame is the first one in the frame chain
+     * then it is root.
+     */
+    IS_ROOT: boolean;
+
+    IS_TEMP_CLOSURE: boolean;
 }
 
 export interface Component {

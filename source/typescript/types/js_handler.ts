@@ -1,7 +1,7 @@
 import { MinTreeNode } from "@candlefw/js";
 
 import { WickASTNode } from "./wick_ast_node_types.js";
-import { Component } from "./types.js";
+import { Component, FunctionFrame } from "./types.js";
 import Presets from "../presets.js";
 
 export interface JSHandler {
@@ -33,7 +33,7 @@ export interface JSHandler {
         skip: (amount?: number) => void,
         component: Component,
         presets: Presets,
-        function_block: any
+        frame: FunctionFrame
     ):
         MinTreeNode
         | void

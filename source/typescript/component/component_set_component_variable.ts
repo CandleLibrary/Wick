@@ -77,7 +77,7 @@ export function setComponentVariable(
     return variable;
 }
 
-export function setVariableName(name, component) {
+export function setVariableName(name, component: Component) {
 
     // Allow global objects to be accessed if there are no existing
     // component variables that have an identifier that matches [name]

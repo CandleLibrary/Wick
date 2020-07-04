@@ -3,7 +3,7 @@ import { traverse, renderWithFormatting, renderCompressed } from "@candlefw/conf
 
 import Presets from "../presets.js";
 import { processBindings } from "./component_process_bindings.js";
-import { Component, } from "../types/types";
+import { Component, FunctionFrame, } from "../types/types";
 import { getPropertyAST, getGenericMethodNode } from "./component_js_ast_tools.js";
 import { setVariableName } from "./component_set_component_variable.js";
 import { renderers, format_rules } from "../format_rules.js";
@@ -13,69 +13,18 @@ import { componentDataToCSS } from "./component_data_to_css.js";
 /**
  * Update global variables in ast after all globals have been identified
  */
-function makeComponentMethod(function_block, component: Component, class_information) {
-    const
-        { binding_variables: variables } = component,
-        used_values = new Set();
+function makeComponentMethod(frame: FunctionFrame, component: Component, class_information) {
 
-    let { ast, root_name } = function_block;
+    const ast = frame.ast;
 
+    for (const pack of frame.binding_identifiers) {
 
-    for (const { node, meta } of traverse(ast, "nodes")
-        .makeMutable()
-    ) {
-        const { mutate, parent } = meta;
+        const { index, node, parent } = pack;
 
-        if (node.type == MinTreeNodeType.AssignmentExpression) {
-
-            const [left, right] = node.nodes;
-
-            if (left.type == MinTreeNodeType.IdentifierReference) {
-
-                const { value } = left;
-
-                if (variables.has(value)) {
-
-                    const global_val = variables.get(value),
-                        mutate_node = exp(`this.u${global_val.class_name}()`);
-
-                    global_val.ASSIGNED = true;
-
-                    node.nodes[0] = exp(setVariableName(value, component));
-
-                    mutate_node.nodes[1].nodes = [node];
-
-                    if (root_name == value)
-                        mutate_node.nodes[1].nodes.push(exp("1"));
-
-                    mutate(mutate_node);
-
-                    used_values.add(value);
-                }
-
-            } else if (left.type == MinTreeNodeType.MemberExpression) {
-                if (left == MinTreeNodeType.IdentifierReference) {
-                    const { value } = node;
-                    if (variables.has(value)) {
-                        const global_val = variables.get(value);
-                        mutate(exp(setVariableName(value, component)));
-                    }
-                }
-            }
-        }
-
-        if (node.type == MinTreeNodeType.IdentifierReference) {
-            const { value } = node;
-
-            if (variables.has(value)) {
-
-                const global_val = variables.get(value);
-                mutate(exp(setVariableName(value, component)));
-            }
-        }
+        parent.nodes[index] = exp(setVariableName(node.value, component));
     }
 
-    if (function_block.type == "method")
+    if (frame.type == "method")
         ast.function_type = "method";
     else
         ast.function_type = "root";
@@ -83,13 +32,12 @@ function makeComponentMethod(function_block, component: Component, class_informa
     switch (ast.function_type) {
         case "root":
             class_information.binding_init_statements.push(...ast.nodes);
-            //const method = exp("({c(){a}})").nodes[0].nodes[0];
-            //method.nodes[2].nodes = ast.nodes;
-            //ast = method;
             break;
         default:
             class_information.methods.push(ast);
     }
+
+    debugger;
 }
 
 function componentStringToJS(class_string: string, component: Component, presets: Presets) {
@@ -161,9 +109,8 @@ export function componentDataToClassString(component: Component, presets: Preset
         const
             component_class = stmt(`class ${component.name || "temp"} extends cfw.wick.rt.C {constructor(m,e,p,w){super(m,e,p,w,"${component.global_model || ""}");}}`);
 
-        if (!component.global_model) {
+        if (!component.global_model)
             component_class.nodes.length = 2;
-        }
 
 
         class_information.methods = component_class.nodes;

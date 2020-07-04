@@ -1,4 +1,4 @@
-import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
+import { MinTreeNode, MinTreeNodeType, MinTreeNodeClass } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 
 import { Component, FunctionFrame } from "../types/types.js";
@@ -20,13 +20,11 @@ export async function processFunctionDeclaration(node: MinTreeNode, component: C
 
         s.ast.type = MinTreeNodeType.Method;
 
-        //s.root_name = root_name;
-
         return s;
     }));
 }
 
-export async function processWickJS_AST(ast: MinTreeNode, component: Component, presets: Presets, root_name = "", frame = null): Promise<FunctionFrame> {
+export async function processWickJS_AST(ast: MinTreeNode, component: Component, presets: Presets, root_name = "", frame = null, temporary = false): Promise<FunctionFrame> {
 
     const
         function_frame = <FunctionFrame>{
@@ -34,9 +32,12 @@ export async function processWickJS_AST(ast: MinTreeNode, component: Component, 
             type: "root",
             ast: null,
             declared_variables: new Set(),
-            input_binding_variables: [],
-            output_binding_variables: [],
-            prev: frame
+            input_names: new Set(),
+            output_names: new Set(),
+            binding_identifiers: [],
+            prev: frame,
+            IS_ROOT: !frame,
+            IS_TEMP_CLOSURE: temporary,
         };
 
     component.function_blocks.push(function_frame);
@@ -48,8 +49,10 @@ export async function processWickJS_AST(ast: MinTreeNode, component: Component, 
         .makeSkippable()
         .extract(function_frame)
     ) {
-
-        let js_node = node;
+        if (node.type & MinTreeNodeClass.CLOSURE) {
+            await processWickJS_AST(node, component, presets, root_name, frame, true);
+            meta.skip();
+        }
 
         for (const handler of JS_handlers[Math.max((node.type >>> 23), 0)]) {
 
@@ -64,8 +67,6 @@ export async function processWickJS_AST(ast: MinTreeNode, component: Component, 
 
             if (result != node) {
                 if (result === null || result) {
-
-                    js_node = result;
 
                     meta.replace(result);
 
