@@ -42,6 +42,7 @@ loadBindingHandler({
             { primary_ast, secondary_ast } = pending_binding;
 
         if (primary_ast) {
+
             for (const { node, meta } of traverse(primary_ast, "nodes")) {
 
                 if (node.type == MinTreeNodeType.IdentifierReference) {
@@ -58,9 +59,6 @@ loadBindingHandler({
                 if (node.type == MinTreeNodeType.IdentifierReference)
                     replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
 
-
-            // TODO validate ON events. 
-            // TODO create custom events.
             const expression = exp(`c.e${element_index}.setAttribute("${attribute_name}")`);
 
             expression.nodes[1].nodes.push(receiver.ast);

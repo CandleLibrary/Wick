@@ -1,4 +1,4 @@
-import { cfw } from "@candlefw/candle";
+import { cfw } from "@candlefw/cfw";
 import spark, { Sparky } from "@candlefw/spark";
 import { WickRTComponent } from "./runtime_component";
 

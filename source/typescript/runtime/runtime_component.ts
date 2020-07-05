@@ -425,7 +425,7 @@ function updateModel() {
             const index = this.nlu[name] & 0xFFFFFF;
             const v = this[index];
 
-            if (model[name] && model[name] !== v)
+            if (model[name] !== undefined && model[name] !== v)
                 this.update({ [name]: model[name] }, DATA_FLOW_FLAG.FROM_MODEL);
         }
     }

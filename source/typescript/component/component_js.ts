@@ -10,11 +10,11 @@ import { JS_handlers } from "./component_default_js_handlers.js";
 export async function processFunctionDeclaration(node: MinTreeNode, component: Component, presets: Presets, root_name = "") {
 
     //@ts-ignore
-    const temp_component = <Component>{ CSS: [], HTML: null, function_blocks: [], location: "", binding_variables: component.binding_variables, names: [], addBinding: component.addBinding };
+    const temp_component = <Component>{ CSS: [], HTML: null, frames: [], location: "", binding_variables: component.binding_variables, names: [], addBinding: component.addBinding };
 
     await processWickJS_AST(node, temp_component, presets, root_name);
 
-    component.function_blocks.push(...temp_component.function_blocks.map(s => {
+    component.frames.push(...temp_component.frames.map(s => {
 
         s.type = "method";
 
@@ -34,13 +34,14 @@ export async function processWickJS_AST(ast: MinTreeNode, component: Component, 
             declared_variables: new Set(),
             input_names: new Set(),
             output_names: new Set(),
-            binding_identifiers: [],
+            binding_ref_identifiers: [],
             prev: frame,
             IS_ROOT: !frame,
             IS_TEMP_CLOSURE: temporary,
+            binding_type: (!frame) ? new Map : null,
         };
 
-    component.function_blocks.push(function_frame);
+    component.frames.push(function_frame);
 
     main_loop:
     for (const { node, meta } of traverse(ast, "nodes")

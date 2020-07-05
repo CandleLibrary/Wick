@@ -7,7 +7,7 @@ import {
     CSSTreeNodeType
 } from "@candlefw/css";
 
-import { ParserEnvironment } from "@candlefw/hydrocarbon/build/library/runtime";
+import { ParserEnvironment } from "@candlefw/hydrocarbon/build/library/runtime.js";
 import { Lexer } from "@candlefw/wind";
 import { MinTreeNodeClass, MinTreeNodeType, JSParserEnvironment, JSParserEnv } from "@candlefw/js";
 

@@ -6,8 +6,6 @@ import { WickASTNodeType } from "../types/wick_ast_node_types.js";
 import { DATA_FLOW_FLAG } from "../runtime/runtime_component.js";
 import Presets from "../presets.js";
 import { VARIABLE_REFERENCE_TYPE } from "./component_set_component_variable.js";
-import { renderers, format_rules } from "../format_rules.js";
-import { traverse, renderWithFormatting } from "@candlefw/conflagrate";
 
 function createBindingName(binding_index_pos: number) {
     return `b${binding_index_pos.toString(36)}`;
@@ -132,20 +130,12 @@ export function processBindings(component: Component, class_data, presets: Prese
 
     for (const v of component.binding_variables.values()) {
 
-
-        if (v.type & VARIABLE_REFERENCE_TYPE.API_VARIABLE) {
-            //console.log({ v });
-        } else {
-
-
-        }
-
         const { local_name, class_name, ACCESSED, ASSIGNED } = v, output = [];
 
         if (ASSIGNED) {
 
             // In here, update any binding that rely on this and only this value. If there
-            // are bindings that need a tuple of variables in order to activate,
+            // are bindings that need a set of variables to exist in order to activate,
             // create a binding update function and add a call to that method here. 
             const method = getGenericMethodNode("u" + class_name, "v,f = 0", `var c = this; c[${class_name}] = v;`),
 

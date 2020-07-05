@@ -2,7 +2,6 @@ import { rt } from "./runtime_global.js";
 import { DOMLiteral } from "../types/dom_literal.js";
 import { WickContainer } from "./runtime_container.js";
 import { takeParentAddChild } from "./runtime_common.js";
-import { e } from "@candlefw/wind/build/types/ascii_code_points";
 
 //
 // https://www.w3.org/TR/2011/WD-html5-20110525/namespaces.html
@@ -57,6 +56,7 @@ export function integrateElement(ele: HTMLElement | Text) {
                 const text = document.createTextNode(ele.innerHTML);
                 ele.replaceWith(text);
                 ele = text;
+                this.elu.push(ele);
             } else {
 
                 if (ele.getAttribute("w-container")) {

@@ -1,11 +1,11 @@
 import { MinTreeNode } from "@candlefw/js";
-import { Component } from "../types/types.js";
-import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./component_set_component_variable.js";
+import { Component, VARIABLE_REFERENCE_TYPE, FunctionFrame } from "../types/types.js";
+import { setComponentVariable, VARIABLE_REFERENCE_TYPE as VARIABLE_REFERENCE_TYPE_OLD } from "./component_set_component_variable.js";
 import { acquireComponentASTFromRemoteSource, compileComponent } from "./component.js";
 import { componentDataToJSCached } from "./component_data_to_js.js";
 import { DATA_FLOW_FLAG } from "../runtime/runtime_component.js";
 import Presets from "../presets.js";
-
+import { addBindingVariable } from "./getNonTempFrame.js";
 
 /**
  * Take the data from the source component and merge it into the destination component.
@@ -27,7 +27,7 @@ export function mergeComponentData(destination_component: Component, source_comp
     for (const name of source_component.names)
         destination_component.names.push(name);
 
-    destination_component.function_blocks.push(...source_component.function_blocks);
+    destination_component.frames.push(...source_component.frames);
 }
 
 export async function importComponentData(new_component_url, component, presets, local_name: string) {
@@ -59,10 +59,11 @@ export async function importResource(
     presets: Presets,
     node,
     local_name: string = "",
-    names: { local: string, external: string; }[] = []
+    names: { local: string, external: string; }[] = [],
+    frame: FunctionFrame
 ): Promise<void> {
 
-    let flag: DATA_FLOW_FLAG = null, ref_type: VARIABLE_REFERENCE_TYPE = null;
+    let flag: DATA_FLOW_FLAG = null, ref_type: VARIABLE_REFERENCE_TYPE_OLD = null;
 
     const [url, meta] = from_value.split(":");
 
@@ -93,20 +94,20 @@ export async function importResource(
         case "@parent":
             /* all ids within this node are imported binding_variables from parent */
             //Add all elements to global scope
-            ref_type = VARIABLE_REFERENCE_TYPE.PARENT_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PARENT;
+            ref_type = VARIABLE_REFERENCE_TYPE_OLD.PARENT_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PARENT;
             break;
 
         case "@api":
-            ref_type = VARIABLE_REFERENCE_TYPE.API_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PRESETS;
+            ref_type = VARIABLE_REFERENCE_TYPE_OLD.API_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PRESETS;
             break;
 
         case "@global":
-            ref_type = VARIABLE_REFERENCE_TYPE.GLOBAL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_OUTSIDE;
+            ref_type = VARIABLE_REFERENCE_TYPE_OLD.GLOBAL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_OUTSIDE;
             break;
 
         case "@model":
             if (meta) component.global_model = meta.trim();
-            ref_type = VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_MODEL;
+            ref_type = VARIABLE_REFERENCE_TYPE_OLD.MODEL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_MODEL;
             break;
 
         case "@presets":
@@ -114,6 +115,15 @@ export async function importResource(
             break;
     }
 
-    for (const { local, external } of names)
+    for (const { local, external } of names) {
+
+        addBindingVariable({
+            external_name: external || local,
+            internal_name: local,
+            class_index: -1,
+            type: ref_type
+        }, frame);
+
         setComponentVariable(ref_type, local, component, external || local, flag, <MinTreeNode>node);
+    }
 }

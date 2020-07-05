@@ -1,6 +1,6 @@
 import { Lexer } from "@candlefw/wind";
 
-import { lrParse, ParserData } from "@candlefw/hydrocarbon/build/library/runtime";
+import { lrParse, ParserData } from "@candlefw/hydrocarbon/build/library/runtime.js";
 
 import parser_data from "./wick_parser.js";
 import env from "./parser_environment.js";

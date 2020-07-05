@@ -102,7 +102,7 @@ export function componentDataToHTML(
                 }>`;
 
         } else if (IS_BINDING)
-            str += `<w-b>${data}</w-b>`;
+            str += `<w-b>${(data || "") + ""}</w-b>`;
         else
             str += data;
 

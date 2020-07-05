@@ -8,7 +8,6 @@ import { DOMLiteral } from "./dom_literal.js";
 
 export interface ComponentVariable {
     name: string,
-
     flags: number,
     type: number;
     nlui: number;
@@ -19,8 +18,24 @@ export interface ComponentVariable {
     ACCESSED: number,
     ASSIGNED: boolean,
     nodes?: MinTreeNode[];
-
 }
+
+export const enum VARIABLE_REFERENCE_TYPE {
+    INTERNAL_VARIABLE = 1,
+    MODEL_VARIABLE = 16,
+    API_VARIABLE = 4,
+    PARENT_VARIABLE = 8,
+    METHOD_VARIABLE = 2,
+    GLOBAL_VARIABLE = 32,
+}
+
+export interface BindingVariable {
+    internal_name: string;
+    external_name: string;
+    type: VARIABLE_REFERENCE_TYPE;
+    class_index: number;
+}
+
 export interface FunctionFrame {
     /**
      * Any binding variable that is referenced within the function.
@@ -28,10 +43,10 @@ export interface FunctionFrame {
     declared_variables: Set<string>;
 
     /**
-     * Identifiers that have no declaration and thus must be a
-     * binding identifier.
+     * Identifiers that have no declaration and no presence in the 
+     * the global object and thus must be a binding identifier reference.
      */
-    binding_identifiers: { node: MinTreeNode, parent: MinTreeNode, index: number; }[];
+    binding_ref_identifiers: { node: MinTreeNode, parent: MinTreeNode, index: number; }[];
 
     /**
      * Binding variable names that are read by the method.
@@ -49,6 +64,7 @@ export interface FunctionFrame {
     ast: MinTreeNode;
     type: string;
     prev?: FunctionFrame;
+
     /**
      * If this frame is the first one in the frame chain
      * then it is root.
@@ -56,6 +72,13 @@ export interface FunctionFrame {
     IS_ROOT: boolean;
 
     IS_TEMP_CLOSURE: boolean;
+
+    /**
+     * Array of bindings types that have been declared in 
+     * the root frame either through a var statement or
+     * from an import/export statement. 
+     */
+    binding_type?: Map<string, BindingVariable>
 }
 
 export interface Component {
@@ -98,7 +121,7 @@ export interface Component {
      * Functions blocks that identify the input and output variables that are consumed
      * and produced by the function. 
      */
-    function_blocks: FunctionFrame[];
+    frames: FunctionFrame[];
 
     /**
      * Globally unique string identifying this particular component. 

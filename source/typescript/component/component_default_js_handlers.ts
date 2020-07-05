@@ -1,18 +1,19 @@
-import { stmt, MinTreeNodeType, MinTreeNode, renderCompressed, exp, MinTreeNodeClass } from "@candlefw/js";
+import { stmt, MinTreeNodeType, MinTreeNode, renderCompressed, exp } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 
 import { WICK_AST_NODE_TYPE_SIZE, WickASTNodeClass, WickASTNode, WickASTNodeType, WickBindingNode } from "../types/wick_ast_node_types.js";
 import { JSHandler } from "../types/js_handler.js";
 import { DATA_FLOW_FLAG } from "../runtime/runtime_component.js";
 import { processFunctionDeclaration } from "./component_js.js";
-import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./component_set_component_variable.js";
+import { setComponentVariable, VARIABLE_REFERENCE_TYPE as old_binding_ref_type } from "./component_set_component_variable.js";
 import { processWickHTML_AST } from "./component_html.js";
 import { processWickCSS_AST } from "./component_css.js";
 import { importResource } from "./component_common.js";
-import { FunctionFrame } from "../types/types.js";
+import { VARIABLE_REFERENCE_TYPE } from "../types/types.js";
+import { addBindingVariable, addNodeToBindingIdentifiers, addWrittenBindingVariableName, addNameToDeclaredVariables, isVariableDeclared, addReadBindingVariableName, isBindingVariable } from "./getNonTempFrame.js";
 
 
-;
+
 const default_handler = {
     priority: -Infinity,
     prepareJSNode(node) { return node; }
@@ -101,7 +102,7 @@ loadJSHandlerInternal(
                     skip();
                 }
 
-                await importResource(url_value, component, presets, node, imports ? <string>imports.nodes[0].value : "", names);
+                await importResource(url_value, component, presets, node, imports ? <string>imports.nodes[0].value : "", names, frame);
             }
 
             //Export and import statements should not showup in the final AST.
@@ -143,7 +144,7 @@ loadJSHandlerInternal(
 
                 for (const node of clause.nodes) {
                     const l_name = <string>node.value;
-                    setComponentVariable(VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE, l_name, component, "", DATA_FLOW_FLAG.EXPORT_TO_PARENT, <MinTreeNode>node);
+                    setComponentVariable(old_binding_ref_type.INTERNAL_VARIABLE, l_name, component, "", DATA_FLOW_FLAG.EXPORT_TO_PARENT, <MinTreeNode>node);
                 }
 
             }
@@ -182,11 +183,22 @@ loadJSHandlerInternal(
 
                     if (frame.IS_ROOT) {
 
-                        const d = setComponentVariable(VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE, l_name, component, "", 0, <MinTreeNode>meta.parent);
+                        if (!
+                            addBindingVariable({
+                                class_index: -1,
+                                external_name: l_name,
+                                internal_name: l_name,
+                                type: VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE
+                            }, frame)
+                        ) {
+                            debugger;
+                        }
+
+                        const d = setComponentVariable(old_binding_ref_type.INTERNAL_VARIABLE, l_name, component, "", 0, <MinTreeNode>meta.parent);
 
                         binding.type = MinTreeNodeType.CallExpression;
 
-                        addNodeToBindingIdentifiers(identifier, meta.parent, frame);
+                        addNodeToBindingIdentifiers(identifier, <MinTreeNode>meta.parent, frame);
 
                         addWrittenBindingVariableName(l_name, frame);
 
@@ -284,6 +296,15 @@ loadJSHandlerInternal(
 
                 setComponentVariable(0, name, component, "", 0, <MinTreeNode>parent_node);
 
+                if (frame.IS_ROOT) {
+                    addBindingVariable({
+                        internal_name: name,
+                        external_name: name,
+                        class_index: -1,
+                        type: VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE
+                    }, frame);
+                }
+
                 root_name = name.slice(1);
 
                 component.addBinding({
@@ -301,11 +322,20 @@ loadJSHandlerInternal(
 
             skip(1);
 
-            setComponentVariable(VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE, name, component, "", 0, <MinTreeNode>parent_node);
+            setComponentVariable(old_binding_ref_type.METHOD_VARIABLE, name, component, "", 0, <MinTreeNode>parent_node);
+
+            if (frame.IS_ROOT) {
+                addBindingVariable({
+                    internal_name: name,
+                    external_name: name,
+                    class_index: -1,
+                    type: VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE
+                }, frame);
+            }
 
             if (name[0] == "$") {
                 node.nodes[1] = { type: MinTreeNodeType.Arguments, nodes: [exp("f=0")], pos: node.pos };
-                node.nodes[2].nodes.unshift(stmt(`if(f>0)return 0;`));
+                (<MinTreeNode>node).nodes[2].nodes.unshift(stmt(`if(f>0)return 0;`));
             }
 
             await processFunctionDeclaration(<MinTreeNode>node, component, presets, root_name);
@@ -327,16 +357,18 @@ loadJSHandlerInternal(
 
             const name = <string>node.value;
 
-            if (!isVariableDeclared(name, frame)) {
+            if (!isVariableDeclared(name, frame)
+                && isBindingVariable(name, frame)) {
+
                 addNodeToBindingIdentifiers(
                     <MinTreeNode>node,
                     <MinTreeNode>parent_node,
-                    frame
-                );
+                    frame);
+
                 addReadBindingVariableName(name, frame);
             }
 
-            setComponentVariable(VARIABLE_REFERENCE_TYPE.GLOBAL_VARIABLE, name, component, name, 0, <MinTreeNode>parent_node);
+            setComponentVariable(old_binding_ref_type.GLOBAL_VARIABLE, name, component, name, 0, <MinTreeNode>parent_node);
 
             return <MinTreeNode>node;
         }
@@ -409,41 +441,3 @@ loadJSHandlerInternal(
     }, MinTreeNodeType.StringLiteral
 );
 
-function getNonTempFrame(frame: FunctionFrame) {
-    while (frame && frame.IS_TEMP_CLOSURE)
-        frame = frame.prev;
-    return frame;
-}
-
-function addNodeToBindingIdentifiers(
-    node: MinTreeNode,
-    parent: MinTreeNode,
-    frame: FunctionFrame) {
-
-    getNonTempFrame(frame)
-        .binding_identifiers.push({
-            node,
-            parent,
-            index: parent.nodes.indexOf(node)
-        });
-}
-
-function isVariableDeclared(var_name: string, frame: FunctionFrame): boolean {
-    if (frame.declared_variables.has(var_name)) return true;
-    else if (frame.prev) return isVariableDeclared(var_name, frame.prev);
-    else return false;
-}
-
-function addNameToDeclaredVariables(var_name: string, frame: FunctionFrame) {
-    frame.declared_variables.add(var_name);
-};
-
-function addWrittenBindingVariableName(var_name: string, frame: FunctionFrame) {
-    getNonTempFrame(frame).
-        output_names.add(var_name);
-}
-
-function addReadBindingVariableName(var_name: string, frame: FunctionFrame) {
-    getNonTempFrame(frame).
-        input_names.add(var_name);
-}

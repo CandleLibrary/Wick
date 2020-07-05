@@ -1,5 +1,5 @@
 import { MinTreeNodeType, MinTreeNode, exp, stmt } from "@candlefw/js";
-import { traverse, renderWithFormatting, renderCompressed } from "@candlefw/conflagrate";
+import { renderWithFormatting } from "@candlefw/conflagrate";
 
 import Presets from "../presets.js";
 import { processBindings } from "./component_process_bindings.js";
@@ -17,7 +17,7 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
 
     const ast = frame.ast;
 
-    for (const pack of frame.binding_identifiers) {
+    for (const pack of frame.binding_ref_identifiers) {
 
         const { index, node, parent } = pack;
 
@@ -36,8 +36,6 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
         default:
             class_information.methods.push(ast);
     }
-
-    debugger;
 }
 
 function componentStringToJS(class_string: string, component: Component, presets: Presets) {
@@ -180,7 +178,7 @@ export function componentDataToClassString(component: Component, presets: Preset
 
         //Compile scripts into methods
 
-        for (const function_block of component.function_blocks)
+        for (const function_block of component.frames)
             makeComponentMethod(function_block, component, class_information);
 
         if (component.HTML && INCLUDE_HTML) {
@@ -196,6 +194,7 @@ export function componentDataToClassString(component: Component, presets: Preset
         }
 
         let style;
+
         if (INCLUDE_CSS && (style = componentDataToCSS(component))) {
             re_stmts.push(stmt(`this.setCSS(\`${style}\`)`));
         }
@@ -207,8 +206,6 @@ export function componentDataToClassString(component: Component, presets: Preset
             class_information.methods.push(register_elements_method);
 
         class_information.compiled_ast = component_class;
-
-        //return renderCompressed(class_information.compiled_ast, renderers);
 
         return renderWithFormatting(class_information.compiled_ast, renderers, format_rules);
 

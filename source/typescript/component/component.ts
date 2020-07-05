@@ -147,7 +147,7 @@ export async function compileComponent(ast: WickASTNode | MinTreeNode, source_st
 
             bindings: [],
 
-            function_blocks: [],
+            frames: [],
 
             CSS: [],
 
