@@ -4,16 +4,19 @@ import { traverse } from "@candlefw/conflagrate";
 import { Component, FunctionFrame } from "../types/types.js";
 import Presets from "../presets.js";
 import { JS_handlers } from "./component_default_js_handlers.js";
+import { createFrame } from "./component_common.js";
 
 
 
 export async function processFunctionDeclaration(node: MinTreeNode, component: Component, presets: Presets, root_name = "") {
 
     //@ts-ignore
-    const temp_component = <Component>{ CSS: [], HTML: null, frames: [], location: "", binding_variables: component.binding_variables, names: [], addBinding: component.addBinding };
+    //const temp_component = <Component>{ CSS: [], HTML: null, frames: [], location: "", binding_variables: component.binding_variables, names: [], addBinding: component.addBinding, };
 
-    await processWickJS_AST(node, temp_component, presets, root_name);
+    //createFrame(null, false, temp_component);
 
+    await processWickJS_AST(node, component, presets, root_name, component.root_frame);
+    /*
     component.frames.push(...temp_component.frames.map(s => {
 
         s.type = "method";
@@ -21,27 +24,14 @@ export async function processFunctionDeclaration(node: MinTreeNode, component: C
         s.ast.type = MinTreeNodeType.Method;
 
         return s;
-    }));
+    }));*/
 }
 
-export async function processWickJS_AST(ast: MinTreeNode, component: Component, presets: Presets, root_name = "", frame = null, temporary = false): Promise<FunctionFrame> {
+export async function processWickJS_AST(ast: MinTreeNode, component: Component, presets: Presets, root_name = "", frame = null, TEMPORARY = false): Promise<FunctionFrame> {
 
-    const
-        function_frame = <FunctionFrame>{
-            root_name,
-            type: "root",
-            ast: null,
-            declared_variables: new Set(),
-            input_names: new Set(),
-            output_names: new Set(),
-            binding_ref_identifiers: [],
-            prev: frame,
-            IS_ROOT: !frame,
-            IS_TEMP_CLOSURE: temporary,
-            binding_type: (!frame) ? new Map : null,
-        };
-
-    component.frames.push(function_frame);
+    const function_frame = frame ?
+        createFrame(frame, TEMPORARY, component) :
+        component.root_frame;
 
     main_loop:
     for (const { node, meta } of traverse(ast, "nodes")

@@ -5,8 +5,10 @@ import { HTMLHandler } from "../types/html_handler.js";
 import { processWickCSS_AST } from "./component_css.js";
 import { compileComponent } from "./component.js";
 import { processFunctionDeclaration, processWickJS_AST } from "./component_js.js";
-import { setComponentVariable, VARIABLE_REFERENCE_TYPE } from "./component_set_component_variable.js";
+import { setComponentVariable } from "./component_set_component_variable.js";
 import { importResource } from "./component_common.js";
+import { addBindingVariable } from "./getNonTempFrame.js";
+import { VARIABLE_REFERENCE_TYPE } from "../types/types.js";
 
 const default_handler = {
     priority: -Infinity,
@@ -353,13 +355,22 @@ loadHTMLHandlerInternal(
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
 
+
             const id = getAttributeValue("id", node),
                 [script] = <MinTreeNode[]><unknown>(node.nodes);
 
             if (id) {
                 const fn_ast = stmt(`function ${id}(){;};`);
                 fn_ast.nodes[2].nodes = script.nodes;
-                setComponentVariable(VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE, id, component, "", 0, node);
+
+                addBindingVariable({
+                    class_index: -1,
+                    external_name: id,
+                    internal_name: id,
+                    flags: 0,
+                    type: VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE
+                }, component.root_frame);
+
                 await processFunctionDeclaration(fn_ast, component, presets);
             } else {
                 await processWickJS_AST(script, component, presets);
@@ -379,7 +390,7 @@ loadHTMLHandlerInternal(
             const url = getAttributeValue("url", node) || "",
                 name = getAttributeValue("name", node) || "";
 
-            await importResource(url, component, presets, node, name);
+            await importResource(url, component, presets, node, name, [{ local: name, external: name }], component.root_frame);
 
             return null;
         }

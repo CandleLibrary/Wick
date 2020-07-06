@@ -17,24 +17,30 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
 
     const ast = frame.ast;
 
-    for (const pack of frame.binding_ref_identifiers) {
+    if (ast) {
 
-        const { index, node, parent } = pack;
 
-        parent.nodes[index] = exp(setVariableName(node.value, component));
-    }
+        for (const pack of frame.binding_ref_identifiers) {
 
-    if (frame.type == "method")
-        ast.function_type = "method";
-    else
-        ast.function_type = "root";
+            const { index, node, parent } = pack;
 
-    switch (ast.function_type) {
-        case "root":
-            class_information.binding_init_statements.push(...ast.nodes);
-            break;
-        default:
-            class_information.methods.push(ast);
+            parent.nodes[index] = exp(setVariableName(node.value, component));
+        }
+
+        ast.type = MinTreeNodeType.Method;
+
+        if (!frame.IS_ROOT)
+            ast.function_type = "method";
+        else
+            ast.function_type = "root";
+
+        switch (frame.IS_ROOT) {
+            case true:
+                class_information.binding_init_statements.push(...ast.nodes);
+                break;
+            default:
+                class_information.methods.push(ast);
+        }
     }
 }
 
@@ -103,7 +109,7 @@ export function componentDataToClassString(component: Component, presets: Preset
             nluf_arrays: []
         };
 
-        //Convert scripts into a class object 
+        // Convert scripts into a class object 
         const
             component_class = stmt(`class ${component.name || "temp"} extends cfw.wick.rt.C {constructor(m,e,p,w){super(m,e,p,w,"${component.global_model || ""}");}}`);
 
@@ -113,7 +119,7 @@ export function componentDataToClassString(component: Component, presets: Preset
 
         class_information.methods = component_class.nodes;
 
-        //Binding value statements Method
+        // Binding value statements Method
         const binding_values_init_method = getGenericMethodNode("c", "", ";"),
 
             [, , { nodes: bi_stmts }] = binding_values_init_method.nodes;
@@ -123,24 +129,22 @@ export function componentDataToClassString(component: Component, presets: Preset
         class_information.binding_init_statements = bi_stmts;
 
 
-        //Initializer Method
+        // Initializer Method
         const register_elements_method = getGenericMethodNode("re", "", "const c = this;"),
 
             [, , { nodes: re_stmts }] = register_elements_method.nodes;
 
         class_information.class_initializer_statements = re_stmts;
 
-        //Cleanup Method
+        // Cleanup Method
         const cleanup_element_method = getGenericMethodNode("cu", "", "const c = this;"),
 
             [, , { nodes: cu_stmts }] = cleanup_element_method.nodes;
 
         class_information.class_cleanup_statements = cu_stmts;
 
-        processBindings(component, class_information, presets);
-
         /* ---------------------------------------
-        * -- Create LU table for public variables
+        *  -- Create LU table for public variables
         */
 
         const
@@ -152,31 +156,36 @@ export function componentDataToClassString(component: Component, presets: Preset
 
         let nlu_index = 0;
 
-        for (const component_variable of component.binding_variables.values()) {
+        for (const component_variable of component.root_frame.binding_type.values()) {
 
             if (true /* some check for component_variable property of binding*/) {
+
+                component_variable.class_index = nlu_index;
+                component_variable.nlui = nlu_index;
 
                 lu_public_variables.nodes.push(
                     getPropertyAST(
                         component_variable.external_name,
-                        ((component_variable.usage_flags << 24) | nlu_index) + "")
+                        ((component_variable.flags << 24) | nlu_index) + "")
                 );
 
-                const nluf_array = exp(`c.u${component_variable.class_name}`);
+                const nluf_array = exp(`c.u${component_variable.class_index}`);
 
                 nluf_arrays.push(nluf_array.nodes);
 
                 nluf_public_variables.nodes.push(nluf_array);
 
-                public_prop_lookup[component_variable.original_name] = nlu_index;
+                public_prop_lookup[component_variable.internal_name] = nlu_index;
 
-                component_variable.nlui = nlu_index++;
+                nlu_index++;
             }
         }
 
+        processBindings(component, class_information, presets);
+
         class_information.class_initializer_statements.push(nlu, nluf);
 
-        //Compile scripts into methods
+        // Compile scripts into methods
 
         for (const function_block of component.frames)
             makeComponentMethod(function_block, component, class_information);
@@ -189,7 +198,7 @@ export function componentDataToClassString(component: Component, presets: Preset
 
             r_stmt.nodes[0].nodes[1].nodes[0] = <MinTreeNode>{ type: MinTreeNodeType.Identifier, value: `${JSON.stringify(component.HTML)}`, pos: r_stmt.nodes[0].nodes[1].pos };
 
-            //Setup element
+            // Setup element
             class_information.methods.push(ele_create_method);
         }
 
@@ -211,8 +220,7 @@ export function componentDataToClassString(component: Component, presets: Preset
 
     } catch (e) {
         console.error(
-            `Error found in component ${component.name} while
-    converting to a class.
+            `Error found in component ${component.name} while converting to a class.
     location: ${component.location}.
     `, e);
     }

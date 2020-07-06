@@ -3,6 +3,7 @@ import { WickContainer } from "./runtime_container.js";
 
 import Presets from "../presets";
 import { makeElement, integrateElement } from "./runtime_html.js";
+import { DATA_FLOW_FLAG } from "../types/types.js";
 type BindingUpdateFunction = () => void;
 
 /**
@@ -10,38 +11,6 @@ type BindingUpdateFunction = () => void;
  */
 export const css_cache = {};
 export const class_strings = {};
-export const enum DATA_FLOW_FLAG {
-    FROM_PARENT = 1,
-
-    FROM_PRESETS = 2,
-
-    FROM_OUTSIDE = 4,
-
-    EXPORT_TO_CHILD = 8,
-
-    EXPORT_TO_PARENT = 16,
-
-    ALLOW_FROM_CHILD = 32,
-
-    FROM_CHILD = 64,
-
-    FROM_MODEL = 128
-}
-
-interface ComponentData {
-    /**
-     * Hash name of component
-     */
-    name?: string,
-    /**
-     * Original source string of the component
-     */
-    source?: string,
-    /**
-     * Original URL string for the component data.
-     */
-    location?: string;
-}
 
 export class WickRTComponent {
 

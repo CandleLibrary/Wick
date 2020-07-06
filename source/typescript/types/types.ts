@@ -6,20 +6,6 @@ import { Lexer } from "@candlefw/wind";
 import Presets from "../presets.js";
 import { DOMLiteral } from "./dom_literal.js";
 
-export interface ComponentVariable {
-    name: string,
-    flags: number,
-    type: number;
-    nlui: number;
-    usage_flags: number,
-    external_name: string,
-    local_name: string,
-    class_name: number,
-    ACCESSED: number,
-    ASSIGNED: boolean,
-    nodes?: MinTreeNode[];
-}
-
 export const enum VARIABLE_REFERENCE_TYPE {
     INTERNAL_VARIABLE = 1,
     MODEL_VARIABLE = 16,
@@ -29,11 +15,43 @@ export const enum VARIABLE_REFERENCE_TYPE {
     GLOBAL_VARIABLE = 32,
 }
 
+
+
+/**
+ * Any variable within a component that is defined a GLOBAL value that
+ * may be produced as the result of the following declaration/references:
+ *  - a: Declared within the top most scope of component in a var statement. 
+ *  - b: Declared within a components import or export statements. 
+ *  - c: Declared within a components data flow statements describing flow between 
+ *       a component and its relatives. 
+ *  - d: Referenced within a binding expression.  
+ */
 export interface BindingVariable {
     internal_name: string;
     external_name: string;
     type: VARIABLE_REFERENCE_TYPE;
     class_index: number;
+    flags: DATA_FLOW_FLAG;
+}
+
+export const enum DATA_FLOW_FLAG {
+    FROM_PARENT = 1,
+
+    FROM_PRESETS = 2,
+
+    FROM_OUTSIDE = 4,
+
+    EXPORT_TO_CHILD = 8,
+
+    EXPORT_TO_PARENT = 16,
+
+    ALLOW_FROM_CHILD = 32,
+
+    FROM_CHILD = 64,
+
+    FROM_MODEL = 128,
+
+    WRITTEN = 256
 }
 
 export interface FunctionFrame {
@@ -78,7 +96,7 @@ export interface FunctionFrame {
      * the root frame either through a var statement or
      * from an import/export statement. 
      */
-    binding_type?: Map<string, BindingVariable>
+    binding_type?: Map<string, BindingVariable>;
 }
 
 export interface Component {
@@ -140,18 +158,6 @@ export interface Component {
      */
     bindings: PendingBinding[],
 
-
-    /**
-     * Any variable within a component that is defined a GLOBAL value that
-     * may be produced as the result of the following declaration/references:
-     *  - a: Declared within the top most scope of component within a var statement. 
-     *  - b: Declared within a components import or export statements. 
-     *  - c: Declared within a components data flow statements describing flow between 
-     *       a component and its relatives. 
-     *  - d: Referenced within a binding expression.  
-     */
-    binding_variables: Map<string, ComponentVariable>;
-
     ///**
     // * The original syntax tree.
     // */
@@ -178,6 +184,11 @@ export interface Component {
      * Original source string.
      */
     source: string;
+
+    /**
+     * The root function frame
+     */
+    root_frame: FunctionFrame;
 }
 
 export interface BindingInfoContainer {
@@ -198,7 +209,7 @@ export const enum BindingType {
     READWRITE = 3
 }
 export interface BindingObject {
-    component_variables: Set<string>;
+    component_variables: Map<string, { name: string, IS_OBJECT: boolean; }>;
     read_ast?: MinTreeNode;
     write_ast?: MinTreeNode;
     cleanup_ast?: MinTreeNode;

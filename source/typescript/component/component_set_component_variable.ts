@@ -1,16 +1,7 @@
 import { MinTreeNode, ext } from "@candlefw/js";
 
-import { Component } from "../types/types.js";
-import { DATA_FLOW_FLAG } from "../runtime/runtime_component.js";
+import { Component, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
 
-export const enum VARIABLE_REFERENCE_TYPE {
-    INTERNAL_VARIABLE = 1,
-    MODEL_VARIABLE = 16,
-    API_VARIABLE = 4,
-    PARENT_VARIABLE = 8,
-    METHOD_VARIABLE = 2,
-    GLOBAL_VARIABLE = 32,
-}
 
 let SET_ONCE_environment_globals = null;
 
@@ -81,14 +72,14 @@ export function setVariableName(name, component: Component) {
 
     // Allow global objects to be accessed if there are no existing
     // component variables that have an identifier that matches [name]
-    if (!component.binding_variables.has(name)) {
+    if (!component.root_frame.binding_type.has(name)) {
         const global_names = getSetOfEnvironmentGlobalNames();
         if (global_names.has(name)) {
             return name;
         }
     }
 
-    const comp_var = setComponentVariable(VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE, name, component, name, DATA_FLOW_FLAG.FROM_MODEL);
+    const comp_var = component.root_frame.binding_type.get(name);
 
     if (comp_var) {
 
@@ -103,7 +94,7 @@ export function setVariableName(name, component: Component) {
             case VARIABLE_REFERENCE_TYPE.GLOBAL_VARIABLE:
                 return `window.${comp_var.external_name}`;
             default:
-                return `this[${comp_var.class_name}]`;
+                return `this[${comp_var.class_index}]`;
         }
     } else {
         return name;

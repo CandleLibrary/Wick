@@ -1,11 +1,8 @@
-import { MinTreeNode } from "@candlefw/js";
-import { Component, VARIABLE_REFERENCE_TYPE, FunctionFrame } from "../types/types.js";
-import { setComponentVariable, VARIABLE_REFERENCE_TYPE as VARIABLE_REFERENCE_TYPE_OLD } from "./component_set_component_variable.js";
+import { Component, VARIABLE_REFERENCE_TYPE, FunctionFrame, DATA_FLOW_FLAG } from "../types/types.js";
 import { acquireComponentASTFromRemoteSource, compileComponent } from "./component.js";
 import { componentDataToJSCached } from "./component_data_to_js.js";
-import { DATA_FLOW_FLAG } from "../runtime/runtime_component.js";
 import Presets from "../presets.js";
-import { addBindingVariable } from "./getNonTempFrame.js";
+import { addBindingVariable, addWrittenBindingVariableName } from "./getNonTempFrame.js";
 
 /**
  * Take the data from the source component and merge it into the destination component.
@@ -21,8 +18,8 @@ export function mergeComponentData(destination_component: Component, source_comp
     else
         console.warn("TODO: Loss of HTML in merged component.");
 
-    for (const [, data] of source_component.binding_variables.entries())
-        setComponentVariable(data.type, data.local_name, destination_component, data.external_name, data.flags);
+    for (const [, data] of source_component.root_frame.binding_type.entries())
+        addBindingVariable(data, destination_component.root_frame);
 
     for (const name of source_component.names)
         destination_component.names.push(name);
@@ -63,7 +60,7 @@ export async function importResource(
     frame: FunctionFrame
 ): Promise<void> {
 
-    let flag: DATA_FLOW_FLAG = null, ref_type: VARIABLE_REFERENCE_TYPE_OLD = null;
+    let flag: DATA_FLOW_FLAG = null, ref_type: VARIABLE_REFERENCE_TYPE = null;
 
     const [url, meta] = from_value.split(":");
 
@@ -94,20 +91,20 @@ export async function importResource(
         case "@parent":
             /* all ids within this node are imported binding_variables from parent */
             //Add all elements to global scope
-            ref_type = VARIABLE_REFERENCE_TYPE_OLD.PARENT_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PARENT;
+            ref_type = VARIABLE_REFERENCE_TYPE.PARENT_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PARENT;
             break;
 
         case "@api":
-            ref_type = VARIABLE_REFERENCE_TYPE_OLD.API_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PRESETS;
+            ref_type = VARIABLE_REFERENCE_TYPE.API_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PRESETS;
             break;
 
         case "@global":
-            ref_type = VARIABLE_REFERENCE_TYPE_OLD.GLOBAL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_OUTSIDE;
+            ref_type = VARIABLE_REFERENCE_TYPE.GLOBAL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_OUTSIDE;
             break;
 
         case "@model":
             if (meta) component.global_model = meta.trim();
-            ref_type = VARIABLE_REFERENCE_TYPE_OLD.MODEL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_MODEL;
+            ref_type = VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_MODEL;
             break;
 
         case "@presets":
@@ -116,14 +113,39 @@ export async function importResource(
     }
 
     for (const { local, external } of names) {
-
         addBindingVariable({
             external_name: external || local,
             internal_name: local,
             class_index: -1,
-            type: ref_type
+            type: ref_type,
+            flags: flag
         }, frame);
+        addWrittenBindingVariableName(local, frame);
 
-        setComponentVariable(ref_type, local, component, external || local, flag, <MinTreeNode>node);
+        //setComponentVariable(ref_type, local, component, external || local, flag, <MinTreeNode>node);
     }
+}
+
+
+
+export function createFrame(parent_frame: any, TEMPORARY: boolean = false, component: Component) {
+
+    const function_frame = <FunctionFrame>{
+        type: "root",
+        ast: null,
+        declared_variables: new Set(),
+        input_names: new Set(),
+        output_names: new Set(),
+        binding_ref_identifiers: [],
+        prev: parent_frame,
+        IS_ROOT: !parent_frame,
+        IS_TEMP_CLOSURE: TEMPORARY,
+        binding_type: (!parent_frame) ? new Map : null,
+    };
+
+    if (!parent_frame) component.root_frame = function_frame;
+
+    if (!TEMPORARY) component.frames.push(function_frame);
+
+    return function_frame;
 }

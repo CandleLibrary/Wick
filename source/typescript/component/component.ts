@@ -10,7 +10,7 @@ import { createNameHash } from "./component_create_hash_name.js";
 import { PendingBinding } from "../types/types";
 import { Component, } from "../types/types";
 import { WickASTNodeClass, WickASTNode } from "../types/wick_ast_node_types.js";
-import { Lexer } from "@candlefw/wind";
+import { createFrame } from "./component_common.js";
 export const component_cache = {};
 
 function getHTML_AST(ast: WickASTNode | MinTreeNode): WickASTNode {
@@ -135,13 +135,13 @@ export async function compileComponent(ast: WickASTNode | MinTreeNode, source_st
 
             source: source_string,
 
+            selector_map: new Map(),
+
             container_count: 0,
 
             children: [],
 
             global_model: "",
-
-            binding_variables: new Map,
 
             location: new URL(url),
 
@@ -162,8 +162,13 @@ export async function compileComponent(ast: WickASTNode | MinTreeNode, source_st
             addBinding: (pending_binding: PendingBinding) => component.bindings.push(pending_binding),
 
             //Local names of imported components that are referenced in HTML expressions. 
-            local_component_names: new Map
+            local_component_names: new Map,
+
+            root_frame: null
         };
+
+    component.root_frame = createFrame(null, false, component);
+
     if (error.length < 1) {
 
         try {
@@ -198,15 +203,6 @@ export async function compileComponent(ast: WickASTNode | MinTreeNode, source_st
 
             for (const name of component.names)
                 presets.named_components.set(name.toUpperCase(), component);
-
-            const binding_variables = component.binding_variables;
-
-            component.binding_variables = new Map();
-
-            for (const [name, value] of binding_variables.entries()) {
-                if (value.type !== 32)
-                    component.binding_variables.set(name, value);
-            }
 
             return component;
         } catch (e) {
