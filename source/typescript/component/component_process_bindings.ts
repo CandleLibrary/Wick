@@ -91,7 +91,7 @@ export function processBindings(component: Component, class_data, presets: Prese
 
                         let_stmt.nodes.length = 0;
 
-                        for (const name of component_variables.values()) {
+                        for (const { name } of component_variables.values()) {
 
                             if (!component.root_frame.binding_type.has(name))
                                 throw (binding.pos.errorMessage(`missing binding variable for ${name}`));

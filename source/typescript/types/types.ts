@@ -233,5 +233,5 @@ export interface BindingHandler {
     priority: number;
     canHandleBinding(attribute_name: string, node_type: string): boolean;
 
-    prepareBindingObject(attribute_name: string, binding: WickBindingNode, host_node: WickASTNode, element_index: number, component: Component, presets?: Presets): BindingObject;
+    prepareBindingObject(attribute_name: string, binding_node_ast: WickBindingNode, host_ast_node: WickASTNode, element_index: number, component: Component, presets?: Presets): BindingObject;
 }

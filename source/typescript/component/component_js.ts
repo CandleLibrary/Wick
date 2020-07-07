@@ -33,6 +33,8 @@ export async function processWickJS_AST(ast: MinTreeNode, component: Component, 
         createFrame(frame, TEMPORARY, component) :
         component.root_frame;
 
+
+
     main_loop:
     for (const { node, meta } of traverse(ast, "nodes")
         .skipRoot()
@@ -70,6 +72,15 @@ export async function processWickJS_AST(ast: MinTreeNode, component: Component, 
 
             break;
         }
+    }
+
+    if (!function_frame.IS_ROOT) {
+        component.addBinding({
+            attribute_name: "method_call",
+            binding_node: function_frame.ast,
+            host_node: function_frame.ast,
+            html_element_index: component.frames.indexOf(function_frame)
+        });
     }
 
     return function_frame;
