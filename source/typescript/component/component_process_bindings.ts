@@ -1,4 +1,5 @@
 import { MinTreeNodeType, exp, stmt } from "@candlefw/js";
+
 import { BindingObject, Component, BindingType, DATA_FLOW_FLAG } from "../types/types.js";
 import { getGenericMethodNode } from "./component_js_ast_tools.js";
 import { binding_handlers } from "./component_default_binding_handlers.js";
@@ -18,8 +19,7 @@ export function processBindings(component: Component, class_data, presets: Prese
         {
             methods: class_methods,
             class_cleanup_statements: clean_stmts,
-            class_initializer_statements: initialize_stmts,
-            nluf_arrays
+            class_initializer_statements: initialize_stmts
         } = class_data,
 
         registered_elements: Set<number> = new Set,
@@ -54,12 +54,12 @@ export function processBindings(component: Component, class_data, presets: Prese
                         pending_binding.host_node,
                         index,
                         component,
-                        presets
+                        class_data
                     );
 
                 if (!binding) continue;
 
-                const { read_ast, write_ast, cleanup_ast, type, component_variables }
+                const { read_ast, write_ast, initialize_ast, cleanup_ast, type, component_variables }
                     = binding;
 
 
@@ -75,36 +75,29 @@ export function processBindings(component: Component, class_data, presets: Prese
                  * register this binding's element if it has not already been done.
                  */
                 if (index > -1 && !registered_elements.has(index)) {
-                    initialize_stmts.push(stmt(`c.e${index}=c.elu[${index}]`));
+                    initialize_stmts.push(stmt(`this.e${index}=this.elu[${index}]`));
                     registered_elements.add(index);
                 }
-
 
                 if (type & BindingType.WRITE && write_ast) {
 
                     if (component_variables.size > 1) {
                         //Create binding update method.
 
-                        const method = getGenericMethodNode(binding_name, "", "const c = this; let n;"),
+                        const method = getGenericMethodNode(binding_name, "", ";"),
                             [, , body] = method.nodes,
-                            { nodes: [, let_stmt] } = body;
+                            { nodes } = body;
 
-                        let_stmt.nodes.length = 0;
+                        nodes.length = 0;
 
                         for (const { name } of component_variables.values()) {
 
                             if (!component.root_frame.binding_type.has(name))
                                 throw (binding.pos.errorMessage(`missing binding variable for ${name}`));
 
-                            const { class_index, nlui } = component.root_frame.binding_type.get(name);
+                            const { class_index } = component.root_frame.binding_type.get(name);
 
-                            let_stmt.nodes.push(exp(`${name}=c[${class_index}]`));
-
-                            if (nlui > -1) {
-                                nluf_arrays[nlui].push(exp(`c.${binding_name}`));
-                            }
-
-                            body.nodes.push(stmt(`if(c[${class_index}]==undefined)return 0;`));
+                            nodes.push(stmt(`if(this[${class_index}]==undefined)return 0;`));
                         }
 
                         body.nodes.push(write_ast);
@@ -113,8 +106,17 @@ export function processBindings(component: Component, class_data, presets: Prese
                     }
                 }
 
+
                 if (type & BindingType.READ && read_ast)
                     binding_inits.push(read_ast);
+
+
+                if (initialize_ast)
+                    initialize_stmts.push({
+                        type: MinTreeNodeType.ExpressionStatement,
+                        nodes: [initialize_ast],
+                        pos: initialize_ast.pos
+                    });
 
                 if (cleanup_ast)
                     clean_stmts.push(cleanup_ast);
@@ -136,17 +138,16 @@ export function processBindings(component: Component, class_data, presets: Prese
             // In here, update any binding that rely on this and only this value. If there
             // are bindings that need a set of variables to exist in order to activate,
             // create a binding update function and add a call to that method here. 
-            const method = getGenericMethodNode("u" + class_index, "v,f = 0", `var c = this; c[${class_index}] = v;`),
+            const method = getGenericMethodNode("u" + class_index, "v,f = 0", `this[${class_index}] = v;`),
 
                 [, args, body] = method.nodes;
-
-            //body.nodes.length = 0;
 
             for (const binding of processed_bindings) {
 
                 if (
                     (binding.type & BindingType.WRITE)
                     && binding.component_variables.has(internal_name)
+                    && binding.write_ast
                 ) {
                     const variable = binding.component_variables.get(internal_name);
 
@@ -170,6 +171,7 @@ export function processBindings(component: Component, class_data, presets: Prese
                     } else {
                         // Need to update the binding method for a multi
                         // dependency binding.
+                        //body.nodes.push(stmt(`this.addFutureCall(${binding.name})`));
                         body.nodes.push(stmt(`this.${binding.name}()`));
                     }
                 }
@@ -177,13 +179,6 @@ export function processBindings(component: Component, class_data, presets: Prese
 
             if (v.flags & DATA_FLOW_FLAG.EXPORT_TO_PARENT) {
                 body.nodes.push(stmt(`/*if(!(f&${DATA_FLOW_FLAG.FROM_PARENT}))*/c.pup(${class_index}, v, f);`));
-            }
-
-            if (body.nodes.length == 2) {
-                args.nodes.length = 1;
-                body.nodes[1].nodes[0].nodes[0].nodes[0].value = "this";
-                body.nodes[0] = body.nodes[1];
-                body.nodes.length = 1;
             }
 
             class_methods.push(method);

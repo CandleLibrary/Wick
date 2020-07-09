@@ -7,7 +7,7 @@ import { processFunctionDeclaration } from "./component_js.js";
 import { processWickHTML_AST } from "./component_html.js";
 import { processWickCSS_AST } from "./component_css.js";
 import { importResource } from "./component_common.js";
-import { VARIABLE_REFERENCE_TYPE, DATA_FLOW_FLAG } from "../types/types.js";
+import { VARIABLE_REFERENCE_TYPE, DATA_FLOW_FLAG, Component } from "../types/types.js";
 import {
     addBindingVariable,
     addNodeToBindingIdentifiers,
@@ -49,6 +49,20 @@ export function loadJSHandler(handler: JSHandler, ...types: MinTreeNodeType[]) {
     modified_handler.priority = Math.abs(modified_handler.priority);
 
     return loadJSHandler(modified_handler, ...types);
+}
+
+function addBinding(
+    attribute_name: string,
+    binding_node: MinTreeNode | WickASTNode,
+    host_node: MinTreeNode | WickASTNode,
+    html_element_index: number,
+    component: Component) {
+    component.bindings.push({
+        attribute_name,
+        binding_node,
+        host_node,
+        html_element_index
+    });
 }
 
 
@@ -170,6 +184,7 @@ loadJSHandlerInternal(
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
+
             const
                 n = stmt("a,a;"),
                 [{ nodes }] = n.nodes;
@@ -200,15 +215,12 @@ loadJSHandlerInternal(
                             debugger;
                         }
 
-
-                        binding.type = MinTreeNodeType.CallExpression;
-
                         addNodeToBindingIdentifiers(identifier, <MinTreeNode>meta.parent, frame);
 
                         addWrittenBindingVariableName(l_name, frame);
 
-                        //Add assignment and update expression for bindings. 
-                        //nodes.push(exp(`this.u${class_name}(${renderCompressed(binding.nodes[1])})`));
+                        addBinding("binding_initialization", binding, node, 0, component);
+
                     } else
                         addNameToDeclaredVariables(l_name, frame);
 
@@ -217,11 +229,10 @@ loadJSHandlerInternal(
                 }
             }
 
-            return n;
+            return null;
         }
     }, MinTreeNodeType.VariableStatement
 );
-
 
 // These variables are accessible by all bindings within the components
 // scope. 
@@ -260,7 +271,6 @@ loadJSHandlerInternal(
         priority: 1,
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
-
             const [id] = node.nodes,
                 l_name = <string>id.value;
 
@@ -381,8 +391,15 @@ loadJSHandlerInternal(
             ) {
                 const name = <string>id.value;
 
-                if (!isVariableDeclared(name, frame))
+                if (!isVariableDeclared(name, frame)) {
+
+                    if (isBindingVariable(name, frame))
+                        addNodeToBindingIdentifiers(node, parent_node, frame);
+
                     addWrittenBindingVariableName(name, frame);
+                }
+
+                skip(1);
 
                 break;
             }
@@ -397,7 +414,24 @@ loadJSHandlerInternal(
     {
         priority: 1,
 
-        async prepareJSNode(node, parent_node, skip, component, presets) {
+        async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+            const [expr] = node.nodes;
+
+            if (frame.IS_ROOT && expr.type == MinTreeNodeType.CallExpression) {
+                const [id] = expr.nodes;
+                if (id.type == MinTreeNodeType.IdentifierReference
+                    && id.value == "watch") {
+
+                    component.addBinding({
+                        attribute_name: "watched_frame_method_call",
+                        binding_node: expr,
+                        host_node: node,
+                        html_element_index: 0
+                    });
+
+                    return null;
+                }
+            }
 
             if (node.nodes[0].type == WickASTNodeType.HTML_STYLE) {
 

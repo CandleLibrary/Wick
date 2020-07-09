@@ -39,17 +39,18 @@ export function addNameToDeclaredVariables(var_name: string, frame: FunctionFram
 export function addWrittenBindingVariableName(var_name: string, frame: FunctionFrame) {
     const root = getRootFrame(frame);
 
-
     if (root.binding_type.has(var_name))
         root.binding_type.get(var_name).flags |= DATA_FLOW_FLAG.WRITTEN;
 
-    getNonTempFrame(frame).
-        output_names.add(var_name);
+    getNonTempFrame(frame).output_names.add(var_name);
 }
 
 export function addReadBindingVariableName(var_name: string, frame: FunctionFrame) {
-    getNonTempFrame(frame).
-        input_names.add(var_name);
+
+    //Return if this name has been assigned before being read.
+    if (frame.output_names.has(var_name)) return;
+
+    getNonTempFrame(frame).input_names.add(var_name);
 }
 
 export function isBindingVariable(var_name: string, frame: FunctionFrame) {

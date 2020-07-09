@@ -3,12 +3,17 @@ import { renderWithFormatting } from "@candlefw/conflagrate";
 
 import Presets from "../presets.js";
 import { processBindings } from "./component_process_bindings.js";
-import { Component, FunctionFrame, } from "../types/types";
+import { Component, FunctionFrame, VARIABLE_REFERENCE_TYPE, } from "../types/types";
 import { getPropertyAST, getGenericMethodNode } from "./component_js_ast_tools.js";
 import { setVariableName } from "./component_set_component_variable.js";
 import { renderers, format_rules } from "../format_rules.js";
 import { WickRTComponent } from "../runtime/runtime_component.js";
 import { componentDataToCSS } from "./component_data_to_css.js";
+
+
+function registerActivatedFrameMethod(frame: FunctionFrame, class_information) {
+    if (frame.index) class_information.nluf_public_variables.nodes.push(exp(`c.f${frame.index}`));
+}
 
 /**
  * Update global variables in ast after all globals have been identified
@@ -17,6 +22,8 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
 
     const ast = frame.ast;
 
+    registerActivatedFrameMethod(frame, class_information);
+
     if (ast) {
 
 
@@ -24,14 +31,33 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
 
             const { index, node, parent } = pack;
 
-            parent.nodes[index] = exp(setVariableName(node.value, component));
+            switch (node.type) {
+                case MinTreeNodeType.AssignmentExpression:
+                    const { type, class_index, external_name }
+                        = component.root_frame.binding_type.get(<string>node.nodes[0].value);
+                    if (type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE) {
+                        const expr = exp(`this.u${class_index}(a)`);
+                        expr.pos = node.pos;
+                        expr.nodes[1].nodes[0] = node.nodes[1];
+                        parent.nodes[index] = expr;
+
+                    }
+                    break;
+                case MinTreeNodeType.IdentifierReference:
+                    parent.nodes[index] = exp(setVariableName(node.value, component));
+                    break;
+            }
         }
 
         ast.type = MinTreeNodeType.Method;
 
-        if (!frame.IS_ROOT)
+        if (!frame.IS_ROOT) {
+
+            if (frame.index != undefined)
+                ast.nodes[0].value = `f${frame.index}`;
+
             ast.function_type = "method";
-        else
+        } else
             ast.function_type = "root";
 
         switch (frame.IS_ROOT) {
@@ -45,6 +71,7 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
 }
 
 function componentStringToJS(class_string: string, component: Component, presets: Presets) {
+    console.log(class_string);
     return (Function("c", "return " + class_string)(component));
 }
 
@@ -90,7 +117,6 @@ export function componentDataToJSStringCached(component: Component, presets: Pre
 
         presets.component_class_string.set(name, str);
 
-
     }
 
     return str;
@@ -106,7 +132,8 @@ export function componentDataToClassString(component: Component, presets: Preset
             class_cleanup_statements: [],
             compiled_ast: null,
             methods: <MinTreeNode[]>[],
-            nluf_arrays: []
+            nluf_arrays: [],
+            nlu_index: 0,
         };
 
         // Convert scripts into a class object 
@@ -146,11 +173,10 @@ export function componentDataToClassString(component: Component, presets: Preset
         /* ---------------------------------------
         *  -- Create LU table for public variables
         */
-
         const
             public_prop_lookup = {},
-            nlu = stmt("c.nlu = {};"), nluf = stmt("c.nluf = [];"),
-            nluf_arrays = class_information.nluf_arrays,
+            nlu = stmt("c.nlu = {};"), nluf = stmt("c.lookup_function_table = [];"),
+            //nluf_arrays = class_information.nluf_arrays,
             { nodes: [{ nodes: [, nluf_public_variables] }] } = nluf,
             { nodes: [{ nodes: [, lu_public_variables] }] } = nlu;
 
@@ -171,7 +197,7 @@ export function componentDataToClassString(component: Component, presets: Preset
 
                 const nluf_array = exp(`c.u${component_variable.class_index}`);
 
-                nluf_arrays.push(nluf_array.nodes);
+                //nluf_arrays.push(nluf_array.nodes);
 
                 nluf_public_variables.nodes.push(nluf_array);
 
@@ -180,6 +206,9 @@ export function componentDataToClassString(component: Component, presets: Preset
                 nlu_index++;
             }
         }
+
+        class_information.nlu_index = nlu_index;
+        class_information.nluf_public_variables = nluf_public_variables;
 
         processBindings(component, class_information, presets);
 

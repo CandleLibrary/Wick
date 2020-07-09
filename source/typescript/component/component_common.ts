@@ -113,6 +113,7 @@ export async function importResource(
     }
 
     for (const { local, external } of names) {
+
         addBindingVariable({
             external_name: external || local,
             internal_name: local,
@@ -120,18 +121,16 @@ export async function importResource(
             type: ref_type,
             flags: flag
         }, frame);
+
         addWrittenBindingVariableName(local, frame);
 
         //setComponentVariable(ref_type, local, component, external || local, flag, <MinTreeNode>node);
     }
 }
 
-
-
 export function createFrame(parent_frame: any, TEMPORARY: boolean = false, component: Component) {
 
     const function_frame = <FunctionFrame>{
-        type: "root",
         ast: null,
         declared_variables: new Set(),
         input_names: new Set(),
@@ -146,6 +145,7 @@ export function createFrame(parent_frame: any, TEMPORARY: boolean = false, compo
     if (!parent_frame) component.root_frame = function_frame;
 
     if (!TEMPORARY) component.frames.push(function_frame);
+
 
     return function_frame;
 }

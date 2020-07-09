@@ -4,7 +4,15 @@ import { WickContainer } from "./runtime_container.js";
 import Presets from "../presets";
 import { makeElement, integrateElement } from "./runtime_html.js";
 import { DATA_FLOW_FLAG } from "../types/types.js";
+import spark, { Sparky } from "@candlefw/spark";
+
 type BindingUpdateFunction = () => void;
+
+
+const enum DATA_DIRECTION {
+    DOWN = 1,
+    UP = 2
+}
 
 /**
  * Store for all known component configurations.
@@ -12,7 +20,7 @@ type BindingUpdateFunction = () => void;
 export const css_cache = {};
 export const class_strings = {};
 
-export class WickRTComponent {
+export class WickRTComponent implements Sparky {
 
     ele: HTMLElement;
 
@@ -24,7 +32,7 @@ export class WickRTComponent {
 
     protected nlu: object;
 
-    protected nluf: BindingUpdateFunction[];
+    protected lookup_function_table: BindingUpdateFunction[];
 
     protected u: any;
 
@@ -41,6 +49,12 @@ export class WickRTComponent {
     protected polling_id?: number;
 
     protected model: any;
+
+    /**
+     * Methods that will be called during the update period
+     * of the component. 
+     */
+    call_set: Map<number, Array<any>>;
 
     name: string;
 
@@ -72,22 +86,23 @@ export class WickRTComponent {
 
         this.nlu = {};
         this.ch = [];
+        this.lookup_function_table = [];
         this.elu = [];
         this.ct = [];
-        this.nluf = [];
         this.pui = [];
         this.nui = [];
         this.model = null;
+        this.call_set = new Map();
 
         this.u = this.update;
         this.me = makeElement;
         this.ie = integrateElement;
-        this.up = updateParent;
-        this.uc = updateChildren;
-        this.spm = syncParentMethod;
-        this.pup = updateFromChild;
-        this.ufp = updateFromParent;
-
+        this.up = this.updateParent;
+        this.uc = this.updateChildren;
+        this.spm = this.syncParentMethod;
+        this.pup = this.updateFromChild;
+        this.ufp = this.updateFromParent;
+        this._SCHD_ = 0;
         this.polling_id = -1;
         this.presets = rt.presets;
 
@@ -145,8 +160,6 @@ export class WickRTComponent {
             this.wrapper.destructor();
     }
 
-    re() { }
-
     ce(): HTMLElement {
         const template: HTMLTemplateElement = <HTMLTemplateElement>document.getElementById(this.name);
 
@@ -194,6 +207,8 @@ export class WickRTComponent {
         this.update({ connected: true });
     }
 
+
+
     removeFromDOM() {
         //Prevent erroneous removal of scope.
         if (this.CONNECTED == true) return;
@@ -207,10 +222,6 @@ export class WickRTComponent {
         //Lifecycle Events: Disconnected <======================================================================
         this.update({ disconnected: true });
     }
-    /* Abstract Functions */
-    c() { }
-    onLoad() { }
-    onMounted() { }
     transitionOut(transition, DESTROY_AFTER_TRANSITION = false, transition_name = "trs_out") {
 
         this.CONNECTED = false;
@@ -293,9 +304,9 @@ export class WickRTComponent {
 
             //Create a polling monitor
             if (this.polling_id <= 0)
-                this.polling_id = <number><unknown>setInterval(updateModel.bind(this), 10);
+                this.polling_id = <number><unknown>setInterval(this.updateModel.bind(this), 10);
 
-            updateModel.call(this);
+            this.updateModel.call(this);
         }
     }
 
@@ -323,79 +334,96 @@ export class WickRTComponent {
         }
 
         for (const index of update_indices.values())
-            this.nluf[index].call(this, this[index], DATA_DIRECTION.DOWN);
-
-
+            this.lookup_function_table[index].call(this, this[index], DATA_DIRECTION.DOWN);
     }
-}
 
+    updateChildren(data, flags) {
 
-const enum DATA_DIRECTION {
-    DOWN = 1,
-    UP = 2
-}
+        for (const name in data) {
 
-function updateChildren(data, flags) {
+            if (typeof data[name] == "undefined") {
 
-    for (const name in data) {
+                let i = 0;
 
-        if (typeof data[name] == "undefined") {
+                for (const chup of this.chups) {
 
-            let i = 0;
-
-            for (const chup of this.chups) {
-
-                if (chup[name])
-                    this.ch[i].update({ [chup[name]]: data[name] }, flags | DATA_FLOW_FLAG.FROM_PARENT);
-                i++;
+                    if (chup[name])
+                        this.ch[i].update({ [chup[name]]: data[name] }, flags | DATA_FLOW_FLAG.FROM_PARENT);
+                    i++;
+                }
             }
         }
     }
-}
 
-function updateParent(data) {
-    if (this.par)
-        updateFromChild.call(this.par, data);
-}
+    updateParent(data) {
+        if (this.par)
+            this.updateFromChild.call(this.par, data);
+    }
 
-function updateFromParent(local_index, v, flags) {
+    updateFromParent(local_index, v, flags) {
 
-    if (flags >> 24 == this.ci + 1)
-        return;
+        if (flags >> 24 == this.ci + 1)
+            return;
 
-    this["u" + local_index](v, DATA_FLOW_FLAG.FROM_PARENT | flags);
-}
+        this.addFutureCall(local_index, v, DATA_FLOW_FLAG.FROM_PARENT | flags);
+    }
 
-function syncParentMethod(this_index, parent_method_index, child_index) {
+    syncParentMethod(this_index, parent_method_index, child_index) {
 
-    this.ci = child_index;
+        this.ci = child_index;
 
-    this.pui[this_index] = this.par["u" + parent_method_index];
-}
+        this.pui[this_index] = this.par["u" + parent_method_index];
+    }
 
 
-function updateFromChild(local_index, val, flags) {
+    updateFromChild(local_index, val, flags) {
 
-    const method = this.pui[local_index];
+        const method = this.pui[local_index];
 
-    if (typeof method == "function")
-        method.call(this.par, val, flags | DATA_FLOW_FLAG.FROM_CHILD | ((this.ci + 1) << 24));
+        if (typeof method == "function")
+            method.call(this.par, val, flags | DATA_FLOW_FLAG.FROM_CHILD | ((this.ci + 1) << 24));
 
-};
+    };
 
-function updateModel() {
-    // Go through the model's props and test whether they are different then the 
-    // currently cached variables
-    const model = this.model;
+    updateModel() {
+        // Go through the model's props and test whether they are different then the 
+        // currently cached variables
+        const model = this.model;
 
-    for (const name in this.nlu) {
+        for (const name in this.nlu) {
 
-        if ((this.nlu[name] >>> 24) & DATA_FLOW_FLAG.FROM_MODEL) {
-            const index = this.nlu[name] & 0xFFFFFF;
-            const v = this[index];
+            if ((this.nlu[name] >>> 24) & DATA_FLOW_FLAG.FROM_MODEL) {
+                const index = this.nlu[name] & 0xFFFFFF;
+                const v = this[index];
 
-            if (model[name] !== undefined && model[name] !== v)
-                this.update({ [name]: model[name] }, DATA_FLOW_FLAG.FROM_MODEL);
+                if (model[name] !== undefined && model[name] !== v)
+                    this.update({ [name]: model[name] }, DATA_FLOW_FLAG.FROM_MODEL);
+            }
         }
     }
+
+    scheduledUpdate(step_ratio, diff) {
+        this.activateCalls();
+    }
+
+    addFutureCall(calling_function_id, ...args) {
+        this.call_set.set(calling_function_id, args);
+        spark.queueUpdate(this);
+    }
+
+    clearActiveCalls() {
+        this.call_set.clear();
+    }
+
+    activateCalls() {
+        for (const [call_id, args] of this.call_set.entries())
+            this.lookup_function_table[call_id].call(this, ...args);
+        this.clearActiveCalls();
+    }
+
+    /* Abstract Functions */
+    c() { }
+    onLoad() { }
+    onMounted() { }
+    re() { }
 }

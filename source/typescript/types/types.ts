@@ -32,6 +32,7 @@ export interface BindingVariable {
     type: VARIABLE_REFERENCE_TYPE;
     class_index: number;
     flags: DATA_FLOW_FLAG;
+
 }
 
 export const enum DATA_FLOW_FLAG {
@@ -97,6 +98,11 @@ export interface FunctionFrame {
      * from an import/export statement. 
      */
     binding_type?: Map<string, BindingVariable>;
+
+    /**
+     * Index of lookup location of the rendered component method
+     */
+    index?: number;
 }
 
 export interface Component {
@@ -210,6 +216,7 @@ export const enum BindingType {
 }
 export interface BindingObject {
     component_variables: Map<string, { name: string, IS_OBJECT: boolean; }>;
+    initialize_ast?: MinTreeNode;
     read_ast?: MinTreeNode;
     write_ast?: MinTreeNode;
     cleanup_ast?: MinTreeNode;
