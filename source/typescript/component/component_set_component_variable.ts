@@ -69,7 +69,6 @@ export function setComponentVariable(
 }
 
 export function setVariableName(name, component: Component) {
-
     // Allow global objects to be accessed if there are no existing
     // component variables that have an identifier that matches [name]
     if (!component.root_frame.binding_type.has(name)) {

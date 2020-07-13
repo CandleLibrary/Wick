@@ -109,8 +109,8 @@ loadJSHandlerInternal(
                     let local = "", external = "";
 
                     if (id.type == MinTreeNodeType.Specifier) {
-                        local = <string>id.nodes[0].value;
-                        external = <string>id.nodes[1].value;
+                        external = <string>id.nodes[0].value;
+                        local = <string>id.nodes[1].value;
                     } else {
                         local = <string>id.value;
                         external = <string>id.value;
@@ -274,7 +274,18 @@ loadJSHandlerInternal(
             const [id] = node.nodes,
                 l_name = <string>id.value;
 
-            if (isBindingVariable(l_name, frame)) skip(1);
+            if (!isVariableDeclared(name, frame)
+                && isBindingVariable(name, frame)) {
+
+                addNodeToBindingIdentifiers(
+                    <MinTreeNode>id,
+                    <MinTreeNode>node,
+                    frame);
+
+                addReadBindingVariableName(id, frame);
+
+                skip(1);
+            }
 
             return <MinTreeNode>node;
         }
@@ -301,6 +312,26 @@ loadJSHandlerInternal(
 
             if (!frame.IS_ROOT)
                 addNameToDeclaredVariables(name, frame);
+
+            if (name.slice(0, 2) == "on") {
+
+                //Automatically bind to the root element.
+                component.addBinding({
+                    attribute_name: name,
+                    binding_node: <WickBindingNode>{
+                        type: WickASTNodeType.WickBinding,
+                        primary_ast: Object.assign(
+                            {},
+                            name_node,
+                            { type: MinTreeNodeType.IdentifierReference }
+                        ),
+                        value: name.slice(1),
+                        IS_BINDING: true
+                    },
+                    host_node: node,
+                    html_element_index: 0
+                });
+            }
 
             if (name[0] == "$") {
 

@@ -4,8 +4,8 @@ import { BindingObject, Component, BindingType, DATA_FLOW_FLAG } from "../types/
 import { getGenericMethodNode } from "./component_js_ast_tools.js";
 import { binding_handlers } from "./component_default_binding_handlers.js";
 import { WickASTNodeType } from "../types/wick_ast_node_types.js";
-import Presets from "../presets.js";
 import { setVariableName } from "./component_set_component_variable.js";
+import Presets from "../presets.js";
 
 function createBindingName(binding_index_pos: number) {
     return `b${binding_index_pos.toString(36)}`;

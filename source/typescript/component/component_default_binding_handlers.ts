@@ -247,8 +247,7 @@ loadBindingHandler({
 
 
         const binding = createBindingObject(BindingType.READONLY),
-            { primary_ast, secondary_ast } = binding_node_ast
-            ;
+            { primary_ast, secondary_ast } = binding_node_ast;
 
         if (primary_ast) {
 
@@ -268,6 +267,7 @@ loadBindingHandler({
 
             if (ast.type == MinTreeNodeType.IdentifierReference) {
                 let name = ast.value;
+
                 const frame = getFrameFromName(name, component);
 
                 if (frame && frame.index)
@@ -490,7 +490,11 @@ loadBindingHandler({
                         continue;
 
                     //Pop any binding names into the binding information container. 
-                    setBindingVariable(<string>node.value, meta.parent.type == MinTreeNodeType.MemberExpression, binding);
+                    setBindingVariable(
+                        <string>node.value,
+                        !!meta.parent && meta.parent.type == MinTreeNodeType.MemberExpression,
+                        binding
+                    );
                 }
             }
 
