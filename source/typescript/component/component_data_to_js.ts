@@ -71,7 +71,6 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
 }
 
 function componentStringToJS(class_string: string, component: Component, presets: Presets) {
-    console.log(class_string);
     return (Function("c", "return " + class_string)(component));
 }
 
