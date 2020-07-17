@@ -114,6 +114,8 @@ export class WickRTComponent implements Sparky {
         else
             this.ele = this.ce();
 
+        this.ele.wick_component = this;
+
         this.re();
 
         //Create or assign global model whose name matches the default_model_name;
@@ -207,8 +209,6 @@ export class WickRTComponent implements Sparky {
         this.update({ connected: true });
     }
 
-
-
     removeFromDOM() {
         //Prevent erroneous removal of scope.
         if (this.CONNECTED == true) return;
@@ -222,6 +222,7 @@ export class WickRTComponent implements Sparky {
         //Lifecycle Events: Disconnected <======================================================================
         this.update({ disconnected: true });
     }
+
     transitionOut(transition, DESTROY_AFTER_TRANSITION = false, transition_name = "trs_out") {
 
         this.CONNECTED = false;
