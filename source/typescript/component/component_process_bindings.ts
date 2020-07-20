@@ -31,8 +31,8 @@ export function processBindings(component: Component, class_data, presets: Prese
     let
         binding_count = 0;
 
-
     for (const pending_binding of raw_bindings) {
+
 
         binding_count++;
 

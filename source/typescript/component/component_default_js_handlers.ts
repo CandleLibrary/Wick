@@ -312,6 +312,15 @@ loadJSHandlerInternal(
 
             if (!frame.IS_ROOT)
                 addNameToDeclaredVariables(name, frame);
+            else {
+                addBindingVariable({
+                    internal_name: name,
+                    external_name: name,
+                    class_index: -1,
+                    type: VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE,
+                    flags: 0
+                }, frame);
+            }
 
             if (name.slice(0, 2) == "on") {
 
@@ -331,9 +340,7 @@ loadJSHandlerInternal(
                     host_node: node,
                     html_element_index: 0
                 });
-            }
-
-            if (name[0] == "$") {
+            } else if (name[0] == "$") {
 
                 if (frame.IS_ROOT) {
                     addBindingVariable({
@@ -358,30 +365,18 @@ loadJSHandlerInternal(
                     host_node: node,
                     html_element_index: -1
                 });
-            }
 
-            skip(1);
-
-            if (frame.IS_ROOT) {
-                addBindingVariable({
-                    internal_name: name,
-                    external_name: name,
-                    class_index: -1,
-                    type: VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE,
-                    flags: 0
-                }, frame);
-            }
-
-            if (name[0] == "$") {
                 node.nodes[1] = { type: MinTreeNodeType.Arguments, nodes: [exp("f=0")], pos: node.pos };
                 (<MinTreeNode>node).nodes[2].nodes.unshift(stmt(`if(f>0)return 0;`));
             }
 
-            await processFunctionDeclaration(<MinTreeNode>node, component, presets, root_name);
+            skip(1);
 
-            skip();
+            return new Promise(async res => {
+                await processFunctionDeclaration(<MinTreeNode>node, component, presets, root_name);
 
-            return null;
+                res(null);
+            });
         }
 
     }, MinTreeNodeType.FunctionDeclaration
@@ -438,6 +433,15 @@ loadJSHandlerInternal(
     }, MinTreeNodeType.AssignmentExpression
 );
 
+function findFirstNodeOfType(type: MinTreeNodeType, ast: MinTreeNode) {
+
+    for (const { node } of traverse(ast, "nodes")) {
+        if (node.type == type) return node;
+    }
+
+    return null;
+};
+
 
 // ###################################################################
 // Naked Style Element. Styles whole component.
@@ -445,32 +449,45 @@ loadJSHandlerInternal(
     {
         priority: 1,
 
-        async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+        prepareJSNode(node, parent_node, skip, component, presets, frame) {
             const [expr] = node.nodes;
 
-            if (frame.IS_ROOT && expr.type == MinTreeNodeType.CallExpression) {
+            if (expr.type == MinTreeNodeType.CallExpression) {
                 const [id] = expr.nodes;
-                if (id.type == MinTreeNodeType.IdentifierReference
-                    && id.value == "watch") {
 
-                    component.addBinding({
-                        attribute_name: "watched_frame_method_call",
-                        binding_node: expr,
-                        host_node: node,
-                        html_element_index: 0
-                    });
+                if (frame.IS_ROOT) {
 
-                    return null;
+                    if (id.type == MinTreeNodeType.IdentifierReference
+                        && id.value == "watch") {
+
+                        component.addBinding({
+                            attribute_name: "watched_frame_method_call",
+                            binding_node: expr,
+                            host_node: node,
+                            html_element_index: 0
+                        });
+
+                        return null;
+                    }
+                } else {
+                    const ref = findFirstNodeOfType(MinTreeNodeType.IdentifierReference, expr);
+
+                    if (ref && isBindingVariable(<string>ref.value, frame)) {
+                        //Assumes that the refereneced object is modified in some
+                        //way from a call on one of its members or submembers.
+                        addWrittenBindingVariableName(<string>ref.value, frame);
+                    }
                 }
             }
 
             if (node.nodes[0].type == WickASTNodeType.HTML_STYLE) {
 
-                await processWickCSS_AST(node.nodes[0], component, presets);
+                return new Promise(async res => {
+                    await processWickCSS_AST(node.nodes[0], component, presets);
 
-                return null;
+                    res(null);
+                });
             }
-
         }
 
     }, MinTreeNodeType.ExpressionStatement
@@ -483,7 +500,7 @@ loadJSHandlerInternal(
     {
         priority: 1,
 
-        async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+        prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
             if (node.value[0] == "@") {
 

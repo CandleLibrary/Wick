@@ -1,14 +1,14 @@
-import { MinTreeNode, stmt } from "@candlefw/js";
+import { MinTreeNode, stmt, MinTreeNodeType } from "@candlefw/js";
 
 import { WickASTNodeType, WICK_AST_NODE_TYPE_SIZE, WICK_AST_NODE_TYPE_BASE, WickASTNode, WickASTNodeClass } from "../types/wick_ast_node_types.js";
 import { HTMLHandler } from "../types/html_handler.js";
 import { processWickCSS_AST } from "./component_css.js";
 import { compileComponent } from "./component.js";
 import { processFunctionDeclaration, processWickJS_AST } from "./component_js.js";
-import { setComponentVariable } from "./component_set_component_variable.js";
 import { importResource } from "./component_common.js";
-import { addBindingVariable } from "./getNonTempFrame.js";
-import { VARIABLE_REFERENCE_TYPE } from "../types/types.js";
+import { addBindingVariable, addReadBindingVariableName, addWrittenBindingVariableName } from "./getNonTempFrame.js";
+import { VARIABLE_REFERENCE_TYPE, DATA_FLOW_FLAG } from "../types/types.js";
+import { traverse } from "@candlefw/conflagrate";
 
 const default_handler = {
     priority: -Infinity,
@@ -55,6 +55,25 @@ loadHTMLHandlerInternal(
                 host_node: host_node,
                 html_element_index: index + 1
             });
+
+            for (const { node: n } of traverse(node.primary_ast, "nodes")) {
+                if (n.type == MinTreeNodeType.IdentifierReference) {
+
+                    const { value: name } = n;
+
+                    if (global[name]) continue;
+
+                    addBindingVariable({
+                        internal_name: name,
+                        external_name: name,
+                        class_index: -1,
+                        type: VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE,
+                        flags: DATA_FLOW_FLAG.FROM_MODEL
+                    }, component.root_frame);
+
+                    addWrittenBindingVariableName(name, component.root_frame);
+                }
+            }
 
             // Skip processing this node in the outer scope, 
             // it will be replaced with a CompiledBinding node.
@@ -297,8 +316,7 @@ loadHTMLHandlerInternal(
                             node.component_name = comp.name;
 
                         } else {
-
-                            const comp = await compileComponent(Object.assign({}, ch, { attributes: [] }), ch.tag, "auto_generated", presets);
+                            const comp = await compileComponent(Object.assign({}, ch, { attributes: [] }), ch.tag, "auto_generated", presets, [], VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE);
 
                             node.component = comp;
 

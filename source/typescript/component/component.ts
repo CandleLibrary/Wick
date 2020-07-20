@@ -7,10 +7,11 @@ import { processWickJS_AST } from "./component_js.js";
 import { processWickHTML_AST } from "./component_html.js";
 import { createNameHash } from "./component_create_hash_name.js";
 
-import { PendingBinding } from "../types/types";
+import { PendingBinding, VARIABLE_REFERENCE_TYPE } from "../types/types";
 import { Component, } from "../types/types";
 import { WickASTNodeClass, WickASTNode } from "../types/wick_ast_node_types.js";
 import { createFrame } from "./component_common.js";
+import { DOMLiteral } from "../wick.js";
 export const component_cache = {};
 
 function getHTML_AST(ast: WickASTNode | MinTreeNode): WickASTNode {
@@ -128,7 +129,12 @@ export default async function makeComponent(input: URL | string, presets?: Prese
     return await compileComponent(ast, <string>input_string, url, presets, error);
 };
 
-export async function compileComponent(ast: WickASTNode | MinTreeNode, source_string: string, url: string, presets: Presets, error: ExceptionInformation[] = []): Promise<Component> {
+export async function compileComponent(
+    ast: WickASTNode | MinTreeNode,
+    source_string: string,
+    url: string,
+    presets: Presets,
+    error: ExceptionInformation[] = []): Promise<Component> {
 
     const
         component: Component = {
@@ -211,15 +217,26 @@ export async function compileComponent(ast: WickASTNode | MinTreeNode, source_st
 
     }
 
-    const error_string = location + "\n" + error.map(e => e + "").join("\n");
+    const error_data = [location + "", ...error.flatMap(e => (e + "").split("\n")).map(s => s.replace(/\ /g, "\u00A0"))].map(e => <DOMLiteral>{
+        tag_name: "p",
+        children: [
+            {
+                tag_name: "",
+                data: e
+            }
+        ]
+    });
 
     component.HTML = {
         tag_name: "ERROR",
         lookup_index: 0,
+        attributes: [
+            ["style", "font-family:monospace"]
+        ],
         children: [
             {
-                tag_name: "",
-                data: error_string
+                tag_name: "div",
+                children: error_data
             }
         ]
     };

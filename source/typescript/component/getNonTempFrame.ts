@@ -15,6 +15,16 @@ function getRootFrame(frame: FunctionFrame) {
 }
 
 export function addNodeToBindingIdentifiers(node: MinTreeNode, parent: MinTreeNode, frame: FunctionFrame) {
+
+    // Check to see if node has already been assigned
+    // as could be the case if a parent node has been 
+    // processed in full before focus has reached the 
+    // child node
+
+    for (const bi of getNonTempFrame(frame).binding_ref_identifiers) {
+        if (bi.node == node) return;
+    }
+
     getNonTempFrame(frame)
         .binding_ref_identifiers.push({
             node,

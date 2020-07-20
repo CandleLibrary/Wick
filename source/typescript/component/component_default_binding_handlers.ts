@@ -1,10 +1,11 @@
-import { MinTreeNodeType, exp, stmt, MinTreeNode } from "@candlefw/js";
+import { MinTreeNodeType, exp, stmt, MinTreeNode, renderCompressed as js_render, renderCompressed } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 
 import { BindingObject, BindingHandler, BindingType, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE, FunctionFrame, Component } from "../types/types.js";
 import { setVariableName } from "./component_set_component_variable.js";
 import { matchAll, SelectionHelpers } from "@candlefw/css";
 import { DOMLiteral } from "../wick.js";
+import { processFunctionDeclaration, processFunctionDeclarationSync } from "./component_js.js";
 
 export const binding_handlers: BindingHandler[] = [];
 
@@ -27,6 +28,9 @@ export function createBindingObject(type: BindingType): BindingObject {
     };
 }
 
+function addNewMethodFrame(function_node: MinTreeNode, component: Component, presets) {
+    processFunctionDeclarationSync(function_node, component, presets);
+}
 
 function getFrameFromName(name: string, component: Component) {
     return component.frames.filter(({ name: n }) => n == name)[0] || null;
@@ -109,8 +113,10 @@ loadBindingHandler({
 
         const binding = createBindingObject(BindingType.WRITEONLY),
             component_names = component.root_frame.binding_type,
-            { primary_ast } = binding_node_ast
-            ;
+            { primary_ast } = binding_node_ast;
+
+        console.log(binding_node_ast);
+        // console.log(binding_node_ast.primary_ast.value);
 
         if (primary_ast) {
 
@@ -127,9 +133,12 @@ loadBindingHandler({
 
             const receiver = { ast: null };
 
-            for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver))
-                if (node.type == MinTreeNodeType.IdentifierReference)
+            for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver)) {
+
+                if (node.type == MinTreeNodeType.IdentifierReference) {
                     replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
+                }
+            }
 
             const expression = exp(`this.e${element_index}.setAttribute("${attribute_name}")`);
 
@@ -226,9 +235,6 @@ loadBindingHandler({
     }
 });
 
-
-var on_count = 0;
-
 /***********************************************
  * 
  * 
@@ -245,7 +251,6 @@ loadBindingHandler({
     prepareBindingObject(attribute_name, binding_node_ast
         , host_node, element_index, component, presets) {
 
-
         const binding = createBindingObject(BindingType.READONLY),
             { primary_ast, secondary_ast } = binding_node_ast;
 
@@ -254,16 +259,14 @@ loadBindingHandler({
             const receiver = { ast: null };
 
             for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver))
-                if (node.type == MinTreeNodeType.IdentifierReference)
-                    replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
+                if (node.type == MinTreeNodeType.IdentifierReference) {
 
+                    //   replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
+                }
 
             const { ast } = receiver;
 
-            // TODO validate ON events. 
-            // TODO create custom events.
             let expression = null;
-
 
             if (ast.type == MinTreeNodeType.IdentifierReference) {
                 let name = ast.value;
@@ -278,12 +281,15 @@ loadBindingHandler({
                 frame.ATTRIBUTE = true;
             }
             else {
-                const name = "on" + on_count++,
+                const name = "n" + element_index,
 
                     //Create new function method for the component
                     fn = stmt(`function ${name}(){;};`);
 
                 fn.nodes[2].nodes = [ast];
+
+
+                addNewMethodFrame(fn, component, presets);
 
                 expression = stmt(`this.e${element_index}.addEventListener("${attribute_name.slice(2)}",this.${name}.bind(this));`);
             }
@@ -435,12 +441,9 @@ loadBindingHandler({
     prepareBindingObject(attribute_name, binding_node_ast
         , host_node, element_index, component) {
 
-
-
         const binding = createBindingObject(BindingType.WRITEONLY),
             component_names = component.root_frame.binding_type,
-            { primary_ast, secondary_ast } = binding_node_ast
-            ;
+            { primary_ast, secondary_ast } = binding_node_ast;
 
         if (primary_ast) {
 

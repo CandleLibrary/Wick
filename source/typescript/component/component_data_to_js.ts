@@ -24,8 +24,10 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
 
     registerActivatedFrameMethod(frame, class_information);
 
+
     if (ast) {
 
+        const updated_names = new Set();
 
         for (const pack of frame.binding_ref_identifiers) {
 
@@ -33,15 +35,18 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
 
             switch (node.type) {
                 case MinTreeNodeType.AssignmentExpression:
-                    const { type, class_index, external_name }
+
+                    const { type, class_index, internal_name }
                         = component.root_frame.binding_type.get(<string>node.nodes[0].value);
+
                     if (type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE) {
                         const expr = exp(`this.u${class_index}(a)`);
                         expr.pos = node.pos;
                         expr.nodes[1].nodes[0] = node.nodes[1];
                         parent.nodes[index] = expr;
-
+                        updated_names.add(internal_name);
                     }
+
                     break;
                 case MinTreeNodeType.IdentifierReference:
                     parent.nodes[index] = exp(setVariableName(node.value, component));
@@ -49,9 +54,24 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
             }
         }
 
+        //
+
         ast.type = MinTreeNodeType.Method;
 
         if (!frame.IS_ROOT) {
+
+            for (const name of frame.output_names.values()) {
+
+                if (!updated_names.has(name)) {
+
+                    const { type, class_index }
+                        = component.root_frame.binding_type.get(name);
+
+                    if (type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE)
+                        ast.nodes[2].nodes.push(exp(`this.u${class_index}(this[${class_index}])`));
+
+                }
+            }
 
             if (frame.index != undefined)
                 ast.nodes[0].value = `f${frame.index}`;
@@ -169,6 +189,7 @@ export function componentDataToClassString(component: Component, presets: Preset
 
         class_information.class_cleanup_statements = cu_stmts;
 
+
         /* ---------------------------------------
         *  -- Create LU table for public variables
         */
@@ -215,8 +236,9 @@ export function componentDataToClassString(component: Component, presets: Preset
 
         // Compile scripts into methods
 
-        for (const function_block of component.frames)
+        for (const function_block of component.frames) {
             makeComponentMethod(function_block, component, class_information);
+        }
 
         if (component.HTML && INCLUDE_HTML) {
 
@@ -247,7 +269,7 @@ export function componentDataToClassString(component: Component, presets: Preset
         return renderWithFormatting(class_information.compiled_ast, renderers, format_rules);
 
     } catch (e) {
-        console.error(
+        console.log(
             `Error found in component ${component.name} while converting to a class.
     location: ${component.location}.
     `, e);
