@@ -17,7 +17,7 @@ import {
     addReadBindingVariableName,
     isBindingVariable,
     addBindingVariableFlag
-} from "./getNonTempFrame.js";
+} from "./component_binding_common.js";
 
 
 

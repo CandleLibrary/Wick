@@ -1,3 +1,4 @@
+import { traverse } from "@candlefw/conflagrate";
 import { MinTreeNode, stmt, MinTreeNodeType } from "@candlefw/js";
 
 import { WickASTNodeType, WICK_AST_NODE_TYPE_SIZE, WICK_AST_NODE_TYPE_BASE, WickASTNode, WickASTNodeClass } from "../types/wick_ast_node_types.js";
@@ -6,9 +7,9 @@ import { processWickCSS_AST } from "./component_css.js";
 import { compileComponent } from "./component.js";
 import { processFunctionDeclaration, processWickJS_AST } from "./component_js.js";
 import { importResource } from "./component_common.js";
-import { addBindingVariable, addReadBindingVariableName, addWrittenBindingVariableName } from "./getNonTempFrame.js";
+import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
 import { VARIABLE_REFERENCE_TYPE, DATA_FLOW_FLAG } from "../types/types.js";
-import { traverse } from "@candlefw/conflagrate";
+import { global_object } from "../runtime/runtime_global.js";
 
 const default_handler = {
     priority: -Infinity,

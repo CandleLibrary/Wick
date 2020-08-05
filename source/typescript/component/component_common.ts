@@ -2,7 +2,7 @@ import { Component, VARIABLE_REFERENCE_TYPE, FunctionFrame, DATA_FLOW_FLAG } fro
 import { acquireComponentASTFromRemoteSource, compileComponent } from "./component.js";
 import { componentDataToJSCached } from "./component_data_to_js.js";
 import Presets from "../presets.js";
-import { addBindingVariable, addWrittenBindingVariableName } from "./getNonTempFrame.js";
+import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
 
 /**
  * Take the data from the source component and merge it into the destination component.
@@ -115,6 +115,7 @@ export async function importResource(
     for (const { local, external } of names) {
 
         addBindingVariable({
+            pos: null,
             external_name: external || local,
             internal_name: local,
             class_index: -1,
