@@ -8,7 +8,6 @@ import spark, { Sparky } from "@candlefw/spark";
 
 type BindingUpdateFunction = () => void;
 
-
 const enum DATA_DIRECTION {
     DOWN = 1,
     UP = 2
@@ -24,31 +23,31 @@ export class WickRTComponent implements Sparky {
 
     ele: HTMLElement;
 
-    protected elu: HTMLElement[];
+    elu: HTMLElement[];
 
-    protected CONNECTED: boolean;
+    /*protected*/ CONNECTED: boolean;
 
-    protected presets: Presets;
+    /*protected*/ presets: Presets;
 
-    protected nlu: object;
+    /*protected*/ nlu: object;
 
-    protected lookup_function_table: BindingUpdateFunction[];
+    /*protected*/ lookup_function_table: BindingUpdateFunction[];
 
-    protected u: any;
+    /*protected*/ u: any;
 
     //Children
-    protected ch: WickRTComponent[];
+    /*protected*/ ch: WickRTComponent[];
 
     //Parent Component
-    protected par: WickRTComponent;
+    /*protected*/ par: WickRTComponent;
 
-    protected ct: WickContainer[];
+    /*protected*/ ct: WickContainer[];
     /**
      * Identifier of interval watcher for non-dynamic models.
      */
-    protected polling_id?: number;
+    /*protected*/ polling_id?: number;
 
-    protected model: any;
+    /*protected*/ model: any;
 
     /**
      * Methods that will be called during the update period
@@ -305,7 +304,7 @@ export class WickRTComponent implements Sparky {
 
             //Create a polling monitor
             if (this.polling_id <= 0)
-                this.polling_id = <number><unknown>setInterval(this.updateModel.bind(this), 10);
+                this.polling_id = <number><unknown>setInterval(this.updateModel.bind(this), 1);
 
             this.updateModel.call(this);
         }
