@@ -115,8 +115,6 @@ loadBindingHandler({
             component_names = component.root_frame.binding_type,
             { primary_ast } = binding_node_ast;
 
-        console.log(binding_node_ast);
-        // console.log(binding_node_ast.primary_ast.value);
 
         if (primary_ast) {
 

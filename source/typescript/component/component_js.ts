@@ -101,7 +101,6 @@ function processCoreSync(ast: MinTreeNode, function_frame: FunctionFrame, compon
         }
     }
 
-    console.log("BEB", ext(function_frame.ast, true));
     return function_frame;
 }
 export async function processFunctionDeclaration(node: MinTreeNode, component: Component, presets: Presets, root_name = "") {
