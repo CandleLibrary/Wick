@@ -69,9 +69,9 @@
 
 +> html::BODY → IMPORT_TAG_LIST html::GOAL_TAG                                             				    ↦r { ( $sym2.import_list = $sym1, $sym2 ) }
 
-+> html::TAG → < τstyle html::ATTRIBUTES? >  css::CSS?  </ τstyle >               			                ↦r { { type:env.typ.HTML_STYLE,  attributes:$$sym3 || [], nodes:[$$sym5], pos } }
++> html::TAG → < (τstyle | τSTYLE) html::ATTRIBUTES? >  css::CSS?  </ (τstyle | τSTYLE) >               			                ↦r { { type:env.typ.HTML_STYLE,  attributes:$$sym3 || [], nodes:[$$sym5], pos } }
     
-+> html::TAG_BODY_ITEM → < τscript html::ATTRIBUTES? > js::script? </ τscript >                             ↦r { { type:env.typ.HTML_SCRIPT, attributes:$$sym3 || [], nodes:[$$sym5], pos } }
++> html::TAG_BODY_ITEM → < (τscript | τSCRIPT)  html::ATTRIBUTES? > js::script? </ (τscript | τSCRIPT) >                             ↦r { { type:env.typ.HTML_SCRIPT, attributes:$$sym3 || [], nodes:[$$sym5], pos } }
     │ < τjs html::ATTRIBUTES? > js::script? </ τjs >                                        		        ↦r { { type:env.typ.HTML_SCRIPT, attributes:$$sym3 || [], nodes:[$$sym5], pos } }
     #│ \( \{ js::expression \{ js::script? \} \} (ERR θws ) \)                                			    ↦r {env.fn.element_selector("script", ["on", null, new env.wick_binding(["on",null, $sym2])], $sym4, env, pos) }
 

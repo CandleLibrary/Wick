@@ -26,9 +26,12 @@
 
 <> GOAL_TAG → TAG
 
-<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >                                     ↦r { { type:env.typ["HTML_"+$sym2.toUpperCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:$sym5 || [], VOID:false, pos } }
-    │ < TAGNAME ATTRIBUTES? / >                                                             ↦r { { type:env.typ["HTML_"+$sym2.toUpperCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:false, pos } }
-    │ < VOID_NAME ATTRIBUTES? /? >                                                          ↦r { { type:env.typ["HTML_"+$sym2.toUpperCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:true, pos } }
+<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >                                     
+                                        ↦r { { type:env.typ["HTML_"+$sym2.toUpperCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:$sym5 || [], VOID:false, pos } }
+    │ < TAGNAME ATTRIBUTES? / >                                                             
+                                        ↦r { { type:env.typ["HTML_"+$sym2.toUpperCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:false, pos } }
+    │ < VOID_NAME ATTRIBUTES? /? >                                                          
+                                        ↦r { { type:env.typ["HTML_"+$sym2.toUpperCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:true, pos } }
     
 <> DTD → <! θid? --?  TEXT_NODE_DATA  --? >                                                 ↦r { { type:"DTD", tag:$$sym2|| "", value:$$sym4 }  }                
 
@@ -62,8 +65,10 @@
     
 <> ATTRIBUTES → ATTRIBUTE(+)                                                                    ↦r { $$sym1 }
 
-<> ATTRIBUTE → ATTRIBUTE_HEAD \= ATTRIBUTE_BODY                                                  ↦r { {type:env.typ.HTMLAttribute, name:$sym1, value:$sym3, IS_BINDING:false, pos } }
-    │ ATTRIBUTE_HEAD                                                                            ↦r { {type:env.typ.HTMLAttribute, name:$sym1, value:"", IS_BINDING:false, pos } }
+<> ATTRIBUTE → ATTRIBUTE_HEAD \= ATTRIBUTE_BODY                                                  
+                                            ↦r { {type:env.typ.HTMLAttribute, name:$sym1, value:$sym3, IS_BINDING:false, pos } }
+    │ ATTRIBUTE_HEAD                                                                            
+                                            ↦r { {type:env.typ.HTMLAttribute, name:$sym1, value:"", IS_BINDING:false, pos } }
 
 <> ATTRIBUTE_HEAD → ' identifier? '                                                             ↦r { $$sym2 }
     │ " identifier? "                                                                           ↦r { $$sym2 }
@@ -77,7 +82,7 @@
 <> TAGNAME → (RED θnl) identifier
 
 
-<> identifier → θid ( θid │ \- │ \: )(*")                                  				        ↦r { $sym1 + $sym2 } 
+<> identifier → θid ( θid │ \- │ \: │ θnum )(*")                                  				        ↦r { $sym1 + $sym2 } 
 
 <> TEXT_NODE → TEXT_NODE_DATA                                                                   ↦r { {type:env.typ.HTMLText, data:$sym1, IS_BINDING:false, pos } }
 <> TEXT_NODE_DATA → BODY_SYMBOLS(+")                                                            
