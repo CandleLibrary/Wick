@@ -32,6 +32,7 @@ export interface BindingVariable {
     type: VARIABLE_REFERENCE_TYPE;
     class_index: number;
     flags: DATA_FLOW_FLAG;
+    pos: Lexer,
 
 }
 
@@ -56,6 +57,12 @@ export const enum DATA_FLOW_FLAG {
 }
 
 export interface FunctionFrame {
+
+    /**
+     * An optional copy of the frame's ast object.
+     */
+    backup_ast?: MinTreeNode;
+
     /**
      * Any binding variable that is referenced within the function.
      */
@@ -106,6 +113,14 @@ export interface FunctionFrame {
 }
 
 export interface Component {
+
+    /**
+     * True if errors were encountered when processing
+     * the component. Also, if true, this component will 
+     * generate an error report element if it is mounted 
+     * to the DOM.
+     */
+    ERRORS: boolean;
 
     /**
      * Maps @***** selector strings to nodes that should be replaced with 

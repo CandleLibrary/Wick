@@ -1,3 +1,5 @@
+import { Lexer } from "@candlefw/wind";
+
 export interface DOMLiteral {
 
     /**  Names space index id into the namespaces table. */
@@ -38,4 +40,9 @@ export interface DOMLiteral {
      * True if is a binding.
      */
     is_bindings?: boolean;
+
+    /**
+     * Lexer positioned at original source location.
+     */
+    pos: Lexer;
 }

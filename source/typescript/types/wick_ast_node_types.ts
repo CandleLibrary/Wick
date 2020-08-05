@@ -164,6 +164,8 @@ export interface WickBindingNode extends WickASTNode {
     extern?: string;
     primary_ast?: MinTreeNode;
     secondary_ast?: MinTreeNode;
+
+    pos: Lexer;
 }
 
 
