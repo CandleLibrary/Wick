@@ -599,10 +599,11 @@ loadBindingHandler({
 
 
 const helper: SelectionHelpers<DOMLiteral> = {
+    getIndexFigures: (ele, tag) => ({ ele_index: 0, tag_index: 0 }),
     WQmatch: (ele, wq_selector) => wq_selector.val,
     getChildren: (ele) => (ele.children && ele.children.slice().map(e => Object.assign({}, e)).map(e => ((e.parent = ele), e))) || [],
     getParent: (ele) => e.parent,
-    hasAttribute: (ele, name, value, sym, modifier) =>
+    hasAttribute: (ele, namespace, name, value, sym, modifier) =>
         ele.attributes && ele.attributes
             .filter(([key]) => key == name)
             .filter(([, v]) => !value || v == value)
@@ -617,8 +618,8 @@ const helper: SelectionHelpers<DOMLiteral> = {
             .filter(([key]) => key == "id")
             .filter(([, v]) => v == id)
             .length > 0,
-    hasPseudoClass: (ele, id) => false,
-    hasPseudoElement: (ele, id) => false,
-    hasType: (ele, type) => ele.tag_name &&
+    hasPseudoClass: (ele, id, val) => false,
+    hasPseudoElement: (ele, id, val) => false,
+    hasType: (ele, namespace, type) => ele.tag_name &&
         ele.tag_name.toUpperCase() == type.toUpperCase()
 };
