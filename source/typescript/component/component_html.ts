@@ -19,7 +19,7 @@ function buildExportableDOMNode(
 
 
 
-    const node: DOMLiteral = <DOMLiteral>{};
+    const node: DOMLiteral = <DOMLiteral>{ pos: ast.pos };
 
     node.tag_name = ast.tag || "";
 
@@ -63,7 +63,8 @@ function buildExportableDOMNode(
     node.lookup_index = ast.id;
 
     if (ast.data) {
-        node.data = ast.data;//.replace(/\n/g, '\\n');
+        node.data = ast.data;
+
     } else if (ast.ns > 0) {
         node.namespace_id = ast.ns || 0;
     }
@@ -129,12 +130,14 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
             break;
         }
 
+        html_node.id = ++index;
+
         //Process Attributes of HTML Elements.
         if (html_node.type & WickASTNodeClass.HTML_ELEMENT) {
 
             last_element = html_node;
 
-            html_node.id = ++index;
+
 
             for (const { node: attrib, meta: meta2 } of traverse(html_node, "attributes").skipRoot().makeMutable()) {
 
