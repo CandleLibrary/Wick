@@ -205,6 +205,7 @@ loadJSHandlerInternal(
 
                         if (!
                             addBindingVariable({
+                                pos: binding.pos,
                                 class_index: -1,
                                 external_name: l_name,
                                 internal_name: l_name,
@@ -272,7 +273,7 @@ loadJSHandlerInternal(
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
             const [id] = node.nodes,
-                l_name = <string>id.value;
+                name = <string>id.value;
 
             if (!isVariableDeclared(name, frame)
                 && isBindingVariable(name, frame)) {
@@ -314,6 +315,7 @@ loadJSHandlerInternal(
                 addNameToDeclaredVariables(name, frame);
             else {
                 addBindingVariable({
+                    pos: node.pos,
                     internal_name: name,
                     external_name: name,
                     class_index: -1,
