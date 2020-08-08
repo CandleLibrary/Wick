@@ -30,9 +30,18 @@ Object.defineProperty(wick, "setWrapper", {
     value: nop
 });
 
-export default wick;
+Object.defineProperty(wick, "toString", {
+    value: () =>
+        `       __          _    _ _____ _____  _   __     _   
+      / _|        | |  | |_   _/  __ \| | / /    | |  
+  ___| |___      _| |  | | | | | /  \/| |/ / _ __| |_ 
+ / __|  _\ \ /\ / / |/\| | | | | |    |    \| '__| __|
+| (__| |  \ V  V /\  /\  /_| |_| \__/\| |\  \ |  | |_ 
+ \___|_|   \_/\_(_)\/  \/ \___/ \____/\_| \_/_|   \__|`
 
-export const global_object = (typeof global !== "undefined") ? global : window;
+});
+
+export default wick;
 
 addModuleToCFW(wick, "wick");
 
