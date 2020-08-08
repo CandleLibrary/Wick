@@ -65,6 +65,7 @@
     "dependencies": {
         "@candlefw/conflagrate": "^0.0.5-alpha",
         "@candlefw/css": "latest",
+        "@candlefw/cfw": "latest",
         "@candlefw/glow": "latest",
         "@candlefw/html": "^0.0.14",
         "@candlefw/hydrocarbon": "^0.3.4-dev-1",
