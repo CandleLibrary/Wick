@@ -1,5 +1,9 @@
 import { addModuleToCFW } from "@candlefw/cfw";
+import { CSSTreeNodeType, CSSTreeNode, CSSRuleNode } from "@candlefw/css";
+import { MinTreeNodeType, MinTreeNode } from "@candlefw/js";
+import { renderWithFormatting } from "@candlefw/conflagrate";
 import URL from "@candlefw/url";
+
 import Presets from "./presets.js";
 import makeComponent from "./component/component.js";
 import { WickRTComponent, class_strings } from "./runtime/runtime_component.js";
@@ -17,10 +21,14 @@ import { DOMLiteral } from "./types/dom_literal.js";
 import { ExtendedComponent } from "./types/extended_component";
 import { componentDataToHTML } from "./component/component_data_to_html.js";
 import parser from "./parser/parser.js";
+import { WickASTNodeType, WickASTNodeClass, WickASTNode } from "./types/wick_ast_node_types.js";
+import { renderers, format_rules } from "./format_rules.js";
+import { ObservableModel, ObservableWatcher } from "./types/observable_model.js";
+
 
 
 /**
- * Creates a Wick component.
+ * Creates a Wick component. test
  */
 function wick(input: string | URL, presets: Presets = rt.presets): ExtendedComponent {
 
@@ -58,6 +66,7 @@ function wick(input: string | URL, presets: Presets = rt.presets): ExtendedCompo
         };
 
     Object.defineProperties(component, {
+
         /**
          * Create an instance of the component.
          */
@@ -154,13 +163,58 @@ Object.defineProperty(wick, "rt", {
 
 addModuleToCFW(wick, "wick");
 
+interface wickOutput {
+    parse: {
+        parser: typeof parser;
+        render: (ast: MinTreeNode | WickASTNode | CSSTreeNode) => string;
+    };
+    Presets: typeof Presets;
+
+    WickRTComponent: typeof WickRTComponent;
+
+    types: {
+        MinTreeNodeType: typeof MinTreeNodeType;
+        CSSTreeNodeType: typeof CSSTreeNodeType;
+        WickASTNodeType: typeof WickASTNodeType;
+        WickASTNodeClass: typeof WickASTNodeClass;
+    };
+}
+
+
+Object.assign(wick, {
+    parse: {
+        parser,
+        render: (ast) => renderWithFormatting(ast, renderers, format_rules, (str, name, node: any): string => {
+            if (node.type == CSSTreeNodeType.Rule)
+                return `{${Array.from((<CSSRuleNode>node).props.values()).map(n => n + "").join(";\n")}}`;
+            return str;
+        })
+    },
+    Presets,
+    WickRTComponent,
+    componentDataToHTML,
+    componentDataToCSS,
+    componentDataToClass: componentDataToJS,
+    componentDataToClassString,
+    types: {
+        MinTreeNodeType,
+        CSSTreeNodeType,
+        WickASTNodeType,
+    }
+});
+
 export default wick;
 
 export {
+    ObservableModel,
+    ObservableWatcher,
+    wick,
+    wickOutput,
     parser,
     Presets,
     Component,
     WickRTComponent,
+    WickRTComponent as RuntimeComponent,
     DOMLiteral,
     componentDataToHTML,
     componentDataToCSS,
