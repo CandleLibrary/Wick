@@ -45,8 +45,10 @@ function createElement(tag_name) {
 export function integrateElement(ele: HTMLElement | Text) {
 
 
-    if (ele instanceof Text)
+    if (ele instanceof Text) {
+        this.elu.push(ele);
         return ele;
+    }
 
     else {
 
