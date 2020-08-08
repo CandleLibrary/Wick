@@ -24,7 +24,6 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
 
     registerActivatedFrameMethod(frame, class_information);
 
-
     if (ast) {
 
         const updated_names = new Set();
@@ -69,7 +68,6 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
 
                     if (type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE)
                         ast.nodes[2].nodes.push(exp(`this.u${class_index}(this[${class_index}])`));
-
                 }
             }
 
@@ -162,7 +160,6 @@ export function componentDataToClassString(component: Component, presets: Preset
         if (!component.global_model)
             component_class.nodes.length = 2;
 
-
         class_information.methods = component_class.nodes;
 
         // Binding value statements Method
@@ -174,7 +171,6 @@ export function componentDataToClassString(component: Component, presets: Preset
 
         class_information.binding_init_statements = bi_stmts;
 
-
         // Initializer Method
         const register_elements_method = getGenericMethodNode("re", "", "const c = this;"),
 
@@ -182,62 +178,65 @@ export function componentDataToClassString(component: Component, presets: Preset
 
         class_information.class_initializer_statements = re_stmts;
 
-        // Cleanup Method
-        const cleanup_element_method = getGenericMethodNode("cu", "", "const c = this;"),
+        if (component.ERRORS === false) {
 
-            [, , { nodes: cu_stmts }] = cleanup_element_method.nodes;
+            // Cleanup Method
+            const cleanup_element_method = getGenericMethodNode("cu", "", "const c = this;"),
 
-        class_information.class_cleanup_statements = cu_stmts;
+                [, , { nodes: cu_stmts }] = cleanup_element_method.nodes;
+
+            class_information.class_cleanup_statements = cu_stmts;
 
 
-        /* ---------------------------------------
-        *  -- Create LU table for public variables
-        */
-        const
-            public_prop_lookup = {},
-            nlu = stmt("c.nlu = {};"), nluf = stmt("c.lookup_function_table = [];"),
-            //nluf_arrays = class_information.nluf_arrays,
-            { nodes: [{ nodes: [, nluf_public_variables] }] } = nluf,
-            { nodes: [{ nodes: [, lu_public_variables] }] } = nlu;
+            /* ---------------------------------------
+            *  -- Create LU table for public variables
+            */
+            const
+                public_prop_lookup = {},
+                nlu = stmt("c.nlu = {};"), nluf = stmt("c.lookup_function_table = [];"),
+                //nluf_arrays = class_information.nluf_arrays,
+                { nodes: [{ nodes: [, nluf_public_variables] }] } = nluf,
+                { nodes: [{ nodes: [, lu_public_variables] }] } = nlu;
 
-        let nlu_index = 0;
+            let nlu_index = 0;
 
-        for (const component_variable of component.root_frame.binding_type.values()) {
+            for (const component_variable of component.root_frame.binding_type.values()) {
 
-            if (true /* some check for component_variable property of binding*/) {
+                if (true /* some check for component_variable property of binding*/) {
 
-                component_variable.class_index = nlu_index;
-                component_variable.nlui = nlu_index;
+                    component_variable.class_index = nlu_index;
+                    component_variable.nlui = nlu_index;
 
-                lu_public_variables.nodes.push(
-                    getPropertyAST(
-                        component_variable.external_name,
-                        ((component_variable.flags << 24) | nlu_index) + "")
-                );
+                    lu_public_variables.nodes.push(
+                        getPropertyAST(
+                            component_variable.external_name,
+                            ((component_variable.flags << 24) | nlu_index) + "")
+                    );
 
-                const nluf_array = exp(`c.u${component_variable.class_index}`);
+                    const nluf_array = exp(`c.u${component_variable.class_index}`);
 
-                //nluf_arrays.push(nluf_array.nodes);
+                    //nluf_arrays.push(nluf_array.nodes);
 
-                nluf_public_variables.nodes.push(nluf_array);
+                    nluf_public_variables.nodes.push(nluf_array);
 
-                public_prop_lookup[component_variable.internal_name] = nlu_index;
+                    public_prop_lookup[component_variable.internal_name] = nlu_index;
 
-                nlu_index++;
+                    nlu_index++;
+                }
             }
-        }
 
-        class_information.nlu_index = nlu_index;
-        class_information.nluf_public_variables = nluf_public_variables;
+            class_information.nlu_index = nlu_index;
+            class_information.nluf_public_variables = nluf_public_variables;
 
-        processBindings(component, class_information, presets);
+            processBindings(component, class_information, presets);
 
-        class_information.class_initializer_statements.push(nlu, nluf);
+            class_information.class_initializer_statements.push(nlu, nluf);
 
-        // Compile scripts into methods
+            // Compile scripts into methods
 
-        for (const function_block of component.frames) {
-            makeComponentMethod(function_block, component, class_information);
+            for (const function_block of component.frames) {
+                makeComponentMethod(function_block, component, class_information);
+            }
         }
 
         if (component.HTML && INCLUDE_HTML) {
