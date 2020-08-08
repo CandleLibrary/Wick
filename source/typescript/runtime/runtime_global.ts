@@ -3,9 +3,12 @@ import Presets from "../presets.js";
 
 import { Component } from "../types/types.js";
 import { PresetOptions } from "../types/preset_options.js";
-import { WickRTComponent } from "./runtime_component.js";
+import { WickRTComponent, css_cache } from "./runtime_component.js";
+
+
 
 import { cfw } from "@candlefw/cfw";
+export const global_object = (typeof global !== "undefined") ? global : window;
 
 export interface WickRuntime {
     glow: any,
@@ -33,6 +36,8 @@ export interface WickRuntime {
 const rt: WickRuntime = (() => {
 
     return <WickRuntime>{
+
+        css_cache,
 
         get glow() { return cfw.glow; },
 
