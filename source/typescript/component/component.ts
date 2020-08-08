@@ -139,6 +139,8 @@ export async function compileComponent(
     const
         component: Component = {
 
+            ERRORS: false,
+
             source: source_string,
 
             selector_map: new Map(),
@@ -175,71 +177,75 @@ export async function compileComponent(
 
     component.root_frame = createFrame(null, false, component);
 
-    if (error.length < 1) {
+    try {
 
-        try {
+        /**
+         * We need to first traverse the AST node structure, locating nodes that need the
+         * following action taken:
+         *      
+         *      a.  Nodes containing a url attribute will need to have that url fetched and
+         *          processed. These nodes will later be merged by the resulting AST
+         *          created from the fetched resource
+         * 
+         *      b.  Global binding variables need to identified and hoisted to a reference
+         *          table that will be used to resolve JS => HTML, JS => CSS, JS => JS
+         *          bindings.
+         * 
+         *      c.  Nodes containing slot attributes will need to resolved.
+         *      
+         */
 
-            /**
-             * We need to first traverse the AST node structure, locating nodes that need the
-             * following action taken:
-             *      
-             *      a.  Nodes containing a url attribute will need to have that url fetched and
-             *          processed. These nodes will later be merged by the resulting AST
-             *          created from the fetched resource
-             * 
-             *      b.  Global binding variables need to identified and hoisted to a reference
-             *          table that will be used to resolve JS => HTML, JS => CSS, JS => JS
-             *          bindings.
-             * 
-             *      c.  Nodes containing slot attributes will need to resolved.
-             *      
-             */
+        const IS_SCRIPT = determineSourceType(ast);
 
-            const IS_SCRIPT = determineSourceType(ast);
+        if (presets.components.has(component.name))
+            return presets.components.get(component.name);
 
-            if (presets.components.has(component.name))
-                return presets.components.get(component.name);
+        presets.components.set(component.name, component);
 
-            presets.components.set(component.name, component);
+        if (IS_SCRIPT)
+            await processWickJS_AST(<MinTreeNode>ast, component, presets);
+        else
+            await processWickHTML_AST(getHTML_AST(ast), component, presets);
 
-            if (IS_SCRIPT)
-                await processWickJS_AST(<MinTreeNode>ast, component, presets);
-            else
-                await processWickHTML_AST(getHTML_AST(ast), component, presets);
+        for (const name of component.names)
+            presets.named_components.set(name.toUpperCase(), component);
 
-            for (const name of component.names)
-                presets.named_components.set(name.toUpperCase(), component);
-
-            return component;
-        } catch (e) {
-            error.push(e);
-        }
-
+    } catch (e) {
+        error.push(e);
     }
 
-    const error_data = [location + "", ...error.flatMap(e => (e + "").split("\n")).map(s => s.replace(/\ /g, "\u00A0"))].map(e => <DOMLiteral>{
-        tag_name: "p",
-        children: [
-            {
-                tag_name: "",
-                data: e
-            }
-        ]
-    });
+    if (error.length > 0) {
 
-    component.HTML = {
-        tag_name: "ERROR",
-        lookup_index: 0,
-        attributes: [
-            ["style", "font-family:monospace"]
-        ],
-        children: [
-            {
-                tag_name: "div",
-                children: error_data
-            }
-        ]
-    };
+        const error_data = [location + "", ...error
+            .flatMap(e => (e + "")
+                .split("\n"))
+            .map(s => s.replace(/\ /g, "\u00A0"))]
+            .map(e => <DOMLiteral>{
+                tag_name: "p",
+                children: [
+                    {
+                        tag_name: "",
+                        data: e
+                    }
+                ]
+            });
+
+        component.HTML = {
+            tag_name: "ERROR",
+            lookup_index: 0,
+            attributes: [
+                ["style", "font-family:monospace"]
+            ],
+            children: [
+                {
+                    tag_name: "div",
+                    children: error_data
+                }
+            ]
+        };
+
+        component.ERRORS = true;
+    }
 
     return component;
 }
