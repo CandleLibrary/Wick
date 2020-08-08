@@ -62,9 +62,10 @@ loadHTMLHandlerInternal(
 
                     const { value: name } = n;
 
-                    if (global[name]) continue;
+                    if (global_object[name]) continue;
 
                     addBindingVariable({
+                        pos: n.pos,
                         internal_name: name,
                         external_name: name,
                         class_index: -1,
@@ -383,6 +384,7 @@ loadHTMLHandlerInternal(
                 fn_ast.nodes[2].nodes = script.nodes;
 
                 addBindingVariable({
+                    pos: node.pos,
                     class_index: -1,
                     external_name: id,
                     internal_name: id,
