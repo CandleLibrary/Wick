@@ -1,41 +1,72 @@
-import { render, CSSTreeNodeType, selector, SelectionHelpers } from "@candlefw/css";
+import { render, CSSTreeNodeType, selector, CSSTreeNode } from "@candlefw/css";
 import { traverse } from "@candlefw/conflagrate";
 
 import parser from "../parser/parser.js";
 
-function UpdateSelector(node, name) {
-    const class_selector = selector(`.${name}`).nodes[0].nodes[0];
+export function UpdateSelector(node: CSSTreeNode, name) {
 
-    node.selectors.map(s => {
+    const class_selector = selector(`.${name}`);
+
+    node.selectors = node.selectors.map(s => {
 
         let HAS_ROOT = false;
+        const ns = { ast: null };
 
-        const [type] = s.nodes[0].nodes;
+        for (const { node, meta: { replace } } of traverse(s, "nodes")
+            .makeReplaceable()
+            .extract(ns)
+        ) {
 
-        if (type.type == CSSTreeNodeType.TypeSelector && type.nodes[0].val == "root") {
-            HAS_ROOT = true;
-            s.nodes[0].nodes[0] = class_selector;
-        } else if (type.type == CSSTreeNodeType.TypeSelector && type.nodes[0].val == "body") {
-            HAS_ROOT = true;
-        } if (!HAS_ROOT)
-            s.nodes.unshift(class_selector);
+            switch (node.type) {
+                case CSSTreeNodeType.TypeSelector:
+                    const val = node.nodes[0].val;
+                    if (val == "root") {
+                        replace(Object.assign({}, class_selector, { pos: node.pos, nodes: [] }));
+                        HAS_ROOT = true;
+                    } else if (val == "body") {
+                        HAS_ROOT = true;
+                    }
+                default:
+                    break;
+            }
+        }
+
+        if (!HAS_ROOT) {
+            const ns = selector(`.${name} ${render(s)}`);
+            ns.pos = s.pos;
+            return ns;
+        }
+
+        return ns.ast;
     });
+
 }
 
 export function componentDataToCSS(component): string {
+    //*/
+    const css_string = component.CSS.map(css => {
+        const r = { ast: null };
 
-    const cloned_stylesheets = component.CSS.map(s => parser(`<style>${render(s)}</style>`).nodes[0]);
-
-    for (const stylesheet of cloned_stylesheets) {
-
-        for (const { node, meta } of traverse(stylesheet, "nodes", 2)) {
+        for (const { node, meta: { replace } } of traverse(css, "nodes", 2)
+            .makeReplaceable()
+            .extract(r)
+        ) {
             switch (node.type) {
-                case CSSTreeNodeType.Rule: UpdateSelector(node, component.name); break;
-                case CSSTreeNodeType.Media:
-                    node.nodes.slice(1).forEach(n => UpdateSelector(n, component.name)); break;
+                case CSSTreeNodeType.Rule: {
+                    const copy = Object.assign({}, node);
+                    UpdateSelector(copy, component.name);
+                    replace(copy);
+                } break;
+                case CSSTreeNodeType.Media: {
+                    const copy = Object.assign({}, node);
+                    copy.nodes.slice(1).forEach(n => UpdateSelector(n, component.name));
+                    replace(copy);
+                } break;
+
             }
         }
-    }
+        return r.ast;
+    }).map(render).join("\n");
 
-    return cloned_stylesheets.map(render).join("\n");
+    return css_string;
 }
