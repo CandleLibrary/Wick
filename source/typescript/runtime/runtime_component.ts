@@ -5,6 +5,7 @@ import Presets from "../presets";
 import { makeElement, integrateElement } from "./runtime_html.js";
 import { DATA_FLOW_FLAG } from "../types/types.js";
 import spark, { Sparky } from "@candlefw/spark";
+import { ObservableModel, ObservableWatcher } from "../types/observable_model.js";
 
 type BindingUpdateFunction = () => void;
 
@@ -19,7 +20,7 @@ const enum DATA_DIRECTION {
 export const css_cache = {};
 export const class_strings = {};
 
-export class WickRTComponent implements Sparky {
+export class WickRTComponent implements Sparky, ObservableWatcher {
 
     ele: HTMLElement;
 
@@ -280,33 +281,35 @@ export class WickRTComponent implements Sparky {
         this.TRANSITIONED_IN = true;
     }
 
-    setModel(model) {
+    setModel(model: ObservableModel | any) {
 
         if (this.model) {
-
             if (this.polling_id > 0) {
                 clearInterval(this.polling_id);
                 this.polling_id = 0;
-            } else {
-                if (this.model.unsubscribe)
-                    this.model.unsubscribe(this);
             }
+
+            if (this.model.unsubscribe)
+                this.model.unsubscribe(this);
+
+            this.model = null;
         }
 
-        this.model = model;
+        if (model) {
 
-        if (model.subscribe)
-            model.subscribe(data => {
-                this.update(data);
-            });
+            this.model = model;
 
-        else {
+            if (model.subscribe) {
+                model.subscribe(this);
+            } else {
 
-            //Create a polling monitor
-            if (this.polling_id <= 0)
-                this.polling_id = <number><unknown>setInterval(this.updateModel.bind(this), 1);
+                //Create a polling monitor
+                if (this.polling_id <= 0)
+                    this.polling_id = <number><unknown>setInterval(this.onModelUpdate.bind(this), 1);
 
-            this.updateModel.call(this);
+            }
+
+            this.onModelUpdate.call(this);
         }
     }
 
@@ -385,7 +388,7 @@ export class WickRTComponent implements Sparky {
 
     };
 
-    updateModel() {
+    onModelUpdate() {
         // Go through the model's props and test whether they are different then the 
         // currently cached variables
         const model = this.model;
