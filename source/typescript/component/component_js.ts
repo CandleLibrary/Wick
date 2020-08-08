@@ -1,5 +1,5 @@
 import { MinTreeNode, MinTreeNodeType, MinTreeNodeClass, ext } from "@candlefw/js";
-import { traverse } from "@candlefw/conflagrate";
+import { traverse, copy } from "@candlefw/conflagrate";
 
 import { Component, FunctionFrame } from "../types/types.js";
 import Presets from "../presets.js";
@@ -53,10 +53,14 @@ async function processCoreAsync(ast: MinTreeNode, function_frame: FunctionFrame,
             } break;
         }
     }
+
+    //if(presets.BACKUP_FRAMES)
+    function_frame.backup_ast = copy(function_frame.ast);
+
     return function_frame;
 }
 
-function processCoreSync(ast: MinTreeNode, function_frame: FunctionFrame, component: Component, presets: Presets, root_name: string, frame: FunctionFrame = null) {
+export function processCoreSync(ast: MinTreeNode, function_frame: FunctionFrame, component: Component, presets: Presets) {
 
     main_loop:
     for (const { node, meta } of traverse(ast, "nodes")
@@ -70,6 +74,53 @@ function processCoreSync(ast: MinTreeNode, function_frame: FunctionFrame, compon
             // processCoreSync(node, temp_ff, component, presets, root_name, frame);
             // meta.skip();
         }
+
+        for (const handler of JS_handlers[Math.max((node.type >>> 23), 0)]) {
+
+            const pending = handler.prepareJSNode(node, meta.parent, meta.skip, component, presets, function_frame);
+
+            let result = null;
+
+            if (pending instanceof Promise) {
+                result = {
+                    type: MinTreeNodeType.StringLiteral,
+                    quote_type: "\"",
+                    value: `Waiting on promise for [${MinTreeNodeType[node.type]}]. Use processFunctionDeclaration instead of processFunctionDeclarationSync to correctly parse this AST structure.`,
+                    pos: node.pos
+                };
+            }
+            else result = pending;
+
+            if (result != node) {
+                if (result === null || result) {
+
+                    meta.replace(result);
+
+                    if (result === null)
+                        continue main_loop;
+
+                } else
+                    continue;
+            } break;
+        }
+    }
+    //if(presets.BACKUP_FRAMES)
+    function_frame.backup_ast = copy(function_frame.ast);
+
+    return function_frame;
+}
+
+export function processNodeSync(ast: MinTreeNode, function_frame: FunctionFrame, component: Component, presets: Presets) {
+
+    const extract = { ast: null };
+
+    main_loop:
+    for (const { node, meta } of traverse(ast, "nodes")
+        .skipRoot()
+        .makeReplaceable()
+        .makeSkippable()
+        .extract(extract)
+    ) {
 
         for (const handler of JS_handlers[Math.max((node.type >>> 23), 0)]) {
 
@@ -101,8 +152,9 @@ function processCoreSync(ast: MinTreeNode, function_frame: FunctionFrame, compon
         }
     }
 
-    return function_frame;
+    return extract.ast;
 }
+
 export async function processFunctionDeclaration(node: MinTreeNode, component: Component, presets: Presets, root_name = "") {
     return await processWickJS_AST(node, component, presets, root_name, component.root_frame);
 }
@@ -117,12 +169,11 @@ export async function processWickJS_AST(ast: MinTreeNode, component: Component, 
     );
 }
 
-export function processFunctionDeclarationSync(node: MinTreeNode, component: Component, presets: Presets, root_name = "") {
+export function processFunctionDeclarationSync(node: MinTreeNode, component: Component, presets: Presets) {
     return processCoreSync(
         node,
         processPreamble(node, component, component.root_frame),
         component,
-        presets,
-        root_name
+        presets
     );
 }

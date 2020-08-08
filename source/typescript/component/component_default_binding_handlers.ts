@@ -324,6 +324,9 @@ loadBindingHandler({
         const frame = getFrameFromName(frame_id.value, component),
             binding = createBindingObject(BindingType.READWRITE);
 
+        if (!frame)
+            frame_id.pos.throw(`Cannot find function for reference ${frame_id.value}`);
+
         if (frame.ATTRIBUTE) return null;
 
         for (const id of other_id) setBindingVariable(<string>id.value, false, binding);

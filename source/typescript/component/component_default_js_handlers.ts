@@ -3,7 +3,7 @@ import { traverse } from "@candlefw/conflagrate";
 
 import { WICK_AST_NODE_TYPE_SIZE, WickASTNodeClass, WickASTNode, WickASTNodeType, WickBindingNode } from "../types/wick_ast_node_types.js";
 import { JSHandler } from "../types/js_handler.js";
-import { processFunctionDeclaration } from "./component_js.js";
+import { processFunctionDeclaration, processNodeSync } from "./component_js.js";
 import { processWickHTML_AST } from "./component_html.js";
 import { processWickCSS_AST } from "./component_css.js";
 import { importResource } from "./component_common.js";
@@ -184,12 +184,14 @@ loadJSHandlerInternal(
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
+            node = processNodeSync(node, frame, component, presets);
 
             const
                 n = stmt("a,a;"),
                 [{ nodes }] = n.nodes;
 
             nodes.length = 0;
+
 
             //Add all elements to global 
             for (const { node: binding, meta } of traverse(node, "nodes", 4)
