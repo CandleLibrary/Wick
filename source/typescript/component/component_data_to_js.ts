@@ -1,5 +1,5 @@
-import { MinTreeNodeType, MinTreeNode, exp, stmt } from "@candlefw/js";
-import { renderWithFormatting } from "@candlefw/conflagrate";
+import { MinTreeNodeType, MinTreeNode, exp, stmt, MinTreeNodeClass } from "@candlefw/js";
+import { renderWithFormatting, traverse } from "@candlefw/conflagrate";
 
 import Presets from "../presets.js";
 import { processBindings } from "./component_process_bindings.js";
@@ -13,6 +13,12 @@ import { componentDataToCSS } from "./component_data_to_css.js";
 
 function registerActivatedFrameMethod(frame: FunctionFrame, class_information) {
     if (frame.index) class_information.nluf_public_variables.nodes.push(exp(`c.f${frame.index}`));
+}
+
+function getReferenceID(node: MinTreeNode): MinTreeNode {
+    for (const { node: id } of traverse(node, "nodes").filter("type", MinTreeNodeType.IdentifierReference))
+        return id;
+    return null;
 }
 
 /**
@@ -35,17 +41,26 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
             switch (node.type) {
                 case MinTreeNodeType.AssignmentExpression:
 
-                    const { type, class_index, internal_name }
-                        = component.root_frame.binding_type.get(<string>node.nodes[0].value);
+                    const id = getReferenceID(node.nodes[0]);
 
-                    if (type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE) {
-                        const expr = exp(`this.u${class_index}(a)`);
-                        expr.pos = node.pos;
-                        expr.nodes[1].nodes[0] = node.nodes[1];
-                        parent.nodes[index] = expr;
-                        updated_names.add(internal_name);
+                    if (id) {
+                        const { type, class_index, internal_name }
+                            = component.root_frame.binding_type.get(<string>id.value);
+
+                        if (node.nodes[0].type == MinTreeNodeType.IdentifierReference) {
+                            if (type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE) {
+                                const expr = exp(`this.u${class_index}(a)`);
+                                expr.pos = node.pos;
+                                expr.nodes[1].nodes[0] = node.nodes[1];
+                                parent.nodes[index] = expr;
+                                updated_names.add(internal_name);
+                            }
+                        } else if (node.nodes[0].type == MinTreeNodeType.MemberExpression) {
+                            //replace the member with the lookup for the node.
+                            node.nodes[0].nodes[0] = exp(`this[${class_index}]`);
+                        }
+
                     }
-
                     break;
                 case MinTreeNodeType.IdentifierReference:
                     parent.nodes[index] = exp(setVariableName(node.value, component));
