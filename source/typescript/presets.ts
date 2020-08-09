@@ -3,6 +3,7 @@ import URL from "@candlefw/url";
 import { PresetOptions } from "./types/preset_options.js";
 import { ExtendedComponent } from "./types/extended_component.js";
 import { Component } from "./types/types.js";
+import { RuntimeComponent } from "./wick.js";
 
 let CachedPresets = null;
 
@@ -31,7 +32,7 @@ export default class Presets implements PresetOptions {
      */
     components?: Map<string, any>;
 
-    component_class: Map<string, any>;
+    component_class: Map<string, RuntimeComponent>;
 
     component_class_string: Map<string, string>;
 
