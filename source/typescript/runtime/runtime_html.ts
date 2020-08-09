@@ -2,6 +2,7 @@ import { rt } from "./runtime_global.js";
 import { DOMLiteral } from "../types/dom_literal.js";
 import { WickContainer } from "./runtime_container.js";
 import { takeParentAddChild } from "./runtime_common.js";
+import { Presets } from "../wick.js";
 
 //
 // https://www.w3.org/TR/2011/WD-html5-20110525/namespaces.html
@@ -63,13 +64,11 @@ export function integrateElement(ele: HTMLElement | Text) {
 
                 if (ele.getAttribute("w-container")) {
 
-                    const
-                        name = ele.getAttribute("w-container"),
-                        comp_constructor = this.presets.component_class.get(name);
+                    const comp_constructors = ele.getAttribute("w-container").split(",").map(name => this.presets.component_class.get(name));
 
-                    if (!comp_constructor) throw new Error(`Could not find component class for ${name} in component ${this.name}`);
+                    if (comp_constructors.length < 1) throw new Error(`Could not find component class for ${name} in component ${this.name}`);
 
-                    const ctr = new WickContainer(comp_constructor, ele, this);
+                    const ctr = new WickContainer(comp_constructors, ele, this);
 
                     this.ct.push(ctr);
                 } else if (ele.hasAttribute("w-s")) {
@@ -140,6 +139,7 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
         data: data,
         is_container: ct,
         component_name: component_name,
+        component_names: component_names,
         slot_name: slot_name
     } = ele_obj;
 
@@ -149,13 +149,13 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
 
     if (ct) {
 
-        const comp_constructor = this.presets.component_class.get(component_name);
+        const comp_constructors = component_names.map(name => (<Presets>this.presets).component_class.get(name));
 
-        if (!comp_constructor) throw new Error(`Could not find component class for ${component_name} in component ${this.name}`);
+        if (comp_constructors.length < 1) throw new Error(`Could not find component class for ${component_name} in component ${this.name}`);
 
         ele = <HTMLElement>createElementNameSpaced(tag_name, name_space, data);
 
-        const ctr = new WickContainer(comp_constructor, ele, this);
+        const ctr = new WickContainer(comp_constructors, ele, this);
 
         this.ct.push(ctr);
 

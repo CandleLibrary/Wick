@@ -1,6 +1,7 @@
 import { cfw } from "@candlefw/cfw";
 import spark, { Sparky } from "@candlefw/spark";
 import { WickRTComponent } from "./runtime_component";
+import { RuntimeComponent } from "../wick";
 
 function getColumnRow(index, offset, set_size) {
     const adjusted_index = index - offset * set_size;
@@ -20,9 +21,8 @@ function createTransition(val?: boolean) {
     else return cfw.glow.createTransition(val);
 }
 
-
-
 type ContainerComponent = WickRTComponent & { index: number; model: any; _TRANSITION_STATE_: boolean; par: ContainerComponent; };
+
 /**
  * ScopeContainer provide the mechanisms for dealing with lists and sets of components. 
  *
@@ -62,24 +62,26 @@ export class WickContainer implements Sparky {
      * Components that meet the filtering requirements and can be
      * mounted to the DOM on demand. 
      */
-    activeScopes: ContainerComponent[];
+    activeComps: ContainerComponent[];
 
     /**
      * Components that are currently mounted to the DOM
      */
-    dom_scopes: ContainerComponent[];
+    dom_comp: ContainerComponent[];
 
     /**
      * Components that have been created from model array data. 
      */
-    scopes: ContainerComponent[];
+    comps: ContainerComponent[];
 
     dom_dn: ContainerComponent[];
     dom_up: ContainerComponent[];
 
     filters: any[];
 
-    component: typeof WickRTComponent;
+    comp_constructors: typeof WickRTComponent[];
+
+    evaluators: ((m: any) => boolean)[];
 
     /**
      * Glow transition for elements with low index values increasing to high index values.
@@ -104,16 +106,21 @@ export class WickContainer implements Sparky {
     filter: (...args) => boolean;
     sort: (...args) => number;
 
-    constructor(component_constructor, element, parent) {
+    constructor(
+        component_constructors: typeof RuntimeComponent[],
+        element: HTMLElement,
+        parent_comp: RuntimeComponent
+    ) {
 
         this.ele = element;
 
-        this.activeScopes = [];
-        this.dom_scopes = [];
+        this.activeComps = [];
+        this.dom_comp = [];
         this.filters = [];
-        this.scopes = [];
+        this.comps = [];
         this.dom_dn = [];
         this.dom_up = [];
+        this.evaluators = [];
 
         this._SCHD_ = 0;
         this.shift_amount = 1;
@@ -125,7 +132,7 @@ export class WickContainer implements Sparky {
 
 
         this.observering = null;
-        this.component = component_constructor;
+        this.comp_constructors = component_constructors;
         this.trs_ascending = null;
         this.trs_descending = null;
 
@@ -135,7 +142,7 @@ export class WickContainer implements Sparky {
         this.AUTO_SCRUB = false;
         this.LOADED = false;
 
-        this.parent = parent;
+        this.parent = parent_comp;
 
         this.filter = m1 => true;
         this.sort = () => -1;
@@ -143,7 +150,7 @@ export class WickContainer implements Sparky {
 
     destructor() {
 
-        this.cull();
+        this.filter_new_items();
 
         for (const fltr of this.filters)
             fltr.destroy();
@@ -159,9 +166,9 @@ export class WickContainer implements Sparky {
         if (!container) return;
 
         if (Array.isArray(container))
-            this.cull(container);
+            this.filter_new_items(container);
         else
-            this.cull(container.data);
+            this.filter_new_items(container.data);
 
         this.loadAcknowledged();
     }
@@ -172,9 +179,9 @@ export class WickContainer implements Sparky {
         if (!container) return;
 
         if (Array.isArray(container))
-            this.cull(container);
+            this.filter_new_items(container);
         else
-            this.cull(container.data);
+            this.filter_new_items(container.data);
     }
 
     loadAcknowledged() {
@@ -247,12 +254,12 @@ export class WickContainer implements Sparky {
         let i = min;
 
         this.ele.innerHTML = "";
-        const output_length = this.activeScopes.length;
-        this.dom_scopes.length = 0;
+        const output_length = this.activeComps.length;
+        this.dom_comp.length = 0;
 
         while (i < max && i < output_length) {
-            const node = this.activeScopes[i++];
-            this.dom_scopes.push(node);
+            const node = this.activeComps[i++];
+            this.dom_comp.push(node);
             node.appendToDOM(this.ele);
         }
     }
@@ -266,7 +273,7 @@ export class WickContainer implements Sparky {
         // scrub_delta is the relative amount of change from the previous offset. 
 
         if (!this.SCRUBBING)
-            this.render(null, this.activeScopes, true);
+            this.render(null, this.activeComps, true);
 
         this.SCRUBBING = true;
 
@@ -291,7 +298,7 @@ export class WickContainer implements Sparky {
 
                     this.offset++;
                     this.offset_diff = 1;
-                    this.render(null, this.activeScopes, true).play(1);
+                    this.render(null, this.activeComps, true).play(1);
                 } else {
                     delta_offset = delta_offset % 1;
                     this.offset_fractional = delta_offset;
@@ -302,7 +309,7 @@ export class WickContainer implements Sparky {
                     this.offset--;
                     this.offset_diff = -1;
 
-                    this.render(null, this.activeScopes, true).play(1);
+                    this.render(null, this.activeComps, true).play(1);
                 }
 
             }
@@ -318,7 +325,7 @@ export class WickContainer implements Sparky {
                     for (let i = 0; i < this.dom_up.length; i++) {
                         this.dom_up[i].appendToDOM(this.ele);
                         this.dom_up[i].index = -1;
-                        this.dom_scopes.push(this.dom_up[i]);
+                        this.dom_comp.push(this.dom_up[i]);
                     }
 
                     this.DOM_UP_APPENDED = true;
@@ -332,11 +339,11 @@ export class WickContainer implements Sparky {
                 if (!this.DOM_DN_APPENDED) {
 
                     for (let i = 0; i < this.dom_dn.length; i++) {
-                        this.dom_dn[i].appendToDOM(this.ele, this.dom_scopes[0].ele);
+                        this.dom_dn[i].appendToDOM(this.ele, this.dom_comp[0].ele);
                         this.dom_dn[i].index = -1;
                     }
 
-                    this.dom_scopes = this.dom_dn.concat(this.dom_scopes);
+                    this.dom_comp = this.dom_dn.concat(this.dom_comp);
 
                     this.DOM_DN_APPENDED = true;
                 }
@@ -376,14 +383,14 @@ export class WickContainer implements Sparky {
                 this.offset += Math.round(this.offset_fractional);
                 this.scrub_velocity = 0;
                 this.offset_fractional = 0;
-                this.render(null, this.activeScopes, true).play(1);
+                this.render(null, this.activeComps, true).play(1);
                 this.SCRUBBING = false;
                 return false;
             }
         }
     }
 
-    arrange(output = this.activeScopes) {
+    arrange(output = this.activeComps) {
 
         //Arranges active scopes according to their arrange handler.
         const
@@ -412,11 +419,11 @@ export class WickContainer implements Sparky {
 
     }
 
-    render(transition?, output = this.activeScopes, NO_TRANSITION = false) {
+    render(transition?, output = this.activeComps, NO_TRANSITION = false) {
 
         const
             active_window_size = this.limit,
-            active_length = this.dom_scopes.length;
+            active_length = this.dom_comp.length;
 
         let
             j = 0,
@@ -518,7 +525,7 @@ export class WickContainer implements Sparky {
 
         for (let i = 0; i < active_length; i++) {
 
-            const as = this.dom_scopes[i];
+            const as = this.dom_comp[i];
 
             if (as.index > j) {
                 while (j < as.index && j < output_length) {
@@ -568,7 +575,7 @@ export class WickContainer implements Sparky {
 
         this.ele.style.position = this.ele.style.position;
 
-        this.dom_scopes = output.slice();
+        this.dom_comp = output.slice();
 
         /*
         this.parent.update({
@@ -601,13 +608,13 @@ export class WickContainer implements Sparky {
      */
     filterUpdate() {
 
-        let output = this.scopes.filter(this.filter);
+        let output = this.comps.filter(this.filter);
 
         if (output.length < 1) return;
 
         output.sort(this.sort);
 
-        this.activeScopes = output;
+        this.activeComps = output;
 
         this.UPDATE_FILTER = false;
 
@@ -642,23 +649,23 @@ export class WickContainer implements Sparky {
      * 
      * @protected
      */
-    cull(new_items = []) {
+    filter_new_items(new_items = []) {
 
         const transition = createTransition();
 
         if (new_items.length == 0) {
 
-            const sl = this.activeScopes.length;
+            const sl = this.activeComps.length;
 
             let trs = { trs: transition.out, pos: null };
 
             for (let i = 0; i < sl; i++) {
                 trs.pos = getColumnRow(i, this.offset, this.shift_amount);
-                this.activeScopes[i].transitionOut(trs, true);
+                this.activeComps[i].transitionOut(trs, true);
             }
 
-            this.scopes.length = 0;
-            this.activeScopes.length = 0;
+            this.comps.length = 0;
+            this.activeComps.length = 0;
 
             /* todo #################################################################
             this.parent.upImport("template_count_changed", {
@@ -681,33 +688,33 @@ export class WickContainer implements Sparky {
                 exists = new Map(new_items.map(e => [e, true])),
                 out = [];
 
-            for (let i = 0, l = this.activeScopes.length; i < l; i++)
-                if (exists.has(this.activeScopes[i].model))
-                    exists.set(this.activeScopes[i].model, false);
+            for (let i = 0, l = this.activeComps.length; i < l; i++)
+                if (exists.has(this.activeComps[i].model))
+                    exists.set(this.activeComps[i].model, false);
 
 
-            for (let i = 0, l = this.scopes.length; i < l; i++)
-                if (!exists.has(this.scopes[i].model)) {
-                    this.scopes[i].transitionOut(transition, true, "dismounting");
-                    this.scopes[i].index = -1;
-                    this.scopes.splice(i, 1);
+            for (let i = 0, l = this.comps.length; i < l; i++)
+                if (!exists.has(this.comps[i].model)) {
+                    this.comps[i].transitionOut(transition, true, "dismounting");
+                    this.comps[i].index = -1;
+                    this.comps.splice(i, 1);
                     l--;
                     i--;
                 } else
-                    exists.set(this.scopes[i].model, false);
+                    exists.set(this.comps[i].model, false);
 
             exists.forEach((v, k) => { if (v) out.push(k); });
 
             if (out.length > 0) {
                 // Wrap models into components
-                this.added(out, transition);
+                this.add(out, transition);
 
             } else {
-                for (let i = 0, j = 0, l = this.activeScopes.length; i < l; i++, j++) {
+                for (let i = 0, j = 0, l = this.activeComps.length; i < l; i++, j++) {
 
-                    if (this.activeScopes[i]._TRANSITION_STATE_) {
+                    if (this.activeComps[i]._TRANSITION_STATE_) {
                         if (j !== i) {
-                            this.activeScopes[i].update({
+                            this.activeComps[i].update({
                                 arrange: {
                                     pos: getColumnRow(i, this.offset, this.shift_amount),
                                     trs: transition.in
@@ -715,25 +722,67 @@ export class WickContainer implements Sparky {
                             });
                         }
                     } else
-                        this.activeScopes.splice(i, 1), i--, l--;
+                        this.activeComps.splice(i, 1), i--, l--;
                 }
             }
 
             this.filterExpressionUpdate(transition);
         }
     }
+    addEvaluator(evalator: (a: any) => boolean) { this.evaluators.push(evalator); }
     /**
      * Called by the ModelContainer when Models have been removed from its set.
      *
      * @param      {Array}  items   An array of items no longer stored in the ModelContainer. 
      */
-    removed(items, transition = createTransition()) {
-        for (let i = 0; i < items.length; i++) {
-            let item = items[i];
-            for (let j = 0; j < this.scopes.length; j++) {
-                let Scope = this.scopes[j];
+    /**
+     * Called by the ModelContainer when Models have been added to its set.
+     *
+     * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
+     */
+    add(items, transition) {
+        let OWN_TRANSITION = false, cstr_l = this.comp_constructors.length;
+
+        if (!transition)
+            transition = createTransition(), OWN_TRANSITION = true;
+
+        for (const item of items) {
+
+            let component = null;
+
+            for (let j = 0; j < cstr_l; j++) {
+
+                if (j == cstr_l - 1) {
+                    component = <ContainerComponent>new this.comp_constructors[j](item);
+                    break;
+                }
+
+                const evaluator = this.evaluators[j];
+
+                if (evaluator && evaluator(item)) {
+                    component = <ContainerComponent>new this.comp_constructors[j](item);
+                    break;
+                }
+
+            }
+
+            component.par = <ContainerComponent>this.parent;
+
+            //TODO: Make sure both of there references are removed when the scope is destroyed.
+            this.comps.push(component);
+
+            component.update({ loaded: true });
+        }
+
+        if (OWN_TRANSITION)
+            this.filterExpressionUpdate(transition);
+    }
+    remove(items, transition = createTransition()) {
+        for (const item of items) {
+            for (let j = 0; j < this.comps.length; j++) {
+                let Scope = this.comps[j];
                 if (Scope.model == item) {
-                    this.scopes.splice(j, 1);
+                    this.comps.splice(j, 1);
                     Scope.transitionOut(transition, true);
                     break;
                 }
@@ -742,34 +791,8 @@ export class WickContainer implements Sparky {
 
         this.filterExpressionUpdate(transition);
     }
-    /**
-     * Called by the ModelContainer when Models have been added to its set.
-     *
-     * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
-     */
-    added(items, transition) {
-        let OWN_TRANSITION = false;
-
-        if (!transition)
-            transition = createTransition(), OWN_TRANSITION = true;
-
-        for (let i = 0; i < items.length; i++) {
-
-            const component = <ContainerComponent>new this.component(items[i]);
-
-            component.par = <ContainerComponent>this.parent;
-
-            //TODO: Make sure both of there references are removed when the scope is destroyed.
-            this.scopes.push(component);
-
-            component.update({ loaded: true });
-        }
-
-        if (OWN_TRANSITION)
-            this.filterExpressionUpdate(transition);
-    }
 
     down(data, changed_values) {
-        for (let i = 0, l = this.activeScopes.length; i < l; i++) this.activeScopes[i].update(data);
+        for (let i = 0, l = this.activeComps.length; i < l; i++) this.activeComps[i].update(data);
     }
 }

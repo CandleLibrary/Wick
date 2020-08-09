@@ -100,6 +100,13 @@ function setBindingVariable(name: string, IS_OBJECT: boolean = false, binding: B
     }
 }
 
+/*************************************************************************************
+* ██████   █████  ████████  █████      ███████ ██       ██████  ██     ██ 
+* ██   ██ ██   ██    ██    ██   ██     ██      ██      ██    ██ ██     ██ 
+* ██   ██ ███████    ██    ███████     █████   ██      ██    ██ ██  █  ██ 
+* ██   ██ ██   ██    ██    ██   ██     ██      ██      ██    ██ ██ ███ ██ 
+* ██████  ██   ██    ██    ██   ██     ██      ███████  ██████   ███ ███  
+*/
 
 loadBindingHandler({
     priority: -Infinity,
@@ -463,6 +470,19 @@ loadBindingHandler({
     }
 });
 
+function setFrameAsBindingActive(frame: FunctionFrame, class_information) {
+    if (!frame.index)
+        frame.index = class_information.nlu_index++;
+}
+
+/*********************************************
+ *  ██████  ██████  ███    ██ ████████  █████  ██ ███    ██ ███████ ██████  
+ * ██      ██    ██ ████   ██    ██    ██   ██ ██ ████   ██ ██      ██   ██ 
+ * ██      ██    ██ ██ ██  ██    ██    ███████ ██ ██ ██  ██ █████   ██████  
+ * ██      ██    ██ ██  ██ ██    ██    ██   ██ ██ ██  ██ ██ ██      ██   ██ 
+ *  ██████  ██████  ██   ████    ██    ██   ██ ██ ██   ████ ███████ ██   ██ 
+ */
+
 // container_data
 loadBindingHandler({
 
@@ -517,12 +537,6 @@ loadBindingHandler({
     }
 });
 
-function setFrameAsBindingActive(frame: FunctionFrame, class_information) {
-    if (!frame.index)
-        frame.index = class_information.nlu_index++;
-}
-
-
 // container_data
 loadBindingHandler({
     priority: 100,
@@ -573,6 +587,98 @@ loadBindingHandler({
         }
 
         return binding;
+    }
+});
+
+// Usage selectors
+loadBindingHandler({
+
+    priority: -1,
+
+    canHandleBinding(attribute_name, node_type) {
+        return attribute_name == "useif";
+    },
+
+    prepareBindingObject(attribute_name, binding_node_ast
+        , host_node, element_index, component, presets) {
+
+        const binding = createBindingObject(BindingType.READONLY),
+            component_names = component.root_frame.binding_type,
+            { primary_ast, secondary_ast } = binding_node_ast
+            ;
+
+        if (primary_ast) {
+
+            for (const { node, meta: { parent } } of traverse(primary_ast, "nodes")) {
+
+                if (node.type == MinTreeNodeType.IdentifierReference) {
+
+                    const val = component_names.get(<string>node.value);
+
+                    if (!val || val.type == VARIABLE_REFERENCE_TYPE.API_VARIABLE)
+                        continue;
+
+                    //Pop any binding names into the binding information container. 
+                    setBindingVariable(<string>node.value, parent.type == MinTreeNodeType.MemberExpression, binding);
+                }
+            }
+
+            const receiver = { ast: null };
+
+            for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver))
+                if (node.type == MinTreeNodeType.IdentifierReference)
+                    replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
+
+            const expression = exp(`m1=>(1)`);
+
+            expression.nodes[1] = receiver.ast;
+
+            const stmt_ = stmt(`this.ct[${host_node.container_id}].addEvaluator(a)`);
+
+            stmt_.nodes[0].nodes[1].nodes[0] = expression;
+
+            binding.read_ast = stmt_;
+        }
+
+        return binding;
+    }
+});
+
+
+
+
+loadBindingHandler({
+
+    priority: -1,
+
+    canHandleBinding(attribute_name, node_type) {
+        return attribute_name == "useif";
+    },
+
+    prepareBindingObject(attribute_name, binding_node_ast
+        , host_node, element_index, component, presets) {
+
+        debugger;
+
+        const binding = createBindingObject(BindingType.WRITE),
+            { local, extern } = binding_node_ast,
+            index = host_node.child_id,
+            comp = host_node.component;
+
+        if (comp) {
+
+            const cv = comp.root_frame.binding_type.get(extern);
+
+            if (cv && cv.flags & DATA_FLOW_FLAG.FROM_PARENT) {
+
+                binding.write_ast = stmt(`this.ch[${index}].ufp(${cv.class_index}, v, f);`);
+
+                setBindingVariable(<string>local, false, binding);
+            }
+
+            return binding;
+        }
+        return null;
     }
 });
 

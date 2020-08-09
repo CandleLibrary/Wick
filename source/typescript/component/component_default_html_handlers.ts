@@ -266,7 +266,89 @@ loadHTMLHandlerInternal(
     }, WickASTNodeType.HTMLAttribute
 );
 
+const tag_map = new Set([
+    "IMPORT",
+    "TEXT",
+    "TT",
+    "I",
+    "B",
+    "BIG",
+    "SMALL",
+    "EM",
+    "STRONG",
+    "DFN",
+    "CODE",
+    "SAMP",
+    "KBD",
+    "VAR",
+    "CITE",
+    "ABBR",
+    "ACRONYM",
+    "SUP",
+    "SPAN",
+    "BDO",
+    "BR",
+    "BODY",
+    "ADDRESS",
+    "DIV",
+    "A",
+    "MAP",
+    "AREA",
+    "LINK",
+    "IMG",
+    "OBJECT",
+    "PARAM",
+    "HR",
+    "P",
+    "H1",
+    "H2",
+    "H3",
+    "H4",
+    "H5",
+    "H6",
+    "PRE",
+    "Q",
+    "BLOCKQUOTE",
+    "INS",
+    "DEL",
+    "DL",
+    "DT",
+    "DD",
+    "OL",
+    "UL",
+    "LI",
+    "FORM",
+    "LABEL",
+    "INPUT",
+    "SELECT",
+    "OPTGROUP",
+    "OPTION",
+    "TEXTAREA",
+    "FIELDSET",
+    "LEGEND",
+    "BUTTON",
+    "TABLE",
+    "CAPTION",
+    "THEAD",
+    "TFOOT",
+    "TBODY",
+    "COLGROUP",
+    "COL",
+    "TR",
+    "TH",
+    "TD",
+    "HEAD",
+    "TITLE",
+    "BASE",
+    "META",
+    "STYLE",
+    "SCRIPT",
+    "NOSCRIPT",
+    "HTML",
+    "SVG"
+]);
 
+function isPredefinedTag(val: string): boolean { return tag_map.has(val.toUpperCase()); }
 /*
  * HTML Elements lacking a spec tag.
  */
@@ -294,15 +376,36 @@ loadHTMLHandlerInternal(
 
             switch (node.tag.toLowerCase()) {
                 case "container":
-                    //Turn child into script.   
+                    //Turn children into components if they are not already so.   
                     let ch = null;
 
-                    for (const n of node.nodes)
-                        if ((n.type & WickASTNodeClass.HTML_ELEMENT)) { ch = n; break; }
+                    node.components = [];
+                    node.component_names = [];
 
-                    if (ch) {
+                    let i = 0;
 
-                        if (ch && component.local_component_names.has(ch.tag)) {
+                    for (const n of node.nodes) {
+
+                        ch = n;
+
+                        if (!(n.type & WickASTNodeClass.HTML_ELEMENT)) { continue; }
+
+
+                        //Check for useif attribute
+                        for (const { name, value } of (n.attributes || [])) {
+
+                            if (name == "useif") {
+                                //create a useif binding for this object
+                                component.addBinding({
+                                    attribute_name: "useif",
+                                    binding_node: value,
+                                    host_node: node,
+                                    html_element_index: index,
+                                });
+                            }
+                        }
+
+                        if (!isPredefinedTag(ch.tag) && component.local_component_names.has(ch.tag)) {
 
                             const
                                 name = component.local_component_names.get(ch.tag),
@@ -313,22 +416,23 @@ loadHTMLHandlerInternal(
 
                             ch.child_id = component.children.push(1) - 1;
 
-                            node.component = comp;
+                            node.components.push(comp);
 
-                            node.component_name = comp.name;
+                            node.component_names.push(comp.name);
 
                         } else {
-                            const comp = await compileComponent(Object.assign({}, ch, { attributes: [] }), ch.tag, "auto_generated", presets, [], VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE);
+                            const comp = await compileComponent(Object.assign({}, ch, { attributes: [] }), ch.pos.slice(), "auto_generated", presets, []);
 
-                            node.component = comp;
+                            node.components.push(comp);
 
-                            node.component_name = comp.name;
+                            node.component_names.push(comp.name);
 
                             component.local_component_names.set(comp.name, comp.name);
 
                         }
-                    } else return;
+                    }
 
+                    console.log(node.component_names);
                     node.is_container = true;
 
                     node.container_id = component.container_count++;

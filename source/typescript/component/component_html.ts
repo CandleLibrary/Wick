@@ -17,8 +17,6 @@ function buildExportableDOMNode(
         is_container?: boolean;
     }): DOMLiteral {
 
-
-
     const node: DOMLiteral = <DOMLiteral>{ pos: ast.pos };
 
     node.tag_name = ast.tag || "";
@@ -36,6 +34,7 @@ function buildExportableDOMNode(
 
     if (ast.is_container) {
         node.is_container = true;
+        node.component_names = ast.component_names;
 
         if (node.tag_name == "CONTAINER")
             node.tag_name = "DIV";
@@ -84,6 +83,7 @@ async function loadHTMLImports(ast: WickASTNode, component: Component, presets: 
 
 export async function processWickHTML_AST(ast: WickASTNode, component: Component, presets: Presets): Promise<WickASTNode> {
     //Process the import list
+
     //@ts-ignore
     await loadHTMLImports(ast, component, presets);
 
