@@ -1,7 +1,24 @@
- import wick from "../build/library/wick.js";
+import wick from "../build/library/wick.js";
 import HTML from "@candlefw/html";
 
 //await HTML.polyfill();
+
+
+
+{
+    await wick.setPresets({});
+
+    const data = `var t = ("@#video").currentTime;
+
+
+    export default <div>
+        <div>(( t ))</div>
+        <video ontimeupdate="(( t = ('@#video').currentTime ))" id="video" src="180813_erev_shabbat.mp4" autoplay>Hello World</video>
+    </div >;`;
+
+    s(((await wick(data).pending).class_string == 2));
+
+}
 
 "@candlefw/wick test spec";
 "PARSER"; "#";
@@ -26,7 +43,7 @@ import HTML from "@candlefw/html";
     const HTMLcompFactory = await wick(data_html).pending;
 
 
-    s((JSXcompFactory.toString() == ""));
+    ((JSXcompFactory.toString() == ""));
     ((childJSXcompFactory.toString() == ""));
 
     const html_comp = HTMLcompFactory.createInstance;
