@@ -27,9 +27,16 @@ export const enum VARIABLE_REFERENCE_TYPE {
  *  - d: Referenced within a binding expression.  
  */
 export interface BindingVariable {
+    /* Name used for references within the component*/
     internal_name: string;
+
+    /* Name used to access the imported object */
     external_name: string;
+
+    /* Type of reference */
     type: VARIABLE_REFERENCE_TYPE;
+
+    /* */
     class_index: number;
     flags: DATA_FLOW_FLAG;
     pos: Lexer,
@@ -88,7 +95,7 @@ export interface FunctionFrame {
      * Extracted source AST for this function block
      */
     ast: MinTreeNode;
-    type: string;
+
     prev?: FunctionFrame;
 
     /**
@@ -179,11 +186,6 @@ export interface Component {
      */
     bindings: PendingBinding[],
 
-    ///**
-    // * The original syntax tree.
-    // */
-    //original_ast: MinTreeNode | WickASTNode;
-
     /**
      * The virtual DOM as described within a component with a .html extension or with a 
      */
@@ -257,3 +259,5 @@ export interface BindingHandler {
 
     prepareBindingObject(attribute_name: string, binding_node_ast: WickBindingNode, host_ast_node: WickASTNode, element_index: number, component: Component, presets?: Presets): BindingObject;
 }
+
+export * from "./js_handler.js";
