@@ -102,27 +102,31 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
 
         let html_node = node;
 
+        if (node.type == WickASTNodeType.HTMLText) {
+            const old_d = node.data;
+            node.data = node.data.replace(/[ \n]+/g, " ");
+            if (node.data == ' ') {
+                meta.replace(null);
+                continue;
+            }
+
+        }
+
         for (const handler of html_handlers[Math.max((node.type >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)]) {
 
-            const pending = handler.prepareHTMLNode(node, meta.parent, last_element, index, meta.skip, () => { }, component, presets);
-
-            let result = null;
-
-            if (pending instanceof Promise)
-                result = await pending;
-            else
-                result = pending;
+            const
+                pending = handler.prepareHTMLNode(node, meta.parent, last_element, index, meta.skip, () => { }, component, presets),
+                result = (pending instanceof Promise) ? await pending : pending;
 
             if (result != node) {
                 if (result === null || result) {
 
-                    html_node = result;
+                    html_node = <WickASTNode>result;
 
-                    meta.replace(result);
+                    meta.replace(<WickASTNode>result);
 
                     if (result === null)
                         continue main_loop;
-
                 } else
                     continue;
             }
@@ -137,8 +141,6 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
 
             last_element = html_node;
 
-
-
             for (const { node: attrib, meta: meta2 } of traverse(html_node, "attributes").skipRoot().makeMutable()) {
 
                 for (const handler of attribute_handlers) {
@@ -147,7 +149,8 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
                         attrib,
                         meta2.parent,
                         meta2.parent,
-                        index, () => { },
+                        index,
+                        () => { },
                         meta.replace,
                         component,
                         presets
@@ -157,10 +160,9 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
                         result = await result;
 
                     if (result != html_node) {
-
-                        if (result === null || result) {
+                        if (result === null || result)
                             meta2.mutate(result);
-                        } else
+                        else
                             continue;
                     }
 
@@ -171,6 +173,7 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
 
         //TODO - Plugin here for analyzing node structure for hinting / warning / errors.
     }
+
 
     if (receiver.ast)
         component.HTML = buildExportableDOMNode(receiver.ast);
