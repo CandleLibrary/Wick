@@ -102,14 +102,12 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
 
         let html_node = node;
 
-        if (node.type == WickASTNodeType.HTMLText) {
-            const old_d = node.data;
-            node.data = node.data.replace(/[ \n]+/g, " ");
-            if (node.data == ' ') {
+        if (html_node.type == WickASTNodeType.HTMLText) {
+            html_node.data = node.data.replace(/[ \n]+/g, " ");
+            if (html_node.data == ' ') {
                 meta.replace(null);
                 continue;
             }
-
         }
 
         for (const handler of html_handlers[Math.max((node.type >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)]) {
