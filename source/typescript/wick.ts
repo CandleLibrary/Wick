@@ -16,7 +16,7 @@ import {
     componentDataToClassString,
 } from "./component/component_data_to_js.js";
 import { componentDataToCSS } from "./component/component_data_to_css.js";
-import { Component } from "./types/types.js";
+import { Component, VARIABLE_REFERENCE_TYPE, BindingVariable } from "./types/types.js";
 import { DOMLiteral } from "./types/dom_literal.js";
 import { ExtendedComponent } from "./types/extended_component";
 import { componentDataToHTML } from "./component/component_data_to_html.js";
@@ -24,6 +24,7 @@ import parser from "./parser/parser.js";
 import { WickASTNodeType, WickASTNodeClass, WickASTNode } from "./types/wick_ast_node_types.js";
 import { renderers, format_rules } from "./format_rules.js";
 import { ObservableModel, ObservableWatcher } from "./types/observable_model.js";
+import { createNameHash } from "./component/component_create_hash_name.js";
 
 
 
@@ -172,20 +173,29 @@ interface wickOutput {
 
     WickRTComponent: typeof WickRTComponent;
 
+    componentDataToClassString: typeof componentDataToClassString,
+
+    componentDataToClass: typeof componentDataToJS,
+
     types: {
+        BindingVariable: BindingVariable,
+        MinTreeNode: MinTreeNode,
+        WickASTNode: WickASTNode,
+        CSSTreeNode: CSSTreeNode,
         MinTreeNodeType: typeof MinTreeNodeType;
         CSSTreeNodeType: typeof CSSTreeNodeType;
         WickASTNodeType: typeof WickASTNodeType;
         WickASTNodeClass: typeof WickASTNodeClass;
+        VARIABLE_REFERENCE_TYPE: typeof VARIABLE_REFERENCE_TYPE;
     };
 }
 
-
 Object.assign(wick, {
     parse: {
+        createNameHash: createNameHash,
         parser,
         render: (ast) => renderWithFormatting(ast, renderers, format_rules, (str, name, node: any): string => {
-            if (node.type == CSSTreeNodeType.Rule)
+            if (node.type == CSSTreeNodeType.Rule && name !== "@full_render")
                 return `{${Array.from((<CSSRuleNode>node).props.values()).map(n => n + "").join(";\n")}}`;
             return str;
         })
@@ -194,6 +204,7 @@ Object.assign(wick, {
     WickRTComponent,
     componentDataToHTML,
     componentDataToCSS,
+    componentDataToJSCached: componentDataToJSCached,
     componentDataToClass: componentDataToJS,
     componentDataToClassString,
     types: {
@@ -207,6 +218,7 @@ export default wick;
 
 export {
     ObservableModel,
+    createNameHash,
     ObservableWatcher,
     wick,
     wickOutput,
