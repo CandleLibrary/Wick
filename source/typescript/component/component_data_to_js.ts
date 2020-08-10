@@ -193,7 +193,8 @@ export function componentDataToClassString(component: Component, presets: Preset
 
         class_information.class_initializer_statements = re_stmts;
 
-        if (component.ERRORS === false) {
+        //Javascript Information.
+        if (component.ERRORS === false && component.root_frame) {
 
             // Cleanup Method
             const cleanup_element_method = getGenericMethodNode("cu", "", "const c = this;"),
@@ -254,6 +255,7 @@ export function componentDataToClassString(component: Component, presets: Preset
             }
         }
 
+        //HTML INFORMATION
         if (component.HTML && INCLUDE_HTML) {
 
             const ele_create_method = getGenericMethodNode("ce", "", "return this.me(a);"),
@@ -266,6 +268,8 @@ export function componentDataToClassString(component: Component, presets: Preset
             class_information.methods.push(ele_create_method);
         }
 
+
+        //CSS INFORMATION
         let style;
 
         if (INCLUDE_CSS && (style = componentDataToCSS(component))) {
