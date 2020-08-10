@@ -26,6 +26,12 @@ export default class Presets implements PresetOptions {
     };
 
 
+
+    document?: Document;
+
+    window?: Window;
+
+
     /**
      * Store for compiled components.
      * @private
@@ -65,6 +71,10 @@ export default class Presets implements PresetOptions {
             THROW_ON_ERRORS: false,
             cache_url: true
         };
+
+        this.window = typeof window != "undefined" ? window : <Window>{};
+
+        this.document = this.window.document;
 
         this.api = preset_options.api;
 
