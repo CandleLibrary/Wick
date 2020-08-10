@@ -25,6 +25,7 @@ import { WickASTNodeType, WickASTNodeClass, WickASTNode } from "./types/wick_ast
 import { renderers, format_rules } from "./format_rules.js";
 import { ObservableModel, ObservableWatcher } from "./types/observable_model.js";
 import { createNameHash } from "./component/component_create_hash_name.js";
+import { css_selector_helpers } from "./component/css_selector_helpers.js";
 
 
 
@@ -178,6 +179,7 @@ interface wickOutput {
     componentDataToClass: typeof componentDataToJS,
 
     types: {
+        DOMLiteral: DOMLiteral,
         BindingVariable: BindingVariable,
         MinTreeNode: MinTreeNode,
         WickASTNode: WickASTNode,
@@ -192,6 +194,7 @@ interface wickOutput {
 
 Object.assign(wick, {
     parse: {
+        css_selector_helpers: css_selector_helpers,
         createNameHash: createNameHash,
         parser,
         render: (ast) => renderWithFormatting(ast, renderers, format_rules, (str, name, node: any): string => {
@@ -200,6 +203,14 @@ Object.assign(wick, {
             return str;
         })
     },
+
+    css_selector_helpers,
+
+    types: {
+        MinTreeNodeType,
+        CSSTreeNodeType,
+        WickASTNodeType
+    },
     Presets,
     WickRTComponent,
     componentDataToHTML,
@@ -207,14 +218,11 @@ Object.assign(wick, {
     componentDataToJSCached: componentDataToJSCached,
     componentDataToClass: componentDataToJS,
     componentDataToClassString,
-    types: {
-        MinTreeNodeType,
-        CSSTreeNodeType,
-        WickASTNodeType,
-    }
 });
 
 export default wick;
+
+
 
 export {
     ObservableModel,
@@ -227,9 +235,20 @@ export {
     Component,
     WickRTComponent,
     WickRTComponent as RuntimeComponent,
-    DOMLiteral,
     componentDataToHTML,
     componentDataToCSS,
     componentDataToJS as componentDataToClass,
     componentDataToClassString,
+
+    //Types
+    DOMLiteral,
+    BindingVariable,
+    MinTreeNode,
+    WickASTNode,
+    CSSTreeNode,
+    MinTreeNodeType,
+    CSSTreeNodeType,
+    WickASTNodeType,
+    WickASTNodeClass,
+    VARIABLE_REFERENCE_TYPE
 };

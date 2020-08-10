@@ -6,7 +6,7 @@ import { BindingObject, BindingHandler, BindingType, DATA_FLOW_FLAG, VARIABLE_RE
 import { setVariableName } from "./component_set_component_variable.js";
 import { DOMLiteral } from "../wick.js";
 import { processFunctionDeclarationSync } from "./component_js.js";
-import { helper } from "./css_selector_helpers.js";
+import { css_selector_helpers } from "./css_selector_helpers.js";
 
 export const binding_handlers: BindingHandler[] = [];
 
@@ -695,7 +695,7 @@ loadBindingHandler({
     prepareBindingObject(attribute_name, pending_binding_node, host_node, element_index, component, presets) {
 
 
-        const nodes = matchAll<DOMLiteral>(pending_binding_node.value.slice(1), component.HTML, helper);
+        const nodes = matchAll<DOMLiteral>(pending_binding_node.value.slice(1), component.HTML, css_selector_helpers);
 
         if (nodes.length > 0) {
 

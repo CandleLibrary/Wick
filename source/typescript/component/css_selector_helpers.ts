@@ -1,10 +1,10 @@
 import { SelectionHelpers } from "@candlefw/css";
 import { DOMLiteral } from "../wick.js";
-export const helper: SelectionHelpers<DOMLiteral> = {
+export const css_selector_helpers: SelectionHelpers<DOMLiteral> = {
     getIndexFigures: (ele, tag) => ({ ele_index: 0, tag_index: 0 }),
     WQmatch: (ele, wq_selector) => wq_selector.val,
     getChildren: (ele) => (ele.children && ele.children.slice().map(e => Object.assign({}, e)).map(e => ((e.parent = ele), e))) || [],
-    getParent: (ele) => e.parent,
+    getParent: (ele) => ele.parent,
     hasAttribute: (ele, namespace, name, value, sym, modifier) => ele.attributes && ele.attributes
         .filter(([key]) => key == name)
         .filter(([, v]) => !value || v == value)
