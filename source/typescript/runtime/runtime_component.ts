@@ -76,9 +76,16 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     pup: typeof updateFromChild;
     ufp: typeof updateFromParent;
 
-    constructor(model = null, existing_element = null, wrapper = null, parent = null, default_model_name = "") {
+    _SCHD_: number;
 
-        const presets = rt.presets;
+    constructor(
+        model = null,
+        existing_element = null,
+        wrapper = null,
+        parent: WickRTComponent = null,
+        default_model_name = "",
+        presets = rt.presets,
+    ) {
 
         this.name = this.constructor.name;
 
@@ -104,16 +111,16 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.ufp = this.updateFromParent;
         this._SCHD_ = 0;
         this.polling_id = -1;
-        this.presets = rt.presets;
+        this.presets = presets;
 
-        this.par = parent;
-
+        if (parent) parent.addChild(this);
 
         if (existing_element)
             this.ele = <HTMLElement>this.ie(existing_element);
         else
             this.ele = this.ce();
 
+        //@ts-ignore
         this.ele.wick_component = this;
 
         this.re();
@@ -160,6 +167,11 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         if (this.wrapper)
             this.wrapper.destructor();
+
+        if (this.par)
+            this.par.removeChild(this);
+
+        this.removeCSS();
     }
 
     ce(): HTMLElement {
@@ -176,7 +188,19 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         }
     }
 
+    removeCSS() {
+        const cache = css_cache[this.name];
+        if (cache) {
+            cache.count--;
+            if (cache.count <= 0) {
+                cache.css_ele.parentElement.removeChild(cache.css_ele);
+                css_cache[this.name] = null;
+            }
+        }
+    }
+
     setCSS(style_string) {
+
         if (style_string) {
 
             if (!css_cache[this.name]) {
@@ -184,10 +208,13 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
                 css_ele.innerHTML = style_string;
 
-                document.head.appendChild(css_ele);
+                this.presets.document.head.appendChild(css_ele);
 
-                css_cache[this.name] = css_ele;
-            }
+                css_cache[this.name] = { css_ele, count: 1 };
+            } else
+                css_cache[this.name].count++;
+
+
 
             this.ele.classList.add(this.name);
         }
@@ -422,6 +449,23 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         for (const [call_id, args] of this.call_set.entries())
             this.lookup_function_table[call_id].call(this, ...args);
         this.clearActiveCalls();
+    }
+
+    removeChild(cp: WickRTComponent) {
+        if (cp.par == this) {
+            this.ch = this.ch.filter(c => c !== cp);
+            cp.par = null;
+        }
+    }
+
+
+    addChild(cp: WickRTComponent) {
+        for (const ch of this.ch)
+            if (ch == cp) continue;
+
+        cp.par = this;
+
+        this.ch.push(cp);
     }
 
     /* Abstract Functions */
