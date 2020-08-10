@@ -2,6 +2,8 @@ import { Lexer } from "@candlefw/wind";
 
 export interface DOMLiteral {
 
+    parent?: DOMLiteral,
+
     /**  Names space index id into the namespaces table. */
     namespace_id?: number;
 
