@@ -16,7 +16,7 @@ import {
     componentDataToClassString,
 } from "./component/component_data_to_js.js";
 import { componentDataToCSS } from "./component/component_data_to_css.js";
-import { Component, VARIABLE_REFERENCE_TYPE, BindingVariable } from "./types/types.js";
+import { Component, VARIABLE_REFERENCE_TYPE, BindingVariable, FunctionFrame, PendingBinding, DATA_FLOW_FLAG } from "./types/types.js";
 import { DOMLiteral } from "./types/dom_literal.js";
 import { ExtendedComponent } from "./types/extended_component";
 import { componentDataToHTML } from "./component/component_data_to_html.js";
@@ -222,8 +222,6 @@ Object.assign(wick, {
 
 export default wick;
 
-
-
 export {
     ObservableModel,
     createNameHash,
@@ -250,5 +248,8 @@ export {
     CSSTreeNodeType,
     WickASTNodeType,
     WickASTNodeClass,
-    VARIABLE_REFERENCE_TYPE
+    VARIABLE_REFERENCE_TYPE,
+    FunctionFrame,
+    PendingBinding,
+    DATA_FLOW_FLAG
 };
