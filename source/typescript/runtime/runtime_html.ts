@@ -181,6 +181,8 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
         for (const [name, value] of attributes)
             ele.setAttributeNS(name_space, name, value);
 
+    this.elu.push(ele);
+
     if (children)
         outer: for (const child of children) {
             if (child.slot_name) {
@@ -194,8 +196,6 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
 
             ele.appendChild(this.me(child, name_space));
         }
-
-    this.elu[i] = ele;
 
     return ele;
 }
