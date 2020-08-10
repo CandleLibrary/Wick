@@ -8,6 +8,9 @@ export const { format_rules } = buildFormatRules([{
     type: MinTreeNodeType.LexicalDeclaration,
     format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 15
 }, {
+    type: MinTreeNodeType.FromClause,
+    format_rule: $.OPTIONAL_SPACE
+}, {
     type: MinTreeNodeType.AssignmentExpression,
     format_rule: $.OPTIONAL_SPACE
 }, {
@@ -33,13 +36,19 @@ export const { format_rules } = buildFormatRules([{
     format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 5
 }, {
     type: MinTreeNodeType.Arguments,
-    format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT | $.MIN_LIST_ELE_LIMIT * 5
+    format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 5
 }, {
     type: MinTreeNodeType.FormalParameters,
-    format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT | $.MIN_LIST_ELE_LIMIT * 5
+    format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 5
 }, {
     type: MinTreeNodeType.ExpressionList,
-    format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT | $.MIN_LIST_ELE_LIMIT * 14
+    format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 14
+}, {
+    type: WickASTNodeType.HTML_DIV,
+    format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 14
+}, {
+    type: WickASTNodeType.HTML_P,
+    format_rule: $.INDENT * 2 | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 14
 }]);
 
 const definitions = [ /**/ /**/ ...MinTreeNodeDefinitions /**/,/**/...CSSTreeNodeDefinitions, ...[
@@ -359,17 +368,18 @@ const definitions = [ /**/ /**/ ...MinTreeNodeDefinitions /**/,/**/...CSSTreeNod
     {
         type: WickASTNodeType.HTMLAttribute,
         template_pattern: { default: "@name=\"@value\"", not_value: "@name" },
-        format_rule: 0
+    },
+    {
+        type: WickASTNodeType.HTML_Element,
+        template_pattern: "<@tagname @_attributes...%>^1@...%^0</@tagname>",
     },
     {
         type: WickASTNodeType.WickBinding,
         template_pattern: "(( @_primary_ast ))",
-        format_rule: 0
     },
     {
         type: WickASTNodeType.HTMLText,
         template_pattern: "@data",
-        format_rule: 0
     },
 ]];
 const renderers = buildRenderers(definitions, Object.assign({}, CSSTreeNodeType, WickASTNodeType, MinTreeNodeType));
