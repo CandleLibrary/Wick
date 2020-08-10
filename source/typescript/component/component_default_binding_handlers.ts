@@ -1,13 +1,21 @@
-import { MinTreeNodeType, exp, stmt, MinTreeNode, renderCompressed as js_render, renderCompressed } from "@candlefw/js";
+import { MinTreeNodeType, exp, stmt, MinTreeNode } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
+import { matchAll } from "@candlefw/css";
 
 import { BindingObject, BindingHandler, BindingType, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE, FunctionFrame, Component } from "../types/types.js";
 import { setVariableName } from "./component_set_component_variable.js";
-import { matchAll, SelectionHelpers } from "@candlefw/css";
 import { DOMLiteral } from "../wick.js";
-import { processFunctionDeclaration, processFunctionDeclarationSync } from "./component_js.js";
+import { processFunctionDeclarationSync } from "./component_js.js";
+import { helper } from "./css_selector_helpers.js";
 
 export const binding_handlers: BindingHandler[] = [];
+
+
+function setFrameAsBindingActive(frame: FunctionFrame, class_information) {
+    if (!frame.index)
+        frame.index = class_information.nlu_index++;
+}
+
 
 export function loadBindingHandler(handler: BindingHandler) {
     if (/*handler_meets_prerequisite*/ true) {
@@ -470,11 +478,6 @@ loadBindingHandler({
     }
 });
 
-function setFrameAsBindingActive(frame: FunctionFrame, class_information) {
-    if (!frame.index)
-        frame.index = class_information.nlu_index++;
-}
-
 /*********************************************
  *  ██████  ██████  ███    ██ ████████  █████  ██ ███    ██ ███████ ██████  
  * ██      ██    ██ ████   ██    ██    ██   ██ ██ ████   ██ ██      ██   ██ 
@@ -707,28 +710,3 @@ loadBindingHandler({
 });
 
 
-const helper: SelectionHelpers<DOMLiteral> = {
-    getIndexFigures: (ele, tag) => ({ ele_index: 0, tag_index: 0 }),
-    WQmatch: (ele, wq_selector) => wq_selector.val,
-    getChildren: (ele) => (ele.children && ele.children.slice().map(e => Object.assign({}, e)).map(e => ((e.parent = ele), e))) || [],
-    getParent: (ele) => e.parent,
-    hasAttribute: (ele, namespace, name, value, sym, modifier) =>
-        ele.attributes && ele.attributes
-            .filter(([key]) => key == name)
-            .filter(([, v]) => !value || v == value)
-            .length > 0,
-    hasClass: (ele, class_) =>
-        ele.attributes && ele.attributes
-            .filter(([key]) => key == "class")
-            .filter(([, v]) => v == class_)
-            .length > 0,
-    hasID: (ele, id) =>
-        ele.attributes && ele.attributes
-            .filter(([key]) => key == "id")
-            .filter(([, v]) => v == id)
-            .length > 0,
-    hasPseudoClass: (ele, id, val) => false,
-    hasPseudoElement: (ele, id, val) => false,
-    hasType: (ele, namespace, type) => ele.tag_name &&
-        ele.tag_name.toUpperCase() == type.toUpperCase()
-};
