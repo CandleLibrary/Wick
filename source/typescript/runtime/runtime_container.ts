@@ -80,6 +80,7 @@ export class WickContainer implements Sparky {
     filters: any[];
 
     comp_constructors: typeof WickRTComponent[];
+    comp_attributes: [string, string][][];
 
     evaluators: ((m: any) => boolean)[];
 
@@ -108,11 +109,14 @@ export class WickContainer implements Sparky {
 
     constructor(
         component_constructors: typeof RuntimeComponent[],
+        component_attributes: [string, string][][],
         element: HTMLElement,
         parent_comp: RuntimeComponent
     ) {
 
         this.ele = element;
+        this.comp_constructors = component_constructors;
+        this.comp_attributes = component_attributes;
 
         this.activeComps = [];
         this.dom_comp = [];
@@ -132,7 +136,6 @@ export class WickContainer implements Sparky {
 
 
         this.observering = null;
-        this.comp_constructors = component_constructors;
         this.trs_ascending = null;
         this.trs_descending = null;
 
@@ -755,8 +758,20 @@ export class WickContainer implements Sparky {
                 const evaluator = this.evaluators[j];
 
                 if (j == cstr_l - 1 || (evaluator && evaluator(item))) {
+
                     component = <ContainerComponent>new this.comp_constructors[j](item);
+
+                    const attrib_list = this.comp_attributes[j];
+
+                    for (const [key, value] of attrib_list) {
+                        if (key == "class")
+                            component.ele.classList.add(...value.split(" "));
+                        else
+                            component.ele.setAttribute(key, value);
+                    }
+
                     component.container_model = item;
+
                     break;
                 }
             }

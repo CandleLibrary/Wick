@@ -143,9 +143,7 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
         children: children,
         data: data,
         is_container: ct,
-        component_name: component_name,
-        component_names: component_names,
-        slot_name: slot_name
+        component_name: component_name
     } = ele_obj;
 
     if (name_space_index) name_space = getNameSpace(name_space_index);
@@ -154,13 +152,18 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
 
     if (ct) {
 
-        const comp_constructors = component_names.map(name => (<Presets>this.presets).component_class.get(name));
+        const
+            { component_attribs, component_names } = <ContainerDomLiteral>ele_obj,
+            comp_constructors = component_names.map(name => (<Presets>this.presets).component_class.get(name));
 
-        if (comp_constructors.length < 1) throw new Error(`Could not find component class for ${component_name} in component ${this.name}`);
+        if (comp_constructors.length < 1)
+            throw new Error(`Could not find component class for ${component_name} in component ${this.name}`);
 
         ele = <HTMLElement>createElementNameSpaced(tag_name, name_space, data);
 
-        const ctr = new WickContainer(comp_constructors, ele, this);
+        console.log(component_attribs);
+
+        const ctr = new WickContainer(comp_constructors, component_attribs, ele, this);
 
         this.ct.push(ctr);
 
@@ -168,7 +171,8 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
 
         const comp_constructor = this.presets.component_class.get(component_name);
 
-        if (!comp_constructor) throw new Error(`Could not find component class for ${component_name} in component ${this.name}`);
+        if (!comp_constructor)
+            throw new Error(`Could not find component class for ${component_name} in component ${this.name}`);
 
         //Do fancy component linking
 

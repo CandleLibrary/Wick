@@ -30,11 +30,17 @@ function buildExportableDOMNode(
     }
 
     if (ast.is_container) {
-        node.is_container = true;
-        node.component_names = ast.component_names;
 
-        if (node.tag_name == "CONTAINER")
-            node.tag_name = "DIV";
+        const
+            ctr = <ContainerDomLiteral>node,
+            ctr_ast = <WickContainerASTNode>ast;
+
+        ctr.is_container = true;
+        ctr.component_names = ctr_ast.component_names;
+        ctr.component_attribs = ctr_ast.component_attributes;
+
+        if (ctr.tag_name == "CONTAINER")
+            ctr.tag_name = "DIV";
     }
 
     if (ast.attributes && ast.attributes.length > 0) {
@@ -100,8 +106,11 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
         let html_node = node;
 
         if (html_node.type == WickASTNodeType.HTMLText) {
-            html_node.data = node.data.replace(/[ \n]+/g, " ");
-            if (html_node.data == ' ') {
+            const text = <WickTextNode>html_node;
+
+            text.data = (<string>text.data).replace(/[ \n]+/g, " ");
+
+            if (text.data == ' ') {
                 meta.replace(null);
                 continue;
             }
