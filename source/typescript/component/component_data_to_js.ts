@@ -1,14 +1,15 @@
 import { MinTreeNodeType, MinTreeNode, exp, stmt } from "@candlefw/js";
-import { renderWithFormatting } from "@candlefw/conflagrate";
+import { renderWithFormatting, copy } from "@candlefw/conflagrate";
 
 import Presets from "../presets.js";
 import { processBindings } from "./component_process_bindings.js";
 import { Component, FunctionFrame, VARIABLE_REFERENCE_TYPE, } from "../types/types";
 import { getPropertyAST, getGenericMethodNode } from "./component_js_ast_tools.js";
-import { setVariableName } from "./component_set_component_variable.js";
+import { getComponentVariableName } from "./component_set_component_variable.js";
 import { renderers, format_rules } from "../format_rules.js";
 import { WickRTComponent } from "../runtime/runtime_component.js";
 import { componentDataToCSS } from "./component_data_to_css.js";
+import { createErrorComponent } from "./component.js";
 
 
 function registerActivatedFrameMethod(frame: FunctionFrame, class_information) {
@@ -29,12 +30,20 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
 
     if (ast) {
 
+
         const updated_names = new Set();
 
-        for (const { index, node, parent } of frame.binding_ref_identifiers)
-            parent.nodes[index] = exp(setVariableName(node.value, component));
+        for (const { index, node: { pos, value: name }, parent } of frame.binding_ref_identifiers) {
+            if (!component.root_frame.binding_type.has(<string>name))
+                throw pos.errorMessage(`Undefined reference to ${name}`);
 
-        ast.type = MinTreeNodeType.Method;
+            parent.nodes[index] = exp(getComponentVariableName(name, component));
+        }
+
+
+        const cpy = copy(ast);
+
+        cpy.type = MinTreeNodeType.Method;
 
         if (!frame.IS_ROOT) {
 
@@ -45,23 +54,24 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
                         = component.root_frame.binding_type.get(name);
 
                     if (type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE)
-                        ast.nodes[2].nodes.push(exp(`this.u${class_index}(this[${class_index}])`));
+                        cpy.nodes[2].nodes.push(stmt(`this.u${class_index}(this[${class_index}]);`));
+
                 }
 
 
             if (frame.index != undefined)
-                ast.nodes[0].value = `f${frame.index}`;
+                cpy.nodes[0].value = `f${frame.index}`;
 
-            ast.function_type = "method";
+            cpy.function_type = "method";
         } else
-            ast.function_type = "root";
+            cpy.function_type = "root";
 
         switch (frame.IS_ROOT) {
             case true:
-                class_information.binding_init_statements.push(...ast.nodes);
+                class_information.binding_init_statements.push(...cpy.nodes.filter(n => n.type != MinTreeNodeType.EmptyStatement));
                 break;
             default:
-                class_information.methods.push(ast);
+                class_information.methods.push(cpy);
         }
     }
 }
@@ -119,7 +129,7 @@ export function componentDataToClassString(component: Component, presets: Preset
         const
             component_class = stmt(`class ${component.name || "temp"} extends cfw.wick.rt.C {constructor(m,e,p,w){super(m,e,p,w,"${component.global_model || ""}");}}`),
             binding_values_init_method = getGenericMethodNode("c", "", ";"),
-            register_elements_method = getGenericMethodNode("re", "", "const c = this;"),
+            register_elements_method = getGenericMethodNode("re", "c", ";"),
             [, , { nodes: bi_stmts }] = binding_values_init_method.nodes,
             [, , { nodes: re_stmts }] = register_elements_method.nodes,
             class_information = {
@@ -136,6 +146,7 @@ export function componentDataToClassString(component: Component, presets: Preset
         if (!component.global_model)
             component_class.nodes.length = 2;
 
+        re_stmts.length = 0;
         bi_stmts.length = 0;
 
         //Javascript Information.
@@ -156,8 +167,11 @@ export function componentDataToClassString(component: Component, presets: Preset
                 comp_var.class_index = class_information.nlu_index;
 
                 const { nlu_index } = class_information,
-                    { external_name, flags, class_index, internal_name } = comp_var,
+                    { external_name, flags, class_index, internal_name, type } = comp_var,
                     nluf_array = exp(`c.u${class_index}`);
+
+                if (type & VARIABLE_REFERENCE_TYPE.DIRECT_ACCESS)
+                    continue;
 
                 lu_public_variables.nodes.push(getPropertyAST(external_name, ((flags << 24) | nlu_index) + ""));
 
@@ -172,10 +186,11 @@ export function componentDataToClassString(component: Component, presets: Preset
 
             processBindings(component, class_information, presets);
 
-            class_information.class_initializer_statements.push(nlu, nluf);
+            class_information.class_initializer_statements.unshift(nlu, nluf);
 
-            for (const function_block of component.frames)
+            for (const function_block of component.frames) {
                 makeComponentMethod(function_block, component, class_information);
+            }
         }
 
         //HTML INFORMATION
@@ -208,6 +223,8 @@ export function componentDataToClassString(component: Component, presets: Preset
         return renderWithFormatting(class_information.compiled_ast, renderers, format_rules) + `\n/* ${component.location} */\n`;
 
     } catch (e) {
-        console.warn(`Error found in component ${component.name} while converting to a class. location: ${component.location}.`, e);
+        console.warn(`Error found in component ${component.name} while converting to a class. location: ${component.location}.`);
+        console.error(e);
+        return componentDataToClassString(createErrorComponent([e], component.source, component.location + "", component), presets);
     }
 }
