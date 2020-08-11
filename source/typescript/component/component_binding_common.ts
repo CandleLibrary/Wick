@@ -1,6 +1,7 @@
-import { MinTreeNode } from "@candlefw/js";
+import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
 
 import { FunctionFrame, BindingVariable, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
+import { traverse } from "@candlefw/conflagrate";
 
 function getNonTempFrame(frame: FunctionFrame) {
     while (frame && frame.IS_TEMP_CLOSURE)
@@ -14,26 +15,39 @@ function getRootFrame(frame: FunctionFrame) {
     return frame;
 }
 
-export function addNodeToBindingIdentifiers(node: MinTreeNode, parent: MinTreeNode, frame: FunctionFrame) {
+export function addNodeToBindingIdentifiers(n: MinTreeNode, p: MinTreeNode, frame: FunctionFrame) {
 
-    // Check to see if node has already been assigned
-    // as could be the case if a parent node has been 
-    // processed in full before focus has reached the 
-    // child node
+    for (const { node, meta: { parent: par } } of traverse(n, "nodes")
+        .filter("type", MinTreeNodeType.IdentifierReference, MinTreeNodeType.IdentifierBinding)
+    ) {
+        // Check to see if node has already been assigned
+        // as could be the case if a parent node has been 
+        // processed in full before focus has reached the 
+        // child node
 
-    for (const bi of getNonTempFrame(frame).binding_ref_identifiers) {
-        if (bi.node == node) return;
+
+        for (const bi of getNonTempFrame(frame).binding_ref_identifiers)
+            if (bi.node == node) return;
+
+        const parent = par || p;
+
+        getNonTempFrame(frame)
+            .binding_ref_identifiers.push({
+                node,
+                parent,
+                index: parent.nodes.indexOf(node)
+            });
+
+        return;
     }
 
-    getNonTempFrame(frame)
-        .binding_ref_identifiers.push({
-            node,
-            parent,
-            index: parent.nodes.indexOf(node)
-        });
+    throw new Error(`Missing reference in express ${p.pos.slice()}`);
 }
 
 export function isVariableDeclared(var_name: string, frame: FunctionFrame): boolean {
+
+    if (typeof var_name !== "string") throw new Error("[var_name] must be a string.");
+
     if (frame.declared_variables.has(var_name))
         return true;
     else if (frame.prev)
@@ -43,10 +57,16 @@ export function isVariableDeclared(var_name: string, frame: FunctionFrame): bool
 }
 
 export function addNameToDeclaredVariables(var_name: string, frame: FunctionFrame) {
+
+    if (typeof var_name !== "string") throw new Error("[var_name] must be a string.");
+
     frame.declared_variables.add(var_name);
 }
 
 export function addWrittenBindingVariableName(var_name: string, frame: FunctionFrame) {
+
+    if (typeof var_name !== "string") throw new Error("[var_name] must be a string.");
+
     const root = getRootFrame(frame);
 
     if (root.binding_type.has(var_name))
@@ -57,6 +77,8 @@ export function addWrittenBindingVariableName(var_name: string, frame: FunctionF
 
 export function addReadBindingVariableName(var_name: string, frame: FunctionFrame) {
 
+    if (typeof var_name !== "string") throw new Error("[var_name] must be a string.");
+
     //Return if this name has been assigned before being read.
     if (frame.output_names.has(var_name)) return;
 
@@ -64,6 +86,9 @@ export function addReadBindingVariableName(var_name: string, frame: FunctionFram
 }
 
 export function isBindingVariable(var_name: string, frame: FunctionFrame) {
+
+    if (typeof var_name !== "string") throw new Error("[var_name] must be a string.");
+
     return getRootFrame(frame).binding_type.has(var_name);
 }
 
@@ -83,6 +108,9 @@ export function addBindingVariable(binding_var: BindingVariable, frame: Function
  * @param frame 
  */
 export function addBindingVariableFlag(binding_var_name: string, flag: DATA_FLOW_FLAG, frame: FunctionFrame): boolean {
+
+    if (typeof binding_var_name !== "string") throw new Error("[binding_var_name] must be a string.");
+
     const root = getRootFrame(frame);
     if (root.binding_type.has(binding_var_name)) {
         root.binding_type.get(binding_var_name).flags != flag;

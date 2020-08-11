@@ -1,25 +1,27 @@
-import { stmt, MinTreeNodeType, MinTreeNode, exp } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
-
-import { WICK_AST_NODE_TYPE_SIZE, WickASTNodeClass, WickASTNode, WickASTNodeType, WickBindingNode } from "../types/wick_ast_node_types.js";
+import { exp, MinTreeNode, MinTreeNodeType, stmt } from "@candlefw/js";
 import { JSHandler } from "../types/js_handler.js";
-import { processFunctionDeclaration, processNodeSync } from "./component_js.js";
-import { processWickHTML_AST } from "./component_html.js";
-import { processWickCSS_AST } from "./component_css.js";
-import { importResource } from "./component_common.js";
-import { VARIABLE_REFERENCE_TYPE, DATA_FLOW_FLAG, Component } from "../types/types.js";
+import { Component, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
+import { WickASTNode, WickASTNodeClass, WickASTNodeType, WickBindingNode, WICK_AST_NODE_TYPE_SIZE } from "../types/wick_ast_node_types.js";
 import {
     addBindingVariable,
-    addNodeToBindingIdentifiers,
-    addWrittenBindingVariableName,
-    addNameToDeclaredVariables,
-    isVariableDeclared,
-    addReadBindingVariableName,
-    isBindingVariable,
-    addBindingVariableFlag
+    addBindingVariableFlag, addNameToDeclaredVariables, addNodeToBindingIdentifiers,
+    addReadBindingVariableName, addWrittenBindingVariableName,
+    isBindingVariable, isVariableDeclared
 } from "./component_binding_common.js";
+import { getFirstReferenceName, importResource } from "./component_common.js";
+import { processWickCSS_AST } from "./component_css.js";
+import { processWickHTML_AST } from "./component_html.js";
+import { processFunctionDeclaration, processNodeSync } from "./component_js.js";
 
 
+export function findFirstNodeOfType(type: MinTreeNodeType, ast: MinTreeNode) {
+
+    for (const { node } of traverse(ast, "nodes"))
+        if (node.type == type) return node;
+
+    return null;
+};
 
 const default_handler = {
     priority: -Infinity,
@@ -53,8 +55,8 @@ export function loadJSHandler(handler: JSHandler, ...types: MinTreeNodeType[]) {
 
 function addBinding(
     attribute_name: string,
-    binding_node: MinTreeNode | WickASTNode,
-    host_node: MinTreeNode | WickASTNode,
+    binding_node: MinTreeNode,
+    host_node: MinTreeNode,
     html_element_index: number,
     component: Component) {
     component.bindings.push({
@@ -65,7 +67,20 @@ function addBinding(
     });
 }
 
-
+/*
+██ ███    ███ ██████   ██████  ██████  ████████                                        
+██ ████  ████ ██   ██ ██    ██ ██   ██    ██                                           
+██ ██ ████ ██ ██████  ██    ██ ██████     ██                                           
+██ ██  ██  ██ ██      ██    ██ ██   ██    ██                                           
+██ ██      ██ ██       ██████  ██   ██    ██                                           
+                                                                                       
+                                                                                       
+██████  ███████  ██████ ██       █████  ██████   █████  ████████ ██  ██████  ███    ██ 
+██   ██ ██      ██      ██      ██   ██ ██   ██ ██   ██    ██    ██ ██    ██ ████   ██ 
+██   ██ █████   ██      ██      ███████ ██████  ███████    ██    ██ ██    ██ ██ ██  ██ 
+██   ██ ██      ██      ██      ██   ██ ██   ██ ██   ██    ██    ██ ██    ██ ██  ██ ██ 
+██████  ███████  ██████ ███████ ██   ██ ██   ██ ██   ██    ██    ██  ██████  ██   ████ 
+*/
 // ###################################################################
 // IMPORTS
 //
@@ -131,7 +146,20 @@ loadJSHandlerInternal(
         }
     }, MinTreeNodeType.ImportDeclaration
 );
-
+/*
+███████ ██   ██ ██████   ██████  ██████  ████████                                      
+██       ██ ██  ██   ██ ██    ██ ██   ██    ██                                         
+█████     ███   ██████  ██    ██ ██████     ██                                         
+██       ██ ██  ██      ██    ██ ██   ██    ██                                         
+███████ ██   ██ ██       ██████  ██   ██    ██                                         
+                                                                                       
+                                                                                       
+██████  ███████  ██████ ██       █████  ██████   █████  ████████ ██  ██████  ███    ██ 
+██   ██ ██      ██      ██      ██   ██ ██   ██ ██   ██    ██    ██ ██    ██ ████   ██ 
+██   ██ █████   ██      ██      ███████ ██████  ███████    ██    ██ ██    ██ ██ ██  ██ 
+██   ██ ██      ██      ██      ██   ██ ██   ██ ██   ██    ██    ██ ██    ██ ██  ██ ██ 
+██████  ███████  ██████ ███████ ██   ██ ██   ██ ██   ██    ██    ██  ██████  ██   ████ 
+*/
 // ###################################################################
 // EXPORTS
 //
@@ -173,6 +201,20 @@ loadJSHandlerInternal(
     }, MinTreeNodeType.ExportDeclaration
 );
 
+/*
+██    ██  █████  ██████  ██  █████  ██████  ██      ███████                     
+██    ██ ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██                          
+██    ██ ███████ ██████  ██ ███████ ██████  ██      █████                       
+ ██  ██  ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██                          
+  ████   ██   ██ ██   ██ ██ ██   ██ ██████  ███████ ███████                     
+                                                                                
+                                                                                
+███████ ████████  █████  ████████ ███████ ███    ███ ███████ ███    ██ ████████ 
+██         ██    ██   ██    ██    ██      ████  ████ ██      ████   ██    ██    
+███████    ██    ███████    ██    █████   ██ ████ ██ █████   ██ ██  ██    ██    
+     ██    ██    ██   ██    ██    ██      ██  ██  ██ ██      ██  ██ ██    ██    
+███████    ██    ██   ██    ██    ███████ ██      ██ ███████ ██   ████    ██    
+*/
 // ###################################################################
 // COMPONENT SCOPE VARIABLES
 //
@@ -184,7 +226,7 @@ loadJSHandlerInternal(
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
-            node = processNodeSync(node, frame, component, presets);
+            node = processNodeSync(<MinTreeNode>node, frame, component, presets);
 
             const
                 n = stmt("a,a;"),
@@ -199,9 +241,9 @@ loadJSHandlerInternal(
             ) {
                 if (binding.type == MinTreeNodeType.BindingExpression) {
 
-                    const [identifier] = binding.nodes;
-
-                    const l_name = <string>identifier.value;
+                    const
+                        [identifier] = binding.nodes,
+                        l_name = <string>identifier.value;
 
                     if (frame.IS_ROOT) {
 
@@ -237,6 +279,13 @@ loadJSHandlerInternal(
     }, MinTreeNodeType.VariableStatement
 );
 
+/*
+██      ███████ ██   ██ ██  ██████  █████  ██      
+██      ██       ██ ██  ██ ██      ██   ██ ██      
+██      █████     ███   ██ ██      ███████ ██      
+██      ██       ██ ██  ██ ██      ██   ██ ██      
+███████ ███████ ██   ██ ██  ██████ ██   ██ ███████ 
+*/
 // These variables are accessible by all bindings within the components
 // scope. 
 loadJSHandlerInternal(
@@ -247,7 +296,10 @@ loadJSHandlerInternal(
 
             //Add all elements to global 
             for (const { node: binding, meta } of traverse(node, "nodes", 4)
-                .filter("type", MinTreeNodeType.IdentifierBinding, MinTreeNodeType.BindingExpression)
+                .filter("type",
+                    MinTreeNodeType.IdentifierBinding,
+                    MinTreeNodeType.BindingExpression
+                )
             ) {
                 if (binding.type == MinTreeNodeType.BindingExpression) {
 
@@ -257,13 +309,26 @@ loadJSHandlerInternal(
 
                     addNameToDeclaredVariables(l_name, frame);
                 } else {
-                    addNameToDeclaredVariables(<string>node.value, frame);
+                    addNameToDeclaredVariables(<string>binding.value, frame);
                 }
             }
         }
     }, MinTreeNodeType.LexicalDeclaration, MinTreeNodeType.LexicalBinding
 );
-
+/*
+ ██████  █████  ██      ██                                                    
+██      ██   ██ ██      ██                                                    
+██      ███████ ██      ██                                                    
+██      ██   ██ ██      ██                                                    
+ ██████ ██   ██ ███████ ███████                                               
+                                                                              
+                                                                              
+███████ ██   ██ ██████  ██████  ███████ ███████ ███████ ██  ██████  ███    ██ 
+██       ██ ██  ██   ██ ██   ██ ██      ██      ██      ██ ██    ██ ████   ██ 
+█████     ███   ██████  ██████  █████   ███████ ███████ ██ ██    ██ ██ ██  ██ 
+██       ██ ██  ██      ██   ██ ██           ██      ██ ██ ██    ██ ██  ██ ██ 
+███████ ██   ██ ██      ██   ██ ███████ ███████ ███████ ██  ██████  ██   ████ 
+*/
 // ###################################################################
 // Call Expression Identifiers
 //
@@ -274,8 +339,10 @@ loadJSHandlerInternal(
         priority: 1,
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
-            const [id] = node.nodes,
-                name = <string>id.value;
+
+            const
+                [id] = node.nodes,
+                name = <string>getFirstReferenceName(<MinTreeNode>id);//.value;
 
             if (!isVariableDeclared(name, frame)
                 && isBindingVariable(name, frame)) {
@@ -285,7 +352,7 @@ loadJSHandlerInternal(
                     <MinTreeNode>node,
                     frame);
 
-                addReadBindingVariableName(id, frame);
+                addReadBindingVariableName(name, frame);
 
                 skip(1);
             }
@@ -295,6 +362,21 @@ loadJSHandlerInternal(
     }, MinTreeNodeType.CallExpression
 );
 
+
+/*
+███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██                      
+██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██                      
+█████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██                      
+██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██                      
+██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████                      
+                                                                                       
+                                                                                       
+██████  ███████  ██████ ██       █████  ██████   █████  ████████ ██  ██████  ███    ██ 
+██   ██ ██      ██      ██      ██   ██ ██   ██ ██   ██    ██    ██ ██    ██ ████   ██ 
+██   ██ █████   ██      ██      ███████ ██████  ███████    ██    ██ ██    ██ ██ ██  ██ 
+██   ██ ██      ██      ██      ██   ██ ██   ██ ██   ██    ██    ██ ██    ██ ██  ██ ██ 
+██████  ███████  ██████ ███████ ██   ██ ██   ██ ██   ██    ██    ██  ██████  ██   ████                                                                                      
+*/
 // ###################################################################
 // Function Declaration
 // 
@@ -352,7 +434,8 @@ loadJSHandlerInternal(
                         external_name: name,
                         class_index: -1,
                         type: VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE,
-                        flags: 0
+                        flags: 0,
+                        pos: node.pos
                     }, frame);
                 }
 
@@ -387,6 +470,20 @@ loadJSHandlerInternal(
 );
 
 
+/*
+██ ██████  ███████ ███    ██ ████████ ██ ███████ ██ ███████ ██████        
+██ ██   ██ ██      ████   ██    ██    ██ ██      ██ ██      ██   ██       
+██ ██   ██ █████   ██ ██  ██    ██    ██ █████   ██ █████   ██████        
+██ ██   ██ ██      ██  ██ ██    ██    ██ ██      ██ ██      ██   ██       
+██ ██████  ███████ ██   ████    ██    ██ ██      ██ ███████ ██   ██       
+                                                                          
+                                                                          
+██████  ███████ ███████ ███████ ██████  ███████ ███    ██  ██████ ███████ 
+██   ██ ██      ██      ██      ██   ██ ██      ████   ██ ██      ██      
+██████  █████   █████   █████   ██████  █████   ██ ██  ██ ██      █████   
+██   ██ ██      ██      ██      ██   ██ ██      ██  ██ ██ ██      ██      
+██   ██ ███████ ██      ███████ ██   ██ ███████ ██   ████  ██████ ███████ 
+*/
 loadJSHandlerInternal(
     {
         priority: 1,
@@ -411,6 +508,21 @@ loadJSHandlerInternal(
     }, MinTreeNodeType.IdentifierReference
 );
 
+
+/*
+ █████  ███████ ███████ ██  ██████  ███    ██ ███████ ███    ███ ███████ ███    ██ ████████ 
+██   ██ ██      ██      ██ ██       ████   ██ ██      ████  ████ ██      ████   ██    ██    
+███████ ███████ ███████ ██ ██   ███ ██ ██  ██ █████   ██ ████ ██ █████   ██ ██  ██    ██    
+██   ██      ██      ██ ██ ██    ██ ██  ██ ██ ██      ██  ██  ██ ██      ██  ██ ██    ██    
+██   ██ ███████ ███████ ██  ██████  ██   ████ ███████ ██      ██ ███████ ██   ████    ██    
+                                                                                            
+                                                                                            
+███████ ██   ██ ██████  ██████  ███████ ███████ ███████ ███████ ██  ██████  ███    ██       
+██       ██ ██  ██   ██ ██   ██ ██      ██      ██      ██      ██ ██    ██ ████   ██       
+█████     ███   ██████  ██████  █████   ███████ ███████ ███████ ██ ██    ██ ██ ██  ██       
+██       ██ ██  ██      ██   ██ ██           ██      ██      ██ ██ ██    ██ ██  ██ ██       
+███████ ██   ██ ██      ██   ██ ███████ ███████ ███████ ███████ ██  ██████  ██   ████
+*/
 loadJSHandlerInternal(
     {
         priority: 1,
@@ -437,17 +549,20 @@ loadJSHandlerInternal(
     }, MinTreeNodeType.AssignmentExpression
 );
 
-function findFirstNodeOfType(type: MinTreeNodeType, ast: MinTreeNode) {
-
-    for (const { node } of traverse(ast, "nodes")) {
-        if (node.type == type) return node;
-    }
-
-    return null;
-};
-
-
-// ###################################################################
+/*
+███████ ██   ██ ██████  ██████  ███████ ███████ ███████ ██  ██████  ███    ██     
+██       ██ ██  ██   ██ ██   ██ ██      ██      ██      ██ ██    ██ ████   ██     
+█████     ███   ██████  ██████  █████   ███████ ███████ ██ ██    ██ ██ ██  ██     
+██       ██ ██  ██      ██   ██ ██           ██      ██ ██ ██    ██ ██  ██ ██     
+███████ ██   ██ ██      ██   ██ ███████ ███████ ███████ ██  ██████  ██   ████     
+                                                                                  
+                                                                                  
+███████ ████████  █████  ████████ ███████ ███    ███ ███████ ███    ██ ████████   
+██         ██    ██   ██    ██    ██      ████  ████ ██      ████   ██    ██      
+███████    ██    ███████    ██    █████   ██ ████ ██ █████   ██ ██  ██    ██      
+     ██    ██    ██   ██    ██    ██      ██  ██  ██ ██      ██  ██ ██    ██      
+███████    ██    ██   ██    ██    ███████ ██      ██ ███████ ██   ████    ██      
+*/
 // Naked Style Element. Styles whole component.
 loadJSHandlerInternal(
     {
@@ -497,8 +612,13 @@ loadJSHandlerInternal(
     }, MinTreeNodeType.ExpressionStatement
 );
 
-
-// ###################################################################
+/*
+███████ ████████ ██████  ██ ███    ██  ██████  
+██         ██    ██   ██ ██ ████   ██ ██       
+███████    ██    ██████  ██ ██ ██  ██ ██   ███ 
+     ██    ██    ██   ██ ██ ██  ██ ██ ██    ██ 
+███████    ██    ██   ██ ██ ██   ████  ██████                                              
+*/
 // String with identifiers for HTML Elements. 
 loadJSHandlerInternal(
     {

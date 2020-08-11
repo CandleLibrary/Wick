@@ -126,7 +126,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.re();
 
         //Create or assign global model whose name matches the default_model_name;
-        if (default_model_name && !model) {
+        if (default_model_name) {
             if (!presets.models[default_model_name])
                 presets.models[default_model_name] = {};
             model = presets.models[default_model_name];

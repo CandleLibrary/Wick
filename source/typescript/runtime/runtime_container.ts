@@ -21,7 +21,7 @@ function createTransition(val?: boolean) {
     else return cfw.glow.createTransition(val);
 }
 
-type ContainerComponent = WickRTComponent & { index: number; model: any; _TRANSITION_STATE_: boolean; par: ContainerComponent; };
+type ContainerComponent = WickRTComponent & { index: number; container_model: any; _TRANSITION_STATE_: boolean; par: ContainerComponent; };
 
 /**
  * ScopeContainer provide the mechanisms for dealing with lists and sets of components. 
@@ -689,19 +689,19 @@ export class WickContainer implements Sparky {
                 out = [];
 
             for (let i = 0, l = this.activeComps.length; i < l; i++)
-                if (exists.has(this.activeComps[i].model))
-                    exists.set(this.activeComps[i].model, false);
+                if (exists.has(this.activeComps[i].container_model))
+                    exists.set(this.activeComps[i].container_model, false);
 
 
             for (let i = 0, l = this.comps.length; i < l; i++)
-                if (!exists.has(this.comps[i].model)) {
+                if (!exists.has(this.comps[i].container_model)) {
                     this.comps[i].transitionOut(transition, true, "dismounting");
                     this.comps[i].index = -1;
                     this.comps.splice(i, 1);
                     l--;
                     i--;
                 } else
-                    exists.set(this.comps[i].model, false);
+                    exists.set(this.comps[i].container_model, false);
 
             exists.forEach((v, k) => { if (v) out.push(k); });
 
@@ -752,18 +752,13 @@ export class WickContainer implements Sparky {
 
             for (let j = 0; j < cstr_l; j++) {
 
-                if (j == cstr_l - 1) {
-                    component = <ContainerComponent>new this.comp_constructors[j](item);
-                    break;
-                }
-
                 const evaluator = this.evaluators[j];
 
-                if (evaluator && evaluator(item)) {
+                if (j == cstr_l - 1 || (evaluator && evaluator(item))) {
                     component = <ContainerComponent>new this.comp_constructors[j](item);
+                    component.container_model = item;
                     break;
                 }
-
             }
 
             component.par = <ContainerComponent>this.parent;

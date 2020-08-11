@@ -1,10 +1,10 @@
-import { MinTreeNodeType, exp, stmt, MinTreeNode } from "@candlefw/js";
+import { MinTreeNodeType, exp, stmt, MinTreeNode, renderCompressed } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 import { matchAll } from "@candlefw/css";
 
 import { BindingObject, BindingHandler, BindingType, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE, FunctionFrame, Component } from "../types/types.js";
 import { setVariableName } from "./component_set_component_variable.js";
-import { DOMLiteral } from "../wick.js";
+import { DOMLiteral, WickASTNodeClass } from "../wick.js";
 import { processFunctionDeclarationSync } from "./component_js.js";
 import { css_selector_helpers } from "./css_selector_helpers.js";
 
@@ -24,7 +24,7 @@ export function loadBindingHandler(handler: BindingHandler) {
     }
 }
 
-export function createBindingObject(type: BindingType): BindingObject {
+export function createBindingObject(type: BindingType, priority: number = 0): BindingObject {
     return {
         DEBUG: false,
         annotate: "",
@@ -32,7 +32,8 @@ export function createBindingObject(type: BindingType): BindingObject {
         type,
         cleanup_ast: null,
         read_ast: null,
-        write_ast: null
+        write_ast: null,
+        priority
     };
 }
 
@@ -68,32 +69,6 @@ function setIdentifierReferenceVariables(root_node: MinTreeNode, component: Comp
 
     return receiver.ast;
 }
-
-function setBindingAndRefVariables(root_node: MinTreeNode, component: Component, binding: BindingObject): MinTreeNode {
-
-    const receiver = { ast: null }, component_names = component.root_frame.binding_type;
-
-    for (const { node, meta: { replace, parent } } of traverse(root_node, "nodes")
-        .makeReplaceable()
-        .extract(receiver)) {
-
-        if (node.type == MinTreeNodeType.IdentifierReference || node.type == MinTreeNodeType.IdentifierBinding) {
-
-            const val = node.value;
-
-            if (!component_names.has(<string>val))
-                continue;
-
-            replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
-
-            //Pop any binding names into the binding information container. 
-            setBindingVariable(<string>val, parent && parent.type == MinTreeNodeType.MemberExpression, binding);
-        }
-    }
-
-    return receiver.ast;
-}
-
 
 
 function setBindingVariable(name: string, IS_OBJECT: boolean = false, binding: BindingObject) {
@@ -230,6 +205,39 @@ loadBindingHandler({
     }
 });
 
+
+
+function setBindingAndRefVariables(root_node: MinTreeNode, component: Component, binding: BindingObject): MinTreeNode {
+
+    const receiver = { ast: null }, component_names = component.root_frame.binding_type;
+
+    for (const { node, meta: { replace, parent } } of traverse(root_node, "nodes")
+        .makeReplaceable()
+        .extract(receiver)) {
+
+        if (node.type == MinTreeNodeType.IdentifierReference || node.type == MinTreeNodeType.IdentifierBinding) {
+
+            const val = node.value;
+
+            if (!component_names.has(<string>val))
+                continue;
+
+            replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
+
+            //Pop any binding names into the binding information container. 
+            setBindingVariable(<string>val, parent && parent.type == MinTreeNodeType.MemberExpression, binding);
+        }
+    }
+
+    //Convert to call
+    const node = receiver.ast;
+
+    //root_node.type = MinTreeNodeType.CallExpression;
+
+    return node;
+}
+
+
 loadBindingHandler({
     priority: -1,
 
@@ -242,7 +250,18 @@ loadBindingHandler({
 
         const binding = createBindingObject(BindingType.WRITE);
 
-        binding.initialize_ast = setBindingAndRefVariables(binding_node_ast, component, binding);
+        const [ref, expr] = (<MinTreeNode><unknown>binding_node_ast).nodes;
+
+        const comp_var = component.root_frame.binding_type.get(<string>ref.value);
+
+        const converted_expression = setIdentifierReferenceVariables(expr, component, binding);
+
+
+        const d = exp(`this.u${comp_var.class_index}(a)`);
+
+        d.nodes[1].nodes[0] = converted_expression;
+        binding.initialize_ast = d;
+        //binding.initialize_ast = setBindingAndRefVariables(binding_node_ast, component, binding);
 
         return binding;
     }
@@ -598,17 +617,15 @@ loadBindingHandler({
 
     priority: -1,
 
-    canHandleBinding(attribute_name, node_type) {
-        return attribute_name == "useif";
-    },
+    canHandleBinding(attribute_name, node_type) { return attribute_name == "useif"; },
 
     prepareBindingObject(attribute_name, binding_node_ast
         , host_node, element_index, component, presets) {
 
-        const binding = createBindingObject(BindingType.READONLY),
+        const
+            binding = createBindingObject(BindingType.READONLY, 100),
             component_names = component.root_frame.binding_type,
-            { primary_ast, secondary_ast } = binding_node_ast
-            ;
+            { primary_ast } = binding_node_ast;
 
         if (primary_ast) {
 
@@ -660,8 +677,6 @@ loadBindingHandler({
 
     prepareBindingObject(attribute_name, binding_node_ast
         , host_node, element_index, component, presets) {
-
-        debugger;
 
         const binding = createBindingObject(BindingType.WRITE),
             { local, extern } = binding_node_ast,

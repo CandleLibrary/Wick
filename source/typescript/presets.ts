@@ -38,7 +38,7 @@ export default class Presets implements PresetOptions {
      */
     components?: Map<string, any>;
 
-    component_class: Map<string, RuntimeComponent>;
+    component_class: Map<string, typeof RuntimeComponent>;
 
     component_class_string: Map<string, string>;
 

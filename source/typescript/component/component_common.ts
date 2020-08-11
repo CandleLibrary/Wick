@@ -3,6 +3,8 @@ import { acquireComponentASTFromRemoteSource, compileComponent } from "./compone
 import { componentDataToJSCached } from "./component_data_to_js.js";
 import Presets from "../presets.js";
 import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
+import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
+import { traverse } from "@candlefw/conflagrate";
 
 /**
  * Take the data from the source component and merge it into the destination component.
@@ -149,4 +151,20 @@ export function createFrame(parent_frame: any, TEMPORARY: boolean = false, compo
 
 
     return function_frame;
+}
+
+/** JS COMMON */
+export function getFirstReferenceNode(node: MinTreeNode): MinTreeNode {
+    for (const { node: id } of traverse(node, "nodes").filter("type", MinTreeNodeType.IdentifierReference))
+        return id;
+    return null;
+}
+
+export function getFirstReferenceName(node: MinTreeNode): string {
+
+    const ref = getFirstReferenceNode(node);
+
+    if (ref)
+        return <string>ref.value;
+    return "";
 }
