@@ -748,7 +748,7 @@ export class WickContainer implements Sparky {
 
         for (const item of items) {
 
-            let component = null;
+            let component: ContainerComponent = null;
 
             for (let j = 0; j < cstr_l; j++) {
 

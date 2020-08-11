@@ -1,7 +1,15 @@
 import { traverse } from "@candlefw/conflagrate";
 import { MinTreeNode, stmt, MinTreeNodeType } from "@candlefw/js";
 
-import { WickASTNodeType, WICK_AST_NODE_TYPE_SIZE, WICK_AST_NODE_TYPE_BASE, WickASTNode, WickASTNodeClass } from "../types/wick_ast_node_types.js";
+import {
+    WICK_AST_NODE_TYPE_SIZE,
+    WICK_AST_NODE_TYPE_BASE,
+    WickASTNode,
+    WickASTNodeClass,
+    WickContainerASTNode,
+    WickASTNodeType,
+    WickBindingNode
+} from "../types/wick_ast_node_types.js";
 import { HTMLHandler } from "../types/html_handler.js";
 import { processWickCSS_AST } from "./component_css.js";
 import { compileComponent } from "./component.js";
@@ -152,14 +160,14 @@ loadHTMLHandlerInternal(
 
                     addBindingVariable({
                         pos: n.pos,
-                        internal_name: name,
-                        external_name: name,
+                        internal_name: <string>name,
+                        external_name: <string>name,
                         class_index: -1,
                         type: VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE,
                         flags: DATA_FLOW_FLAG.FROM_MODEL
                     }, component.root_frame);
 
-                    addWrittenBindingVariableName(name, component.root_frame);
+                    addWrittenBindingVariableName(<string>name, component.root_frame);
                 }
             }
 
@@ -177,9 +185,12 @@ loadHTMLHandlerInternal(
 );
 
 /*
- * HTML Attribute nodes
+ *  █████  ████████ ████████ ██████  ██ ██████  ██    ██ ████████ ███████ ███████ 
+ * ██   ██    ██       ██    ██   ██ ██ ██   ██ ██    ██    ██    ██      ██      
+ * ███████    ██       ██    ██████  ██ ██████  ██    ██    ██    █████   ███████ 
+ * ██   ██    ██       ██    ██   ██ ██ ██   ██ ██    ██    ██    ██           ██ 
+ * ██   ██    ██       ██    ██   ██ ██ ██████   ██████     ██    ███████ ███████ 
  */
-
 //Slot Name
 loadHTMLHandlerInternal(
     {
@@ -294,18 +305,7 @@ loadHTMLHandlerInternal(
                 }
 
                 return null;
-            }
-        }
-    }, WickASTNodeType.HTMLAttribute
-);
-
-loadHTMLHandlerInternal(
-    {
-        priority: -4,
-
-        prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
-
-            if (node.name == "export" && node.value) {
+            } else if (node.name == "export" && node.value) {
 
                 const
                     obj = node.value.split(",").map(v => v.split(":").map(s => s.trim())).map(v => ({ local: v[0], extern: v[1] || v[0] }));
@@ -328,7 +328,6 @@ loadHTMLHandlerInternal(
         }
     }, WickASTNodeType.HTMLAttribute
 );
-
 
 loadHTMLHandlerInternal(
     {
@@ -377,22 +376,40 @@ loadHTMLHandlerInternal(
                 node.tag = "div";
             }
 
+            /*********************************************
+             *  ██████  ██████  ███    ██ ████████  █████  ██ ███    ██ ███████ ██████  
+             * ██      ██    ██ ████   ██    ██    ██   ██ ██ ████   ██ ██      ██   ██ 
+             * ██      ██    ██ ██ ██  ██    ██    ███████ ██ ██ ██  ██ █████   ██████  
+             * ██      ██    ██ ██  ██ ██    ██    ██   ██ ██ ██  ██ ██ ██      ██   ██ 
+             *  ██████  ██████  ██   ████    ██    ██   ██ ██ ██   ████ ███████ ██   ██ 
+             */
+
+
             switch (node.tag.toLowerCase()) {
                 case "container":
                     //Turn children into components if they are not already so.   
                     let ch = null;
 
-                    node.components = [];
-                    node.component_names = [];
+                    const ctr: WickContainerASTNode = <WickContainerASTNode>Object.assign({
+
+                        components: [],
+
+                        component_names: [],
+
+                        component_attributes: []
+
+                    }, node);
+
 
                     let i = 0;
 
-                    for (const n of node.nodes) {
+                    for (const n of ctr.nodes) {
 
                         ch = n;
 
                         if (!(n.type & WickASTNodeClass.HTML_ELEMENT)) { continue; }
 
+                        const other_attributes = [];
 
                         //Check for useif attribute
                         for (const { name, value } of (n.attributes || [])) {
@@ -406,8 +423,11 @@ loadHTMLHandlerInternal(
                                     host_node: ctr,
                                     html_element_index: index,
                                 });
-                            }
+                            } else
+                                other_attributes.push([name, value]);
                         }
+
+                        ctr.component_attributes.push(other_attributes);
 
                         if (!isPredefinedTag(ch.tag) && component.local_component_names.has(ch.tag)) {
 
@@ -420,31 +440,31 @@ loadHTMLHandlerInternal(
 
                             ch.child_id = component.children.push(1) - 1;
 
-                            node.components.push(comp);
+                            ctr.components.push(comp);
 
-                            node.component_names.push(comp.name);
+                            ctr.component_names.push(comp.name);
 
                         } else {
                             const comp = await compileComponent(Object.assign({}, ch, { attributes: [] }), ch.pos.slice(), "auto_generated", presets, []);
 
-                            node.components.push(comp);
+                            ctr.components.push(comp);
 
-                            node.component_names.push(comp.name);
+                            ctr.component_names.push(comp.name);
 
                             component.local_component_names.set(comp.name, comp.name);
 
                         }
                     }
 
-                    node.is_container = true;
+                    ctr.is_container = true;
 
-                    node.container_id = component.container_count++;
+                    ctr.container_id = component.container_count++;
 
-                    node.nodes.length = 0;
+                    ctr.nodes.length = 0;
 
                     skip();
 
-                    break;
+                    return ctr;
                 case "svg":
                     node.name_space = 1;
                     break;

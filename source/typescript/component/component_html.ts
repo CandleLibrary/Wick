@@ -156,7 +156,7 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
 
                     if (result != html_node) {
                         if (result === null || result)
-                            meta2.mutate(result);
+                            meta2.mutate(<WickASTNode>result);
                         else
                             continue;
                     }

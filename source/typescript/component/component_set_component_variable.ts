@@ -14,7 +14,7 @@ export function getSetOfEnvironmentGlobalNames(): Set<string> {
     return SET_ONCE_environment_globals;
 }
 
-export function setVariableName(name, component: Component) {
+export function getComponentVariableName(name, component: Component) {
     // Allow global objects to be accessed if there are no existing
     // component variables that have an identifier that matches [name]
     if (!component.root_frame.binding_type.has(name)) {

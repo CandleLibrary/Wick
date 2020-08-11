@@ -1,11 +1,11 @@
 import { MinTreeNodeType, stmt } from "@candlefw/js";
 
-import { BindingObject, Component, BindingType, DATA_FLOW_FLAG, PendingBinding } from "../types/types.js";
+import { Component, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
+import { BindingObject, BindingType, PendingBinding } from "../types/binding";
 import { getGenericMethodNode } from "./component_js_ast_tools.js";
 import { binding_handlers } from "./component_default_binding_handlers.js";
-import { WickASTNodeType } from "../types/wick_ast_node_types.js";
-import { setVariableName } from "./component_set_component_variable.js";
 import { WickASTNodeTypeLU } from "../types/wick_ast_node_types.js";
+import { getComponentVariableName } from "./component_set_component_variable.js";
 import Presets from "../presets.js";
 
 function createBindingName(binding_index_pos: number) {
@@ -96,7 +96,10 @@ export function processBindings(component: Component, class_data, presets: Prese
                     if (!component.root_frame.binding_type.has(name))
                         throw (binding.pos.errorMessage(`missing binding variable for ${name}`));
 
-                    const { class_index } = component.root_frame.binding_type.get(name);
+                    const { class_index, type } = component.root_frame.binding_type.get(name);
+
+                    if (type & VARIABLE_REFERENCE_TYPE.DIRECT_ACCESS)
+                        continue;
 
                     nodes.push(stmt(`if(this[${class_index}]==undefined)return 0;`));
                 }
@@ -125,7 +128,10 @@ export function processBindings(component: Component, class_data, presets: Prese
 
     const write_bindings = processed_bindings.filter(b => (b.binding.type & BindingType.WRITE) && !!b.binding.write_ast);
 
-    for (const { internal_name, class_index, flags } of component.root_frame.binding_type.values()) {
+    for (const { internal_name, class_index, flags, type } of component.root_frame.binding_type.values()) {
+
+        if (type & VARIABLE_REFERENCE_TYPE.DIRECT_ACCESS)
+            continue;
 
         if (flags & DATA_FLOW_FLAG.WRITTEN) {
 
@@ -142,7 +148,7 @@ export function processBindings(component: Component, class_data, presets: Prese
                     if (binding.component_variables.size <= 1) {
 
                         if (variable.IS_OBJECT) {
-                            const s = stmt(`if(${setVariableName(internal_name, component)});`);
+                            const s = stmt(`if(${getComponentVariableName(internal_name, component)});`);
                             s.nodes[1] = {
                                 type: MinTreeNodeType.ExpressionStatement,
                                 nodes: [binding.write_ast],

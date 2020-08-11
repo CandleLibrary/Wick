@@ -5,6 +5,7 @@ import Presets from "../presets.js";
 import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
 import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
+import { WickASTNode } from "../wick.js";
 
 /**
  * Take the data from the source component and merge it into the destination component.
@@ -56,11 +57,16 @@ export async function importResource(
     from_value: string,
     component: Component,
     presets: Presets,
-    node,
+    node: WickASTNode | MinTreeNode,
     local_name: string = "",
     names: { local: string, external: string; }[] = [],
     frame: FunctionFrame
 ): Promise<void> {
+
+    if (local_name == "comp") {
+        console.log(component.location + "");
+        debugger;
+    }
 
     let flag: DATA_FLOW_FLAG = null, ref_type: VARIABLE_REFERENCE_TYPE = null;
 
@@ -116,14 +122,17 @@ export async function importResource(
 
     for (const { local, external } of names) {
 
-        addBindingVariable({
-            pos: null,
+        if (!addBindingVariable({
+            pos: node.pos,
             external_name: external || local,
             internal_name: local,
             class_index: -1,
             type: ref_type,
             flags: flag
-        }, frame);
+        }, frame)) {
+            debugger;
+            node.pos.throw(`Import variable [${local}] already declared`);
+        };
 
         addWrittenBindingVariableName(local, frame);
 

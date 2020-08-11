@@ -17,13 +17,13 @@ export interface WickRuntime {
      * Register component CLASS
      * @param arg1 
      */
-    rC(arg1: WickRTComponent): void;
+    rC(arg1: typeof WickRTComponent): void;
 
     /**
      * Retrieve component CLASS
      * @param name 
      */
-    gC(name: string): WickRTComponent,
+    gC(name: string): typeof WickRTComponent,
     presets: Presets;
 
     OVERRIDABLE_onComponentCreate(component_instance: WickRTComponent): void;

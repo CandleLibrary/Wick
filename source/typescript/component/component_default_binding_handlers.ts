@@ -1,10 +1,11 @@
-import { MinTreeNodeType, exp, stmt, MinTreeNode, renderCompressed } from "@candlefw/js";
+import { MinTreeNodeType, exp, stmt, MinTreeNode } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 import { matchAll } from "@candlefw/css";
 
-import { BindingObject, BindingHandler, BindingType, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE, FunctionFrame, Component } from "../types/types.js";
-import { setVariableName } from "./component_set_component_variable.js";
-import { DOMLiteral, WickASTNodeClass } from "../wick.js";
+import { DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE, FunctionFrame, Component } from "../types/types.js";
+import { BindingObject, BindingHandler, BindingType } from "../types/binding";
+import { getComponentVariableName } from "./component_set_component_variable.js";
+import { DOMLiteral } from "../wick.js";
 import { processFunctionDeclarationSync } from "./component_js.js";
 import { css_selector_helpers } from "./css_selector_helpers.js";
 
@@ -15,7 +16,6 @@ function setFrameAsBindingActive(frame: FunctionFrame, class_information) {
     if (!frame.index)
         frame.index = class_information.nlu_index++;
 }
-
 
 export function loadBindingHandler(handler: BindingHandler) {
     if (/*handler_meets_prerequisite*/ true) {
@@ -60,7 +60,7 @@ function setIdentifierReferenceVariables(root_node: MinTreeNode, component: Comp
             if (!component_names.has(<string>val))
                 continue;
 
-            replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
+            replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
 
             //Pop any binding names into the binding information container. 
             setBindingVariable(<string>val, parent && parent.type == MinTreeNodeType.MemberExpression, binding);
@@ -124,7 +124,7 @@ loadBindingHandler({
             for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver)) {
 
                 if (node.type == MinTreeNodeType.IdentifierReference) {
-                    replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
+                    replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
                 }
             }
 
@@ -222,7 +222,7 @@ function setBindingAndRefVariables(root_node: MinTreeNode, component: Component,
             if (!component_names.has(<string>val))
                 continue;
 
-            replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
+            replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
 
             //Pop any binding names into the binding information container. 
             setBindingVariable(<string>val, parent && parent.type == MinTreeNodeType.MemberExpression, binding);
@@ -525,7 +525,6 @@ loadBindingHandler({
 
             const receiver = { ast: null };
 
-
             for (const { node, meta } of traverse(primary_ast, "nodes")) {
 
                 if (node.type == MinTreeNodeType.IdentifierReference) {
@@ -546,7 +545,7 @@ loadBindingHandler({
 
             for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver))
                 if (node.type == MinTreeNodeType.IdentifierReference)
-                    replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
+                    replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
 
             const expression = exp(`this.ct[${host_node.container_id}].sd(0)`);
 
@@ -595,7 +594,7 @@ loadBindingHandler({
 
             for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver))
                 if (node.type == MinTreeNodeType.IdentifierReference)
-                    replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
+                    replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
 
             const expression = exp(`m1=>(1)`);
 
@@ -647,7 +646,7 @@ loadBindingHandler({
 
             for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver))
                 if (node.type == MinTreeNodeType.IdentifierReference)
-                    replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
+                    replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
 
             const expression = exp(`m1=>(1)`);
 

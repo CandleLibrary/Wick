@@ -264,7 +264,7 @@ loadJSHandlerInternal(
 
                         addWrittenBindingVariableName(l_name, frame);
 
-                        addBinding("binding_initialization", binding, node, 0, component);
+                        addBinding("binding_initialization", binding, <MinTreeNode>node, 0, component);
 
                     } else
                         addNameToDeclaredVariables(l_name, frame);
@@ -339,6 +339,8 @@ loadJSHandlerInternal(
         priority: 1,
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
+
+            node = processNodeSync(<MinTreeNode>node, frame, component, presets);
 
             const
                 [id] = node.nodes,
@@ -643,3 +645,14 @@ loadJSHandlerInternal(
     }, MinTreeNodeType.StringLiteral
 );
 
+// String with identifiers for HTML Elements. 
+loadJSHandlerInternal(
+    {
+        priority: 1,
+
+        prepareJSNode(node, parent_node, skip, component, presets, frame) {
+            return null;
+        }
+
+    }, MinTreeNodeType.DebuggerStatement
+);

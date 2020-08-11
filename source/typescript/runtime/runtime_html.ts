@@ -66,9 +66,10 @@ export function integrateElement(ele: HTMLElement | Text) {
 
                     const comp_constructors = ele.getAttribute("w-container").split(",").map(name => this.presets.component_class.get(name));
 
-                    if (comp_constructors.length < 1) throw new Error(`Could not find component class for ${name} in component ${this.name}`);
+                    if (comp_constructors.length < 1)
+                        throw new Error(`Could not find component class for ${name} in component ${this.name}`);
 
-                    const ctr = new WickContainer(comp_constructors, ele, this);
+                    const ctr = new WickContainer(comp_constructors, [], ele, this);
 
                     this.ct.push(ctr);
                 } else if (ele.hasAttribute("w-s")) {
@@ -79,7 +80,8 @@ export function integrateElement(ele: HTMLElement | Text) {
 
                     this.elu.push(ele);
 
-                    if (!comp_constructor) throw new Error(`Could not find component class for ${name} in component ${this.name}`);
+                    if (!comp_constructor)
+                        throw new Error(`Could not find component class for ${name} in component ${this.name}`);
 
                     const comp = new comp_constructor(null, ele, null, this);
 
@@ -91,6 +93,7 @@ export function integrateElement(ele: HTMLElement | Text) {
                 if (ele.hasAttribute("w-o")) {
                     this.par.elu[+ele.hasAttribute("w-o")] = ele;
 
+                    //@ts-ignore
                     for (const child of (<HTMLElement>ele).childNodes)
                         this.par.ie(child);
 
@@ -101,6 +104,7 @@ export function integrateElement(ele: HTMLElement | Text) {
 
                     this.elu.push(ele);
 
+                    //@ts-ignore
                     for (const child of (<HTMLElement>ele).childNodes)
                         this.par.ie(child);
 
@@ -116,6 +120,7 @@ export function integrateElement(ele: HTMLElement | Text) {
             this.elu.push(ele);
         }
 
+        //@ts-ignore
         for (const child of (<HTMLElement>ele).childNodes)
             this.ie(child);
 

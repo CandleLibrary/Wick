@@ -26,29 +26,29 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     elu: HTMLElement[];
 
-    /*protected*/ CONNECTED: boolean;
+    CONNECTED: boolean;
 
-    /*protected*/ presets: Presets;
+    presets: Presets;
 
-    /*protected*/ nlu: object;
+    nlu: object;
 
-    /*protected*/ lookup_function_table: BindingUpdateFunction[];
+    lookup_function_table: BindingUpdateFunction[];
 
-    /*protected*/ u: any;
+    u: any;
 
     //Children
-    /*protected*/ ch: WickRTComponent[];
+    ch: WickRTComponent[];
 
     //Parent Component
-    /*protected*/ par: WickRTComponent;
+    par: WickRTComponent;
 
-    /*protected*/ ct: WickContainer[];
+    ct: WickContainer[];
     /**
      * Identifier of interval watcher for non-dynamic models.
      */
-    /*protected*/ polling_id?: number;
+    polling_id?: number;
 
-    /*protected*/ model: any;
+    model: any;
 
     /**
      * Methods that will be called during the update period
@@ -70,11 +70,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     ie: typeof integrateElement;
     me: typeof makeElement;
-    up: typeof updateParent;
-    uc: typeof updateChildren;
-    spm: typeof syncParentMethod;
-    pup: typeof updateFromChild;
-    ufp: typeof updateFromParent;
 
     _SCHD_: number;
 
@@ -104,11 +99,18 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.u = this.update;
         this.me = makeElement;
         this.ie = integrateElement;
+
+        //@ts-ignore
         this.up = this.updateParent;
+        //@ts-ignore
         this.uc = this.updateChildren;
+        //@ts-ignore
         this.spm = this.syncParentMethod;
+        //@ts-ignore
         this.pup = this.updateFromChild;
+        //@ts-ignore
         this.ufp = this.updateFromParent;
+
         this._SCHD_ = 0;
         this.polling_id = -1;
         this.presets = presets;
@@ -123,7 +125,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         //@ts-ignore
         this.ele.wick_component = this;
 
-        this.re();
+        this.re(this);
 
         //Create or assign global model whose name matches the default_model_name;
         if (default_model_name) {
@@ -250,7 +252,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.update({ disconnected: true });
     }
 
-    transitionOut(transition, DESTROY_AFTER_TRANSITION = false, transition_name = "trs_out") {
+    transitionOut(transition?, DESTROY_AFTER_TRANSITION = false, transition_name = "trs_out") {
 
         this.CONNECTED = false;
 
@@ -472,5 +474,5 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     c() { }
     onLoad() { }
     onMounted() { }
-    re() { }
+    re(c: any) { }
 }
