@@ -2,7 +2,7 @@ import { traverse } from "@candlefw/conflagrate";
 import { exp, MinTreeNode, MinTreeNodeType, stmt } from "@candlefw/js";
 import { JSHandler } from "../types/js_handler.js";
 import { Component, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
-import { WickASTNode, WickASTNodeClass, WickASTNodeType, WickBindingNode, WICK_AST_NODE_TYPE_SIZE } from "../types/wick_ast_node_types.js";
+import { WickASTNode, WickASTNodeClass, WickASTNodeTypeLU, WickBindingNode, WICK_AST_NODE_TYPE_SIZE, WickASTNodeType } from "../types/wick_ast_node_types.js";
 import {
     addBindingVariable,
     addBindingVariableFlag, addNameToDeclaredVariables, addNodeToBindingIdentifiers,
@@ -55,14 +55,14 @@ export function loadJSHandler(handler: JSHandler, ...types: MinTreeNodeType[]) {
 
 function addBinding(
     attribute_name: string,
-    binding_node: MinTreeNode,
+    binding_val: MinTreeNode,
     host_node: MinTreeNode,
     html_element_index: number,
     component: Component) {
     component.bindings.push({
         attribute_name,
-        binding_node,
-        host_node,
+        binding_val,
+        host_node: <MinTreeNode>host_node,
         html_element_index
     });
 }
@@ -413,7 +413,7 @@ loadJSHandlerInternal(
                 //Automatically bind to the root element.
                 component.addBinding({
                     attribute_name: name,
-                    binding_node: <WickBindingNode>{
+                    binding_val: <WickBindingNode>{
                         type: WickASTNodeType.WickBinding,
                         primary_ast: Object.assign(
                             {},
@@ -443,7 +443,7 @@ loadJSHandlerInternal(
 
                 component.addBinding({
                     attribute_name: "method_call",
-                    binding_node: <WickBindingNode>{
+                    binding_val: <WickBindingNode>{
                         type: WickASTNodeType.WickBinding,
                         primary_ast: stmt(`if(f<1) this.${name}();`),
                         value: name.slice(1),
@@ -536,7 +536,7 @@ loadJSHandlerInternal(
                 if (!isVariableDeclared(name, frame)) {
 
                     if (isBindingVariable(name, frame))
-                        addNodeToBindingIdentifiers(node, parent_node, frame);
+                        addNodeToBindingIdentifiers(<MinTreeNode>node, <MinTreeNode>parent_node, frame);
 
                     addWrittenBindingVariableName(name, frame);
                 }
@@ -581,7 +581,7 @@ loadJSHandlerInternal(
 
                         component.addBinding({
                             attribute_name: "watched_frame_method_call",
-                            binding_node: expr,
+                            binding_val: expr,
                             host_node: node,
                             html_element_index: 0
                         });
@@ -602,7 +602,7 @@ loadJSHandlerInternal(
             if (node.nodes[0].type == WickASTNodeType.HTML_STYLE) {
 
                 return new Promise(async res => {
-                    await processWickCSS_AST(node.nodes[0], component, presets);
+                    await processWickCSS_AST(<WickASTNode>node.nodes[0], component, presets);
 
                     res(null);
                 });
@@ -630,7 +630,7 @@ loadJSHandlerInternal(
 
                 component.addBinding({
                     attribute_name: "inlined_element_id",
-                    binding_node: node,
+                    binding_val: node,
                     host_node: parent_node,
                     html_element_index: 0
                 });

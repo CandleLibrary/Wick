@@ -7,7 +7,8 @@ import { processWickJS_AST } from "./component_js.js";
 import { processWickHTML_AST } from "./component_html.js";
 import { createNameHash } from "./component_create_hash_name.js";
 
-import { PendingBinding, VARIABLE_REFERENCE_TYPE } from "../types/types";
+import { VARIABLE_REFERENCE_TYPE } from "../types/types";
+import { PendingBinding } from "../types/binding";
 import { Component, } from "../types/types";
 import { WickASTNodeClass, WickASTNode } from "../types/wick_ast_node_types.js";
 import { createFrame } from "./component_common.js";

@@ -1,11 +1,9 @@
 import { traverse } from "@candlefw/conflagrate";
-import { WickASTNode, WickASTNodeType, WickASTNodeClass, WICK_AST_NODE_TYPE_BASE } from "../types/wick_ast_node_types.js";
+import { WickASTNode, WickASTNodeClass, WICK_AST_NODE_TYPE_BASE, WickContainerASTNode, WickASTNodeType, WickTextNode } from "../types/wick_ast_node_types.js";
 import { Component } from "../types/types.js";
 import { html_handlers } from "./component_default_html_handlers.js";
 import Presets from "../presets.js";
-import { DOMLiteral } from "../wick.js";
-
-
+import { ContainerDomLiteral, DOMLiteral } from "../types/dom_literal.js";
 
 function buildExportableDOMNode(
     ast: WickASTNode & {
@@ -14,7 +12,6 @@ function buildExportableDOMNode(
         data?: any;
         id?: number;
         ns?: number;
-        is_container?: boolean;
     }): DOMLiteral {
 
     const node: DOMLiteral = <DOMLiteral>{ pos: ast.pos };

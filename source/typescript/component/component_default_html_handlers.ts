@@ -134,11 +134,11 @@ loadHTMLHandlerInternal(
     {
         priority: 1,
 
-        prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
+        prepareHTMLNode(node: WickBindingNode, host_node, host_element, index, skip, replace, component, presets) {
 
             component.addBinding({
                 attribute_name: "",
-                binding_node: node,
+                binding_val: node,
                 host_node: host_node,
                 html_element_index: index + 1
             });
@@ -203,11 +203,12 @@ loadHTMLHandlerInternal(
                     break;
 
                 case "value":
-                    if (node.value.type == WickASTNodeType.WickBinding) {
+                    if (node.type == WickASTNodeType.WickBinding) {
 
                         component.addBinding({
                             attribute_name: "input_value",
-                            binding_node: node.value,
+                            //@ts-ignore
+                            binding_val: node.value,
                             host_node: node,
                             html_element_index: index
                         });
@@ -283,7 +284,7 @@ loadHTMLHandlerInternal(
                 for (const { local, extern } of obj) {
                     component.addBinding({
                         attribute_name: "import_from_child",
-                        binding_node: {
+                        binding_val: {
                             local,
                             extern,
                         },
@@ -313,7 +314,7 @@ loadHTMLHandlerInternal(
                 for (const { local, extern } of obj) {
                     component.addBinding({
                         attribute_name: "export_to_child",
-                        binding_node: {
+                        binding_val: {
                             local,
                             extern,
                         },
@@ -341,7 +342,7 @@ loadHTMLHandlerInternal(
 
                 component.addBinding({
                     attribute_name: attrib.name,
-                    binding_node: attrib.value,
+                    binding_val: attrib.value,
                     host_node: attrib,
                     html_element_index: index
                 });
@@ -400,8 +401,9 @@ loadHTMLHandlerInternal(
                                 //create a useif binding for this object
                                 component.addBinding({
                                     attribute_name: "useif",
-                                    binding_node: value,
-                                    host_node: node,
+                                    //@ts-ignore
+                                    binding_val: value,
+                                    host_node: ctr,
                                     html_element_index: index,
                                 });
                             }

@@ -1,5 +1,5 @@
 import { rt } from "./runtime_global.js";
-import { DOMLiteral } from "../types/dom_literal.js";
+import { DOMLiteral, ContainerDomLiteral } from "../types/dom_literal.js";
 import { WickContainer } from "./runtime_container.js";
 import { takeParentAddChild } from "./runtime_common.js";
 import { Presets } from "../wick.js";

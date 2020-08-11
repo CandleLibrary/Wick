@@ -11,7 +11,7 @@ import { ParserEnvironment } from "@candlefw/hydrocarbon/build/library/runtime.j
 import { Lexer } from "@candlefw/wind";
 import { MinTreeNodeClass, MinTreeNodeType, JSParserEnvironment, JSParserEnv } from "@candlefw/js";
 
-import { WickASTNodeType } from "../types/wick_ast_node_types.js";
+import { WickASTNodeTypeLU } from "../types/wick_ast_node_types.js";
 
 type WickParserEnvironment = ParserEnvironment & JSParserEnv & {
     ASI: boolean;
@@ -27,7 +27,7 @@ const env = <WickParserEnvironment>{
 
     ASI: true,
 
-    typ: Object.assign(WickASTNodeType, MinTreeNodeType, CSSTreeNodeType),
+    typ: Object.assign(WickASTNodeTypeLU, MinTreeNodeType, CSSTreeNodeType),
 
     cls: Object.assign({}, MinTreeNodeClass),
 

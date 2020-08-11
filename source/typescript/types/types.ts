@@ -1,10 +1,10 @@
 import { MinTreeNode } from "@candlefw/js";
 import { CSSTreeNode } from "@candlefw/css";
-import { WickASTNode, WickBindingNode, WickTextNode } from "./wick_ast_node_types.js";
+import { WickASTNode, WickTextNode } from "./wick_ast_node_types.js";
 import URL from "@candlefw/url";
-import { Lexer } from "@candlefw/wind";
-import Presets from "../presets.js";
 import { DOMLiteral } from "./dom_literal.js";
+import { PendingBinding } from "./binding";
+import { BindingVariable } from "./binding";
 
 export const enum VARIABLE_REFERENCE_TYPE {
     INTERNAL_VARIABLE = 1,
@@ -13,34 +13,12 @@ export const enum VARIABLE_REFERENCE_TYPE {
     PARENT_VARIABLE = 8,
     METHOD_VARIABLE = 2,
     GLOBAL_VARIABLE = 32,
-}
 
-
-
-/**
- * Any variable within a component that is defined a GLOBAL value that
- * may be produced as the result of the following declaration/references:
- *  - a: Declared within the top most scope of component in a var statement. 
- *  - b: Declared within a components import or export statements. 
- *  - c: Declared within a components data flow statements describing flow between 
- *       a component and its relatives. 
- *  - d: Referenced within a binding expression.  
- */
-export interface BindingVariable {
-    /* Name used for references within the component*/
-    internal_name: string;
-
-    /* Name used to access the imported object */
-    external_name: string;
-
-    /* Type of reference */
-    type: VARIABLE_REFERENCE_TYPE;
-
-    /* */
-    class_index: number;
-    flags: DATA_FLOW_FLAG;
-    pos: Lexer,
-
+    /**
+     * Variables that are replaced with direct
+     * property access on the associated object
+     */
+    DIRECT_ACCESS = 4 | 32
 }
 
 export const enum DATA_FLOW_FLAG {
@@ -64,6 +42,14 @@ export const enum DATA_FLOW_FLAG {
 }
 
 export interface FunctionFrame {
+    /**
+     * true if the frame is created from
+     * an anonymous binding expression 
+     * in an element attribute
+     */
+    ATTRIBUTE: boolean,
+
+    name: string,
 
     /**
      * An optional copy of the frame's ast object.
@@ -152,7 +138,7 @@ export interface Component {
      */
     addBinding(arg: {
         attribute_name: string,
-        binding_node: MinTreeNode | WickASTNode | CSSTreeNode,
+        binding_val: MinTreeNode | WickASTNode | CSSTreeNode | any,
         host_node: MinTreeNode | WickASTNode | CSSTreeNode,
         html_element_index: number;
     }): void;
@@ -212,54 +198,6 @@ export interface Component {
      * The root function frame
      */
     root_frame: FunctionFrame;
-}
-
-export interface BindingInfoContainer {
-    node_type: string;
-    type: string;
-    node: MinTreeNode | WickASTNode | WickTextNode;
-    index: number;
-    name: string;
-    dependent_variables: Set<string>;
-}
-
-export const enum BindingType {
-    READ = 1,
-    WRITE = 2,
-    READONLY = 1,
-    WRITEONLY = 2,
-
-    READWRITE = 3
-}
-export interface BindingObject {
-    component_variables: Map<string, { name: string, IS_OBJECT: boolean; }>;
-    initialize_ast?: MinTreeNode;
-    read_ast?: MinTreeNode;
-    write_ast?: MinTreeNode;
-    cleanup_ast?: MinTreeNode;
-    DEBUG: boolean;
-    //TODO - Determine form of an
-    annotate: string;
-    type: BindingType;
-
-    pos?: Lexer;
-
-    name?: string;
-
-    priority: number;
-}
-export interface PendingBinding {
-    html_element_index: number;
-    attribute_name: string;
-    host_node: WickASTNode;
-    binding_node: WickBindingNode;
-}
-export interface BindingHandler {
-
-    priority: number;
-    canHandleBinding(attribute_name: string, node_type: string): boolean;
-
-    prepareBindingObject(attribute_name: string, binding_node: WickBindingNode, host_ast_node: WickASTNode, element_index: number, component: Component, presets?: Presets): BindingObject;
 }
 
 export * from "./js_handler.js";

@@ -3,7 +3,7 @@ import { MinTreeNodeDefinitions, MinTreeNodeType } from "@candlefw/js";
 import { buildFormatRules, FormatRule as $ } from "@candlefw/conflagrate";
 import { CSSTreeNodeDefinitions, CSSTreeNodeType } from "@candlefw/css";
 
-import { WickASTNodeType } from "./types/wick_ast_node_types.js";
+import { WickASTNodeType, WickASTNodeTypeLU } from "./types/wick_ast_node_types.js";
 export const { format_rules } = buildFormatRules([{
     type: MinTreeNodeType.LexicalDeclaration,
     format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 15
@@ -382,6 +382,6 @@ const definitions = [ /**/ /**/ ...MinTreeNodeDefinitions /**/,/**/...CSSTreeNod
         template_pattern: "@data",
     },
 ]];
-const renderers = buildRenderers(definitions, Object.assign({}, CSSTreeNodeType, WickASTNodeType, MinTreeNodeType));
+const renderers = buildRenderers(definitions, Object.assign({}, CSSTreeNodeType, WickASTNodeTypeLU, MinTreeNodeType));
 
 export { renderers };

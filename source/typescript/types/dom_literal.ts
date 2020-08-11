@@ -48,3 +48,9 @@ export interface DOMLiteral {
      */
     pos: Lexer;
 }
+
+export interface ContainerDomLiteral extends DOMLiteral {
+    component_names: string[],
+    component_attribs: [string, string][][];
+    is_container: true;
+}

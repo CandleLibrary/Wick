@@ -5,6 +5,7 @@ import { getGenericMethodNode } from "./component_js_ast_tools.js";
 import { binding_handlers } from "./component_default_binding_handlers.js";
 import { WickASTNodeType } from "../types/wick_ast_node_types.js";
 import { setVariableName } from "./component_set_component_variable.js";
+import { WickASTNodeTypeLU } from "../types/wick_ast_node_types.js";
 import Presets from "../presets.js";
 
 function createBindingName(binding_index_pos: number) {
@@ -18,11 +19,11 @@ export function runBindingHandlers(pending_binding: PendingBinding, component: C
 
         if (handler.canHandleBinding(
             pending_binding.attribute_name,
-            WickASTNodeType[pending_binding.host_node.type]
+            WickASTNodeTypeLU[pending_binding.host_node.type]
         ))
             binding = handler.prepareBindingObject(
                 pending_binding.attribute_name,
-                pending_binding.binding_node,
+                pending_binding.binding_val,
                 pending_binding.host_node,
                 pending_binding.html_element_index,
                 component,
@@ -59,7 +60,7 @@ export function processBindings(component: Component, class_data, presets: Prese
 
     for (const { binding, pending_binding } of processed_bindings) {
 
-        binding.pos = pending_binding.binding_node.pos;
+        binding.pos = pending_binding.binding_val.pos;
 
         binding.name = createBindingName(binding_count++);
 

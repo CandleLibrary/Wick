@@ -1,6 +1,7 @@
 import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
 
-import { FunctionFrame, BindingVariable, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
+import { FunctionFrame, DATA_FLOW_FLAG } from "../types/types.js";
+import { BindingVariable } from "../types/binding";
 import { traverse } from "@candlefw/conflagrate";
 
 function getNonTempFrame(frame: FunctionFrame) {
@@ -94,8 +95,10 @@ export function isBindingVariable(var_name: string, frame: FunctionFrame) {
 
 export function addBindingVariable(binding_var: BindingVariable, frame: FunctionFrame): boolean {
     const root = getRootFrame(frame);
+
     if (root.binding_type.has(binding_var.internal_name))
         return false;
+
     root.binding_type.set(binding_var.internal_name, binding_var);
     return true;
 
