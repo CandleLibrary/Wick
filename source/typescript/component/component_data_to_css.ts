@@ -1,9 +1,8 @@
-import { render, CSSTreeNodeType, selector, CSSTreeNode } from "@candlefw/css";
+import { CSSNodeType, selector, CSSNode } from "@candlefw/css";
 import { traverse } from "@candlefw/conflagrate";
+import { renderWithFormatting } from "../render/render.js";
 
-import parser from "../parser/parser.js";
-
-export function UpdateSelector(node: CSSTreeNode, name) {
+export function UpdateSelector(node: CSSNode, name) {
 
     const class_selector = selector(`.${name}`);
 
@@ -18,7 +17,7 @@ export function UpdateSelector(node: CSSTreeNode, name) {
         ) {
 
             switch (node.type) {
-                case CSSTreeNodeType.TypeSelector:
+                case CSSNodeType.TypeSelector:
                     const val = node.nodes[0].val;
                     if (val == "root") {
                         replace(Object.assign({}, class_selector, { pos: node.pos, nodes: [] }));
@@ -32,7 +31,7 @@ export function UpdateSelector(node: CSSTreeNode, name) {
         }
 
         if (!HAS_ROOT) {
-            const ns = selector(`.${name} ${render(s)}`);
+            const ns = selector(`.${name} ${renderWithFormatting(s)}`);
             ns.pos = s.pos;
             return ns;
         }
@@ -52,12 +51,12 @@ export function componentDataToCSS(component): string {
             .extract(r)
         ) {
             switch (node.type) {
-                case CSSTreeNodeType.Rule: {
+                case CSSNodeType.Rule: {
                     const copy = Object.assign({}, node);
                     UpdateSelector(copy, component.name);
                     replace(copy);
                 } break;
-                case CSSTreeNodeType.Media: {
+                case CSSNodeType.Media: {
                     const copy = Object.assign({}, node);
                     copy.nodes.slice(1).forEach(n => UpdateSelector(n, component.name));
                     replace(copy);
@@ -66,7 +65,7 @@ export function componentDataToCSS(component): string {
             }
         }
         return r.ast;
-    }).map(render).join("\n");
+    }).map(renderWithFormatting).join("\n");
 
     return css_string;
 }

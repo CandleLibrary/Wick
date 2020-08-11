@@ -1,11 +1,13 @@
-import { Component, VARIABLE_REFERENCE_TYPE, FunctionFrame, DATA_FLOW_FLAG } from "../types/types.js";
-import { acquireComponentASTFromRemoteSource, compileComponent } from "./component.js";
-import { componentDataToJSCached } from "./component_data_to_js.js";
-import Presets from "../presets.js";
-import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
-import { JSNode, JSNodeType } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
-import { WickASTNode } from "../wick.js";
+import { JSNode, JSNodeType } from "@candlefw/js";
+
+import Presets from "../presets.js";
+import { compileComponent } from "./component.js";
+import { Component, DATA_FLOW_FLAG, FunctionFrame, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
+import { WickNode } from "../wick.js";
+import { acquireComponentASTFromRemoteSource } from "./component_acquire_ast";
+import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
+import { componentDataToJSCached } from "./component_data_to_js.js";
 
 /**
  * Take the data from the source component and merge it into the destination component.
@@ -57,16 +59,11 @@ export async function importResource(
     from_value: string,
     component: Component,
     presets: Presets,
-    node: WickASTNode | JSNode,
+    node: WickNode | JSNode,
     local_name: string = "",
     names: { local: string, external: string; }[] = [],
     frame: FunctionFrame
 ): Promise<void> {
-
-    if (local_name == "comp") {
-        console.log(component.location + "");
-        debugger;
-    }
 
     let flag: DATA_FLOW_FLAG = null, ref_type: VARIABLE_REFERENCE_TYPE = null;
 
@@ -138,28 +135,6 @@ export async function importResource(
 
         //setComponentVariable(ref_type, local, component, external || local, flag, <JSNode>node);
     }
-}
-
-export function createFrame(parent_frame: any, TEMPORARY: boolean = false, component: Component) {
-
-    const function_frame = <FunctionFrame>{
-        ast: null,
-        declared_variables: new Set(),
-        input_names: new Set(),
-        output_names: new Set(),
-        binding_ref_identifiers: [],
-        prev: parent_frame,
-        IS_ROOT: !parent_frame,
-        IS_TEMP_CLOSURE: TEMPORARY,
-        binding_type: (!parent_frame) ? new Map : null,
-    };
-
-    if (!parent_frame) component.root_frame = function_frame;
-
-    if (!TEMPORARY) component.frames.push(function_frame);
-
-
-    return function_frame;
 }
 
 /** JS COMMON */

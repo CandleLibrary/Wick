@@ -7,7 +7,7 @@ import { BindingObject, BindingHandler, BindingType } from "../types/binding";
 import { getComponentVariableName } from "./component_set_component_variable.js";
 import { DOMLiteral } from "../wick.js";
 import { processFunctionDeclarationSync } from "./component_js.js";
-import { css_selector_helpers } from "./css_selector_helpers.js";
+import { css_selector_helpers } from "./component_css_selector_helpers.js";
 
 export const binding_handlers: BindingHandler[] = [];
 

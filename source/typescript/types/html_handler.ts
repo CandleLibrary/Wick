@@ -1,4 +1,4 @@
-import { WickASTNode } from "./wick_ast_node_types.js";
+import { WickNode } from "./wick_ast_node_types.js";
 import { Component } from "./types.js";
 import Presets from "../presets.js";
 export interface HTMLHandler {
@@ -22,19 +22,19 @@ export interface HTMLHandler {
      * 
      * @async May return a promise that resolves to the givin return types.
      * 
-     * @return @type {WickASTNode} | @type {void} | @type {Promise}
+     * @return @type {WickNode} | @type {void} | @type {Promise}
      */
     prepareHTMLNode(
-        node: WickASTNode,
-        host_node: WickASTNode,
-        host_element_node: WickASTNode,
+        node: WickNode,
+        host_node: WickNode,
+        host_element_node: WickNode,
         element_index: number,
         skip: () => void,
-        replace_element: (arg: WickASTNode | null) => void,
+        replace_element: (arg: WickNode | null) => void,
         component: Component,
         presets: Presets
     ):
-        WickASTNode
+        WickNode
         | void
-        | Promise<WickASTNode | void>;
+        | Promise<WickNode | void>;
 }

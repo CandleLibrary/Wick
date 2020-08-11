@@ -20,7 +20,7 @@
         "declarationDir": "./build/types",
         "declaration": true,
         "moduleResolution": "node",
-        "sourceMap": true,
+        "inlineSourceMap": true,
         "skipLibCheck": true
     }
 }

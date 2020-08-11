@@ -481,7 +481,6 @@ export class WickContainer implements Sparky {
             while (i < active_window_start + active_window_size && i < output_length) {
                 //Scopes on the descending edge of the transition window
                 if (oa < this.shift_amount && ++oa) {
-                    //console.log("pos",i, getColumnRow(i, this.offset+1, this.shift_amount), output[i].scopes[0].ele.style.transform)
                     output[i].update({ trs_asc_out: { trs: this.trs_ascending.out, pos: getColumnRow(i, this.offset + 1, this.shift_amount) } });
                 } else
                     output[i].update({ arrange: { trs: this.trs_ascending.in, pos: getColumnRow(i, this.offset + 1, this.shift_amount) } });

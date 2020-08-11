@@ -4,16 +4,16 @@ import {
     percentage,
     length,
     parseDeclaration,
-    CSSTreeNodeType
+    CSSNodeTypeLU
 } from "@candlefw/css";
 
 import { ParserEnvironment } from "@candlefw/hydrocarbon/build/library/runtime.js";
 import { Lexer } from "@candlefw/wind";
 import { JSParserEnvironment, JSParserEnv, JSNodeTypeLU } from "@candlefw/js";
 
-import { WickASTNodeTypeLU } from "../types/wick_ast_node_types.js";
+import { WickNodeTypeLU } from "../types/wick_ast_node_types.js";
 
-export const NodeTypes = Object.assign({}, CSSTreeNodeType, WickASTNodeTypeLU, JSNodeTypeLU);
+export const NodeTypes = Object.assign({}, CSSNodeTypeLU, WickNodeTypeLU, JSNodeTypeLU);
 
 type WickParserEnvironment = ParserEnvironment & JSParserEnv & {
     ASI: boolean;

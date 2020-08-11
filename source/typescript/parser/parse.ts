@@ -3,8 +3,8 @@ import { Lexer } from "@candlefw/wind";
 import { lrParse, ParserData } from "@candlefw/hydrocarbon/build/library/runtime.js";
 
 import parser_data from "./wick_parser.js";
-import env from "./parser_environment.js";
-import { WickASTNode } from "../types/wick_ast_node_types.js";
+import env from "./env.js";
+import { WickNode } from "../types/wick_ast_node_types.js";
 
 
 
@@ -13,13 +13,13 @@ import { WickASTNode } from "../types/wick_ast_node_types.js";
  *
  * @param {string | Lexer} input
  * 
- * @returns {WickASTNode} - The root node of an
+ * @returns {WickNode} - The root node of an
  * 
  * @throws {SyntaxError} - If the parse fails, a SyntaxError will be thrown indicating
  * the point where the parser was unable to parse the input string.
  *
  */
-export default function (input: string | Lexer, source = ""): WickASTNode {
+export default function (input: string | Lexer, source = ""): WickNode {
 
     let lex: string | Lexer = null;
 
@@ -35,5 +35,5 @@ export default function (input: string | Lexer, source = ""): WickASTNode {
     if (parse_result.error)
         throw new SyntaxError(parse_result.error);
 
-    return <WickASTNode>parse_result.value;
+    return <WickNode>parse_result.value;
 }

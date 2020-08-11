@@ -1,12 +1,12 @@
 import { traverse } from "@candlefw/conflagrate";
-import { WickASTNode, WickASTNodeClass, WICK_AST_NODE_TYPE_BASE, WickContainerASTNode, WickASTNodeType, WickTextNode } from "../types/wick_ast_node_types.js";
+import { WickNode, WickNodeClass, WICK_AST_NODE_TYPE_BASE, WickContainerASTNode, WickNodeType, WickTextNode } from "../types/wick_ast_node_types.js";
 import { Component } from "../types/types.js";
 import { html_handlers } from "./component_default_html_handlers.js";
 import Presets from "../presets.js";
 import { ContainerDomLiteral, DOMLiteral } from "../types/dom_literal.js";
 
 function buildExportableDOMNode(
-    ast: WickASTNode & {
+    ast: WickNode & {
         component_name?: string;
         slot_name?: string;
         data?: any;
@@ -74,17 +74,17 @@ function buildExportableDOMNode(
     return node;
 }
 
-async function loadHTMLImports(ast: WickASTNode, component: Component, presets: Presets) {
+async function loadHTMLImports(ast: WickNode, component: Component, presets: Presets) {
     if (ast.import_list)
-        for (const import_ of <WickASTNode[]>(ast.import_list)) {
-            for (const handler of html_handlers[(WickASTNodeType.HTML_IMPORT >>> 23) - WICK_AST_NODE_TYPE_BASE]) {
+        for (const import_ of <WickNode[]>(ast.import_list)) {
+            for (const handler of html_handlers[(WickNodeType.HTML_IMPORT >>> 23) - WICK_AST_NODE_TYPE_BASE]) {
                 if (! await handler.prepareHTMLNode(import_, ast, import_, 0, () => { }, null, component, presets)) break;
             }
         }
 }
 
 
-export async function processWickHTML_AST(ast: WickASTNode, component: Component, presets: Presets): Promise<WickASTNode> {
+export async function processWickHTML_AST(ast: WickNode, component: Component, presets: Presets): Promise<WickNode> {
     //Process the import list
 
     //@ts-ignore
@@ -92,7 +92,7 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
 
     //Process the ast and return a node that  
     const receiver = { ast: null },
-        attribute_handlers = html_handlers[Math.max((WickASTNodeType.HTMLAttribute >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)];
+        attribute_handlers = html_handlers[Math.max((WickNodeType.HTMLAttribute >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)];
 
     let last_element = null, index = -1;
 
@@ -105,7 +105,7 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
 
         let html_node = node;
 
-        if (html_node.type == WickASTNodeType.HTMLText) {
+        if (html_node.type == WickNodeType.HTMLText) {
             const text = <WickTextNode>html_node;
 
             text.data = (<string>text.data).replace(/[ \n]+/g, " ");
@@ -125,9 +125,9 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
             if (result != node) {
                 if (result === null || result) {
 
-                    html_node = <WickASTNode>result;
+                    html_node = <WickNode>result;
 
-                    meta.replace(<WickASTNode>result);
+                    meta.replace(<WickNode>result);
 
                     if (result === null)
                         continue main_loop;
@@ -141,7 +141,7 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
         html_node.id = ++index;
 
         //Process Attributes of HTML Elements.
-        if (html_node.type & WickASTNodeClass.HTML_ELEMENT) {
+        if (html_node.type & WickNodeClass.HTML_ELEMENT) {
 
             last_element = html_node;
 
@@ -165,7 +165,7 @@ export async function processWickHTML_AST(ast: WickASTNode, component: Component
 
                     if (result != html_node) {
                         if (result === null || result)
-                            meta2.mutate(<WickASTNode>result);
+                            meta2.mutate(<WickNode>result);
                         else
                             continue;
                     }

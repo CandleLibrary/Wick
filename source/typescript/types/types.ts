@@ -1,6 +1,6 @@
 import { JSNode } from "@candlefw/js";
-import { CSSTreeNode } from "@candlefw/css";
-import { WickASTNode, WickTextNode } from "./wick_ast_node_types.js";
+import { CSSNode } from "@candlefw/css";
+import { WickNode, WickTextNode } from "./wick_ast_node_types.js";
 import URL from "@candlefw/url";
 import { DOMLiteral } from "./dom_literal.js";
 import { PendingBinding } from "./binding";
@@ -138,8 +138,8 @@ export interface Component {
      */
     addBinding(arg: {
         attribute_name: string,
-        binding_val: JSNode | WickASTNode | CSSTreeNode | any,
-        host_node: JSNode | WickASTNode | CSSTreeNode,
+        binding_val: JSNode | WickNode | CSSNode | any,
+        host_node: JSNode | WickNode | CSSNode,
         html_element_index: number;
     }): void;
 
@@ -177,7 +177,7 @@ export interface Component {
      */
     HTML: DOMLiteral;
 
-    CSS: CSSTreeNode[];
+    CSS: CSSNode[];
 
     /**
      * URL of source file for this component

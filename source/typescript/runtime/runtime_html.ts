@@ -161,8 +161,6 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
 
         ele = <HTMLElement>createElementNameSpaced(tag_name, name_space, data);
 
-        console.log(component_attribs);
-
         const ctr = new WickContainer(comp_constructors, component_attribs, ele, this);
 
         this.ct.push(ctr);

@@ -1,15 +1,15 @@
 import { JSNodeType, JSNode, exp, stmt } from "@candlefw/js";
-import { renderWithFormatting, copy } from "@candlefw/conflagrate";
 
 import Presets from "../presets.js";
 import { processBindings } from "./component_process_bindings.js";
 import { Component, FunctionFrame, VARIABLE_REFERENCE_TYPE, } from "../types/types";
 import { getPropertyAST, getGenericMethodNode } from "./component_js_ast_tools.js";
 import { getComponentVariableName } from "./component_set_component_variable.js";
-import { renderers, format_rules } from "../format_rules.js";
 import { WickRTComponent } from "../runtime/runtime_component.js";
 import { componentDataToCSS } from "./component_data_to_css.js";
-import { createErrorComponent } from "./component.js";
+import { createErrorComponent } from "./componant_create_compoent";
+import { renderWithFormatting } from "../render/render.js";
+import { copy } from "@candlefw/conflagrate";
 
 
 function registerActivatedFrameMethod(frame: FunctionFrame, class_information) {
@@ -220,7 +220,7 @@ export function componentDataToClassString(component: Component, presets: Preset
 
         class_information.compiled_ast = component_class;
 
-        return renderWithFormatting(class_information.compiled_ast, renderers, format_rules) + `\n/* ${component.location} */\n`;
+        return renderWithFormatting(class_information.compiled_ast) + `\n/* ${component.location} */\n`;
 
     } catch (e) {
         console.warn(`Error found in component ${component.name} while converting to a class. location: ${component.location}.`);

@@ -1,13 +1,12 @@
 import URL from "@candlefw/url";
 import { addModuleToCFW } from "@candlefw/cfw";
-import { CSSTreeNodeType, CSSTreeNode, CSSRuleNode } from "@candlefw/css";
+import { CSSNodeType, CSSNode, CSSNodeTypeLU } from "@candlefw/css";
 import { JSNodeType, JSNode, JSNodeTypeLU } from "@candlefw/js";
-import { renderWithFormatting } from "@candlefw/conflagrate";
 
 
 import Presets from "./presets.js";
 import makeComponent from "./component/component.js";
-import parser from "./parser/parser.js";
+import parser from "./parser/parse.js";
 
 import { rt } from "./runtime/runtime_global.js";
 import { WickRTComponent, class_strings } from "./runtime/runtime_component.js";
@@ -25,13 +24,11 @@ import { PendingBinding } from "./types/binding";
 import { DOMLiteral } from "./types/dom_literal.js";
 import { ExtendedComponent } from "./types/extended_component";
 import { componentDataToHTML } from "./component/component_data_to_html.js";
-import { WickASTNodeTypeLU, WickASTNodeClass, WickASTNode } from "./types/wick_ast_node_types.js";
-import { renderers, format_rules } from "./format_rules.js";
+import { WickNodeTypeLU, WickNodeClass, WickNode } from "./types/wick_ast_node_types.js";
 import { ObservableModel, ObservableWatcher } from "./types/observable_model.js";
 import { createNameHash } from "./component/component_create_hash_name.js";
-import { css_selector_helpers } from "./component/css_selector_helpers.js";
-
-
+import { css_selector_helpers } from "./component/component_css_selector_helpers.js";
+import { renderWithFormatting } from "./render/render.js";
 
 /**
  * Creates a Wick component. test
@@ -172,7 +169,7 @@ addModuleToCFW(wick, "wick");
 interface wickOutput {
     parse: {
         parser: typeof parser;
-        render: (ast: JSNode | WickASTNode | CSSTreeNode) => string;
+        render: typeof renderWithFormatting;
     };
     Presets: typeof Presets;
 
@@ -183,15 +180,16 @@ interface wickOutput {
     componentDataToClass: typeof componentDataToJS,
 
     types: {
+
         DOMLiteral: DOMLiteral,
         BindingVariable: BindingVariable,
         JSNode: JSNode,
-        WickASTNode: WickASTNode,
-        CSSTreeNode: CSSTreeNode,
-        CSSTreeNodeType: typeof CSSTreeNodeType;
+        WickNode: WickNode,
+        CSSNode: CSSNode,
+        CSSNodeType: typeof CSSNodeType;
         JSNodeType: typeof JSNodeTypeLU;
-        WickASTNodeType: typeof WickASTNodeTypeLU;
-        WickASTNodeClass: typeof WickASTNodeClass;
+        WickNodeType: typeof WickNodeTypeLU;
+        WickNodeClass: typeof WickNodeClass;
         VARIABLE_REFERENCE_TYPE: typeof VARIABLE_REFERENCE_TYPE;
     };
 }
@@ -201,19 +199,15 @@ Object.assign(wick, {
         css_selector_helpers: css_selector_helpers,
         createNameHash: createNameHash,
         parser,
-        render: (ast) => renderWithFormatting(ast, renderers, format_rules, (str, name, node: any): string => {
-            if (node.type == CSSTreeNodeType.Rule && name !== "@full_render")
-                return `{${Array.from((<CSSRuleNode>node).props.values()).map(n => n + "").join(";\n")}}`;
-            return str;
-        })
+        render: renderWithFormatting
     },
 
     css_selector_helpers,
 
     types: {
-        CSSTreeNodeType,
+        CSSNodeType: CSSNodeTypeLU,
         JSNodeType: JSNodeTypeLU,
-        WickASTNodeType: WickASTNodeTypeLU
+        WickNodeType: WickNodeTypeLU
     },
 
     Presets,
@@ -226,6 +220,9 @@ Object.assign(wick, {
 });
 
 export default wick;
+
+export * from "./render/render.js";
+export * from "./render/rules.js";
 
 export {
     //Functions
@@ -241,9 +238,9 @@ export {
     Presets,
     WickRTComponent as RuntimeComponent,
     WickRTComponent,
-    WickASTNodeTypeLU as WickASTNodeType,
+    WickNodeTypeLU as WickNodeType,
     JSNodeTypeLU,
-    CSSTreeNodeType,
+    CSSNodeType,
 
     //Pure Types
     wickOutput,
@@ -253,10 +250,10 @@ export {
     DOMLiteral,
     BindingVariable,
     JSNode,
-    WickASTNode,
-    CSSTreeNode,
+    WickNode,
+    CSSNode,
     JSNodeType,
-    WickASTNodeClass,
+    WickNodeClass,
     FunctionFrame,
     PendingBinding,
     VARIABLE_REFERENCE_TYPE,

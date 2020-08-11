@@ -4,10 +4,10 @@ import { JSNode, stmt, JSNodeType } from "@candlefw/js";
 import {
     WICK_AST_NODE_TYPE_SIZE,
     WICK_AST_NODE_TYPE_BASE,
-    WickASTNode,
-    WickASTNodeClass,
+    WickNode,
+    WickNodeClass,
     WickContainerASTNode,
-    WickASTNodeType,
+    WickNodeType,
     WickBindingNode
 } from "../types/wick_ast_node_types.js";
 import { HTMLHandler } from "../types/html_handler.js";
@@ -112,7 +112,7 @@ function isPredefinedTag(val: string): boolean { return tag_map.has(val.toUpperC
 
 export const html_handlers: Array<HTMLHandler[]> = Array(WICK_AST_NODE_TYPE_SIZE).fill(null).map(() => [default_handler]);
 
-function loadHTMLHandlerInternal(handler: HTMLHandler, ...types: WickASTNodeType[]) {
+function loadHTMLHandlerInternal(handler: HTMLHandler, ...types: WickNodeType[]) {
 
     for (const type of types) {
 
@@ -125,7 +125,7 @@ function loadHTMLHandlerInternal(handler: HTMLHandler, ...types: WickASTNodeType
     }
 }
 
-export function loadHTMLHandler(handler: HTMLHandler, ...types: WickASTNodeType[]) {
+export function loadHTMLHandler(handler: HTMLHandler, ...types: WickNodeType[]) {
 
     const modified_handler = Object.assign({}, handler);
 
@@ -174,14 +174,14 @@ loadHTMLHandlerInternal(
             // Skip processing this node in the outer scope, 
             // it will be replaced with a CompiledBinding node.
 
-            return <WickASTNode>{
-                type: WickASTNodeType.HTML_BINDING_ELEMENT,
+            return <WickNode>{
+                type: WickNodeType.HTML_BINDING_ELEMENT,
                 IS_BINDING: true,
                 value: "",
                 pos: node.pos
             };
         }
-    }, WickASTNodeType.WickBinding
+    }, WickNodeType.WickBinding
 );
 
 /*
@@ -214,7 +214,7 @@ loadHTMLHandlerInternal(
                     break;
 
                 case "value":
-                    if (node.type == WickASTNodeType.WickBinding) {
+                    if (node.type == WickNodeType.WickBinding) {
 
                         component.addBinding({
                             attribute_name: "input_value",
@@ -231,7 +231,7 @@ loadHTMLHandlerInternal(
 
             return;
         }
-    }, WickASTNodeType.HTMLAttribute
+    }, WickNodeType.HTMLAttribute
 );
 
 
@@ -246,7 +246,7 @@ loadHTMLHandlerInternal(
 
             if (node.name == "component") {
 
-                const component_name = <string>(<WickASTNode>node).value;
+                const component_name = <string>(<WickNode>node).value;
 
                 component.names.push(component_name);
 
@@ -276,7 +276,7 @@ loadHTMLHandlerInternal(
 
             return;
         }
-    }, WickASTNodeType.HTMLAttribute
+    }, WickNodeType.HTMLAttribute
 );
 
 
@@ -326,7 +326,7 @@ loadHTMLHandlerInternal(
                 return null;
             }
         }
-    }, WickASTNodeType.HTMLAttribute
+    }, WickNodeType.HTMLAttribute
 );
 
 loadHTMLHandlerInternal(
@@ -349,7 +349,7 @@ loadHTMLHandlerInternal(
                 return null;
             }
         }
-    }, WickASTNodeType.HTMLAttribute
+    }, WickNodeType.HTMLAttribute
 );
 /*
  * HTML Elements lacking a spec tag.
@@ -407,7 +407,7 @@ loadHTMLHandlerInternal(
 
                         ch = n;
 
-                        if (!(n.type & WickASTNodeClass.HTML_ELEMENT)) { continue; }
+                        if (!(n.type & WickNodeClass.HTML_ELEMENT)) { continue; }
 
                         const other_attributes = [];
 
@@ -480,7 +480,7 @@ loadHTMLHandlerInternal(
             return node;
         }
 
-    }, WickASTNodeType.HTML_Element
+    }, WickNodeType.HTML_Element
 );
 
 loadHTMLHandlerInternal(
@@ -493,7 +493,7 @@ loadHTMLHandlerInternal(
 
             return null;
         }
-    }, WickASTNodeType.HTML_STYLE
+    }, WickNodeType.HTML_STYLE
 );
 
 loadHTMLHandlerInternal(
@@ -527,7 +527,7 @@ loadHTMLHandlerInternal(
             return null;
         }
 
-    }, WickASTNodeType.HTML_SCRIPT
+    }, WickNodeType.HTML_SCRIPT
 );
 
 loadHTMLHandlerInternal(
@@ -543,10 +543,10 @@ loadHTMLHandlerInternal(
             return null;
         }
 
-    }, WickASTNodeType.HTML_IMPORT
+    }, WickNodeType.HTML_IMPORT
 );
 
-function getAttributeValue(name, node: WickASTNode) {
+function getAttributeValue(name, node: WickNode) {
     for (const att of node.attributes) {
         if (att.name == name)
             return att.value;

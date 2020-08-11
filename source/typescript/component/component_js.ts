@@ -4,7 +4,7 @@ import { traverse, copy } from "@candlefw/conflagrate";
 import { Component, FunctionFrame } from "../types/types.js";
 import Presets from "../presets.js";
 import { JS_handlers } from "./component_default_js_handlers.js";
-import { createFrame } from "./component_common.js";
+import { createFrame } from "./component_create_frame";
 
 function processPreamble(ast: JSNode, component: Component, frame: FunctionFrame = null, TEMPORARY = false) {
     const function_frame = frame ?
