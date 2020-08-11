@@ -1,5 +1,5 @@
 import URL from "@candlefw/url";
-import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
+import { JSNode, JSNodeType } from "@candlefw/js";
 
 import Presets from "../presets.js";
 import parseStringReturnAST from "../parser/parser.js";
@@ -15,7 +15,7 @@ import { createFrame } from "./component_common.js";
 import { DOMLiteral } from "../wick.js";
 export const component_cache = {};
 
-function getHTML_AST(ast: WickASTNode | MinTreeNode): WickASTNode {
+function getHTML_AST(ast: WickASTNode | JSNode): WickASTNode {
 
     while (ast && !(ast.type & WickASTNodeClass.HTML_ELEMENT))
         ast = ast.nodes[0];
@@ -23,11 +23,11 @@ function getHTML_AST(ast: WickASTNode | MinTreeNode): WickASTNode {
     return <WickASTNode>ast;
 }
 
-function determineSourceType(ast: WickASTNode | MinTreeNode): boolean {
+function determineSourceType(ast: WickASTNode | JSNode): boolean {
 
-    if (ast.type == MinTreeNodeType.Script || ast.type == MinTreeNodeType.Module) {
+    if (ast.type == JSNodeType.Script || ast.type == JSNodeType.Module) {
         if (ast.nodes.length > 1) return true;
-        if (ast.nodes[0].type != MinTreeNodeType.ExpressionStatement) return true;
+        if (ast.nodes[0].type != JSNodeType.ExpressionStatement) return true;
         if (!(ast.nodes[0].nodes[0].type & WickASTNodeClass.HTML_ELEMENT)) return true;
     }
 
@@ -131,7 +131,7 @@ export default async function makeComponent(input: URL | string, presets?: Prese
 };
 
 export async function compileComponent(
-    ast: WickASTNode | MinTreeNode,
+    ast: WickASTNode | JSNode,
     source_string: string,
     url: string,
     presets: Presets,
@@ -168,7 +168,7 @@ export async function compileComponent(
         presets.components.set(component.name, component);
 
         if (IS_SCRIPT)
-            await processWickJS_AST(<MinTreeNode>ast, component, presets);
+            await processWickJS_AST(<JSNode>ast, component, presets);
         else
             await processWickHTML_AST(getHTML_AST(ast), component, presets);
 

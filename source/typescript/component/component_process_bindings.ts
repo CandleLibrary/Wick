@@ -1,4 +1,4 @@
-import { MinTreeNodeType, stmt } from "@candlefw/js";
+import { JSNodeType, stmt } from "@candlefw/js";
 
 import { Component, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
 import { BindingObject, BindingType, PendingBinding } from "../types/binding";
@@ -115,7 +115,7 @@ export function processBindings(component: Component, class_data, presets: Prese
 
         if (initialize_ast)
             initialize_stmts.push({
-                type: MinTreeNodeType.ExpressionStatement,
+                type: JSNodeType.ExpressionStatement,
                 nodes: [initialize_ast],
                 pos: initialize_ast.pos
             });
@@ -150,14 +150,14 @@ export function processBindings(component: Component, class_data, presets: Prese
                         if (variable.IS_OBJECT) {
                             const s = stmt(`if(${getComponentVariableName(internal_name, component)});`);
                             s.nodes[1] = {
-                                type: MinTreeNodeType.ExpressionStatement,
+                                type: JSNodeType.ExpressionStatement,
                                 nodes: [binding.write_ast],
                                 pos: binding.pos
                             };
                             body.nodes.push(s);
                         } else
                             body.nodes.push({
-                                type: MinTreeNodeType.ExpressionStatement,
+                                type: JSNodeType.ExpressionStatement,
                                 nodes: [binding.write_ast],
                                 pos: binding.pos
                             });

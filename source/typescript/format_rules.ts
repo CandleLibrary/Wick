@@ -1,47 +1,48 @@
 import { buildRenderers } from "@candlefw/conflagrate";
-import { MinTreeNodeDefinitions, MinTreeNodeType } from "@candlefw/js";
+import { JSNodeDefinitions, JSNodeType } from "@candlefw/js";
 import { buildFormatRules, FormatRule as $ } from "@candlefw/conflagrate";
-import { CSSTreeNodeDefinitions, CSSTreeNodeType } from "@candlefw/css";
+import { CSSTreeNodeDefinitions } from "@candlefw/css";
+import { WickASTNodeType } from "./types/wick_ast_node_types.js";
+import { NodeTypes } from "./parser/parser_environment.js";
 
-import { WickASTNodeType, WickASTNodeTypeLU } from "./types/wick_ast_node_types.js";
 export const { format_rules } = buildFormatRules([{
-    type: MinTreeNodeType.LexicalDeclaration,
+    type: JSNodeType.LexicalDeclaration,
     format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 15
 }, {
-    type: MinTreeNodeType.FromClause,
+    type: JSNodeType.FromClause,
     format_rule: $.OPTIONAL_SPACE
 }, {
-    type: MinTreeNodeType.AssignmentExpression,
+    type: JSNodeType.AssignmentExpression,
     format_rule: $.OPTIONAL_SPACE
 }, {
-    type: MinTreeNodeType.BindingExpression,
+    type: JSNodeType.BindingExpression,
     format_rule: $.OPTIONAL_SPACE
 }, {
-    type: MinTreeNodeType.IfStatement,
+    type: JSNodeType.IfStatement,
     format_rule: $.OPTIONAL_SPACE
 }, {
-    type: MinTreeNodeType.Class,
+    type: JSNodeType.Class,
     format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT
 }, {
-    type: MinTreeNodeType.Script,
+    type: JSNodeType.Script,
     format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT
 }, {
-    type: MinTreeNodeType.BlockStatement,
+    type: JSNodeType.BlockStatement,
     format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 5
 }, {
-    type: MinTreeNodeType.FunctionBody,
+    type: JSNodeType.FunctionBody,
     format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 5
 }, {
-    type: MinTreeNodeType.ObjectLiteral,
+    type: JSNodeType.ObjectLiteral,
     format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 5
 }, {
-    type: MinTreeNodeType.Arguments,
+    type: JSNodeType.Arguments,
     format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 5
 }, {
-    type: MinTreeNodeType.FormalParameters,
+    type: JSNodeType.FormalParameters,
     format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 5
 }, {
-    type: MinTreeNodeType.ExpressionList,
+    type: JSNodeType.ExpressionList,
     format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 14
 }, {
     type: WickASTNodeType.HTML_DIV,
@@ -51,7 +52,7 @@ export const { format_rules } = buildFormatRules([{
     format_rule: $.INDENT * 2 | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 14
 }]);
 
-const definitions = [ /**/ /**/ ...MinTreeNodeDefinitions /**/,/**/...CSSTreeNodeDefinitions, ...[
+const definitions = [ /**/ /**/ ...JSNodeDefinitions /**/,/**/...CSSTreeNodeDefinitions, ...[
     {
         type: WickASTNodeType.HTML_DIV,
         template_pattern: "<div @_attributes...%>^1@...%^0</div>",
@@ -382,6 +383,8 @@ const definitions = [ /**/ /**/ ...MinTreeNodeDefinitions /**/,/**/...CSSTreeNod
         template_pattern: "@data",
     },
 ]];
-const renderers = buildRenderers(definitions, Object.assign({}, CSSTreeNodeType, WickASTNodeTypeLU, MinTreeNodeType));
+
+
+const renderers = buildRenderers(definitions, NodeTypes);
 
 export { renderers };

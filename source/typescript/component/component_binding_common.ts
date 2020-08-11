@@ -1,4 +1,4 @@
-import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
+import { JSNode, JSNodeType } from "@candlefw/js";
 
 import { FunctionFrame, DATA_FLOW_FLAG } from "../types/types.js";
 import { BindingVariable } from "../types/binding";
@@ -16,10 +16,10 @@ function getRootFrame(frame: FunctionFrame) {
     return frame;
 }
 
-export function addNodeToBindingIdentifiers(n: MinTreeNode, p: MinTreeNode, frame: FunctionFrame) {
+export function addNodeToBindingIdentifiers(n: JSNode, p: JSNode, frame: FunctionFrame) {
 
     for (const { node, meta: { parent: par } } of traverse(n, "nodes")
-        .filter("type", MinTreeNodeType.IdentifierReference, MinTreeNodeType.IdentifierBinding)
+        .filter("type", JSNodeType.IdentifierReference, JSNodeType.IdentifierBinding)
     ) {
         // Check to see if node has already been assigned
         // as could be the case if a parent node has been 

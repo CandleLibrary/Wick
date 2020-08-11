@@ -1,4 +1,4 @@
-import { exp, MinTreeNode } from "@candlefw/js";
+import { exp, JSNode } from "@candlefw/js";
 
 /**
  * Create an AST of the form
@@ -7,8 +7,8 @@ import { exp, MinTreeNode } from "@candlefw/js";
  * 
  * ````
  * 
- * @param name :  A string or @type {MinTreeNode} specifying the name of the property.
- * @param value : A string or @type {MinTreeNode} specifying the value of the property.
+ * @param name :  A string or @type {JSNode} specifying the name of the property.
+ * @param value : A string or @type {JSNode} specifying the value of the property.
  * @param {boolean} COMPUTED
  * If true the returned computed value should appear as:
  * 
@@ -16,7 +16,7 @@ import { exp, MinTreeNode } from "@candlefw/js";
  * [name] : property_value
  * ```
  */
-export function getPropertyAST(name: string | MinTreeNode, value: string | MinTreeNode, COMPUTED: boolean = false) {
+export function getPropertyAST(name: string | JSNode, value: string | JSNode, COMPUTED: boolean = false) {
     return exp(`({${name}:${value}})`).nodes[0].nodes[0];
 }
 /**

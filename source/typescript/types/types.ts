@@ -1,4 +1,4 @@
-import { MinTreeNode } from "@candlefw/js";
+import { JSNode } from "@candlefw/js";
 import { CSSTreeNode } from "@candlefw/css";
 import { WickASTNode, WickTextNode } from "./wick_ast_node_types.js";
 import URL from "@candlefw/url";
@@ -54,7 +54,7 @@ export interface FunctionFrame {
     /**
      * An optional copy of the frame's ast object.
      */
-    backup_ast?: MinTreeNode;
+    backup_ast?: JSNode;
 
     /**
      * Any binding variable that is referenced within the function.
@@ -65,7 +65,7 @@ export interface FunctionFrame {
      * Identifiers that have no declaration and no presence in the 
      * the global object and thus must be a binding identifier reference.
      */
-    binding_ref_identifiers: { node: MinTreeNode, parent: MinTreeNode, index: number; }[];
+    binding_ref_identifiers: { node: JSNode, parent: JSNode, index: number; }[];
 
     /**
      * Binding variable names that are read by the method.
@@ -80,7 +80,7 @@ export interface FunctionFrame {
     /**
      * Extracted source AST for this function block
      */
-    ast: MinTreeNode;
+    ast: JSNode;
 
     prev?: FunctionFrame;
 
@@ -120,7 +120,7 @@ export interface Component {
      * a reference or an array of references that match the selector to a
      * local HTML element or elements. 
      */
-    selector_map: Map<string, MinTreeNode[]>;
+    selector_map: Map<string, JSNode[]>;
 
     /**
      * Count of number of container tags identified in HTML 
@@ -138,8 +138,8 @@ export interface Component {
      */
     addBinding(arg: {
         attribute_name: string,
-        binding_val: MinTreeNode | WickASTNode | CSSTreeNode | any,
-        host_node: MinTreeNode | WickASTNode | CSSTreeNode,
+        binding_val: JSNode | WickASTNode | CSSTreeNode | any,
+        host_node: JSNode | WickASTNode | CSSTreeNode,
         html_element_index: number;
     }): void;
 

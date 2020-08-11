@@ -3,7 +3,7 @@ import { acquireComponentASTFromRemoteSource, compileComponent } from "./compone
 import { componentDataToJSCached } from "./component_data_to_js.js";
 import Presets from "../presets.js";
 import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
-import { MinTreeNode, MinTreeNodeType } from "@candlefw/js";
+import { JSNode, JSNodeType } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 import { WickASTNode } from "../wick.js";
 
@@ -57,7 +57,7 @@ export async function importResource(
     from_value: string,
     component: Component,
     presets: Presets,
-    node: WickASTNode | MinTreeNode,
+    node: WickASTNode | JSNode,
     local_name: string = "",
     names: { local: string, external: string; }[] = [],
     frame: FunctionFrame
@@ -136,7 +136,7 @@ export async function importResource(
 
         addWrittenBindingVariableName(local, frame);
 
-        //setComponentVariable(ref_type, local, component, external || local, flag, <MinTreeNode>node);
+        //setComponentVariable(ref_type, local, component, external || local, flag, <JSNode>node);
     }
 }
 
@@ -163,13 +163,13 @@ export function createFrame(parent_frame: any, TEMPORARY: boolean = false, compo
 }
 
 /** JS COMMON */
-export function getFirstReferenceNode(node: MinTreeNode): MinTreeNode {
-    for (const { node: id } of traverse(node, "nodes").filter("type", MinTreeNodeType.IdentifierReference))
+export function getFirstReferenceNode(node: JSNode): JSNode {
+    for (const { node: id } of traverse(node, "nodes").filter("type", JSNodeType.IdentifierReference))
         return id;
     return null;
 }
 
-export function getFirstReferenceName(node: MinTreeNode): string {
+export function getFirstReferenceName(node: JSNode): string {
 
     const ref = getFirstReferenceNode(node);
 

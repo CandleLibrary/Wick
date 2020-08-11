@@ -1,4 +1,4 @@
-import { MinTreeNode } from "@candlefw/js";
+import { JSNode } from "@candlefw/js";
 
 import { WickASTNode } from "./wick_ast_node_types.js";
 import { Component, FunctionFrame } from "./types.js";
@@ -28,14 +28,14 @@ export interface JSHandler {
      * @return @type {WickASTNode} | @type {void} | @type {Promise}
      */
     prepareJSNode(
-        node: MinTreeNode | WickASTNode,
-        parent_node: MinTreeNode | WickASTNode,
+        node: JSNode | WickASTNode,
+        parent_node: JSNode | WickASTNode,
         skip: (amount?: number) => void,
         component: Component,
         presets: Presets,
         frame: FunctionFrame
     ):
-        MinTreeNode
+        JSNode
         | void
-        | Promise<MinTreeNode | void>;
+        | Promise<JSNode | void>;
 }

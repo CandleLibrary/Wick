@@ -1,4 +1,4 @@
-import { MinTreeNodeType, exp, stmt, MinTreeNode } from "@candlefw/js";
+import { JSNodeType, exp, stmt, JSNode } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 import { matchAll } from "@candlefw/css";
 
@@ -37,7 +37,7 @@ export function createBindingObject(type: BindingType, priority: number = 0): Bi
     };
 }
 
-function addNewMethodFrame(function_node: MinTreeNode, component: Component, presets) {
+function addNewMethodFrame(function_node: JSNode, component: Component, presets) {
     processFunctionDeclarationSync(function_node, component, presets);
 }
 
@@ -45,7 +45,7 @@ function getFrameFromName(name: string, component: Component) {
     return component.frames.filter(({ name: n }) => n == name)[0] || null;
 }
 
-function setIdentifierReferenceVariables(root_node: MinTreeNode, component: Component, binding: BindingObject): MinTreeNode {
+function setIdentifierReferenceVariables(root_node: JSNode, component: Component, binding: BindingObject): JSNode {
 
     const receiver = { ast: null }, component_names = component.root_frame.binding_type;
 
@@ -53,7 +53,7 @@ function setIdentifierReferenceVariables(root_node: MinTreeNode, component: Comp
         .makeReplaceable()
         .extract(receiver)) {
 
-        if (node.type == MinTreeNodeType.IdentifierReference) {
+        if (node.type == JSNodeType.IdentifierReference) {
 
             const val = node.value;
 
@@ -63,7 +63,7 @@ function setIdentifierReferenceVariables(root_node: MinTreeNode, component: Comp
             replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
 
             //Pop any binding names into the binding information container. 
-            setBindingVariable(<string>val, parent && parent.type == MinTreeNodeType.MemberExpression, binding);
+            setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, binding);
         }
     }
 
@@ -110,12 +110,12 @@ loadBindingHandler({
 
             for (const { node, meta: { parent } } of traverse(primary_ast, "nodes")) {
 
-                if (node.type == MinTreeNodeType.IdentifierReference) {
+                if (node.type == JSNodeType.IdentifierReference) {
                     if (!component_names.has(<string>node.value))
                         continue;
                     //Pop any binding names into the binding information container. 
 
-                    setBindingVariable(<string>node.value, parent.type == MinTreeNodeType.MemberExpression, binding);
+                    setBindingVariable(<string>node.value, parent.type == JSNodeType.MemberExpression, binding);
                 }
             }
 
@@ -123,7 +123,7 @@ loadBindingHandler({
 
             for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver)) {
 
-                if (node.type == MinTreeNodeType.IdentifierReference) {
+                if (node.type == JSNodeType.IdentifierReference) {
                     replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
                 }
             }
@@ -207,7 +207,7 @@ loadBindingHandler({
 
 
 
-function setBindingAndRefVariables(root_node: MinTreeNode, component: Component, binding: BindingObject): MinTreeNode {
+function setBindingAndRefVariables(root_node: JSNode, component: Component, binding: BindingObject): JSNode {
 
     const receiver = { ast: null }, component_names = component.root_frame.binding_type;
 
@@ -215,7 +215,7 @@ function setBindingAndRefVariables(root_node: MinTreeNode, component: Component,
         .makeReplaceable()
         .extract(receiver)) {
 
-        if (node.type == MinTreeNodeType.IdentifierReference || node.type == MinTreeNodeType.IdentifierBinding) {
+        if (node.type == JSNodeType.IdentifierReference || node.type == JSNodeType.IdentifierBinding) {
 
             const val = node.value;
 
@@ -225,14 +225,14 @@ function setBindingAndRefVariables(root_node: MinTreeNode, component: Component,
             replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
 
             //Pop any binding names into the binding information container. 
-            setBindingVariable(<string>val, parent && parent.type == MinTreeNodeType.MemberExpression, binding);
+            setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, binding);
         }
     }
 
     //Convert to call
     const node = receiver.ast;
 
-    //root_node.type = MinTreeNodeType.CallExpression;
+    //root_node.type = JSNodeType.CallExpression;
 
     return node;
 }
@@ -250,7 +250,7 @@ loadBindingHandler({
 
         const binding = createBindingObject(BindingType.WRITE);
 
-        const [ref, expr] = (<MinTreeNode><unknown>binding_node_ast).nodes;
+        const [ref, expr] = (<JSNode><unknown>binding_node_ast).nodes;
 
         const comp_var = component.root_frame.binding_type.get(<string>ref.value);
 
@@ -291,7 +291,7 @@ loadBindingHandler({
             const receiver = { ast: null };
 
             for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver))
-                if (node.type == MinTreeNodeType.IdentifierReference) {
+                if (node.type == JSNodeType.IdentifierReference) {
 
                     //   replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
                 }
@@ -300,7 +300,7 @@ loadBindingHandler({
 
             let expression = null;
 
-            if (ast.type == MinTreeNodeType.IdentifierReference) {
+            if (ast.type == JSNodeType.IdentifierReference) {
                 let name = ast.value;
 
                 const frame = getFrameFromName(name, component);
@@ -423,14 +423,14 @@ loadBindingHandler({
 
             if (primary_ast) {
                 let v = null;
-                if (primary_ast.type == MinTreeNodeType.IdentifierReference) {
+                if (primary_ast.type == JSNodeType.IdentifierReference) {
                     v = primary_ast.value;
                 }
 
                 const ast = setIdentifierReferenceVariables(primary_ast, component, binding);
 
                 {
-                    if (primary_ast.type == MinTreeNodeType.IdentifierReference) {
+                    if (primary_ast.type == JSNodeType.IdentifierReference) {
                         const frame = getFrameFromName(v, component);
 
                         let name = v;
@@ -527,7 +527,7 @@ loadBindingHandler({
 
             for (const { node, meta } of traverse(primary_ast, "nodes")) {
 
-                if (node.type == MinTreeNodeType.IdentifierReference) {
+                if (node.type == JSNodeType.IdentifierReference) {
 
                     const val = component_names.get(<string>node.value);
 
@@ -537,14 +537,14 @@ loadBindingHandler({
                     //Pop any binding names into the binding information container. 
                     setBindingVariable(
                         <string>node.value,
-                        !!meta.parent && meta.parent.type == MinTreeNodeType.MemberExpression,
+                        !!meta.parent && meta.parent.type == JSNodeType.MemberExpression,
                         binding
                     );
                 }
             }
 
             for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver))
-                if (node.type == MinTreeNodeType.IdentifierReference)
+                if (node.type == JSNodeType.IdentifierReference)
                     replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
 
             const expression = exp(`this.ct[${host_node.container_id}].sd(0)`);
@@ -578,7 +578,7 @@ loadBindingHandler({
 
             for (const { node, meta: { parent } } of traverse(primary_ast, "nodes")) {
 
-                if (node.type == MinTreeNodeType.IdentifierReference) {
+                if (node.type == JSNodeType.IdentifierReference) {
 
                     const val = component_names.get(<string>node.value);
 
@@ -586,14 +586,14 @@ loadBindingHandler({
                         continue;
 
                     //Pop any binding names into the binding information container. 
-                    setBindingVariable(<string>node.value, parent.type == MinTreeNodeType.MemberExpression, binding);
+                    setBindingVariable(<string>node.value, parent.type == JSNodeType.MemberExpression, binding);
                 }
             }
 
             const receiver = { ast: null };
 
             for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver))
-                if (node.type == MinTreeNodeType.IdentifierReference)
+                if (node.type == JSNodeType.IdentifierReference)
                     replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
 
             const expression = exp(`m1=>(1)`);
@@ -630,7 +630,7 @@ loadBindingHandler({
 
             for (const { node, meta: { parent } } of traverse(primary_ast, "nodes")) {
 
-                if (node.type == MinTreeNodeType.IdentifierReference) {
+                if (node.type == JSNodeType.IdentifierReference) {
 
                     const val = component_names.get(<string>node.value);
 
@@ -638,14 +638,14 @@ loadBindingHandler({
                         continue;
 
                     //Pop any binding names into the binding information container. 
-                    setBindingVariable(<string>node.value, parent.type == MinTreeNodeType.MemberExpression, binding);
+                    setBindingVariable(<string>node.value, parent.type == JSNodeType.MemberExpression, binding);
                 }
             }
 
             const receiver = { ast: null };
 
             for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver))
-                if (node.type == MinTreeNodeType.IdentifierReference)
+                if (node.type == JSNodeType.IdentifierReference)
                     replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
 
             const expression = exp(`m1=>(1)`);
@@ -714,7 +714,7 @@ loadBindingHandler({
         if (nodes.length > 0) {
 
             const index = host_node.nodes.indexOf(pending_binding_node);
-            (<MinTreeNode><unknown>host_node).nodes[index] = (nodes.length == 1)
+            (<JSNode><unknown>host_node).nodes[index] = (nodes.length == 1)
                 ? exp(`this.elu[${nodes[0].lookup_index}];`)
                 : exp(`[${nodes.map(e => `this.elu[${e.lookup_index}]`).join(",")}]`);
         }

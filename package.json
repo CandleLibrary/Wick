@@ -69,7 +69,7 @@
         "@candlefw/glow": "latest",
         "@candlefw/html": "^0.0.14",
         "@candlefw/hydrocarbon": "^0.3.4-dev-1",
-        "@candlefw/js": "^0.1.6-dev-1",
+        "@candlefw/js": "^0.2.0",
         "@candlefw/math": "latest",
         "@candlefw/spark": "^0.1.0",
         "@candlefw/url": "^0.1.1",

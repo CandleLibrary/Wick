@@ -1,13 +1,16 @@
+import URL from "@candlefw/url";
 import { addModuleToCFW } from "@candlefw/cfw";
 import { CSSTreeNodeType, CSSTreeNode, CSSRuleNode } from "@candlefw/css";
-import { MinTreeNodeType, MinTreeNode } from "@candlefw/js";
+import { JSNodeType, JSNode, JSNodeTypeLU } from "@candlefw/js";
 import { renderWithFormatting } from "@candlefw/conflagrate";
-import URL from "@candlefw/url";
+
 
 import Presets from "./presets.js";
 import makeComponent from "./component/component.js";
-import { WickRTComponent, class_strings } from "./runtime/runtime_component.js";
+import parser from "./parser/parser.js";
+
 import { rt } from "./runtime/runtime_global.js";
+import { WickRTComponent, class_strings } from "./runtime/runtime_component.js";
 import { PresetOptions } from "./types/preset_options.js";
 import {
     componentDataToJS,
@@ -22,7 +25,6 @@ import { PendingBinding } from "./types/binding";
 import { DOMLiteral } from "./types/dom_literal.js";
 import { ExtendedComponent } from "./types/extended_component";
 import { componentDataToHTML } from "./component/component_data_to_html.js";
-import parser from "./parser/parser.js";
 import { WickASTNodeTypeLU, WickASTNodeClass, WickASTNode } from "./types/wick_ast_node_types.js";
 import { renderers, format_rules } from "./format_rules.js";
 import { ObservableModel, ObservableWatcher } from "./types/observable_model.js";
@@ -170,7 +172,7 @@ addModuleToCFW(wick, "wick");
 interface wickOutput {
     parse: {
         parser: typeof parser;
-        render: (ast: MinTreeNode | WickASTNode | CSSTreeNode) => string;
+        render: (ast: JSNode | WickASTNode | CSSTreeNode) => string;
     };
     Presets: typeof Presets;
 
@@ -183,11 +185,11 @@ interface wickOutput {
     types: {
         DOMLiteral: DOMLiteral,
         BindingVariable: BindingVariable,
-        MinTreeNode: MinTreeNode,
+        JSNode: JSNode,
         WickASTNode: WickASTNode,
         CSSTreeNode: CSSTreeNode,
-        MinTreeNodeType: typeof MinTreeNodeType;
         CSSTreeNodeType: typeof CSSTreeNodeType;
+        JSNodeType: typeof JSNodeTypeLU;
         WickASTNodeType: typeof WickASTNodeTypeLU;
         WickASTNodeClass: typeof WickASTNodeClass;
         VARIABLE_REFERENCE_TYPE: typeof VARIABLE_REFERENCE_TYPE;
@@ -209,10 +211,11 @@ Object.assign(wick, {
     css_selector_helpers,
 
     types: {
-        MinTreeNodeType,
         CSSTreeNodeType,
+        JSNodeType: JSNodeTypeLU,
         WickASTNodeType: WickASTNodeTypeLU
     },
+
     Presets,
     WickRTComponent,
     componentDataToHTML,
@@ -225,33 +228,37 @@ Object.assign(wick, {
 export default wick;
 
 export {
-    ObservableModel,
-    createNameHash,
-    ObservableWatcher,
+    //Functions
     wick,
-    wickOutput,
     parser,
-    Presets,
-    Component,
-    WickRTComponent,
-    WickRTComponent as RuntimeComponent,
+    createNameHash,
     componentDataToHTML,
     componentDataToCSS,
     componentDataToJS as componentDataToClass,
     componentDataToClassString,
 
-    //Types
+    //Object Types
+    Presets,
+    WickRTComponent as RuntimeComponent,
+    WickRTComponent,
+    WickASTNodeTypeLU as WickASTNodeType,
+    JSNodeTypeLU,
+    CSSTreeNodeType,
+
+    //Pure Types
+    wickOutput,
+    Component,
+    ObservableModel,
+    ObservableWatcher,
     DOMLiteral,
     BindingVariable,
-    MinTreeNode,
+    JSNode,
     WickASTNode,
     CSSTreeNode,
-    MinTreeNodeType,
-    CSSTreeNodeType,
-    WickASTNodeTypeLU as WickASTNodeType,
+    JSNodeType,
     WickASTNodeClass,
-    VARIABLE_REFERENCE_TYPE,
     FunctionFrame,
     PendingBinding,
+    VARIABLE_REFERENCE_TYPE,
     DATA_FLOW_FLAG
 };

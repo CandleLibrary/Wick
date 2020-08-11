@@ -1,4 +1,4 @@
-import { MinTreeNode, MinTreeNodeClass } from "@candlefw/js";
+import { JSNode, JSNodeClass } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
 import { Component } from "../wick";
 
@@ -255,8 +255,8 @@ export interface WickBindingNode extends WickASTNode {
      * External Identifer name, ie: name exported to parent. 
      */
     extern?: string;
-    primary_ast?: MinTreeNode;
-    secondary_ast?: MinTreeNode;
+    primary_ast?: JSNode;
+    secondary_ast?: JSNode;
 
     pos: Lexer;
 }

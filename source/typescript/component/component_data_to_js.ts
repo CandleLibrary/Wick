@@ -1,4 +1,4 @@
-import { MinTreeNodeType, MinTreeNode, exp, stmt } from "@candlefw/js";
+import { JSNodeType, JSNode, exp, stmt } from "@candlefw/js";
 import { renderWithFormatting, copy } from "@candlefw/conflagrate";
 
 import Presets from "../presets.js";
@@ -43,7 +43,7 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
 
         const cpy = copy(ast);
 
-        cpy.type = MinTreeNodeType.Method;
+        cpy.type = JSNodeType.Method;
 
         if (!frame.IS_ROOT) {
 
@@ -68,7 +68,7 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
 
         switch (frame.IS_ROOT) {
             case true:
-                class_information.binding_init_statements.push(...cpy.nodes.filter(n => n.type != MinTreeNodeType.EmptyStatement));
+                class_information.binding_init_statements.push(...cpy.nodes.filter(n => n.type != JSNodeType.EmptyStatement));
                 break;
             default:
                 class_information.methods.push(cpy);
@@ -200,7 +200,7 @@ export function componentDataToClassString(component: Component, presets: Preset
 
                 [, , { nodes: [r_stmt] }] = ele_create_method.nodes;
 
-            r_stmt.nodes[0].nodes[1].nodes[0] = <MinTreeNode>{ type: MinTreeNodeType.Identifier, value: `${JSON.stringify(component.HTML)}`, pos: r_stmt.nodes[0].nodes[1].pos };
+            r_stmt.nodes[0].nodes[1].nodes[0] = <JSNode>{ type: JSNodeType.Identifier, value: `${JSON.stringify(component.HTML)}`, pos: r_stmt.nodes[0].nodes[1].pos };
 
             // Setup element
             class_information.methods.push(ele_create_method);

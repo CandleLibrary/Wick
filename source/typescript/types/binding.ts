@@ -1,5 +1,5 @@
 import { Lexer } from "@candlefw/wind";
-import { MinTreeNode } from "@candlefw/js";
+import { JSNode } from "@candlefw/js";
 
 import { VARIABLE_REFERENCE_TYPE, DATA_FLOW_FLAG } from "./types";
 import { WickASTNode, WickBindingNode } from "./wick_ast_node_types.js";
@@ -46,10 +46,10 @@ export const enum BindingType {
 
 export interface BindingObject {
     component_variables: Map<string, { name: string; IS_OBJECT: boolean; }>;
-    initialize_ast?: MinTreeNode;
-    read_ast?: MinTreeNode;
-    write_ast?: MinTreeNode;
-    cleanup_ast?: MinTreeNode;
+    initialize_ast?: JSNode;
+    read_ast?: JSNode;
+    write_ast?: JSNode;
+    cleanup_ast?: JSNode;
     DEBUG: boolean;
     //TODO - Determine form of an
     annotate: string;
@@ -65,7 +65,7 @@ export interface BindingObject {
 export interface PendingBinding {
     html_element_index: number;
     attribute_name: string;
-    host_node: WickASTNode | MinTreeNode;
+    host_node: WickASTNode | JSNode;
     binding_val: WickBindingNode | any;
 }
 

@@ -1,5 +1,5 @@
 import { traverse } from "@candlefw/conflagrate";
-import { exp, MinTreeNode, MinTreeNodeType, stmt } from "@candlefw/js";
+import { exp, JSNode, JSNodeType, stmt } from "@candlefw/js";
 import { JSHandler } from "../types/js_handler.js";
 import { Component, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
 import { WickASTNode, WickASTNodeClass, WickASTNodeTypeLU, WickBindingNode, WICK_AST_NODE_TYPE_SIZE, WickASTNodeType } from "../types/wick_ast_node_types.js";
@@ -15,7 +15,7 @@ import { processWickHTML_AST } from "./component_html.js";
 import { processFunctionDeclaration, processNodeSync } from "./component_js.js";
 
 
-export function findFirstNodeOfType(type: MinTreeNodeType, ast: MinTreeNode) {
+export function findFirstNodeOfType(type: JSNodeType, ast: JSNode) {
 
     for (const { node } of traverse(ast, "nodes"))
         if (node.type == type) return node;
@@ -31,7 +31,7 @@ const default_handler = {
 export const JS_handlers: Array<JSHandler[]> = Array(512 - WICK_AST_NODE_TYPE_SIZE).fill(null).map(() => [default_handler]);
 
 
-function loadJSHandlerInternal(handler: JSHandler, ...types: MinTreeNodeType[]) {
+function loadJSHandlerInternal(handler: JSHandler, ...types: JSNodeType[]) {
 
     for (const type of types) {
 
@@ -44,7 +44,7 @@ function loadJSHandlerInternal(handler: JSHandler, ...types: MinTreeNodeType[]) 
     }
 }
 
-export function loadJSHandler(handler: JSHandler, ...types: MinTreeNodeType[]) {
+export function loadJSHandler(handler: JSHandler, ...types: JSNodeType[]) {
 
     const modified_handler = Object.assign({}, handler);
 
@@ -55,14 +55,14 @@ export function loadJSHandler(handler: JSHandler, ...types: MinTreeNodeType[]) {
 
 function addBinding(
     attribute_name: string,
-    binding_val: MinTreeNode,
-    host_node: MinTreeNode,
+    binding_val: JSNode,
+    host_node: JSNode,
     html_element_index: number,
     component: Component) {
     component.bindings.push({
         attribute_name,
         binding_val,
-        host_node: <MinTreeNode>host_node,
+        host_node: <JSNode>host_node,
         html_element_index
     });
 }
@@ -117,13 +117,13 @@ loadJSHandlerInternal(
                 const names = [];
 
                 for (const { node: id, meta: { skip } } of traverse(node, "nodes", 4)
-                    .filter("type", MinTreeNodeType.Specifier, MinTreeNodeType.IdentifierModule)
+                    .filter("type", JSNodeType.Specifier, JSNodeType.IdentifierModule)
                     .makeSkippable()
                 ) {
 
                     let local = "", external = "";
 
-                    if (id.type == MinTreeNodeType.Specifier) {
+                    if (id.type == JSNodeType.Specifier) {
                         external = <string>id.nodes[0].value;
                         local = <string>id.nodes[1].value;
                     } else {
@@ -144,7 +144,7 @@ loadJSHandlerInternal(
 
             return null;
         }
-    }, MinTreeNodeType.ImportDeclaration
+    }, JSNodeType.ImportDeclaration
 );
 /*
 ███████ ██   ██ ██████   ██████  ██████  ████████                                      
@@ -198,7 +198,7 @@ loadJSHandlerInternal(
 
             return null;
         }
-    }, MinTreeNodeType.ExportDeclaration
+    }, JSNodeType.ExportDeclaration
 );
 
 /*
@@ -226,7 +226,7 @@ loadJSHandlerInternal(
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
-            node = processNodeSync(<MinTreeNode>node, frame, component, presets);
+            node = processNodeSync(<JSNode>node, frame, component, presets);
 
             const
                 n = stmt("a,a;"),
@@ -237,9 +237,9 @@ loadJSHandlerInternal(
 
             //Add all elements to global 
             for (const { node: binding, meta } of traverse(node, "nodes", 4)
-                .filter("type", MinTreeNodeType.IdentifierBinding, MinTreeNodeType.BindingExpression)
+                .filter("type", JSNodeType.IdentifierBinding, JSNodeType.BindingExpression)
             ) {
-                if (binding.type == MinTreeNodeType.BindingExpression) {
+                if (binding.type == JSNodeType.BindingExpression) {
 
                     const
                         [identifier] = binding.nodes,
@@ -260,11 +260,11 @@ loadJSHandlerInternal(
                             debugger;
                         }
 
-                        addNodeToBindingIdentifiers(identifier, <MinTreeNode>meta.parent, frame);
+                        addNodeToBindingIdentifiers(identifier, <JSNode>meta.parent, frame);
 
                         addWrittenBindingVariableName(l_name, frame);
 
-                        addBinding("binding_initialization", binding, <MinTreeNode>node, 0, component);
+                        addBinding("binding_initialization", binding, <JSNode>node, 0, component);
 
                     } else
                         addNameToDeclaredVariables(l_name, frame);
@@ -276,7 +276,7 @@ loadJSHandlerInternal(
 
             return null;
         }
-    }, MinTreeNodeType.VariableStatement
+    }, JSNodeType.VariableStatement
 );
 
 /*
@@ -297,11 +297,11 @@ loadJSHandlerInternal(
             //Add all elements to global 
             for (const { node: binding, meta } of traverse(node, "nodes", 4)
                 .filter("type",
-                    MinTreeNodeType.IdentifierBinding,
-                    MinTreeNodeType.BindingExpression
+                    JSNodeType.IdentifierBinding,
+                    JSNodeType.BindingExpression
                 )
             ) {
-                if (binding.type == MinTreeNodeType.BindingExpression) {
+                if (binding.type == JSNodeType.BindingExpression) {
 
                     const [identifier] = binding.nodes;
 
@@ -313,7 +313,7 @@ loadJSHandlerInternal(
                 }
             }
         }
-    }, MinTreeNodeType.LexicalDeclaration, MinTreeNodeType.LexicalBinding
+    }, JSNodeType.LexicalDeclaration, JSNodeType.LexicalBinding
 );
 /*
  ██████  █████  ██      ██                                                    
@@ -340,18 +340,18 @@ loadJSHandlerInternal(
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
-            node = processNodeSync(<MinTreeNode>node, frame, component, presets);
+            node = processNodeSync(<JSNode>node, frame, component, presets);
 
             const
                 [id] = node.nodes,
-                name = <string>getFirstReferenceName(<MinTreeNode>id);//.value;
+                name = <string>getFirstReferenceName(<JSNode>id);//.value;
 
             if (!isVariableDeclared(name, frame)
                 && isBindingVariable(name, frame)) {
 
                 addNodeToBindingIdentifiers(
-                    <MinTreeNode>id,
-                    <MinTreeNode>node,
+                    <JSNode>id,
+                    <JSNode>node,
                     frame);
 
                 addReadBindingVariableName(name, frame);
@@ -359,9 +359,9 @@ loadJSHandlerInternal(
                 skip(1);
             }
 
-            return <MinTreeNode>node;
+            return <JSNode>node;
         }
-    }, MinTreeNodeType.CallExpression
+    }, JSNodeType.CallExpression
 );
 
 
@@ -420,7 +420,7 @@ loadJSHandlerInternal(
                         primary_ast: Object.assign(
                             {},
                             name_node,
-                            { type: MinTreeNodeType.IdentifierReference }
+                            { type: JSNodeType.IdentifierReference }
                         ),
                         value: name.slice(1),
                         IS_BINDING: true
@@ -455,20 +455,20 @@ loadJSHandlerInternal(
                     html_element_index: -1
                 });
 
-                node.nodes[1] = { type: MinTreeNodeType.Arguments, nodes: [exp("f=0")], pos: node.pos };
-                (<MinTreeNode>node).nodes[2].nodes.unshift(stmt(`if(f>0)return 0;`));
+                node.nodes[1] = { type: JSNodeType.Arguments, nodes: [exp("f=0")], pos: node.pos };
+                (<JSNode>node).nodes[2].nodes.unshift(stmt(`if(f>0)return 0;`));
             }
 
             skip(1);
 
             return new Promise(async res => {
-                await processFunctionDeclaration(<MinTreeNode>node, component, presets, root_name);
+                await processFunctionDeclaration(<JSNode>node, component, presets, root_name);
 
                 res(null);
             });
         }
 
-    }, MinTreeNodeType.FunctionDeclaration
+    }, JSNodeType.FunctionDeclaration
 );
 
 
@@ -498,16 +498,16 @@ loadJSHandlerInternal(
                 && isBindingVariable(name, frame)) {
 
                 addNodeToBindingIdentifiers(
-                    <MinTreeNode>node,
-                    <MinTreeNode>parent_node,
+                    <JSNode>node,
+                    <JSNode>parent_node,
                     frame);
 
                 addReadBindingVariableName(name, frame);
             }
 
-            return <MinTreeNode>node;
+            return <JSNode>node;
         }
-    }, MinTreeNodeType.IdentifierReference
+    }, JSNodeType.IdentifierReference
 );
 
 
@@ -530,15 +530,15 @@ loadJSHandlerInternal(
         priority: 1,
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
-            for (const { node: id } of traverse(<MinTreeNode>node, "nodes")
-                .filter("type", MinTreeNodeType.IdentifierReference)
+            for (const { node: id } of traverse(<JSNode>node, "nodes")
+                .filter("type", JSNodeType.IdentifierReference)
             ) {
                 const name = <string>id.value;
 
                 if (!isVariableDeclared(name, frame)) {
 
                     if (isBindingVariable(name, frame))
-                        addNodeToBindingIdentifiers(<MinTreeNode>node, <MinTreeNode>parent_node, frame);
+                        addNodeToBindingIdentifiers(<JSNode>node, <JSNode>parent_node, frame);
 
                     addWrittenBindingVariableName(name, frame);
                 }
@@ -548,7 +548,7 @@ loadJSHandlerInternal(
                 break;
             }
         }
-    }, MinTreeNodeType.AssignmentExpression
+    }, JSNodeType.AssignmentExpression
 );
 
 /*
@@ -573,12 +573,12 @@ loadJSHandlerInternal(
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
             const [expr] = node.nodes;
 
-            if (expr.type == MinTreeNodeType.CallExpression) {
+            if (expr.type == JSNodeType.CallExpression) {
                 const [id] = expr.nodes;
 
                 if (frame.IS_ROOT) {
 
-                    if (id.type == MinTreeNodeType.IdentifierReference
+                    if (id.type == JSNodeType.IdentifierReference
                         && id.value == "watch") {
 
                         component.addBinding({
@@ -591,7 +591,7 @@ loadJSHandlerInternal(
                         return null;
                     }
                 } else {
-                    const ref = findFirstNodeOfType(MinTreeNodeType.IdentifierReference, expr);
+                    const ref = findFirstNodeOfType(JSNodeType.IdentifierReference, expr);
 
                     if (ref && isBindingVariable(<string>ref.value, frame)) {
                         //Assumes that the refereneced object is modified in some
@@ -611,7 +611,7 @@ loadJSHandlerInternal(
             }
         }
 
-    }, MinTreeNodeType.ExpressionStatement
+    }, JSNodeType.ExpressionStatement
 );
 
 /*
@@ -639,10 +639,10 @@ loadJSHandlerInternal(
 
             }
 
-            return <MinTreeNode>node;
+            return <JSNode>node;
         }
 
-    }, MinTreeNodeType.StringLiteral
+    }, JSNodeType.StringLiteral
 );
 
 // String with identifiers for HTML Elements. 
@@ -654,5 +654,5 @@ loadJSHandlerInternal(
             return null;
         }
 
-    }, MinTreeNodeType.DebuggerStatement
+    }, JSNodeType.DebuggerStatement
 );

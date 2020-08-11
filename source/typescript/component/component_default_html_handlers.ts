@@ -1,5 +1,5 @@
 import { traverse } from "@candlefw/conflagrate";
-import { MinTreeNode, stmt, MinTreeNodeType } from "@candlefw/js";
+import { JSNode, stmt, JSNodeType } from "@candlefw/js";
 
 import {
     WICK_AST_NODE_TYPE_SIZE,
@@ -152,7 +152,7 @@ loadHTMLHandlerInternal(
             });
 
             for (const { node: n } of traverse(node.primary_ast, "nodes")) {
-                if (n.type == MinTreeNodeType.IdentifierReference) {
+                if (n.type == JSNodeType.IdentifierReference) {
 
                     const { value: name } = n;
 
@@ -504,7 +504,7 @@ loadHTMLHandlerInternal(
 
 
             const id = getAttributeValue("id", node),
-                [script] = <MinTreeNode[]><unknown>(node.nodes);
+                [script] = <JSNode[]><unknown>(node.nodes);
 
             if (id) {
                 const fn_ast = stmt(`function ${id}(){;};`);
