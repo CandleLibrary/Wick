@@ -3,6 +3,8 @@ import { createNameHash } from "./component_create_hash_name.js";
 import { PendingBinding } from "../types/binding";
 import { Component } from "../types/types";
 import { DOMLiteral } from "../wick.js";
+import { Lexer } from "@candlefw/wind";
+
 
 export function createErrorComponent(errors: ExceptionInformation[], src: string, location: string, component: Component = createComponent(src, location)) {
 
@@ -20,6 +22,8 @@ export function createErrorComponent(errors: ExceptionInformation[], src: string
             ]
         });
 
+    const pos = new Lexer(component.source);
+
     component.HTML = {
         tag_name: "ERROR",
         lookup_index: 0,
@@ -30,10 +34,10 @@ export function createErrorComponent(errors: ExceptionInformation[], src: string
             {
                 tag_name: "div",
                 children: error_data,
-                pos: null
+                pos
             }
         ],
-        pos: null
+        pos
     };
 
     component.ERRORS = true;

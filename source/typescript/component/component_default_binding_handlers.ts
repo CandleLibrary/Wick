@@ -4,7 +4,7 @@ import { matchAll } from "@candlefw/css";
 
 import { DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE, FunctionFrame, Component } from "../types/types.js";
 import { BindingObject, BindingHandler, BindingType } from "../types/binding";
-import { getComponentVariableName } from "./component_set_component_variable.js";
+import { getComponentVariableName, getComponentVariable } from "./component_set_component_variable.js";
 import { DOMLiteral } from "../wick.js";
 import { processFunctionDeclarationSync } from "./component_js.js";
 import { css_selector_helpers } from "./component_css_selector_helpers.js";

@@ -10,8 +10,8 @@ import { processWickHTML_AST } from "./component_html.js";
 import { Component, } from "../types/types";
 import { WickNodeClass, WickNode } from "../types/wick_ast_node_types.js";
 import { acquireComponentASTFromRemoteSource } from "./component_acquire_ast.js";
-import { createComponent, createErrorComponent } from "./componant_create_compoent.js";
-import { createFrame } from "./component_create_frame";
+import { createComponent, createErrorComponent } from "./component_create_component.js";
+import { createFrame } from "./component_create_frame.js";
 export const component_cache = {};
 
 function getHTML_AST(ast: WickNode | JSNode): WickNode {
