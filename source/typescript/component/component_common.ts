@@ -1,13 +1,31 @@
 import { traverse } from "@candlefw/conflagrate";
 import { JSNode, JSNodeType } from "@candlefw/js";
+import { Lexer } from "@candlefw/wind";
 
 import Presets from "../presets.js";
 import { compileComponent } from "./component.js";
 import { Component, DATA_FLOW_FLAG, FunctionFrame, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
 import { WickNode } from "../wick.js";
-import { acquireComponentASTFromRemoteSource } from "./component_acquire_ast";
+import { acquireComponentASTFromRemoteSource } from "./component_acquire_ast.js";
 import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
 import { componentDataToJSCached } from "./component_data_to_js.js";
+
+
+/**
+ * Set the givin Lexer as the pos val for each node
+ * @param node 
+ * @param pos 
+ */
+export function setPos(node, pos: Lexer) {
+    if (!pos) {
+        debugger;
+        throw new Error("pos null");
+    }
+    for (const { node: n } of traverse(node, "nodes"))
+        n.pos = pos;
+
+    return node;
+}
 
 /**
  * Take the data from the source component and merge it into the destination component.

@@ -9,7 +9,7 @@ import {
     addReadBindingVariableName, addWrittenBindingVariableName,
     isBindingVariable, isVariableDeclared
 } from "./component_binding_common.js";
-import { getFirstReferenceName, importResource } from "./component_common.js";
+import { getFirstReferenceName, importResource, setPos } from "./component_common.js";
 import { processWickCSS_AST } from "./component_css.js";
 import { processWickHTML_AST } from "./component_html.js";
 import { processFunctionDeclaration, processNodeSync } from "./component_js.js";
@@ -229,7 +229,7 @@ loadJSHandlerInternal(
             node = processNodeSync(<JSNode>node, frame, component, presets);
 
             const
-                n = stmt("a,a;"),
+                n = setPos(stmt("a,a;"), node.pos),
                 [{ nodes }] = n.nodes;
 
             nodes.length = 0;
@@ -447,7 +447,7 @@ loadJSHandlerInternal(
                     attribute_name: "method_call",
                     binding_val: <WickBindingNode>{
                         type: WickNodeType.WickBinding,
-                        primary_ast: stmt(`if(f<1) this.${name}();`),
+                        primary_ast: setPos(stmt(`if(f<1) this.${name}();`), node.pos),
                         value: name.slice(1),
                         IS_BINDING: true
                     },
@@ -456,7 +456,7 @@ loadJSHandlerInternal(
                 });
 
                 node.nodes[1] = { type: JSNodeType.Arguments, nodes: [exp("f=0")], pos: node.pos };
-                (<JSNode>node).nodes[2].nodes.unshift(stmt(`if(f>0)return 0;`));
+                (<JSNode>node).nodes[2].nodes.unshift(setPos(stmt(`if(f>0)return 0;`), node.pos));
             }
 
             skip(1);
@@ -539,6 +539,8 @@ loadJSHandlerInternal(
 
                     if (isBindingVariable(name, frame))
                         addNodeToBindingIdentifiers(<JSNode>node, <JSNode>parent_node, frame);
+                    else
+                        node.pos.throw(`Invalid assignment to undefined [${name}]`);
 
                     addWrittenBindingVariableName(name, frame);
                 }
@@ -651,7 +653,7 @@ loadJSHandlerInternal(
         priority: 1,
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
-            return null;
+            return node;
         }
 
     }, JSNodeType.DebuggerStatement

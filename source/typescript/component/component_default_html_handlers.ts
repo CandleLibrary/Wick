@@ -214,7 +214,8 @@ loadHTMLHandlerInternal(
                     break;
 
                 case "value":
-                    if (node.type == WickNodeType.WickBinding) {
+
+                    if (<WickNode>node.IS_BINDING) {
 
                         component.addBinding({
                             attribute_name: "input_value",

@@ -18,16 +18,16 @@ function buildExportableDOMNode(
 
     node.tag_name = ast.tag || "";
 
-    if (ast.slot_name) {
+    if (ast.slot_name)
         node.slot_name = ast.slot_name;
-    }
+
 
     if (ast.IS_BINDING)
         node.is_bindings = true;
 
-    if (ast.component_name) {
+    if (ast.component_name)
         node.component_name = ast.component_name;
-    }
+
 
     if (ast.is_container) {
 
@@ -96,8 +96,27 @@ export async function processWickHTML_AST(ast: WickNode, component: Component, p
 
     let last_element = null, index = -1;
 
+    //Remove content-less text nodes.
+    for (const { node, meta: { prev, next, mutate } } of traverse(ast, "nodes")
+        .makeMutable()
+        .filter("type", WickNodeType.HTMLText)
+    ) {
+        if (node.type == WickNodeType.HTMLText) {
+            const text = <WickTextNode>node;
+
+            text.data = (<string>text.data).replace(/[ \n]+/g, " ");
+
+            if (text.data == ' ') {
+                if (prev && prev.type == WickNodeType.WickBinding
+                    && next && next.type == WickNodeType.WickBinding)
+                    continue;
+                mutate(null);
+            }
+        }
+    }
+
     main_loop:
-    for (const { node, meta } of traverse(ast, "nodes")
+    for (const { node, meta: { replace, parent, skip } } of traverse(ast, "nodes")
         .makeReplaceable()
         .makeSkippable()
         .extract(receiver)
@@ -105,21 +124,11 @@ export async function processWickHTML_AST(ast: WickNode, component: Component, p
 
         let html_node = node;
 
-        if (html_node.type == WickNodeType.HTMLText) {
-            const text = <WickTextNode>html_node;
-
-            text.data = (<string>text.data).replace(/[ \n]+/g, " ");
-
-            if (text.data == ' ') {
-                meta.replace(null);
-                continue;
-            }
-        }
 
         for (const handler of html_handlers[Math.max((node.type >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)]) {
 
             const
-                pending = handler.prepareHTMLNode(node, meta.parent, last_element, index, meta.skip, () => { }, component, presets),
+                pending = handler.prepareHTMLNode(node, parent, last_element, index, skip, () => { }, component, presets),
                 result = (pending instanceof Promise) ? await pending : pending;
 
             if (result != node) {
@@ -127,7 +136,7 @@ export async function processWickHTML_AST(ast: WickNode, component: Component, p
 
                     html_node = <WickNode>result;
 
-                    meta.replace(<WickNode>result);
+                    replace(<WickNode>result);
 
                     if (result === null)
                         continue main_loop;
@@ -155,7 +164,7 @@ export async function processWickHTML_AST(ast: WickNode, component: Component, p
                         meta2.parent,
                         index,
                         () => { },
-                        meta.replace,
+                        replace,
                         component,
                         presets
                     );

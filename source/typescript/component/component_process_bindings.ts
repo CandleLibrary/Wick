@@ -7,6 +7,7 @@ import { binding_handlers } from "./component_default_binding_handlers.js";
 import { WickNodeTypeLU } from "../types/wick_ast_node_types.js";
 import { getComponentVariableName } from "./component_set_component_variable.js";
 import Presets from "../presets.js";
+import { setPos } from "./component_common.js";
 
 function createBindingName(binding_index_pos: number) {
     return `b${binding_index_pos.toString(36)}`;
@@ -163,7 +164,7 @@ export function processBindings(component: Component, class_data, presets: Prese
                             });
 
                     } else
-                        body.nodes.push(stmt(`this.${binding.name}()`));
+                        body.nodes.push(setPos(stmt(`this.${binding.name}()`), binding.pos));
                 }
             }
 

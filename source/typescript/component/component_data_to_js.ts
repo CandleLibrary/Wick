@@ -2,22 +2,29 @@ import { JSNodeType, JSNode, exp, stmt } from "@candlefw/js";
 
 import Presets from "../presets.js";
 import { processBindings } from "./component_process_bindings.js";
-import { Component, FunctionFrame, VARIABLE_REFERENCE_TYPE, } from "../types/types";
+import { Component, FunctionFrame, VARIABLE_REFERENCE_TYPE, ComponentClassStrings, } from "../types/types";
 import { getPropertyAST, getGenericMethodNode } from "./component_js_ast_tools.js";
 import { getComponentVariableName } from "./component_set_component_variable.js";
 import { WickRTComponent } from "../runtime/runtime_component.js";
 import { componentDataToCSS } from "./component_data_to_css.js";
-import { createErrorComponent } from "./componant_create_compoent";
-import { renderWithFormatting } from "../render/render.js";
-import { copy } from "@candlefw/conflagrate";
+import { createErrorComponent } from "./component_create_component.js";
+import { renderWithFormattingAndSourceMap } from "../render/render.js";
+import { copy, createSourceMap, createSourceMapJSON } from "@candlefw/conflagrate";
+import { setPos } from "./component_common.js";
 
+const StrToBase64 = (typeof btoa != "undefined") ? btoa : str => Buffer.from('Hélló wórld!!', 'binary').toString('base64');
 
 function registerActivatedFrameMethod(frame: FunctionFrame, class_information) {
-    if (frame.index) class_information.nluf_public_variables.nodes.push(exp(`c.f${frame.index}`));
+    if (frame.index)
+        class_information
+            .nluf_public_variables
+            .nodes
+            .push(setPos(exp(`c.f${frame.index}`), frame.ast.pos));
 }
 
 const componentStringToJS =
-    (class_string: string, component: Component, presets: Presets) => (Function("c", "return " + class_string)(component));
+    ({ class_string: cls, source_map }: ComponentClassStrings, component: Component, presets: Presets) =>
+        (eval("c=>" + cls /*+ `\n${source_map}`*/)(component));
 
 /**
  * Update global variables in ast after all globals have been identified
@@ -37,7 +44,9 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
             if (!component.root_frame.binding_type.has(<string>name))
                 throw pos.errorMessage(`Undefined reference to ${name}`);
 
-            parent.nodes[index] = exp(getComponentVariableName(name, component));
+            const id = exp(getComponentVariableName(name, component));
+
+            parent.nodes[index] = setPos(id, pos);
         }
 
 
@@ -50,11 +59,13 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
             for (const name of frame.output_names.values())
                 if (!updated_names.has(name)) {
 
-                    const { type, class_index }
+                    const { type, class_index, pos }
                         = component.root_frame.binding_type.get(name);
 
-                    if (type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE)
-                        cpy.nodes[2].nodes.push(stmt(`this.u${class_index}(this[${class_index}]);`));
+                    if (type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE) {
+                        const st = stmt(`this.u${class_index}(this[${class_index}]);`);
+                        cpy.nodes[2].nodes.push(setPos(st, pos));
+                    }
 
                 }
 
@@ -76,7 +87,12 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
     }
 }
 
-export function componentDataToJSCached(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): typeof WickRTComponent {
+export function componentDataToJSCached(
+    component: Component,
+    presets: Presets,
+    INCLUDE_HTML: boolean = true,
+    INCLUDE_CSS = true
+): typeof WickRTComponent {
 
     const name = component.name;
 
@@ -99,18 +115,28 @@ export function componentDataToJSCached(component: Component, presets: Presets, 
     return comp;
 }
 
-export function componentDataToJS(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): typeof WickRTComponent {
+export function componentDataToJS(
+    component: Component,
+    presets: Presets,
+    INCLUDE_HTML: boolean = true,
+    INCLUDE_CSS = true
+): typeof WickRTComponent {
 
     const class_string = componentDataToClassString(component, presets, INCLUDE_HTML, INCLUDE_CSS);
 
     return componentStringToJS(class_string, component, presets);
 }
 
-export function componentDataToJSStringCached(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): string {
+export function componentDataToJSStringCached(
+    component: Component,
+    presets: Presets,
+    INCLUDE_HTML: boolean = true,
+    INCLUDE_CSS = true
+): ComponentClassStrings {
 
     const name = component.name;
 
-    let str: string = presets.component_class_string.get(name);
+    let str: ComponentClassStrings = presets.component_class_string.get(name);
 
     if (!str) {
 
@@ -122,7 +148,12 @@ export function componentDataToJSStringCached(component: Component, presets: Pre
     return str;
 }
 
-export function componentDataToClassString(component: Component, presets: Presets, INCLUDE_HTML: boolean = true, INCLUDE_CSS = true): string {
+export function componentDataToClassString(
+    component: Component,
+    presets: Presets,
+    INCLUDE_HTML: boolean = true,
+    INCLUDE_CSS = true
+): ComponentClassStrings {
 
     try {
 
@@ -151,6 +182,8 @@ export function componentDataToClassString(component: Component, presets: Preset
 
         //Javascript Information.
         if (component.ERRORS === false && component.root_frame) {
+
+            //setPos(component_class, component.root_frame.ast.pos);
 
             const
                 cleanup_element_method = getGenericMethodNode("cu", "", "const c = this;"),
@@ -196,11 +229,11 @@ export function componentDataToClassString(component: Component, presets: Preset
         //HTML INFORMATION
         if (component.HTML && INCLUDE_HTML) {
 
-            const ele_create_method = getGenericMethodNode("ce", "", "return this.me(a);"),
+            const ele_create_method = setPos(getGenericMethodNode("ce", "", "return this.me(a);"), component.HTML.pos),
 
                 [, , { nodes: [r_stmt] }] = ele_create_method.nodes;
 
-            r_stmt.nodes[0].nodes[1].nodes[0] = <JSNode>{ type: JSNodeType.Identifier, value: `${JSON.stringify(component.HTML)}`, pos: r_stmt.nodes[0].nodes[1].pos };
+            r_stmt.nodes[0].nodes[1].nodes[0] = <JSNode>{ type: JSNodeType.Identifier, value: `${JSON.stringify(component.HTML)}`, pos: component.HTML.pos };
 
             // Setup element
             class_information.methods.push(ele_create_method);
@@ -220,7 +253,14 @@ export function componentDataToClassString(component: Component, presets: Preset
 
         class_information.compiled_ast = component_class;
 
-        return renderWithFormatting(class_information.compiled_ast) + `\n/* ${component.location} */\n`;
+        const
+            map = [],
+            names = new Map(),
+            result = renderWithFormattingAndSourceMap(class_information.compiled_ast, undefined, undefined, map, 0, names),
+            source_map = createSourceMap(map, component.location.file, component.location.dir, [component.location.file], [], [component.source]),
+            json = StrToBase64(createSourceMapJSON(source_map));
+
+        return { class_string: result + `\n/* ${component.location} */\n`, source_map: "//# sourceMappingURL=data:application/json;base64," + json };
 
     } catch (e) {
         console.warn(`Error found in component ${component.name} while converting to a class. location: ${component.location}.`);

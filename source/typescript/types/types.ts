@@ -6,6 +6,7 @@ import { DOMLiteral } from "./dom_literal.js";
 import { PendingBinding } from "./binding";
 import { BindingVariable } from "./binding";
 
+export type ComponentClassStrings = { class_string: string, source_map: string; };
 export const enum VARIABLE_REFERENCE_TYPE {
     INTERNAL_VARIABLE = 1,
     MODEL_VARIABLE = 16,
