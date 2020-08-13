@@ -8,7 +8,7 @@ import Presets from "./presets.js";
 import makeComponent from "./component/component.js";
 import parser from "./parser/parse.js";
 
-import { rt } from "./runtime/runtime_global.js";
+import { rt, WickRuntime } from "./runtime/runtime_global.js";
 import { WickRTComponent, class_strings } from "./runtime/runtime_component.js";
 import { PresetOptions } from "./types/preset_options.js";
 import {
@@ -243,6 +243,7 @@ export {
     CSSNodeType,
 
     //Pure Types
+    WickRuntime,
     wickOutput,
     Component,
     ObservableModel,
