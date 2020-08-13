@@ -42,7 +42,7 @@ export function getComponentVariableName(name, component: Component) {
                 return `this.model.${comp_var.external_name}`;
 
             case VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE:
-                return name;
+                return "this." + name;
 
             case VARIABLE_REFERENCE_TYPE.GLOBAL_VARIABLE:
                 return `window.${comp_var.external_name}`;
