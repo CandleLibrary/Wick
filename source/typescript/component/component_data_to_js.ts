@@ -8,7 +8,7 @@ import { getComponentVariableName } from "./component_set_component_variable.js"
 import { WickRTComponent } from "../runtime/runtime_component.js";
 import { componentDataToCSS } from "./component_data_to_css.js";
 import { createErrorComponent } from "./component_create_component.js";
-import { renderWithFormattingAndSourceMap } from "../render/render.js";
+import { renderWithFormattingAndSourceMap, renderWithFormatting } from "../render/render.js";
 import { copy, createSourceMap, createSourceMapJSON } from "@candlefw/conflagrate";
 import { setPos } from "./component_common.js";
 
@@ -23,8 +23,13 @@ function registerActivatedFrameMethod(frame: FunctionFrame, class_information) {
 }
 
 const componentStringToJS =
-    ({ class_string: cls, source_map }: ComponentClassStrings, component: Component, presets: Presets) =>
-        (eval("c=>" + cls /*+ `\n${source_map}`*/)(component));
+    ({ class_string: cls, source_map }: ComponentClassStrings, component: Component, presets: Presets) => (
+        (
+            eval(
+                "c=>" + cls + (presets.options.GENERATE_SOURCE_MAPS ? `\n${source_map}` : "")
+            )
+        )(component)
+    );
 
 /**
  * Update global variables in ast after all globals have been identified
@@ -248,19 +253,27 @@ export function componentDataToClassString(
         if (class_information.binding_init_statements.length > 0)
             class_information.methods.push(binding_values_init_method);
 
-        if (class_information.class_initializer_statements.length > 3)
+        if (class_information.class_initializer_statements.length > 0)
             class_information.methods.push(register_elements_method);
 
         class_information.compiled_ast = component_class;
 
-        const
-            map = [],
-            names = new Map(),
-            result = renderWithFormattingAndSourceMap(class_information.compiled_ast, undefined, undefined, map, 0, names),
-            source_map = createSourceMap(map, component.location.file, component.location.dir, [component.location.file], [], [component.source]),
-            json = StrToBase64(createSourceMapJSON(source_map));
+        let cl = "", sm = "";
 
-        return { class_string: result + `\n/* ${component.location} */\n`, source_map: "//# sourceMappingURL=data:application/json;base64," + json };
+        if (presets.options.GENERATE_SOURCE_MAPS) {
+            const
+                map = [],
+                names = new Map();
+
+            cl = renderWithFormattingAndSourceMap(class_information.compiled_ast, undefined, undefined, map, 0, names);
+
+            const source_map = createSourceMap(map, component.location.file, component.location.dir, [component.location.file], [], [component.source]);
+
+            sm = "//# sourceMappingURL=data:application/json;base64," + StrToBase64(createSourceMapJSON(source_map));
+        } else
+            cl = renderWithFormatting(class_information.compiled_ast);
+
+        return { class_string: cl + `\n/* ${component.location} */\n`, source_map: sm };
 
     } catch (e) {
         console.warn(`Error found in component ${component.name} while converting to a class. location: ${component.location}.`);

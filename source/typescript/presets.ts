@@ -10,27 +10,23 @@ let CachedPresets = null;
 /**
      * Default configuration options
      */
-const P = <PresetOptions>{
+const DefaultPresets = <PresetOptions>{
     options: {
-        USE_SHADOW: false
+        USE_SHADOW: false,
+        USE_SHADOWED_STYLE: false,
+        CACHE_URL: false,
+        GENERATE_SOURCE_MAPS: false,
+        REMOVE_DEBUGGER_STATEMENTS: true,
+        THROW_ON_ERRORS: true
     }
 };
 
 export default class Presets implements PresetOptions {
 
-    options: {
-        THROW_ON_ERRORS?: boolean,
-        cache_url?: boolean,
-        USE_SHADOW?: boolean,
-        USE_SHADOWED_STYLE?: boolean,
-    };
-
-
-
+    options: PresetOptions["options"];
     document?: Document;
 
     window?: Window;
-
 
     /**
      * Store for compiled components.
@@ -40,6 +36,9 @@ export default class Presets implements PresetOptions {
 
     component_class: Map<string, typeof RuntimeComponent>;
 
+    /**
+     * Map of generated component class strings and optional source maps.
+     */
     component_class_string: Map<string, ComponentClassStrings>;
 
     schemes?: {};
@@ -60,23 +59,21 @@ export default class Presets implements PresetOptions {
 
     /**
      * Constructs a Presets object that can be passed to the Wick compiler.
-     * @param preset_options - An object of optional configurations.
+     * @param UserPresets - An object of optional configurations.
      */
-    constructor(preset_options: PresetOptions = <PresetOptions>{}) {
+    constructor(UserPresets: PresetOptions = <PresetOptions>{}) {
 
-        preset_options = Object.assign({}, P, preset_options);
-        preset_options.options = Object.assign({}, P.options, preset_options.options);
+        UserPresets = Object.assign({}, DefaultPresets, UserPresets);
 
-        this.options = <PresetOptions["options"]>{
-            THROW_ON_ERRORS: false,
-            cache_url: true
-        };
+        UserPresets.options = Object.assign({}, DefaultPresets.options, UserPresets.options);
+
+        this.options = UserPresets.options;
 
         this.window = typeof window != "undefined" ? window : <Window>{};
 
         this.document = this.window.document;
 
-        this.api = preset_options.api;
+        this.api = UserPresets.api;
 
         this.wrapper = null;
 
@@ -92,33 +89,29 @@ export default class Presets implements PresetOptions {
 
         this.models = {};
 
-        this.custom = Object.assign({}, preset_options.custom);
+        this.custom = Object.assign({}, UserPresets.custom);
 
-        let c = preset_options.options;
+        for (const cn in this.options)
+            if (typeof this.options[cn] != typeof DefaultPresets.options[cn])
+                throw new ReferenceError(`Unrecognized preset ${cn}`);
 
-        if (c)
-            for (const cn in c) {
-                if (typeof c[cn] == typeof this.options[cn])
-                    this.options[cn] = c[cn];
-            }
-
-        c = preset_options.models;
+        let c = UserPresets.models;
 
         if (c)
             for (const cn in c)
                 this.models[cn] = c[cn];
 
-        c = preset_options.schemes;
+        c = UserPresets.schemes;
 
         if (c)
             for (const cn in c)
                 this.schemes[cn] = c[cn];
 
-        this.options.USE_SHADOWED_STYLE = ((preset_options.options.USE_SHADOWED_STYLE) && (this.options.USE_SHADOW));
+        this.options.USE_SHADOWED_STYLE = ((UserPresets.options.USE_SHADOWED_STYLE) && (this.options.USE_SHADOW));
 
         this.url = new URL;
 
-        Object.freeze(this.options);
+        // Object.freeze(this.options);
         Object.freeze(this.schemes);
         //Object.freeze(this.models);
 
@@ -155,5 +148,3 @@ export default class Presets implements PresetOptions {
         return presets;
     }
 }
-
-//Presets.global = {get v(){return CachedPresets}, set v(e){}};
