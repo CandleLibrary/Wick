@@ -672,43 +672,6 @@ loadBindingHandler({
 });
 
 
-
-
-loadBindingHandler({
-
-    priority: -1,
-
-    canHandleBinding(attribute_name, node_type) {
-        return attribute_name == "useif";
-    },
-
-    prepareBindingObject(attribute_name, binding_node_ast
-        , host_node, element_index, component, presets) {
-
-        const binding = createBindingObject(BindingType.WRITE),
-            { local, extern } = binding_node_ast,
-            index = host_node.child_id,
-            comp = host_node.component;
-
-        if (comp) {
-
-            const cv = comp.root_frame.binding_type.get(extern);
-
-            if (cv && cv.flags & DATA_FLOW_FLAG.FROM_PARENT) {
-
-                binding.write_ast = stmt(`this.ch[${index}].ufp(${cv.class_index}, v, f); `);
-
-                setPos(binding.write_ast, host_node.pos);
-
-                setBindingVariable(<string>local, false, binding);
-            }
-
-            return binding;
-        }
-        return null;
-    }
-});
-
 loadBindingHandler({
     priority: 100,
 
