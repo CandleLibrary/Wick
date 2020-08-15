@@ -61,7 +61,7 @@ export function processBindings(component: Component, class_data, presets: Prese
 
     for (const { binding, pending_binding } of processed_bindings) {
 
-        binding.pos = pending_binding.binding_val.pos;
+        //binding.pos = pending_binding.binding_val.pos;
 
         binding.name = createBindingName(binding_count++);
 
@@ -86,7 +86,7 @@ export function processBindings(component: Component, class_data, presets: Prese
             if (component_variables.size > 1) {
                 //Create binding update method.
 
-                const method = getGenericMethodNode(binding_name, "", ";"),
+                const method = getGenericMethodNode(binding_name, "f=0", ";"),
                     [, , body] = method.nodes,
                     { nodes } = body;
 
@@ -99,8 +99,9 @@ export function processBindings(component: Component, class_data, presets: Prese
 
                     const { class_index, type } = component.root_frame.binding_type.get(name);
 
-                    if (type & VARIABLE_REFERENCE_TYPE.DIRECT_ACCESS)
-                        continue;
+                    if (type & (VARIABLE_REFERENCE_TYPE.DIRECT_ACCESS
+                        | VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE)
+                    ) continue;
 
                     nodes.push(stmt(`if(this[${class_index}]==undefined)return 0;`));
                 }
@@ -125,8 +126,6 @@ export function processBindings(component: Component, class_data, presets: Prese
             clean_stmts.push(cleanup_ast);
     }
 
-    //initialize_stmts.push(...binding_inits);
-
     const write_bindings = processed_bindings.filter(b => (b.binding.type & BindingType.WRITE) && !!b.binding.write_ast);
 
     for (const { internal_name, class_index, flags, type } of component.root_frame.binding_type.values()) {
@@ -140,15 +139,16 @@ export function processBindings(component: Component, class_data, presets: Prese
 
                 [, , body] = method.nodes;
 
+
             for (const { binding } of write_bindings) {
 
                 if (binding.component_variables.has(internal_name)) {
 
-                    const variable = binding.component_variables.get(internal_name);
+                    const { IS_OBJECT } = binding.component_variables.get(internal_name);
 
                     if (binding.component_variables.size <= 1) {
 
-                        if (variable.IS_OBJECT) {
+                        if (IS_OBJECT) {
                             const s = stmt(`if(${getComponentVariableName(internal_name, component)});`);
                             s.nodes[1] = {
                                 type: JSNodeType.ExpressionStatement,
@@ -162,15 +162,13 @@ export function processBindings(component: Component, class_data, presets: Prese
                                 nodes: [binding.write_ast],
                                 pos: binding.pos
                             });
-
                     } else
-                        body.nodes.push(setPos(stmt(`this.${binding.name}()`), binding.pos));
+                        body.nodes.push(setPos(stmt(`this.${binding.name}(f)`), binding.pos));
                 }
             }
 
             if (flags & DATA_FLOW_FLAG.EXPORT_TO_PARENT)
                 body.nodes.push(stmt(`/*if(!(f&${DATA_FLOW_FLAG.FROM_PARENT}))*/c.pup(${class_index}, v, f);`));
-
             methods.push(method);
         }
     }
