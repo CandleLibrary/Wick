@@ -25,6 +25,7 @@ async function processCoreAsync(ast: JSNode, function_frame: FunctionFrame, comp
         .makeSkippable()
         .extract(function_frame)
     ) {
+
         if (node.type & JSNodeClass.CLOSURE) {
             const temp_ff = processPreamble(node, component, frame, true);
             await processCoreAsync(node, temp_ff, component, presets, root_name, function_frame);

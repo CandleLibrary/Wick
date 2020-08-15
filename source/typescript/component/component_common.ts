@@ -28,13 +28,15 @@ export function setPos(node, pos: Lexer) {
 }
 
 /**
- * Take the data from the source component and merge it into the destination component.
+ * Take the data from the source component and merge it into the destination component. Asserts
+ * the source component has only CSS and Javascript data, and does not represent an HTML element.
  * @param destination_component 
  * @param source_component 
  */
 export function mergeComponentData(destination_component: Component, source_component: Component) {
 
     if (source_component.CSS) destination_component.CSS.push(...source_component.CSS);
+
 
     if (!destination_component.HTML)
         destination_component.HTML = source_component.HTML;
@@ -65,8 +67,8 @@ export async function importComponentData(new_component_url, component, presets,
 
         if (local_name) component.local_component_names.set(local_name.toUpperCase(), comp_data.name);
 
-        if (!comp_data.HTML)
-            mergeComponentData(component, comp_data);
+        if (!comp_data.HTML) mergeComponentData(component, comp_data);
+
 
     } catch (e) {
         console.log("TODO: Replace with a temporary warning component.", e);

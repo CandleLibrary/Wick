@@ -1,4 +1,5 @@
 import { JSNodeType, JSNode, exp, stmt } from "@candlefw/js";
+import { copy, createSourceMap, createSourceMapJSON } from "@candlefw/conflagrate";
 
 import Presets from "../presets.js";
 import { processBindings } from "./component_process_bindings.js";
@@ -9,7 +10,6 @@ import { WickRTComponent } from "../runtime/runtime_component.js";
 import { componentDataToCSS } from "./component_data_to_css.js";
 import { createErrorComponent } from "./component_create_component.js";
 import { renderWithFormattingAndSourceMap, renderWithFormatting } from "../render/render.js";
-import { copy, createSourceMap, createSourceMapJSON } from "@candlefw/conflagrate";
 import { setPos } from "./component_common.js";
 
 const StrToBase64 = (typeof btoa != "undefined") ? btoa : str => Buffer.from(str, 'binary').toString('base64');
@@ -261,6 +261,7 @@ export function componentDataToClassString(
         let cl = "", sm = "";
 
         if (presets.options.GENERATE_SOURCE_MAPS) {
+
             const
                 map = [],
                 names = new Map();

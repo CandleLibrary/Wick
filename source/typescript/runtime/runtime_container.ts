@@ -636,7 +636,7 @@ export class WickContainer implements Sparky {
 
         this.render(transition);
 
-        // If scrubbing is currently occuring, if the transition were to auto play then the results 
+        // If scrubbing is currently occurring, if the transition were to auto play then the results 
         // would interfere with the expected behavior of scrubbing. So the transition
         // is instead set to it's end state, and scrub is called to set intermittent 
         // position. 

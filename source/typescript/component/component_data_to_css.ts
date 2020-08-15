@@ -1,6 +1,7 @@
 import { CSSNodeType, selector, CSSNode } from "@candlefw/css";
 import { traverse } from "@candlefw/conflagrate";
 import { renderWithFormatting } from "../render/render.js";
+import { Component } from "../wick.js";
 
 export function UpdateSelector(node: CSSNode, name) {
 
@@ -41,8 +42,14 @@ export function UpdateSelector(node: CSSNode, name) {
 
 }
 
-export function componentDataToCSS(component): string {
-    //*/
+export function componentDataToCSS(component: Component): string {
+    // Get all css data from component and it's children,
+    // Include pure CSS components (components that only have CSS data),
+    // in the main components context.
+
+
+
+
     const css_string = component.CSS.map(css => {
         const r = { ast: null };
 
@@ -66,6 +73,7 @@ export function componentDataToCSS(component): string {
         }
         return r.ast;
     }).map(renderWithFormatting).join("\n");
+
 
     return css_string;
 }
