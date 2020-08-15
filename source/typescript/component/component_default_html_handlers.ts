@@ -407,9 +407,6 @@ loadHTMLHandlerInternal(
                     skip();
 
                     return ctr;
-                case "svg":
-                    node.name_space = 1;
-                    break;
                 case "mathml":
                     node.name_space = 2;
                     break;
@@ -423,6 +420,19 @@ loadHTMLHandlerInternal(
         }
 
     }, HTMLNodeType.HTML_Element
+);
+
+loadHTMLHandlerInternal(
+    {
+        priority: -99999,
+
+        async prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
+
+            node.name_space = 1;
+
+            return node;
+        }
+    }, HTMLNodeType.HTML_SVG
 );
 
 loadHTMLHandlerInternal(
