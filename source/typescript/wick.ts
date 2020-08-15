@@ -243,6 +243,7 @@ export {
     CSSNodeType,
 
     //Pure Types
+    ExtendedComponent,
     WickRuntime,
     wickOutput,
     Component,
