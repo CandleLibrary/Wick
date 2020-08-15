@@ -39,7 +39,7 @@ export function mergeComponentData(destination_component: Component, source_comp
     if (!destination_component.HTML)
         destination_component.HTML = source_component.HTML;
     else
-        console.warn("TODO: Loss of HTML in merged component.");
+        throw new Error(`Cannot combine components. The source component ${source_component.location} contains a default HTML export that conflicts with the destination component ${destination_component.location}`);
 
     for (const [, data] of source_component.root_frame.binding_type.entries())
         addBindingVariable(data, destination_component.root_frame);
