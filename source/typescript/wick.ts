@@ -46,8 +46,8 @@ function wick(input: string | URL, presets: Presets = rt.presets): ExtendedCompo
         promise = new Promise(async res => {
             const comp = await makeComponent(input, presets);
             Object.assign(component, comp);
-            componentDataToJSCached(component, presets, true, false);
-            componentDataToJSStringCached(component, presets, true, false);
+            componentDataToJSCached(component, presets, true, true);
+            componentDataToJSStringCached(component, presets, true, true);
             res(component);
         }),
 
