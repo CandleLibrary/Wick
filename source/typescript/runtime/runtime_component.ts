@@ -84,7 +84,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         this.name = this.constructor.name;
 
-        this.CONNECTED = false;
+
 
         this.nlu = {};
         this.ch = [];
@@ -125,8 +125,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         //@ts-ignore
         this.ele.wick_component = this;
 
-        this.re(this);
-
         //Create or assign global model whose name matches the default_model_name;
         if (default_model_name) {
             if (!presets.models[default_model_name])
@@ -134,7 +132,13 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             model = presets.models[default_model_name];
         }
 
-        if (model) this.setModel(model);
+        // Hydration --------------------------------
+        this.CONNECTED = true;
+        this.model = model; // Soft set of model, to handle access defined in source files.
+        this.re(this);
+        this.setModel(model); //Hard set of model, with proper updating and polling.
+        this.CONNECTED = false;
+        // End Hydration ----------------------------
 
         if (wrapper) {
             this.wrapper = wrapper;
@@ -222,12 +226,24 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         }
     }
 
-    appendToDOM(element, before_element = null) {
+    connect() {
+        this.CONNECTED = true;
+        for (const child of this.ch)
+            child.connect();
+    }
+
+    disconnect() {
+        for (const child of this.ch)
+            child.disconnect();
+        this.CONNECTED = false;
+    }
+
+    appendToDOM(element: HTMLElement, before_element: HTMLElement = null) {
 
         //Lifecycle Events: Connecting <======================================================================
-        this.update({ connecting: true });
+        this.connect();
 
-        this.CONNECTED = true;
+        this.update({ connecting: true });
 
         if (before_element)
             element.insertBefore(this.ele, before_element);
@@ -240,7 +256,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     removeFromDOM() {
         //Prevent erroneous removal of scope.
-        if (this.CONNECTED == true) return;
+        if (this.CONNECTED == false) return;
 
         //Lifecycle Events: Disconnecting <======================================================================
         this.update({ disconnecting: true });
@@ -250,11 +266,12 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         //Lifecycle Events: Disconnected <======================================================================
         this.update({ disconnected: true });
+
+        this.disconnect();
+
     }
 
     transitionOut(transition?, DESTROY_AFTER_TRANSITION = false, transition_name = "trs_out") {
-
-        this.CONNECTED = false;
 
         this.DESTROY_ON_TRANSITION = DESTROY_AFTER_TRANSITION;
 
@@ -343,6 +360,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     }
 
     update(data, flags: number = 0, IMMEDIATE: boolean = false) {
+
+        if (!this.CONNECTED) return;
 
         const update_indices: Set<number> = new Set;
 
