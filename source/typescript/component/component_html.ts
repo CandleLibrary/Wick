@@ -11,7 +11,7 @@ function buildExportableDOMNode(
         slot_name?: string;
         data?: any;
         id?: number;
-        ns?: number;
+        name_space?: number;
     }): DOMLiteral {
 
     const node: DOMLiteral = <DOMLiteral>{ pos: ast.pos };
@@ -67,8 +67,8 @@ function buildExportableDOMNode(
     if (ast.data) {
         node.data = ast.data;
 
-    } else if (ast.ns > 0) {
-        node.namespace_id = ast.ns || 0;
+    } else if (ast.name_space > 0) {
+        node.namespace_id = ast.name_space || 0;
     }
 
     return node;
