@@ -19,13 +19,13 @@ export function runBindingHandlers(pending_binding: PendingBinding, component: C
         let binding = null;
 
         if (handler.canHandleBinding(
-            pending_binding.attribute_name,
+            pending_binding.binding_selector,
             HTMLNodeTypeLU[pending_binding.host_node.type]
         ))
             binding = handler.prepareBindingObject(
-                pending_binding.attribute_name,
+                pending_binding.binding_selector,
                 pending_binding.binding_val,
-                pending_binding.host_node,
+                <HTMLNode>pending_binding.host_node,
                 pending_binding.html_element_index,
                 component,
                 class_data

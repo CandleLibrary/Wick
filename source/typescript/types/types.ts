@@ -3,8 +3,9 @@ import { CSSNode } from "@candlefw/css";
 import { HTMLNode, HTMLTextNode } from "./wick_ast_node_types.js";
 import URL from "@candlefw/url";
 import { DOMLiteral } from "./dom_literal.js";
-import { PendingBinding } from "./binding";
+import { PendingBinding, BINDING_SELECTOR } from "./binding";
 import { BindingVariable } from "./binding";
+import { Lexer } from "@candlefw/wind";
 
 export type ComponentClassStrings = { class_string: string, source_map: string; };
 export const enum VARIABLE_REFERENCE_TYPE {
@@ -138,10 +139,11 @@ export interface Component {
      * @param arg 
      */
     addBinding(arg: {
-        attribute_name: string,
+        binding_selector: BINDING_SELECTOR | string,
         binding_val: JSNode | HTMLNode | CSSNode | any,
         host_node: JSNode | HTMLNode | CSSNode,
         html_element_index: number;
+        pos: Lexer;
     }): void;
 
     /**

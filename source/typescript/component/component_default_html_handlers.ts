@@ -18,6 +18,7 @@ import { importResource } from "./component_common.js";
 import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
 import { VARIABLE_REFERENCE_TYPE, DATA_FLOW_FLAG } from "../types/types.js";
 import { global_object } from "../runtime/runtime_global.js";
+import { BINDING_SELECTOR } from "../types/binding.js";
 
 const default_handler = {
     priority: -Infinity,
@@ -145,10 +146,11 @@ loadHTMLHandlerInternal(
         prepareHTMLNode(node: WickBindingNode, host_node, host_element, index, skip, replace, component, presets) {
 
             component.addBinding({
-                attribute_name: "",
+                binding_selector: "",
                 binding_val: node,
                 host_node: host_node,
-                html_element_index: index + 1
+                html_element_index: index + 1,
+                pos: node.pos
             });
 
             for (const { node: n } of traverse(node.primary_ast, "nodes")) {
@@ -215,11 +217,12 @@ loadHTMLHandlerInternal(
 
                     if (<HTMLNode><unknown>node.IS_BINDING) {
                         component.addBinding({
-                            attribute_name: "input_value",
+                            binding_selector: BINDING_SELECTOR.IMPORT_VALUE,
                             //@ts-ignore
                             binding_val: node.value,
                             host_node: node,
-                            html_element_index: index
+                            html_element_index: index,
+                            pos: node.pos
                         });
 
                         return null;
@@ -292,13 +295,14 @@ loadHTMLHandlerInternal(
 
                 for (const { local, extern } of obj) {
                     component.addBinding({
-                        attribute_name: "import_from_child",
+                        binding_selector: BINDING_SELECTOR.IMPORT_FROM_CHILD,
                         binding_val: {
                             local,
                             extern,
                         },
                         host_node,
-                        html_element_index: index + 1
+                        html_element_index: index + 1,
+                        pos: node.pos
                     });
                 }
 
@@ -311,13 +315,14 @@ loadHTMLHandlerInternal(
 
                 for (const { local, extern } of obj) {
                     component.addBinding({
-                        attribute_name: "export_to_child",
+                        binding_selector: BINDING_SELECTOR.EXPORT_TO_CHILD,
                         binding_val: {
                             local,
                             extern,
                         },
                         host_node,
-                        html_element_index: index + 1
+                        html_element_index: index + 1,
+                        pos: node.pos
                     });
                 }
 
@@ -338,10 +343,11 @@ loadHTMLHandlerInternal(
             if (attrib.IS_BINDING) {
 
                 component.addBinding({
-                    attribute_name: attrib.name,
+                    binding_selector: attrib.name,
                     binding_val: attrib.value,
                     host_node: attrib,
-                    html_element_index: index
+                    html_element_index: index,
+                    pos: node.pos
                 });
 
                 return null;
@@ -415,11 +421,12 @@ loadHTMLHandlerInternal(
                             if (name == "useif") {
                                 //create a useif binding for this object
                                 component.addBinding({
-                                    attribute_name: "useif",
+                                    binding_selector: BINDING_SELECTOR.CONTAINER_USE_IF,
                                     //@ts-ignore
                                     binding_val: value,
                                     host_node: ctr,
                                     html_element_index: index,
+                                    pos: node.pos
                                 });
                             } else
                                 other_attributes.push([name, value]);

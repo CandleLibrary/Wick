@@ -55,23 +55,38 @@ export interface BindingObject {
     annotate: string;
     type: BindingType;
 
-    pos?: Lexer;
+    pos: Lexer;
 
     name?: string;
 
     priority: number;
 }
 
+
+export const enum BINDING_SELECTOR {
+    ELEMENT_SELECTOR_STRING = "esl",
+    WATCHED_FRAME_METHOD_CALL = "wfm",
+    METHOD_CALL = "mc",
+    IMPORT_FROM_CHILD = "ifc",
+    EXPORT_TO_CHILD = "etc",
+    IMPORT_FROM_PARENT = "ifp",
+    EXPORT_TO_PARENT = "etp",
+    IMPORT_VALUE = "imp",
+    CONTAINER_USE_IF = "cui",
+    BINDING_INITIALIZATION = "bin"
+}
+
+
 export interface PendingBinding {
     html_element_index: number;
-    attribute_name: string;
+    binding_selector: string;
     host_node: HTMLNode | JSNode;
     binding_val: WickBindingNode | any;
 }
 
 export interface BindingHandler {
     priority: number;
-    canHandleBinding(attribute_name: string, node_type: string): boolean;
+    canHandleBinding(binding_selector: BINDING_SELECTOR | string, node_type: string): boolean;
 
     prepareBindingObject(binding_selector: BINDING_SELECTOR | string, binding_node: WickBindingNode, host_ast_node: HTMLNode, element_index: number, component: Component, presets?: Presets): BindingObject;
 }

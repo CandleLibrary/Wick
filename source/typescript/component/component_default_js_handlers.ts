@@ -13,6 +13,7 @@ import { getFirstReferenceName, importResource, setPos } from "./component_commo
 import { processWickCSS_AST } from "./component_css.js";
 import { processWickHTML_AST } from "./component_html.js";
 import { processFunctionDeclaration, processNodeSync } from "./component_js.js";
+import { BINDING_SELECTOR } from "../types/binding.js";
 
 
 export function findFirstNodeOfType(type: JSNodeType, ast: JSNode) {
@@ -60,7 +61,7 @@ function addBinding(
     html_element_index: number,
     component: Component) {
     component.bindings.push({
-        attribute_name,
+        binding_selector: attribute_name,
         binding_val,
         host_node: <JSNode>host_node,
         html_element_index
@@ -414,7 +415,7 @@ loadJSHandlerInternal(
 
                 //Automatically bind to the root element.
                 component.addBinding({
-                    attribute_name: name,
+                    binding_selector: name,
                     binding_val: <WickBindingNode>{
                         type: HTMLNodeType.WickBinding,
                         primary_ast: Object.assign(
@@ -426,7 +427,8 @@ loadJSHandlerInternal(
                         IS_BINDING: true
                     },
                     host_node: node,
-                    html_element_index: 0
+                    html_element_index: 0,
+                    pos: node.pos
                 });
             } else if (name[0] == "$") {
 
@@ -444,7 +446,7 @@ loadJSHandlerInternal(
                 root_name = name.slice(1);
 
                 component.addBinding({
-                    attribute_name: "method_call",
+                    binding_selector: BINDING_SELECTOR.METHOD_CALL,
                     binding_val: <WickBindingNode>{
                         type: HTMLNodeType.WickBinding,
                         primary_ast: setPos(stmt(`this.${name}(f+1);`), node.pos),
@@ -452,23 +454,44 @@ loadJSHandlerInternal(
                         IS_BINDING: true
                     },
                     host_node: node,
-                    html_element_index: -1
+                    html_element_index: -1,
+                    pos: node.pos
                 });
 
-                node.nodes[1] = { type: JSNodeType.Arguments, nodes: [exp("f=0")], pos: node.pos };
-                (<JSNode>node).nodes[2].nodes.unshift(setPos(stmt(`if(f>0)return 0;`), node.pos));
+                addNameToDeclaredVariables("f", frame);
+
+                node.nodes[1] = env.functions.reinterpretArrowParameters([{ type: JSNodeType.Parenthesized, nodes: [exp("f=1")], pos: node.pos }]);
+
+                (<JSNode>node).nodes[2].nodes.unshift(setPos(stmt(`if(f>1)return 0;`), node.pos));
             }
 
             skip(1);
 
             return new Promise(async res => {
                 await processFunctionDeclaration(<JSNode>node, component, presets, root_name);
-
                 res(null);
             });
         }
 
     }, JSNodeType.FunctionDeclaration
+);
+
+loadJSHandlerInternal(
+    {
+        priority: 1,
+
+        prepareJSNode(node, parent_node, skip, component, presets, frame) {
+
+            if (parent_node == frame.ast) {
+                for (const { node: binding, meta } of traverse(node, "nodes", 4)
+                    .filter("type", JSNodeType.IdentifierBinding, JSNodeType.IdentifierReference)
+                ) {
+                    addNameToDeclaredVariables(<string>binding.value, frame);
+                }
+            }
+        }
+
+    }, JSNodeType.FormalParameters
 );
 
 
@@ -584,10 +607,11 @@ loadJSHandlerInternal(
                         && id.value == "watch") {
 
                         component.addBinding({
-                            attribute_name: "watched_frame_method_call",
+                            binding_selector: BINDING_SELECTOR.WATCHED_FRAME_METHOD_CALL,
                             binding_val: expr,
                             host_node: node,
-                            html_element_index: 0
+                            html_element_index: 0,
+                            pos: node.pos
                         });
 
                         return null;
@@ -633,10 +657,11 @@ loadJSHandlerInternal(
             if (node.value[0] == "@") {
 
                 component.addBinding({
-                    attribute_name: "inlined_element_id",
+                    binding_selector: BINDING_SELECTOR.ELEMENT_SELECTOR_STRING,
                     binding_val: node,
                     host_node: parent_node,
-                    html_element_index: 0
+                    html_element_index: 0,
+                    pos: node.pos
                 });
 
             }

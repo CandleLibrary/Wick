@@ -3,7 +3,7 @@ import { traverse } from "@candlefw/conflagrate";
 import { matchAll } from "@candlefw/css";
 
 import { DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE, FunctionFrame, Component } from "../types/types.js";
-import { BindingObject, BindingHandler, BindingType } from "../types/binding";
+import { BindingObject, BindingHandler, BindingType, BINDING_SELECTOR } from "../types/binding";
 import { getComponentVariableName, getComponentVariable } from "./component_set_component_variable.js";
 import { DOMLiteral } from "../wick.js";
 import { processFunctionDeclarationSync } from "./component_js.js";
@@ -95,11 +95,11 @@ function setBindingVariable(name: string, IS_OBJECT: boolean = false, binding: B
 loadBindingHandler({
     priority: -Infinity,
 
-    canHandleBinding(attribute_name, node_type) {
+    canHandleBinding(binding_selector, node_type) {
         return true;
     },
 
-    prepareBindingObject(attribute_name, binding_node_ast
+    prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component) {
 
         const binding = createBindingObject(BindingType.WRITEONLY),
@@ -145,11 +145,11 @@ loadBindingHandler({
 loadBindingHandler({
     priority: -1,
 
-    canHandleBinding(attribute_name, node_type) {
-        return attribute_name == "import_from_child";
+    canHandleBinding(binding_selector, node_type) {
+        return binding_selector == BINDING_SELECTOR.IMPORT_FROM_CHILD;
     },
 
-    prepareBindingObject(attribute_name, binding_node_ast
+    prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
         const binding = createBindingObject(BindingType.READONLY),
@@ -181,11 +181,11 @@ loadBindingHandler({
 loadBindingHandler({
     priority: -1,
 
-    canHandleBinding(attribute_name, node_type) {
-        return attribute_name == "export_to_child";
+    canHandleBinding(binding_selector, node_type) {
+        return binding_selector == BINDING_SELECTOR.EXPORT_TO_CHILD;
     },
 
-    prepareBindingObject(attribute_name, binding_node_ast
+    prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
         const binding = createBindingObject(BindingType.WRITE),
@@ -246,11 +246,11 @@ function setBindingAndRefVariables(root_node: JSNode, component: Component, bind
 loadBindingHandler({
     priority: -1,
 
-    canHandleBinding(attribute_name, node_type) {
-        return attribute_name == "binding_initialization";
+    canHandleBinding(binding_selector, node_type) {
+        return binding_selector == BINDING_SELECTOR.BINDING_INITIALIZATION;
     },
 
-    prepareBindingObject(attribute_name, binding_node_ast
+    prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
         const binding = createBindingObject(BindingType.WRITE);
@@ -283,11 +283,11 @@ loadBindingHandler({
 loadBindingHandler({
     priority: -1,
 
-    canHandleBinding(attribute_name, node_type) {
-        return (attribute_name.slice(0, 2) == "on");
+    canHandleBinding(binding_selector, node_type) {
+        return (binding_selector.slice(0, 2) == "on");
     },
 
-    prepareBindingObject(attribute_name, binding_node_ast
+    prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
         const binding = createBindingObject(BindingType.READONLY),
@@ -315,7 +315,7 @@ loadBindingHandler({
                 if (frame && frame.index)
                     name = "f" + frame.index;
 
-                expression = stmt(`this.e${element_index}.addEventListener("${attribute_name.slice(2)}",this.${name}.bind(this));`);
+                expression = stmt(`this.e${element_index}.addEventListener("${binding_selector.slice(2)}",this.${name}.bind(this));`);
 
                 frame.ATTRIBUTE = true;
             }
@@ -329,7 +329,7 @@ loadBindingHandler({
 
                 addNewMethodFrame(fn, component, presets);
 
-                expression = stmt(`this.e${element_index}.addEventListener("${attribute_name.slice(2)}",this.${name}.bind(this));`);
+                expression = stmt(`this.e${element_index}.addEventListener("${binding_selector.slice(2)}",this.${name}.bind(this));`);
             }
 
             setPos(expression, primary_ast.pos);
@@ -354,11 +354,11 @@ loadBindingHandler({
 loadBindingHandler({
     priority: -1,
 
-    canHandleBinding(attribute_name, node_type) {
-        return attribute_name == "watched_frame_method_call";
+    canHandleBinding(binding_selector, node_type) {
+        return binding_selector == BINDING_SELECTOR.WATCHED_FRAME_METHOD_CALL;
     },
 
-    prepareBindingObject(attribute_name, binding_node_ast
+    prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
         const [, { nodes: [frame_id, ...other_id] }] = binding_node_ast.nodes;
@@ -387,11 +387,11 @@ loadBindingHandler({
 loadBindingHandler({
     priority: -2,
 
-    canHandleBinding(attribute_name, node_type) {
-        return attribute_name == "method_call";
+    canHandleBinding(binding_selector, node_type) {
+        return binding_selector == BINDING_SELECTOR.METHOD_CALL;
     },
 
-    prepareBindingObject(attribute_name, binding_node_ast
+    prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component) {
 
         const binding = createBindingObject(BindingType.WRITEONLY),
@@ -413,11 +413,11 @@ loadBindingHandler({
 loadBindingHandler({
     priority: 0,
 
-    canHandleBinding(attribute_name, node_type) {
-        return attribute_name == "input_value";
+    canHandleBinding(binding_selector, node_type) {
+        return binding_selector == BINDING_SELECTOR.IMPORT_VALUE;
     },
 
-    prepareBindingObject(attribute_name, binding_node_ast
+    prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
         const binding = createBindingObject(BindingType.READWRITE),
@@ -471,11 +471,11 @@ loadBindingHandler({
 loadBindingHandler({
     priority: -2,
 
-    canHandleBinding(attribute_name, node_type) {
-        return !attribute_name;
+    canHandleBinding(binding_selector, node_type) {
+        return !binding_selector;
     },
 
-    prepareBindingObject(attribute_name, binding_node_ast
+    prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component) {
 
         const binding = createBindingObject(BindingType.WRITEONLY),
@@ -514,9 +514,9 @@ loadBindingHandler({
 
     priority: 100,
 
-    canHandleBinding: (attribute_name, node_type) => attribute_name == "data",
+    canHandleBinding: (binding_selector, node_type) => binding_selector == "data",
 
-    prepareBindingObject(attribute_name, binding_node_ast
+    prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
         if (!getElementAtIndex(component, element_index).is_container) return;
@@ -568,9 +568,9 @@ loadBindingHandler({
 loadBindingHandler({
     priority: 100,
 
-    canHandleBinding: (attribute_name, node_type) => attribute_name == "filter",
+    canHandleBinding: (binding_selector, node_type) => binding_selector == "filter",
 
-    prepareBindingObject(attribute_name, binding_node_ast
+    prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
         const binding = createBindingObject(BindingType.READONLY),
@@ -622,9 +622,9 @@ loadBindingHandler({
 
     priority: -1,
 
-    canHandleBinding: (attribute_name, node_type) => attribute_name == "useif",
+    canHandleBinding: (binding_selector, node_type) => binding_selector == BINDING_SELECTOR.CONTAINER_USE_IF,
 
-    prepareBindingObject(attribute_name, binding_node_ast
+    prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
         const
@@ -675,11 +675,11 @@ loadBindingHandler({
 loadBindingHandler({
     priority: 100,
 
-    canHandleBinding(attribute_name, node_type) {
-        return attribute_name == "inlined_element_id";
+    canHandleBinding(binding_selector, node_type) {
+        return binding_selector == BINDING_SELECTOR.ELEMENT_SELECTOR_STRING;
     },
 
-    prepareBindingObject(attribute_name, pending_binding_node, host_node, element_index, component, presets) {
+    prepareBindingObject(binding_selector, pending_binding_node, host_node, element_index, component, presets) {
 
 
         const nodes = matchAll<DOMLiteral>(pending_binding_node.value.slice(1), component.HTML, css_selector_helpers);
