@@ -8,7 +8,8 @@ import { getComponentVariableName, getComponentVariable } from "./component_set_
 import { DOMLiteral } from "../wick.js";
 import { processFunctionDeclarationSync } from "./component_js.js";
 import { css_selector_helpers } from "./component_css_selector_helpers.js";
-import { setPos } from "./component_common.js";
+import { setPos, getFirstReferenceName } from "./component_common.js";
+import { Lexer } from "@candlefw/wind";
 
 export const binding_handlers: BindingHandler[] = [];
 
@@ -55,7 +56,7 @@ function setIdentifierReferenceVariables(root_node: JSNode, component: Component
         .makeReplaceable()
         .extract(receiver)) {
 
-        if (node.type == JSNodeType.IdentifierReference) {
+        if (node.type == JSNodeType.IdentifierReference || node.type == JSNodeType.IdentifierBinding) {
 
             const val = node.value;
 
@@ -103,38 +104,20 @@ loadBindingHandler({
     prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component) {
 
-        const binding = createBindingObject(BindingType.WRITEONLY),
-            component_names = component.root_frame.binding_type,
+        const
+            binding = createBindingObject(BindingType.WRITEONLY, 0, binding_node_ast.pos),
             { primary_ast } = binding_node_ast;
 
 
         if (primary_ast) {
 
-            for (const { node, meta: { parent } } of traverse(primary_ast, "nodes")) {
-
-                if (node.type == JSNodeType.IdentifierReference) {
-                    if (!component_names.has(<string>node.value))
-                        continue;
-                    //Pop any binding names into the binding information container. 
-
-                    setBindingVariable(<string>node.value, parent && parent.type == JSNodeType.MemberExpression, binding);
-                }
-            }
-
-            const receiver = { ast: null };
-
-            for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver)) {
-
-                if (node.type == JSNodeType.IdentifierReference) {
-                    replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
-                }
-            }
-
-            const expression = exp(`this.e${element_index}.setAttribute("${attribute_name}")`);
+            const
+                ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                expression = exp(`this.e${element_index}.setAttribute("${binding_selector}")`);
 
             setPos(expression, primary_ast.pos);
 
-            expression.nodes[1].nodes.push(receiver.ast);
+            expression.nodes[1].nodes.push(ast);
 
             binding.write_ast = expression;
         }
@@ -153,15 +136,16 @@ loadBindingHandler({
     prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
-        const binding = createBindingObject(BindingType.READONLY),
+        const
+            binding = createBindingObject(BindingType.READONLY, 0, binding_node_ast.pos),
             { local, extern } = binding_node_ast,
             index = host_node.child_id, child_comp = host_node.component;
 
         if (child_comp) {
 
-            const root = child_comp.root_frame;
-
-            const cv = root.binding_type.get(extern);
+            const
+                root = child_comp.root_frame,
+                cv = root.binding_type.get(extern);
 
             if (cv && cv.flags == DATA_FLOW_FLAG.EXPORT_TO_PARENT && component.root_frame.binding_type.get(local)) {
 
@@ -189,7 +173,8 @@ loadBindingHandler({
     prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
-        const binding = createBindingObject(BindingType.WRITE),
+        const
+            binding = createBindingObject(BindingType.WRITE, 0, binding_node_ast.pos),
             { local, extern } = binding_node_ast,
             index = host_node.child_id,
             comp = host_node.component;
@@ -213,37 +198,6 @@ loadBindingHandler({
     }
 });
 
-
-
-function setBindingAndRefVariables(root_node: JSNode, component: Component, binding: BindingObject): JSNode {
-
-    const receiver = { ast: null }, component_names = component.root_frame.binding_type;
-
-    for (const { node, meta: { replace, parent } } of traverse(root_node, "nodes")
-        .makeReplaceable()
-        .extract(receiver)) {
-
-        if (node.type == JSNodeType.IdentifierReference || node.type == JSNodeType.IdentifierBinding) {
-
-            const val = node.value;
-
-            if (!component_names.has(<string>val))
-                continue;
-
-            replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
-
-            //Pop any binding names into the binding information container. 
-            setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, binding);
-        }
-    }
-
-    //Convert to call
-    const node = receiver.ast;
-
-    return node;
-}
-
-
 loadBindingHandler({
     priority: -1,
 
@@ -254,15 +208,12 @@ loadBindingHandler({
     prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
-        const binding = createBindingObject(BindingType.WRITE);
-
-        const [ref, expr] = (<JSNode><unknown>binding_node_ast).nodes;
-
-        const comp_var = component.root_frame.binding_type.get(<string>ref.value);
-
-        const converted_expression = setIdentifierReferenceVariables(expr, component, binding);
-
-        const d = exp(`this.u${comp_var.class_index}(a)`);
+        const
+            binding = createBindingObject(BindingType.WRITE, 0, binding_node_ast.pos),
+            [ref, expr] = (<JSNode><unknown>binding_node_ast).nodes,
+            comp_var = component.root_frame.binding_type.get(<string>ref.value),
+            converted_expression = setIdentifierReferenceVariables(expr, component, binding),
+            d = exp(`this.u${comp_var.class_index}(a)`);
 
         setPos(d, binding_node_ast.pos);
 
@@ -291,8 +242,9 @@ loadBindingHandler({
     prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
-        const binding = createBindingObject(BindingType.READONLY),
-            { primary_ast, secondary_ast } = binding_node_ast;
+        const
+            binding = createBindingObject(BindingType.READONLY, 0, binding_node_ast.pos),
+            { primary_ast } = binding_node_ast;
 
         if (primary_ast) {
 
@@ -347,6 +299,15 @@ loadBindingHandler({
 });
 
 /***********************************************
+███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████ 
+██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ ██      
+█████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██ ███████ 
+██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██ 
+██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████ 
+                                                                          
+                                                                          
+                                                                  
+                                                                  
  * 
  * 
  *  Bound function activation bindings.
@@ -362,17 +323,17 @@ loadBindingHandler({
     prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
-        const [, { nodes: [frame_id, ...other_id] }] = binding_node_ast.nodes;
+        const
+            [, { nodes: [frame_id, ...other_id] }] = binding_node_ast.nodes,
+            frame = getFrameFromName(frame_id.value, component),
+            binding = createBindingObject(BindingType.READWRITE, 0, binding_node_ast.pos);
 
-        const frame = getFrameFromName(frame_id.value, component),
-            binding = createBindingObject(BindingType.READWRITE);
-
-        if (!frame)
-            frame_id.pos.throw(`Cannot find function for reference ${frame_id.value}`);
+        if (!frame) frame_id.pos.throw(`Cannot find function for reference ${frame_id.value}`);
 
         if (frame.ATTRIBUTE) return null;
 
         for (const id of other_id) setBindingVariable(<string>id.value, false, binding);
+
         for (const id of frame.input_names) setBindingVariable(id, false, binding);
 
         setFrameAsBindingActive(frame, presets);
@@ -395,16 +356,47 @@ loadBindingHandler({
     prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component) {
 
-        const binding = createBindingObject(BindingType.WRITEONLY),
-            { primary_ast } = binding_node_ast
-            ;
+        const binding = createBindingObject(BindingType.WRITEONLY, 0, host_node.pos),
+            { primary_ast } = binding_node_ast;
 
         if (primary_ast) {
 
-            setBindingVariable(<string>binding_node_ast
-                .value, false, binding);
+            const receiver = { ast: null }, component_names = component.root_frame.binding_type;
 
-            binding.write_ast = primary_ast;
+            for (const { node, meta: { replace, parent } } of traverse(host_node, "nodes")
+                .makeReplaceable()
+                .extract(receiver)) {
+
+                if (node.type == JSNodeType.CallExpression) {
+                    const name = getFirstReferenceName(node);
+                    const frame = getFrameFromName(name, component);
+                    if (frame) {
+
+                        for (const input of frame.input_names.values()) {
+                            if (component_names.has(<string>input))
+                                setBindingVariable(<string>input, false, binding);
+                        }
+                    }
+                }
+
+                if (node.type == JSNodeType.IdentifierReference || node.type == JSNodeType.IdentifierBinding) {
+
+                    const val = node.value;
+
+                    if (!component_names.has(<string>val))
+                        continue;
+
+                    replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
+
+                    //Pop any binding names into the binding information container. 
+                    setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, binding);
+                }
+            }
+
+            //return receiver.ast;
+
+            setIdentifierReferenceVariables(host_node, component, binding);
+            binding.write_ast = setPos(primary_ast, host_node.pos);
         }
 
         return binding;
@@ -421,7 +413,7 @@ loadBindingHandler({
     prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
-        const binding = createBindingObject(BindingType.READWRITE),
+        const binding = createBindingObject(BindingType.READWRITE, 0, binding_node_ast.pos),
             { primary_ast } = binding_node_ast;
 
         if (primary_ast) {
@@ -479,15 +471,15 @@ loadBindingHandler({
     prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component) {
 
-        const binding = createBindingObject(BindingType.WRITEONLY),
+        const binding = createBindingObject(BindingType.WRITEONLY, 0, binding_node_ast.pos),
             component_names = component.root_frame.binding_type,
             { primary_ast, secondary_ast } = binding_node_ast;
 
         if (primary_ast) {
 
-            const ast = setIdentifierReferenceVariables(primary_ast, component, binding);
-
-            const expression = exp("a=b");
+            const
+                ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                expression = exp("a=b");
 
             expression.nodes[0] = exp(`this.e${element_index}.data`);
 
@@ -522,41 +514,19 @@ loadBindingHandler({
 
         if (!getElementAtIndex(component, element_index).is_container) return;
 
-        const binding = createBindingObject(BindingType.WRITEONLY),
+        const binding = createBindingObject(BindingType.WRITEONLY, 0, binding_node_ast.pos),
             component_names = component.root_frame.binding_type,
             { primary_ast } = binding_node_ast;
 
         if (primary_ast) {
 
-            const receiver = { ast: null };
-
-            for (const { node, meta } of traverse(primary_ast, "nodes")) {
-
-                if (node.type == JSNodeType.IdentifierReference) {
-
-                    const val = component_names.get(<string>node.value);
-
-                    if (!val || val.type == VARIABLE_REFERENCE_TYPE.API_VARIABLE)
-                        continue;
-
-                    //Pop any binding names into the binding information container. 
-                    setBindingVariable(
-                        <string>node.value,
-                        !!meta.parent && meta.parent.type == JSNodeType.MemberExpression,
-                        binding
-                    );
-                }
-            }
-
-            for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver))
-                if (node.type == JSNodeType.IdentifierReference)
-                    replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
-
-            const expression = exp(`this.ct[${host_node.container_id}].sd(0)`);
+            const
+                ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                expression = exp(`this.ct[${host_node.container_id}].sd(0)`);
 
             setPos(expression, primary_ast.pos);
 
-            expression.nodes[1].nodes = [receiver.ast];
+            expression.nodes[1].nodes = [ast];
 
             binding.write_ast = expression;
         }
@@ -574,36 +544,20 @@ loadBindingHandler({
     prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
-        const binding = createBindingObject(BindingType.READONLY),
+        if (!getElementAtIndex(component, element_index).is_container) return;
+
+        const binding = createBindingObject(BindingType.READWRITE, 1000, binding_node_ast.pos),
             component_names = component.root_frame.binding_type,
             { primary_ast, secondary_ast } = binding_node_ast
             ;
 
         if (primary_ast) {
 
-            for (const { node, meta: { parent } } of traverse(primary_ast, "nodes")) {
+            const
+                ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                expression = setPos(exp(`m1 => (1)`), primary_ast.pos);
 
-                if (node.type == JSNodeType.IdentifierReference) {
-
-                    const val = component_names.get(<string>node.value);
-
-                    if (!val || val.type == VARIABLE_REFERENCE_TYPE.API_VARIABLE)
-                        continue;
-
-                    //Pop any binding names into the binding information container. 
-                    setBindingVariable(<string>node.value, parent.type == JSNodeType.MemberExpression, binding);
-                }
-            }
-
-            const receiver = { ast: null };
-
-            for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver))
-                if (node.type == JSNodeType.IdentifierReference)
-                    replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
-
-            const expression = setPos(exp(`m1 => (1)`), primary_ast.pos);
-
-            expression.nodes[1] = receiver.ast;
+            expression.nodes[1] = ast;
 
             setPos(expression, primary_ast.pos);
 
@@ -612,6 +566,8 @@ loadBindingHandler({
             stmt_.nodes[0].nodes[1] = expression;
 
             binding.read_ast = stmt_;
+
+            binding.write_ast = exp(`this.ct[${host_node.container_id}].filterExpressionUpdate()`);
         }
 
         return binding;
@@ -629,35 +585,17 @@ loadBindingHandler({
         , host_node, element_index, component, presets) {
 
         const
-            binding = createBindingObject(BindingType.READONLY, 100),
+            binding = createBindingObject(BindingType.READONLY, 100, binding_node_ast.pos),
             component_names = component.root_frame.binding_type,
             { primary_ast } = binding_node_ast;
 
         if (primary_ast) {
 
-            for (const { node, meta: { parent } } of traverse(primary_ast, "nodes")) {
+            const
+                ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                expression = exp(`m1 => (1)`);
 
-                if (node.type == JSNodeType.IdentifierReference) {
-
-                    const val = component_names.get(<string>node.value);
-
-                    if (!val || val.type == VARIABLE_REFERENCE_TYPE.API_VARIABLE)
-                        continue;
-
-                    //Pop any binding names into the binding information container. 
-                    setBindingVariable(<string>node.value, parent.type == JSNodeType.MemberExpression, binding);
-                }
-            }
-
-            const receiver = { ast: null };
-
-            for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver))
-                if (node.type == JSNodeType.IdentifierReference)
-                    replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
-
-            const expression = exp(`m1 => (1)`);
-
-            expression.nodes[1] = receiver.ast;
+            expression.nodes[1] = ast;
 
             setPos(expression, primary_ast.pos);
 
@@ -681,21 +619,45 @@ loadBindingHandler({
     },
 
     prepareBindingObject(binding_selector, pending_binding_node, host_node, element_index, component, presets) {
+        const css_selector = <string>pending_binding_node.value.slice(1); //remove "@"
 
+        let html_nodes = null, index = host_node.nodes.indexOf(pending_binding_node);
 
-        const nodes = matchAll<DOMLiteral>(pending_binding_node.value.slice(1), component.HTML, css_selector_helpers);
+        switch (css_selector) {
 
-        if (nodes.length > 0) {
+            case "ctx3D":
+                html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
 
-            const index = host_node.nodes.indexOf(pending_binding_node);
+                if (html_nodes) {
+                    const expression = exp(`this.elu[${html_nodes.lookup_index}].getContext("3d")`);
+                    setPos(expression, host_node.pos);
+                    (<JSNode><unknown>host_node).nodes[index] = expression;
+                }
+                break;
 
-            const expression = (nodes.length == 1)
-                ? exp(`this.elu[${nodes[0].lookup_index}]; `)
-                : exp(`[${nodes.map(e => `this.elu[${e.lookup_index}]`).join(",")}]`);
+            case "ctx2D":
+                html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
 
-            setPos(expression, host_node.pos);
+                if (html_nodes) {
+                    const expression = exp(`this.elu[${html_nodes.lookup_index}].getContext("2d")`);
+                    setPos(expression, host_node.pos);
+                    (<JSNode><unknown>host_node).nodes[index] = expression;
+                }
+                break;
 
-            (<JSNode><unknown>host_node).nodes[index] = expression;
+            default:
+                html_nodes = matchAll<DOMLiteral>(css_selector, component.HTML, css_selector_helpers);
+
+                if (html_nodes.length > 0) {
+
+                    const expression = (html_nodes.length == 1)
+                        ? exp(`this.elu[${html_nodes[0].lookup_index}]; `)
+                        : exp(`[${html_nodes.map(e => `this.elu[${e.lookup_index}]`).join(",")}]`);
+
+                    setPos(expression, host_node.pos);
+
+                    (<JSNode><unknown>host_node).nodes[index] = expression;
+                }
         }
 
         return null;
