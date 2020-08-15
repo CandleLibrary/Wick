@@ -68,7 +68,7 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
                         = component.root_frame.binding_type.get(name);
 
                     if (type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE) {
-                        const st = stmt(`this.u${class_index}(this[${class_index}]);`);
+                        const st = stmt(`this.u${class_index}(this[${class_index}]${frame.name[0] == "$" ? ",f" : ""});`);
                         cpy.nodes[2].nodes.push(setPos(st, pos));
                     }
 
