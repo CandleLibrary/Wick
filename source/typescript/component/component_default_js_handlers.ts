@@ -563,7 +563,7 @@ loadJSHandlerInternal(
                     if (isBindingVariable(name, frame))
                         addNodeToBindingIdentifiers(<JSNode>node, <JSNode>parent_node, frame);
                     else
-                        node.pos.throw(`Invalid assignment to undefined [${name}]`);
+                        node.pos.throw(`Invalid assignment to undeclared variable [${name}]`);
 
                     addWrittenBindingVariableName(name, frame);
                 }
