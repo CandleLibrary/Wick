@@ -25,8 +25,8 @@ export function loadBindingHandler(handler: BindingHandler) {
     }
 }
 
-export function createBindingObject(type: BindingType, priority: number = 0): BindingObject {
-    return {
+export function createBindingObject(type: BindingType, priority: number = 0, pos: Lexer): BindingObject {
+    return <BindingObject>{
         DEBUG: false,
         annotate: "",
         component_variables: new Map,
@@ -34,7 +34,8 @@ export function createBindingObject(type: BindingType, priority: number = 0): Bi
         cleanup_ast: null,
         read_ast: null,
         write_ast: null,
-        priority
+        priority,
+        pos
     };
 }
 
