@@ -12,7 +12,7 @@ import { renderWithFormattingAndSourceMap, renderWithFormatting } from "../rende
 import { copy, createSourceMap, createSourceMapJSON } from "@candlefw/conflagrate";
 import { setPos } from "./component_common.js";
 
-const StrToBase64 = (typeof btoa != "undefined") ? btoa : str => Buffer.from('Hélló wórld!!', 'binary').toString('base64');
+const StrToBase64 = (typeof btoa != "undefined") ? btoa : str => Buffer.from(str, 'binary').toString('base64');
 
 function registerActivatedFrameMethod(frame: FunctionFrame, class_information) {
     if (frame.index)
