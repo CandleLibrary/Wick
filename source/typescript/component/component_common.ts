@@ -17,10 +17,10 @@ import { componentDataToJSCached } from "./component_data_to_js.js";
  * @param pos 
  */
 export function setPos(node, pos: Lexer) {
-    if (!pos) {
-        debugger;
-        throw new Error("pos null");
-    }
+
+    if (!pos)
+        throw new TypeError("[pos] is null - this node will not render source maps correctly.");
+
     for (const { node: n } of traverse(node, "nodes"))
         n.pos = pos;
 
@@ -51,6 +51,7 @@ export function mergeComponentData(destination_component: Component, source_comp
 }
 
 export async function importComponentData(new_component_url, component, presets, local_name: string) {
+
     try {
 
         const { ast, string, resolved_url } = await acquireComponentASTFromRemoteSource(new_component_url, component.location);
@@ -144,10 +145,8 @@ export async function importResource(
             class_index: -1,
             type: ref_type,
             flags: flag
-        }, frame)) {
-            debugger;
+        }, frame))
             node.pos.throw(`Import variable [${local}] already declared`);
-        };
 
         addWrittenBindingVariableName(local, frame);
 
