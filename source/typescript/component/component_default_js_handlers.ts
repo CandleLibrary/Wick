@@ -14,6 +14,7 @@ import { processWickCSS_AST } from "./component_css.js";
 import { processWickHTML_AST } from "./component_html.js";
 import { processFunctionDeclaration, processNodeSync } from "./component_js.js";
 import { BINDING_SELECTOR } from "../types/binding.js";
+import env from "../parser/env.js";
 
 
 export function findFirstNodeOfType(type: JSNodeType, ast: JSNode) {
@@ -227,7 +228,7 @@ loadJSHandlerInternal(
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
-            node = processNodeSync(<JSNode>node, frame, component, presets);
+            node = <JSNode>processNodeSync(<JSNode>node, frame, component, presets);
 
             const
                 n = setPos(stmt("a,a;"), node.pos),
@@ -239,6 +240,7 @@ loadJSHandlerInternal(
             //Add all elements to global 
             for (const { node: binding, meta } of traverse(node, "nodes", 4)
                 .filter("type", JSNodeType.IdentifierBinding, JSNodeType.BindingExpression)
+                .makeSkippable()
             ) {
                 if (binding.type == JSNodeType.BindingExpression) {
 
@@ -268,17 +270,24 @@ loadJSHandlerInternal(
 
                         addWrittenBindingVariableName(l_name, frame);
 
-                        addBinding("binding_initialization", binding, <JSNode>node, 0, component);
+                        addBinding(BINDING_SELECTOR.BINDING_INITIALIZATION, binding, <JSNode>node, 0, component);
+
+                        meta.skip();
 
                     } else
                         addNameToDeclaredVariables(l_name, frame);
 
                 } else {
-                    if (!frame.IS_ROOT) addNameToDeclaredVariables(<string>node.value, frame);
+                    if (frame.IS_ROOT)
+                        addNodeToBindingIdentifiers(binding, <JSNode>meta.parent, frame);
+                    else
+                        addNameToDeclaredVariables(<string>binding.value, frame);
                 }
             }
 
-            return null;
+            if (frame.IS_ROOT)
+                return null;
+            return node;
         }
     }, JSNodeType.VariableStatement
 );
@@ -299,13 +308,14 @@ loadJSHandlerInternal(
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
             //Add all elements to global 
-            for (const { node: binding, meta } of traverse(node, "nodes", 4)
+            for (const { node: binding, meta } of traverse(node, "nodes")
                 .filter("type",
                     JSNodeType.IdentifierBinding,
-                    JSNodeType.BindingExpression
+                    //JSNodeType.BindingExpression
                 )
             ) {
                 if (binding.type == JSNodeType.BindingExpression) {
+
 
                     const [identifier] = binding.nodes;
 
