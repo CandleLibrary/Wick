@@ -195,22 +195,26 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     }
 
     removeCSS() {
-        const cache = css_cache[this.name];
+        const cache = this.presets.css_cache[this.name];
         if (cache) {
             cache.count--;
             if (cache.count <= 0) {
                 cache.css_ele.parentElement.removeChild(cache.css_ele);
-                css_cache[this.name] = null;
+                this.presets.css_cache[this.name] = null;
             }
         }
     }
 
-    setCSS(style_string) {
+    getCSS() { return ""; }
+
+    setCSS(style_string = this.getCSS()) {
 
         if (style_string) {
 
-            if (!css_cache[this.name]) {
-                const css_ele = document.createElement("style");
+            if (!this.presets.css_cache[this.name]) {
+
+                const { window: { document }, css_cache } = this.presets,
+                    css_ele = document.createElement("style");
 
                 css_ele.innerHTML = style_string;
 
@@ -218,7 +222,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
                 css_cache[this.name] = { css_ele, count: 1 };
             } else
-                css_cache[this.name].count++;
+                this.presets.css_cache[this.name].count++;
 
 
 

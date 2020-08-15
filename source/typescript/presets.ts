@@ -55,6 +55,8 @@ export default class Presets implements PresetOptions {
 
     named_components: Map<string, Component>;
 
+    css_cache: any;
+
     static global = { get v() { return CachedPresets; }, set v(e) { } };
 
     /**
@@ -88,6 +90,8 @@ export default class Presets implements PresetOptions {
         this.schemes = {};
 
         this.models = {};
+
+        this.css_cache = {};
 
         this.custom = Object.assign({}, UserPresets.custom);
 

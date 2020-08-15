@@ -165,7 +165,7 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
 
         this.ct.push(ctr);
 
-    } else if (component_name && rt.presets.component_class.has(component_name)) {
+    } else if (component_name && this.presets.component_class.has(component_name)) {
 
         const comp_constructor = this.presets.component_class.get(component_name);
 
@@ -174,7 +174,7 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
 
         //Do fancy component linking
 
-        const comp = new comp_constructor();
+        const comp = new comp_constructor(undefined, undefined, undefined, undefined, undefined, this.presets);
 
         //Perform linking, what not then set element to the components element. 
         takeParentAddChild(this, comp);
