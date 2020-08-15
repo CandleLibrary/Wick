@@ -14,6 +14,8 @@ function processPreamble(ast: JSNode, component: Component, frame: FunctionFrame
     if (ast.type == JSNodeType.FunctionDeclaration)
         function_frame.name = <string>ast.nodes[0].value;
 
+    function_frame.ast = ast;
+
     return function_frame;
 }
 
