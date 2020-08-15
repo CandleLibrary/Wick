@@ -2,7 +2,7 @@ import { Lexer } from "@candlefw/wind";
 import { JSNode } from "@candlefw/js";
 
 import { VARIABLE_REFERENCE_TYPE, DATA_FLOW_FLAG } from "./types";
-import { WickNode, WickBindingNode } from "./wick_ast_node_types.js";
+import { HTMLNode, WickBindingNode } from "./wick_ast_node_types.js";
 import Presets from "../presets.js";
 import { Component } from "./types";
 
@@ -65,7 +65,7 @@ export interface BindingObject {
 export interface PendingBinding {
     html_element_index: number;
     attribute_name: string;
-    host_node: WickNode | JSNode;
+    host_node: HTMLNode | JSNode;
     binding_val: WickBindingNode | any;
 }
 
@@ -73,5 +73,5 @@ export interface BindingHandler {
     priority: number;
     canHandleBinding(attribute_name: string, node_type: string): boolean;
 
-    prepareBindingObject(attribute_name: string, binding_node: WickBindingNode, host_ast_node: WickNode, element_index: number, component: Component, presets?: Presets): BindingObject;
+    prepareBindingObject(binding_selector: BINDING_SELECTOR | string, binding_node: WickBindingNode, host_ast_node: HTMLNode, element_index: number, component: Component, presets?: Presets): BindingObject;
 }

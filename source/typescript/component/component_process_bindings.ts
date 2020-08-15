@@ -4,7 +4,7 @@ import { Component, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/typ
 import { BindingObject, BindingType, PendingBinding } from "../types/binding";
 import { getGenericMethodNode } from "./component_js_ast_tools.js";
 import { binding_handlers } from "./component_default_binding_handlers.js";
-import { WickNodeTypeLU } from "../types/wick_ast_node_types.js";
+import { HTMLNodeTypeLU, HTMLNode } from "../types/wick_ast_node_types.js";
 import { getComponentVariableName } from "./component_set_component_variable.js";
 import Presets from "../presets.js";
 import { setPos } from "./component_common.js";
@@ -20,7 +20,7 @@ export function runBindingHandlers(pending_binding: PendingBinding, component: C
 
         if (handler.canHandleBinding(
             pending_binding.attribute_name,
-            WickNodeTypeLU[pending_binding.host_node.type]
+            HTMLNodeTypeLU[pending_binding.host_node.type]
         ))
             binding = handler.prepareBindingObject(
                 pending_binding.attribute_name,

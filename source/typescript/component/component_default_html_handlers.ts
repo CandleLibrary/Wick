@@ -4,10 +4,10 @@ import { JSNode, stmt, JSNodeType } from "@candlefw/js";
 import {
     WICK_AST_NODE_TYPE_SIZE,
     WICK_AST_NODE_TYPE_BASE,
-    WickNode,
-    WickNodeClass,
-    WickContainerASTNode,
-    WickNodeType,
+    HTMLNode,
+    HTMLNodeClass,
+    HTMLContainerNode,
+    HTMLNodeType,
     WickBindingNode
 } from "../types/wick_ast_node_types.js";
 import { HTMLHandler } from "../types/html_handler.js";
@@ -112,7 +112,7 @@ function isPredefinedTag(val: string): boolean { return tag_map.has(val.toUpperC
 
 export const html_handlers: Array<HTMLHandler[]> = Array(WICK_AST_NODE_TYPE_SIZE).fill(null).map(() => [default_handler]);
 
-function loadHTMLHandlerInternal(handler: HTMLHandler, ...types: WickNodeType[]) {
+function loadHTMLHandlerInternal(handler: HTMLHandler, ...types: HTMLNodeType[]) {
 
     for (const type of types) {
 
@@ -125,7 +125,7 @@ function loadHTMLHandlerInternal(handler: HTMLHandler, ...types: WickNodeType[])
     }
 }
 
-export function loadHTMLHandler(handler: HTMLHandler, ...types: WickNodeType[]) {
+export function loadHTMLHandler(handler: HTMLHandler, ...types: HTMLNodeType[]) {
 
     const modified_handler = Object.assign({}, handler);
 
@@ -174,14 +174,14 @@ loadHTMLHandlerInternal(
             // Skip processing this node in the outer scope, 
             // it will be replaced with a CompiledBinding node.
 
-            return <WickNode>{
-                type: WickNodeType.HTML_BINDING_ELEMENT,
+            return <HTMLNode>{
+                type: HTMLNodeType.HTML_BINDING_ELEMENT,
                 IS_BINDING: true,
                 value: "",
                 pos: node.pos
             };
         }
-    }, WickNodeType.WickBinding
+    }, HTMLNodeType.WickBinding
 );
 
 /*
@@ -213,8 +213,7 @@ loadHTMLHandlerInternal(
 
                 case "value":
 
-                    if (<WickNode>node.IS_BINDING) {
-
+                    if (<HTMLNode><unknown>node.IS_BINDING) {
                         component.addBinding({
                             attribute_name: "input_value",
                             //@ts-ignore
@@ -230,7 +229,7 @@ loadHTMLHandlerInternal(
 
             return;
         }
-    }, WickNodeType.HTMLAttribute
+    }, HTMLNodeType.HTMLAttribute
 );
 
 
@@ -245,7 +244,7 @@ loadHTMLHandlerInternal(
 
             if (node.name == "component") {
 
-                const component_name = <string>(<WickNode>node).value;
+                const component_name = <string>(<HTMLNode>node).value;
 
                 component.names.push(component_name);
 
@@ -275,7 +274,7 @@ loadHTMLHandlerInternal(
 
             return;
         }
-    }, WickNodeType.HTMLAttribute
+    }, HTMLNodeType.HTMLAttribute
 );
 
 
@@ -325,7 +324,7 @@ loadHTMLHandlerInternal(
                 return null;
             }
         }
-    }, WickNodeType.HTMLAttribute
+    }, HTMLNodeType.HTMLAttribute
 );
 
 loadHTMLHandlerInternal(
@@ -348,7 +347,7 @@ loadHTMLHandlerInternal(
                 return null;
             }
         }
-    }, WickNodeType.HTMLAttribute
+    }, HTMLNodeType.HTMLAttribute
 );
 /*
  * HTML Elements lacking a spec tag.
@@ -389,7 +388,7 @@ loadHTMLHandlerInternal(
                     //Turn children into components if they are not already so.   
                     let ch = null;
 
-                    const ctr: WickContainerASTNode = <WickContainerASTNode>Object.assign({
+                    const ctr: HTMLContainerNode = <HTMLContainerNode>Object.assign({
 
                         components: [],
 
@@ -406,7 +405,7 @@ loadHTMLHandlerInternal(
 
                         ch = n;
 
-                        if (!(n.type & WickNodeClass.HTML_ELEMENT)) { continue; }
+                        if (!(n.type & HTMLNodeClass.HTML_ELEMENT)) { continue; }
 
                         const other_attributes = [];
 
@@ -479,7 +478,7 @@ loadHTMLHandlerInternal(
             return node;
         }
 
-    }, WickNodeType.HTML_Element
+    }, HTMLNodeType.HTML_Element
 );
 
 loadHTMLHandlerInternal(
@@ -492,7 +491,7 @@ loadHTMLHandlerInternal(
 
             return null;
         }
-    }, WickNodeType.HTML_STYLE
+    }, HTMLNodeType.HTML_STYLE
 );
 
 loadHTMLHandlerInternal(
@@ -519,14 +518,13 @@ loadHTMLHandlerInternal(
                 }, component.root_frame);
 
                 await processFunctionDeclaration(fn_ast, component, presets);
-            } else {
+            } else
                 await processWickJS_AST(script, component, presets);
-            }
 
             return null;
         }
 
-    }, WickNodeType.HTML_SCRIPT
+    }, HTMLNodeType.HTML_SCRIPT
 );
 
 loadHTMLHandlerInternal(
@@ -542,10 +540,10 @@ loadHTMLHandlerInternal(
             return null;
         }
 
-    }, WickNodeType.HTML_IMPORT
+    }, HTMLNodeType.HTML_IMPORT
 );
 
-function getAttributeValue(name, node: WickNode) {
+function getAttributeValue(name, node: HTMLNode) {
     for (const att of node.attributes) {
         if (att.name == name)
             return att.value;

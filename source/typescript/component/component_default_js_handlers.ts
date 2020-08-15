@@ -2,7 +2,7 @@ import { traverse } from "@candlefw/conflagrate";
 import { exp, JSNode, JSNodeType, stmt } from "@candlefw/js";
 import { JSHandler } from "../types/js_handler.js";
 import { Component, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
-import { WickNode, WickNodeClass, WickNodeTypeLU, WickBindingNode, WICK_AST_NODE_TYPE_SIZE, WickNodeType } from "../types/wick_ast_node_types.js";
+import { HTMLNode, HTMLNodeClass, HTMLNodeTypeLU, WickBindingNode, WICK_AST_NODE_TYPE_SIZE, HTMLNodeType } from "../types/wick_ast_node_types.js";
 import {
     addBindingVariable,
     addBindingVariableFlag, addNameToDeclaredVariables, addNodeToBindingIdentifiers,
@@ -177,11 +177,11 @@ loadJSHandlerInternal(
             // If the export is an element then 
             const [export_obj] = node.nodes;
 
-            if (export_obj.type & WickNodeClass.HTML_NODE) {
+            if (export_obj.type & HTMLNodeClass.HTML_NODE) {
                 // Don't need this node, it will be assigned to the components
 
                 // Element slot.
-                await processWickHTML_AST(<WickNode>export_obj, component, presets);
+                await processWickHTML_AST(<HTMLNode>export_obj, component, presets);
 
             } else {
 
@@ -416,7 +416,7 @@ loadJSHandlerInternal(
                 component.addBinding({
                     attribute_name: name,
                     binding_val: <WickBindingNode>{
-                        type: WickNodeType.WickBinding,
+                        type: HTMLNodeType.WickBinding,
                         primary_ast: Object.assign(
                             {},
                             name_node,
@@ -446,8 +446,8 @@ loadJSHandlerInternal(
                 component.addBinding({
                     attribute_name: "method_call",
                     binding_val: <WickBindingNode>{
-                        type: WickNodeType.WickBinding,
-                        primary_ast: setPos(stmt(`if(f<1) this.${name}();`), node.pos),
+                        type: HTMLNodeType.WickBinding,
+                        primary_ast: setPos(stmt(`this.${name}(f+1);`), node.pos),
                         value: name.slice(1),
                         IS_BINDING: true
                     },
@@ -603,10 +603,10 @@ loadJSHandlerInternal(
                 }
             }
 
-            if (node.nodes[0].type == WickNodeType.HTML_STYLE) {
+            if (node.nodes[0].type == HTMLNodeType.HTML_STYLE) {
 
                 return new Promise(async res => {
-                    await processWickCSS_AST(<WickNode>node.nodes[0], component, presets);
+                    await processWickCSS_AST(<HTMLNode>node.nodes[0], component, presets);
 
                     res(null);
                 });

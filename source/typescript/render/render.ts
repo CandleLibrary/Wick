@@ -10,9 +10,8 @@ import { FormatFunction as JSFormatFunction, JSNode } from "@candlefw/js";
 import { CSSNode, FormatFunction as CSSFormatFunction } from "@candlefw/css";
 
 import { renderers, format_rules } from "../render/rules.js";
-import { WickNode } from "../types/wick_ast_node_types.js";
+import { Node } from "../types/wick_ast_node_types.js";
 
-type Node = WickNode | JSNode | CSSNode;
 
 export const FormatFunction: CustomFormatFunction<Node> = (val, prop_name, node) => {
 

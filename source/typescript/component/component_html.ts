@@ -1,12 +1,12 @@
 import { traverse } from "@candlefw/conflagrate";
-import { WickNode, WickNodeClass, WICK_AST_NODE_TYPE_BASE, WickContainerASTNode, WickNodeType, WickTextNode } from "../types/wick_ast_node_types.js";
+import { HTMLNode, HTMLNodeClass, WICK_AST_NODE_TYPE_BASE, HTMLContainerNode, HTMLNodeType, HTMLTextNode } from "../types/wick_ast_node_types.js";
 import { Component } from "../types/types.js";
 import { html_handlers } from "./component_default_html_handlers.js";
 import Presets from "../presets.js";
 import { ContainerDomLiteral, DOMLiteral } from "../types/dom_literal.js";
 
 function buildExportableDOMNode(
-    ast: WickNode & {
+    ast: HTMLNode & {
         component_name?: string;
         slot_name?: string;
         data?: any;
@@ -33,7 +33,7 @@ function buildExportableDOMNode(
 
         const
             ctr = <ContainerDomLiteral>node,
-            ctr_ast = <WickContainerASTNode>ast;
+            ctr_ast = <HTMLContainerNode>ast;
 
         ctr.is_container = true;
         ctr.component_names = ctr_ast.component_names;
@@ -74,17 +74,17 @@ function buildExportableDOMNode(
     return node;
 }
 
-async function loadHTMLImports(ast: WickNode, component: Component, presets: Presets) {
+async function loadHTMLImports(ast: HTMLNode, component: Component, presets: Presets) {
     if (ast.import_list)
-        for (const import_ of <WickNode[]>(ast.import_list)) {
-            for (const handler of html_handlers[(WickNodeType.HTML_IMPORT >>> 23) - WICK_AST_NODE_TYPE_BASE]) {
+        for (const import_ of <HTMLNode[]>(ast.import_list)) {
+            for (const handler of html_handlers[(HTMLNodeType.HTML_IMPORT >>> 23) - WICK_AST_NODE_TYPE_BASE]) {
                 if (! await handler.prepareHTMLNode(import_, ast, import_, 0, () => { }, null, component, presets)) break;
             }
         }
 }
 
 
-export async function processWickHTML_AST(ast: WickNode, component: Component, presets: Presets): Promise<WickNode> {
+export async function processWickHTML_AST(ast: HTMLNode, component: Component, presets: Presets): Promise<HTMLNode> {
     //Process the import list
 
     //@ts-ignore
@@ -92,23 +92,23 @@ export async function processWickHTML_AST(ast: WickNode, component: Component, p
 
     //Process the ast and return a node that  
     const receiver = { ast: null },
-        attribute_handlers = html_handlers[Math.max((WickNodeType.HTMLAttribute >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)];
+        attribute_handlers = html_handlers[Math.max((HTMLNodeType.HTMLAttribute >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)];
 
     let last_element = null, index = -1;
 
     //Remove content-less text nodes.
     for (const { node, meta: { prev, next, mutate } } of traverse(ast, "nodes")
         .makeMutable()
-        .filter("type", WickNodeType.HTMLText)
+        .filter("type", HTMLNodeType.HTMLText)
     ) {
-        if (node.type == WickNodeType.HTMLText) {
-            const text = <WickTextNode>node;
+        if (node.type == HTMLNodeType.HTMLText) {
+            const text = <HTMLTextNode>node;
 
             text.data = (<string>text.data).replace(/[ \n]+/g, " ");
 
             if (text.data == ' ') {
-                if (prev && prev.type == WickNodeType.WickBinding
-                    && next && next.type == WickNodeType.WickBinding)
+                if (prev && prev.type == HTMLNodeType.WickBinding
+                    && next && next.type == HTMLNodeType.WickBinding)
                     continue;
                 mutate(null);
             }
@@ -134,9 +134,9 @@ export async function processWickHTML_AST(ast: WickNode, component: Component, p
             if (result != node) {
                 if (result === null || result) {
 
-                    html_node = <WickNode>result;
+                    html_node = <HTMLNode>result;
 
-                    replace(<WickNode>result);
+                    replace(<HTMLNode>result);
 
                     if (result === null)
                         continue main_loop;
@@ -150,7 +150,7 @@ export async function processWickHTML_AST(ast: WickNode, component: Component, p
         html_node.id = ++index;
 
         //Process Attributes of HTML Elements.
-        if (html_node.type & WickNodeClass.HTML_ELEMENT) {
+        if (html_node.type & HTMLNodeClass.HTML_ELEMENT) {
 
             last_element = html_node;
 
@@ -174,7 +174,7 @@ export async function processWickHTML_AST(ast: WickNode, component: Component, p
 
                     if (result != html_node) {
                         if (result === null || result)
-                            meta2.mutate(<WickNode>result);
+                            meta2.mutate(<HTMLNode>result);
                         else
                             continue;
                     }

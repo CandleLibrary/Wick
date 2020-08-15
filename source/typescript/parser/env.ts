@@ -11,9 +11,9 @@ import { ParserEnvironment } from "@candlefw/hydrocarbon/build/library/runtime.j
 import { Lexer } from "@candlefw/wind";
 import { JSParserEnvironment, JSParserEnv, JSNodeTypeLU } from "@candlefw/js";
 
-import { WickNodeTypeLU } from "../types/wick_ast_node_types.js";
+import { HTMLNodeTypeLU } from "../types/wick_ast_node_types.js";
 
-export const NodeTypes = Object.assign({}, CSSNodeTypeLU, WickNodeTypeLU, JSNodeTypeLU);
+export const NodeTypes = Object.assign({}, CSSNodeTypeLU, HTMLNodeTypeLU, JSNodeTypeLU);
 
 type WickParserEnvironment = ParserEnvironment & JSParserEnv & {
     ASI: boolean;

@@ -24,7 +24,7 @@ import { PendingBinding } from "./types/binding";
 import { DOMLiteral } from "./types/dom_literal.js";
 import { ExtendedComponent } from "./types/extended_component";
 import { componentDataToHTML } from "./component/component_data_to_html.js";
-import { WickNodeTypeLU, WickNodeClass, WickNode } from "./types/wick_ast_node_types.js";
+import { HTMLNodeTypeLU, HTMLNodeClass, HTMLNode } from "./types/wick_ast_node_types.js";
 import { ObservableModel, ObservableWatcher } from "./types/observable_model.js";
 import { createNameHash } from "./component/component_create_hash_name.js";
 import { css_selector_helpers } from "./component/component_css_selector_helpers.js";
@@ -184,12 +184,12 @@ interface wickOutput {
         DOMLiteral: DOMLiteral,
         BindingVariable: BindingVariable,
         JSNode: JSNode,
-        WickNode: WickNode,
+        HTMLNode: HTMLNode,
         CSSNode: CSSNode,
         CSSNodeType: typeof CSSNodeType;
         JSNodeType: typeof JSNodeTypeLU;
-        WickNodeType: typeof WickNodeTypeLU;
-        WickNodeClass: typeof WickNodeClass;
+        HTMLNodeType: typeof HTMLNodeTypeLU;
+        HTMLNodeClass: typeof HTMLNodeClass;
         VARIABLE_REFERENCE_TYPE: typeof VARIABLE_REFERENCE_TYPE;
     };
 }
@@ -207,7 +207,7 @@ Object.assign(wick, {
     types: {
         CSSNodeType: CSSNodeTypeLU,
         JSNodeType: JSNodeTypeLU,
-        WickNodeType: WickNodeTypeLU
+        HTMLNodeType: HTMLNodeTypeLU
     },
 
     Presets,
@@ -238,7 +238,7 @@ export {
     Presets,
     WickRTComponent as RuntimeComponent,
     WickRTComponent,
-    WickNodeTypeLU as WickNodeType,
+    HTMLNodeTypeLU as HTMLNodeType,
     JSNodeTypeLU,
     CSSNodeType,
 
@@ -251,10 +251,10 @@ export {
     DOMLiteral,
     BindingVariable,
     JSNode,
-    WickNode,
+    HTMLNode as HTMLNode,
     CSSNode,
     JSNodeType,
-    WickNodeClass,
+    HTMLNodeClass as HTMLNodeClass,
     FunctionFrame,
     PendingBinding,
     VARIABLE_REFERENCE_TYPE,

@@ -5,7 +5,7 @@ import { Lexer } from "@candlefw/wind";
 import Presets from "../presets.js";
 import { compileComponent } from "./component.js";
 import { Component, DATA_FLOW_FLAG, FunctionFrame, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
-import { WickNode } from "../wick.js";
+import { HTMLNode } from "../wick.js";
 import { acquireComponentASTFromRemoteSource } from "./component_acquire_ast.js";
 import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
 import { componentDataToJSCached } from "./component_data_to_js.js";
@@ -77,7 +77,7 @@ export async function importResource(
     from_value: string,
     component: Component,
     presets: Presets,
-    node: WickNode | JSNode,
+    node: HTMLNode | JSNode,
     local_name: string = "",
     names: { local: string, external: string; }[] = [],
     frame: FunctionFrame

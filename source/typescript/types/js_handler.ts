@@ -1,6 +1,6 @@
 import { JSNode } from "@candlefw/js";
 
-import { WickNode } from "./wick_ast_node_types.js";
+import { HTMLNode } from "./wick_ast_node_types.js";
 import { Component, FunctionFrame } from "./types.js";
 import Presets from "../presets.js";
 
@@ -25,11 +25,11 @@ export interface JSHandler {
      * 
      * @async May return a promise that resolves to the givin return types.
      * 
-     * @return @type {WickNode} | @type {void} | @type {Promise}
+     * @return @type {HTMLNode} | @type {void} | @type {Promise}
      */
     prepareJSNode(
-        node: JSNode | WickNode,
-        parent_node: JSNode | WickNode,
+        node: JSNode | HTMLNode,
+        parent_node: JSNode | HTMLNode,
         skip: (amount?: number) => void,
         component: Component,
         presets: Presets,

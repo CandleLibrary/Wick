@@ -8,26 +8,26 @@ import { processWickJS_AST } from "./component_js.js";
 import { processWickHTML_AST } from "./component_html.js";
 
 import { Component, } from "../types/types";
-import { WickNodeClass, WickNode } from "../types/wick_ast_node_types.js";
+import { HTMLNodeClass, HTMLNode } from "../types/wick_ast_node_types.js";
 import { acquireComponentASTFromRemoteSource } from "./component_acquire_ast.js";
 import { createComponent, createErrorComponent } from "./component_create_component.js";
 import { createFrame } from "./component_create_frame.js";
 export const component_cache = {};
 
-function getHTML_AST(ast: WickNode | JSNode): WickNode {
+function getHTML_AST(ast: HTMLNode | JSNode): HTMLNode {
 
-    while (ast && !(ast.type & WickNodeClass.HTML_ELEMENT))
+    while (ast && !(ast.type & HTMLNodeClass.HTML_ELEMENT))
         ast = ast.nodes[0];
 
-    return <WickNode>ast;
+    return <HTMLNode>ast;
 }
 
-function determineSourceType(ast: WickNode | JSNode): boolean {
+function determineSourceType(ast: HTMLNode | JSNode): boolean {
 
     if (ast.type == JSNodeType.Script || ast.type == JSNodeType.Module) {
         if (ast.nodes.length > 1) return true;
         if (ast.nodes[0].type != JSNodeType.ExpressionStatement) return true;
-        if (!(ast.nodes[0].nodes[0].type & WickNodeClass.HTML_ELEMENT)) return true;
+        if (!(ast.nodes[0].nodes[0].type & HTMLNodeClass.HTML_ELEMENT)) return true;
     }
 
     return false;
@@ -79,7 +79,7 @@ export default async function makeComponent(input: URL | string, presets?: Prese
 };
 
 export async function compileComponent(
-    ast: WickNode | JSNode,
+    ast: HTMLNode | JSNode,
     source_string: string,
     url: string,
     presets: Presets,
