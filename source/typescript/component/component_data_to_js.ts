@@ -247,8 +247,10 @@ export function componentDataToClassString(
         //CSS INFORMATION
         let style;
 
-        if (INCLUDE_CSS && (style = componentDataToCSS(component)))
-            re_stmts.push(stmt(`this.setCSS(\`${style}\`)`));
+        if (INCLUDE_CSS && (style = componentDataToCSS(component))) {
+            re_stmts.push(stmt(`this.setCSS()`));
+            class_information.methods.push(setPos(getGenericMethodNode("getCSS", "", `return \`${style}\`;`), component.CSS[0].pos));
+        }
 
         if (class_information.binding_init_statements.length > 0)
             class_information.methods.push(binding_values_init_method);
