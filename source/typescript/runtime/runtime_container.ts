@@ -610,7 +610,7 @@ export class WickContainer implements Sparky {
      */
     filterUpdate() {
 
-        let output = this.comps.filter(this.filter);
+        let output = this.comps.filter(comp => this.filter(comp.container_model));
 
         if (output.length < 1) return;
 
