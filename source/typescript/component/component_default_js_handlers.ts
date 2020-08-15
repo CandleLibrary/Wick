@@ -258,7 +258,10 @@ loadJSHandlerInternal(
                                 flags: 0
                             }, frame)
                         ) {
-                            debugger;
+                            const msg = `Redeclaration of the binding variable [${l_name}]. \nFirst declaration here:\n${
+                                component.root_frame.binding_type.get(l_name).pos.blame()
+                                }\nredeclaration here:\n${binding.pos.blame()}\nin ${component.location}`;
+                            throw new ReferenceError(msg);
                         }
 
                         addNodeToBindingIdentifiers(identifier, <JSNode>meta.parent, frame);
