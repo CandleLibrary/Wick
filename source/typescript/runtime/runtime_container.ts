@@ -612,8 +612,6 @@ export class WickContainer implements Sparky {
 
         let output = this.comps.filter(comp => this.filter(comp.container_model));
 
-        if (output.length < 1) return;
-
         output.sort(this.sort);
 
         this.activeComps = output;
