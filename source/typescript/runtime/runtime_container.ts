@@ -2,6 +2,7 @@ import { cfw } from "@candlefw/cfw";
 import spark, { Sparky } from "@candlefw/spark";
 import { WickRTComponent } from "./runtime_component";
 import { RuntimeComponent } from "../wick";
+import { ObservableModel, ObservableWatcher } from "../types/observable_model";
 
 function getColumnRow(index, offset, set_size) {
     const adjusted_index = index - offset * set_size;
@@ -31,7 +32,7 @@ type ContainerComponent = WickRTComponent & { index: number; container_model: an
  * @param      {Object}  presets  The global presets object.
  * @param      {HTMLElement}  element  The element that the Scope will _bind_ to. 
  */
-export class WickContainer implements Sparky {
+export class WickContainer implements Sparky, ObservableWatcher {
 
     /**
      * Scrub offset
@@ -100,7 +101,6 @@ export class WickContainer implements Sparky {
     AUTO_SCRUB: boolean;
     LOADED: boolean;
     SCRUBBING: boolean;
-    observering: any;
 
     parent: WickRTComponent;
 
@@ -134,8 +134,6 @@ export class WickContainer implements Sparky {
         this.offset_fractional = 0;
         this.scrub_velocity = 0;
 
-
-        this.observering = null;
         this.trs_ascending = null;
         this.trs_descending = null;
 
@@ -144,6 +142,8 @@ export class WickContainer implements Sparky {
         this.DOM_DN_APPENDED = false;
         this.AUTO_SCRUB = false;
         this.LOADED = false;
+
+        this.container = null;
 
         this.parent = parent_comp;
 
@@ -158,25 +158,43 @@ export class WickContainer implements Sparky {
         for (const fltr of this.filters)
             fltr.destroy();
 
-        if (this.observering) {
-            this.observering.removeObserver(this);
-            this.observering = null;
-        }
+        if (this.container && this.container.OBSERVABLE)
+            this.container.unsubscribe(this);
+
     }
 
-    sd(container) {
+
+    /**
+     * Called by component when when container data should be set.
+     * @param container 
+     */
+    sd(container: any[] | ObservableModel) {
 
         if (!container) return;
 
-        if (Array.isArray(container))
-            this.filter_new_items(container);
-        else
-            this.filter_new_items(container.data);
+        //@ts-ignore
+        if (container.OBSERVABLE) {
 
+            const ctr: ObservableModel = <ObservableModel>container;
+            ctr.subscribe(this);
+        } else {
+            if (Array.isArray(container))
+                this.filter_new_items(container);
+            else
+                this.filter_new_items(container.data);
+
+        }
         this.loadAcknowledged();
     }
 
+    onModelUpdate(container) {
+
+        this.filter_new_items(container);
+    }
+
     update(container) {
+        throw new Error("IS this being used?");
+
         if (container.CFW_DATA_STRUCTURE) container = container.get(undefined, []);
 
         if (!container) return;
@@ -687,6 +705,7 @@ export class WickContainer implements Sparky {
             const
                 exists = new Map(new_items.map(e => [e, true])),
                 out = [];
+
 
             for (let i = 0, l = this.activeComps.length; i < l; i++)
                 if (exists.has(this.activeComps[i].container_model))

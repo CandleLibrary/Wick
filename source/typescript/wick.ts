@@ -29,6 +29,8 @@ import { ObservableModel, ObservableWatcher } from "./types/observable_model.js"
 import { createNameHash } from "./component/component_create_hash_name.js";
 import { css_selector_helpers } from "./component/component_css_selector_helpers.js";
 import { renderWithFormatting } from "./render/render.js";
+import { Observable } from "./runtime/observable/observable.js";
+import { ObservableScheme } from "./runtime/observable/observable_prototyped.js";
 
 /**
  * Creates a Wick component. test
@@ -179,6 +181,10 @@ interface wickOutput {
 
     componentDataToClass: typeof componentDataToJS,
 
+    Observable: typeof Observable;
+
+    ObservableScheme: typeof ObservableScheme;
+
     types: {
 
         DOMLiteral: DOMLiteral,
@@ -217,7 +223,11 @@ Object.assign(wick, {
     componentDataToJSCached: componentDataToJSCached,
     componentDataToClass: componentDataToJS,
     componentDataToClassString,
+    Observable,
+    ObservableScheme
+
 });
+
 
 export default wick;
 
@@ -259,5 +269,9 @@ export {
     FunctionFrame,
     PendingBinding,
     VARIABLE_REFERENCE_TYPE,
-    DATA_FLOW_FLAG
+    DATA_FLOW_FLAG,
+
+    //Observables
+    Observable
+
 };
