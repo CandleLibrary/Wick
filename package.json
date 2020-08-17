@@ -1,6 +1,6 @@
 {
     "name": "@candlefw/wick",
-    "version": "0.9.0-ts",
+    "version": "0.10.0",
     "description": "HTML Component Builder",
     "main": "./build/library/wick.js",
     "types": "./build/types/wick.d.ts",
@@ -9,7 +9,7 @@
         "wick": "./source/cli.mjs"
     },
     "scripts": {
-        "prepublishOnly": "yarn run build && yarn run build.lite",
+        "prepublishOnly": "yarn run build && yarn run build.lite && yarn test",
         "compile": "hydrocarbon compile --parser glalr -u -o ./source/typescript/parser/ -e ./source/typescript/parser/proxy_parser_environment.js -t module ./source/grammars/wick_parser.hcg",
         "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
         "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/html.hcg",
@@ -51,6 +51,7 @@
         "@candlefw/test": "0.1.0-alpha",
         "@rollup/plugin-commonjs": "^11.0.1",
         "@rollup/plugin-node-resolve": "^7.0.0",
+        "@candlefw/html": "^0.0.14",
         "esm": "latest",
         "node-fetch": "^2.3.0",
         "rollup": "2.6.0",
@@ -63,20 +64,15 @@
         "unused": true
     },
     "dependencies": {
-        "@candlefw/conflagrate": "^0.0.5-alpha",
-        "@candlefw/css": "latest",
+        "@candlefw/conflagrate": "^0.1.0",
+        "@candlefw/css": "0.2.0",
         "@candlefw/cfw": "latest",
         "@candlefw/glow": "latest",
-        "@candlefw/html": "^0.0.14",
         "@candlefw/hydrocarbon": "^0.4.0-dev",
-        "@candlefw/js": "^0.2.0",
-        "@candlefw/math": "latest",
+        "@candlefw/js": "^0.2.2-dev",
         "@candlefw/spark": "^0.1.0",
-        "@candlefw/url": "^0.1.1",
-        "@candlefw/wind": "^0.4.1-dev",
-        "commander": "^4.1.0",
-        "env": "^0.0.2",
-        "latest": "^0.2.0"
+        "@candlefw/url": "^0.1.2",
+        "@candlefw/wind": "^0.4.1-dev"
     },
     "esm": {
         "cjs": {

@@ -9,7 +9,7 @@
 #                                                                                                  __/ |
 #                                                                                                 |___/ 
 # 
-# 		2020 v2.1
+# 		2020 v3.0
 # 		
 # 		Copyright (c) MMXX Anthony C Weathersby
 # 		
@@ -46,7 +46,7 @@
 
 @EXT wick
 
-@SYMBOL </ (! ((
+@SYMBOL </ ${
 
 @IGNORE θws θnl 
 
@@ -78,11 +78,13 @@
 
 <> IMPORT_TAG_LIST → IMPORT_TAG(+)
 
-<> IMPORT_TAG → < τimport html::ATTRIBUTES? /? > ( </ τimport > )?                          			    ↦r { { type:env.typ.HTML_IMPORT, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:true, pos } } 
+<> IMPORT_TAG → < τimport html::ATTRIBUTES? /? > ( </ τimport > )?                          			    
+                                                                    ↦r { { type:env.typ.HTML_IMPORT, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:true, pos } } 
 
 +> html::VOID_NAME →  τf
 
-+> html::ATTRIBUTE → html::ATTRIBUTE_HEAD = ( " WICK_BINDING? " ↦r {$$sym2} │ WICK_BINDING )  			    ↦r { {type:env.typ.HTMLAttribute, name:$sym1, value:$sym3 || "", IS_BINDING:!!$sym3, pos } }                    
++> html::ATTRIBUTE → html::ATTRIBUTE_HEAD = ( " WICK_BINDING? " ↦r {$$sym2} │ WICK_BINDING )  			    
+                                                                    ↦r { {type:env.typ.HTMLAttribute, name:$sym1, value:$sym3 || "", IS_BINDING:!!$sym3, pos } }                    
 
 +> html::TEXT_NODE → WICK_BINDING  
 
@@ -92,9 +94,13 @@
 <> WICK_BINDING → CALL_BINDING                              
     │ BASIC_BINDING
 
-<> BASIC_BINDING →  ( BINDING_SYMBOL │ \(!\( )  js::expression? \) (ERR θws ) \)                                       ↦r { {type:env.typ.WickBinding, primary_ast:$$sym2, secondary_ast:null, DEBUG: $sym1 == "(!(" , pos } }
-<> CALL_BINDING →   ( BINDING_SYMBOL │ \(!\( )  js::expression? \) (ERR θws ) \( js::expression? \) (ERR θws ) \)      ↦r { {type:env.typ.WickBinding, primary_ast:$$sym2, secondary_ast:$$sym5, DEBUG: $sym1 == "(!(", pos } }
+<> BASIC_BINDING →  ( BINDING_SYMBOL_START )  js::expression? BINDING_SYMBOL_END                                       
+                                                                   
+                                                                    ↦r { {type:env.typ.WickBinding, primary_ast:$$sym2, secondary_ast:null, DEBUG: $sym1 == "(!(" , pos } }
 
-<> BINDING_SYMBOL > \((
+<> CALL_BINDING →   ( BINDING_SYMBOL_START )  js::expression?  ( \; js::expression )? BINDING_SYMBOL_END      
+                                                                    
+                                                                    ↦r { {type:env.typ.WickBinding, primary_ast:$$sym2, secondary_ast:$$sym5, DEBUG: $sym1 == "(!(", pos } }
 
-#<> CALL_BINDING →   \!? \( \(  ↦{ env.start = pos.off+2 } html::BODY_SYMBOLS(+") \) (ERR θws ) \( html::BODY_SYMBOLS(*") \) (ERR θws ) \)      ↦r {(env.off = pos.off, new env.fn.wick_binding($$sym4, $$sym7, env, pos,$$sym2) )}
+<> BINDING_SYMBOL_START > \${
+<> BINDING_SYMBOL_END > }

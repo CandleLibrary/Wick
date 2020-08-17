@@ -4,7 +4,7 @@
 
 <h3 align=center>HTML Components</h3>
 
-<p align=center> <sub><b>v0.9.0</b></sub> </p>
+<p align=center> <sub><b>v0.10.0</b></sub> </p>
 
 
 ## HTML Components on 
@@ -22,11 +22,11 @@ syntax.
 
 Wick introduces a minimal amount of syntax to handle the problems of data binding, component composition, and asset wrangling. Using already powerful HTML and JavaScript expressions, Wick relies on established conventions to handle common interface problems. If you know HTML, then you know basic Wick, and if you're good with JavaScript, then Wick is the interface wrangler for you.
 
-For example, in order to create a list of items, Wick uses a simple binding expression `((` --- `)(` ### `))` combined with HTML and JavaScript.
+For example, in order to create a list of items, Wick uses a simple binding expression,similar to a JavaScript template string expression, `${`  `}` to combine JavaScript with HTML in a natural way.
 ```html
 Things I Like:
 <ol>
-    (( [{name:"Books"}, {name:"Parks"}, {name:"Films"}] )( <li>((name))</li> ))
+    ${ [{name:"Books"}, {name:"Parks"}, {name:"Films"}] ; <li>${name}</li> }
 </ol>
 ```
 
@@ -39,14 +39,14 @@ This is further expressed by the ability for wick components to be described in 
 ```jsx
 the_best_color = "green";
 
-export default <div> The best color is (( the_best_color )). </div>
+export default <div> The best color is ${ the_best_color }. </div>
 ```
 
 #### HTML style
 ```html
 <div> 
     <script> the_best_color = "green"; </script>
-    The best color is (( the_best_color )).
+    The best color is ${ the_best_color }.
 </div>
 ```
 
@@ -93,32 +93,27 @@ The ``wick`` constructor function can accept both HTML and JavaScript strings an
 Learn more at [TODO](#).
 
 ## The Binding
-Wick is created around the syntax of the binding `((` `))`. Like other templating systems, a Wick binding allows content to be injected into an otherwise static file. In Wick's case, the content that is injected is the result of a JavaScript expression. 
+Wick is created around the syntax of the binding `${` `}`. Like other templating systems, a Wick binding allows content to be injected into an otherwise static file. In Wick's case, the content that is injected is the result of a JavaScript expression. 
 
 ```html
-This binding (( "is completely" )) unnecessary.
+This binding ${ "is completely" } unnecessary.
 ```
 
 Any Javascript expression can be used in a binding.
 
 ```html
-This binding is (( 2*50 ))% better.
-```
-Wick additionally allows JSX like HTML expressions to be used within bindings.
-
-```html
-This binding is (( <a ref=#>linked to nothing!</a>  ))
+This binding is ${ 2*50 }% better.
 ```
 
 By itself, bindings yield moderate value, but the true benefit is found when combined with JavaScript code. 
 
 ```html
 <div>
-    This binding has been running for (( value )) second(( value == 1 ? "s" : "")).
+    This binding has been running for ${ value } second${ value == 1 ? "s" : ""}.
     
     <script>
         value = 0;
-        setInterval(()=>value++,1000);
+        setInterval${)=>value++,1000);
     </script>
 </div>
 ```
@@ -129,8 +124,8 @@ Bindings become even more powerful when paired to HTML attributes that yield val
 
 ```html
 <div>
-    You typed: (( text_message ))
-    <input type="text" value="(( text_message ))"/>
+    You typed: ${ text_message }
+    <input type="text" value="${ text_message }"/>
 </div>
 ```
 
@@ -140,8 +135,8 @@ Or events:
 <div>
     <script> click = 0; /* Need to initialize the component variable click */ </script>
     
-    <button onclick="((click++))"/> 
-        Clicked ((click)) time(( click == 1 ? "s" : "" )) 
+    <button onclick="${click++}"/> 
+        Clicked ${click} time${ click == 1 ? "s" : "" } 
     </button>
 </div>
 ```
@@ -157,7 +152,7 @@ Wick provides a way for the properties of an object to drive the values of compo
 ```js
 // In webpage script
 
-const comp = wick("<div>((name))</div>");
+const comp = wick("<div>${name}</div>");
 
 comp.mount(document.body, {name:"Elizabeth"});
 
@@ -171,7 +166,7 @@ When an object is assigned to a mounted component, its properties provide the in
 // In webpage script
 
 const 
-    comp = wick(" <div>((name))<input value=((name))></div> "),
+    comp = wick(" <div>${name}<input value=${name}></div> "),
     data = {name:"Elizabeth"};
 
 comp.mount(document.body, data);
@@ -192,7 +187,7 @@ To overcome this, Wick provides a special virtual URL `$model` that can be used 
     <script> 
         import { name } from "$model"; 
     </script>
-    Type in your name: <input value=((name))/>
+    Type in your name: <input value=${name}/>
 </div>
 
 ```
@@ -218,78 +213,7 @@ Learn more at [TODO](#).
 
 ## Containers
 
-An advanced use of a Wick binding to use one to bind objects stored in arrays to HTML elements. 
-```html
-Things I Like:
-<ol>
-    (( [{name:"Books"}, {name:"Parks"}, {name:"Films"}] )( <li>((name))</li> ))
-</ol>
-```
-
-Wick recognizes bindings expressions of the form 
-
-```jsx
-(( [ a,b,c,... ] )( <component-template> ))
-``` 
-and
-```jsx
-(( containerize( container_object ) )( <component-template> ))
-```
-as container bindings. Objects within the array will be bound as `$models` to the `<component-template>`, and the templates will be appended to the DOM where ever the binding occurred. 
-
-Containers can be taken to the next level by using functional programming to modify the results of the array output:
-
-```jsx
-(( 
-    [{name:"Tom"}, {name:"Dick"}, {name:"Harry"}]
-        .filter(e=>e.name == "Harry") 
-)( <div>((name))</div> ))
-```
-
-Combined with component variables, you can quickly create search forms on large data sets.
-
-```html
-<div>
-    <script>
-        three_stooges = [
-            {name:"Moe", original:true},
-            {name:"Larry", original:true},
-            {name:"Shemp", original:true},
-            {name:"Curly", original:false},
-            {name:"Joe", original:false},
-            {name:"Curly Joe", original:false}
-        ]
-    </script>
-
-    Characters of the three stooges:
-    
-    <ul>
-        (( 
-            /* 
-                The containerize method ensures that
-                we are working an object that has
-                numeric indexes.
-            */
-            containerize(three_stooges)
-            /* 
-                Containerized methods will only
-                run when component variables
-                have values other than [undefined]
-            */
-                .filter(e=>e.name == search)
-                .filter(e=>e.original || !original)
-            )( 
-            <div>((name))</div> 
-        ))
-    <ul>
-
-    <input type="text" value=((search)) placeholder="Search">
-    Only show original: <input type="radio" value=((original))>
-
-</div>
-```
-Learn more at [TODO](#).
-
+TODO
 
 ## Composition
 
@@ -337,7 +261,7 @@ Wick provides the virtual URL `$parent` to allow a component to import the varia
         import {  name as parent_name } from "$parent";
         name = "Animal";
     </script>
-    The scope ((name)) Is a child of the scope ((parent_name))
+    The scope ${name} Is a child of the scope ${parent_name}
 </div>
 
 ```
@@ -364,7 +288,7 @@ This will establish a one-way binding between the parent and the child scope. In
             name = "Sexy Beast";
         export { name }
     </script>
-    is a child of the scope ((parent_name))
+    is a child of the scope ${parent_name}
 </div>
 ```
 Then the parent scope can use the `bind` attribute on the child scope to bind a local variable to one of the child's exported variable, using JavaScript object destructuring syntax.
@@ -376,7 +300,7 @@ Then the parent scope can use the `bind` attribute on the child scope to bind a 
     <script>
         name = "Disgruntled Coder";
     </script>
-    (( child_name )) <child bind=`(( {name: child_name} ))`/>
+    ${ child_name } <child bind=`${ {name: child_name} }`/>
 </div>
 ```
 Learn more at [TODO](#).
