@@ -195,7 +195,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     }
 
     removeCSS() {
+
         const cache = this.presets.css_cache[this.name];
+
         if (cache) {
             cache.count--;
             if (cache.count <= 0) {
@@ -223,8 +225,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                 css_cache[this.name] = { css_ele, count: 1 };
             } else
                 this.presets.css_cache[this.name].count++;
-
-
 
             this.ele.classList.add(this.name);
         }

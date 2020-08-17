@@ -359,45 +359,41 @@ loadBindingHandler({
         const binding = createBindingObject(BindingType.WRITEONLY, 0, host_node.pos),
             { primary_ast } = binding_node_ast;
 
-        if (primary_ast) {
+        const receiver = { ast: null }, component_names = component.root_frame.binding_type;
 
-            const receiver = { ast: null }, component_names = component.root_frame.binding_type;
+        for (const { node, meta: { replace, parent } } of traverse(host_node, "nodes")
+            .makeReplaceable()
+            .extract(receiver)) {
 
-            for (const { node, meta: { replace, parent } } of traverse(host_node, "nodes")
-                .makeReplaceable()
-                .extract(receiver)) {
+            if (node.type == JSNodeType.CallExpression) {
+                const name = getFirstReferenceName(node);
+                const frame = getFrameFromName(name, component);
+                if (frame) {
 
-                if (node.type == JSNodeType.CallExpression) {
-                    const name = getFirstReferenceName(node);
-                    const frame = getFrameFromName(name, component);
-                    if (frame) {
-
-                        for (const input of frame.input_names.values()) {
-                            if (component_names.has(<string>input))
-                                setBindingVariable(<string>input, false, binding);
-                        }
+                    for (const input of frame.input_names.values()) {
+                        if (component_names.has(<string>input))
+                            setBindingVariable(<string>input, false, binding);
                     }
-                }
-
-                if (node.type == JSNodeType.IdentifierReference || node.type == JSNodeType.IdentifierBinding) {
-
-                    const val = node.value;
-
-                    if (!component_names.has(<string>val))
-                        continue;
-
-                    replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
-
-                    //Pop any binding names into the binding information container. 
-                    setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, binding);
                 }
             }
 
-            //return receiver.ast;
+            if (node.type == JSNodeType.IdentifierReference || node.type == JSNodeType.IdentifierBinding) {
 
-            setIdentifierReferenceVariables(host_node, component, binding);
-            binding.write_ast = setPos(primary_ast, host_node.pos);
+                const val = node.value;
+
+                if (!component_names.has(<string>val))
+                    continue;
+
+                replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
+
+                //Pop any binding names into the binding information container. 
+                setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, binding);
+            }
         }
+
+        setIdentifierReferenceVariables(<JSNode>host_node, component, binding);
+        binding.write_ast = setPos(primary_ast, host_node.pos);
+
 
         return binding;
     }
