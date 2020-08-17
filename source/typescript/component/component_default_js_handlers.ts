@@ -424,9 +424,10 @@ loadJSHandlerInternal(
                 }, frame);
             }
 
+            /**
+             * Automatic event handler for root element
+             */
             if (name.slice(0, 2) == "on") {
-
-                //Automatically bind to the root element.
                 component.addBinding({
                     binding_selector: name,
                     binding_val: <WickBindingNode>{
@@ -462,7 +463,7 @@ loadJSHandlerInternal(
                     binding_selector: BINDING_SELECTOR.METHOD_CALL,
                     binding_val: <WickBindingNode>{
                         type: HTMLNodeType.WickBinding,
-                        primary_ast: setPos(stmt(`this.${name}(f+1);`), node.pos),
+                        primary_ast: setPos(stmt(`this.${name}(c+1);`), node.pos),
                         value: name.slice(1),
                         IS_BINDING: true
                     },
@@ -471,11 +472,11 @@ loadJSHandlerInternal(
                     pos: node.pos
                 });
 
-                addNameToDeclaredVariables("f", frame);
+                addNameToDeclaredVariables("c", frame);
 
-                node.nodes[1] = env.functions.reinterpretArrowParameters([{ type: JSNodeType.Parenthesized, nodes: [exp("f=1")], pos: node.pos }]);
+                node.nodes[1] = env.functions.reinterpretArrowParameters([{ type: JSNodeType.Parenthesized, nodes: [exp("c=1")], pos: node.pos }]);
 
-                (<JSNode>node).nodes[2].nodes.unshift(setPos(stmt(`if(f>1)return 0;`), node.pos));
+                (<JSNode>node).nodes[2].nodes.unshift(setPos(stmt(`if(c>1)return 0;`), node.pos));
             }
 
             skip(1);

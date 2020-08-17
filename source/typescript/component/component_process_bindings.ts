@@ -41,7 +41,7 @@ export function runBindingHandlers(pending_binding: PendingBinding, component: C
 export function processBindings(component: Component, class_data, presets: Presets) {
 
     const
-        { bindings: raw_bindings, } = component,
+        { bindings: raw_bindings } = component,
 
         {
             methods,
@@ -86,7 +86,7 @@ export function processBindings(component: Component, class_data, presets: Prese
             if (component_variables.size > 1) {
                 //Create binding update method.
 
-                const method = getGenericMethodNode(binding_name, "f=0", ";"),
+                const method = getGenericMethodNode(binding_name, "c=0", ";"),
                     [, , body] = method.nodes,
                     { nodes } = body;
 
@@ -135,7 +135,7 @@ export function processBindings(component: Component, class_data, presets: Prese
 
         if (flags & DATA_FLOW_FLAG.WRITTEN) {
 
-            const method = getGenericMethodNode("u" + class_index, "v,f = 0", `this[${class_index}] = v;`),
+            const method = getGenericMethodNode("u" + class_index, "v,f,c", `this[${class_index}] = v;`),
 
                 [, , body] = method.nodes;
 
@@ -163,7 +163,7 @@ export function processBindings(component: Component, class_data, presets: Prese
                                 pos: binding.pos
                             });
                     } else
-                        body.nodes.push(setPos(stmt(`this.${binding.name}(f)`), binding.pos));
+                        body.nodes.push(setPos(stmt(`this.${binding.name}(c)`), binding.pos));
                 }
             }
 
