@@ -115,14 +115,9 @@ export interface ComponentData {
      * generate an error report element if it is mounted 
      * to the DOM.
      */
-    ERRORS: boolean;
+    HAS_ERRORS: boolean;
 
-    /**
-     * Maps @***** selector strings to nodes that should be replaced with 
-     * a reference or an array of references that match the selector to a
-     * local HTML element or elements. 
-     */
-    selector_map: Map<string, JSNode[]>;
+    errors: Error[];
 
     /**
      * Count of number of container tags identified in HTML 

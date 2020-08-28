@@ -108,11 +108,11 @@ export async function compileComponent(
             presets.named_components.set(name.toUpperCase(), component);
 
     } catch (e) {
-        error.push(e);
+        errors.push(e);
     }
 
-    if (error.length > 0)
-        return createErrorComponent(error, source_string, url, component);
+    if (errors.length > 0)
+        return createErrorComponent(errors, source_string, url, component);
 
     return component;
 }

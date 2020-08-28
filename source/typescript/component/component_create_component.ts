@@ -6,7 +6,7 @@ import { DOMLiteral } from "../wick.js";
 import { Lexer } from "@candlefw/wind";
 
 
-export function createErrorComponent(errors: ExceptionInformation[], src: string, location: string, component: Component = createComponent(src, location)) {
+export function createErrorComponent(errors: Error[], src: string, location: string, component: ComponentData = createComponent(src, location)) {
 
     const error_data = [location + "", ...errors
         .flatMap(e => (e + "")
@@ -24,6 +24,8 @@ export function createErrorComponent(errors: ExceptionInformation[], src: string
 
     const pos = new Lexer(component.source);
 
+    component.errors.push(...errors);
+
     component.HTML = {
         tag_name: "ERROR",
         lookup_index: 0,
@@ -40,38 +42,41 @@ export function createErrorComponent(errors: ExceptionInformation[], src: string
         pos
     };
 
-    component.ERRORS = true;
+    component.HAS_ERRORS = true;
 
     return component;
 }
 
 export function createComponent(source_string: string, location: string): ComponentData {
     const component: ComponentData = <ComponentData>{
-        ERRORS: false,
 
-        source: source_string,
-
-        selector_map: new Map(),
-
-        container_count: 0,
-
-        children: [],
+        name: createNameHash(source_string),
 
         global_model: "",
 
+        names: [],
+
         location: new URL(location),
 
-        bindings: [],
+        source: source_string,
+
+        root_frame: null,
 
         frames: [],
 
-        CSS: [],
-
         HTML: null,
 
-        names: [],
+        CSS: [],
 
-        name: createNameHash(source_string),
+        bindings: [],
+
+        children: [],
+
+        HAS_ERRORS: false,
+
+        errors: [],
+
+        container_count: 0,
 
         //OLD STUFFS
         addBinding: (pending_binding: PendingBinding) => component.bindings.push(pending_binding),
@@ -79,7 +84,6 @@ export function createComponent(source_string: string, location: string): Compon
         //Local names of imported components that are referenced in HTML expressions. 
         local_component_names: new Map,
 
-        root_frame: null
     };
     return component;
 }
