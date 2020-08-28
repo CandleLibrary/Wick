@@ -8,10 +8,11 @@ import {
 } from "@candlefw/css";
 
 import { ParserEnvironment } from "@candlefw/hydrocarbon";
-import { Lexer } from "@candlefw/wind";
+
 import { JSParserEnvironment, JSParserEnv, JSNodeTypeLU } from "@candlefw/js";
 
 import { HTMLNodeTypeLU } from "../types/wick_ast_node_types.js";
+import { Lexer } from "@candlefw/wind";
 
 export const NodeTypes = Object.assign({}, CSSNodeTypeLU, HTMLNodeTypeLU, JSNodeTypeLU);
 
@@ -20,6 +21,7 @@ type WickParserEnvironment = ParserEnvironment & JSParserEnv & {
     /**
      * Test
      */
+    comments: Lexer[],
     typ: any;
     cls: any;
 };
@@ -34,6 +36,8 @@ const env = <WickParserEnvironment>{
     typ: NodeTypes,
 
     cls: Object.assign({}, JSParserEnvironment.cls),
+
+    comments: null,
 
     functions: {
         //CSS
@@ -80,7 +84,7 @@ const env = <WickParserEnvironment>{
         integrate: false,
 
         onstart: () => {
-            //env.table = {};
+            env.comments = [];
             env.ASI = true;
         }
     }
