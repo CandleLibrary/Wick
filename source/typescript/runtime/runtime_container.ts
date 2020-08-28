@@ -24,6 +24,8 @@ function createTransition(val?: boolean) {
 
 type ContainerComponent = WickRTComponent & { index: number; container_model: any; _TRANSITION_STATE_: boolean; par: ContainerComponent; };
 
+const component_attributes_defualt = [[[]]];
+
 /**
  * ScopeContainer provide the mechanisms for dealing with lists and sets of components. 
  *
@@ -104,6 +106,8 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
     parent: WickRTComponent;
 
+    container: any | ObservableModel;
+
     filter: (...args) => boolean;
     sort: (...args) => number;
 
@@ -116,7 +120,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
         this.ele = element;
         this.comp_constructors = component_constructors;
-        this.comp_attributes = component_attributes;
+        this.comp_attributes = component_attributes || component_attributes_defualt;
 
         this.activeComps = [];
         this.dom_comp = [];
@@ -476,16 +480,17 @@ export class WickContainer implements Sparky, ObservableWatcher {
             this.max = shift_points - 1;
             this.offset = Math.max(0, Math.min(shift_points - 1, offset));
 
-            //Two transitions to support scrubbing from an offset in either direction
+            // Two transitions to support scrubbing from an offset in either direction
             this.trs_ascending = createTransition(false);
             this.trs_descending = createTransition(false);
 
+            //
             this.dom_dn.length = 0;
             this.dom_up.length = 0;
             this.DOM_UP_APPENDED = false;
             this.DOM_DN_APPENDED = false;
 
-            //Scopes preceeding the transition window
+            // Scopes proceeding the transition window
             while (i < active_window_start - this.shift_amount) output[i++].index = -2;
 
             //Scopes entering the transition window ascending
@@ -495,7 +500,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
                 output[i++].index = -2;
             }
 
-            //Scopes in the transtion window
+            //Scopes in the transition window
             while (i < active_window_start + active_window_size && i < output_length) {
                 //Scopes on the descending edge of the transition window
                 if (oa < this.shift_amount && ++oa) {
@@ -779,12 +784,13 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
                     const attrib_list = this.comp_attributes[j];
 
-                    for (const [key, value] of attrib_list) {
-                        if (key == "class")
-                            component.ele.classList.add(...value.split(" "));
-                        else
-                            component.ele.setAttribute(key, value);
-                    }
+                    if (attrib_list)
+                        for (const [key, value] of attrib_list) {
+                            if (key == "class")
+                                component.ele.classList.add(...value.split(" "));
+                            else
+                                component.ele.setAttribute(key, value);
+                        }
 
                     component.container_model = item;
 
