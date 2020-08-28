@@ -26,11 +26,11 @@ export interface WickRuntime {
     gC(name: string): typeof WickRTComponent,
     presets: Presets;
 
+    setPresets: (preset_options?: PresetOptions) => Presets,
+
     OVERRIDABLE_onComponentCreate(component_instance: WickRTComponent): void;
 
     OVERRIDABLE_onComponentMetaChange(component_meta: any): void;
-
-    api: any;//{ __internal_API_format__: () => void, };
 }
 
 const rt: WickRuntime = (() => {
@@ -56,7 +56,7 @@ const rt: WickRuntime = (() => {
 
         OVERRIDABLE_onComponentMetaChange() { },
 
-        setPresets: async (preset_options: PresetOptions) => {
+        setPresets: (preset_options: PresetOptions) => {
 
             //create new component
             const presets = new Presets(preset_options);
@@ -66,14 +66,6 @@ const rt: WickRuntime = (() => {
 
             return presets;
         },
-
-        api: {
-            URL,
-            __internal_API_format__: {},
-            getExpectedAPIJSON() {
-                return JSON.stringify(rt.api.__internal_API_format__);
-            }
-        }
     };
 })();
 
