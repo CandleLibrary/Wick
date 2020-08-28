@@ -15,8 +15,6 @@ import { Node } from "../types/wick_ast_node_types.js";
 
 export const FormatFunction: CustomFormatFunction<Node> = (val, prop_name, node) => {
 
-
-
     let str = JSFormatFunction(val, prop_name, <JSNode>node);
 
     str = CSSFormatFunction(str, prop_name, <CSSNode>node);
@@ -33,7 +31,6 @@ export function renderCompressed(
 
 export function renderWithFormatting(
     node: Node,
-
     //format rules
     fr: FormatRule[] = format_rules.format_rules
 ) {
@@ -41,7 +38,7 @@ export function renderWithFormatting(
 }
 
 export function renderWithSourceMap(
-    node: JSNode,
+    node: Node,
 
     //source map data
     map: Array<number[]> = null,
@@ -53,7 +50,7 @@ export function renderWithSourceMap(
 }
 
 export function renderWithFormattingAndSourceMap(
-    node: JSNode,
+    node: Node,
 
     //format rules
     fr: FormatRule[] = format_rules.format_rules,
