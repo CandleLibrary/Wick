@@ -9,8 +9,8 @@ import { Presets } from "../wick.js";
 //
 const namespaces = [
     "www.w3.org/1999/xhtml",            // Default HTML - 0
-    "www.w3.org/1998/Math/MathML",      // MATHML - 1
-    "www.w3.org/2000/svg",              // SVG - 2
+    "http://www.w3.org/2000/svg",              // SVG - 1
+    "www.w3.org/1998/Math/MathML",      // MATHML - 2
     "www.w3.org/1999/xlink",            // XLINK - 3
     "www.w3.org/XML/1998/namespace",    // XML - 4
     "www.w3.org/2000/xmlns/",           // XMLNS - 5
@@ -36,7 +36,7 @@ function createElementNameSpaced(tag_name, name_space, data = ""): HTMLElement |
 
     if (!name_space) return createElement(tag_name);
 
-    return document.createElementNS(tag_name, name_space);
+    return document.createElementNS(name_space, tag_name);
 }
 
 function createElement(tag_name) {
@@ -53,7 +53,9 @@ export function integrateElement(ele: HTMLElement | Text) {
 
     else {
 
-        if (this.ele) {
+        if (ele) {
+
+            if (!this.ele) this.ele = ele;
 
             if (ele.tagName == "W-B") {
                 const text = document.createTextNode(ele.innerHTML);
@@ -64,7 +66,10 @@ export function integrateElement(ele: HTMLElement | Text) {
 
                 if (ele.getAttribute("w-container")) {
 
-                    const comp_constructors = ele.getAttribute("w-container").split(",").map(name => this.presets.component_class.get(name));
+                    const comp_constructors = ele
+                        .getAttribute("w-container")
+                        .split(",")
+                        .map(name => this.presets.component_class.get(name));
 
                     if (comp_constructors.length < 1)
                         throw new Error(`Could not find component class for ${name} in component ${this.name}`);
@@ -72,11 +77,13 @@ export function integrateElement(ele: HTMLElement | Text) {
                     const ctr = new WickContainer(comp_constructors, [], ele, this);
 
                     this.ct.push(ctr);
-                } else if (ele.hasAttribute("w-s")) {
+                } else if (ele.hasAttribute("w-s") && this.ele !== ele) {
 
                     const
                         name = ele.classList[0],
                         comp_constructor = this.presets.component_class.get(name);
+
+                    console.log(name);
 
                     this.elu.push(ele);
 
@@ -154,6 +161,7 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
 
         const
             { component_attribs, component_names } = <ContainerDomLiteral>ele_obj,
+
             comp_constructors = component_names.map(name => (<Presets>this.presets).component_class.get(name));
 
         if (comp_constructors.length < 1)
@@ -186,7 +194,7 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
 
     if (attributes)
         for (const [name, value] of attributes)
-            ele.setAttributeNS(name_space, name, value);
+            ele.setAttribute(name, value);
 
     this.elu.push(ele);
 

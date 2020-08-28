@@ -24,7 +24,7 @@ export function componentDataToHTML(
     comp: ComponentData,
     presets: Presets = rt.presets,
     template_map = new Map,
-    html = comp.HTML,
+    html: DOMLiteral = comp.HTML,
     state: htmlState = htmlState.IS_ROOT,
     extern_children: DOMLiteral[] = [],
     parent_component = null
@@ -44,17 +44,19 @@ export function componentDataToHTML(
             is_container: ct,
             is_bindings: IS_BINDING,
             component_name: component_name,
+            component_names,
             slot_name: slot_name
         }: DOMLiteral = html,
             // Unshare the children array
             children = c.slice();
 
         if (ct) {
-            const
-                comp = presets.components.get(component_name);
+            const comp = presets.components.get(component_names[0]);
+
+            console.log(html);
 
             if (!template_map.has(comp.name))
-                template_map.set(comp.name, `<template id="${comp.name}">${componentDataToHTML(comp, presets, template_map)}</template>`);
+                template_map.set(comp.name, `<template id="${comp.name}">${componentDataToHTML(comp, presets, template_map).html}</template>`);
             //create template for the component. 
 
             str += `<${tag_name.toLowerCase()}${attributes.map(([n, v]) => ` "${n}"="${v}"`).join("")} w-container="${comp.name}">`;
@@ -87,6 +89,9 @@ export function componentDataToHTML(
                     return componentDataToHTML(parent_component, presets, template_map, child, htmlState.IS_SLOT_REPLACEMENT);
             }
 
+            const IS_COMPONENT_ROOT_ELEMENT = comp.HTML == html;
+            let HAVE_CLASS: boolean = false;
+
             str += `<${
                 tag_name.toLowerCase()
                 }${
@@ -96,9 +101,11 @@ export function componentDataToHTML(
                 }${
                 state & htmlState.IS_ROOT ? " id=\"app\" " : ""
                 }${
-                attributes.map(([n, v]) => ` ${n}="${v}"`).join("")
+                attributes.map(([n, v]) => (n.toLowerCase() == "class")
+                    ? ` class="${IS_COMPONENT_ROOT_ELEMENT ? (HAVE_CLASS = true, comp.name + " ") : ""}${v}"`
+                    : ` ${n}="${v}"`).join("")
                 }${
-                comp.HTML == html ? ` w-s class="${comp.name}"` : ""
+                IS_COMPONENT_ROOT_ELEMENT ? ` w-s ${!HAVE_CLASS ? `class="${comp.name}"` : ""}` : ""
                 }>`;
 
         } else if (IS_BINDING)
