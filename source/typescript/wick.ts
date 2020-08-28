@@ -1,7 +1,10 @@
+
+
+
 import URL from "@candlefw/url";
 import { addModuleToCFW } from "@candlefw/cfw";
 import { CSSNodeType, CSSNode, CSSNodeTypeLU } from "@candlefw/css";
-import { JSNodeType, JSNode, JSNodeTypeLU } from "@candlefw/js";
+import { JSNodeType, JSNode, JSNodeTypeLU, renderWithFormattingAndSourceMap } from "@candlefw/js";
 
 
 import Presets from "./presets.js";
@@ -9,7 +12,7 @@ import makeComponent from "./component/component.js";
 import parser from "./parser/parse.js";
 
 import { rt, WickRuntime } from "./runtime/runtime_global.js";
-import { WickRTComponent, class_strings } from "./runtime/runtime_component.js";
+import { WickRTComponent } from "./runtime/runtime_component.js";
 import { PresetOptions } from "./types/preset_options.js";
 import {
     componentDataToJS,
@@ -32,10 +35,109 @@ import { renderWithFormatting } from "./render/render.js";
 import { Observable } from "./runtime/observable/observable.js";
 import { ObservableScheme } from "./runtime/observable/observable_prototyped.js";
 
+type T = (root_dir?: string) => Promise<void>;
 /**
- * Creates a Wick component. test
+ * Exporting the wick compiler
  */
-function wick(input: string | URL, presets: Presets = rt.presets): ExtendedComponent {
+export interface WickCompiler {
+
+    /**
+     * Main runtime system. Accessible as a standalone module
+     * wick_rt.
+     */
+    rt: WickRuntime,
+
+
+    /**
+     * Configure the global presets object with the given
+     * preset options.
+     */
+
+    utils: {
+        /**
+         * Configures wick to run server side.
+         */
+        server: (root_dir?: string) => Promise<void>,
+
+        /**
+         * Wrapper is a special sudo element that allows interception,
+         * injection, and modification of existing components by wrapping
+         * it in another component that has full access to the original 
+         * component. This can be used to create adhoc component editors.
+         */
+        setWrapper: (url: URL | string) => Promise<void>;
+
+        /**
+         * Converts component data to a class string that can
+         * be parsed by a JavaScript parser as a RuntimeComponent
+         * constructor function.
+         */
+        componentToClassString: typeof componentDataToClassString;
+        createNameHash: typeof createNameHash;
+        componentToClass: typeof componentDataToJS;
+        /**
+         * Renders a CSS stylesheet from the CSS data from a ComponentData
+         * object.
+         */
+        componentDataToCSS: typeof componentDataToCSS;
+        componentDataToClass: typeof componentDataToJS;
+        componentDataToClassString: typeof componentDataToClassString;
+
+        parse: {
+            parser: typeof parser;
+            render: typeof renderWithFormatting;
+        };
+    };
+
+    objects: {
+
+        /**
+         * Main store of parsing and runtime objects and 
+         * options.
+         */
+        Presets: typeof Presets;
+
+        /**
+         * Class type for runtime components
+         */
+        WickRTComponent: typeof WickRTComponent;
+
+        Observable: typeof Observable;
+
+        ObservableScheme: typeof ObservableScheme;
+    };
+
+    types: {
+        DOMLiteral: DOMLiteral,
+        BindingVariable: BindingVariable,
+        JSNode: JSNode,
+        HTMLNode: HTMLNode,
+        CSSNode: CSSNode,
+        CSSNodeType: typeof CSSNodeType;
+        JSNodeType: typeof JSNodeTypeLU;
+        HTMLNodeType: typeof HTMLNodeTypeLU;
+        HTMLNodeClass: typeof HTMLNodeClass;
+        VARIABLE_REFERENCE_TYPE: VARIABLE_REFERENCE_TYPE;
+        PresetOptions: PresetOptions;
+    };
+}
+
+
+/**
+ * ==================================================================================================
+ * ==================================================================================================
+ * Creates an ExtendedComponentData object from a string or from data imported from a URL.
+ * 
+ * @param input - String with Wick source text or a URL to a file containing source text.
+ * 
+ * @param presets - An optional Presets object. If this is left undefined then the global 
+ * presets object will be used, or a new global presets object will be created if not defined. This
+ * argument is Presets object and the global presets object has not yet been set, then global presets
+ * will be set to the value of this argument.
+ * 
+ * @returns {ExtendedComponentData}
+ */
+function componentCreate(input: string | URL, presets: Presets = rt.presets): ExtendedComponentData {
 
     // Ensure there is a presets object attached to this component.
     if (!presets)
@@ -112,93 +214,103 @@ Object.defineProperty(/* WickRTComponent.prototype */{}, "replace", {
 });
 
 /**
- * Configure wick to run server side.
+ * Wick component parser and component library.
  */
-Object.defineProperty(wick, "server", {
-    value: async function (preset_options: PresetOptions) {
-        await URL.polyfill();
-    }
-});
+type WickLibrary = typeof componentCreate & WickCompiler & WickRuntime;
 
-/**
- * Sets the presets object.
+
+
+/** README:USAGE
+ * 
+ * #### HTML - Client Side Component Rendering
+ * ```ts
+ * import wick from "@candlefw/wick";
+ *
+ * // Calls to Wick return an object that can then be used to 
+ * // render components. The pending attribute allows wick to 
+ * // Operate asynchronously as it gathers the resources 
+ * // necessary to compile the givin component.
+ * 
+ * const comp_constructor: ExtendedComponentData = await wick("./local_directory/my_component.wick").pending;
+ * 
+ * // Runtime components can be mounted to the DOM and
+ * // can update DOM content reactively based on data submitted
+ * // to the component.
+ * const comp: RTComponent = new comp_constructor.class();
+ * 
+ * comp.appendToDOM(document.body)
+ * ```
  */
-Object.defineProperty(wick, "rt", {
-    value: rt,
-    writable: false,
-});
-
-addModuleToCFW(wick, "wick");
-
-interface wickOutput {
-    parse: {
-        parser: typeof parser;
-        render: typeof renderWithFormatting;
-    };
-    Presets: typeof Presets;
-
-    WickRTComponent: typeof WickRTComponent;
-
-    componentDataToClassString: typeof componentDataToClassString,
-
-    componentDataToClass: typeof componentDataToJS,
-
-    Observable: typeof Observable;
-
-    ObservableScheme: typeof ObservableScheme;
-
-    types: {
-
-        DOMLiteral: DOMLiteral,
-        BindingVariable: BindingVariable,
-        JSNode: JSNode,
-        HTMLNode: HTMLNode,
-        CSSNode: CSSNode,
-        CSSNodeType: typeof CSSNodeType;
-        JSNodeType: typeof JSNodeTypeLU;
-        HTMLNodeType: typeof HTMLNodeTypeLU;
-        HTMLNodeClass: typeof HTMLNodeClass;
-        VARIABLE_REFERENCE_TYPE: typeof VARIABLE_REFERENCE_TYPE;
-    };
-}
-
-Object.assign(wick, {
-    parse: {
-        css_selector_helpers: css_selector_helpers,
-        createNameHash: createNameHash,
-        parser,
-        render: renderWithFormatting
-    },
+const wick: WickLibrary = Object.assign(componentCreate, <WickRuntime>rt, <WickCompiler>{
 
     css_selector_helpers,
 
-    types: {
+    types: <WickCompiler["types"]><unknown>{
         CSSNodeType: CSSNodeTypeLU,
         JSNodeType: JSNodeTypeLU,
         HTMLNodeType: HTMLNodeTypeLU
     },
 
-    Presets,
-    WickRTComponent,
-    componentDataToHTML,
-    componentDataToCSS,
-    componentDataToJSCached: componentDataToJSCached,
-    componentDataToClass: componentDataToJS,
-    componentDataToClassString,
-    Observable,
-    ObservableScheme
+    rt: rt,
+
+    get presets() { return rt.presets; },
+
+    utils: {
+        parse: {
+            css_selector_helpers: css_selector_helpers,
+            createNameHash: createNameHash,
+            parser,
+            render: renderWithFormatting
+        },
+        server: async function (root_dir: string = "") {
+            await URL.server(root_dir);
+        },
+
+        setWrapper: async function (url) {
+            //create new component
+
+            if (!rt.presets)
+                rt.presets = new Presets();
+
+            rt.presets.wrapper = wick(url);
+
+            const comp = await rt.presets.wrapper.pending;
+
+            componentDataToJSCached(comp, rt.presets);
+        },
+
+        componentToClass: componentDataToJS,
+
+        componentToClassString: componentDataToClassString,
+
+
+        componentDataToHTML,
+        componentDataToCSS,
+        componentDataToJSCached: componentDataToJSCached,
+        componentDataToClass: componentDataToJS,
+        componentDataToClassString,
+        createNameHash,
+    },
+
+    objects: {
+        WickRTComponent,
+        Presets,
+        Observable,
+        ObservableScheme
+    },
 
 });
 
-
+addModuleToCFW(wick, "wick");
+/**EXPORT wick*/
 export default wick;
-
+/**EXPORTS Nothing*/
 export * from "./render/render.js";
+/**EXPORTS everything*/
 export * from "./render/rules.js";
-
+/**EXPORTS*/
 export {
     //Functions
-    wick,
     parser,
     createNameHash,
     componentDataToHTML,
@@ -215,7 +327,8 @@ export {
     CSSNodeType,
 
     //Pure Types
-    ExtendedComponent,
+    WickLibrary,
+    ExtendedComponentData as ExtendedComponent,
     WickRuntime,
     ComponentData as Component,
     ComponentData,
@@ -233,7 +346,7 @@ export {
     VARIABLE_REFERENCE_TYPE,
     DATA_FLOW_FLAG,
 
-    //Observables
+    /*Observables*/
     Observable
 
 };
