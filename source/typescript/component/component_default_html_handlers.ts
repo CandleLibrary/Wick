@@ -171,11 +171,12 @@ loadHTMLHandlerInternal(
         }
     }, HTMLNodeType.HTMLAttribute
 );
-
-
-
-
-
+/**[API]
+ * 
+ * HTMLAttribute Handler
+ * 
+ * One of six default handlers that parses tag attributes. 
+ */
 loadHTMLHandlerInternal(
     {
         priority: 10,
@@ -210,7 +211,6 @@ loadHTMLHandlerInternal(
                     return;
                 }
             }
-
 
             return;
         }
@@ -378,7 +378,6 @@ loadHTMLHandlerInternal(
                                 comp = presets.components.get(name);
 
                             //Make sure the component is compiled into a class.
-                            // componentDataToClass(comp, presets);
 
                             ch.child_id = component.children.push(1) - 1;
 
@@ -388,6 +387,8 @@ loadHTMLHandlerInternal(
 
                         } else {
                             const comp = await compileComponent(Object.assign({}, ch, { attributes: [] }), ch.pos.slice(), "auto_generated", presets, []);
+
+                            ch.child_id = component.children.push(1) - 1;
 
                             ctr.components.push(comp);
 
@@ -407,9 +408,11 @@ loadHTMLHandlerInternal(
                     skip();
 
                     return ctr;
+
                 case "mathml":
                     node.name_space = 2;
                     break;
+
                 default:
                     //TODO Plugin here for custom components.  
                     break;
