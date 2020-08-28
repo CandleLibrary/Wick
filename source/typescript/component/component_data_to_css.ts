@@ -71,8 +71,9 @@ export function componentDataToCSS(component: Component): string {
 
             }
         }
-        return r.ast;
-    }).map(renderWithFormatting).join("\n");
+
+        return <CSSNode>r.ast;
+    }).map(_ => renderWithFormatting(_)).join("\n");
 
 
     return css_string;
