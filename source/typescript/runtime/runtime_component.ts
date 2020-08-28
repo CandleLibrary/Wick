@@ -14,11 +14,8 @@ const enum DATA_DIRECTION {
     UP = 2
 }
 
-/**
- * Store for all known component configurations.
- */
-export const css_cache = {};
-export const class_strings = {};
+const empty_array = [];
+
 
 export class WickRTComponent implements Sparky, ObservableWatcher {
 
@@ -33,8 +30,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     nlu: object;
 
     lookup_function_table: BindingUpdateFunction[];
-
-    u: any;
 
     //Children
     ch: WickRTComponent[];
@@ -55,6 +50,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
      * of the component. 
      */
     call_set: Map<number, Array<any>>;
+
+    binding_call_set: Array<any>;
 
     name: string;
 
@@ -95,8 +92,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.nui = [];
         this.model = null;
         this.call_set = new Map();
+        this.binding_call_set = [];
 
-        this.u = this.update;
         this.me = makeElement;
         this.ie = integrateElement;
 
@@ -122,8 +119,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         else
             this.ele = this.ce();
 
-        //@ts-ignore
-        this.ele.wick_component = this;
+        if (this.ele)
+            //@ts-ignore
+            this.ele.wick_component = this;
 
         //Create or assign global model whose name matches the default_model_name;
         if (default_model_name) {
@@ -180,17 +178,59 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.removeCSS();
     }
 
+    removeChild(cp: WickRTComponent) {
+        if (cp.par == this) {
+            this.ch = this.ch.filter(c => c !== cp);
+            cp.par = null;
+        }
+    }
+
+
+    addChild(cp: WickRTComponent) {
+        for (const ch of this.ch)
+            if (ch == cp) continue;
+
+        cp.par = this;
+
+        this.ch.push(cp);
+    }
+
+    connect() {
+        this.CONNECTED = true;
+        for (const child of this.ch)
+            child.connect();
+    }
+
+    disconnect() {
+        for (const child of this.ch)
+            child.disconnect();
+        this.CONNECTED = false;
+    }
+
+    /** 
+     * ██████   ██████  ███    ███         ██     ██   ██ ████████ ███    ███ ██      
+     * ██   ██ ██    ██ ████  ████        ██      ██   ██    ██    ████  ████ ██      
+     * ██   ██ ██    ██ ██ ████ ██       ██       ███████    ██    ██ ████ ██ ██      
+     * ██   ██ ██    ██ ██  ██  ██      ██        ██   ██    ██    ██  ██  ██ ██      
+     * ██████   ██████  ██      ██     ██         ██   ██    ██    ██      ██ ███████                                                                                                                                                          
+     */
+
+
     ce(): HTMLElement {
-        const template: HTMLTemplateElement = <HTMLTemplateElement>document.getElementById(this.name);
 
-        if (template) {
-            const
-                doc = template.content.cloneNode(true),
-                ele = <HTMLElement>doc.firstChild;
+        if (document && document.getElementById) {
 
-            return <HTMLElement>this.ie(ele);
-        } else {
-            console.warn("NO template element for component: " + this.name);
+            const template: HTMLTemplateElement = <HTMLTemplateElement>document.getElementById(this.name);
+
+            if (template) {
+                const
+                    doc = template.content.cloneNode(true),
+                    ele = <HTMLElement>doc.firstChild;
+
+                return <HTMLElement>this.ie(ele);
+            } else {
+                console.warn("NO template element for component: " + this.name);
+            }
         }
     }
 
@@ -207,8 +247,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         }
     }
 
-    getCSS() { return ""; }
-
     setCSS(style_string = this.getCSS()) {
 
         if (style_string) {
@@ -220,26 +258,16 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
                 css_ele.innerHTML = style_string;
 
-                this.presets.document.head.appendChild(css_ele);
+                document.head.appendChild(css_ele);
 
                 css_cache[this.name] = { css_ele, count: 1 };
             } else
                 this.presets.css_cache[this.name].count++;
 
+
+
             this.ele.classList.add(this.name);
         }
-    }
-
-    connect() {
-        this.CONNECTED = true;
-        for (const child of this.ch)
-            child.connect();
-    }
-
-    disconnect() {
-        for (const child of this.ch)
-            child.disconnect();
-        this.CONNECTED = false;
     }
 
     appendToDOM(element: HTMLElement, before_element: HTMLElement = null) {
@@ -274,6 +302,23 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.disconnect();
 
     }
+
+    /***
+     * ████████ ██████   █████  ███    ██ ███████ ██ ████████ ██  ██████  ███    ██ ███████ 
+     *    ██    ██   ██ ██   ██ ████   ██ ██      ██    ██    ██ ██    ██ ████   ██ ██      
+     *    ██    ██████  ███████ ██ ██  ██ ███████ ██    ██    ██ ██    ██ ██ ██  ██ ███████ 
+     *    ██    ██   ██ ██   ██ ██  ██ ██      ██ ██    ██    ██ ██    ██ ██  ██ ██      ██ 
+     *    ██    ██   ██ ██   ██ ██   ████ ███████ ██    ██    ██  ██████  ██   ████ ███████
+     */
+
+    /**
+     * Call when the component is about to be removed from the DOM. 
+     * 
+     * Called by RuntimeContainer
+     * @param transition 
+     * @param DESTROY_AFTER_TRANSITION 
+     * @param transition_name 
+     */
 
     transitionOut(transition?, DESTROY_AFTER_TRANSITION = false, transition_name = "trs_out") {
 
@@ -331,6 +376,15 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.TRANSITIONED_IN = true;
     }
 
+    /***
+     * ███    ███  ██████  ██████  ███████ ██      
+     * ████  ████ ██    ██ ██   ██ ██      ██      
+     * ██ ████ ██ ██    ██ ██   ██ █████   ██      
+     * ██  ██  ██ ██    ██ ██   ██ ██      ██      
+     * ██      ██  ██████  ██████  ███████ ███████ 
+     */
+
+
     setModel(model: ObservableModel | any) {
 
         if (this.model) {
@@ -355,11 +409,146 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
                 //Create a polling monitor
                 if (this.polling_id <= 0)
-                    this.polling_id = <number><unknown>setInterval(this.onModelUpdate.bind(this), 1);
+                    this.polling_id = <number><unknown>setInterval(this.onModelUpdate.bind(this), 1000 / 30);
 
             }
 
             this.onModelUpdate.call(this);
+        }
+    }
+    /**
+     * ██    ██ ██████  ██████   █████  ████████ ███████ 
+     * ██    ██ ██   ██ ██   ██ ██   ██    ██    ██      
+     * ██    ██ ██████  ██   ██ ███████    ██    █████   
+     * ██    ██ ██      ██   ██ ██   ██    ██    ██      
+     *  ██████  ██      ██████  ██   ██    ██    ███████ 
+     */
+
+    u(flags: DATA_DIRECTION, call_depth: number, ...pending_function_indices: number[]) {
+
+        for (const index of pending_function_indices) {
+            if (this.lookup_function_table[index])
+                this.call_set.set(index, [flags, call_depth]);
+        }
+
+        cfw.spark.queueUpdate(this);
+    }
+
+    call(pending_function_index: number, call_depth: number = 0) {
+
+        if (call_depth >= 1) return;
+
+        for (const [index] of this.binding_call_set)
+            if (index == pending_function_index)
+                return;
+
+        this.binding_call_set.push([pending_function_index, call_depth]);
+
+        cfw.spark.queueUpdate(this);
+    }
+
+    callFrame(pending_function_index: number, call_depth) {
+
+        if (call_depth >= 1) return;
+
+        for (const [index] of this.binding_call_set)
+            if (index == pending_function_index)
+                return;
+
+        this.binding_call_set.push([pending_function_index, call_depth]);
+
+        cfw.spark.queueUpdate(this);
+    }
+
+    /**
+     * Check to see of the index locations are defined
+     * @param ids 
+     */
+    check(...ids) {
+        for (const id of ids)
+            if (typeof this[id] == "undefined") return false;
+        return true;
+    }
+
+    syncParentMethod(this_index, parent_method_index, child_index) {
+
+        this.ci = child_index;
+
+        this.pui[this_index] = this.par["u" + parent_method_index];
+    }
+
+    updateParent(data) {
+        if (this.par)
+            this.updateFromChild.call(this.par, data);
+    }
+
+    updateFromParent(local_index, v, flags) {
+
+        if (flags >> 24 == this.ci + 1)
+            return;
+
+        this.u(v, DATA_FLOW_FLAG.FROM_PARENT | flags, local_index);
+    }
+
+
+    updateFromChild(local_index, val, flags) {
+
+        const method = this.pui[local_index];
+
+        if (typeof method == "function")
+            method.call(this.par, val, flags | DATA_FLOW_FLAG.FROM_CHILD | ((this.ci + 1) << 24));
+
+    };
+
+    /**
+     * @param model - The data model that has been updated 
+     * @param changed_names - An iterable list of property names on the model that have been modified 
+     */
+
+    onModelUpdate(model: any = this.model, changed_names?: Iterable<string>) {
+        // Go through the model's props and test whether they are different then the 
+        // currently cached variables
+
+        if (!this.CONNECTED) return;
+
+        if (model) {
+
+            if (changed_names) {
+                for (const name in changed_names) {
+                    const flag_id = this.nlu[name];
+                    if (flag_id && (flag_id >>> 24) & DATA_FLOW_FLAG.FROM_MODEL) {
+                        const index = flag_id & 0xFFFFFF,
+                            v = this[index],
+                            m = model[name];
+
+                        if (m !== v) {
+                            this[index] = m;
+                            this.u(0, 0, index);
+                        }
+                    }
+                }
+
+
+            } else {
+
+                for (const name in this.nlu) {
+
+                    if ((this.nlu[name] >>> 24) & DATA_FLOW_FLAG.FROM_MODEL) {
+                        const
+                            index = this.nlu[name] & 0xFFFFFF,
+                            v = this[index],
+                            m = model[name];
+
+                        if (m !== undefined && m !== v) {
+                            this[index] = m;
+                            this.u(0, 0, index);
+                        }
+                    }
+                }
+            }
+
+            for (const [call_id, args] of this.clearActiveCalls())
+                this.lookup_function_table[call_id].call(this, ...args);
         }
     }
 
@@ -379,17 +568,18 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
                     const index = val & 0xFFFFFF;
 
+
                     this[index] = data[name];
 
-                    update_indices.add(index);
+                    this.u(0, 0, index);
 
                     let i = 0;
                 }
             }
         }
 
-        for (const index of update_indices.values())
-            this.lookup_function_table[index].call(this, this[index], DATA_DIRECTION.DOWN);
+        for (const [call_id, args] of this.clearActiveCalls())
+            this.lookup_function_table[call_id].call(this, ...args);
     }
 
     updateChildren(data, flags) {
@@ -410,92 +600,51 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         }
     }
 
-    updateParent(data) {
-        if (this.par)
-            this.updateFromChild.call(this.par, data);
-    }
-
-    updateFromParent(local_index, v, flags) {
-
-        if (flags >> 24 == this.ci + 1)
-            return;
-
-        this.addFutureCall(local_index, v, DATA_FLOW_FLAG.FROM_PARENT | flags);
-    }
-
-    syncParentMethod(this_index, parent_method_index, child_index) {
-
-        this.ci = child_index;
-
-        this.pui[this_index] = this.par["u" + parent_method_index];
-    }
-
-
-    updateFromChild(local_index, val, flags) {
-
-        const method = this.pui[local_index];
-
-        if (typeof method == "function")
-            method.call(this.par, val, flags | DATA_FLOW_FLAG.FROM_CHILD | ((this.ci + 1) << 24));
-
-    };
-
-    onModelUpdate() {
-        // Go through the model's props and test whether they are different then the 
-        // currently cached variables
-        const model = this.model;
-
-        for (const name in this.nlu) {
-
-            if ((this.nlu[name] >>> 24) & DATA_FLOW_FLAG.FROM_MODEL) {
-                const index = this.nlu[name] & 0xFFFFFF;
-                const v = this[index];
-
-                if (model[name] !== undefined && model[name] !== v)
-                    this.update({ [name]: model[name] }, DATA_FLOW_FLAG.FROM_MODEL);
-            }
-        }
-    }
-
     scheduledUpdate(step_ratio, diff) {
-        this.activateCalls();
+
+        for (const [calls_id, depth] of this.clearActiveBindingCalls())
+            this.lookup_function_table[calls_id].call(this, depth);
+
+        for (const [call_id, args] of this.clearActiveCalls())
+            this.lookup_function_table[call_id].call(this, ...args);
+
+
+
     }
 
-    addFutureCall(calling_function_id, ...args) {
-        this.call_set.set(calling_function_id, args);
-        spark.queueUpdate(this);
+    clearActiveBindingCalls() {
+        if (this.binding_call_set.length == 0) return empty_array;
+
+        const data = this.binding_call_set.slice();
+        this.binding_call_set.length = 0;
+        return data;
     }
 
     clearActiveCalls() {
+        if (this.call_set.size == 0) return empty_array;
+        const data = [...this.call_set.entries()];
         this.call_set.clear();
+        return data;
     }
 
-    activateCalls() {
-        for (const [call_id, args] of this.call_set.entries())
-            this.lookup_function_table[call_id].call(this, ...args);
-        this.clearActiveCalls();
+    runActiveCalls() {
+
     }
 
-    removeChild(cp: WickRTComponent) {
-        if (cp.par == this) {
-            this.ch = this.ch.filter(c => c !== cp);
-            cp.par = null;
-        }
-    }
-
-
-    addChild(cp: WickRTComponent) {
-        for (const ch of this.ch)
-            if (ch == cp) continue;
-
-        cp.par = this;
-
-        this.ch.push(cp);
-    }
-
-    /* Abstract Functions */
+    /**************** Abstract Functions *********************/
+    // Replaced by inheriting class.
+    //=========================================================
+    //=========================================================
+    //=========================================================
+    //=========================================================
     c() { }
     onLoad() { }
     onMounted() { }
     re(c: any) { }
+    getCSS() { return ""; }
+
+    //=========================================================
+    //=========================================================
+    //=========================================================
+    //=========================================================
 }
