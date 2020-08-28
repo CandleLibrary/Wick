@@ -1,4 +1,4 @@
-import { JSNodeType, stmt } from "@candlefw/js";
+import { JSNodeType, stmt, exp } from "@candlefw/js";
 
 import { ComponentData, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
 import { BindingObject, BindingType, PendingBinding } from "../types/binding";
@@ -13,7 +13,7 @@ function createBindingName(binding_index_pos: number) {
     return `b${binding_index_pos.toString(36)}`;
 }
 
-export function runBindingHandlers(pending_binding: PendingBinding, component: Component, class_data) {
+export function runBindingHandlers(pending_binding: PendingBinding, component: ComponentData, class_data) {
     for (const handler of binding_handlers) {
 
         let binding = null;
@@ -41,12 +41,13 @@ export function runBindingHandlers(pending_binding: PendingBinding, component: C
 export function processBindings(component: ComponentData, class_data, presets: Presets) {
 
     const
-        { bindings: raw_bindings } = component,
+        { bindings: raw_bindings, root_frame: { binding_type } } = component,
 
         {
             methods,
             class_cleanup_statements: clean_stmts,
-            class_initializer_statements: initialize_stmts
+            class_initializer_statements: initialize_stmts,
+            nluf_public_variables
         } = class_data,
 
         registered_elements: Set<number> = new Set,
@@ -55,7 +56,7 @@ export function processBindings(component: ComponentData, class_data, presets: P
             .map(b => runBindingHandlers(b, component, class_data))
             .sort((a, b) => a.binding.priority > b.binding.priority ? -1 : 1),
 
-        binding_inits = [];
+        initialized_internal_variables = new Set;
 
     let binding_count = 0;
 
@@ -83,14 +84,24 @@ export function processBindings(component: ComponentData, class_data, presets: P
 
         if (type & BindingType.WRITE && write_ast) {
 
+
+            /**
+             * Add a binding update function reference to the function lookup
+             * table
+             */
+
             if (component_variables.size > 1) {
                 //Create binding update method.
+                binding.name = nluf_public_variables.nodes.length;
+                nluf_public_variables.nodes.push(exp(`c.b${binding.name}`));
 
-                const method = getGenericMethodNode(binding_name, "c=0", ";"),
+                const method = getGenericMethodNode("b" + binding.name, "c=0", ";"),
                     [, , body] = method.nodes,
                     { nodes } = body;
 
                 nodes.length = 0;
+
+                const check_ids = [];
 
                 for (const { name } of component_variables.values()) {
 
@@ -103,8 +114,12 @@ export function processBindings(component: ComponentData, class_data, presets: P
                         | VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE)
                     ) continue;
 
-                    nodes.push(stmt(`if(this[${class_index}]==undefined)return 0;`));
+                    check_ids.push(class_index);
                 }
+
+                if (check_ids.length > 0)
+
+                    nodes.push(stmt(`if(!this.check(${check_ids.sort()}))return 0;`));
 
                 body.nodes.push(write_ast);
 
@@ -115,16 +130,35 @@ export function processBindings(component: ComponentData, class_data, presets: P
         if (type & BindingType.READ && read_ast)
             initialize_stmts.push(read_ast);
 
-        if (initialize_ast)
+        if (initialize_ast) {
+
             initialize_stmts.push({
                 type: JSNodeType.ExpressionStatement,
                 nodes: [initialize_ast],
                 pos: initialize_ast.pos
             });
 
+            for (const [, { name }] of component_variables) {
+                const type = binding_type.get(name);
+                if (type && type.type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE) {
+                    initialized_internal_variables.add(type.class_index | 0);
+                }
+            }
+        }
+
         if (cleanup_ast)
             clean_stmts.push(cleanup_ast);
     }
+
+    if (initialized_internal_variables.size > 0) {
+        initialize_stmts.push(
+            setPos(
+                stmt(`this.u(0,0,${Array.from(initialized_internal_variables.values()).sort().join(",")});`),
+                component.root_frame.ast.pos
+            )
+        );
+    }
+
 
     const write_bindings = processed_bindings.filter(b => (b.binding.type & BindingType.WRITE) && !!b.binding.write_ast);
 
@@ -135,9 +169,11 @@ export function processBindings(component: ComponentData, class_data, presets: P
 
         if (flags & DATA_FLOW_FLAG.WRITTEN) {
 
-            const method = getGenericMethodNode("u" + class_index, "v,f,c", `this[${class_index}] = v;`),
+            const method = getGenericMethodNode("u" + class_index, "f,c", ";"),
 
                 [, , body] = method.nodes;
+
+            body.nodes.length = 0;
 
 
             for (const { binding } of write_bindings) {
@@ -163,13 +199,15 @@ export function processBindings(component: ComponentData, class_data, presets: P
                                 pos: binding.pos
                             });
                     } else
-                        body.nodes.push(setPos(stmt(`this.${binding.name}(c)`), binding.pos));
+                        body.nodes.push(setPos(stmt(`this.call(${binding.name}, c)`), binding.pos));
                 }
             }
 
             if (flags & DATA_FLOW_FLAG.EXPORT_TO_PARENT)
                 body.nodes.push(stmt(`/*if(!(f&${DATA_FLOW_FLAG.FROM_PARENT}))*/c.pup(${class_index}, v, f);`));
-            methods.push(method);
+
+            if (body.nodes.length > 0)
+                methods.push(method);
         }
     }
 }

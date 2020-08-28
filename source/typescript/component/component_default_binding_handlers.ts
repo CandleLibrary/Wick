@@ -13,10 +13,26 @@ import { Lexer } from "@candlefw/wind";
 
 export const binding_handlers: BindingHandler[] = [];
 
+/*
+function registerActivatedFrameMethod(frame: FunctionFrame, class_information) {
+    if (frame.index)
+        class_information
+            .nluf_public_variables
+            .nodes
+            .push(setPos(exp(`c.f${frame.index}`), frame.ast.pos));
+}
+*/
 
-function setFrameAsBindingActive(frame: FunctionFrame, class_information) {
-    if (!frame.index)
-        frame.index = class_information.nlu_index++;
+function registerActivatedFrameMethod(frame: FunctionFrame, class_information) {
+    if (!frame.index) {
+
+        const { nodes } = class_information
+            .nluf_public_variables;
+
+        frame.index = nodes.length;
+
+        nodes.push(setPos(exp(`c.f${frame.index}`), frame.ast.pos));
+    }
 }
 
 export function loadBindingHandler(handler: BindingHandler) {
@@ -213,11 +229,12 @@ loadBindingHandler({
             [ref, expr] = (<JSNode><unknown>binding_node_ast).nodes,
             comp_var = component.root_frame.binding_type.get(<string>ref.value),
             converted_expression = setIdentifierReferenceVariables(expr, component, binding),
-            d = exp(`this.u${comp_var.class_index}(a)`);
+            d = exp(`this[${comp_var.class_index}] = a`);
 
         setPos(d, binding_node_ast.pos);
+        setBindingVariable(ref.value, false, binding);
 
-        d.nodes[1].nodes[0] = converted_expression;
+        d.nodes[1] = converted_expression;
 
         binding.initialize_ast = d;
         //binding.initialize_ast = setBindingAndRefVariables(binding_node_ast, component, binding);
@@ -336,9 +353,9 @@ loadBindingHandler({
 
         for (const id of frame.input_names) setBindingVariable(id, false, binding);
 
-        setFrameAsBindingActive(frame, presets);
+        registerActivatedFrameMethod(frame, presets);
 
-        binding.write_ast = exp(`this.addFutureCall(${frame.index})`);
+        binding.write_ast = exp(`this.call(${frame.index})`);
 
         setPos(binding.write_ast, binding_node_ast.pos);
 

@@ -11,16 +11,9 @@ import { componentDataToCSS } from "./component_data_to_css.js";
 import { createErrorComponent } from "./component_create_component.js";
 import { renderWithFormattingAndSourceMap, renderWithFormatting } from "../render/render.js";
 import { setPos } from "./component_common.js";
+import { DOMLiteral } from "../wick.js";
 
 const StrToBase64 = (typeof btoa != "undefined") ? btoa : str => Buffer.from(str, 'binary').toString('base64');
-
-function registerActivatedFrameMethod(frame: FunctionFrame, class_information) {
-    if (frame.index)
-        class_information
-            .nluf_public_variables
-            .nodes
-            .push(setPos(exp(`c.f${frame.index}`), frame.ast.pos));
-}
 
 const componentStringToJS =
     ({ class_string: cls, source_map }: ComponentClassStrings, component: ComponentData, presets: Presets) => (
@@ -38,7 +31,7 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, cla
 
     const ast = frame.ast;
 
-    registerActivatedFrameMethod(frame, class_information);
+    //registerActivatedFrameMethod(frame, class_information);
 
     if (ast) {
 
@@ -61,19 +54,22 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, cla
 
         if (!frame.IS_ROOT) {
 
+            let id_indices = [];
+
+
             for (const name of frame.output_names.values())
                 if (!updated_names.has(name)) {
 
                     const { type, class_index, pos }
                         = component.root_frame.binding_type.get(name);
 
-                    if (type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE) {
-                        const st = stmt(`this.u${class_index}(this[${class_index}]${frame.name[0] == "$" ? ",0,c" : ""});`);
-                        cpy.nodes[2].nodes.push(setPos(st, pos));
-                    }
-
+                    if (type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE)
+                        id_indices.push(class_index);
                 }
 
+            const st = stmt(`this.u(${frame.name[0] == "$" ? "0,c," : "0,0,"} ${id_indices.sort()});`);
+
+            cpy.nodes[2].nodes.push(setPos(st, frame.ast.pos));
 
             if (frame.index != undefined)
                 cpy.nodes[0].value = `f${frame.index}`;
@@ -179,6 +175,8 @@ export function componentDataToClassString(
                 nlu_index: 0,
             };
 
+        let HAVE_LU_DATA = false;
+
         if (!component.global_model)
             component_class.nodes.length = 2;
 
@@ -186,7 +184,7 @@ export function componentDataToClassString(
         bi_stmts.length = 0;
 
         //Javascript Information.
-        if (component.ERRORS === false && component.root_frame) {
+        if (component.HAS_ERRORS === false && component.root_frame) {
 
             //setPos(component_class, component.root_frame.ast.pos);
 
@@ -195,7 +193,7 @@ export function componentDataToClassString(
                 [, , { nodes: cu_stmts }] = cleanup_element_method.nodes,
                 public_prop_lookup = {},
                 nlu = stmt("c.nlu = {};"), nluf = stmt("c.lookup_function_table = [];"),
-                { nodes: [{ nodes: [, nluf_public_variables] }] } = nluf,
+                { nodes: [{ nodes: [, lu_functions] }] } = nluf,
                 { nodes: [{ nodes: [, lu_public_variables] }] } = nlu;
 
             class_information.class_cleanup_statements = cu_stmts;
@@ -213,14 +211,16 @@ export function componentDataToClassString(
 
                 lu_public_variables.nodes.push(getPropertyAST(external_name, ((flags << 24) | nlu_index) + ""));
 
-                nluf_public_variables.nodes.push(nluf_array);
+                lu_functions.nodes.push(nluf_array);
 
                 public_prop_lookup[internal_name] = nlu_index;
+
+                HAVE_LU_DATA = true;
 
                 class_information.nlu_index++;
             }
 
-            class_information.nluf_public_variables = nluf_public_variables;
+            class_information.nluf_public_variables = lu_functions;
 
             processBindings(component, class_information, presets);
 
@@ -238,7 +238,7 @@ export function componentDataToClassString(
 
                 [, , { nodes: [r_stmt] }] = ele_create_method.nodes;
 
-            r_stmt.nodes[0].nodes[1].nodes[0] = <JSNode>{ type: JSNodeType.Identifier, value: `${JSON.stringify(component.HTML)}`, pos: component.HTML.pos };
+            r_stmt.nodes[0].nodes[1].nodes[0] = DOMLiteralToJSNode(component.HTML);
 
             // Setup element
             class_information.methods.push(ele_create_method);
@@ -255,7 +255,7 @@ export function componentDataToClassString(
         if (class_information.binding_init_statements.length > 0)
             class_information.methods.push(binding_values_init_method);
 
-        if (class_information.class_initializer_statements.length > 0)
+        if (class_information.class_initializer_statements.length > 2 || HAVE_LU_DATA)
             class_information.methods.push(register_elements_method);
 
         class_information.compiled_ast = component_class;
@@ -283,4 +283,73 @@ export function componentDataToClassString(
         console.error(e);
         return componentDataToClassString(createErrorComponent([e], component.source, component.location + "", component), presets);
     }
+}
+
+function sanitizeString(str: string) {
+    return str.replace(/\n/g, "\\n").replace(/"/g, `\\"`);
+}
+
+function propLiteral(name: string, val: any) {
+    return exp(`({${name}:${val}})`).nodes[0].nodes[0];
+}
+
+function propString(name: string, val: string) {
+    return exp(`({${name}:"${sanitizeString(val)}"})`).nodes[0].nodes[0];
+}
+
+function propArray(name: string, children) {
+    const d = exp(`({${name}:[]})`).nodes[0].nodes[0];
+    d.nodes[1].nodes = children;
+    return d;
+}
+
+function DOMAttributeToJSNode([key, val]: [string, string]) {
+    return {
+        type: JSNodeType.ArrayLiteral,
+        nodes: [
+            { type: JSNodeType.StringLiteral, quote_type: "\"", value: key },
+            { type: JSNodeType.StringLiteral, quote_type: "\"", value: val ? sanitizeString(val) : "" }
+        ]
+    };
+};
+
+
+function DOMLiteralToJSNode(node: DOMLiteral): JSNode {
+
+    //  console.log(node);
+    const out = {
+        type: JSNodeType.ObjectLiteral,
+        nodes: [propLiteral("lookup_index", node.lookup_index),],
+        pos: node.pos
+    };
+
+    if (!node.tag_name)
+        out.nodes.push(propString("data", node.data || ""));
+    else
+        out.nodes.push(propString("tag_name", node.tag_name));
+
+    if (node.children)
+        out.nodes.push(propArray("children", node.children.map(DOMLiteralToJSNode)));
+
+    if (node.attributes)
+        out.nodes.push(propArray("attributes", node.attributes.map(DOMAttributeToJSNode)));
+
+    if (node.is_container)
+        out.nodes.push(propLiteral("is_container", true));
+
+    if (node.component_name)
+        out.nodes.push(propString("component_name", node.component_name));
+
+    if (node.component_names)
+        out.nodes.push(propArray("component_names", node.component_names.map(n => exp(`"${n}"`))));
+
+    if (node.component_attribs)
+        out.nodes.push(propArray("component_attribs", node.component_attribs.map(DOMAttributeToJSNode)));
+
+    if (node.namespace_id)
+        out.nodes.push(propLiteral("component_name", node.namespace_id));
+
+
+    return out;
+    <JSNode>{ type: JSNodeType.Identifier, value: `${JSON.stringify(component.HTML)}`, pos: component.HTML.pos };
 }
