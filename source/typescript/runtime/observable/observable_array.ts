@@ -1,8 +1,4 @@
-import { ModelBase } from "./base.js";
-
-import { ObservableContainerBase, MCArray } from "./container_base.js";
-
-import { MultiIndexedContainer } from "./multi.js";
+import { ObservableContainerBase } from "./container_base.js";
 import { ObservableData } from "./observable.js";
 
 const ArrayContainerProxySettings = {

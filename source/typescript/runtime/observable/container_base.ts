@@ -307,8 +307,6 @@ export class ObservableContainerBase<T> extends ObservableBase {
         }
 
         if (out_container.length > 0) {
-            if (this.par)
-                this.par.scheduleUpdate(this.prop_name);
 
 
             if (out_container && out_container.length > 0) {

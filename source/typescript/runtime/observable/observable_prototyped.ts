@@ -77,14 +77,14 @@ class SchemedContainer extends ObservableArray<any> {
     }
 }
 
-export class ObservableScheme extends ObservableBase {
+export class ObservableScheme<T = any> extends ObservableBase {
     _changed_: boolean;
     schema: any;
     look_up: any;
 
     static schema: any;
 
-    constructor(data, _schema_ = null) {
+    constructor(data: T, _schema_ = null) {
 
         super();
 

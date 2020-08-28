@@ -69,6 +69,8 @@ class ObservableBase implements ObservableModel, Sparky {
      */
     scheduleUpdate(changed_value?: any) {
 
+        if (this.par) this.par.scheduleUpdate();
+
         if (this.observers.length == 0)
             return;
 
