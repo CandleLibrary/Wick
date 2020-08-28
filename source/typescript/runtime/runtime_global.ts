@@ -3,7 +3,7 @@ import Presets from "../presets.js";
 
 import { ComponentData } from "../types/types.js";
 import { PresetOptions } from "../types/preset_options.js";
-import { WickRTComponent, css_cache } from "./runtime_component.js";
+import { WickRTComponent } from "./runtime_component.js";
 
 
 
@@ -36,8 +36,6 @@ export interface WickRuntime {
 const rt: WickRuntime = (() => {
 
     return <WickRuntime>{
-
-        css_cache,
 
         get glow() { return cfw.glow; },
 
