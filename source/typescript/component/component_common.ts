@@ -4,7 +4,7 @@ import { Lexer } from "@candlefw/wind";
 
 import Presets from "../presets.js";
 import { compileComponent } from "./component.js";
-import { Component, DATA_FLOW_FLAG, FunctionFrame, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
+import { ComponentData, DATA_FLOW_FLAG, FunctionFrame, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
 import { HTMLNode } from "../wick.js";
 import { acquireComponentASTFromRemoteSource } from "./component_acquire_ast.js";
 import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
@@ -33,7 +33,7 @@ export function setPos(node, pos: Lexer) {
  * @param destination_component 
  * @param source_component 
  */
-export function mergeComponentData(destination_component: Component, source_component: Component) {
+export function mergeComponentData(destination_component: ComponentData, source_component: ComponentData) {
 
     if (source_component.CSS) destination_component.CSS.push(...source_component.CSS);
 
@@ -78,7 +78,7 @@ export async function importComponentData(new_component_url, component, presets,
 
 export async function importResource(
     from_value: string,
-    component: Component,
+    component: ComponentData,
     presets: Presets,
     node: HTMLNode | JSNode,
     local_name: string = "",

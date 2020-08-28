@@ -107,7 +107,7 @@ export interface FunctionFrame {
     index?: number;
 }
 
-export interface Component {
+export interface ComponentData {
 
     /**
      * True if errors were encountered when processing

@@ -1,6 +1,6 @@
-import { Component, FunctionFrame } from "../types/types.js";
+import { ComponentData, FunctionFrame } from "../types/types.js";
 
-export function createFrame(parent_frame: any, TEMPORARY: boolean = false, component: Component) {
+export function createFrame(parent_frame: any, TEMPORARY: boolean = false, component: ComponentData) {
 
     const function_frame = <FunctionFrame>{
         ast: null,

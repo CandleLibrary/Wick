@@ -18,11 +18,11 @@ import {
     componentDataToClassString,
 } from "./component/component_data_to_js.js";
 import { componentDataToCSS } from "./component/component_data_to_css.js";
-import { Component, VARIABLE_REFERENCE_TYPE, FunctionFrame, DATA_FLOW_FLAG } from "./types/types.js";
+import { ComponentData, VARIABLE_REFERENCE_TYPE, FunctionFrame, DATA_FLOW_FLAG } from "./types/types.js";
 import { BindingVariable } from "./types/binding";
 import { PendingBinding } from "./types/binding";
 import { DOMLiteral } from "./types/dom_literal.js";
-import { ExtendedComponent } from "./types/extended_component";
+import { ExtendedComponentData } from "./types/extended_component";
 import { componentDataToHTML } from "./component/component_data_to_html.js";
 import { HTMLNodeTypeLU, HTMLNodeClass, HTMLNode } from "./types/wick_ast_node_types.js";
 import { ObservableModel, ObservableWatcher } from "./types/observable_model.js";
@@ -53,7 +53,7 @@ function wick(input: string | URL, presets: Presets = rt.presets): ExtendedCompo
             res(component);
         }),
 
-        component = <ExtendedComponent><unknown>{
+        component = <ExtendedComponentData><unknown>{
             get class() { return componentDataToJSCached(component, presets, true, false); },
             get classWithIntegratedCSS() { return componentDataToJS(component, presets, true, true); },
             get class_string() { return componentDataToJSStringCached(component, presets, true, false); },
@@ -78,8 +78,8 @@ function wick(input: string | URL, presets: Presets = rt.presets): ExtendedCompo
         createInstance: {
             configurable: false,
             writable: false,
-            value: function (model = null): ExtendedComponent {
-                return <ExtendedComponent>new this.class(model);
+            value: function (model = null): ExtendedComponentData {
+                return <ExtendedComponentData>new this.class(model);
             }
         },
     });
@@ -87,53 +87,15 @@ function wick(input: string | URL, presets: Presets = rt.presets): ExtendedCompo
     return component;
 }
 
-Object.assign(wick, rt);
-
-Object.defineProperty(wick, "class_strings", {
-    value: class_strings,
-    writable: false
-});
-
-Object.defineProperty(wick, "componentToClass", {
-    value: componentDataToJS,
-    writable: false
-});
-
-Object.defineProperty(wick, "componentToClassString", {
-    value: componentDataToClassString,
-    writable: false
-});
-
-
-/**
- * Wrapper is a special sudo element that allows interception,
- * injection, and modification of existing components by wrapping
- * it in another component that has full access to the original 
- * component. This can be used to create adhoc component editors.
- */
-Object.defineProperty(wick, "setWrapper", {
-    value: async function (url) {
-        //create new component
-
-        if (!rt.presets)
-            rt.presets = new Presets();
-
-        rt.presets.wrapper = wick(url);
-
-        const comp = await rt.presets.wrapper.pending;
-
-        componentDataToJSCached(comp, rt.presets);
-    }
-});
-
 //Allow a component to be replaced inline
-Object.defineProperty(WickRTComponent.prototype, "replace", {
+//WHY IS THIS HERE? DOES FLAME NEED IT?
+Object.defineProperty(/* WickRTComponent.prototype */{}, "replace", {
     value:
         /**
          * Replace this component with the one passed in. 
          * The new component inherits the old one's element and model.
          */
-        function (component: Component) {
+        function (component: ComponentData) {
 
             const comp_class = componentDataToJS(component, this.presets);
 
@@ -255,8 +217,8 @@ export {
     //Pure Types
     ExtendedComponent,
     WickRuntime,
-    wickOutput,
-    Component,
+    ComponentData as Component,
+    ComponentData,
     ObservableModel,
     ObservableWatcher,
     DOMLiteral,

@@ -1,5 +1,5 @@
 import { HTMLNode } from "./wick_ast_node_types.js";
-import { Component } from "./types.js";
+import { ComponentData } from "./types.js";
 import Presets from "../presets.js";
 export interface HTMLHandler {
     priority: number;
@@ -31,7 +31,7 @@ export interface HTMLHandler {
         element_index: number,
         skip: () => void,
         replace_element: (arg: HTMLNode | null) => void,
-        component: Component,
+        component: ComponentData,
         presets: Presets
     ):
         HTMLNode

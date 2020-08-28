@@ -1,4 +1,4 @@
-import { Component, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
+import { ComponentData, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
 
 
 let SET_ONCE_environment_globals = null;
@@ -14,14 +14,14 @@ export function getSetOfEnvironmentGlobalNames(): Set<string> {
     return SET_ONCE_environment_globals;
 }
 
-export function getComponentVariable(name, component: Component) {
+export function getComponentVariable(name, component: ComponentData) {
     // Allow global objects to be accessed if there are no existing
     // component variables that have an identifier that matches [name]
     if (!component.root_frame.binding_type.has(name)) return null;
     return component.root_frame.binding_type.get(name);
 }
 
-export function getComponentVariableName(name, component: Component) {
+export function getComponentVariableName(name, component: ComponentData) {
 
     const comp_var = getComponentVariable(name, component);
 

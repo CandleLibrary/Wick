@@ -1,6 +1,6 @@
 import { JSNodeType, stmt } from "@candlefw/js";
 
-import { Component, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
+import { ComponentData, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
 import { BindingObject, BindingType, PendingBinding } from "../types/binding";
 import { getGenericMethodNode } from "./component_js_ast_tools.js";
 import { binding_handlers } from "./component_default_binding_handlers.js";
@@ -38,7 +38,7 @@ export function runBindingHandlers(pending_binding: PendingBinding, component: C
     return { binding: null, pending_binding };
 }
 
-export function processBindings(component: Component, class_data, presets: Presets) {
+export function processBindings(component: ComponentData, class_data, presets: Presets) {
 
     const
         { bindings: raw_bindings } = component,

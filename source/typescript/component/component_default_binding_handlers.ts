@@ -2,7 +2,7 @@ import { JSNodeType, exp, stmt, JSNode } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 import { matchAll } from "@candlefw/css";
 
-import { DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE, FunctionFrame, Component } from "../types/types.js";
+import { DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE, FunctionFrame, ComponentData } from "../types/types.js";
 import { BindingObject, BindingHandler, BindingType, BINDING_SELECTOR } from "../types/binding";
 import { getComponentVariableName, getComponentVariable } from "./component_set_component_variable.js";
 import { DOMLiteral } from "../wick.js";
@@ -40,15 +40,15 @@ export function createBindingObject(type: BindingType, priority: number = 0, pos
     };
 }
 
-function addNewMethodFrame(function_node: JSNode, component: Component, presets) {
+function addNewMethodFrame(function_node: JSNode, component: ComponentData, presets) {
     processFunctionDeclarationSync(function_node, component, presets);
 }
 
-function getFrameFromName(name: string, component: Component) {
+function getFrameFromName(name: string, component: ComponentData) {
     return component.frames.filter(({ name: n }) => n == name)[0] || null;
 }
 
-function setIdentifierReferenceVariables(root_node: JSNode, component: Component, binding: BindingObject): JSNode {
+function setIdentifierReferenceVariables(root_node: JSNode, component: ComponentData, binding: BindingObject): JSNode {
 
     const receiver = { ast: null }, component_names = component.root_frame.binding_type;
 
@@ -660,7 +660,7 @@ loadBindingHandler({
     }
 });
 
-function getElementAtIndex(comp: Component, index: number, node: DOMLiteral = comp.HTML, counter = { i: 0 }): DOMLiteral {
+function getElementAtIndex(comp: ComponentData, index: number, node: DOMLiteral = comp.HTML, counter = { i: 0 }): DOMLiteral {
 
     if (counter.i == index) return node;
 

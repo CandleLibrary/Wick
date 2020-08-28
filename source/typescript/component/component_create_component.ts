@@ -1,7 +1,7 @@
 import URL from "@candlefw/url";
 import { createNameHash } from "./component_create_hash_name.js";
 import { PendingBinding } from "../types/binding";
-import { Component } from "../types/types";
+import { ComponentData } from "../types/types";
 import { DOMLiteral } from "../wick.js";
 import { Lexer } from "@candlefw/wind";
 
@@ -45,8 +45,8 @@ export function createErrorComponent(errors: ExceptionInformation[], src: string
     return component;
 }
 
-export function createComponent(source_string: string, location: string): Component {
-    const component: Component = <Component>{
+export function createComponent(source_string: string, location: string): ComponentData {
+    const component: ComponentData = <ComponentData>{
         ERRORS: false,
 
         source: source_string,

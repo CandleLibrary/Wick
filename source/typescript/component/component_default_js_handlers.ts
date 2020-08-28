@@ -1,7 +1,7 @@
 import { traverse } from "@candlefw/conflagrate";
 import { exp, JSNode, JSNodeType, stmt } from "@candlefw/js";
 import { JSHandler } from "../types/js_handler.js";
-import { Component, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
+import { ComponentData, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
 import { HTMLNode, HTMLNodeClass, HTMLNodeTypeLU, WickBindingNode, WICK_AST_NODE_TYPE_SIZE, HTMLNodeType } from "../types/wick_ast_node_types.js";
 import {
     addBindingVariable,
@@ -60,7 +60,7 @@ function addBinding(
     binding_val: JSNode,
     host_node: JSNode,
     html_element_index: number,
-    component: Component) {
+    component: ComponentData) {
     component.bindings.push({
         binding_selector: attribute_name,
         binding_val,

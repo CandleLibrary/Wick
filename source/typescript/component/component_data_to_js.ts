@@ -3,7 +3,7 @@ import { copy, createSourceMap, createSourceMapJSON } from "@candlefw/conflagrat
 
 import Presets from "../presets.js";
 import { processBindings } from "./component_process_bindings.js";
-import { Component, FunctionFrame, VARIABLE_REFERENCE_TYPE, ComponentClassStrings, } from "../types/types";
+import { ComponentData, FunctionFrame, VARIABLE_REFERENCE_TYPE, ComponentClassStrings, } from "../types/types";
 import { getPropertyAST, getGenericMethodNode } from "./component_js_ast_tools.js";
 import { getComponentVariableName } from "./component_set_component_variable.js";
 import { WickRTComponent } from "../runtime/runtime_component.js";
@@ -23,7 +23,7 @@ function registerActivatedFrameMethod(frame: FunctionFrame, class_information) {
 }
 
 const componentStringToJS =
-    ({ class_string: cls, source_map }: ComponentClassStrings, component: Component, presets: Presets) => (
+    ({ class_string: cls, source_map }: ComponentClassStrings, component: ComponentData, presets: Presets) => (
         (
             eval(
                 "c=>" + cls + (presets.options.GENERATE_SOURCE_MAPS ? `\n${source_map}` : "")
@@ -34,7 +34,7 @@ const componentStringToJS =
 /**
  * Update global variables in ast after all globals have been identified
  */
-function makeComponentMethod(frame: FunctionFrame, component: Component, class_information) {
+function makeComponentMethod(frame: FunctionFrame, component: ComponentData, class_information) {
 
     const ast = frame.ast;
 
@@ -93,7 +93,7 @@ function makeComponentMethod(frame: FunctionFrame, component: Component, class_i
 }
 
 export function componentDataToJSCached(
-    component: Component,
+    component: ComponentData,
     presets: Presets,
     INCLUDE_HTML: boolean = true,
     INCLUDE_CSS = true
@@ -121,7 +121,7 @@ export function componentDataToJSCached(
 }
 
 export function componentDataToJS(
-    component: Component,
+    component: ComponentData,
     presets: Presets,
     INCLUDE_HTML: boolean = true,
     INCLUDE_CSS = true
@@ -133,7 +133,7 @@ export function componentDataToJS(
 }
 
 export function componentDataToJSStringCached(
-    component: Component,
+    component: ComponentData,
     presets: Presets,
     INCLUDE_HTML: boolean = true,
     INCLUDE_CSS = true
@@ -154,7 +154,7 @@ export function componentDataToJSStringCached(
 }
 
 export function componentDataToClassString(
-    component: Component,
+    component: ComponentData,
     presets: Presets,
     INCLUDE_HTML: boolean = true,
     INCLUDE_CSS = true

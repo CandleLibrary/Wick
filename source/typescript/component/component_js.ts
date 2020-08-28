@@ -1,12 +1,12 @@
 import { JSNode, JSNodeType, JSNodeTypeLU, JSNodeClass, ext } from "@candlefw/js";
 import { traverse, copy } from "@candlefw/conflagrate";
 
-import { Component, FunctionFrame } from "../types/types.js";
+import { ComponentData, FunctionFrame } from "../types/types.js";
 import Presets from "../presets.js";
 import { JS_handlers } from "./component_default_js_handlers.js";
 import { createFrame } from "./component_create_frame.js";
 
-function processPreamble(ast: JSNode, component: Component, frame: FunctionFrame = null, TEMPORARY = false) {
+function processPreamble(ast: JSNode, component: ComponentData, frame: FunctionFrame = null, TEMPORARY = false) {
     const function_frame = frame ?
         createFrame(frame, TEMPORARY, component) :
         component.root_frame;
@@ -19,7 +19,7 @@ function processPreamble(ast: JSNode, component: Component, frame: FunctionFrame
     return function_frame;
 }
 
-async function processCoreAsync(ast: JSNode, function_frame: FunctionFrame, component: Component, presets: Presets, root_name: string, frame: FunctionFrame = null) {
+async function processCoreAsync(ast: JSNode, function_frame: FunctionFrame, component: ComponentData, presets: Presets, root_name: string, frame: FunctionFrame = null) {
     main_loop:
     for (const { node, meta } of traverse(ast, "nodes")
         .skipRoot()
@@ -63,7 +63,7 @@ async function processCoreAsync(ast: JSNode, function_frame: FunctionFrame, comp
     return function_frame;
 }
 
-export function processCoreSync(ast: JSNode, function_frame: FunctionFrame, component: Component, presets: Presets) {
+export function processCoreSync(ast: JSNode, function_frame: FunctionFrame, component: ComponentData, presets: Presets) {
 
     main_loop:
     for (const { node, meta } of traverse(ast, "nodes")
@@ -113,7 +113,7 @@ export function processCoreSync(ast: JSNode, function_frame: FunctionFrame, comp
     return function_frame;
 }
 
-export function processNodeSync(ast: JSNode, function_frame: FunctionFrame, component: Component, presets: Presets) {
+export function processNodeSync(ast: JSNode, function_frame: FunctionFrame, component: ComponentData, presets: Presets) {
 
     const extract = { ast: null };
 
@@ -158,11 +158,11 @@ export function processNodeSync(ast: JSNode, function_frame: FunctionFrame, comp
     return extract.ast;
 }
 
-export async function processFunctionDeclaration(node: JSNode, component: Component, presets: Presets, root_name = "") {
+export async function processFunctionDeclaration(node: JSNode, component: ComponentData, presets: Presets, root_name = "") {
     return await processWickJS_AST(node, component, presets, root_name, component.root_frame);
 }
 
-export async function processWickJS_AST(ast: JSNode, component: Component, presets: Presets, root_name = "", frame = null, TEMPORARY = false): Promise<FunctionFrame> {
+export async function processWickJS_AST(ast: JSNode, component: ComponentData, presets: Presets, root_name = "", frame = null, TEMPORARY = false): Promise<FunctionFrame> {
     return await processCoreAsync(
         ast,
         processPreamble(ast, component, frame, TEMPORARY),
@@ -172,7 +172,7 @@ export async function processWickJS_AST(ast: JSNode, component: Component, prese
     );
 }
 
-export function processFunctionDeclarationSync(node: JSNode, component: Component, presets: Presets) {
+export function processFunctionDeclarationSync(node: JSNode, component: ComponentData, presets: Presets) {
     return processCoreSync(
         node,
         processPreamble(node, component, component.root_frame),

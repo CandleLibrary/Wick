@@ -7,7 +7,7 @@ import parseStringReturnAST from "../parser/parse.js";
 import { processWickJS_AST } from "./component_js.js";
 import { processWickHTML_AST } from "./component_html.js";
 
-import { Component, } from "../types/types";
+import { ComponentData, } from "../types/types";
 import { HTMLNodeClass, HTMLNode } from "../types/wick_ast_node_types.js";
 import { acquireComponentASTFromRemoteSource } from "./component_acquire_ast.js";
 import { createComponent, createErrorComponent } from "./component_create_component.js";
@@ -41,7 +41,7 @@ function determineSourceType(ast: HTMLNode | JSNode): boolean {
  * @param presets {PresetOptions} - 
  * @param root_url 
  */
-export default async function makeComponent(input: URL | string, presets?: Presets, root_url?: URL): Promise<Component> {
+export default async function makeComponent(input: URL | string, presets?: Presets, root_url?: URL): Promise<ComponentData> {
 
     //If this is a node.js environment, make sure URL is able to resolve local files system addresses.
     if (typeof (window) == "undefined") await URL.polyfill();
@@ -83,10 +83,10 @@ export async function compileComponent(
     source_string: string,
     url: string,
     presets: Presets,
-    error: ExceptionInformation[] = []): Promise<Component> {
+    errors: Error[] = []): Promise<ComponentData> {
 
     const
-        component: Component = createComponent(source_string, url);
+        component: ComponentData = createComponent(source_string, url);
 
     component.root_frame = createFrame(null, false, component);
 

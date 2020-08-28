@@ -1,5 +1,5 @@
 import Presets from "../presets.js";
-import { Component } from "../types/types.js";
+import { ComponentData } from "../types/types.js";
 import { DOMLiteral } from "../types/dom_literal.js";
 import { rt } from "../runtime/runtime_global.js";
 
@@ -21,7 +21,7 @@ const enum htmlState {
  * @param root 
  */
 export function componentDataToHTML(
-    comp: Component,
+    comp: ComponentData,
     presets: Presets = rt.presets,
     template_map = new Map,
     html = comp.HTML,

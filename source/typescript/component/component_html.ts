@@ -1,6 +1,6 @@
 import { traverse } from "@candlefw/conflagrate";
 import { HTMLNode, HTMLNodeClass, WICK_AST_NODE_TYPE_BASE, HTMLContainerNode, HTMLNodeType, HTMLTextNode } from "../types/wick_ast_node_types.js";
-import { Component } from "../types/types.js";
+import { ComponentData } from "../types/types.js";
 import { html_handlers } from "./component_default_html_handlers.js";
 import Presets from "../presets.js";
 import { ContainerDomLiteral, DOMLiteral } from "../types/dom_literal.js";
@@ -74,7 +74,7 @@ function buildExportableDOMNode(
     return node;
 }
 
-async function loadHTMLImports(ast: HTMLNode, component: Component, presets: Presets) {
+async function loadHTMLImports(ast: HTMLNode, component: ComponentData, presets: Presets) {
     if (ast.import_list)
         for (const import_ of <HTMLNode[]>(ast.import_list)) {
             for (const handler of html_handlers[(HTMLNodeType.HTML_IMPORT >>> 23) - WICK_AST_NODE_TYPE_BASE]) {
@@ -84,7 +84,7 @@ async function loadHTMLImports(ast: HTMLNode, component: Component, presets: Pre
 }
 
 
-export async function processWickHTML_AST(ast: HTMLNode, component: Component, presets: Presets): Promise<HTMLNode> {
+export async function processWickHTML_AST(ast: HTMLNode, component: ComponentData, presets: Presets): Promise<HTMLNode> {
     //Process the import list
 
     //@ts-ignore

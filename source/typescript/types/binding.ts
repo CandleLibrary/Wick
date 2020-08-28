@@ -4,7 +4,7 @@ import { JSNode } from "@candlefw/js";
 import { VARIABLE_REFERENCE_TYPE, DATA_FLOW_FLAG } from "./types";
 import { HTMLNode, WickBindingNode, Node } from "./wick_ast_node_types.js";
 import Presets from "../presets.js";
-import { Component } from "./types";
+import { ComponentData } from "./types";
 
 /**
  * Any variable within a component that is defined a GLOBAL value that
@@ -88,5 +88,5 @@ export interface BindingHandler {
     priority: number;
     canHandleBinding(binding_selector: BINDING_SELECTOR | string, node_type: string): boolean;
 
-    prepareBindingObject(binding_selector: BINDING_SELECTOR | string, binding_node: WickBindingNode, host_ast_node: Node, element_index: number, component: Component, presets?: Presets): BindingObject;
+    prepareBindingObject(binding_selector: BINDING_SELECTOR | string, binding_node: WickBindingNode, host_ast_node: Node, element_index: number, component: ComponentData, presets?: Presets): BindingObject;
 }

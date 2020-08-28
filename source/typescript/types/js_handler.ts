@@ -1,7 +1,7 @@
 import { JSNode } from "@candlefw/js";
 
 import { HTMLNode } from "./wick_ast_node_types.js";
-import { Component, FunctionFrame } from "./types.js";
+import { ComponentData, FunctionFrame } from "./types.js";
 import Presets from "../presets.js";
 
 export interface JSHandler {
@@ -31,7 +31,7 @@ export interface JSHandler {
         node: JSNode | HTMLNode,
         parent_node: JSNode | HTMLNode,
         skip: (amount?: number) => void,
-        component: Component,
+        component: ComponentData,
         presets: Presets,
         frame: FunctionFrame
     ):
