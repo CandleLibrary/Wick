@@ -189,27 +189,16 @@ function componentCreate(input: string | URL, presets: Presets = rt.presets): Ex
     return component;
 }
 
-//Allow a component to be replaced inline
-//WHY IS THIS HERE? DOES FLAME NEED IT?
-Object.defineProperty(/* WickRTComponent.prototype */{}, "replace", {
+Object.defineProperty(componentCreate, "server", {
     value:
         /**
          * Replace this component with the one passed in. 
          * The new component inherits the old one's element and model.
          */
-        function (component: ComponentData) {
-
-            const comp_class = componentDataToJS(component, this.presets);
-
-            const comp = new comp_class(this.model, this.wrapper);
-
-            this.ele.replaceWith(comp.ele);
-
-            this.wrapper = null;
-
-            this.destructor();
-
-            return comp;
+        async function () {
+            //Polyfill document data
+            await URL.server();
+            await (await import("@candlefw/html")).default.server();
         }
 });
 

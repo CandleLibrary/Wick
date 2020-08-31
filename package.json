@@ -1,6 +1,6 @@
 {
     "name": "@candlefw/wick",
-    "version": "0.11.0",
+    "version": "0.11.1",
     "description": "HTML Component Compiler",
     "main": "./build/library/wick.js",
     "types": "./build/types/wick.d.ts",
@@ -66,13 +66,13 @@
     "dependencies": {
         "@candlefw/conflagrate": "^0.1.0",
         "@candlefw/css": "0.2.0",
-        "@candlefw/cfw": "latest",
         "@candlefw/glow": "latest",
         "@candlefw/hydrocarbon": "^0.4.0-dev",
         "@candlefw/js": "^0.2.2-dev",
         "@candlefw/spark": "^0.1.0",
         "@candlefw/url": "^0.1.2",
-        "@candlefw/wind": "^0.4.1-dev"
+        "@candlefw/wind": "^0.4.1-dev",
+        "@candlefw/html": "latest"
     },
     "esm": {
         "cjs": {
