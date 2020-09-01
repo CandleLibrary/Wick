@@ -384,7 +384,7 @@ loadHTMLHandlerInternal(
 
                             ctr.components.push(comp);
 
-                            ctr.component_names.push(comp.name);
+                            ctr.component_names.push(comp?.name);
 
                         } else {
                             const comp = await compileComponent(Object.assign({}, ch, { attributes: [] }), ch.pos.slice(), "auto_generated", presets, []);
@@ -393,9 +393,9 @@ loadHTMLHandlerInternal(
 
                             ctr.components.push(comp);
 
-                            ctr.component_names.push(comp.name);
+                            ctr.component_names.push(comp?.name);
 
-                            component.local_component_names.set(comp.name, comp.name);
+                            component.local_component_names.set(comp?.name, comp?.name);
 
                         }
                     }

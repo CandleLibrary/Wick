@@ -108,6 +108,7 @@ loadJSHandlerInternal(
         priority: 1,
 
         async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+
             let url_value = "";
 
             const [imports, from] = node.nodes;
@@ -130,7 +131,7 @@ loadJSHandlerInternal(
 
                     if (id.type == JSNodeType.Specifier) {
                         external = <string>id.nodes[0].value;
-                        local = <string>id.nodes[1].value;
+                        local = <string>id.nodes[1]?.value ?? external;
                     } else {
                         local = <string>id.value;
                         external = <string>id.value;
