@@ -1,6 +1,6 @@
 import { traverse } from "@candlefw/conflagrate";
 import { HTMLNode, HTMLNodeClass, WICK_AST_NODE_TYPE_BASE, HTMLContainerNode, HTMLNodeType, HTMLTextNode } from "../types/wick_ast_node_types.js";
-import { ComponentData } from "../types/types.js";
+import { ComponentData } from "../types/component_data";
 import { html_handlers } from "./component_default_html_handlers.js";
 import Presets from "../presets.js";
 import { ContainerDomLiteral, DOMLiteral } from "../types/dom_literal.js";

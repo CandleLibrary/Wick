@@ -1,6 +1,6 @@
 import { WickComponentErrorStore } from "./errors.js";
 import { WickRTComponent } from "../runtime/runtime_component.js";
-import { ComponentData } from "./types.js";
+import { ComponentData } from "./component_data";
 import { RuntimeComponent } from "../wick.js";
 /**
  * A compiled component that can be mounted to a DOM node.

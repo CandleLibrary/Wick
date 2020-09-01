@@ -1,10 +1,7 @@
-
-
-
 import URL from "@candlefw/url";
 import { addModuleToCFW } from "@candlefw/cfw";
 import { CSSNodeType, CSSNode, CSSNodeTypeLU } from "@candlefw/css";
-import { JSNodeType, JSNode, JSNodeTypeLU, renderWithFormattingAndSourceMap } from "@candlefw/js";
+import { JSNodeType, JSNode, JSNodeTypeLU } from "@candlefw/js";
 
 
 import Presets from "./presets.js";
@@ -21,7 +18,10 @@ import {
     componentDataToClassString,
 } from "./component/component_data_to_js.js";
 import { componentDataToCSS } from "./component/component_data_to_css.js";
-import { ComponentData, VARIABLE_REFERENCE_TYPE, FunctionFrame, DATA_FLOW_FLAG } from "./types/types.js";
+import { VARIABLE_REFERENCE_TYPE } from "./types/variable_reference_types";
+import { DATA_FLOW_FLAG } from "./types/data_flow_flags";
+import { FunctionFrame } from "./types/function_frame";
+import { ComponentData } from "./types/component_data";
 import { BindingVariable } from "./types/binding";
 import { PendingBinding } from "./types/binding";
 import { DOMLiteral } from "./types/dom_literal.js";

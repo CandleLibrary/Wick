@@ -4,11 +4,15 @@ import { Lexer } from "@candlefw/wind";
 
 import Presets from "../presets.js";
 import { compileComponent } from "./component.js";
-import { ComponentData, DATA_FLOW_FLAG, FunctionFrame, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
+import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
+import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
+import { FunctionFrame } from "../types/function_frame";
+import { ComponentData } from "../types/component_data";
 import { HTMLNode } from "../wick.js";
 import { acquireComponentASTFromRemoteSource } from "./component_acquire_ast.js";
 import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
 import { componentDataToJSCached } from "./component_data_to_js.js";
+import URL from "@candlefw/url";
 
 
 /**

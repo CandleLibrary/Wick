@@ -1,7 +1,8 @@
 import { JSNode } from "@candlefw/js";
 
 import { HTMLNode } from "./wick_ast_node_types.js";
-import { ComponentData, FunctionFrame } from "./types.js";
+import { FunctionFrame } from "./function_frame";
+import { ComponentData } from "./component_data";
 import Presets from "../presets.js";
 
 export interface JSHandler {

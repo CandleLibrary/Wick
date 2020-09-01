@@ -1,9 +1,9 @@
 import URL from "@candlefw/url";
+import { Lexer } from "@candlefw/wind";
 import { createNameHash } from "./component_create_hash_name.js";
 import { PendingBinding } from "../types/binding";
-import { ComponentData } from "../types/types";
+import { ComponentData } from "../types/component_data";
 import { DOMLiteral } from "../wick.js";
-import { Lexer } from "@candlefw/wind";
 
 
 export function createErrorComponent(errors: Error[], src: string, location: string, component: ComponentData = createComponent(src, location)) {

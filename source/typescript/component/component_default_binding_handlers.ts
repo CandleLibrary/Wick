@@ -2,7 +2,10 @@ import { JSNodeType, exp, stmt, JSNode } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 import { matchAll } from "@candlefw/css";
 
-import { DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE, FunctionFrame, ComponentData } from "../types/types.js";
+import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
+import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
+import { FunctionFrame } from "../types/function_frame";
+import { ComponentData } from "../types/component_data";
 import { BindingObject, BindingHandler, BindingType, BINDING_SELECTOR } from "../types/binding";
 import { getComponentVariableName, getComponentVariable } from "./component_set_component_variable.js";
 import { DOMLiteral } from "../wick.js";

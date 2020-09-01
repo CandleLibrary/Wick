@@ -1,5 +1,3 @@
-import { b } from "@candlefw/wind/build/types/ascii_code_points";
-
 let seed_tracker = 0xf012501;
 
 function PseudoRandom(seed = 0x1f25d8e2f98) {

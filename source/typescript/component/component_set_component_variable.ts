@@ -1,4 +1,5 @@
-import { ComponentData, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
+import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
+import { ComponentData } from "../types/component_data";
 
 
 let SET_ONCE_environment_globals = null;
