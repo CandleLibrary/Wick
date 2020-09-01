@@ -34,8 +34,8 @@ import { css_selector_helpers } from "./component/component_css_selector_helpers
 import { renderWithFormatting } from "./render/render.js";
 import { Observable } from "./runtime/observable/observable.js";
 import { ObservableScheme } from "./runtime/observable/observable_prototyped.js";
+import { WickServer, srv } from "./wick.server.js";
 
-type T = (root_dir?: string) => Promise<void>;
 /**
  * Exporting the wick compiler
  */
@@ -189,25 +189,10 @@ function componentCreate(input: string | URL, presets: Presets = rt.presets): Ex
     return component;
 }
 
-Object.defineProperty(componentCreate, "server", {
-    value:
-        /**
-         * Replace this component with the one passed in. 
-         * The new component inherits the old one's element and model.
-         */
-        async function () {
-            //Polyfill document data
-            await URL.server();
-            await (await import("@candlefw/html")).default.server();
-        }
-});
-
 /**
  * Wick component parser and component library.
  */
-type WickLibrary = typeof componentCreate & WickCompiler & WickRuntime;
-
-
+type WickLibrary = typeof componentCreate & WickCompiler & WickRuntime & WickServer;
 
 /** README:USAGE
  * 
@@ -230,74 +215,77 @@ type WickLibrary = typeof componentCreate & WickCompiler & WickRuntime;
  * comp.appendToDOM(document.body)
  * ```
  */
-const wick: WickLibrary = Object.assign(componentCreate, <WickRuntime>rt, <WickCompiler>{
+const wick: WickLibrary = Object.assign(componentCreate,
+    <WickServer>srv,
+    <WickRuntime>rt,
+    <WickCompiler>{
 
-    css_selector_helpers,
+        css_selector_helpers,
 
-    types: <WickCompiler["types"]><unknown>{
-        CSSNodeType: CSSNodeTypeLU,
-        JSNodeType: JSNodeTypeLU,
-        HTMLNodeType: HTMLNodeTypeLU
-    },
-
-    rt: rt,
-
-    get presets() { return rt.presets; },
-
-    utils: {
-        parse: {
-            css_selector_helpers: css_selector_helpers,
-            createNameHash: createNameHash,
-            parser,
-            render: renderWithFormatting
-        },
-        server: async function (root_dir: string = "") {
-            await URL.server(root_dir);
+        types: <WickCompiler["types"]><unknown>{
+            CSSNodeType: CSSNodeTypeLU,
+            JSNodeType: JSNodeTypeLU,
+            HTMLNodeType: HTMLNodeTypeLU
         },
 
-        setWrapper: async function (url) {
-            //create new component
+        rt: rt,
 
-            if (!rt.presets)
-                rt.presets = new Presets();
+        get presets() { return rt.presets; },
 
-            rt.presets.wrapper = wick(url);
+        utils: {
+            parse: {
+                css_selector_helpers: css_selector_helpers,
+                createNameHash: createNameHash,
+                parser,
+                render: renderWithFormatting
+            },
+            server: async function (root_dir: string = "") {
+                await URL.server(root_dir);
+            },
 
-            const comp = await rt.presets.wrapper.pending;
+            setWrapper: async function (url) {
+                //create new component
 
-            componentDataToJSCached(comp, rt.presets);
+                if (!rt.presets)
+                    rt.presets = new Presets();
+
+                rt.presets.wrapper = wick(url);
+
+                const comp = await rt.presets.wrapper.pending;
+
+                componentDataToJSCached(comp, rt.presets);
+            },
+
+            componentToClass: componentDataToJS,
+
+            componentToClassString: componentDataToClassString,
+
+
+            componentDataToHTML,
+            componentDataToCSS,
+            componentDataToJSCached: componentDataToJSCached,
+            componentDataToClass: componentDataToJS,
+            componentDataToClassString,
+            createNameHash,
         },
 
-        componentToClass: componentDataToJS,
+        objects: {
+            WickRTComponent,
+            Presets,
+            Observable,
+            ObservableScheme
+        },
 
-        componentToClassString: componentDataToClassString,
-
-
-        componentDataToHTML,
-        componentDataToCSS,
-        componentDataToJSCached: componentDataToJSCached,
-        componentDataToClass: componentDataToJS,
-        componentDataToClassString,
-        createNameHash,
-    },
-
-    objects: {
-        WickRTComponent,
-        Presets,
-        Observable,
-        ObservableScheme
-    },
-
-});
+    });
 
 addModuleToCFW(wick, "wick");
-/**EXPORT wick*/
+
 export default wick;
-/**EXPORTS Nothing*/
+
 export * from "./render/render.js";
-/**EXPORTS everything*/
+
 export * from "./render/rules.js";
-/**EXPORTS*/
+
 export {
     //Functions
     parser,
