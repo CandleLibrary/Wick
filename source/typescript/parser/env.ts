@@ -21,7 +21,7 @@ type WickParserEnvironment = ParserEnvironment & JSParserEnv & {
     /**
      * Test
      */
-    comments: Lexer[],
+    comments: Comment[],
     typ: any;
     cls: any;
 };

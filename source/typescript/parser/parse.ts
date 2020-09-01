@@ -3,8 +3,10 @@ import { Lexer } from "@candlefw/wind";
 import { lrParse, ParserData } from "@candlefw/hydrocarbon/build/library/runtime.js";
 
 import parser_data from "./wick_parser.js";
+
 import env from "./env.js";
-import { HTMLNode } from "../types/wick_ast_node_types.js";
+
+import { Node } from "../types/wick_ast_node_types.js";
 
 
 
@@ -19,7 +21,7 @@ import { HTMLNode } from "../types/wick_ast_node_types.js";
  * the point where the parser was unable to parse the input string.
  *
  */
-export default function (input: string | Lexer, source = ""): HTMLNode {
+export default function (input: string | Lexer, source = ""): { ast: Node, comments: Comment[]; } {
 
     let lex: string | Lexer = null;
 
@@ -30,10 +32,12 @@ export default function (input: string | Lexer, source = ""): HTMLNode {
     if (source)
         lex.source = source;
 
-    const parse_result = lrParse(lex, <ParserData>parser_data, env);
+    const
+        { value: ast, error } = lrParse<Node>(lex, <ParserData>parser_data, env),
+        comments = env.comments as Comment[] || [];
 
-    if (parse_result.error)
-        throw new SyntaxError(parse_result.error);
+    if (error)
+        throw new SyntaxError(error);
 
-    return <HTMLNode>parse_result.value;
+    return { ast, comments };
 }
