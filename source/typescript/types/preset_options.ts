@@ -6,7 +6,7 @@ export interface PresetOptions {
     /**
      *  Object of options that can be passed to the Wick compiler.
      */
-    options: {
+    options?: {
 
         /**
          * If `true` Wick will throw on any errors encountered when
@@ -109,11 +109,11 @@ export interface PresetOptions {
     /**
      * URL of the initiating script.
      */
-    url: URL;
+    url?: URL;
 
     /**
      * Any objects or functions that should be accessible to all components
      * through the `"@api"` import path.
      */
-    api: any;
+    api?: any;
 }
