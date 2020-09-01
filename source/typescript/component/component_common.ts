@@ -60,7 +60,7 @@ export async function importComponentData(new_component_url, component, presets,
 
     try {
 
-        const { ast, string, resolved_url } = await acquireComponentASTFromRemoteSource(new_component_url, component.location);
+        const { ast, string, resolved_url } = await acquireComponentASTFromRemoteSource(new URL(new_component_url), component.location);
 
         // If the ast is an HTML_NODE with a single style element, then integrate the 
         // css data into the current component. 
