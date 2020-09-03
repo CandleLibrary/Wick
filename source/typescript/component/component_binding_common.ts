@@ -1,6 +1,7 @@
 import { JSNode, JSNodeType } from "@candlefw/js";
 
-import { FunctionFrame, DATA_FLOW_FLAG } from "../types/types.js";
+import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
+import { FunctionFrame } from "../types/function_frame";
 import { BindingVariable } from "../types/binding";
 import { traverse } from "@candlefw/conflagrate";
 

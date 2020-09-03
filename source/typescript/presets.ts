@@ -2,7 +2,8 @@ import URL from "@candlefw/url";
 
 import { PresetOptions } from "./types/preset_options.js";
 import { ExtendedComponentData } from "./types/extended_component.js";
-import { ComponentData, ComponentClassStrings } from "./types/types.js";
+import { ComponentClassStrings } from "./types/component_class_strings";
+import { ComponentData } from "./types/component_data";
 import { RuntimeComponent } from "./wick.js";
 
 let CachedPresets = null;

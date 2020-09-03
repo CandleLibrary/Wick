@@ -16,7 +16,8 @@ import { compileComponent } from "./component.js";
 import { processFunctionDeclaration, processWickJS_AST } from "./component_js.js";
 import { importResource } from "./component_common.js";
 import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
-import { VARIABLE_REFERENCE_TYPE, DATA_FLOW_FLAG } from "../types/types.js";
+import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
+import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
 import { global_object } from "../runtime/runtime_global.js";
 import { BINDING_SELECTOR } from "../types/binding.js";
 
@@ -383,7 +384,7 @@ loadHTMLHandlerInternal(
 
                             ctr.components.push(comp);
 
-                            ctr.component_names.push(comp.name);
+                            ctr.component_names.push(comp?.name);
 
                         } else {
                             const comp = await compileComponent(Object.assign({}, ch, { attributes: [] }), ch.pos.slice(), "auto_generated", presets, []);
@@ -392,9 +393,9 @@ loadHTMLHandlerInternal(
 
                             ctr.components.push(comp);
 
-                            ctr.component_names.push(comp.name);
+                            ctr.component_names.push(comp?.name);
 
-                            component.local_component_names.set(comp.name, comp.name);
+                            component.local_component_names.set(comp?.name, comp?.name);
 
                         }
                     }

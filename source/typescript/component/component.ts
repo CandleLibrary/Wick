@@ -7,11 +7,12 @@ import parseStringReturnAST from "../parser/parse.js";
 import { processWickJS_AST } from "./component_js.js";
 import { processWickHTML_AST } from "./component_html.js";
 
-import { ComponentData, } from "../types/types";
+import { ComponentData } from "../types/component_data";
 import { HTMLNodeClass, HTMLNode } from "../types/wick_ast_node_types.js";
 import { acquireComponentASTFromRemoteSource } from "./component_acquire_ast.js";
 import { createComponent, createErrorComponent } from "./component_create_component.js";
 import { createFrame } from "./component_create_frame.js";
+import { Comment } from "../types/comment.js";
 export const component_cache = {};
 
 function getHTML_AST(ast: HTMLNode | JSNode): HTMLNode {
@@ -33,6 +34,8 @@ function determineSourceType(ast: HTMLNode | JSNode): boolean {
     return false;
 };
 
+const empty_obj = {};
+
 /**
  * This functions is used to compile a Wick component, which can then be immediately
  * It will accept a string containing wick markup, or a URL that points to a wick component.
@@ -46,36 +49,30 @@ export default async function makeComponent(input: URL | string, presets?: Prese
     //If this is a node.js environment, make sure URL is able to resolve local files system addresses.
     if (typeof (window) == "undefined") await URL.polyfill();
 
-    let ast = null, url = input, input_string = input, error = [];
+    let data: any = empty_obj, errors = [];
 
     try {
-
-        const { string, ast: url_ast, resolved_url, error: e }
-            = await acquireComponentASTFromRemoteSource(input, root_url);
-
-        ast = url_ast;
-
-        input_string = string;
-
-        url = resolved_url;
-
-        error = e;
-
+        data = await acquireComponentASTFromRemoteSource(new URL(input), root_url);
     } catch (e) {
         //Illegal URL, try parsing string
-        //error.push(e);
-
-        url = "";
-
         try {
-            ast = parseStringReturnAST(<string>input, url);
+            data = parseStringReturnAST(<string>input, "");
         } catch (e) {
-            error.push(e);
+            errors.push(e);
         }
     }
 
+    const {
+        string: input_string = input,
+        ast = null,
+        resolved_url: url = null,
+        error: e = null,
+        comments = []
+    } = data;
 
-    return await compileComponent(ast, <string>input_string, url, presets, error);
+    if (e) errors.push(...e);
+
+    return await compileComponent(ast, <string>input_string, url, presets, errors, comments);
 };
 
 export async function compileComponent(
@@ -83,12 +80,16 @@ export async function compileComponent(
     source_string: string,
     url: string,
     presets: Presets,
-    errors: Error[] = []): Promise<ComponentData> {
+    errors: Error[] = [],
+    comments: Comment[] = [],
+): Promise<ComponentData> {
 
     const
         component: ComponentData = createComponent(source_string, url);
 
     component.root_frame = createFrame(null, false, component);
+
+    component.comments = comments;
 
     try {
 

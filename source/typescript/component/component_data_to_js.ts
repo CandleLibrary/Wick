@@ -3,7 +3,10 @@ import { copy, createSourceMap, createSourceMapJSON } from "@candlefw/conflagrat
 
 import Presets from "../presets.js";
 import { processBindings } from "./component_process_bindings.js";
-import { ComponentData, FunctionFrame, VARIABLE_REFERENCE_TYPE, ComponentClassStrings, } from "../types/types";
+import { ComponentClassStrings } from "../types/component_class_strings";
+import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
+import { FunctionFrame } from "../types/function_frame";
+import { ComponentData } from "../types/component_data";
 import { getPropertyAST, getGenericMethodNode } from "./component_js_ast_tools.js";
 import { getComponentVariableName } from "./component_set_component_variable.js";
 import { WickRTComponent } from "../runtime/runtime_component.js";

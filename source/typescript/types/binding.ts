@@ -1,10 +1,11 @@
 import { Lexer } from "@candlefw/wind";
 import { JSNode } from "@candlefw/js";
 
-import { VARIABLE_REFERENCE_TYPE, DATA_FLOW_FLAG } from "./types";
+import { VARIABLE_REFERENCE_TYPE } from "./variable_reference_types";
+import { DATA_FLOW_FLAG } from "./data_flow_flags";
 import { HTMLNode, WickBindingNode, Node } from "./wick_ast_node_types.js";
 import Presets from "../presets.js";
-import { ComponentData } from "./types";
+import { ComponentData } from "./component_data";
 
 /**
  * Any variable within a component that is defined a GLOBAL value that

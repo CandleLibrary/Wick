@@ -1,8 +1,11 @@
 import { traverse } from "@candlefw/conflagrate";
 import { exp, JSNode, JSNodeType, stmt } from "@candlefw/js";
+
 import { JSHandler } from "../types/js_handler.js";
-import { ComponentData, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
-import { HTMLNode, HTMLNodeClass, HTMLNodeTypeLU, WickBindingNode, WICK_AST_NODE_TYPE_SIZE, HTMLNodeType } from "../types/wick_ast_node_types.js";
+import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
+import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
+import { ComponentData } from "../types/component_data";
+import { HTMLNode, HTMLNodeClass, WickBindingNode, WICK_AST_NODE_TYPE_SIZE, HTMLNodeType } from "../types/wick_ast_node_types.js";
 import {
     addBindingVariable,
     addBindingVariableFlag, addNameToDeclaredVariables, addNodeToBindingIdentifiers,
@@ -105,6 +108,7 @@ loadJSHandlerInternal(
         priority: 1,
 
         async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+
             let url_value = "";
 
             const [imports, from] = node.nodes;
@@ -127,7 +131,7 @@ loadJSHandlerInternal(
 
                     if (id.type == JSNodeType.Specifier) {
                         external = <string>id.nodes[0].value;
-                        local = <string>id.nodes[1].value;
+                        local = <string>id.nodes[1]?.value ?? external;
                     } else {
                         local = <string>id.value;
                         external = <string>id.value;

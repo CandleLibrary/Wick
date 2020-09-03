@@ -3,7 +3,7 @@ import { WickContainer } from "./runtime_container.js";
 
 import Presets from "../presets";
 import { makeElement, integrateElement } from "./runtime_html.js";
-import { DATA_FLOW_FLAG } from "../types/types.js";
+import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
 import spark, { Sparky } from "@candlefw/spark";
 import { ObservableModel, ObservableWatcher } from "../types/observable_model.js";
 

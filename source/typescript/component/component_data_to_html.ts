@@ -1,5 +1,5 @@
 import Presets from "../presets.js";
-import { ComponentData } from "../types/types.js";
+import { ComponentData } from "../types/component_data";
 import { DOMLiteral } from "../types/dom_literal.js";
 import { rt } from "../runtime/runtime_global.js";
 

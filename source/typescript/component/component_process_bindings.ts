@@ -1,6 +1,8 @@
 import { JSNodeType, stmt, exp } from "@candlefw/js";
 
-import { ComponentData, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/types.js";
+import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
+import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
+import { ComponentData } from "../types/component_data";
 import { BindingObject, BindingType, PendingBinding } from "../types/binding";
 import { getGenericMethodNode } from "./component_js_ast_tools.js";
 import { binding_handlers } from "./component_default_binding_handlers.js";

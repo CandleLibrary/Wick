@@ -1,4 +1,5 @@
-import { ComponentData, FunctionFrame } from "../types/types.js";
+import { FunctionFrame } from "../types/function_frame";
+import { ComponentData } from "../types/component_data";
 
 export function createFrame(parent_frame: any, TEMPORARY: boolean = false, component: ComponentData) {
 

@@ -1,7 +1,7 @@
 
 import Presets from "../presets.js";
 
-import { ComponentData } from "../types/types.js";
+import { ComponentData } from "../types/component_data";
 import { PresetOptions } from "../types/preset_options.js";
 import { WickRTComponent } from "./runtime_component.js";
 

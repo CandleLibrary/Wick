@@ -1,7 +1,8 @@
 import { JSNode, JSNodeType, JSNodeTypeLU, JSNodeClass, ext } from "@candlefw/js";
 import { traverse, copy } from "@candlefw/conflagrate";
 
-import { ComponentData, FunctionFrame } from "../types/types.js";
+import { FunctionFrame } from "../types/function_frame";
+import { ComponentData } from "../types/component_data";
 import Presets from "../presets.js";
 import { JS_handlers } from "./component_default_js_handlers.js";
 import { createFrame } from "./component_create_frame.js";

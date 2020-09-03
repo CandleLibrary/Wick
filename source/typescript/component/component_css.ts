@@ -1,6 +1,6 @@
 import { CSSNodeType, CSSNode } from "@candlefw/css";
 
-import { ComponentData } from "../types/types.js";
+import { ComponentData } from "../types/component_data";
 import Presets from "../presets.js";
 import { HTMLNode } from "../types/wick_ast_node_types.js";
 
