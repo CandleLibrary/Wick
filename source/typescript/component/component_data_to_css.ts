@@ -43,37 +43,26 @@ export function UpdateSelector(node: CSSNode, name) {
 }
 
 export function componentDataToCSS(component: Component): string {
+
     // Get all css data from component and it's children,
     // Include pure CSS components (components that only have CSS data),
     // in the main components context.
 
-
-
-
     const css_string = component.CSS.map(css => {
         const r = { ast: null };
 
-        for (const { node, meta: { replace } } of traverse(css, "nodes", 2)
+        for (const { node, meta: { replace } } of traverse(css, "nodes")
+            .filter("type", CSSNodeType.Rule)
             .makeReplaceable()
             .extract(r)
         ) {
-            switch (node.type) {
-                case CSSNodeType.Rule: {
-                    const copy = Object.assign({}, node);
-                    UpdateSelector(copy, component.name);
-                    replace(copy);
-                } break;
-                case CSSNodeType.Media: {
-                    const copy = Object.assign({}, node);
-                    copy.nodes.slice(1).forEach(n => UpdateSelector(n, component.name));
-                    replace(copy);
-                } break;
-
-            }
+            const copy = Object.assign({}, node);
+            UpdateSelector(copy, component.name);
+            replace(copy);
         }
 
         return <CSSNode>r.ast;
-    }).map(_ => renderWithFormatting(_)).join("\n");
+    }).map(_ => _ ? renderWithFormatting(_) : "").join("\n");
 
 
     return css_string;

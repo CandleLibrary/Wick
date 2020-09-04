@@ -35,6 +35,7 @@ import { renderWithFormatting } from "./render/render.js";
 import { Observable } from "./runtime/observable/observable.js";
 import { ObservableScheme } from "./runtime/observable/observable_prototyped.js";
 import { WickServer, srv } from "./wick.server.js";
+import { WickTestTools, WickTest as test } from "./test/wick.test.js";
 
 /**
  * Exporting the wick compiler
@@ -294,6 +295,9 @@ export {
     componentDataToCSS,
     componentDataToJS as componentDataToClass,
     componentDataToClassString,
+
+    //tools
+    test,
 
     //Object Types
     Presets,
