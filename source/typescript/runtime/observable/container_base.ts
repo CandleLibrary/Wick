@@ -231,7 +231,6 @@ export class ObservableContainerBase<T> extends ObservableBase {
             for (var i = 0; i < item.length; i++)
                 if (this.__insertSub__(item[i], out_data, add_list))
                     out_data = true;
-            console.log("AA");
         } else if (item)
             out_data = this.__insertSub__(item, out_data, add_list);
 

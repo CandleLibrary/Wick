@@ -189,8 +189,6 @@ export function componentDataToClassString(
         //Javascript Information.
         if (component.HAS_ERRORS === false && component.root_frame) {
 
-            //setPos(component_class, component.root_frame.ast.pos);
-
             const
                 cleanup_element_method = getGenericMethodNode("cu", "", "const c = this;"),
                 [, , { nodes: cu_stmts }] = cleanup_element_method.nodes,
@@ -284,7 +282,7 @@ export function componentDataToClassString(
     } catch (e) {
         console.warn(`Error found in component ${component.name} while converting to a class. location: ${component.location}.`);
         console.error(e);
-        return componentDataToClassString(createErrorComponent([e], component.source, component.location + "", component), presets);
+        return null; componentDataToClassString(createErrorComponent([e], component.source, component.location + "", component), presets);
     }
 }
 
@@ -319,7 +317,6 @@ function DOMAttributeToJSNode([key, val]: [string, string]) {
 
 function DOMLiteralToJSNode(node: DOMLiteral): JSNode {
 
-    //  console.log(node);
     const out = {
         type: JSNodeType.ObjectLiteral,
         nodes: [propLiteral("lookup_index", node.lookup_index),],

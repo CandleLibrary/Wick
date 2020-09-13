@@ -83,8 +83,6 @@ export function integrateElement(ele: HTMLElement | Text) {
                         name = ele.classList[0],
                         comp_constructor = this.presets.component_class.get(name);
 
-                    console.log(name);
-
                     this.elu.push(ele);
 
                     if (!comp_constructor)

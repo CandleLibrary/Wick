@@ -53,13 +53,11 @@ export function componentDataToHTML(
         if (ct) {
             const comp = presets.components.get(component_names[0]);
 
-            console.log(html);
-
             if (!template_map.has(comp.name))
                 template_map.set(comp.name, `<template id="${comp.name}">${componentDataToHTML(comp, presets, template_map).html}</template>`);
             //create template for the component. 
 
-            str += `<${tag_name.toLowerCase()}${attributes.map(([n, v]) => ` "${n}"="${v}"`).join("")} w-container="${comp.name}">`;
+            str += `<${tag_name.toLowerCase()} w-container="${comp.name}"${attributes.length > 0 ? " " + attributes.map(([n, v]) => `${n}="${v}"`).join(" ") : ""}>`;
 
 
         } else if (component_name && presets.components.has(component_name)) {
