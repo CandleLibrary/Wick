@@ -159,15 +159,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     }
 
     destructor() {
-
-        if (this.polling_id > -1)
-            clearInterval(this.polling_id);
-
-        if (this.model) {
-            if (this.model.unsubscribe)
-                this.model.unsubscribe(this);
-            this.model = null;
-        }
+        if (this.model)
+            this.setModel(null);
 
         if (this.wrapper)
             this.wrapper.destructor();
@@ -264,21 +257,23 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             } else
                 this.presets.css_cache[this.name].count++;
 
-
-
             this.ele.classList.add(this.name);
         }
     }
 
-    appendToDOM(element: HTMLElement, before_element: HTMLElement = null) {
+    appendToDOM(element: HTMLElement, other_element: HTMLElement = null, INSERT_AFTER = false) {
 
         //Lifecycle Events: Connecting <======================================================================
         this.connect();
 
         this.update({ connecting: true });
 
-        if (before_element)
-            element.insertBefore(this.ele, before_element);
+        if (other_element) {
+            if (!INSERT_AFTER)
+                other_element.parentElement.insertBefore(this.ele, other_element);
+            else
+                other_element.parentElement.insertBefore(this.ele, other_element.nextSibling);
+        }
         else
             element.appendChild(this.ele);
 
@@ -388,9 +383,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     setModel(model: ObservableModel | any) {
 
         if (this.model) {
-            if (this.polling_id > 0) {
+            if (this.polling_id || this.polling_id === 0) {
                 clearInterval(this.polling_id);
-                this.polling_id = 0;
+                this.polling_id = null;
             }
 
             if (this.model.unsubscribe)
@@ -408,8 +403,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             } else {
 
                 //Create a polling monitor
-                if (this.polling_id <= 0)
+                if (!this.polling_id) {
                     this.polling_id = <number><unknown>setInterval(this.onModelUpdate.bind(this), 1000 / 30);
+                }
 
             }
 
@@ -642,7 +638,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     onMounted() { }
     re(c: any) { }
     getCSS() { return ""; }
-
     //=========================================================
     //=========================================================
     //=========================================================
