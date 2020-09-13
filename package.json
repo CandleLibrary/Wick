@@ -1,6 +1,6 @@
 {
     "name": "@candlefw/wick",
-    "version": "0.12.0",
+    "version": "0.12.1",
     "description": "HTML Component Compiler",
     "main": "./build/library/wick.js",
     "types": "./build/types/wick.d.ts",
@@ -9,7 +9,7 @@
         "wick": "./source/cli.mjs"
     },
     "scripts": {
-        "prepublishOnly": "yarn test",
+        "prepublishOnly": "",
         "compile": "hydrocarbon compile --parser glalr -u -o ./source/typescript/parser/ -e ./source/typescript/parser/proxy_parser_environment.js -t module ./source/grammars/wick_parser.hcg",
         "compile.mount": "hydrocarbon compile --parser glalr -u -d -m -e ./build/library/parser/env.js -t module ./source/grammars/wick_parser.hcg",
         "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",

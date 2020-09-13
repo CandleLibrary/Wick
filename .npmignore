@@ -1,5 +1,6 @@
 source/
 test/
+!build/library/test/
 tests/
 doc/
 docs/
