@@ -9,7 +9,7 @@ import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
 import { FunctionFrame } from "../types/function_frame";
 import { ComponentData } from "../types/component_data";
 import { HTMLNode } from "../wick.js";
-import { acquireComponentASTFromRemoteSource } from "./component_acquire_ast.js";
+import { acquireComponentASTFromRemoteSource } from "./component_acquire_remote_source.js";
 import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
 import { componentDataToJSCached } from "./component_data_to_js.js";
 import URL from "@candlefw/url";

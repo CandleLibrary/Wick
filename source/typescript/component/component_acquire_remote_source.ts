@@ -1,16 +1,15 @@
 import URL from "@candlefw/url";
 import parse from "../parser/parse.js";
 
-export async function acquireComponentASTFromRemoteSource(url_source: URL, root_url?: URL) {
+export async function acquireComponentASTFromRemoteSource(url_source: URL, root_url: URL = new URL(URL.GLOBAL + "/")) {
 
     let url = url_source;
 
     if (url_source.IS_RELATIVE)
-        url = URL.resolveRelative(url_source + "", root_url || URL.GLOBAL);
-
+        url = URL.resolveRelative(url_source, root_url);
 
     const
-        error = [];
+        errors = [];
 
     let ast = null,
         comments = null,
@@ -29,16 +28,17 @@ export async function acquireComponentASTFromRemoteSource(url_source: URL, root_
         if (url.ext == "css")
             string = `<style>${string}</style>`;
 
-        const { ast: a, comments: c } = parse(string, url.toString());
+        const { ast: a, comments: c, error } = parse(string, url.toString());
 
         ast = a;
         comments = c;
 
+        if (error)
+            errors.push(error);
+
     } catch (e) {
-        console.log(e);
-        console.log(url);
-        error.push(e);
+        errors.push(e);
     }
 
-    return { ast, string, resolved_url: url.toString(), error, comments };
+    return { ast, string, resolved_url: url.toString(), errors, comments };
 }
