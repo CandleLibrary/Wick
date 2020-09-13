@@ -79,6 +79,15 @@ export class ObservableArray<T> extends ObservableContainerBase<T> {
 
     get length() { return this.data.length; }
 
+    set length(v) {
+
+        let new_length = Math.min(Math.max(0, v), this.data.length);
+
+        this.data.length = new_length;
+
+        this.scheduleUpdate();
+    }
+
     __defaultReturn__(USE_ARRAY) {
 
         return this;
@@ -131,7 +140,7 @@ export class ObservableArray<T> extends ObservableContainerBase<T> {
     }
 
     __removeAll__() {
-        let items = this.data.map(d => d) || [];
+        let items = this.data.map(d => d); // [];
 
         this.data.length = 0;
 

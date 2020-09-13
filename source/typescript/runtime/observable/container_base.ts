@@ -318,13 +318,14 @@ export class ObservableContainerBase<T> extends ObservableBase {
     }
 
     /**
-        Removes any items in the ModelContainer not included in the array "items", and adds any item in `items` not already in the ModelContainerBase.
+        Removes any items in the ModelContainer not included in the array "items", 
+        and adds any item in `items` not already in the ModelContainerBase.
         @param {Array} items - An array of identifiable Models or objects. 
     */
-    cull(items: T) {
+    cull(items: T[]) {
 
         let hash_table = {};
-        let existing_items = __getAll__([], true);
+        let existing_items = this.__getAll__([]);
 
         let loadHash = (item) => {
             if (item instanceof Array)
