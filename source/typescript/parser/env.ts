@@ -12,7 +12,6 @@ import { ParserEnvironment } from "@candlefw/hydrocarbon";
 import { JSParserEnvironment, JSParserEnv, JSNodeTypeLU } from "@candlefw/js";
 
 import { HTMLNodeTypeLU } from "../types/wick_ast_node_types.js";
-import { Lexer } from "@candlefw/wind";
 
 export const NodeTypes = Object.assign({}, CSSNodeTypeLU, HTMLNodeTypeLU, JSNodeTypeLU);
 
@@ -63,16 +62,16 @@ const env = <WickParserEnvironment>{
             env.addParseError(`Unexpected token [${tk}]`, lex, env.url);
         },
 
-        frrh: (tk, env: ParserEnvironment & { ASI: boolean; }, output, lex, prv_lex, ss, lu) => {
-            const val = JSParserEnvironment.functions.frrh(tk, env, output, lex, prv_lex, ss, lu);
+        frrh: (tk, env: ParserEnvironment & { ASI: boolean; }, output, lex, prv_lex, ss, lu, sp) => {
+            const val = JSParserEnvironment.functions.frrh(tk, env, output, lex, prv_lex, ss, lu, sp);
 
             if (val >= 0) return val;
 
             return -1;
         },
 
-        lrrh: (tk, env: ParserEnvironment & { ASI: boolean; }, output, lex, prv_lex, ss, lu) => {
-            const val = JSParserEnvironment.functions.lrrh(tk, env, output, lex, prv_lex, ss, lu);
+        lrrh: (tk, env: ParserEnvironment & { ASI: boolean; }, output, lex, prv_lex, ss, lu, sp) => {
+            const val = JSParserEnvironment.functions.lrrh(tk, env, output, lex, prv_lex, ss, lu, sp);
 
             if (val >= 0) return val;
 

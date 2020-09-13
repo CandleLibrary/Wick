@@ -21,7 +21,7 @@ import { Node } from "../types/wick_ast_node_types.js";
  * the point where the parser was unable to parse the input string.
  *
  */
-export default function (input: string | Lexer, source = ""): { ast: Node, comments: Comment[]; } {
+export default function (input: string | Lexer, source = ""): { ast: Node, comments: Comment[]; error?: any; } {
 
     let lex: string | Lexer = null;
 
@@ -33,11 +33,11 @@ export default function (input: string | Lexer, source = ""): { ast: Node, comme
         lex.source = source;
 
     const
+
         { value: ast, error } = lrParse<Node>(lex, <ParserData>parser_data, env),
+
         comments = env.comments as Comment[] || [];
 
-    if (error)
-        throw new SyntaxError(error);
 
-    return { ast, comments };
+    return { ast, comments, error };
 }

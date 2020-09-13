@@ -38,7 +38,7 @@ export interface PresetOptions {
         USE_SHADOWED_STYLE?: boolean;
 
         /**
-         * Debugger statements are removed from final output if `true`.
+         * Debugger statements are removed from final output of a component class if `true`.
          */
         REMOVE_DEBUGGER_STATEMENTS?: boolean,
 

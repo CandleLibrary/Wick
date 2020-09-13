@@ -602,21 +602,6 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
         this.dom_comp = output.slice();
 
-        /*
-        this.parent.update({
-            [this.name + "_changed"]: {
-
-                displayed: output_length,
-                offset: offset,
-                count: this.activeScopes.length,
-                pages: this.max,
-                ele: this.ele,
-                template: this,
-                trs: transition.in
-            }
-        });
-        */
-
         if (OWN_TRANSITION) {
             if (NO_TRANSITION)
                 return transition;
@@ -627,7 +612,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
     }
 
     /**
-     * Filters stored Scopes with search terms and outputs an array of passing Scops.
+     * Filters stored Scopes with search terms and outputs an array of passing scopes.
      * 
      * @protected
      */
