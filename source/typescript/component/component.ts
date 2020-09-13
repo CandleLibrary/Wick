@@ -46,17 +46,45 @@ const empty_obj = {};
  */
 export default async function makeComponent(input: URL | string, presets?: Presets, root_url?: URL): Promise<ComponentData> {
 
+
     //If this is a node.js environment, make sure URL is able to resolve local files system addresses.
     if (typeof (window) == "undefined") await URL.polyfill();
 
     let data: any = empty_obj, errors = [];
 
     try {
-        data = await acquireComponentASTFromRemoteSource(new URL(input), root_url);
+        const url = new URL(input);
+        //Sloppy tests to see if the input is A URL or not
+        if (typeof input == "string") {
+            if (
+                input.trim[0] == "."
+                ||
+                url.ext == "wick"
+                ||
+                url.ext == "html"
+                ||
+                (url + "").length == input.length
+            ) { /* Allow to pass through */ }
+            else if (
+                input.trim()[0] == "<"
+                ||
+                input.indexOf("\n") >= 0
+            ) throw "input is not a url";
+        }
+
+        data = await acquireComponentASTFromRemoteSource(url, root_url);
+
+        if (data.errors.length > 0 && !data.string)
+            throw data.errors.pop();
+
     } catch (e) {
         //Illegal URL, try parsing string
         try {
             data = parseStringReturnAST(<string>input, "");
+
+            if (data.error)
+                throw data.error;
+
         } catch (e) {
             errors.push(e);
         }
@@ -69,8 +97,6 @@ export default async function makeComponent(input: URL | string, presets?: Prese
         error: e = null,
         comments = []
     } = data;
-
-    if (e) errors.push(...e);
 
     return await compileComponent(ast, <string>input_string, url, presets, errors, comments);
 };
