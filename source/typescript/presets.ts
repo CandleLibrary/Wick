@@ -76,7 +76,7 @@ export default class Presets implements PresetOptions {
 
         this.window = typeof window != "undefined" ? window : <Window>{};
 
-        this.document = this.window.document;
+        this.document = typeof document != "undefined" ? document : <Document>{};
 
         this.api = UserPresets.api;
 
