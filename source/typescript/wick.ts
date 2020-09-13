@@ -1,9 +1,10 @@
+//External
 import URL from "@candlefw/url";
 import { addModuleToCFW } from "@candlefw/cfw";
 import { CSSNodeType, CSSNode, CSSNodeTypeLU } from "@candlefw/css";
 import { JSNodeType, JSNode, JSNodeTypeLU } from "@candlefw/js";
 
-
+//Internal
 import Presets from "./presets.js";
 import makeComponent from "./component/component.js";
 import parser from "./parser/parse.js";
@@ -138,7 +139,7 @@ export interface WickCompiler {
  * 
  * @returns {ExtendedComponentData}
  */
-function componentCreate(input: string | URL, presets: Presets = rt.presets): ExtendedComponentData {
+async function componentCreate(input: string | URL, presets: Presets = rt.presets): Promise<ExtendedComponentData> {
 
     // Ensure there is a presets object attached to this component.
     if (!presets)
@@ -148,7 +149,7 @@ function componentCreate(input: string | URL, presets: Presets = rt.presets): Ex
         rt.presets = presets;
 
     const
-        promise = new Promise(async res => {
+        promise = new Promise<ExtendedComponentData>(async res => {
             const comp = await makeComponent(input, presets);
             Object.assign(component, comp);
             componentDataToJSCached(component, presets, true, true);
@@ -158,7 +159,7 @@ function componentCreate(input: string | URL, presets: Presets = rt.presets): Ex
 
         component = <ExtendedComponentData><unknown>{
             get class() { return componentDataToJSCached(component, presets, true, false); },
-            get classWithIntegratedCSS() { return componentDataToJS(component, presets, true, true); },
+            get class_with_integrated_css() { return componentDataToJS(component, presets, true, true); },
             get class_string() { return componentDataToJSStringCached(component, presets, true, false); },
             pending: promise,
             mount: async (model: any, ele: HTMLElement) => {
@@ -187,7 +188,7 @@ function componentCreate(input: string | URL, presets: Presets = rt.presets): Ex
         },
     });
 
-    return component;
+    return promise;
 }
 
 /**
@@ -328,6 +329,6 @@ export {
     DATA_FLOW_FLAG,
 
     /*Observables*/
-    Observable
+    Observable,
 
 };
