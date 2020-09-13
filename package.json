@@ -9,18 +9,14 @@
         "wick": "./source/cli.mjs"
     },
     "scripts": {
-        "prepublishOnly": "yarn run build && yarn run build.lite && yarn test",
+        "prepublishOnly": "yarn test",
         "compile": "hydrocarbon compile --parser glalr -u -o ./source/typescript/parser/ -e ./source/typescript/parser/proxy_parser_environment.js -t module ./source/grammars/wick_parser.hcg",
+        "compile.mount": "hydrocarbon compile --parser glalr -u -d -m -e ./build/library/parser/env.js -t module ./source/grammars/wick_parser.hcg",
         "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
         "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/html.hcg",
         "compile.test": "node --experimental-modules ./test/config.mjs",
-        "test.coverage": "nyc yarn run test",
-        "test": "cfw.test ./test/candlefw.wick.spec.js",
-        "test.watch": "cfw.test -w ./test/candlefw.wick.spec.js",
-        "build": "rollup --config ./build/config/main.config.js",
-        "build.watch": "rollup --config ./source/config/rollup.config.js --watch",
-        "build.runtime": "rollup --config ./source/config/rollup.runtime.config.js",
-        "build.runtime.watch": "rollup --config ./source/config/rollup.runtime.config.js --watch",
+        "test": "cfw.test ./test/**",
+        "test.watch": "cfw.test -w ./test/**",
         "server": "lantern"
     },
     "repository": {
@@ -48,31 +44,22 @@
     },
     "homepage": "https://github.com/candlefw/wick#readme",
     "devDependencies": {
-        "@candlefw/test": "0.1.0-alpha",
-        "@rollup/plugin-commonjs": "^11.0.1",
-        "@rollup/plugin-node-resolve": "^7.0.0",
-        "@candlefw/html": "^0.0.14",
-        "esm": "latest",
-        "node-fetch": "^2.3.0",
-        "rollup": "2.6.0",
-        "rollup-plugin-gzip": "latest",
-        "rollup-plugin-resolve": "latest",
-        "rollup-plugin-terser": "latest"
+        "@candlefw/test": "*"
     },
     "jshintConfig": {
         "esversion": 6,
         "unused": true
     },
     "dependencies": {
-        "@candlefw/conflagrate": "^0.1.0",
-        "@candlefw/css": "0.2.0",
-        "@candlefw/glow": "latest",
-        "@candlefw/hydrocarbon": "^0.4.0-dev",
-        "@candlefw/js": "^0.2.2-dev",
-        "@candlefw/spark": "^0.1.0",
-        "@candlefw/url": "^0.1.2",
-        "@candlefw/wind": "^0.4.1-dev",
-        "@candlefw/html": "latest"
+        "@candlefw/conflagrate": "*",
+        "@candlefw/css": "*",
+        "@candlefw/glow": "*",
+        "@candlefw/hydrocarbon": "*",
+        "@candlefw/js": "*",
+        "@candlefw/spark": "*",
+        "@candlefw/url": "*",
+        "@candlefw/wind": "*",
+        "@candlefw/html": "*"
     },
     "esm": {
         "cjs": {
