@@ -37,6 +37,7 @@ import { Observable } from "./runtime/observable/observable.js";
 import { ObservableScheme } from "./runtime/observable/observable_prototyped.js";
 import { WickServer, srv } from "./wick.server.js";
 import { WickTestTools, WickTest as test } from "./test/wick.test.js";
+import { RenderPage } from "./render/render_page.js";
 
 /**
  * Exporting the wick compiler
@@ -239,7 +240,7 @@ const wick: WickLibrary = Object.assign(componentCreate,
                 css_selector_helpers: css_selector_helpers,
                 createNameHash: createNameHash,
                 parser,
-                render: renderWithFormatting
+                render: renderWithFormatting,
             },
             server: async function (root_dir: string = "") {
                 await URL.server(root_dir);
@@ -269,6 +270,7 @@ const wick: WickLibrary = Object.assign(componentCreate,
             componentDataToClass: componentDataToJS,
             componentDataToClassString,
             createNameHash,
+            RenderPage
         },
 
         objects: {
