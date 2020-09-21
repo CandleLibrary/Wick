@@ -46,6 +46,21 @@ export interface PresetOptions {
          * Class string builder generates source maps if `true`.
          */
         GENERATE_SOURCE_MAPS?: boolean;
+
+
+        /**
+         * Append URI string comment to source data when rendering - Default is false
+         */
+        INCLUDE_SOURCE_URI?: boolean;
+
+        /**
+         *  CandleFW src URLs used when rendering wick components to pages
+         */
+        url?: {
+            wick?: string,
+            wickrt?: string,
+            glow?: string;
+        };
     };
 
     /**
