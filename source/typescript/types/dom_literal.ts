@@ -24,11 +24,6 @@ export interface DOMLiteral {
     lookup_index?: number;
 
     /**
-     * Name of a named component
-     */
-    component_name?: string;
-
-    /**
      * Hash name of container component
      */
     is_container?: boolean;
@@ -47,10 +42,22 @@ export interface DOMLiteral {
      * Lexer positioned at original source location.
      */
     pos: Lexer;
+
+    /**
+     * Name of the component if this is the
+     * component's root element
+     */
+    component_name?: string;
 }
 
 export interface ContainerDomLiteral extends DOMLiteral {
-    component_names: string[],
+    /**
+     * Ordered list of component names that 
+     * Container element needs to load 
+     */
+    component_names?: string[];
+
     component_attribs: [string, string][][];
+
     is_container: true;
 }
