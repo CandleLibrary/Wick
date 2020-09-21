@@ -95,7 +95,7 @@ export const enum HTMLNodeType {
     HTML_TD = ((221 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT),
     HTML_HEAD = ((222 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT),
     HTML_TITLE = ((223 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT),
-    HTML_BASE = ((223 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT),
+    HTML_BASE = ((224 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT),
     HTML_META = ((225 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT),
     HTML_STYLE = ((226 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT),
     HTML_SCRIPT = ((227 << 23) | HTMLNodeClass.HTML_NODE | HTMLNodeClass.HTML_ELEMENT),
@@ -200,6 +200,7 @@ export enum HTMLNodeTypeLU {
 
 export interface HTMLNode {
     import_list?: any[];
+    
     is_container?: boolean;
     /**
      * If node is a <container> node, gives the numerical
