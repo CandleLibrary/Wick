@@ -1,0 +1,21 @@
+import test, { type, name, test_id } from "@model";
+
+import { run_test, URL, complete_test } from "@api";
+
+var pass = undefined, total_time = undefined;
+
+var frame = "@iframe";
+
+export default <div>
+    id: ${test_id}
+    type: ${ type.toLowerCase() } 
+    source: <code>${ name } </code>
+    passed: <code>${ pass } </code>
+    time: <code>${ total_time + "ms" } </code>
+</div>;
+
+<style>
+    div{
+        color:red;
+    }
+</style>

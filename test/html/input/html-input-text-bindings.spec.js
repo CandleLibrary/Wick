@@ -6,13 +6,13 @@
     https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/oninput
 */
 
-import wick from "../build/library/wick.js";
+import wick from "@candlefw/wick";
 import spark from "@candlefw/spark";
 
 // Bindings should be two-way on input elements [value] attribute 
 // by default
 
-await wick.server()
+await wick.server();
 
 const data = { input_data = "send" };
 const comp = new (await wick(`
@@ -32,8 +32,8 @@ spark.update();
 assert(comp.ele.children[0].data == "receive");
 
 //HTML
-comp.ele.children[0].data = "received"
-comp.ele.children[0].runEvent("input", {})
+comp.ele.children[0].data = "received";
+comp.ele.children[0].runEvent("input", {});
 
 
 spark.update();

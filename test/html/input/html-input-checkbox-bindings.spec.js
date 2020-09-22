@@ -6,39 +6,41 @@
     https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onclick
 */
 
-import wick from "../build/library/wick.js";
+import wick from "@candlefw/wick";
 import spark from "@candlefw/spark";
 
 // Bindings should be two-way on input elements [value] attribute 
 // by default
 
-await wick.server()
-
-const data = { input_data = true };
+const data = { input_data: true };
 const comp = new (await wick(`
 import { input_data } from "@model";
 
-default export <div>
-<input type="checkbox" value=\${input_data}></input>
-</div>`)).class(data);
+export default <div>
+<input type="checkbox" value=\${input_data} checked=\${input_data}> 
+</div>;`)).class(data);
 
 
 
-// Force component update by prempting spark's update
+// Force component update by preempting spark's update
 // cycle
 
-spark.update();
+assert_group(sequence, () => {
 
-assert(comp.ele.children[0].checked == true);
+    await spark.sleep(1);
 
-//HTML
-comp.ele.children[0].checked = false
-comp.ele.children[0].runEvent("click", {})
+    data.input_data.checked = true;
 
+    await spark.sleep(1);
 
-spark.update();
+    assert(comp.ele.children[0].checked == true, browser);
 
-assert(data.input_data == false);
+    await spark.sleep(1);
+
+    data.input_data.checked = false;
+
+    assert(data.input_data == false, browser);
+});
 
 
 

@@ -1,0 +1,4 @@
+
+var test = 555;
+
+export default <div id="main-information"> Hello World ${test} and man </div>;
