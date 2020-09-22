@@ -124,6 +124,26 @@ loadHTMLHandlerInternal(
     }, HTMLNodeType.WickBinding
 );
 
+// HEAD ELEMENT CONTENTS GET APPENDED TO THE HEAD SLOT ON A COMPONENT
+
+/**[API]
+ * 
+ * HTMLAttribute Handler
+ * 
+ * One of six default handlers that parses tag attributes. 
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: 10,
+
+        prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
+            component.HTML_HEAD.push(...node.nodes);
+            return null;
+        }
+    }, HTMLNodeType.HTML_HEAD
+);
+
+
 /*
  *  █████  ████████ ████████ ██████  ██ ██████  ██    ██ ████████ ███████ ███████ 
  * ██   ██    ██       ██    ██   ██ ██ ██   ██ ██    ██    ██    ██      ██      
