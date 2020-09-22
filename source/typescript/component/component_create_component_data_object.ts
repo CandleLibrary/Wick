@@ -6,10 +6,10 @@ import { ComponentData } from "../types/component_data";
 import { DOMLiteral } from "../wick.js";
 
 
-export function createErrorComponent(errors: Error[], src: string, location: string, component: ComponentData = createComponent(src, location)) {
+export function createErrorComponent(errors: Error[], src: string, location: string, component: ComponentData = createComponentData(src, location)) {
 
     const error_data = [location + "", ...errors
-        .flatMap(e => (e + "")
+        .flatMap(e => (e.stack + "")
             .split("\n"))
         .map(s => s.replace(/\ /g, "\u00A0"))]
         .map(e => <DOMLiteral>{
@@ -47,7 +47,7 @@ export function createErrorComponent(errors: Error[], src: string, location: str
     return component;
 }
 
-export function createComponent(source_string: string, location: string): ComponentData {
+export function createComponentData(source_string: string, location: string): ComponentData {
     const component: ComponentData = <ComponentData>{
 
         name: createNameHash(source_string),
@@ -65,6 +65,8 @@ export function createComponent(source_string: string, location: string): Compon
         frames: [],
 
         HTML: null,
+
+        HTML_HEAD: [],
 
         CSS: [],
 
