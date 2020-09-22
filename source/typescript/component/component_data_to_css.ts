@@ -43,13 +43,8 @@ export function UpdateSelector(node: CSSNode, name) {
 
 }
 
-export function componentDataToCSS(component: Component): string {
-
-    // Get all css data from component and it's children,
-    // Include pure CSS components (components that only have CSS data),
-    // in the main components context.
-
-    const css_string = component.CSS.map(css => {
+export function componentToMutatedCSS(component: ComponentData): CSSNode[] {
+    return component.CSS.map(css => {
         const r = { ast: null };
 
         for (const { node, meta: { replace } } of traverse(css, "nodes")
@@ -63,8 +58,16 @@ export function componentDataToCSS(component: Component): string {
         }
 
         return <CSSNode>r.ast;
-    }).map(_ => _ ? renderWithFormatting(_) : "").join("\n");
+    });
+}
 
+export function componentDataToCSS(component: ComponentData): string {
 
-    return css_string;
+    // Get all css data from component and it's children,
+    // Include pure CSS components (components that only have CSS data),
+    // in the main components context.
+
+    return componentToMutatedCSS(component)
+        .map(_ => _ ? renderWithFormatting(_) : "")
+        .join("\n");
 }
