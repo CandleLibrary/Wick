@@ -465,8 +465,21 @@ loadHTMLHandlerInternal(
         async prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
 
 
-            const id = getAttributeValue("id", node),
-                [script] = <JSNode[]><unknown>(node.nodes);
+            const
+                id = getAttributeValue("id", node),
+                [script] = <JSNode[]><unknown>(node.nodes),
+                src = getAttributeValue("src", node);
+
+            /**
+             * If source is present, then leave this node as is
+             * and do not attempt to process the contents.
+             * 
+             * Additionally, remove contents if present.
+             */
+            if (src) {
+                node.nodes.length = 0;
+                return node;
+            }
 
             if (id) {
                 const fn_ast = stmt(`function ${id}(){;};`);
