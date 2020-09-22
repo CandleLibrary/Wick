@@ -23,7 +23,7 @@ function createTransition(val?: boolean) {
 
 type ContainerComponent = WickRTComponent & { index: number; container_model: any; _TRANSITION_STATE_: boolean; par: ContainerComponent; };
 
-const component_attributes_defualt = [[[]]];
+const component_attributes_default: [string?, string?][][] = [[[]]];
 
 /**
  * ScopeContainer provide the mechanisms for dealing with lists and sets of components. 
@@ -82,7 +82,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
     filters: any[];
 
     comp_constructors: typeof WickRTComponent[];
-    comp_attributes: [string, string][][];
+    comp_attributes: [string?, string?][][];
 
     evaluators: ((m: any) => boolean)[];
 
@@ -111,15 +111,15 @@ export class WickContainer implements Sparky, ObservableWatcher {
     sort: (...args) => number;
 
     constructor(
-        component_constructors: typeof RuntimeComponent[],
+        component_constructors: typeof WickRTComponent[],
         component_attributes: [string, string][][],
         element: HTMLElement,
-        parent_comp: RuntimeComponent
+        parent_comp: WickRTComponent
     ) {
 
         this.ele = element;
         this.comp_constructors = component_constructors;
-        this.comp_attributes = component_attributes || component_attributes_defualt;
+        this.comp_attributes = component_attributes || component_attributes_default;
 
         this.activeComps = [];
         this.dom_comp = [];
@@ -150,8 +150,8 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
         this.parent = parent_comp;
 
-        this.filter = m1 => true;
-        this.sort = () => -1;
+        this.filter = null;//m1 => true;
+        this.sort = null;//() => 0;
     }
 
     destructor() {
@@ -619,9 +619,13 @@ export class WickContainer implements Sparky, ObservableWatcher {
      */
     filterUpdate() {
 
-        let output = this.comps.filter(comp => this.filter(comp.container_model));
+        let output = this.comps.slice();
 
-        output.sort(this.sort);
+        if (this.filter)
+            output = this.comps.filter(comp => this.filter(comp.container_model));
+
+        if (this.sort)
+            output.sort(this.sort);
 
         this.activeComps = output;
 
@@ -740,17 +744,14 @@ export class WickContainer implements Sparky, ObservableWatcher {
         }
     }
     addEvaluator(evalator: (a: any) => boolean) { this.evaluators.push(evalator); }
+
     /**
-     * Called by the ModelContainer when Models have been removed from its set.
-     *
-     * @param      {Array}  items   An array of items no longer stored in the ModelContainer. 
-     */
-    /**
-     * Called by the ModelContainer when Models have been added to its set.
+     * Called by the ModelContainer when Models have been added to it.
      *
      * @param      {Array}  items   An array of new items now stored in the ModelContainer. 
      */
     add(items, transition) {
+
         let OWN_TRANSITION = false, cstr_l = this.comp_constructors.length;
 
         if (!transition)
@@ -800,9 +801,14 @@ export class WickContainer implements Sparky, ObservableWatcher {
             component.update({ loaded: true });
         }
 
-        if (OWN_TRANSITION)
-            this.filterExpressionUpdate(transition);
+        if (OWN_TRANSITION) this.filterExpressionUpdate(transition);
     }
+
+    /**
+     * Called by the ModelContainer when Models have been removed from it.
+     *
+     * @param      {Array}  items   An array of items no longer stored in the ModelContainer. 
+     */
     remove(items, transition = createTransition()) {
         for (const item of items) {
             for (let j = 0; j < this.comps.length; j++) {
