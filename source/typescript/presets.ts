@@ -89,7 +89,7 @@ export default class Presets implements PresetOptions {
 
         this.document = typeof document != "undefined" ? document : <Document>{};
 
-        this.api = UserPresets.api;
+        this.api = Object.assign(URL.GLOBAL.getData(), { hash: URL.GLOBAL.hash }, UserPresets.api);
 
         this.wrapper = null;
 
