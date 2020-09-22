@@ -1,4 +1,9 @@
+
 let seed_tracker = 0xf012501;
+
+const P_Table = shuffle(new Array(256).fill(0).map((j, i) => i)),
+    _64bit_table = "0ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789_$";
+
 
 function PseudoRandom(seed = 0x1f25d8e2f98) {
     return (seed ^ (seed_tracker ^= seed_tracker + 1) % 1256581324) / 1256581324;
@@ -23,17 +28,25 @@ function shuffle(array, round = 0, max_rounds = 4, depth = 0, max_depth = 5 | 0)
     return array;
 }
 
-const P_Table = shuffle(new Array(256).fill(0).map((j, i) => i));
+function to64BitID(number: bigint, size: number = 6) {
+    const str = [];
+
+    for (let i = 0n; i < size; i++) {
+        str.push(_64bit_table[Number((number >> (6n * i)) & 0x3Fn)]);
+    }
+
+    return str.join("");
+}
 
 function PearsonModifiedHash(string: string) {
 
-    const max_v = 16;
-    const byte_size = max_v << 3;
-    const str_l = string.length;
-    const hh = new Uint8Array(max_v);
+    const
+        max_v = 16,
+        byte_size = max_v << 3,
+        str_l = string.length,
+        hh = new Uint8Array(max_v);
 
-    let i;
-    let j;
+    let i = 0, j = 0;
 
     for (j = 0; j < max_v; j++)
         hh[j] = P_Table[(string.charCodeAt(0) + j) % 256];
@@ -44,14 +57,10 @@ function PearsonModifiedHash(string: string) {
             hh[j] = P_Table[hh[j] ^ v];
     }
 
-    return (
-        "000000000000000000000"
-        + [...hh]
-            .map((v, i) => BigInt(v) << BigInt(byte_size - 8 - (i << 3)))
-            .reduce((r, v) => BigInt(v) | r, BigInt(0))
-            .toString(36)
-            .toUpperCase()
-    ).slice(-13);
+    return (to64BitID([...hh]
+        .map((v, i) => BigInt(v) << BigInt(byte_size - 8 - (i << 3)))
+        .reduce((r, v) => BigInt(v) | r, BigInt(0)))
+    ).slice(-6);
 }
 
 /**
