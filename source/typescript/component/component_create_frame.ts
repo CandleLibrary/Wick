@@ -1,7 +1,7 @@
 import { FunctionFrame } from "../types/function_frame";
 import { ComponentData } from "../types/component_data";
 
-export function createFrame(parent_frame: any, TEMPORARY: boolean = false, component: ComponentData) {
+export function createFrame(parent_frame: any, component: ComponentData, DO_NOT_ATTACH: boolean = false, TEMPORARY: boolean = DO_NOT_ATTACH) {
 
     const function_frame = <FunctionFrame>{
         ast: null,
@@ -18,9 +18,8 @@ export function createFrame(parent_frame: any, TEMPORARY: boolean = false, compo
     if (!parent_frame)
         component.root_frame = function_frame;
 
-    if (!TEMPORARY)
+    if (!DO_NOT_ATTACH)
         component.frames.push(function_frame);
-
 
     return function_frame;
 }

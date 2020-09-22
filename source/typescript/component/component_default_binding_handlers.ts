@@ -9,10 +9,11 @@ import { ComponentData } from "../types/component_data";
 import { BindingObject, BindingHandler, BindingType, BINDING_SELECTOR } from "../types/binding";
 import { getComponentVariableName, getComponentVariable } from "./component_set_component_variable.js";
 import { DOMLiteral } from "../wick.js";
-import { processFunctionDeclarationSync } from "./component_js.js";
+
 import { css_selector_helpers } from "./component_css_selector_helpers.js";
 import { setPos, getFirstReferenceName } from "./component_common.js";
 import { Lexer } from "@candlefw/wind";
+import { postProcessFunctionDeclarationSync } from "./component_js.js";
 
 export const binding_handlers: BindingHandler[] = [];
 
@@ -59,8 +60,10 @@ export function createBindingObject(type: BindingType, priority: number = 0, pos
     };
 }
 
-function addNewMethodFrame(function_node: JSNode, component: ComponentData, presets) {
-    processFunctionDeclarationSync(function_node, component, presets);
+function addNewMethodFrame(function_node: JSNode, component: ComponentData, presets, class_data) {
+    const frame = postProcessFunctionDeclarationSync(function_node, component, presets);
+    class_data.frames.push(frame);
+    return frame;
 }
 
 function getFrameFromName(name: string, component: ComponentData) {

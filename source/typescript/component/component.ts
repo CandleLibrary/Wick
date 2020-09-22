@@ -113,7 +113,7 @@ export async function compileComponent(
     const
         component: ComponentData = createComponentData(source_string, url);
 
-    component.root_frame = createFrame(null, false, component);
+    component.root_frame = createFrame(null, component);
 
     component.comments = comments;
 
