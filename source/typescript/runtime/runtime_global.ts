@@ -25,8 +25,16 @@ export interface WickRuntime {
      */
     gC(name: string): typeof WickRTComponent,
     presets: Presets;
-
+    /**
+     * Replace the current presets with a new set.
+     * > Warning:  This will cause a lose of all currently
+     * > compiled components.
+     */
     setPresets: (preset_options?: PresetOptions) => Presets,
+    /**
+     * Template elements mapped to component names
+     */
+    templates: Map<string, HTMLElement>;
 
     OVERRIDABLE_onComponentCreate(component_instance: WickRTComponent): void;
 
@@ -52,17 +60,20 @@ const rt: WickRuntime = (() => {
 
         gC: component_name => rt.presets.component_class.get(component_name),
 
+        templates: new Map,
+
         OVERRIDABLE_onComponentCreate(component_instance) { },
 
         OVERRIDABLE_onComponentMetaChange() { },
+
 
         setPresets: (preset_options: PresetOptions) => {
 
             //create new component
             const presets = new Presets(preset_options);
 
-            if (!rt.presets)
-                rt.presets = presets;
+            //if (!rt.presets)
+            rt.presets = presets;
 
             return presets;
         },

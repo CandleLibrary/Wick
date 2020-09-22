@@ -6,6 +6,7 @@ import { makeElement, integrateElement } from "./runtime_html.js";
 import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
 import spark, { Sparky } from "@candlefw/spark";
 import { ObservableModel, ObservableWatcher } from "../types/observable_model.js";
+import { cfw } from "@candlefw/cfw";
 
 type BindingUpdateFunction = () => void;
 
@@ -211,19 +212,18 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     ce(): HTMLElement {
 
-        if (document && document.getElementById) {
+        if (rt.templates.has(this.name)) {
 
-            const template: HTMLTemplateElement = <HTMLTemplateElement>document.getElementById(this.name);
+            const template: HTMLTemplateElement = <HTMLTemplateElement>rt.templates.get(this.name);
 
             if (template) {
                 const
-                    doc = template.content.cloneNode(true),
-                    ele = <HTMLElement>doc.firstChild;
+                    doc = <HTMLElement>template.content.cloneNode(true),
+                    ele = <HTMLElement>doc.firstElementChild;
 
                 return <HTMLElement>this.ie(ele);
-            } else {
-                console.warn("NO template element for component: " + this.name);
-            }
+            } else
+                console.warn("WickRT :: NO template element for component: " + this.name);
         }
     }
 
@@ -340,8 +340,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             trs.addEventListener("stopped", this.out_trs.fn);
 
         } else {
-            if (!this.out_trs)
+            if (!this.out_trs) {
                 this.outTransitionStop();
+            }
         }
 
         transition_time = Math.max(transition_time, 0);
