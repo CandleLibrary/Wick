@@ -1,5 +1,5 @@
-import { JSNodeType, JSNode, exp, stmt } from "@candlefw/js";
-import { copy, createSourceMap, createSourceMapJSON } from "@candlefw/conflagrate";
+import { JSNodeType, exp, stmt, renderWithFormatting as renderWithFormattingJS, JSNodeClass } from "@candlefw/js";
+import { copy, createSourceMap, createSourceMapJSON, traverse } from "@candlefw/conflagrate";
 
 import Presets from "../presets.js";
 import { processBindings } from "./component_process_bindings.js";
@@ -15,6 +15,7 @@ import { createErrorComponent } from "./component_create_component_data_object.j
 import { renderWithFormattingAndSourceMap, renderWithFormatting } from "../render/render.js";
 import { setPos } from "./component_common.js";
 import { DOMLiteralToJSNode } from "./dom_literal_to_js_node.js";
+import { ClassInformation } from "../types/class_information.js";
 
 const StrToBase64 = (typeof btoa != "undefined") ? btoa : str => Buffer.from(str, 'binary').toString('base64');
 
@@ -30,7 +31,7 @@ const componentStringToJS =
 /**
  * Update global variables in ast after all globals have been identified
  */
-function makeComponentMethod(frame: FunctionFrame, component: ComponentData, class_information) {
+function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci: ClassInformation) {
 
     const ast = frame.ast;
 
@@ -39,26 +40,44 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, cla
     if (ast) {
 
 
-        const updated_names = new Set();
+        //*
+        const cpy = copy(ast);
+        for (const { node, meta: { mutate } } of traverse(cpy, "nodes")
+            .filter("type", JSNodeType.IdentifierReference, JSNodeType.IdentifierBinding)
+            .makeMutable()
+        ) {
+            if (node.IS_BINDING_REF) {
+                const name = <string>node.value;
+                if (!component.root_frame.binding_type.has(<string>name))
+                    throw node.pos.errorMessage(`Undefined reference to ${name}`);
 
+                const id = exp(getComponentVariableName(name, component));
+
+                mutate(setPos(id, node.pos));
+            }
+        }
+        /*/
+
+        
         for (const { index, node: { pos, value: name }, parent } of frame.binding_ref_identifiers) {
             if (!component.root_frame.binding_type.has(<string>name))
-                throw pos.errorMessage(`Undefined reference to ${name}`);
-
+            throw pos.errorMessage(`Undefined reference to ${name}`);
+            
             const id = exp(getComponentVariableName(name, component));
-
+            
             parent.nodes[index] = setPos(id, pos);
         }
-
-
         const cpy = copy(ast);
+        //*/
+        const updated_names = new Set();
+
 
         cpy.type = JSNodeType.Method;
 
         if (!frame.IS_ROOT) {
 
-            let id_indices = [];
 
+            let id_indices = [];
 
             for (const name of frame.output_names.values())
                 if (!updated_names.has(name)) {
@@ -81,12 +100,13 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, cla
         } else
             cpy.function_type = "root";
 
+
         switch (frame.IS_ROOT) {
             case true:
-                class_information.binding_init_statements.push(...cpy.nodes.filter(n => n.type != JSNodeType.EmptyStatement));
+                ci.binding_init_statements.push(...cpy.nodes.filter(n => n.type != JSNodeType.EmptyStatement));
                 break;
             default:
-                class_information.methods.push(cpy);
+                ci.methods.push(cpy);
         }
     }
 }
@@ -123,7 +143,7 @@ export function componentDataToJS(
     component: ComponentData,
     presets: Presets,
     INCLUDE_HTML: boolean = true,
-    INCLUDE_CSS = true
+    INCLUDE_CSS: boolean = true
 ): typeof WickRTComponent {
 
     const class_string = componentDataToClassString(component, presets, INCLUDE_HTML, INCLUDE_CSS);
@@ -135,7 +155,7 @@ export function componentDataToJSStringCached(
     component: ComponentData,
     presets: Presets,
     INCLUDE_HTML: boolean = true,
-    INCLUDE_CSS = true
+    INCLUDE_CSS: boolean = true
 ): ComponentClassStrings {
 
     const name = component.name;
@@ -156,7 +176,7 @@ export function componentDataToClassString(
     component: ComponentData,
     presets: Presets,
     INCLUDE_HTML: boolean = true,
-    INCLUDE_CSS = true
+    INCLUDE_CSS: boolean = true
 ): ComponentClassStrings {
 
     try {
@@ -167,7 +187,8 @@ export function componentDataToClassString(
             register_elements_method = getGenericMethodNode("re", "c", ";"),
             [, , { nodes: bi_stmts }] = binding_values_init_method.nodes,
             [, , { nodes: re_stmts }] = register_elements_method.nodes,
-            class_information = {
+            class_information: ClassInformation = {
+                frames: component.frames.slice(),
                 methods: component_class.nodes,
                 binding_init_statements: bi_stmts,
                 class_initializer_statements: re_stmts,
@@ -227,9 +248,8 @@ export function componentDataToClassString(
 
             class_information.class_initializer_statements.unshift(nlu, nluf);
 
-            for (const function_block of component.frames) {
+            for (const function_block of class_information.frames)
                 makeComponentMethod(function_block, component, class_information);
-            }
         }
 
         //HTML INFORMATION
@@ -277,7 +297,7 @@ export function componentDataToClassString(
         } else
             cl = renderWithFormatting(class_information.compiled_ast);
 
-        return { class_string: cl + `\n/* ${component.location} */\n`, source_map: sm };
+        return { class_string: cl + (presets.options.INCLUDE_SOURCE_URI ? + `\n/* ${component.location} */\n` : ""), source_map: sm };
 
     } catch (e) {
         console.warn(`Error found in component ${component.name} while converting to a class. location: ${component.location}.`);

@@ -1,8 +1,7 @@
-import { JSNodeType, exp, stmt, JSNode } from "@candlefw/js";
+import { JSNodeType, exp, stmt, JSNode, renderCompressed } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 import { matchAll } from "@candlefw/css";
 
-import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
 import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
 import { FunctionFrame } from "../types/function_frame";
 import { ComponentData } from "../types/component_data";
@@ -14,18 +13,9 @@ import { css_selector_helpers } from "./component_css_selector_helpers.js";
 import { setPos, getFirstReferenceName } from "./component_common.js";
 import { Lexer } from "@candlefw/wind";
 import { postProcessFunctionDeclarationSync } from "./component_js.js";
+import { HTMLNode } from "../types/wick_ast_node_types";
 
 export const binding_handlers: BindingHandler[] = [];
-
-/*
-function registerActivatedFrameMethod(frame: FunctionFrame, class_information) {
-    if (frame.index)
-        class_information
-            .nluf_public_variables
-            .nodes
-            .push(setPos(exp(`c.f${frame.index}`), frame.ast.pos));
-}
-*/
 
 function registerActivatedFrameMethod(frame: FunctionFrame, class_information) {
     if (!frame.index) {
@@ -161,7 +151,8 @@ loadBindingHandler({
         const
             binding = createBindingObject(BindingType.READONLY, 0, binding_node_ast.pos),
             { local, extern } = binding_node_ast,
-            index = host_node.child_id, child_comp = host_node.component;
+            index = (<HTMLNode>host_node).child_id,
+            child_comp = (<HTMLNode>host_node).component;
 
         if (child_comp) {
 
@@ -198,8 +189,8 @@ loadBindingHandler({
         const
             binding = createBindingObject(BindingType.WRITE, 0, binding_node_ast.pos),
             { local, extern } = binding_node_ast,
-            index = host_node.child_id,
-            comp = host_node.component;
+            index = (<HTMLNode>host_node).child_id,
+            comp = (<HTMLNode>host_node).component;
 
         if (comp) {
 
@@ -238,7 +229,7 @@ loadBindingHandler({
             d = exp(`this[${comp_var.class_index}] = a`);
 
         setPos(d, binding_node_ast.pos);
-        setBindingVariable(ref.value, false, binding);
+        setBindingVariable(<string>ref.value, false, binding);
 
         d.nodes[1] = converted_expression;
 
@@ -263,7 +254,7 @@ loadBindingHandler({
     },
 
     prepareBindingObject(binding_selector, binding_node_ast
-        , host_node, element_index, component, presets) {
+        , host_node, element_index, component, presets, class_data) {
 
         const
             binding = createBindingObject(BindingType.READONLY, 0, binding_node_ast.pos),
@@ -271,20 +262,22 @@ loadBindingHandler({
 
         if (primary_ast) {
 
+            const ast = primary_ast;
+            /*
             const receiver = { ast: null };
 
             for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver))
                 if (node.type == JSNodeType.IdentifierReference) {
-
                     //   replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
                 }
 
             const { ast } = receiver;
+            //*/
 
             let expression = null;
 
             if (ast.type == JSNodeType.IdentifierReference) {
-                let name = ast.value;
+                let name = <string>ast.value;
 
                 const frame = getFrameFromName(name, component);
 
@@ -294,22 +287,29 @@ loadBindingHandler({
                 expression = stmt(`this.e${element_index}.addEventListener("${binding_selector.slice(2)}",this.${name}.bind(this));`);
 
                 frame.ATTRIBUTE = true;
-            }
-            else {
+            } else {
+
                 const name = "n" + element_index,
 
                     //Create new function method for the component
                     fn = stmt(`function ${name}(){;};`);
 
-                fn.nodes[2].nodes = [ast];
+                //need to make sure the 
 
-                addNewMethodFrame(fn, component, presets);
+                fn.nodes[2].nodes = [{
+                    type: JSNodeType.ExpressionStatement,
+                    nodes: [ast],
+                    pos: ast.pos
+                }];
+
+                const frame = addNewMethodFrame(fn, component, presets, class_data);
+
+                console.log(renderCompressed(frame.ast));
 
                 expression = stmt(`this.e${element_index}.addEventListener("${binding_selector.slice(2)}",this.${name}.bind(this));`);
             }
 
             setPos(expression, primary_ast.pos);
-
 
             binding.read_ast = expression;
 
@@ -326,11 +326,7 @@ loadBindingHandler({
 ██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ ██      
 █████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██ ███████ 
 ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██ 
-██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████ 
-                                                                          
-                                                                          
-                                                                  
-                                                                  
+██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████                                              
  * 
  * 
  *  Bound function activation bindings.
@@ -370,6 +366,7 @@ loadBindingHandler({
 });
 
 loadBindingHandler({
+
     priority: -2,
 
     canHandleBinding(binding_selector, node_type) {
@@ -430,7 +427,7 @@ loadBindingHandler({
     },
 
     prepareBindingObject(binding_selector, binding_node_ast
-        , host_node, element_index, component, presets) {
+        , host_node, element_index, component) {
 
         const binding = createBindingObject(BindingType.READWRITE, 0, binding_node_ast.pos),
             { primary_ast } = binding_node_ast;
@@ -541,7 +538,7 @@ loadBindingHandler({
 
             const
                 ast = setIdentifierReferenceVariables(primary_ast, component, binding),
-                expression = exp(`this.ct[${host_node.container_id}].sd(0)`);
+                expression = exp(`this.ct[${(<HTMLNode>host_node).container_id}].sd(0)`);
 
             setPos(expression, primary_ast.pos);
 
@@ -580,13 +577,13 @@ loadBindingHandler({
 
             setPos(expression, primary_ast.pos);
 
-            const stmt_ = setPos(stmt(`this.ct[${host_node.container_id}].filter = a`), primary_ast.pos);
+            const stmt_ = setPos(stmt(`this.ct[${(<HTMLNode>host_node).container_id}].filter = a`), primary_ast.pos);
 
             stmt_.nodes[0].nodes[1] = expression;
 
             binding.read_ast = stmt_;
 
-            binding.write_ast = exp(`this.ct[${host_node.container_id}].filterExpressionUpdate()`);
+            binding.write_ast = exp(`this.ct[${(<HTMLNode>host_node).container_id}].filterExpressionUpdate()`);
         }
 
         return binding;
@@ -618,7 +615,7 @@ loadBindingHandler({
 
             setPos(expression, primary_ast.pos);
 
-            const stmt_ = stmt(`this.ct[${host_node.container_id}].addEvaluator(a)`);
+            const stmt_ = stmt(`this.ct[${(<HTMLNode>host_node).container_id}].addEvaluator(a)`);
 
             stmt_.nodes[0].nodes[1].nodes[0] = expression;
 
@@ -685,9 +682,10 @@ loadBindingHandler({
 
 function getElementAtIndex(comp: ComponentData, index: number, node: DOMLiteral = comp.HTML, counter = { i: 0 }): DOMLiteral {
 
-    if (counter.i == index) return node;
+    if (index == node.lookup_index) return node;
 
-    counter.i++;
+    //if (!node.data)
+    //counter.i++;
 
     if (node.children) for (const child of node.children) {
         let out = null;

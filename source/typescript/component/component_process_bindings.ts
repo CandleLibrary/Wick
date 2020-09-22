@@ -10,12 +10,13 @@ import { HTMLNodeTypeLU, HTMLNode } from "../types/wick_ast_node_types.js";
 import { getComponentVariableName } from "./component_set_component_variable.js";
 import Presets from "../presets.js";
 import { setPos } from "./component_common.js";
+import { ClassInformation } from "../types/class_information";
 
 function createBindingName(binding_index_pos: number) {
     return `b${binding_index_pos.toString(36)}`;
 }
 
-export function runBindingHandlers(pending_binding: PendingBinding, component: ComponentData, class_data) {
+export function runBindingHandlers(pending_binding: PendingBinding, component: ComponentData, presets: Presets, class_info: ClassInformation) {
     for (const handler of binding_handlers) {
 
         let binding = null;
@@ -30,7 +31,8 @@ export function runBindingHandlers(pending_binding: PendingBinding, component: C
                 <HTMLNode>pending_binding.host_node,
                 pending_binding.html_element_index,
                 component,
-                class_data
+                presets,
+                class_info
             );
 
         if (!binding) continue;
@@ -40,7 +42,7 @@ export function runBindingHandlers(pending_binding: PendingBinding, component: C
     return { binding: null, pending_binding };
 }
 
-export function processBindings(component: ComponentData, class_data, presets: Presets) {
+export function processBindings(component: ComponentData, class_info: ClassInformation, presets: Presets) {
 
     const
         { bindings: raw_bindings, root_frame: { binding_type } } = component,
@@ -50,12 +52,12 @@ export function processBindings(component: ComponentData, class_data, presets: P
             class_cleanup_statements: clean_stmts,
             class_initializer_statements: initialize_stmts,
             nluf_public_variables
-        } = class_data,
+        } = class_info,
 
         registered_elements: Set<number> = new Set,
 
         processed_bindings: { binding: BindingObject, pending_binding: PendingBinding; }[] = raw_bindings
-            .map(b => runBindingHandlers(b, component, class_data))
+            .map(b => runBindingHandlers(b, component, presets, class_info))
             .sort((a, b) => a.binding.priority > b.binding.priority ? -1 : 1),
 
         initialized_internal_variables = new Set;
@@ -93,8 +95,11 @@ export function processBindings(component: ComponentData, class_data, presets: P
              */
 
             if (component_variables.size > 1) {
+
                 //Create binding update method.
+
                 binding.name = nluf_public_variables.nodes.length;
+
                 nluf_public_variables.nodes.push(exp(`c.b${binding.name}`));
 
                 const method = getGenericMethodNode("b" + binding.name, "c=0", ";"),

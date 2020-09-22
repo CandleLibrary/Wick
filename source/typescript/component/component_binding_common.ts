@@ -33,6 +33,8 @@ export function addNodeToBindingIdentifiers(n: JSNode, p: JSNode, frame: Functio
 
         const parent = par || p;
 
+        node.IS_BINDING_REF = true;
+
         getNonTempFrame(frame)
             .binding_ref_identifiers.push({
                 node,
