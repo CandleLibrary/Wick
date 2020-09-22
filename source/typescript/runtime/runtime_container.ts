@@ -1,7 +1,6 @@
 import { cfw } from "@candlefw/cfw";
 import spark, { Sparky } from "@candlefw/spark";
-import { WickRTComponent } from "./runtime_component";
-import { RuntimeComponent } from "../wick";
+import { WickRTComponent } from "./runtime_component.js";
 import { ObservableModel, ObservableWatcher } from "../types/observable_model";
 
 function getColumnRow(index, offset, set_size) {
@@ -262,24 +261,22 @@ export class WickContainer implements Sparky, ObservableWatcher {
             this.forceMount();
             this.arrange();
             //this.offset = offset_b;
-            this.render();
+            this.mutateDOM();
             this.offset_diff = 0;
         }
     }
 
     forceMount() {
-        const active_window_size = this.limit;
-        const offset = this.offset;
-
-
-        const min = Math.min(offset + this.offset_diff, offset) * this.shift_amount;
-        const max = Math.max(offset + this.offset_diff, offset) * this.shift_amount + active_window_size;
-
+        const
+            active_window_size = this.limit,
+            offset = this.offset,
+            min = Math.min(offset + this.offset_diff, offset) * this.shift_amount,
+            max = Math.max(offset + this.offset_diff, offset) * this.shift_amount + active_window_size,
+            output_length = this.activeComps.length;
 
         let i = min;
 
         this.ele.innerHTML = "";
-        const output_length = this.activeComps.length;
         this.dom_comp.length = 0;
 
         while (i < max && i < output_length) {
@@ -298,7 +295,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
         // scrub_delta is the relative amount of change from the previous offset. 
 
         if (!this.SCRUBBING)
-            this.render(null, this.activeComps, true);
+            this.mutateDOM(null, this.activeComps, true);
 
         this.SCRUBBING = true;
 
@@ -323,7 +320,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
                     this.offset++;
                     this.offset_diff = 1;
-                    this.render(null, this.activeComps, true).play(1);
+                    this.mutateDOM(null, this.activeComps, true).play(1);
                 } else {
                     delta_offset = delta_offset % 1;
                     this.offset_fractional = delta_offset;
@@ -334,7 +331,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
                     this.offset--;
                     this.offset_diff = -1;
 
-                    this.render(null, this.activeComps, true).play(1);
+                    this.mutateDOM(null, this.activeComps, true).play(1);
                 }
 
             }
@@ -392,9 +389,12 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
                 //Determine the distance traveled with normal drag decay of 0.5
                 let dist = this.scrub_velocity * (1 / (-0.5 + 1));
+
                 //get the distance to nearest page given the distance traveled
                 let nearest = (this.offset + this.offset_fractional + dist);
+
                 nearest = (this.scrub_velocity > 0) ? Math.min(this.max, Math.ceil(nearest)) : Math.max(0, Math.floor(nearest));
+
                 //get the ratio of the distance from the current position and distance to the nearest 
                 let nearest_dist = nearest - (this.offset + this.offset_fractional);
                 let drag = Math.abs(1 - (1 / (nearest_dist / this.scrub_velocity)));
@@ -408,7 +408,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
                 this.offset += Math.round(this.offset_fractional);
                 this.scrub_velocity = 0;
                 this.offset_fractional = 0;
-                this.render(null, this.activeComps, true).play(1);
+                this.mutateDOM(null, this.activeComps, true).play(1);
                 this.SCRUBBING = false;
                 return false;
             }
@@ -444,7 +444,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
     }
 
-    render(transition?, output = this.activeComps, NO_TRANSITION = false) {
+    mutateDOM(transition?, output = this.activeComps, NO_TRANSITION = false) {
 
         const
             active_window_size = this.limit,
@@ -605,7 +605,8 @@ export class WickContainer implements Sparky, ObservableWatcher {
         if (OWN_TRANSITION) {
             if (NO_TRANSITION)
                 return transition;
-            transition.play();
+            else
+                transition.play();
         }
 
         return transition;
@@ -640,7 +641,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
         //Preset the positions of initial components. 
         this.arrange();
 
-        this.render(transition);
+        this.mutateDOM(transition);
 
         // If scrubbing is currently occurring, if the transition were to auto play then the results 
         // would interfere with the expected behavior of scrubbing. So the transition
@@ -759,27 +760,35 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
             let component: ContainerComponent = null;
 
-            for (let j = 0; j < cstr_l; j++) {
+            if (item instanceof WickRTComponent) {
+                component = <ContainerComponent>item;
+            } else {
 
-                const evaluator = this.evaluators[j];
+                for (let j = 0; j < cstr_l; j++) {
 
-                if (j == cstr_l - 1 || (evaluator && evaluator(item))) {
+                    const evaluator = this.evaluators[j];
 
-                    component = <ContainerComponent>new this.comp_constructors[j](item);
+                    if (j == cstr_l - 1 || (evaluator && evaluator(item))) {
 
-                    const attrib_list = this.comp_attributes[j];
+                        component = <ContainerComponent>new this.comp_constructors[j](item);
 
-                    if (attrib_list)
-                        for (const [key, value] of attrib_list) {
-                            if (key == "class")
-                                component.ele.classList.add(...value.split(" "));
-                            else
-                                component.ele.setAttribute(key, value);
-                        }
+                        const attrib_list = this.comp_attributes[j];
 
-                    component.container_model = item;
+                        if (attrib_list)
+                            for (const [key, value] of attrib_list) {
 
-                    break;
+                                if (!key) continue;
+
+                                if (key == "class")
+                                    component.ele.classList.add(...value.split(" "));
+                                else
+                                    component.ele.setAttribute(key, value);
+                            }
+
+                        component.container_model = item;
+
+                        break;
+                    }
                 }
             }
 
