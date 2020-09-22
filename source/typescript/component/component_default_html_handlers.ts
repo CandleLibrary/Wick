@@ -159,7 +159,6 @@ loadHTMLHandlerInternal(
         prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
             switch (node.name) {
 
-
                 case "id":
                     break;
 
@@ -192,6 +191,7 @@ loadHTMLHandlerInternal(
         }
     }, HTMLNodeType.HTMLAttribute
 );
+
 /**[API]
  * 
  * HTMLAttribute Handler
@@ -362,16 +362,13 @@ loadHTMLHandlerInternal(
 
                     }, node);
 
-
-                    let i = 0;
-
                     for (const n of ctr.nodes) {
 
                         ch = n;
 
                         if (!(n.type & HTMLNodeClass.HTML_ELEMENT)) { continue; }
 
-                        const other_attributes = [];
+                        const inherited_attributes = [], core_attributes = [];
 
                         //Check for useif attribute
                         for (const { name, value } of (n.attributes || [])) {
@@ -386,38 +383,27 @@ loadHTMLHandlerInternal(
                                     html_element_index: index,
                                     pos: node.pos
                                 });
-                            } else
-                                other_attributes.push([name, value]);
+                            } else if (typeof value == "object") { } else
+                                inherited_attributes.push([name, value]);
                         }
 
-                        ctr.component_attributes.push(other_attributes);
+                        ctr.component_attributes.push(inherited_attributes);
 
-                        if (!isPredefinedTag(ch.tag) && component.local_component_names.has(ch.tag)) {
+                        let comp;
 
-                            const
-                                name = component.local_component_names.get(ch.tag),
-                                comp = presets.components.get(name);
+                        if (!isPredefinedTag(ch.tag) && component.local_component_names.has(ch.tag))
+                            comp = presets.components.get(component.local_component_names.get(ch.tag));
+                        else
+                            comp = await compileComponent(Object.assign({}, ch), ch.pos.slice(), "auto_generated", presets, []);
 
-                            //Make sure the component is compiled into a class.
+                        ch.child_id = component.children.push(1) - 1;
 
-                            ch.child_id = component.children.push(1) - 1;
+                        ctr.components.push(comp);
 
-                            ctr.components.push(comp);
+                        ctr.component_names.push(comp?.name);
 
-                            ctr.component_names.push(comp?.name);
+                        component.local_component_names.set(comp?.name, comp?.name);
 
-                        } else {
-                            const comp = await compileComponent(Object.assign({}, ch, { attributes: [] }), ch.pos.slice(), "auto_generated", presets, []);
-
-                            ch.child_id = component.children.push(1) - 1;
-
-                            ctr.components.push(comp);
-
-                            ctr.component_names.push(comp?.name);
-
-                            component.local_component_names.set(comp?.name, comp?.name);
-
-                        }
                     }
 
                     ctr.is_container = true;

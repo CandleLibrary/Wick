@@ -63,6 +63,7 @@ function buildExportableDOMNode(
     }
 
     node.lookup_index = ast.id;
+    node.ele_index = ast.ele_id;
 
     if (ast.data) {
         node.data = ast.data;
@@ -94,7 +95,7 @@ export async function processWickHTML_AST(ast: HTMLNode, component: ComponentDat
     const receiver = { ast: null },
         attribute_handlers = html_handlers[Math.max((HTMLNodeType.HTMLAttribute >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)];
 
-    let last_element = null, index = -1;
+    let last_element = null, ele_index = -1;
 
     //Remove content-less text nodes.
     for (const { node, meta: { prev, next, mutate } } of traverse(ast, "nodes")
@@ -110,6 +111,7 @@ export async function processWickHTML_AST(ast: HTMLNode, component: ComponentDat
                 if (prev && prev.type == HTMLNodeType.WickBinding
                     && next && next.type == HTMLNodeType.WickBinding)
                     continue;
+
                 mutate(null);
             }
         }
@@ -128,7 +130,7 @@ export async function processWickHTML_AST(ast: HTMLNode, component: ComponentDat
         for (const handler of html_handlers[Math.max((node.type >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)]) {
 
             const
-                pending = handler.prepareHTMLNode(node, parent, last_element, index, skip, () => { }, component, presets),
+                pending = handler.prepareHTMLNode(node, parent, last_element, ele_index, skip, () => { }, component, presets),
                 result = (pending instanceof Promise) ? await pending : pending;
 
             if (result != node) {
@@ -147,7 +149,11 @@ export async function processWickHTML_AST(ast: HTMLNode, component: ComponentDat
             break;
         }
 
-        html_node.id = ++index;
+        if (html_node.type & HTMLNodeClass.HTML_ELEMENT || html_node.type == HTMLNodeType.WickBinding)
+            html_node.id = ++ele_index;
+
+        //  html_node.id = ++index;
+
 
         //Process Attributes of HTML Elements.
         if (html_node.type & HTMLNodeClass.HTML_ELEMENT) {
@@ -162,7 +168,7 @@ export async function processWickHTML_AST(ast: HTMLNode, component: ComponentDat
                         attrib,
                         meta2.parent,
                         meta2.parent,
-                        index,
+                        ele_index,
                         () => { },
                         replace,
                         component,

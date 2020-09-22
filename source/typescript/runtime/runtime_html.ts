@@ -30,13 +30,21 @@ function getNameSpace(name_space_lookup) {
  * @param name_space 
  * 
  */
-function createElementNameSpaced(tag_name, name_space, data = ""): HTMLElement | Text {
+function createElementNameSpaced(tag_name, name_space, data = "", ele_list: Array<Text | HTMLElement>): HTMLElement | Text {
+
+    let ele: any = null;
 
     if (!tag_name) /*TextNode*/ return createText(data);
 
-    if (!name_space) return createElement(tag_name);
+    if (tag_name == "binding") /*BindingTextNode*/ ele = createText("");
 
-    return document.createElementNS(name_space, tag_name);
+    else if (!name_space) ele = createElement(tag_name);
+
+    else ele = document.createElementNS(name_space, tag_name);
+
+    ele_list.push(ele);
+
+    return ele;
 }
 
 function createElement(tag_name) {
@@ -47,15 +55,13 @@ export function integrateElement(ele: HTMLElement | Text) {
 
 
     if (ele instanceof Text) {
-        this.elu.push(ele);
+        //this.elu.push(ele);
         return ele;
-    }
+    } else {
 
-    else {
+        if (this.ele) {
 
-        if (ele) {
-
-            if (!this.ele) this.ele = ele;
+            console.log(ele.tagName);
 
             if (ele.tagName == "W-B") {
                 const text = document.createTextNode(ele.innerHTML);
@@ -64,20 +70,25 @@ export function integrateElement(ele: HTMLElement | Text) {
                 this.elu.push(ele);
             } else {
 
-                if (ele.getAttribute("w-container")) {
+                if (ele.getAttribute("w:ctr")) {
 
-                    const comp_constructors = ele
-                        .getAttribute("w-container")
-                        .split(",")
-                        .map(name => this.presets.component_class.get(name));
+                    const
+                        comp_constructors = ele
+                            .getAttribute("w:ctr")
+                            .split(" ")
+                            .map(name => this.presets.component_class.get(name)),
+                        comp_attributes = (ele
+                            .getAttribute("w:ctr-atr") ?? "")
+                            .split(":")
+                            .map(e => e.split(";").map(e => <[string, string]>e.split("=")));
 
                     if (comp_constructors.length < 1)
                         throw new Error(`Could not find component class for ${name} in component ${this.name}`);
 
-                    const ctr = new WickContainer(comp_constructors, [], ele, this);
+                    const ctr = new WickContainer(comp_constructors, comp_attributes, ele, this);
 
                     this.ct.push(ctr);
-                } else if (ele.hasAttribute("w-s") && this.ele !== ele) {
+                } else if (ele.hasAttribute("w:c") && this.ele !== ele) {
 
                     const
                         name = ele.classList[0],
@@ -95,28 +106,28 @@ export function integrateElement(ele: HTMLElement | Text) {
                     return;
                 }
 
-                if (ele.hasAttribute("w-o")) {
-                    this.par.elu[+ele.hasAttribute("w-o")] = ele;
+                if (ele.hasAttribute("w:o")) {
+                    this.par.elu[+ele.hasAttribute("w:o")] = ele;
 
                     //@ts-ignore
-                    for (const child of (<HTMLElement>ele).childNodes)
+                    for (const child of ele.childNodes)
                         this.par.ie(child);
 
                     return ele;
-                } else if (ele.hasAttribute("w-r")) {
+                } else if (ele.hasAttribute("w:r")) {
 
-                    this.par.elu[+ele.hasAttribute("w-r")] = ele;
+                    this.par.elu[+ele.hasAttribute("w:r")] = ele;
 
                     this.elu.push(ele);
 
                     //@ts-ignore
-                    for (const child of (<HTMLElement>ele).childNodes)
+                    for (const child of ele.childNodes)
                         this.par.ie(child);
 
                     return ele;
                 } else this.elu.push(ele);
 
-                if ((<HTMLElement>ele).tagName == "A")
+                if (ele.tagName == "A")
                     rt.presets.processLink(ele);
             }
         } else {
@@ -126,7 +137,7 @@ export function integrateElement(ele: HTMLElement | Text) {
         }
 
         //@ts-ignore
-        for (const child of (<HTMLElement>ele).childNodes)
+        for (const child of (ele.childNodes || []))
             this.ie(child);
 
         return ele;
@@ -165,7 +176,7 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
         if (comp_constructors.length < 1)
             throw new Error(`Could not find component class for ${component_name} in component ${this.name}`);
 
-        ele = <HTMLElement>createElementNameSpaced(tag_name, name_space, data);
+        ele = <HTMLElement>createElementNameSpaced(tag_name, name_space, data, this.elu);
 
         const ctr = new WickContainer(comp_constructors, component_attribs, ele, this);
 
@@ -187,15 +198,12 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
 
         ele = comp.ele;
     } else
-        ele = <HTMLElement>createElementNameSpaced(tag_name, name_space, data);
+        ele = <HTMLElement>createElementNameSpaced(tag_name, name_space, data, this.elu);
 
 
     if (attributes)
         for (const [name, value] of attributes)
             ele.setAttribute(name, value);
-
-    this.elu.push(ele);
-
     if (children)
         outer: for (const child of children) {
             if (child.slot_name) {
