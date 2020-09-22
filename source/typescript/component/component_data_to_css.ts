@@ -1,7 +1,8 @@
 import { CSSNodeType, selector, CSSNode } from "@candlefw/css";
 import { traverse } from "@candlefw/conflagrate";
 import { renderWithFormatting } from "../render/render.js";
-import { Component } from "../wick.js";
+import { ComponentData } from "../types/component_data.js";
+
 
 export function UpdateSelector(node: CSSNode, name) {
 

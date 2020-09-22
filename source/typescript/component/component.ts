@@ -10,7 +10,7 @@ import { processWickHTML_AST } from "./component_html.js";
 import { ComponentData } from "../types/component_data";
 import { HTMLNodeClass, HTMLNode } from "../types/wick_ast_node_types.js";
 import { acquireComponentASTFromRemoteSource } from "./component_acquire_remote_source.js";
-import { createComponent, createErrorComponent } from "./component_create_component.js";
+import { createComponentData, createErrorComponent } from "./component_create_component_data_object.js";
 import { createFrame } from "./component_create_frame.js";
 import { Comment } from "../types/comment.js";
 export const component_cache = {};
@@ -111,7 +111,7 @@ export async function compileComponent(
 ): Promise<ComponentData> {
 
     const
-        component: ComponentData = createComponent(source_string, url);
+        component: ComponentData = createComponentData(source_string, url);
 
     component.root_frame = createFrame(null, false, component);
 
