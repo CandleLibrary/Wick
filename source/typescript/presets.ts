@@ -18,10 +18,19 @@ const DefaultPresets = <PresetOptions>{
         CACHE_URL: false,
         GENERATE_SOURCE_MAPS: false,
         REMOVE_DEBUGGER_STATEMENTS: true,
-        THROW_ON_ERRORS: true
+        THROW_ON_ERRORS: true,
+        INCLUDE_SOURCE_URI: false,
+        url: {
+            glow: "@candlefw/glow",
+            wick: "@candlefw/wick",
+            wickrt: "@candlefw/wick",
+        }
     }
 };
 
+/**
+ * Global store for build and runtime objects
+ */
 export default class Presets implements PresetOptions {
 
     options: PresetOptions["options"];
@@ -71,6 +80,8 @@ export default class Presets implements PresetOptions {
         UserPresets = Object.assign({}, DefaultPresets, UserPresets);
 
         UserPresets.options = Object.assign({}, DefaultPresets.options, UserPresets.options);
+
+        UserPresets.options.url = Object.assign({}, DefaultPresets.options.url, UserPresets?.options?.url ?? {});
 
         this.options = UserPresets.options;
 
