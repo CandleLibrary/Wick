@@ -41,9 +41,8 @@ export const enum BindingType {
     READ = 1,
     WRITE = 2,
     READONLY = 1,
-    WRITEONLY = 2,
-
-    READWRITE = 3
+    WRITE_ONLY = 2,
+    READ_WRITE = 3
 }
 
 export interface BindingObject {

@@ -95,9 +95,10 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
 
             if (frame.index != undefined)
                 cpy.nodes[0].value = `f${frame.index}`;
-
+            //@ts-ignore
             cpy.function_type = "method";
         } else
+            //@ts-ignore
             cpy.function_type = "root";
 
 
@@ -241,7 +242,7 @@ export function componentDataToClassString(
 
                 class_information.nlu_index++;
             }
-
+            
             class_information.nluf_public_variables = lu_functions;
 
             processBindings(component, class_information, presets);

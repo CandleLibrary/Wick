@@ -117,7 +117,7 @@ loadBindingHandler({
         , host_node, element_index, component) {
 
         const
-            binding = createBindingObject(BindingType.WRITEONLY, 0, binding_node_ast.pos),
+            binding = createBindingObject(BindingType.WRITE_ONLY, 0, binding_node_ast.pos),
             { primary_ast } = binding_node_ast;
 
 
@@ -304,8 +304,6 @@ loadBindingHandler({
 
                 const frame = addNewMethodFrame(fn, component, presets, class_data);
 
-                console.log(renderCompressed(frame.ast));
-
                 expression = stmt(`this.e${element_index}.addEventListener("${binding_selector.slice(2)}",this.${name}.bind(this));`);
             }
 
@@ -345,7 +343,7 @@ loadBindingHandler({
         const
             [, { nodes: [frame_id, ...other_id] }] = binding_node_ast.nodes,
             frame = getFrameFromName(frame_id.value, component),
-            binding = createBindingObject(BindingType.READWRITE, 0, binding_node_ast.pos);
+            binding = createBindingObject(BindingType.READ_WRITE, 0, binding_node_ast.pos);
 
         if (!frame) frame_id.pos.throw(`Cannot find function for reference ${frame_id.value}`);
 
@@ -376,7 +374,7 @@ loadBindingHandler({
     prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component) {
 
-        const binding = createBindingObject(BindingType.WRITEONLY, 0, host_node.pos),
+        const binding = createBindingObject(BindingType.WRITE_ONLY, 0, host_node.pos),
             { primary_ast } = binding_node_ast;
 
         const receiver = { ast: null }, component_names = component.root_frame.binding_type;
@@ -429,7 +427,7 @@ loadBindingHandler({
     prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component) {
 
-        const binding = createBindingObject(BindingType.READWRITE, 0, binding_node_ast.pos),
+        const binding = createBindingObject(BindingType.READ_WRITE, 0, binding_node_ast.pos),
             { primary_ast } = binding_node_ast;
 
         if (primary_ast) {
@@ -487,7 +485,7 @@ loadBindingHandler({
     prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component) {
 
-        const binding = createBindingObject(BindingType.WRITEONLY, 0, binding_node_ast.pos),
+        const binding = createBindingObject(BindingType.WRITE_ONLY, 0, binding_node_ast.pos),
             component_names = component.root_frame.binding_type,
             { primary_ast, secondary_ast } = binding_node_ast;
 
@@ -530,7 +528,7 @@ loadBindingHandler({
 
         if (!getElementAtIndex(component, element_index).is_container) return;
 
-        const binding = createBindingObject(BindingType.WRITEONLY, 0, binding_node_ast.pos),
+        const binding = createBindingObject(BindingType.WRITE_ONLY, 0, binding_node_ast.pos),
             component_names = component.root_frame.binding_type,
             { primary_ast } = binding_node_ast;
 
@@ -562,7 +560,7 @@ loadBindingHandler({
 
         if (!getElementAtIndex(component, element_index).is_container) return;
 
-        const binding = createBindingObject(BindingType.READWRITE, 1000, binding_node_ast.pos),
+        const binding = createBindingObject(BindingType.READ_WRITE, 1000, binding_node_ast.pos),
             component_names = component.root_frame.binding_type,
             { primary_ast, secondary_ast } = binding_node_ast
             ;

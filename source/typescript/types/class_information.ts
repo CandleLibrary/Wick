@@ -12,7 +12,7 @@ export interface ClassInformation {
     class_initializer_statements: JSNode[];
     class_cleanup_statements: JSNode[];
     nluf_arrays: any[];
-    nluf_public_variables: any[];
+    nluf_public_variables: JSNode;
     compiled_ast: JSNode;
     nlu_index: number;
 }

@@ -61,8 +61,6 @@ export function integrateElement(ele: HTMLElement | Text) {
 
         if (this.ele) {
 
-            console.log(ele.tagName);
-
             if (ele.tagName == "W-B") {
                 const text = document.createTextNode(ele.innerHTML);
                 ele.replaceWith(text);

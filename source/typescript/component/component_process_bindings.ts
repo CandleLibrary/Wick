@@ -98,7 +98,7 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
 
                 //Create binding update method.
 
-                binding.name = nluf_public_variables.nodes.length;
+                binding.name = nluf_public_variables.nodes.length + "";
 
                 nluf_public_variables.nodes.push(exp(`c.b${binding.name}`));
 
