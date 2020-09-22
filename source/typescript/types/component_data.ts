@@ -76,6 +76,11 @@ export interface ComponentData {
      */
     HTML: DOMLiteral;
 
+    /**
+     * Any information that should be stored in the head of the document
+     */
+    HTML_HEAD: HTMLNode[];
+
     CSS: CSSNode[];
 
     /**
