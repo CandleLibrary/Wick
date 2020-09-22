@@ -333,7 +333,7 @@ const definitions = [ /**/ /**/ ...JSNodeDefinitions /**/,/**/...CSSNodeDefiniti
     },
     {
         type: HTMLNodeType.HTML_TITLE,
-        template_pattern: "<title @_attributes...%>^1@...%^0</title>"
+        template_pattern: "<title%@_attributes...%>^1@...%^0</title>"
     },
     {
         type: HTMLNodeType.HTML_BASE,
@@ -349,7 +349,7 @@ const definitions = [ /**/ /**/ ...JSNodeDefinitions /**/,/**/...CSSNodeDefiniti
     },
     {
         type: HTMLNodeType.HTML_SCRIPT,
-        template_pattern: "<script @_attributes...%>^1@...%^0</script>"
+        template_pattern: "<script @_attributes...%></script>"
     },
     {
         type: HTMLNodeType.HTML_NOSCRIPT,
