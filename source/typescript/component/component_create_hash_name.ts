@@ -2,7 +2,7 @@
 let seed_tracker = 0xf012501;
 
 const P_Table = shuffle(new Array(256).fill(0).map((j, i) => i)),
-    _64bit_table = "0ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789_$";
+    _64bit_table = "0_ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz123456789";
 
 
 function PseudoRandom(seed = 0x1f25d8e2f98) {
@@ -38,7 +38,7 @@ function to64BitID(number: bigint, size: number = 6) {
     return str.join("");
 }
 
-function PearsonModifiedHash(string: string) {
+function PearsonModifiedHash(string: string, size = 8) {
 
     const
         max_v = 16,
@@ -59,12 +59,12 @@ function PearsonModifiedHash(string: string) {
 
     return (to64BitID([...hh]
         .map((v, i) => BigInt(v) << BigInt(byte_size - 8 - (i << 3)))
-        .reduce((r, v) => BigInt(v) | r, BigInt(0)))
-    ).slice(-6);
+        .reduce((r, v) => BigInt(v) | r, BigInt(0)), size)
+    ).slice(-size);
 }
 
 /**
  * Create a hash name to uniquely identify a component.
  * @param string - source file contents.
 */
-export const createNameHash = (string: string) => "W" + PearsonModifiedHash(string);
+export const createNameHash = (string: string) => "W" + PearsonModifiedHash(string, 8) + "_";
