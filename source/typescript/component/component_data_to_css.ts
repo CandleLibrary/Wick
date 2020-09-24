@@ -1,8 +1,9 @@
 import { CSSNodeType, selector, CSSNode } from "@candlefw/css";
 import { traverse } from "@candlefw/conflagrate";
+
 import { renderWithFormatting } from "../render/render.js";
 import { ComponentData } from "../types/component_data.js";
-
+import { ComponentStyle } from "../types/component_style.js";
 
 export function UpdateSelector(node: CSSNode, name) {
 
@@ -43,22 +44,28 @@ export function UpdateSelector(node: CSSNode, name) {
 
 }
 
-export function componentToMutatedCSS(component: ComponentData): CSSNode[] {
-    return component.CSS.map(css => {
-        const r = { ast: null };
+export function componentToMutatedCSS(css: ComponentStyle, component?: ComponentData): CSSNode {
 
-        for (const { node, meta: { replace } } of traverse(css, "nodes")
-            .filter("type", CSSNodeType.Rule)
-            .makeReplaceable()
-            .extract(r)
-        ) {
-            const copy = Object.assign({}, node);
+    const r = { ast: null };
+
+    for (const { node, meta: { replace } } of traverse(css.data, "nodes")
+        .filter("type", CSSNodeType.Rule)
+        .makeReplaceable()
+        .extract(r)
+    ) {
+        const copy = Object.assign({}, node);
+
+        if (component)
             UpdateSelector(copy, component.name);
-            replace(copy);
-        }
 
-        return <CSSNode>r.ast;
-    });
+        replace(copy);
+    }
+
+    return <CSSNode>r.ast;
+}
+
+export function getCSSStringFromComponentStyle(css: ComponentStyle, component?: ComponentData) {
+    return css.data ? renderWithFormatting(componentToMutatedCSS(css, component)) : "";
 }
 
 export function componentDataToCSS(component: ComponentData): string {
@@ -67,7 +74,6 @@ export function componentDataToCSS(component: ComponentData): string {
     // Include pure CSS components (components that only have CSS data),
     // in the main components context.
 
-    return componentToMutatedCSS(component)
-        .map(_ => _ ? renderWithFormatting(_) : "")
+    return component.CSS.map(c => getCSSStringFromComponentStyle(c, component))
         .join("\n");
 }

@@ -451,7 +451,11 @@ loadHTMLHandlerInternal(
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
 
-            await processWickCSS_AST(node, component, presets);
+            if (index == -1)
+                await processWickCSS_AST(node, component, presets, node.pos.source);
+            else
+                await processWickCSS_AST(node, component, presets);
+
 
             return null;
         }

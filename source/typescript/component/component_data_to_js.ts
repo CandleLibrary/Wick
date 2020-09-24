@@ -242,7 +242,7 @@ export function componentDataToClassString(
 
                 class_information.nlu_index++;
             }
-            
+
             class_information.nluf_public_variables = lu_functions;
 
             processBindings(component, class_information, presets);
@@ -271,7 +271,7 @@ export function componentDataToClassString(
 
         if (INCLUDE_CSS && (style = componentDataToCSS(component))) {
             re_stmts.push(stmt(`this.setCSS()`));
-            class_information.methods.push(setPos(getGenericMethodNode("getCSS", "", `return \`${style}\`;`), component.CSS[0].pos));
+            class_information.methods.push(setPos(getGenericMethodNode("getCSS", "", `return \`${style}\`;`), component.CSS[0].data.pos));
         }
 
         if (class_information.binding_init_statements.length > 0)

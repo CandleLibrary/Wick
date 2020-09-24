@@ -5,6 +5,7 @@ import { ExtendedComponentData } from "./types/extended_component.js";
 import { ComponentClassStrings } from "./types/component_class_strings";
 import { ComponentData } from "./types/component_data";
 import { RuntimeComponent } from "./wick.js";
+import { ComponentStyle } from "./types/component_style.js";
 
 let CachedPresets = null;
 
@@ -59,6 +60,8 @@ export default class Presets implements PresetOptions {
 
     custom?: {};
 
+    styles?: Map<string, ComponentStyle>;
+
     url: URL;
 
     api: any;
@@ -81,7 +84,7 @@ export default class Presets implements PresetOptions {
 
         UserPresets.options = Object.assign({}, DefaultPresets.options, UserPresets.options);
 
-        UserPresets.options.url = Object.assign({}, DefaultPresets.options.url, UserPresets?.options?.url ?? {});
+        UserPresets.options.url = Object.assign({}, DefaultPresets.options.url, (UserPresets.options || {}).url || {});
 
         this.options = UserPresets.options;
 
@@ -106,6 +109,8 @@ export default class Presets implements PresetOptions {
         this.models = {};
 
         this.css_cache = {};
+
+        this.styles = new Map();
 
         this.custom = Object.assign({}, UserPresets.custom);
 

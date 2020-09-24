@@ -7,6 +7,7 @@ import { DOMLiteral } from "./dom_literal.js";
 import { PendingBinding, BINDING_SELECTOR } from "./binding";
 import { FunctionFrame } from "./function_frame";
 import { Comment } from "./comment.js";
+import { ComponentStyle } from "./component_style.js";
 
 export interface ComponentData {
 
@@ -81,7 +82,7 @@ export interface ComponentData {
      */
     HTML_HEAD: HTMLNode[];
 
-    CSS: CSSNode[];
+    CSS: ComponentStyle[];
 
     /**
      * URL of source file for this component
