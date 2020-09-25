@@ -195,6 +195,8 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
         takeParentAddChild(this, comp);
 
         ele = comp.ele;
+
+        this.elu.push(ele);
     } else
         ele = <HTMLElement>createElementNameSpaced(tag_name, name_space, data, this.elu);
 
@@ -202,6 +204,7 @@ export function makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
     if (attributes)
         for (const [name, value] of attributes)
             ele.setAttribute(name, value);
+
     if (children)
         outer: for (const child of children) {
             if (child.slot_name) {
