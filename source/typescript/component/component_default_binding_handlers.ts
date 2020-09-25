@@ -14,10 +14,11 @@ import { setPos, getFirstReferenceName } from "./component_common.js";
 import { Lexer } from "@candlefw/wind";
 import { postProcessFunctionDeclarationSync } from "./component_js.js";
 import { HTMLNode } from "../types/wick_ast_node_types";
+import { ClassInformation } from "../types/class_information";
 
 export const binding_handlers: BindingHandler[] = [];
 
-function registerActivatedFrameMethod(frame: FunctionFrame, class_information) {
+function registerActivatedFrameMethod(frame: FunctionFrame, class_information: ClassInformation) {
     if (!frame.index) {
 
         const { nodes } = class_information
@@ -338,7 +339,7 @@ loadBindingHandler({
     },
 
     prepareBindingObject(binding_selector, binding_node_ast
-        , host_node, element_index, component, presets) {
+        , host_node, element_index, component, presets, class_data) {
 
         const
             [, { nodes: [frame_id, ...other_id] }] = binding_node_ast.nodes,
@@ -353,7 +354,7 @@ loadBindingHandler({
 
         for (const id of frame.input_names) setBindingVariable(id, false, binding);
 
-        registerActivatedFrameMethod(frame, presets);
+        registerActivatedFrameMethod(frame, class_data);
 
         binding.write_ast = exp(`this.call(${frame.index})`);
 
