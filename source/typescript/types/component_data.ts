@@ -35,7 +35,7 @@ export interface ComponentData {
      * Add new PendingBinding entry to the component.
      * @param arg
      */
-    addBinding(arg: {
+    addBinding?(arg: {
         binding_selector: BINDING_SELECTOR | string;
         binding_val: JSNode | HTMLNode | CSSNode | any;
         host_node: JSNode | HTMLNode | CSSNode;
