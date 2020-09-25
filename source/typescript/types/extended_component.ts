@@ -11,7 +11,7 @@ interface Extension {
     pending: Promise<Extension & ComponentData>;
     mount: (data?: object, ele?: HTMLElement) => Promise<WickRTComponent>;
     class: typeof RuntimeComponent;
-    classWithIntegratedCSS: typeof RuntimeComponent;
+    class_with_integrated_css: typeof RuntimeComponent;
     class_string: string;
 }
 /**
