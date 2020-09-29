@@ -12,7 +12,6 @@ export class ObservableData extends ObservableBase {
     constructor(data) {
 
         super();
-        this.createProp(name, value)
 
         _SealedProperty_(this, "prop_array", []);
         _SealedProperty_(this, "prop_offset", 0);
