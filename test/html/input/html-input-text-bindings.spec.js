@@ -12,33 +12,54 @@ import spark from "@candlefw/spark";
 // Bindings should be two-way on input elements [value] attribute 
 // by default
 
-await wick.server();
-
-const data = { input_data = "send" };
-const comp = new (await wick(`
+const
+    data = { input_data: "send" },
+    comp = new (await wick(`
     import { input_data } from "@model";
 
-    default export <div>
-        <input type="text" value=\${input_data}></input>
+    export default <div>
+        <input type="text" value="\${input_data}"/>
     </div>`)).class(data);
+const ele = comp.ele.children[0];
 
 
+assert_group("Sever Side", sequence, () => {
 
-// Force component update by prempting spark's update
-// cycle
+    // Force component update by preempting spark's update
+    // cycle
 
-spark.update();
+    assert(ele.value == "send");
 
-assert(comp.ele.children[0].data == "receive");
+    //HTML
+    ele.value = "received";
+    ele.runEvent("input", {});
 
-//HTML
-comp.ele.children[0].data = "received";
-comp.ele.children[0].runEvent("input", {});
+    spark.update();
 
+    assert(data.input_data == "received");
+});
 
-spark.update();
+assert_group("Browser Side", sequence, () => {
 
-assert(data.input_data == "receive");
+    // Force component update by preempting spark's update
+
+    await spark.sleep(10);
+
+    assert(ele.value == "send");
+
+    //HTML
+    ele.value = "received";
+
+    ele.dispatchEvent(new InputEvent('input', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+    }));
+
+    await spark.sleep(10);
+
+    assert(data.input_data == "received", browser);
+});
 
 
 

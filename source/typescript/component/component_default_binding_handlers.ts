@@ -437,6 +437,22 @@ loadBindingHandler({
 
             //Pop any binding names into the binding information container. 
 
+            binding.write_ast = setPos(
+                exp(`this.e${element_index}.value = 1`),
+                primary_ast.pos
+            );
+
+            binding.read_ast = setPos(
+                exp(`this.e${element_index}.value = 1`),
+                primary_ast.pos
+            );
+
+            binding.read_ast.nodes[1] = ast;
+
+            binding.write_ast.nodes[1] = ast;
+
+            binding.cleanup_ast = null;
+
             if (primary_ast.type == JSNodeType.IdentifierReference) {
                 let name = <string>primary_ast.value;
                 const frame = getFrameFromName(name, component);
@@ -449,23 +465,18 @@ loadBindingHandler({
                     );
                 } else {
 
-                    const { class_index } = getComponentVariable(name, component);
+                    const
+                        { class_index } = getComponentVariable(name, component),
+                        exprA = binding.write_ast,
+                        exprB = exp(`this.e${element_index}.addEventListener("input",e=>{${renderCompressed(ast)}= e.target.value; this.u(0,0,${class_index})})`);
+
 
                     binding.initialize_ast = setPos(
-                        stmt(`this.e${element_index}.addEventListener("input",e=>this.u${class_index}(e.target.value));`),
+                        exprB,
                         primary_ast.pos
                     );
                 }
             }
-
-            binding.write_ast = setPos(
-                exp(`this.e${element_index}.value = 1`),
-                primary_ast.pos
-            );
-
-            binding.write_ast.nodes[1] = ast;
-
-            binding.cleanup_ast = null;
         }
 
         return binding;
