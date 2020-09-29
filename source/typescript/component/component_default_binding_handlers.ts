@@ -422,7 +422,7 @@ loadBindingHandler({
     priority: 0,
 
     canHandleBinding(binding_selector, node_type) {
-        return binding_selector == BINDING_SELECTOR.IMPORT_VALUE;
+        return binding_selector == BINDING_SELECTOR.INPUT_VALUE;
     },
 
     prepareBindingObject(binding_selector, binding_node_ast

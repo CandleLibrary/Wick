@@ -172,9 +172,9 @@ loadHTMLHandlerInternal(
 
                 case "value":
 
-                    if (<HTMLNode><unknown>node.IS_BINDING) {
+                    if (<HTMLNode><unknown>node.IS_BINDING && host_node.type == HTMLNodeType.HTML_INPUT) {
                         component.addBinding({
-                            binding_selector: BINDING_SELECTOR.IMPORT_VALUE,
+                            binding_selector: BINDING_SELECTOR.INPUT_VALUE,
                             //@ts-ignore
                             binding_val: node.value,
                             host_node: node,
