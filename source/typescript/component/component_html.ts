@@ -31,16 +31,17 @@ function buildExportableDOMNode(
 
     if (ast.is_container) {
 
-        const
-            ctr = <ContainerDomLiteral>node,
-            ctr_ast = <HTMLContainerNode>ast;
+        const {
+            container_tag,
+            component_names,
+            component_attributes
+        } = <HTMLContainerNode>ast,
+            ctr = <ContainerDomLiteral>node;
 
         ctr.is_container = true;
-        ctr.component_names = ctr_ast.component_names;
-        ctr.component_attribs = ctr_ast.component_attributes;
-
-        if (ctr.tag_name == "CONTAINER")
-            ctr.tag_name = "DIV";
+        ctr.component_names = component_names;
+        ctr.component_attribs = component_attributes;
+        ctr.tag_name = container_tag ?? "DIV";
     }
 
     if (ast.attributes && ast.attributes.length > 0) {

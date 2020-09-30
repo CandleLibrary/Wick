@@ -216,7 +216,7 @@ loadHTMLHandlerInternal(
 
             if (node.name == "element") {
 
-                host_node.tag = node.value;
+                (<HTMLContainerNode>host_node).container_tag = node.value;
 
                 return;
             }
