@@ -8,16 +8,23 @@ import { DOMLiteral } from "../types/dom_literal.js";
 
 export function createErrorComponent(errors: Error[], src: string, location: string, component: ComponentData = createComponentData(src, location)) {
 
-    const error_data = [location + "", ...errors
-        .flatMap(e => (e.stack + "")
-            .split("\n"))
-        .map(s => s.replace(/\ /g, "\u00A0"))]
+    const error_data = [...errors
+        .map(
+            e => (e + "")
+            //.split("\n")
+        )
+        //.map(s => s.replace(/\ /g, "\u00A0"))
+    ]
         .map(e => <DOMLiteral>{
             tag_name: "p",
             children: [
                 {
                     tag_name: "",
-                    data: e
+                    data: e.replace(/>/g, "&gt;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/\n/g, "<br/>")
+                        .replace(/\s/g, "&#8199;")
                 }
             ]
         });
@@ -35,7 +42,15 @@ export function createErrorComponent(errors: Error[], src: string, location: str
         children: [
             {
                 tag_name: "div",
-                children: error_data,
+                children: [{
+                    tag_name: "p",
+                    children: [
+                        {
+                            tag_name: "",
+                            data: `Error in ${location}:`
+                        }
+                    ]
+                }, ...error_data],
                 pos
             }
         ],

@@ -50,6 +50,8 @@ export default async function makeComponent(input: URL | string, presets?: Prese
     //If this is a node.js environment, make sure URL is able to resolve local files system addresses.
     if (typeof (window) == "undefined") await URL.polyfill();
 
+    let source_url = "";
+
     let data: any = empty_obj, errors = [];
 
     try {
@@ -74,8 +76,13 @@ export default async function makeComponent(input: URL | string, presets?: Prese
 
         data = await acquireComponentASTFromRemoteSource(url, root_url);
 
-        if (data.errors.length > 0 && !data.string)
+        source_url = url;
+
+        if (data.errors.length > 0) {
             throw data.errors.pop();
+        }
+
+
 
     } catch (e) {
 
@@ -85,6 +92,8 @@ export default async function makeComponent(input: URL | string, presets?: Prese
 
             if (data.error)
                 throw data.error;
+
+            source_url = root_url + "";
 
         } catch (a) {
             errors.push(e, a);
@@ -99,7 +108,7 @@ export default async function makeComponent(input: URL | string, presets?: Prese
         comments = []
     } = data;
 
-    return await compileComponent(ast, <string>input_string, url, presets, errors, comments);
+    return await compileComponent(ast, <string>input_string, source_url, presets, errors, comments);
 };
 
 export async function compileComponent(
@@ -107,7 +116,7 @@ export async function compileComponent(
     source_string: string,
     url: string,
     presets: Presets,
-    errors: Error[] = [],
+    parse_errors: Error[] = [],
     comments: Comment[] = [],
 ): Promise<ComponentData> {
 
@@ -117,7 +126,8 @@ export async function compileComponent(
     component.root_frame = createFrame(null, component);
 
     component.comments = comments;
-    if (ast)
+
+    if (ast && parse_errors.length == 0)
         try {
 
             const IS_SCRIPT = determineSourceType(ast);
@@ -136,12 +146,12 @@ export async function compileComponent(
                 presets.named_components.set(name.toUpperCase(), component);
 
         } catch (e) {
-            errors.push(e);
-            console.log({ errors });
+            parse_errors.push(e);
         }
 
-    if (errors.length > 0)
-        return createErrorComponent(errors, source_string, url, component);
+    if (parse_errors.length > 0) {
+        return createErrorComponent(parse_errors, source_string, url, component);
+    }
 
     return component;
 }
