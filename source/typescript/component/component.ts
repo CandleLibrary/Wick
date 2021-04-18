@@ -78,6 +78,7 @@ export default async function makeComponent(input: URL | string, presets?: Prese
             throw data.errors.pop();
 
     } catch (e) {
+
         //Illegal URL, try parsing string
         try {
             data = parseStringReturnAST(<string>input, "");
@@ -85,8 +86,8 @@ export default async function makeComponent(input: URL | string, presets?: Prese
             if (data.error)
                 throw data.error;
 
-        } catch (e) {
-            errors.push(e);
+        } catch (a) {
+            errors.push(e, a);
         }
     }
 
@@ -116,27 +117,28 @@ export async function compileComponent(
     component.root_frame = createFrame(null, component);
 
     component.comments = comments;
+    if (ast)
+        try {
 
-    try {
+            const IS_SCRIPT = determineSourceType(ast);
 
-        const IS_SCRIPT = determineSourceType(ast);
+            if (presets.components.has(component.name))
+                return presets.components.get(component.name);
 
-        if (presets.components.has(component.name))
-            return presets.components.get(component.name);
+            presets.components.set(component.name, component);
 
-        presets.components.set(component.name, component);
+            if (IS_SCRIPT)
+                await processWickJS_AST(<JSNode>ast, component, presets);
+            else
+                await processWickHTML_AST(getHTML_AST(ast), component, presets);
 
-        if (IS_SCRIPT)
-            await processWickJS_AST(<JSNode>ast, component, presets);
-        else
-            await processWickHTML_AST(getHTML_AST(ast), component, presets);
+            for (const name of component.names)
+                presets.named_components.set(name.toUpperCase(), component);
 
-        for (const name of component.names)
-            presets.named_components.set(name.toUpperCase(), component);
-
-    } catch (e) {
-        errors.push(e);
-    }
+        } catch (e) {
+            errors.push(e);
+            console.log({ errors });
+        }
 
     if (errors.length > 0)
         return createErrorComponent(errors, source_string, url, component);
