@@ -1,43 +1,39 @@
 //External
-import URL from "@candlefw/url";
 import { addModuleToCFW } from "@candlefw/cfw";
-import { CSSNodeType, CSSNode, CSSNodeTypeLU } from "@candlefw/css";
-import { JSNodeType, JSNode, JSNodeTypeLU } from "@candlefw/js";
-
-//Internal
-import Presets from "./presets.js";
+import { CSSNode, CSSNodeType, CSSNodeTypeLU } from "@candlefw/css";
+import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlefw/js";
+import URL from "@candlefw/url";
 import makeComponent from "./component/component.js";
-import parser from "./parser/parse.js";
-
-import { rt, WickRuntime } from "./runtime/runtime_global.js";
-import { WickRTComponent } from "./runtime/runtime_component.js";
-import { PresetOptions } from "./types/preset_options.js";
-import {
-    componentDataToJS,
-    componentDataToJSCached,
-    componentDataToJSStringCached,
-    componentDataToClassString,
-} from "./component/component_data_to_js.js";
-import { componentDataToCSS } from "./component/component_data_to_css.js";
-import { VARIABLE_REFERENCE_TYPE } from "./types/variable_reference_types";
-import { DATA_FLOW_FLAG } from "./types/data_flow_flags";
-import { FunctionFrame } from "./types/function_frame";
-import { ComponentData } from "./types/component_data";
-import { BindingVariable } from "./types/binding";
-import { PendingBinding } from "./types/binding";
-import { DOMLiteral } from "./types/dom_literal.js";
-import { ExtendedComponentData } from "./types/extended_component";
-import { componentDataToHTML } from "./component/component_data_to_html.js";
-import { HTMLNodeTypeLU, HTMLNodeClass, HTMLNode } from "./types/wick_ast_node_types.js";
-import { ObservableModel, ObservableWatcher } from "./types/observable_model.js";
 import { createNameHash } from "./component/component_create_hash_name.js";
 import { css_selector_helpers } from "./component/component_css_selector_helpers.js";
+import { componentDataToCSS } from "./component/component_data_to_css.js";
+import { componentDataToHTML } from "./component/component_data_to_html.js";
+import {
+    componentDataToClassString, componentDataToJS,
+    componentDataToJSCached,
+    componentDataToJSStringCached
+} from "./component/component_data_to_js.js";
+import parser from "./parser/parse.js";
+//Internal
+import Presets from "./presets.js";
 import { renderWithFormatting } from "./render/render.js";
+import { RenderPage } from "./render/render_page.js";
 import { Observable } from "./runtime/observable/observable.js";
 import { ObservableScheme } from "./runtime/observable/observable_prototyped.js";
-import { WickServer, srv } from "./wick.server.js";
-import { WickTestTools, WickTest as test } from "./test/wick.test.js";
-import { RenderPage } from "./render/render_page.js";
+import { WickRTComponent } from "./runtime/runtime_component.js";
+import { rt, WickRuntime } from "./runtime/runtime_global.js";
+import { WickTest as test } from "./test/wick.test.js";
+import { BindingVariable, PendingBinding } from "./types/binding";
+import { ComponentData } from "./types/component_data";
+import { DATA_FLOW_FLAG } from "./types/data_flow_flags";
+import { DOMLiteral } from "./types/dom_literal.js";
+import { ExtendedComponentData } from "./types/extended_component";
+import { FunctionFrame } from "./types/function_frame";
+import { ObservableModel, ObservableWatcher } from "./types/observable_model.js";
+import { PresetOptions } from "./types/preset_options.js";
+import { VARIABLE_REFERENCE_TYPE } from "./types/variable_reference_types";
+import { HTMLNode, HTMLNodeClass, HTMLNodeTypeLU } from "./types/wick_ast_node_types.js";
+import { srv, WickServer } from "./wick.server.js";
 
 /**
  * Exporting the wick compiler
@@ -90,6 +86,17 @@ export interface WickCompiler {
             parser: typeof parser;
             render: typeof renderWithFormatting;
         };
+        /**[API]
+         * Builds a single page from a wick component, with the
+         * designated component serving as the root element of the
+         * DOM tree. Can be used to build a hydratable page.
+         *
+         * Optionally hydrates with data from an object serving as a virtual preset.
+         *
+         * Returns HTML markup and an auxillary script strings that
+         * stores and registers hydration information.
+         */
+        RenderPage: typeof RenderPage;
     };
 
     objects: {
@@ -165,9 +172,9 @@ async function componentCreate(input: string | URL, presets: Presets = rt.preset
             pending: promise,
             mount: async (model: any, ele: HTMLElement) => {
 
-                await this.pending;
+                await component.pending;
 
-                const comp_inst = new this.class(model);
+                const comp_inst = new component.class(model);
 
                 ele.appendChild(comp_inst.ele);
 
@@ -287,9 +294,7 @@ addModuleToCFW(wick, "wick");
 export default wick;
 
 export * from "./render/render.js";
-
 export * from "./render/rules.js";
-
 export {
     //Functions
     parser,
@@ -334,3 +339,5 @@ export {
     Observable,
 
 };
+
+
