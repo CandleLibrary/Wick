@@ -79,7 +79,7 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
 
             let id_indices = [];
 
-            for (const name of frame.output_names.values())
+            for (const name of frame.output_names.values()) {
                 if (!updated_names.has(name)) {
 
                     const { type, class_index, pos }
@@ -88,10 +88,13 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
                     if (type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE)
                         id_indices.push(class_index);
                 }
+            }
 
-            const st = stmt(`this.u(${frame.name[0] == "$" ? "0,c," : "0,0,"} ${id_indices.sort()});`);
+            if (id_indices.length > 0) {
+                const st = stmt(`this.u(${frame.name[0] == "$" ? "0,c," : "0,0,"} ${id_indices.sort()});`);
 
-            cpy.nodes[2].nodes.push(setPos(st, frame.ast.pos));
+                cpy.nodes[2].nodes.push(setPos(st, frame.ast.pos));
+            }
 
             if (frame.index != undefined)
                 cpy.nodes[0].value = `f${frame.index}`;
