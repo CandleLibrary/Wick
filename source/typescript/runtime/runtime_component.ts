@@ -66,6 +66,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     pui: any[];
     nui: any[];
 
+    ci: number;
+
     ie: typeof integrateElement;
     me: typeof makeElement;
 
@@ -261,7 +263,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         }
     }
 
-    appendToDOM(element: HTMLElement, other_element: HTMLElement = null, INSERT_AFTER = false) {
+    appendToDOM(parent_element: HTMLElement, other_element: HTMLElement = null, INSERT_AFTER = false) {
 
         //Lifecycle Events: Connecting <======================================================================
         this.connect();
@@ -272,10 +274,10 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             if (!INSERT_AFTER)
                 other_element.parentElement.insertBefore(this.ele, other_element);
             else
-                other_element.parentElement.insertBefore(this.ele, other_element.nextSibling);
+                other_element.parentElement.insertBefore(this.ele, other_element.nextElementSibling);
+        } else {
+            parent_element.appendChild(this.ele);
         }
-        else
-            element.appendChild(this.ele);
 
         //Lifecycle Events: Connected <======================================================================
         this.update({ connected: true });
