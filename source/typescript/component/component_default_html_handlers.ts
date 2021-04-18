@@ -373,10 +373,19 @@ loadHTMLHandlerInternal(
                         //Check for useif attribute
                         for (const { name, value } of (n.attributes || [])) {
 
-                            if (name == "useif") {
+                            if (name == "use-if") {
                                 //create a useif binding for this object
                                 component.addBinding({
                                     binding_selector: BINDING_SELECTOR.CONTAINER_USE_IF,
+                                    //@ts-ignore
+                                    binding_val: value,
+                                    host_node: ctr,
+                                    html_element_index: index,
+                                    pos: node.pos
+                                });
+                            } else if (name == "use-empty") {
+                                component.addBinding({
+                                    binding_selector: BINDING_SELECTOR.CONTAINER_USE_EMPTY,
                                     //@ts-ignore
                                     binding_val: value,
                                     host_node: ctr,
