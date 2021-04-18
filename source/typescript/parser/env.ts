@@ -7,7 +7,7 @@ import {
     CSSNodeTypeLU
 } from "@candlefw/css";
 
-import { ParserEnvironment } from "@candlefw/hydrocarbon";
+import { ParserEnvironment } from "@candlefw/hydrocarbon/build/library/runtime.js";
 
 import { JSParserEnvironment, JSParserEnv, JSNodeTypeLU } from "@candlefw/js";
 
