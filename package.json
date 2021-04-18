@@ -1,6 +1,6 @@
 {
     "name": "@candlelib/wick",
-    "version": "0.12.4",
+    "version": "0.12.5",
     "description": "HTML Component Compiler",
     "main": "./build/library/wick.js",
     "types": "./build/types/wick.d.ts",
