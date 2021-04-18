@@ -9,7 +9,7 @@
 #                                                                                                  __/ |
 #                                                                                                 |___/ 
 # 
-# 		2020 v3.0
+# 		2021 v3.1
 # 		
 # 		Copyright (c) MMXX Anthony C Weathersby
 # 		
@@ -44,17 +44,13 @@
 
 @NAME CFWWickParser
 
-@EXT wick
-
-@SYMBOL </ ${
+@EXT wick_binding
 
 @IGNORE θws θnl 
 
 @IMPORT ../../node_modules/@candlefw/js/source/grammar/javascript.hcg as js
 
 @IMPORT ./html.hcg as html
-
-#@IMPORT ./wickup.hcg as wickup
 
 @IMPORT ../../node_modules/@candlefw/css/source/grammar/css.hcg as css 
 
@@ -64,24 +60,26 @@
      │ js::javascript 
 
 # This allows JSX like html expressions within JS objects. 
+
 +> js::primary_expression → html::TAG  
+
 #   | t:css \: \{ css::CSS \}                                                                               ↦r { $sym4 }       			    
 
 +> html::BODY → IMPORT_TAG_LIST html::GOAL_TAG                                             				    ↦r { ( $sym2.import_list = $sym1, $sym2 ) }
 
-+> html::TAG → < (τstyle | τSTYLE) html::ATTRIBUTES? >  css::CSS?  </ (τstyle | τSTYLE) >               			                ↦r { { type:env.typ.HTML_STYLE,  attributes:$$sym3 || [], nodes:[$$sym5], pos } }
++> html::TAG → < (t:style | t:STYLE) html::ATTRIBUTES? >  css::CSS?  </ (t:style | t:STYLE) >               			                ↦r { { type:env.typ.HTML_STYLE,  attributes:$$sym3 || [], nodes:[$$sym5], pos } }
     
-+> html::TAG_BODY_ITEM → < (τscript | τSCRIPT)  html::ATTRIBUTES? > js::script? </ (τscript | τSCRIPT) >                             ↦r { { type:env.typ.HTML_SCRIPT, attributes:$$sym3 || [], nodes:[$$sym5], pos } }
-    │ < τjs html::ATTRIBUTES? > js::script? </ τjs >                                        		        ↦r { { type:env.typ.HTML_SCRIPT, attributes:$$sym3 || [], nodes:[$$sym5], pos } }
++> html::TAG_BODY_ITEM → < (t:script | t:SCRIPT)  html::ATTRIBUTES? > js::script? </ (t:script | t:SCRIPT) >                             ↦r { { type:env.typ.HTML_SCRIPT, attributes:$$sym3 || [], nodes:[$$sym5], pos } }
+    │ < t:js html::ATTRIBUTES? > js::script? </ t:js >                                        		        ↦r { { type:env.typ.HTML_SCRIPT, attributes:$$sym3 || [], nodes:[$$sym5], pos } }
     #│ \( \{ js::expression \{ js::script? \} \} (ERR θws ) \)                                			    ↦r {env.fn.element_selector("script", ["on", null, new env.wick_binding(["on",null, $sym2])], $sym4, env, pos) }
 
 
 <> IMPORT_TAG_LIST → IMPORT_TAG(+)
 
-<> IMPORT_TAG → < τimport html::ATTRIBUTES? /? > ( </ τimport > )?                          			    
+<> IMPORT_TAG → < t:import html::ATTRIBUTES? /? > ( </ t:import > )?                          			    
                                                                     ↦r { { type:env.typ.HTML_IMPORT, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:true, pos } } 
 
-+> html::VOID_NAME →  τf
++> html::VOID_NAME →  t:f
 
 +> html::ATTRIBUTE → html::ATTRIBUTE_HEAD = ( " WICK_BINDING? " ↦r {$$sym2} │ WICK_BINDING )  			    
                                                                     ↦r { {type:env.typ.HTMLAttribute, name:$sym1, value:$sym3 || "", IS_BINDING:!!$sym3, pos } }                    
@@ -89,7 +87,7 @@
 +> html::TEXT_NODE → WICK_BINDING  
 
 # Add component scoped variable declaration
-# +> js::lexical_declaration → τcomp js::binding_list ;                                                      ↦r { { type:env.typ.ComponentVariableDeclaration, symbol:$sym1, nodes:$sym2, pos } }
+# +> js::lexical_declaration → t:comp js::binding_list ;                                                      ↦r { { type:env.typ.ComponentVariableDeclaration, symbol:$sym1, nodes:$sym2, pos } }
 
 <> WICK_BINDING → CALL_BINDING                              
     │ BASIC_BINDING
@@ -103,4 +101,5 @@
                                                                     ↦r { {type:env.typ.WickBinding, primary_ast:$$sym2, secondary_ast:$$sym5, DEBUG: $sym1 == "(!(", pos } }
 
 <> BINDING_SYMBOL_START > \${
+    
 <> BINDING_SYMBOL_END > }
