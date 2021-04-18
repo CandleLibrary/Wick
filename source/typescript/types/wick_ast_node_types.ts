@@ -1,7 +1,8 @@
 import { JSNode, JSNodeClass } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
-import { Component } from "../wick";
+
 import { CSSNode } from "@candlefw/css";
+import { ComponentData } from "./component_data";
 
 export const enum HTMLNodeClass {
     HTML_NODE = (1 << 20),
@@ -200,7 +201,7 @@ export enum HTMLNodeTypeLU {
 
 export interface HTMLNode {
     import_list?: any[];
-    
+
     is_container?: boolean;
     /**
      * If node is a <container> node, gives the numerical
@@ -282,7 +283,7 @@ export interface HTMLTextNode {
 export interface HTMLContainerNode extends HTMLNode {
 
     is_container: true,
-    components: Component[],
+    components: ComponentData[],
 
     component_names: string[],
 

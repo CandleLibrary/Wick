@@ -15,8 +15,7 @@ import { noop } from "./noop.js";
  * designated component serving as the root element of the
  * DOM tree. Can be used to build a hydratable page.
  *
- * Optionally make partial data from a data object serving
- * as a virtual preset.
+ * Optionally hydrates with data from an object serving as a virtual preset.
  *
  * Returns HTML markup and an auxillary script strings that
  * stores and registers hydration information.
