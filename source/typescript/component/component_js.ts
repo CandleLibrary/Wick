@@ -43,7 +43,7 @@ async function processCoreAsync(ast: JSNode, function_frame: FunctionFrame, comp
         .extract(function_frame)
     ) {
 
-        if (node.type & JSNodeClass.CLOSURE) {
+        if (node.type & JSNodeClass.BLOCK) {
             const temp_ff = processPreamble(node, component, frame, true);
             await processCoreAsync(node, temp_ff, component, presets, root_name, function_frame);
             meta.skip();
@@ -87,7 +87,7 @@ export function processCoreSync(ast: JSNode, function_frame: FunctionFrame, comp
         .makeSkippable()
         .extract(function_frame)
     ) {
-        if (node.type & JSNodeClass.CLOSURE) {
+        if (node.type & JSNodeClass.BLOCK) {
             // const temp_ff = processPreamble(node, component, frame, true);
             // processCoreSync(node, temp_ff, component, presets, root_name, frame);
             // meta.skip();
