@@ -264,8 +264,7 @@ loadJSHandlerInternal(
                                 flags: 0
                             }, frame)
                         ) {
-                            const msg = `Redeclaration of the binding variable [${l_name}]. \nFirst declaration here:\n${
-                                component.root_frame.binding_type.get(l_name).pos.blame()
+                            const msg = `Redeclaration of the binding variable [${l_name}]. \nFirst declaration here:\n${component.root_frame.binding_type.get(l_name).pos.blame()
                                 }\nredeclaration here:\n${binding.pos.blame()}\nin ${component.location}`;
                             throw new ReferenceError(msg);
                         }
@@ -552,6 +551,7 @@ loadJSHandlerInternal(
 );
 
 
+
 /*
  █████  ███████ ███████ ██  ██████  ███    ██ ███████ ███    ███ ███████ ███    ██ ████████ 
 ██   ██ ██      ██      ██ ██       ████   ██ ██      ████  ████ ██      ████   ██    ██    
@@ -565,6 +565,8 @@ loadJSHandlerInternal(
 █████     ███   ██████  ██████  █████   ███████ ███████ ███████ ██ ██    ██ ██ ██  ██       
 ██       ██ ██  ██      ██   ██ ██           ██      ██      ██ ██ ██    ██ ██  ██ ██       
 ███████ ██   ██ ██      ██   ██ ███████ ███████ ███████ ███████ ██  ██████  ██   ████
+
++ Post(++|--) and (++|--)Pre increment expressions
 */
 loadJSHandlerInternal(
     {
@@ -591,8 +593,10 @@ loadJSHandlerInternal(
                 break;
             }
         }
-    }, JSNodeType.AssignmentExpression
+    }, JSNodeType.AssignmentExpression, JSNodeType.PostExpression, JSNodeType.PreExpression
 );
+
+
 
 /*
 ███████ ██   ██ ██████  ██████  ███████ ███████ ███████ ██  ██████  ███    ██     
