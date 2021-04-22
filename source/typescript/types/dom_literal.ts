@@ -24,7 +24,7 @@ export interface DOMLiteral {
     lookup_index?: number;
 
     /**
-     * Hash name of container component
+     * True if the element belongs to a wick container
      */
     is_container?: boolean;
 
@@ -48,6 +48,8 @@ export interface DOMLiteral {
      * component's root element
      */
     component_name?: string;
+
+    container_id?: number;
 }
 
 export interface ContainerDomLiteral extends DOMLiteral {

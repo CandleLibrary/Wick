@@ -283,12 +283,6 @@ export interface HTMLTextNode {
 export interface HTMLContainerNode extends HTMLNode {
 
     is_container: true,
-
-    /**
-     * Name of the tag. 
-     */
-    container_tag: string;
-    
     components: ComponentData[],
 
     component_names: string[],
