@@ -1,4 +1,4 @@
-import { JSNodeType, exp, stmt, JSNode, renderCompressed } from "@candlefw/js";
+import { JSNodeType, exp, stmt, JSNode, renderCompressed, JSCallExpression, JSNodeClass } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 import { matchAll } from "@candlefw/css";
 
@@ -50,7 +50,14 @@ export function createBindingObject(type: BindingType, priority: number = 0, pos
         pos
     };
 }
-
+/**
+ * (has side effects)
+ * @param function_node 
+ * @param component 
+ * @param presets 
+ * @param class_data 
+ * @returns 
+ */
 function addNewMethodFrame(function_node: JSNode, component: ComponentData, presets, class_data) {
     const frame = postProcessFunctionDeclarationSync(function_node, component, presets);
     class_data.frames.push(frame);
@@ -261,39 +268,34 @@ loadBindingHandler({
             binding = createBindingObject(BindingType.READONLY, 0, binding_node_ast.pos),
             { primary_ast } = binding_node_ast;
 
+
+        console.log(binding_selector, binding);
+
         if (primary_ast) {
 
             const ast = primary_ast;
-            /*
-            const receiver = { ast: null };
-
-            for (const { node, meta: { replace } } of traverse(primary_ast, "nodes").makeReplaceable().extract(receiver))
-                if (node.type == JSNodeType.IdentifierReference) {
-                    //   replace(Object.assign({}, node, { value: setVariableName(node.value, component) }));
-                }
-
-            const { ast } = receiver;
-            //*/
 
             let expression = null;
+            let name = null;
 
             if (ast.type == JSNodeType.IdentifierReference) {
-                let name = <string>ast.value;
+
+                name = <string>ast.value;
+
+
 
                 const frame = getFrameFromName(name, component);
 
                 if (frame && frame.index)
                     name = "f" + frame.index;
 
-                expression = stmt(`this.e${element_index}.addEventListener("${binding_selector.slice(2)}",this.${name}.bind(this));`);
-
                 frame.ATTRIBUTE = true;
             } else {
 
-                const name = "n" + element_index,
+                name = "n" + element_index;
 
-                    //Create new function method for the component
-                    fn = stmt(`function ${name}(){;};`);
+                //Create new function method for the component
+                const fn = stmt(`function ${name}(){;};`);
 
                 //need to make sure the 
 
@@ -304,9 +306,9 @@ loadBindingHandler({
                 }];
 
                 const frame = addNewMethodFrame(fn, component, presets, class_data);
-
-                expression = stmt(`this.e${element_index}.addEventListener("${binding_selector.slice(2)}",this.${name}.bind(this));`);
             }
+
+            expression = stmt(`this.e${element_index}.addEventListener("${binding_selector.slice(2)}",this.${name}.bind(this));`);
 
             setPos(expression, primary_ast.pos);
 
@@ -314,7 +316,6 @@ loadBindingHandler({
 
             binding.cleanup_ast = null;
         }
-
 
         return binding;
     }
@@ -594,6 +595,154 @@ loadBindingHandler({
             binding.read_ast = stmt_;
 
             binding.write_ast = exp(`this.ct[${(<HTMLNode>host_node).container_id}].filterExpressionUpdate()`);
+        }
+
+        return binding;
+    }
+});
+
+loadBindingHandler({
+    priority: 100,
+
+    canHandleBinding: (binding_selector, node_type) => binding_selector == "limit",
+
+    prepareBindingObject(binding_selector, binding_node_ast
+        , host_node, element_index, component, presets) {
+
+        if (!getElementAtIndex(component, element_index).is_container) return;
+
+        const
+            container_id = getElementAtIndex(component, element_index).container_id,
+            binding = createBindingObject(BindingType.READ_WRITE, 1000, binding_node_ast.pos),
+            { primary_ast, secondary_ast } = binding_node_ast;
+
+        if (primary_ast) {
+
+            if (primary_ast.type == JSNodeType.NumericLiteral) {
+                binding.read_ast = stmt(`this.ct[${container_id}].updateLimit(${primary_ast.value})`);
+            } else if (primary_ast.type & (JSNodeClass.EXPRESSION | JSNodeClass.IDENTIFIER)) {
+
+                const
+                    ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                    stmt_ = <JSCallExpression>setPos(stmt(`this.ct[${container_id}].updateLimit(a)`), primary_ast.pos);
+
+                stmt_.nodes[0].nodes[1].nodes[0] = ast;
+
+                binding.write_ast = stmt_;
+
+                //binding.write_ast = stmt_;
+            }
+        }
+
+        return binding;
+    }
+});
+
+loadBindingHandler({
+    priority: 100,
+
+    canHandleBinding: (binding_selector, node_type) => binding_selector == "scrub",
+
+    prepareBindingObject(binding_selector, binding_node_ast
+        , host_node, element_index, component, presets) {
+
+        if (!getElementAtIndex(component, element_index).is_container) return;
+
+        const
+            container_id = getElementAtIndex(component, element_index).container_id,
+            binding = createBindingObject(BindingType.READ_WRITE, 1000, binding_node_ast.pos),
+            { primary_ast, secondary_ast } = binding_node_ast;
+
+        if (primary_ast) {
+
+            if (primary_ast.type == JSNodeType.NumericLiteral) {
+                binding.read_ast = stmt(`this.ct[${container_id}].updateScrub(${primary_ast.value})`);
+            } else if (primary_ast.type & (JSNodeClass.EXPRESSION | JSNodeClass.IDENTIFIER)) {
+
+                const
+                    ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                    stmt_ = <JSCallExpression>setPos(stmt(`this.ct[${container_id}].updateScrub(a)`), primary_ast.pos);
+
+                stmt_.nodes[0].nodes[1].nodes[0] = ast;
+
+                binding.write_ast = stmt_;
+
+                //binding.write_ast = stmt_;
+            }
+        }
+
+        return binding;
+    }
+});
+
+loadBindingHandler({
+    priority: 100,
+
+    canHandleBinding: (binding_selector, node_type) => binding_selector == "shift",
+
+    prepareBindingObject(binding_selector, binding_node_ast
+        , host_node, element_index, component, presets) {
+
+        if (!getElementAtIndex(component, element_index).is_container) return;
+
+        const
+            container_id = getElementAtIndex(component, element_index).container_id,
+            binding = createBindingObject(BindingType.READ_WRITE, 1000, binding_node_ast.pos),
+            { primary_ast, secondary_ast } = binding_node_ast;
+
+        if (primary_ast) {
+
+            if (primary_ast.type == JSNodeType.NumericLiteral) {
+                binding.read_ast = stmt(`this.ct[${container_id}].updateShift(${primary_ast.value})`);
+            } else if (primary_ast.type & JSNodeClass.EXPRESSION | JSNodeClass.IDENTIFIER) {
+
+                const
+                    ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                    stmt_ = <JSCallExpression>setPos(stmt(`this.ct[${container_id}].updateShift(a)`), primary_ast.pos);
+
+                stmt_.nodes[0].nodes[1].nodes[0] = ast;
+
+                binding.write_ast = stmt_;
+
+                //binding.write_ast = stmt_;
+            }
+        }
+
+        return binding;
+    }
+});
+
+loadBindingHandler({
+    priority: 100,
+
+    canHandleBinding: (binding_selector, node_type) => binding_selector == "offset",
+
+    prepareBindingObject(binding_selector, binding_node_ast
+        , host_node, element_index, component, presets) {
+
+        if (!getElementAtIndex(component, element_index).is_container) return;
+
+        const
+            container_id = getElementAtIndex(component, element_index).container_id,
+            binding = createBindingObject(BindingType.READ_WRITE, 1000, binding_node_ast.pos),
+            { primary_ast, secondary_ast } = binding_node_ast;
+
+        if (primary_ast) {
+
+            if (primary_ast.type == JSNodeType.NumericLiteral) {
+                binding.read_ast = stmt(`this.ct[${container_id}].updateOffset(${primary_ast.value})`);
+            } else if (primary_ast.type & (JSNodeClass.EXPRESSION | JSNodeClass.IDENTIFIER)) {
+
+                const
+                    ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                    stmt_ = <JSCallExpression>setPos(stmt(`this.ct[${container_id}].updateOffset(a)`), primary_ast.pos);
+
+                stmt_.nodes[0].nodes[1].nodes[0] = ast;
+
+                binding.write_ast = stmt_;
+
+                //binding.write_ast = stmt_;
+            }
         }
 
         return binding;

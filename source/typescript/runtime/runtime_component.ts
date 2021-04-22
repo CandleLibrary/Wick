@@ -59,7 +59,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     protected wrapper?: WickRTComponent;
 
     TRANSITIONED_IN: boolean;
-    DESTROY_ON_TRANSITION: boolean;
+    DESTROY_AFTER_TRANSITION: boolean;
 
     out_trs: any;
 
@@ -308,6 +308,29 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
      *    ██    ██   ██ ██   ██ ██   ████ ███████ ██    ██    ██  ██████  ██   ████ ███████
      */
 
+
+    oTI(row, col, DESCENDING, trs) { }
+    oTO(row, col, DESCENDING, trs) { }
+    aRR(row, col, trs) { }
+
+
+    onTransitionOutEnd() {
+
+        if (!this.TRANSITIONED_IN) {
+
+            this.removeFromDOM();
+
+            if (this.DESTROY_AFTER_TRANSITION)
+                this.destructor();
+
+            this.DESTROY_AFTER_TRANSITION = false;
+        }
+
+        this.out_trs = null;
+
+        return false;
+    }
+
     /**
      * Call when the component is about to be removed from the DOM. 
      * 
@@ -316,10 +339,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
      * @param DESTROY_AFTER_TRANSITION 
      * @param transition_name 
      */
+    transitionOut(row, col, DESCENDING, transition = null, DESTROY_AFTER_TRANSITION = false) {
 
-    transitionOut(transition?, DESTROY_AFTER_TRANSITION = false, transition_name = "trs_out") {
-
-        this.DESTROY_ON_TRANSITION = DESTROY_AFTER_TRANSITION;
+        this.DESTROY_AFTER_TRANSITION = DESTROY_AFTER_TRANSITION;
 
         this.TRANSITIONED_IN = false;
 
@@ -329,49 +351,49 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             this.out_trs.trs.removeEventListener("stopped", this.out_trs.fn);
 
         if (transition) {
-            this.update({
-                [transition_name]: transition
-            }/*, null, false, { IMMEDIATE: true }*/);
 
-            const trs = transition.trs || transition;
+            this.oTO(row, col, DESCENDING, transition.in);
 
-            this.out_trs = { trs, fn: this.outTransitionStop.bind(this) };
-
-            transition_time = trs.out_duration;
-
-            trs.addEventListener("stopped", this.out_trs.fn);
-
-        } else {
-            if (!this.out_trs) {
-                this.outTransitionStop();
+            try {
+                this.out_trs = { trs: transition, fn: this.onTransitionOutEnd.bind(this) };
+                transition_time = transition.out_duration;
+                transition.addEventListener("stopped", this.out_trs.fn);
+            } catch (e) {
+                console.log(e);
             }
-        }
+        } else if (!this.out_trs)
+            this.onTransitionOutEnd();
 
         transition_time = Math.max(transition_time, 0);
 
         return transition_time;
     }
 
-    outTransitionStop() {
 
-        if (!this.TRANSITIONED_IN) {
-            this.removeFromDOM();
-            if (this.DESTROY_ON_TRANSITION) this.destructor();
-            this.DESTROY_ON_TRANSITION = false;
+    /**
+     * Call when the ordering of the component changes the component 
+     * should be repositioned according to the new ordering. 
+     * @param row The new row number in which the component lies
+     * @param col The new column number in which the component lies
+     * @param trs A transition object that can be used to animate the position change
+     */
+    arrange(row, col, trs) { this.aRR(row, col, trs.in); }
+
+    /**
+     * Call when the object should transition from an out of view state to 
+     * an in view state. 
+     * @param row The new row number in which the component lies
+     * @param col The new column number in which the component lies
+     * @param DESCENDING If true the transition occurs from a high positional index to 
+     * a lower positional index
+     * @param trs A transition object that can be used to animate the position change
+     */
+    transitionIn(row, col, DESCENDING, trs) {
+        try {
+            this.oTI(row, col, DESCENDING, trs.in); this.TRANSITIONED_IN = true;
+        } catch (e) {
+            console.log(e);
         }
-
-        this.out_trs = null;
-
-        return false;
-    }
-
-    transitionIn(transition, transition_name = "trs_in") {
-        if (transition)
-            this.update({
-                [transition_name]: transition
-            }/*, null, false, { IMMEDIATE: true }*/);
-
-        this.TRANSITIONED_IN = true;
     }
 
     /***
@@ -579,6 +601,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         for (const [call_id, args] of this.clearActiveCalls())
             this.lookup_function_table[call_id].call(this, ...args);
+
+        if (IMMEDIATE)
+            this.scheduledUpdate(0, 0);
     }
 
     updateChildren(data, flags) {

@@ -431,22 +431,47 @@ loadJSHandlerInternal(
              * Automatic event handler for root element
              */
             if (name.slice(0, 2) == "on") {
-                component.addBinding({
-                    binding_selector: name,
-                    binding_val: <WickBindingNode>{
-                        type: HTMLNodeType.WickBinding,
-                        primary_ast: Object.assign(
-                            {},
-                            name_node,
-                            { type: JSNodeType.IdentifierReference }
-                        ),
-                        value: name.slice(1),
-                        IS_BINDING: true
-                    },
-                    host_node: node,
-                    html_element_index: 0,
-                    pos: node.pos
-                });
+                /**
+                 * Any method that is directly called by the component 
+                 * runtime system should be mapped here to common names 
+                 * that exist for that internal method. 
+                 * 
+                 * If internal_method_name is defined, then DO NOT create a
+                 * event listener call.
+                 */
+                const internal_method_name = {
+                    "ontransitionin": "oTI",
+                    "ontrsin": "oTI",
+                    "ontransitionout": "oTO",
+                    "ontrsout": "oTO",
+                    "onarrange": "aRR",
+                    "onload": "onload",
+                    "onload": "onload",
+                }[name.toLocaleLowerCase()] ?? "";
+
+                if (internal_method_name != "") {
+                    // This should be an internally called method
+                    name_node.value = internal_method_name;
+                } else {
+
+                    //For use with DOM on* methods
+                    component.addBinding({
+                        binding_selector: name,
+                        binding_val: <WickBindingNode>{
+                            type: HTMLNodeType.WickBinding,
+                            primary_ast: Object.assign(
+                                {},
+                                name_node,
+                                { type: JSNodeType.IdentifierReference }
+                            ),
+                            value: name.slice(2),
+                            IS_BINDING: true
+                        },
+                        host_node: node,
+                        html_element_index: 0,
+                        pos: node.pos
+                    });
+                }
             } else if (name[0] == "$") {
 
                 if (frame.IS_ROOT) {
@@ -565,7 +590,7 @@ loadJSHandlerInternal(
 █████     ███   ██████  ██████  █████   ███████ ███████ ███████ ██ ██    ██ ██ ██  ██       
 ██       ██ ██  ██      ██   ██ ██           ██      ██      ██ ██ ██    ██ ██  ██ ██       
 ███████ ██   ██ ██      ██   ██ ███████ ███████ ███████ ███████ ██  ██████  ██   ████
-
+ 
 + Post(++|--) and (++|--)Pre increment expressions
 */
 loadJSHandlerInternal(

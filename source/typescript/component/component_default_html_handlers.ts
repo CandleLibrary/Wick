@@ -216,7 +216,7 @@ loadHTMLHandlerInternal(
 
             if (node.name == "element") {
 
-                (<HTMLContainerNode>host_node).container_tag = node.value;
+                host_node.tag = node.value;
 
                 return;
             }
@@ -226,9 +226,14 @@ loadHTMLHandlerInternal(
                     || node.name == "filter"
                     || node.name == "sort"
                     || node.name == "shift"
+                    || node.name == "offset"
+                    || node.name == "limit"
                     || node.name == "scrub"
                 ) {
+                    console.log("--------------------------- 1111 -----------------------------", host_node.container_id);
+
                     node.container_id = host_node.container_id;
+
                     return;
                 }
             }
@@ -333,7 +338,9 @@ loadHTMLHandlerInternal(
 
                 node.component = comp;
 
-                node.component_name = node.component.name;
+                if (comp)
+
+                    node.component_name = node.component.name;
 
                 node.tag = "div";
             }
@@ -353,6 +360,12 @@ loadHTMLHandlerInternal(
                     let ch = null;
 
                     const ctr: HTMLContainerNode = <HTMLContainerNode>Object.assign({
+
+                        is_container: true,
+
+                        mango: "as",
+
+                        container_id: component.container_count,
 
                         components: [],
 
@@ -415,9 +428,9 @@ loadHTMLHandlerInternal(
 
                     }
 
-                    ctr.is_container = true;
+                    component.container_count++;
 
-                    ctr.container_id = component.container_count++;
+                    //ctr.is_container = true;
 
                     ctr.nodes.length = 0;
 
@@ -496,6 +509,7 @@ loadHTMLHandlerInternal(
 
             if (id) {
                 const fn_ast = stmt(`function ${id}(){;};`);
+
                 fn_ast.nodes[2].nodes = script.nodes;
 
                 addBindingVariable({

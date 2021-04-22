@@ -74,7 +74,6 @@ export const enum BINDING_SELECTOR {
     EXPORT_TO_PARENT = "etp",
     INPUT_VALUE = "imp",
     CONTAINER_USE_IF = "cui",
-    CONTAINER_USE_EMPTY = "cue",
     BINDING_INITIALIZATION = "bin"
 }
 
