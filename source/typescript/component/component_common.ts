@@ -3,7 +3,7 @@ import { JSNode, JSNodeType } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
 
 import Presets from "../presets.js";
-import { compileComponent } from "./component.js";
+import makeComponent, { compileComponent } from "./component.js";
 import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
 import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
 import { FunctionFrame } from "../types/function_frame";
@@ -60,12 +60,14 @@ export async function importComponentData(new_component_url, component, presets,
 
     try {
 
-        const { ast, string, resolved_url } = await acquireComponentASTFromRemoteSource(new URL(new_component_url), component.location);
+        const comp_data = await makeComponent(new URL(new_component_url), presets, component.location);
+
+        //const { ast, string, resolved_url } = await acquireComponentASTFromRemoteSource(new URL(new_component_url), component.location);
 
         // If the ast is an HTML_NODE with a single style element, then integrate the 
         // css data into the current component. 
 
-        const comp_data = await compileComponent(ast, string, resolved_url, presets);
+        //const comp_data = await compileComponent(ast, string, resolved_url, presets);
 
         componentDataToJSCached(comp_data, presets);
 
