@@ -6,9 +6,7 @@
 
 @EXT html
 
-@SYMBOL </ <! -- 
-
-@IGNORE θws θnl 
+@IGNORE g:ws g:nl 
 
 @IMPORT ./string.hcg as string
 
@@ -18,76 +16,90 @@
 ##############################################################################################
 ##############################################################################################
     
-<> HTML → RESULT
+<> HTML > RESULT
 
-<> RESULT → DTD(*) BODY                                                                     ↦r { $sym2.DTD = $sym1, $sym2 }
+<> RESULT > DTD(*) BODY                                                                     
+                                                                f:r { $sym2.DTD = $sym1, $sym2 }
 
-<> BODY → GOAL_TAG
+<> BODY > GOAL_TAG
 
-<> GOAL_TAG → TAG
+<> GOAL_TAG > TAG
 
-<> TAG → < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >                                     
-                                        ↦r { { type:env.typ["HTML_"+$sym2.toUpperCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:$sym5 || [], VOID:false, pos } }
-    │ < TAGNAME ATTRIBUTES? / >                                                             
-                                        ↦r { { type:env.typ["HTML_"+$sym2.toUpperCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:false, pos } }
-    │ < VOID_NAME ATTRIBUTES? /? >                                                          
-                                        ↦r { { type:env.typ["HTML_"+$sym2.toUpperCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:true, pos } }
+<> TAG > < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >                                     
+                                        f:r { { type:env.typ["HTML_"+$sym2.toUpperCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:$sym5 || [], VOID:false, pos } }
+    | < TAGNAME ATTRIBUTES? / >                                                             
+                                        f:r { { type:env.typ["HTML_"+$sym2.toUpperCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:false, pos } }
+    | < VOID_NAME ATTRIBUTES? /? >                                                          
+                                        f:r { { type:env.typ["HTML_"+$sym2.toUpperCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:true, pos } }
     
-<> DTD → <! θid? --?  TEXT_NODE_DATA  --? >                                                 ↦r { { type:"DTD", tag:$$sym2|| "", value:$$sym4 }  }                
+<> DTD > \<! g:id? \-- ?  TEXT_NODE_DATA  \-- ? \>                                                 
+                                                                f:r { { type:"DTD", tag:$$sym2|| "", value:$$sym4 }  }                
 
 
 ###########################################################################################
 # https://www.w3.org/TR/2011/WD-html-markup-20110113/syntax.html#syntax-elements
 ###########################################################################################
 
-<> VOID_NAME → τinput
-    │ τarea
-    │ τbase
-    │ τbr
-    │ τcol
-    │ τcommand
-    │ τembed
-    │ τhr
-    │ τimg
-    │ τkeygen
-    │ τlink
-    │ τmeta
-    │ τparam
-    │ τsource
-    │ τtrack
-    │ τwbr
+<> VOID_NAME > τinput
+    | τarea
+    | τbase
+    | τbr
+    | τcol
+    | τcommand
+    | τembed
+    | τhr
+    | τimg
+    | τkeygen
+    | τlink
+    | τmeta
+    | τparam
+    | τsource
+    | τtrack
+    | τwbr
 
-<> TAG_BODY → TAG_BODY_ITEM(+)
+<> TAG_BODY > TAG_BODY_ITEM(+)
 
-<> TAG_BODY_ITEM → TEXT_NODE                        
-    │ TAG
-    │ DTD                                                                                                                            
+<> TAG_BODY_ITEM > TEXT_NODE                        
+    | TAG
+    | DTD                                                                                                                            
     
-<> ATTRIBUTES → ATTRIBUTE(+)                                                                    ↦r { $$sym1 }
+<> ATTRIBUTES > ATTRIBUTE(+)                                    f:r { $$sym1 }
 
-<> ATTRIBUTE → ATTRIBUTE_HEAD \= ATTRIBUTE_BODY                                                  
-                                            ↦r { {type:env.typ.HTMLAttribute, name:$sym1, value:$sym3, IS_BINDING:false, pos } }
-    │ ATTRIBUTE_HEAD                                                                            
-                                            ↦r { {type:env.typ.HTMLAttribute, name:$sym1, value:"", IS_BINDING:false, pos } }
+<> ATTRIBUTE > ATTRIBUTE_HEAD \= ATTRIBUTE_BODY                                                  
+                                                                f:r { {type:env.typ.HTMLAttribute, name:$sym1, value:$sym3, IS_BINDING:false, pos } }
+    | ATTRIBUTE_HEAD                                                                            
+                                                                f:r { {type:env.typ.HTMLAttribute, name:$sym1, value:"", IS_BINDING:false, pos } }
 
-<> ATTRIBUTE_HEAD → ' identifier? '                                                             ↦r { $$sym2 }
-    │ " identifier? "                                                                           ↦r { $$sym2 }
-    │ identifier
+<> ATTRIBUTE_HEAD > ' identifier? '                                                             
+                                                                f:r { $$sym2 }
+    | " identifier? "                                                                           
+                                                                f:r { $$sym2 }
+    | identifier
 
-<> ATTRIBUTE_BODY → \" BODY_SYMBOLS(*") \"                                                      f:return{ $sym2 || "" }
-    | \' BODY_SYMBOLS(*") \''                                                                   f:return{ $sym2 || "" }
-    │ identifier
-    │ θnum                                          
+<> ATTRIBUTE_BODY > \" BODY_SYMBOLS(*\" ) \"                                                      
+                                                                f:return{ $sym2 || "" }
+    | \' BODY_SYMBOLS(*\" ) \''                                                                   
+                                                                f:return{ $sym2 || "" }
+    | identifier
+    | g:num                                          
 
-<> TAGNAME → (RED θnl) identifier
+<> TAGNAME > (RED g:nl) identifier
 
 
-<> identifier → θid ( θid │ \- │ \: │ θnum )(*")                                  				        ↦r { $sym1 + $sym2 } 
+<> identifier > g:id ( g:id | \- | \: | g:num )(*\" )                                  			
+                                                                f:r { $sym1 + $sym2 } 
 
-<> TEXT_NODE → TEXT_NODE_DATA                                                                   ↦r { {type:env.typ.HTMLText, data:$sym1, IS_BINDING:false, pos } }
-<> TEXT_NODE_DATA → BODY_SYMBOLS(+")                                                            
+<> TEXT_NODE > TEXT_NODE_DATA                                                                   
+                                                                f:r { {type:env.typ.HTMLText, data:$sym1, IS_BINDING:false, pos } }
+<> TEXT_NODE_DATA > BODY_SYMBOLS(+\" )                                                            
  
-<> BODY_SYMBOLS → θid │ θnl │ θws │ θsym │ θop │ θob │ θcb │ θnum │ θkeyword │ θany │ \! │ \( 
+<> BODY_SYMBOLS > g:id 
+    | g:nl 
+    | g:ws 
+    | g:sym 
+    | g:num 
+    | \! 
+    | \( 
 
 
 
