@@ -10,7 +10,7 @@ export function createErrorComponent(errors: Error[], src: string, location: str
 
     const error_data = [...errors
         .map(
-            e => (e + "")
+            e => (e.stack + "")
             //.split("\n")
         )
         //.map(s => s.replace(/\ /g, "\u00A0"))

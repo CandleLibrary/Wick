@@ -127,33 +127,37 @@ export async function compileComponent(
 
     component.comments = comments;
 
-    if (ast && parse_errors.length == 0)
+    if (ast)
         try {
 
-            const IS_SCRIPT = determineSourceType(ast);
+            if (ast && parse_errors.length == 0) {
 
-            if (presets.components.has(component.name))
-                return presets.components.get(component.name);
+                const IS_SCRIPT = determineSourceType(ast);
 
-            presets.components.set(component.name, component);
+                if (presets.components.has(component.name))
+                    return presets.components.get(component.name);
 
-            if (IS_SCRIPT)
-                await processWickJS_AST(<JSNode>ast, component, presets);
-            else
-                await processWickHTML_AST(getHTML_AST(ast), component, presets);
+                presets.components.set(component.name, component);
 
-            for (const name of component.names)
-                presets.named_components.set(name.toUpperCase(), component);
+                if (IS_SCRIPT)
+                    await processWickJS_AST(<JSNode>ast, component, presets);
+                else
+                    await processWickHTML_AST(getHTML_AST(ast), component, presets);
+
+                for (const name of component.names)
+                    presets.named_components.set(name.toUpperCase(), component);
+
+                if (component.HAS_ERRORS)
+                    throw new Error("Component has errors");
+
+                return component;
+            }
 
         } catch (e) {
-            parse_errors.push(e);
+            parse_errors.push(e, ...(component?.errors ?? []));
         }
+    return createErrorComponent(parse_errors, source_string, url, component);
 
-    if (parse_errors.length > 0) {
-        return createErrorComponent(parse_errors, source_string, url, component);
-    }
-
-    return component;
 }
 
 
