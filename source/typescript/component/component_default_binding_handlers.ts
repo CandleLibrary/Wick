@@ -268,9 +268,6 @@ loadBindingHandler({
             binding = createBindingObject(BindingType.READONLY, 0, binding_node_ast.pos),
             { primary_ast } = binding_node_ast;
 
-
-        console.log(binding_selector, binding);
-
         if (primary_ast) {
 
             const ast = primary_ast;
@@ -281,8 +278,6 @@ loadBindingHandler({
             if (ast.type == JSNodeType.IdentifierReference) {
 
                 name = <string>ast.value;
-
-
 
                 const frame = getFrameFromName(name, component);
 
@@ -309,6 +304,69 @@ loadBindingHandler({
             }
 
             expression = stmt(`this.e${element_index}.addEventListener("${binding_selector.slice(2)}",this.${name}.bind(this));`);
+
+            setPos(expression, primary_ast.pos);
+
+            binding.read_ast = expression;
+
+            binding.cleanup_ast = null;
+        }
+
+        return binding;
+    }
+});
+
+
+loadBindingHandler({
+    priority: 2,
+
+    canHandleBinding(binding_selector, node_type) {
+        return (binding_selector.slice(0, 2) == "on" && binding_selector.slice(-7) == "_window");
+    },
+
+    prepareBindingObject(binding_selector, binding_node_ast
+        , host_node, element_index, component, presets, class_data) {
+
+        const
+            binding = createBindingObject(BindingType.READONLY, 0, binding_node_ast.pos),
+            { primary_ast } = binding_node_ast;
+
+        if (primary_ast) {
+
+            const ast = primary_ast;
+
+            let expression = null;
+            let name = null;
+
+            if (ast.type == JSNodeType.IdentifierReference) {
+
+                name = <string>ast.value;
+
+                const frame = getFrameFromName(name, component);
+
+                if (frame && frame.index)
+                    name = "f" + frame.index;
+
+                frame.ATTRIBUTE = true;
+            } else {
+
+                name = "n" + element_index;
+
+                //Create new function method for the component
+                const fn = stmt(`function ${name}(){;};`);
+
+                //need to make sure the 
+
+                fn.nodes[2].nodes = [{
+                    type: JSNodeType.ExpressionStatement,
+                    nodes: [ast],
+                    pos: ast.pos
+                }];
+
+                const frame = addNewMethodFrame(fn, component, presets, class_data);
+            }
+
+            expression = stmt(`window.addEventListener("${binding_selector.slice(2, -7)}",this.${name}.bind(this));`);
 
             setPos(expression, primary_ast.pos);
 
