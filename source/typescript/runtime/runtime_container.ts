@@ -218,7 +218,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
 
     /**
-     * Called by component when when container data should be set.
+     * Called by component when container data should be set.
      * @param container 
      */
     sd(container: any[] | ObservableModel) {
@@ -289,10 +289,13 @@ export class WickContainer implements Sparky, ObservableWatcher {
      */
     scrub(scrub_delta, SCRUBBING = true) {
 
+        const w_data = this.getWindowData();
+
         // scrub_delta is the relative amount of change from the previous offset. 
 
         if (!this.SCRUBBING)
-            this.mutateDOM(null, this.activeComps, true);
+            this.arrangeScrub(w_data, this.activeComps);
+
 
         this.SCRUBBING = true;
 
@@ -306,29 +309,31 @@ export class WickContainer implements Sparky, ObservableWatcher {
         if (scrub_delta !== Infinity) {
 
             if (Math.abs(delta_offset) > 1) {
-                if (delta_offset > 1) {
-
+                if (delta_offset > 0) {
                     delta_offset = delta_offset % 1;
                     this.offset_fractional = delta_offset;
                     this.scrub_velocity = scrub_delta;
 
                     if (this.offset < this.max)
-                        this.trs_ascending.play(1);
+                        this.trs_ascending.step(1);
 
                     this.offset++;
                     this.offset_diff = 1;
-                    this.mutateDOM(null, this.activeComps, true).play(1);
+
+                    this.mutateDOM(this.getWindowData(), null, this.activeComps, true, false).step(1).issueStopped();
+                    this.arrangeScrub(w_data, this.activeComps);
                 } else {
                     delta_offset = delta_offset % 1;
                     this.offset_fractional = delta_offset;
                     this.scrub_velocity = scrub_delta;
 
                     if (this.offset >= 1)
-                        this.trs_descending.play(1);
+                        this.trs_descending.step(1);
                     this.offset--;
                     this.offset_diff = -1;
 
-                    this.mutateDOM(null, this.activeComps, true).play(1);
+                    this.mutateDOM(this.getWindowData(), null, this.activeComps, true, false).step(1).issueStopped();
+                    this.arrangeScrub(w_data, this.activeComps);
                 }
 
             }
@@ -358,7 +363,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
                 if (!this.DOM_DN_APPENDED) {
 
                     for (let i = 0; i < this.dom_dn.length; i++) {
-                        this.append(this.dom_up[i], this.dom_comp[0].ele);
+                        this.append(this.dom_dn[i], this.dom_comp[0].ele);
                         this.dom_dn[i].index = -1;
                     }
 
@@ -367,7 +372,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
                     this.DOM_DN_APPENDED = true;
                 }
 
-                this.trs_descending.play(-delta_offset);
+                this.trs_descending.step(-delta_offset);
             }
 
             this.offset_fractional = delta_offset;
@@ -405,21 +410,17 @@ export class WickContainer implements Sparky, ObservableWatcher {
                 this.offset += Math.round(this.offset_fractional);
                 this.scrub_velocity = 0;
                 this.offset_fractional = 0;
-                this.mutateDOM(null, this.activeComps, true).play(1);
+                this.mutateDOM(this.getWindowData(), null, this.activeComps, true).step(1).issueStopped();
                 this.SCRUBBING = false;
                 return false;
             }
         }
     }
 
-    arrangeScrub(output = this.activeComps) {
+    arrangeScrub(w_data: WindowData, output = this.activeComps) {
 
-        let
-            offset = Math.max(0, this.offset),
-            output_length = output.length,
-            active_window_size = this.limit,
-
-            active_window_start = offset * this.shift_amount;
+        let { limit, offset, output_length, active_window_start } = w_data,
+            active_window_size = this.limit;
 
         if (active_window_size > 0) {
 
@@ -642,13 +643,16 @@ export class WickContainer implements Sparky, ObservableWatcher {
         return j;
     }
 
-    mutateDOM(w_data: WindowData, transition?, output = this.activeComps, NO_TRANSITION = false) {
+    mutateDOM(w_data: WindowData, transition?, output = this.activeComps, NO_TRANSITION = false, USE_ARRANGE_SCRUB = false) {
 
         let
             OWN_TRANSITION = false;
 
         if (!transition) transition = createTransition(), OWN_TRANSITION = true;
 
+        // if (USE_ARRANGE_SCRUB)
+        //     this.arrangeScrub(w_data, output);
+        // else
         this.arrange(w_data, output, transition);
 
         this.appendToDOM(w_data, output, transition);
@@ -730,6 +734,15 @@ export class WickContainer implements Sparky, ObservableWatcher {
         this.UPDATE_FILTER = false;
 
         return output;
+    }
+
+    updateScrub(value: number) {
+        if (typeof value == "number" && value != 0)
+            this.scrub(value);
+        else if (value === null && this.SCRUBBING) {
+            this.AUTO_SCRUB = true;
+            this.scheduledUpdate();
+        }
     }
 
     updateLimit(value: number) {
