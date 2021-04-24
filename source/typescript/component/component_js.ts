@@ -43,10 +43,11 @@ async function processCoreAsync(ast: JSNode, function_frame: FunctionFrame, comp
         .extract(function_frame)
     ) {
 
-        if (node.type & JSNodeClass.BLOCK) {
-            const temp_ff = processPreamble(node, component, frame, true);
-            await processCoreAsync(node, temp_ff, component, presets, root_name, function_frame);
-            meta.skip();
+        if (node.type & JSNodeClass.BLOCK && (node.type != JSNodeType.FunctionBody || meta.depth > 2)) {
+            //console.log(0, 3, ext(node, true));
+            //const temp_ff = createFunctionFrame(node, component, frame, true);
+            //await processCoreAsync(node, temp_ff, component, presets, root_name, function_frame);
+            //meta.skip();
         }
 
         for (const handler of JS_handlers[Math.max((node.type >>> 23), 0)]) {
@@ -87,12 +88,6 @@ export function processCoreSync(ast: JSNode, function_frame: FunctionFrame, comp
         .makeSkippable()
         .extract(function_frame)
     ) {
-        if (node.type & JSNodeClass.BLOCK) {
-            // const temp_ff = processPreamble(node, component, frame, true);
-            // processCoreSync(node, temp_ff, component, presets, root_name, frame);
-            // meta.skip();
-        }
-
         for (const handler of JS_handlers[Math.max((node.type >>> 23), 0)]) {
 
             const pending = handler.prepareJSNode(node, meta.parent, meta.skip, component, presets, function_frame);
