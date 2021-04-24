@@ -37,6 +37,7 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
 
     //registerActivatedFrameMethod(frame, class_information);
 
+
     if (ast) {
 
 
@@ -75,7 +76,6 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
         cpy.type = JSNodeType.Method;
 
         if (!frame.IS_ROOT) {
-
 
             let id_indices = [];
 

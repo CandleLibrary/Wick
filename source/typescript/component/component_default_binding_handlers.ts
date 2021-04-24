@@ -78,6 +78,8 @@ function setIdentifierReferenceVariables(root_node: JSNode, component: Component
 
         if (node.type == JSNodeType.IdentifierReference || node.type == JSNodeType.IdentifierBinding) {
 
+
+
             const val = node.value;
 
             if (!component_names.has(<string>val))
@@ -95,6 +97,7 @@ function setIdentifierReferenceVariables(root_node: JSNode, component: Component
 
 
 function setBindingVariable(name: string, IS_OBJECT: boolean = false, binding: BindingObject) {
+
     if (binding.component_variables.has(name)) {
         const variable = binding.component_variables.get(name);
         variable.IS_OBJECT = !!(+variable.IS_OBJECT | +IS_OBJECT);

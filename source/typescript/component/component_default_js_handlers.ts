@@ -302,7 +302,7 @@ loadJSHandlerInternal(
 ██      ██       ██ ██  ██ ██      ██   ██ ██      
 ███████ ███████ ██   ██ ██  ██████ ██   ██ ███████ 
 */
-// These variables are accessible by all bindings within the components
+// These variables are accessible by all bindings within the component's
 // scope. 
 loadJSHandlerInternal(
     {
@@ -446,7 +446,6 @@ loadJSHandlerInternal(
                     "ontrsout": "oTO",
                     "onarrange": "aRR",
                     "onload": "onload",
-                    "onload": "onload",
                 }[name.toLocaleLowerCase()] ?? "";
 
                 if (internal_method_name != "") {
@@ -558,6 +557,8 @@ loadJSHandlerInternal(
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
             const name = <string>node.value;
+
+
 
             if (!isVariableDeclared(name, frame)
                 && isBindingVariable(name, frame)) {
