@@ -7,7 +7,7 @@ import Presets from "../presets.js";
 import { JS_handlers } from "./component_default_js_handlers.js";
 import { createFrame } from "./component_create_frame.js";
 
-function processPreamble(ast: JSNode, component: ComponentData, frame: FunctionFrame = null, DONT_ATTACH = false, TEMPORARY = DONT_ATTACH) {
+function getFunctionFrame(ast: JSNode, component: ComponentData, frame: FunctionFrame = null, DONT_ATTACH = false, TEMPORARY = DONT_ATTACH) {
     const function_frame = frame
         ? createFrame(frame, component, DONT_ATTACH, TEMPORARY)
         : component.root_frame;
@@ -26,8 +26,8 @@ function processPreamble(ast: JSNode, component: ComponentData, frame: FunctionF
  * Each node is processed by a dedicated @JSHandler that can opt to transform 
  * the node, replace it, or ignore it. If more than one handler is able to
  * process a given node type, then the @JSHandler that first returns a value
- * other than defined will be the last handler that is able to modify that
- * node. Processing will then proceed to the next node in the AST.
+ * other than undefined will be the last handler that is able to modify that
+ * node. Processing will then proceed to the next node in the tree.
  * 
  * Once all nodes are processed, an output AST is assigned to the function frame`s
  * `ast` property. There are no guarantees the input AST will not be modified
@@ -175,7 +175,7 @@ export async function processFunctionDeclaration(node: JSNode, component: Compon
 export async function processWickJS_AST(ast: JSNode, component: ComponentData, presets: Presets, root_name = "", frame = null, TEMPORARY = false): Promise<FunctionFrame> {
     return await processCoreAsync(
         ast,
-        processPreamble(ast, component, frame, TEMPORARY),
+        getFunctionFrame(ast, component, frame, TEMPORARY),
         component,
         presets,
         root_name
@@ -185,7 +185,7 @@ export async function processWickJS_AST(ast: JSNode, component: ComponentData, p
 export function processFunctionDeclarationSync(node: JSNode, component: ComponentData, presets: Presets) {
     return processCoreSync(
         node,
-        processPreamble(node, component, component.root_frame),
+        getFunctionFrame(node, component, component.root_frame),
         component,
         presets
     );
@@ -194,7 +194,7 @@ export function processFunctionDeclarationSync(node: JSNode, component: Componen
 export function postProcessFunctionDeclarationSync(node: JSNode, component: ComponentData, presets: Presets) {
     return processCoreSync(
         node,
-        processPreamble(node, component, component.root_frame, true, false),
+        getFunctionFrame(node, component, component.root_frame, true, false),
         component,
         presets,
     );
