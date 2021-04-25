@@ -1,5 +1,6 @@
 import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
 import { ComponentData } from "../types/component_data";
+import { BindingVariable } from "../wick";
 
 
 let SET_ONCE_environment_globals = null;
@@ -15,14 +16,14 @@ export function getSetOfEnvironmentGlobalNames(): Set<string> {
     return SET_ONCE_environment_globals;
 }
 
-export function getComponentVariable(name, component: ComponentData) {
+export function getComponentVariable(name: string, component: ComponentData): BindingVariable {
     // Allow global objects to be accessed if there are no existing
     // component variables that have an identifier that matches [name]
     if (!component.root_frame.binding_type.has(name)) return null;
     return component.root_frame.binding_type.get(name);
 }
 
-export function getComponentVariableName(name, component: ComponentData) {
+export function getComponentVariableName(name: string, component: ComponentData) {
 
     const comp_var = getComponentVariable(name, component);
 
