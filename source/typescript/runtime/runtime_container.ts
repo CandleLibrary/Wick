@@ -185,6 +185,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
         this.offset_diff = 0;
         this.offset_fractional = 0;
         this.scrub_velocity = 0;
+        this.drag = 0.5;
 
         this.trs_ascending = null;
         this.trs_descending = null;
@@ -291,6 +292,11 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
         const w_data = this.getWindowData();
 
+        if (w_data.limit == 0) {
+            this.SCRUBBING = false;
+            return;
+        }
+
         // scrub_delta is the relative amount of change from the previous offset. 
 
         if (!this.SCRUBBING)
@@ -381,16 +387,18 @@ export class WickContainer implements Sparky, ObservableWatcher {
             return true;
         } else {
 
+            // Velocity Physics
+
             if (Math.abs(this.scrub_velocity) > 0.0001) {
                 const sign = Math.sign(this.scrub_velocity);
 
-                if (Math.abs(this.scrub_velocity) < 0.1) this.scrub_velocity = 0.1 * sign;
-                if (Math.abs(this.scrub_velocity) > 0.5) this.scrub_velocity = 0.5 * sign;
+                if (Math.abs(this.scrub_velocity) < 0.1) this.scrub_velocity = this.drag * 0.2 * sign;
+                if (Math.abs(this.scrub_velocity) > 0.5) this.scrub_velocity = this.drag * sign;
 
                 this.AUTO_SCRUB = true;
 
-                //Determine the distance traveled with normal drag decay of 0.5
-                let dist = this.scrub_velocity * (1 / (-0.5 + 1));
+                //Determine the distance traveled with normal drag decay
+                let dist = this.scrub_velocity * (1 / (-this.drag + 1));
 
                 //get the distance to nearest page given the distance traveled
                 let nearest = (this.offset + this.offset_fractional + dist);
