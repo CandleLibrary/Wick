@@ -68,6 +68,13 @@ function getFrameFromName(name: string, component: ComponentData) {
     return component.frames.filter(({ name: n }) => n == name)[0] || null;
 }
 
+/**
+ * Updates binding variables
+ * @param root_node 
+ * @param component 
+ * @param binding 
+ * @returns 
+ */
 function setIdentifierReferenceVariables(root_node: JSNode, component: ComponentData, binding: BindingObject): JSNode {
 
     const receiver = { ast: null }, component_names = component.root_frame.binding_type;
@@ -226,6 +233,36 @@ loadBindingHandler({
     priority: -1,
 
     canHandleBinding(binding_selector, node_type) {
+        return false;
+        return binding_selector == BINDING_SELECTOR.BINDING_ASSIGNER;
+    },
+
+    prepareBindingObject(binding_selector, binding_node_ast
+        , host_node, element_index, component, presets) {
+
+        const
+            binding = createBindingObject(BindingType.WRITE, 0, binding_node_ast.pos),
+            [ref, expr] = (<JSNode><unknown>binding_node_ast).nodes,
+            comp_var = component.root_frame.binding_type.get(<string>ref.value),
+            converted_expression = setIdentifierReferenceVariables(expr, component, binding),
+            d = exp(`this.ua(${comp_var.class_index})`);
+
+        setPos(d, binding_node_ast.pos);
+        setBindingVariable(<string>ref.value, false, binding);
+
+        d.nodes[1].nodes.push(converted_expression);
+
+        binding.initialize_ast = d;
+        //binding.initialize_ast = setBindingAndRefVariables(binding_node_ast, component, binding);
+
+        return binding;
+    }
+});
+
+loadBindingHandler({
+    priority: -1,
+
+    canHandleBinding(binding_selector, node_type) {
         return binding_selector == BINDING_SELECTOR.BINDING_INITIALIZATION;
     },
 
@@ -237,12 +274,12 @@ loadBindingHandler({
             [ref, expr] = (<JSNode><unknown>binding_node_ast).nodes,
             comp_var = component.root_frame.binding_type.get(<string>ref.value),
             converted_expression = setIdentifierReferenceVariables(expr, component, binding),
-            d = exp(`this[${comp_var.class_index}] = a`);
+            d = exp(`this.ua(${comp_var.class_index})`);
 
         setPos(d, binding_node_ast.pos);
         setBindingVariable(<string>ref.value, false, binding);
 
-        d.nodes[1] = converted_expression;
+        d.nodes[1].nodes.push(converted_expression);
 
         binding.initialize_ast = d;
         //binding.initialize_ast = setBindingAndRefVariables(binding_node_ast, component, binding);
@@ -289,6 +326,7 @@ loadBindingHandler({
 
                 frame.ATTRIBUTE = true;
             } else {
+
 
                 name = "n" + element_index;
 

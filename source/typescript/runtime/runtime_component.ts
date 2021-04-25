@@ -61,6 +61,11 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     TRANSITIONED_IN: boolean;
     DESTROY_AFTER_TRANSITION: boolean;
 
+    active_flags: number;
+    update_state: number;
+
+    call_depth: number;
+
     out_trs: any;
 
     pui: any[];
@@ -70,6 +75,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     ie: typeof integrateElement;
     me: typeof makeElement;
+
+    updated_attributes: Set<number>;
 
     _SCHD_: number;
 
@@ -99,6 +106,12 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         this.me = makeElement;
         this.ie = integrateElement;
+
+        this.updated_attributes = new Set();
+
+        this.update_state = 0;
+        this.active_flags = 0;
+        this.call_depth = 0;
 
         //@ts-ignore
         this.up = this.updateParent;
@@ -444,8 +457,37 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
      * ██    ██ ██      ██   ██ ██   ██    ██    ██      
      *  ██████  ██      ██████  ██   ██    ██    ███████ 
      */
+    /**
+     * Use in compiled functions to update attributes and schedule an
+     * immediate update followup pass to call methods that may be effected
+     * by the attribute that has been modified
+     * @param attribute_value 
+     * @param attribute_index 
+     * @param RETURN_PREVIOUS_VAL 
+     * @returns 
+     */
+    ua(attribute_index: number, attribute_value: any, RETURN_PREVIOUS_VAL = false) {
 
-    u(flags: DATA_DIRECTION, call_depth: number, ...pending_function_indices: number[]) {
+        const prev_val = this[attribute_index];
+
+        if (attribute_value !== prev_val) {
+
+            if (!this.call_set.has(attribute_index) && this.lookup_function_table[attribute_index])
+                this.call_set.set(attribute_index, [this.active_flags, this.call_depth]);
+            //this.updated_attributes.add(attribute_index);
+            this[attribute_index] = attribute_value;
+
+            //Forcefully update 
+            spark.queueUpdate(this, 0, 0, true);
+        }
+
+        return RETURN_PREVIOUS_VAL ? prev_val : this[attribute_index];
+    }
+    u(flags: DATA_DIRECTION, call_depth: number = this.call_depth) {
+
+        const pending_function_indices = this.updated_attributes.values();
+
+        this.updated_attributes.clear();
 
         for (const index of pending_function_indices) {
             if (this.lookup_function_table[index])
@@ -503,12 +545,14 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             this.updateFromChild.call(this.par, data);
     }
 
-    updateFromParent(local_index, v, flags) {
+    updateFromParent(local_index, attribute_value, flags) {
 
         if (flags >> 24 == this.ci + 1)
             return;
 
-        this.u(v, DATA_FLOW_FLAG.FROM_PARENT | flags, local_index);
+        this.active_flags |= DATA_FLOW_FLAG.FROM_PARENT;
+
+        this.ua(local_index, attribute_value);
     }
 
 
@@ -516,8 +560,10 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         const method = this.pui[local_index];
 
-        if (typeof method == "function")
-            method.call(this.par, val, flags | DATA_FLOW_FLAG.FROM_CHILD | ((this.ci + 1) << 24));
+        if (typeof method == "function") {
+            this.active_flags |= DATA_FLOW_FLAG.FROM_CHILD | ((this.ci + 1) << 24);
+            method.call(this.par, val, 0);
+        }
 
     };
 
@@ -537,36 +583,14 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             if (changed_names) {
                 for (const name in changed_names) {
                     const flag_id = this.nlu[name];
-                    if (flag_id && (flag_id >>> 24) & DATA_FLOW_FLAG.FROM_MODEL) {
-                        const index = flag_id & 0xFFFFFF,
-                            v = this[index],
-                            m = model[name];
-
-                        if (m !== v) {
-                            this[index] = m;
-                            this.u(0, 0, index);
-                        }
-                    }
+                    if (flag_id && (flag_id >>> 24) & DATA_FLOW_FLAG.FROM_MODEL)
+                        this.ua(flag_id & 0xFFFFFF, model[name]);
                 }
-
-
-            } else {
-
-                for (const name in this.nlu) {
-
-                    if ((this.nlu[name] >>> 24) & DATA_FLOW_FLAG.FROM_MODEL) {
-                        const
-                            index = this.nlu[name] & 0xFFFFFF,
-                            v = this[index],
-                            m = model[name];
-
-                        if (m !== undefined && m !== v) {
-                            this[index] = m;
-                            this.u(0, 0, index);
-                        }
-                    }
-                }
-            }
+            } else
+                for (const name in this.nlu)
+                    if ((this.nlu[name] >>> 24) & DATA_FLOW_FLAG.FROM_MODEL)
+                        if (model[name] !== undefined)
+                            this.ua(this.nlu[name] & 0xFFFFFF, model[name]);
 
             for (const [call_id, args] of this.clearActiveCalls())
                 this.lookup_function_table[call_id].call(this, ...args);
@@ -577,8 +601,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         if (!this.CONNECTED) return;
 
-        const update_indices: Set<number> = new Set;
-
         for (const name in data) {
 
             if (typeof (data[name]) !== "undefined") {
@@ -586,15 +608,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                 const val = this.nlu[name];
 
                 if (((val >> 24) & flags)) {
-
-                    const index = val & 0xFFFFFF;
-
-
-                    this[index] = data[name];
-
-                    this.u(0, 0, index);
-
-                    let i = 0;
+                    this.ua(val & 0xFFFFFF, data[name]);
                 }
             }
         }
@@ -626,14 +640,19 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     scheduledUpdate(step_ratio, diff) {
 
-        for (const [calls_id, depth] of this.clearActiveBindingCalls())
+        this.call_depth = 1;
+
+        for (const [calls_id, depth] of this.clearActiveBindingCalls()) {
             this.lookup_function_table[calls_id].call(this, depth);
+            this.call_depth = 0;
+            this.active_flags = 0;
+        }
 
-        for (const [call_id, args] of this.clearActiveCalls())
+        for (const [call_id, args] of this.clearActiveCalls()) {
             this.lookup_function_table[call_id].call(this, ...args);
-
-
-
+            this.call_depth = 0;
+            this.active_flags = 0;
+        }
     }
 
     clearActiveBindingCalls() {

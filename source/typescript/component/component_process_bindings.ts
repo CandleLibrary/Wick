@@ -59,14 +59,16 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
         processed_bindings: { binding: BindingObject, pending_binding: PendingBinding; }[] = raw_bindings
             .map(b => runBindingHandlers(b, component, presets, class_info))
             .sort((a, b) => a.binding.priority > b.binding.priority ? -1 : 1),
+        /**
+         * All component variables that have been assigned a value
+         */
+        initialized_internal_variables: Set<number> = new Set;
 
-        initialized_internal_variables = new Set;
+
 
     let binding_count = 0;
 
     for (const { binding, pending_binding } of processed_bindings) {
-
-        //binding.pos = pending_binding.binding_val.pos;
 
         binding.name = createBindingName(binding_count++);
 
@@ -157,16 +159,6 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
             clean_stmts.push(cleanup_ast);
     }
 
-    if (initialized_internal_variables.size > 0) {
-        initialize_stmts.push(
-            setPos(
-                stmt(`this.u(0,0,${Array.from(initialized_internal_variables.values()).sort().join(",")});`),
-                component.root_frame.ast.pos
-            )
-        );
-    }
-
-
     const write_bindings = processed_bindings.filter(b => (b.binding.type & BindingType.WRITE) && !!b.binding.write_ast);
 
     for (const { internal_name, class_index, flags, type } of component.root_frame.binding_type.values()) {
@@ -188,6 +180,8 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
                 if (binding.component_variables.has(internal_name)) {
 
                     const { IS_OBJECT } = binding.component_variables.get(internal_name);
+
+                    // TODO: Sort bindings and their input outputs to make sure dependencies are met. 
 
                     if (binding.component_variables.size <= 1) {
 

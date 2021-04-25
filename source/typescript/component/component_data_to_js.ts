@@ -1,21 +1,22 @@
-import { JSNodeType, exp, stmt, renderWithFormatting as renderWithFormattingJS, JSNodeClass } from "@candlefw/js";
-import { copy, createSourceMap, createSourceMapJSON, traverse } from "@candlefw/conflagrate";
-
+import { bidirectionalTraverse, copy, createSourceMap, createSourceMapJSON } from "@candlefw/conflagrate";
+import { exp, JSCallExpression, JSNodeType, stmt } from "@candlefw/js";
 import Presets from "../presets.js";
-import { processBindings } from "./component_process_bindings.js";
-import { ComponentClassStrings } from "../types/component_class_strings";
-import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
-import { FunctionFrame } from "../types/function_frame";
-import { ComponentData } from "../types/component_data";
-import { getPropertyAST, getGenericMethodNode } from "./component_js_ast_tools.js";
-import { getComponentVariableName } from "./component_set_component_variable.js";
+import { renderWithFormatting, renderWithFormattingAndSourceMap } from "../render/render.js";
 import { WickRTComponent } from "../runtime/runtime_component.js";
-import { componentDataToCSS } from "./component_data_to_css.js";
-import { createErrorComponent } from "./component_create_component_data_object.js";
-import { renderWithFormattingAndSourceMap, renderWithFormatting } from "../render/render.js";
-import { setPos } from "./component_common.js";
-import { DOMLiteralToJSNode } from "./dom_literal_to_js_node.js";
 import { ClassInformation } from "../types/class_information.js";
+import { ComponentClassStrings } from "../types/component_class_strings";
+import { ComponentData } from "../types/component_data";
+import { FunctionFrame } from "../types/function_frame";
+import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
+import { BindingVariable } from "../wick.js";
+import { setPos } from "./component_common.js";
+import { createErrorComponent } from "./component_create_component_data_object.js";
+import { componentDataToCSS } from "./component_data_to_css.js";
+import { getGenericMethodNode, getPropertyAST } from "./component_js_ast_tools.js";
+import { processBindings } from "./component_process_bindings.js";
+import { getComponentVariable, getComponentVariableName } from "./component_set_component_variable.js";
+import { DOMLiteralToJSNode } from "./dom_literal_to_js_node.js";
+
 
 const StrToBase64 = (typeof btoa != "undefined") ? btoa : str => Buffer.from(str, 'binary').toString('base64');
 
@@ -35,43 +36,87 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
 
     const ast = frame.ast;
 
-    //registerActivatedFrameMethod(frame, class_information);
-
-
     if (ast) {
 
-
-        //*
         const cpy = copy(ast);
-        for (const { node, meta: { mutate } } of traverse(cpy, "nodes")
-            .filter("type", JSNodeType.IdentifierReference, JSNodeType.IdentifierBinding)
+        for (const { node, meta: { mutate, traverse_state } } of bidirectionalTraverse(cpy, "nodes")
+            .filter("type",
+                JSNodeType.PostExpression,
+                JSNodeType.PreExpression,
+                JSNodeType.AssignmentExpression,
+                JSNodeType.IdentifierReference,
+                JSNodeType.IdentifierBinding)
             .makeMutable()
         ) {
-            if (node.IS_BINDING_REF) {
-                const name = <string>node.value;
-                if (!component.root_frame.binding_type.has(<string>name))
-                    throw node.pos.errorMessage(`Undefined reference to ${name}`);
 
-                const id = exp(getComponentVariableName(name, component));
+            if (traverse_state > 0) {
 
-                mutate(setPos(id, node.pos));
+                switch (node.type) {
+                    case JSNodeType.IdentifierBinding:
+                    case JSNodeType.IdentifierReference:
+
+                        if (node.IS_BINDING_REF) {
+
+                            const
+                                name = <string>node.value,
+                                id = exp(getComponentVariableName(name, component)),
+                                new_node = setPos(id, node.pos);
+
+                            if (!component.root_frame.binding_type.has(<string>name))
+                                throw node.pos.errorMessage(`Undefined reference to ${name}`);
+
+                            new_node.IS_BINDING_REF = name;
+
+                            mutate(new_node);
+                        }
+                        break;
+
+                    case JSNodeType.PreExpression:
+                    case JSNodeType.PostExpression:
+
+                        if (node.nodes[0].IS_BINDING_REF) {
+
+                            const
+                                ref = node.nodes[0],
+                                name = <string>ref.IS_BINDING_REF,
+                                comp_var: BindingVariable = getComponentVariable(name, component),
+                                comp_var_name: BindingVariable = getComponentVariableName(name, component),
+                                assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`),
+                                exp_ = exp(`${comp_var_name}${node.symbol[0]}1`);
+
+                            assignment.nodes[1].nodes.push(exp_);
+
+                            if (node.type == JSNodeType.PreExpression)
+                                assignment.nodes[1].nodes.push(exp("true"));
+
+                            mutate(setPos(assignment, node.pos));
+                        }
+                        break;
+
+                    case JSNodeType.AssignmentExpression:
+
+                        if (node.nodes[0].IS_BINDING_REF) {
+                            const
+                                ref = node.nodes[0],
+                                name = <string>ref.IS_BINDING_REF,
+                                comp_var: BindingVariable = getComponentVariable(name, component),
+                                assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`);
+
+                            if (node.symbol == "=") {
+                                assignment.nodes[1].nodes.push(node.nodes[1]);
+                            } else {
+                                node.symbol = node.symbol.slice(0, 1);
+                                assignment.nodes[1].nodes.push(node);
+                            }
+
+                            mutate(setPos(assignment, node.pos));
+                        }
+                        break;
+                }
             }
         }
-        /*/
 
-        
-        for (const { index, node: { pos, value: name }, parent } of frame.binding_ref_identifiers) {
-            if (!component.root_frame.binding_type.has(<string>name))
-            throw pos.errorMessage(`Undefined reference to ${name}`);
-            
-            const id = exp(getComponentVariableName(name, component));
-            
-            parent.nodes[index] = setPos(id, pos);
-        }
-        const cpy = copy(ast);
-        //*/
         const updated_names = new Set();
-
 
         cpy.type = JSNodeType.Method;
 
@@ -88,12 +133,6 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
                     if (type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE)
                         id_indices.push(class_index);
                 }
-            }
-
-            if (id_indices.length > 0) {
-                const st = stmt(`this.u(${frame.name[0] == "$" ? "0,c," : "0,0,"} ${id_indices.sort()});`);
-
-                cpy.nodes[2].nodes.push(setPos(st, frame.ast.pos));
             }
 
             if (frame.index != undefined)
@@ -186,7 +225,8 @@ export function componentDataToClassString(
     try {
 
         const
-            component_class = stmt(`class ${component.name || "temp"} extends cfw.wick.rt.C {constructor(m,e,p,w){super(m,e,p,w,"${component.global_model || ""}");}}`),
+            component_class = stmt(`class ${component.name || "temp"} extends 
+            cfw.wick.rt.C {constructor(m,e,p,w){super(m,e,p,w,"${component.global_model || ""}");}}`),
             binding_values_init_method = getGenericMethodNode("c", "", ";"),
             register_elements_method = getGenericMethodNode("re", "c", ";"),
             [, , { nodes: bi_stmts }] = binding_values_init_method.nodes,
