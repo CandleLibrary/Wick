@@ -180,7 +180,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
         this._SCHD_ = 0;
         this.shift_amount = 1;
-        this.limit = 0;
+        this.limit = Infinity;
         this.offset = 0;
         this.offset_diff = 0;
         this.offset_fractional = 0;
