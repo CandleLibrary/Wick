@@ -1,10 +1,10 @@
 import { copy, traverse } from "@candlefw/conflagrate";
 import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlefw/js";
 
-import Presets from "../../presets.js";
-import { ComponentData } from "../../types/component_data";
-import { FunctionFrame } from "../../types/function_frame";
-import { createFrame } from "../utils/create_frame.js";
+import Presets from "../../../presets.js";
+import { ComponentData } from "../../../types/component_data";
+import { FunctionFrame } from "../../../types/function_frame";
+import { createFrame } from "../../utils/create_frame.js";
 import { JS_handlers } from "./js_parse_handlers.js";
 
 

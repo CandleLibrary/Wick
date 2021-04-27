@@ -6,10 +6,11 @@ import Presets from "../../presets.js";
 import { Comment } from "../../types/comment.js";
 import { ComponentData } from "../../types/component_data";
 import { HTMLNode, HTMLNodeClass } from "../../types/wick_ast_node_types.js";
+
 import { createComponentData, createErrorComponent } from "../utils/component_data_object.js";
 import { createFrame } from "../utils/create_frame.js";
-import { processWickHTML_AST } from "./html_ast_parser.js";
-import { processWickJS_AST } from "./js_ast_parser.js";
+import { processWickHTML_AST } from "./html/html_ast_parser.js";
+import { processWickJS_AST } from "./js/js_ast_parser.js";
 import { acquireComponentASTFromRemoteSource } from "./remote_source.js";
 
 
@@ -45,7 +46,7 @@ const empty_obj = {};
  * @param presets {PresetOptions} - 
  * @param root_url 
  */
-export default async function makeComponent(input: URL | string, presets?: Presets, root_url?: URL): Promise<ComponentData> {
+export async function parseSource(input: URL | string, presets?: Presets, root_url?: URL): Promise<ComponentData> {
 
 
     //If this is a node.js environment, make sure URL is able to resolve local files system addresses.
@@ -109,10 +110,10 @@ export default async function makeComponent(input: URL | string, presets?: Prese
         comments = []
     } = data;
 
-    return await parseComponent(ast, <string>input_string, source_url, presets, errors, comments);
+    return await parseComponentAST(ast, <string>input_string, source_url, presets, errors, comments);
 };
 
-export async function parseComponent(
+export async function parseComponentAST(
     ast: HTMLNode | JSNode,
     source_string: string,
     url: string,

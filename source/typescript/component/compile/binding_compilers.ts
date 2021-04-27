@@ -12,7 +12,7 @@ import { FunctionFrame } from "../../types/function_frame";
 import { HTMLNode } from "../../types/wick_ast_node_types";
 import { css_selector_helpers } from "../utils/css_selector_helpers.js";
 import { getFirstReferenceName, setPos } from "../utils/common.js";
-import { postProcessFunctionDeclarationSync } from "../parse/js_ast_parser.js";
+import { postProcessFunctionDeclarationSync } from "../parse/js/js_ast_parser.js";
 import { getComponentVariable, getComponentVariableName } from "../utils/set_component_variable.js";
 
 export const binding_handlers: BindingHandler[] = [];

@@ -1,7 +1,7 @@
 import { traverse } from "@candlefw/conflagrate";
-import Presets from "../../presets.js";
-import { ComponentData } from "../../types/component_data";
-import { ContainerDomLiteral, DOMLiteral } from "../../types/dom_literal.js";
+import Presets from "../../../presets.js";
+import { ComponentData } from "../../../types/component_data";
+import { ContainerDomLiteral, DOMLiteral } from "../../../types/dom_literal.js";
 import {
     HTMLContainerNode,
     HTMLNode,
@@ -9,7 +9,7 @@ import {
     HTMLNodeType,
     HTMLTextNode,
     WICK_AST_NODE_TYPE_BASE
-} from "../../types/wick_ast_node_types.js";
+} from "../../../types/wick_ast_node_types.js";
 import { html_handlers } from "./html_parse_handlers.js";
 
 function buildExportableDOMNode(

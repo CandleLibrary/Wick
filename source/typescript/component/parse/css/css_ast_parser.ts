@@ -1,9 +1,10 @@
-import { CSSNodeType, CSSNode } from "@candlefw/css";
+import { CSSNode } from "@candlefw/css";
 
-import { ComponentData } from "../../types/component_data";
-import Presets from "../../presets.js";
-import { HTMLNode } from "../../types/wick_ast_node_types.js";
-import { ComponentStyle } from "../../types/component_style";
+import Presets from "../../../presets.js";
+import { ComponentData } from "../../../types/component_data";
+import { ComponentStyle } from "../../../types/component_style";
+import { HTMLNode } from "../../../types/wick_ast_node_types.js";
+
 
 export function processWickCSS_AST(ast: HTMLNode, component: ComponentData, presets: Presets, url: string = ""): Promise<void> {
     //Extract style sheet and add to the components stylesheets

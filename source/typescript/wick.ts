@@ -12,7 +12,7 @@ import {
     componentDataToJSCached,
     componentDataToJSStringCached
 } from "./component/compile/component_data_to_js.js";
-import makeComponent from "./component/parse/source_parser.js";
+import { parseSource } from "./component/parse/source_parser.js";
 import { createNameHash } from "./component/utils/create_hash_name.js";
 import { css_selector_helpers } from "./component/utils/css_selector_helpers.js";
 import parser from "./parser/parse.js";
@@ -160,7 +160,7 @@ async function componentCreate(input: string | URL, presets: Presets = rt.preset
 
     const
         promise = new Promise<ExtendedComponentData>(async res => {
-            const comp = await makeComponent(input, presets);
+            const comp = await parseSource(input, presets);
             Object.assign(component, comp);
             componentDataToJSCached(component, presets, true, true);
             componentDataToJSStringCached(component, presets, true, true);

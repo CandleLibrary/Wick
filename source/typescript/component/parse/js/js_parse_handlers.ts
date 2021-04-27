@@ -1,22 +1,22 @@
 import { traverse } from "@candlefw/conflagrate";
 import { exp, JSNode, JSNodeType, stmt } from "@candlefw/js";
 
-import env from "../../parser/env.js";
-import { BINDING_SELECTOR } from "../../types/binding.js";
-import { ComponentData } from "../../types/component_data";
-import { DATA_FLOW_FLAG } from "../../types/data_flow_flags";
-import { JSHandler } from "../../types/js_handler.js";
-import { VARIABLE_REFERENCE_TYPE } from "../../types/variable_reference_types";
-import { HTMLNode, HTMLNodeClass, HTMLNodeType, WickBindingNode, WICK_AST_NODE_TYPE_SIZE } from "../../types/wick_ast_node_types.js";
+import env from "../../../parser/env.js";
+import { BINDING_SELECTOR } from "../../../types/binding.js";
+import { ComponentData } from "../../../types/component_data";
+import { DATA_FLOW_FLAG } from "../../../types/data_flow_flags";
+import { JSHandler } from "../../../types/js_handler.js";
+import { VARIABLE_REFERENCE_TYPE } from "../../../types/variable_reference_types";
+import { HTMLNode, HTMLNodeClass, HTMLNodeType, WickBindingNode, WICK_AST_NODE_TYPE_SIZE } from "../../../types/wick_ast_node_types.js";
 import {
     addBindingVariable,
     addBindingVariableFlag, addNameToDeclaredVariables, addNodeToBindingIdentifiers,
     addReadBindingVariableName, addWrittenBindingVariableName,
     isBindingVariable, isVariableDeclared
-} from "../utils/binding_common.js";
-import { getFirstReferenceName, importResource, setPos } from "../utils/common.js";
-import { processWickCSS_AST } from "./css_ast_parser.js";
-import { processWickHTML_AST } from "./html_ast_parser.js";
+} from "../../utils/binding_common.js";
+import { getFirstReferenceName, importResource, setPos } from "../../utils/common.js";
+import { processWickCSS_AST } from "../css/css_ast_parser.js";
+import { processWickHTML_AST } from "../html/html_ast_parser.js";
 import { processFunctionDeclaration, processNodeSync } from "./js_ast_parser.js";
 
 
@@ -37,7 +37,7 @@ const default_handler = {
 export const JS_handlers: Array<JSHandler[]> = Array(512 - WICK_AST_NODE_TYPE_SIZE).fill(null).map(() => [default_handler]);
 
 
-function loadJSHandlerInternal(handler: JSHandler, ...types: JSNodeType[]) {
+function loadJSParseHandlerInternal(handler: JSHandler, ...types: JSNodeType[]) {
 
     for (const type of types) {
 
@@ -50,13 +50,13 @@ function loadJSHandlerInternal(handler: JSHandler, ...types: JSNodeType[]) {
     }
 }
 
-export function loadJSHandler(handler: JSHandler, ...types: JSNodeType[]) {
+export function loadJSParseHandler(handler: JSHandler, ...types: JSNodeType[]) {
 
     const modified_handler = Object.assign({}, handler);
 
     modified_handler.priority = Math.abs(modified_handler.priority);
 
-    return loadJSHandler(modified_handler, ...types);
+    return loadJSParseHandler(modified_handler, ...types);
 }
 
 function addBinding(
@@ -104,7 +104,7 @@ function addBinding(
 // "presets" or runtime import @presets, which are special none file
 // imports that wick will use to load data from the node's parent's 
 // exports and the presets global object, respectively.
-loadJSHandlerInternal(
+loadJSParseHandlerInternal(
     {
         priority: 1,
 
@@ -174,7 +174,7 @@ loadJSHandlerInternal(
 // be consumed by the components parent element. This creates a one
 // way non-bubbling binding to the parent's scope. The parent scope
 // must bind to the child's name through the bind attribute. 
-loadJSHandlerInternal(
+loadJSParseHandlerInternal(
     {
         priority: 1,
 
@@ -225,7 +225,7 @@ loadJSHandlerInternal(
 //
 // These variables are accessible by all bindings within the components
 // scope. 
-loadJSHandlerInternal(
+loadJSParseHandlerInternal(
     {
         priority: 1,
 
@@ -304,7 +304,7 @@ loadJSHandlerInternal(
 */
 // These variables are accessible by all bindings within the component's
 // scope. 
-loadJSHandlerInternal(
+loadJSParseHandlerInternal(
     {
         priority: 1,
 
@@ -351,7 +351,7 @@ loadJSHandlerInternal(
 //
 // If the identifier is used as the target of a call expression, add the call
 // expression node to the variable's references list.
-loadJSHandlerInternal(
+loadJSParseHandlerInternal(
     {
         priority: 1,
 
@@ -401,7 +401,7 @@ loadJSHandlerInternal(
 // 
 // Root scoped functions are transformed into methods.
 // 
-loadJSHandlerInternal(
+loadJSParseHandlerInternal(
     {
         priority: 1,
 
@@ -517,7 +517,7 @@ loadJSHandlerInternal(
     }, JSNodeType.FunctionDeclaration
 );
 
-loadJSHandlerInternal(
+loadJSParseHandlerInternal(
     {
         priority: 1,
 
@@ -550,7 +550,7 @@ loadJSHandlerInternal(
 ██   ██ ██      ██      ██      ██   ██ ██      ██  ██ ██ ██      ██      
 ██   ██ ███████ ██      ███████ ██   ██ ███████ ██   ████  ██████ ███████ 
 */
-loadJSHandlerInternal(
+loadJSParseHandlerInternal(
     {
         priority: 1,
 
@@ -576,8 +576,6 @@ loadJSHandlerInternal(
     }, JSNodeType.IdentifierReference
 );
 
-
-
 /*
  █████  ███████ ███████ ██  ██████  ███    ██ ███████ ███    ███ ███████ ███    ██ ████████ 
 ██   ██ ██      ██      ██ ██       ████   ██ ██      ████  ████ ██      ████   ██    ██    
@@ -586,15 +584,15 @@ loadJSHandlerInternal(
 ██   ██ ███████ ███████ ██  ██████  ██   ████ ███████ ██      ██ ███████ ██   ████    ██    
                                                                                             
                                                                                             
-███████ ██   ██ ██████  ██████  ███████ ███████ ███████ ███████ ██  ██████  ███    ██       
-██       ██ ██  ██   ██ ██   ██ ██      ██      ██      ██      ██ ██    ██ ████   ██       
-█████     ███   ██████  ██████  █████   ███████ ███████ ███████ ██ ██    ██ ██ ██  ██       
-██       ██ ██  ██      ██   ██ ██           ██      ██      ██ ██ ██    ██ ██  ██ ██       
-███████ ██   ██ ██      ██   ██ ███████ ███████ ███████ ███████ ██  ██████  ██   ████
+███████ ██   ██ ██████  ██████  ███████ ███████ ███████ ██  ██████  ███    ██       
+██       ██ ██  ██   ██ ██   ██ ██      ██      ██      ██ ██    ██ ████   ██       
+█████     ███   ██████  ██████  █████   ███████ ███████ ██ ██    ██ ██ ██  ██       
+██       ██ ██  ██      ██   ██ ██           ██      ██ ██ ██    ██ ██  ██ ██       
+███████ ██   ██ ██      ██   ██ ███████ ███████ ███████ ██  ██████  ██   ████
  
 + Post(++|--) and (++|--)Pre increment expressions
 */
-loadJSHandlerInternal(
+loadJSParseHandlerInternal(
     {
         priority: 1,
 
@@ -639,7 +637,7 @@ loadJSHandlerInternal(
 ███████    ██    ██   ██    ██    ███████ ██      ██ ███████ ██   ████    ██      
 */
 // Naked Style Element. Styles whole component.
-loadJSHandlerInternal(
+loadJSParseHandlerInternal(
     {
         priority: 1,
 
@@ -696,7 +694,7 @@ loadJSHandlerInternal(
 ███████    ██    ██   ██ ██ ██   ████  ██████                                              
 */
 // String with identifiers for HTML Elements. 
-loadJSHandlerInternal(
+loadJSParseHandlerInternal(
     {
         priority: 1,
 
@@ -728,7 +726,7 @@ loadJSHandlerInternal(
 ██████  ███████ ██████   ██████   ██████   ██████  ███████ ██   ██ 
 */
 
-loadJSHandlerInternal(
+loadJSParseHandlerInternal(
     {
         priority: 1,
 

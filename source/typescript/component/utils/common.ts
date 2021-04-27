@@ -10,7 +10,7 @@ import { FunctionFrame } from "../../types/function_frame";
 import { VARIABLE_REFERENCE_TYPE } from "../../types/variable_reference_types";
 import { HTMLNode } from "../../wick.js";
 import { componentDataToJSCached } from "../compile/component_data_to_js.js";
-import makeComponent from "../parse/source_parser.js";
+import { parseSource } from "../parse/source_parser.js";
 import { addBindingVariable, addWrittenBindingVariableName } from "./binding_common.js";
 
 
@@ -60,7 +60,7 @@ export async function importComponentData(new_component_url, component, presets,
 
     try {
 
-        const comp_data = await makeComponent(new URL(new_component_url), presets, component.location);
+        const comp_data = await parseSource(new URL(new_component_url), presets, component.location);
 
         //const { ast, string, resolved_url } = await acquireComponentASTFromRemoteSource(new URL(new_component_url), component.location);
 

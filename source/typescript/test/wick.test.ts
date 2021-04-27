@@ -11,7 +11,7 @@
 
 import { ComponentData } from "../types/component_data.js";
 import { rt } from "../runtime/runtime_global.js";
-import { componentDataToCSS } from "../component/component_data_to_css.js";
+import { componentDataToCSS } from "../component/compile/component_data_to_css.js";
 import Presets from "../presets.js";
 
 
