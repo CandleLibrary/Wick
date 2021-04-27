@@ -640,7 +640,9 @@ loadBindingHandler({
 
         if (!getElementAtIndex(component, element_index).is_container) return;
 
-        const binding = createBindingObject(BindingType.WRITE_ONLY, 0, binding_node_ast.pos),
+        const
+            container_id = getElementAtIndex(component, element_index).container_id,
+            binding = createBindingObject(BindingType.WRITE_ONLY, 0, binding_node_ast.pos),
             component_names = component.root_frame.binding_type,
             { primary_ast } = binding_node_ast;
 
@@ -648,7 +650,7 @@ loadBindingHandler({
 
             const
                 ast = setIdentifierReferenceVariables(primary_ast, component, binding),
-                expression = exp(`this.ct[${(<HTMLNode>host_node).container_id}].sd(0)`);
+                expression = exp(`this.ct[${container_id}].sd(0)`);
 
             setPos(expression, primary_ast.pos);
 
