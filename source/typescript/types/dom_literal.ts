@@ -50,6 +50,8 @@ export interface DOMLiteral {
     component_name?: string;
 
     container_id?: number;
+
+    ele_index?: number;
 }
 
 export interface ContainerDomLiteral extends DOMLiteral {

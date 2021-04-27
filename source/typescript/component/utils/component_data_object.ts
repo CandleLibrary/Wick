@@ -1,9 +1,10 @@
 import URL from "@candlefw/url";
 import { Lexer } from "@candlefw/wind";
-import { createNameHash } from "./component_create_hash_name.js";
-import { PendingBinding } from "../types/binding";
-import { ComponentData } from "../types/component_data";
-import { DOMLiteral } from "../types/dom_literal.js";
+
+import { createNameHash } from "./create_hash_name.js";
+import { PendingBinding } from "../../types/binding";
+import { ComponentData } from "../../types/component_data";
+import { DOMLiteral } from "../../types/dom_literal.js";
 
 
 export function createErrorComponent(errors: Error[], src: string, location: string, component: ComponentData = createComponentData(src, location)) {
@@ -47,7 +48,9 @@ export function createErrorComponent(errors: Error[], src: string, location: str
                     children: [
                         {
                             tag_name: "",
-                            data: `Error in ${location}:`
+                            data: `Error in ${location}:`,
+                            //@ts-ignore
+                            pos: {}
                         }
                     ]
                 }, ...error_data],

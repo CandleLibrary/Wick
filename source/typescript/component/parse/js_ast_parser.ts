@@ -1,11 +1,12 @@
-import { JSNode, JSNodeType, JSNodeTypeLU, JSNodeClass, ext } from "@candlefw/js";
-import { traverse, copy } from "@candlefw/conflagrate";
+import { copy, traverse } from "@candlefw/conflagrate";
+import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlefw/js";
 
-import { FunctionFrame } from "../types/function_frame";
-import { ComponentData } from "../types/component_data";
-import Presets from "../presets.js";
-import { JS_handlers } from "./component_default_js_handlers.js";
-import { createFrame } from "./component_create_frame.js";
+import Presets from "../../presets.js";
+import { ComponentData } from "../../types/component_data";
+import { FunctionFrame } from "../../types/function_frame";
+import { createFrame } from "../utils/create_frame.js";
+import { JS_handlers } from "./js_parse_handlers.js";
+
 
 function getFunctionFrame(ast: JSNode, component: ComponentData, frame: FunctionFrame = null, DONT_ATTACH = false, TEMPORARY = DONT_ATTACH) {
     const function_frame = frame

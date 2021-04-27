@@ -1,18 +1,18 @@
 import { traverse } from "@candlefw/conflagrate";
-import { JSNode, JSNodeType } from "@candlefw/js";
+import { JSIdentifierClass, JSNode, JSNodeType, JSReferenceClass } from "@candlefw/js";
+import URL from "@candlefw/url";
 import { Lexer } from "@candlefw/wind";
 
-import Presets from "../presets.js";
-import makeComponent, { compileComponent } from "./component.js";
-import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
-import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
-import { FunctionFrame } from "../types/function_frame";
-import { ComponentData } from "../types/component_data";
-import { HTMLNode } from "../wick.js";
-import { acquireComponentASTFromRemoteSource } from "./component_acquire_remote_source.js";
-import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
-import { componentDataToJSCached } from "./component_data_to_js.js";
-import URL from "@candlefw/url";
+import Presets from "../../presets.js";
+import { ComponentData } from "../../types/component_data";
+import { DATA_FLOW_FLAG } from "../../types/data_flow_flags";
+import { FunctionFrame } from "../../types/function_frame";
+import { VARIABLE_REFERENCE_TYPE } from "../../types/variable_reference_types";
+import { HTMLNode } from "../../wick.js";
+import { componentDataToJSCached } from "../compile/component_data_to_js.js";
+import makeComponent from "../parse/source_parser.js";
+import { addBindingVariable, addWrittenBindingVariableName } from "./binding_common.js";
+
 
 
 /**
@@ -147,6 +147,7 @@ export async function importResource(
     for (const { local, external } of names) {
 
         if (!addBindingVariable({
+            //@ts-ignore
             pos: node.pos,
             external_name: external || local,
             internal_name: local,
@@ -154,18 +155,17 @@ export async function importResource(
             type: ref_type,
             flags: flag
         }, frame))
+            //@ts-ignore
             node.pos.throw(`Import variable [${local}] already declared`);
 
         addWrittenBindingVariableName(local, frame);
-
-        //setComponentVariable(ref_type, local, component, external || local, flag, <JSNode>node);
     }
 }
 
 /** JS COMMON */
-export function getFirstReferenceNode(node: JSNode): JSNode {
+export function getFirstReferenceNode(node: JSNode): JSIdentifierClass {
     for (const { node: id } of traverse(node, "nodes").filter("type", JSNodeType.IdentifierReference))
-        return id;
+        return <JSIdentifierClass>id;
     return null;
 }
 

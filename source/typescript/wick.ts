@@ -3,21 +3,22 @@ import { addModuleToCFW } from "@candlefw/cfw";
 import { CSSNode, CSSNodeType, CSSNodeTypeLU } from "@candlefw/css";
 import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlefw/js";
 import URL from "@candlefw/url";
-import makeComponent from "./component/component.js";
-import { createNameHash } from "./component/component_create_hash_name.js";
-import { css_selector_helpers } from "./component/component_css_selector_helpers.js";
-import { componentDataToCSS } from "./component/component_data_to_css.js";
-import { componentDataToHTML } from "./component/component_data_to_html.js";
+
+import { RenderPage } from "./component/compile/compile_web_page.js";
+import { componentDataToCSS } from "./component/compile/component_data_to_css.js";
+import { componentDataToHTML } from "./component/compile/component_data_to_html.js";
 import {
     componentDataToClassString, componentDataToJS,
     componentDataToJSCached,
     componentDataToJSStringCached
-} from "./component/component_data_to_js.js";
+} from "./component/compile/component_data_to_js.js";
+import makeComponent from "./component/parse/source_parser.js";
+import { createNameHash } from "./component/utils/create_hash_name.js";
+import { css_selector_helpers } from "./component/utils/css_selector_helpers.js";
 import parser from "./parser/parse.js";
 //Internal
 import Presets from "./presets.js";
 import { renderWithFormatting } from "./render/render.js";
-import { RenderPage } from "./render/render_page.js";
 import { Observable } from "./runtime/observable/observable.js";
 import { ObservableScheme } from "./runtime/observable/observable_prototyped.js";
 import { WickRTComponent } from "./runtime/runtime_component.js";
@@ -34,6 +35,7 @@ import { PresetOptions } from "./types/preset_options.js";
 import { VARIABLE_REFERENCE_TYPE } from "./types/variable_reference_types";
 import { HTMLNode, HTMLNodeClass, HTMLNodeTypeLU } from "./types/wick_ast_node_types.js";
 import { srv, WickServer } from "./wick.server.js";
+
 
 /**
  * Exporting the wick compiler

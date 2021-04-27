@@ -1,5 +1,5 @@
-import { FunctionFrame } from "../types/function_frame";
-import { ComponentData } from "../types/component_data";
+import { FunctionFrame } from "../../types/function_frame";
+import { ComponentData } from "../../types/component_data";
 
 export function createFrame(parent_frame: any, component: ComponentData, DO_NOT_ATTACH: boolean = false, TEMPORARY: boolean = DO_NOT_ATTACH) {
 

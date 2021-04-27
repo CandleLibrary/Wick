@@ -1,6 +1,6 @@
-import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
-import { ComponentData } from "../types/component_data";
-import { BindingVariable } from "../wick";
+import { VARIABLE_REFERENCE_TYPE } from "../../types/variable_reference_types";
+import { ComponentData } from "../../types/component_data";
+import { BindingVariable } from "../../wick";
 
 
 let SET_ONCE_environment_globals = null;

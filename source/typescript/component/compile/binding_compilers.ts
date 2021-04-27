@@ -1,20 +1,19 @@
-import { JSNodeType, exp, stmt, JSNode, renderCompressed, JSCallExpression, JSNodeClass } from "@candlefw/js";
 import { traverse } from "@candlefw/conflagrate";
 import { matchAll } from "@candlefw/css";
-
-import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
-import { FunctionFrame } from "../types/function_frame";
-import { ComponentData } from "../types/component_data";
-import { BindingObject, BindingHandler, BindingType, BINDING_SELECTOR } from "../types/binding";
-import { getComponentVariableName, getComponentVariable } from "./component_set_component_variable.js";
-import { DOMLiteral } from "../wick.js";
-
-import { css_selector_helpers } from "./component_css_selector_helpers.js";
-import { setPos, getFirstReferenceName } from "./component_common.js";
+import { exp, JSCallExpression, JSNode, JSNodeClass, JSNodeType, renderCompressed, stmt } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
-import { postProcessFunctionDeclarationSync } from "./component_js.js";
-import { HTMLNode } from "../types/wick_ast_node_types";
-import { ClassInformation } from "../types/class_information";
+
+import { BindingHandler, BindingObject, BindingType, BINDING_SELECTOR } from "../../types/binding";
+import { ClassInformation } from "../../types/class_information";
+import { ComponentData } from "../../types/component_data";
+import { DATA_FLOW_FLAG } from "../../types/data_flow_flags";
+import { DOMLiteral } from "../../types/dom_literal";
+import { FunctionFrame } from "../../types/function_frame";
+import { HTMLNode } from "../../types/wick_ast_node_types";
+import { css_selector_helpers } from "../utils/css_selector_helpers.js";
+import { getFirstReferenceName, setPos } from "../utils/common.js";
+import { postProcessFunctionDeclarationSync } from "../parse/js_ast_parser.js";
+import { getComponentVariable, getComponentVariableName } from "../utils/set_component_variable.js";
 
 export const binding_handlers: BindingHandler[] = [];
 

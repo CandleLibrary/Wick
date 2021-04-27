@@ -21,7 +21,7 @@ export function getPropertyAST(name: string | JSNode, value: string | JSNode, CO
 }
 /**
  * Create a class method AST
- * @param name  Name of the class method
+ * @param name  Name of the classrender method
  * @param arg_string  String value of the class method arguments.
  * @param body_string  String value of the class method body.
  */

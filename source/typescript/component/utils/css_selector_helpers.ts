@@ -1,5 +1,5 @@
 import { SelectionHelpers } from "@candlefw/css";
-import { DOMLiteral } from "../wick.js";
+import { DOMLiteral } from "../../wick.js";
 export const css_selector_helpers: SelectionHelpers<DOMLiteral> = {
     getIndexFigures: (ele, tag) => ({ ele_index: 0, tag_index: 0 }),
     WQmatch: (ele, wq_selector) => wq_selector.val,

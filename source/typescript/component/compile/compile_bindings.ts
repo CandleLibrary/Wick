@@ -1,16 +1,16 @@
-import { JSNodeType, stmt, exp } from "@candlefw/js";
+import { exp, JSNodeType, stmt } from "@candlefw/js";
+import Presets from "../../presets.js";
+import { BindingObject, BindingType, PendingBinding } from "../../types/binding";
+import { ClassInformation } from "../../types/class_information";
+import { ComponentData } from "../../types/component_data";
+import { DATA_FLOW_FLAG } from "../../types/data_flow_flags";
+import { VARIABLE_REFERENCE_TYPE } from "../../types/variable_reference_types";
+import { HTMLNode, HTMLNodeTypeLU } from "../../types/wick_ast_node_types.js";
+import { setPos } from "../utils/common.js";
+import { getGenericMethodNode } from "../utils/js_ast_tools.js";
+import { getComponentVariableName } from "../utils/set_component_variable.js";
+import { binding_handlers } from "./binding_compilers.js";
 
-import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
-import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
-import { ComponentData } from "../types/component_data";
-import { BindingObject, BindingType, PendingBinding } from "../types/binding";
-import { getGenericMethodNode } from "./component_js_ast_tools.js";
-import { binding_handlers } from "./component_default_binding_handlers.js";
-import { HTMLNodeTypeLU, HTMLNode } from "../types/wick_ast_node_types.js";
-import { getComponentVariableName } from "./component_set_component_variable.js";
-import Presets from "../presets.js";
-import { setPos } from "./component_common.js";
-import { ClassInformation } from "../types/class_information";
 
 function createBindingName(binding_index_pos: number) {
     return `b${binding_index_pos.toString(36)}`;

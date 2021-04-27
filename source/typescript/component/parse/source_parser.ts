@@ -1,18 +1,19 @@
-import URL from "@candlefw/url";
 import { JSNode, JSNodeType } from "@candlefw/js";
+import URL from "@candlefw/url";
 
-import Presets from "../presets.js";
-import parseStringReturnAST from "../parser/parse.js";
+import parseStringReturnAST from "../../parser/parse.js";
+import Presets from "../../presets.js";
+import { Comment } from "../../types/comment.js";
+import { ComponentData } from "../../types/component_data";
+import { HTMLNode, HTMLNodeClass } from "../../types/wick_ast_node_types.js";
+import { createComponentData, createErrorComponent } from "../utils/component_data_object.js";
+import { createFrame } from "../utils/create_frame.js";
+import { processWickHTML_AST } from "./html_ast_parser.js";
+import { processWickJS_AST } from "./js_ast_parser.js";
+import { acquireComponentASTFromRemoteSource } from "./remote_source.js";
 
-import { processWickJS_AST } from "./component_js.js";
-import { processWickHTML_AST } from "./component_html.js";
 
-import { ComponentData } from "../types/component_data";
-import { HTMLNodeClass, HTMLNode } from "../types/wick_ast_node_types.js";
-import { acquireComponentASTFromRemoteSource } from "./component_acquire_remote_source.js";
-import { createComponentData, createErrorComponent } from "./component_create_component_data_object.js";
-import { createFrame } from "./component_create_frame.js";
-import { Comment } from "../types/comment.js";
+
 export const component_cache = {};
 
 function getHTML_AST(ast: HTMLNode | JSNode): HTMLNode {
@@ -108,10 +109,10 @@ export default async function makeComponent(input: URL | string, presets?: Prese
         comments = []
     } = data;
 
-    return await compileComponent(ast, <string>input_string, source_url, presets, errors, comments);
+    return await parseComponent(ast, <string>input_string, source_url, presets, errors, comments);
 };
 
-export async function compileComponent(
+export async function parseComponent(
     ast: HTMLNode | JSNode,
     source_string: string,
     url: string,

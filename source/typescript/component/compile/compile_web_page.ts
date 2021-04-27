@@ -1,14 +1,12 @@
-import { componentDataToHTML } from "../component/component_data_to_html.js";
-import { componentDataToClassString } from "../component/component_data_to_js.js";
-import Presets from "../presets";
-import { rt } from "../runtime/runtime_global.js";
-import { ComponentData } from "../types/component_data.js";
-import { componentDataToCSS } from "../component/component_data_to_css.js";
-import { DOMLiteralToJSNode } from "../component/dom_literal_to_js_node.js";
-import { renderCompressed } from "./render.js";
-import { traverse } from "@candlefw/conflagrate";
-import { DOMLiteral } from "../wick.js";
-import { noop } from "./noop.js";
+import Presets from "../../presets";
+import { noop } from "../../render/noop.js";
+import { renderCompressed } from "../../render/render.js";
+import { rt } from "../../runtime/runtime_global.js";
+import { ComponentData } from "../../types/component_data.js";
+import { DOMLiteral } from "../../wick.js";
+import { componentDataToCSS } from "../compile/component_data_to_css.js";
+import { componentDataToHTML } from "../compile/component_data_to_html.js";
+import { componentDataToClassString } from "../compile/component_data_to_js.js";
 
 /**[API]
  * Builds a single page from a wick component, with the

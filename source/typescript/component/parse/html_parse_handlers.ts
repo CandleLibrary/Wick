@@ -9,17 +9,17 @@ import {
     HTMLContainerNode,
     HTMLNodeType,
     WickBindingNode
-} from "../types/wick_ast_node_types.js";
-import { HTMLHandler } from "../types/html_handler.js";
-import { processWickCSS_AST } from "./component_css.js";
-import { compileComponent } from "./component.js";
-import { processFunctionDeclaration, processWickJS_AST } from "./component_js.js";
-import { importResource } from "./component_common.js";
-import { addBindingVariable, addWrittenBindingVariableName } from "./component_binding_common.js";
-import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
-import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
-import { global_object } from "../runtime/runtime_global.js";
-import { BINDING_SELECTOR } from "../types/binding.js";
+} from "../../types/wick_ast_node_types.js";
+import { HTMLHandler } from "../../types/html_handler.js";
+import { processWickCSS_AST } from "./css_ast_parser.js";
+import { parseComponent } from "./source_parser.js";
+import { processFunctionDeclaration, processWickJS_AST } from "./js_ast_parser.js";
+import { importResource } from "../utils/common.js";
+import { addBindingVariable, addWrittenBindingVariableName } from "../utils/binding_common.js";
+import { VARIABLE_REFERENCE_TYPE } from "../../types/variable_reference_types";
+import { DATA_FLOW_FLAG } from "../../types/data_flow_flags";
+import { global_object } from "../../runtime/runtime_global.js";
+import { BINDING_SELECTOR } from "../../types/binding.js";
 
 const default_handler = {
     priority: -Infinity,
@@ -416,7 +416,7 @@ loadHTMLHandlerInternal(
                         if (!isPredefinedTag(ch.tag) && component.local_component_names.has(ch.tag))
                             comp = presets.components.get(component.local_component_names.get(ch.tag));
                         else
-                            comp = await compileComponent(Object.assign({}, ch), ch.pos.slice(), "auto_generated", presets, []);
+                            comp = await parseComponent(Object.assign({}, ch), ch.pos.slice(), "auto_generated", presets, []);
 
                         ch.child_id = component.children.push(1) - 1;
 

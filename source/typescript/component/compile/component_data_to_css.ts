@@ -1,9 +1,10 @@
-import { CSSNodeType, selector, CSSNode } from "@candlefw/css";
 import { traverse } from "@candlefw/conflagrate";
+import { CSSNode, CSSNodeType, selector } from "@candlefw/css";
 
-import { renderWithFormatting } from "../render/render.js";
-import { ComponentData } from "../types/component_data.js";
-import { ComponentStyle } from "../types/component_style.js";
+import { renderWithFormatting } from "../../render/render.js";
+import { ComponentData } from "../../types/component_data.js";
+import { ComponentStyle } from "../../types/component_style.js";
+
 
 export function UpdateSelector(node: CSSNode, name) {
 

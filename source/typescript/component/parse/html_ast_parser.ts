@@ -1,9 +1,16 @@
 import { traverse } from "@candlefw/conflagrate";
-import { HTMLNode, HTMLNodeClass, WICK_AST_NODE_TYPE_BASE, HTMLContainerNode, HTMLNodeType, HTMLTextNode } from "../types/wick_ast_node_types.js";
-import { ComponentData } from "../types/component_data";
-import { html_handlers } from "./component_default_html_handlers.js";
-import Presets from "../presets.js";
-import { ContainerDomLiteral, DOMLiteral } from "../types/dom_literal.js";
+import Presets from "../../presets.js";
+import { ComponentData } from "../../types/component_data";
+import { ContainerDomLiteral, DOMLiteral } from "../../types/dom_literal.js";
+import {
+    HTMLContainerNode,
+    HTMLNode,
+    HTMLNodeClass,
+    HTMLNodeType,
+    HTMLTextNode,
+    WICK_AST_NODE_TYPE_BASE
+} from "../../types/wick_ast_node_types.js";
+import { html_handlers } from "./html_parse_handlers.js";
 
 function buildExportableDOMNode(
     ast: HTMLNode & {
@@ -11,6 +18,7 @@ function buildExportableDOMNode(
         slot_name?: string;
         data?: any;
         id?: number;
+        ele_id?: number;
         name_space?: number;
     }): DOMLiteral {
 

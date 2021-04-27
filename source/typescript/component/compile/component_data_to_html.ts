@@ -1,8 +1,8 @@
-import Presets from "../presets.js";
-import { ComponentData } from "../types/component_data";
-import { DOMLiteral, ContainerDomLiteral } from "../types/dom_literal.js";
-import { rt } from "../runtime/runtime_global.js";
-import { noop } from "../render/noop.js";
+import Presets from "../../presets.js";
+import { noop } from "../../render/noop.js";
+import { rt } from "../../runtime/runtime_global.js";
+import { ComponentData } from "../../types/component_data";
+import { ContainerDomLiteral, DOMLiteral } from "../../types/dom_literal.js";
 
 const enum htmlState {
     IS_ROOT = 1,
@@ -132,18 +132,13 @@ export function componentDataToHTML(
 
             str += "\n"
                 + prepend
-                + `<${
-                tag_name.toLowerCase()
-                }${
-                state & htmlState.EXTERNAL_COMPONENT ? ` w:o=${i}` : ""
-                }${
-                state & htmlState.IS_SLOT_REPLACEMENT ? ` w:r=${i}` : ""
-                }${
-                (attributes.length > 0 && " " || "") + attributes.map(([n, v]) => (n.toLowerCase() == "class")
+                + `<${tag_name.toLowerCase()
+                }${state & htmlState.EXTERNAL_COMPONENT ? ` w:o=${i}` : ""
+                }${state & htmlState.IS_SLOT_REPLACEMENT ? ` w:r=${i}` : ""
+                }${(attributes.length > 0 && " " || "") + attributes.map(([n, v]) => (n.toLowerCase() == "class")
                     ? ` class="${IS_COMPONENT_ROOT_ELEMENT ? (HAVE_CLASS = true, comp.name + " ") : ""}${v}"`
                     : ` ${n}="${v}"`).join("")
-                }${
-                IS_COMPONENT_ROOT_ELEMENT ? ` w:c ${!HAVE_CLASS ? `class="${comp.name}"` : ""}` : ""
+                }${IS_COMPONENT_ROOT_ELEMENT ? ` w:c ${!HAVE_CLASS ? `class="${comp.name}"` : ""}` : ""
                 }>`;
 
         } else if (IS_BINDING)

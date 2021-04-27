@@ -1,23 +1,24 @@
 import { traverse } from "@candlefw/conflagrate";
 import { exp, JSNode, JSNodeType, stmt } from "@candlefw/js";
 
-import { JSHandler } from "../types/js_handler.js";
-import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
-import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
-import { ComponentData } from "../types/component_data";
-import { HTMLNode, HTMLNodeClass, WickBindingNode, WICK_AST_NODE_TYPE_SIZE, HTMLNodeType } from "../types/wick_ast_node_types.js";
+import env from "../../parser/env.js";
+import { BINDING_SELECTOR } from "../../types/binding.js";
+import { ComponentData } from "../../types/component_data";
+import { DATA_FLOW_FLAG } from "../../types/data_flow_flags";
+import { JSHandler } from "../../types/js_handler.js";
+import { VARIABLE_REFERENCE_TYPE } from "../../types/variable_reference_types";
+import { HTMLNode, HTMLNodeClass, HTMLNodeType, WickBindingNode, WICK_AST_NODE_TYPE_SIZE } from "../../types/wick_ast_node_types.js";
 import {
     addBindingVariable,
     addBindingVariableFlag, addNameToDeclaredVariables, addNodeToBindingIdentifiers,
     addReadBindingVariableName, addWrittenBindingVariableName,
     isBindingVariable, isVariableDeclared
-} from "./component_binding_common.js";
-import { getFirstReferenceName, importResource, setPos } from "./component_common.js";
-import { processWickCSS_AST } from "./component_css.js";
-import { processWickHTML_AST } from "./component_html.js";
-import { processFunctionDeclaration, processNodeSync } from "./component_js.js";
-import { BINDING_SELECTOR } from "../types/binding.js";
-import env from "../parser/env.js";
+} from "../utils/binding_common.js";
+import { getFirstReferenceName, importResource, setPos } from "../utils/common.js";
+import { processWickCSS_AST } from "./css_ast_parser.js";
+import { processWickHTML_AST } from "./html_ast_parser.js";
+import { processFunctionDeclaration, processNodeSync } from "./js_ast_parser.js";
+
 
 
 export function findFirstNodeOfType(type: JSNodeType, ast: JSNode) {

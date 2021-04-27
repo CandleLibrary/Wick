@@ -1,5 +1,5 @@
 import { JSNodeType, JSNode, exp } from "@candlefw/js";
-import { DOMLiteral } from "../types/dom_literal";
+import { DOMLiteral } from "../../types/dom_literal";
 
 
 

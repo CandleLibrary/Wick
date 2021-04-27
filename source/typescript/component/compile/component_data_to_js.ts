@@ -1,21 +1,21 @@
 import { bidirectionalTraverse, copy, createSourceMap, createSourceMapJSON } from "@candlefw/conflagrate";
 import { exp, JSCallExpression, JSNodeType, stmt } from "@candlefw/js";
-import Presets from "../presets.js";
-import { renderWithFormatting, renderWithFormattingAndSourceMap } from "../render/render.js";
-import { WickRTComponent } from "../runtime/runtime_component.js";
-import { ClassInformation } from "../types/class_information.js";
-import { ComponentClassStrings } from "../types/component_class_strings";
-import { ComponentData } from "../types/component_data";
-import { FunctionFrame } from "../types/function_frame";
-import { VARIABLE_REFERENCE_TYPE } from "../types/variable_reference_types";
-import { BindingVariable } from "../wick.js";
-import { setPos } from "./component_common.js";
-import { createErrorComponent } from "./component_create_component_data_object.js";
+import Presets from "../../presets.js";
+import { renderWithFormatting, renderWithFormattingAndSourceMap } from "../../render/render.js";
+import { WickRTComponent } from "../../runtime/runtime_component.js";
+import { ClassInformation } from "../../types/class_information.js";
+import { ComponentClassStrings } from "../../types/component_class_strings";
+import { ComponentData } from "../../types/component_data";
+import { FunctionFrame } from "../../types/function_frame";
+import { VARIABLE_REFERENCE_TYPE } from "../../types/variable_reference_types";
+import { BindingVariable } from "../../wick.js";
+import { processBindings } from "../compile/compile_bindings.js";
 import { componentDataToCSS } from "./component_data_to_css.js";
-import { getGenericMethodNode, getPropertyAST } from "./component_js_ast_tools.js";
-import { processBindings } from "./component_process_bindings.js";
-import { getComponentVariable, getComponentVariableName } from "./component_set_component_variable.js";
-import { DOMLiteralToJSNode } from "./dom_literal_to_js_node.js";
+import { setPos } from "../utils/common.js";
+import { createErrorComponent } from "../utils/component_data_object.js";
+import { getGenericMethodNode, getPropertyAST } from "../utils/js_ast_tools.js";
+import { getComponentVariable, getComponentVariableName } from "../utils/set_component_variable.js";
+import { DOMLiteralToJSNode } from "../utils/dom_literal_to_js_node.js";
 
 
 const StrToBase64 = (typeof btoa != "undefined") ? btoa : str => Buffer.from(str, 'binary').toString('base64');

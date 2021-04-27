@@ -1,5 +1,5 @@
 import URL from "@candlefw/url";
-import parse from "../parser/parse.js";
+import parse from "../../parser/parse.js";
 
 export async function acquireComponentASTFromRemoteSource(url_source: URL, root_url: URL = new URL(URL.GLOBAL + "/")) {
 

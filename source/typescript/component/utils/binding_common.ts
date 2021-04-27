@@ -1,9 +1,10 @@
+import { traverse } from "@candlefw/conflagrate";
 import { JSNode, JSNodeType } from "@candlefw/js";
 
-import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
-import { FunctionFrame } from "../types/function_frame";
-import { BindingVariable } from "../types/binding";
-import { traverse } from "@candlefw/conflagrate";
+import { BindingVariable } from "../../types/binding";
+import { DATA_FLOW_FLAG } from "../../types/data_flow_flags";
+import { FunctionFrame } from "../../types/function_frame";
+
 
 function getNonTempFrame(frame: FunctionFrame) {
     while (frame && frame.IS_TEMP_CLOSURE)
