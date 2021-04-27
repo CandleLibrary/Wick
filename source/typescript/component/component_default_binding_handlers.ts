@@ -742,6 +742,43 @@ loadBindingHandler({
 loadBindingHandler({
     priority: 100,
 
+    canHandleBinding: (binding_selector, node_type) => binding_selector == "sort",
+
+    prepareBindingObject(binding_selector, binding_node_ast
+        , host_node, element_index, component, presets) {
+
+        if (!getElementAtIndex(component, element_index).is_container) return;
+
+        const
+            container_id = getElementAtIndex(component, element_index).container_id,
+            binding = createBindingObject(BindingType.READ_WRITE, 1000, binding_node_ast.pos),
+            { primary_ast, secondary_ast } = binding_node_ast;
+
+        if (primary_ast) {
+
+            if (primary_ast.type == JSNodeType.NumericLiteral) {
+                binding.read_ast = stmt(`this.ct[${container_id}].updateLimit(${primary_ast.value})`);
+            } else if (primary_ast.type & (JSNodeClass.EXPRESSION | JSNodeClass.IDENTIFIER)) {
+
+                const
+                    ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                    stmt_ = <JSCallExpression>setPos(stmt(`this.ct[${container_id}].updateLimit(a)`), primary_ast.pos);
+
+                stmt_.nodes[0].nodes[1].nodes[0] = ast;
+
+                binding.write_ast = stmt_;
+
+                //binding.write_ast = stmt_;
+            }
+        }
+
+        return binding;
+    }
+});
+
+loadBindingHandler({
+    priority: 100,
+
     canHandleBinding: (binding_selector, node_type) => binding_selector == "scrub",
 
     prepareBindingObject(binding_selector, binding_node_ast
