@@ -239,7 +239,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
                 this.filter_new_items(container.data);
         }
 
-        this.loadAcknowledged();
+        this.setLoadedFlag();
     }
 
     onModelUpdate(container) { this.filter_new_items(container); }
@@ -257,11 +257,9 @@ export class WickContainer implements Sparky, ObservableWatcher {
             this.filter_new_items(container.data);
     }
 
-    loadAcknowledged() {
-        if (!this.LOADED) {
+    setLoadedFlag() {
+        if (!this.LOADED)
             this.LOADED = true;
-            //    this.parent.loadAcknowledged();
-        }
     }
 
     forceMount() {
@@ -609,7 +607,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
         }
     }
 
-    private appendToDOM(w_data: WindowData, output: ContainerComponent[], transition: any) {
+    private appendToDOM(w_data: WindowData, output: ContainerComponent[]) {
 
         const { limit, offset, output_length, active_window_start } = w_data;
 
@@ -623,7 +621,6 @@ export class WickContainer implements Sparky, ObservableWatcher {
             output[i].index = i++;
 
         // Integrate new items with those already on the DOM
-
 
         for (let i = 0; i < this.dom_comp.length && j < upper_bound; i++) {
 
@@ -644,23 +641,18 @@ export class WickContainer implements Sparky, ObservableWatcher {
         while (j < upper_bound) {
             this.append(output[j]);
             output[j].index = -1;
-            //const { row, col } = getColumnRow(j, offset, this.shift_amount);
-            //output[j].arrange(row, col, transition);
             j++;
         }
         return j;
     }
 
-    mutateDOM(w_data: WindowData, transition?, output = this.activeComps, NO_TRANSITION = false, USE_ARRANGE_SCRUB = false) {
+    mutateDOM(w_data: WindowData, transition?, output = this.activeComps, NO_TRANSITION = false) {
 
         let
             OWN_TRANSITION = false;
 
         if (!transition) transition = createTransition(), OWN_TRANSITION = true;
 
-        // if (USE_ARRANGE_SCRUB)
-        //     this.arrangeScrub(w_data, output);
-        // else
         this.arrange(w_data, output, transition);
 
         this.appendToDOM(w_data, output, transition);
@@ -883,8 +875,6 @@ export class WickContainer implements Sparky, ObservableWatcher {
             }
 
             cfw.spark.queueUpdate(this);
-
-            //this.filterExpressionUpdate(transition);
         }
     }
     addEvaluator(evalator: (a: any) => boolean) { this.evaluators.push(evalator); }

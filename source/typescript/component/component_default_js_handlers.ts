@@ -179,8 +179,6 @@ loadJSHandlerInternal(
 
         async prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
-
-            // If the export is an element then 
             const [export_obj] = node.nodes;
 
             if (export_obj.type & HTMLNodeClass.HTML_NODE) {
@@ -264,8 +262,9 @@ loadJSHandlerInternal(
                                 flags: 0
                             }, frame)
                         ) {
-                            const msg = `Redeclaration of the binding variable [${l_name}]. \nFirst declaration here:\n${component.root_frame.binding_type.get(l_name).pos.blame()
-                                }\nredeclaration here:\n${binding.pos.blame()}\nin ${component.location}`;
+                            const msg = `Redeclaration of the binding variable [${l_name}]. 
+                                First declaration here:\n${component.root_frame.binding_type.get(l_name).pos.blame()}
+                                redeclaration here:\n${binding.pos.blame()}\nin ${component.location}`;
                             throw new ReferenceError(msg);
                         }
 
