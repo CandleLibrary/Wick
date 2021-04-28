@@ -1,12 +1,7 @@
 import URL from "@candlefw/url";
 import parse from "../../parser/parse.js";
 
-export async function acquireComponentASTFromRemoteSource(url_source: URL, root_url: URL = new URL(URL.GLOBAL + "/")) {
-
-    let url = url_source;
-
-    if (url_source.IS_RELATIVE)
-        url = URL.resolveRelative(url_source, root_url);
+export async function acquireComponentASTFromRemoteSource(url: URL) {
 
     const
         errors = [];
@@ -16,7 +11,7 @@ export async function acquireComponentASTFromRemoteSource(url_source: URL, root_
         string = "";
 
     if (!url)
-        throw new Error("Could not load URL: " + url_source + "");
+        throw new Error("Could not load URL: " + url + "");
 
 
     //TODO: Can throw

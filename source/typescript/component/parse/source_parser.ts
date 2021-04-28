@@ -46,18 +46,21 @@ const empty_obj = {};
  * @param presets {PresetOptions} - 
  * @param root_url 
  */
-export async function parseSource(input: URL | string, presets?: Presets, root_url?: URL): Promise<ComponentData> {
+export async function parseSource(input: URL | string, presets?: Presets, root_url: URL = new URL(URL.GLOBAL + "/")): Promise<ComponentData> {
 
 
     //If this is a node.js environment, make sure URL is able to resolve local files system addresses.
     if (typeof (window) == "undefined") await URL.polyfill();
 
-    let source_url = "";
-
-    let data: any = empty_obj, errors = [];
+    let
+        source_url: URL = null,
+        data: any = empty_obj,
+        errors = [];
 
     try {
-        const url = new URL(input);
+
+        let url = new URL(input);
+
         //Sloppy tests to see if the input is A URL or not
         if (typeof input == "string") {
             if (
@@ -76,15 +79,15 @@ export async function parseSource(input: URL | string, presets?: Presets, root_u
             ) throw "input is not a url";
         }
 
-        data = await acquireComponentASTFromRemoteSource(url, root_url);
+        if (url.IS_RELATIVE)
+            url = URL.resolveRelative(url, root_url);
+
+        data = await acquireComponentASTFromRemoteSource(url);
 
         source_url = url;
 
-        if (data.errors.length > 0) {
+        if (data.errors.length > 0)
             throw data.errors.pop();
-        }
-
-
 
     } catch (e) {
 
