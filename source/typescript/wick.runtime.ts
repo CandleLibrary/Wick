@@ -1,6 +1,7 @@
+import { addModuleToCFW } from "@candlefw/cfw";
 import Presets from "./presets.js";
 import { rt } from "./runtime/runtime_global.js";
-import { addModuleToCFW } from "@candlefw/cfw";
+import { hydrateComponentElements, Is_Wick_Component_Element } from "./runtime/runtime_html.js";
 
 const nop = _ => !0, wick = function () {
 
@@ -43,9 +44,6 @@ Object.defineProperty(wick, "toString", {
 
 });
 
-export default wick;
-
-addModuleToCFW(wick, "wick");
 
 /**
  * Loads templates and hydrates page. Assumes hydratable component 
@@ -53,14 +51,9 @@ addModuleToCFW(wick, "wick");
  */
 if (typeof window != undefined) {
 
-    const isWICKComponentElement = (ele: HTMLElement) => (ele
-        &&
-        ele.hasAttribute("w:c")
-        && (ele.id.match(/W[_\$a-zA-Z0-9]+/)
-            ||
-            ele.classList[0].match(/W[_\$a-zA-Z0-9]+/)));
 
-    window.addEventListener("load", () => {
+
+    window.addEventListener("load", (): void => {
         //Assuming wick.rt.setPresets has been called already.
 
         /**
@@ -68,44 +61,43 @@ if (typeof window != undefined) {
          * attribute. Such element also require that their first class 
          * name should be a WC############ component hash name.
          */
-        const
-            pending_elements_queue: HTMLElement[] = [window.document.body],
 
-            pending_component_elements: HTMLElement[] = [];
+        const elements = gatherWickElements();
 
-        while (pending_elements_queue.length > 0)
-
-            for (const element of (Array.from(pending_elements_queue.shift().children ?? [])))
-
-                if (element.nodeType == Node.ELEMENT_NODE) {
-
-                    if (element.tagName == "TEMPLATE" && isWICKComponentElement(<any>element)) {
-                        rt.templates.set(element.id, <any>element);
-                        continue;
-                    }
-
-                    const html_ref = element as HTMLElement;
-
-                    if (isWICKComponentElement(html_ref))
-                        pending_component_elements.push(html_ref);
-                    else
-                        pending_elements_queue.push(html_ref);
-                }
-
-        for (const hydrate_candidate of pending_component_elements) {
-
-            const
-                component_name = hydrate_candidate.classList[0],
-
-                comp = rt.gC(component_name);
-
-            if (comp)
-                new (comp)(null, hydrate_candidate);
-            else
-                console.warn(`WickRT :: Could not find component data for ${component_name}`);
-        }
+        hydrateComponentElements(elements);
     });
 }
 
-export { Presets };
+function gatherWickElements() {
 
+    const
+        pending_elements_queue: HTMLElement[] = [window.document.body],
+
+        pending_component_elements: HTMLElement[] = [];
+
+    while (pending_elements_queue.length > 0)
+
+        for (const element of (Array.from(pending_elements_queue.shift().children ?? [])))
+
+            if (element.nodeType == Node.ELEMENT_NODE) {
+
+                if (element.tagName == "TEMPLATE" && Is_Wick_Component_Element(<any>element)) {
+                    rt.templates.set(element.id, <any>element);
+                    continue;
+                }
+
+                const html_ref = element as HTMLElement;
+
+                if (Is_Wick_Component_Element(html_ref))
+                    pending_component_elements.push(html_ref);
+                else
+                    pending_elements_queue.push(html_ref);
+            }
+
+    return pending_component_elements;
+}
+
+export { Presets };
+export default wick;
+
+addModuleToCFW(wick, "wick");

@@ -66,6 +66,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     call_depth: number;
 
+    affinity: number;
+
     out_trs: any;
 
     pui: any[];
@@ -87,6 +89,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         parent: WickRTComponent = null,
         default_model_name = "",
         presets = rt.presets,
+        element_affinity = 0
     ) {
 
         this.name = this.constructor.name;
@@ -112,6 +115,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.update_state = 0;
         this.active_flags = 0;
         this.call_depth = 0;
+        this.affinity = element_affinity;
 
         //@ts-ignore
         this.up = this.updateParent;
@@ -131,7 +135,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         if (parent) parent.addChild(this);
 
         if (existing_element)
-            this.ele = <HTMLElement>this.ie(existing_element);
+            this.ele = <HTMLElement>this.ie(existing_element, element_affinity);
         else
             this.ele = this.ce();
 
@@ -236,7 +240,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                     doc = <HTMLElement>template.content.cloneNode(true),
                     ele = <HTMLElement>doc.firstElementChild;
 
-                return <HTMLElement>this.ie(ele);
+                return <HTMLElement>this.ie(ele, this.affinity);
             } else
                 console.warn("WickRT :: NO template element for component: " + this.name);
         }

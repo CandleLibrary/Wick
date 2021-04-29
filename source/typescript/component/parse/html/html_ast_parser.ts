@@ -81,6 +81,8 @@ function buildExportableDOMNode(
         node.namespace_id = ast.name_space || 0;
     }
 
+    node.comp = ast.comp;
+
     return node;
 }
 
@@ -101,7 +103,16 @@ export async function processWickHTML_AST(ast: HTMLNode, component: ComponentDat
     await loadHTMLImports(ast, component, presets);
 
     //Process the ast and return a node that  
-    const receiver = { ast: null },
+    const receiver: {
+        ast: HTMLNode & {
+            component_name?: string;
+            slot_name?: string;
+            data?: any;
+            id?: number;
+            ele_id?: number;
+            name_space?: number;
+        };
+    } = { ast: null },
         attribute_handlers = html_handlers[Math.max((HTMLNodeType.HTMLAttribute >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)];
 
     let last_element = null, ele_index = -1;
@@ -161,6 +172,8 @@ export async function processWickHTML_AST(ast: HTMLNode, component: ComponentDat
         if (html_node.type & HTMLNodeClass.HTML_ELEMENT || html_node.type == HTMLNodeType.WickBinding)
             html_node.id = ++ele_index;
 
+        if (!html_node.comp)
+            html_node.comp = component.name;
         //  html_node.id = ++index;
 
 
@@ -203,8 +216,19 @@ export async function processWickHTML_AST(ast: HTMLNode, component: ComponentDat
     }
 
 
-    if (receiver.ast)
+    if (receiver.ast) {
+
         component.HTML = buildExportableDOMNode(receiver.ast);
+        if (
+            receiver.ast.component_name
+        ) {
+            const sup_component = presets.components.get(receiver.ast.component_name);
+
+            component.root_ele_claims = [...sup_component.root_ele_claims, component.name];
+        } else {
+            component.root_ele_claims = [component.name];
+        }
+    }
 
     return receiver.ast;
 }

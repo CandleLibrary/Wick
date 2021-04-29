@@ -2,7 +2,8 @@ import { rt } from "./runtime_global.js";
 import { DOMLiteral, ContainerDomLiteral } from "../types/dom_literal.js";
 import { WickContainer } from "./runtime_container.js";
 import { takeParentAddChild } from "./runtime_common.js";
-import { Presets } from "../wick.js";
+import { WickRTComponent } from "./runtime_component.js";
+import Presets from "../presets.js";
 
 //
 // https://www.w3.org/TR/2011/WD-html5-20110525/namespaces.html
@@ -16,12 +17,87 @@ const namespaces = [
     "www.w3.org/2000/xmlns/",           // XMLNS - 5
 ];
 
+const comp_name_regex = /W[_\$a-zA-Z0-9]+_/;
+
 function createText(data) {
     return document.createTextNode(data);
 }
 
 function getNameSpace(name_space_lookup) {
     return namespaces[name_space_lookup] || "";
+}
+export function integrateElement(ele: HTMLElement | Text) {
+
+    if (ele instanceof Text) {
+        //this.elu.push(ele);
+        return ele;
+    } else {
+
+        if (this.ele) {
+
+            if (ele.hasAttribute("w:own")) {
+                debugger;
+                if (+ele.getAttribute("w:own") != this.affinity)
+                    return ele;
+            }
+
+            if (ele.tagName == "W-B") {
+                debugger;
+                const text = document.createTextNode(ele.innerHTML);
+                ele.replaceWith(text);
+                ele = text;
+                this.elu.push(ele);
+            } else {
+
+                if (ele.getAttribute("w:ctr")) {
+
+                    hydrateContainerElement(ele, this);
+
+                } else if (ele.hasAttribute("w:c") && this.ele !== ele) {
+
+                    takeParentAddChild(this, hydrateComponentElement(ele, this));
+
+                    return;
+                }
+
+                if (ele.hasAttribute("w:o")) {
+
+                    this.par.elu[+ele.hasAttribute("w:o")] = ele;
+
+                    //@ts-ignore
+                    for (const child of ele.childNodes)
+                        this.par.ie(child);
+
+                    return ele;
+
+                } else if (ele.hasAttribute("w:r")) {
+
+                    this.par.elu[+ele.hasAttribute("w:r")] = ele;
+
+                    this.elu.push(ele);
+
+                    //@ts-ignore
+                    for (const child of ele.childNodes)
+                        this.par.ie(child);
+
+                    return ele;
+                } else this.elu.push(ele);
+
+                if (ele.tagName == "A")
+                    rt.presets.processLink(ele);
+            }
+        } else {
+            ele.classList.add(this.name);
+            this.ele = ele;
+            this.elu.push(ele);
+        }
+
+        //@ts-ignore
+        for (const child of (ele.childNodes || []))
+            this.ie(child);
+
+        return ele;
+    }
 }
 
 /**
@@ -51,95 +127,84 @@ function createElement(tag_name) {
     return document.createElement(tag_name);
 }
 
-export function integrateElement(ele: HTMLElement | Text) {
+export function* getComponentNames(ele: HTMLElement): Generator<string, void, void> {
+    const len = ele.classList.length;
+
+    for (let i = 0; i < len; i++)
+        if (ele.classList[i].match(comp_name_regex))
+            yield ele.classList[i];
+}
 
 
-    if (ele instanceof Text) {
-        //this.elu.push(ele);
-        return ele;
-    } else {
+export function Is_Wick_Component_Element(ele: HTMLElement) {
+    return (ele
+        &&
+        ele.hasAttribute("w:c")
+        && [...getComponentNames(ele)].length > 0
+    );
+}
 
-        if (this.ele) {
 
-            if (ele.tagName == "W-B") {
-                const text = document.createTextNode(ele.innerHTML);
-                ele.replaceWith(text);
-                ele = text;
-                this.elu.push(ele);
-            } else {
+export function hydrateComponentElements(pending_component_elements: HTMLElement[]) {
 
-                if (ele.getAttribute("w:ctr")) {
 
-                    const
-                        comp_constructors = ele
-                            .getAttribute("w:ctr")
-                            .split(" ")
-                            .map(name => this.presets.component_class.get(name)),
-                        comp_attributes = (ele
-                            .getAttribute("w:ctr-atr") ?? "")
-                            .split(":")
-                            .map(e => e.split(";").map(e => <[string, string]>e.split("=")));
+    for (const hydrate_candidate of pending_component_elements) {
 
-                    if (comp_constructors.length < 1)
-                        throw new Error(`Could not find component class for ${name} in component ${this.name}`);
+        /**
+         * Some components are interleaved, forcing the use of the w:own attribute
+         * to untangle interleaved elements. Whether a component is interleaved or not 
+         * can be determined by the number of Wick class names present within the 
+         * elements class list. If there is more than one matching class name, then 
+         * there are interleaved components.
+         */
+        hydrateComponentElement(hydrate_candidate);
+    }
+}
 
-                    const ctr = new WickContainer(comp_constructors, comp_attributes, ele, this);
 
-                    this.ct.push(ctr);
-                } else if (ele.hasAttribute("w:c") && this.ele !== ele) {
+function hydrateComponentElement(hydrate_candidate: HTMLElement, parent: WickRTComponent = null) {
 
-                    const
-                        name = ele.classList[0],
-                        comp_constructor = this.presets.component_class.get(name);
+    let names = [...getComponentNames(hydrate_candidate)].reverse(), affinity = names.length - 1;
 
-                    this.elu.push(ele);
+    const u = undefined;
 
-                    if (!comp_constructor)
-                        throw new Error(`Could not find component class for ${name} in component ${this.name}`);
+    let prev_comp: WickRTComponent = null;
 
-                    const comp = new comp_constructor(null, ele, null, this);
+    for (const component_name of names) {
 
-                    takeParentAddChild(this, comp);
+        const comp_class = rt.gC(component_name);
 
-                    return;
-                }
+        if (comp_class) {
 
-                if (ele.hasAttribute("w:o")) {
-                    this.par.elu[+ele.hasAttribute("w:o")] = ele;
+            parent = new (comp_class)(null, hydrate_candidate, u, parent, u, u, affinity--);
 
-                    //@ts-ignore
-                    for (const child of ele.childNodes)
-                        this.par.ie(child);
-
-                    return ele;
-                } else if (ele.hasAttribute("w:r")) {
-
-                    this.par.elu[+ele.hasAttribute("w:r")] = ele;
-
-                    this.elu.push(ele);
-
-                    //@ts-ignore
-                    for (const child of ele.childNodes)
-                        this.par.ie(child);
-
-                    return ele;
-                } else this.elu.push(ele);
-
-                if (ele.tagName == "A")
-                    rt.presets.processLink(ele);
-            }
-        } else {
-            ele.classList.add(this.name);
-            this.ele = ele;
-            this.elu.push(ele);
+            prev_comp = parent;
         }
 
-        //@ts-ignore
-        for (const child of (ele.childNodes || []))
-            this.ie(child);
-
-        return ele;
+        else
+            console.warn(`WickRT :: Could not find component data for ${component_name}`);
     }
+
+    return prev_comp;
+}
+
+function hydrateContainerElement(ele: HTMLElement, parent: WickRTComponent) {
+    const
+        comp_constructors = ele
+            .getAttribute("w:ctr")
+            .split(" ")
+            .map(name => this.presets.component_class.get(name)),
+        comp_attributes = (ele
+            .getAttribute("w:ctr-atr") ?? "")
+            .split(":")
+            .map(e => e.split(";").map(e => <[string, string]>e.split("=")));
+
+    if (comp_constructors.length < 1)
+        throw new Error(`Could not find component class for ${name} in component ${parent.name}`);
+
+    const ctr = new WickContainer(comp_constructors, comp_attributes, ele, parent);
+
+    this.ct.push(ctr);
 }
 
 /**

@@ -108,4 +108,12 @@ export interface ComponentData {
      * Array of Lexers fenced to comment sections
      */
     comments?: Comment[];
+
+    /**
+     * List of component hash names that claim this component's root ele.
+     * The first element is the "owner" component that has full control
+     * of the element. Subsequent components are the "borrowers" of the 
+     * element
+     */
+    root_ele_claims: string[];
 }

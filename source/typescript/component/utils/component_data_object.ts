@@ -104,6 +104,7 @@ export function createComponentData(source_string: string, location: string): Co
         //Local names of imported components that are referenced in HTML expressions. 
         local_component_names: new Map,
 
+        root_ele_claims: []
     };
     return component;
 }
