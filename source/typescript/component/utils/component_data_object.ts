@@ -7,7 +7,7 @@ import { ComponentData } from "../../types/component_data";
 import { DOMLiteral } from "../../types/dom_literal.js";
 
 
-export function createErrorComponent(errors: Error[], src: string, location: string, component: ComponentData = createComponentData(src, location)) {
+export function createErrorComponent(errors: Error[], src: string, location: URL, component: ComponentData = createComponentData(src, location)) {
 
     const error_data = [...errors
         .map(
@@ -65,7 +65,8 @@ export function createErrorComponent(errors: Error[], src: string, location: str
     return component;
 }
 
-export function createComponentData(source_string: string, location: string): ComponentData {
+export function createComponentData(source_string: string, location: URL): ComponentData {
+
     const component: ComponentData = <ComponentData>{
 
         name: createNameHash(source_string),

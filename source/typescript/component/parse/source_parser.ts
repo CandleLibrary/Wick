@@ -119,7 +119,7 @@ export async function parseSource(input: URL | string, presets?: Presets, root_u
 export async function parseComponentAST(
     ast: HTMLNode | JSNode,
     source_string: string,
-    url: string,
+    url: URL,
     presets: Presets,
     parse_errors: Error[] = [],
     comments: Comment[] = [],
