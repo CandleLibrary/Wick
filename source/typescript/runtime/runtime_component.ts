@@ -2,11 +2,12 @@ import { rt, WickRuntime } from "./runtime_global.js";
 import { WickContainer } from "./runtime_container.js";
 
 import Presets from "../presets";
-import { makeElement, integrateElement } from "./runtime_html.js";
+import { makeElement, integrateElement, hydrateComponentElement, hydrateContainerElement } from "./runtime_html.js";
 import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
 import spark, { Sparky } from "@candlefw/spark";
 import { ObservableModel, ObservableWatcher } from "../types/observable_model.js";
 import { cfw } from "@candlefw/cfw";
+import { takeParentAddChild } from "./runtime_common.js";
 
 type BindingUpdateFunction = () => void;
 
@@ -74,8 +75,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     nui: any[];
 
     ci: number;
-
-    ie: typeof integrateElement;
     me: typeof makeElement;
 
     updated_attributes: Set<number>;
@@ -86,15 +85,13 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         model = null,
         existing_element = null,
         wrapper = null,
-        parent: WickRTComponent = null,
+        parent_chain: WickRTComponent[] = [],
         default_model_name = "",
         presets = rt.presets,
         element_affinity = 0
     ) {
 
         this.name = this.constructor.name;
-
-
 
         this.nlu = {};
         this.ch = [];
@@ -108,7 +105,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.binding_call_set = [];
 
         this.me = makeElement;
-        this.ie = integrateElement;
+        this.ie = this.integrateElement;
 
         this.updated_attributes = new Set();
 
@@ -132,10 +129,15 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.polling_id = -1;
         this.presets = presets;
 
+
+        this.model = model; // Soft set of model, to handle access defined in source files.
+
+        const parent = parent_chain[parent_chain.length - 1];
+
         if (parent) parent.addChild(this);
 
         if (existing_element)
-            this.ele = <HTMLElement>this.ie(existing_element, element_affinity);
+            this.ele = <HTMLElement>this.integrateElement(existing_element, parent_chain.concat(this));
         else
             this.ele = this.ce();
 
@@ -150,16 +152,21 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             model = presets.models[default_model_name];
         }
 
+        this.model = model;
+        this.wrapper = wrapper;
+    }
+
+    hydrate() {
+        const model = this.model, presets = this.presets, wrapper = this.wrapper;
+
         // Hydration --------------------------------
         this.CONNECTED = true;
-        this.model = model; // Soft set of model, to handle access defined in source files.
         this.re(this);
         this.setModel(model); //Hard set of model, with proper updating and polling.
         this.CONNECTED = false;
         // End Hydration ----------------------------
 
         if (wrapper) {
-            this.wrapper = wrapper;
             this.ele.appendChild(this.wrapper.ele);
             this.wrapper.setModel({ comp: this });
         } else if (presets.wrapper && this.name !== presets.wrapper.name /*Prevent recursion, which will be infinite */) {
@@ -176,6 +183,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.onLoad();
 
         rt.OVERRIDABLE_onComponentCreate(this);
+
+        for (const child of this.ch)
+            child.hydrate();
     }
 
     destructor() {
@@ -693,4 +703,85 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     //=========================================================
     //=========================================================
     //=========================================================
+
+    integrateElement(ele: HTMLElement | Text, component_chain: WickRTComponent[] = [this]) {
+
+        if (ele instanceof Text) {
+            //this.elu.push(ele);
+            return ele;
+        } else {
+
+            if (this.ele) {
+
+                if (ele.hasAttribute("w:own")) {
+                    if (+ele.getAttribute("w:own") != this.affinity)
+                        return ele;
+                }
+
+                if (ele.tagName == "W-B") {
+
+                    const text = document.createTextNode(ele.innerHTML);
+
+                    ele.replaceWith(text);
+
+                    ele = text;
+
+                    this.elu.push(ele);
+
+                } else {
+
+                    if (ele.getAttribute("w:ctr")) {
+
+                        hydrateContainerElement(ele, this);
+
+                    } else if (ele.hasAttribute("w:c") && this.ele !== ele) {
+
+                        takeParentAddChild(this, hydrateComponentElement(ele, component_chain));
+
+                        return;
+                    }
+
+                    if (ele.hasAttribute("w:o")) {
+
+                        this.par.elu[+ele.hasAttribute("w:o")] = ele;
+
+                        //@ts-ignore
+                        for (const child of ele.childNodes)
+                            this.par.integrateElement(child, component_chain);
+
+                        return ele;
+
+                    } else if (ele.hasAttribute("w:r")) {
+
+                        const index = +ele.hasAttribute("w:r");
+                        const lu_index = index % 50;
+                        const comp_index = (index / 50) | 0;
+
+                        component_chain[comp_index].elu[lu_index] = ele;
+
+                        this.elu.push(ele);
+
+                        //@ts-ignore
+                        for (const child of ele.childNodes)
+                            component_chain[comp_index].integrateElement(child, component_chain);
+
+                        return ele;
+                    } else this.elu.push(ele);
+
+                    if (ele.tagName == "A")
+                        rt.presets.processLink(ele);
+                }
+            } else {
+                ele.classList.add(this.name);
+                this.ele = ele;
+                this.elu.push(ele);
+            }
+
+            //@ts-ignore
+            for (const child of (ele.childNodes || []))
+                this.integrateElement(child, component_chain);
+
+            return ele;
+        }
+    }
 }

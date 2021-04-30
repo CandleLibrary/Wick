@@ -64,7 +64,8 @@ if (typeof window != undefined) {
 
         const elements = gatherWickElements();
 
-        hydrateComponentElements(elements);
+        for (const comp of hydrateComponentElements(elements))
+            comp.hydrate();
     });
 }
 

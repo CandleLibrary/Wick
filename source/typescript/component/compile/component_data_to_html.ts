@@ -9,7 +9,8 @@ const enum htmlState {
     IS_ROOT = 1,
     EXTERNAL_COMPONENT = 2,
     IS_COMPONENT = 4,
-    IS_SLOT_REPLACEMENT = 8
+    IS_SLOT_REPLACEMENT = 8,
+    IS_INTERLEAVED = 16
 }
 
 interface TempHTMLNode {
@@ -84,21 +85,21 @@ function componentDataToTempAST(
     on_ele_hook: (arg: DOMLiteral) => DOMLiteral | null | undefined = noop,
     presets: Presets = rt.presets,
     template_map = new Map,
-    depth = 0,
     html: DOMLiteral = comp.HTML,
-    state: htmlState = htmlState.IS_ROOT,
-    extern_children: DOMLiteral[] = [],
+    state: htmlState = htmlState.IS_ROOT | htmlState.IS_COMPONENT,
+    extern_children: [number, DOMLiteral][] = [],
     parent_component = null,
     comp_data = [comp.name]
 ): { html: TempHTMLNode, template_map: Map<string, TempHTMLNode>; } {
 
-    const node: TempHTMLNode = {
+    let node: TempHTMLNode = {
         attributes: new Map,
         children: [],
         strings: [],
         data: "",
         tag: ""
     };
+
 
     if (html)
         html = on_ele_hook(html);
@@ -137,8 +138,7 @@ function componentDataToTempAST(
                         data: "",
                         strings: [],
                         attributes: new Map([["w:c", ""], ["id", comp.name]]),
-                        children: [componentDataToTempAST(comp,
-                            on_ele_hook, presets, template_map, depth).html]
+                        children: [componentDataToTempAST(comp, on_ele_hook, presets, template_map).html]
                     });
             }
 
@@ -153,24 +153,24 @@ function componentDataToTempAST(
 
         } else if (component_name && presets.components.has(component_name)) {
 
-            const c_comp = presets.components.get(component_name),
-                { html } = componentDataToTempAST(
-                    c_comp,
-                    on_ele_hook,
-                    presets,
-                    template_map,
-                    0,
-                    c_comp.HTML,
-                    htmlState.IS_COMPONENT | state,
-                    children,
-                    comp,
-                    depth == 0 ? [...comp_data, c_comp.name] : [c_comp.name]
-                );
+            const c_comp = presets.components.get(component_name);
 
-            if (comp_data.length > 1)
-                html.attributes.set("w:own", comp_data.indexOf(comp.name));
+            ({ html: node } = componentDataToTempAST(
+                c_comp,
+                on_ele_hook,
+                presets,
+                template_map,
+                c_comp.HTML,
+                htmlState.IS_COMPONENT | (((state & htmlState.IS_COMPONENT) > 0) ? htmlState.IS_INTERLEAVED : 0),
+                extern_children.concat(children.map(c => [comp_data.length - 1, c])),
+                comp,
+                [...comp_data, c_comp.name]
+            ));
 
-            return { html, template_map };
+            if ((state & htmlState.IS_INTERLEAVED) > 0)
+                node.attributes.set("w:own", comp_data.indexOf(comp.name));
+
+
 
         } else if (tag_name) {
 
@@ -180,10 +180,11 @@ function componentDataToTempAST(
 
                 for (let i = 0; i < extern_children.length; i++) {
 
-                    const c = extern_children[i];
+                    const [j, c] = extern_children[i];
 
-                    if (c.slot_name == slot_name) {
-                        extern_children.splice(i, 1);
+                    if (c.slot_name == slot_name && !c.USED) {
+                        c.USED = true;
+                        c.UU = j;
                         child = c;
                         break;
                     }
@@ -195,7 +196,6 @@ function componentDataToTempAST(
                         on_ele_hook,
                         presets,
                         template_map,
-                        depth + 1,
                         child,
                         htmlState.IS_SLOT_REPLACEMENT,
                     );
@@ -206,75 +206,62 @@ function componentDataToTempAST(
 
             node.tag = tag_name.toLocaleLowerCase();
 
-            /**
-             * str += "\n"
-                + prepend
-                + `<${tag_name.toLowerCase()
-                }${state & htmlState.EXTERNAL_COMPONENT ? ` w:o=${i}` : ""
-                }${state & htmlState.IS_SLOT_REPLACEMENT ? ` w:r=${i}` : ""
-                }${(attributes.length > 0 && " " || "") + attributes.map(([n, v]) => (n.toLowerCase() == "class")
-                    ? ` class="${IS_COMPONENT_ROOT_ELEMENT ? (HAVE_CLASS = true, comp.name + " ") : ""}${v}"`
-                    : ` ${n}="${v}"`).join("")
-                }${IS_COMPONENT_ROOT_ELEMENT ? ` w:c ${!HAVE_CLASS ? `class="${comp.name}"` : ""}` : ""
-                }>`;
-             */
-
             if (state & htmlState.IS_SLOT_REPLACEMENT)
-                node.attributes.set("w:r", i + "");
+                node.attributes.set("w:r", html.UU * 50 + html.lookup_index);
+
             for (const [key, val] of attributes)
                 if (key.toLocaleLowerCase() == "class") {
                     HAVE_CLASS = IS_COMPONENT_ROOT_ELEMENT || HAVE_CLASS;
-                    node.attributes.set("class", (IS_COMPONENT_ROOT_ELEMENT ? comp_data.join(" ") : "") + ` ${val}`);
-                }
-                else
+                    const class_names = (IS_COMPONENT_ROOT_ELEMENT
+                        ? ((state & htmlState.IS_INTERLEAVED) > 0)
+                            ? comp_data.join(" ")
+                            : comp_data[comp_data.length - 1]
+                        : "");
+                    node.attributes.set("class", class_names + ` ${val}`);
+                } else
                     node.attributes.set(key, val);
+
             if (IS_COMPONENT_ROOT_ELEMENT) {
                 node.attributes.set("w:c", "");
-                if (!HAVE_CLASS)
-                    node.attributes.set("class", (IS_COMPONENT_ROOT_ELEMENT ? comp_data.join(" ") : ""));
+                if (!HAVE_CLASS) {
+                    const class_names = (IS_COMPONENT_ROOT_ELEMENT
+                        ? ((state & htmlState.IS_INTERLEAVED) > 0)
+                            ? comp_data.join(" ")
+                            : comp_data[comp_data.length - 1]
+                        : "");
+                    node.attributes.set("class", class_names);
+                }
             }
 
-            if (comp_data.length > 1)
+            if ((state & htmlState.IS_INTERLEAVED) > 0)
                 node.attributes.set("w:own", comp_data.indexOf(comp.name));
 
         } else if (IS_BINDING) {
-            if (comp_data.length > 1)
+            if ((state & htmlState.IS_INTERLEAVED) > 0)
                 node.attributes.set("w:own", comp_data.indexOf(comp.name));
             node.tag = "w-b";
             node.data = data || "";
-        }
-        else {
+        } else {
             node.data = data;
         }
 
-        for (const child of children)
+        console.log({ children });
+
+
+        //console.log("" + state, (state & (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT)) == (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT));
+
+        for (const child of children.filter(n => !n.USED))
             node.children.push(componentDataToTempAST(
                 comp,
                 on_ele_hook,
                 presets,
                 template_map,
-                depth + 1,
                 child,
-                0,
+                (((state) & (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT)) == (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT)) ? htmlState.IS_INTERLEAVED : 0,
                 extern_children,
                 parent_component,
                 comp_data
             ).html);
-
-        if (state & htmlState.IS_COMPONENT)
-            for (const child of extern_children)
-                node.children.push(componentDataToTempAST(
-                    parent_component,
-                    on_ele_hook,
-                    presets,
-                    template_map,
-                    depth + 1,
-                    child,
-                    htmlState.EXTERNAL_COMPONENT,
-                    undefined,
-                    undefined,
-                    comp_data
-                ).html);
     }
 
     return { html: node, template_map };

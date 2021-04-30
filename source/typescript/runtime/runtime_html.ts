@@ -26,79 +26,6 @@ function createText(data) {
 function getNameSpace(name_space_lookup) {
     return namespaces[name_space_lookup] || "";
 }
-export function integrateElement(ele: HTMLElement | Text) {
-
-    if (ele instanceof Text) {
-        //this.elu.push(ele);
-        return ele;
-    } else {
-
-        if (this.ele) {
-
-            if (ele.hasAttribute("w:own")) {
-                debugger;
-                if (+ele.getAttribute("w:own") != this.affinity)
-                    return ele;
-            }
-
-            if (ele.tagName == "W-B") {
-                debugger;
-                const text = document.createTextNode(ele.innerHTML);
-                ele.replaceWith(text);
-                ele = text;
-                this.elu.push(ele);
-            } else {
-
-                if (ele.getAttribute("w:ctr")) {
-
-                    hydrateContainerElement(ele, this);
-
-                } else if (ele.hasAttribute("w:c") && this.ele !== ele) {
-
-                    takeParentAddChild(this, hydrateComponentElement(ele, this));
-
-                    return;
-                }
-
-                if (ele.hasAttribute("w:o")) {
-
-                    this.par.elu[+ele.hasAttribute("w:o")] = ele;
-
-                    //@ts-ignore
-                    for (const child of ele.childNodes)
-                        this.par.ie(child);
-
-                    return ele;
-
-                } else if (ele.hasAttribute("w:r")) {
-
-                    this.par.elu[+ele.hasAttribute("w:r")] = ele;
-
-                    this.elu.push(ele);
-
-                    //@ts-ignore
-                    for (const child of ele.childNodes)
-                        this.par.ie(child);
-
-                    return ele;
-                } else this.elu.push(ele);
-
-                if (ele.tagName == "A")
-                    rt.presets.processLink(ele);
-            }
-        } else {
-            ele.classList.add(this.name);
-            this.ele = ele;
-            this.elu.push(ele);
-        }
-
-        //@ts-ignore
-        for (const child of (ele.childNodes || []))
-            this.ie(child);
-
-        return ele;
-    }
-}
 
 /**
  * Used for SVG, MATHML.
@@ -145,8 +72,8 @@ export function Is_Wick_Component_Element(ele: HTMLElement) {
 }
 
 
-export function hydrateComponentElements(pending_component_elements: HTMLElement[]) {
-
+export function hydrateComponentElements(pending_component_elements: HTMLElement[]): WickRTComponent[] {
+    const components = [];
 
     for (const hydrate_candidate of pending_component_elements) {
 
@@ -157,18 +84,20 @@ export function hydrateComponentElements(pending_component_elements: HTMLElement
          * elements class list. If there is more than one matching class name, then 
          * there are interleaved components.
          */
-        hydrateComponentElement(hydrate_candidate);
+        components.push(hydrateComponentElement(hydrate_candidate));
     }
+
+    return components;
 }
 
 
-function hydrateComponentElement(hydrate_candidate: HTMLElement, parent: WickRTComponent = null) {
+export function hydrateComponentElement(hydrate_candidate: HTMLElement, parent_chain: WickRTComponent[] = []) {
 
-    let names = [...getComponentNames(hydrate_candidate)].reverse(), affinity = names.length - 1;
+    let names = getComponentNames(hydrate_candidate), affinity = 0;
 
     const u = undefined;
 
-    let prev_comp: WickRTComponent = null;
+    let first_comp: WickRTComponent = null;
 
     for (const component_name of names) {
 
@@ -176,19 +105,22 @@ function hydrateComponentElement(hydrate_candidate: HTMLElement, parent: WickRTC
 
         if (comp_class) {
 
-            parent = new (comp_class)(null, hydrate_candidate, u, parent, u, u, affinity--);
+            const comp = new (comp_class)(null, hydrate_candidate, u, parent_chain, u, u, affinity++);
 
-            prev_comp = parent;
+            parent_chain = parent_chain.concat(comp);
+
+            if (!first_comp)
+                first_comp = comp;
         }
 
         else
             console.warn(`WickRT :: Could not find component data for ${component_name}`);
     }
 
-    return prev_comp;
+    return first_comp;
 }
 
-function hydrateContainerElement(ele: HTMLElement, parent: WickRTComponent) {
+export function hydrateContainerElement(ele: HTMLElement, parent: WickRTComponent) {
     const
         comp_constructors = ele
             .getAttribute("w:ctr")
