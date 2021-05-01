@@ -1,4 +1,4 @@
-<div>
+<slotdiv>
     <span>
         <slot name="slot-A">
             <div>Slot Data Here</div>
@@ -8,6 +8,10 @@
         <div>Slot Data Here</div>
     </slot>
 
-    <slot><h1>Original Slot Content</h1></slot>
-</div>
+    <a>
+        <slot>
+            <h1>Original Slot Content</h1>
+        </slot>
+    </a>
+</slotdiv>
  
