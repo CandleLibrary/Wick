@@ -1,4 +1,4 @@
-import { bidirectionalTraverse } from "@candlefw/conflagrate";
+import { bidirectionalTraverse, TraverseState } from "@candlefw/conflagrate";
 import Presets from "../../presets.js";
 import { noop } from "../../render/noop.js";
 import { rt } from "../../runtime/runtime_global.js";
@@ -29,20 +29,36 @@ interface TempHTMLNode {
  */
 export function componentDataToHTML(
     comp: ComponentData,
+    presets: Presets = rt.presets,
     on_ele_hook: (arg: DOMLiteral) => DOMLiteral | null | undefined = noop,
-    presets: Presets = rt.presets
 ): { html: string, template_map: Map<string, string>; } {
 
-    const { html, template_map } = componentDataToTempAST(comp, on_ele_hook, presets);
+    const { html: [html], template_map } = componentDataToTempAST(comp, presets, on_ele_hook);
 
-    let string = "";
 
-    for (const { node, meta: { depth, parent } } of bidirectionalTraverse(html, "children", true)) {
+    for (const { node, meta: { depth, parent, traverse_state } } of bidirectionalTraverse(html, "children")) {
 
-        string = "";
+        const depth_str = " ".repeat(depth);
 
-        if (node.tag) {
-            string += `<${node.tag}`;
+        if (traverse_state == TraverseState.LEAF) {
+            if (node.tag) {
+                let string = `<${node.tag}`;
+
+                for (const [key, val] of node.attributes.entries())
+                    if (val === "")
+                        string += ` ${key}`;
+                    else
+                        string += ` ${key}="${val}"`;
+
+                node.strings.push(string + "/>");
+
+            } else
+                node.strings.push(...node.data.split("\n"));
+
+            if (parent)
+                parent.strings.push(...node.strings.map(s => depth_str + s));
+        } else if (traverse_state == TraverseState.ENTER) {
+            let string = `<${node.tag}`;
 
             for (const [key, val] of node.attributes.entries())
                 if (val === "")
@@ -50,23 +66,17 @@ export function componentDataToHTML(
                 else
                     string += ` ${key}="${val}"`;
 
-            if (node.children.length > 0) {
-                string += ">\n";
-                string += node.strings.join("\n");
-                string += `</${node.tag}>`;
-            } else
-                string += "/>";
-
+            node.strings.push(string + ">");
         } else {
-            string += node.data;
+
+            node.strings.push(`</${node.tag}>`);
+
+            if (parent)
+                parent.strings.push(...node.strings.map(s => depth_str + s));
         }
-
-        if (parent)
-            parent.strings.push(string);
-
     };
 
-    return { html: string, template_map: template_map };
+    return { html: html.strings.join("\n"), template_map: template_map };
 }
 
 
@@ -80,26 +90,25 @@ export function componentDataToHTML(
  * @param html 
  * @param root 
  */
-function componentDataToTempAST(
+export function componentDataToTempAST(
     comp: ComponentData,
-    on_ele_hook: (arg: DOMLiteral) => DOMLiteral | null | undefined = noop,
     presets: Presets = rt.presets,
+    on_ele_hook: (arg: DOMLiteral) => DOMLiteral | null | undefined = noop,
     template_map = new Map,
     html: DOMLiteral = comp.HTML,
     state: htmlState = htmlState.IS_ROOT | htmlState.IS_COMPONENT,
-    extern_children: [number, DOMLiteral][] = [],
+    extern_children: { USED: boolean, child: DOMLiteral, id: number; }[] = [],
     parent_component = null,
     comp_data = [comp.name]
-): { html: TempHTMLNode, template_map: Map<string, TempHTMLNode>; } {
+): { html: TempHTMLNode[], template_map: Map<string, TempHTMLNode>; } {
 
     let node: TempHTMLNode = {
-        attributes: new Map,
+        tag: "",
+        data: "",
         children: [],
         strings: [],
-        data: "",
-        tag: ""
+        attributes: new Map,
     };
-
 
     if (html)
         html = on_ele_hook(html);
@@ -117,7 +126,7 @@ function componentDataToTempAST(
             component_name: component_name,
             slot_name: slot_name
         }: DOMLiteral = html,
-            children = c.slice();
+            children = c.map(i => ({ USED: false, child: i, id: comp_data.length - 1 }));
 
         if (ct) {
 
@@ -138,7 +147,7 @@ function componentDataToTempAST(
                         data: "",
                         strings: [],
                         attributes: new Map([["w:c", ""], ["id", comp.name]]),
-                        children: [componentDataToTempAST(comp, on_ele_hook, presets, template_map).html]
+                        children: [...componentDataToTempAST(comp, presets, on_ele_hook, template_map).html]
                     });
             }
 
@@ -155,14 +164,14 @@ function componentDataToTempAST(
 
             const c_comp = presets.components.get(component_name);
 
-            ({ html: node } = componentDataToTempAST(
+            ({ html: [node] } = componentDataToTempAST(
                 c_comp,
-                on_ele_hook,
                 presets,
+                on_ele_hook,
                 template_map,
                 c_comp.HTML,
                 htmlState.IS_COMPONENT | (((state & htmlState.IS_COMPONENT) > 0) ? htmlState.IS_INTERLEAVED : 0),
-                extern_children.concat(children.map(c => [comp_data.length - 1, c])),
+                extern_children.concat(children),
                 comp,
                 [...comp_data, c_comp.name]
             ));
@@ -170,38 +179,59 @@ function componentDataToTempAST(
             if ((state & htmlState.IS_INTERLEAVED) > 0)
                 node.attributes.set("w:own", comp_data.indexOf(comp.name));
 
-
-
         } else if (tag_name) {
 
             if (tag_name == "SLOT" && extern_children.length > 0) {
 
-                let child = null;
+                let r_ = { html: [], template_map };
 
-                for (let i = 0; i < extern_children.length; i++) {
+                if (slot_name != "") {
 
-                    const [j, c] = extern_children[i];
+                    for (let i = 0; i < extern_children.length; i++) {
 
-                    if (c.slot_name == slot_name && !c.USED) {
-                        c.USED = true;
-                        c.UU = j;
-                        child = c;
-                        break;
+                        const pkg = extern_children[i];
+
+                        if (pkg.child.slot_name == slot_name && !pkg.USED) {
+                            pkg.USED = true;
+                            pkg.child.UU = pkg.id;
+                            r_.html.push(...componentDataToTempAST(
+                                parent_component,
+                                presets,
+                                on_ele_hook,
+                                template_map,
+                                pkg.child,
+                                htmlState.IS_SLOT_REPLACEMENT,
+                            ).html);
+                        }
+                    }
+
+                } else {
+
+                    for (let i = 0; i < extern_children.length; i++) {
+
+                        const pkg = extern_children[i];
+
+                        if (!pkg.child.slot_name && !pkg.USED) {
+                            pkg.USED = true;
+                            pkg.child.UU = pkg.id;
+                            r_.html.push(...componentDataToTempAST(
+                                parent_component,
+                                presets,
+                                on_ele_hook,
+                                template_map,
+                                pkg.child,
+                                htmlState.IS_SLOT_REPLACEMENT,
+                            ).html);
+                        }
                     }
                 }
 
-                if (child)
-                    return componentDataToTempAST(
-                        parent_component,
-                        on_ele_hook,
-                        presets,
-                        template_map,
-                        child,
-                        htmlState.IS_SLOT_REPLACEMENT,
-                    );
+                if (r_.html.length > 0)
+                    return r_;
             }
 
             const IS_COMPONENT_ROOT_ELEMENT = comp.HTML == html;
+
             let HAVE_CLASS: boolean = false;
 
             node.tag = tag_name.toLocaleLowerCase();
@@ -245,24 +275,25 @@ function componentDataToTempAST(
             node.data = data;
         }
 
-        console.log({ children });
+        for (const { child } of children.filter(n => !n.USED)) {
 
-
-        //console.log("" + state, (state & (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT)) == (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT));
-
-        for (const child of children.filter(n => !n.USED))
-            node.children.push(componentDataToTempAST(
+            const { html } = componentDataToTempAST(
                 comp,
-                on_ele_hook,
                 presets,
+                on_ele_hook,
                 template_map,
                 child,
-                (((state) & (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT)) == (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT)) ? htmlState.IS_INTERLEAVED : 0,
+                (((state) & (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT))
+                    == (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT))
+                    ? htmlState.IS_INTERLEAVED : 0,
                 extern_children,
                 parent_component,
                 comp_data
-            ).html);
+            );
+            node.children.push(...html);
+        }
+
     }
 
-    return { html: node, template_map };
+    return { html: [node], template_map };
 }
