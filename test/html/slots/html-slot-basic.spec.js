@@ -9,7 +9,7 @@
 
 import wick from "@candlefw/wick";
 import assert from "assert";
-import { getInstanceHTML, getRenderedHTML } from "../../test-tools/tools.js";
+import { getInstanceHTML, getRenderedHTML, createComponentInstance, assertTree } from "../../test-tools/tools.js";
 
 assert_group("Basic", () => {
     await wick.server();
@@ -80,12 +80,45 @@ export default <div>
         assert(DOM.tag == "slotdiv");
         assert(DOM.children[2].children[0].tag == "div");
         assert(DOM.children[2].children[1].data == " default text value ");
-        assert(str == "");
     });
 
 });
 
+assert_group("Runtime", () => {
+    assert_group("Component bindings work with slotted elements", sequence, () => {
 
+        const comp = await wick(`
+    import default_slot from "./test/html/slots/data/slot.wick";
 
+    var d = "test_ed";
+
+    export default <default_slot>
+        <div>!!!test!!!</div>
+        default text value
+        <div>test \${(d + "123") }</div>
+    </default_slot>
+    `),
+            comp_instance = createComponentInstance(comp);
+
+        assertTree({
+            t: "slotdiv",
+            c: [{
+                t: "span"
+            }, , {
+                t: "a",
+                c: [
+                    { t: "div", c: [{ d: "!!!test!!!" }] },
+                    { d: "default text value" },
+                    {
+                        t: "div", c: [
+                            { d: "test" },
+                            { d: "test_ed123" }
+                        ]
+                    }
+                ]
+            }]
+        }, comp_instance.ele);
+    });
+});
 
 
