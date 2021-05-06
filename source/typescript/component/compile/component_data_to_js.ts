@@ -10,11 +10,12 @@ import { FunctionFrame } from "../../types/function_frame";
 import { VARIABLE_REFERENCE_TYPE } from "../../types/variable_reference_types";
 import { BindingVariable } from "../../wick.js";
 import { processBindings } from "../compile/compile_bindings.js";
-import { componentDataToCSS } from "./component_data_to_css.js";
 import { setPos } from "../utils/common.js";
 import { createErrorComponent } from "../utils/component_data_object.js";
 import { getGenericMethodNode, getPropertyAST } from "../utils/js_ast_tools.js";
 import { getComponentVariable, getComponentVariableName } from "../utils/set_component_variable.js";
+import { componentDataToCSS } from "./component_data_to_css.js";
+import { componentDataToTempAST } from "./component_data_to_html.js";
 import { DOMLiteralToJSNode } from "../utils/dom_literal_to_js_node.js";
 
 
@@ -299,11 +300,13 @@ export function componentDataToClassString(
         //HTML INFORMATION
         if (component.HTML && INCLUDE_HTML) {
 
-            const ele_create_method = setPos(getGenericMethodNode("ce", "", "return this.me(a);"), component.HTML.pos),
+            const ele_create_method = setPos(getGenericMethodNode("ce", "", "return this.makeElement(a);"), component.HTML.pos),
 
                 [, , { nodes: [r_stmt] }] = ele_create_method.nodes;
 
-            r_stmt.nodes[0].nodes[1].nodes[0] = DOMLiteralToJSNode(component.HTML);
+            const html = componentDataToTempAST(component, presets).html.pop();
+
+            r_stmt.nodes[0].nodes[1].nodes[0] = DOMLiteralToJSNode(html);
 
             // Setup element
             class_information.methods.push(ele_create_method);
@@ -346,6 +349,6 @@ export function componentDataToClassString(
     } catch (e) {
         console.warn(`Error found in component ${component.name} while converting to a class. location: ${component.location}.`);
         console.error(e);
-        return null; componentDataToClassString(createErrorComponent([e], component.source, component.location + "", component), presets);
+        return null; componentDataToClassString(createErrorComponent([e], component.source, component.location, component), presets);
     }
 }
