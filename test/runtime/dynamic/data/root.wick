@@ -1,0 +1,8 @@
+import interleaved from "./interleaved.wick"
+
+var data = "testing"
+
+export default <interleaved>
+    
+    <div>root ${data}</div>
+</interleaved>
