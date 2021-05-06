@@ -2,12 +2,16 @@ import { rt, WickRuntime } from "./runtime_global.js";
 import { WickContainer } from "./runtime_container.js";
 
 import Presets from "../presets";
-import { makeElement, integrateElement, hydrateComponentElement, hydrateContainerElement } from "./runtime_html.js";
+import {
+    getNameSpace,
+    createElementNameSpaced, hydrateComponentElement, hydrateContainerElement
+} from "./runtime_html.js";
 import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
 import spark, { Sparky } from "@candlefw/spark";
 import { ObservableModel, ObservableWatcher } from "../types/observable_model.js";
 import { cfw } from "@candlefw/cfw";
 import { takeParentAddChild } from "./runtime_common.js";
+import { DOMLiteral } from "../wick.js";
 
 type BindingUpdateFunction = () => void;
 
@@ -75,7 +79,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     nui: any[];
 
     ci: number;
-    me: typeof makeElement;
+    //me: typeof makeElement;
 
     updated_attributes: Set<number>;
 
@@ -103,10 +107,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.model = null;
         this.call_set = new Map();
         this.binding_call_set = [];
-
-        this.me = makeElement;
-        this.ie = this.integrateElement;
-
         this.updated_attributes = new Set();
 
         this.update_state = 0;
@@ -136,15 +136,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         if (parent) parent.addChild(this);
 
-        if (existing_element)
-            this.ele = <HTMLElement>this.integrateElement(existing_element, parent_chain.concat(this));
-        else
-            this.ele = this.ce();
-
-        if (this.ele)
-            //@ts-ignore
-            this.ele.wick_component = this;
-
         //Create or assign global model whose name matches the default_model_name;
         if (default_model_name) {
             if (!presets.models[default_model_name])
@@ -153,12 +144,18 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         }
 
         this.model = model;
+
         this.wrapper = wrapper;
+
+
+        if (existing_element)
+            this.ele = <HTMLElement>this.integrateElement(existing_element, parent_chain.concat(this));
+        else
+            this.ele = this.createElement(presets, parent_chain);
     }
 
     hydrate() {
         const model = this.model, presets = this.presets, wrapper = this.wrapper;
-
         // Hydration --------------------------------
         this.CONNECTED = true;
         this.re(this);
@@ -250,7 +247,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                     doc = <HTMLElement>template.content.cloneNode(true),
                     ele = <HTMLElement>doc.firstElementChild;
 
-                return <HTMLElement>this.ie(ele, this.affinity);
+                return <HTMLElement>this.integrateElement(ele, this.affinity);
             } else
                 console.warn("WickRT :: NO template element for component: " + this.name);
         }
@@ -703,7 +700,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     //=========================================================
     //=========================================================
     //=========================================================
-
     integrateElement(ele: HTMLElement | Text, component_chain: WickRTComponent[] = [this]) {
 
         if (ele instanceof Text) {
@@ -712,10 +708,10 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         } else {
 
             if (this.ele) {
-
                 if (ele.hasAttribute("w:own")) {
-                    if (+ele.getAttribute("w:own") != this.affinity)
+                    if (+ele.getAttribute("w:own") != this.affinity) {
                         return ele;
+                    }
                 }
 
                 if (ele.tagName == "W-B") {
@@ -749,13 +745,16 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                         for (const child of ele.childNodes)
                             this.par.integrateElement(child, component_chain);
 
+
+
                         return ele;
 
                     } else if (ele.hasAttribute("w:r")) {
 
-                        const index = +ele.hasAttribute("w:r");
-                        const lu_index = index % 50;
-                        const comp_index = (index / 50) | 0;
+                        const
+                            index = +ele.getAttribute("w:r"),
+                            lu_index = index % 50,
+                            comp_index = (index / 50) | 0;
 
                         component_chain[comp_index].elu[lu_index] = ele;
 
@@ -764,6 +763,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                         //@ts-ignore
                         for (const child of ele.childNodes)
                             component_chain[comp_index].integrateElement(child, component_chain);
+
+
 
                         return ele;
                     } else this.elu.push(ele);
@@ -783,5 +784,48 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
             return ele;
         }
+    }
+
+    /**
+* Make DOM Element tree from JS object
+* literals. Return list of object ID's and the
+* root element tree.
+*/
+    makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
+
+        const {
+            namespace_id: name_space_index,
+            tag_name: tag_name,
+            lookup_index: i,
+            attributes: attributes,
+            children: children,
+            data: data
+        } = ele_obj;
+
+        if (name_space_index) name_space = getNameSpace(name_space_index);
+
+        let ele = <HTMLElement>createElementNameSpaced(tag_name, name_space, data);
+
+        if (attributes)
+            for (const [name, value] of attributes)
+                ele.setAttribute(name, value);
+
+        if (children)
+            for (const child of children)
+                ele.appendChild(this.makeElement(child, name_space));
+
+        return ele;
+    }
+    createElement(presets, parent_chain) {
+
+        const ele = this.ce();
+
+        hydrateComponentElement(ele, parent_chain, this);
+
+        this.integrateElement(ele, parent_chain);
+
+        this.hydrate();
+
+        return ele;
     }
 }

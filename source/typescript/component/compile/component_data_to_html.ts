@@ -13,12 +13,14 @@ const enum htmlState {
     IS_INTERLEAVED = 16
 }
 
-interface TempHTMLNode {
+export interface TempHTMLNode {
     tag: string,
     data: string,
     attributes: Map<string, string>;
     children: TempHTMLNode[];
     strings: string[];
+
+    namespace?: number;
 }
 /**
  * Compile component HTML information (including child component and slot information), into a string containing the components html
@@ -107,7 +109,7 @@ export function componentDataToTempAST(
         data: "",
         children: [],
         strings: [],
-        attributes: new Map,
+        attributes: new Map(),
     };
 
     if (html)
@@ -124,10 +126,12 @@ export function componentDataToTempAST(
             is_container: ct,
             is_bindings: IS_BINDING,
             component_name: component_name,
-            slot_name: slot_name
+            slot_name: slot_name,
+            namespace_id
         }: DOMLiteral = html,
             children = c.map(i => ({ USED: false, child: i, id: comp_data.length - 1 }));
-
+        if (namespace_id)
+            node.namespace = namespace_id;
         if (ct) {
 
             const {
@@ -164,20 +168,23 @@ export function componentDataToTempAST(
 
             const c_comp = presets.components.get(component_name);
 
+            if (htmlState.IS_COMPONENT & state)
+                state |= htmlState.IS_INTERLEAVED;
+
             ({ html: [node] } = componentDataToTempAST(
                 c_comp,
                 presets,
                 on_ele_hook,
                 template_map,
                 c_comp.HTML,
-                htmlState.IS_COMPONENT | (((state & htmlState.IS_COMPONENT) > 0) ? htmlState.IS_INTERLEAVED : 0),
+                state,
                 extern_children.concat(children),
                 comp,
                 [...comp_data, c_comp.name]
             ));
 
-            if ((state & htmlState.IS_INTERLEAVED) > 0)
-                node.attributes.set("w:own", comp_data.indexOf(comp.name));
+            //if ((state & htmlState.IS_INTERLEAVED) > 0)
+            //    node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
 
         } else if (tag_name) {
 
@@ -263,19 +270,25 @@ export function componentDataToTempAST(
                 }
             }
 
-            if ((state & htmlState.IS_INTERLEAVED) > 0)
+            if ((state & htmlState.IS_INTERLEAVED) > 0) {
                 node.attributes.set("w:own", comp_data.indexOf(comp.name));
+            }
 
         } else if (IS_BINDING) {
             if ((state & htmlState.IS_INTERLEAVED) > 0)
-                node.attributes.set("w:own", comp_data.indexOf(comp.name));
+                node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
             node.tag = "w-b";
             node.data = data || "";
         } else {
             node.data = data;
         }
 
+        const child_state = (((state) & (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT))
+            == (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT))
+            ? htmlState.IS_INTERLEAVED : 0;
+
         for (const { child } of children.filter(n => !n.USED)) {
+
 
             const { html } = componentDataToTempAST(
                 comp,
@@ -283,9 +296,7 @@ export function componentDataToTempAST(
                 on_ele_hook,
                 template_map,
                 child,
-                (((state) & (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT))
-                    == (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT))
-                    ? htmlState.IS_INTERLEAVED : 0,
+                child_state,
                 extern_children,
                 parent_component,
                 comp_data

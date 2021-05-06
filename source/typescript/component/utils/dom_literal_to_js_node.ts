@@ -1,5 +1,6 @@
 import { JSNodeType, JSNode, exp } from "@candlefw/js";
 import { DOMLiteral } from "../../types/dom_literal";
+import { TempHTMLNode } from "../compile/component_data_to_html";
 
 
 
@@ -26,49 +27,31 @@ function DOMAttributeToJSNode([key, val]: [string, string]) {
         type: JSNodeType.ArrayLiteral,
         nodes: [
             { type: JSNodeType.StringLiteral, quote_type: "\"", value: key },
-            { type: JSNodeType.StringLiteral, quote_type: "\"", value: val ? sanitizeString(val) : "" }
+            { type: JSNodeType.StringLiteral, quote_type: "\"", value: val !== undefined ? sanitizeString(val + "") : "" }
         ]
     };
 }
 ;
 
 
-export function DOMLiteralToJSNode(node: DOMLiteral): JSNode {
+export function DOMLiteralToJSNode(node: TempHTMLNode): JSNode {
 
     const out = {
         type: JSNodeType.ObjectLiteral,
-        nodes: [propLiteral("lookup_index", node.lookup_index),],
+        nodes: [],
         pos: node.pos
     };
 
-    if (node.is_bindings)
-        out.nodes.push(propString("tag_name", "binding"));
-    else if (!node.tag_name)
+    if (!node.tag)
         out.nodes.push(propString("data", node.data || ""));
     else
-        out.nodes.push(propString("tag_name", node.tag_name));
+        out.nodes.push(propString("tag_name", node.tag));
 
     if (node.children)
         out.nodes.push(propArray("children", node.children.map(DOMLiteralToJSNode)));
 
     if (node.attributes)
-        out.nodes.push(propArray("attributes", node.attributes.map(DOMAttributeToJSNode)));
-
-    if (node.is_container)
-        out.nodes.push(propLiteral("is_container", true));
-
-    if (node.component_name)
-        out.nodes.push(propString("component_name", node.component_name));
-
-    if (node.component_names)
-        out.nodes.push(propArray("component_names", node.component_names.map(n => exp(`"${n}"`))));
-
-    if (node.component_attribs)
-        out.nodes.push(propArray("component_attribs", node.component_attribs.map(DOMAttributeToJSNode)));
-
-    if (node.namespace_id)
-        out.nodes.push(propLiteral("component_name", node.namespace_id));
+        out.nodes.push(propArray("attributes", [...node.attributes.entries()].map(DOMAttributeToJSNode)));
 
     return out;
-    <JSNode>{ type: JSNodeType.Identifier, value: `${JSON.stringify(component.HTML)}`, pos: component.HTML.pos };
 }
