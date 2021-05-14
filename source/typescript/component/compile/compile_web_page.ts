@@ -65,7 +65,7 @@ export function RenderPage(
      */
 
     const
-        { html, template_map } = componentDataToHTML(comp, hooks.on_element, presets),
+        { html, template_map } = componentDataToHTML(comp, presets, hooks.on_element),
         templates = [...template_map.values()].join("\n");
 
     let script = "", style = "", head = "";
