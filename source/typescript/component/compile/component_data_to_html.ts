@@ -33,11 +33,20 @@ export function componentDataToHTML(
     comp: ComponentData,
     presets: Presets = rt.presets,
     on_ele_hook: (arg: DOMLiteral) => DOMLiteral | null | undefined = noop,
-): { html: string, template_map: Map<string, string>; } {
+): { html: string, template_map: Map<string, TempHTMLNode>; } {
 
     const { html: [html], template_map } = componentDataToTempAST(comp, presets, on_ele_hook);
 
+    const html_string = htmlTemplateDataToString(html);
 
+    return { html: html_string, template_map: template_map };
+}
+
+
+/**
+ * Return an HTML string from a TempHTMLNode AST object
+ */
+export function htmlTemplateDataToString(html: TempHTMLNode) {
     for (const { node, meta: { depth, parent, traverse_state } } of bidirectionalTraverse(html, "children")) {
 
         const depth_str = " ".repeat(depth);
@@ -49,12 +58,14 @@ export function componentDataToHTML(
                 for (const [key, val] of node.attributes.entries())
                     if (val === "")
                         string += ` ${key}`;
+
                     else
                         string += ` ${key}="${val}"`;
 
                 node.strings.push(string + "/>");
 
-            } else
+            }
+            else
                 node.strings.push(...node.data.split("\n"));
 
             if (parent)
@@ -65,6 +76,7 @@ export function componentDataToHTML(
             for (const [key, val] of node.attributes.entries())
                 if (val === "")
                     string += ` ${key}`;
+
                 else
                     string += ` ${key}="${val}"`;
 
@@ -78,9 +90,8 @@ export function componentDataToHTML(
         }
     };
 
-    return { html: html.strings.join("\n"), template_map: template_map };
+    return html.strings.join("\n");
 }
-
 
 /**
  * Compile component HTML information (including child component and slot information), into a string containing the components html
@@ -112,8 +123,8 @@ export function componentDataToTempAST(
         attributes: new Map(),
     };
 
-    if (html)
-        html = on_ele_hook(html);
+    //if (html)
+    //    html = on_ele_hook(html);
 
     if (html) {
         //Convert html to string 

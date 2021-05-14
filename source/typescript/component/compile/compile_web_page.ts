@@ -5,7 +5,7 @@ import { rt } from "../../runtime/runtime_global.js";
 import { ComponentData } from "../../types/component_data.js";
 import { DOMLiteral } from "../../wick.js";
 import { componentDataToCSS } from "../compile/component_data_to_css.js";
-import { componentDataToHTML } from "../compile/component_data_to_html.js";
+import { componentDataToHTML, htmlTemplateDataToString } from "../compile/component_data_to_html.js";
 import { componentDataToClassString } from "../compile/component_data_to_js.js";
 
 /**[API]
@@ -66,7 +66,7 @@ export function RenderPage(
 
     const
         { html, template_map } = componentDataToHTML(comp, presets, hooks.on_element),
-        templates = [...template_map.values()].join("\n");
+        templates = [...template_map.values()].map(htmlTemplateDataToString).join("\n");
 
     let script = "", style = "", head = "";
 
