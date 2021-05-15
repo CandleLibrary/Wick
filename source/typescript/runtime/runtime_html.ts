@@ -1,9 +1,6 @@
-import { rt } from "./runtime_global.js";
-import { DOMLiteral, ContainerDomLiteral } from "../types/dom_literal.js";
-import { WickContainer } from "./runtime_container.js";
-import { takeParentAddChild } from "./runtime_common.js";
 import { WickRTComponent } from "./runtime_component.js";
-import Presets from "../presets.js";
+import { WickContainer } from "./runtime_container.js";
+import { rt } from "./runtime_global.js";
 
 //
 // https://www.w3.org/TR/2011/WD-html5-20110525/namespaces.html
@@ -23,6 +20,10 @@ function createText(data) {
     return document.createTextNode(data);
 }
 
+function createElement(tag_name) {
+    return document.createElement(tag_name);
+}
+
 export function getNameSpace(name_space_lookup) {
     return namespaces[name_space_lookup] || "";
 }
@@ -33,7 +34,7 @@ export function getNameSpace(name_space_lookup) {
  * @param name_space 
  * 
  */
-export function createElementNameSpaced(tag_name, name_space, data = ""): HTMLElement | Text {
+export function createNamespacedElement(tag_name, name_space, data = ""): HTMLElement | Text {
 
     let ele: any = null;
 
@@ -46,10 +47,6 @@ export function createElementNameSpaced(tag_name, name_space, data = ""): HTMLEl
     else ele = document.createElementNS(name_space, tag_name);
 
     return ele;
-}
-
-function createElement(tag_name) {
-    return document.createElement(tag_name);
 }
 
 export function* getComponentNames(ele: HTMLElement): Generator<string, void, void> {
@@ -131,6 +128,7 @@ export function hydrateContainerElement(ele: HTMLElement, parent: WickRTComponen
             .getAttribute("w:ctr")
             .split(" ")
             .map(name => parent.presets.component_class.get(name)),
+
         comp_attributes = (ele
             .getAttribute("w:ctr-atr") ?? "")
             .split(":")

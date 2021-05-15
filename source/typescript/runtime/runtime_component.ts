@@ -4,7 +4,7 @@ import { WickContainer } from "./runtime_container.js";
 import Presets from "../presets";
 import {
     getNameSpace,
-    createElementNameSpaced, hydrateComponentElement, hydrateContainerElement
+    createNamespacedElement, hydrateComponentElement, hydrateContainerElement
 } from "./runtime_html.js";
 import { DATA_FLOW_FLAG } from "../types/data_flow_flags";
 import spark, { Sparky } from "@candlefw/spark";
@@ -505,33 +505,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                 this.call_set.set(index, [flags, call_depth]);
         }
 
-        cfw.spark.queueUpdate(this);
-    }
-
-    call(pending_function_index: number, call_depth: number = 0) {
-
-        if (call_depth >= 1) return;
-
-        for (const [index] of this.binding_call_set)
-            if (index == pending_function_index)
-                return;
-
-        this.binding_call_set.push([pending_function_index, call_depth]);
-
-        cfw.spark.queueUpdate(this);
-    }
-
-    callFrame(pending_function_index: number, call_depth) {
-
-        if (call_depth >= 1) return;
-
-        for (const [index] of this.binding_call_set)
-            if (index == pending_function_index)
-                return;
-
-        this.binding_call_set.push([pending_function_index, call_depth]);
-
-        cfw.spark.queueUpdate(this);
+        spark.queueUpdate(this);
     }
 
     /**
@@ -603,8 +577,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                         if (model[name] !== undefined)
                             this.ua(this.nlu[name] & 0xFFFFFF, model[name]);
 
-            for (const [call_id, args] of this.clearActiveCalls())
-                this.lookup_function_table[call_id].call(this, ...args);
+            //for (const [call_id, args] of this.clearActiveCalls())
+            //    this.lookup_function_table[call_id].call(this, ...args);
         }
     }
 
@@ -685,6 +659,32 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     }
 
+    call(pending_function_index: number, call_depth: number = 0) {
+
+        if (call_depth >= 1) return;
+
+        for (const [index] of this.binding_call_set)
+            if (index == pending_function_index)
+                return;
+
+        this.binding_call_set.push([pending_function_index, call_depth]);
+
+        spark.queueUpdate(this);
+    }
+
+    callFrame(pending_function_index: number, call_depth) {
+
+        if (call_depth >= 1) return;
+
+        for (const [index] of this.binding_call_set)
+            if (index == pending_function_index)
+                return;
+
+        this.binding_call_set.push([pending_function_index, call_depth]);
+
+        spark.queueUpdate(this);
+    }
+
     /**************** Abstract Functions *********************/
     // Replaced by inheriting class.
     //=========================================================
@@ -740,14 +740,13 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                     }
 
                     if (ele.hasAttribute("w:o")) {
+                        // Element outside the scope of the current component
 
                         this.par.elu[+ele.hasAttribute("w:o")] = ele;
 
                         //@ts-ignore
                         for (const child of ele.childNodes)
                             this.par.integrateElement(child, component_chain);
-
-
 
                         return ele;
 
@@ -765,8 +764,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                         //@ts-ignore
                         for (const child of ele.childNodes)
                             component_chain[comp_index].integrateElement(child, component_chain);
-
-
 
                         return ele;
                     } else this.elu.push(ele);
@@ -806,7 +803,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         if (name_space_index) name_space = getNameSpace(name_space_index);
 
-        let ele = <HTMLElement>createElementNameSpaced(tag_name, name_space, data);
+        let ele = <HTMLElement>createNamespacedElement(tag_name, name_space, data);
 
         if (attributes)
             for (const [name, value] of attributes)

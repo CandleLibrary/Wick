@@ -3,33 +3,31 @@ import Presets from "./presets.js";
 import { rt } from "./runtime/runtime_global.js";
 import { hydrateComponentElements, Is_Wick_Component_Element } from "./runtime/runtime_html.js";
 
-const nop = _ => !0, wick = function () {
+const
+    nop = _ => !0,
+    wick = function () {
 
-    console.warn("Wick.rt is incapable of compiling components. Use the full wick library instead." +
-        " \n\t An inert component will be generated.");
+        console.warn("Wick.rt is incapable of compiling components. Use the full Wick library instead." +
+            " \n\t A dummy component will be generated.");
 
-    const d = {
-        mount: nop,
-        get pending() { return d; },
-        class: function () {
-            this.ele = document.createElement("div");
-            this.ele.innerHTML = "Wick.rt is incapable of compiling components. An inert component has been generated.";
-        },
-        createInstance: nop,
+        const d = {
+            mount: nop,
+            get pending() { return d; },
+            class: function () {
+                this.ele = document.createElement("div");
+                this.ele.innerHTML = "Wick.rt is incapable of compiling component, a dummy component has been generated instead.";
+            },
+            createInstance: nop,
+        };
+
+        return d;
     };
-
-    return d;
-};
 
 Object.assign(wick, rt);
 
-Object.defineProperty(wick, "rt", {
-    value: rt
-});
+Object.defineProperty(wick, "rt", { value: rt });
 
-Object.defineProperty(wick, "setWrapper", {
-    value: nop
-});
+Object.defineProperty(wick, "setWrapper", { value: nop });
 
 Object.defineProperty(wick, "toString", {
     value: () =>
@@ -45,30 +43,6 @@ Object.defineProperty(wick, "toString", {
 });
 
 
-/**
- * Loads templates and hydrates page. Assumes hydratable component 
- * data has already been loaded.
- */
-if (typeof window != undefined) {
-
-
-
-    window.addEventListener("load", (): void => {
-        //Assuming wick.rt.setPresets has been called already.
-
-        /**
-         * Looks through DOM and hydrates any element that has an 'w:c'
-         * attribute. Such element also require that their first class 
-         * name should be a WC############ component hash name.
-         */
-
-        const elements = gatherWickElements();
-
-        for (const comp of hydrateComponentElements(elements))
-            comp.hydrate();
-    });
-}
-
 function gatherWickElements() {
 
     const
@@ -82,8 +56,12 @@ function gatherWickElements() {
 
             if (element.nodeType == Node.ELEMENT_NODE) {
 
-                if (element.tagName == "TEMPLATE" && Is_Wick_Component_Element(<any>element)) {
-                    rt.templates.set(element.id, <any>element);
+                if (
+                    element.tagName == "TEMPLATE"
+                    &&
+                    Is_Wick_Component_Element(<any>element)
+                ) {
+                    rt.templates.set(element.classList[0], <any>element);
                     continue;
                 }
 
@@ -96,6 +74,29 @@ function gatherWickElements() {
             }
 
     return pending_component_elements;
+}
+
+
+/**
+ * Loads templates and hydrates page. Assumes hydratable component 
+ * data has already been loaded.
+ */
+if (typeof window != undefined) {
+
+    window.addEventListener("load", (): void => {
+        //Assuming wick.rt.setPresets has been called already.
+
+        /**
+         * Looks through DOM and hydrates any element that has a 'w:c'
+         * attribute. Such elements also require their first class 
+         * name be a Wick component hash name.
+         */
+
+        const elements = gatherWickElements();
+
+        for (const comp of hydrateComponentElements(elements))
+            comp.hydrate();
+    });
 }
 
 export { Presets };

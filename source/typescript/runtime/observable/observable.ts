@@ -1,6 +1,5 @@
 import { ObservableBase, _SealedProperty_ } from "./base.js";
 import { ObservableArray } from "./observable_array.js";
-import { ObservableContainerBase } from "./container_base.js";
 
 export class ObservableData extends ObservableBase {
 
@@ -27,6 +26,8 @@ export class ObservableData extends ObservableBase {
     get proxy() { return this; }
 
     set(data, prop_name: string = "") {
+
+        
 
         if (typeof data == "undefined")
             return false;

@@ -160,6 +160,7 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
     }
 
     const write_bindings = processed_bindings.filter(b => (b.binding.type & BindingType.WRITE) && !!b.binding.write_ast);
+    
 
     for (const { internal_name, class_index, flags, type } of component.root_frame.binding_type.values()) {
 

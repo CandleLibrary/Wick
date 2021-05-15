@@ -98,6 +98,7 @@ export function isBindingVariable(var_name: string, frame: FunctionFrame) {
 }
 
 export function addBindingVariable(binding_var: BindingVariable, frame: FunctionFrame): boolean {
+
     const root = getRootFrame(frame);
 
     if (root.binding_type.has(binding_var.internal_name))

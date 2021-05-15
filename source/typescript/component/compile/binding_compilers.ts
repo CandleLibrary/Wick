@@ -84,8 +84,6 @@ function setIdentifierReferenceVariables(root_node: JSNode, component: Component
 
         if (node.type == JSNodeType.IdentifierReference || node.type == JSNodeType.IdentifierBinding) {
 
-
-
             const val = node.value;
 
             if (!component_names.has(<string>val))
@@ -640,6 +638,7 @@ loadBindingHandler({
     prepareBindingObject(binding_selector, binding_node_ast
         , host_node, element_index, component, presets) {
 
+
         if (!getElementAtIndex(component, element_index).is_container) return;
 
         const
@@ -647,6 +646,8 @@ loadBindingHandler({
             binding = createBindingObject(BindingType.WRITE_ONLY, 0, binding_node_ast.pos),
             component_names = component.root_frame.binding_type,
             { primary_ast } = binding_node_ast;
+
+
 
         if (primary_ast) {
 
