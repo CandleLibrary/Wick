@@ -1,11 +1,11 @@
 import { traverse } from "@candlefw/conflagrate";
 import { JSNode, JSNodeType, renderCompressed, stmt } from "@candlefw/js";
 import URL from "@candlefw/url";
-import { addBindingVariable, addWrittenBindingVariableName, addBinding } from "../../common/binding.js";
+import { addBindingVariable, addWriteFlagToBindingVariable, addBinding, addBindingReference } from "../../common/binding.js";
 import { importResource } from "../../common/common.js";
 import { Is_Tag_From_HTML_Spec } from "../../common/html.js";
 import { global_object } from "../../runtime/global.js";
-import { BINDING_SELECTOR, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../../types/binding.js";
+import { BINDING_SELECTOR, DATA_FLOW_FLAG, BINDING_VARIABLE_TYPE } from "../../types/binding.js";
 import { HTMLHandler } from "../../types/html";
 import {
     HTMLContainerNode, HTMLNode,
@@ -49,33 +49,18 @@ export function loadHTMLHandler(handler: HTMLHandler, ...types: HTMLNodeType[]) 
  * Wick Binding Nodes
  */
 function addWickBindingVariableName(node: WickBindingNode, component) {
-    for (const { node: n } of traverse(node.primary_ast, "nodes")) {
-        if (n.type == JSNodeType.IdentifierReference) {
 
-            const { value: name } = n;
+    for (const { node: n } of traverse(node.primary_ast, "nodes"))
 
-            if (global_object[name]) continue;
+        if (n.type == JSNodeType.IdentifierReference)
 
-            addBindingVariable({
-                pos: n.pos,
-                internal_name: <string>name,
-                external_name: <string>name,
-                class_index: -1,
-                type: VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE,
-                flags: DATA_FLOW_FLAG.FROM_MODEL
-            }, component.root_frame);
-
-            addWrittenBindingVariableName(<string>name, component.root_frame);
-        }
-    }
+            addBindingReference(n, node.primary_ast, component.root_frame);
 }
 
 const process_wick_binding = {
     priority: 1,
 
     prepareHTMLNode(node: WickBindingNode, host_node, host_element, index, skip, replace, component, presets) {
-
-        console.log({ host_node, str: renderCompressed(node.primary_ast) });
 
         addBinding(component, {
             binding_selector: "",
@@ -508,7 +493,7 @@ loadHTMLHandlerInternal(
                     external_name: id,
                     internal_name: id,
                     flags: 0,
-                    type: VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE
+                    type: BINDING_VARIABLE_TYPE.METHOD_VARIABLE
                 }, component.root_frame);
 
                 await processFunctionDeclaration(fn_ast, component, presets);

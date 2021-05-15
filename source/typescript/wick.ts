@@ -24,7 +24,7 @@ import { rt, WickRuntime } from "./runtime/global.js";
 import { srv, WickServer } from "./server.js";
 import parser from "./source_code/parse.js";
 import { WickTest as test } from "./test/wick.test.js";
-import { BindingVariable, DATA_FLOW_FLAG, PendingBinding, VARIABLE_REFERENCE_TYPE } from "./types/binding";
+import { BindingVariable, DATA_FLOW_FLAG, IntermediateBinding, BINDING_VARIABLE_TYPE } from "./types/binding";
 import { ComponentData, ExtendedComponentData } from "./types/component";
 import { FunctionFrame } from "./types/function_frame";
 import { DOMLiteral } from "./types/html";
@@ -126,7 +126,7 @@ export interface WickCompiler {
         JSNodeType: typeof JSNodeTypeLU;
         HTMLNodeType: typeof HTMLNodeTypeLU;
         HTMLNodeClass: typeof HTMLNodeClass;
-        VARIABLE_REFERENCE_TYPE: VARIABLE_REFERENCE_TYPE;
+        VARIABLE_REFERENCE_TYPE: BINDING_VARIABLE_TYPE;
         PresetOptions: PresetOptions;
     };
 }
@@ -330,8 +330,8 @@ export {
     JSNodeType,
     HTMLNodeClass as HTMLNodeClass,
     FunctionFrame,
-    PendingBinding,
-    VARIABLE_REFERENCE_TYPE,
+    IntermediateBinding as PendingBinding,
+    BINDING_VARIABLE_TYPE as VARIABLE_REFERENCE_TYPE,
     DATA_FLOW_FLAG,
 
     /*Observables*/

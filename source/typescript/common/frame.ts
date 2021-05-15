@@ -1,7 +1,12 @@
 import { FunctionFrame } from "../types/function_frame";
 import { ComponentData } from "../types/component";
 
-export function createFrame(parent_frame: any, component: ComponentData, DO_NOT_ATTACH: boolean = false, TEMPORARY: boolean = DO_NOT_ATTACH) {
+export function createFrame(
+    parent_frame: any,
+    component: ComponentData,
+    DO_NOT_ATTACH: boolean = false,
+    TEMPORARY: boolean = DO_NOT_ATTACH
+) {
 
     const function_frame = <FunctionFrame>{
         ast: null,
@@ -12,7 +17,7 @@ export function createFrame(parent_frame: any, component: ComponentData, DO_NOT_
         prev: parent_frame,
         IS_ROOT: !parent_frame,
         IS_TEMP_CLOSURE: TEMPORARY,
-        binding_type: (!parent_frame) ? new Map : null,
+        binding_variables: (!parent_frame) ? new Map : null,
     };
 
     if (!parent_frame)

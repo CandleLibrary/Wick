@@ -3,7 +3,7 @@ import { setPos } from "../../common/common.js";
 import { getGenericMethodNode } from "../../common/js.js";
 import { getComponentVariableName } from "../../common/binding.js";
 import Presets from "../../common/presets.js";
-import { BindingObject, BindingType, DATA_FLOW_FLAG, PendingBinding, VARIABLE_REFERENCE_TYPE } from "../../types/binding";
+import { BindingObject, BindingType, DATA_FLOW_FLAG, IntermediateBinding, BINDING_VARIABLE_TYPE } from "../../types/binding";
 import { ClassInformation } from "../../types/class_information";
 import { ComponentData } from "../../types/component";
 import { HTMLNode, HTMLNodeTypeLU } from "../../types/wick_ast.js";
@@ -14,7 +14,7 @@ function createBindingName(binding_index_pos: number) {
     return `b${binding_index_pos.toString(36)}`;
 }
 
-export function runBindingHandlers(pending_binding: PendingBinding, component: ComponentData, presets: Presets, class_info: ClassInformation) {
+export function runBindingHandlers(pending_binding: IntermediateBinding, component: ComponentData, presets: Presets, class_info: ClassInformation) {
     for (const handler of binding_handlers) {
 
         let binding = null;
@@ -43,7 +43,7 @@ export function runBindingHandlers(pending_binding: PendingBinding, component: C
 export function processBindings(component: ComponentData, class_info: ClassInformation, presets: Presets) {
 
     const
-        { bindings: raw_bindings, root_frame: { binding_type } } = component,
+        { bindings: raw_bindings, root_frame: { binding_variables: binding_type } } = component,
 
         {
             methods,
@@ -54,7 +54,7 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
 
         registered_elements: Set<number> = new Set,
 
-        processed_bindings: { binding: BindingObject, pending_binding: PendingBinding; }[] = raw_bindings
+        processed_bindings: { binding: BindingObject, pending_binding: IntermediateBinding; }[] = raw_bindings
             .map(b => runBindingHandlers(b, component, presets, class_info))
             .sort((a, b) => a.binding.priority > b.binding.priority ? -1 : 1),
         /**
@@ -112,13 +112,13 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
 
                 for (const { name } of component_variables.values()) {
 
-                    if (!component.root_frame.binding_type.has(name))
+                    if (!component.root_frame.binding_variables.has(name))
                         throw (binding.pos.errorMessage(`missing binding variable for ${name}`));
 
-                    const { class_index, type } = component.root_frame.binding_type.get(name);
+                    const { class_index, type } = component.root_frame.binding_variables.get(name);
 
-                    if (type & (VARIABLE_REFERENCE_TYPE.DIRECT_ACCESS
-                        | VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE)
+                    if (type & (BINDING_VARIABLE_TYPE.DIRECT_ACCESS
+                        | BINDING_VARIABLE_TYPE.METHOD_VARIABLE)
                     ) continue;
 
                     check_ids.push(class_index);
@@ -147,7 +147,7 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
 
             for (const [, { name }] of component_variables) {
                 const type = binding_type.get(name);
-                if (type && type.type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE) {
+                if (type && type.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE) {
                     initialized_internal_variables.add(type.class_index | 0);
                 }
             }
@@ -160,9 +160,9 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
     const write_bindings = processed_bindings.filter(b => (b.binding.type & BindingType.WRITE) && !!b.binding.write_ast);
 
 
-    for (const { internal_name, class_index, flags, type } of component.root_frame.binding_type.values()) {
+    for (const { internal_name, class_index, flags, type } of component.root_frame.binding_variables.values()) {
 
-        if (type & VARIABLE_REFERENCE_TYPE.DIRECT_ACCESS)
+        if (type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS)
             continue;
 
         if (flags & DATA_FLOW_FLAG.WRITTEN) {

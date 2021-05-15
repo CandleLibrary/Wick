@@ -1,7 +1,7 @@
 import { JSNode, JSNodeType } from "@candlefw/js";
 import URL from "@candlefw/url";
 
-import parseStringReturnAST from "../../source_code/parse.js";
+import parserSourceString from "../../source_code/parse.js";
 import Presets from "../../common/presets.js";
 import { Comment } from "../../types/comment.js";
 import { ComponentData } from "../../types/component";
@@ -93,7 +93,7 @@ export async function parseSource(input: URL | string, presets?: Presets, root_u
 
         //Illegal URL, try parsing string
         try {
-            data = parseStringReturnAST(<string>input, "");
+            data = parserSourceString(<string>input, "");
 
             if (data.error)
                 throw data.error;

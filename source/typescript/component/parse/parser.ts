@@ -1,6 +1,7 @@
 import { copy, traverse } from "@candlefw/conflagrate";
 import { CSSNode } from "@candlefw/css";
 import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlefw/js";
+import { getBindingRefCount, getRootFrame } from "../../common/binding.js";
 import { createFrame } from "../../common/frame.js";
 import Presets from "../../common/presets.js";
 import { ComponentData, ComponentStyle } from "../../types/component";
@@ -18,7 +19,7 @@ import { html_handlers } from "./html.js";
 import { JS_handlers } from "./js.js";
 
 
-function getFunctionFrame(
+export function getFunctionFrame(
     ast: JSNode,
     component: ComponentData,
     frame: FunctionFrame = null,
@@ -52,13 +53,11 @@ function getFunctionFrame(
  * by actions taken by @JSHandlers.
  * 
 */
-async function processCoreAsync(
+export async function processCoreAsync(
     ast: JSNode,
     function_frame: FunctionFrame,
     component: ComponentData,
-    presets: Presets,
-    root_name: string,
-    frame: FunctionFrame = null
+    presets: Presets
 ) {
     main_loop:
     for (const { node, meta } of traverse(ast, "nodes")
@@ -67,6 +66,7 @@ async function processCoreAsync(
         .makeSkippable()
         .extract(function_frame)
     ) {
+
         for (const handler of JS_handlers[Math.max((node.type >>> 23), 0)]) {
 
             const pending = handler.prepareJSNode(node, meta.parent, meta.skip, component, presets, function_frame);
@@ -92,7 +92,20 @@ async function processCoreAsync(
 
     function_frame.backup_ast = copy(function_frame.ast);
 
+    incrementBindingRefCounters(function_frame);
+
     return function_frame;
+}
+
+function incrementBindingRefCounters(function_frame: FunctionFrame) {
+
+    const root = getRootFrame(function_frame);
+    console.log(function_frame, getBindingRefCount(function_frame));
+
+    for (const [name, count] of getBindingRefCount(function_frame).entries()) {
+        if (root.binding_variables.has(name))
+            root.binding_variables.get(name).ref_count += count;
+    }
 }
 
 export function processCoreSync(
@@ -140,6 +153,8 @@ export function processCoreSync(
     }
 
     function_frame.backup_ast = copy(function_frame.ast);
+
+    incrementBindingRefCounters(function_frame);
 
     return function_frame;
 }

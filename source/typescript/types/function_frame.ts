@@ -1,4 +1,4 @@
-import { JSNode } from "@candlefw/js";
+import { JSIdentifier, JSNode } from "@candlefw/js";
 import { BindingVariable } from "./binding";
 /**
  * Reference information for a single function defined within 
@@ -28,7 +28,7 @@ export interface FunctionFrame {
      * Identifiers that have no declaration and no presence in the
      * the global object and thus must be a binding identifier reference.
      */
-    binding_ref_identifiers: { node: JSNode; parent: JSNode; index: number; }[];
+    binding_ref_identifiers: (JSIdentifier & { IS_BINDING_REF: boolean; })[];
 
     /**
      * Binding variable names that are read by the method.
@@ -56,11 +56,9 @@ export interface FunctionFrame {
     IS_TEMP_CLOSURE: boolean;
 
     /**
-     * Array of bindings types that have been declared in
-     * the root frame either through a var statement or
-     * from an import/export statement.
+     * A Map of binding variables
      */
-    binding_type?: Map<string, BindingVariable>;
+    binding_variables?: Map<string, BindingVariable>;
 
     /**
      * Index of lookup location of the rendered component method

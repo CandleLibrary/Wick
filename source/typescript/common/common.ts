@@ -4,11 +4,11 @@ import URL from "@candlefw/url";
 import { Lexer } from "@candlefw/wind";
 import { parseSource } from "../component/parse/source_parser.js";
 import { componentDataToJSCached } from "../component/render/js.js";
-import { DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/binding";
+import { DATA_FLOW_FLAG, BINDING_VARIABLE_TYPE } from "../types/binding";
 import { ComponentData } from "../types/component";
 import { FunctionFrame } from "../types/function_frame";
 import { HTMLNode } from "../types/wick_ast";
-import { addBindingVariable, addWrittenBindingVariableName } from "./binding.js";
+import { addBindingVariable, addWriteFlagToBindingVariable } from "./binding.js";
 import Presets from "./presets.js";
 
 
@@ -40,14 +40,13 @@ export function mergeComponentData(destination_component: ComponentData, source_
 
     if (source_component.CSS) destination_component.CSS.push(...source_component.CSS);
 
-
     if (!destination_component.HTML)
         destination_component.HTML = source_component.HTML;
     else
         throw new Error(`Cannot combine components. The source component ${source_component.location} contains a default HTML export that conflicts with the destination component ${destination_component.location}`);
 
-    for (const [, data] of source_component.root_frame.binding_type.entries())
-        addBindingVariable(data, destination_component.root_frame);
+    for (const [, { external_name, flags, internal_name, pos, type }] of source_component.root_frame.binding_variables.entries())
+        addBindingVariable(destination_component.root_frame, internal_name, pos, type, external_name, flags);
 
     for (const name of source_component.names)
         destination_component.names.push(name);
@@ -91,7 +90,7 @@ export async function importResource(
     frame: FunctionFrame
 ): Promise<void> {
 
-    let flag: DATA_FLOW_FLAG = null, ref_type: VARIABLE_REFERENCE_TYPE = null;
+    let flag: DATA_FLOW_FLAG = null, ref_type: BINDING_VARIABLE_TYPE = null;
 
     const [url, meta] = from_value.split(":");
 
@@ -122,20 +121,20 @@ export async function importResource(
         case "@parent":
             /* all ids within this node are imported binding_variables from parent */
             //Add all elements to global scope
-            ref_type = VARIABLE_REFERENCE_TYPE.PARENT_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PARENT;
+            ref_type = BINDING_VARIABLE_TYPE.PARENT_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PARENT;
             break;
 
         case "@api":
-            ref_type = VARIABLE_REFERENCE_TYPE.API_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PRESETS;
+            ref_type = BINDING_VARIABLE_TYPE.API_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PRESETS;
             break;
 
         case "@global":
-            ref_type = VARIABLE_REFERENCE_TYPE.GLOBAL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_OUTSIDE;
+            ref_type = BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_OUTSIDE;
             break;
 
         case "@model":
-            if (meta) component.global_model = meta.trim();
-            ref_type = VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_MODEL;
+            if (meta) component.global_model_name = meta.trim();
+            ref_type = BINDING_VARIABLE_TYPE.MODEL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_MODEL;
             break;
 
         case "@presets":
@@ -145,19 +144,11 @@ export async function importResource(
 
     for (const { local, external } of names) {
 
-        if (!addBindingVariable({
-            //@ts-ignore
-            pos: node.pos,
-            external_name: external || local,
-            internal_name: local,
-            class_index: -1,
-            type: ref_type,
-            flags: flag
-        }, frame))
+        if (!addBindingVariable(frame, local, node.pos, ref_type, external || local, flag))
             //@ts-ignore
             node.pos.throw(`Import variable [${local}] already declared`);
 
-        addWrittenBindingVariableName(local, frame);
+        addWriteFlagToBindingVariable(local, frame);
     }
 }
 

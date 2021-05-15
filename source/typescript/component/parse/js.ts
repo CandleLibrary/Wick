@@ -1,21 +1,21 @@
 import { traverse } from "@candlefw/conflagrate";
-import { exp, JSIdentifier, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt } from "@candlefw/js";
-
-import env from "../../source_code/env.js";
-import { BINDING_SELECTOR } from "../../types/binding.js";
-import { ComponentData } from "../../types/component";
-import { DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../../types/binding";
-import { JSHandler } from "../../types/js.js";
-import { HTMLNode, HTMLNodeClass, HTMLNodeType, WickBindingNode, WICK_AST_NODE_TYPE_SIZE } from "../../types/wick_ast.js";
+import { exp, JSIdentifier, JSIdentifierReference, JSLexicalDeclaration, JSNode, JSNodeType, JSStringLiteral, stmt } from "@candlefw/js";
+import { Lexer } from "@candlefw/wind";
 import {
-    addBindingVariable,
-    addBindingVariableFlag, addNameToDeclaredVariables, addNodeToBindingIdentifiers,
-    addReadBindingVariableName, addWrittenBindingVariableName,
-    isBindingVariable, isVariableDeclared
+    addBinding,
+    addBindingReference, addBindingVariable,
+    addBindingVariableFlag, addDefaultValueToBindingVariable, addNameToDeclaredVariables,
+    addReadFlagToBindingVariable, addWriteFlagToBindingVariable,
+    Name_Is_A_Binding_Variable, Variable_Is_Declared
 } from "../../common/binding.js";
 import { getFirstReferenceName, importResource, setPos } from "../../common/common.js";
-import { processWickCSS_AST, processWickHTML_AST, processFunctionDeclaration, processNodeSync } from "./parser.js";
-import { Lexer } from "@candlefw/wind";
+import env from "../../source_code/env.js";
+import { BINDING_VARIABLE_TYPE, DATA_FLOW_FLAG } from "../../types/binding";
+import { BINDING_SELECTOR } from "../../types/binding.js";
+import { JSHandler } from "../../types/js.js";
+import { HTMLNode, HTMLNodeClass, HTMLNodeType, WickBindingNode, WICK_AST_NODE_TYPE_SIZE } from "../../types/wick_ast.js";
+import { processFunctionDeclaration, processNodeSync, processWickCSS_AST, processWickHTML_AST } from "./parser.js";
+
 
 
 
@@ -55,20 +55,6 @@ export function loadJSParseHandler(handler: JSHandler, ...types: JSNodeType[]) {
     modified_handler.priority = Math.abs(modified_handler.priority);
 
     return loadJSParseHandler(modified_handler, ...types);
-}
-
-function addBinding(
-    attribute_name: string,
-    binding_val: JSNode,
-    host_node: JSNode,
-    html_element_index: number,
-    component: ComponentData) {
-    component.bindings.push({
-        binding_selector: attribute_name,
-        binding_val,
-        host_node: <JSNode>host_node,
-        html_element_index
-    });
 }
 
 /*
@@ -205,11 +191,11 @@ loadJSParseHandlerInternal(
 );
 
 /*
-██    ██  █████  ██████  ██  █████  ██████  ██      ███████                     
-██    ██ ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██                          
-██    ██ ███████ ██████  ██ ███████ ██████  ██      █████                       
- ██  ██  ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██                          
-  ████   ██   ██ ██   ██ ██ ██   ██ ██████  ███████ ███████                     
+██    ██  █████  ██████  ██  █████  ██████  ██      ███████   ██          ██      ███████ ██   ██ ██  ██████  █████  ██                     
+██    ██ ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██          ██        ██      ██       ██ ██  ██ ██      ██   ██ ██                     
+██    ██ ███████ ██████  ██ ███████ ██████  ██      █████         ██      ██      █████     ███   ██ ██      ███████ ██                     
+ ██  ██  ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██              ██    ██      ██       ██ ██  ██ ██      ██   ██ ██                     
+  ████   ██   ██ ██   ██ ██ ██   ██ ██████  ███████ ███████           ██  ███████ ███████ ██   ██ ██  ██████ ██   ██ ███████                
                                                                                 
                                                                                 
 ███████ ████████  █████  ████████ ███████ ███    ███ ███████ ███    ██ ████████ 
@@ -233,6 +219,7 @@ loadJSParseHandlerInternal(
 
             const
                 n = setPos(stmt("a,a;"), node.pos),
+                IS_CONSTANT = (node.type == JSNodeType.LexicalDeclaration && (<JSLexicalDeclaration>node).symbol == "const"),
                 [{ nodes }] = n.nodes;
 
             nodes.length = 0;
@@ -246,32 +233,28 @@ loadJSParseHandlerInternal(
                 if (binding.type == JSNodeType.BindingExpression) {
 
                     const
-                        [identifier] = binding.nodes,
+                        [identifier, value] = binding.nodes,
                         l_name = (<JSIdentifierReference>identifier).value;
 
                     if (frame.IS_ROOT) {
 
-                        if (!
-                            addBindingVariable({
-                                pos: binding.pos,
-                                class_index: -1,
-                                external_name: l_name,
-                                internal_name: l_name,
-                                type: VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE,
-                                flags: 0
-                            }, frame)
-                        ) {
+                        if (!addBindingVariable(frame, l_name, binding.pos,
+                            IS_CONSTANT
+                                ? BINDING_VARIABLE_TYPE.CONST_VARIABLE
+                                : BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
+
+                        )) {
                             const msg = `Redeclaration of the binding variable [${l_name}]. 
-                                First declaration here:\n${component.root_frame.binding_type.get(l_name).pos.blame()}
+                                First declaration here:\n${component.root_frame.binding_variables.get(l_name).pos.blame()}
                                 redeclaration here:\n${(<Lexer><any>binding.pos).blame()}\nin ${component.location}`;
                             throw new ReferenceError(msg);
                         }
 
-                        addNodeToBindingIdentifiers(identifier, <JSNode>meta.parent, frame);
+                        addDefaultValueToBindingVariable(frame, l_name, <JSNode>value);
 
-                        addWrittenBindingVariableName(l_name, frame);
+                        addBindingReference(identifier, <JSNode>meta.parent, frame);
 
-                        addBinding(BINDING_SELECTOR.BINDING_INITIALIZATION, binding, <JSNode>node, 0, component);
+                        addWriteFlagToBindingVariable(l_name, frame);
 
                         meta.skip();
 
@@ -279,56 +262,31 @@ loadJSParseHandlerInternal(
                         addNameToDeclaredVariables(l_name, frame);
 
                 } else {
-                    if (frame.IS_ROOT)
-                        addNodeToBindingIdentifiers(binding, <JSNode>meta.parent, frame);
-                    else
+                    if (frame.IS_ROOT) {
+                        if (!addBindingVariable(frame, (<JSIdentifierReference>binding).value, binding.pos,
+                            IS_CONSTANT
+                                ? BINDING_VARIABLE_TYPE.CONST_VARIABLE
+                                : BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
+
+                        )) {
+                            const msg = `Redeclaration of the binding variable [${(<JSIdentifierReference>binding).value}]. 
+                                First declaration here:\n${component.root_frame.binding_variables.get((<JSIdentifierReference>binding).value).pos.blame()}
+                                redeclaration here:\n${(<Lexer><any>binding.pos).blame()}\nin ${component.location}`;
+                            throw new ReferenceError(msg);
+                        }
+                    } else
                         addNameToDeclaredVariables((<JSIdentifierReference>binding).value, frame);
                 }
             }
+
 
             if (frame.IS_ROOT)
                 return null;
             return node;
         }
-    }, JSNodeType.VariableStatement
+    }, JSNodeType.VariableStatement, JSNodeType.LexicalDeclaration, JSNodeType.LexicalBinding
 );
 
-/*
-██      ███████ ██   ██ ██  ██████  █████  ██      
-██      ██       ██ ██  ██ ██      ██   ██ ██      
-██      █████     ███   ██ ██      ███████ ██      
-██      ██       ██ ██  ██ ██      ██   ██ ██      
-███████ ███████ ██   ██ ██  ██████ ██   ██ ███████ 
-*/
-// These variables are accessible by all bindings within the component's
-// scope. 
-loadJSParseHandlerInternal(
-    {
-        priority: 1,
-
-        prepareJSNode(node, parent_node, skip, component, presets, frame) {
-
-            //Add all elements to global 
-            for (const { node: binding, meta } of traverse(node, "nodes")
-                .filter("type",
-                    JSNodeType.IdentifierBinding,
-                )
-            ) {
-                if (binding.type == JSNodeType.BindingExpression) {
-
-
-                    const [identifier] = binding.nodes;
-
-                    const l_name = (<JSIdentifier>identifier).value;
-
-                    addNameToDeclaredVariables(l_name, frame);
-                } else {
-                    addNameToDeclaredVariables((<JSIdentifierReference>binding).value, frame);
-                }
-            }
-        }
-    }, JSNodeType.LexicalDeclaration, JSNodeType.LexicalBinding
-);
 /*
  ██████  █████  ██      ██                                                    
 ██      ██   ██ ██      ██                                                    
@@ -360,15 +318,15 @@ loadJSParseHandlerInternal(
                 [id] = node.nodes,
                 name = <string>getFirstReferenceName(<JSNode>id);//.value;
 
-            if (!isVariableDeclared(name, frame)
-                && isBindingVariable(name, frame)) {
+            if (!Variable_Is_Declared(name, frame)
+                && Name_Is_A_Binding_Variable(name, frame)) {
 
-                addNodeToBindingIdentifiers(
+                addBindingReference(
                     <JSNode>id,
                     <JSNode>node,
                     frame);
 
-                addReadBindingVariableName(name, frame);
+                addReadFlagToBindingVariable(name, frame);
 
                 skip(1);
             }
@@ -413,16 +371,8 @@ loadJSParseHandlerInternal(
 
             if (!frame.IS_ROOT)
                 addNameToDeclaredVariables(name, frame);
-            else {
-                addBindingVariable({
-                    pos: node.pos,
-                    internal_name: name,
-                    external_name: name,
-                    class_index: -1,
-                    type: VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE,
-                    flags: 0
-                }, frame);
-            }
+            else
+                addBindingVariable(frame, name, node.pos, BINDING_VARIABLE_TYPE.METHOD_VARIABLE);
 
             /**
              * Automatic event handler for root element
@@ -470,16 +420,8 @@ loadJSParseHandlerInternal(
                 }
             } else if (name[0] == "$") {
 
-                if (frame.IS_ROOT) {
-                    addBindingVariable({
-                        internal_name: name,
-                        external_name: name,
-                        class_index: -1,
-                        type: VARIABLE_REFERENCE_TYPE.METHOD_VARIABLE,
-                        flags: 0,
-                        pos: node.pos
-                    }, frame);
-                }
+                if (frame.IS_ROOT)
+                    addBindingVariable(frame, name, node.pos, BINDING_VARIABLE_TYPE.METHOD_VARIABLE);
 
                 root_name = name.slice(1);
 
@@ -555,15 +497,15 @@ loadJSParseHandlerInternal(
 
             const name = (<JSIdentifierReference>node).value;
 
-            if (!isVariableDeclared(name, frame)
-                && isBindingVariable(name, frame)) {
+            if (!Variable_Is_Declared(name, frame)
+                && Name_Is_A_Binding_Variable(name, frame)) {
 
-                addNodeToBindingIdentifiers(
+                addBindingReference(
                     <JSNode>node,
                     <JSNode>parent_node,
                     frame);
 
-                addReadBindingVariableName(name, frame);
+                addReadFlagToBindingVariable(name, frame);
             }
 
             return <JSNode>node;
@@ -597,14 +539,14 @@ loadJSParseHandlerInternal(
             ) {
                 const name = (<JSIdentifierReference>id).value;
 
-                if (!isVariableDeclared(name, frame)) {
+                if (!Variable_Is_Declared(name, frame)) {
 
-                    if (isBindingVariable(name, frame))
-                        addNodeToBindingIdentifiers(<JSNode>node, <JSNode>parent_node, frame);
+                    if (Name_Is_A_Binding_Variable(name, frame))
+                        addBindingReference(<JSNode>node, <JSNode>parent_node, frame);
                     else
                         node.pos.throw(`Invalid assignment to undeclared variable [${name}]`);
 
-                    addWrittenBindingVariableName(name, frame);
+                    addWriteFlagToBindingVariable(name, frame);
                 }
 
                 skip(1);
@@ -660,10 +602,10 @@ loadJSParseHandlerInternal(
                 } else {
                     const ref = <JSIdentifierReference>findFirstNodeOfType(JSNodeType.IdentifierReference, expr);
 
-                    if (ref && isBindingVariable(<string>ref.value, frame)) {
+                    if (ref && Name_Is_A_Binding_Variable(<string>ref.value, frame)) {
                         //Assumes that the refereneced object is modified in some
                         //way from a call on one of its members or submembers.
-                        addWrittenBindingVariableName(<string>ref.value, frame);
+                        addWriteFlagToBindingVariable(<string>ref.value, frame);
                     }
                 }
             }

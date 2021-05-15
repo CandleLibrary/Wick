@@ -8,7 +8,7 @@ import { getGenericMethodNode, getPropertyAST } from "../../common/js.js";
 import Presets from "../../common/presets.js";
 import { renderWithFormatting, renderWithFormattingAndSourceMap } from "../../render/render.js";
 import { WickRTComponent } from "../../runtime/component.js";
-import { VARIABLE_REFERENCE_TYPE } from "../../types/binding";
+import { BINDING_VARIABLE_TYPE } from "../../types/binding";
 import { ClassInformation } from "../../types/class_information.js";
 import { ComponentClassStrings, ComponentData } from "../../types/component";
 import { FunctionFrame } from "../../types/function_frame";
@@ -40,6 +40,7 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
     if (ast) {
 
         const cpy = copy(ast);
+
         for (const { node, meta: { mutate, traverse_state } } of bidirectionalTraverse(cpy, "nodes")
             .filter("type",
                 JSNodeType.PostExpression,
@@ -63,7 +64,7 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
                                 id = exp(getComponentVariableName(name, component)),
                                 new_node = setPos(id, node.pos);
 
-                            if (!component.root_frame.binding_type.has(<string>name))
+                            if (!component.root_frame.binding_variables.has(<string>name))
                                 //ts-ignore
                                 throw node.pos.errorMessage(`Undefined reference to ${name}`);
 
@@ -133,9 +134,9 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
                 if (!updated_names.has(name)) {
 
                     const { type, class_index, pos }
-                        = component.root_frame.binding_type.get(name);
+                        = component.root_frame.binding_variables.get(name);
 
-                    if (type == VARIABLE_REFERENCE_TYPE.INTERNAL_VARIABLE)
+                    if (type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE)
                         id_indices.push(class_index);
                 }
             }
@@ -233,7 +234,7 @@ export function componentDataToClassString(
 
         const
             component_class = stmt(`class ${component.name || "temp"} extends 
-            cfw.wick.rt.C {constructor(m,e,p,w){super(m,e,p,w,"${component.global_model || ""}");}}`),
+            cfw.wick.rt.C {constructor(m,e,p,w){super(m,e,p,w,"${component.global_model_name || ""}");}}`),
             binding_values_init_method = getGenericMethodNode("c", "", ";"),
             register_elements_method = getGenericMethodNode("re", "c", ";"),
             [, , { nodes: bi_stmts }] = binding_values_init_method.nodes,
@@ -252,7 +253,7 @@ export function componentDataToClassString(
 
         let HAVE_LU_DATA = false;
 
-        if (!component.global_model)
+        if (!component.global_model_name)
             component_class.nodes.length = 2;
 
         re_stmts.length = 0;
@@ -271,7 +272,7 @@ export function componentDataToClassString(
 
             class_information.class_cleanup_statements = <any>cu_stmts;
 
-            for (const comp_var of component.root_frame.binding_type.values()) {
+            for (const comp_var of component.root_frame.binding_variables.values()) {
 
                 comp_var.class_index = class_information.nlu_index;
 
@@ -279,7 +280,7 @@ export function componentDataToClassString(
                     { external_name, flags, class_index, internal_name, type } = comp_var,
                     nluf_array = exp(`c.u${class_index}`);
 
-                if (type & VARIABLE_REFERENCE_TYPE.DIRECT_ACCESS)
+                if (type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS)
                     continue;
 
                 lu_public_variables.nodes.push(getPropertyAST(external_name, ((flags << 24) | nlu_index) + ""));

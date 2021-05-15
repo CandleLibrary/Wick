@@ -21,7 +21,7 @@ import { Node } from "../types/wick_ast.js";
  * the point where the parser was unable to parse the input string.
  *
  */
-export default function (input: string | Lexer, source = ""): { ast: Node, comments: Comment[]; error?: any; } {
+export default function (input: string | Lexer, source_path: string = ""): { ast: Node, comments: Comment[]; error?: any; } {
 
     let lex: string | Lexer = null;
 
@@ -29,8 +29,8 @@ export default function (input: string | Lexer, source = ""): { ast: Node, comme
         lex = new Lexer(input);
     else lex = input;
 
-    if (source)
-        lex.source = source;
+    if (source_path)
+        lex.source = source_path;
 
     const
 

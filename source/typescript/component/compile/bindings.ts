@@ -76,7 +76,7 @@ function getFrameFromName(name: string, component: ComponentData) {
  */
 function setIdentifierReferenceVariables(root_node: JSNode, component: ComponentData, binding: BindingObject): JSNode {
 
-    const receiver = { ast: null }, component_names = component.root_frame.binding_type;
+    const receiver = { ast: null }, component_names = component.root_frame.binding_variables;
 
     for (const { node, meta: { replace, parent } } of traverse(root_node, "nodes")
         .makeReplaceable()
@@ -173,11 +173,11 @@ loadBindingHandler({
 
             const
                 root = child_comp.root_frame,
-                cv = root.binding_type.get(extern);
+                cv = root.binding_variables.get(extern);
 
-            if (cv && cv.flags == DATA_FLOW_FLAG.EXPORT_TO_PARENT && component.root_frame.binding_type.get(local)) {
+            if (cv && cv.flags == DATA_FLOW_FLAG.EXPORT_TO_PARENT && component.root_frame.binding_variables.get(local)) {
 
-                binding.read_ast = stmt(`this.ch[${index}].spm(${cv.class_index}, ${component.root_frame.binding_type.get(local).class_index}, ${index})`);
+                binding.read_ast = stmt(`this.ch[${index}].spm(${cv.class_index}, ${component.root_frame.binding_variables.get(local).class_index}, ${index})`);
 
                 setPos(binding.read_ast.pos, host_node.pos);
 
@@ -210,11 +210,11 @@ loadBindingHandler({
         if (comp) {
 
 
-            const cv = comp.root_frame.binding_type.get(extern);
+            const cv = comp.root_frame.binding_variables.get(extern);
 
             if (cv && cv.flags & DATA_FLOW_FLAG.FROM_PARENT) {
 
-                const comp_var = component.root_frame.binding_type.get(<string>local);
+                const comp_var = component.root_frame.binding_variables.get(<string>local);
 
                 binding.write_ast = stmt(`this.ch[${index}].ufp(${cv.class_index}, this[${comp_var.class_index}], f);`);
 
@@ -242,7 +242,7 @@ loadBindingHandler({
         const
             binding = createBindingObject(BindingType.WRITE, 0, binding_node_ast.pos),
             [ref, expr] = (<JSNode><unknown>binding_node_ast).nodes,
-            comp_var = component.root_frame.binding_type.get(<string>ref.value),
+            comp_var = component.root_frame.binding_variables.get(<string>ref.value),
             converted_expression = setIdentifierReferenceVariables(expr, component, binding),
             d = exp(`this.ua(${comp_var.class_index})`);
 
@@ -448,7 +448,7 @@ loadBindingHandler({
         const binding = createBindingObject(BindingType.WRITE_ONLY, 0, <any>host_node.pos),
             { primary_ast } = binding_node_ast;
 
-        const receiver = { ast: null }, component_names = component.root_frame.binding_type;
+        const receiver = { ast: null }, component_names = component.root_frame.binding_variables;
 
         for (const { node, meta: { replace, parent } } of traverse(host_node, "nodes")
             .makeReplaceable()
@@ -568,7 +568,7 @@ loadBindingHandler({
         , host_node, element_index, component) {
 
         const binding = createBindingObject(BindingType.WRITE_ONLY, 0, binding_node_ast.pos),
-            component_names = component.root_frame.binding_type,
+            component_names = component.root_frame.binding_variables,
             { primary_ast, secondary_ast } = binding_node_ast;
 
         if (primary_ast) {
@@ -614,7 +614,7 @@ loadBindingHandler({
         const
             container_id = getElementAtIndex(component, element_index).container_id,
             binding = createBindingObject(BindingType.WRITE_ONLY, 0, binding_node_ast.pos),
-            component_names = component.root_frame.binding_type,
+            component_names = component.root_frame.binding_variables,
             { primary_ast } = binding_node_ast;
 
 
@@ -648,7 +648,7 @@ loadBindingHandler({
         if (!getElementAtIndex(component, element_index).is_container) return;
 
         const binding = createBindingObject(BindingType.READ_WRITE, 1000, binding_node_ast.pos),
-            component_names = component.root_frame.binding_type,
+            component_names = component.root_frame.binding_variables,
             { primary_ast, secondary_ast } = binding_node_ast
             ;
 
@@ -862,7 +862,7 @@ loadBindingHandler({
 
         const
             binding = createBindingObject(BindingType.READONLY, 100, binding_node_ast.pos),
-            component_names = component.root_frame.binding_type,
+            component_names = component.root_frame.binding_variables,
             { primary_ast } = binding_node_ast;
 
         if (primary_ast) {

@@ -1,10 +1,8 @@
 import { CSSNode } from "@candlefw/css";
-import { JSNode } from "@candlefw/js";
 import URL from "@candlefw/url";
-import { Lexer } from "@candlefw/wind";
 import { WickRTComponent } from "../runtime/component.js";
 import { RuntimeComponent } from "../wick.js";
-import { BINDING_SELECTOR, PendingBinding } from "./binding";
+import { IntermediateBinding } from "./binding";
 import { Comment } from "./comment.js";
 import { WickComponentErrorStore } from "./errors.js";
 import { FunctionFrame } from "./function_frame";
@@ -49,22 +47,10 @@ export interface ComponentData {
     children: number[];
 
     /**
-     * Add new PendingBinding entry to the component.
-     * @param arg
-     */
-    addBinding?(arg: {
-        binding_selector: BINDING_SELECTOR | string;
-        binding_val: JSNode | HTMLNode | CSSNode | any;
-        host_node: JSNode | HTMLNode | CSSNode;
-        html_element_index: number;
-        pos: any;
-    }): void;
-
-    /**
      * Name of a model defined in presets that will be auto assigned to the
      * component instance when it is created.
      */
-    global_model: string;
+    global_model_name: string;
 
     /**
      * Functions blocks that identify the input and output variables that are consumed
@@ -87,7 +73,7 @@ export interface ComponentData {
      * modified by the binding variable, including HTML attributes,
      * CSS attributes, and other binding variables.
      */
-    bindings: PendingBinding[];
+    bindings: IntermediateBinding[];
 
     /**
      * The virtual DOM as described within a component with a .html extension or with a
@@ -127,10 +113,10 @@ export interface ComponentData {
     comments?: Comment[];
 
     /**
-     * List of component hash names that claim this component's root ele.
-     * The first element is the "owner" component that has full control
-     * of the element. Subsequent components are the "borrowers" of the 
-     * element
+     * List of foreign component hash names that claim this component's 
+     * root ele. The first element is the "owner" component that has full 
+     * control of the element. Subsequent listed components are "borrowers" 
+     * of the element.
      */
     root_ele_claims: string[];
 }

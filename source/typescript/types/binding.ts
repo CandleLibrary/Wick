@@ -25,7 +25,9 @@ export const enum BindingType {
     READ_WRITE = 3
 }
 
-export const enum VARIABLE_REFERENCE_TYPE {
+export const enum BINDING_VARIABLE_TYPE {
+    UNDEFINED = 0,
+    CONST_VARIABLE = 64,
     INTERNAL_VARIABLE = 1,
     MODEL_VARIABLE = 16,
     API_VARIABLE = 4,
@@ -59,6 +61,12 @@ export const enum DATA_FLOW_FLAG {
     WRITTEN = 256
 }
 
+export const enum STATIC_BINDING_STATE {
+    UNCHECKED = 0,
+    TRUE = 1,
+    FALSE = 2
+}
+
 
 export const enum BINDING_SELECTOR {
     ELEMENT_SELECTOR_STRING = "esl",
@@ -76,7 +84,7 @@ export const enum BINDING_SELECTOR {
 
 
 
-export interface PendingBinding {
+export interface IntermediateBinding {
     html_element_index: number;
     binding_selector: string;
     host_node: HTMLNode | JSNode;
@@ -99,16 +107,22 @@ export interface BindingVariable {
     external_name: string;
 
     /* Type of reference */
-    type: VARIABLE_REFERENCE_TYPE;
+    type: BINDING_VARIABLE_TYPE;
 
     /* */
     class_index: number;
     flags: DATA_FLOW_FLAG;
     pos: any | Lexer;
+    default_val?: JSNode;
+    STATIC_STATE: STATIC_BINDING_STATE;
+    /**
+     * Number of references made to this variable within the component
+     */
+    ref_count: number;
 }
 
 /**
- * Maps binding variables to a specific JS statement or expression
+ * Maps A 
  */
 export interface BindingObject {
     component_variables: Map<string, { name: string; IS_OBJECT: boolean; }>;
