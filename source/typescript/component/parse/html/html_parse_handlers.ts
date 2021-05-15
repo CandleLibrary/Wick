@@ -1,6 +1,5 @@
 import { traverse } from "@candlefw/conflagrate";
-import { JSNode, stmt, JSNodeType } from "@candlefw/js";
-
+import { JSNode, stmt, JSNodeType, JSNodeClass, renderCompressed } from "@candlefw/js";
 import {
     WICK_AST_NODE_TYPE_SIZE,
     WICK_AST_NODE_TYPE_BASE,
@@ -26,9 +25,6 @@ const default_handler = {
     priority: -Infinity,
     prepareHTMLNode(node) { return node; }
 };
-
-
-function isPredefinedTag(val: string): boolean { return standard_tag_set.has(val.toUpperCase()); }
 
 export const html_handlers: Array<HTMLHandler[]> = Array(WICK_AST_NODE_TYPE_SIZE).fill(null).map(() => [default_handler]);
 
@@ -57,53 +53,58 @@ export function loadHTMLHandler(handler: HTMLHandler, ...types: HTMLNodeType[]) 
 /*
  * Wick Binding Nodes
  */
+function addWickBindingVariableName(node: WickBindingNode, component) {
+    for (const { node: n } of traverse(node.primary_ast, "nodes")) {
+        if (n.type == JSNodeType.IdentifierReference) {
 
-loadHTMLHandlerInternal(
-    {
-        priority: 1,
+            const { value: name } = n;
 
-        prepareHTMLNode(node: WickBindingNode, host_node, host_element, index, skip, replace, component, presets) {
+            if (global_object[name]) continue;
 
-            component.addBinding({
-                binding_selector: "",
-                binding_val: node,
-                host_node: host_node,
-                html_element_index: index + 1,
-                pos: node.pos
-            });
+            addBindingVariable({
+                pos: n.pos,
+                internal_name: <string>name,
+                external_name: <string>name,
+                class_index: -1,
+                type: VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE,
+                flags: DATA_FLOW_FLAG.FROM_MODEL
+            }, component.root_frame);
 
-            for (const { node: n } of traverse(node.primary_ast, "nodes")) {
-                if (n.type == JSNodeType.IdentifierReference) {
-
-                    const { value: name } = n;
-
-                    if (global_object[name]) continue;
-
-                    addBindingVariable({
-                        pos: n.pos,
-                        internal_name: <string>name,
-                        external_name: <string>name,
-                        class_index: -1,
-                        type: VARIABLE_REFERENCE_TYPE.MODEL_VARIABLE,
-                        flags: DATA_FLOW_FLAG.FROM_MODEL
-                    }, component.root_frame);
-
-                    addWrittenBindingVariableName(<string>name, component.root_frame);
-                }
-            }
-
-            // Skip processing this node in the outer scope, 
-            // it will be replaced with a CompiledBinding node.
-
-            return <HTMLNode>{
-                type: HTMLNodeType.HTML_BINDING_ELEMENT,
-                IS_BINDING: true,
-                value: "",
-                pos: node.pos
-            };
+            addWrittenBindingVariableName(<string>name, component.root_frame);
         }
-    }, HTMLNodeType.WickBinding
-);
+    }
+}
+
+const process_wick_binding = {
+    priority: 1,
+
+    prepareHTMLNode(node: WickBindingNode, host_node, host_element, index, skip, replace, component, presets) {
+
+        console.log({ host_node, str: renderCompressed(node.primary_ast) });
+
+        component.addBinding({
+            binding_selector: "",
+            binding_val: node,
+            host_node: host_node,
+            html_element_index: index + 1,
+            pos: node.pos
+        });
+
+        addWickBindingVariableName(node, component);
+
+        // Skip processing this node in the outer scope, 
+        // it will be replaced with a CompiledBinding node.
+
+        return <HTMLNode>{
+            type: HTMLNodeType.HTML_BINDING_ELEMENT,
+            IS_BINDING: true,
+            value: "",
+            pos: node.pos
+        };
+    }
+};
+
+loadHTMLHandlerInternal(process_wick_binding, HTMLNodeType.WickBinding);
 
 // HEAD ELEMENT CONTENTS GET APPENDED TO THE HEAD SLOT ON A COMPONENT
 
@@ -132,7 +133,19 @@ loadHTMLHandlerInternal(
  * ██   ██    ██       ██    ██   ██ ██ ██   ██ ██    ██    ██    ██           ██ 
  * ██   ██    ██       ██    ██   ██ ██ ██████   ██████     ██    ███████ ███████ 
  */
-//Slot Name
+loadHTMLHandlerInternal(
+    {
+        priority: -2,
+
+        prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
+            if (<HTMLNode><unknown>node.IS_BINDING)
+                addWickBindingVariableName(node.value, component);
+
+        }
+    }, HTMLNodeType.HTMLAttribute
+);
+
+
 loadHTMLHandlerInternal(
     {
         priority: -2,
@@ -337,6 +350,7 @@ loadHTMLHandlerInternal(
                  */
 
                 case "container":
+
                     //Turn children into components if they are not already so.   
                     let ch = null;
 
@@ -394,7 +408,7 @@ loadHTMLHandlerInternal(
 
                         let comp;
 
-                        if (!isPredefinedTag(ch.tag) && component.local_component_names.has(ch.tag))
+                        if (!Is_Tag_From_HTML_Spec(ch.tag) && component.local_component_names.has(ch.tag))
                             comp = presets.components.get(component.local_component_names.get(ch.tag));
                         else
                             comp = await parseComponentAST(Object.assign({}, ch), ch.pos.slice(), "auto_generated", presets, []);
@@ -411,6 +425,8 @@ loadHTMLHandlerInternal(
 
                     component.container_count++;
 
+                    // Remove all child nodes from container after they have 
+                    // been processed
                     ctr.nodes.length = 0;
 
                     skip();
