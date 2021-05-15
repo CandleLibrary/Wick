@@ -734,6 +734,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
                         takeParentAddChild(this, hydrateComponentElement(ele, component_chain));
 
+                        this.elu.push(ele);
+
                         return;
                     }
 
