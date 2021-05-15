@@ -21,7 +21,7 @@ class BoolSchemeConstructor extends SchemeConstructor {
         if (value === undefined) {
             result.valid = false;
             result.reason = " value is undefined";
-        } else if (!value instanceof Boolean) {
+        } else if (!(value instanceof Boolean)) {
             result.valid = false;
             result.reason = " value is not a Boolean.";
         }
@@ -29,7 +29,7 @@ class BoolSchemeConstructor extends SchemeConstructor {
 
     filter(identifier, filters) {
 
-        if (value instanceof Boolean)
+        if (identifier instanceof Boolean)
             return true;
 
         return false;

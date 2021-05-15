@@ -1,3 +1,4 @@
+import { ObservableBase } from "./base.js";
 import { ObservableContainerBase } from "./container_base.js";
 import { ObservableData } from "./observable.js";
 
@@ -93,7 +94,7 @@ export class ObservableArray<T> extends ObservableContainerBase<T> {
         return this;
     }
 
-    __insert__(item: any, add_list) {
+    __insert__(item: any, add_list: any[]) {
 
         this.data.push(item);
 
@@ -150,7 +151,7 @@ export class ObservableArray<T> extends ObservableContainerBase<T> {
 
         let result = false;
 
-        term = term.map(t => (t instanceof ModelBase) ? this._gI_(t) : t);
+        term = term.map(t => (t instanceof ObservableBase) ? this._gI_(t) : t);
 
         for (var i = 0, l = this.data.length; i < l; i++) {
             var obj = this.data[i];
@@ -173,7 +174,7 @@ export class ObservableArray<T> extends ObservableContainerBase<T> {
         return result;
     }
 
-    toJSON() { return this.data; }
+    toJSON() { return JSON.stringify(this.data); }
 
     [Symbol.iterator]() {
         let i = -1;

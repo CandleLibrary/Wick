@@ -1,15 +1,13 @@
 import { exp, JSNodeType, stmt } from "@candlefw/js";
-import Presets from "../../presets.js";
-import { BindingObject, BindingType, PendingBinding } from "../../types/binding";
+import { setPos } from "../../common/common.js";
+import { getGenericMethodNode } from "../../common/js.js";
+import { getComponentVariableName } from "../../common/binding.js";
+import Presets from "../../common/presets.js";
+import { BindingObject, BindingType, DATA_FLOW_FLAG, PendingBinding, VARIABLE_REFERENCE_TYPE } from "../../types/binding";
 import { ClassInformation } from "../../types/class_information";
-import { ComponentData } from "../../types/component_data";
-import { DATA_FLOW_FLAG } from "../../types/data_flow_flags";
-import { VARIABLE_REFERENCE_TYPE } from "../../types/variable_reference_types";
-import { HTMLNode, HTMLNodeTypeLU } from "../../types/wick_ast_node_types.js";
-import { setPos } from "../utils/common.js";
-import { getGenericMethodNode } from "../utils/js_ast_tools.js";
-import { getComponentVariableName } from "../utils/set_component_variable.js";
-import { binding_handlers } from "./binding_compilers.js";
+import { ComponentData } from "../../types/component";
+import { HTMLNode, HTMLNodeTypeLU } from "../../types/wick_ast.js";
+import { binding_handlers } from "./bindings.js";
 
 
 function createBindingName(binding_index_pos: number) {
@@ -101,8 +99,8 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
                 //Create binding update method.
 
                 binding.name = nluf_public_variables.nodes.length + "";
-
-                nluf_public_variables.nodes.push(exp(`c.b${binding.name}`));
+                //@ts-ignore
+                nluf_public_variables.nodes.push(<any>exp(`c.b${binding.name}`));
 
                 const method = getGenericMethodNode("b" + binding.name, "c=0", ";"),
                     [, , body] = method.nodes,
@@ -127,12 +125,12 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
                 }
 
                 if (check_ids.length > 0)
-
-                    nodes.push(stmt(`if(!this.check(${check_ids.sort()}))return 0;`));
+                    //@ts-ignore
+                    nodes.push(<any>stmt(`if(!this.check(${check_ids.sort()}))return 0;`));
 
                 body.nodes.push(write_ast);
 
-                methods.push(method);
+                methods.push(<any>method);
             }
         }
 
@@ -143,7 +141,7 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
 
             initialize_stmts.push({
                 type: JSNodeType.ExpressionStatement,
-                nodes: [initialize_ast],
+                nodes: [<any>initialize_ast],
                 pos: initialize_ast.pos
             });
 
@@ -160,7 +158,7 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
     }
 
     const write_bindings = processed_bindings.filter(b => (b.binding.type & BindingType.WRITE) && !!b.binding.write_ast);
-    
+
 
     for (const { internal_name, class_index, flags, type } of component.root_frame.binding_type.values()) {
 
@@ -189,9 +187,9 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
                         if (IS_OBJECT) {
                             const s = stmt(`if(${getComponentVariableName(internal_name, component)});`);
                             s.nodes[1] = {
-                                type: JSNodeType.ExpressionStatement,
+                                type: <any>JSNodeType.ExpressionStatement,
                                 nodes: [binding.write_ast],
-                                pos: binding.pos
+                                pos: <any>binding.pos
                             };
                             body.nodes.push(s);
                         } else
@@ -209,7 +207,7 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
                 body.nodes.push(stmt(`/*if(!(f&${DATA_FLOW_FLAG.FROM_PARENT}))*/c.pup(${class_index}, v, f);`));
 
             if (body.nodes.length > 0)
-                methods.push(method);
+                methods.push(<any>method);
         }
     }
 }

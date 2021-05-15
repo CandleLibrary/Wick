@@ -1,6 +1,9 @@
 import { JSNode } from "@candlefw/js";
 import { BindingVariable } from "./binding";
-
+/**
+ * Reference information for a single function defined within 
+ * a Wick component source file.
+ */
 export interface FunctionFrame {
     /**
      * true if the frame is created from

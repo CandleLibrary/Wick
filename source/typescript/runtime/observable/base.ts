@@ -1,6 +1,6 @@
 import spark, { Sparky } from "@candlefw/spark";
 
-import { ObservableModel, ObservableWatcher } from "../../types/observable_model.js";
+import { ObservableModel, ObservableWatcher } from "../../types/model.js";
 
 export const _SealedProperty_ = (object, name, value) => Object.defineProperty(object, name, { value, configurable: false, enumerable: false, writable: true });
 export const _FrozenProperty_ = (object, name, value) => Object.defineProperty(object, name, { value, configurable: false, enumerable: false, writable: false });
@@ -25,7 +25,7 @@ class ObservableBase implements ObservableModel, Sparky {
     prop_name: string;
     observers: ObservableWatcher[];
 
-    set: (data: any, FROM_ROOT: boolean) => void;
+    data: any;
 
     constructor() {
         _SealedProperty_(this, "OBSERVABLE", true);
@@ -93,7 +93,7 @@ class ObservableBase implements ObservableModel, Sparky {
 
         this.observers.push(view);
 
-        view.onModelUpdate(this);
+        view.onModelUpdate(<any>this);
 
         return true;
     }
@@ -127,12 +127,14 @@ class ObservableBase implements ObservableModel, Sparky {
     updateViews() {
 
         for (const view of this.observers)
-            view.onModelUpdate(this);
+            view.onModelUpdate(<any>this);
 
         return;
     }
 
-    toJSON() { return JSON.stringify(this, null, '\t'); }
+    toJSON(host: boolean) { return JSON.stringify(this, null, '\t'); }
+
+    set(data: any) { return false; }
 }
 
 export { ObservableBase };

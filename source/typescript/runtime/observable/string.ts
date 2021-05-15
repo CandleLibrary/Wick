@@ -2,6 +2,7 @@ import { SchemeConstructor } from "./scheme_constructor.js";
 
 class StringSchemeConstructor extends SchemeConstructor {
 
+    start_value: string;
     constructor() {
 
         super();
@@ -19,7 +20,7 @@ class StringSchemeConstructor extends SchemeConstructor {
         if (value === undefined) {
             result.valid = false;
             result.reason = " value is undefined";
-        } else if (!value instanceof String) {
+        } else if (!(value instanceof String)) {
             result.valid = false;
             result.reason = " value is not a string.";
         }

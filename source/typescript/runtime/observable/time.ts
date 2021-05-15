@@ -9,7 +9,7 @@ class TimeSchemeConstructor extends NumberSchemeConstructor {
             var hour = parseInt(value.split(":")[0]);
             var min = parseInt(value.split(":")[1].split(" ")[0]);
             if (value.split(":")[1].split(" ")[1])
-                half = (value.split(":")[1].split(" ")[1].toLowerCase() == "pm");
+                half = +(value.split(":")[1].split(" ")[1].toLowerCase() == "pm");
             else
                 half = 0;
         } catch (e) {
@@ -18,7 +18,7 @@ class TimeSchemeConstructor extends NumberSchemeConstructor {
             var half = 0;
         }
 
-        return parseFloat((hour + ((half) ? 12 : 0) + (min / 60)));
+        return (hour + ((half) ? 12 : 0) + (min / 60));
     }
 
     verify(value, result) {

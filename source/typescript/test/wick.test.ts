@@ -9,10 +9,10 @@
  * - Inspecting Runtime Components
  */
 
-import { ComponentData } from "../types/component_data.js";
-import { rt } from "../runtime/runtime_global.js";
-import { componentDataToCSS } from "../component/compile/component_data_to_css.js";
-import Presets from "../presets.js";
+import { ComponentData } from "../types/component";
+import { rt } from "../runtime/global.js";
+import { componentDataToCSS } from "../component/render/css.js";
+import Presets from "../common/presets.js";
 
 
 

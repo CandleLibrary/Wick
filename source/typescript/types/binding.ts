@@ -1,11 +1,9 @@
 import { Lexer } from "@candlefw/wind";
 import { JSNode } from "@candlefw/js";
 
-import { VARIABLE_REFERENCE_TYPE } from "./variable_reference_types";
-import { DATA_FLOW_FLAG } from "./data_flow_flags";
-import { HTMLNode, WickBindingNode, Node } from "./wick_ast_node_types.js";
-import Presets from "../presets.js";
-import { ComponentData } from "./component_data";
+import { HTMLNode, WickBindingNode, Node } from "./wick_ast.js";
+import Presets from "../common/presets.js";
+import { ComponentData } from "./component";
 import { ClassInformation } from "./class_information";
 
 /**
@@ -33,7 +31,7 @@ export interface BindingVariable {
     /* */
     class_index: number;
     flags: DATA_FLOW_FLAG;
-    pos: Lexer;
+    pos: any | Lexer;
 }
 
 
@@ -74,7 +72,8 @@ export const enum BINDING_SELECTOR {
     EXPORT_TO_PARENT = "etp",
     INPUT_VALUE = "imp",
     CONTAINER_USE_IF = "cui",
-    BINDING_INITIALIZATION = "bin"
+    BINDING_INITIALIZATION = "bin",
+    CONTAINER_USE_EMPTY = "cue"
 }
 
 
@@ -98,4 +97,38 @@ export interface BindingHandler {
         presets?: Presets,
         class_info?: ClassInformation
     ): BindingObject;
+}
+
+export const enum VARIABLE_REFERENCE_TYPE {
+    INTERNAL_VARIABLE = 1,
+    MODEL_VARIABLE = 16,
+    API_VARIABLE = 4,
+    PARENT_VARIABLE = 8,
+    METHOD_VARIABLE = 2,
+    GLOBAL_VARIABLE = 32,
+    /**
+     * Variables that are replaced with direct
+     * property access on the associated object
+     */
+    DIRECT_ACCESS = 4 | 32
+}
+
+export const enum DATA_FLOW_FLAG {
+    FROM_PARENT = 1,
+
+    FROM_PRESETS = 2,
+
+    FROM_OUTSIDE = 4,
+
+    EXPORT_TO_CHILD = 8,
+
+    EXPORT_TO_PARENT = 16,
+
+    ALLOW_FROM_CHILD = 32,
+
+    FROM_CHILD = 64,
+
+    FROM_MODEL = 128,
+
+    WRITTEN = 256
 }

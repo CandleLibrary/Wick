@@ -36,7 +36,7 @@ import spark from "@candlefw/spark";
 // reset	        Reset Button	n/a	A button
 // button           Button
 
-assert_group("Text Input", browser, sequence, () => {
+assert_group("Text Input", sequence, browser, () => {
 
     const comp = await wick(`
     import {data} from "@model";
@@ -55,11 +55,18 @@ assert_group("Text Input", browser, sequence, () => {
     assert(instance.ele.children[1].innerHTML == "no");
 
     instance.ele.children[0].value = "test2";
+    instance.ele.children[0].dispatchEvent(new Event("input"));
 
     await spark.sleep(1);
 
-    assert(model.data == "test2");
-    assert(instance.ele.children[1].innerHTML == "yes");
+    //Updates text from input change
+    assert("Model updated from input event.", model.data == "test2");
+    assert("Binding with model dependency updated from input event.", instance.ele.children[1].innerHTML == "yes");
+
+    model.data = "test3";
+    await spark.sleep(1);
+    assert("Input value changed from update to observable model", instance.ele.children[0].value == "test3");
+
 });
 
 

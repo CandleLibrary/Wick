@@ -110,7 +110,7 @@ export class ObservableContainerBase<T> extends ObservableBase {
         return this;
     }
 
-    setByIndex(index) { /* NO OP **/ }
+    setByIndex(index, m) { /* NO OP **/ }
 
     getByIndex(index, value) { /* NO OP **/ }
 
@@ -207,7 +207,7 @@ export class ObservableContainerBase<T> extends ObservableBase {
         return out;
     }
 
-    set(item) { this.insert(item); }
+    set(item) { this.insert(item); return false; }
 
     /**
         Inserts an item into the container. If the item is not a {Model}, an attempt will be made to convert the data in the Object into a Model.
@@ -309,7 +309,7 @@ export class ObservableContainerBase<T> extends ObservableBase {
 
 
             if (out_container && out_container.length > 0) {
-                this.updateViewsRemoved(out_container);
+                this.updateViews();
                 this.scheduleUpdate();
             }
         }
@@ -372,7 +372,7 @@ export class ObservableContainerBase<T> extends ObservableBase {
     }
 
     _gIf_(item, term) {
-        let t = this._gI_(item, this.filters);
+        let t = this._gI_(item, this._filters_);
     }
 
     /**
@@ -406,7 +406,7 @@ export class ObservableContainerBase<T> extends ObservableBase {
         All of these functions should be overridden by inheriting classes
     */
 
-    __insert__() { return this; }
+    __insert__(item: any, add_list: any[] = (this.fv) ? [] : null) { return false; }
 
     __get__(item, __return_data__) { return __return_data__; }
 
@@ -414,7 +414,7 @@ export class ObservableContainerBase<T> extends ObservableBase {
 
     __removeAll__() { return []; }
 
-    __remove__() { return []; }
+    __remove__(term, out_container = null) { return false; }
 
     // END OVERRIDE *************************************************************************
 }

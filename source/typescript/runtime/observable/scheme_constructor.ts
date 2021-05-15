@@ -3,6 +3,8 @@
 */
 class SchemeConstructor {
 
+    start_value: any;
+
     constructor() {
 
         this.start_value = undefined;

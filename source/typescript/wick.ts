@@ -3,38 +3,35 @@ import { addModuleToCFW } from "@candlefw/cfw";
 import { CSSNode, CSSNodeType, CSSNodeTypeLU } from "@candlefw/css";
 import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlefw/js";
 import URL from "@candlefw/url";
-
-import { RenderPage } from "./component/compile/compile_web_page.js";
-import { componentDataToCSS } from "./component/compile/component_data_to_css.js";
-import { componentDataToHTML } from "./component/compile/component_data_to_html.js";
+import { css_selector_helpers } from "./common/css.js";
+import { createNameHash } from "./common/hash_name.js";
+//Internal
+import Presets from "./common/presets.js";
+import { parseSource } from "./component/parse/source_parser.js";
+import { componentDataToCSS } from "./component/render/css.js";
+import { componentDataToHTML } from "./component/render/html.js";
 import {
     componentDataToClassString, componentDataToJS,
     componentDataToJSCached,
     componentDataToJSStringCached
-} from "./component/compile/component_data_to_js.js";
-import { parseSource } from "./component/parse/source_parser.js";
-import { createNameHash } from "./component/utils/create_hash_name.js";
-import { css_selector_helpers } from "./component/utils/css_selector_helpers.js";
-import parser from "./parser/parse.js";
-//Internal
-import Presets from "./presets.js";
+} from "./component/render/js.js";
+import { RenderPage } from "./component/render/webpage.js";
 import { renderWithFormatting } from "./render/render.js";
 import { Observable } from "./runtime/observable/observable.js";
 import { ObservableScheme } from "./runtime/observable/observable_prototyped.js";
-import { WickRTComponent } from "./runtime/runtime_component.js";
-import { rt, WickRuntime } from "./runtime/runtime_global.js";
+import { WickRTComponent } from "./runtime/component.js";
+import { rt, WickRuntime } from "./runtime/global.js";
+import { srv, WickServer } from "./server.js";
+import parser from "./source_code/parse.js";
 import { WickTest as test } from "./test/wick.test.js";
-import { BindingVariable, PendingBinding } from "./types/binding";
-import { ComponentData } from "./types/component_data";
-import { DATA_FLOW_FLAG } from "./types/data_flow_flags";
-import { DOMLiteral } from "./types/dom_literal.js";
-import { ExtendedComponentData } from "./types/extended_component";
+import { BindingVariable, DATA_FLOW_FLAG, PendingBinding, VARIABLE_REFERENCE_TYPE } from "./types/binding";
+import { ComponentData, ExtendedComponentData } from "./types/component";
 import { FunctionFrame } from "./types/function_frame";
-import { ObservableModel, ObservableWatcher } from "./types/observable_model.js";
-import { PresetOptions } from "./types/preset_options.js";
-import { VARIABLE_REFERENCE_TYPE } from "./types/variable_reference_types";
-import { HTMLNode, HTMLNodeClass, HTMLNodeTypeLU } from "./types/wick_ast_node_types.js";
-import { srv, WickServer } from "./wick.server.js";
+import { DOMLiteral } from "./types/html";
+import { ObservableModel, ObservableWatcher } from "./types/model.js";
+import { PresetOptions } from "./types/presets.js";
+import { HTMLNode, HTMLNodeClass, HTMLNodeTypeLU } from "./types/wick_ast.js";
+
 
 
 /**

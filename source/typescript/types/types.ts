@@ -1,3 +1,3 @@
 
 
-export * from "./js_handler.js";
+export * from "./js.js";

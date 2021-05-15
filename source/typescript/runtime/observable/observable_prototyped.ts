@@ -82,6 +82,8 @@ export class ObservableScheme<T = any> extends ObservableBase {
     schema: any;
     look_up: any;
 
+    prop_offset: number;
+
     static schema: any;
 
     constructor(data: T, _schema_ = null) {
@@ -179,7 +181,7 @@ export class ObservableScheme<T = any> extends ObservableBase {
 
         Object.defineProperty(this, "prop_array", { value: new Array(this.prop_offset), enumerable: false, configurable: false, writable: true });
 
-        if (data) this.set(data, true);
+        if (data) this.set(data);
     }
 
     destroy() { }

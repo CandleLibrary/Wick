@@ -1,12 +1,12 @@
 {
     "name": "@candlelib/wick",
-    "version": "0.12.8",
+    "version": "0.13.0",
     "description": "HTML Component Compiler",
     "main": "./build/library/wick.js",
     "types": "./build/types/wick.d.ts",
     "type": "module",
     "bin": {
-        "wick": "./source/cli.mjs"
+        "wick": "./source/cli.js"
     },
     "scripts": {
         "prepublishOnly": "tsc && cure test",

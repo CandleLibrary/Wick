@@ -27,7 +27,7 @@ export class ObservableData extends ObservableBase {
 
     set(data, prop_name: string = "") {
 
-        
+
 
         if (typeof data == "undefined")
             return false;
@@ -45,13 +45,13 @@ export class ObservableData extends ObservableBase {
                 if (typeof (prop) == "object") {
 
                     if (prop.set(data[prop_name], true)) {
-                        this.scheduleUpdate(prop_name);
+                        this.scheduleUpdate();
                         out = true;
                     }
 
                 } else if (prop !== data[prop_name]) {
                     this.prop_array[index] = data[prop_name];
-                    this.scheduleUpdate(prop_name);
+                    this.scheduleUpdate();
                     out = true;
                 }
             } else {
@@ -79,6 +79,7 @@ export class ObservableData extends ObservableBase {
                         if (value instanceof ObservableBase)
                             this.prop_array.push(value);
                         else
+                            //@ts-ignore
                             this.prop_array.push(new Observable(value));
                     }
 

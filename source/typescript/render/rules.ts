@@ -3,8 +3,8 @@ import { JSNodeDefinitions, JSNodeType } from "@candlefw/js";
 import { buildFormatRules, FormatRule as $ } from "@candlefw/conflagrate";
 import { CSSNodeDefinitions } from "@candlefw/css";
 
-import { HTMLNodeType } from "../types/wick_ast_node_types.js";
-import { NodeTypes } from "../parser/env.js";
+import { HTMLNodeType } from "../types/wick_ast.js";
+import { NodeTypes } from "../source_code/env.js";
 
 export const format_rules = buildFormatRules([{
     type: JSNodeType.LexicalDeclaration,

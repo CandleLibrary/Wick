@@ -1,16 +1,16 @@
 import { JSNode, JSNodeType } from "@candlefw/js";
 import URL from "@candlefw/url";
 
-import parseStringReturnAST from "../../parser/parse.js";
-import Presets from "../../presets.js";
+import parseStringReturnAST from "../../source_code/parse.js";
+import Presets from "../../common/presets.js";
 import { Comment } from "../../types/comment.js";
-import { ComponentData } from "../../types/component_data";
-import { HTMLNode, HTMLNodeClass } from "../../types/wick_ast_node_types.js";
+import { ComponentData } from "../../types/component";
+import { HTMLNode, HTMLNodeClass } from "../../types/wick_ast.js";
 
-import { createComponentData, createErrorComponent } from "../utils/component_data_object.js";
-import { createFrame } from "../utils/create_frame.js";
-import { processWickHTML_AST } from "./html/html_ast_parser.js";
-import { processWickJS_AST } from "./js/js_ast_parser.js";
+import { createComponentData, createErrorComponent } from "../../common/component.js";
+import { createFrame } from "../../common/frame.js";
+import { processWickHTML_AST } from "./parser.js";
+import { processWickJS_AST } from "./parser.js";
 import { acquireComponentASTFromRemoteSource } from "./remote_source.js";
 
 
@@ -98,7 +98,7 @@ export async function parseSource(input: URL | string, presets?: Presets, root_u
             if (data.error)
                 throw data.error;
 
-            source_url = root_url + "";
+            source_url = new URL(root_url + "");
 
         } catch (a) {
             errors.push(e, a);
