@@ -1,4 +1,5 @@
 import { bidirectionalTraverse, TraverseState } from "@candlefw/conflagrate";
+import { html_void_tags } from "../../common/html.js";
 import Presets from "../../presets.js";
 import { noop } from "../../render/noop.js";
 import { rt } from "../../runtime/runtime_global.js";
@@ -62,7 +63,10 @@ export function htmlTemplateDataToString(html: TempHTMLNode) {
                     else
                         string += ` ${key}="${val}"`;
 
-                node.strings.push(string + "/>");
+                if (html_void_tags.has(node.tag.toLowerCase()))
+                    node.strings.push(string + "/>");
+                else
+                    node.strings.push(string + `></${node.tag}>`);
 
             }
             else
@@ -161,7 +165,7 @@ export function componentDataToTempAST(
                         tag: "template",
                         data: "",
                         strings: [],
-                        attributes: new Map([["w:c", ""], ["id", comp.name]]),
+                        attributes: new Map([["w:c", ""], ["class", comp.name]]),
                         children: [...componentDataToTempAST(comp, presets, on_ele_hook, template_map).html]
                     });
             }

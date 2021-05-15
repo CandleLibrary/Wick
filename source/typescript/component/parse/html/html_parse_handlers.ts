@@ -20,32 +20,13 @@ import { VARIABLE_REFERENCE_TYPE } from "../../../types/variable_reference_types
 import { DATA_FLOW_FLAG } from "../../../types/data_flow_flags";
 import { global_object } from "../../../runtime/runtime_global.js";
 import { BINDING_SELECTOR } from "../../../types/binding.js";
+import { Is_Tag_From_HTML_Spec } from "../../../common/html.js";
 
 const default_handler = {
     priority: -Infinity,
     prepareHTMLNode(node) { return node; }
 };
 
-const standard_tag_set = new Set([
-    "A", "ABBR", "ACRONYM", "ADDRESS", "AREA",
-    "B", "BASE", "BDO", "BIG", "BLOCKQUOTE", "BODY", "BR", "BUTTON",
-    "CAPTION", "CITE", "CODE", "COL", "COLGROUP",
-    "DD", "DEL", "DFN", "DIV", "DL", "DT",
-    "EM",
-    "FIELDSET", "FORM",
-    "H1", "H2", "H3", "H4", "H5", "H6", "HEAD", "HR", "HTML",
-    "I", "IMG", "IMPORT", "INPUT", "INS",
-    "KBD",
-    "LABEL", "LEGEND", "LI", "LINK",
-    "MAP", "META",
-    "NOSCRIPT", "OBJECT", "OL", "OPTGROUP", "OPTION",
-    "P", "PARAM", "PRE",
-    "Q",
-    "SAMP", "SCRIPT", "SELECT", "SMALL", "SPAN", "STRONG", "STYLE", "SUP", "SVG",
-    "TABLE", "TBODY", "TD", "TEXT", "TEXTAREA", "TFOOT", "TH", "THEAD", "TITLE", "TR", "TT",
-    "UL",
-    "VAR",
-]);
 
 function isPredefinedTag(val: string): boolean { return standard_tag_set.has(val.toUpperCase()); }
 
