@@ -451,7 +451,7 @@ loadJSParseHandlerInternal(
                 } else {
 
                     //For use with DOM on* methods
-                    component.addBinding({
+                    addBinding(component, {
                         binding_selector: name,
                         binding_val: <WickBindingNode>{
                             type: HTMLNodeType.WickBinding,
@@ -483,7 +483,7 @@ loadJSParseHandlerInternal(
 
                 root_name = name.slice(1);
 
-                component.addBinding({
+                addBinding(component, {
                     binding_selector: BINDING_SELECTOR.METHOD_CALL,
                     binding_val: <WickBindingNode>{
                         type: HTMLNodeType.WickBinding,
@@ -554,8 +554,6 @@ loadJSParseHandlerInternal(
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
             const name = (<JSIdentifierReference>node).value;
-
-
 
             if (!isVariableDeclared(name, frame)
                 && isBindingVariable(name, frame)) {
@@ -649,7 +647,7 @@ loadJSParseHandlerInternal(
                     if (id.type == JSNodeType.IdentifierReference
                         && id.value == "watch") {
 
-                        component.addBinding({
+                        addBinding(component, {
                             binding_selector: BINDING_SELECTOR.WATCHED_FRAME_METHOD_CALL,
                             binding_val: expr,
                             host_node: node,
@@ -699,7 +697,7 @@ loadJSParseHandlerInternal(
 
             if ((<JSStringLiteral>node).value[0] == "@") {
 
-                component.addBinding({
+                addBinding(component, {
                     binding_selector: BINDING_SELECTOR.ELEMENT_SELECTOR_STRING,
                     binding_val: node,
                     host_node: parent_node,

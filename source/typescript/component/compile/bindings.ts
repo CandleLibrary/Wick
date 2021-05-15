@@ -13,7 +13,7 @@ import { HTMLNode } from "../../types/wick_ast";
 import { css_selector_helpers } from "../../common/css.js";
 import { getFirstReferenceName, setPos } from "../../common/common.js";
 import { postProcessFunctionDeclarationSync } from "../parse/parser.js";
-import { getComponentVariable, getComponentVariableName } from "../../common/binding.js";
+import { getComponentBinding, getComponentVariableName } from "../../common/binding.js";
 
 export const binding_handlers: BindingHandler[] = [];
 
@@ -536,7 +536,7 @@ loadBindingHandler({
                 } else {
 
                     const
-                        { class_index } = getComponentVariable(name, component),
+                        { class_index } = getComponentBinding(name, component),
                         exprA = binding.write_ast,
                         exprB = exp(`this.e${element_index}.addEventListener("input",e=>{${renderCompressed(ast)}= e.target.value; this.ua(${class_index})})`);
 

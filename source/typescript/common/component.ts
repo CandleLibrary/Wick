@@ -71,9 +71,13 @@ export function createComponentData(source_string: string, location: URL): Compo
 
         name: createNameHash(source_string),
 
-        global_model: "",
+        container_count: 0,
 
-        names: [],
+
+        //Local names of imported components that are referenced in HTML expressions. 
+        local_component_names: new Map,
+
+        global_model: "",
 
         location: new URL(location),
 
@@ -81,9 +85,13 @@ export function createComponentData(source_string: string, location: URL): Compo
 
         root_frame: null,
 
-        frames: [],
-
         HTML: null,
+
+        HAS_ERRORS: false,
+
+        names: [],
+
+        frames: [],
 
         HTML_HEAD: [],
 
@@ -93,17 +101,7 @@ export function createComponentData(source_string: string, location: URL): Compo
 
         children: [],
 
-        HAS_ERRORS: false,
-
         errors: [],
-
-        container_count: 0,
-
-        //OLD STUFFS
-        addBinding: (pending_binding: PendingBinding) => component.bindings.push(pending_binding),
-
-        //Local names of imported components that are referenced in HTML expressions. 
-        local_component_names: new Map,
 
         root_ele_claims: []
     };

@@ -1,7 +1,7 @@
 import { traverse } from "@candlefw/conflagrate";
 import { JSNode, JSNodeType, renderCompressed, stmt } from "@candlefw/js";
 import URL from "@candlefw/url";
-import { addBindingVariable, addWrittenBindingVariableName } from "../../common/binding.js";
+import { addBindingVariable, addWrittenBindingVariableName, addBinding } from "../../common/binding.js";
 import { importResource } from "../../common/common.js";
 import { Is_Tag_From_HTML_Spec } from "../../common/html.js";
 import { global_object } from "../../runtime/global.js";
@@ -77,7 +77,7 @@ const process_wick_binding = {
 
         console.log({ host_node, str: renderCompressed(node.primary_ast) });
 
-        component.addBinding({
+        addBinding(component, {
             binding_selector: "",
             binding_val: node,
             host_node: host_node,
@@ -162,7 +162,7 @@ loadHTMLHandlerInternal(
                 case "value":
 
                     if (<HTMLNode><unknown>node.IS_BINDING && host_node.type == HTMLNodeType.HTML_INPUT) {
-                        component.addBinding({
+                        addBinding(component, {
                             binding_selector: BINDING_SELECTOR.INPUT_VALUE,
                             //@ts-ignore
                             binding_val: node.value,
@@ -245,7 +245,7 @@ loadHTMLHandlerInternal(
 
 
                 for (const { local, extern } of obj) {
-                    component.addBinding({
+                    addBinding(component, {
                         binding_selector: BINDING_SELECTOR.IMPORT_FROM_CHILD,
                         binding_val: {
                             local,
@@ -265,7 +265,7 @@ loadHTMLHandlerInternal(
 
 
                 for (const { local, extern } of obj) {
-                    component.addBinding({
+                    addBinding(component, {
                         binding_selector: BINDING_SELECTOR.EXPORT_TO_CHILD,
                         binding_val: {
                             local,
@@ -293,7 +293,7 @@ loadHTMLHandlerInternal(
 
             if (attrib.IS_BINDING) {
 
-                component.addBinding({
+                addBinding(component, {
                     binding_selector: attrib.name,
                     binding_val: attrib.value,
                     host_node: attrib,
@@ -378,7 +378,7 @@ loadHTMLHandlerInternal(
 
                             if (name == "use-if") {
                                 //create a useif binding for this object
-                                component.addBinding({
+                                addBinding(component, {
                                     binding_selector: BINDING_SELECTOR.CONTAINER_USE_IF,
                                     //@ts-ignore
                                     binding_val: value,
@@ -387,7 +387,7 @@ loadHTMLHandlerInternal(
                                     pos: node.pos
                                 });
                             } else if (name == "use-empty") {
-                                component.addBinding({
+                                addBinding(component, {
                                     binding_selector: BINDING_SELECTOR.CONTAINER_USE_EMPTY,
                                     //@ts-ignore
                                     binding_val: value,

@@ -1,10 +1,11 @@
 import { copy, traverse } from "@candlefw/conflagrate";
 import { CSSNode } from "@candlefw/css";
 import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlefw/js";
+import { createFrame } from "../../common/frame.js";
 import Presets from "../../common/presets.js";
 import { ComponentData, ComponentStyle } from "../../types/component";
-import { ContainerDomLiteral, DOMLiteral } from "../../types/html";
 import { FunctionFrame } from "../../types/function_frame";
+import { ContainerDomLiteral, DOMLiteral } from "../../types/html";
 import {
     HTMLContainerNode,
     HTMLNode,
@@ -13,14 +14,20 @@ import {
     HTMLTextNode,
     WICK_AST_NODE_TYPE_BASE
 } from "../../types/wick_ast.js";
-import { createFrame } from "../../common/frame.js";
 import { html_handlers } from "./html.js";
 import { JS_handlers } from "./js.js";
 
 
-function getFunctionFrame(ast: JSNode, component: ComponentData, frame: FunctionFrame = null, DONT_ATTACH = false, TEMPORARY = DONT_ATTACH) {
+function getFunctionFrame(
+    ast: JSNode,
+    component: ComponentData,
+    frame: FunctionFrame = null,
+    DONT_ATTACH = false,
+    TEMPORARY = DONT_ATTACH
+) {
     const function_frame = frame
-        ? createFrame(frame, component, DONT_ATTACH, TEMPORARY)
+        ? createFrame(frame,
+            component, DONT_ATTACH, TEMPORARY)
         : component.root_frame;
 
     if (ast.type == JSNodeType.FunctionDeclaration)
@@ -45,7 +52,14 @@ function getFunctionFrame(ast: JSNode, component: ComponentData, frame: Function
  * by actions taken by @JSHandlers.
  * 
 */
-async function processCoreAsync(ast: JSNode, function_frame: FunctionFrame, component: ComponentData, presets: Presets, root_name: string, frame: FunctionFrame = null) {
+async function processCoreAsync(
+    ast: JSNode,
+    function_frame: FunctionFrame,
+    component: ComponentData,
+    presets: Presets,
+    root_name: string,
+    frame: FunctionFrame = null
+) {
     main_loop:
     for (const { node, meta } of traverse(ast, "nodes")
         .skipRoot()
@@ -81,7 +95,12 @@ async function processCoreAsync(ast: JSNode, function_frame: FunctionFrame, comp
     return function_frame;
 }
 
-export function processCoreSync(ast: JSNode, function_frame: FunctionFrame, component: ComponentData, presets: Presets) {
+export function processCoreSync(
+    ast: JSNode,
+    function_frame: FunctionFrame,
+    component: ComponentData,
+    presets: Presets
+) {
 
     main_loop:
     for (const { node, meta } of traverse(ast, "nodes")
@@ -184,15 +203,6 @@ export async function processWickJS_AST(ast: JSNode, component: ComponentData, p
     );
 }
 
-export function processFunctionDeclarationSync(node: JSNode, component: ComponentData, presets: Presets) {
-    return processCoreSync(
-        node,
-        getFunctionFrame(node, component, component.root_frame),
-        component,
-        presets
-    );
-}
-
 export function postProcessFunctionDeclarationSync(node: JSNode, component: ComponentData, presets: Presets) {
     return processCoreSync(
         node,
@@ -201,8 +211,6 @@ export function postProcessFunctionDeclarationSync(node: JSNode, component: Comp
         presets,
     );
 }
-
-
 
 function buildExportableDOMNode(
     ast: HTMLNode & {

@@ -1,6 +1,6 @@
 import { bidirectionalTraverse, copy, createSourceMap, createSourceMapJSON } from "@candlefw/conflagrate";
 import { exp, JSCallExpression, JSNodeType, stmt } from "@candlefw/js";
-import { getComponentVariable, getComponentVariableName } from "../../common/binding.js";
+import { getComponentBinding, getComponentVariableName } from "../../common/binding.js";
 import { setPos } from "../../common/common.js";
 import { createErrorComponent } from "../../common/component.js";
 import { DOMLiteralToJSNode } from "../../common/html.js";
@@ -30,7 +30,8 @@ const componentStringToJS =
     );
 
 /**
- * Update global variables in ast after all globals have been identified
+ * Create new AST that has all undefined references converted to binding 
+ * lookups or static values.
  */
 function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci: ClassInformation) {
 
@@ -81,7 +82,7 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
                                 ref = node.nodes[0],
                                 //@ts-ignore
                                 name = <string>ref.IS_BINDING_REF,
-                                comp_var: BindingVariable = getComponentVariable(name, component),
+                                comp_var: BindingVariable = getComponentBinding(name, component),
                                 comp_var_name: string = getComponentVariableName(name, component),
                                 assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`),
                                 exp_ = exp(`${comp_var_name}${node.symbol[0]}1`);
@@ -102,7 +103,7 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
                                 ref = node.nodes[0],
                                 //@ts-ignore
                                 name = <string>ref.IS_BINDING_REF,
-                                comp_var: BindingVariable = getComponentVariable(name, component),
+                                comp_var: BindingVariable = getComponentBinding(name, component),
                                 assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`);
 
                             if (node.symbol == "=") {

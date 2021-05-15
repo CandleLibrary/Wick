@@ -1,8 +1,9 @@
 import { traverse } from "@candlefw/conflagrate";
 import { JSNode, JSNodeType } from "@candlefw/js";
-import { BindingVariable, DATA_FLOW_FLAG, VARIABLE_REFERENCE_TYPE } from "../types/binding";
+import { BindingVariable, DATA_FLOW_FLAG, PendingBinding, VARIABLE_REFERENCE_TYPE } from "../types/binding";
 import { ComponentData } from "../types/component";
 import { FunctionFrame } from "../types/function_frame";
+import { Component } from "../wick";
 
 
 
@@ -18,9 +19,28 @@ function getRootFrame(frame: FunctionFrame) {
     return frame;
 }
 
-export function addNodeToBindingIdentifiers(n: JSNode, p: JSNode, frame: FunctionFrame) {
+let SET_ONCE_environment_globals = null;
+export function getSetOfEnvironmentGlobalNames(): Set<string> {
+    //Determine what environment we have pull and out the global object. 
+    if (!SET_ONCE_environment_globals) {
+        SET_ONCE_environment_globals = new Set();
+        const g = (typeof window !== "undefined") ? window : (typeof global !== "undefined") ? global : null;
+        if (g) for (const name in g)
+            SET_ONCE_environment_globals.add(<string>name);
+    }
+    return SET_ONCE_environment_globals;
+}
+/**
+ * Adds JS AST node to list of identifiers that will need to be transformed 
+ * to map to a binding variable
+ * @param node 
+ * @param parent 
+ * @param frame 
+ * @returns 
+ */
+export function addNodeToBindingIdentifiers(input_node: JSNode, input_parent: JSNode, frame: FunctionFrame) {
 
-    for (const { node, meta: { parent: par } } of traverse(n, "nodes")
+    for (const { node, meta: { parent: par } } of traverse(input_node, "nodes")
         .filter("type", JSNodeType.IdentifierReference, JSNodeType.IdentifierBinding)
     ) {
         // Check to see if node has already been assigned
@@ -28,11 +48,10 @@ export function addNodeToBindingIdentifiers(n: JSNode, p: JSNode, frame: Functio
         // processed in full before focus has reached the 
         // child node
 
-
         for (const bi of getNonTempFrame(frame).binding_ref_identifiers)
             if (bi.node == node) return;
 
-        const parent = par || p;
+        const parent = par || input_parent;
 
         node.IS_BINDING_REF = true;
 
@@ -46,7 +65,7 @@ export function addNodeToBindingIdentifiers(n: JSNode, p: JSNode, frame: Functio
         return;
     }
 
-    throw new Error(`Missing reference in express ${p.pos.slice()}`);
+    throw new Error(`Missing reference in express ${parent.pos.slice()}`);
 }
 
 export function isVariableDeclared(var_name: string, frame: FunctionFrame): boolean {
@@ -127,31 +146,22 @@ export function addBindingVariableFlag(binding_var_name: string, flag: DATA_FLOW
     return false;
 };
 
+/**
+ * Return a binding variable object that matches `name` or null
+ * @param name @string
+ * @param component 
+ * @returns 
+ */
+export function getComponentBinding(name: string, component: ComponentData): BindingVariable {
 
-
-let SET_ONCE_environment_globals = null;
-
-export function getSetOfEnvironmentGlobalNames(): Set<string> {
-    //Determine what environment we have pull and out the global object. 
-    if (!SET_ONCE_environment_globals) {
-        SET_ONCE_environment_globals = new Set();
-        const g = (typeof window !== "undefined") ? window : (typeof global !== "undefined") ? global : null;
-        if (g) for (const name in g)
-            SET_ONCE_environment_globals.add(<string>name);
-    }
-    return SET_ONCE_environment_globals;
-}
-
-export function getComponentVariable(name: string, component: ComponentData): BindingVariable {
-    // Allow global objects to be accessed if there are no existing
-    // component variables that have an identifier that matches [name]
     if (!component.root_frame.binding_type.has(name)) return null;
+
     return component.root_frame.binding_type.get(name);
 }
 
 export function getComponentVariableName(name: string, component: ComponentData) {
 
-    const comp_var = getComponentVariable(name, component);
+    const comp_var = getComponentBinding(name, component);
 
     if (!comp_var) {
         const global_names = getSetOfEnvironmentGlobalNames();
@@ -182,3 +192,19 @@ export function getComponentVariableName(name: string, component: ComponentData)
         return name;
 
 }
+
+export function getDefaultBindingValue(name: string, component: Component): any {
+
+}
+
+export function Binding_Is_Static(name: string, component: Component) {
+
+}
+
+export function addBinding(component: Component, pending_binding: PendingBinding) {
+    component.bindings.push(pending_binding);
+};
+
+
+export function addBindingReference(node, frame) { }
+export function removeBindingReference(name: string, frame) { }
