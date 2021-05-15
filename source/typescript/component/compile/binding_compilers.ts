@@ -211,11 +211,14 @@ loadBindingHandler({
 
         if (comp) {
 
+
             const cv = comp.root_frame.binding_type.get(extern);
 
             if (cv && cv.flags & DATA_FLOW_FLAG.FROM_PARENT) {
 
-                binding.write_ast = stmt(`this.ch[${index}].ufp(${cv.class_index}, v, f);`);
+                const comp_var = component.root_frame.binding_type.get(<string>local);
+
+                binding.write_ast = stmt(`this.ch[${index}].ufp(${cv.class_index}, this[${comp_var.class_index}], f);`);
 
                 setPos(binding.write_ast, host_node.pos);
 
@@ -567,7 +570,7 @@ loadBindingHandler({
                     const
                         { class_index } = getComponentVariable(name, component),
                         exprA = binding.write_ast,
-                        exprB = exp(`this.e${element_index}.addEventListener("input",e=>{${renderCompressed(ast)}= e.target.value; this.u(0,0,${class_index})})`);
+                        exprB = exp(`this.e${element_index}.addEventListener("input",e=>{${renderCompressed(ast)}= e.target.value; this.ua(${class_index})})`);
 
 
                     binding.initialize_ast = setPos(
