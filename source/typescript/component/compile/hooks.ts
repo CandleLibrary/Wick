@@ -6,7 +6,7 @@ import { getComponentBinding, getComponentVariableName } from "../../common/bind
 import { getFirstReferenceName, setPos } from "../../common/common.js";
 import { css_selector_helpers } from "../../common/css.js";
 import { DATA_FLOW_FLAG } from "../../types/binding";
-import { ClassInformation } from "../../types/class_information";
+import { CompiledComponentClass } from "../../types/class_information";
 import { ComponentData } from "../../types/component";
 import { FunctionFrame } from "../../types/function_frame";
 import { HookProcessor, HOOK_TYPE, HOOK_SELECTOR, ProcessedHook } from "../../types/hook";
@@ -15,9 +15,9 @@ import { HTMLNode } from "../../types/wick_ast";
 import { postProcessFunctionDeclarationSync } from "../parse/parser.js";
 
 
-export const hook_processor: HookProcessor[] = [];
+export const hook_processors: HookProcessor[] = [];
 
-function registerActivatedFrameMethod(frame: FunctionFrame, class_information: ClassInformation) {
+function registerActivatedFrameMethod(frame: FunctionFrame, class_information: CompiledComponentClass) {
     if (!frame.index) {
 
         const { nodes } = class_information
@@ -31,8 +31,8 @@ function registerActivatedFrameMethod(frame: FunctionFrame, class_information: C
 
 export function loadHookProcessor(handler: HookProcessor) {
     if (/*handler_meets_prerequisite*/ true) {
-        hook_processor.push(handler);
-        hook_processor.sort((a, b) => a.priority > b.priority ? -1 : 1);
+        hook_processors.push(handler);
+        hook_processors.sort((a, b) => a.priority > b.priority ? -1 : 1);
     }
 }
 
@@ -74,7 +74,7 @@ function getFrameFromName(name: string, component: ComponentData) {
  * @param hook 
  * @returns 
  */
-function setIdentifierReferenceVariables(root_node: JSNode, component: ComponentData, hook: ProcessedHook): JSNode {
+export function setIdentifierReferenceVariables(root_node: JSNode, component: ComponentData, hook: ProcessedHook = null): JSNode {
 
     const receiver = { ast: null }, component_names = component.root_frame.binding_variables;
 
@@ -92,7 +92,8 @@ function setIdentifierReferenceVariables(root_node: JSNode, component: Component
             replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
 
             //Pop any binding names into the binding information container. 
-            setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, hook);
+            if (hook)
+                setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, hook);
         }
     }
 
@@ -579,6 +580,7 @@ loadHookProcessor({
         , host_node, element_index, component, presets) {
 
 
+
         if (!getElementAtIndex(component, element_index).is_container) return;
 
         const
@@ -587,8 +589,7 @@ loadHookProcessor({
             component_names = component.root_frame.binding_variables,
             { primary_ast } = hook_node;
 
-
-
+        console.log("----", renderCompressed(primary_ast));
         if (primary_ast) {
 
             const

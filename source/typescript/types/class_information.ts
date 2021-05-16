@@ -5,14 +5,11 @@ import { FunctionFrame } from "./function_frame";
  * Data objects used during compilation of a component
  * class.
  */
-export interface ClassInformation {
-    frames: FunctionFrame[];
+export interface CompiledComponentClass {
     methods: JSNode[];
-    binding_init_statements: JSNode[];
-    class_initializer_statements: JSNode[];
-    class_cleanup_statements: JSNode[];
-    nluf_arrays: any[];
+    binding_setup_stmts: JSNode[];
+    setup_stmts: JSNode[];
+    teardown_stmts: JSNode[];
     nluf_public_variables: JSNode;
-    compiled_ast: JSNode;
     nlu_index: number;
 }

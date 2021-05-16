@@ -6,7 +6,7 @@ import { ComponentData } from "../../types/component";
 import { DOMLiteral } from "../../wick.js";
 import { componentDataToCSS } from "./css.js";
 import { componentDataToHTML, htmlTemplateDataToString } from "./html.js";
-import { componentDataToClassString } from "./js.js";
+import { createCompiledComponentClass } from "../compile/compile.js";
 
 /**[API]
  * Builds a single page from a wick component, with the
@@ -72,7 +72,7 @@ export function RenderPage(
 
     for (const comp of components_to_process) {
 
-        const { class_string } = componentDataToClassString(comp, presets, false, false);
+        const { class_string } = createCompiledComponentClass(comp, presets, false, false);
 
         if (comp.HTML_HEAD.length > 0) {
             for (const node of comp.HTML_HEAD) {

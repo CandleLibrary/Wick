@@ -11,10 +11,11 @@ import { parseSource } from "./component/parse/source_parser.js";
 import { componentDataToCSS } from "./component/render/css.js";
 import { componentDataToHTML } from "./component/render/html.js";
 import {
-    componentDataToClassString, componentDataToJS,
+    componentDataToJS,
     componentDataToJSCached,
     componentDataToJSStringCached
 } from "./component/render/js.js";
+import { createCompiledComponentClass } from "./component/compile/compile.js";
 import { RenderPage } from "./component/render/webpage.js";
 import { renderWithFormatting } from "./render/render.js";
 import { Observable } from "./runtime/observable/observable.js";
@@ -71,7 +72,7 @@ export interface WickCompiler {
          * be parsed by a JavaScript parser as a RuntimeComponent
          * constructor function.
          */
-        componentToClassString: typeof componentDataToClassString;
+        componentToClassString: typeof createCompiledComponentClass;
         createNameHash: typeof createNameHash;
         componentToClass: typeof componentDataToJS;
         /**
@@ -80,7 +81,7 @@ export interface WickCompiler {
          */
         componentDataToCSS: typeof componentDataToCSS;
         componentDataToClass: typeof componentDataToJS;
-        componentDataToClassString: typeof componentDataToClassString;
+        componentDataToClassString: typeof createCompiledComponentClass;
 
         parse: {
             parser: typeof parser;
@@ -268,14 +269,14 @@ const wick: WickLibrary = Object.assign(componentCreate,
 
             componentToClass: componentDataToJS,
 
-            componentToClassString: componentDataToClassString,
+            componentToClassString: createCompiledComponentClass,
 
 
             componentDataToHTML,
             componentDataToCSS,
             componentDataToJSCached: componentDataToJSCached,
             componentDataToClass: componentDataToJS,
-            componentDataToClassString,
+            componentDataToClassString: createCompiledComponentClass,
             createNameHash,
             RenderPage
         },
@@ -302,7 +303,7 @@ export {
     componentDataToHTML,
     componentDataToCSS,
     componentDataToJS as componentDataToClass,
-    componentDataToClassString,
+    createCompiledComponentClass as componentDataToClassString,
 
     //tools
     test,

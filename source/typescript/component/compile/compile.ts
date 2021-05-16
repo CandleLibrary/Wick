@@ -1,23 +1,29 @@
-import { exp, JSNodeType, stmt } from "@candlefw/js";
+import { bidirectionalTraverse, copy } from "@candlefw/conflagrate";
+import { exp, JSCallExpression, JSNodeType, stmt } from "@candlefw/js";
+import { getComponentBinding, getComponentVariableName } from "../../common/binding.js";
 import { setPos } from "../../common/common.js";
-import { getGenericMethodNode } from "../../common/js.js";
-import { getComponentVariableName } from "../../common/binding.js";
+import { createErrorComponent } from "../../common/component.js";
+import { DOMLiteralToJSNode } from "../../common/html.js";
+import { getGenericMethodNode, getPropertyAST } from "../../common/js.js";
 import Presets from "../../common/presets.js";
-import { DATA_FLOW_FLAG, BINDING_VARIABLE_TYPE, BindingVariable } from "../../types/binding";
-import { HOOK_TYPE, ProcessedHook, IntermediateHook } from "../../types/hook";
-import { ClassInformation } from "../../types/class_information";
+import { BINDING_VARIABLE_TYPE, DATA_FLOW_FLAG } from "../../types/binding";
+import { CompiledComponentClass } from "../../types/class_information";
 import { ComponentData } from "../../types/component";
+import { FunctionFrame } from "../../types/function_frame";
+import { HOOK_TYPE, IntermediateHook, ProcessedHook } from "../../types/hook";
 import { HTMLNode, HTMLNodeTypeLU } from "../../types/wick_ast.js";
-import { hook_processor } from "./hooks.js";
-import { Component } from "../../wick.js";
+import { BindingVariable, Component } from "../../wick.js";
+import { componentDataToCSS } from "../render/css.js";
+import { componentDataToTempAST } from "../render/html.js";
+import { hook_processors, setIdentifierReferenceVariables } from "./hooks.js";
 
 
 function createBindingName(binding_index_pos: number) {
     return `b${binding_index_pos.toString(36)}`;
 }
 
-export function runBindingHandlers(pending_binding: IntermediateHook, component: ComponentData, presets: Presets, class_info: ClassInformation) {
-    for (const handler of hook_processor) {
+export function runBindingHandlers(pending_binding: IntermediateHook, component: ComponentData, presets: Presets, class_info: CompiledComponentClass) {
+    for (const handler of hook_processors) {
 
         let binding = null;
 
@@ -42,15 +48,18 @@ export function runBindingHandlers(pending_binding: IntermediateHook, component:
     return { binding: null, pending_binding };
 }
 
-export function processHooks(component: ComponentData, class_info: ClassInformation, presets: Presets) {
+export function processHooks(component: ComponentData, class_info: CompiledComponentClass, presets: Presets) {
 
     const
-        { hooks: raw_bindings, root_frame: { binding_variables: binding_type } } = component,
+        {
+            hooks: raw_bindings,
+            root_frame: { binding_variables: binding_type }
+        } = component,
 
         {
             methods,
-            class_cleanup_statements: clean_stmts,
-            class_initializer_statements: initialize_stmts,
+            teardown_stmts: clean_stmts,
+            setup_stmts: initialize_stmts,
             nluf_public_variables
         } = class_info,
 
@@ -63,9 +72,6 @@ export function processHooks(component: ComponentData, class_info: ClassInformat
          * All component variables that have been assigned a value
          */
         initialized_internal_variables: Set<number> = new Set;
-
-
-
     let binding_count = 0;
 
     for (const { binding, pending_binding } of processed_bindings) {
@@ -167,7 +173,7 @@ export function processHooks(component: ComponentData, class_info: ClassInformat
         if (type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS)
             continue;
 
-        if (flags & DATA_FLOW_FLAG.WRITTEN) {
+        if (true || flags & DATA_FLOW_FLAG.WRITTEN) {
 
             const method = getGenericMethodNode("u" + class_index, "f,c", ";"),
 
@@ -214,23 +220,283 @@ export function processHooks(component: ComponentData, class_info: ClassInformat
     }
 }
 
-function addBindingInitialization(binding: BindingVariable, component: Component, presets: Presets) {
 
+/**
+ * Create new AST that has all undefined references converted to binding
+ * lookups or static values.
+ */
+function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci: CompiledComponentClass) {
+
+    const ast = frame.ast;
+
+    if (ast) {
+
+        const cpy = copy(ast);
+
+        for (const { node, meta: { mutate, traverse_state } } of bidirectionalTraverse(cpy, "nodes")
+            .filter("type",
+                JSNodeType.PostExpression,
+                JSNodeType.PreExpression,
+                JSNodeType.AssignmentExpression,
+                JSNodeType.IdentifierReference,
+                JSNodeType.IdentifierBinding)
+            .makeMutable()) {
+
+            if (traverse_state > 0) {
+
+                switch (node.type) {
+                    case JSNodeType.IdentifierBinding:
+                    case JSNodeType.IdentifierReference:
+                        //@ts-ignore
+                        if (node.IS_BINDING_REF) {
+
+                            const
+                                name = <string>node.value,
+                                id = exp(getComponentVariableName(name, component)),
+                                new_node = setPos(id, node.pos);
+
+                            if (!component.root_frame.binding_variables.has(<string>name))
+                                //ts-ignore
+                                throw node.pos.errorMessage(`Undefined reference to ${name}`);
+
+                            new_node.IS_BINDING_REF = name;
+
+                            mutate(new_node);
+                        }
+                        break;
+
+                    case JSNodeType.PreExpression:
+                    case JSNodeType.PostExpression:
+                        //@ts-ignore
+                        if (node.nodes[0].IS_BINDING_REF) {
+
+                            const
+                                ref = node.nodes[0],
+                                //@ts-ignore
+                                name = <string>ref.IS_BINDING_REF,
+                                comp_var: BindingVariable = getComponentBinding(name, component),
+                                comp_var_name: string = getComponentVariableName(name, component),
+                                assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`),
+                                exp_ = exp(`${comp_var_name}${node.symbol[0]}1`);
+
+                            assignment.nodes[1].nodes.push(<any>exp_);
+
+                            if (node.type == JSNodeType.PreExpression)
+                                assignment.nodes[1].nodes.push(exp("true"));
+
+                            mutate(setPos(assignment, node.pos));
+                        }
+                        break;
+
+                    case JSNodeType.AssignmentExpression:
+                        //@ts-ignore
+                        if (node.nodes[0].IS_BINDING_REF) {
+                            const
+                                ref = node.nodes[0],
+                                //@ts-ignore
+                                name = <string>ref.IS_BINDING_REF,
+                                comp_var: BindingVariable = getComponentBinding(name, component),
+                                assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`);
+
+                            if (node.symbol == "=") {
+                                assignment.nodes[1].nodes.push(node.nodes[1]);
+                            } else {
+                                //@ts-ignore
+                                node.symbol = node.symbol.slice(0, 1);
+                                assignment.nodes[1].nodes.push(node);
+                            }
+
+                            mutate(setPos(assignment, node.pos));
+                        }
+                        break;
+                }
+            }
+        }
+
+        const updated_names = new Set();
+
+        cpy.type = JSNodeType.Method;
+
+        if (!frame.IS_ROOT) {
+
+            let id_indices = [];
+
+            for (const name of frame.output_names.values()) {
+                if (!updated_names.has(name)) {
+
+                    const { type, class_index, pos } = component.root_frame.binding_variables.get(name);
+
+                    if (type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE)
+                        id_indices.push(class_index);
+                }
+            }
+
+            if (frame.index != undefined)
+                //@ts-ignore
+                cpy.nodes[0].value = `f${frame.index}`;
+            //@ts-ignore
+            cpy.function_type = "method";
+        }
+        else
+            //@ts-ignore
+            cpy.function_type = "root";
+
+
+        switch (frame.IS_ROOT) {
+            case true:
+                //@ts-ignore
+                ci.binding_setup_stmts.push(...cpy.nodes.filter(n => n.type != JSNodeType.EmptyStatement));
+                break;
+            default:
+                ci.methods.push(cpy);
+        }
+    }
+}
+
+export function createCompiledComponentClass(
+    component: ComponentData,
+    presets: Presets,
+    INCLUDE_HTML: boolean = true,
+    INCLUDE_CSS: boolean = true
+): CompiledComponentClass {
+
+    try {
+
+        const
+            binding_values_init_method = getGenericMethodNode("c", "", ";"),
+            register_elements_method = getGenericMethodNode("re", "c", ";"),
+            [, , { nodes: bi_stmts }] = binding_values_init_method.nodes,
+            [, , { nodes: re_stmts }] = register_elements_method.nodes,
+            class_info: CompiledComponentClass = {
+                methods: <any>[],
+                binding_setup_stmts: <any>bi_stmts,
+                setup_stmts: <any>re_stmts,
+                teardown_stmts: [],
+                nluf_public_variables: null,
+                nlu_index: 0,
+            };
+
+        re_stmts.length = 0;
+        bi_stmts.length = 0;
+
+        class_info.methods.push(<any>binding_values_init_method);
+
+        class_info.methods.push(<any>register_elements_method);
+
+        //Javascript Information.
+        if (component.HAS_ERRORS === false && component.root_frame) {
+
+            processBindingVariables(component, class_info, presets);
+
+            processHooks(component, class_info, presets);
+
+            processMethods(class_info, component);
+        }
+
+        //HTML INFORMATION
+        if (INCLUDE_HTML)
+            processHTML(component, class_info, presets);
+
+        //CSS INFORMATION
+        if (INCLUDE_CSS)
+            processCSS(component, class_info, presets);
+
+
+        // Remove methods 
+        return class_info;
+
+    } catch (e) {
+        console.warn(`Error found in component ${component.name} while converting to a class. location: ${component.location}.`);
+        console.error(e);
+        return null; createCompiledComponentClass(createErrorComponent([e], component.source, component.location, component), presets);
+    }
+}
+function processCSS(
+    component: ComponentData,
+    class_info: CompiledComponentClass,
+    presets: Presets
+) {
+
+    let style;
+
+    if (style = componentDataToCSS(component)) {
+        class_info.setup_stmts.push(<any>stmt(`this.setCSS()`));
+        class_info.methods.push(
+            setPos(getGenericMethodNode("getCSS", "", `return \`${style}\`;`),
+                component.CSS[0].data.pos)
+        );
+    }
+}
+function processHTML(
+    component: ComponentData,
+    class_info: CompiledComponentClass,
+    presets: Presets
+) {
+
+    if (component.HTML) {
+
+        const ele_create_method = setPos(getGenericMethodNode("ce", "", "return this.makeElement(a);"), component.HTML.pos),
+
+            [, , { nodes: [r_stmt] }] = ele_create_method.nodes;
+
+        const html = componentDataToTempAST(component, presets).html.pop();
+
+        r_stmt.nodes[0].nodes[1].nodes[0] = DOMLiteralToJSNode(html);
+
+        // Setup element
+        class_info.methods.push(ele_create_method);
+    }
+}
+function processMethods(class_info: CompiledComponentClass, component: ComponentData) {
+    for (const function_block of component.frames)
+        makeComponentMethod(function_block, component, class_info);
+}
+function processBindingVariables(component: Component, class_info: CompiledComponentClass, presets: Presets) {
     const
-        binding = createBindingObject(HOOK_TYPE.WRITE, 0, binding_node_ast.pos),
-        [ref, expr] = (<JSNode><unknown>binding_node_ast).nodes,
-        comp_var = component.root_frame.binding_variables.get(<string>ref.value),
-        converted_expression = setIdentifierReferenceVariables(expr, component, binding),
-        d = exp(`this.ua(${comp_var.class_index})`);
+        nlu = stmt("c.nlu = {};"), nluf = stmt("c.lookup_function_table = [];"),
+        { nodes: [{ nodes: [, lu_functions] }] } = nluf,
+        { nodes: [{ nodes: [, lu_public_variables] }] } = nlu;
 
-    setPos(d, binding_node_ast.pos);
-    setBindingVariable(<string>ref.value, false, binding);
+    class_info.nluf_public_variables = <any>lu_functions;
 
-    d.nodes[1].nodes.push(converted_expression);
+    class_info.setup_stmts.unshift(nlu, nluf);
 
-    binding.initialize_ast = d;
-    //binding.initialize_ast = setBindingAndRefVariables(binding_node_ast, component, binding);
+    for (const binding_variable of component.root_frame.binding_variables.values()) {
 
-    return binding;
+        addBindingInitialization(binding_variable, class_info, component, presets);
 
+        binding_variable.class_index = class_info.nlu_index;
+
+        const
+            { nlu_index } = class_info,
+            { external_name, flags, class_index, internal_name, type } = binding_variable,
+            nluf_array = exp(`c.u${class_index}`);
+
+        if (type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS)
+            continue;
+
+        lu_public_variables.nodes.push(getPropertyAST(external_name, ((flags << 24) | nlu_index) + ""));
+
+        lu_functions.nodes.push(nluf_array);
+
+        class_info.nlu_index++;
+    }
+}
+function addBindingInitialization(
+    { default_val, class_index }: BindingVariable,
+    class_info: CompiledComponentClass,
+    component: Component,
+    presets: Presets
+) {
+    if (default_val) {
+
+        const expr = exp(`this.ua(${class_index})`);
+
+        expr.nodes[1].nodes.push(<any>default_val);
+
+        const converted_expression = setIdentifierReferenceVariables(expr, component);
+
+        class_info.setup_stmts.push(converted_expression);
+
+    }
 }

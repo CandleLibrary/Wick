@@ -16,9 +16,6 @@ import { JSHandler } from "../../types/js.js";
 import { HTMLNode, HTMLNodeClass, HTMLNodeType, WickBindingNode, WICK_AST_NODE_TYPE_SIZE } from "../../types/wick_ast.js";
 import { processFunctionDeclaration, processNodeSync, processWickCSS_AST, processWickHTML_AST } from "./parser.js";
 
-
-
-
 export function findFirstNodeOfType(type: JSNodeType, ast: JSNode) {
 
     for (const { node } of traverse(ast, "nodes"))
@@ -252,10 +249,9 @@ loadJSParseHandlerInternal(
 
                         addDefaultValueToBindingVariable(frame, l_name, <JSNode>value);
 
-                        addBindingReference(identifier, <JSNode>meta.parent, frame);
+                        //addBindingReference(identifier, <JSNode>meta.parent, frame);
 
                         addWriteFlagToBindingVariable(l_name, frame);
-
 
                         meta.skip();
 

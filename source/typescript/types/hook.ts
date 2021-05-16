@@ -3,7 +3,7 @@ import { JSNode } from "@candlefw/js";
 import { HTMLNode, WickBindingNode, Node } from "./wick_ast.js";
 import Presets from "../common/presets.js";
 import { ComponentData } from "./component";
-import { ClassInformation } from "./class_information";
+import { CompiledComponentClass } from "./class_information";
 
 /**
  * Any variable within a component that is defined a GLOBAL value that
@@ -85,6 +85,6 @@ export interface HookProcessor {
         element_index: number,
         component: ComponentData,
         presets?: Presets,
-        class_info?: ClassInformation
+        class_info?: CompiledComponentClass
     ): ProcessedHook;
 }
