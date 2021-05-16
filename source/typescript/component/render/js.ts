@@ -13,7 +13,7 @@ import { ClassInformation } from "../../types/class_information.js";
 import { ComponentClassStrings, ComponentData } from "../../types/component";
 import { FunctionFrame } from "../../types/function_frame";
 import { BindingVariable } from "../../wick.js";
-import { processBindings } from "../compile/compile_bindings.js";
+import { processHooks } from "../compile/compile.js";
 import { componentDataToCSS } from "./css.js";
 import { componentDataToTempAST } from "./html.js";
 
@@ -296,7 +296,7 @@ export function componentDataToClassString(
 
             class_information.nluf_public_variables = <any>lu_functions;
 
-            processBindings(component, class_information, presets);
+            processHooks(component, class_information, presets);
 
             class_information.class_initializer_statements.unshift(nlu, nluf);
 

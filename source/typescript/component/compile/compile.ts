@@ -3,29 +3,31 @@ import { setPos } from "../../common/common.js";
 import { getGenericMethodNode } from "../../common/js.js";
 import { getComponentVariableName } from "../../common/binding.js";
 import Presets from "../../common/presets.js";
-import { BindingObject, BindingType, DATA_FLOW_FLAG, IntermediateBinding, BINDING_VARIABLE_TYPE } from "../../types/binding";
+import { DATA_FLOW_FLAG, BINDING_VARIABLE_TYPE, BindingVariable } from "../../types/binding";
+import { HOOK_TYPE, ProcessedHook, IntermediateHook } from "../../types/hook";
 import { ClassInformation } from "../../types/class_information";
 import { ComponentData } from "../../types/component";
 import { HTMLNode, HTMLNodeTypeLU } from "../../types/wick_ast.js";
-import { binding_handlers } from "./bindings.js";
+import { hook_processor } from "./hooks.js";
+import { Component } from "../../wick.js";
 
 
 function createBindingName(binding_index_pos: number) {
     return `b${binding_index_pos.toString(36)}`;
 }
 
-export function runBindingHandlers(pending_binding: IntermediateBinding, component: ComponentData, presets: Presets, class_info: ClassInformation) {
-    for (const handler of binding_handlers) {
+export function runBindingHandlers(pending_binding: IntermediateHook, component: ComponentData, presets: Presets, class_info: ClassInformation) {
+    for (const handler of hook_processor) {
 
         let binding = null;
 
-        if (handler.canHandleBinding(
-            pending_binding.binding_selector,
+        if (handler.canProcessHook(
+            pending_binding.selector,
             HTMLNodeTypeLU[pending_binding.host_node.type]
         ))
-            binding = handler.prepareBindingObject(
-                pending_binding.binding_selector,
-                pending_binding.binding_val,
+            binding = handler.processHook(
+                pending_binding.selector,
+                pending_binding.hook_value,
                 <HTMLNode>pending_binding.host_node,
                 pending_binding.html_element_index,
                 component,
@@ -40,10 +42,10 @@ export function runBindingHandlers(pending_binding: IntermediateBinding, compone
     return { binding: null, pending_binding };
 }
 
-export function processBindings(component: ComponentData, class_info: ClassInformation, presets: Presets) {
+export function processHooks(component: ComponentData, class_info: ClassInformation, presets: Presets) {
 
     const
-        { bindings: raw_bindings, root_frame: { binding_variables: binding_type } } = component,
+        { hooks: raw_bindings, root_frame: { binding_variables: binding_type } } = component,
 
         {
             methods,
@@ -54,7 +56,7 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
 
         registered_elements: Set<number> = new Set,
 
-        processed_bindings: { binding: BindingObject, pending_binding: IntermediateBinding; }[] = raw_bindings
+        processed_bindings: { binding: ProcessedHook, pending_binding: IntermediateHook; }[] = raw_bindings
             .map(b => runBindingHandlers(b, component, presets, class_info))
             .sort((a, b) => a.binding.priority > b.binding.priority ? -1 : 1),
         /**
@@ -86,7 +88,7 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
             registered_elements.add(index);
         }
 
-        if (type & BindingType.WRITE && write_ast) {
+        if (type & HOOK_TYPE.WRITE && write_ast) {
 
 
             /**
@@ -134,7 +136,7 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
             }
         }
 
-        if (type & BindingType.READ && read_ast)
+        if (type & HOOK_TYPE.READ && read_ast)
             initialize_stmts.push(read_ast);
 
         if (initialize_ast) {
@@ -157,7 +159,7 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
             clean_stmts.push(cleanup_ast);
     }
 
-    const write_bindings = processed_bindings.filter(b => (b.binding.type & BindingType.WRITE) && !!b.binding.write_ast);
+    const write_bindings = processed_bindings.filter(b => (b.binding.type & HOOK_TYPE.WRITE) && !!b.binding.write_ast);
 
 
     for (const { internal_name, class_index, flags, type } of component.root_frame.binding_variables.values()) {
@@ -210,4 +212,25 @@ export function processBindings(component: ComponentData, class_info: ClassInfor
                 methods.push(<any>method);
         }
     }
+}
+
+function addBindingInitialization(binding: BindingVariable, component: Component, presets: Presets) {
+
+    const
+        binding = createBindingObject(HOOK_TYPE.WRITE, 0, binding_node_ast.pos),
+        [ref, expr] = (<JSNode><unknown>binding_node_ast).nodes,
+        comp_var = component.root_frame.binding_variables.get(<string>ref.value),
+        converted_expression = setIdentifierReferenceVariables(expr, component, binding),
+        d = exp(`this.ua(${comp_var.class_index})`);
+
+    setPos(d, binding_node_ast.pos);
+    setBindingVariable(<string>ref.value, false, binding);
+
+    d.nodes[1].nodes.push(converted_expression);
+
+    binding.initialize_ast = d;
+    //binding.initialize_ast = setBindingAndRefVariables(binding_node_ast, component, binding);
+
+    return binding;
+
 }

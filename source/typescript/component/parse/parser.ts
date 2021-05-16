@@ -100,7 +100,6 @@ export async function processCoreAsync(
 function incrementBindingRefCounters(function_frame: FunctionFrame) {
 
     const root = getRootFrame(function_frame);
-    console.log(function_frame, getBindingRefCount(function_frame));
 
     for (const [name, count] of getBindingRefCount(function_frame).entries()) {
         if (root.binding_variables.has(name))

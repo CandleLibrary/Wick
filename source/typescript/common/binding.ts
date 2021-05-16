@@ -1,7 +1,8 @@
 import { traverse } from "@candlefw/conflagrate";
 import { JSIdentifier, JSNode, JSNodeType } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
-import { BindingVariable, BINDING_VARIABLE_TYPE, DATA_FLOW_FLAG, IntermediateBinding, STATIC_BINDING_STATE } from "../types/binding";
+import { BindingVariable, BINDING_VARIABLE_TYPE, DATA_FLOW_FLAG, STATIC_BINDING_STATE } from "../types/binding";
+import { IntermediateHook } from "../types/hook";
 import { ComponentData } from "../types/component";
 import { FunctionFrame } from "../types/function_frame";
 import { Component } from "../wick";
@@ -320,8 +321,8 @@ export function Binding_Is_Static(name: string, component: Component) {
 
 }
 
-export function addBinding(component: Component, pending_binding: IntermediateBinding) {
-    component.bindings.push(pending_binding);
+export function addHook(component: Component, hook: IntermediateHook) {
+    component.hooks.push(hook);
 };
 
 

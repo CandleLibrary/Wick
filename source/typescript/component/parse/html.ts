@@ -1,11 +1,12 @@
 import { traverse } from "@candlefw/conflagrate";
 import { JSNode, JSNodeType, renderCompressed, stmt } from "@candlefw/js";
 import URL from "@candlefw/url";
-import { addBindingVariable, addWriteFlagToBindingVariable, addBinding, addBindingReference } from "../../common/binding.js";
+import { addBindingVariable, addWriteFlagToBindingVariable, addHook, addBindingReference } from "../../common/binding.js";
 import { importResource } from "../../common/common.js";
 import { Is_Tag_From_HTML_Spec } from "../../common/html.js";
 import { global_object } from "../../runtime/global.js";
-import { BINDING_SELECTOR, DATA_FLOW_FLAG, BINDING_VARIABLE_TYPE } from "../../types/binding.js";
+import { DATA_FLOW_FLAG, BINDING_VARIABLE_TYPE } from "../../types/binding.js";
+import { HOOK_SELECTOR } from "../../types/hook";
 import { HTMLHandler } from "../../types/html";
 import {
     HTMLContainerNode, HTMLNode,
@@ -62,9 +63,9 @@ const process_wick_binding = {
 
     prepareHTMLNode(node: WickBindingNode, host_node, host_element, index, skip, replace, component, presets) {
 
-        addBinding(component, {
-            binding_selector: "",
-            binding_val: node,
+        addHook(component, {
+            selector: "",
+            hook_value: node,
             host_node: host_node,
             html_element_index: index + 1,
             pos: node.pos
@@ -147,10 +148,10 @@ loadHTMLHandlerInternal(
                 case "value":
 
                     if (<HTMLNode><unknown>node.IS_BINDING && host_node.type == HTMLNodeType.HTML_INPUT) {
-                        addBinding(component, {
-                            binding_selector: BINDING_SELECTOR.INPUT_VALUE,
+                        addHook(component, {
+                            selector: HOOK_SELECTOR.INPUT_VALUE,
                             //@ts-ignore
-                            binding_val: node.value,
+                            hook_value: node.value,
                             host_node: node,
                             html_element_index: index,
                             pos: node.pos
@@ -230,9 +231,9 @@ loadHTMLHandlerInternal(
 
 
                 for (const { local, extern } of obj) {
-                    addBinding(component, {
-                        binding_selector: BINDING_SELECTOR.IMPORT_FROM_CHILD,
-                        binding_val: {
+                    addHook(component, {
+                        selector: HOOK_SELECTOR.IMPORT_FROM_CHILD,
+                        hook_value: {
                             local,
                             extern,
                         },
@@ -250,9 +251,9 @@ loadHTMLHandlerInternal(
 
 
                 for (const { local, extern } of obj) {
-                    addBinding(component, {
-                        binding_selector: BINDING_SELECTOR.EXPORT_TO_CHILD,
-                        binding_val: {
+                    addHook(component, {
+                        selector: HOOK_SELECTOR.EXPORT_TO_CHILD,
+                        hook_value: {
                             local,
                             extern,
                         },
@@ -278,9 +279,9 @@ loadHTMLHandlerInternal(
 
             if (attrib.IS_BINDING) {
 
-                addBinding(component, {
-                    binding_selector: attrib.name,
-                    binding_val: attrib.value,
+                addHook(component, {
+                    selector: attrib.name,
+                    hook_value: attrib.value,
                     host_node: attrib,
                     html_element_index: index,
                     pos: node.pos
@@ -363,19 +364,19 @@ loadHTMLHandlerInternal(
 
                             if (name == "use-if") {
                                 //create a useif binding for this object
-                                addBinding(component, {
-                                    binding_selector: BINDING_SELECTOR.CONTAINER_USE_IF,
+                                addHook(component, {
+                                    selector: HOOK_SELECTOR.CONTAINER_USE_IF,
                                     //@ts-ignore
-                                    binding_val: value,
+                                    hook_value: value,
                                     host_node: ctr,
                                     html_element_index: index,
                                     pos: node.pos
                                 });
                             } else if (name == "use-empty") {
-                                addBinding(component, {
-                                    binding_selector: BINDING_SELECTOR.CONTAINER_USE_EMPTY,
+                                addHook(component, {
+                                    selector: HOOK_SELECTOR.CONTAINER_USE_EMPTY,
                                     //@ts-ignore
-                                    binding_val: value,
+                                    hook_value: value,
                                     host_node: ctr,
                                     html_element_index: index,
                                     pos: node.pos

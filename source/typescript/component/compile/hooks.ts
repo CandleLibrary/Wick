@@ -2,20 +2,20 @@ import { traverse } from "@candlefw/conflagrate";
 import { matchAll } from "@candlefw/css";
 import { exp, JSCallExpression, JSNode, JSNodeClass, JSNodeType, renderCompressed, stmt } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
-
-import { BindingHandler, BindingObject, BindingType, BINDING_SELECTOR } from "../../types/binding";
+import { getComponentBinding, getComponentVariableName } from "../../common/binding.js";
+import { getFirstReferenceName, setPos } from "../../common/common.js";
+import { css_selector_helpers } from "../../common/css.js";
+import { DATA_FLOW_FLAG } from "../../types/binding";
 import { ClassInformation } from "../../types/class_information";
 import { ComponentData } from "../../types/component";
-import { DATA_FLOW_FLAG } from "../../types/binding";
-import { DOMLiteral } from "../../types/html";
 import { FunctionFrame } from "../../types/function_frame";
+import { HookProcessor, HOOK_TYPE, HOOK_SELECTOR, ProcessedHook } from "../../types/hook";
+import { DOMLiteral } from "../../types/html";
 import { HTMLNode } from "../../types/wick_ast";
-import { css_selector_helpers } from "../../common/css.js";
-import { getFirstReferenceName, setPos } from "../../common/common.js";
 import { postProcessFunctionDeclarationSync } from "../parse/parser.js";
-import { getComponentBinding, getComponentVariableName } from "../../common/binding.js";
 
-export const binding_handlers: BindingHandler[] = [];
+
+export const hook_processor: HookProcessor[] = [];
 
 function registerActivatedFrameMethod(frame: FunctionFrame, class_information: ClassInformation) {
     if (!frame.index) {
@@ -29,15 +29,15 @@ function registerActivatedFrameMethod(frame: FunctionFrame, class_information: C
     }
 }
 
-export function loadBindingHandler(handler: BindingHandler) {
+export function loadHookProcessor(handler: HookProcessor) {
     if (/*handler_meets_prerequisite*/ true) {
-        binding_handlers.push(handler);
-        binding_handlers.sort((a, b) => a.priority > b.priority ? -1 : 1);
+        hook_processor.push(handler);
+        hook_processor.sort((a, b) => a.priority > b.priority ? -1 : 1);
     }
 }
 
-export function createBindingObject(type: BindingType, priority: number = 0, pos: Lexer): BindingObject {
-    return <BindingObject>{
+export function createHookObject(type: HOOK_TYPE, priority: number = 0, pos: Lexer): ProcessedHook {
+    return <ProcessedHook>{
         DEBUG: false,
         annotate: "",
         component_variables: new Map,
@@ -71,10 +71,10 @@ function getFrameFromName(name: string, component: ComponentData) {
  * Updates binding variables
  * @param root_node 
  * @param component 
- * @param binding 
+ * @param hook 
  * @returns 
  */
-function setIdentifierReferenceVariables(root_node: JSNode, component: ComponentData, binding: BindingObject): JSNode {
+function setIdentifierReferenceVariables(root_node: JSNode, component: ComponentData, hook: ProcessedHook): JSNode {
 
     const receiver = { ast: null }, component_names = component.root_frame.binding_variables;
 
@@ -92,7 +92,7 @@ function setIdentifierReferenceVariables(root_node: JSNode, component: Component
             replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
 
             //Pop any binding names into the binding information container. 
-            setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, binding);
+            setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, hook);
         }
     }
 
@@ -100,13 +100,13 @@ function setIdentifierReferenceVariables(root_node: JSNode, component: Component
 }
 
 
-function setBindingVariable(name: string, IS_OBJECT: boolean = false, binding: BindingObject) {
+function setBindingVariable(name: string, IS_OBJECT: boolean = false, hook: ProcessedHook) {
 
-    if (binding.component_variables.has(name)) {
-        const variable = binding.component_variables.get(name);
+    if (hook.component_variables.has(name)) {
+        const variable = hook.component_variables.get(name);
         variable.IS_OBJECT = !!(+variable.IS_OBJECT | +IS_OBJECT);
     } else {
-        binding.component_variables.set(name, {
+        hook.component_variables.set(name, {
             name,
             IS_OBJECT
         });
@@ -121,51 +121,51 @@ function setBindingVariable(name: string, IS_OBJECT: boolean = false, binding: B
 * ██████  ██   ██    ██    ██   ██     ██      ███████  ██████   ███ ███  
 */
 
-loadBindingHandler({
+loadHookProcessor({
     priority: -Infinity,
 
-    canHandleBinding(binding_selector, node_type) {
+    canProcessHook(hook_selector, node_type) {
         return true;
     },
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component) {
 
         const
-            binding = createBindingObject(BindingType.WRITE_ONLY, 0, binding_node_ast.pos),
-            { primary_ast } = binding_node_ast;
+            hook = createHookObject(HOOK_TYPE.WRITE_ONLY, 0, hook_node.pos),
+            { primary_ast } = hook_node;
 
 
         if (primary_ast) {
 
             const
-                ast = setIdentifierReferenceVariables(primary_ast, component, binding),
-                expression = exp(`this.e${element_index}.setAttribute("${binding_selector}")`);
+                ast = setIdentifierReferenceVariables(primary_ast, component, hook),
+                expression = exp(`this.e${element_index}.setAttribute("${hook_selector}")`);
 
             setPos(expression, primary_ast.pos);
 
             expression.nodes[1].nodes.push(ast);
 
-            binding.write_ast = expression;
+            hook.write_ast = expression;
         }
 
-        return binding;
+        return hook;
     }
 });
 
-loadBindingHandler({
+loadHookProcessor({
     priority: -1,
 
-    canHandleBinding(binding_selector, node_type) {
-        return binding_selector == BINDING_SELECTOR.IMPORT_FROM_CHILD;
+    canProcessHook(hook_selector, node_type) {
+        return hook_selector == HOOK_SELECTOR.IMPORT_FROM_CHILD;
     },
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component, presets) {
 
         const
-            binding = createBindingObject(BindingType.READONLY, 0, binding_node_ast.pos),
-            { local, extern } = binding_node_ast,
+            hook = createHookObject(HOOK_TYPE.READONLY, 0, hook_node.pos),
+            { local, extern } = hook_node,
             index = (<HTMLNode>host_node).child_id,
             child_comp = (<HTMLNode>host_node).component;
 
@@ -177,13 +177,13 @@ loadBindingHandler({
 
             if (cv && cv.flags == DATA_FLOW_FLAG.EXPORT_TO_PARENT && component.root_frame.binding_variables.get(local)) {
 
-                binding.read_ast = stmt(`this.ch[${index}].spm(${cv.class_index}, ${component.root_frame.binding_variables.get(local).class_index}, ${index})`);
+                hook.read_ast = stmt(`this.ch[${index}].spm(${cv.class_index}, ${component.root_frame.binding_variables.get(local).class_index}, ${index})`);
 
-                setPos(binding.read_ast.pos, host_node.pos);
+                setPos(hook.read_ast.pos, host_node.pos);
 
-                setBindingVariable(<string>local, false, binding);
+                setBindingVariable(<string>local, false, hook);
 
-                return binding;
+                return hook;
             }
 
         } return null;
@@ -191,24 +191,23 @@ loadBindingHandler({
     }
 });
 
-loadBindingHandler({
+loadHookProcessor({
     priority: -1,
 
-    canHandleBinding(binding_selector, node_type) {
-        return binding_selector == BINDING_SELECTOR.EXPORT_TO_CHILD;
+    canProcessHook(hook_selector, node_type) {
+        return hook_selector == HOOK_SELECTOR.EXPORT_TO_CHILD;
     },
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component, presets) {
 
         const
-            binding = createBindingObject(BindingType.WRITE, 0, binding_node_ast.pos),
-            { local, extern } = binding_node_ast,
+            hook = createHookObject(HOOK_TYPE.WRITE, 0, hook_node.pos),
+            { local, extern } = hook_node,
             index = (<HTMLNode>host_node).child_id,
             comp = (<HTMLNode>host_node).component;
 
         if (comp) {
-
 
             const cv = comp.root_frame.binding_variables.get(extern);
 
@@ -216,45 +215,16 @@ loadBindingHandler({
 
                 const comp_var = component.root_frame.binding_variables.get(<string>local);
 
-                binding.write_ast = stmt(`this.ch[${index}].ufp(${cv.class_index}, this[${comp_var.class_index}], f);`);
+                hook.write_ast = stmt(`this.ch[${index}].ufp(${cv.class_index}, this[${comp_var.class_index}], f);`);
 
-                setPos(binding.write_ast, host_node.pos);
+                setPos(hook.write_ast, host_node.pos);
 
-                setBindingVariable(<string>local, false, binding);
+                setBindingVariable(<string>local, false, hook);
             }
 
-            return binding;
+            return hook;
         }
         return null;
-    }
-});
-
-loadBindingHandler({
-    priority: -1,
-
-    canHandleBinding(binding_selector, node_type) {
-        return binding_selector == BINDING_SELECTOR.BINDING_INITIALIZATION;
-    },
-
-    prepareBindingObject(binding_selector, binding_node_ast
-        , host_node, element_index, component, presets) {
-
-        const
-            binding = createBindingObject(BindingType.WRITE, 0, binding_node_ast.pos),
-            [ref, expr] = (<JSNode><unknown>binding_node_ast).nodes,
-            comp_var = component.root_frame.binding_variables.get(<string>ref.value),
-            converted_expression = setIdentifierReferenceVariables(expr, component, binding),
-            d = exp(`this.ua(${comp_var.class_index})`);
-
-        setPos(d, binding_node_ast.pos);
-        setBindingVariable(<string>ref.value, false, binding);
-
-        d.nodes[1].nodes.push(converted_expression);
-
-        binding.initialize_ast = d;
-        //binding.initialize_ast = setBindingAndRefVariables(binding_node_ast, component, binding);
-
-        return binding;
     }
 });
 
@@ -264,19 +234,19 @@ loadBindingHandler({
  *  'on'* event handler bindings.
  * 
  */
-loadBindingHandler({
+loadHookProcessor({
     priority: -1,
 
-    canHandleBinding(binding_selector, node_type) {
-        return (binding_selector.slice(0, 2) == "on");
+    canProcessHook(hook_selector, node_type) {
+        return (hook_selector.slice(0, 2) == "on");
     },
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component, presets, class_data) {
 
         const
-            binding = createBindingObject(BindingType.READONLY, 0, binding_node_ast.pos),
-            { primary_ast } = binding_node_ast;
+            hook = createHookObject(HOOK_TYPE.READONLY, 0, hook_node.pos),
+            { primary_ast } = hook_node;
 
         if (primary_ast) {
 
@@ -314,33 +284,33 @@ loadBindingHandler({
                 const frame = addNewMethodFrame(fn, component, presets, class_data);
             }
 
-            expression = stmt(`this.e${element_index}.addEventListener("${binding_selector.slice(2)}",this.${name}.bind(this));`);
+            expression = stmt(`this.e${element_index}.addEventListener("${hook_selector.slice(2)}",this.${name}.bind(this));`);
 
             setPos(expression, primary_ast.pos);
 
-            binding.read_ast = expression;
+            hook.read_ast = expression;
 
-            binding.cleanup_ast = null;
+            hook.cleanup_ast = null;
         }
 
-        return binding;
+        return hook;
     }
 });
 
 
-loadBindingHandler({
+loadHookProcessor({
     priority: 2,
 
-    canHandleBinding(binding_selector, node_type) {
-        return (binding_selector.slice(0, 2) == "on" && binding_selector.slice(-7) == "_window");
+    canProcessHook(hook_selector, node_type) {
+        return (hook_selector.slice(0, 2) == "on" && hook_selector.slice(-7) == "_window");
     },
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component, presets, class_data) {
 
         const
-            binding = createBindingObject(BindingType.READONLY, 0, binding_node_ast.pos),
-            { primary_ast } = binding_node_ast;
+            hook = createHookObject(HOOK_TYPE.READONLY, 0, hook_node.pos),
+            { primary_ast } = hook_node;
 
         if (primary_ast) {
 
@@ -377,16 +347,16 @@ loadBindingHandler({
                 const frame = addNewMethodFrame(fn, component, presets, class_data);
             }
 
-            expression = stmt(`window.addEventListener("${binding_selector.slice(2, -7)}",this.${name}.bind(this));`);
+            expression = stmt(`window.addEventListener("${hook_selector.slice(2, -7)}",this.${name}.bind(this));`);
 
             setPos(expression, primary_ast.pos);
 
-            binding.read_ast = expression;
+            hook.read_ast = expression;
 
-            binding.cleanup_ast = null;
+            hook.cleanup_ast = null;
         }
 
-        return binding;
+        return hook;
     }
 });
 
@@ -401,52 +371,52 @@ loadBindingHandler({
  *  Bound function activation bindings.
  * 
  */
-loadBindingHandler({
+loadHookProcessor({
     priority: -1,
 
-    canHandleBinding(binding_selector, node_type) {
-        return binding_selector == BINDING_SELECTOR.WATCHED_FRAME_METHOD_CALL;
+    canProcessHook(hook_selector, node_type) {
+        return hook_selector == HOOK_SELECTOR.WATCHED_FRAME_METHOD_CALL;
     },
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component, presets, class_data) {
 
         const
-            [, { nodes: [frame_id, ...other_id] }] = binding_node_ast.nodes,
+            [, { nodes: [frame_id, ...other_id] }] = hook_node.nodes,
             frame = getFrameFromName(frame_id.value, component),
-            binding = createBindingObject(BindingType.READ_WRITE, 0, binding_node_ast.pos);
+            hook = createHookObject(HOOK_TYPE.READ_WRITE, 0, hook_node.pos);
 
         if (!frame) frame_id.pos.throw(`Cannot find function for reference ${frame_id.value}`);
 
         if (frame.ATTRIBUTE) return null;
 
-        for (const id of other_id) setBindingVariable(<string>id.value, false, binding);
+        for (const id of other_id) setBindingVariable(<string>id.value, false, hook);
 
-        for (const id of frame.input_names) setBindingVariable(id, false, binding);
+        for (const id of frame.input_names) setBindingVariable(id, false, hook);
 
         registerActivatedFrameMethod(frame, class_data);
 
-        binding.write_ast = exp(`this.call(${frame.index})`);
+        hook.write_ast = exp(`this.call(${frame.index})`);
 
-        setPos(binding.write_ast, binding_node_ast.pos);
+        setPos(hook.write_ast, hook_node.pos);
 
-        return binding;
+        return hook;
     }
 });
 
-loadBindingHandler({
+loadHookProcessor({
 
     priority: -2,
 
-    canHandleBinding(binding_selector, node_type) {
-        return binding_selector == BINDING_SELECTOR.METHOD_CALL;
+    canProcessHook(hook_selector, node_type) {
+        return hook_selector == HOOK_SELECTOR.METHOD_CALL;
     },
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component) {
 
-        const binding = createBindingObject(BindingType.WRITE_ONLY, 0, <any>host_node.pos),
-            { primary_ast } = binding_node_ast;
+        const hook = createHookObject(HOOK_TYPE.WRITE_ONLY, 0, <any>host_node.pos),
+            { primary_ast } = hook_node;
 
         const receiver = { ast: null }, component_names = component.root_frame.binding_variables;
 
@@ -461,7 +431,7 @@ loadBindingHandler({
 
                     for (const input of frame.input_names.values()) {
                         if (component_names.has(<string>input))
-                            setBindingVariable(<string>input, false, binding);
+                            setBindingVariable(<string>input, false, hook);
                     }
                 }
             }
@@ -476,52 +446,52 @@ loadBindingHandler({
                 replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
 
                 //Pop any binding names into the binding information container. 
-                setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, binding);
+                setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, hook);
             }
         }
 
-        setIdentifierReferenceVariables(<JSNode>host_node, component, binding);
-        binding.write_ast = setPos(primary_ast, host_node.pos);
+        setIdentifierReferenceVariables(<JSNode>host_node, component, hook);
+        hook.write_ast = setPos(primary_ast, host_node.pos);
 
 
-        return binding;
+        return hook;
     }
 });
 
-loadBindingHandler({
+loadHookProcessor({
     priority: 0,
 
-    canHandleBinding(binding_selector, node_type) {
-        return binding_selector == BINDING_SELECTOR.INPUT_VALUE;
+    canProcessHook(hook_selector, node_type) {
+        return hook_selector == HOOK_SELECTOR.INPUT_VALUE;
     },
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component) {
 
-        const binding = createBindingObject(BindingType.READ_WRITE, 0, binding_node_ast.pos),
-            { primary_ast } = binding_node_ast;
+        const hook = createHookObject(HOOK_TYPE.READ_WRITE, 0, hook_node.pos),
+            { primary_ast } = hook_node;
 
         if (primary_ast) {
 
-            const ast = setIdentifierReferenceVariables(primary_ast, component, binding);
+            const ast = setIdentifierReferenceVariables(primary_ast, component, hook);
 
             //Pop any binding names into the binding information container. 
 
-            binding.write_ast = setPos(
+            hook.write_ast = setPos(
                 exp(`this.e${element_index}.value = 1`),
                 primary_ast.pos
             );
 
-            binding.read_ast = setPos(
+            hook.read_ast = setPos(
                 exp(`this.e${element_index}.value = 1`),
                 primary_ast.pos
             );
 
-            binding.read_ast.nodes[1] = ast;
+            hook.read_ast.nodes[1] = ast;
 
-            binding.write_ast.nodes[1] = ast;
+            hook.write_ast.nodes[1] = ast;
 
-            binding.cleanup_ast = null;
+            hook.cleanup_ast = null;
 
             if (primary_ast.type == JSNodeType.IdentifierReference) {
                 let name = <string>primary_ast.value;
@@ -529,7 +499,7 @@ loadBindingHandler({
                 if (frame) {
                     if (frame && frame.index) name = "f" + frame.index;
 
-                    binding.initialize_ast = setPos(
+                    hook.initialize_ast = setPos(
                         stmt(`this.e${element_index}.addEventListener("input",this.$${name}.bind(this));`),
                         primary_ast.pos
                     );
@@ -537,11 +507,11 @@ loadBindingHandler({
 
                     const
                         { class_index } = getComponentBinding(name, component),
-                        exprA = binding.write_ast,
+                        exprA = hook.write_ast,
                         exprB = exp(`this.e${element_index}.addEventListener("input",e=>{${renderCompressed(ast)}= e.target.value; this.ua(${class_index})})`);
 
 
-                    binding.initialize_ast = setPos(
+                    hook.initialize_ast = setPos(
                         exprB,
                         primary_ast.pos
                     );
@@ -549,7 +519,7 @@ loadBindingHandler({
             }
         }
 
-        return binding;
+        return hook;
     }
 });
 /**********************
@@ -557,24 +527,24 @@ loadBindingHandler({
  * Inline text bindings 
  * 
  */
-loadBindingHandler({
+loadHookProcessor({
     priority: -2,
 
-    canHandleBinding(binding_selector, node_type) {
-        return !binding_selector;
+    canProcessHook(hook_selector, node_type) {
+        return !hook_selector;
     },
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component) {
 
-        const binding = createBindingObject(BindingType.WRITE_ONLY, 0, binding_node_ast.pos),
+        const hook = createHookObject(HOOK_TYPE.WRITE_ONLY, 0, hook_node.pos),
             component_names = component.root_frame.binding_variables,
-            { primary_ast, secondary_ast } = binding_node_ast;
+            { primary_ast, secondary_ast } = hook_node;
 
         if (primary_ast) {
 
             const
-                ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                ast = setIdentifierReferenceVariables(primary_ast, component, hook),
                 expression = exp("a=b");
 
             expression.nodes[0] = <any>exp(`this.e${element_index}.data`);
@@ -583,10 +553,10 @@ loadBindingHandler({
 
             setPos(expression, primary_ast.pos);
 
-            binding.write_ast = expression;
+            hook.write_ast = expression;
         }
 
-        return binding;
+        return hook;
     }
 });
 
@@ -599,13 +569,13 @@ loadBindingHandler({
  */
 
 // container_data
-loadBindingHandler({
+loadHookProcessor({
 
     priority: 100,
 
-    canHandleBinding: (binding_selector, node_type) => binding_selector == "data",
+    canProcessHook: (hook_selector, node_type) => hook_selector == "data",
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component, presets) {
 
 
@@ -613,49 +583,49 @@ loadBindingHandler({
 
         const
             container_id = getElementAtIndex(component, element_index).container_id,
-            binding = createBindingObject(BindingType.WRITE_ONLY, 0, binding_node_ast.pos),
+            hook = createHookObject(HOOK_TYPE.WRITE_ONLY, 0, hook_node.pos),
             component_names = component.root_frame.binding_variables,
-            { primary_ast } = binding_node_ast;
+            { primary_ast } = hook_node;
 
 
 
         if (primary_ast) {
 
             const
-                ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                ast = setIdentifierReferenceVariables(primary_ast, component, hook),
                 expression = exp(`this.ct[${container_id}].sd(0)`);
 
             setPos(expression, primary_ast.pos);
 
             expression.nodes[1].nodes = [ast];
 
-            binding.write_ast = expression;
+            hook.write_ast = expression;
         }
 
-        return binding;
+        return hook;
     }
 });
 
 // container_data
-loadBindingHandler({
+loadHookProcessor({
     priority: 100,
 
-    canHandleBinding: (binding_selector, node_type) => binding_selector == "filter",
+    canProcessHook: (hook_selector, node_type) => hook_selector == "filter",
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component, presets) {
 
         if (!getElementAtIndex(component, element_index).is_container) return;
 
-        const binding = createBindingObject(BindingType.READ_WRITE, 1000, binding_node_ast.pos),
+        const hook = createHookObject(HOOK_TYPE.READ_WRITE, 1000, hook_node.pos),
             component_names = component.root_frame.binding_variables,
-            { primary_ast, secondary_ast } = binding_node_ast
+            { primary_ast, secondary_ast } = hook_node
             ;
 
         if (primary_ast) {
 
             const
-                ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                ast = setIdentifierReferenceVariables(primary_ast, component, hook),
                 expression = setPos(exp(`m1 => (1)`), primary_ast.pos);
 
             expression.nodes[1] = ast;
@@ -666,209 +636,209 @@ loadBindingHandler({
 
             stmt_.nodes[0].nodes[1] = expression;
 
-            binding.read_ast = stmt_;
+            hook.read_ast = stmt_;
 
-            binding.write_ast = exp(`this.ct[${(<HTMLNode>host_node).container_id}].filterExpressionUpdate()`);
+            hook.write_ast = exp(`this.ct[${(<HTMLNode>host_node).container_id}].filterExpressionUpdate()`);
         }
 
-        return binding;
+        return hook;
     }
 });
 
-loadBindingHandler({
+loadHookProcessor({
     priority: 100,
 
-    canHandleBinding: (binding_selector, node_type) => binding_selector == "limit",
+    canProcessHook: (hook_selector, node_type) => hook_selector == "limit",
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component, presets) {
 
         if (!getElementAtIndex(component, element_index).is_container) return;
 
         const
             container_id = getElementAtIndex(component, element_index).container_id,
-            binding = createBindingObject(BindingType.READ_WRITE, 1000, binding_node_ast.pos),
-            { primary_ast, secondary_ast } = binding_node_ast;
+            hook = createHookObject(HOOK_TYPE.READ_WRITE, 1000, hook_node.pos),
+            { primary_ast, secondary_ast } = hook_node;
 
         if (primary_ast) {
 
             if (primary_ast.type == JSNodeType.NumericLiteral) {
-                binding.read_ast = stmt(`this.ct[${container_id}].updateLimit(${primary_ast.value})`);
+                hook.read_ast = stmt(`this.ct[${container_id}].updateLimit(${primary_ast.value})`);
             } else if (primary_ast.type & (JSNodeClass.EXPRESSION | JSNodeClass.IDENTIFIER)) {
 
                 const
-                    ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                    ast = setIdentifierReferenceVariables(primary_ast, component, hook),
                     stmt_ = <JSCallExpression>setPos(stmt(`this.ct[${container_id}].updateLimit(a)`), primary_ast.pos);
 
                 stmt_.nodes[0].nodes[1].nodes[0] = <any>ast;
 
-                binding.write_ast = stmt_;
+                hook.write_ast = stmt_;
             }
         }
 
-        return binding;
+        return hook;
     }
 });
 
-loadBindingHandler({
+loadHookProcessor({
     priority: 100,
 
-    canHandleBinding: (binding_selector, node_type) => binding_selector == "sort",
+    canProcessHook: (hook_selector, node_type) => hook_selector == "sort",
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component, presets) {
 
         if (!getElementAtIndex(component, element_index).is_container) return;
 
         const
             container_id = getElementAtIndex(component, element_index).container_id,
-            binding = createBindingObject(BindingType.READ_WRITE, 1000, binding_node_ast.pos),
-            { primary_ast, secondary_ast } = binding_node_ast;
+            hook = createHookObject(HOOK_TYPE.READ_WRITE, 1000, hook_node.pos),
+            { primary_ast, secondary_ast } = hook_node;
 
         if (primary_ast) {
 
             if (primary_ast.type == JSNodeType.NumericLiteral) {
-                binding.read_ast = stmt(`this.ct[${container_id}].updateLimit(${primary_ast.value})`);
+                hook.read_ast = stmt(`this.ct[${container_id}].updateLimit(${primary_ast.value})`);
             } else if (primary_ast.type & (JSNodeClass.EXPRESSION | JSNodeClass.IDENTIFIER)) {
 
                 const
-                    ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                    ast = setIdentifierReferenceVariables(primary_ast, component, hook),
                     stmt_ = <JSCallExpression>setPos(stmt(`this.ct[${container_id}].updateLimit(a)`), primary_ast.pos);
 
                 stmt_.nodes[0].nodes[1].nodes[0] = <any>ast;
 
-                binding.write_ast = stmt_;
+                hook.write_ast = stmt_;
             }
         }
 
-        return binding;
+        return hook;
     }
 });
 
-loadBindingHandler({
+loadHookProcessor({
     priority: 100,
 
-    canHandleBinding: (binding_selector, node_type) => binding_selector == "scrub",
+    canProcessHook: (hook_selector, node_type) => hook_selector == "scrub",
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component, presets) {
 
         if (!getElementAtIndex(component, element_index).is_container) return;
 
         const
             container_id = getElementAtIndex(component, element_index).container_id,
-            binding = createBindingObject(BindingType.READ_WRITE, 1000, binding_node_ast.pos),
-            { primary_ast, secondary_ast } = binding_node_ast;
+            hook = createHookObject(HOOK_TYPE.READ_WRITE, 1000, hook_node.pos),
+            { primary_ast, secondary_ast } = hook_node;
 
         if (primary_ast) {
 
             if (primary_ast.type == JSNodeType.NumericLiteral) {
-                binding.read_ast = stmt(`this.ct[${container_id}].updateScrub(${primary_ast.value})`);
+                hook.read_ast = stmt(`this.ct[${container_id}].updateScrub(${primary_ast.value})`);
             } else if (primary_ast.type & (JSNodeClass.EXPRESSION | JSNodeClass.IDENTIFIER)) {
 
                 const
-                    ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                    ast = setIdentifierReferenceVariables(primary_ast, component, hook),
                     stmt_ = <JSCallExpression>setPos(stmt(`this.ct[${container_id}].updateScrub(a)`), primary_ast.pos);
 
                 stmt_.nodes[0].nodes[1].nodes[0] = <any>ast;
 
-                binding.write_ast = stmt_;
+                hook.write_ast = stmt_;
             }
         }
 
-        return binding;
+        return hook;
     }
 });
 
-loadBindingHandler({
+loadHookProcessor({
     priority: 100,
 
-    canHandleBinding: (binding_selector, node_type) => binding_selector == "shift",
+    canProcessHook: (hook_selector, node_type) => hook_selector == "shift",
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component, presets) {
 
         if (!getElementAtIndex(component, element_index).is_container) return;
 
         const
             container_id = getElementAtIndex(component, element_index).container_id,
-            binding = createBindingObject(BindingType.READ_WRITE, 1000, binding_node_ast.pos),
-            { primary_ast, secondary_ast } = binding_node_ast;
+            hook = createHookObject(HOOK_TYPE.READ_WRITE, 1000, hook_node.pos),
+            { primary_ast, secondary_ast } = hook_node;
 
         if (primary_ast) {
 
             if (primary_ast.type == JSNodeType.NumericLiteral) {
-                binding.read_ast = stmt(`this.ct[${container_id}].updateShift(${primary_ast.value})`);
+                hook.read_ast = stmt(`this.ct[${container_id}].updateShift(${primary_ast.value})`);
             } else if (primary_ast.type & JSNodeClass.EXPRESSION | JSNodeClass.IDENTIFIER) {
 
                 const
-                    ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                    ast = setIdentifierReferenceVariables(primary_ast, component, hook),
                     stmt_ = <JSCallExpression>setPos(stmt(`this.ct[${container_id}].updateShift(a)`), primary_ast.pos);
 
                 stmt_.nodes[0].nodes[1].nodes[0] = <any>ast;
 
-                binding.write_ast = stmt_;
+                hook.write_ast = stmt_;
             }
         }
 
-        return binding;
+        return hook;
     }
 });
 
-loadBindingHandler({
+loadHookProcessor({
     priority: 100,
 
-    canHandleBinding: (binding_selector, node_type) => binding_selector == "offset",
+    canProcessHook: (hook_selector, node_type) => hook_selector == "offset",
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component, presets) {
 
         if (!getElementAtIndex(component, element_index).is_container) return;
 
         const
             container_id = getElementAtIndex(component, element_index).container_id,
-            binding = createBindingObject(BindingType.READ_WRITE, 1000, binding_node_ast.pos),
-            { primary_ast, secondary_ast } = binding_node_ast;
+            hook = createHookObject(HOOK_TYPE.READ_WRITE, 1000, hook_node.pos),
+            { primary_ast, secondary_ast } = hook_node;
 
         if (primary_ast) {
 
             if (primary_ast.type == JSNodeType.NumericLiteral) {
-                binding.read_ast = stmt(`this.ct[${container_id}].updateOffset(${primary_ast.value})`);
+                hook.read_ast = stmt(`this.ct[${container_id}].updateOffset(${primary_ast.value})`);
             } else if (primary_ast.type & (JSNodeClass.EXPRESSION | JSNodeClass.IDENTIFIER)) {
 
                 const
-                    ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                    ast = setIdentifierReferenceVariables(primary_ast, component, hook),
                     stmt_ = <JSCallExpression>setPos(stmt(`this.ct[${container_id}].updateOffset(a)`), primary_ast.pos);
 
                 stmt_.nodes[0].nodes[1].nodes[0] = <any>ast;
 
-                binding.write_ast = stmt_;
+                hook.write_ast = stmt_;
             }
         }
 
-        return binding;
+        return hook;
     }
 });
 
 // Usage selectors
-loadBindingHandler({
+loadHookProcessor({
 
     priority: -1,
 
-    canHandleBinding: (binding_selector, node_type) => binding_selector == BINDING_SELECTOR.CONTAINER_USE_IF,
+    canProcessHook: (hook_selector, node_type) => hook_selector == HOOK_SELECTOR.CONTAINER_USE_IF,
 
-    prepareBindingObject(binding_selector, binding_node_ast
+    processHook(hook_selector, hook_node
         , host_node, element_index, component, presets) {
 
         const
-            binding = createBindingObject(BindingType.READONLY, 100, binding_node_ast.pos),
+            hook = createHookObject(HOOK_TYPE.READONLY, 100, hook_node.pos),
             component_names = component.root_frame.binding_variables,
-            { primary_ast } = binding_node_ast;
+            { primary_ast } = hook_node;
 
         if (primary_ast) {
 
             const
-                ast = setIdentifierReferenceVariables(primary_ast, component, binding),
+                ast = setIdentifierReferenceVariables(primary_ast, component, hook),
                 expression = exp(`m1 => (1)`);
 
             expression.nodes[1] = ast;
@@ -879,25 +849,25 @@ loadBindingHandler({
 
             stmt_.nodes[0].nodes[1].nodes[0] = expression;
 
-            binding.read_ast = stmt_;
+            hook.read_ast = stmt_;
         }
 
-        return binding;
+        return hook;
     }
 });
 
 
-loadBindingHandler({
+loadHookProcessor({
     priority: 100,
 
-    canHandleBinding(binding_selector, node_type) {
-        return binding_selector == BINDING_SELECTOR.ELEMENT_SELECTOR_STRING;
+    canProcessHook(hook_selector, node_type) {
+        return hook_selector == HOOK_SELECTOR.ELEMENT_SELECTOR_STRING;
     },
 
-    prepareBindingObject(binding_selector, pending_binding_node, host_node, element_index, component, presets) {
-        const css_selector = <string>pending_binding_node.value.slice(1); //remove "@"
+    processHook(hook_selector, pending_hook_node, host_node, element_index, component, presets) {
+        const css_selector = <string>pending_hook_node.value.slice(1); //remove "@"
 
-        let html_nodes = null, index = host_node.nodes.indexOf(pending_binding_node);
+        let html_nodes = null, index = host_node.nodes.indexOf(pending_hook_node);
 
         switch (css_selector) {
 

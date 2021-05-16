@@ -2,7 +2,7 @@ import { traverse } from "@candlefw/conflagrate";
 import { exp, JSIdentifier, JSIdentifierReference, JSLexicalDeclaration, JSNode, JSNodeType, JSStringLiteral, stmt } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
 import {
-    addBinding,
+    addHook,
     addBindingReference, addBindingVariable,
     addBindingVariableFlag, addDefaultValueToBindingVariable, addNameToDeclaredVariables,
     addReadFlagToBindingVariable, addWriteFlagToBindingVariable,
@@ -11,7 +11,7 @@ import {
 import { getFirstReferenceName, importResource, setPos } from "../../common/common.js";
 import env from "../../source_code/env.js";
 import { BINDING_VARIABLE_TYPE, DATA_FLOW_FLAG } from "../../types/binding";
-import { BINDING_SELECTOR } from "../../types/binding.js";
+import { HOOK_SELECTOR } from "../../types/hook";
 import { JSHandler } from "../../types/js.js";
 import { HTMLNode, HTMLNodeClass, HTMLNodeType, WickBindingNode, WICK_AST_NODE_TYPE_SIZE } from "../../types/wick_ast.js";
 import { processFunctionDeclaration, processNodeSync, processWickCSS_AST, processWickHTML_AST } from "./parser.js";
@@ -256,6 +256,7 @@ loadJSParseHandlerInternal(
 
                         addWriteFlagToBindingVariable(l_name, frame);
 
+
                         meta.skip();
 
                     } else
@@ -401,9 +402,9 @@ loadJSParseHandlerInternal(
                 } else {
 
                     //For use with DOM on* methods
-                    addBinding(component, {
-                        binding_selector: name,
-                        binding_val: <WickBindingNode>{
+                    addHook(component, {
+                        selector: name,
+                        hook_value: <WickBindingNode>{
                             type: HTMLNodeType.WickBinding,
                             primary_ast: Object.assign(
                                 {},
@@ -425,9 +426,9 @@ loadJSParseHandlerInternal(
 
                 root_name = name.slice(1);
 
-                addBinding(component, {
-                    binding_selector: BINDING_SELECTOR.METHOD_CALL,
-                    binding_val: <WickBindingNode>{
+                addHook(component, {
+                    selector: HOOK_SELECTOR.METHOD_CALL,
+                    hook_value: <WickBindingNode>{
                         type: HTMLNodeType.WickBinding,
                         primary_ast: setPos(stmt(`this.${name}(c+1);`), node.pos),
                         value: name.slice(1),
@@ -589,9 +590,9 @@ loadJSParseHandlerInternal(
                     if (id.type == JSNodeType.IdentifierReference
                         && id.value == "watch") {
 
-                        addBinding(component, {
-                            binding_selector: BINDING_SELECTOR.WATCHED_FRAME_METHOD_CALL,
-                            binding_val: expr,
+                        addHook(component, {
+                            selector: HOOK_SELECTOR.WATCHED_FRAME_METHOD_CALL,
+                            hook_value: expr,
                             host_node: node,
                             html_element_index: 0,
                             pos: node.pos
@@ -639,9 +640,9 @@ loadJSParseHandlerInternal(
 
             if ((<JSStringLiteral>node).value[0] == "@") {
 
-                addBinding(component, {
-                    binding_selector: BINDING_SELECTOR.ELEMENT_SELECTOR_STRING,
-                    binding_val: node,
+                addHook(component, {
+                    selector: HOOK_SELECTOR.ELEMENT_SELECTOR_STRING,
+                    hook_value: node,
                     host_node: parent_node,
                     html_element_index: 0,
                     pos: <any>node.pos

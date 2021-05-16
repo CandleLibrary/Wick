@@ -2,7 +2,7 @@ import URL from "@candlefw/url";
 import { Lexer } from "@candlefw/wind";
 
 import { createNameHash } from "./hash_name.js";
-import { IntermediateBinding } from "../types/binding";
+import { IntermediateHook } from "../types/hook";
 import { ComponentData } from "../types/component";
 import { DOMLiteral } from "../types/html";
 
@@ -95,7 +95,7 @@ export function createComponentData(source_string: string, location: URL): Compo
 
         CSS: [],
 
-        bindings: [],
+        hooks: [],
 
         children: [],
 

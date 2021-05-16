@@ -2,7 +2,7 @@ import { CSSNode } from "@candlefw/css";
 import URL from "@candlefw/url";
 import { WickRTComponent } from "../runtime/component.js";
 import { RuntimeComponent } from "../wick.js";
-import { IntermediateBinding } from "./binding";
+import { IntermediateHook } from "./hook";
 import { Comment } from "./comment.js";
 import { WickComponentErrorStore } from "./errors.js";
 import { FunctionFrame } from "./function_frame";
@@ -73,7 +73,7 @@ export interface ComponentData {
      * modified by the binding variable, including HTML attributes,
      * CSS attributes, and other binding variables.
      */
-    bindings: IntermediateBinding[];
+    hooks: IntermediateHook[];
 
     /**
      * The virtual DOM as described within a component with a .html extension or with a
