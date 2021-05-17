@@ -2,17 +2,18 @@ import { traverse } from "@candlefw/conflagrate";
 import { matchAll } from "@candlefw/css";
 import { exp, JSCallExpression, JSNode, JSNodeClass, JSNodeType, renderCompressed, stmt } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
-import { getComponentBinding, getComponentVariableName } from "../../common/binding.js";
+import { getComponentBinding, getCompiledBindingVariableName, Expression_Is_Static, getStaticValue } from "../../common/binding.js";
 import { getFirstReferenceName, setPos } from "../../common/common.js";
 import { css_selector_helpers } from "../../common/css.js";
-import { DATA_FLOW_FLAG } from "../../types/binding";
+import { BINDING_FLAG } from "../../types/binding";
 import { CompiledComponentClass } from "../../types/class_information";
 import { ComponentData } from "../../types/component";
 import { FunctionFrame } from "../../types/function_frame";
 import { HookProcessor, HOOK_TYPE, HOOK_SELECTOR, ProcessedHook } from "../../types/hook";
-import { DOMLiteral } from "../../types/html";
+import { ContainerDomLiteral, DOMLiteral, TempHTMLNode } from "../../types/html";
 import { HTMLNode } from "../../types/wick_ast";
 import { postProcessFunctionDeclarationSync } from "../parse/parser.js";
+import { componentDataToTempAST } from "../render/html.js";
 
 
 export const hook_processors: HookProcessor[] = [];
@@ -89,7 +90,7 @@ export function setIdentifierReferenceVariables(root_node: JSNode, component: Co
             if (!component_names.has(<string>val))
                 continue;
 
-            replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
+            replace(Object.assign({}, node, { value: getCompiledBindingVariableName(node.value, component) }));
 
             //Pop any binding names into the binding information container. 
             if (hook)
@@ -151,6 +152,26 @@ loadHookProcessor({
         }
 
         return hook;
+    },
+
+    getDefaultHTMLValue(hook, comp, presets, model) {
+
+        const ele = getElementAtIndex(comp, hook.html_element_index);
+
+        const tag_name = hook.selector;
+
+        const value = hook.hook_value;
+
+        if (Expression_Is_Static(value, comp)) {
+            const static_value = getStaticValue(hook.hook_value, comp, model);
+
+            if (static_value)
+                return {
+                    attributes: new Map([[tag_name, static_value + ""]])
+                };
+        }
+
+        return null;
     }
 });
 
@@ -176,7 +197,7 @@ loadHookProcessor({
                 root = child_comp.root_frame,
                 cv = root.binding_variables.get(extern);
 
-            if (cv && cv.flags == DATA_FLOW_FLAG.EXPORT_TO_PARENT && component.root_frame.binding_variables.get(local)) {
+            if (cv && cv.flags == BINDING_FLAG.ALLOW_EXPORT_TO_PARENT && component.root_frame.binding_variables.get(local)) {
 
                 hook.read_ast = stmt(`this.ch[${index}].spm(${cv.class_index}, ${component.root_frame.binding_variables.get(local).class_index}, ${index})`);
 
@@ -188,8 +209,8 @@ loadHookProcessor({
             }
 
         } return null;
-
-    }
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
 loadHookProcessor({
@@ -212,7 +233,7 @@ loadHookProcessor({
 
             const cv = comp.root_frame.binding_variables.get(extern);
 
-            if (cv && cv.flags & DATA_FLOW_FLAG.FROM_PARENT) {
+            if (cv && cv.flags & BINDING_FLAG.FROM_PARENT) {
 
                 const comp_var = component.root_frame.binding_variables.get(<string>local);
 
@@ -226,7 +247,8 @@ loadHookProcessor({
             return hook;
         }
         return null;
-    }
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
 /***********************************************
@@ -295,7 +317,8 @@ loadHookProcessor({
         }
 
         return hook;
-    }
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
 
@@ -358,7 +381,8 @@ loadHookProcessor({
         }
 
         return hook;
-    }
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
 /***********************************************
@@ -402,7 +426,8 @@ loadHookProcessor({
         setPos(hook.write_ast, hook_node.pos);
 
         return hook;
-    }
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
 loadHookProcessor({
@@ -444,7 +469,7 @@ loadHookProcessor({
                 if (!component_names.has(<string>val))
                     continue;
 
-                replace(Object.assign({}, node, { value: getComponentVariableName(node.value, component) }));
+                replace(Object.assign({}, node, { value: getCompiledBindingVariableName(node.value, component) }));
 
                 //Pop any binding names into the binding information container. 
                 setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, hook);
@@ -456,7 +481,8 @@ loadHookProcessor({
 
 
         return hook;
-    }
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
 loadHookProcessor({
@@ -521,7 +547,8 @@ loadHookProcessor({
         }
 
         return hook;
-    }
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 /**********************
  * 
@@ -558,6 +585,9 @@ loadHookProcessor({
         }
 
         return hook;
+    },
+    getDefaultHTMLValue(hook, component, presets, model) {
+        return null;
     }
 });
 
@@ -579,21 +609,22 @@ loadHookProcessor({
     processHook(hook_selector, hook_node
         , host_node, element_index, component, presets) {
 
-
-
         if (!getElementAtIndex(component, element_index).is_container) return;
 
         const
+
             container_id = getElementAtIndex(component, element_index).container_id,
+
             hook = createHookObject(HOOK_TYPE.WRITE_ONLY, 0, hook_node.pos),
-            component_names = component.root_frame.binding_variables,
+
             { primary_ast } = hook_node;
 
-        console.log("----", renderCompressed(primary_ast));
         if (primary_ast) {
 
             const
+
                 ast = setIdentifierReferenceVariables(primary_ast, component, hook),
+
                 expression = exp(`this.ct[${container_id}].sd(0)`);
 
             setPos(expression, primary_ast.pos);
@@ -604,6 +635,42 @@ loadHookProcessor({
         }
 
         return hook;
+    },
+
+    getDefaultHTMLValue(hook, component, presets, model, parent_component) {
+
+        const node: TempHTMLNode = {
+            children: []
+        };
+
+        const html: ContainerDomLiteral = <any>getElementAtIndex(component, hook.html_element_index);
+
+        if (
+            Expression_Is_Static(hook.hook_value, component)
+            &&
+            html.component_names.length > 0
+        ) {
+
+            const
+
+                comp_name = html.component_names[0],
+
+                child_comp = presets.components.get(comp_name),
+
+                models = getStaticValue(hook.hook_value, component, model, parent_component);
+
+            if (models && child_comp) {
+
+                for (const model of models) {
+
+                    const result = componentDataToTempAST(child_comp, presets, model);
+
+                    node.children.push(result.html[0]);
+                }
+            }
+        }
+
+        return node;
     }
 });
 
@@ -643,7 +710,8 @@ loadHookProcessor({
         }
 
         return hook;
-    }
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
 loadHookProcessor({
@@ -678,7 +746,8 @@ loadHookProcessor({
         }
 
         return hook;
-    }
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
 loadHookProcessor({
@@ -713,7 +782,8 @@ loadHookProcessor({
         }
 
         return hook;
-    }
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
 loadHookProcessor({
@@ -748,7 +818,8 @@ loadHookProcessor({
         }
 
         return hook;
-    }
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
 loadHookProcessor({
@@ -783,7 +854,8 @@ loadHookProcessor({
         }
 
         return hook;
-    }
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
 loadHookProcessor({
@@ -818,7 +890,8 @@ loadHookProcessor({
         }
 
         return hook;
-    }
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
 // Usage selectors
@@ -854,7 +927,8 @@ loadHookProcessor({
         }
 
         return hook;
-    }
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
 
@@ -908,12 +982,13 @@ loadHookProcessor({
         }
 
         return null;
-    }
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
 function getElementAtIndex(comp: ComponentData, index: number, node: DOMLiteral = comp.HTML, counter = { i: 0 }): DOMLiteral {
 
-    if (index == node.lookup_index) return node;
+    if (index == node.element_index) return node;
 
     //if (!node.data)
     //counter.i++;

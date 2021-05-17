@@ -1,16 +1,17 @@
 import { bidirectionalTraverse, copy } from "@candlefw/conflagrate";
 import { exp, JSCallExpression, JSNodeType, stmt } from "@candlefw/js";
-import { getComponentBinding, getComponentVariableName } from "../../common/binding.js";
+import { getComponentBinding, getCompiledBindingVariableName } from "../../common/binding.js";
 import { setPos } from "../../common/common.js";
 import { createErrorComponent } from "../../common/component.js";
 import { DOMLiteralToJSNode } from "../../common/html.js";
 import { getGenericMethodNode, getPropertyAST } from "../../common/js.js";
 import Presets from "../../common/presets.js";
-import { BINDING_VARIABLE_TYPE, DATA_FLOW_FLAG } from "../../types/binding";
+import { BINDING_VARIABLE_TYPE, BINDING_FLAG } from "../../types/binding";
 import { CompiledComponentClass } from "../../types/class_information";
 import { ComponentData } from "../../types/component";
 import { FunctionFrame } from "../../types/function_frame";
 import { HOOK_TYPE, IntermediateHook, ProcessedHook } from "../../types/hook";
+import { TempHTMLNode } from "../../types/html.js";
 import { HTMLNode, HTMLNodeTypeLU } from "../../types/wick_ast.js";
 import { BindingVariable, Component } from "../../wick.js";
 import { componentDataToCSS } from "../render/css.js";
@@ -22,37 +23,76 @@ function createBindingName(binding_index_pos: number) {
     return `b${binding_index_pos.toString(36)}`;
 }
 
-export function runBindingHandlers(pending_binding: IntermediateHook, component: ComponentData, presets: Presets, class_info: CompiledComponentClass) {
+export function runHTMLHookHandlers(
+    intermediate_hook: IntermediateHook,
+    component: ComponentData,
+    presets: Presets,
+    model: any = null,
+    parent_component: ComponentData
+): TempHTMLNode {
     for (const handler of hook_processors) {
 
-        let binding = null;
+        let html_element = null;
 
         if (handler.canProcessHook(
-            pending_binding.selector,
-            HTMLNodeTypeLU[pending_binding.host_node.type]
+            intermediate_hook.selector,
+            HTMLNodeTypeLU[intermediate_hook.host_node.type]
         ))
-            binding = handler.processHook(
-                pending_binding.selector,
-                pending_binding.hook_value,
-                <HTMLNode>pending_binding.host_node,
-                pending_binding.html_element_index,
+            html_element = handler.getDefaultHTMLValue(
+                intermediate_hook,
+                component,
+                presets,
+                model,
+                parent_component
+            );
+
+        if (!html_element) continue;
+
+        return html_element;
+    }
+
+    return null;
+}
+
+export function runClassHookHandlers(
+    intermediate_hook: IntermediateHook,
+    component: ComponentData,
+    presets: Presets,
+    class_info: CompiledComponentClass
+): {
+    hook: ProcessedHook,
+    intermediate_hook: IntermediateHook;
+} {
+    for (const handler of hook_processors) {
+
+        let hook = null;
+
+        if (handler.canProcessHook(
+            intermediate_hook.selector,
+            HTMLNodeTypeLU[intermediate_hook.host_node.type]
+        ))
+            hook = handler.processHook(
+                intermediate_hook.selector,
+                intermediate_hook.hook_value,
+                <HTMLNode>intermediate_hook.host_node,
+                intermediate_hook.html_element_index,
                 component,
                 presets,
                 class_info
             );
 
-        if (!binding) continue;
+        if (!hook) continue;
 
-        return { binding, pending_binding };
+        return { hook, intermediate_hook };
     }
-    return { binding: null, pending_binding };
+    return { hook: null, intermediate_hook };
 }
 
 export function processHooks(component: ComponentData, class_info: CompiledComponentClass, presets: Presets) {
 
     const
         {
-            hooks: raw_bindings,
+            hooks: intermediate_hooks,
             root_frame: { binding_variables: binding_type }
         } = component,
 
@@ -65,26 +105,28 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
 
         registered_elements: Set<number> = new Set,
 
-        processed_bindings: { binding: ProcessedHook, pending_binding: IntermediateHook; }[] = raw_bindings
-            .map(b => runBindingHandlers(b, component, presets, class_info))
-            .sort((a, b) => a.binding.priority > b.binding.priority ? -1 : 1),
+        processed_hooks = intermediate_hooks
+            .map(b => runClassHookHandlers(b, component, presets, class_info))
+            .sort((a, b) => a.hook.priority > b.hook.priority ? -1 : 1),
         /**
          * All component variables that have been assigned a value
          */
         initialized_internal_variables: Set<number> = new Set;
-    let binding_count = 0;
 
-    for (const { binding, pending_binding } of processed_bindings) {
+    let hook_count = 0;
 
-        binding.name = createBindingName(binding_count++);
+    for (const { hook, intermediate_hook } of processed_hooks) {
 
-        const { html_element_index: index } = pending_binding,
+        hook.name = createBindingName(hook_count++);
+
+        const { html_element_index: index } = intermediate_hook,
             {
                 read_ast, write_ast,
                 initialize_ast, cleanup_ast,
-                type, component_variables,
+                type,
+                component_variables,
                 name: binding_name
-            } = binding;
+            } = hook;
 
         /**
          * register this binding's element if it has not already been done.
@@ -106,11 +148,11 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
 
                 //Create binding update method.
 
-                binding.name = nluf_public_variables.nodes.length + "";
+                hook.name = nluf_public_variables.nodes.length + "";
                 //@ts-ignore
-                nluf_public_variables.nodes.push(<any>exp(`c.b${binding.name}`));
+                nluf_public_variables.nodes.push(<any>exp(`c.b${hook.name}`));
 
-                const method = getGenericMethodNode("b" + binding.name, "c=0", ";"),
+                const method = getGenericMethodNode("b" + hook.name, "c=0", ";"),
                     [, , body] = method.nodes,
                     { nodes } = body;
 
@@ -121,7 +163,7 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
                 for (const { name } of component_variables.values()) {
 
                     if (!component.root_frame.binding_variables.has(name))
-                        throw (binding.pos.errorMessage(`missing binding variable for ${name}`));
+                        throw (hook.pos.errorMessage(`missing binding variable for ${name}`));
 
                     const { class_index, type } = component.root_frame.binding_variables.get(name);
 
@@ -165,7 +207,7 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
             clean_stmts.push(cleanup_ast);
     }
 
-    const write_bindings = processed_bindings.filter(b => (b.binding.type & HOOK_TYPE.WRITE) && !!b.binding.write_ast);
+    const write_bindings = processed_hooks.filter(b => (b.hook.type & HOOK_TYPE.WRITE) && !!b.hook.write_ast);
 
 
     for (const { internal_name, class_index, flags, type } of component.root_frame.binding_variables.values()) {
@@ -173,7 +215,7 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
         if (type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS)
             continue;
 
-        if (true || flags & DATA_FLOW_FLAG.WRITTEN) {
+        if (true || flags & BINDING_FLAG.WRITTEN) {
 
             const method = getGenericMethodNode("u" + class_index, "f,c", ";"),
 
@@ -182,37 +224,37 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
             body.nodes.length = 0;
 
 
-            for (const { binding } of write_bindings) {
+            for (const { hook } of write_bindings) {
 
-                if (binding.component_variables.has(internal_name)) {
+                if (hook.component_variables.has(internal_name)) {
 
-                    const { IS_OBJECT } = binding.component_variables.get(internal_name);
+                    const { IS_OBJECT } = hook.component_variables.get(internal_name);
 
                     // TODO: Sort bindings and their input outputs to make sure dependencies are met. 
 
-                    if (binding.component_variables.size <= 1) {
+                    if (hook.component_variables.size <= 1) {
 
                         if (IS_OBJECT) {
-                            const s = stmt(`if(${getComponentVariableName(internal_name, component)});`);
+                            const s = stmt(`if(${getCompiledBindingVariableName(internal_name, component)});`);
                             s.nodes[1] = {
                                 type: <any>JSNodeType.ExpressionStatement,
-                                nodes: [binding.write_ast],
-                                pos: <any>binding.pos
+                                nodes: [hook.write_ast],
+                                pos: <any>hook.pos
                             };
                             body.nodes.push(s);
                         } else
                             body.nodes.push({
                                 type: JSNodeType.ExpressionStatement,
-                                nodes: [binding.write_ast],
-                                pos: binding.pos
+                                nodes: [hook.write_ast],
+                                pos: hook.pos
                             });
                     } else
-                        body.nodes.push(setPos(stmt(`this.call(${binding.name}, c)`), binding.pos));
+                        body.nodes.push(setPos(stmt(`this.call(${hook.name}, c)`), hook.pos));
                 }
             }
 
-            if (flags & DATA_FLOW_FLAG.EXPORT_TO_PARENT)
-                body.nodes.push(stmt(`/*if(!(f&${DATA_FLOW_FLAG.FROM_PARENT}))*/c.pup(${class_index}, v, f);`));
+            if (flags & BINDING_FLAG.ALLOW_EXPORT_TO_PARENT)
+                body.nodes.push(stmt(`/*if(!(f&${BINDING_FLAG.FROM_PARENT}))*/c.pup(${class_index}, v, f);`));
 
             if (body.nodes.length > 0)
                 methods.push(<any>method);
@@ -252,7 +294,7 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
 
                             const
                                 name = <string>node.value,
-                                id = exp(getComponentVariableName(name, component)),
+                                id = exp(getCompiledBindingVariableName(name, component)),
                                 new_node = setPos(id, node.pos);
 
                             if (!component.root_frame.binding_variables.has(<string>name))
@@ -275,7 +317,7 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
                                 //@ts-ignore
                                 name = <string>ref.IS_BINDING_REF,
                                 comp_var: BindingVariable = getComponentBinding(name, component),
-                                comp_var_name: string = getComponentVariableName(name, component),
+                                comp_var_name: string = getCompiledBindingVariableName(name, component),
                                 assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`),
                                 exp_ = exp(`${comp_var_name}${node.symbol[0]}1`);
 
@@ -406,6 +448,7 @@ export function createCompiledComponentClass(
         return class_info;
 
     } catch (e) {
+        console.log(e);
         console.warn(`Error found in component ${component.name} while converting to a class. location: ${component.location}.`);
         console.error(e);
         return null; createCompiledComponentClass(createErrorComponent([e], component.source, component.location, component), presets);

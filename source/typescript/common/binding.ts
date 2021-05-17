@@ -1,11 +1,13 @@
 import { traverse } from "@candlefw/conflagrate";
-import { JSIdentifier, JSNode, JSNodeType } from "@candlefw/js";
+import { JSExpressionClass, JSIdentifier, JSNode, JSNodeType, renderCompressed } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
-import { BindingVariable, BINDING_VARIABLE_TYPE, DATA_FLOW_FLAG, STATIC_BINDING_STATE } from "../types/binding";
-import { IntermediateHook } from "../types/hook";
+import { BindingVariable, BINDING_VARIABLE_TYPE, BINDING_FLAG, STATIC_BINDING_STATE } from "../types/binding";
+import { HOOK_SELECTOR, IntermediateHook } from "../types/hook";
 import { ComponentData } from "../types/component";
 import { FunctionFrame } from "../types/function_frame";
-import { Component } from "../wick";
+import { Component, Presets } from "../wick";
+import { convertObjectToJSNode, Node_Is_Identifier } from "./js.js";
+import { WickBindingNode } from "../types/wick_ast";
 
 
 
@@ -22,6 +24,11 @@ export function getRootFrame(frame: FunctionFrame) {
 }
 
 let SET_ONCE_environment_globals = null;
+
+/**
+ * Return a set of global variables names
+ * @returns 
+ */
 export function getSetOfEnvironmentGlobalNames(): Set<string> {
     //Determine what environment we have pull and out the global object. 
     if (!SET_ONCE_environment_globals) {
@@ -118,7 +125,7 @@ export function addWriteFlagToBindingVariable(var_name: string, frame: FunctionF
     const root = getRootFrame(frame);
 
     if (root.binding_variables.has(var_name))
-        root.binding_variables.get(var_name).flags |= DATA_FLOW_FLAG.WRITTEN;
+        root.binding_variables.get(var_name).flags |= BINDING_FLAG.WRITTEN;
 
     getNonTempFrame(frame).output_names.add(var_name);
 }
@@ -154,7 +161,7 @@ export function addBindingVariable(
     pos: any | Lexer,
     type: BINDING_VARIABLE_TYPE = BINDING_VARIABLE_TYPE.UNDEFINED,
     external_name: string = internal_name,
-    flags: DATA_FLOW_FLAG = 0,
+    flags: BINDING_FLAG = 0,
 ): boolean {
 
     const binding_var: BindingVariable = {
@@ -216,7 +223,7 @@ export function addBindingVariable(
  * @param flag 
  * @param frame 
  */
-export function addBindingVariableFlag(binding_var_name: string, flag: DATA_FLOW_FLAG, frame: FunctionFrame): boolean {
+export function addBindingVariableFlag(binding_var_name: string, flag: BINDING_FLAG, frame: FunctionFrame): boolean {
 
     if (typeof binding_var_name !== "string") throw new Error("[binding_var_name] must be a string.");
 
@@ -242,7 +249,25 @@ export function getComponentBinding(name: string, component: ComponentData): Bin
     return component.root_frame.binding_variables.get(name);
 }
 
-export function getComponentVariableName(name: string, component: ComponentData) {
+export function processUndefinedBindingVariables(component: ComponentData, presets: Presets) {
+
+    for (const binding_variable of component.root_frame.binding_variables.values()) {
+
+        if (binding_variable.type == BINDING_VARIABLE_TYPE.UNDEFINED) {
+
+            if (!getSetOfEnvironmentGlobalNames().has(binding_variable.external_name)) {
+
+                binding_variable.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE;
+
+                binding_variable.flags |= BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL
+                    //Assumes binding will inevitably be written to 
+                    | BINDING_FLAG.WRITTEN;
+            }
+        }
+    }
+}
+
+export function getCompiledBindingVariableName(name: string, component: ComponentData) {
 
     const comp_var = getComponentBinding(name, component);
 
@@ -276,10 +301,19 @@ export function getComponentVariableName(name: string, component: ComponentData)
         return name;
 
 }
-
+/**
+ * A Binding has a static if it contains no references or call expressions.
+ * 
+ * If it does contain references, it may still be considered static if the 
+ * references are to other binding variables that have static states.
+ * 
+ * @param binding 
+ * @param comp 
+ * @returns 
+ */
 export function Binding_Variable_Has_Static_Default_Value(
     binding: BindingVariable,
-    component: Component
+    comp: Component
 ): boolean {
 
     let STATIC_STATE = binding.STATIC_STATE;
@@ -288,24 +322,12 @@ export function Binding_Variable_Has_Static_Default_Value(
 
         STATIC_STATE = STATIC_BINDING_STATE.FALSE;
 
-        if (binding.default_val) {
-
+        if (binding.default_val)
+            STATIC_STATE = Expression_Is_Static(binding.default_val, comp)
+                ? STATIC_BINDING_STATE.TRUE
+                : STATIC_BINDING_STATE.FALSE;
+        else if (binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE)
             STATIC_STATE = STATIC_BINDING_STATE.TRUE;
-
-            outer:
-            for (const { node, meta } of traverse(binding.default_val, "nodes")
-            ) {
-                switch (node.type) {
-                    case JSNodeType.IdentifierReference:
-                    //If the value is another binding reference then a 
-
-                    case JSNodeType.CallExpression:
-                    case JSNodeType.FunctionDeclaration:
-                        STATIC_STATE = STATIC_BINDING_STATE.FALSE;
-                        break outer;
-                }
-            }
-        }
     }
 
     binding.STATIC_STATE = STATIC_STATE;
@@ -313,16 +335,104 @@ export function Binding_Variable_Has_Static_Default_Value(
     return STATIC_STATE == STATIC_BINDING_STATE.TRUE;
 }
 
-export function getDefaultBindingValue(name: string, component: Component): any {
+export function Expression_Is_Static(ast: JSNode, comp: ComponentData): boolean {
 
+    for (const { node, meta } of traverse(ast, "nodes")
+    ) {
+        switch (node.type) {
+            case JSNodeType.IdentifierName:
+            case JSNodeType.IdentifierReference:
+                //If the value is another binding reference then a 
+                const name = node.value;
+
+                let binding = getComponentBinding(name, comp);
+
+                if (Binding_Variable_Has_Static_Default_Value(binding, comp))
+                    continue;
+
+            case JSNodeType.CallExpression:
+            case JSNodeType.ArrowFunction:
+            case JSNodeType.FunctionDeclaration:
+                return false;
+        }
+    }
+
+    return true;
 }
 
-export function Binding_Is_Static(name: string, component: Component) {
+export function getDefaultBindingValue(name: string, comp: Component, model: Object, parent_comp: Component = null): JSExpressionClass {
+
+    const binding = getComponentBinding(name, comp);
+
+    if (binding) {
+
+        if (binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE && parent_comp)
+            for (const hook of parent_comp.hooks.filter(h => h.selector == HOOK_SELECTOR.EXPORT_TO_CHILD))
+                if (hook.hook_value.extern == binding.external_name)
+                    return getDefaultBindingValue(hook.hook_value.local, parent_comp, model);
+
+
+        if (binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE || binding.type == BINDING_VARIABLE_TYPE.UNDEFINED) {
+            if (model)
+                return convertObjectToJSNode(model[binding.external_name]);
+
+        } else if (Binding_Variable_Has_Static_Default_Value(binding, comp)) {
+            const receiver = { ast: null };
+            for (
+                const { node, meta } of traverse(binding.default_val, "nodes")
+                    .filter("type", JSNodeType.IdentifierReference, JSNodeType.IdentifierName)
+                    .makeReplaceable()
+                    .extract(receiver)
+            ) {
+                const name = (<JSIdentifier>node).value;
+
+                if (comp.root_frame.binding_variables.has(name))
+                    meta.replace(<JSNode>getDefaultBindingValue(name, comp, model, parent_comp));
+            }
+            return <JSExpressionClass>receiver.ast;
+        }
+    }
+
+    return undefined;
 
 }
-
 export function addHook(component: Component, hook: IntermediateHook) {
     component.hooks.push(hook);
 };
 
 
+
+/**
+ * Creates a static value
+ * @param binding 
+ */
+export function getStaticValue(
+    binding: WickBindingNode,
+    component: ComponentData,
+    model: any = null,
+    parent_comp: Component = null
+) {
+    const receiver = { ast: null };
+
+    for (const { node, meta: { replace } } of traverse(binding.primary_ast, "nodes")
+        .makeReplaceable()
+        .extract(receiver)
+    ) {
+        if (Node_Is_Identifier(node)) {
+            const name = node.value;
+
+            const val = getDefaultBindingValue(name, component, model, parent_comp);
+
+
+            if (val == undefined) {
+                return null;
+            }
+
+            replace(val);
+
+            continue;
+        }
+    }
+
+    return eval(renderCompressed(receiver.ast));
+}

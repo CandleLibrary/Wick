@@ -3,6 +3,7 @@ import { Transition } from "@candlefw/glow";
 import spark, { Sparky } from "@candlefw/spark";
 import { WickRTComponent } from "./component.js";
 import { ObservableModel, ObservableWatcher } from "../types/model";
+import { hydrateComponentElements } from "./html.js";
 
 function getColumnRow(index, offset, set_size) {
     const adjusted_index = index - offset * set_size;
@@ -202,7 +203,18 @@ export class WickContainer implements Sparky, ObservableWatcher {
         this.parent = parent_comp;
 
         this.filter = null;//m1 => true;
-        this.sort = null;//() => 0;
+        this.sort = null;//() => 0; 
+
+        if (this.ele.childElementCount > 0)
+            for (const comp of hydrateComponentElements(Array.from(this.ele.children))) {
+                comp.par = parent_comp;
+                comp.hydrate();
+                comp.connect();
+                this.activeComps.push(<ContainerComponent>comp);
+                this.comps.push(<ContainerComponent>comp);
+                this.dom_comp.push(<ContainerComponent>comp);
+            }
+
     }
 
     destructor() {

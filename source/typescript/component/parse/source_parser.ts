@@ -12,6 +12,7 @@ import { createFrame } from "../../common/frame.js";
 import { processWickHTML_AST } from "./parser.js";
 import { processWickJS_AST } from "./parser.js";
 import { acquireComponentASTFromRemoteSource } from "./remote_source.js";
+import { processUndefinedBindingVariables } from "../../common/binding.js";
 
 
 
@@ -149,8 +150,9 @@ export async function parseComponentAST(
                 else
                     await processWickHTML_AST(getHTML_AST(ast), component, presets);
 
-                for (const name of component.names)
-                    presets.named_components.set(name.toUpperCase(), component);
+                addComponentNamesToPresets(component, presets);
+
+                processUndefinedBindingVariables(component, presets);
 
                 if (component.HAS_ERRORS)
                     throw new Error("Component has errors");
@@ -165,4 +167,7 @@ export async function parseComponentAST(
 
 }
 
-
+function addComponentNamesToPresets(component: ComponentData, presets: Presets) {
+    for (const name of component.names)
+        presets.named_components.set(name.toUpperCase(), component);
+}

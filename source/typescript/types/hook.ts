@@ -4,6 +4,7 @@ import { HTMLNode, WickBindingNode, Node } from "./wick_ast.js";
 import Presets from "../common/presets.js";
 import { ComponentData } from "./component";
 import { CompiledComponentClass } from "./class_information";
+import { TempHTMLNode } from "./html.js";
 
 /**
  * Any variable within a component that is defined a GLOBAL value that
@@ -47,9 +48,7 @@ export interface IntermediateHook {
     host_node: HTMLNode | JSNode;
     hook_value: WickBindingNode | any;
 }
-/**
- * Maps A
- */
+
 
 export interface ProcessedHook {
     component_variables: Map<string, { name: string; IS_OBJECT: boolean; }>;
@@ -63,9 +62,7 @@ export interface ProcessedHook {
      */
     write_ast?: JSNode;
     cleanup_ast?: JSNode;
-    DEBUG: boolean;
-    //TODO - Determine form of an
-    annotate: string;
+
     type: HOOK_TYPE;
 
     pos: Lexer;
@@ -87,4 +84,11 @@ export interface HookProcessor {
         presets?: Presets,
         class_info?: CompiledComponentClass
     ): ProcessedHook;
+
+    getDefaultHTMLValue(
+        hook: IntermediateHook,
+        component: ComponentData,
+        presets?: Presets,
+        model?: any
+    ): TempHTMLNode;
 }

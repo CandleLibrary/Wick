@@ -285,8 +285,7 @@ function buildExportableDOMNode(
             node.children.push(buildExportableDOMNode(child));
     }
 
-    node.lookup_index = ast.id;
-    node.ele_index = ast.ele_id;
+    node.element_index = ast.id;
 
     if (ast.data) {
         node.data = ast.data;

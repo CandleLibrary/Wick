@@ -5,12 +5,20 @@ import { JSNode } from "@candlefw/js";
 
 export const enum BINDING_VARIABLE_TYPE {
     UNDEFINED = 0,
-    CONST_VARIABLE = 64,
+    /**
+     * Static variable that could replaced directly with 
+     * its assigned value
+     */
+    CONST_INTERNAL_VARIABLE = 64,
     INTERNAL_VARIABLE = 1,
     MODEL_VARIABLE = 16,
     API_VARIABLE = 4,
     PARENT_VARIABLE = 8,
     METHOD_VARIABLE = 2,
+    /**
+     * A Global variable that should be wrapped into a an
+     * observerable 
+     */
     GLOBAL_VARIABLE = 32,
     /**
      * Variables that are replaced with direct
@@ -19,22 +27,22 @@ export const enum BINDING_VARIABLE_TYPE {
     DIRECT_ACCESS = 4 | 32
 }
 
-export const enum DATA_FLOW_FLAG {
+/**
+ * These flags govern how data can move
+ * through the boundaries of a component
+ */
+export const enum BINDING_FLAG {
     FROM_PARENT = 1,
 
     FROM_PRESETS = 2,
 
     FROM_OUTSIDE = 4,
 
-    EXPORT_TO_CHILD = 8,
+    ALLOW_EXPORT_TO_PARENT = 16,
 
-    EXPORT_TO_PARENT = 16,
+    ALLOW_UPDATE_FROM_CHILD = 64,
 
-    ALLOW_FROM_CHILD = 32,
-
-    FROM_CHILD = 64,
-
-    FROM_MODEL = 128,
+    ALLOW_UPDATE_FROM_MODEL = 128,
 
     WRITTEN = 256
 }
@@ -67,7 +75,7 @@ export interface BindingVariable {
 
     /* */
     class_index: number;
-    flags: DATA_FLOW_FLAG;
+    flags: BINDING_FLAG;
     pos: any | Lexer;
     default_val?: JSNode;
     STATIC_STATE: STATIC_BINDING_STATE;

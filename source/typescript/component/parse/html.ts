@@ -5,7 +5,7 @@ import { addBindingVariable, addWriteFlagToBindingVariable, addHook, addBindingR
 import { importResource } from "../../common/common.js";
 import { Is_Tag_From_HTML_Spec } from "../../common/html.js";
 import { global_object } from "../../runtime/global.js";
-import { DATA_FLOW_FLAG, BINDING_VARIABLE_TYPE } from "../../types/binding.js";
+import { BINDING_FLAG, BINDING_VARIABLE_TYPE } from "../../types/binding.js";
 import { HOOK_SELECTOR } from "../../types/hook";
 import { HTMLHandler } from "../../types/html";
 import {

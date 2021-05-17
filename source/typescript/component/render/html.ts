@@ -1,10 +1,12 @@
 import { bidirectionalTraverse, TraverseState } from "@candlefw/conflagrate";
+import { getStaticValue } from "../../common/binding.js";
 import { html_void_tags } from "../../common/html.js";
 import Presets from "../../common/presets.js";
-import { noop } from "../../render/noop.js";
 import { rt } from "../../runtime/global.js";
 import { ComponentData } from "../../types/component";
+import { IntermediateHook } from "../../types/hook.js";
 import { ContainerDomLiteral, DOMLiteral, htmlState, TempHTMLNode } from "../../types/html";
+import { runHTMLHookHandlers } from "../compile/compile.js";
 
 /**
  * Compile component HTML information (including child component and slot information), into a string containing the components html
@@ -16,10 +18,9 @@ import { ContainerDomLiteral, DOMLiteral, htmlState, TempHTMLNode } from "../../
 export function componentDataToHTML(
     comp: ComponentData,
     presets: Presets = rt.presets,
-    on_ele_hook: (arg: DOMLiteral) => DOMLiteral | null | undefined = noop,
 ): { html: string, template_map: Map<string, TempHTMLNode>; } {
 
-    const { html: [html], template_map } = componentDataToTempAST(comp, presets, on_ele_hook);
+    const { html: [html], template_map } = componentDataToTempAST(comp, presets);
 
     const html_string = htmlTemplateDataToString(html);
 
@@ -36,8 +37,8 @@ export function htmlTemplateDataToString(html: TempHTMLNode) {
         const depth_str = " ".repeat(depth);
 
         if (traverse_state == TraverseState.LEAF) {
-            if (node.tag) {
-                let string = `<${node.tag}`;
+            if (node.tagName) {
+                let string = `<${node.tagName}`;
 
                 for (const [key, val] of node.attributes.entries())
                     if (val === "")
@@ -46,10 +47,10 @@ export function htmlTemplateDataToString(html: TempHTMLNode) {
                     else
                         string += ` ${key}="${val}"`;
 
-                if (html_void_tags.has(node.tag.toLowerCase()))
+                if (html_void_tags.has(node.tagName.toLowerCase()))
                     node.strings.push(string + "/>");
                 else
-                    node.strings.push(string + `></${node.tag}>`);
+                    node.strings.push(string + `></${node.tagName}>`);
 
             }
             else
@@ -58,7 +59,7 @@ export function htmlTemplateDataToString(html: TempHTMLNode) {
             if (parent)
                 parent.strings.push(...node.strings.map(s => depth_str + s));
         } else if (traverse_state == TraverseState.ENTER) {
-            let string = `<${node.tag}`;
+            let string = `<${node.tagName}`;
 
             for (const [key, val] of node.attributes.entries())
                 if (val === "")
@@ -70,7 +71,7 @@ export function htmlTemplateDataToString(html: TempHTMLNode) {
             node.strings.push(string + ">");
         } else {
 
-            node.strings.push(`</${node.tag}>`);
+            node.strings.push(`</${node.tagName}>`);
 
             if (parent)
                 parent.strings.push(...node.strings.map(s => depth_str + s));
@@ -93,25 +94,25 @@ export function htmlTemplateDataToString(html: TempHTMLNode) {
 export function componentDataToTempAST(
     comp: ComponentData,
     presets: Presets = rt.presets,
-    on_ele_hook: (arg: DOMLiteral) => DOMLiteral | null | undefined = noop,
+    model = null,
     template_map = new Map,
     html: DOMLiteral = comp.HTML,
     state: htmlState = htmlState.IS_ROOT | htmlState.IS_COMPONENT,
     extern_children: { USED: boolean, child: DOMLiteral, id: number; }[] = [],
-    parent_component = null,
-    comp_data = [comp.name]
+    parent_component: ComponentData[] = null,
+    comp_data = [comp.name],
 ): { html: TempHTMLNode[], template_map: Map<string, TempHTMLNode>; } {
 
     let node: TempHTMLNode = {
-        tag: "",
+        tagName: "",
         data: "",
+        attributes: new Map(),
         children: [],
         strings: [],
-        attributes: new Map()
     };
 
     //if (html)
-    //    html = on_ele_hook(html);
+    //html = on_ele_hook(html);
 
     if (html) {
         //Convert html to string 
@@ -120,8 +121,6 @@ export function componentDataToTempAST(
             attributes: attributes = [],
             children: c = [],
             data: data,
-            lookup_index: i,
-            is_container: ct,
             is_bindings: IS_BINDING,
             component_name: component_name,
             slot_name: slot_name,
@@ -130,59 +129,36 @@ export function componentDataToTempAST(
             children = c.map(i => ({ USED: false, child: i, id: comp_data.length - 1 }));
         if (namespace_id)
             node.namespace = namespace_id;
-        if (ct) {
 
-            const {
-                component_attribs,
-                component_names
-            } = <ContainerDomLiteral>html,
-                w_ctr = component_names.join(" "),
-                w_ctr_atr = component_attribs.map(s => s.map(a => a.join(("=").replace(/\"/g, ""))).join(";")).join(":");
+        if (html.is_container == true)
 
-            for (const name of component_names) {
-
-                const comp = presets.components.get(name);
-
-                if (!template_map.has(comp.name))
-                    template_map.set(comp.name, {
-                        tag: "template",
-                        data: "",
-                        strings: [],
-                        attributes: new Map([["w:c", ""], ["class", comp.name]]),
-                        children: [...componentDataToTempAST(comp, presets, on_ele_hook, template_map).html]
-                    });
-            }
-
-            node.tag = tag_name.toLowerCase();
-
-            node.attributes.set("w:ctr", w_ctr);
-
-            node.attributes.set("w:ctr-atr", w_ctr_atr);
-
-            for (const [key, val] of attributes)
-                node.attributes.set(key, val);
-
-        } else if (component_name && presets.components.has(component_name)) {
-
-            const c_comp = presets.components.get(component_name);
-
-            if (htmlState.IS_COMPONENT & state)
-                state |= htmlState.IS_INTERLEAVED;
-
-            ({ html: [node] } = componentDataToTempAST(
-                c_comp,
-                presets,
-                on_ele_hook,
-                template_map,
-                c_comp.HTML,
-                state,
-                extern_children.concat(children),
+            addContainer(
+                <ContainerDomLiteral>html,
                 comp,
-                [...comp_data, c_comp.name]
-            ));
+                presets,
+                state,
+                comp_data,
+                template_map,
+                node,
+                model,
+                parent_component
+            );
 
-            //if ((state & htmlState.IS_INTERLEAVED) > 0)
-            //    node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
+        else if (component_name && presets.components.has(component_name)) {
+
+            ({ node, state } =
+                addComponent(presets,
+                    component_name,
+                    state,
+                    node,
+                    template_map,
+                    extern_children,
+                    children,
+                    comp,
+                    comp_data,
+                    model
+                )
+            );
 
         } else if (tag_name) {
 
@@ -198,11 +174,11 @@ export function componentDataToTempAST(
 
                         if (pkg.child.slot_name == slot_name && !pkg.USED) {
                             pkg.USED = true;
-                            pkg.child.UU = pkg.id;
+                            pkg.child.host_component_index = pkg.id;
                             r_.html.push(...componentDataToTempAST(
                                 parent_component,
                                 presets,
-                                on_ele_hook,
+                                model,
                                 template_map,
                                 pkg.child,
                                 htmlState.IS_SLOT_REPLACEMENT,
@@ -218,11 +194,11 @@ export function componentDataToTempAST(
 
                         if (!pkg.child.slot_name && !pkg.USED) {
                             pkg.USED = true;
-                            pkg.child.UU = pkg.id;
+                            pkg.child.host_component_index = pkg.id;
                             r_.html.push(...componentDataToTempAST(
                                 parent_component,
                                 presets,
-                                on_ele_hook,
+                                model,
                                 template_map,
                                 pkg.child,
                                 htmlState.IS_SLOT_REPLACEMENT,
@@ -235,31 +211,21 @@ export function componentDataToTempAST(
                     return r_;
             }
 
-            const IS_COMPONENT_ROOT_ELEMENT = comp.HTML == html;
+            processHooks(html, comp, presets, model, node);
 
-            let HAVE_CLASS: boolean = false;
+            const COMPONENT_IS_ROOT_ELEMENT = comp.HTML == html;
 
-            node.tag = tag_name.toLocaleLowerCase();
+            node.tagName = tag_name.toLocaleLowerCase();
 
             if (state & htmlState.IS_SLOT_REPLACEMENT)
-                node.attributes.set("w:r", (html.UU * 50 + html.lookup_index) + "");
+                node.attributes.set("w:r", (html.host_component_index * 50 + html.element_index) + "");
 
-            for (const [key, val] of attributes)
-                if (key.toLocaleLowerCase() == "class") {
-                    HAVE_CLASS = IS_COMPONENT_ROOT_ELEMENT || HAVE_CLASS;
-                    const class_names = (IS_COMPONENT_ROOT_ELEMENT
-                        ? ((state & htmlState.IS_INTERLEAVED) > 0)
-                            ? comp_data.join(" ")
-                            : comp_data[comp_data.length - 1]
-                        : "");
-                    node.attributes.set("class", class_names + ` ${val}`);
-                } else
-                    node.attributes.set(key, val);
+            const HAVE_CLASS = processAttributes(html, comp, state, comp_data, node);
 
-            if (IS_COMPONENT_ROOT_ELEMENT) {
+            if (COMPONENT_IS_ROOT_ELEMENT) {
                 node.attributes.set("w:c", "");
                 if (!HAVE_CLASS) {
-                    const class_names = (IS_COMPONENT_ROOT_ELEMENT
+                    const class_names = (COMPONENT_IS_ROOT_ELEMENT
                         ? ((state & htmlState.IS_INTERLEAVED) > 0)
                             ? comp_data.join(" ")
                             : comp_data[comp_data.length - 1]
@@ -272,12 +238,9 @@ export function componentDataToTempAST(
                 node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
             }
 
-        } else if (IS_BINDING) {
-            if ((state & htmlState.IS_INTERLEAVED) > 0)
-                node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
-            node.tag = "w-b";
-            node.data = data || "";
-        } else {
+        } else if (IS_BINDING)
+            addBindingElement(html, state, node, comp_data, comp, model);
+        else {
             node.data = data;
         }
 
@@ -287,11 +250,10 @@ export function componentDataToTempAST(
 
         for (const { child } of children.filter(n => !n.USED)) {
 
-
             const { html } = componentDataToTempAST(
                 comp,
                 presets,
-                on_ele_hook,
+                model,
                 template_map,
                 child,
                 child_state,
@@ -305,4 +267,179 @@ export function componentDataToTempAST(
     }
 
     return { html: [node], template_map };
+}
+
+function processAttributes(
+    html: DOMLiteral,
+    comp: ComponentData,
+    state: htmlState,
+    comp_data: string[],
+    node: TempHTMLNode
+) {
+
+    let HAVE_CLASS: boolean = false;
+    const COMPONENT_IS_ROOT_ELEMENT = comp.HTML == html;
+
+    for (const [key, val] of html?.attributes?.values() ?? [])
+
+        if (key.toLocaleLowerCase() == "class") {
+
+            HAVE_CLASS = COMPONENT_IS_ROOT_ELEMENT || HAVE_CLASS;
+
+            const class_names = (COMPONENT_IS_ROOT_ELEMENT
+                ? ((state & htmlState.IS_INTERLEAVED) > 0)
+                    ? comp_data.join(" ")
+                    : comp_data[comp_data.length - 1]
+                : "");
+
+            node.attributes.set("class", class_names + ` ${val}`);
+        } else
+            node.attributes.set(key, val);
+
+    return HAVE_CLASS;
+}
+
+function addComponent(presets: Presets,
+    component_name: string,
+    state: htmlState,
+    node: TempHTMLNode,
+    template_map: Map<any, any>,
+    extern_children: { USED: boolean; child: DOMLiteral; id: number; }[],
+    children: { USED: boolean; child: DOMLiteral; id: number; }[],
+    comp: ComponentData,
+    comp_data: string[],
+    model: any = null
+) {
+    const c_comp = presets.components.get(component_name);
+
+    if (htmlState.IS_COMPONENT & state)
+        state |= htmlState.IS_INTERLEAVED;
+
+    ({ html: [node] } = componentDataToTempAST(
+        c_comp,
+        presets,
+        model,
+        template_map,
+        c_comp.HTML,
+        state,
+        extern_children.concat(children),
+        comp,
+        [...comp_data, c_comp.name]
+    ));
+
+    return { state, node };
+}
+
+function addContainer(
+    html: ContainerDomLiteral,
+    component: ComponentData,
+    presets: Presets,
+    state: htmlState,
+    comp_data: string[],
+    template_map: Map<any, any>,
+    node: TempHTMLNode,
+    model: any = null,
+    parent_component: ComponentData = null
+) {
+    const {
+        component_attribs,
+        component_names
+    } = <ContainerDomLiteral>html,
+        w_ctr = component_names.join(" "),
+        w_ctr_atr = component_attribs.map(s => s.map(a => a.join(("=").replace(/\"/g, ""))).join(";")).join(":");
+
+    for (const name of component_names) {
+
+        const comp = presets.components.get(name);
+
+        if (!template_map.has(comp.name))
+            template_map.set(comp.name, {
+                tagName: "template",
+                data: "",
+                strings: [],
+                attributes: new Map([["w:c", ""], ["class", comp.name]]),
+                children: [...componentDataToTempAST(comp, presets, model, template_map).html]
+            });
+    }
+
+    node.tagName = html.tag_name.toLowerCase();
+
+    node.attributes.set("w:ctr", w_ctr);
+    node.attributes.set("w:ctr-atr", w_ctr_atr);
+
+    //get data hook 
+    processHooks(html, component, presets, model, node, parent_component);
+
+    processAttributes(html, component, state, comp_data, node);
+}
+
+function processHooks(
+    html: DOMLiteral,
+    component: ComponentData,
+    presets: Presets,
+    model: any,
+    node: TempHTMLNode,
+    parent_component: ComponentData
+) {
+
+    for (const hook of getHookFromElement(html, component)) {
+
+        const ele = runHTMLHookHandlers(hook, component, presets, model, parent_component);
+
+        if (ele) {
+            if (ele.attributes)
+                for (const [k, v] of ele.attributes.entries())
+                    node.attributes.set(k, v);
+
+            if (ele.children)
+                node.children.push(...ele.children);
+
+            if (ele.data)
+                node.data += ele.data;
+        }
+    }
+}
+
+function addBindingElement(
+    html: DOMLiteral,
+    state: htmlState,
+    node: TempHTMLNode,
+    comp_data: string[],
+    comp: ComponentData,
+    model: any = null
+) {
+
+    const
+        hook = getHookFromElement(html, comp)[0],
+        val = getStaticValue(hook.hook_value, comp, model);
+
+    if ((state & htmlState.IS_INTERLEAVED) > 0)
+        node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
+
+    node.tagName = "w-b";
+
+    if (val) {
+        node.children.push({
+            data: val + "",
+            children: [],
+            strings: [],
+            attributes: null,
+            tagName: null,
+        });
+    }
+
+    node.data = html.data || "";
+
+}
+
+function getHookFromElement(ele: DOMLiteral, comp: ComponentData): IntermediateHook[] {
+
+    let hooks = [];
+
+    for (const hook of comp.hooks) {
+        if (hook.html_element_index == ele.element_index)
+            hooks.push(hook);
+    }
+
+    return hooks;
 }

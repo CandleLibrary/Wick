@@ -1,6 +1,6 @@
 import spark, { Sparky } from "@candlefw/spark";
 import Presets from "../common/presets";
-import { DATA_FLOW_FLAG } from "../types/binding";
+import { BINDING_FLAG } from "../types/binding";
 import { ObservableModel, ObservableWatcher } from "../types/model";
 import { DOMLiteral } from "../wick.js";
 import { takeParentAddChild } from "./common.js";
@@ -532,7 +532,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         if (flags >> 24 == this.ci + 1)
             return;
 
-        this.active_flags |= DATA_FLOW_FLAG.FROM_PARENT;
+        this.active_flags |= BINDING_FLAG.FROM_PARENT;
 
         this.ua(local_index, attribute_value);
     }
@@ -543,7 +543,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         const method = this.pui[local_index];
 
         if (typeof method == "function") {
-            this.active_flags |= DATA_FLOW_FLAG.FROM_CHILD | ((this.ci + 1) << 24);
+            this.active_flags |= BINDING_FLAG.ALLOW_UPDATE_FROM_CHILD | ((this.ci + 1) << 24);
             method.call(this.par, val, 0);
         }
 
@@ -565,12 +565,12 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             if (changed_names) {
                 for (const name in changed_names) {
                     const flag_id = this.nlu[name];
-                    if (flag_id && (flag_id >>> 24) & DATA_FLOW_FLAG.FROM_MODEL)
+                    if (flag_id && (flag_id >>> 24) & BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL)
                         this.ua(flag_id & 0xFFFFFF, model[name]);
                 }
             } else
                 for (const name in this.nlu)
-                    if ((this.nlu[name] >>> 24) & DATA_FLOW_FLAG.FROM_MODEL)
+                    if ((this.nlu[name] >>> 24) & BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL)
                         if (model[name] !== undefined)
                             this.ua(this.nlu[name] & 0xFFFFFF, model[name]);
 
@@ -774,7 +774,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         const {
             namespace_id: name_space_index,
             tag_name: tag_name,
-            lookup_index: i,
+            element_index: i,
             attributes: attributes,
             children: children,
             data: data

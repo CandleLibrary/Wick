@@ -36,7 +36,7 @@ export function createErrorComponent(errors: Error[], src: string, location: URL
 
     component.HTML = {
         tag_name: "ERROR",
-        lookup_index: 0,
+        element_index: 0,
         attributes: [
             ["style", "font-family:monospace"]
         ],

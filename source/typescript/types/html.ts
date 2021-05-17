@@ -13,15 +13,6 @@ export const enum htmlState {
     IS_INTERLEAVED = 16
 }
 
-export interface TempHTMLNode {
-    tag: string;
-    data: string;
-    attributes: Map<string, string>;
-    children: TempHTMLNode[];
-    strings: string[];
-    namespace?: number;
-}
-
 export interface HTMLHandler {
     priority: number;
     /**
@@ -60,10 +51,17 @@ export interface HTMLHandler {
         | Promise<HTMLNode | void>;
 }
 
-export interface DOMLiteral {
-    UU: number;
+export interface TempHTMLNode {
+    tagName?: string;
+    data?: string;
+    attributes?: Map<string, string>;
+    children?: TempHTMLNode[];
+    strings?: string[];
+    namespace?: number;
+}
 
-    parent?: DOMLiteral,
+export interface DOMLiteral {
+    host_component_index: number;
 
     /**  Names space index id into the namespaces table. */
     namespace_id?: number;
@@ -82,7 +80,7 @@ export interface DOMLiteral {
     data?: string;
 
     /** Index into the component's lookup table for this element. */
-    lookup_index?: number;
+    element_index?: number;
 
     /**
      * True if the element belongs to a wick container
@@ -111,8 +109,6 @@ export interface DOMLiteral {
     component_name?: string;
 
     container_id?: number;
-
-    ele_index?: number;
 }
 
 export interface ContainerDomLiteral extends DOMLiteral {

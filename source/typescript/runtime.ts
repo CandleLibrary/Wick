@@ -94,8 +94,10 @@ if (typeof window != undefined) {
 
         const elements = gatherWickElements();
 
-        for (const comp of hydrateComponentElements(elements))
+        for (const comp of hydrateComponentElements(elements)) {
             comp.hydrate();
+            comp.connect();
+        }
     });
 }
 

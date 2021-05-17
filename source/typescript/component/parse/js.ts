@@ -10,7 +10,7 @@ import {
 } from "../../common/binding.js";
 import { getFirstReferenceName, importResource, setPos } from "../../common/common.js";
 import env from "../../source_code/env.js";
-import { BINDING_VARIABLE_TYPE, DATA_FLOW_FLAG } from "../../types/binding";
+import { BINDING_VARIABLE_TYPE, BINDING_FLAG } from "../../types/binding";
 import { HOOK_SELECTOR } from "../../types/hook";
 import { JSHandler } from "../../types/js.js";
 import { HTMLNode, HTMLNodeClass, HTMLNodeType, WickBindingNode, WICK_AST_NODE_TYPE_SIZE } from "../../types/wick_ast.js";
@@ -177,7 +177,7 @@ loadJSParseHandlerInternal(
 
                 for (const node of clause.nodes) {
                     const l_name = (<JSIdentifier>node).value;
-                    addBindingVariableFlag(l_name, DATA_FLOW_FLAG.EXPORT_TO_PARENT, frame);
+                    addBindingVariableFlag(l_name, BINDING_FLAG.ALLOW_EXPORT_TO_PARENT, frame);
                 }
 
             }
@@ -237,7 +237,7 @@ loadJSParseHandlerInternal(
 
                         if (!addBindingVariable(frame, l_name, binding.pos,
                             IS_CONSTANT
-                                ? BINDING_VARIABLE_TYPE.CONST_VARIABLE
+                                ? BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
                                 : BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
 
                         )) {
@@ -262,7 +262,7 @@ loadJSParseHandlerInternal(
                     if (frame.IS_ROOT) {
                         if (!addBindingVariable(frame, (<JSIdentifierReference>binding).value, binding.pos,
                             IS_CONSTANT
-                                ? BINDING_VARIABLE_TYPE.CONST_VARIABLE
+                                ? BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
                                 : BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
 
                         )) {

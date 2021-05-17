@@ -120,10 +120,10 @@ export function DOMLiteralToJSNode(node: TempHTMLNode): JSNode {
         pos: node.pos
     };
 
-    if (!node.tag)
+    if (!node.tagName)
         out.nodes.push(propString("data", node.data || ""));
     else
-        out.nodes.push(propString("tag_name", node.tag));
+        out.nodes.push(propString("tag_name", node.tagName));
 
     if (node.children)
         out.nodes.push(propArray("children", node.children.map(DOMLiteralToJSNode)));

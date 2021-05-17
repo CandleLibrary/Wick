@@ -8,21 +8,25 @@ import { ComponentClassStrings, ComponentData } from "../../types/component";
 import { createCompiledComponentClass } from "../compile/compile.js";
 
 
-const StrToBase64 = (typeof btoa != "undefined") ? btoa : str => Buffer.from(str, 'binary').toString('base64');
+const
 
-const componentStringToJS =
-    ({ class_string: cls, source_map }: ComponentClassStrings, component: ComponentData, presets: Presets) => (
-        (
-            eval(
-                "c=>" + cls + (presets.options.GENERATE_SOURCE_MAPS ? `\n${source_map}` : "")
-            )
-        )(component)
-    );
+    StrToBase64 = (typeof btoa != "undefined")
+        ? btoa
+        : str => Buffer.from(str, 'binary').toString('base64'),
+
+    componentStringToJS =
+        ({ class_string: cls, source_map }: ComponentClassStrings, component: ComponentData, presets: Presets) => (
+            (
+                eval(
+                    "c=>" + cls + (presets.options.GENERATE_SOURCE_MAPS ? `\n${source_map}` : "")
+                )
+            )(component)
+        );
 export function componentDataToJSCached(
     component: ComponentData,
     presets: Presets,
     INCLUDE_HTML: boolean = true,
-    INCLUDE_CSS = true
+    INCLUDE_CSS: boolean = true
 )
     : typeof WickRTComponent {
 
@@ -87,20 +91,24 @@ export function componentDataToJSStringCached(
     return class_strings;
 }
 
-function createClassStringObject(
+export function createClassStringObject(
     component: ComponentData,
     class_info: CompiledComponentClass,
-    presets: Presets,
+    presets: Presets
 ): ComponentClassStrings {
 
     let cl = "", sm = "";
 
-    const component_class = stmt(`class ${component.name || "temp"} extends 
-        cfw.wick.rt.C {constructor(m,e,p,w){super(m,e,p,w,"${component.global_model_name || ""}");}}`);
+    let component_class = null;
 
-    if (!component.global_model_name)
-        component_class.nodes.length = 2;
-        
+    const name = component.name || "temp";
+
+    if (component.global_model_name)
+        component_class = stmt(`class ${name} extends 
+        cfw.wick.rt.C {constructor(m,e,p,w){super(m,e,p,w,"${component.global_model_name}");}}`);
+    else
+        component_class = stmt(`class ${name} extends cfw.wick.rt.C {}`);
+
     //@ts-ignore
     component_class.nodes.push(...class_info.methods.filter(m => m.nodes[2].nodes.length > 0));
 
@@ -119,7 +127,10 @@ function createClassStringObject(
     else
         cl = renderWithFormatting(component_class);
 
-    return { class_string: cl + (presets.options.INCLUDE_SOURCE_URI ? +`\n/* ${component.location} */\n` : ""), source_map: sm };
+    return {
+        class_string: cl + (presets.options.INCLUDE_SOURCE_URI ? +`\n/* ${component.location} */\n` : ""),
+        source_map: sm
+    };
 }
 
 

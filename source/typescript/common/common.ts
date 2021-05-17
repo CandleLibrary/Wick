@@ -4,7 +4,7 @@ import URL from "@candlefw/url";
 import { Lexer } from "@candlefw/wind";
 import { parseSource } from "../component/parse/source_parser.js";
 import { componentDataToJSCached } from "../component/render/js.js";
-import { DATA_FLOW_FLAG, BINDING_VARIABLE_TYPE } from "../types/binding";
+import { BINDING_FLAG, BINDING_VARIABLE_TYPE } from "../types/binding";
 import { ComponentData } from "../types/component";
 import { FunctionFrame } from "../types/function_frame";
 import { HTMLNode } from "../types/wick_ast";
@@ -90,7 +90,7 @@ export async function importResource(
     frame: FunctionFrame
 ): Promise<void> {
 
-    let flag: DATA_FLOW_FLAG = null, ref_type: BINDING_VARIABLE_TYPE = null;
+    let flag: BINDING_FLAG = null, ref_type: BINDING_VARIABLE_TYPE = null;
 
     const [url, meta] = from_value.split(":");
 
@@ -121,20 +121,20 @@ export async function importResource(
         case "@parent":
             /* all ids within this node are imported binding_variables from parent */
             //Add all elements to global scope
-            ref_type = BINDING_VARIABLE_TYPE.PARENT_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PARENT;
+            ref_type = BINDING_VARIABLE_TYPE.PARENT_VARIABLE; flag = BINDING_FLAG.FROM_PARENT;
             break;
 
         case "@api":
-            ref_type = BINDING_VARIABLE_TYPE.API_VARIABLE; flag = DATA_FLOW_FLAG.FROM_PRESETS;
+            ref_type = BINDING_VARIABLE_TYPE.API_VARIABLE; flag = BINDING_FLAG.FROM_PRESETS;
             break;
 
         case "@global":
-            ref_type = BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_OUTSIDE;
+            ref_type = BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE; flag = BINDING_FLAG.FROM_OUTSIDE;
             break;
 
         case "@model":
             if (meta) component.global_model_name = meta.trim();
-            ref_type = BINDING_VARIABLE_TYPE.MODEL_VARIABLE; flag = DATA_FLOW_FLAG.FROM_MODEL;
+            ref_type = BINDING_VARIABLE_TYPE.MODEL_VARIABLE; flag = BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL;
             break;
 
         case "@presets":
