@@ -25,7 +25,7 @@ import { rt, WickRuntime } from "./runtime/global.js";
 import { srv, WickServer } from "./server.js";
 import parser from "./source_code/parse.js";
 import { WickTest as test } from "./test/wick.test.js";
-import { BindingVariable, DATA_FLOW_FLAG, BINDING_VARIABLE_TYPE } from "./types/binding";
+import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE } from "./types/binding";
 import { IntermediateHook } from "./types/hook";
 import { ComponentData, ExtendedComponentData } from "./types/component";
 import { FunctionFrame } from "./types/function_frame";
@@ -334,7 +334,7 @@ export {
     FunctionFrame,
     IntermediateHook as IntermediateBinding,
     BINDING_VARIABLE_TYPE,
-    DATA_FLOW_FLAG,
+    BINDING_FLAG as DATA_FLOW_FLAG,
 
     /*Observables*/
     Observable,
