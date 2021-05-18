@@ -1,4 +1,5 @@
 import URL from "@candlefw/url";
+import { PluginStore } from "../plugin/plugin";
 /**
  * A collection of configuration options to customize the wick compiler.
  */
@@ -131,4 +132,7 @@ export interface PresetOptions {
      * through the `"@api"` import path.
      */
     api?: any;
+
+
+    plugins: PluginStore;
 }

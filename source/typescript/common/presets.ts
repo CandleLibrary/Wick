@@ -1,11 +1,10 @@
 import URL from "@candlefw/url";
-
+import { PluginStore } from "../plugin/plugin.js";
+import { WickRTComponent } from "../runtime/component.js";
+import { ComponentClassStrings, ComponentData, ComponentStyle } from "../types/component";
+import { ExtendedComponentData } from "../types/component.js";
 import { PresetOptions } from "../types/presets.js";
-import { ExtendedComponentData } from "./types/extended_component.js";
-import { ComponentClassStrings } from "../types/component";
-import { ComponentData } from "./types/component_data";
-import { RuntimeComponent } from "../wick.js";
-import { ComponentStyle } from "./types/component_style.js";
+
 
 let CachedPresets = null;
 
@@ -35,6 +34,9 @@ const DefaultPresets = <PresetOptions>{
 export default class Presets implements PresetOptions {
 
     options: PresetOptions["options"];
+
+    plugins: PresetOptions["plugins"];
+
     document?: Document;
 
     window?: Window;
@@ -45,26 +47,26 @@ export default class Presets implements PresetOptions {
     components?: Map<string, ComponentData>;
 
     /**
-     * Store for RuntimeComponent.
+     * Store for WickRTComponents.
      */
-    component_class: Map<string, typeof RuntimeComponent>;
+    component_class: Map<string, typeof WickRTComponent>;
 
     /**
      * Map of generated component class strings and optional source maps.
      */
     component_class_string: Map<string, ComponentClassStrings>;
 
-    schemes?: {};
+    schemes?: PresetOptions["schemes"];
 
-    models?: {};
+    models?: PresetOptions["models"];
 
     custom?: {};
 
     styles?: Map<string, ComponentStyle>;
 
-    url: URL;
+    url: PresetOptions["url"];
 
-    api: any;
+    api: PresetOptions["api"];
 
     wrapper: ExtendedComponentData;
 
@@ -103,6 +105,8 @@ export default class Presets implements PresetOptions {
         this.component_class = new Map;
 
         this.component_class_string = new Map;
+
+        this.plugins = new PluginStore;
 
         this.schemes = {};
 

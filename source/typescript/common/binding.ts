@@ -8,8 +8,7 @@ import { FunctionFrame } from "../types/function_frame";
 import { Component, Presets } from "../wick";
 import { convertObjectToJSNode, Node_Is_Identifier } from "./js.js";
 import { WickBindingNode } from "../types/wick_ast";
-
-
+import { PluginStore } from "../plugin/plugin";
 
 function getNonTempFrame(frame: FunctionFrame) {
     while (frame && frame.IS_TEMP_CLOSURE)
