@@ -90,5 +90,5 @@ export interface HookProcessor {
         component: ComponentData,
         presets?: Presets,
         model?: any
-    ): TempHTMLNode;
+    ): (TempHTMLNode | Promise<TempHTMLNode>);
 }
