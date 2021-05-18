@@ -143,6 +143,15 @@ export class PluginStore {
         return null;
     }
 
+    hasPlugin(type:string, selector:string): boolean{
+
+        if(this.plugins.has(type)){
+            const plugin_class = this.plugins.get(type)
+            return plugin_class.has(selector);
+        }
+        return false;
+    }
+
     async runClientPlugin(presets:PresetOptions, type:string, selector:string, ...args:any[]){
         const plugin = this.getPlugin(type, selector);
         if(plugin)try{
