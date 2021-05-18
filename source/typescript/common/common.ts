@@ -2,7 +2,7 @@ import { traverse } from "@candlefw/conflagrate";
 import { JSIdentifierClass, JSNode, JSNodeType } from "@candlefw/js";
 import URL from "@candlefw/url";
 import { Lexer } from "@candlefw/wind";
-import { parseSource } from "../component/parse/source_parser.js";
+import { parseSource } from "../component/parse/source.js";
 import { componentDataToJSCached } from "../component/render/js.js";
 import { BINDING_FLAG, BINDING_VARIABLE_TYPE } from "../types/binding";
 import { ComponentData } from "../types/component";
