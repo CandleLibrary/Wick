@@ -15,7 +15,7 @@ import { TempHTMLNode } from "../../types/html.js";
 import { HTMLNode, HTMLNodeTypeLU } from "../../types/wick_ast.js";
 import { BindingVariable, Component } from "../../wick.js";
 import { componentDataToCSS } from "../render/css.js";
-import { componentDataToTempAST } from "../render/html.js";
+import { componentDataToTempAST } from "./html.js";
 import { hook_processors, setIdentifierReferenceVariables } from "./hooks.js";
 
 

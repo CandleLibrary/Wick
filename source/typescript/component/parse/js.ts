@@ -1,20 +1,19 @@
 import { traverse } from "@candlefw/conflagrate";
-import { exp, JSIdentifier, JSIdentifierReference, JSLexicalDeclaration, JSNode, JSNodeType, JSStringLiteral, stmt } from "@candlefw/js";
+import { JSIdentifier, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
 import {
-    addHook,
     addBindingReference, addBindingVariable,
-    addBindingVariableFlag, addDefaultValueToBindingVariable, addNameToDeclaredVariables,
+    addBindingVariableFlag, addDefaultValueToBindingVariable, addHook,
+    addNameToDeclaredVariables,
     addReadFlagToBindingVariable, addWriteFlagToBindingVariable,
     Name_Is_A_Binding_Variable, Variable_Is_Declared
 } from "../../common/binding.js";
 import { getFirstReferenceName, importResource, setPos } from "../../common/common.js";
-import env from "../../source_code/env.js";
-import { BINDING_VARIABLE_TYPE, BINDING_FLAG } from "../../types/binding";
+import { BINDING_FLAG, BINDING_VARIABLE_TYPE } from "../../types/binding";
 import { HOOK_SELECTOR } from "../../types/hook";
 import { JSHandler } from "../../types/js.js";
 import { HTMLNode, HTMLNodeClass, HTMLNodeType, WickBindingNode, WICK_AST_NODE_TYPE_SIZE } from "../../types/wick_ast.js";
-import { processFunctionDeclaration, processNodeSync, processWickCSS_AST, processWickHTML_AST } from "./parser.js";
+import { processFunctionDeclaration, processNodeSync, processWickCSS_AST, processWickHTML_AST } from "./parse.js";
 
 export function findFirstNodeOfType(type: JSNodeType, ast: JSNode) {
 
@@ -216,7 +215,7 @@ loadJSParseHandlerInternal(
 
             const
                 n = setPos(stmt("a,a;"), node.pos),
-                IS_CONSTANT = (node.type == JSNodeType.LexicalDeclaration && (<JSLexicalDeclaration>node).symbol == "const"),
+                IS_CONSTANT = (node.type == JSNodeType.LexicalDeclaration && (<any>node).symbol == "const"),
                 [{ nodes }] = n.nodes;
 
             nodes.length = 0;
@@ -433,12 +432,7 @@ loadJSParseHandlerInternal(
                     host_node: node,
                     html_element_index: -1,
                     pos: node.pos
-                });
-
-                addNameToDeclaredVariables("c", frame);
-
-                node.nodes[1] = env.functions.reinterpretArrowParameters([{ type: JSNodeType.Parenthesized, nodes: [exp("c=1")], pos: node.pos }]);
-                //@ts-ignore
+                });                                                                                            
                 (<JSNode>node).nodes[2].nodes.unshift(setPos(stmt(`if(c>1)return 0;`), node.pos));
             }
 

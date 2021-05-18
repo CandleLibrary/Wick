@@ -1,11 +1,10 @@
 import { traverse } from "@candlefw/conflagrate";
-import { JSNode, JSNodeType, renderCompressed, stmt } from "@candlefw/js";
+import { JSNode, JSNodeType, stmt } from "@candlefw/js";
 import URL from "@candlefw/url";
-import { addBindingVariable, addWriteFlagToBindingVariable, addHook, addBindingReference } from "../../common/binding.js";
+import { addBindingReference, addBindingVariable, addHook } from "../../common/binding.js";
 import { importResource } from "../../common/common.js";
 import { Is_Tag_From_HTML_Spec } from "../../common/html.js";
-import { global_object } from "../../runtime/global.js";
-import { BINDING_FLAG, BINDING_VARIABLE_TYPE } from "../../types/binding.js";
+import { BINDING_VARIABLE_TYPE } from "../../types/binding.js";
 import { HOOK_SELECTOR } from "../../types/hook";
 import { HTMLHandler } from "../../types/html";
 import {
@@ -14,8 +13,8 @@ import {
     HTMLNodeType,
     WickBindingNode, WICK_AST_NODE_TYPE_BASE, WICK_AST_NODE_TYPE_SIZE
 } from "../../types/wick_ast.js";
-import { processFunctionDeclaration, processWickCSS_AST, processWickJS_AST } from "./parser.js";
-import { parseComponentAST } from "./source_parser.js";
+import { processFunctionDeclaration, processWickCSS_AST, processWickJS_AST } from "./parse.js";
+import { parseComponentAST } from "./source.js";
 
 const default_handler = {
     priority: -Infinity,

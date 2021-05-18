@@ -1,29 +1,30 @@
 import { JSNode, JSNodeType } from "@candlefw/js";
 import URL from "@candlefw/url";
-
-import parserSourceString from "../../source_code/parse.js";
+import { processUndefinedBindingVariables } from "../../common/binding.js";
+import { createComponentData, createErrorComponent } from "../../common/component.js";
+import { createFrame } from "../../common/frame.js";
 import Presets from "../../common/presets.js";
+import parserSourceString from "../../source_code/parse.js";
 import { Comment } from "../../types/comment.js";
 import { ComponentData } from "../../types/component";
 import { HTMLNode, HTMLNodeClass } from "../../types/wick_ast.js";
-
-import { createComponentData, createErrorComponent } from "../../common/component.js";
-import { createFrame } from "../../common/frame.js";
-import { processWickHTML_AST } from "./parser.js";
-import { processWickJS_AST } from "./parser.js";
-import { acquireComponentASTFromRemoteSource } from "./remote_source.js";
-import { processUndefinedBindingVariables } from "../../common/binding.js";
-
-
+import { processWickHTML_AST, processWickJS_AST } from "./parse.js";
 
 export const component_cache = {};
+
+
+function addComponentNamesToPresets(component: ComponentData, presets: Presets) {
+    for (const name of component.names)
+        presets.named_components.set(name.toUpperCase(), component);
+}
+
 
 function getHTML_AST(ast: HTMLNode | JSNode): HTMLNode {
 
     while (ast && !(ast.type & HTMLNodeClass.HTML_ELEMENT))
-        ast = ast.nodes[0];
+        ast = <any>ast.nodes[0];
 
-    return <HTMLNode>ast;
+    return <any>ast;
 }
 
 function determineSourceType(ast: HTMLNode | JSNode): boolean {
@@ -83,7 +84,7 @@ export async function parseSource(input: URL | string, presets?: Presets, root_u
         if (url.IS_RELATIVE)
             url = URL.resolveRelative(url, root_url);
 
-        data = await acquireComponentASTFromRemoteSource(url);
+        data = await fetchASTFromRemote(url);
 
         source_url = url;
 
@@ -166,8 +167,39 @@ export async function parseComponentAST(
     return createErrorComponent(parse_errors, source_string, url, component);
 
 }
+export async function fetchASTFromRemote(url: URL) {
 
-function addComponentNamesToPresets(component: ComponentData, presets: Presets) {
-    for (const name of component.names)
-        presets.named_components.set(name.toUpperCase(), component);
+    const
+        errors = [];
+
+    let ast = null,
+        comments = null,
+        string = "";
+
+    if (!url)
+        throw new Error("Could not load URL: " + url + "");
+
+
+    //TODO: Can throw
+    try {
+        string = <string>await url.fetchText(false);
+
+        // HACK -- if the source data is a css file, then wrap the source string into a <style></style> element string to enable 
+        // the wick parser to parser the data correctly. 
+        if (url.ext == "css")
+            string = `<style>${string}</style>`;
+
+        const { ast: a, comments: c, error } = parserSourceString(string, url.toString());
+
+        ast = a;
+        comments = c;
+
+        if (error)
+            errors.push(error);
+
+    } catch (e) {
+        errors.push(e);
+    }
+
+    return { ast, string, resolved_url: url.toString(), errors, comments };
 }

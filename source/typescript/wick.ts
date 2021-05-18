@@ -7,7 +7,7 @@ import { css_selector_helpers } from "./common/css.js";
 import { createNameHash } from "./common/hash_name.js";
 //Internal
 import Presets from "./common/presets.js";
-import { parseSource } from "./component/parse/source_parser.js";
+import { parseSource } from "./component/parse/source.js";
 import { componentDataToCSS } from "./component/render/css.js";
 import { componentDataToHTML } from "./component/render/html.js";
 import {

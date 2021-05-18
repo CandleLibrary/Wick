@@ -12,8 +12,8 @@ import { FunctionFrame } from "../../types/function_frame";
 import { HookProcessor, HOOK_TYPE, HOOK_SELECTOR, ProcessedHook } from "../../types/hook";
 import { ContainerDomLiteral, DOMLiteral, TempHTMLNode } from "../../types/html";
 import { HTMLNode } from "../../types/wick_ast";
-import { postProcessFunctionDeclarationSync } from "../parse/parser.js";
-import { componentDataToTempAST } from "../render/html.js";
+import { postProcessFunctionDeclarationSync } from "../parse/parse.js";
+import { componentDataToTempAST } from "./html.js";
 
 
 export const hook_processors: HookProcessor[] = [];
