@@ -217,7 +217,7 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
         if (type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS)
             continue;
 
-        if (true || flags & BINDING_FLAG.WRITTEN) {
+        if (flags & BINDING_FLAG.WRITTEN) {
 
             const method = getGenericMethodNode("u" + class_index, "f,c", ";"),
 
