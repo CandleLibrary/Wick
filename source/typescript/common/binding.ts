@@ -1,14 +1,15 @@
 import { traverse } from "@candlefw/conflagrate";
-import { JSExpressionClass, JSIdentifier, JSNode, JSNodeType, renderCompressed } from "@candlefw/js";
+import { JSExpressionClass, JSIdentifier, JSNode, JSNodeClass, JSNodeType, JSReferenceClass, renderCompressed } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
-import { BindingVariable, BINDING_VARIABLE_TYPE, BINDING_FLAG, STATIC_BINDING_STATE } from "../types/binding";
-import { HOOK_SELECTOR, IntermediateHook } from "../types/hook";
+import { PluginStore } from "../plugin/plugin.js";
+import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, STATIC_BINDING_STATE } from "../types/binding";
 import { ComponentData } from "../types/component";
 import { FunctionFrame } from "../types/function_frame";
-import { Component, Presets } from "../wick";
-import { convertObjectToJSNode, Node_Is_Identifier } from "./js.js";
+import { HOOK_SELECTOR, IntermediateHook } from "../types/hook";
+import { PLUGIN_TYPE } from "../types/plugin.js";
 import { WickBindingNode } from "../types/wick_ast";
-import { PluginStore } from "../plugin/plugin";
+import { PresetOptions as Presets } from "../types/presets";
+import { convertObjectToJSNode, Node_Is_Identifier } from "./js.js";
 
 function getNonTempFrame(frame: FunctionFrame) {
     while (frame && frame.IS_TEMP_CLOSURE)
@@ -312,7 +313,8 @@ export function getCompiledBindingVariableName(name: string, component: Componen
  */
 export function Binding_Variable_Has_Static_Default_Value(
     binding: BindingVariable,
-    comp: Component
+    comp: ComponentData,
+    presets:Presets,
 ): boolean {
 
     let STATIC_STATE = binding.STATIC_STATE;
@@ -322,7 +324,7 @@ export function Binding_Variable_Has_Static_Default_Value(
         STATIC_STATE = STATIC_BINDING_STATE.FALSE;
 
         if (binding.default_val)
-            STATIC_STATE = Expression_Is_Static(binding.default_val, comp)
+            STATIC_STATE = Expression_Is_Static(binding.default_val, comp, presets)
                 ? STATIC_BINDING_STATE.TRUE
                 : STATIC_BINDING_STATE.FALSE;
         else if (binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE)
@@ -334,11 +336,50 @@ export function Binding_Variable_Has_Static_Default_Value(
     return STATIC_STATE == STATIC_BINDING_STATE.TRUE;
 }
 
-export function Expression_Is_Static(ast: JSNode, comp: ComponentData): boolean {
+function haveStaticPluginForRefName(name: string, presets: Presets) {
+    return presets.plugins.hasPlugin(PLUGIN_TYPE.STATIC_DATA_FETCH, name);
+}
 
-    for (const { node, meta } of traverse(ast, "nodes")
+export async function getDefaultBindingValue(
+        name: string, 
+        comp: ComponentData, 
+        presets:Presets, 
+        model: Object, 
+        parent_comp: ComponentData[] = null
+    ): JSExpressionClass {
+
+    const binding = getComponentBinding(name, comp);
+
+    if (binding) {
+        
+        if (binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE && parent_comp)
+
+            for (const hook of parent_comp.hooks.filter(h => h.selector == HOOK_SELECTOR.EXPORT_TO_CHILD))
+
+                if (hook.hook_value.extern == binding.external_name)
+
+                    return await getDefaultBindingValue(hook.hook_value.local, parent_comp, presets, model);
+
+        if ((binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE || binding.type == BINDING_VARIABLE_TYPE.UNDEFINED)) {
+
+            if(model) return await convertObjectToJSNode(model[binding.external_name]);
+
+        } else if (Binding_Variable_Has_Static_Default_Value(binding, comp, presets)) 
+
+            return await getStaticValueAstFromSourceAST(binding.default_val, comp, presets, model, parent_comp);
+        
+    }
+
+    return undefined;
+}
+
+export function Expression_Is_Static(ast: JSNode, comp: ComponentData, presets:Presets): boolean {
+
+    for (const { node, meta } of traverse(ast, "nodes").makeSkippable()
     ) {
         switch (node.type) {
+
+            
             case JSNodeType.IdentifierName:
             case JSNodeType.IdentifierReference:
                 //If the value is another binding reference then a 
@@ -346,92 +387,133 @@ export function Expression_Is_Static(ast: JSNode, comp: ComponentData): boolean 
 
                 let binding = getComponentBinding(name, comp);
 
-                if (Binding_Variable_Has_Static_Default_Value(binding, comp))
+                if (Binding_Variable_Has_Static_Default_Value(binding, comp, presets))
                     continue;
 
-            case JSNodeType.CallExpression:
+                return false;
+                
+            case JSNodeType.CallExpression:{    
+                const [name_node] = node.nodes;
+                if((name_node.type & JSNodeClass.IDENTIFIER) > 0){
+                    if(haveStaticPluginForRefName(name_node.value, presets)){
+                        for(const n of node.nodes.slice(1))
+                            if(!Expression_Is_Static(n, comp, presets))
+                                return false
+                        meta.skip()
+                        break
+                    }
+                }
+                    }
             case JSNodeType.ArrowFunction:
             case JSNodeType.FunctionDeclaration:
                 return false;
+            
         }
     }
 
     return true;
 }
 
-export function getDefaultBindingValue(name: string, comp: Component, model: Object, parent_comp: Component = null): JSExpressionClass {
+/**
+ * Returns a JSNode AST that represents the resolved value
+ * of the node after taking into account BindingVariable references
+ * and plugin return values. 
+ * 
+ * If ANY value cannot be resolved then undefined is returned instead 
+ * of a JSNode
+ */
+export async function getStaticValueAstFromSourceAST(
+    input_node:JSNode, 
+    comp:ComponentData, 
+    presets:Presets, 
+    model:Object, 
+    parent_comp:ComponentData[] = null
+){
+    const receiver = { ast: null };
+    
+    for (
+        const { node, meta } of traverse(input_node, "nodes")
+            .filter("type", JSNodeType.IdentifierReference, JSNodeType.IdentifierName, JSNodeType.CallExpression)
+            .makeReplaceable()
+            .extract(receiver)
+    ) {
 
-    const binding = getComponentBinding(name, comp);
+        if(node.type == JSNodeType.CallExpression){
 
-    if (binding) {
+            const [{value:name}] = node.nodes;
+            
+            if(haveStaticPluginForRefName(name, presets)){
+                const vals = [];
 
-        if (binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE && parent_comp)
-            for (const hook of parent_comp.hooks.filter(h => h.selector == HOOK_SELECTOR.EXPORT_TO_CHILD))
-                if (hook.hook_value.extern == binding.external_name)
-                    return getDefaultBindingValue(hook.hook_value.local, parent_comp, model);
+                for(const n of node.nodes.slice(1)){
 
+                    const val = await getStaticValueAstFromSourceAST(n, comp, presets, model, parent_comp)
+                    
+                    if (val == undefined)
+                        return undefined
+                    
+                    vals.push(val);
+                }
 
-        if (binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE || binding.type == BINDING_VARIABLE_TYPE.UNDEFINED) {
-            if (model)
-                return convertObjectToJSNode(model[binding.external_name]);
+                const val = await presets.plugins.getPlugin(
+                    PLUGIN_TYPE.STATIC_DATA_FETCH, 
+                    name
+                    )
+                    .serverHandler(presets, ...vals.map(v=>eval(renderCompressed(v))))
 
-        } else if (Binding_Variable_Has_Static_Default_Value(binding, comp)) {
-            const receiver = { ast: null };
-            for (
-                const { node, meta } of traverse(binding.default_val, "nodes")
-                    .filter("type", JSNodeType.IdentifierReference, JSNodeType.IdentifierName)
-                    .makeReplaceable()
-                    .extract(receiver)
-            ) {
-                const name = (<JSIdentifier>node).value;
-
-                if (comp.root_frame.binding_variables.has(name))
-                    meta.replace(<JSNode>getDefaultBindingValue(name, comp, model, parent_comp));
+                meta.replace(<JSNode>convertObjectToJSNode(val))
             }
-            return <JSExpressionClass>receiver.ast;
+
+        }else{
+            const name = (<JSIdentifier>node).value;
+            
+            if (comp.root_frame.binding_variables.has(name))    {
+                
+                const val = await <JSNode>getDefaultBindingValue(name, comp, presets, model,  parent_comp)
+
+                if(val == undefined)
+                    return undefined
+
+                meta.replace(val);
+            }
+            
+            
         }
     }
-
-    return undefined;
-
+    return <JSExpressionClass>receiver.ast;
 }
-export function addHook(component: Component, hook: IntermediateHook) {
+
+export function addHook(component: ComponentData, hook: IntermediateHook) {
     component.hooks.push(hook);
 };
 
-
-
 /**
- * Creates a static value
- * @param binding 
+ * Retrieves the default static value of the given binding or 
+ * null
  */
-export function getStaticValue(
+export async function getStaticValue(
     binding: WickBindingNode,
     component: ComponentData,
+    presets: Presets,
     model: any = null,
-    parent_comp: Component = null
+    parent_comp: ComponentData = null
 ) {
-    const receiver = { ast: null };
 
-    for (const { node, meta: { replace } } of traverse(binding.primary_ast, "nodes")
-        .makeReplaceable()
-        .extract(receiver)
-    ) {
-        if (Node_Is_Identifier(node)) {
-            const name = node.value;
+    const ast = await getStaticValueAstFromSourceAST(binding.primary_ast, component, presets, model, parent_comp)
 
-            const val = getDefaultBindingValue(name, component, model, parent_comp);
-
-
-            if (val == undefined) {
-                return null;
-            }
-
-            replace(val);
-
-            continue;
-        }
-    }
-
-    return eval(renderCompressed(receiver.ast));
+    if(ast)
+        return eval(renderCompressed(ast));
+    return null
 }
+
+/**
+ * Static Data Fetch Plugin
+ */
+PluginStore.addSpec({
+    type:PLUGIN_TYPE.STATIC_DATA_FETCH,
+    requires:["serverHandler"],
+    async defaultRecover(data){
+        return null
+    },
+    validateSpecifier:(str:string)=>(str.match(/^[a-zA-Z\_][\w\_\d]*$/) || []).length > 0
+})

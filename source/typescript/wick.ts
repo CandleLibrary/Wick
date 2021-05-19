@@ -157,19 +157,27 @@ async function componentCreate(input: string | URL, presets: Presets = rt.preset
     if (!rt.presets)
         rt.presets = presets;
 
+    let comp = null;
+
     const
         promise = new Promise<ExtendedComponentData>(async res => {
-            const comp = await parseSource(input, presets);
+            comp = await parseSource(input, presets);
             Object.assign(component, comp);
-            componentDataToJSCached(component, presets, true, true);
-            componentDataToJSStringCached(component, presets, true, true);
+            await componentDataToJSCached(component, presets, true, true);
+            await componentDataToJSStringCached(component, presets, true, true);
             res(component);
         }),
 
         component = <ExtendedComponentData><unknown>{
-            get class() { return componentDataToJSCached(component, presets, true, false); },
-            get class_with_integrated_css() { return componentDataToJS(component, presets, true, true); },
-            get class_string() { return componentDataToJSStringCached(component, presets, true, false); },
+            get class() { 
+                return presets.component_class.get(comp.name); 
+            },
+            get class_with_integrated_css() { 
+                return presets.component_class.get(comp.name);
+            },
+            get class_string() { 
+                return presets.component_class_string.get(comp.name);
+            },
             pending: promise,
             mount: async (model: any, ele: HTMLElement) => {
 

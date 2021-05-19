@@ -17,7 +17,7 @@ import { runHTMLHookHandlers } from "./compile.js";
  * @param root
  */
 
-export function componentDataToTempAST(
+export async function componentDataToTempAST(
     comp: ComponentData,
     presets: Presets = rt.presets,
     model = null,
@@ -27,7 +27,7 @@ export function componentDataToTempAST(
     extern_children: { USED: boolean; child: DOMLiteral; id: number; }[] = [],
     parent_component: ComponentData[] = null,
     comp_data = [comp.name]
-): { html: TemplateHTMLNode[]; template_map: Map<string, TemplateHTMLNode>; } {
+): Promise<{ html: TemplateHTMLNode[]; template_map: Map<string, TemplateHTMLNode>; }> {
 
     let node: TemplateHTMLNode = {
         tagName: "",
@@ -56,7 +56,7 @@ export function componentDataToTempAST(
             node.namespace = namespace_id;
 
         if (html.is_container == true)
-            addContainer(
+            await addContainer(
                 <ContainerDomLiteral>html,
                 comp,
                 presets,
@@ -71,7 +71,7 @@ export function componentDataToTempAST(
         else if (component_name && presets.components.has(component_name)) {
 
             ({ node, state } =
-                addComponent(presets,
+                await addComponent(presets,
                     component_name,
                     state,
                     node,
@@ -99,14 +99,14 @@ export function componentDataToTempAST(
                         if (pkg.child.slot_name == slot_name && !pkg.USED) {
                             pkg.USED = true;
                             pkg.child.host_component_index = pkg.id;
-                            r_.html.push(...componentDataToTempAST(
+                            r_.html.push(...(await componentDataToTempAST(
                                 parent_component,
                                 presets,
                                 model,
                                 template_map,
                                 pkg.child,
                                 htmlState.IS_SLOT_REPLACEMENT
-                            ).html);
+                            )).html);
                         }
                     }
 
@@ -119,14 +119,14 @@ export function componentDataToTempAST(
                         if (!pkg.child.slot_name && !pkg.USED) {
                             pkg.USED = true;
                             pkg.child.host_component_index = pkg.id;
-                            r_.html.push(...componentDataToTempAST(
+                            r_.html.push(...(await componentDataToTempAST(
                                 parent_component,
                                 presets,
                                 model,
                                 template_map,
                                 pkg.child,
                                 htmlState.IS_SLOT_REPLACEMENT
-                            ).html);
+                            )).html);
                         }
                     }
                 }
@@ -135,7 +135,7 @@ export function componentDataToTempAST(
                     return r_;
             }
 
-            processHooks(html, comp, presets, model, node);
+            await processHooks(html, comp, presets, model, node, parent_component);
 
             const COMPONENT_IS_ROOT_ELEMENT = comp.HTML == html;
 
@@ -162,9 +162,10 @@ export function componentDataToTempAST(
                 node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
             }
 
-        } else if (IS_BINDING)
-            addBindingElement(html, state, node, comp_data, comp, model);
-        else {
+        } else if (IS_BINDING){
+
+            await addBindingElement(html, state, node, comp_data, comp, presets, model);
+        }else {
             node.data = data;
         }
 
@@ -174,7 +175,7 @@ export function componentDataToTempAST(
 
         for (const { child } of children.filter(n => !n.USED)) {
 
-            const { html } = componentDataToTempAST(
+            const { html } = await componentDataToTempAST(
                 comp,
                 presets,
                 model,
@@ -192,6 +193,8 @@ export function componentDataToTempAST(
 
     return { html: [node], template_map };
 }
+
+
 function processAttributes(
     html: DOMLiteral,
     comp: ComponentData,
@@ -221,7 +224,9 @@ function processAttributes(
 
     return HAVE_CLASS;
 }
-function addComponent(presets: Presets,
+
+
+async function addComponent(presets: Presets,
     component_name: string,
     state: htmlState,
     node: TemplateHTMLNode,
@@ -237,7 +242,7 @@ function addComponent(presets: Presets,
     if (htmlState.IS_COMPONENT & state)
         state |= htmlState.IS_INTERLEAVED;
 
-    ({ html: [node] } = componentDataToTempAST(
+    ({ html: [node] } = await componentDataToTempAST(
         c_comp,
         presets,
         model,
@@ -251,7 +256,9 @@ function addComponent(presets: Presets,
 
     return { state, node };
 }
-function addContainer(
+
+
+async function addContainer(
     html: ContainerDomLiteral,
     component: ComponentData,
     presets: Presets,
@@ -279,21 +286,24 @@ function addContainer(
                 data: "",
                 strings: [],
                 attributes: new Map([["w:c", ""], ["class", comp.name]]),
-                children: [...componentDataToTempAST(comp, presets, model, template_map).html]
+                children: [...(await componentDataToTempAST(comp, presets, model, template_map)).html]
             });
     }
 
     node.tagName = html.tag_name.toLowerCase();
 
     node.attributes.set("w:ctr", w_ctr);
+
     node.attributes.set("w:ctr-atr", w_ctr_atr);
 
     //get data hook 
-    processHooks(html, component, presets, model, node, parent_component);
+    await processHooks(html, component, presets, model, node, parent_component);
 
     processAttributes(html, component, state, comp_data, node);
 }
-function processHooks(
+
+
+async function processHooks(
     html: DOMLiteral,
     component: ComponentData,
     presets: Presets,
@@ -304,7 +314,7 @@ function processHooks(
 
     for (const hook of getHookFromElement(html, component)) {
 
-        const ele = runHTMLHookHandlers(hook, component, presets, model, parent_component);
+        const ele = await runHTMLHookHandlers(hook, component, presets, model, parent_component);
 
         if (ele) {
             if (ele.attributes)
@@ -319,18 +329,21 @@ function processHooks(
         }
     }
 }
-function addBindingElement(
+
+
+async function addBindingElement(
     html: DOMLiteral,
     state: htmlState,
     node: TemplateHTMLNode,
     comp_data: string[],
     comp: ComponentData,
+    presets: Presets,
     model: any = null
 ) {
 
     const
         hook = getHookFromElement(html, comp)[0],
-        val = getStaticValue(hook.hook_value, comp, model);
+        val = await getStaticValue(hook.hook_value, comp, presets, model);
 
     if ((state & htmlState.IS_INTERLEAVED) > 0)
         node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));

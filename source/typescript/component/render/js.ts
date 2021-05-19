@@ -22,7 +22,7 @@ const
                 )
             )(component)
         );
-export function componentDataToJSCached(
+export async  function componentDataToJSCached(
     component: ComponentData,
     presets: Presets,
     INCLUDE_HTML: boolean = true,
@@ -36,7 +36,7 @@ export function componentDataToJSCached(
 
     if (!comp) {
 
-        const comp_class = createCompiledComponentClass(component, presets, INCLUDE_HTML, INCLUDE_CSS);
+        const comp_class = await createCompiledComponentClass(component, presets, INCLUDE_HTML, INCLUDE_CSS);
 
         const class_strings = createClassStringObject(component, comp_class, presets);
 
@@ -46,14 +46,14 @@ export function componentDataToJSCached(
 
         for (const comp of component.local_component_names.values()) {
             if (!presets.component_class_string.has(comp))
-                componentDataToJSCached(presets.components.get(comp), presets, INCLUDE_HTML, INCLUDE_CSS);
+                await componentDataToJSCached(presets.components.get(comp), presets, INCLUDE_HTML, INCLUDE_CSS);
         }
     }
 
     return comp;
 }
 
-export function componentDataToJS(
+export async  function componentDataToJS(
     component: ComponentData,
     presets: Presets,
     INCLUDE_HTML: boolean = true,
@@ -61,14 +61,14 @@ export function componentDataToJS(
 )
     : typeof WickRTComponent {
 
-    const comp_class = createCompiledComponentClass(component, presets, INCLUDE_HTML, INCLUDE_CSS);
+    const comp_class = await createCompiledComponentClass(component, presets, INCLUDE_HTML, INCLUDE_CSS);
 
     const class_strings = createClassStringObject(component, comp_class, presets);
 
     return componentStringToJS(class_strings, component, presets);
 }
 
-export function componentDataToJSStringCached(
+export async function componentDataToJSStringCached(
     component: ComponentData,
     presets: Presets,
     INCLUDE_HTML: boolean = true,
@@ -81,7 +81,7 @@ export function componentDataToJSStringCached(
 
     if (!class_strings) {
 
-        const comp_class = createCompiledComponentClass(component, presets, INCLUDE_HTML, INCLUDE_CSS);
+        const comp_class = await createCompiledComponentClass(component, presets, INCLUDE_HTML, INCLUDE_CSS);
 
         class_strings = createClassStringObject(component, comp_class, presets);
 

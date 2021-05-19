@@ -10,8 +10,8 @@ import { CompiledComponentClass } from "../../types/class_information";
 import { ComponentData } from "../../types/component";
 import { FunctionFrame } from "../../types/function_frame";
 import { HookProcessor, HOOK_TYPE, HOOK_SELECTOR, ProcessedHook } from "../../types/hook";
-import { ContainerDomLiteral, DOMLiteral, TempHTMLNode } from "../../types/html";
-import { HTMLNode } from "../../types/wick_ast";
+import { ContainerDomLiteral, DOMLiteral, TemplateHTMLNode } from "../../types/html";
+import { HTMLNode, Node, WickBindingNode } from "../../types/wick_ast";
 import { postProcessFunctionDeclarationSync } from "../parse/parse.js";
 import { componentDataToTempAST } from "./html.js";
 
@@ -154,16 +154,15 @@ loadHookProcessor({
         return hook;
     },
 
-    getDefaultHTMLValue(hook, comp, presets, model) {
-
-        const ele = getElementAtIndex(comp, hook.html_element_index);
+    async getDefaultHTMLValue(hook, comp, presets, model) {
 
         const tag_name = hook.selector;
 
         const value = hook.hook_value;
 
-        if (Expression_Is_Static(value, comp)) {
-            const static_value = getStaticValue(hook.hook_value, comp, model);
+        if (Expression_Is_Static(value, comp, presets)) {
+
+            const static_value = await getStaticValue(hook.hook_value, comp, presets, model);
 
             if (static_value)
                 return {
@@ -637,16 +636,16 @@ loadHookProcessor({
         return hook;
     },
 
-    getDefaultHTMLValue(hook, component, presets, model, parent_component) {
+    async getDefaultHTMLValue(hook, component, presets, model, parent_component) {
 
-        const node: TempHTMLNode = {
+        const node: TemplateHTMLNode = {
             children: []
         };
 
         const html: ContainerDomLiteral = <any>getElementAtIndex(component, hook.html_element_index);
 
         if (
-            Expression_Is_Static(hook.hook_value, component)
+            Expression_Is_Static(hook.hook_value, component, presets)
             &&
             html.component_names.length > 0
         ) {
@@ -657,13 +656,14 @@ loadHookProcessor({
 
                 child_comp = presets.components.get(comp_name),
 
-                models = getStaticValue(hook.hook_value, component, model, parent_component);
+                models = await getStaticValue(hook.hook_value, component, presets, model, parent_component);
 
+               
             if (models && child_comp) {
 
                 for (const model of models) {
 
-                    const result = componentDataToTempAST(child_comp, presets, model);
+                    const result = await componentDataToTempAST(child_comp, presets, model);
 
                     node.children.push(result.html[0]);
                 }
@@ -928,6 +928,7 @@ loadHookProcessor({
 
         return hook;
     },
+
     getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 

@@ -13,14 +13,14 @@ import { componentDataToTempAST } from "../compile/html.js";
  * @param comp 
  * @param presets 
  */
-export function componentDataToHTML(
+export async function componentDataToHTML(
     comp: ComponentData,
     presets: Presets = rt.presets,
-): { html: string, template_map: Map<string, TemplateHTMLNode>; } {
+): Promise<{ html: string, template_map: Map<string, TemplateHTMLNode>; }> {
 
     const { html: [html], template_map } = await componentDataToTempAST(comp, presets);
 
-    const html_string = htmlTemplateDataToString(html);
+    const html_string = htmlTemplateToString(html);
 
     return { html: html_string, template_map: template_map };
 }
@@ -57,6 +57,7 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
             if (parent)
                 parent.strings.push(...node.strings.map(s => depth_str + s));
         } else if (traverse_state == TraverseState.ENTER) {
+
             let string = `<${node.tagName}`;
 
             for (const [key, val] of node.attributes.entries())

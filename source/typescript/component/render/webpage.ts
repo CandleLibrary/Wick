@@ -5,7 +5,7 @@ import { rt } from "../../runtime/global.js";
 import { ComponentData } from "../../types/component";
 import { DOMLiteral } from "../../wick.js";
 import { componentDataToCSS } from "./css.js";
-import { componentDataToHTML, htmlTemplateDataToString } from "./html.js";
+import { componentDataToHTML, htmlTemplateToString } from "./html.js";
 import { createCompiledComponentClass } from "../compile/compile.js";
 import { createClassStringObject } from "./js.js";
 
@@ -19,7 +19,7 @@ import { createClassStringObject } from "./js.js";
  * Returns HTML markup and an auxillary script strings that
  * stores and registers hydration information.
  */
-export function RenderPage(
+export async function RenderPage(
     comp: ComponentData,
     presets: Presets = rt.presets,
     hooks: {
@@ -66,8 +66,9 @@ export function RenderPage(
      */
 
     const
-        { html, template_map } = componentDataToHTML(comp, presets, hooks.on_element),
-        templates = [...template_map.values()].map(htmlTemplateDataToString).join("\n");
+        { html, template_map } = await componentDataToHTML(comp, presets),
+
+        templates = [...template_map.values()].map(htmlTemplateToString).join("\n");
 
     let script = "", style = "", head = "";
 

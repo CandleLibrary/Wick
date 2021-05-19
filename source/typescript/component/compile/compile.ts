@@ -23,13 +23,13 @@ function createBindingName(binding_index_pos: number) {
     return `b${binding_index_pos.toString(36)}`;
 }
 
-export function runHTMLHookHandlers(
+export async function runHTMLHookHandlers(
     intermediate_hook: IntermediateHook,
     component: ComponentData,
     presets: Presets,
     model: any = null,
     parent_component: ComponentData
-): TemplateHTMLNode {
+): Promise<TemplateHTMLNode> {
     for (const handler of hook_processors) {
 
         let html_element = null;
@@ -38,7 +38,7 @@ export function runHTMLHookHandlers(
             intermediate_hook.selector,
             HTMLNodeTypeLU[intermediate_hook.host_node.type]
         ))
-            html_element = handler.getDefaultHTMLValue(
+            html_element = await handler.getDefaultHTMLValue(
                 intermediate_hook,
                 component,
                 presets,
@@ -395,12 +395,12 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
     }
 }
 
-export function createCompiledComponentClass(
-    component: ComponentData,
+export async function createCompiledComponentClass(
+    comp: ComponentData,
     presets: Presets,
     INCLUDE_HTML: boolean = true,
     INCLUDE_CSS: boolean = true
-): CompiledComponentClass {
+): Promise<CompiledComponentClass> {
 
     try {
 
@@ -437,11 +437,11 @@ export function createCompiledComponentClass(
 
         //HTML INFORMATION
         if (INCLUDE_HTML)
-            processHTML(component, class_info, presets);
+            await processHTML(comp, info, presets);
 
         //CSS INFORMATION
         if (INCLUDE_CSS)
-            processCSS(component, class_info, presets);
+            processCSS(comp, info, presets);
 
 
         // Remove methods 
@@ -470,7 +470,7 @@ function processCSS(
         );
     }
 }
-function processHTML(
+async function processHTML(
     component: ComponentData,
     class_info: CompiledComponentClass,
     presets: Presets
@@ -482,7 +482,7 @@ function processHTML(
 
             [, , { nodes: [r_stmt] }] = ele_create_method.nodes;
 
-        const html = componentDataToTempAST(component, presets).html.pop();
+        const { html: [html], template_map } = (await componentDataToTempAST(component, presets));
 
         r_stmt.nodes[0].nodes[1].nodes[0] = DOMLiteralToJSNode(html);
 
