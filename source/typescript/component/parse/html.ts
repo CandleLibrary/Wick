@@ -13,7 +13,7 @@ import {
     HTMLNodeType,
     WickBindingNode, WICK_AST_NODE_TYPE_BASE, WICK_AST_NODE_TYPE_SIZE
 } from "../../types/wick_ast.js";
-import { processFunctionDeclaration, processNodeSync, processWickCSS_AST, processWickJS_AST } from "./parse.js";
+import { processFunctionDeclaration, processNodeAsync, processNodeSync, processWickCSS_AST, processWickJS_AST } from "./parse.js";
 import { parseComponentAST } from "./source.js";
 
 const default_handler = {
@@ -119,10 +119,12 @@ loadHTMLHandlerInternal(
             if (attrib.IS_BINDING) {
 
                 if (attrib.value.primary_ast)
-                    attrib.value.primary_ast = processNodeSync(attrib.value.primary_ast, component.root_frame, component, presets);
+                    attrib.value.primary_ast =
+                        await processNodeAsync(attrib.value.primary_ast, component.root_frame, component, presets);
 
                 if (attrib.value.secondary_ast)
-                    attrib.value.secondary_ast = processNodeSync(attrib.value.secondary_ast, component.root_frame, component, presets);
+                    attrib.value.secondary_ast =
+                        await processNodeAsync(attrib.value.secondary_ast, component.root_frame, component, presets);
 
                 addHook(component, {
                     selector: attrib.name,

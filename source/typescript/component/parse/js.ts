@@ -1,5 +1,5 @@
 import { traverse } from "@candlefw/conflagrate";
-import { JSIdentifier, JSIdentifierReference, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, stmt, tools, renderCompressed, ext, JSIdentifierBinding } from "@candlefw/js";
+import { JSIdentifier, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt, tools } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
 import {
     addBindingReference, addBindingVariable,
@@ -13,7 +13,7 @@ import { BINDING_FLAG, BINDING_VARIABLE_TYPE } from "../../types/binding";
 import { HOOK_SELECTOR } from "../../types/hook";
 import { JSHandler } from "../../types/js.js";
 import { HTMLNode, HTMLNodeClass, HTMLNodeType, WickBindingNode, WICK_AST_NODE_TYPE_SIZE } from "../../types/wick_ast.js";
-import { getFunctionFrame, processFunctionDeclaration, processNodeSync, processWickCSS_AST, processWickHTML_AST, processWickJS_AST } from "./parse.js";
+import { processFunctionDeclaration, processNodeSync, processNodeAsync, processWickCSS_AST, processWickHTML_AST, processWickJS_AST } from "./parse.js";
 
 export function findFirstNodeOfType(type: JSNodeType, ast: JSNode) {
 
@@ -53,20 +53,6 @@ export function loadJSParseHandler(handler: JSHandler, ...types: JSNodeType[]) {
     return loadJSParseHandler(modified_handler, ...types);
 }
 
-/*
-██ ███    ███ ██████   ██████  ██████  ████████                                        
-██ ████  ████ ██   ██ ██    ██ ██   ██    ██                                           
-██ ██ ████ ██ ██████  ██    ██ ██████     ██                                           
-██ ██  ██  ██ ██      ██    ██ ██   ██    ██                                           
-██ ██      ██ ██       ██████  ██   ██    ██                                           
-                                                                                       
-                                                                                       
-██████  ███████  ██████ ██       █████  ██████   █████  ████████ ██  ██████  ███    ██ 
-██   ██ ██      ██      ██      ██   ██ ██   ██ ██   ██    ██    ██ ██    ██ ████   ██ 
-██   ██ █████   ██      ██      ███████ ██████  ███████    ██    ██ ██    ██ ██ ██  ██ 
-██   ██ ██      ██      ██      ██   ██ ██   ██ ██   ██    ██    ██ ██    ██ ██  ██ ██ 
-██████  ███████  ██████ ███████ ██   ██ ██   ██ ██   ██    ██    ██  ██████  ██   ████ 
-*/
 // ###################################################################
 // IMPORTS
 //
@@ -133,20 +119,7 @@ loadJSParseHandlerInternal(
         }
     }, JSNodeType.ImportDeclaration
 );
-/*
-███████ ██   ██ ██████   ██████  ██████  ████████                                      
-██       ██ ██  ██   ██ ██    ██ ██   ██    ██                                         
-█████     ███   ██████  ██    ██ ██████     ██                                         
-██       ██ ██  ██      ██    ██ ██   ██    ██                                         
-███████ ██   ██ ██       ██████  ██   ██    ██                                         
-                                                                                       
-                                                                                       
-██████  ███████  ██████ ██       █████  ██████   █████  ████████ ██  ██████  ███    ██ 
-██   ██ ██      ██      ██      ██   ██ ██   ██ ██   ██    ██    ██ ██    ██ ████   ██ 
-██   ██ █████   ██      ██      ███████ ██████  ███████    ██    ██ ██    ██ ██ ██  ██ 
-██   ██ ██      ██      ██      ██   ██ ██   ██ ██   ██    ██    ██ ██    ██ ██  ██ ██ 
-██████  ███████  ██████ ███████ ██   ██ ██   ██ ██   ██    ██    ██  ██████  ██   ████ 
-*/
+
 // ###################################################################
 // EXPORTS
 //
@@ -195,7 +168,7 @@ loadJSParseHandlerInternal(
     {
         priority: 1,
 
-        prepareJSNode(node, parent_node, skip, component, presets, frame) {
+        async prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
             const
                 n = setPos(stmt("a,a;"), node.pos),
@@ -230,7 +203,7 @@ loadJSParseHandlerInternal(
                             throw new ReferenceError(msg);
                         }
 
-                        const new_value = <JSNode>processNodeSync(<JSNode>value, frame, component, presets);
+                        const new_value = await processNodeAsync(<JSNode>value, frame, component, presets);
 
                         addDefaultValueToBindingVariable(frame, l_name, <JSNode>new_value);
 
@@ -268,20 +241,7 @@ loadJSParseHandlerInternal(
     }, JSNodeType.VariableStatement, JSNodeType.LexicalDeclaration, JSNodeType.LexicalBinding
 );
 
-/*
- ██████  █████  ██      ██                                                    
-██      ██   ██ ██      ██                                                    
-██      ███████ ██      ██                                                    
-██      ██   ██ ██      ██                                                    
- ██████ ██   ██ ███████ ███████                                               
-                                                                              
-                                                                              
-███████ ██   ██ ██████  ██████  ███████ ███████ ███████ ██  ██████  ███    ██ 
-██       ██ ██  ██   ██ ██   ██ ██      ██      ██      ██ ██    ██ ████   ██ 
-█████     ███   ██████  ██████  █████   ███████ ███████ ██ ██    ██ ██ ██  ██ 
-██       ██ ██  ██      ██   ██ ██           ██      ██ ██ ██    ██ ██  ██ ██ 
-███████ ██   ██ ██      ██   ██ ███████ ███████ ███████ ██  ██████  ██   ████ 
-*/
+
 // ###################################################################
 // Call Expression Identifiers
 //
@@ -291,9 +251,9 @@ loadJSParseHandlerInternal(
     {
         priority: 1,
 
-        prepareJSNode(node, parent_node, skip, component, presets, frame) {
+        async prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
-            node = processNodeSync(<JSNode>node, frame, component, presets, true);
+            node = await processNodeAsync(<JSNode>node, frame, component, presets, true);
 
             const
                 [id] = node.nodes,
@@ -598,14 +558,11 @@ loadJSParseHandlerInternal(
     }, JSNodeType.ExpressionStatement
 );
 
-/*
-███████ ████████ ██████  ██ ███    ██  ██████  
-██         ██    ██   ██ ██ ████   ██ ██       
-███████    ██    ██████  ██ ██ ██  ██ ██   ███ 
-     ██    ██    ██   ██ ██ ██  ██ ██ ██    ██ 
-███████    ██    ██   ██ ██ ██   ████  ██████                                              
-*/
-// String with identifiers for HTML Elements. 
+/**############################################################
+ * STRING PRIMITIVE
+ * 
+ * String with identifiers for HTML Elements. 
+ */
 loadJSParseHandlerInternal(
     {
         priority: 1,
@@ -630,14 +587,9 @@ loadJSParseHandlerInternal(
     }, JSNodeType.StringLiteral
 );
 
-/*
-██████  ███████ ██████  ██    ██  ██████   ██████  ███████ ██████  
-██   ██ ██      ██   ██ ██    ██ ██       ██       ██      ██   ██ 
-██   ██ █████   ██████  ██    ██ ██   ███ ██   ███ █████   ██████  
-██   ██ ██      ██   ██ ██    ██ ██    ██ ██    ██ ██      ██   ██ 
-██████  ███████ ██████   ██████   ██████   ██████  ███████ ██   ██ 
-*/
-
+/**############################################################
+ * DEBUGGER STATEMENT 
+ */
 loadJSParseHandlerInternal(
     {
         priority: 1,

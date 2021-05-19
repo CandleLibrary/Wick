@@ -79,16 +79,9 @@ export async function processCoreAsync(
     presets: Presets
 ) {
 
-    function_frame.backup_ast = copy(function_frame.ast);
+    function_frame.backup_ast = copy(ast);
 
-    const gen = processNodeGenerator(ast, function_frame, component, presets, true);
-
-    let val = gen.next();
-
-    while (val.done == false)
-        val = gen.next(await val.value.promise);
-
-    function_frame.ast = val.value;
+    function_frame.ast = await processNodeAsync(ast, function_frame, component, presets, true);
 
     incrementBindingRefCounters(function_frame);
 
@@ -119,6 +112,7 @@ export function processNodeSync(
     SKIP_ROOT: boolean = false
 ) {
 
+    console.log("---------------------------");
     const gen = processNodeGenerator(ast, function_frame, component, presets, SKIP_ROOT);
 
     let val = gen.next();
@@ -130,11 +124,28 @@ export function processNodeSync(
             quote_type: "\"",
             value: `
                 Waiting on promise for [${JSNodeTypeLU[val.value.node.type]}]. Use 
-                processFunctionDeclaration instead of processFunctionDeclarationSync 
-                to correctly parse this ast structure.`,
+                and await processNodeAsync instead of processNodeSync 
+                to correctly parse this ast structure.`.replace(/\n/g, "\\n"),
             pos: node.pos
         });
     }
+    return val.value;
+}
+
+export async function processNodeAsync(
+    ast: JSNode,
+    function_frame: FunctionFrame,
+    component: ComponentData,
+    presets: Presets,
+    SKIP_ROOT: boolean = false
+) {
+
+    const gen = processNodeGenerator(ast, function_frame, component, presets, SKIP_ROOT);
+
+    let val = gen.next();
+
+    while (val.done == false)
+        val = gen.next(await val.value.promise);
 
     return val.value;
 }
