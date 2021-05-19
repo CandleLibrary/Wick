@@ -1,5 +1,5 @@
 import { traverse } from "@candlefw/conflagrate";
-import { JSIdentifier, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt } from "@candlefw/js";
+import { JSIdentifier, JSIdentifierReference, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, stmt, tools, renderCompressed } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
 import {
     addBindingReference, addBindingVariable,
@@ -175,7 +175,7 @@ loadJSParseHandlerInternal(
                 //Regular export that will be pushed to parent scope space. 
 
                 for (const node of clause.nodes) {
-                    const l_name = (<JSIdentifier>node).value;
+                    const l_name = tools.getIdentifierName(node);
                     addBindingVariableFlag(l_name, BINDING_FLAG.ALLOW_EXPORT_TO_PARENT, frame);
                 }
 
@@ -230,7 +230,7 @@ loadJSParseHandlerInternal(
 
                     const
                         [identifier, value] = binding.nodes,
-                        l_name = (<JSIdentifierReference>identifier).value;
+                        l_name = tools.getIdentifierName(identifier);
 
                     if (frame.IS_ROOT) {
 
