@@ -10,6 +10,8 @@ export interface CompiledComponentClass {
     binding_setup_stmts: JSNode[];
     setup_stmts: JSNode[];
     teardown_stmts: JSNode[];
+    lfu_table_entries: JSNode[];
+    lu_public_variables: JSNode[];
     nluf_public_variables: JSNode;
     nlu_index: number;
 }
