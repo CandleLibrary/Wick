@@ -1,15 +1,17 @@
 import html from "@candlefw/html";
 import spark from "@candlefw/spark";
 
-import { componentDataToTempAST, componentDataToHTML } from "../../build/library/component/compile/component_data_to_html.js";
-import { hydrateComponentElements } from "../../build/library/runtime/runtime_html.js";
+import { htmlTemplateToString } from "../../build/library/component/render/html.js";
+import { componentDataToTempAST } from "../../build/library/component/compile/html.js";
+import { hydrateComponentElements } from "../../build/library/runtime/html.js";
 
 export function getInstanceHTML(comp, presets) {
     return componentDataToTempAST(comp, presets).html[0];
 }
 
 export function getRenderedHTML(comp, presets) {
-    return componentDataToHTML(comp, presets).html;
+    const html = componentDataToTempAST(comp, presets).html[0];
+    return htmlTemplateToString(html).html;
 }
 
 export function createComponentInstance(comp, presets, model = null) {

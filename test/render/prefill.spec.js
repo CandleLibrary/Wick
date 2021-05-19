@@ -1,10 +1,11 @@
 
 import Presets from "../../build/library/common/presets.js";
-import { parseSource } from "../../build/library/component/parse/source_parser.js";
-import { htmlTemplateDataToString } from "../../build/library/component/render/html.js";
+import { parseSource } from "../../build/library/component/parse/source.js";
+import { htmlTemplateToString } from "../../build/library/component/render/html.js";
 import { assertTree } from "../test-tools/tools.js";
 import HTML from "@candlefw/html";
 import { componentDataToTempAST } from "../../build/library/component/compile/html.js";
+import { assert } from "console";
 
 await HTML.server();
 assert_group("Basic Container Prefill", sequence, () => {
@@ -23,7 +24,6 @@ export default <div>
     <container data=\${data} element=div limit=\${3} element=ol>
         <div>
             <div class="header">\${header}</div>
-
             <container data=\${entries} >
                 <a href=\${href || "#"} >
                     \${value}
@@ -41,7 +41,7 @@ export default <div>
 
     const { html } = await componentDataToTempAST(component, presets);
 
-    const html_string = htmlTemplateDataToString(html[0]);
+    const html_string = htmlTemplateToString(html[0]);
 
 
     assertTree({
@@ -97,7 +97,7 @@ export default <div>
 
     const { html } = await componentDataToTempAST(component, presets);
 
-    const html_string = htmlTemplateDataToString(html[0]);
+    const html_string = htmlTemplateToString(html[0]);
 
     //*
     assertTree({

@@ -3,7 +3,7 @@ import { Binding_Variable_Has_Static_Default_Value } from "../../build/library/c
 import { createComponentData } from "../../build/library/common/component.js";
 import { createFrame } from "../../build/library/common/frame.js";
 import Presets from "../../build/library/common/presets.js";
-import { processCoreAsync } from "../../build/library/component/parse/parser.js";
+import { processCoreAsync } from "../../build/library/component/parse/parse.js";
 import parserSourceString from "../../build/library/source_code/parse.js";
 
 
@@ -17,7 +17,7 @@ assert_group("Sanity", () => {
     const presets = new Presets();
 
     assert("Sanity Parse", ast != null);
-})
+});
 
 assert_group("Function frame and bindings", () => {
 
@@ -39,7 +39,7 @@ assert_group("Function frame and bindings", () => {
     const presets = new Presets();
 
     const component = createComponentData(source_string);
-    
+
     component.root_frame = createFrame(null, component);
 
     assert(component.root_frame.IS_ROOT == true);
@@ -63,7 +63,7 @@ assert_group("Function frame and bindings", () => {
     assert(F.type == 2);
 
     assert(A.ref_count == 1);
-    assert(B.ref_count == 2);
+    assert(B.ref_count == 1);
     assert(C.ref_count == 1);
     assert(D.ref_count == 1);
     assert(E.ref_count == 2);
@@ -77,7 +77,7 @@ assert_group("Function frame and bindings", () => {
     assert(Binding_Variable_Has_Static_Default_Value(F, component) == false);
 });
 
-assert_group(s, "JS module with multiple elements", ()=>{
+assert_group(s, "JS module with multiple elements", () => {
 
     var source_string = `
 
@@ -107,10 +107,10 @@ assert_group(s, "JS module with multiple elements", ()=>{
 
     component.root_frame = createFrame(null, component);
 
-    await processCoreAsync(ast, component.root_frame, component, presets)
-    
-    assert(component.HTML !== null)
+    await processCoreAsync(ast, component.root_frame, component, presets);
 
-    assert(component.CSS.length == 2)
+    assert(component.HTML !== null);
 
-})
+    assert(component.CSS.length == 2);
+
+});
