@@ -85,16 +85,19 @@ export function setIdentifierReferenceVariables(root_node: JSNode, component: Co
 
         if (node.type == JSNodeType.IdentifierReference || node.type == JSNodeType.IdentifierBinding) {
 
-            const val = node.value;
+            if (node.IS_BINDING_REF) {
 
-            if (!component_names.has(<string>val))
-                continue;
+                const val = node.value;
 
-            replace(Object.assign({}, node, { value: getCompiledBindingVariableName(node.value, component) }));
+                if (!component_names.has(<string>val))
+                    continue;
 
-            //Pop any binding names into the binding information container. 
-            if (hook)
-                setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, hook);
+                replace(Object.assign({}, node, { value: getCompiledBindingVariableName(node.value, component) }));
+
+                //Pop any binding names into the binding information container. 
+                if (hook)
+                    setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, hook);
+            }
         }
     }
 
@@ -158,7 +161,7 @@ loadHookProcessor({
 
         const tag_name = hook.selector;
 
-        const value = hook.hook_value;
+        const value = hook.hook_value.primary_ast;
 
         if (Expression_Is_Static(value, comp, presets)) {
 
@@ -636,16 +639,14 @@ loadHookProcessor({
         return hook;
     },
 
-    async getDefaultHTMLValue(hook, component, presets, model, parent_component) {
+    async getDefaultHTMLValue(hook, component, presets, outer_model, parent_component) {
 
-        const node: TemplateHTMLNode = {
-            children: []
-        };
+        const node: TemplateHTMLNode = { children: [] };
 
         const html: ContainerDomLiteral = <any>getElementAtIndex(component, hook.html_element_index);
 
         if (
-            Expression_Is_Static(hook.hook_value, component, presets)
+            Expression_Is_Static(hook.hook_value.primary_ast, component, presets, parent_component)
             &&
             html.component_names.length > 0
         ) {
@@ -656,9 +657,8 @@ loadHookProcessor({
 
                 child_comp = presets.components.get(comp_name),
 
-                models = await getStaticValue(hook.hook_value, component, presets, model, parent_component);
+                models = await getStaticValue(hook.hook_value, component, presets, outer_model, parent_component);
 
-               
             if (models && child_comp) {
 
                 for (const model of models) {
@@ -942,14 +942,14 @@ loadHookProcessor({
 
     processHook(hook_selector, pending_hook_node, host_node, element_index, component, presets) {
 
-        const 
-            
-            node = convertAtLookupToElementRef(<JSStringLiteral>pending_hook_node,  component),
+        const
+
+            node = convertAtLookupToElementRef(<JSStringLiteral>pending_hook_node, component),
 
             index = (<JSNode>host_node).nodes.indexOf(pending_hook_node);
 
-        if (node){
-            setPos(node, host_node.pos);    
+        if (node) {
+            setPos(node, host_node.pos);
             (<JSNode><unknown>host_node).nodes[index] = node;
         }
 
@@ -959,7 +959,7 @@ loadHookProcessor({
     getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
-export function convertAtLookupToElementRef(string_node: JSStringLiteral,  component: ComponentData) {
+export function convertAtLookupToElementRef(string_node: JSStringLiteral, component: ComponentData) {
 
     const css_selector = string_node.value.slice(1); //remove "@"
 
@@ -970,28 +970,28 @@ export function convertAtLookupToElementRef(string_node: JSStringLiteral,  compo
         case "ctx3D":
             html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
 
-            if (html_nodes) 
+            if (html_nodes)
                 expression = exp(`this.elu[${html_nodes.element_index}].getContext("3d")`);
-            
+
             break;
 
         case "ctx2D":
             html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
 
-            if (html_nodes) 
-                expression = exp(`this.elu[${html_nodes.element_index}].getContext("2d")`);               
-            
+            if (html_nodes)
+                expression = exp(`this.elu[${html_nodes.element_index}].getContext("2d")`);
+
             break;
 
         default:
             html_nodes = matchAll<DOMLiteral>(css_selector, component.HTML, css_selector_helpers);
 
-            if (html_nodes.length > 0) 
+            if (html_nodes.length > 0)
 
                 expression = (html_nodes.length == 1)
                     ? exp(`this.elu[${html_nodes[0].element_index}]; `)
                     : exp(`[${html_nodes.map(e => `this.elu[${e.element_index}]`).join(",")}]`);
-            
+
     }
 
     return expression;
