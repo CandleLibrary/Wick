@@ -16,7 +16,7 @@ const
 
     export default <div>
         <container data=\${ test() }>  <a>\${ name }</a> </container>
-        <container data=\${ test().filter(e=>e.name==2) }>  <a>\${ name }</a> </container>
+        <container data=\${ test().filter(e=>(e.name==2)) }>  <a>\${ name }</a> </container>
     </div>`));
 
 keep: wick.rt.presets.api.test = () => [{ name: 1 }, { name: 2 }];
@@ -29,7 +29,7 @@ const
 
 spark.sleep(20);
 
-assert_group("Server run", sequence, () => {
+assert_group("Server run", 5000, sequence, () => {
     assert(elements.length == 2);
     assert(elements[0].children.length == 2);
     assert(elements[1].children.length == 1);

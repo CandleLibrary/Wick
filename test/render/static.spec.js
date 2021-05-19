@@ -31,6 +31,6 @@ const str = componentDataToJSStringCached(component, presets);
 
 console.log(0, 3, comp.methods);
 
-assert(i, comp.methods.length == 4);
-assert(i, str == 2);
+assert(comp.methods.length == 4);
+assert(str == 2);
 

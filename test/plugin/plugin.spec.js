@@ -49,13 +49,13 @@ assert_group("Base Plugin Function", () => {
 
         addPlugin(p,{ type:"test-hook", specifier: "tested", 
 
-        clientHandler(data){
-            if(data != "data")
-                throw new Error("Throw for testing")
-            return "client-val-" + data
-        }, 
-        async serverHandler(){} 
-    })
+            clientHandler(data){
+                if(data != "data")
+                    throw new Error("Throw for testing")
+                return "client-val-" + data
+            }, 
+            async serverHandler(){} 
+        })
         assert("Directly called plugin will crash",  !p.plugins.getPlugin("test-hook", "tested").clientHandler(p, "test-hook", "tested", "data"));
         assert("Regular plugin functionality", "default-val" == await p.plugins.runClientPlugin(p, "test-hook", "tested", "data"));
         assert("Handles plugins that crash", "default-val" == await p.plugins.runClientPlugin(p, "test-hook", "tested", "datas"));

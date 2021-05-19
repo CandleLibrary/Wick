@@ -1,3 +1,4 @@
+import { assert } from "console";
 import { Binding_Variable_Has_Static_Default_Value } from "../../build/library/common/binding.js";
 import { createComponentData } from "../../build/library/common/component.js";
 import { createFrame } from "../../build/library/common/frame.js";
@@ -5,30 +6,41 @@ import Presets from "../../build/library/common/presets.js";
 import { processCoreAsync } from "../../build/library/component/parse/parser.js";
 import parserSourceString from "../../build/library/source_code/parse.js";
 
-const source_string = `
 
-var A = 2;
-const B = 3;
-let C = 4;
-let E = B;
+assert_group("Sanity", () => {
+    const source_string = `
 
-function F(){
-    E = A + B + C;
-}
+    export default <div>\${E + D}</div> `;
 
-export default <div>\${E + D}</div> `;
+    const { ast } = parserSourceString(source_string);
 
-const { ast } = parserSourceString(source_string);
+    const presets = new Presets();
 
-const presets = new Presets();
-
-assert("Sanity Parse", ast != null);
-
-const component = createComponentData(source_string);
-
-component.root_frame = createFrame(null, component);
+    assert("Sanity Parse", ast != null);
+})
 
 assert_group("Function frame and bindings", () => {
+
+    const source_string = `
+
+    var A = 2;
+    const B = 3;
+    let C = 4;
+    let E = B;
+
+    function F(){
+        E = A + B + C;
+    }
+
+    export default <div>\${E + D}</div> `;
+
+    const { ast } = parserSourceString(source_string);
+
+    const presets = new Presets();
+
+    const component = createComponentData(source_string);
+    
+    component.root_frame = createFrame(null, component);
 
     assert(component.root_frame.IS_ROOT == true);
 
@@ -64,3 +76,41 @@ assert_group("Function frame and bindings", () => {
     assert(Binding_Variable_Has_Static_Default_Value(E, component) == true);
     assert(Binding_Variable_Has_Static_Default_Value(F, component) == false);
 });
+
+assert_group(s, "JS module with multiple elements", ()=>{
+
+    var source_string = `
+
+    var A = 0;
+    
+    <style>
+        root {
+            color:red
+        }
+    </style>;
+
+    <style>
+        div {
+            color:red
+        }
+    </style>;
+
+    var G = <div>test</div>;
+    
+    export default <div>\${E + D}</div>`;
+
+    const { ast } = parserSourceString(source_string);
+
+    const presets = new Presets();
+
+    const component = createComponentData(source_string);
+
+    component.root_frame = createFrame(null, component);
+
+    await processCoreAsync(ast, component.root_frame, component, presets)
+    
+    assert(component.HTML !== null)
+
+    assert(component.CSS.length == 2)
+
+})
