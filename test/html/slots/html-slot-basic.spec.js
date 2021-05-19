@@ -30,11 +30,11 @@ export default <div>
 `, presets);
 
         assert(comp != undefined);
-        const DOM = getInstanceHTML(comp, presets);
-        assert(DOM.tag == "div");
-        assert(DOM.children[0].tag == "slotdiv");
-        assert(DOM.children[0].children[0].tag == "span");
-        assert(DOM.children[0].children[0].children[0].tag == "h1");
+        const DOM = await getInstanceHTML(comp, presets);
+        assert(DOM.tagName == "div");
+        assert(DOM.children[0].tagName == "slotdiv");
+        assert(DOM.children[0].children[0].tagName == "span");
+        assert(DOM.children[0].children[0].children[0].tagName == "h1");
     });
 
     assert_group("Slot found within a interleaved template component", sequence, () => {
@@ -49,16 +49,16 @@ export default <div>
     </interleaved>
     `, presets);
         assert(comp != undefined);
-        const DOM = getInstanceHTML(comp, presets);
+        const DOM = await getInstanceHTML(comp, presets);
         // assert(DOM.tag == "div");
-        assert(DOM.children[0].tag == "a");
-        assert(DOM.children[1].tag == "slotdiv");
-        assert(DOM.children[1].children[0].tag == "span");
-        assert(DOM.children[1].children[0].children[0].tag == "h1");
-        assert(DOM.children[1].children[0].children[1].tag == "h1");
-        assert(DOM.children[1].children[1].tag == "h1");
-        assert(DOM.children[1].children[2].tag == "a");
-        assert(DOM.children[1].children[2].children[0].tag == "slot");
+        assert(DOM.children[0].tagName == "a");
+        assert(DOM.children[1].tagName == "slotdiv");
+        assert(DOM.children[1].children[0].tagName == "span");
+        assert(DOM.children[1].children[0].children[0].tagName == "h1");
+        assert(DOM.children[1].children[0].children[1].tagName == "h1");
+        assert(DOM.children[1].children[1].tagName == "h1");
+        assert(DOM.children[1].children[2].tagName == "a");
+        assert(DOM.children[1].children[2].children[0].tagName == "slot");
     });
 
 
@@ -74,11 +74,10 @@ export default <div>
     </default_slot>
     `, presets);
         assert(comp != undefined);
-
-        const DOM = getInstanceHTML(comp, presets);
-        const str = getRenderedHTML(comp, presets);
-        assert(DOM.tag == "slotdiv");
-        assert(DOM.children[2].children[0].tag == "div");
+        const DOM = await getInstanceHTML(comp, presets);
+        const str = await getRenderedHTML(comp, presets);
+        assert(DOM.tagName == "slotdiv");
+        assert(DOM.children[2].children[0].tagName == "div");
         assert(DOM.children[2].children[1].data == " default text value ");
     });
 
@@ -87,7 +86,8 @@ export default <div>
 assert_group("Runtime", () => {
     assert_group("Component bindings work with slotted elements", sequence, () => {
 
-        const comp = await wick(`
+        const
+            comp = await wick(`
     import default_slot from "./test/html/slots/data/slot.wick";
 
     var d = "test_ed";
@@ -98,7 +98,7 @@ assert_group("Runtime", () => {
         <div>test \${(d + "123") }</div>
     </default_slot>
     `),
-            comp_instance = createComponentInstance(comp);
+            comp_instance = await createComponentInstance(comp);
 
         assertTree({
             t: "slotdiv",

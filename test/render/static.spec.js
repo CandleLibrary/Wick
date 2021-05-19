@@ -5,7 +5,7 @@ import { componentDataToJSStringCached } from "../../build/library/component/ren
 import Presets from "../../build/library/common/presets.js";
 
 const source_string = `<div>
-    var data
+    var data;
 
     <container data=\${data} element=div limit=${3}>
         <div>
@@ -23,14 +23,9 @@ const source_string = `<div>
 </div>`;
 
 const presets = new Presets();
-
 const component = await parseSource(source_string, presets);
-
-const comp = createCompiledComponentClass(component, presets);
-const str = componentDataToJSStringCached(component, presets);
-
-console.log(0, 3, comp.methods);
+const comp = await createCompiledComponentClass(component, presets);
+const str = await componentDataToJSStringCached(component, presets);
 
 assert(comp.methods.length == 4);
-assert(str == 2);
 

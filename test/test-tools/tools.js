@@ -5,17 +5,17 @@ import { htmlTemplateToString } from "../../build/library/component/render/html.
 import { componentDataToTempAST } from "../../build/library/component/compile/html.js";
 import { hydrateComponentElements } from "../../build/library/runtime/html.js";
 
-export function getInstanceHTML(comp, presets) {
-    return componentDataToTempAST(comp, presets).html[0];
+export async function getInstanceHTML(comp, presets) {
+    return (await componentDataToTempAST(comp, presets)).html[0];
 }
 
-export function getRenderedHTML(comp, presets) {
-    const html = componentDataToTempAST(comp, presets).html[0];
-    return htmlTemplateToString(html).html;
+export async function getRenderedHTML(comp, presets) {
+    const html = (await componentDataToTempAST(comp, presets)).html[0];
+    return htmlTemplateToString(html);
 }
 
-export function createComponentInstance(comp, presets, model = null) {
-    const ele = html(getRenderedHTML(comp, presets));
+export async function createComponentInstance(comp, presets, model = null) {
+    const ele = html(await getRenderedHTML(comp, presets));
 
     const components = hydrateComponentElements([ele]);
 
