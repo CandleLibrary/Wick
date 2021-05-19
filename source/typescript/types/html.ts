@@ -51,11 +51,11 @@ export interface HTMLHandler {
         | Promise<HTMLNode | void>;
 }
 
-export interface TempHTMLNode {
+export interface TemplateHTMLNode {
     tagName?: string;
     data?: string;
     attributes?: Map<string, string>;
-    children?: TempHTMLNode[];
+    children?: TemplateHTMLNode[];
     strings?: string[];
     namespace?: number;
 }

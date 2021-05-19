@@ -3,7 +3,7 @@ import { html_void_tags } from "../../common/html.js";
 import Presets from "../../common/presets.js";
 import { rt } from "../../runtime/global.js";
 import { ComponentData } from "../../types/component";
-import { TempHTMLNode } from "../../types/html";
+import { TemplateHTMLNode } from "../../types/html";
 import { componentDataToTempAST } from "../compile/html.js";
 
 /**
@@ -16,9 +16,9 @@ import { componentDataToTempAST } from "../compile/html.js";
 export function componentDataToHTML(
     comp: ComponentData,
     presets: Presets = rt.presets,
-): { html: string, template_map: Map<string, TempHTMLNode>; } {
+): { html: string, template_map: Map<string, TemplateHTMLNode>; } {
 
-    const { html: [html], template_map } = componentDataToTempAST(comp, presets);
+    const { html: [html], template_map } = await componentDataToTempAST(comp, presets);
 
     const html_string = htmlTemplateDataToString(html);
 
@@ -27,9 +27,9 @@ export function componentDataToHTML(
 
 
 /**
- * Return an HTML string from a TempHTMLNode AST object
+ * Return an HTML string from a TemplateHTMLNode AST object
  */
-export function htmlTemplateDataToString(html: TempHTMLNode) {
+export function htmlTemplateToString(html: TemplateHTMLNode) {
     for (const { node, meta: { depth, parent, traverse_state } } of bidirectionalTraverse(html, "children")) {
 
         const depth_str = " ".repeat(depth);

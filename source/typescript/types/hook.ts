@@ -4,7 +4,7 @@ import { HTMLNode, WickBindingNode, Node } from "./wick_ast.js";
 import Presets from "../common/presets.js";
 import { ComponentData } from "./component";
 import { CompiledComponentClass } from "./class_information";
-import { TempHTMLNode } from "./html.js";
+import { TemplateHTMLNode } from "./html.js";
 
 /**
  * Any variable within a component that is defined a GLOBAL value that
@@ -90,5 +90,5 @@ export interface HookProcessor {
         component: ComponentData,
         presets?: Presets,
         model?: any
-    ): (TempHTMLNode | Promise<TempHTMLNode>);
+    ): (TemplateHTMLNode | Promise<TemplateHTMLNode>);
 }

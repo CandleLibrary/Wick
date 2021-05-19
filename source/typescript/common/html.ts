@@ -2,7 +2,7 @@
 
 
 import { exp, JSNode, JSNodeType } from "@candlefw/js";
-import { TempHTMLNode } from "../types/html";
+import { TemplateHTMLNode } from "../types/html";
 
 
 export const html_void_tags = new Set([
@@ -112,7 +112,7 @@ function DOMAttributeToJSNode([key, val]: [string, string]) {
     };
 };
 
-export function DOMLiteralToJSNode(node: TempHTMLNode): JSNode {
+export function DOMLiteralToJSNode(node: TemplateHTMLNode): JSNode {
 
     const out: JSNode = {
         type: JSNodeType.ObjectLiteral,

@@ -11,7 +11,7 @@ import { CompiledComponentClass } from "../../types/class_information";
 import { ComponentData } from "../../types/component";
 import { FunctionFrame } from "../../types/function_frame";
 import { HOOK_TYPE, IntermediateHook, ProcessedHook } from "../../types/hook";
-import { TempHTMLNode } from "../../types/html.js";
+import { TemplateHTMLNode } from "../../types/html.js";
 import { HTMLNode, HTMLNodeTypeLU } from "../../types/wick_ast.js";
 import { BindingVariable, Component } from "../../wick.js";
 import { componentDataToCSS } from "../render/css.js";
@@ -29,7 +29,7 @@ export function runHTMLHookHandlers(
     presets: Presets,
     model: any = null,
     parent_component: ComponentData
-): TempHTMLNode {
+): TemplateHTMLNode {
     for (const handler of hook_processors) {
 
         let html_element = null;

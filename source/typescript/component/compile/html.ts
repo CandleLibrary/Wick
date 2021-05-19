@@ -3,7 +3,7 @@ import Presets from "../../common/presets.js";
 import { rt } from "../../runtime/global.js";
 import { ComponentData } from "../../types/component";
 import { IntermediateHook } from "../../types/hook.js";
-import { ContainerDomLiteral, DOMLiteral, htmlState, TempHTMLNode } from "../../types/html";
+import { ContainerDomLiteral, DOMLiteral, htmlState, TemplateHTMLNode } from "../../types/html";
 import { runHTMLHookHandlers } from "./compile.js";
 
 /**
@@ -27,9 +27,9 @@ export function componentDataToTempAST(
     extern_children: { USED: boolean; child: DOMLiteral; id: number; }[] = [],
     parent_component: ComponentData[] = null,
     comp_data = [comp.name]
-): { html: TempHTMLNode[]; template_map: Map<string, TempHTMLNode>; } {
+): { html: TemplateHTMLNode[]; template_map: Map<string, TemplateHTMLNode>; } {
 
-    let node: TempHTMLNode = {
+    let node: TemplateHTMLNode = {
         tagName: "",
         data: "",
         attributes: new Map(),
@@ -197,7 +197,7 @@ function processAttributes(
     comp: ComponentData,
     state: htmlState,
     comp_data: string[],
-    node: TempHTMLNode
+    node: TemplateHTMLNode
 ) {
 
     let HAVE_CLASS: boolean = false;
@@ -224,7 +224,7 @@ function processAttributes(
 function addComponent(presets: Presets,
     component_name: string,
     state: htmlState,
-    node: TempHTMLNode,
+    node: TemplateHTMLNode,
     template_map: Map<any, any>,
     extern_children: { USED: boolean; child: DOMLiteral; id: number; }[],
     children: { USED: boolean; child: DOMLiteral; id: number; }[],
@@ -258,7 +258,7 @@ function addContainer(
     state: htmlState,
     comp_data: string[],
     template_map: Map<any, any>,
-    node: TempHTMLNode,
+    node: TemplateHTMLNode,
     model: any = null,
     parent_component: ComponentData = null
 ) {
@@ -298,7 +298,7 @@ function processHooks(
     component: ComponentData,
     presets: Presets,
     model: any,
-    node: TempHTMLNode,
+    node: TemplateHTMLNode,
     parent_component: ComponentData
 ) {
 
@@ -322,7 +322,7 @@ function processHooks(
 function addBindingElement(
     html: DOMLiteral,
     state: htmlState,
-    node: TempHTMLNode,
+    node: TemplateHTMLNode,
     comp_data: string[],
     comp: ComponentData,
     model: any = null
