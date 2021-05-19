@@ -1,6 +1,6 @@
 import { traverse } from "@candlefw/conflagrate";
 import { matchAll } from "@candlefw/css";
-import { exp, JSCallExpression, JSNode, JSNodeClass, JSNodeType, renderCompressed, stmt } from "@candlefw/js";
+import { exp, JSCallExpression, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, renderCompressed, stmt } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
 import { getComponentBinding, getCompiledBindingVariableName, Expression_Is_Static, getStaticValue } from "../../common/binding.js";
 import { getFirstReferenceName, setPos } from "../../common/common.js";
@@ -941,58 +941,65 @@ loadHookProcessor({
     },
 
     processHook(hook_selector, pending_hook_node, host_node, element_index, component, presets) {
-        const css_selector = <string>pending_hook_node.value.slice(1); //remove "@"
 
-        let html_nodes = null, index = host_node.nodes.indexOf(pending_hook_node);
+        const 
+            
+            node = convertAtLookupToElementRef(<JSStringLiteral>pending_hook_node,  component),
 
-        switch (css_selector) {
+            index = (<JSNode>host_node).nodes.indexOf(pending_hook_node);
 
-            case "ctx3D":
-                html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
-
-                if (html_nodes) {
-                    const expression = exp(`this.elu[${html_nodes.lookup_index}].getContext("3d")`);
-                    setPos(expression, host_node.pos);
-                    (<JSNode><unknown>host_node).nodes[index] = expression;
-                }
-                break;
-
-            case "ctx2D":
-                html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
-
-                if (html_nodes) {
-                    const expression = exp(`this.elu[${html_nodes.lookup_index}].getContext("2d")`);
-                    setPos(expression, host_node.pos);
-                    (<JSNode><unknown>host_node).nodes[index] = expression;
-                }
-                break;
-
-            default:
-                html_nodes = matchAll<DOMLiteral>(css_selector, component.HTML, css_selector_helpers);
-
-                if (html_nodes.length > 0) {
-
-                    const expression = (html_nodes.length == 1)
-                        ? exp(`this.elu[${html_nodes[0].lookup_index}]; `)
-                        : exp(`[${html_nodes.map(e => `this.elu[${e.lookup_index}]`).join(",")}]`);
-
-                    setPos(expression, host_node.pos);
-
-                    (<JSNode><unknown>host_node).nodes[index] = expression;
-                }
+        if (node){
+            setPos(node, host_node.pos);    
+            (<JSNode><unknown>host_node).nodes[index] = node;
         }
+
 
         return null;
     },
     getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
+export function convertAtLookupToElementRef(string_node: JSStringLiteral,  component: ComponentData) {
+
+    const css_selector = string_node.value.slice(1); //remove "@"
+
+    let html_nodes = null, expression = null;
+
+    switch (css_selector) {
+
+        case "ctx3D":
+            html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
+
+            if (html_nodes) 
+                expression = exp(`this.elu[${html_nodes.element_index}].getContext("3d")`);
+            
+            break;
+
+        case "ctx2D":
+            html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
+
+            if (html_nodes) 
+                expression = exp(`this.elu[${html_nodes.element_index}].getContext("2d")`);               
+            
+            break;
+
+        default:
+            html_nodes = matchAll<DOMLiteral>(css_selector, component.HTML, css_selector_helpers);
+
+            if (html_nodes.length > 0) 
+
+                expression = (html_nodes.length == 1)
+                    ? exp(`this.elu[${html_nodes[0].element_index}]; `)
+                    : exp(`[${html_nodes.map(e => `this.elu[${e.element_index}]`).join(",")}]`);
+            
+    }
+
+    return expression;
+}
+
 function getElementAtIndex(comp: ComponentData, index: number, node: DOMLiteral = comp.HTML, counter = { i: 0 }): DOMLiteral {
 
     if (index == node.element_index) return node;
-
-    //if (!node.data)
-    //counter.i++;
 
     if (node.children) for (const child of node.children) {
         let out = null;

@@ -16,7 +16,9 @@ import { HTMLNode, HTMLNodeTypeLU } from "../../types/wick_ast.js";
 import { BindingVariable, Component } from "../../wick.js";
 import { componentDataToCSS } from "../render/css.js";
 import { componentDataToTempAST } from "./html.js";
-import { hook_processors, setIdentifierReferenceVariables } from "./hooks.js";
+import { convertAtLookupToElementRef, hook_processors, setIdentifierReferenceVariables } from "./hooks.js";
+import { htmlTemplateToString } from "../render/html.js";
+import { rt } from "../../runtime/global.js";
 
 
 function createBindingName(binding_index_pos: number) {
@@ -409,30 +411,36 @@ export async function createCompiledComponentClass(
             register_elements_method = getGenericMethodNode("re", "c", ";"),
             [, , { nodes: bi_stmts }] = binding_values_init_method.nodes,
             [, , { nodes: re_stmts }] = register_elements_method.nodes,
-            class_info: CompiledComponentClass = {
+            info: CompiledComponentClass = {
                 methods: <any>[],
                 binding_setup_stmts: <any>bi_stmts,
                 setup_stmts: <any>re_stmts,
                 teardown_stmts: [],
                 nluf_public_variables: null,
+                lfu_table_entries: [],
+                lu_public_variables: [],
                 nlu_index: 0,
             };
 
         re_stmts.length = 0;
         bi_stmts.length = 0;
 
-        class_info.methods.push(<any>binding_values_init_method);
+        info.methods.push(<any>binding_values_init_method);
 
-        class_info.methods.push(<any>register_elements_method);
+        info.methods.push(<any>register_elements_method);
 
         //Javascript Information.
-        if (component.HAS_ERRORS === false && component.root_frame) {
+        if (comp.HAS_ERRORS === false && comp.root_frame) {
 
-            processBindingVariables(component, class_info, presets);
+            createLookupTables(info);
 
-            processHooks(component, class_info, presets);
+            setBindingVariableIndices(comp, info);
 
-            processMethods(class_info, component);
+            processBindingVariables(comp, info, presets);
+
+            processHooks(comp, info, presets);
+
+            processMethods(comp, info);
         }
 
         //HTML INFORMATION
@@ -445,13 +453,13 @@ export async function createCompiledComponentClass(
 
 
         // Remove methods 
-        return class_info;
+        return info;
 
     } catch (e) {
         console.log(e);
-        console.warn(`Error found in component ${component.name} while converting to a class. location: ${component.location}.`);
+        console.warn(`Error found in component ${comp.name} while converting to a class. location: ${comp.location}.`);
         console.error(e);
-        return null; createCompiledComponentClass(createErrorComponent([e], component.source, component.location, component), presets);
+        return null; createCompiledComponentClass(createErrorComponent([e], comp.source, comp.location, comp), presets);
     }
 }
 function processCSS(
@@ -484,17 +492,44 @@ async function processHTML(
 
         const { html: [html], template_map } = (await componentDataToTempAST(component, presets));
 
+        // Add templates to runtime template collection
+        if (typeof document != undefined)
+
+            for (const [template_name, template_node] of template_map.entries()) {
+
+                if (!rt.templates.has(template_name)) {
+
+                    const ele = document.createElement("div");
+
+                    ele.innerHTML = htmlTemplateToString(template_node);
+
+                    rt.templates.set(template_name, <HTMLElement>ele.firstElementChild);
+                }
+            }
+
         r_stmt.nodes[0].nodes[1].nodes[0] = DOMLiteralToJSNode(html);
 
-        // Setup element
         class_info.methods.push(ele_create_method);
     }
 }
-function processMethods(class_info: CompiledComponentClass, component: ComponentData) {
+
+function processMethods(component: ComponentData, class_info: CompiledComponentClass) {
+
     for (const function_block of component.frames)
         makeComponentMethod(function_block, component, class_info);
 }
-function processBindingVariables(component: Component, class_info: CompiledComponentClass, presets: Presets) {
+
+function setBindingVariableIndices(component: Component, class_info: CompiledComponentClass) {
+
+    for (const binding_variable of component.root_frame.binding_variables.values()) {
+
+        if (binding_variable.type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS)
+            continue;
+        binding_variable.class_index = class_info.nlu_index++;
+    }
+}
+
+function createLookupTables(class_info: CompiledComponentClass) {
     const
         nlu = stmt("c.nlu = {};"), nluf = stmt("c.lookup_function_table = [];"),
         { nodes: [{ nodes: [, lu_functions] }] } = nluf,
@@ -502,40 +537,50 @@ function processBindingVariables(component: Component, class_info: CompiledCompo
 
     class_info.nluf_public_variables = <any>lu_functions;
 
+    class_info.lfu_table_entries = <any[]>lu_functions.nodes;
+
+    class_info.lu_public_variables = <any[]>lu_public_variables.nodes;
+
     class_info.setup_stmts.unshift(nlu, nluf);
+}
+
+function processBindingVariables(component: Component, class_info: CompiledComponentClass, presets: Presets): void {
+
+
 
     for (const binding_variable of component.root_frame.binding_variables.values()) {
 
-        addBindingInitialization(binding_variable, class_info, component, presets);
-
-        binding_variable.class_index = class_info.nlu_index;
-
         const
-            { nlu_index } = class_info,
             { external_name, flags, class_index, internal_name, type } = binding_variable,
             nluf_array = exp(`c.u${class_index}`);
+
+        addBindingInitialization(binding_variable, class_info, component, presets);
 
         if (type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS)
             continue;
 
-        lu_public_variables.nodes.push(getPropertyAST(external_name, ((flags << 24) | nlu_index) + ""));
+        class_info.lu_public_variables.push(<any>getPropertyAST(external_name, ((flags << 24) | class_index) + ""));
 
-        lu_functions.nodes.push(nluf_array);
+        class_info.lfu_table_entries.push(nluf_array);
 
-        class_info.nlu_index++;
     }
 }
 function addBindingInitialization(
-    { default_val, class_index }: BindingVariable,
+    { default_val, class_index, ref_count }: BindingVariable,
     class_info: CompiledComponentClass,
     component: Component,
     presets: Presets
 ) {
-    if (default_val) {
+    if (default_val && ref_count > 0) {
 
         const expr = exp(`this.ua(${class_index})`);
 
-        expr.nodes[1].nodes.push(<any>default_val);
+        if (default_val.type == JSNodeType.StringLiteral && default_val.value[0] == "@") {
+            const val = convertAtLookupToElementRef(default_val, component);
+            expr.nodes[1].nodes.push(val || default_val);
+        } else {
+            expr.nodes[1].nodes.push(<any>default_val);
+        }
 
         const converted_expression = setIdentifierReferenceVariables(expr, component);
 
