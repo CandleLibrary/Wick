@@ -1,19 +1,19 @@
 import { traverse } from "@candlefw/conflagrate";
-import { JSIdentifier, JSIdentifierReference, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, stmt, tools, renderCompressed } from "@candlefw/js";
+import { JSIdentifier, JSIdentifierReference, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, stmt, tools, renderCompressed, ext, JSIdentifierBinding } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
 import {
     addBindingReference, addBindingVariable,
     addBindingVariableFlag, addDefaultValueToBindingVariable, addHook,
     addNameToDeclaredVariables,
     addReadFlagToBindingVariable, addWriteFlagToBindingVariable,
-    Name_Is_A_Binding_Variable, Variable_Is_Declared
+    Name_Is_A_Binding_Variable, Variable_Is_Declared_In_Closure, Variable_Is_Declared_Locally
 } from "../../common/binding.js";
 import { getFirstReferenceName, importResource, setPos } from "../../common/common.js";
 import { BINDING_FLAG, BINDING_VARIABLE_TYPE } from "../../types/binding";
 import { HOOK_SELECTOR } from "../../types/hook";
 import { JSHandler } from "../../types/js.js";
 import { HTMLNode, HTMLNodeClass, HTMLNodeType, WickBindingNode, WICK_AST_NODE_TYPE_SIZE } from "../../types/wick_ast.js";
-import { processFunctionDeclaration, processNodeSync, processWickCSS_AST, processWickHTML_AST } from "./parse.js";
+import { getFunctionFrame, processFunctionDeclaration, processNodeSync, processWickCSS_AST, processWickHTML_AST, processWickJS_AST } from "./parse.js";
 
 export function findFirstNodeOfType(type: JSNodeType, ast: JSNode) {
 
@@ -186,22 +186,8 @@ loadJSParseHandlerInternal(
     }, JSNodeType.ExportDeclaration
 );
 
-/*
-██    ██  █████  ██████  ██  █████  ██████  ██      ███████   ██          ██      ███████ ██   ██ ██  ██████  █████  ██                     
-██    ██ ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██          ██        ██      ██       ██ ██  ██ ██      ██   ██ ██                     
-██    ██ ███████ ██████  ██ ███████ ██████  ██      █████         ██      ██      █████     ███   ██ ██      ███████ ██                     
- ██  ██  ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██              ██    ██      ██       ██ ██  ██ ██      ██   ██ ██                     
-  ████   ██   ██ ██   ██ ██ ██   ██ ██████  ███████ ███████           ██  ███████ ███████ ██   ██ ██  ██████ ██   ██ ███████                
-                                                                                
-                                                                                
-███████ ████████  █████  ████████ ███████ ███    ███ ███████ ███    ██ ████████ 
-██         ██    ██   ██    ██    ██      ████  ████ ██      ████   ██    ██    
-███████    ██    ███████    ██    █████   ██ ████ ██ █████   ██ ██  ██    ██    
-     ██    ██    ██   ██    ██    ██      ██  ██  ██ ██      ██  ██ ██    ██    
-███████    ██    ██   ██    ██    ███████ ██      ██ ███████ ██   ████    ██    
-*/
 // ###################################################################
-// COMPONENT SCOPE VARIABLES
+// CONST, LET, VAR Statements
 //
 // These variables are accessible by all bindings within the components
 // scope. 
@@ -210,8 +196,6 @@ loadJSParseHandlerInternal(
         priority: 1,
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
-
-            node = <JSNode>processNodeSync(<JSNode>node, frame, component, presets);
 
             const
                 n = setPos(stmt("a,a;"), node.pos),
@@ -246,9 +230,9 @@ loadJSParseHandlerInternal(
                             throw new ReferenceError(msg);
                         }
 
-                        addDefaultValueToBindingVariable(frame, l_name, <JSNode>value);
+                        const new_value = <JSNode>processNodeSync(<JSNode>value, frame, component, presets);
 
-                        //addBindingReference(identifier, <JSNode>meta.parent, frame);
+                        addDefaultValueToBindingVariable(frame, l_name, <JSNode>new_value);
 
                         addWriteFlagToBindingVariable(l_name, frame);
 
@@ -278,7 +262,8 @@ loadJSParseHandlerInternal(
 
             if (frame.IS_ROOT)
                 return null;
-            return node;
+
+            return <JSNode>node;
         }
     }, JSNodeType.VariableStatement, JSNodeType.LexicalDeclaration, JSNodeType.LexicalBinding
 );
@@ -308,13 +293,13 @@ loadJSParseHandlerInternal(
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
-            node = processNodeSync(<JSNode>node, frame, component, presets);
+            node = processNodeSync(<JSNode>node, frame, component, presets, true);
 
             const
                 [id] = node.nodes,
                 name = <string>getFirstReferenceName(<JSNode>id);//.value;
 
-            if (!Variable_Is_Declared(name, frame)
+            if (!Variable_Is_Declared_In_Closure(name, frame)
                 && Name_Is_A_Binding_Variable(name, frame)) {
 
                 addBindingReference(
@@ -332,21 +317,27 @@ loadJSParseHandlerInternal(
     }, JSNodeType.CallExpression
 );
 
+/* ###################################################################
+ * ARROW EXPRESSION
+ */
+loadJSParseHandlerInternal(
+    {
+        priority: 1,
 
-/*
-███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██                      
-██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██                      
-█████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██                      
-██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██                      
-██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████                      
-                                                                                       
-                                                                                       
-██████  ███████  ██████ ██       █████  ██████   █████  ████████ ██  ██████  ███    ██ 
-██   ██ ██      ██      ██      ██   ██ ██   ██ ██   ██    ██    ██ ██    ██ ████   ██ 
-██   ██ █████   ██      ██      ███████ ██████  ███████    ██    ██ ██    ██ ██ ██  ██ 
-██   ██ ██      ██      ██      ██   ██ ██   ██ ██   ██    ██    ██ ██    ██ ██  ██ ██ 
-██████  ███████  ██████ ███████ ██   ██ ██   ██ ██   ██    ██    ██  ██████  ██   ████                                                                                      
-*/
+        async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+
+            const { ast } = await processWickJS_AST(
+                <JSNode>node, component, presets, null, frame, true
+            );
+
+            skip();
+
+            return <JSNode>ast;
+        }
+
+    }, JSNodeType.ArrowFunction
+);
+
 // ###################################################################
 // Function Declaration
 // 
@@ -432,7 +423,7 @@ loadJSParseHandlerInternal(
                     host_node: node,
                     html_element_index: -1,
                     pos: node.pos
-                });                                                                                            
+                });
                 (<JSNode>node).nodes[2].nodes.unshift(setPos(stmt(`if(c>1)return 0;`), node.pos));
             }
 
@@ -465,20 +456,8 @@ loadJSParseHandlerInternal(
     }, JSNodeType.FormalParameters
 );
 
-
-/*
-██ ██████  ███████ ███    ██ ████████ ██ ███████ ██ ███████ ██████        
-██ ██   ██ ██      ████   ██    ██    ██ ██      ██ ██      ██   ██       
-██ ██   ██ █████   ██ ██  ██    ██    ██ █████   ██ █████   ██████        
-██ ██   ██ ██      ██  ██ ██    ██    ██ ██      ██ ██      ██   ██       
-██ ██████  ███████ ██   ████    ██    ██ ██      ██ ███████ ██   ██       
-                                                                          
-                                                                          
-██████  ███████ ███████ ███████ ██████  ███████ ███    ██  ██████ ███████ 
-██   ██ ██      ██      ██      ██   ██ ██      ████   ██ ██      ██      
-██████  █████   █████   █████   ██████  █████   ██ ██  ██ ██      █████   
-██   ██ ██      ██      ██      ██   ██ ██      ██  ██ ██ ██      ██      
-██   ██ ███████ ██      ███████ ██   ██ ███████ ██   ████  ██████ ███████ 
+/*############################################################3
+* IDENTIFIER REFERENCE
 */
 loadJSParseHandlerInternal(
     {
@@ -488,36 +467,47 @@ loadJSParseHandlerInternal(
 
             const name = (<JSIdentifierReference>node).value;
 
-            if (!Variable_Is_Declared(name, frame)
-                && Name_Is_A_Binding_Variable(name, frame)) {
+            if (
+                !Variable_Is_Declared_In_Closure(name, frame)
+                &&
+                Name_Is_A_Binding_Variable(name, frame)
+            ) {
 
                 addBindingReference(
-                    <JSNode>node,
-                    <JSNode>parent_node,
-                    frame);
+                    <JSNode>node, <JSNode>parent_node, frame
+                );
 
                 addReadFlagToBindingVariable(name, frame);
             }
+
+            addBindingReference(node, parent_node, frame);
 
             return <JSNode>node;
         }
     }, JSNodeType.IdentifierReference
 );
 
-/*
- █████  ███████ ███████ ██  ██████  ███    ██ ███████ ███    ███ ███████ ███    ██ ████████ 
-██   ██ ██      ██      ██ ██       ████   ██ ██      ████  ████ ██      ████   ██    ██    
-███████ ███████ ███████ ██ ██   ███ ██ ██  ██ █████   ██ ████ ██ █████   ██ ██  ██    ██    
-██   ██      ██      ██ ██ ██    ██ ██  ██ ██ ██      ██  ██  ██ ██      ██  ██ ██    ██    
-██   ██ ███████ ███████ ██  ██████  ██   ████ ███████ ██      ██ ███████ ██   ████    ██    
-                                                                                            
-                                                                                            
-███████ ██   ██ ██████  ██████  ███████ ███████ ███████ ██  ██████  ███    ██       
-██       ██ ██  ██   ██ ██   ██ ██      ██      ██      ██ ██    ██ ████   ██       
-█████     ███   ██████  ██████  █████   ███████ ███████ ██ ██    ██ ██ ██  ██       
-██       ██ ██  ██      ██   ██ ██           ██      ██ ██ ██    ██ ██  ██ ██       
-███████ ██   ██ ██      ██   ██ ███████ ███████ ███████ ██  ██████  ██   ████
- 
+/*############################################################ 
+* IDENTIFIER BINDING
+*/
+loadJSParseHandlerInternal(
+    {
+        priority: 1,
+
+        prepareJSNode(node, parent_node, skip, component, presets, frame) {
+
+            const name = tools.getIdentifierName(<JSIdentifierBinding>node);
+
+            if (!Variable_Is_Declared_Locally(name, frame))
+                addNameToDeclaredVariables(name, frame);
+
+            return node;
+        }
+    }, JSNodeType.IdentifierBinding
+);
+
+/*############################################################
+* ASSIGNMENT; POST/PRE EXPRESSIONS
 + Post(++|--) and (++|--)Pre increment expressions
 */
 loadJSParseHandlerInternal(
@@ -530,12 +520,14 @@ loadJSParseHandlerInternal(
             ) {
                 const name = (<JSIdentifierReference>id).value;
 
-                if (!Variable_Is_Declared(name, frame)) {
+                if (!Variable_Is_Declared_In_Closure(name, frame)) {
 
                     if (Name_Is_A_Binding_Variable(name, frame))
                         addBindingReference(<JSNode>node, <JSNode>parent_node, frame);
                     else
-                        node.pos.throw(`Invalid assignment to undeclared variable [${name}]`);
+                        node.pos.throw(
+                            `Invalid assignment to undeclared variable [${name}]`
+                        );
 
                     addWriteFlagToBindingVariable(name, frame);
                 }
@@ -550,19 +542,9 @@ loadJSParseHandlerInternal(
 
 
 
-/*
-███████ ██   ██ ██████  ██████  ███████ ███████ ███████ ██  ██████  ███    ██     
-██       ██ ██  ██   ██ ██   ██ ██      ██      ██      ██ ██    ██ ████   ██     
-█████     ███   ██████  ██████  █████   ███████ ███████ ██ ██    ██ ██ ██  ██     
-██       ██ ██  ██      ██   ██ ██           ██      ██ ██ ██    ██ ██  ██ ██     
-███████ ██   ██ ██      ██   ██ ███████ ███████ ███████ ██  ██████  ██   ████     
-                                                                                  
-                                                                                  
-███████ ████████  █████  ████████ ███████ ███    ███ ███████ ███    ██ ████████   
-██         ██    ██   ██    ██    ██      ████  ████ ██      ████   ██    ██      
-███████    ██    ███████    ██    █████   ██ ████ ██ █████   ██ ██  ██    ██      
-     ██    ██    ██   ██    ██    ██      ██  ██  ██ ██      ██  ██ ██    ██      
-███████    ██    ██   ██    ██    ███████ ██      ██ ███████ ██   ████    ██      
+/*############################################################
+* EXPRESSION STATEMENTS
++ Post(++|--) and (++|--)Pre increment expressions
 */
 // Naked Style Element. Styles whole component.
 loadJSParseHandlerInternal(
@@ -591,7 +573,9 @@ loadJSParseHandlerInternal(
                         return null;
                     }
                 } else {
-                    const ref = <JSIdentifierReference>findFirstNodeOfType(JSNodeType.IdentifierReference, expr);
+                    const ref = <JSIdentifierReference>findFirstNodeOfType(
+                        JSNodeType.IdentifierReference, expr
+                    );
 
                     if (ref && Name_Is_A_Binding_Variable(<string>ref.value, frame)) {
                         //Assumes that the refereneced object is modified in some

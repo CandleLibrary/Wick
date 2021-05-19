@@ -22,13 +22,12 @@ const
                 )
             )(component)
         );
-export async  function componentDataToJSCached(
+export async function componentDataToJSCached(
     component: ComponentData,
     presets: Presets,
     INCLUDE_HTML: boolean = true,
     INCLUDE_CSS: boolean = true
-)
-    : typeof WickRTComponent {
+): typeof WickRTComponent {
 
     const name = component.name;
 
@@ -53,13 +52,12 @@ export async  function componentDataToJSCached(
     return comp;
 }
 
-export async  function componentDataToJS(
+export async function componentDataToJS(
     component: ComponentData,
     presets: Presets,
     INCLUDE_HTML: boolean = true,
     INCLUDE_CSS: boolean = true
-)
-    : typeof WickRTComponent {
+): typeof WickRTComponent {
 
     const comp_class = await createCompiledComponentClass(component, presets, INCLUDE_HTML, INCLUDE_CSS);
 

@@ -2,7 +2,8 @@
 
 
 import { exp, JSNode, JSNodeType } from "@candlefw/js";
-import { TemplateHTMLNode } from "../types/html";
+import { ContainerDomLiteral, DOMLiteral, TemplateHTMLNode } from "../types/html";
+import { HTMLContainerNode, HTMLNode } from "../types/wick_ast";
 
 
 export const html_void_tags = new Set([
@@ -132,4 +133,77 @@ export function DOMLiteralToJSNode(node: TemplateHTMLNode): JSNode {
         out.nodes.push(propArray("attributes", [...node.attributes.entries()].map(DOMAttributeToJSNode)));
 
     return out;
+}
+
+export function buildExportableDOMNode(
+    ast: HTMLNode & {
+        component_name?: string;
+        slot_name?: string;
+        data?: any;
+        id?: number;
+        ele_id?: number;
+        name_space?: number;
+    }): DOMLiteral {
+
+    const node: DOMLiteral = <DOMLiteral>{ pos: ast.pos };
+
+    node.tag_name = ast.tag || "";
+
+    if (ast.slot_name)
+        node.slot_name = ast.slot_name;
+
+
+    if (ast.IS_BINDING)
+        node.is_bindings = true;
+
+    if (ast.component_name)
+        node.component_name = ast.component_name;
+
+
+    if (ast.is_container) {
+
+        const
+            ctr = <ContainerDomLiteral>node,
+            ctr_ast = <HTMLContainerNode>ast;
+
+        ctr.is_container = true;
+        ctr.component_names = ctr_ast.component_names;
+        ctr.container_id = ctr_ast.container_id;
+        ctr.component_attribs = ctr_ast.component_attributes;
+
+        if (ctr.tag_name == "CONTAINER")
+            ctr.tag_name = "DIV";
+    }
+
+    if (ast.attributes && ast.attributes.length > 0) {
+
+        node.attributes = [];
+
+        for (const attrib of ast.attributes)
+            node.attributes.push([attrib.name, attrib.value]);
+
+    }
+
+    /***
+     * DOM
+     */
+
+    if (ast.nodes && ast.nodes.length > 0) {
+        node.children = [];
+        for (const child of ast.nodes)
+            node.children.push(buildExportableDOMNode(child));
+    }
+
+    node.element_index = ast.id;
+
+    if (ast.data) {
+        node.data = ast.data;
+
+    } else if (ast.name_space > 0) {
+        node.namespace_id = ast.name_space || 0;
+    }
+
+    node.comp = ast.comp;
+
+    return node;
 }

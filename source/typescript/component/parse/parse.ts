@@ -1,14 +1,13 @@
 import { copy, traverse } from "@candlefw/conflagrate";
 import { CSSNode } from "@candlefw/css";
 import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlefw/js";
+import { buildExportableDOMNode } from "../../common/html.js";
 import { getBindingRefCount, getRootFrame } from "../../common/binding.js";
 import { createFrame } from "../../common/frame.js";
 import Presets from "../../common/presets.js";
 import { ComponentData, ComponentStyle } from "../../types/component";
 import { FunctionFrame } from "../../types/function_frame";
-import { ContainerDomLiteral, DOMLiteral } from "../../types/html";
 import {
-    HTMLContainerNode,
     HTMLNode,
     HTMLNodeClass,
     HTMLNodeType,
@@ -38,169 +37,16 @@ export function getFunctionFrame(
 
     return function_frame;
 }
-/**[API] 
- * This function is responsible for processing a JavaScript AST. It processes
- * AST nodes in a single top-down, depth-first pass. 
- * 
- * Each node is processed by a dedicated @JSHandler that can opt to transform 
- * the node, replace it, or ignore it. If more than one handler is able to
- * process a given node type, then the @JSHandler that first returns a value
- * other than undefined will be the last handler that is able to modify that
- * node. Processing will then proceed to the next node in the tree.
- * 
- * Once all nodes are processed, an output AST is assigned to the function frame`s
- * `ast` property. There are no guarantees the input AST will not be modified
- * by actions taken by @JSHandlers.
- * 
-*/
-export async function processCoreAsync(
-    ast: JSNode,
-    function_frame: FunctionFrame,
-    component: ComponentData,
-    presets: Presets
-) {
-    main_loop:
-    for (const { node, meta } of traverse(ast, "nodes")
-        .skipRoot()
-        .makeReplaceable()
-        .makeSkippable()
-        .extract(function_frame)
-    ) {
-
-        for (const handler of JS_handlers[Math.max((node.type >>> 23), 0)]) {
-
-            const pending = handler.prepareJSNode(node, meta.parent, meta.skip, component, presets, function_frame);
-
-            let result = null;
-
-            if (pending instanceof Promise) result = await pending;
-            else result = pending;
-
-            if (result != node) {
-                if (result === null || result) {
-
-                    meta.replace(result);
-
-                    if (result === null)
-                        continue main_loop;
-
-                } else
-                    continue;
-            } break;
-        }
-    }
-
-    function_frame.backup_ast = copy(function_frame.ast);
-
-    incrementBindingRefCounters(function_frame);
-
-    return function_frame;
-}
 
 function incrementBindingRefCounters(function_frame: FunctionFrame) {
 
     const root = getRootFrame(function_frame);
 
-    for (const [name, count] of getBindingRefCount(function_frame).entries()) {
+    for (const [name, count] of getBindingRefCount(function_frame).entries())
+
         if (root.binding_variables.has(name))
+
             root.binding_variables.get(name).ref_count += count;
-    }
-}
-
-export function processCoreSync(
-    ast: JSNode,
-    function_frame: FunctionFrame,
-    component: ComponentData,
-    presets: Presets
-) {
-
-    main_loop:
-    for (const { node, meta } of traverse(ast, "nodes")
-        .skipRoot()
-        .makeReplaceable()
-        .makeSkippable()
-        .extract(function_frame)
-    ) {
-        for (const handler of JS_handlers[Math.max((node.type >>> 23), 0)]) {
-
-            const pending = handler.prepareJSNode(node, meta.parent, meta.skip, component, presets, function_frame);
-
-            let result = null;
-
-            if (pending instanceof Promise) {
-                result = {
-                    type: JSNodeType.StringLiteral,
-                    quote_type: "\"",
-                    value: `Waiting on promise for [${JSNodeTypeLU[node.type]}]. Use processFunctionDeclaration instead of processFunctionDeclarationSync to correctly parse this AST structure.`,
-                    pos: node.pos
-                };
-            }
-            else result = pending;
-
-            if (result != node) {
-                if (result === null || result) {
-
-                    meta.replace(result);
-
-                    if (result === null)
-                        continue main_loop;
-
-                } else
-                    continue;
-            } break;
-        }
-    }
-
-    function_frame.backup_ast = copy(function_frame.ast);
-
-    incrementBindingRefCounters(function_frame);
-
-    return function_frame;
-}
-
-export function processNodeSync(ast: JSNode, function_frame: FunctionFrame, component: ComponentData, presets: Presets) {
-
-    const extract = { ast: null };
-
-    main_loop:
-    for (const { node, meta } of traverse(ast, "nodes")
-        .skipRoot()
-        .makeReplaceable()
-        .makeSkippable()
-        .extract(extract)
-    ) {
-
-        for (const handler of JS_handlers[Math.max((node.type >>> 23), 0)]) {
-
-            const pending = handler.prepareJSNode(node, meta.parent, meta.skip, component, presets, function_frame);
-
-            let result = null;
-
-            if (pending instanceof Promise) {
-                result = {
-                    type: JSNodeType.StringLiteral,
-                    quote_type: "\"",
-                    value: `Waiting on promise for [${JSNodeTypeLU[node.type]}]. Use processFunctionDeclaration instead of processFunctionDeclarationSync to correctly parse this ast structure.`,
-                    pos: node.pos
-                };
-            }
-            else result = pending;
-
-            if (result != node) {
-                if (result === null || result) {
-
-                    meta.replace(result);
-
-                    if (result === null)
-                        continue main_loop;
-
-                } else
-                    continue;
-            } break;
-        }
-    }
-
-    return extract.ast;
 }
 
 export async function processFunctionDeclaration(node: JSNode, component: ComponentData, presets: Presets, root_name = "") {
@@ -226,88 +72,134 @@ export function postProcessFunctionDeclarationSync(node: JSNode, component: Comp
     );
 }
 
-function buildExportableDOMNode(
-    ast: HTMLNode & {
-        component_name?: string;
-        slot_name?: string;
-        data?: any;
-        id?: number;
-        ele_id?: number;
-        name_space?: number;
-    }): DOMLiteral {
+export async function processCoreAsync(
+    ast: JSNode,
+    function_frame: FunctionFrame,
+    component: ComponentData,
+    presets: Presets
+) {
 
-    const node: DOMLiteral = <DOMLiteral>{ pos: ast.pos };
+    function_frame.backup_ast = copy(function_frame.ast);
 
-    node.tag_name = ast.tag || "";
+    const gen = processNodeGenerator(ast, function_frame, component, presets, true);
 
-    if (ast.slot_name)
-        node.slot_name = ast.slot_name;
+    let val = gen.next();
 
+    while (val.done == false)
+        val = gen.next(await val.value.promise);
 
-    if (ast.IS_BINDING)
-        node.is_bindings = true;
+    function_frame.ast = val.value;
 
-    if (ast.component_name)
-        node.component_name = ast.component_name;
+    incrementBindingRefCounters(function_frame);
 
+    return function_frame;
+}
 
-    if (ast.is_container) {
+export function processCoreSync(
+    ast: JSNode,
+    function_frame: FunctionFrame,
+    component: ComponentData,
+    presets: Presets
+) {
 
-        const
-            ctr = <ContainerDomLiteral>node,
-            ctr_ast = <HTMLContainerNode>ast;
+    function_frame.backup_ast = copy(ast);
 
-        ctr.is_container = true;
-        ctr.component_names = ctr_ast.component_names;
-        ctr.container_id = ctr_ast.container_id;
-        ctr.component_attribs = ctr_ast.component_attributes;
+    function_frame.ast = processNodeSync(ast, function_frame, component, presets, true);
 
-        if (ctr.tag_name == "CONTAINER")
-            ctr.tag_name = "DIV";
+    incrementBindingRefCounters(function_frame);
+
+    return function_frame;
+}
+
+export function processNodeSync(
+    ast: JSNode,
+    function_frame: FunctionFrame,
+    component: ComponentData,
+    presets: Presets,
+    SKIP_ROOT: boolean = false
+) {
+
+    const gen = processNodeGenerator(ast, function_frame, component, presets, SKIP_ROOT);
+
+    let val = gen.next();
+
+    while (val.done == false) {
+        const { node } = val.value;
+        val = gen.next(<JSNode>{
+            type: JSNodeType.StringLiteral,
+            quote_type: "\"",
+            value: `
+                Waiting on promise for [${JSNodeTypeLU[val.value.node.type]}]. Use 
+                processFunctionDeclaration instead of processFunctionDeclarationSync 
+                to correctly parse this ast structure.`,
+            pos: node.pos
+        });
     }
 
-    if (ast.attributes && ast.attributes.length > 0) {
+    return val.value;
+}
 
-        node.attributes = [];
+/**[API] 
+ * This function is responsible for processing a JavaScript AST. It processes
+ * AST nodes in a single top-down, depth-first pass. 
+ * 
+ * Each node is processed by a dedicated @JSHandler that can opt to transform 
+ * the node, replace it, or ignore it. If more than one handler is able to
+ * process a given node type, then the @JSHandler that first returns a value
+ * other than undefined will be the last handler that is able to modify that
+ * node. Processing will then proceed to the next node in the tree.
+ * 
+*/
+export function* processNodeGenerator(
+    ast: JSNode,
+    function_frame: FunctionFrame,
+    component: ComponentData,
+    presets: Presets,
+    SKIP_ROOT: boolean = false
+): Generator<{ promise: Promise<JSNode | void>; node: JSNode; }, JSNode, JSNode | void> {
 
-        for (const attrib of ast.attributes)
-            node.attributes.push([attrib.name, attrib.value]);
+    const extract = { ast: null };
 
+    SKIP_ROOT = !SKIP_ROOT;
+
+    for (const { node, meta } of traverse(ast, "nodes")
+        .makeReplaceable()
+        .makeSkippable()
+        .extract(extract)
+    ) {
+        if (!SKIP_ROOT) {
+            SKIP_ROOT = true;
+            continue;
+        }
+
+        for (const handler of JS_handlers[Math.max((node.type >>> 23), 0)]) {
+
+            const
+                pending = handler.prepareJSNode(node, meta.parent, meta.skip, component, presets, function_frame),
+                result = (pending instanceof Promise)
+                    ? yield { promise: pending, node }
+                    : pending;
+
+            if (result === undefined)
+                continue;
+            else if (result != node)
+                meta.replace(result);
+
+            break;
+        }
     }
 
-    /***
-     * DOM
-     */
-
-    if (ast.nodes && ast.nodes.length > 0) {
-        node.children = [];
-        for (const child of ast.nodes)
-            node.children.push(buildExportableDOMNode(child));
-    }
-
-    node.element_index = ast.id;
-
-    if (ast.data) {
-        node.data = ast.data;
-
-    } else if (ast.name_space > 0) {
-        node.namespace_id = ast.name_space || 0;
-    }
-
-    node.comp = ast.comp;
-
-    return node;
+    return extract.ast;
 }
 
 async function loadHTMLImports(ast: HTMLNode, component: ComponentData, presets: Presets) {
     if (ast.import_list)
         for (const import_ of <HTMLNode[]>(ast.import_list)) {
             for (const handler of html_handlers[(HTMLNodeType.HTML_IMPORT >>> 23) - WICK_AST_NODE_TYPE_BASE]) {
-                if (! await handler.prepareHTMLNode(import_, ast, import_, 0, () => { }, null, component, presets)) break;
+                if (! await handler.prepareHTMLNode(import_, ast, import_, 0, () => { }, component, presets)) break;
             }
         }
 }
-
 
 export async function processWickHTML_AST(ast: HTMLNode, component: ComponentData, presets: Presets): Promise<HTMLNode> {
     //Process the import list
@@ -363,7 +255,7 @@ export async function processWickHTML_AST(ast: HTMLNode, component: ComponentDat
         for (const handler of html_handlers[Math.max((node.type >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)]) {
 
             const
-                pending = handler.prepareHTMLNode(node, parent, last_element, ele_index, skip, () => { }, component, presets),
+                pending = handler.prepareHTMLNode(node, parent, last_element, ele_index, skip, component, presets),
                 result = (pending instanceof Promise) ? await pending : pending;
 
             if (result != node) {
@@ -403,7 +295,6 @@ export async function processWickHTML_AST(ast: HTMLNode, component: ComponentDat
                         meta2.parent,
                         ele_index,
                         () => { },
-                        replace,
                         component,
                         presets
                     );
@@ -428,6 +319,7 @@ export async function processWickHTML_AST(ast: HTMLNode, component: ComponentDat
     if (receiver.ast) {
 
         component.HTML = buildExportableDOMNode(receiver.ast);
+
         if (
             receiver.ast.component_name
         ) {

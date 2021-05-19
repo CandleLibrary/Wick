@@ -16,7 +16,6 @@ import { runHTMLHookHandlers } from "./compile.js";
  * @param html
  * @param root
  */
-
 export async function componentDataToTempAST(
     comp: ComponentData,
     presets: Presets = rt.presets,
@@ -162,10 +161,10 @@ export async function componentDataToTempAST(
                 node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
             }
 
-        } else if (IS_BINDING){
+        } else if (IS_BINDING) {
 
             await addBindingElement(html, state, node, comp_data, comp, presets, model);
-        }else {
+        } else {
             node.data = data;
         }
 

@@ -11,9 +11,6 @@ import { HTMLNode } from "../types/wick_ast";
 import { addBindingVariable, addWriteFlagToBindingVariable } from "./binding.js";
 import Presets from "./presets.js";
 
-
-
-
 /**
  * Set the givin Lexer as the pos val for each node
  * @param node 

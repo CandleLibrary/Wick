@@ -42,7 +42,6 @@ export interface HTMLHandler {
         host_element_node: HTMLNode,
         element_index: number,
         skip: () => void,
-        replace_element: (arg: HTMLNode | null) => void,
         component: ComponentData,
         presets: Presets
     ):

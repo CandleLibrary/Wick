@@ -1,5 +1,5 @@
 import { traverse } from "@candlefw/conflagrate";
-import { JSNode, JSNodeType, stmt } from "@candlefw/js";
+import { JSNode, JSNodeType, renderCompressed, stmt } from "@candlefw/js";
 import URL from "@candlefw/url";
 import { addBindingReference, addBindingVariable, addHook } from "../../common/binding.js";
 import { importResource } from "../../common/common.js";
@@ -13,7 +13,7 @@ import {
     HTMLNodeType,
     WickBindingNode, WICK_AST_NODE_TYPE_BASE, WICK_AST_NODE_TYPE_SIZE
 } from "../../types/wick_ast.js";
-import { processFunctionDeclaration, processWickCSS_AST, processWickJS_AST } from "./parse.js";
+import { processFunctionDeclaration, processNodeSync, processWickCSS_AST, processWickJS_AST } from "./parse.js";
 import { parseComponentAST } from "./source.js";
 
 const default_handler = {
@@ -60,14 +60,13 @@ function addWickBindingVariableName(node: WickBindingNode, component) {
 const process_wick_binding = {
     priority: 1,
 
-    prepareHTMLNode(node: WickBindingNode, host_node, host_element, index, skip, replace, component, presets) {
+    prepareHTMLNode(node: WickBindingNode, host_node, host_element, index, skip, component, presets) {
 
         addHook(component, {
             selector: "",
             hook_value: node,
             host_node: host_node,
-            html_element_index: index + 1,
-            pos: node.pos
+            html_element_index: index + 1
         });
 
         addWickBindingVariableName(node, component);
@@ -88,7 +87,7 @@ loadHTMLHandlerInternal(process_wick_binding, HTMLNodeType.WickBinding);
 
 // HEAD ELEMENT CONTENTS GET APPENDED TO THE HEAD SLOT ON A COMPONENT
 
-/**[API]
+/*[API] ##########################################################
  * 
  * HTMLAttribute Handler
  * 
@@ -98,7 +97,7 @@ loadHTMLHandlerInternal(
     {
         priority: 10,
 
-        prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
+        prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
             component.HTML_HEAD.push(...node.nodes);
             return null;
         }
@@ -106,67 +105,88 @@ loadHTMLHandlerInternal(
 );
 
 
-/*
- *  █████  ████████ ████████ ██████  ██ ██████  ██    ██ ████████ ███████ ███████ 
- * ██   ██    ██       ██    ██   ██ ██ ██   ██ ██    ██    ██    ██      ██      
- * ███████    ██       ██    ██████  ██ ██████  ██    ██    ██    █████   ███████ 
- * ██   ██    ██       ██    ██   ██ ██ ██   ██ ██    ██    ██    ██           ██ 
- * ██   ██    ██       ██    ██   ██ ██ ██████   ██████     ██    ███████ ███████ 
+/** ##########################################################
+ * ATTRIBUTE BINDING
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: -4,
+
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+
+            const attrib = <any>node;
+
+            if (attrib.IS_BINDING) {
+
+                if (attrib.value.primary_ast)
+                    attrib.value.primary_ast = processNodeSync(attrib.value.primary_ast, component.root_frame, component, presets);
+
+                if (attrib.value.secondary_ast)
+                    attrib.value.secondary_ast = processNodeSync(attrib.value.secondary_ast, component.root_frame, component, presets);
+
+                addHook(component, {
+                    selector: attrib.name,
+                    hook_value: attrib.value,
+                    host_node: attrib,
+                    html_element_index: index
+                });
+
+                return null;
+            }
+        }
+    }, HTMLNodeType.HTMLAttribute
+);
+
+/** ##############################################################################
+ * Input Value Attribute
  */
 loadHTMLHandlerInternal(
     {
         priority: -2,
 
-        prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
-            if (<HTMLNode><unknown>node.IS_BINDING)
-                addWickBindingVariableName((node).value, component);
+        prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+            if (
+                node.name == "value"
+                &&
+                <HTMLNode><unknown>node.IS_BINDING
+                &&
+                host_node.type == HTMLNodeType.HTML_INPUT
+            ) {
+                addHook(component, {
+                    selector: HOOK_SELECTOR.INPUT_VALUE,
+                    //@ts-ignore
+                    hook_value: node.value,
+                    host_node: node,
+                    html_element_index: index
+                });
 
+                return null;
+            }
         }
     }, HTMLNodeType.HTMLAttribute
 );
 
-
+/** ##############################################################################
+ * Slot Attributes
+ */
 loadHTMLHandlerInternal(
     {
         priority: -2,
 
-        prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
-            switch (node.name) {
-
-                case "id":
-                    break;
-
-                case "slot":
-                    host_node.slot_name = <string>node.value;
-                    return null;
-
-                case "name":
-                    host_node.slot_name = <string>node.value;
-                    return null;
-
-                case "value":
-
-                    if (<HTMLNode><unknown>node.IS_BINDING && host_node.type == HTMLNodeType.HTML_INPUT) {
-                        addHook(component, {
-                            selector: HOOK_SELECTOR.INPUT_VALUE,
-                            //@ts-ignore
-                            hook_value: node.value,
-                            host_node: node,
-                            html_element_index: index,
-                            pos: node.pos
-                        });
-
-                        return null;
-                    }
-                    break;
+        prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+            if (
+                node.name == "slot"
+                ||
+                node.name == "name"
+            ) {
+                host_node.slot_name = <string>node.value;
+                return null;
             }
-
-            return;
         }
     }, HTMLNodeType.HTMLAttribute
 );
 
-/**[API]
+/**[API] ##########################################################
  * 
  * HTMLAttribute Handler
  * 
@@ -176,7 +196,7 @@ loadHTMLHandlerInternal(
     {
         priority: 10,
 
-        prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
+        prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
             if (node.name == "component") {
 
@@ -221,7 +241,7 @@ loadHTMLHandlerInternal(
     {
         priority: -4,
 
-        prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
+        prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
             if (node.name == "import" && node.value) {
 
@@ -237,8 +257,7 @@ loadHTMLHandlerInternal(
                             extern,
                         },
                         host_node,
-                        html_element_index: index + 1,
-                        pos: node.pos
+                        html_element_index: index + 1
                     });
                 }
 
@@ -257,34 +276,9 @@ loadHTMLHandlerInternal(
                             extern,
                         },
                         host_node,
-                        html_element_index: index + 1,
-                        pos: node.pos
+                        html_element_index: index + 1
                     });
                 }
-
-                return null;
-            }
-        }
-    }, HTMLNodeType.HTMLAttribute
-);
-
-loadHTMLHandlerInternal(
-    {
-        priority: -4,
-
-        prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
-
-            const attrib = <any>node;
-
-            if (attrib.IS_BINDING) {
-
-                addHook(component, {
-                    selector: attrib.name,
-                    hook_value: attrib.value,
-                    host_node: attrib,
-                    html_element_index: index,
-                    pos: node.pos
-                });
 
                 return null;
             }
@@ -298,7 +292,7 @@ loadHTMLHandlerInternal(
     {
         priority: -99999,
 
-        async prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
 
             if (component.local_component_names.has(node.tag)) {
@@ -368,8 +362,7 @@ loadHTMLHandlerInternal(
                                     //@ts-ignore
                                     hook_value: value,
                                     host_node: ctr,
-                                    html_element_index: index,
-                                    pos: node.pos
+                                    html_element_index: index
                                 });
                             } else if (name == "use-empty") {
                                 addHook(component, {
@@ -377,8 +370,7 @@ loadHTMLHandlerInternal(
                                     //@ts-ignore
                                     hook_value: value,
                                     host_node: ctr,
-                                    html_element_index: index,
-                                    pos: node.pos
+                                    html_element_index: index
                                 });
                             } else if (typeof value == "object") { } else
                                 inherited_attributes.push([name, value]);
@@ -433,7 +425,7 @@ loadHTMLHandlerInternal(
     {
         priority: -99999,
 
-        async prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
             node.name_space = 1;
 
@@ -446,7 +438,7 @@ loadHTMLHandlerInternal(
     {
         priority: -99999,
 
-        async prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
             if (index == -1)
                 await processWickCSS_AST(node, component, presets, node.pos.source);
@@ -463,7 +455,7 @@ loadHTMLHandlerInternal(
     {
         priority: -99999,
 
-        async prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
 
             const
@@ -487,14 +479,7 @@ loadHTMLHandlerInternal(
 
                 fn_ast.nodes[2].nodes = script.nodes;
 
-                addBindingVariable({
-                    pos: node.pos,
-                    class_index: -1,
-                    external_name: id,
-                    internal_name: id,
-                    flags: 0,
-                    type: BINDING_VARIABLE_TYPE.METHOD_VARIABLE
-                }, component.root_frame);
+                addBindingVariable(component.root_frame, id, node.pos, BINDING_VARIABLE_TYPE.METHOD_VARIABLE);
 
                 await processFunctionDeclaration(fn_ast, component, presets);
             } else
@@ -510,7 +495,7 @@ loadHTMLHandlerInternal(
     {
         priority: -99999,
 
-        async prepareHTMLNode(node, host_node, host_element, index, skip, replace, component, presets) {
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
             const url = getAttributeValue("url", node) || "",
                 name = getAttributeValue("name", node) || "";
 
