@@ -458,6 +458,34 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             this.onModelUpdate.call(this);
         }
     }
+
+    /**
+     * @param model - The data model that has been updated 
+     * @param changed_names - An iterable list of property names on the model that have been modified 
+     */
+
+    onModelUpdate(model: any = this.model, changed_names?: Iterable<string>) {
+        // Go through the model's props and test whether they are different then the 
+        // currently cached variables
+
+        if (!this.CONNECTED) return;
+
+        if (model) {
+
+
+            if (changed_names) {
+                for (const name in changed_names) {
+                    const flag_id = this.nlu[name];
+                    if (flag_id && (flag_id >>> 24) & BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL)
+                        this.ua(flag_id & 0xFFFFFF, model[name]);
+                }
+            } else
+                this.update(model, BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL);
+
+            //for (const [call_id, args] of this.clearActiveCalls())
+            //    this.lookup_function_table[call_id].call(this, ...args);
+        }
+    }
     /**
      * ██    ██ ██████  ██████   █████  ████████ ███████ 
      * ██    ██ ██   ██ ██   ██ ██   ██    ██    ██      
@@ -465,6 +493,34 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
      * ██    ██ ██      ██   ██ ██   ██    ██    ██      
      *  ██████  ██      ██████  ██   ██    ██    ███████ 
      */
+
+    update(data, flags: number = 0, IMMEDIATE: boolean = false) {
+
+
+
+        if (!this.CONNECTED) return;
+
+
+
+        for (const name in data) {
+
+            const val = data[name];
+
+            if (typeof val !== "undefined") {
+
+                const index = this.nlu[name];
+
+                if (((index >>> 24) & flags))
+                    this.ua(index & 0xFFFFFF, val);
+            }
+        }
+
+        for (const [call_id, args] of this.clearActiveCalls())
+            this.lookup_function_table[call_id].call(this, ...args);
+
+        if (IMMEDIATE)
+            this.scheduledUpdate(0, 0);
+    }
     /**
      * Use in compiled functions to update attributes and schedule an
      * immediate update followup pass to call methods that may be effected
@@ -482,7 +538,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
             if (!this.call_set.has(attribute_index) && this.lookup_function_table[attribute_index])
                 this.call_set.set(attribute_index, [this.active_flags, this.call_depth]);
-            //this.updated_attributes.add(attribute_index);
+
             this[attribute_index] = attribute_value;
 
             //Forcefully update 
@@ -548,59 +604,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         }
 
     };
-
-    /**
-     * @param model - The data model that has been updated 
-     * @param changed_names - An iterable list of property names on the model that have been modified 
-     */
-
-    onModelUpdate(model: any = this.model, changed_names?: Iterable<string>) {
-        // Go through the model's props and test whether they are different then the 
-        // currently cached variables
-
-        if (!this.CONNECTED) return;
-
-        if (model) {
-
-            if (changed_names) {
-                for (const name in changed_names) {
-                    const flag_id = this.nlu[name];
-                    if (flag_id && (flag_id >>> 24) & BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL)
-                        this.ua(flag_id & 0xFFFFFF, model[name]);
-                }
-            } else
-                for (const name in this.nlu)
-                    if ((this.nlu[name] >>> 24) & BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL)
-                        if (model[name] !== undefined)
-                            this.ua(this.nlu[name] & 0xFFFFFF, model[name]);
-
-            //for (const [call_id, args] of this.clearActiveCalls())
-            //    this.lookup_function_table[call_id].call(this, ...args);
-        }
-    }
-
-    update(data, flags: number = 0, IMMEDIATE: boolean = false) {
-
-        if (!this.CONNECTED) return;
-
-        for (const name in data) {
-
-            if (typeof (data[name]) !== "undefined") {
-
-                const val = this.nlu[name];
-
-                if (((val >> 24) & flags)) {
-                    this.ua(val & 0xFFFFFF, data[name]);
-                }
-            }
-        }
-
-        for (const [call_id, args] of this.clearActiveCalls())
-            this.lookup_function_table[call_id].call(this, ...args);
-
-        if (IMMEDIATE)
-            this.scheduledUpdate(0, 0);
-    }
 
     scheduledUpdate(step_ratio, diff) {
 
