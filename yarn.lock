@@ -105,9 +105,9 @@
   resolved "https://registry.yarnpkg.com/@candlefw/spark/-/spark-0.1.1.tgz#8a33fba7fa8ff8e371aae6a589f2aa36de9e6a06"
   integrity sha512-k99ckSRHRY89eBsQnR0wTClJT2oh3lT63gWRTdW4/HTlxEMYRmtAxJTl3BpFS16nGEzLzw+Ici6KIy3+qJPiqw==
 
-"@candlefw/test@*":
+"@candlelib/cure@*":
   version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@candlefw/test/-/test-0.3.1.tgz#65af1a1beaab6ae7b273fb5fdf6872ed91f4ea54"
+  resolved "https://registry.yarnpkg.com/@candlelib/cure/-/test-0.3.1.tgz#65af1a1beaab6ae7b273fb5fdf6872ed91f4ea54"
   integrity sha512-+XkwFCzvK7FKUzec+cjTTCJwPsa9LqSN/+Bvj9AkY7EdAE96cj4+B9AfIJsAb2CUJZtkjFXrEkU9Hi9lAWriEA==
   dependencies:
     "@candlefw/conflagrate" "*"
