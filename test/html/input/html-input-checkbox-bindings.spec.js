@@ -7,7 +7,6 @@
 */
 
 import wick from "@candlefw/wick";
-
 import spark from "@candlefw/spark";
 import { assert } from "console";
 
@@ -21,7 +20,7 @@ const comp_class = (await wick(`
 import { input_data } from "@model";
 
 export default <div>
-<input type="checkbox" value=\${input_data} checked=\${input_data}> 
+<input type="checkbox" checked=\${input_data}> 
 </div>;`)).class;
 const comp = new comp_class(data);
 
@@ -31,21 +30,34 @@ const comp = new comp_class(data);
 
 assert_group(sequence, () => {
 
+    // Ensure component is connected to DOM, otherwise
+    // updates to model will have no effect
+    comp.appendToDOM(document.body);
+
     await spark.sleep(1);
 
     data.input_data = true;
 
     await spark.sleep(1);
 
-    assert(comp.ele.children[0].checked == true, browser);
+    assert("Model input on component initialization", browser, comp.ele.children[0].checked == true);
 
     await spark.sleep(1);
 
     data.input_data = false;
 
-    await spark.sleep(120);
+    await spark.sleep(40);
 
-    assert(comp.ele.children[0].checked == false, browser);
+    assert(browser, comp.ele.children[0].checked == false);
+
+    comp.ele.children[0].checked = true;
+
+    comp.ele.children[0].dispatchEvent(new InputEvent("input"), comp.ele.children[0]);
+
+    await spark.sleep(40);
+
+    assert(browser, data.input_data == true);
+
 });
 
 
