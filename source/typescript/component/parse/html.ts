@@ -128,7 +128,7 @@ loadHTMLHandlerInternal(
 );
 
 /** ##############################################################################
- * Input Value Attribute
+ * Input Attributes
  */
 loadHTMLHandlerInternal(
     {
@@ -136,7 +136,7 @@ loadHTMLHandlerInternal(
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
             if (
-                node.name == "value"
+                (node.name == "value" || node.name == "checked")
                 &&
                 <HTMLNode><unknown>node.IS_BINDING
                 &&
@@ -147,7 +147,7 @@ loadHTMLHandlerInternal(
                 component.hooks.length = l;
 
                 addHook(component, {
-                    selector: HOOK_SELECTOR.INPUT_VALUE,
+                    selector: getInputAttributeHookType(node.name),
                     //@ts-ignore
                     hook_value: node.value,
                     host_node: node,
@@ -159,6 +159,13 @@ loadHTMLHandlerInternal(
         }
     }, HTMLNodeType.HTMLAttribute
 );
+
+function getInputAttributeHookType(type: string) {
+    return ({
+        "value": HOOK_SELECTOR.INPUT_VALUE,
+        "checked": HOOK_SELECTOR.CHECKED_VALUE,
+    }[type.toLowerCase()]) ?? HOOK_SELECTOR.INPUT_VALUE;
+}
 
 /** ##############################################################################
  * Slot Attributes

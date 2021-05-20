@@ -484,7 +484,9 @@ loadHookProcessor({
     },
     getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
-
+/**********************
+ * INPUT ELEMENT VALUE ATTRIBUTE
+ */
 loadHookProcessor({
     priority: 0,
 
@@ -502,8 +504,6 @@ loadHookProcessor({
 
             const ast = setIdentifierReferenceVariables(primary_ast, component, hook);
 
-            //Pop any binding names into the binding information container. 
-
             hook.write_ast = setPos(
                 exp(`this.e${element_index}.value = 1`),
                 primary_ast.pos
@@ -515,9 +515,7 @@ loadHookProcessor({
             );
 
             hook.read_ast.nodes[1] = ast;
-
             hook.write_ast.nodes[1] = ast;
-
             hook.cleanup_ast = null;
 
             if (primary_ast.type == JSNodeType.IdentifierReference) {
@@ -534,9 +532,70 @@ loadHookProcessor({
 
                     const
                         { class_index } = getComponentBinding(name, component),
-                        exprA = hook.write_ast,
                         exprB = exp(`this.e${element_index}.addEventListener("input",e=>{${renderCompressed(ast)}= e.target.value; this.ua(${class_index})})`);
 
+                    hook.initialize_ast = setPos(
+                        exprB,
+                        primary_ast.pos
+                    );
+                }
+            }
+        }
+
+        return hook;
+    },
+    getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
+});
+
+/**********************
+ * CHECKBOX INPUT ELEMENT CHECKED ATTRIBUTE
+ */
+loadHookProcessor({
+    priority: 0,
+
+    canProcessHook(hook_selector, node_type) {
+        return hook_selector == HOOK_SELECTOR.CHECKED_VALUE;
+    },
+
+    processHook(hook_selector, hook_node
+        , host_node, element_index, component) {
+
+        const hook = createHookObject(HOOK_TYPE.READ_WRITE, 0, hook_node.pos),
+            { primary_ast } = hook_node;
+
+        if (primary_ast) {
+
+            const ast = setIdentifierReferenceVariables(primary_ast, component, hook);
+
+            hook.write_ast = setPos(
+                exp(`this.e${element_index}.checked = 1`),
+                primary_ast.pos
+            );
+
+            hook.read_ast = setPos(
+                exp(`this.e${element_index}.checked = 1`),
+                primary_ast.pos
+            );
+
+            hook.read_ast.nodes[1] = ast;
+            hook.write_ast.nodes[1] = ast;
+            hook.cleanup_ast = null;
+
+            if (primary_ast.type == JSNodeType.IdentifierReference) {
+                let name = <string>primary_ast.value;
+                const frame = getFrameFromName(name, component);
+                if (frame) {
+                    if (frame && frame.index) name = "f" + frame.index;
+
+                    hook.initialize_ast = setPos(
+                        stmt(`this.e${element_index}.addEventListener("input",this.$${name}.bind(this));`),
+                        primary_ast.pos
+                    );
+                } else {
+
+                    const
+                        { class_index } = getComponentBinding(name, component),
+                        exprB = exp(`this.e${element_index}.addEventListener("input",e=>{${renderCompressed(ast)}= e.target.checked; this.ua(${class_index})})`);
 
                     hook.initialize_ast = setPos(
                         exprB,

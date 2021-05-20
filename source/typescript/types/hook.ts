@@ -34,6 +34,7 @@ export const enum HOOK_SELECTOR {
     IMPORT_FROM_PARENT = "ifp",
     EXPORT_TO_PARENT = "etp",
     INPUT_VALUE = "imp",
+    CHECKED_VALUE = "chk",
     CONTAINER_USE_IF = "cui",
     CONTAINER_USE_EMPTY = "cue"
 }
