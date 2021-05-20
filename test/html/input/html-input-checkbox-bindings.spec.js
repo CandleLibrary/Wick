@@ -7,19 +7,23 @@
 */
 
 import wick from "@candlefw/wick";
+
 import spark from "@candlefw/spark";
+import { assert } from "console";
+
+//import wick from "../../../build/library/wick.js";
 
 // Bindings should be two-way on input elements [value] attribute 
 // by default
 
 const data = { input_data: true };
-const comp = new (await wick(`
+const comp_class = (await wick(`
 import { input_data } from "@model";
 
 export default <div>
 <input type="checkbox" value=\${input_data} checked=\${input_data}> 
-</div>;`)).class(data);
-
+</div>;`)).class;
+const comp = new comp_class(data);
 
 
 // Force component update by preempting spark's update
@@ -29,7 +33,7 @@ assert_group(sequence, () => {
 
     await spark.sleep(1);
 
-    data.input_data.checked = true;
+    data.input_data = true;
 
     await spark.sleep(1);
 
@@ -37,9 +41,11 @@ assert_group(sequence, () => {
 
     await spark.sleep(1);
 
-    data.input_data.checked = false;
+    data.input_data = false;
 
-    assert(data.input_data == false, browser);
+    await spark.sleep(120);
+
+    assert(comp.ele.children[0].checked == false, browser);
 });
 
 

@@ -1,15 +1,16 @@
 /**[API]:testing 
-    Container with a data attribute comprised of an expression shall 
+    Container with a data attribute comprised of an expression should 
     perform that expression on load provided all binding references are
     defined.
 */
 
-import wick from "@candlefw/wick";
 import spark from "@candlefw/spark";
+import wick from "@candlefw/wick";
 
 const
 
     data = { data: [] },
+
 
     comp_data = (await wick(`
     import { test } from "@api";
@@ -19,23 +20,27 @@ const
         <container data=\${ test().filter(e=>(e.name==2)) }>  <a>\${ name }</a> </container>
     </div>`));
 
+
 keep: wick.rt.presets.api.test = () => [{ name: 1 }, { name: 2 }];
 
-const
-
-    comp = new comp_data.class(data),
-
-    elements = comp.ele.children;
-
-spark.sleep(20);
 
 assert_group("Server run", 5000, sequence, () => {
+    await wick.server();
+    const
+        comp = new comp_data.class(data),
+        elements = comp.ele.children;
+    await spark.sleep(20);
     assert(elements.length == 2);
     assert(elements[0].children.length == 2);
     assert(elements[1].children.length == 1);
 });
 
 assert_group("Browser run", sequence, browser, () => {
+    const
+
+        comp = new comp_data.class(data),
+        elements = comp.ele.children;
+    await spark.sleep(20);
     assert(elements.length == 2);
     assert(elements[0].children.length == 2);
     assert(elements[1].children.length == 1);

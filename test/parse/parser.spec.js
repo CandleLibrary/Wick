@@ -63,7 +63,7 @@ assert_group("Function frame and bindings", () => {
     assert(F.type == 2);
 
     assert(A.ref_count == 1);
-    assert(B.ref_count == 1);
+    assert(B.ref_count == 2);
     assert(C.ref_count == 1);
     assert(D.ref_count == 1);
     assert(E.ref_count == 2);
@@ -72,7 +72,7 @@ assert_group("Function frame and bindings", () => {
     assert(Binding_Variable_Has_Static_Default_Value(A, component) == true);
     assert(Binding_Variable_Has_Static_Default_Value(B, component) == true);
     assert(Binding_Variable_Has_Static_Default_Value(C, component) == true);
-    assert(Binding_Variable_Has_Static_Default_Value(D, component) == false);
+    assert("Model bindings are assumed to have a static value", Binding_Variable_Has_Static_Default_Value(D, component) == true);
     assert(Binding_Variable_Has_Static_Default_Value(E, component) == true);
     assert(Binding_Variable_Has_Static_Default_Value(F, component) == false);
 });
