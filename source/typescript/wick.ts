@@ -169,13 +169,13 @@ async function componentCreate(input: string | URL, presets: Presets = rt.preset
         }),
 
         component = <ExtendedComponentData><unknown>{
-            get class() { 
-                return presets.component_class.get(comp.name); 
-            },
-            get class_with_integrated_css() { 
+            get class() {
                 return presets.component_class.get(comp.name);
             },
-            get class_string() { 
+            get class_with_integrated_css() {
+                return presets.component_class.get(comp.name);
+            },
+            get class_string() {
                 return presets.component_class_string.get(comp.name);
             },
             pending: promise,
@@ -185,7 +185,7 @@ async function componentCreate(input: string | URL, presets: Presets = rt.preset
 
                 const comp_inst = new component.class(model);
 
-                ele.appendChild(comp_inst.ele);
+                comp_inst.appendToDOM(ele);
 
                 return comp_inst;
             }
