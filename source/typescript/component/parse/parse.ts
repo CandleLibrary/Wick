@@ -38,7 +38,7 @@ export function getFunctionFrame(
     return function_frame;
 }
 
-function incrementBindingRefCounters(function_frame: FunctionFrame) {
+export function incrementBindingRefCounters(function_frame: FunctionFrame) {
 
     const root = getRootFrame(function_frame);
 

@@ -1,4 +1,5 @@
 import { traverse } from "@candlefw/conflagrate";
+import { render } from "@candlefw/conflagrate/build/types/render/render";
 import { matchAll } from "@candlefw/css";
 import { exp, JSCallExpression, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, renderCompressed, stmt } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
@@ -359,10 +360,7 @@ loadHookProcessor({
 
                 name = "n" + element_index;
 
-                //Create new function method for the component
                 const fn = stmt(`function ${name}(){;};`);
-
-                //need to make sure the 
 
                 fn.nodes[2].nodes = [{
                     type: JSNodeType.ExpressionStatement,

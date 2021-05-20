@@ -13,7 +13,7 @@ import { FunctionFrame } from "../../types/function_frame";
 import { HOOK_TYPE, IntermediateHook, ProcessedHook } from "../../types/hook";
 import { TemplateHTMLNode } from "../../types/html.js";
 import { HTMLNode, HTMLNodeTypeLU } from "../../types/wick_ast.js";
-import { BindingVariable, Component } from "../../wick.js";
+import { BindingVariable, Component, HTMLNodeType } from "../../wick.js";
 import { componentDataToCSS } from "../render/css.js";
 import { componentDataToTempAST } from "./html.js";
 import { convertAtLookupToElementRef, hook_processors, setIdentifierReferenceVariables } from "./hooks.js";
@@ -71,7 +71,9 @@ export function runClassHookHandlers(
 
         if (handler.canProcessHook(
             intermediate_hook.selector,
-            HTMLNodeTypeLU[intermediate_hook.host_node.type]
+            (intermediate_hook.host_node
+                ? HTMLNodeTypeLU[intermediate_hook.host_node.type]
+                : "")
         ))
             hook = handler.processHook(
                 intermediate_hook.selector,
@@ -93,6 +95,47 @@ export function runClassHookHandlers(
 export function processHooks(component: ComponentData, class_info: CompiledComponentClass, presets: Presets) {
 
     const
+
+        {
+            methods,
+        } = class_info,
+
+        registered_elements: Set<number> = new Set,
+
+        processed_hooks = component.hooks
+            .map(b => runClassHookHandlers(b, component, presets, class_info))
+            .sort((a, b) => a.hook.priority > b.hook.priority ? -1 : 1),
+        /**
+         * All component variables that have been assigned a value
+         */
+        initialized_internal_variables: Set<number> = new Set;
+
+    newFunction(
+        component,
+        class_info,
+        presets,
+        processed_hooks,
+        registered_elements,
+        initialized_internal_variables
+    );
+
+    const write_bindings = processed_hooks.filter(b => (b.hook.type & HOOK_TYPE.WRITE) && !!b.hook.write_ast);
+
+    compileBindingVariables(component, class_info, write_bindings);
+}
+
+
+function newFunction(
+    component: ComponentData,
+    class_info: CompiledComponentClass,
+    presets: Presets,
+    processed_hooks: { hook: ProcessedHook; intermediate_hook: IntermediateHook; }[],
+    registered_elements: Set<number>,
+    initialized_internal_variables: Set<number>,
+) {
+    let hook_count = 0;
+
+    const
         {
             hooks: intermediate_hooks,
             root_frame: { binding_variables: binding_type }
@@ -103,19 +146,7 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
             teardown_stmts: clean_stmts,
             setup_stmts: initialize_stmts,
             nluf_public_variables
-        } = class_info,
-
-        registered_elements: Set<number> = new Set,
-
-        processed_hooks = intermediate_hooks
-            .map(b => runClassHookHandlers(b, component, presets, class_info))
-            .sort((a, b) => a.hook.priority > b.hook.priority ? -1 : 1),
-        /**
-         * All component variables that have been assigned a value
-         */
-        initialized_internal_variables: Set<number> = new Set;
-
-    let hook_count = 0;
+        } = class_info;
 
     for (const { hook, intermediate_hook } of processed_hooks) {
 
@@ -145,11 +176,9 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
              * Add a binding update function reference to the function lookup
              * table
              */
-
             if (component_variables.size > 1) {
 
                 //Create binding update method.
-
                 hook.name = nluf_public_variables.nodes.length + "";
                 //@ts-ignore
                 nluf_public_variables.nodes.push(<any>exp(`c.b${hook.name}`));
@@ -160,7 +189,7 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
 
                 nodes.length = 0;
 
-                const check_ids = [];
+                const unresolved_binding_references = [];
 
                 for (const { name } of component_variables.values()) {
 
@@ -169,16 +198,15 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
 
                     const { class_index, type } = component.root_frame.binding_variables.get(name);
 
-                    if (type & (BINDING_VARIABLE_TYPE.DIRECT_ACCESS
-                        | BINDING_VARIABLE_TYPE.METHOD_VARIABLE)
-                    ) continue;
+                    if (type & (BINDING_VARIABLE_TYPE.DIRECT_ACCESS | BINDING_VARIABLE_TYPE.METHOD_VARIABLE))
+                        continue;
 
-                    check_ids.push(class_index);
+                    unresolved_binding_references.push(class_index);
                 }
 
-                if (check_ids.length > 0)
+                if (unresolved_binding_references.length > 0)
                     //@ts-ignore
-                    nodes.push(<any>stmt(`if(!this.check(${check_ids.sort()}))return 0;`));
+                    nodes.push(<any>stmt(`if(!this.check(${unresolved_binding_references.sort()}))return 0;`));
 
                 body.nodes.push(write_ast);
 
@@ -208,18 +236,23 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
         if (cleanup_ast)
             clean_stmts.push(cleanup_ast);
     }
+}
 
-    const write_bindings = processed_hooks.filter(b => (b.hook.type & HOOK_TYPE.WRITE) && !!b.hook.write_ast);
+function compileBindingVariables(
+    component: ComponentData,
+    class_info: CompiledComponentClass,
+    write_bindings: { hook: ProcessedHook; intermediate_hook: IntermediateHook; }[]
+) {
 
+    const { methods } = class_info;
 
     for (const { internal_name, class_index, flags, type } of component.root_frame.binding_variables.values()) {
 
-        if (type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS)
-            continue;
+        const IS_DIRECT_ACCESS = (type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS) > 0;
 
         if (flags & BINDING_FLAG.WRITTEN) {
 
-            const method = getGenericMethodNode("u" + class_index, "f,c", ";"),
+            const method = getGenericMethodNode("u" + (class_index >= 0 ? class_index : 9999), "f,c", ";"),
 
                 [, , body] = method.nodes;
 
@@ -233,7 +266,6 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
                     const { IS_OBJECT } = hook.component_variables.get(internal_name);
 
                     // TODO: Sort bindings and their input outputs to make sure dependencies are met. 
-
                     if (hook.component_variables.size <= 1) {
 
                         if (IS_OBJECT) {
@@ -244,13 +276,15 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
                                 pos: <any>hook.pos
                             };
                             body.nodes.push(s);
-                        } else
+                        }
+                        else
                             body.nodes.push({
                                 type: JSNodeType.ExpressionStatement,
                                 nodes: [hook.write_ast],
                                 pos: hook.pos
                             });
-                    } else
+                    }
+                    else
                         body.nodes.push(setPos(stmt(`this.call(${hook.name}, c)`), hook.pos));
                 }
             }
@@ -258,12 +292,22 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
             if (flags & BINDING_FLAG.ALLOW_EXPORT_TO_PARENT)
                 body.nodes.push(stmt(`/*if(!(f&${BINDING_FLAG.FROM_PARENT}))*/c.pup(${class_index}, v, f);`));
 
-            if (body.nodes.length > 0)
-                methods.push(<any>method);
+            if (body.nodes.length > 0) {
+
+                if (IS_DIRECT_ACCESS) {
+                    // Direct access variables ( API & GLOBALS ) are assigned 
+                    // at at component initialization start. This allows these 
+                    // variables to accessed within the component initialization
+                    // function  
+
+                    class_info.setup_stmts.push(...body.nodes);
+                } else {
+                    methods.push(<any>method);
+                }
+            }
         }
     }
 }
-
 
 /**
  * Create new AST that has all undefined references converted to binding

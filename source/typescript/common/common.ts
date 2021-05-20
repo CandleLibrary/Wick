@@ -9,6 +9,7 @@ import { ComponentData } from "../types/component";
 import { FunctionFrame } from "../types/function_frame";
 import { HTMLNode } from "../types/wick_ast";
 import { addBindingVariable, addWriteFlagToBindingVariable } from "./binding.js";
+import { GlobalVariables } from "./GlobalVariables.js";
 import Presets from "./presets.js";
 
 /**
@@ -122,7 +123,7 @@ export async function importResource(
             break;
 
         case "@api":
-            ref_type = BINDING_VARIABLE_TYPE.API_VARIABLE; flag = BINDING_FLAG.FROM_PRESETS;
+            ref_type = BINDING_VARIABLE_TYPE.API_VARIABLE; flag = BINDING_FLAG.FROM_OUTSIDE;
             break;
 
         case "@global":
@@ -150,6 +151,7 @@ export async function importResource(
 }
 
 /** JS COMMON */
+
 export function getFirstReferenceNode(node: JSNode): JSIdentifierClass {
     for (const { node: id } of traverse(node, "nodes").filter("type", JSNodeType.IdentifierReference))
         return <JSIdentifierClass>id;
@@ -164,3 +166,18 @@ export function getFirstReferenceName(node: JSNode): string {
         return <string>ref.value;
     return "";
 }
+
+/* DOM Common */
+
+let SET_ONCE_environment_globals = null;
+/**
+ * Return a set of global variables names
+ * @returns 
+ */
+export function getSetOfEnvironmentGlobalNames(): Set<string> {
+    //Determine what environment we have pull and out the global object. 
+    if (!SET_ONCE_environment_globals)
+        SET_ONCE_environment_globals = new Set(GlobalVariables);
+    return SET_ONCE_environment_globals;
+}
+

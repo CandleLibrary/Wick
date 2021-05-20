@@ -1,6 +1,7 @@
 import { traverse } from "@candlefw/conflagrate";
-import { JSNode, JSNodeType, renderCompressed, stmt } from "@candlefw/js";
+import { JSNode, JSNodeType, stmt } from "@candlefw/js";
 import URL from "@candlefw/url";
+import { ComponentData, Presets } from "source/typescript/wick.js";
 import { addBindingReference, addBindingVariable, addHook } from "../../common/binding.js";
 import { importResource } from "../../common/common.js";
 import { Is_Tag_From_HTML_Spec } from "../../common/html.js";
@@ -13,7 +14,7 @@ import {
     HTMLNodeType,
     WickBindingNode, WICK_AST_NODE_TYPE_BASE, WICK_AST_NODE_TYPE_SIZE
 } from "../../types/wick_ast.js";
-import { processFunctionDeclaration, processNodeAsync, processNodeSync, processWickCSS_AST, processWickJS_AST } from "./parse.js";
+import { processFunctionDeclaration, processNodeAsync, processWickCSS_AST, processWickJS_AST } from "./parse.js";
 import { parseComponentAST } from "./source.js";
 
 const default_handler = {
@@ -118,20 +119,7 @@ loadHTMLHandlerInternal(
 
             if (attrib.IS_BINDING) {
 
-                if (attrib.value.primary_ast)
-                    attrib.value.primary_ast =
-                        await processNodeAsync(attrib.value.primary_ast, component.root_frame, component, presets);
-
-                if (attrib.value.secondary_ast)
-                    attrib.value.secondary_ast =
-                        await processNodeAsync(attrib.value.secondary_ast, component.root_frame, component, presets);
-
-                addHook(component, {
-                    selector: attrib.name,
-                    hook_value: attrib.value,
-                    host_node: attrib,
-                    html_element_index: index
-                });
+                await processBindingNode(attrib, component, presets, index);
 
                 return null;
             }
@@ -146,7 +134,7 @@ loadHTMLHandlerInternal(
     {
         priority: -2,
 
-        prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
             if (
                 node.name == "value"
                 &&
@@ -154,6 +142,10 @@ loadHTMLHandlerInternal(
                 &&
                 host_node.type == HTMLNodeType.HTML_INPUT
             ) {
+                const l = component.hooks.length;
+                await processBindingNode(node, component, presets, index);
+                component.hooks.length = l;
+
                 addHook(component, {
                     selector: HOOK_SELECTOR.INPUT_VALUE,
                     //@ts-ignore
@@ -508,6 +500,23 @@ loadHTMLHandlerInternal(
 
     }, HTMLNodeType.HTML_IMPORT
 );
+
+async function processBindingNode(attrib: any, component: ComponentData, presets: Presets, index: number) {
+    if (attrib.value.primary_ast)
+        attrib.value.primary_ast =
+            await processNodeAsync(attrib.value.primary_ast, component.root_frame, component, presets);
+
+    if (attrib.value.secondary_ast)
+        attrib.value.secondary_ast =
+            await processNodeAsync(attrib.value.secondary_ast, component.root_frame, component, presets);
+
+    addHook(component, {
+        selector: attrib.name,
+        hook_value: attrib.value,
+        host_node: attrib,
+        html_element_index: index
+    });
+}
 
 function getAttributeValue(name, node: HTMLNode) {
     for (const att of node.attributes) {

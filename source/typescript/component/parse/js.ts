@@ -1,19 +1,39 @@
 import { traverse } from "@candlefw/conflagrate";
-import { JSIdentifier, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt, tools } from "@candlefw/js";
+import { ext, JSIdentifier, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt, tools } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
 import {
-    addBindingReference, addBindingVariable,
-    addBindingVariableFlag, addDefaultValueToBindingVariable, addHook,
+    addBindingReference,
+    addBindingVariable,
+    addBindingVariableFlag,
+    addDefaultValueToBindingVariable,
+    addHook,
     addNameToDeclaredVariables,
-    addReadFlagToBindingVariable, addWriteFlagToBindingVariable,
-    Name_Is_A_Binding_Variable, Variable_Is_Declared_In_Closure, Variable_Is_Declared_Locally
+    addReadFlagToBindingVariable,
+    addWriteFlagToBindingVariable,
+    Name_Is_A_Binding_Variable,
+    Variable_Is_Declared_In_Closure,
+    Variable_Is_Declared_Locally
 } from "../../common/binding.js";
 import { getFirstReferenceName, importResource, setPos } from "../../common/common.js";
 import { BINDING_FLAG, BINDING_VARIABLE_TYPE } from "../../types/binding";
 import { HOOK_SELECTOR } from "../../types/hook";
 import { JSHandler } from "../../types/js.js";
-import { HTMLNode, HTMLNodeClass, HTMLNodeType, WickBindingNode, WICK_AST_NODE_TYPE_SIZE } from "../../types/wick_ast.js";
-import { processFunctionDeclaration, processNodeSync, processNodeAsync, processWickCSS_AST, processWickHTML_AST, processWickJS_AST } from "./parse.js";
+import {
+    HTMLNode,
+    HTMLNodeClass,
+    HTMLNodeType,
+    WickBindingNode,
+    WICK_AST_NODE_TYPE_SIZE
+} from "../../types/wick_ast.js";
+import {
+    getFunctionFrame,
+    processFunctionDeclaration,
+    processNodeAsync,
+    processWickCSS_AST,
+    processWickHTML_AST,
+    processWickJS_AST,
+    incrementBindingRefCounters
+} from "./parse.js";
 
 export function findFirstNodeOfType(type: JSNodeType, ast: JSNode) {
 
@@ -202,8 +222,17 @@ loadJSParseHandlerInternal(
                                 redeclaration here:\n${(<Lexer><any>binding.pos).blame()}\nin ${component.location}`;
                             throw new ReferenceError(msg);
                         }
+                        const hook_length = component.hooks.length;
 
-                        const new_value = await processNodeAsync(<JSNode>value, frame, component, presets);
+                        const temp_frame = getFunctionFrame(value, component, frame, true, true);
+
+                        const new_value = await processNodeAsync(<JSNode>value, temp_frame, component, presets);
+
+                        incrementBindingRefCounters(temp_frame);
+
+                        // Remove any hooks created by this step
+
+                        component.hooks.length = hook_length;
 
                         addDefaultValueToBindingVariable(frame, l_name, <JSNode>new_value);
 
@@ -239,6 +268,59 @@ loadJSParseHandlerInternal(
             return <JSNode>node;
         }
     }, JSNodeType.VariableStatement, JSNodeType.LexicalDeclaration, JSNodeType.LexicalBinding
+);
+
+/*############################################################3
+* IDENTIFIER REFERENCE
+*/
+loadJSParseHandlerInternal(
+    {
+        priority: 1,
+
+        prepareJSNode(node, parent_node, skip, component, presets, frame) {
+
+            const name = (<JSIdentifierReference>node).value;
+
+
+            if (
+                !Variable_Is_Declared_In_Closure(name, frame)
+                &&
+                Name_Is_A_Binding_Variable(name, frame)
+            ) {
+
+                addBindingReference(
+                    <JSNode>node, <JSNode>parent_node, frame
+                );
+
+                addReadFlagToBindingVariable(name, frame);
+            } else
+
+                addBindingReference(
+                    <JSNode>node, <JSNode>parent_node, frame
+                );
+
+            return <JSNode>node;
+        }
+    }, JSNodeType.IdentifierReference
+);
+
+/*############################################################ 
+* IDENTIFIER BINDING
+*/
+loadJSParseHandlerInternal(
+    {
+        priority: 1,
+
+        prepareJSNode(node, parent_node, skip, component, presets, frame) {
+
+            const name = tools.getIdentifierName(<JSIdentifierBinding>node);
+
+            if (!Variable_Is_Declared_Locally(name, frame))
+                addNameToDeclaredVariables(name, frame);
+
+            return node;
+        }
+    }, JSNodeType.IdentifierBinding
 );
 
 
@@ -414,56 +496,6 @@ loadJSParseHandlerInternal(
         }
 
     }, JSNodeType.FormalParameters
-);
-
-/*############################################################3
-* IDENTIFIER REFERENCE
-*/
-loadJSParseHandlerInternal(
-    {
-        priority: 1,
-
-        prepareJSNode(node, parent_node, skip, component, presets, frame) {
-
-            const name = (<JSIdentifierReference>node).value;
-
-            if (
-                !Variable_Is_Declared_In_Closure(name, frame)
-                &&
-                Name_Is_A_Binding_Variable(name, frame)
-            ) {
-
-                addBindingReference(
-                    <JSNode>node, <JSNode>parent_node, frame
-                );
-
-                addReadFlagToBindingVariable(name, frame);
-            }
-
-            addBindingReference(node, parent_node, frame);
-
-            return <JSNode>node;
-        }
-    }, JSNodeType.IdentifierReference
-);
-
-/*############################################################ 
-* IDENTIFIER BINDING
-*/
-loadJSParseHandlerInternal(
-    {
-        priority: 1,
-
-        prepareJSNode(node, parent_node, skip, component, presets, frame) {
-
-            const name = tools.getIdentifierName(<JSIdentifierBinding>node);
-
-            if (!Variable_Is_Declared_Locally(name, frame))
-                addNameToDeclaredVariables(name, frame);
-
-            return node;
-        }
-    }, JSNodeType.IdentifierBinding
 );
 
 /*############################################################
