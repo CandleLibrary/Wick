@@ -9,6 +9,7 @@ import { HOOK_SELECTOR, IntermediateHook } from "../types/hook";
 import { PLUGIN_TYPE } from "../types/plugin.js";
 import { PresetOptions as Presets } from "../types/presets";
 import { WickBindingNode } from "../types/wick_ast";
+import { getSetOfEnvironmentGlobalNames } from "./common.js";
 import { convertObjectToJSNode } from "./js.js";
 
 function getNonTempFrame(frame: FunctionFrame) {
@@ -25,20 +26,6 @@ export function getRootFrame(frame: FunctionFrame) {
 
 let SET_ONCE_environment_globals = null;
 
-/**
- * Return a set of global variables names
- * @returns 
- */
-export function getSetOfEnvironmentGlobalNames(): Set<string> {
-    //Determine what environment we have pull and out the global object. 
-    if (!SET_ONCE_environment_globals) {
-        SET_ONCE_environment_globals = new Set();
-        const g = (typeof window !== "undefined") ? window : (typeof global !== "undefined") ? global : null;
-        if (g) for (const name in g)
-            SET_ONCE_environment_globals.add(<string>name);
-    }
-    return SET_ONCE_environment_globals;
-}
 /**
  * Adds JS AST node to list of identifiers that will need to be transformed 
  * to map to a binding variable.
@@ -289,6 +276,12 @@ export function getCompiledBindingVariableName(name: string, component: Componen
                 return `this.presets.api.${comp_var.external_name}`;
 
             case BINDING_VARIABLE_TYPE.UNDEFINED:
+                const global_names = getSetOfEnvironmentGlobalNames();
+                if (global_names.has(comp_var.external_name))
+                    return comp_var.external_name;
+
+            //intentional
+
             case BINDING_VARIABLE_TYPE.MODEL_VARIABLE:
                 return `this.model.${comp_var.external_name}`;
 
