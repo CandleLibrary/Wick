@@ -28,7 +28,7 @@ export const enum BINDING_VARIABLE_TYPE {
      * Variables that are replaced with direct
      * property access on the associated object
      */
-    DIRECT_ACCESS = 4 | 32,
+    DIRECT_ACCESS = 4 | 32 | 64 | 128 | 256,
 }
 
 /**

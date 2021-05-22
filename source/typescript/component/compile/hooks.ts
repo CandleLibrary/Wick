@@ -94,7 +94,7 @@ export function setIdentifierReferenceVariables(root_node: JSNode, component: Co
                 if (!component_names.has(<string>val))
                     continue;
 
-                replace(Object.assign({}, node, { value: getCompiledBindingVariableName(node.value, component) }));
+                replace(Object.assign({}, node, { value: getCompiledBindingVariableName(node.value, component), IS_BINDING_REF: false }));
 
                 //Pop any binding names into the binding information container. 
                 if (hook)

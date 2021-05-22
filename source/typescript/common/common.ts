@@ -106,7 +106,7 @@ export async function importResource(
     let flag: BINDING_FLAG = null, ref_type: BINDING_VARIABLE_TYPE = null;
 
     const [url, meta] = from_value.split(":");
-    console.log(default_name);
+
     switch (url.trim()) {
         default:
             // Read file and determine if we have a component, a script or some other resource. REQUIRING

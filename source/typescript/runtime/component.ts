@@ -155,7 +155,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         const model = this.model, presets = this.presets, wrapper = this.wrapper;
         // Hydration --------------------------------
         this.CONNECTED = true;
-        this.re(this);
+        this.init(this);
         this.setModel(model); //Hard set of model, with proper updating and polling.
         this.CONNECTED = false;
         // End Hydration ----------------------------
@@ -174,7 +174,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             console.error(e);
         }
 
-        this.onload();
+        this.async_init();
 
         rt.OVERRIDABLE_onComponentCreate(this);
 
@@ -674,9 +674,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     //=========================================================
     //=========================================================
     c() { }
-    onload() { }
+    init(c: any) { }
+    async_init() { }
     onMounted() { }
-    re(c: any) { }
     getCSS() { return ""; }
     //=========================================================
     //=========================================================
@@ -785,7 +785,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         if (name_space_index) name_space = getNameSpace(name_space_index);
 
-    let ele = <HTMLElement>createNamespacedElement(tag_name, name_space, data);
+        let ele = <HTMLElement>createNamespacedElement(tag_name, name_space, data);
 
         if (attributes)
             for (const [name, value] of attributes)

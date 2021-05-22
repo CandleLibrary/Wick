@@ -1,5 +1,5 @@
 import { bidirectionalTraverse, copy } from "@candlefw/conflagrate";
-import { exp, JSCallExpression, JSFunctionDeclaration, JSMethod, JSNode, JSNodeType, JSStatementClass, stmt } from "@candlefw/js";
+import { exp, ext, JSCallExpression, JSFunctionDeclaration, JSMethod, JSNode, JSNodeType, JSStatementClass, renderCompressed, stmt } from "@candlefw/js";
 import { getComponentBinding, getCompiledBindingVariableName } from "../../common/binding.js";
 import { setPos } from "../../common/common.js";
 import { createErrorComponent } from "../../common/component.js";
@@ -96,10 +96,6 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
 
     const
 
-        {
-            methods,
-        } = class_info,
-
         registered_elements: Set<number> = new Set,
 
         processed_hooks = component.hooks
@@ -137,14 +133,14 @@ function compileHookFunctions(
 
     const
         {
-            hooks: intermediate_hooks,
             root_frame: { binding_variables: binding_type }
         } = component,
 
         {
             methods,
             teardown_stmts: clean_stmts,
-            setup_stmts: initialize_stmts,
+            init_stmts,
+            async_init_frame,
             nluf_public_variables
         } = class_info;
 
@@ -155,17 +151,17 @@ function compileHookFunctions(
         const { html_element_index: index } = intermediate_hook,
             {
                 read_ast, write_ast,
-                initialize_ast, cleanup_ast,
+                initialize_ast,
+                cleanup_ast,
                 type,
-                component_variables,
-                name: binding_name
+                component_variables
             } = hook;
 
         /**
          * register this binding's element if it has not already been done.
          */
         if (index > -1 && !registered_elements.has(index)) {
-            initialize_stmts.unshift(stmt(`this.e${index}=this.elu[${index}]`));
+            init_stmts.unshift(stmt(`this.e${index}=this.elu[${index}]`));
             registered_elements.add(index);
         }
 
@@ -176,52 +172,72 @@ function compileHookFunctions(
              * Add a binding update function reference to the function lookup
              * table
              */
-            if (component_variables.size > 1) {
+            if (component_variables.size > 0) {
 
-                //Create binding update method.
-                hook.name = nluf_public_variables.nodes.length + "";
-                //@ts-ignore
-                nluf_public_variables.nodes.push(<any>exp(`c.b${hook.name}`));
+                const
+                    HAS_ASYNC = Expression_Contains_Await(write_ast),
+                    NO_INDIRECT_VARIABLES = [...component_variables.values()]
+                        .map(v => component.root_frame.binding_variables.get(v.name))
+                        .every(Binding_Var_Is_Directly_Accessed);
 
-                const method = getGenericMethodNode("b" + hook.name, "c=0", ";"),
-                    [, , body] = method.nodes,
-                    { nodes } = body;
+                if (NO_INDIRECT_VARIABLES) {
+                    //This code can be included in component initialization
+                    if (HAS_ASYNC)
+                        //Use onload method; Create method if necessary
+                        appendStmtToFrame(async_init_frame, write_ast);
+                    else
+                        //Use component init method
+                        init_stmts.push(write_ast);
 
-                nodes.length = 0;
-
-                const unresolved_binding_references = [];
-
-                for (const { name } of component_variables.values()) {
-
-                    if (!component.root_frame.binding_variables.has(name))
-                        throw (hook.pos.errorMessage(`missing binding variable for ${name}`));
-
-                    const { class_index, type } = component.root_frame.binding_variables.get(name);
-
-                    if (type & (BINDING_VARIABLE_TYPE.DIRECT_ACCESS | BINDING_VARIABLE_TYPE.METHOD_VARIABLE))
-                        continue;
-
-                    unresolved_binding_references.push(class_index);
-                }
-
-                if (unresolved_binding_references.length > 0)
+                } else {
+                    //Create binding update method.
+                    hook.name = nluf_public_variables.nodes.length + "";
                     //@ts-ignore
-                    nodes.push(<any>stmt(`if(!this.check(${unresolved_binding_references.sort()}))return 0;`));
+                    nluf_public_variables.nodes.push(<any>exp(`c.b${hook.name}`));
 
-                method.ASYNC = Expression_Contains_Await(write_ast) || method.ASYNC;
+                    const method = getGenericMethodNode("b" + hook.name, "c=0", ";"),
+                        [, , body] = method.nodes,
+                        { nodes } = body;
 
-                nodes.push(write_ast);
+                    nodes.length = 0;
 
-                methods.push(<any>method);
+                    const unresolved_binding_references = [];
+
+                    for (const { name } of component_variables.values()) {
+
+                        if (!component.root_frame.binding_variables.has(name))
+                            throw (hook.pos.errorMessage(`missing binding variable for ${name}`));
+
+                        const binding_var = component.root_frame.binding_variables.get(name);
+
+                        if (Binding_Var_Is_Directly_Accessed(binding_var))
+                            continue;
+
+                        unresolved_binding_references.push(binding_var.class_index);
+                    }
+
+                    // Create a check call that will cause an early return to occur if any of the indirect 
+                    // bindings are undefined
+
+                    if (unresolved_binding_references.length > 0)
+                        //@ts-ignore
+                        nodes.push(<any>stmt(`if(!this.check(${unresolved_binding_references.sort()}))return 0;`));
+
+                    method.ASYNC = HAS_ASYNC || method.ASYNC;
+
+                    nodes.push(write_ast);
+
+                    methods.push(<any>method);
+                }
             }
         }
 
         if (type & HOOK_TYPE.READ && read_ast)
-            initialize_stmts.push(read_ast);
+            init_stmts.push(read_ast);
 
         if (initialize_ast) {
 
-            initialize_stmts.push({
+            init_stmts.push({
                 type: JSNodeType.ExpressionStatement,
                 nodes: [<any>initialize_ast],
                 pos: initialize_ast.pos
@@ -238,6 +254,10 @@ function compileHookFunctions(
         if (cleanup_ast)
             clean_stmts.push(cleanup_ast);
     }
+}
+
+function Binding_Var_Is_Directly_Accessed(binding_var: BindingVariable) {
+    return binding_var.type & (BINDING_VARIABLE_TYPE.DIRECT_ACCESS | BINDING_VARIABLE_TYPE.METHOD_VARIABLE);
 }
 
 function compileBindingVariables(
@@ -302,7 +322,7 @@ function compileBindingVariables(
                     // variables to accessed within the component initialization
                     // function  
 
-                    class_info.setup_stmts.push(...body.nodes);
+                    class_info.init_stmts.push(...body.nodes);
                 } else {
                     methods.push(<any>method);
                 }
@@ -321,6 +341,14 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
 
     if (ast) {
 
+        ////Do not create empty functions
+        if (
+            frame.IS_ROOT == false
+            &&
+            (!ast.nodes[2] || ast.nodes[2].nodes.length == 0)
+        )
+            return;
+
         const cpy: JSFunctionDeclaration | JSMethod = <any>copy(ast);
 
         cpy.ASYNC = frame.IS_ASYNC || cpy.ASYNC;
@@ -334,16 +362,16 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
         if (!frame.IS_ROOT) {
 
             let id_indices = [];
+            if (frame.output_names)
+                for (const name of frame.output_names.values()) {
+                    if (!updated_names.has(name)) {
 
-            for (const name of frame.output_names.values()) {
-                if (!updated_names.has(name)) {
+                        const { type, class_index, pos } = component.root_frame.binding_variables.get(name);
 
-                    const { type, class_index, pos } = component.root_frame.binding_variables.get(name);
-
-                    if (type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE)
-                        id_indices.push(class_index);
+                        if (type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE)
+                            id_indices.push(class_index);
+                    }
                 }
-            }
 
             if (frame.index != undefined)
                 //@ts-ignore
@@ -385,6 +413,7 @@ export function finalizeBindingExpression(mutated_node: JSNode, component: Compo
         if (traverse_state > 0) {
 
             switch (node.type) {
+                //case JSNodeType.ComponentBindingIdentifier
                 case JSNodeType.IdentifierBinding:
                 case JSNodeType.IdentifierReference:
                     //@ts-ignore
@@ -458,25 +487,32 @@ export function createClassInfoObject(): CompiledComponentClass {
 
     const
         binding_values_init_method = getGenericMethodNode("c", "", ";"),
-        register_elements_method = getGenericMethodNode("re", "c", ";"),
+        init_statements = getGenericMethodNode("init", "c", ";"),
+        async_init_frame = createCompileFrame("async_init"),
         [, , { nodes: bi_stmts }] = binding_values_init_method.nodes,
-        [, , { nodes: re_stmts }] = register_elements_method.nodes,
+        [, , { nodes: init_stmts }] = init_statements.nodes,
         class_info: CompiledComponentClass = {
             methods: <any>[],
-            binding_setup_stmts: <any>bi_stmts,
-            setup_stmts: <any>re_stmts,
+            binding_setup_stmts: bi_stmts,
+            init_stmts: init_stmts,
+            async_init_frame,
             teardown_stmts: [],
             nluf_public_variables: null,
             lfu_table_entries: [],
             lu_public_variables: [],
+            method_frames: [async_init_frame],
             nlu_index: 0,
         };
-    re_stmts.length = 0;
+
+    init_stmts.length = 0;
     bi_stmts.length = 0;
 
-    class_info.methods.push(<any>binding_values_init_method);
+    async_init_frame.IS_ASYNC = true;
 
-    class_info.methods.push(<any>register_elements_method);
+    class_info.methods.push(
+        <any>binding_values_init_method,
+        <any>init_statements,
+    );
 
     return class_info;
 }
@@ -489,9 +525,6 @@ export async function createCompiledComponentClass(
 ): Promise<CompiledComponentClass> {
 
     try {
-
-
-
 
         const info = createClassInfoObject();
 
@@ -521,6 +554,7 @@ export async function createCompiledComponentClass(
         return info;
 
     } catch (e) {
+        //throw e;
         console.log(`Error found in component ${comp.name} while converting to a class. location: ${comp.location}.`);
         console.log(e);
         return createCompiledComponentClass(createErrorComponent([e], comp.source, comp.location, comp), presets);
@@ -535,7 +569,7 @@ function processCSS(
     let style;
 
     if (style = componentDataToCSS(component)) {
-        class_info.setup_stmts.push(<any>stmt(`this.setCSS()`));
+        class_info.init_stmts.push(<any>stmt(`this.setCSS()`));
         class_info.methods.push(
             setPos(getGenericMethodNode("getCSS", "", `return \`${style}\`;`),
                 component.CSS[0].data.pos)
@@ -577,8 +611,42 @@ async function processHTML(
     }
 }
 
+function createCompileFrame(name, arg_string = "_null_"): FunctionFrame {
+    return {
+        method_name: name,
+        input_names: null,
+        IS_ASYNC: false,
+        IS_ROOT: false,
+        ATTRIBUTE: false,
+        IS_TEMP_CLOSURE: false,
+        ast: getGenericMethodNode(name, arg_string),
+        output_names: null,
+        declared_variables: null,
+        binding_ref_identifiers: null,
+    };
+}
+
+function prependStmtToFrame(frame: FunctionFrame, ...stmt: JSStatementClass[]) {
+    frame.ast.nodes[2].nodes.unshift(...stmt);
+}
+
+function appendStmtToFrame(frame: FunctionFrame, ...stmt: JSStatementClass[]) {
+    frame.ast.nodes[2].nodes.push(...stmt);
+}
+
 export function processMethods(component: ComponentData, class_info: CompiledComponentClass) {
-    for (const function_block of component.frames)
+    // check for any onload frames. This will be converted to the async_init frame. Any
+    // statements defined in async_init will prepended to the frames statements. Create
+    // a new frame if onload is not present
+    const onload_frame: FunctionFrame = component.frames.filter(s => s.method_name.toLowerCase() == "onload")[0];
+
+    if (onload_frame)
+        prependStmtToFrame(class_info.async_init_frame, ...onload_frame.ast.nodes[2].nodes);
+
+    const out_frames = [...class_info.method_frames, ...component.frames.filter(f => f != onload_frame)];
+
+    //Ensure there is an async init method
+    for (const function_block of out_frames)
         makeComponentMethod(function_block, component, class_info);
 }
 
@@ -604,7 +672,7 @@ function createLookupTables(class_info: CompiledComponentClass) {
 
     class_info.lu_public_variables = <any[]>lu_public_variables.nodes;
 
-    class_info.setup_stmts.unshift(nlu, nluf);
+    class_info.init_stmts.unshift(nlu, nluf);
 }
 
 function processBindingVariables(component: Component, class_info: CompiledComponentClass, presets: Presets): void {
@@ -646,7 +714,7 @@ function addBindingInitialization(
 
         const converted_expression = setIdentifierReferenceVariables(expr, component);
 
-        class_info.setup_stmts.push(converted_expression);
+        class_info.init_stmts.push(converted_expression);
 
     }
 }

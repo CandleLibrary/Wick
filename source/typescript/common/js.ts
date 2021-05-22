@@ -27,9 +27,17 @@ export function getPropertyAST(name: string | JSNode, value: string | JSNode, CO
  * @param arg_string  String value of the class method arguments.
  * @param body_string  String value of the class method body.
  */
-export function getGenericMethodNode(name = "generic", arg_string = "", body_string = ";") {
+export function getGenericMethodNode(name = "generic", arg_string = "_null_", body_string = ";"): JSMethod {
 
-    return exp(`({${name}(${arg_string}){${body_string}}})`).nodes[0].nodes[0];
+    const node = <JSMethod>exp(`({${name}(${arg_string}){${body_string}}})`).nodes[0].nodes[0];
+
+    if (body_string == ";")
+        node.nodes[2].nodes.length = 0;
+
+    if (arg_string == "_null_")
+        node.nodes[1].nodes.length = 0;
+
+    return node;
 }
 
 export function convertObjectToJSNode(obj: any): JSExpressionClass {

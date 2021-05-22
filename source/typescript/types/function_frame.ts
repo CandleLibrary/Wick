@@ -1,4 +1,4 @@
-import { JSIdentifier, JSNode } from "@candlefw/js";
+import { JSFunctionDeclaration, JSIdentifier, JSMethod, JSNode } from "@candlefw/js";
 import { BindingVariable } from "./binding";
 /**
  * Reference information for a single function defined within 
@@ -48,7 +48,7 @@ export interface FunctionFrame {
     /**
      * Extracted source AST for this function block
      */
-    ast: JSNode;
+    ast: JSMethod | JSFunctionDeclaration;
 
     prev?: FunctionFrame;
 
