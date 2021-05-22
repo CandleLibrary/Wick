@@ -73,71 +73,179 @@ export function loadJSParseHandler(handler: JSHandler, ...types: JSNodeType[]) {
     return loadJSParseHandler(modified_handler, ...types);
 }
 
-// ###################################################################
-// IMPORTS
-//
-// Import statements from files can either be JS data or HTML data.
-// In either case we may be dealing with a component. HTML files are 
-// by default components. 
-//
-// In the case of  a JS file, we'll know we have a component if there 
-// lies a DEFAULT export which is a wick component.  IF this is note the
-// case, then the file is handled as a regular JS file which can have
-// objects imported into the component. Access to this file is ultimately
-// hoisted to the root of the APP and is made available to all component. 
-// 
-// There is also the case of the Parent Module import @parent and the 
-// "presets" or runtime import @presets, which are special none file
-// imports that wick will use to load data from the node's parent's 
-// exports and the presets global object, respectively.
+/* ###################################################################
+ * ARROW EXPRESSION
+ */
 loadJSParseHandlerInternal(
     {
         priority: 1,
 
         async prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
-            let url_value = "";
+            const { ast } = await processWickJS_AST(
+                <JSNode>node, component, presets, null, frame, true
+            );
 
-            const [imports, from] = node.nodes;
-
-            if (!imports)
-                url_value = (<JSIdentifier>from).value;
-            else
-                url_value = (<JSIdentifier>from.nodes[0]).value;
-
-            if (url_value) {
-
-                const names = [];
-
-                for (const { node: id, meta: { skip } } of traverse(node, "nodes", 4)
-                    .filter("type", JSNodeType.Specifier, JSNodeType.IdentifierModule)
-                    .makeSkippable()
-                ) {
-
-                    let local = "", external = "";
-
-                    if (id.type == JSNodeType.Specifier) {
-                        external = <string>id.nodes[0].value;
-                        local = <string>id.nodes[1]?.value ?? external;
-                    } else {
-                        local = (<JSIdentifier>id).value;
-                        external = (<JSIdentifier>id).value;
-                    }
-
-                    names.push({ local, external });
-
-                    skip();
-                }
-
-                await importResource(url_value, component, presets, node, imports ? (<JSIdentifier>imports.nodes[0]).value : "", names, frame);
-            }
-
-            //Export and import statements should not showup in the final AST.
             skip();
 
-            return null;
+            return <JSNode>ast;
         }
-    }, JSNodeType.ImportDeclaration
+
+    }, JSNodeType.ArrowFunction
+);
+
+/*############################################################
+* ASSIGNMENT + POST/PRE EXPRESSIONS
++ Post(++|--) and (++|--)Pre increment expressions
+*/
+loadJSParseHandlerInternal(
+    {
+        priority: 1,
+
+        prepareJSNode(node, parent_node, skip, component, presets, frame) {
+            for (const { node: id } of traverse(<JSNode>node, "nodes")
+                .filter("type", JSNodeType.IdentifierReference)
+            ) {
+                const name = (<JSIdentifierReference>id).value;
+
+                if (!Variable_Is_Declared_In_Closure(name, frame)) {
+
+                    if (Name_Is_A_Binding_Variable(name, frame))
+                        addBindingReference(<JSNode>node, <JSNode>parent_node, frame);
+                    else
+                        node.pos.throw(
+                            `Invalid assignment to undeclared variable [${name}]`
+                        );
+
+                    addWriteFlagToBindingVariable(name, frame);
+                }
+
+                skip(1);
+
+                break;
+            }
+        }
+    }, JSNodeType.AssignmentExpression, JSNodeType.PostExpression, JSNodeType.PreExpression
+);
+
+/* ###################################################################
+ * AWAIT EXPRESSION
+ */
+loadJSParseHandlerInternal(
+    {
+        priority: 1,
+
+        async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+            frame.IS_ASYNC = true;
+        }
+
+    }, JSNodeType.AwaitExpression
+);
+
+// ###################################################################
+// Call Expression Identifiers
+//
+// If the identifier is used as the target of a call expression, add the call
+// expression node to the variable's references list.
+loadJSParseHandlerInternal(
+    {
+        priority: 1,
+
+        async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+
+            node = await processNodeAsync(<JSNode>node, frame, component, presets, true);
+
+            const
+                [id] = node.nodes,
+                name = <string>getFirstReferenceName(<JSNode>id);//.value;
+
+            if (!Variable_Is_Declared_In_Closure(name, frame)
+                && Name_Is_A_Binding_Variable(name, frame)) {
+
+                addBindingReference(
+                    <JSNode>id,
+                    <JSNode>node,
+                    frame);
+
+                addReadFlagToBindingVariable(name, frame);
+
+                skip(1);
+            }
+
+            return <JSNode>node;
+        }
+    }, JSNodeType.CallExpression
+);
+
+/**############################################################
+ * DEBUGGER STATEMENT 
+ */
+loadJSParseHandlerInternal(
+    {
+        priority: 1,
+
+        prepareJSNode(node, parent_node, skip, component, presets, frame) {
+            if (presets.options.REMOVE_DEBUGGER_STATEMENTS)
+                return null;
+        }
+
+    }, JSNodeType.DebuggerStatement
+);
+
+/*############################################################
+* EXPRESSION STATEMENTS
++ Post(++|--) and (++|--)Pre increment expressions
+*/
+// Naked Style Element. Styles whole component.
+loadJSParseHandlerInternal(
+    {
+        priority: 1,
+
+        prepareJSNode(node, parent_node, skip, component, presets, frame) {
+            const [expr] = node.nodes;
+
+            if (expr.type == JSNodeType.CallExpression) {
+                const [id] = expr.nodes;
+
+                if (frame.IS_ROOT) {
+
+                    if (id.type == JSNodeType.IdentifierReference
+                        && id.value == "watch") {
+
+                        addHook(component, {
+                            selector: HOOK_SELECTOR.WATCHED_FRAME_METHOD_CALL,
+                            hook_value: expr,
+                            host_node: node,
+                            html_element_index: 0,
+                            pos: node.pos
+                        });
+
+                        return null;
+                    }
+                } else {
+                    const ref = <JSIdentifierReference>findFirstNodeOfType(
+                        JSNodeType.IdentifierReference, expr
+                    );
+
+                    if (ref && Name_Is_A_Binding_Variable(<string>ref.value, frame)) {
+                        //Assumes that the refereneced object is modified in some
+                        //way from a call on one of its members or submembers.
+                        addWriteFlagToBindingVariable(<string>ref.value, frame);
+                    }
+                }
+            }
+
+            if (node.nodes[0].type == HTMLNodeType.HTML_STYLE) {
+
+                return new Promise(async res => {
+                    await processWickCSS_AST(<HTMLNode>node.nodes[0], component, presets);
+
+                    res(null);
+                });
+            }
+        }
+
+    }, JSNodeType.ExpressionStatement
 );
 
 // ###################################################################
@@ -177,207 +285,6 @@ loadJSParseHandlerInternal(
             return null;
         }
     }, JSNodeType.ExportDeclaration
-);
-
-// ###################################################################
-// CONST, LET, VAR Statements
-//
-// These variables are accessible by all bindings within the components
-// scope. 
-loadJSParseHandlerInternal(
-    {
-        priority: 1,
-
-        async prepareJSNode(node, parent_node, skip, component, presets, frame) {
-
-            const
-                n = setPos(stmt("a,a;"), node.pos),
-                IS_CONSTANT = (node.type == JSNodeType.LexicalDeclaration && (<any>node).symbol == "const"),
-                [{ nodes }] = n.nodes;
-
-            nodes.length = 0;
-
-
-            //Add all elements to global 
-            for (const { node: binding, meta } of traverse(node, "nodes", 4)
-                .filter("type", JSNodeType.IdentifierBinding, JSNodeType.BindingExpression)
-                .makeSkippable()
-            ) {
-                if (binding.type == JSNodeType.BindingExpression) {
-
-                    const
-                        [identifier, value] = binding.nodes,
-                        l_name = tools.getIdentifierName(identifier);
-
-                    if (frame.IS_ROOT) {
-
-                        if (!addBindingVariable(frame, l_name, binding.pos,
-                            IS_CONSTANT
-                                ? BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
-                                : BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
-
-                        )) {
-                            const msg = `Redeclaration of the binding variable [${l_name}]. 
-                                First declaration here:\n${component.root_frame.binding_variables.get(l_name).pos.blame()}
-                                redeclaration here:\n${(<Lexer><any>binding.pos).blame()}\nin ${component.location}`;
-                            throw new ReferenceError(msg);
-                        }
-                        const hook_length = component.hooks.length;
-
-                        const temp_frame = getFunctionFrame(value, component, frame, true, true);
-
-                        const new_value = await processNodeAsync(<JSNode>value, temp_frame, component, presets);
-
-                        incrementBindingRefCounters(temp_frame);
-
-                        // Remove any hooks created by this step
-
-                        component.hooks.length = hook_length;
-
-                        addDefaultValueToBindingVariable(frame, l_name, <JSNode>new_value);
-
-                        addWriteFlagToBindingVariable(l_name, frame);
-
-                        meta.skip();
-
-                    } else
-                        addNameToDeclaredVariables(l_name, frame);
-
-                } else {
-                    if (frame.IS_ROOT) {
-                        if (!addBindingVariable(frame, (<JSIdentifierReference>binding).value, binding.pos,
-                            IS_CONSTANT
-                                ? BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
-                                : BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
-
-                        )) {
-                            const msg = `Redeclaration of the binding variable [${(<JSIdentifierReference>binding).value}]. 
-                                First declaration here:\n${component.root_frame.binding_variables.get((<JSIdentifierReference>binding).value).pos.blame()}
-                                redeclaration here:\n${(<Lexer><any>binding.pos).blame()}\nin ${component.location}`;
-                            throw new ReferenceError(msg);
-                        }
-                    } else
-                        addNameToDeclaredVariables((<JSIdentifierReference>binding).value, frame);
-                }
-            }
-
-
-            if (frame.IS_ROOT)
-                return null;
-
-            return <JSNode>node;
-        }
-    }, JSNodeType.VariableStatement, JSNodeType.LexicalDeclaration, JSNodeType.LexicalBinding
-);
-
-/*############################################################3
-* IDENTIFIER REFERENCE
-*/
-loadJSParseHandlerInternal(
-    {
-        priority: 1,
-
-        prepareJSNode(node, parent_node, skip, component, presets, frame) {
-
-            const name = (<JSIdentifierReference>node).value;
-
-
-            if (
-                !Variable_Is_Declared_In_Closure(name, frame)
-                &&
-                Name_Is_A_Binding_Variable(name, frame)
-            ) {
-
-                addBindingReference(
-                    <JSNode>node, <JSNode>parent_node, frame
-                );
-
-                addReadFlagToBindingVariable(name, frame);
-            } else
-
-                addBindingReference(
-                    <JSNode>node, <JSNode>parent_node, frame
-                );
-
-            return <JSNode>node;
-        }
-    }, JSNodeType.IdentifierReference
-);
-
-/*############################################################ 
-* IDENTIFIER BINDING
-*/
-loadJSParseHandlerInternal(
-    {
-        priority: 1,
-
-        prepareJSNode(node, parent_node, skip, component, presets, frame) {
-
-            const name = tools.getIdentifierName(<JSIdentifierBinding>node);
-
-            if (!Variable_Is_Declared_Locally(name, frame))
-                addNameToDeclaredVariables(name, frame);
-
-            return node;
-        }
-    }, JSNodeType.IdentifierBinding
-);
-
-
-// ###################################################################
-// Call Expression Identifiers
-//
-// If the identifier is used as the target of a call expression, add the call
-// expression node to the variable's references list.
-loadJSParseHandlerInternal(
-    {
-        priority: 1,
-
-        async prepareJSNode(node, parent_node, skip, component, presets, frame) {
-
-            node = await processNodeAsync(<JSNode>node, frame, component, presets, true);
-
-            const
-                [id] = node.nodes,
-                name = <string>getFirstReferenceName(<JSNode>id);//.value;
-
-            if (!Variable_Is_Declared_In_Closure(name, frame)
-                && Name_Is_A_Binding_Variable(name, frame)) {
-
-                addBindingReference(
-                    <JSNode>id,
-                    <JSNode>node,
-                    frame);
-
-                addReadFlagToBindingVariable(name, frame);
-
-                skip(1);
-            }
-
-            return <JSNode>node;
-        }
-    }, JSNodeType.CallExpression
-);
-
-/* ###################################################################
- * ARROW EXPRESSION
- */
-loadJSParseHandlerInternal(
-    {
-        priority: 1,
-
-        async prepareJSNode(node, parent_node, skip, component, presets, frame) {
-
-            const { ast } = await processWickJS_AST(
-                <JSNode>node, component, presets, null, frame, true
-            );
-
-            skip();
-
-            return <JSNode>ast;
-        }
-
-    }, JSNodeType.ArrowFunction
 );
 
 // ###################################################################
@@ -480,6 +387,9 @@ loadJSParseHandlerInternal(
     }, JSNodeType.FunctionDeclaration
 );
 
+/*############################################################
+* FORMAL PARAMETERS
+*/
 loadJSParseHandlerInternal(
     {
         priority: 1,
@@ -498,96 +408,124 @@ loadJSParseHandlerInternal(
     }, JSNodeType.FormalParameters
 );
 
-/*############################################################
-* ASSIGNMENT; POST/PRE EXPRESSIONS
-+ Post(++|--) and (++|--)Pre increment expressions
-*/
+// ###################################################################
+// IMPORTS
+//
+// Import statements from files can either be JS data or HTML data.
+// In either case we may be dealing with a component. HTML files are 
+// by default components. 
+//
+// In the case of  a JS file, we'll know we have a component if there 
+// lies a DEFAULT export which is a wick component.  IF this is note the
+// case, then the file is handled as a regular JS file which can have
+// objects imported into the component. Access to this file is ultimately
+// hoisted to the root of the APP and is made available to all component. 
+// 
+// There is also the case of the Parent Module import @parent and the 
+// "presets" or runtime import @presets, which are special none file
+// imports that wick will use to load data from the node's parent's 
+// exports and the presets global object, respectively.
 loadJSParseHandlerInternal(
     {
         priority: 1,
 
-        prepareJSNode(node, parent_node, skip, component, presets, frame) {
-            for (const { node: id } of traverse(<JSNode>node, "nodes")
-                .filter("type", JSNodeType.IdentifierReference)
-            ) {
-                const name = (<JSIdentifierReference>id).value;
+        async prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
-                if (!Variable_Is_Declared_In_Closure(name, frame)) {
+            let url_value = "";
 
-                    if (Name_Is_A_Binding_Variable(name, frame))
-                        addBindingReference(<JSNode>node, <JSNode>parent_node, frame);
-                    else
-                        node.pos.throw(
-                            `Invalid assignment to undeclared variable [${name}]`
-                        );
+            const [imports, from] = node.nodes;
 
-                    addWriteFlagToBindingVariable(name, frame);
+            if (!imports)
+                url_value = (<JSIdentifier>from).value;
+            else
+                url_value = (<JSIdentifier>from.nodes[0]).value;
+
+            if (url_value) {
+
+                const names = [];
+
+                for (const { node: id, meta: { skip } } of traverse(node, "nodes", 4)
+                    .filter("type", JSNodeType.Specifier, JSNodeType.IdentifierModule)
+                    .makeSkippable()
+                ) {
+
+                    let local = "", external = "";
+
+                    if (id.type == JSNodeType.Specifier) {
+                        external = <string>id.nodes[0].value;
+                        local = <string>id.nodes[1]?.value ?? external;
+                    } else {
+                        local = (<JSIdentifier>id).value;
+                        external = (<JSIdentifier>id).value;
+                    }
+
+                    names.push({ local, external });
+
+                    skip();
                 }
 
-                skip(1);
-
-                break;
+                await importResource(url_value, component, presets, node, imports ? (<JSIdentifier>imports.nodes[0]).value : "", names, frame);
             }
+
+            //Export and import statements should not showup in the final AST.
+            skip();
+
+            return null;
         }
-    }, JSNodeType.AssignmentExpression, JSNodeType.PostExpression, JSNodeType.PreExpression
+    }, JSNodeType.ImportDeclaration
 );
 
-
-
-/*############################################################
-* EXPRESSION STATEMENTS
-+ Post(++|--) and (++|--)Pre increment expressions
+/*############################################################3
+* IDENTIFIER REFERENCE
 */
-// Naked Style Element. Styles whole component.
 loadJSParseHandlerInternal(
     {
         priority: 1,
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
-            const [expr] = node.nodes;
 
-            if (expr.type == JSNodeType.CallExpression) {
-                const [id] = expr.nodes;
+            const name = (<JSIdentifierReference>node).value;
 
-                if (frame.IS_ROOT) {
 
-                    if (id.type == JSNodeType.IdentifierReference
-                        && id.value == "watch") {
+            if (
+                !Variable_Is_Declared_In_Closure(name, frame)
+                &&
+                Name_Is_A_Binding_Variable(name, frame)
+            ) {
 
-                        addHook(component, {
-                            selector: HOOK_SELECTOR.WATCHED_FRAME_METHOD_CALL,
-                            hook_value: expr,
-                            host_node: node,
-                            html_element_index: 0,
-                            pos: node.pos
-                        });
+                addBindingReference(
+                    <JSNode>node, <JSNode>parent_node, frame
+                );
 
-                        return null;
-                    }
-                } else {
-                    const ref = <JSIdentifierReference>findFirstNodeOfType(
-                        JSNodeType.IdentifierReference, expr
-                    );
+                addReadFlagToBindingVariable(name, frame);
+            } else
 
-                    if (ref && Name_Is_A_Binding_Variable(<string>ref.value, frame)) {
-                        //Assumes that the refereneced object is modified in some
-                        //way from a call on one of its members or submembers.
-                        addWriteFlagToBindingVariable(<string>ref.value, frame);
-                    }
-                }
-            }
+                addBindingReference(
+                    <JSNode>node, <JSNode>parent_node, frame
+                );
 
-            if (node.nodes[0].type == HTMLNodeType.HTML_STYLE) {
-
-                return new Promise(async res => {
-                    await processWickCSS_AST(<HTMLNode>node.nodes[0], component, presets);
-
-                    res(null);
-                });
-            }
+            return <JSNode>node;
         }
+    }, JSNodeType.IdentifierReference
+);
 
-    }, JSNodeType.ExpressionStatement
+/*############################################################ 
+* IDENTIFIER BINDING
+*/
+loadJSParseHandlerInternal(
+    {
+        priority: 1,
+
+        prepareJSNode(node, parent_node, skip, component, presets, frame) {
+
+            const name = tools.getIdentifierName(<JSIdentifierBinding>node);
+
+            if (!Variable_Is_Declared_Locally(name, frame))
+                addNameToDeclaredVariables(name, frame);
+
+            return <JSNode>node;
+        }
+    }, JSNodeType.IdentifierBinding
 );
 
 /**############################################################
@@ -619,33 +557,93 @@ loadJSParseHandlerInternal(
     }, JSNodeType.StringLiteral
 );
 
-/**############################################################
- * DEBUGGER STATEMENT 
- */
-loadJSParseHandlerInternal(
-    {
-        priority: 1,
-
-        prepareJSNode(node, parent_node, skip, component, presets, frame) {
-            if (presets.options.REMOVE_DEBUGGER_STATEMENTS)
-                return null;
-        }
-
-    }, JSNodeType.DebuggerStatement
-);
-
-
-
-/* ###################################################################
- * AWAIT EXPRESSION
- */
+// ###################################################################
+// VARIABLE DECLARATION STATEMENTS - CONST, LET, VAR
+//
+// These variables are accessible by all bindings within the components
+// scope. 
 loadJSParseHandlerInternal(
     {
         priority: 1,
 
         async prepareJSNode(node, parent_node, skip, component, presets, frame) {
-            frame.IS_ASYNC = true;
-        }
 
-    }, JSNodeType.AwaitExpression
+            const
+                n = setPos(stmt("a,a;"), node.pos),
+                IS_CONSTANT = (node.type == JSNodeType.LexicalDeclaration && (<any>node).symbol == "const"),
+                [{ nodes }] = n.nodes;
+
+            nodes.length = 0;
+
+
+            //Add all elements to global 
+            for (const { node: binding, meta } of traverse(node, "nodes", 4)
+                .filter("type", JSNodeType.IdentifierBinding, JSNodeType.BindingExpression)
+                .makeSkippable()
+            ) {
+                if (binding.type == JSNodeType.BindingExpression) {
+
+                    const
+                        [identifier, value] = binding.nodes,
+                        l_name = tools.getIdentifierName(identifier);
+
+                    if (frame.IS_ROOT) {
+
+                        if (!addBindingVariable(frame, l_name, binding.pos,
+                            IS_CONSTANT
+                                ? BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
+                                : BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
+
+                        )) {
+                            const msg = `Redeclaration of the binding variable [${l_name}]. 
+                                First declaration here:\n${component.root_frame.binding_variables.get(l_name).pos.blame()}
+                                redeclaration here:\n${(<Lexer><any>binding.pos).blame()}\nin ${component.location}`;
+                            throw new ReferenceError(msg);
+                        }
+                        const hook_length = component.hooks.length;
+
+                        const temp_frame = getFunctionFrame(value, component, frame, true, true);
+
+                        const new_value = await processNodeAsync(<JSNode>value, temp_frame, component, presets);
+
+                        incrementBindingRefCounters(temp_frame);
+
+                        // Remove any hooks created by this step
+
+                        component.hooks.length = hook_length;
+
+                        addDefaultValueToBindingVariable(frame, l_name, <JSNode>new_value);
+
+                        addWriteFlagToBindingVariable(l_name, frame);
+
+                        meta.skip();
+
+                    } else
+                        addNameToDeclaredVariables(l_name, frame);
+
+                } else {
+                    if (frame.IS_ROOT) {
+                        if (!addBindingVariable(frame, (<JSIdentifierReference>binding).value, binding.pos,
+                            IS_CONSTANT
+                                ? BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
+                                : BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
+
+                        )) {
+                            const msg = `Redeclaration of the binding variable [${(<JSIdentifierReference>binding).value}]. 
+                                First declaration here:\n${component.root_frame.binding_variables.get((<JSIdentifierReference>binding).value).pos.blame()}
+                                redeclaration here:\n${(<Lexer><any>binding.pos).blame()}\nin ${component.location}`;
+                            throw new ReferenceError(msg);
+                        }
+                    } else
+                        addNameToDeclaredVariables((<JSIdentifierReference>binding).value, frame);
+                }
+            }
+
+
+            if (frame.IS_ROOT)
+                return null;
+
+            return <JSNode>node;
+        }
+    }, JSNodeType.VariableStatement, JSNodeType.LexicalDeclaration, JSNodeType.LexicalBinding
 );

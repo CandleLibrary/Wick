@@ -86,13 +86,12 @@ const process_wick_binding = {
 
 loadHTMLHandlerInternal(process_wick_binding, HTMLNodeType.WickBinding);
 
-// HEAD ELEMENT CONTENTS GET APPENDED TO THE HEAD SLOT ON A COMPONENT
 
 /*[API] ##########################################################
- * 
- * HTMLAttribute Handler
- * 
- * One of six default handlers that parses tag attributes. 
+* 
+* HTML HEAD
+* 
+ * HEAD ELEMENT CONTENTS GET APPENDED TO THE HEAD SLOT ON A COMPONENT
  */
 loadHTMLHandlerInternal(
     {
@@ -107,7 +106,7 @@ loadHTMLHandlerInternal(
 
 
 /** ##########################################################
- * ATTRIBUTE BINDING
+ * BINDING ATTRIBUTE VALUE
  */
 loadHTMLHandlerInternal(
     {
@@ -128,7 +127,7 @@ loadHTMLHandlerInternal(
 );
 
 /** ##############################################################################
- * Input Attributes
+ * INPUT ATTRIBUTES
  */
 loadHTMLHandlerInternal(
     {
@@ -168,7 +167,7 @@ function getInputAttributeHookType(type: string) {
 }
 
 /** ##############################################################################
- * Slot Attributes
+ * SLOT ATTRIBUTES
  */
 loadHTMLHandlerInternal(
     {
@@ -314,15 +313,6 @@ loadHTMLHandlerInternal(
             }
 
             switch (node.tag.toLowerCase()) {
-
-                /*  ******  ******  ***    ** ********  *****  ** ***    ** ******* ******
-                 *  ██████  ██████  ███    ██ ████████  █████  ██ ███    ██ ███████ ██████  
-                 * ██      ██    ██ ████   ██    ██    ██   ██ ██ ████   ██ ██      ██   ██ 
-                 * ██      ██    ██ ██ ██  ██    ██    ███████ ██ ██ ██  ██ █████   ██████  
-                 * ██      ██    ██ ██  ██ ██    ██    ██   ██ ██ ██  ██ ██ ██      ██   ██ 
-                 *  ██████  ██████  ██   ████    ██    ██   ██ ██ ██   ████ ███████ ██   ██
-                 *  ******  ******  **   ****    **    **   ** ** **   **** ******* **   **
-                 */
 
                 case "container":
 
