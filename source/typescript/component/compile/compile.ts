@@ -1,10 +1,10 @@
 import { bidirectionalTraverse, copy } from "@candlefw/conflagrate";
-import { exp, JSCallExpression, JSNode, JSNodeType, stmt } from "@candlefw/js";
+import { exp, JSCallExpression, JSFunctionDeclaration, JSMethod, JSNode, JSNodeType, JSStatementClass, stmt } from "@candlefw/js";
 import { getComponentBinding, getCompiledBindingVariableName } from "../../common/binding.js";
 import { setPos } from "../../common/common.js";
 import { createErrorComponent } from "../../common/component.js";
 import { DOMLiteralToJSNode } from "../../common/html.js";
-import { getGenericMethodNode, getPropertyAST } from "../../common/js.js";
+import { Expression_Contains_Await, getGenericMethodNode, getPropertyAST } from "../../common/js.js";
 import Presets from "../../common/presets.js";
 import { BINDING_VARIABLE_TYPE, BINDING_FLAG } from "../../types/binding";
 import { CompiledComponentClass } from "../../types/class_information";
@@ -110,7 +110,7 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
          */
         initialized_internal_variables: Set<number> = new Set;
 
-    newFunction(
+    compileHookFunctions(
         component,
         class_info,
         presets,
@@ -125,7 +125,7 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
 }
 
 
-function newFunction(
+function compileHookFunctions(
     component: ComponentData,
     class_info: CompiledComponentClass,
     presets: Presets,
@@ -208,7 +208,9 @@ function newFunction(
                     //@ts-ignore
                     nodes.push(<any>stmt(`if(!this.check(${unresolved_binding_references.sort()}))return 0;`));
 
-                body.nodes.push(write_ast);
+                method.ASYNC = Expression_Contains_Await(write_ast) || method.ASYNC;
+
+                nodes.push(write_ast);
 
                 methods.push(<any>method);
             }
@@ -258,7 +260,6 @@ function compileBindingVariables(
 
             body.nodes.length = 0;
 
-
             for (const { hook } of write_bindings) {
 
                 if (hook.component_variables.has(internal_name)) {
@@ -268,20 +269,21 @@ function compileBindingVariables(
                     // TODO: Sort bindings and their input outputs to make sure dependencies are met. 
                     if (hook.component_variables.size <= 1) {
 
+                        method.ASYNC = Expression_Contains_Await(hook.write_ast) || method.ASYNC;
+
                         if (IS_OBJECT) {
-                            const s = stmt(`if(${getCompiledBindingVariableName(internal_name, component)});`);
+                            const s = <JSStatementClass>stmt(`if(${getCompiledBindingVariableName(internal_name, component)});`);
                             s.nodes[1] = {
                                 type: <any>JSNodeType.ExpressionStatement,
                                 nodes: [hook.write_ast],
                                 pos: <any>hook.pos
                             };
                             body.nodes.push(s);
-                        }
-                        else
+                        } else
                             body.nodes.push({
                                 type: JSNodeType.ExpressionStatement,
                                 nodes: [hook.write_ast],
-                                pos: hook.pos
+                                pos: <any>hook.pos
                             });
                     }
                     else
@@ -290,7 +292,7 @@ function compileBindingVariables(
             }
 
             if (flags & BINDING_FLAG.ALLOW_EXPORT_TO_PARENT)
-                body.nodes.push(stmt(`/*if(!(f&${BINDING_FLAG.FROM_PARENT}))*/c.pup(${class_index}, v, f);`));
+                body.nodes.push(<JSStatementClass>stmt(`/*if(!(f&${BINDING_FLAG.FROM_PARENT}))*/c.pup(${class_index}, v, f);`));
 
             if (body.nodes.length > 0) {
 
@@ -319,9 +321,11 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
 
     if (ast) {
 
-        const cpy = copy(ast);
+        const cpy: JSFunctionDeclaration | JSMethod = <any>copy(ast);
 
-        convertReferencesToComponentObjectLookups(cpy, component);
+        cpy.ASYNC = frame.IS_ASYNC || cpy.ASYNC;
+
+        finalizeBindingExpression(cpy, component);
 
         const updated_names = new Set();
 

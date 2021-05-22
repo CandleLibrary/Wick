@@ -70,6 +70,14 @@ export function convertObjectToJSNode(obj: any): JSExpressionClass {
 
     return null;
 }
+
 export function Node_Is_Identifier(node: JSNode): node is JSIdentifier {
     return (node.type & JSNodeClass.IDENTIFIER) > 0;
+}
+
+
+export function Expression_Contains_Await(input_node: JSNode) {
+    for (const { node } of traverse(input_node, "nodes").filter("type", JSNodeType.AwaitExpression))
+        return true;
+    return false;
 }

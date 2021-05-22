@@ -633,3 +633,19 @@ loadJSParseHandlerInternal(
 
     }, JSNodeType.DebuggerStatement
 );
+
+
+
+/* ###################################################################
+ * AWAIT EXPRESSION
+ */
+loadJSParseHandlerInternal(
+    {
+        priority: 1,
+
+        async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+            frame.IS_ASYNC = true;
+        }
+
+    }, JSNodeType.AwaitExpression
+);

@@ -71,6 +71,8 @@ export interface ProcessedHook {
     name?: string;
 
     priority: number;
+
+    IS_ASYNC?: boolean;
 }
 export interface HookProcessor {
     priority: number;

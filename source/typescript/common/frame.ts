@@ -15,6 +15,7 @@ export function createFrame(
         output_names: new Set(),
         binding_ref_identifiers: [],
         prev: parent_frame,
+        IS_ASYNC: false,
         IS_ROOT: !parent_frame,
         IS_TEMP_CLOSURE: TEMPORARY,
         binding_variables: (!parent_frame) ? new Map : null,

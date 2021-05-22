@@ -11,6 +11,11 @@ export interface FunctionFrame {
      * in an element attribute
      */
     ATTRIBUTE: boolean;
+    /**
+     * Indicates the fame's statements include 
+     * an await expression.
+     */
+    IS_ASYNC: boolean;
 
     name: string;
 
