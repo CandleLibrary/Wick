@@ -1,6 +1,6 @@
 {
     "name": "@candlelib/wick",
-    "version": "0.13.4",
+    "version": "0.13.5",
     "description": "HTML Component Compiler",
     "main": "./build/library/wick.js",
     "types": "./build/types/wick.d.ts",
@@ -15,8 +15,8 @@
         "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
         "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/html.hcg",
         "compile.test": "node --experimental-modules ./test/config.mjs",
-        "test": "cfw.test ./test/**",
-        "test.watch": "cfw.test -w ./test/**",
+        "test": "candle.cure --headless ./test/*",
+        "test.watch": "cfw.test -w ./test/*",
         "server": "lantern"
     },
     "repository": {
