@@ -530,8 +530,15 @@ export async function getStaticValue(
 
     const ast = await getStaticValueAstFromSourceAST(binding.primary_ast, component, presets, model, parent_comp);
 
-    if (ast)
-        return eval(renderCompressed(ast));
+    if (ast) {
+        try {
+
+            return eval(renderCompressed(ast));
+        } catch (e) {
+
+        }
+
+    }
     return null;
 }
 
