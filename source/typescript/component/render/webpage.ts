@@ -26,9 +26,35 @@ export async function RenderPage(
         on_element: (arg: DOMLiteral) => DOMLiteral | null | undefined;
     } = {
             on_element: noop
-        }) {
+        }): Promise<{
+            /**
+             * A string of template elements that comprise components that are rendered
+             * within containers. 
+             */
+            templates: string,
+            /**
+             * The main component rendered with static data
+             */
+            html: string,
+            /**
+             * All head elements gathered from all components
+             */
+            head: string,
+            /**
+             * All component class code
+             */
+            script: string,
+            /**
+             * All component CSS style data
+             */
+            style: string;
+            /**
+             * A deploy ready page string
+             */
+            page: string;
+        }> {
 
-    if (!comp) return {};
+    if (!comp) return null;
 
     const applicable_components = new Set([comp.name]);
 
@@ -61,8 +87,7 @@ export async function RenderPage(
 
     /** WARNING!!
      * Transforming a components html structure can lead to 
-     * incompatible component code. Handle this with eyes wide
-     * open.
+     * incompatible component code. Handle this with care
      */
 
     const
@@ -74,7 +99,7 @@ export async function RenderPage(
 
     for (const comp of components_to_process) {
 
-        const class_info = createCompiledComponentClass(comp, presets, false, false);
+        const class_info = await createCompiledComponentClass(comp, presets, false, false);
 
         const { class_string } = createClassStringObject(comp, class_info, presets);
 
@@ -89,12 +114,12 @@ export async function RenderPage(
         style += "\n" + componentDataToCSS(comp);
     }
 
-    const page = renderPage(presets, templates, html, head, script, style);
+    const page = renderPageString(presets, templates, html, head, script, style);
 
     return { templates, html, head, script, style, page };
 }
 
-function renderPage(
+function renderPageString(
     presets: Presets,
     templates: string,
     html: string,
@@ -105,12 +130,12 @@ function renderPage(
     return `<!DOCTYPE html>
 <html>
     <head>
+    <meta charset="utf-8">
         ${head.split("\n").join("\n    ")}
         <style>
         ${style.split("\n").join("\n            ")}
         </style>
         <script type="module" src="${presets.options.url.wickrt}"></script>
-        <script type="module" src="${presets.options.url.glow}"></script>
     </head>
     <body>
         ${html.split("\n").join("\n        ")}
