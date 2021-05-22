@@ -945,7 +945,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
             this.comps.push(component);
 
-            component.onLoad();
+            component.onload();
         }
 
         if (OWN_TRANSITION) this.filterExpressionUpdate(transition);

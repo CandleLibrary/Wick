@@ -174,7 +174,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             console.error(e);
         }
 
-        this.onLoad();
+        this.onload();
 
         rt.OVERRIDABLE_onComponentCreate(this);
 
@@ -674,7 +674,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     //=========================================================
     //=========================================================
     c() { }
-    onLoad() { }
+    onload() { }
     onMounted() { }
     re(c: any) { }
     getCSS() { return ""; }
@@ -785,7 +785,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         if (name_space_index) name_space = getNameSpace(name_space_index);
 
-        let ele = <HTMLElement>createNamespacedElement(tag_name, name_space, data);
+    let ele = <HTMLElement>createNamespacedElement(tag_name, name_space, data);
 
         if (attributes)
             for (const [name, value] of attributes)
