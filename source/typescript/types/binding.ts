@@ -9,22 +9,26 @@ export const enum BINDING_VARIABLE_TYPE {
      * Static variable that could replaced directly with 
      * its assigned value
      */
-    CONST_INTERNAL_VARIABLE = 64,
     INTERNAL_VARIABLE = 1,
-    MODEL_VARIABLE = 16,
+    METHOD_VARIABLE = 2,
     API_VARIABLE = 4,
     PARENT_VARIABLE = 8,
-    METHOD_VARIABLE = 2,
+    MODEL_VARIABLE = 16,
     /**
      * A Global variable that should be wrapped into a an
      * observerable 
      */
     GLOBAL_VARIABLE = 32,
+
+    CONST_INTERNAL_VARIABLE = 64,
+    MODULE_MEMBER_VARIABLE = 128,
+    MODULE_VARIABLE = 256,
+
     /**
      * Variables that are replaced with direct
      * property access on the associated object
      */
-    DIRECT_ACCESS = 4 | 32
+    DIRECT_ACCESS = 4 | 32,
 }
 
 /**
