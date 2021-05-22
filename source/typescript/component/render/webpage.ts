@@ -117,9 +117,16 @@ function renderPage(
         ${templates.split("\n").join("\n        ")}
         <script type=module>
             import w from "${presets.options.url.wickrt}";
-            w.setPresets({});
+            w.setPresets(${renderPresets(presets)});
             ${script.split("\n").join("\n            ")}
         </script>
     </body>
 </html>`;
+}
+
+function renderPresets(presets: Presets) {
+    const out_value = {
+        repo: [...presets.repo.values()].map(repo => [repo.hash, repo.url])
+    };
+    return JSON.stringify(out_value);
 }
