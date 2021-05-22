@@ -523,7 +523,7 @@ export async function createCompiledComponentClass(
     } catch (e) {
         console.log(`Error found in component ${comp.name} while converting to a class. location: ${comp.location}.`);
         console.log(e);
-        return null; createCompiledComponentClass(createErrorComponent([e], comp.source, comp.location, comp), presets);
+        return createCompiledComponentClass(createErrorComponent([e], comp.source, comp.location, comp), presets);
     }
 }
 function processCSS(
