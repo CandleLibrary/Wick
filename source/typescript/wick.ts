@@ -4,7 +4,7 @@ import { CSSNode, CSSNodeType, CSSNodeTypeLU } from "@candlefw/css";
 import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlefw/js";
 import URL from "@candlefw/url";
 import { css_selector_helpers } from "./common/css.js";
-import { createNameHash } from "./common/hash_name.js";
+import { ComponentHash } from "./common/hash_name.js";
 //Internal
 import Presets from "./common/presets.js";
 import { parseSource } from "./component/parse/source.js";
@@ -73,7 +73,7 @@ export interface WickCompiler {
          * constructor function.
          */
         componentToClassString: typeof createCompiledComponentClass;
-        createNameHash: typeof createNameHash;
+        createNameHash: typeof ComponentHash;
         componentToClass: typeof componentDataToJS;
         /**
          * Renders a CSS stylesheet from the CSS data from a ComponentData
@@ -204,7 +204,6 @@ async function componentCreate(input: string | URL, presets: Presets = rt.preset
             }
         },
     });
-
     return promise;
 }
 
@@ -254,7 +253,7 @@ const wick: WickLibrary = Object.assign(componentCreate,
         utils: {
             parse: {
                 css_selector_helpers: css_selector_helpers,
-                createNameHash: createNameHash,
+                createNameHash: ComponentHash,
                 parser,
                 render: renderWithFormatting,
             },
@@ -285,7 +284,7 @@ const wick: WickLibrary = Object.assign(componentCreate,
             componentDataToJSCached: componentDataToJSCached,
             componentDataToClass: componentDataToJS,
             componentDataToClassString: createCompiledComponentClass,
-            createNameHash,
+            createNameHash: ComponentHash,
             RenderPage
         },
 
@@ -307,7 +306,7 @@ export * from "./render/rules.js";
 export {
     //Functions
     parser,
-    createNameHash,
+    ComponentHash as createNameHash,
     componentDataToHTML,
     componentDataToCSS,
     componentDataToJS as componentDataToClass,

@@ -1,10 +1,9 @@
 import URL from "@candlefw/url";
 import { Lexer } from "@candlefw/wind";
-
-import { createNameHash } from "./hash_name.js";
-import { IntermediateHook } from "../types/hook";
 import { ComponentData } from "../types/component";
 import { DOMLiteral } from "../types/html";
+import { ComponentHash } from "./hash_name.js";
+
 
 
 export function createErrorComponent(errors: Error[], src: string, location: URL, component: ComponentData = createComponentData(src, location)) {
@@ -69,12 +68,12 @@ export function createComponentData(source_string: string, location: URL): Compo
 
     const component: ComponentData = <ComponentData>{
 
-        name: createNameHash(source_string),
+        name: ComponentHash(source_string),
 
         container_count: 0,
 
         global_model_name: "",
-        
+
         source: source_string,
         //Local names of imported components that are referenced in HTML expressions. 
         local_component_names: new Map,

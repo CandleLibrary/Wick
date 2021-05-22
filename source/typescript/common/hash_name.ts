@@ -71,4 +71,24 @@ export function ModuleHash(string: string) {
  * Create a hash name to uniquely identify a component.
  * @param string - source file contents.
 */
-export const createNameHash = (string: string) => "W" + PearsonModifiedHash(string, 8) + "_";
+export function ComponentHash(string: string) {
+    return "W" + PearsonModifiedHash(string, 8) + "_";
+}
+
+/**
+ * Returns an error reference identifier from a given string
+ */
+export function ErrorHash(identifying_string: string): string {
+    const hash = PearsonModifiedHash(identifying_string, 20);
+    const output = [];
+    let i = 0;
+    for (const char of hash) {
+
+        if (i > 0 && ((i) % 5) == 0)
+            output.push("-");
+        output.push(String.fromCodePoint((char.codePointAt(0) % 10) + 48));
+        i++;
+    }
+    return output.join("");
+}
+
