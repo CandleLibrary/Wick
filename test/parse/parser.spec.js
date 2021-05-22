@@ -1,7 +1,7 @@
 import { assert } from "console";
 import { Binding_Variable_Has_Static_Default_Value } from "../../build/library/common/binding.js";
 import { createComponentData } from "../../build/library/common/component.js";
-import { createFrame } from "../../build/library/common/frame.js";
+import { createParserFrame } from "../../build/library/common/frame.js";
 import Presets from "../../build/library/common/presets.js";
 import { processCoreAsync } from "../../build/library/component/parse/parse.js";
 import parserSourceString from "../../build/library/source_code/parse.js";
@@ -40,7 +40,7 @@ assert_group("Function frame and bindings", () => {
 
     const component = createComponentData(source_string);
 
-    component.root_frame = createFrame(null, component);
+    component.root_frame = createParserFrame(null, component);
 
     assert(component.root_frame.IS_ROOT == true);
 
@@ -105,7 +105,7 @@ assert_group(s, "JS module with multiple elements", () => {
 
     const component = createComponentData(source_string);
 
-    component.root_frame = createFrame(null, component);
+    component.root_frame = createParserFrame(null, component);
 
     await processCoreAsync(ast, component.root_frame, component, presets);
 
