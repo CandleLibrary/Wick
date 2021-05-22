@@ -572,8 +572,7 @@ async function processHTML(
     }
 }
 
-function processMethods(component: ComponentData, class_info: CompiledComponentClass) {
-
+export function processMethods(component: ComponentData, class_info: CompiledComponentClass) {
     for (const function_block of component.frames)
         makeComponentMethod(function_block, component, class_info);
 }
