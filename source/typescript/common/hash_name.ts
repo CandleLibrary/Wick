@@ -63,6 +63,10 @@ function PearsonModifiedHash(string: string, size = 8) {
     ).slice(-size);
 }
 
+export function ModuleHash(string: string) {
+    return "M" + PearsonModifiedHash(string, 15);
+}
+
 /**
  * Create a hash name to uniquely identify a component.
  * @param string - source file contents.

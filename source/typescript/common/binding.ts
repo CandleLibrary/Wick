@@ -270,7 +270,13 @@ export function getCompiledBindingVariableName(name: string, component: Componen
     if (comp_var)
         switch (comp_var.type) {
 
+            case BINDING_VARIABLE_TYPE.MODULE_VARIABLE:
+                return `this.presets.api.${comp_var.external_name}.default`;
+
             case BINDING_VARIABLE_TYPE.API_VARIABLE:
+                return `this.presets.api.${comp_var.external_name}.default`;
+
+            case BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE:
                 return `this.presets.api.${comp_var.external_name}`;
 
             case BINDING_VARIABLE_TYPE.UNDEFINED:

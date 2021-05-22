@@ -7,10 +7,11 @@ import { componentDataToJSCached } from "../component/render/js.js";
 import { BINDING_FLAG, BINDING_VARIABLE_TYPE } from "../types/binding";
 import { ComponentData } from "../types/component";
 import { FunctionFrame } from "../types/function_frame";
+import { PresetOptions } from "../types/presets.js";
 import { HTMLNode } from "../types/wick_ast";
 import { addBindingVariable, addWriteFlagToBindingVariable } from "./binding.js";
 import { GlobalVariables } from "./GlobalVariables.js";
-import Presets from "./presets.js";
+import { ModuleHash, PearsonModifiedHash } from "./hash_name.js";
 
 /**
  * Set the givin Lexer as the pos val for each node
@@ -51,12 +52,23 @@ export function mergeComponentData(destination_component: ComponentData, source_
 
     destination_component.frames.push(...source_component.frames);
 }
-
-export async function importComponentData(new_component_url, component, presets, local_name: string) {
+/**
+ * Attempts to import a component from a URL. Returns true if the resource
+ * is a wick component that could be parsed, false otherwise.
+ * @param new_component_url 
+ * @param component 
+ * @param presets 
+ * @param local_name 
+ * @returns 
+ */
+export async function importComponentData(new_component_url, component, presets, local_name: string): boolean {
 
     try {
 
         const comp_data = await parseSource(new URL(new_component_url), presets, component.location);
+
+        if (comp_data.HAS_ERRORS)
+            return false;
 
         //const { ast, string, resolved_url } = await acquireComponentASTFromRemoteSource(new URL(new_component_url), component.location);
 
@@ -71,19 +83,22 @@ export async function importComponentData(new_component_url, component, presets,
 
         if (!comp_data.HTML) mergeComponentData(component, comp_data);
 
+        return true;
 
     } catch (e) {
         console.log("TODO: Replace with a temporary warning component.", e);
     }
+
+    return false;
 
 }
 
 export async function importResource(
     from_value: string,
     component: ComponentData,
-    presets: Presets,
+    presets: PresetOptions,
     node: HTMLNode | JSNode,
-    local_name: string = "",
+    default_name: string = "",
     names: { local: string, external: string; }[] = [],
     frame: FunctionFrame
 ): Promise<void> {
@@ -91,7 +106,7 @@ export async function importResource(
     let flag: BINDING_FLAG = null, ref_type: BINDING_VARIABLE_TYPE = null;
 
     const [url, meta] = from_value.split(":");
-
+    console.log(default_name);
     switch (url.trim()) {
         default:
             // Read file and determine if we have a component, a script or some other resource. REQUIRING
@@ -101,18 +116,29 @@ export async function importResource(
             // server.
 
             //Compile Component Data
-            await importComponentData(
+            if (!(await importComponentData(
                 from_value,
                 component,
                 presets,
-                local_name
-            );
+                default_name
+            ))) {
+                let external_name = "";
+
+                if (!presets.repo.has(from_value.trim()))
+                    external_name = addPendingModuleToPresets(presets, from_value);
+
+                if (default_name)
+                    addBindingVariable(frame, default_name, node.pos, BINDING_VARIABLE_TYPE.MODULE_VARIABLE, external_name, flag);
+
+                ref_type = BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE; flag = BINDING_FLAG.FROM_OUTSIDE;
+                break;
+            }
 
             return;
 
         case "@registered":
-            const comp_name = local_name.toUpperCase();
-            if (local_name && presets.named_components.has(comp_name))
+            const comp_name = default_name.toUpperCase();
+            if (default_name && presets.named_components.has(comp_name))
                 component.local_component_names.set(comp_name, presets.named_components.get(comp_name).name);
             return;
 
@@ -148,6 +174,21 @@ export async function importResource(
 
         addWriteFlagToBindingVariable(local, frame);
     }
+}
+
+function addPendingModuleToPresets(presets: PresetOptions, from_value: string): string {
+
+    const url = from_value.toString().trim();
+
+    const hash = ModuleHash(url);
+
+    presets.repo.set(url, {
+        url: url,
+        hash: hash,
+        module: null
+    });
+
+    return hash;
 }
 
 /** JS COMMON */
