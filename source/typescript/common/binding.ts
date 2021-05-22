@@ -24,8 +24,6 @@ export function getRootFrame(frame: FunctionFrame) {
     return frame;
 }
 
-let SET_ONCE_environment_globals = null;
-
 /**
  * Adds JS AST node to list of identifiers that will need to be transformed 
  * to map to a binding variable.
