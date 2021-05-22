@@ -35,7 +35,7 @@ export function convertObjectToJSNode(obj: any): JSExpressionClass {
 
     switch (typeof obj) {
         case "string":
-            return <JSExpressionClass>exp(`"${obj.replace(/\"/g, "\\\"")}"`);
+            return <JSExpressionClass>exp(`"${obj.replace(/\"/g, "\\\"").replace(/\n/g, "\\\n")}"`);
         case "boolean":
         case "undefined":
         case "number":
