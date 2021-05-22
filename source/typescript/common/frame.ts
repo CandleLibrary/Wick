@@ -1,7 +1,7 @@
 import { FunctionFrame } from "../types/function_frame";
 import { ComponentData } from "../types/component";
 
-export function createFrame(
+export function createParserFrame(
     parent_frame: any,
     component: ComponentData,
     DO_NOT_ATTACH: boolean = false,

@@ -2,7 +2,7 @@ import { JSNode, JSNodeType } from "@candlefw/js";
 import URL from "@candlefw/url";
 import { processUndefinedBindingVariables } from "../../common/binding.js";
 import { createComponentData, createErrorComponent } from "../../common/component.js";
-import { createFrame } from "../../common/frame.js";
+import { createParserFrame } from "../../common/frame.js";
 import Presets from "../../common/presets.js";
 import parserSourceString from "../../source_code/parse.js";
 import { Comment } from "../../types/comment.js";
@@ -130,7 +130,7 @@ export async function parseComponentAST(
     const
         component: ComponentData = createComponentData(source_string, url);
 
-    component.root_frame = createFrame(null, component);
+    component.root_frame = createParserFrame(null, component);
 
     component.comments = comments;
 

@@ -3,7 +3,7 @@ import { CSSNode } from "@candlefw/css";
 import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlefw/js";
 import { buildExportableDOMNode } from "../../common/html.js";
 import { getBindingRefCount, getRootFrame } from "../../common/binding.js";
-import { createFrame } from "../../common/frame.js";
+import { createParserFrame } from "../../common/frame.js";
 import Presets from "../../common/presets.js";
 import { ComponentData, ComponentStyle } from "../../types/component";
 import { FunctionFrame } from "../../types/function_frame";
@@ -26,7 +26,7 @@ export function getFunctionFrame(
     TEMPORARY = DONT_ATTACH
 ) {
     const function_frame = frame
-        ? createFrame(frame,
+        ? createParserFrame(frame,
             component, DONT_ATTACH, TEMPORARY)
         : component.root_frame;
 
