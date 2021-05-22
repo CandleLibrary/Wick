@@ -44,7 +44,7 @@ export async function componentDataToJSCached(
         presets.component_class.set(name, comp);
 
         for (const comp of component.local_component_names.values()) {
-            if (!presets.component_class_string.has(comp))
+            if (!presets.component_class_string.has(comp) && presets.components.has(comp))
                 await componentDataToJSCached(presets.components.get(comp), presets, INCLUDE_HTML, INCLUDE_CSS);
         }
     }
