@@ -132,7 +132,36 @@ export interface PresetOptions {
      * through the `"@api"` import path.
      */
     api?: any;
-
+    /**
+     * A list of external resource paths that should be loaded before the first
+     * component is instantiated.
+     */
+    repo: Map<string, {
+        /**
+         * The specifier path of the import statement
+         */
+        url: string,
+        /**
+         * The hash name of the specifier
+         */
+        hash: string,
+        /**
+         * the imported module object
+         */
+        module: any;
+    }>;
 
     plugins: PluginStore;
+}
+
+
+export interface UserPresets {
+
+    repo?: [[string, string]];
+
+    api?: {
+        [key: string]: any;
+    };
+
+    options?: PresetOptions["options"];
 }
