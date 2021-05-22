@@ -162,7 +162,17 @@ export class WickContainer implements Sparky, ObservableWatcher {
         parent_comp: WickRTComponent
     ) {
 
+
         this.ele = element;
+
+        if (this.ele.tagName == "TABLE") {
+            // Some browsers automatically insert tbody in table elements
+            // which will break hydration. This will map containers element
+            // reference to that tbody, which will contain the real containers
+            // children
+            if (this.ele.firstElementChild && this.ele.firstElementChild.tagName == "TBODY")
+                this.ele = <HTMLElement>this.ele.firstElementChild;
+        }
 
         this.comp_constructors = component_constructors;
         this.comp_attributes = component_attributes || component_attributes_default;
