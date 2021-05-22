@@ -449,6 +449,33 @@ export function convertReferencesToComponentObjectLookups(cpy: JSNode, component
     }
 }
 
+export function createClassInfoObject(): CompiledComponentClass {
+
+    const
+        binding_values_init_method = getGenericMethodNode("c", "", ";"),
+        register_elements_method = getGenericMethodNode("re", "c", ";"),
+        [, , { nodes: bi_stmts }] = binding_values_init_method.nodes,
+        [, , { nodes: re_stmts }] = register_elements_method.nodes,
+        class_info: CompiledComponentClass = {
+            methods: <any>[],
+            binding_setup_stmts: <any>bi_stmts,
+            setup_stmts: <any>re_stmts,
+            teardown_stmts: [],
+            nluf_public_variables: null,
+            lfu_table_entries: [],
+            lu_public_variables: [],
+            nlu_index: 0,
+        };
+    re_stmts.length = 0;
+    bi_stmts.length = 0;
+
+    class_info.methods.push(<any>binding_values_init_method);
+
+    class_info.methods.push(<any>register_elements_method);
+
+    return class_info;
+}
+
 export async function createCompiledComponentClass(
     comp: ComponentData,
     presets: Presets,
@@ -458,28 +485,10 @@ export async function createCompiledComponentClass(
 
     try {
 
-        const
-            binding_values_init_method = getGenericMethodNode("c", "", ";"),
-            register_elements_method = getGenericMethodNode("re", "c", ";"),
-            [, , { nodes: bi_stmts }] = binding_values_init_method.nodes,
-            [, , { nodes: re_stmts }] = register_elements_method.nodes,
-            info: CompiledComponentClass = {
-                methods: <any>[],
-                binding_setup_stmts: <any>bi_stmts,
-                setup_stmts: <any>re_stmts,
-                teardown_stmts: [],
-                nluf_public_variables: null,
-                lfu_table_entries: [],
-                lu_public_variables: [],
-                nlu_index: 0,
-            };
 
-        re_stmts.length = 0;
-        bi_stmts.length = 0;
 
-        info.methods.push(<any>binding_values_init_method);
 
-        info.methods.push(<any>register_elements_method);
+        const info = createClassInfoObject();
 
         //Javascript Information.
         if (comp.HAS_ERRORS === false && comp.root_frame) {
