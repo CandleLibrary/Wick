@@ -65,7 +65,7 @@ function addNewMethodFrame(function_node: JSNode, component: ComponentData, pres
 }
 
 function getFrameFromName(name: string, component: ComponentData) {
-    return component.frames.filter(({ name: n }) => n == name)[0] || null;
+    return component.frames.filter(({ method_name: n }) => n == name)[0] || null;
 }
 
 /**

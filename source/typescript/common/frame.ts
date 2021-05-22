@@ -9,6 +9,7 @@ export function createFrame(
 ) {
 
     const function_frame = <FunctionFrame>{
+        method_name: "",
         ast: null,
         declared_variables: new Set(),
         input_names: new Set(),

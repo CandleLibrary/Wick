@@ -17,7 +17,7 @@ export interface FunctionFrame {
      */
     IS_ASYNC: boolean;
 
-    name: string;
+    method_name: string;
 
     /**
      * An optional copy of the frame's ast object.

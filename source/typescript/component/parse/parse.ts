@@ -31,7 +31,7 @@ export function getFunctionFrame(
         : component.root_frame;
 
     if (ast.type == JSNodeType.FunctionDeclaration)
-        function_frame.name = <string>ast.nodes[0].value;
+        function_frame.method_name = <string>ast.nodes[0].value;
 
     function_frame.ast = ast;
 
