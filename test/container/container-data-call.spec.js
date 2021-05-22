@@ -21,11 +21,14 @@ const
     </div>`));
 
 
-keep: wick.rt.presets.api.test = () => [{ name: 1 }, { name: 2 }];
+keep: wick.rt.presets.addAPIObject("test", () => [{ name: 1 }, { name: 2 }]);
 
+assert(wick.rt.presets.api.test != undefined);
+assert(wick.rt.presets.api.test.default != undefined);
 
 assert_group("Server run", 5000, sequence, () => {
     await wick.server();
+
     const
         comp = new comp_data.class(data),
         elements = comp.ele.children;
