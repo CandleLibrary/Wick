@@ -2,6 +2,7 @@ import { addModuleToCFW } from "@candlefw/cfw";
 import Presets from "./common/presets.js";
 import { rt } from "./runtime/global.js";
 import { hydrateComponentElements, Is_Wick_Component_Element } from "./runtime/html.js";
+import { loadModules } from "./runtime/load_modules.js";
 
 const
     nop = _ => !0,
@@ -83,8 +84,11 @@ function gatherWickElements() {
  */
 if (typeof window != undefined) {
 
-    window.addEventListener("load", (): void => {
-        //Assuming wick.rt.setPresets has been called already.
+    window.addEventListener("load", async (): Promise<void> => {
+        // Assuming wick.rt.setPresets has been called already.
+
+        // Load API modules
+        await loadModules(rt.presets);
 
         /**
          * Looks through DOM and hydrates any element that has a 'w:c'
@@ -102,6 +106,7 @@ if (typeof window != undefined) {
 }
 
 export { Presets };
+
 export default wick;
 
 addModuleToCFW(wick, "wick");
