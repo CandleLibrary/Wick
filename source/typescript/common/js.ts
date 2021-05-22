@@ -1,4 +1,5 @@
-import { exp, JSBindingExpression, JSBindingProperty, JSExpressionClass, JSIdentifier, JSNode, JSNodeClass, JSNodeType } from "@candlefw/js";
+import { traverse } from "@candlefw/conflagrate";
+import { exp, JSBindingProperty, JSExpressionClass, JSIdentifier, JSMethod, JSNode, JSNodeClass, JSNodeType } from "@candlefw/js";
 
 /**
  * Create an AST of the form
