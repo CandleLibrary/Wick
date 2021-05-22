@@ -366,9 +366,14 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
         }
     }
 }
-
-export function convertReferencesToComponentObjectLookups(cpy: JSNode, component: ComponentData) {
-    for (const { node, meta: { mutate, traverse_state } } of bidirectionalTraverse(cpy, "nodes")
+/**
+ * Converts ComponentBinding expressions and identifers into class based reference expressions.
+ * 
+ * @param mutated_node 
+ * @param component 
+ */
+export function finalizeBindingExpression(mutated_node: JSNode, component: ComponentData): boolean {
+    for (const { node, meta: { mutate, traverse_state } } of bidirectionalTraverse(mutated_node, "nodes")
         .filter("type",
             JSNodeType.PostExpression,
             JSNodeType.PreExpression,
@@ -604,8 +609,6 @@ function createLookupTables(class_info: CompiledComponentClass) {
 
 function processBindingVariables(component: Component, class_info: CompiledComponentClass, presets: Presets): void {
 
-
-
     for (const binding_variable of component.root_frame.binding_variables.values()) {
 
         const
@@ -623,6 +626,7 @@ function processBindingVariables(component: Component, class_info: CompiledCompo
 
     }
 }
+
 function addBindingInitialization(
     { default_val, class_index, ref_count }: BindingVariable,
     class_info: CompiledComponentClass,

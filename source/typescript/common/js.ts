@@ -19,6 +19,7 @@ import { exp, JSBindingExpression, JSBindingProperty, JSExpressionClass, JSIdent
 export function getPropertyAST(name: string | JSNode, value: string | JSNode, COMPUTED: boolean = false) {
     return exp(`({${name}:${value}})`).nodes[0].nodes[0];
 }
+
 /**
  * Create a class method AST
  * @param name  Name of the classrender method

@@ -1,18 +1,17 @@
 import { traverse } from "@candlefw/conflagrate";
-import { render } from "@candlefw/conflagrate/build/types/render/render";
 import { matchAll } from "@candlefw/css";
 import { exp, JSCallExpression, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, renderCompressed, stmt } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
-import { getComponentBinding, getCompiledBindingVariableName, Expression_Is_Static, getStaticValue } from "../../common/binding.js";
+import { Expression_Is_Static, getCompiledBindingVariableName, getComponentBinding, getStaticValue } from "../../common/binding.js";
 import { getFirstReferenceName, setPos } from "../../common/common.js";
 import { css_selector_helpers } from "../../common/css.js";
 import { BINDING_FLAG } from "../../types/binding";
 import { CompiledComponentClass } from "../../types/class_information";
 import { ComponentData } from "../../types/component";
 import { FunctionFrame } from "../../types/function_frame";
-import { HookProcessor, HOOK_TYPE, HOOK_SELECTOR, ProcessedHook } from "../../types/hook";
+import { HookProcessor, HOOK_SELECTOR, HOOK_TYPE, ProcessedHook } from "../../types/hook";
 import { ContainerDomLiteral, DOMLiteral, TemplateHTMLNode } from "../../types/html";
-import { HTMLNode, Node, WickBindingNode } from "../../types/wick_ast";
+import { HTMLNode } from "../../types/wick_ast";
 import { postProcessFunctionDeclarationSync } from "../parse/parse.js";
 import { componentDataToTempAST } from "./html.js";
 
@@ -70,6 +69,8 @@ function getFrameFromName(name: string, component: ComponentData) {
 }
 
 /**
+ * 
+ * 
  * Updates binding variables
  * @param root_node 
  * @param component 
