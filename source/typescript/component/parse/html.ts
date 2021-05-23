@@ -208,7 +208,7 @@ loadHTMLHandlerInternal(
                 return null;
             }
 
-            if (node.name == "element") {
+            if (node.name == "element" || node.name == "ele") {
 
                 host_node.tag = node.value;
 
