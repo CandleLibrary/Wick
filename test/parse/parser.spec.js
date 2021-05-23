@@ -56,11 +56,11 @@ assert_group("Function frame and bindings", () => {
     assert(root_frame.binding_variables.size == 6);
 
     assert(A.type == 1);
-    assert(B.type == 64);
+    assert(B.type == 32);
     assert(C.type == 1);
     assert(D.type == 0);
     assert(E.type == 1);
-    assert(F.type == 2);
+    assert(F.type == 16);
 
     assert(A.ref_count == 1);
     assert(B.ref_count == 2);
