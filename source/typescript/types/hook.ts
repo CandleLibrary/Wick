@@ -1,5 +1,5 @@
 import { Lexer } from "@candlefw/wind";
-import { JSNode } from "@candlefw/js";
+import { JSNode, JSStatementClass } from "@candlefw/js";
 import { HTMLNode, WickBindingNode, Node } from "./wick_ast.js";
 import Presets from "../common/presets.js";
 import { ComponentData } from "./component";
@@ -53,16 +53,16 @@ export interface IntermediateHook {
 
 export interface ProcessedHook {
     component_variables: Map<string, { name: string; IS_OBJECT: boolean; }>;
-    initialize_ast?: JSNode;
+    initialize_ast?: JSStatementClass;
     /**
      * Code that accesses the binding value
      */
-    read_ast?: JSNode;
+    read_ast?: JSStatementClass;
     /**
      * Code that assigns a value to the binding
      */
-    write_ast?: JSNode;
-    cleanup_ast?: JSNode;
+    write_ast?: JSStatementClass;
+    cleanup_ast?: JSStatementClass;
 
     type: HOOK_TYPE;
 

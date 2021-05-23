@@ -1,6 +1,6 @@
-import { bidirectionalTraverse, copy } from "@candlefw/conflagrate";
+import { bidirectionalTraverse, copy, traverse } from "@candlefw/conflagrate";
 import { exp, JSCallExpression, JSExpressionStatement, JSFunctionDeclaration, JSMethod, JSNode, JSNodeType, stmt } from "@candlefw/js";
-import { getCompiledBindingVariableName, getComponentBinding } from "../../common/binding.js";
+import { Binding_Var_Is_Internal_Variable, getCompiledBindingVariableName, getComponentBinding, Name_Is_A_Binding_Variable } from "../../common/binding.js";
 import { setPos } from "../../common/common.js";
 import { createErrorComponent } from "../../common/component.js";
 import { appendStmtToFrame, createCompileFrame, Frame_Has_Statements, getStatementsFromFrame, getStatementsFromRootFrame, prependStmtToFrame } from "../../common/frame.js";
@@ -18,7 +18,7 @@ import { HTMLNode, HTMLNodeTypeLU } from "../../types/wick_ast.js";
 import { BindingVariable, Component } from "../../wick.js";
 import { componentDataToCSS } from "../render/css.js";
 import { htmlTemplateToString } from "../render/html.js";
-import { convertAtLookupToElementRef, hook_processors, setIdentifierReferenceVariables } from "./hooks.js";
+import { convertAtLookupToElementRef, hook_processors } from "./hooks.js";
 import { componentDataToTempAST } from "./html.js";
 
 
@@ -56,6 +56,44 @@ export async function runHTMLHookHandlers(
 
     return null;
 }
+/**
+ * 
+ * 
+ * Updates binding variables
+ * @param root_node 
+ * @param component 
+ * @param hook 
+ * @returns 
+ */
+export function collectBindingReferences(root_node: JSNode, component: ComponentData, hook: ProcessedHook = null) {
+
+    for (const { node, meta: { parent } } of traverse(root_node, "nodes")) {
+
+        if (node.type == JSNodeType.IdentifierReference || node.type == JSNodeType.IdentifierBinding) {
+
+            if (!Name_Is_A_Binding_Variable(node.value, component.root_frame))
+                continue;
+
+            if (node.IS_BINDING_REF) {
+                //Pop any binding names into the binding information container. 
+                setBindingVariable(node.value, parent && parent.type == JSNodeType.MemberExpression, hook);
+            }
+        }
+    }
+}
+
+function setBindingVariable(name: string, IS_OBJECT: boolean = false, hook: ProcessedHook) {
+
+    if (hook.component_variables.has(name)) {
+        const variable = hook.component_variables.get(name);
+        variable.IS_OBJECT = IS_OBJECT || variable.IS_OBJECT;
+    } else {
+        hook.component_variables.set(name, {
+            name,
+            IS_OBJECT
+        });
+    }
+}
 
 export function runClassHookHandlers(
     intermediate_hook: IntermediateHook,
@@ -68,7 +106,7 @@ export function runClassHookHandlers(
 } {
     for (const handler of hook_processors) {
 
-        let hook = null;
+        let hook: ProcessedHook = null;
 
         if (handler.canProcessHook(
             intermediate_hook.selector,
@@ -87,6 +125,11 @@ export function runClassHookHandlers(
             );
 
         if (!hook) continue;
+
+        // Add any binding variables to the hooks component_variable set
+        for (const ast of [hook.cleanup_ast, hook.initialize_ast, hook.write_ast, hook.read_ast])
+            if (ast)
+                collectBindingReferences(ast, component, hook);
 
         return { hook, intermediate_hook };
     }
@@ -321,7 +364,7 @@ function compileBindingVariables(
  * @param component 
  */
 export function finalizeBindingExpression(mutated_node: JSNode, component: ComponentData): boolean {
-    for (const { node, meta: { mutate, traverse_state } } of bidirectionalTraverse(mutated_node, "nodes")
+    for (const { node, meta: { mutate, traverse_state } } of traverse(mutated_node, "nodes")
         .filter("type",
             JSNodeType.PostExpression,
             JSNodeType.PreExpression,
@@ -330,43 +373,44 @@ export function finalizeBindingExpression(mutated_node: JSNode, component: Compo
             JSNodeType.IdentifierBinding)
         .makeMutable()) {
 
-        if (traverse_state > 0) {
+        switch (node.type) {
+            //case JSNodeType.ComponentBindingIdentifier
+            case JSNodeType.IdentifierBinding:
+            case JSNodeType.IdentifierReference:
+                //@ts-ignore
+                if (node.IS_BINDING_REF) {
 
-            switch (node.type) {
-                //case JSNodeType.ComponentBindingIdentifier
-                case JSNodeType.IdentifierBinding:
-                case JSNodeType.IdentifierReference:
-                    //@ts-ignore
-                    if (node.IS_BINDING_REF) {
+                    const
+                        name = <string>node.value,
+                        id = exp(getCompiledBindingVariableName(name, component)),
+                        new_node = setPos(id, node.pos);
 
+                    if (!component.root_frame.binding_variables.has(<string>name))
+                        //ts-ignore
+                        throw node.pos.errorMessage(`Undefined reference to ${name}`);
+
+                    mutate(new_node);
+                }
+                break;
+
+            case JSNodeType.PreExpression:
+            case JSNodeType.PostExpression:
+                //@ts-ignore
+                if (node.nodes[0].IS_BINDING_REF) {
+
+                    const
+                        ref = node.nodes[0],
+                        //@ts-ignore
+                        name = <string>ref.value,
+                        comp_var: BindingVariable = getComponentBinding(name, component);
+
+                    if (Binding_Var_Is_Internal_Variable(comp_var)) {
                         const
-                            name = <string>node.value,
-                            id = exp(getCompiledBindingVariableName(name, component)),
-                            new_node = setPos(id, node.pos);
-
-                        if (!component.root_frame.binding_variables.has(<string>name))
-                            //ts-ignore
-                            throw node.pos.errorMessage(`Undefined reference to ${name}`);
-
-                        new_node.IS_BINDING_REF = name;
-
-                        mutate(new_node);
-                    }
-                    break;
-
-                case JSNodeType.PreExpression:
-                case JSNodeType.PostExpression:
-                    //@ts-ignore
-                    if (node.nodes[0].IS_BINDING_REF) {
-
-                        const
-                            ref = node.nodes[0],
-                            //@ts-ignore
-                            name = <string>ref.IS_BINDING_REF,
-                            comp_var: BindingVariable = getComponentBinding(name, component),
                             comp_var_name: string = getCompiledBindingVariableName(name, component),
                             assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`),
                             exp_ = exp(`${comp_var_name}${node.symbol[0]}1`);
+
+                        exp_.nodes[0] = copy(ref);
 
                         assignment.nodes[1].nodes.push(<any>exp_);
 
@@ -375,17 +419,21 @@ export function finalizeBindingExpression(mutated_node: JSNode, component: Compo
 
                         mutate(setPos(assignment, node.pos));
                     }
-                    break;
+                }
+                break;
 
-                case JSNodeType.AssignmentExpression:
-                    //@ts-ignore
-                    if (node.nodes[0].IS_BINDING_REF) {
-                        const
-                            ref = node.nodes[0],
-                            //@ts-ignore
-                            name = <string>ref.IS_BINDING_REF,
-                            comp_var: BindingVariable = getComponentBinding(name, component),
-                            assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`);
+            case JSNodeType.AssignmentExpression:
+                //@ts-ignore
+                if (node.nodes[0].IS_BINDING_REF) {
+                    const
+                        ref = node.nodes[0],
+                        //@ts-ignore
+                        name = <string>ref.value,
+                        comp_var: BindingVariable = getComponentBinding(name, component);
+
+                    //Directly assign new value to model variables
+                    if (Binding_Var_Is_Internal_Variable(comp_var)) {
+                        const assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`);
 
                         if (node.symbol == "=") {
                             assignment.nodes[1].nodes.push(node.nodes[1]);
@@ -397,11 +445,13 @@ export function finalizeBindingExpression(mutated_node: JSNode, component: Compo
 
                         mutate(setPos(assignment, node.pos));
                     }
-                    break;
-            }
+                }
+                break;
         }
     }
 }
+
+
 
 export function createClassInfoObject(): CompiledComponentClass {
 
@@ -637,8 +687,6 @@ function addBindingInitialization(
         } else
             expr.nodes[0].nodes[1].nodes.push(<any>default_val);
 
-        const converted_expression = setIdentifierReferenceVariables(expr, component);
-
-        appendStmtToFrame(class_info.init_frame, converted_expression);
+        appendStmtToFrame(class_info.init_frame, expr);
     }
 }

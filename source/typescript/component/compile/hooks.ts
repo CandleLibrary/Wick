@@ -1,10 +1,11 @@
 import { traverse } from "@candlefw/conflagrate";
 import { matchAll } from "@candlefw/css";
-import { exp, JSCallExpression, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, renderCompressed, stmt } from "@candlefw/js";
+import { exp, ext, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, renderCompressed, stmt } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
 import { Expression_Is_Static, getCompiledBindingVariableName, getComponentBinding, getStaticValue } from "../../common/binding.js";
-import { getFirstReferenceName, setPos } from "../../common/common.js";
+import { setPos } from "../../common/common.js";
 import { css_selector_helpers } from "../../common/css.js";
+import { getFrameFromName } from "../../common/frame.js";
 import { BINDING_FLAG } from "../../types/binding";
 import { CompiledComponentClass } from "../../types/class_information";
 import { ComponentData } from "../../types/component";
@@ -58,66 +59,10 @@ export function createHookObject(type: HOOK_TYPE, priority: number = 0, pos: Lex
  * @param class_data 
  * @returns 
  */
-function addNewMethodFrame(function_node: JSNode, component: ComponentData, presets, class_data) {
+function addNewMethodFrame(function_node: JSNode, component: ComponentData, presets, class_data: CompiledComponentClass) {
     const frame = postProcessFunctionDeclarationSync(function_node, component, presets);
-    class_data.frames.push(frame);
+    class_data.method_frames.push(frame);
     return frame;
-}
-
-function getFrameFromName(name: string, component: ComponentData) {
-    return component.frames.filter(({ method_name: n }) => n == name)[0] || null;
-}
-
-/**
- * 
- * 
- * Updates binding variables
- * @param root_node 
- * @param component 
- * @param hook 
- * @returns 
- */
-export function setIdentifierReferenceVariables(root_node: JSNode, component: ComponentData, hook: ProcessedHook = null): JSNode {
-
-    const receiver = { ast: null }, component_names = component.root_frame.binding_variables;
-
-    for (const { node, meta: { replace, parent } } of traverse(root_node, "nodes")
-        .makeReplaceable()
-        .extract(receiver)) {
-
-        if (node.type == JSNodeType.IdentifierReference || node.type == JSNodeType.IdentifierBinding) {
-
-            if (node.IS_BINDING_REF) {
-
-                const val = node.value;
-
-                if (!component_names.has(<string>val))
-                    continue;
-
-                replace(Object.assign({}, node, { value: getCompiledBindingVariableName(node.value, component), IS_BINDING_REF: false }));
-
-                //Pop any binding names into the binding information container. 
-                if (hook)
-                    setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, hook);
-            }
-        }
-    }
-
-    return receiver.ast;
-}
-
-
-function setBindingVariable(name: string, IS_OBJECT: boolean = false, hook: ProcessedHook) {
-
-    if (hook.component_variables.has(name)) {
-        const variable = hook.component_variables.get(name);
-        variable.IS_OBJECT = !!(+variable.IS_OBJECT | +IS_OBJECT);
-    } else {
-        hook.component_variables.set(name, {
-            name,
-            IS_OBJECT
-        });
-    }
 }
 
 /*************************************************************************************
@@ -146,14 +91,13 @@ loadHookProcessor({
         if (primary_ast) {
 
             const
-                ast = setIdentifierReferenceVariables(primary_ast, component, hook),
-                expression = exp(`this.e${element_index}.setAttribute("${hook_selector}")`);
+                stmt_ = stmt(`this.e${element_index}.setAttribute("${hook_selector}")`);
 
-            setPos(expression, primary_ast.pos);
+            setPos(stmt_, primary_ast.pos);
+            //@ts-ignore
+            stmt_.nodes[0].nodes[1].nodes.push(primary_ast);
 
-            expression.nodes[1].nodes.push(ast);
-
-            hook.write_ast = expression;
+            hook.write_ast = stmt_;
         }
 
         return hook;
@@ -207,8 +151,6 @@ loadHookProcessor({
 
                 setPos(hook.read_ast.pos, host_node.pos);
 
-                setBindingVariable(<string>local, false, hook);
-
                 return hook;
             }
 
@@ -244,8 +186,6 @@ loadHookProcessor({
                 hook.write_ast = stmt(`this.ch[${index}].ufp(${cv.class_index}, this[${comp_var.class_index}], f);`);
 
                 setPos(hook.write_ast, host_node.pos);
-
-                setBindingVariable(<string>local, false, hook);
             }
 
             return hook;
@@ -277,14 +217,12 @@ loadHookProcessor({
 
         if (primary_ast) {
 
-            const ast = primary_ast;
-
             let expression = null;
             let name = null;
 
-            if (ast.type == JSNodeType.IdentifierReference) {
+            if (primary_ast.type == JSNodeType.IdentifierReference) {
 
-                name = <string>ast.value;
+                name = <string>primary_ast.value;
 
                 const frame = getFrameFromName(name, component);
 
@@ -304,8 +242,8 @@ loadHookProcessor({
 
                 fn.nodes[2].nodes = [{
                     type: JSNodeType.ExpressionStatement,
-                    nodes: [ast],
-                    pos: ast.pos
+                    nodes: [<any>primary_ast],
+                    pos: primary_ast.pos
                 }];
 
                 const frame = addNewMethodFrame(fn, component, presets, class_data);
@@ -316,8 +254,6 @@ loadHookProcessor({
             setPos(expression, primary_ast.pos);
 
             hook.read_ast = expression;
-
-            hook.cleanup_ast = null;
         }
 
         return hook;
@@ -342,14 +278,12 @@ loadHookProcessor({
 
         if (primary_ast) {
 
-            const ast = primary_ast;
-
             let expression = null;
             let name = null;
 
-            if (ast.type == JSNodeType.IdentifierReference) {
+            if (primary_ast.type == JSNodeType.IdentifierReference) {
 
-                name = <string>ast.value;
+                name = <string>primary_ast.value;
 
                 const frame = getFrameFromName(name, component);
 
@@ -365,11 +299,11 @@ loadHookProcessor({
 
                 fn.nodes[2].nodes = [{
                     type: JSNodeType.ExpressionStatement,
-                    nodes: [ast],
-                    pos: ast.pos
+                    nodes: [<any>primary_ast],
+                    pos: primary_ast.pos
                 }];
 
-                const frame = addNewMethodFrame(fn, component, presets, class_data);
+                addNewMethodFrame(fn, component, presets, class_data);
             }
 
             expression = stmt(`window.addEventListener("${hook_selector.slice(2, -7)}",this.${name}.bind(this));`);
@@ -416,13 +350,9 @@ loadHookProcessor({
 
         if (frame.ATTRIBUTE) return null;
 
-        for (const id of other_id) setBindingVariable(<string>id.value, false, hook);
-
-        for (const id of frame.input_names) setBindingVariable(id, false, hook);
-
         registerActivatedFrameMethod(frame, class_data);
 
-        hook.write_ast = exp(`this.call(${frame.index})`);
+        hook.write_ast = stmt(`this.call(${frame.index})`);
 
         setPos(hook.write_ast, hook_node.pos);
 
@@ -451,18 +381,6 @@ loadHookProcessor({
             .makeReplaceable()
             .extract(receiver)) {
 
-            if (node.type == JSNodeType.CallExpression) {
-                const name = getFirstReferenceName(node);
-                const frame = getFrameFromName(name, component);
-                if (frame) {
-
-                    for (const input of frame.input_names.values()) {
-                        if (component_names.has(<string>input))
-                            setBindingVariable(<string>input, false, hook);
-                    }
-                }
-            }
-
             if (node.type == JSNodeType.IdentifierReference || node.type == JSNodeType.IdentifierBinding) {
 
                 const val = node.value;
@@ -471,20 +389,23 @@ loadHookProcessor({
                     continue;
 
                 replace(Object.assign({}, node, { value: getCompiledBindingVariableName(node.value, component) }));
-
-                //Pop any binding names into the binding information container. 
-                setBindingVariable(<string>val, parent && parent.type == JSNodeType.MemberExpression, hook);
             }
         }
 
-        setIdentifierReferenceVariables(<JSNode>host_node, component, hook);
-        hook.write_ast = setPos(primary_ast, host_node.pos);
-
+        hook.write_ast = <any>primary_ast;
 
         return hook;
     },
     getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
+
+function getFirstMatchingReferenceIdentifier(input_node: JSNode, id_value: string): JSNode {
+    for (const { node } of traverse(input_node, "nodes").bitFilter("type", JSNodeClass.IDENTIFIER)) {
+        if (node.value == id_value) return node;
+    }
+    return {};
+}
+
 /**********************
  * INPUT ELEMENT VALUE ATTRIBUTE
  */
@@ -503,21 +424,19 @@ loadHookProcessor({
 
         if (primary_ast) {
 
-            const ast = setIdentifierReferenceVariables(primary_ast, component, hook);
-
             hook.write_ast = setPos(
-                exp(`this.e${element_index}.value = 1`),
+                stmt(`this.e${element_index}.value = 1`),
                 primary_ast.pos
             );
+            hook.write_ast.nodes[0].nodes[1] = primary_ast;
 
-            hook.read_ast = setPos(
-                exp(`this.e${element_index}.value = 1`),
-                primary_ast.pos
-            );
+            // hook.read_ast = setPos(
+            //     stmt(`this.e${element_index}.value = 1`),
+            //     primary_ast.pos
+            // );
 
-            hook.read_ast.nodes[1] = ast;
-            hook.write_ast.nodes[1] = ast;
-            hook.cleanup_ast = null;
+            //  hook.read_ast.nodes[0].nodes[1] = primary_ast;
+
 
             if (primary_ast.type == JSNodeType.IdentifierReference) {
                 let name = <string>primary_ast.value;
@@ -532,13 +451,14 @@ loadHookProcessor({
                 } else {
 
                     const
-                        { class_index } = getComponentBinding(name, component),
-                        exprB = exp(`this.e${element_index}.addEventListener("input",e=>{${renderCompressed(ast)}= e.target.value; this.ua(${class_index})})`);
+                        { class_index } = getComponentBinding(name, component);
 
                     hook.initialize_ast = setPos(
-                        exprB,
+                        stmt(`this.e${element_index}.addEventListener("input",e=>{aAAa = e.target.value; this.ua(${class_index})})`),
                         primary_ast.pos
                     );
+
+                    Object.assign(getFirstMatchingReferenceIdentifier(hook.initialize_ast, "aAAa"), primary_ast);
                 }
             }
         }
@@ -566,21 +486,18 @@ loadHookProcessor({
 
         if (primary_ast) {
 
-            const ast = setIdentifierReferenceVariables(primary_ast, component, hook);
-
             hook.write_ast = setPos(
-                exp(`this.e${element_index}.checked = 1`),
+                stmt(`this.e${element_index}.checked = 1`),
                 primary_ast.pos
             );
+            hook.write_ast.nodes[0].nodes[1] = primary_ast;
 
-            hook.read_ast = setPos(
-                exp(`this.e${element_index}.checked = 1`),
-                primary_ast.pos
-            );
+            //hook.read_ast = setPos(
+            //    stmt(`this.e${element_index}.checked = 1`),
+            //    primary_ast.pos
+            //);
 
-            hook.read_ast.nodes[1] = ast;
-            hook.write_ast.nodes[1] = ast;
-            hook.cleanup_ast = null;
+            //hook.read_ast.nodes[0].nodes[1] = primary_ast;
 
             if (primary_ast.type == JSNodeType.IdentifierReference) {
                 let name = <string>primary_ast.value;
@@ -595,13 +512,14 @@ loadHookProcessor({
                 } else {
 
                     const
-                        { class_index } = getComponentBinding(name, component),
-                        exprB = exp(`this.e${element_index}.addEventListener("input",e=>{${renderCompressed(ast)}= e.target.checked; this.ua(${class_index})})`);
+                        { class_index } = getComponentBinding(name, component);
 
                     hook.initialize_ast = setPos(
-                        exprB,
+                        stmt(`this.e${element_index}.addEventListener("input",e=>{aAAa = e.target.checked; this.ua(${class_index})})`),
                         primary_ast.pos
                     );
+
+                    Object.assign(getFirstMatchingReferenceIdentifier(hook.initialize_ast, "aAAa"), primary_ast);
                 }
             }
         }
@@ -610,10 +528,9 @@ loadHookProcessor({
     },
     getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
-/**********************
- * 
- * Inline text bindings 
- * 
+
+/** #####################################################################
+ * TEXT BINDING
  */
 loadHookProcessor({
     priority: -2,
@@ -632,16 +549,15 @@ loadHookProcessor({
         if (primary_ast) {
 
             const
-                ast = setIdentifierReferenceVariables(primary_ast, component, hook),
-                expression = exp("a=b");
+                stmt_ = stmt("a=b");
 
-            expression.nodes[0] = <any>exp(`this.e${element_index}.data`);
+            stmt_.nodes[0].nodes[0] = <any>exp(`this.e${element_index}.data`);
 
-            expression.nodes[1] = ast;
+            setPos(stmt_, primary_ast.pos);
 
-            setPos(expression, primary_ast.pos);
+            stmt_.nodes[0].nodes[1] = primary_ast;
 
-            hook.write_ast = expression;
+            hook.write_ast = stmt_;
         }
 
         return hook;
@@ -651,15 +567,9 @@ loadHookProcessor({
     }
 });
 
-/*********************************************
- *  ██████  ██████  ███    ██ ████████  █████  ██ ███    ██ ███████ ██████  
- * ██      ██    ██ ████   ██    ██    ██   ██ ██ ████   ██ ██      ██   ██ 
- * ██      ██    ██ ██ ██  ██    ██    ███████ ██ ██ ██  ██ █████   ██████  
- * ██      ██    ██ ██  ██ ██    ██    ██   ██ ██ ██  ██ ██ ██      ██   ██ 
- *  ██████  ██████  ██   ████    ██    ██   ██ ██ ██   ████ ███████ ██   ██ 
+/** #####################################################################
+ * CONTAINER - DATA
  */
-
-// container_data
 loadHookProcessor({
 
     priority: 100,
@@ -683,15 +593,13 @@ loadHookProcessor({
 
             const
 
-                ast = setIdentifierReferenceVariables(primary_ast, component, hook),
+                ast = primary_ast,
 
-                expression = exp(`this.ct[${container_id}].sd(0)`);
+                stmt_ = setPos(stmt(`this.ct[${container_id}].sd(0)`), primary_ast.pos);
 
-            setPos(expression, primary_ast.pos);
+            stmt_.nodes[0].nodes[1].nodes = [ast];
 
-            expression.nodes[1].nodes = [ast];
-
-            hook.write_ast = expression;
+            hook.write_ast = stmt_;
         }
 
         return hook;
@@ -732,7 +640,9 @@ loadHookProcessor({
     }
 });
 
-// container_data
+/** #####################################################################
+ * CONTAINER - FILTER
+ */
 loadHookProcessor({
     priority: 100,
 
@@ -751,10 +661,9 @@ loadHookProcessor({
         if (primary_ast) {
 
             const
-                ast = setIdentifierReferenceVariables(primary_ast, component, hook),
                 expression = setPos(exp(`m1 => (1)`), primary_ast.pos);
 
-            expression.nodes[1] = ast;
+            expression.nodes[1] = primary_ast;
 
             setPos(expression, primary_ast.pos);
 
@@ -764,14 +673,16 @@ loadHookProcessor({
 
             hook.read_ast = stmt_;
 
-            hook.write_ast = exp(`this.ct[${(<HTMLNode>host_node).container_id}].filterExpressionUpdate()`);
+            hook.write_ast = stmt(`this.ct[${(<HTMLNode>host_node).container_id}].filterExpressionUpdate()`);
         }
 
         return hook;
     },
     getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
-
+/** #####################################################################
+ * CONTAINER - LIMIT
+ */
 loadHookProcessor({
     priority: 100,
 
@@ -794,10 +705,9 @@ loadHookProcessor({
             } else if (primary_ast.type & (JSNodeClass.EXPRESSION | JSNodeClass.IDENTIFIER)) {
 
                 const
-                    ast = setIdentifierReferenceVariables(primary_ast, component, hook),
-                    stmt_ = <JSCallExpression>setPos(stmt(`this.ct[${container_id}].updateLimit(a)`), primary_ast.pos);
+                    stmt_ = setPos(stmt(`this.ct[${container_id}].updateLimit(a)`), primary_ast.pos);
 
-                stmt_.nodes[0].nodes[1].nodes[0] = <any>ast;
+                stmt_.nodes[0].nodes[1].nodes[0] = primary_ast;
 
                 hook.write_ast = stmt_;
             }
@@ -808,6 +718,10 @@ loadHookProcessor({
     getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
+
+/** #####################################################################
+ * CONTAINER - SORT
+ */
 loadHookProcessor({
     priority: 100,
 
@@ -830,10 +744,9 @@ loadHookProcessor({
             } else if (primary_ast.type & (JSNodeClass.EXPRESSION | JSNodeClass.IDENTIFIER)) {
 
                 const
-                    ast = setIdentifierReferenceVariables(primary_ast, component, hook),
-                    stmt_ = <JSCallExpression>setPos(stmt(`this.ct[${container_id}].updateLimit(a)`), primary_ast.pos);
+                    stmt_ = setPos(stmt(`this.ct[${container_id}].updateLimit(a)`), primary_ast.pos);
 
-                stmt_.nodes[0].nodes[1].nodes[0] = <any>ast;
+                stmt_.nodes[0].nodes[1].nodes[0] = <any>primary_ast;
 
                 hook.write_ast = stmt_;
             }
@@ -844,6 +757,9 @@ loadHookProcessor({
     getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
+/** #####################################################################
+ * CONTAINER - SCRUB
+ */
 loadHookProcessor({
     priority: 100,
 
@@ -866,10 +782,9 @@ loadHookProcessor({
             } else if (primary_ast.type & (JSNodeClass.EXPRESSION | JSNodeClass.IDENTIFIER)) {
 
                 const
-                    ast = setIdentifierReferenceVariables(primary_ast, component, hook),
-                    stmt_ = <JSCallExpression>setPos(stmt(`this.ct[${container_id}].updateScrub(a)`), primary_ast.pos);
+                    stmt_ = setPos(stmt(`this.ct[${container_id}].updateScrub(a)`), primary_ast.pos);
 
-                stmt_.nodes[0].nodes[1].nodes[0] = <any>ast;
+                stmt_.nodes[0].nodes[1].nodes[0] = <any>primary_ast;
 
                 hook.write_ast = stmt_;
             }
@@ -880,6 +795,10 @@ loadHookProcessor({
     getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
+
+/** #####################################################################
+ * CONTAINER - SHIFT
+ */
 loadHookProcessor({
     priority: 100,
 
@@ -902,10 +821,9 @@ loadHookProcessor({
             } else if (primary_ast.type & JSNodeClass.EXPRESSION | JSNodeClass.IDENTIFIER) {
 
                 const
-                    ast = setIdentifierReferenceVariables(primary_ast, component, hook),
-                    stmt_ = <JSCallExpression>setPos(stmt(`this.ct[${container_id}].updateShift(a)`), primary_ast.pos);
+                    stmt_ = setPos(stmt(`this.ct[${container_id}].updateShift(a)`), primary_ast.pos);
 
-                stmt_.nodes[0].nodes[1].nodes[0] = <any>ast;
+                stmt_.nodes[0].nodes[1].nodes[0] = primary_ast;
 
                 hook.write_ast = stmt_;
             }
@@ -916,6 +834,10 @@ loadHookProcessor({
     getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
+
+/** #####################################################################
+ * CONTAINER - OFFSET
+ */
 loadHookProcessor({
     priority: 100,
 
@@ -938,10 +860,9 @@ loadHookProcessor({
             } else if (primary_ast.type & (JSNodeClass.EXPRESSION | JSNodeClass.IDENTIFIER)) {
 
                 const
-                    ast = setIdentifierReferenceVariables(primary_ast, component, hook),
-                    stmt_ = <JSCallExpression>setPos(stmt(`this.ct[${container_id}].updateOffset(a)`), primary_ast.pos);
+                    stmt_ = setPos(stmt(`this.ct[${container_id}].updateOffset(a)`), primary_ast.pos);
 
-                stmt_.nodes[0].nodes[1].nodes[0] = <any>ast;
+                stmt_.nodes[0].nodes[1].nodes[0] = <any>primary_ast;
 
                 hook.write_ast = stmt_;
             }
@@ -952,7 +873,9 @@ loadHookProcessor({
     getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
-// Usage selectors
+/** #####################################################################
+ * CONTAINER - USE-IF
+ */
 loadHookProcessor({
 
     priority: -1,
@@ -970,12 +893,11 @@ loadHookProcessor({
         if (primary_ast) {
 
             const
-                ast = setIdentifierReferenceVariables(primary_ast, component, hook),
                 expression = exp(`m1 => (1)`);
 
-            expression.nodes[1] = ast;
-
             setPos(expression, primary_ast.pos);
+
+            expression.nodes[1] = primary_ast;
 
             const stmt_ = stmt(`this.ct[${(<HTMLNode>host_node).container_id}].addEvaluator(a)`);
 
@@ -990,7 +912,9 @@ loadHookProcessor({
     getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
-
+/** #####################################################################
+ * ELEMENT SELECTOR STRING
+ */
 loadHookProcessor({
     priority: 100,
 

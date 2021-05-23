@@ -256,7 +256,7 @@ export function processUndefinedBindingVariables(component: ComponentData, prese
     }
 }
 
-export function getCompiledBindingVariableName(name: string, component: ComponentData) {
+export function  getCompiledBindingVariableName(name: string, component: ComponentData) {
 
     const comp_var = getComponentBinding(name, component);
 
@@ -303,7 +303,11 @@ export function getCompiledBindingVariableName(name: string, component: Componen
 
 }
 
-
+export function Binding_Var_Is_Internal_Variable(comp_var: BindingVariable) {
+    return comp_var.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
+        ||
+        comp_var.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE;
+}
 /**
  * A Binding has a static if it contains no references or call expressions.
  * 

@@ -48,6 +48,10 @@ export function createParserFrame(
     return function_frame;
 }
 
+export function getFrameFromName(name: string, component: ComponentData) {
+    return component.frames.filter(({ method_name: n }) => n == name)[0] || null;
+}
+
 export function Frame_Has_Statements({ ast, IS_ROOT }: FunctionFrame): boolean {
     return (ast && ast.nodes[2] && ast.nodes[2].nodes.length > 0);
 }
