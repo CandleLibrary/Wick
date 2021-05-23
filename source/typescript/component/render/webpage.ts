@@ -128,9 +128,10 @@ function renderPageString(
     style: string,
 ): string {
     return `<!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
-    <meta charset="utf-8">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         ${head.split("\n").join("\n    ")}
         <style>
         ${style.split("\n").join("\n            ")}
