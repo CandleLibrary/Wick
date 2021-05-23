@@ -12,16 +12,16 @@ const
 
     StrToBase64 = (typeof btoa != "undefined")
         ? btoa
-        : str => Buffer.from(str, 'binary').toString('base64'),
+        : str => Buffer.from(str, 'binary').toString('base64');
 
-    componentStringToJS =
-        ({ class_string: cls, source_map }: ComponentClassStrings, component: ComponentData, presets: Presets) => (
-            (
-                eval(
-                    "c=>" + cls + (presets.options.GENERATE_SOURCE_MAPS ? `\n${source_map}` : "")
-                )
-            )(component)
-        );
+function componentStringToJS({ class_string: cls, source_map }: ComponentClassStrings, component: ComponentData, presets: Presets) {
+
+    return (
+        eval(
+            "c=>" + cls + (presets.options.GENERATE_SOURCE_MAPS ? `\n${source_map}` : "")
+        )
+    )(component);
+}
 export async function componentDataToJSCached(
     component: ComponentData,
     presets: Presets,
