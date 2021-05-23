@@ -1,5 +1,5 @@
-import { bidirectionalTraverse, copy, traverse } from "@candlefw/conflagrate";
-import { exp, JSCallExpression, JSExpressionStatement, JSFunctionDeclaration, JSMethod, JSNode, JSNodeType, stmt } from "@candlefw/js";
+import { copy, traverse } from "@candlefw/conflagrate";
+import { exp, JSCallExpression, JSExpressionStatement, JSFunctionDeclaration, JSMethod, JSNode, JSNodeType, renderCompressed, stmt } from "@candlefw/js";
 import { Binding_Var_Is_Internal_Variable, getCompiledBindingVariableName, getComponentBinding, Name_Is_A_Binding_Variable } from "../../common/binding.js";
 import { setPos } from "../../common/common.js";
 import { createErrorComponent } from "../../common/component.js";
@@ -363,23 +363,31 @@ function compileBindingVariables(
  * @param mutated_node 
  * @param component 
  */
-export function finalizeBindingExpression(mutated_node: JSNode, component: ComponentData): boolean {
-    for (const { node, meta: { mutate, traverse_state } } of traverse(mutated_node, "nodes")
+export function finalizeBindingExpression(mutated_node: JSNode, component: ComponentData): { ast: JSNode, NEED_ASYNC: boolean; } {
+    const lz = { ast: null };
+    let NEED_ASYNC = false;
+    for (const { node, meta: { mutate, skip } } of traverse(mutated_node, "nodes")
+        .extract(lz)
         .filter("type",
+            JSNodeType.AwaitExpression,
             JSNodeType.PostExpression,
             JSNodeType.PreExpression,
             JSNodeType.AssignmentExpression,
             JSNodeType.IdentifierReference,
             JSNodeType.IdentifierBinding)
-        .makeMutable()) {
+        .makeMutable()
+        .makeSkippable()
+    ) {
 
         switch (node.type) {
+            case JSNodeType.AwaitExpression:
+                NEED_ASYNC = true;
+                break;
             //case JSNodeType.ComponentBindingIdentifier
             case JSNodeType.IdentifierBinding:
             case JSNodeType.IdentifierReference:
                 //@ts-ignore
                 if (node.IS_BINDING_REF) {
-
                     const
                         name = <string>node.value,
                         id = exp(getCompiledBindingVariableName(name, component)),
@@ -399,7 +407,7 @@ export function finalizeBindingExpression(mutated_node: JSNode, component: Compo
                 if (node.nodes[0].IS_BINDING_REF) {
 
                     const
-                        ref = node.nodes[0],
+                        [ref] = node.nodes,
                         //@ts-ignore
                         name = <string>ref.value,
                         comp_var: BindingVariable = getComponentBinding(name, component);
@@ -410,7 +418,11 @@ export function finalizeBindingExpression(mutated_node: JSNode, component: Compo
                             assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`),
                             exp_ = exp(`${comp_var_name}${node.symbol[0]}1`);
 
-                        exp_.nodes[0] = copy(ref);
+                        const { ast, NEED_ASYNC: NA } = finalizeBindingExpression(ref, component);
+
+                        NEED_ASYNC = NA || NEED_ASYNC;
+
+                        exp_.nodes[0] = ast;
 
                         assignment.nodes[1].nodes.push(<any>exp_);
 
@@ -418,6 +430,8 @@ export function finalizeBindingExpression(mutated_node: JSNode, component: Compo
                             assignment.nodes[1].nodes.push(exp("true"));
 
                         mutate(setPos(assignment, node.pos));
+
+                        skip();
                     }
                 }
                 break;
@@ -426,29 +440,42 @@ export function finalizeBindingExpression(mutated_node: JSNode, component: Compo
                 //@ts-ignore
                 if (node.nodes[0].IS_BINDING_REF) {
                     const
-                        ref = node.nodes[0],
+                        [ref, value] = node.nodes,
                         //@ts-ignore
                         name = <string>ref.value,
                         comp_var: BindingVariable = getComponentBinding(name, component);
 
                     //Directly assign new value to model variables
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {
+
                         const assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`);
+                        const { ast: a1, NEED_ASYNC: NA1 } = finalizeBindingExpression(ref, component);
+                        const { ast: a2, NEED_ASYNC: NA2 } = finalizeBindingExpression(value, component);
+
+                        NEED_ASYNC = NA1 || NA2 || NEED_ASYNC;
+
+                        node.nodes = [a1, a2];
+
 
                         if (node.symbol == "=") {
                             assignment.nodes[1].nodes.push(node.nodes[1]);
                         } else {
+
                             //@ts-ignore
                             node.symbol = node.symbol.slice(0, 1);
                             assignment.nodes[1].nodes.push(node);
                         }
 
                         mutate(setPos(assignment, node.pos));
+
+                        skip();
                     }
                 }
                 break;
         }
     }
+
+    return { ast: lz.ast, NEED_ASYNC };
 }
 
 
@@ -587,9 +614,9 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
 
         const cpy: JSFunctionDeclaration | JSMethod = <any>copy(frame.ast);
 
-        cpy.ASYNC = frame.IS_ASYNC || cpy.ASYNC;
+        const { NEED_ASYNC } = finalizeBindingExpression(cpy, component);
 
-        finalizeBindingExpression(cpy, component);
+        cpy.ASYNC = NEED_ASYNC || frame.IS_ASYNC || cpy.ASYNC;
 
         cpy.type = JSNodeType.Method;
 
