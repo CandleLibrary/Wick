@@ -216,6 +216,7 @@ function compileHookFunctions(
                     .map(v => component.root_frame.binding_variables.get(v.name))
                     .every(Binding_Var_Is_Directly_Accessed);
 
+
             if (NO_INDIRECT_VARIABLES) {
                 //This code can be included in component initialization
                 if (HAS_ASYNC)
@@ -290,7 +291,7 @@ function compileHookFunctions(
 }
 
 function Binding_Var_Is_Directly_Accessed(binding_var: BindingVariable) {
-    return binding_var.type & (BINDING_VARIABLE_TYPE.DIRECT_ACCESS | BINDING_VARIABLE_TYPE.METHOD_VARIABLE);
+    return (binding_var.type & (BINDING_VARIABLE_TYPE.DIRECT_ACCESS)) > 0;
 }
 
 function compileBindingVariables(

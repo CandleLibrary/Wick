@@ -5,22 +5,30 @@ import { JSNode } from "@candlefw/js";
 
 export const enum BINDING_VARIABLE_TYPE {
     UNDEFINED = 0,
+    
+    
     /**
-     * Static variable that could replaced directly with 
-     * its assigned value
+     * Indirect variables that require one level
+     * of indirection.
      */
     INTERNAL_VARIABLE = 1,
-    METHOD_VARIABLE = 2,
-    API_VARIABLE = 4,
-    PARENT_VARIABLE = 8,
-    MODEL_VARIABLE = 16,
+    PARENT_VARIABLE = 2,
+    MODEL_VARIABLE = 4,
+    
     /**
      * A Global variable that should be wrapped into a an
      * observerable 
      */
-    GLOBAL_VARIABLE = 32,
+    GLOBAL_VARIABLE = 8,
 
-    CONST_INTERNAL_VARIABLE = 64,
+    /**
+     * Static variable that could replaced directly with 
+     * its assigned value
+     */
+    
+    METHOD_VARIABLE = 16,
+    CONST_INTERNAL_VARIABLE = 32,
+    API_VARIABLE = 64,
     MODULE_MEMBER_VARIABLE = 128,
     MODULE_VARIABLE = 256,
 
@@ -28,7 +36,7 @@ export const enum BINDING_VARIABLE_TYPE {
      * Variables that are replaced with direct
      * property access on the associated object
      */
-    DIRECT_ACCESS = 4 | 32 | 64 | 128 | 256,
+    DIRECT_ACCESS = 16 | 32 | 64 | 128 | 256,
 }
 
 /**
