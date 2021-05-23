@@ -122,7 +122,7 @@ export function hydrateComponentElement(hydrate_candidate: HTMLElement, parent_c
     return first_comp;
 }
 
-export function hydrateContainerElement(ele: HTMLElement, parent: WickRTComponent) {
+export function hydrateContainerElement(ele: HTMLElement, parent: WickRTComponent, null_elements: HTMLElement[] = []) {
     const
         comp_constructors = ele
             .getAttribute("w:ctr")
@@ -137,7 +137,7 @@ export function hydrateContainerElement(ele: HTMLElement, parent: WickRTComponen
     if (comp_constructors.length < 1)
         throw new Error(`Could not find component class for ${name} in component ${parent.name}`);
 
-    const ctr = new WickContainer(comp_constructors, comp_attributes, ele, parent);
+    const ctr = new WickContainer(comp_constructors, comp_attributes, ele, parent, null_elements);
 
     parent.ct.push(ctr);
 }

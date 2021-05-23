@@ -33,6 +33,12 @@ interface WindowData {
     DESCENDING: boolean;
 }
 
+const enum TRANSITION {
+    OUT = 0,
+    IN = 1,
+    ARRANGE = 2
+}
+
 
 type ContainerComponent = WickRTComponent & { index: number; container_model: any; _TRANSITION_STATE_: boolean; par: ContainerComponent; };
 
@@ -98,6 +104,8 @@ export class WickContainer implements Sparky, ObservableWatcher {
      */
     dom_comp: ContainerComponent[];
 
+    transition_list: { comp: ContainerComponent; TYPE: TRANSITION, row: number, col: number, DESCENDING: boolean; }[];
+
     /**
      * Components that have been created from model array data. 
      */
@@ -126,7 +134,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
     /**
      * True if any sub-component ele has been mounted to the DOM.
      */
-    ELEMENT_CONNECTED: boolean;
+    NULL_ELEMENT_DISCONNECTED: boolean;
     UPDATE_FILTER: boolean;
     DOM_UP_APPENDED: boolean;
     DOM_DN_APPENDED: boolean;
@@ -135,7 +143,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
     SCRUBBING: boolean;
 
     //Replaces the element with sub-component elements if true.
-    REPLACE_ELEMENT: boolean;
+    USE_NULL_ELEMENT: boolean;
 
     parent: WickRTComponent;
 
@@ -159,20 +167,9 @@ export class WickContainer implements Sparky, ObservableWatcher {
         component_constructors: typeof WickRTComponent[],
         component_attributes: [string, string][][],
         element: HTMLElement,
-        parent_comp: WickRTComponent
+        parent_comp: WickRTComponent,
+        null_elements: HTMLElement[] = []
     ) {
-
-
-        this.ele = element;
-
-        if (this.ele.tagName == "TABLE") {
-            // Some browsers automatically insert tbody in table elements
-            // which will break hydration. This will map containers element
-            // reference to that tbody, which will contain the real containers
-            // children
-            if (this.ele.firstElementChild && this.ele.firstElementChild.tagName == "TBODY")
-                this.ele = <HTMLElement>this.ele.firstElementChild;
-        }
 
         this.comp_constructors = component_constructors;
         this.comp_attributes = component_attributes || component_attributes_default;
@@ -182,12 +179,10 @@ export class WickContainer implements Sparky, ObservableWatcher {
         this.filters = [];
         this.comps = [];
 
-        this.first_dom_element = null;
-        this.last_dom_element = null;
-
         this.dom_dn = [];
         this.dom_up = [];
         this.evaluators = [];
+        this.transition_list = [];
 
         this._SCHD_ = 0;
         this.shift_amount = 1;
@@ -200,13 +195,14 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
         this.trs_ascending = null;
         this.trs_descending = null;
-        this.REPLACE_ELEMENT = this.ele.tagName == "NULL";
-        this.ELEMENT_CONNECTED = false;
+        this.USE_NULL_ELEMENT = false;
+        this.NULL_ELEMENT_DISCONNECTED = false;
         this.UPDATE_FILTER = false;
         this.DOM_UP_APPENDED = false;
         this.DOM_DN_APPENDED = false;
         this.AUTO_SCRUB = false;
         this.LOADED = false;
+        this.SCRUBBING = false;
 
         this.container = null;
 
@@ -215,16 +211,54 @@ export class WickContainer implements Sparky, ObservableWatcher {
         this.filter = null;//m1 => true;
         this.sort = null;//() => 0; 
 
-        if (this.ele.childElementCount > 0)
-            for (const comp of hydrateComponentElements(Array.from(this.ele.children))) {
-                comp.par = parent_comp;
-                comp.hydrate();
-                comp.connect();
-                this.activeComps.push(<ContainerComponent>comp);
-                this.comps.push(<ContainerComponent>comp);
-                this.dom_comp.push(<ContainerComponent>comp);
+        this.first_dom_element = null;
+        this.last_dom_element = null;
+        this.ele = element;
+
+        if (null_elements.length > 0 || this.ele.hasAttribute("null")) {
+
+            this.USE_NULL_ELEMENT = true;
+
+            this.ele.setAttribute("BBB", "222");
+
+            if (null_elements.length > 0) {
+
+                this.NULL_ELEMENT_DISCONNECTED = true;
+                this.ele.parentElement.removeChild(this.ele);
+                this.first_dom_element = null_elements[0];
+                this.last_dom_element = null_elements[null_elements.length - 1];
+
+                for (const comp of hydrateComponentElements(null_elements)) {
+                    comp.par = parent_comp;
+                    comp.hydrate();
+                    comp.connect();
+                    this.activeComps.push(<ContainerComponent>comp);
+                    this.comps.push(<ContainerComponent>comp);
+                    this.dom_comp.push(<ContainerComponent>comp);
+                }
+            }
+        } else {
+
+            if (this.ele.tagName == "TABLE") {
+                // Some browsers automatically insert tbody in table elements
+                // which will break hydration. This will map containers element
+                // reference to that tbody, which will contain the real containers
+                // children
+                if (this.ele.firstElementChild && this.ele.firstElementChild.tagName == "TBODY")
+                    this.ele = <HTMLElement>this.ele.firstElementChild;
             }
 
+            if (this.ele.childElementCount > 0)
+                for (const comp of hydrateComponentElements(Array.from(this.ele.children))) {
+                    comp.par = parent_comp;
+                    comp.hydrate();
+                    comp.connect();
+                    this.activeComps.push(<ContainerComponent>comp);
+                    this.comps.push(<ContainerComponent>comp);
+                    this.dom_comp.push(<ContainerComponent>comp);
+                }
+
+        }
     }
 
     destructor() {
@@ -265,19 +299,6 @@ export class WickContainer implements Sparky, ObservableWatcher {
     }
 
     onModelUpdate(container) { this.filter_new_items(container); }
-
-    update(container) {
-        throw new Error("IS this being used?");
-
-        if (container.CFW_DATA_STRUCTURE) container = container.get(undefined, []);
-
-        if (!container) return;
-
-        if (Array.isArray(container))
-            this.filter_new_items(container);
-        else
-            this.filter_new_items(container.data);
-    }
 
     setLoadedFlag() {
         if (!this.LOADED)
@@ -482,6 +503,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
             while (i < active_window_start) {
                 this.dom_dn.push(output[i]);
                 const { row, col } = getColumnRow(i, offset - 1, this.shift_amount);
+
                 output[i].transitionIn(row, col, true, this.trs_descending);
                 output[i++].index = -2;
             }
@@ -530,7 +552,15 @@ export class WickContainer implements Sparky, ObservableWatcher {
         }
     }
 
-
+    addTransitioningComp(comp: ContainerComponent, TYPE: TRANSITION, DESCENDING: boolean, row: number, col: number) {
+        this.transition_list.push({
+            comp,
+            TYPE,
+            DESCENDING,
+            row,
+            col,
+        });
+    }
 
 
     arrange(w_data: WindowData, output = this.activeComps, transition = createTransition()) {
@@ -544,10 +574,8 @@ export class WickContainer implements Sparky, ObservableWatcher {
         while (i < active_window_start && i < output_length) {
 
             if (output[i].CONNECTED) {
-
                 const { row, col } = getColumnRow(i, offset, this.shift_amount);
-
-                output[i].transitionOut(row, col, DESCENDING, transition);
+                this.addTransitioningComp(output[i], TRANSITION.OUT, DESCENDING, row, col);
             }
 
             i++;
@@ -558,9 +586,9 @@ export class WickContainer implements Sparky, ObservableWatcher {
             const { row, col } = getColumnRow(i, offset, this.shift_amount);
 
             if (output[i].CONNECTED)
-                output[i].arrange(row, col, transition);
+                this.addTransitioningComp(output[i], TRANSITION.ARRANGE, DESCENDING, row, col);
             else
-                output[i].transitionIn(row, col, DESCENDING, transition);
+                this.addTransitioningComp(output[i], TRANSITION.IN, DESCENDING, row, col);
             i++;
         }
 
@@ -568,7 +596,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
             if (output[i].CONNECTED) {
                 const { row, col } = getColumnRow(i, offset, this.shift_amount);
-                output[i].transitionOut(row, col, DESCENDING, transition);
+                this.addTransitioningComp(output[i], TRANSITION.OUT, DESCENDING, row, col);
             }
             i++;
         }
@@ -580,10 +608,9 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
         this.ele.style.position = this.ele.style.position;
 
-
-        if (this.REPLACE_ELEMENT && this.ELEMENT_CONNECTED && upper_bound - active_window_start == 0) {
+        if (this.USE_NULL_ELEMENT && this.NULL_ELEMENT_DISCONNECTED && upper_bound - active_window_start == 0) {
             this.dom_comp[0].ele.parentElement.insertBefore(this.ele, this.dom_comp[0].ele);
-            this.ELEMENT_CONNECTED = false;
+            this.NULL_ELEMENT_DISCONNECTED = false;
         }
 
         this.dom_comp.length = 0;
@@ -591,7 +618,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
         for (let i = active_window_start; i < upper_bound; i++)
             this.dom_comp.push(output[i]);
 
-        if (this.REPLACE_ELEMENT && this.dom_comp.length > 0) {
+        if (this.USE_NULL_ELEMENT && this.dom_comp.length > 0) {
             this.first_dom_element = this.dom_comp[0].ele;
             this.last_dom_element = this.dom_comp[this.dom_comp.length - 1].ele;
         }
@@ -601,8 +628,9 @@ export class WickContainer implements Sparky, ObservableWatcher {
      * Appends elements to the DOM
      */
     append(appending_comp: WickRTComponent, append_before_ele?: HTMLElement) {
-        if (this.REPLACE_ELEMENT) {
-            if (!this.ELEMENT_CONNECTED) {
+
+        if (this.USE_NULL_ELEMENT) {
+            if (!this.NULL_ELEMENT_DISCONNECTED) {
 
                 appending_comp.appendToDOM(this.ele.parentElement, this.ele, false);
 
@@ -611,7 +639,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
                 this.first_dom_element = appending_comp.ele;
                 this.last_dom_element = appending_comp.ele;
 
-                this.ELEMENT_CONNECTED = true;
+                this.NULL_ELEMENT_DISCONNECTED = true;
             } else {
                 if (!append_before_ele) {
 
@@ -681,6 +709,8 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
         this.updateRefs(w_data, output);
 
+        this.primeTransitions(transition);
+
         if (OWN_TRANSITION) {
             if (NO_TRANSITION)
                 return transition;
@@ -689,6 +719,23 @@ export class WickContainer implements Sparky, ObservableWatcher {
         }
 
         return transition;
+    }
+
+    primeTransitions(transition) {
+        for (const { TYPE, row, col, DESCENDING, comp } of this.transition_list)
+            switch (TYPE) {
+                case TRANSITION.IN:
+                    comp.transitionIn(row, col, DESCENDING, transition);
+                    break;
+                case TRANSITION.OUT:
+                    comp.transitionOut(row, col, DESCENDING, transition);
+                    break;
+                case TRANSITION.ARRANGE:
+                    comp.arrange(row, col, transition);
+                    break;
+            }
+
+        this.transition_list.length = 0;
     }
 
 
@@ -743,6 +790,8 @@ export class WickContainer implements Sparky, ObservableWatcher {
      */
     updateFilter() {
 
+
+
         let output = this.comps.slice();
 
         if (this.filter)
@@ -768,6 +817,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
     }
 
     updateLimit(value: number) {
+
         if (typeof value == "number" && this.limit != value) {
             this.limit = value;
             this.scheduledUpdate();
@@ -842,15 +892,18 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
             const sl = this.activeComps.length;
 
-            let trs = { trs: transition, pos: null };
+            if (this.USE_NULL_ELEMENT && this.NULL_ELEMENT_DISCONNECTED)
+                this.first_dom_element.parentElement.insertBefore(this.first_dom_element, this.ele);
 
             for (let i = 0; i < sl; i++) {
                 const { row, col } = getColumnRow(i, this.offset, this.shift_amount);
-                this.activeComps[i].transitionOut(row, col, trs, false, true);
+                this.addTransitioningComp(this.activeComps[i], TRANSITION.OUT, false, row, col);
             }
 
             this.comps.length = 0;
             this.activeComps.length = 0;
+
+            this.primeTransitions(transition);
 
             if (!this.SCRUBBING)
                 transition.play();
@@ -866,10 +919,9 @@ export class WickContainer implements Sparky, ObservableWatcher {
                 if (exists.has(this.activeComps[i].container_model))
                     exists.set(this.activeComps[i].container_model, false);
 
-
             for (let i = 0, l = this.comps.length; i < l; i++)
                 if (!exists.has(this.comps[i].container_model)) {
-                    this.comps[i].transitionOut(true, transition, true);
+                    this.addTransitioningComp(this.comps[0], TRANSITION.OUT, false, -1, -1);
                     this.comps[i].index = -1;
                     this.comps.splice(i, 1);
                     l--;

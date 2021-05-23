@@ -1,8 +1,4 @@
-
-
-
-import { exp, JSNode, JSNodeType } from "@candlefw/js";
-import { ContainerDomLiteral, DOMLiteral, TemplateHTMLNode } from "../types/html";
+import { ContainerDomLiteral, DOMLiteral } from "../types/html";
 import { HTMLContainerNode, HTMLNode } from "../types/wick_ast";
 
 
@@ -82,59 +78,6 @@ export const html_command_types = new Set([
     "checkbox",
 ]);
 
-export function Is_Tag_From_HTML_Spec(tag_name: string): boolean { return html_tags.has(tag_name.toLowerCase()); }
-
-
-function sanitizeString(str: string) {
-    return str.replace(/\n/g, "\\n").replace(/"/g, `\\"`);
-}
-
-function propLiteral(name: string, val: any) {
-    return exp(`({${name}:${val}})`).nodes[0].nodes[0];
-}
-
-function propString(name: string, val: string) {
-    return exp(`({${name}:"${sanitizeString(val)}"})`).nodes[0].nodes[0];
-}
-
-function propArray(name: string, children) {
-    const d = exp(`({${name}:[]})`).nodes[0].nodes[0];
-    d.nodes[1].nodes = children;
-    return d;
-}
-
-function DOMAttributeToJSNode([key, val]: [string, string]) {
-    return {
-        type: JSNodeType.ArrayLiteral,
-        nodes: [
-            { type: JSNodeType.StringLiteral, quote_type: "\"", value: key },
-            { type: JSNodeType.StringLiteral, quote_type: "\"", value: val !== undefined ? sanitizeString(val + "") : "" }
-        ]
-    };
-};
-
-export function DOMLiteralToJSNode(node: TemplateHTMLNode): JSNode {
-
-    const out: JSNode = {
-        type: JSNodeType.ObjectLiteral,
-        nodes: [],
-        pos: node.pos
-    };
-
-    if (!node.tagName)
-        out.nodes.push(propString("data", node.data || ""));
-    else
-        out.nodes.push(propString("tag_name", node.tagName));
-
-    if (node.children)
-        out.nodes.push(propArray("children", node.children.map(DOMLiteralToJSNode)));
-
-    if (node.attributes)
-        out.nodes.push(propArray("attributes", [...node.attributes.entries()].map(DOMAttributeToJSNode)));
-
-    return out;
-}
-
 export function buildExportableDOMNode(
     ast: HTMLNode & {
         component_name?: string;
@@ -207,3 +150,6 @@ export function buildExportableDOMNode(
 
     return node;
 }
+
+export function Is_Tag_From_HTML_Spec(tag_name: string): boolean { return html_tags.has(tag_name.toLowerCase()); }
+

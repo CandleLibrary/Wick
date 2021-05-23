@@ -1,4 +1,6 @@
 import { bidirectionalTraverse, TraverseState } from "@candlefw/conflagrate";
+import { TraversedNode } from "@candlefw/conflagrate/build/types/types/traversed_node";
+import { exp, JSNode, JSNodeType } from "@candlefw/js";
 import { html_void_tags } from "../../common/html.js";
 import Presets from "../../common/presets.js";
 import { rt } from "../../runtime/global.js";
@@ -25,7 +27,6 @@ export async function componentDataToHTML(
     return { html: html_string, template_map: template_map };
 }
 
-
 /**
  * Return an HTML string from a TemplateHTMLNode AST object
  */
@@ -36,14 +37,8 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
 
         if (traverse_state == TraverseState.LEAF) {
             if (node.tagName) {
-                let string = `<${node.tagName}`;
 
-                for (const [key, val] of node.attributes.entries())
-                    if (val === "")
-                        string += ` ${key}`;
-
-                    else
-                        string += ` ${key}="${val}"`;
+                let string = addAttributesToString(node, `<${node.tagName}`);
 
                 if (html_void_tags.has(node.tagName.toLowerCase()))
                     node.strings.push(string + "/>");
@@ -57,20 +52,23 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
             if (parent)
                 parent.strings.push(...node.strings.map(s => depth_str + s));
         } else if (traverse_state == TraverseState.ENTER) {
+            let string = "";
 
-            let string = `<${node.tagName}`;
 
-            for (const [key, val] of node.attributes.entries())
-                if (val === "")
-                    string += ` ${key}`;
+            //Null container elements do not enclose their children 
+            //elements, but instead are closed before their children
+            //are listed. A special null attribute is applied indicating 
+            //how many children the container captures. 
+            if (node.tagName == "null")
+                string = addAttributesToString(node, `<span hidden=true null=${node.children.length} `) + "</span>";
+            else
+                string = addAttributesToString(node, `<${node.tagName}`) + ">";
 
-                else
-                    string += ` ${key}="${val}"`;
-
-            node.strings.push(string + ">");
+            node.strings.push(string);
         } else {
-
-            node.strings.push(`</${node.tagName}>`);
+            //Null container elements do not enclose their child elements
+            if (node.tagName !== "null")
+                node.strings.push(`</${node.tagName}>`);
 
             if (parent)
                 parent.strings.push(...node.strings.map(s => depth_str + s));
@@ -80,3 +78,91 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
     return html.strings.join("\n");
 }
 
+function addAttributesToString(node: TraversedNode<TemplateHTMLNode>, string: string) {
+    for (const [key, val] of node.attributes.entries())
+        if (val === "")
+            string += ` ${key}`;
+        else
+            string += ` ${key}="${val}"`;
+    return string;
+}
+
+
+export function htmlTemplateToJSNode(node: TemplateHTMLNode): JSNode {
+
+    const out: JSNode = {
+        type: JSNodeType.ObjectLiteral,
+        nodes: [],
+        pos: node.pos
+    };
+
+    if (!node.tagName)
+        out.nodes.push(propString("data", node.data || ""));
+    else
+        out.nodes.push(propString("tag_name", node.tagName));
+
+
+    if (node.children) {
+
+        const children_array = [];
+
+        for (const child of node.children) {
+            if (child.tagName == "null") {
+                children_array.push(nullContainerToJSNode(child));
+                children_array.push(...(child.children ?? []).map(htmlTemplateToJSNode));
+            } else {
+                children_array.push(htmlTemplateToJSNode(child));
+            }
+        }
+
+        out.nodes.push(propArray("children", children_array));
+    }
+
+    if (node.attributes)
+        out.nodes.push(propArray("attributes", [...node.attributes.entries()].map(DOMAttributeToJSNode)));
+
+    return out;
+}
+
+export function nullContainerToJSNode(node: TemplateHTMLNode): JSNode {
+
+    const out: JSNode = {
+        type: JSNodeType.ObjectLiteral,
+        nodes: [],
+        pos: node.pos
+    };
+
+    out.nodes.push(propString("tag_name", "span"));
+
+    if (node.attributes)
+        out.nodes.push(propArray("attributes", [...node.attributes.entries(), ...[["hidden", "true"], ["null", node.children.length]]].map(DOMAttributeToJSNode)));
+
+    return out;
+}
+function sanitizeString(str: string) {
+    return str.replace(/\n/g, "\\n").replace(/"/g, `\\"`);
+}
+
+function propLiteral(name: string, val: any) {
+    return exp(`({${name}:${val}})`).nodes[0].nodes[0];
+}
+
+function propString(name: string, val: string) {
+    return exp(`({${name}:"${sanitizeString(val)}"})`).nodes[0].nodes[0];
+}
+
+function propArray(name: string, children) {
+    const d = exp(`({${name}:[]})`).nodes[0].nodes[0];
+    d.nodes[1].nodes = children;
+    return d;
+}
+
+function DOMAttributeToJSNode([key, val]: [string, string]) {
+    return {
+        type: JSNodeType.ArrayLiteral,
+        nodes: [
+            { type: JSNodeType.StringLiteral, quote_type: "\"", value: key },
+            { type: JSNodeType.StringLiteral, quote_type: "\"", value: val !== undefined ? sanitizeString(val + "") : "" }
+        ]
+    };
+};

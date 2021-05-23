@@ -145,9 +145,10 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.wrapper = wrapper;
 
 
-        if (existing_element)
-            this.ele = <HTMLElement>this.integrateElement(existing_element, parent_chain.concat(this));
-        else
+        if (existing_element) {
+            this.ele = existing_element;
+            this.integrateElement(existing_element, parent_chain.concat(this));
+        } else
             this.ele = this.createElement(presets, parent_chain);
     }
 
@@ -244,7 +245,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                     doc = <HTMLElement>template.content.cloneNode(true),
                     ele = <HTMLElement>doc.firstElementChild;
 
-                return <HTMLElement>this.integrateElement(ele);
+                this.integrateElement(ele);
+
+                return ele;
             } else
                 console.warn("WickRT :: NO template element for component: " + this.name);
         }
@@ -294,8 +297,12 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         if (other_element) {
             if (!INSERT_AFTER)
                 other_element.parentElement.insertBefore(this.ele, other_element);
-            else
-                other_element.parentElement.insertBefore(this.ele, other_element.nextElementSibling);
+            else {
+                if (other_element.nextElementSibling)
+                    other_element.parentElement.insertBefore(this.ele, other_element.nextElementSibling);
+                else
+                    other_element.parentElement.appendChild(this.ele);
+            }
         } else {
             parent_element.appendChild(this.ele);
         }
@@ -305,6 +312,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     }
 
     removeFromDOM() {
+
         //Prevent erroneous removal of scope.
         if (this.CONNECTED == false) return;
 
@@ -682,17 +690,17 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     //=========================================================
     //=========================================================
     //=========================================================
-    integrateElement(ele: HTMLElement | Text, component_chain: WickRTComponent[] = [this]) {
+    integrateElement(ele: HTMLElement | Text, component_chain: WickRTComponent[] = [this]): number {
 
         if (ele instanceof Text) {
             //this.elu.push(ele);
-            return ele;
+            return 0;
         } else {
 
             if (this.ele) {
                 if (ele.hasAttribute("w:own")) {
                     if (+ele.getAttribute("w:own") != this.affinity) {
-                        return ele;
+                        return 0;
                     }
                 }
 
@@ -710,7 +718,28 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
                     if (ele.getAttribute("w:ctr")) {
 
-                        hydrateContainerElement(ele, this);
+                        //If null=n attribute exists then the container will 
+                        //be hydrated by the next n elements, which do not 
+                        //belong to the scope of the current container. 
+                        const
+                            null_count = parseInt(ele.getAttribute("null")) || 0,
+                            null_elements = [];
+
+                        if (null_count > 0) {
+
+                            let prev = ele;
+
+                            for (let i = 0; i < null_count; i++) {
+                                null_elements.push(prev.nextElementSibling);
+                                prev = null_elements[i];
+                            }
+                        }
+
+                        hydrateContainerElement(ele, this, null_elements);
+
+                        this.elu.push(ele);
+
+                        return null_count;
 
                     } else if (ele.hasAttribute("w:c") && this.ele !== ele) {
 
@@ -718,10 +747,11 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
                         this.elu.push(ele);
 
-                        return;
+                        return 0;
                     }
 
                     if (ele.hasAttribute("w:o")) {
+
                         // Element outside the scope of the current component
 
                         this.par.elu[+ele.hasAttribute("w:o")] = ele;
@@ -730,7 +760,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                         for (const child of ele.childNodes)
                             this.par.integrateElement(child, component_chain);
 
-                        return ele;
+                        return 0;
 
                     } else if (ele.hasAttribute("w:r")) {
 
@@ -747,7 +777,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                         for (const child of ele.childNodes)
                             component_chain[comp_index].integrateElement(child, component_chain);
 
-                        return ele;
+                        return 0;
                     } else this.elu.push(ele);
 
                     if (ele.tagName == "A")
@@ -759,11 +789,14 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                 this.elu.push(ele);
             }
 
+            let skip_count = 0;
             //@ts-ignore
-            for (const child of (ele.childNodes || []))
-                this.integrateElement(child, component_chain);
+            for (const child of (ele.childNodes || [])) {
+                if (skip_count-- > 0) continue;
+                skip_count = this.integrateElement(child, component_chain);
+            }
 
-            return ele;
+            return 0;
         }
     }
 

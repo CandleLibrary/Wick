@@ -1,10 +1,9 @@
 import { copy, traverse } from "@candlefw/conflagrate";
-import { exp, JSCallExpression, JSExpressionStatement, JSFunctionDeclaration, JSMethod, JSNode, JSNodeType, renderCompressed, stmt } from "@candlefw/js";
+import { exp, JSCallExpression, JSExpressionStatement, JSFunctionDeclaration, JSMethod, JSNode, JSNodeType, stmt } from "@candlefw/js";
 import { Binding_Var_Is_Internal_Variable, getCompiledBindingVariableName, getComponentBinding, Name_Is_A_Binding_Variable } from "../../common/binding.js";
 import { setPos } from "../../common/common.js";
 import { createErrorComponent } from "../../common/component.js";
 import { appendStmtToFrame, createCompileFrame, Frame_Has_Statements, getStatementsFromFrame, getStatementsFromRootFrame, prependStmtToFrame } from "../../common/frame.js";
-import { DOMLiteralToJSNode } from "../../common/html.js";
 import { Expression_Contains_Await, getPropertyAST } from "../../common/js.js";
 import Presets from "../../common/presets.js";
 import { rt } from "../../runtime/global.js";
@@ -17,10 +16,113 @@ import { TemplateHTMLNode } from "../../types/html.js";
 import { HTMLNode, HTMLNodeTypeLU } from "../../types/wick_ast.js";
 import { BindingVariable, Component } from "../../wick.js";
 import { componentDataToCSS } from "../render/css.js";
-import { htmlTemplateToString } from "../render/html.js";
+import { htmlTemplateToJSNode, htmlTemplateToString } from "../render/html.js";
 import { convertAtLookupToElementRef, hook_processors } from "./hooks.js";
 import { componentDataToTempAST } from "./html.js";
 
+export async function createCompiledComponentClass(
+    comp: ComponentData,
+    presets: Presets,
+    INCLUDE_HTML: boolean = true,
+    INCLUDE_CSS: boolean = true
+): Promise<CompiledComponentClass> {
+
+    try {
+
+        const info = createClassInfoObject();
+
+        //HTML INFORMATION
+        if (INCLUDE_HTML)
+            await processHTML(comp, info, presets);
+
+        //CSS INFORMATION
+        if (INCLUDE_CSS)
+            processCSS(comp, info, presets);
+
+        //Javascript Information.
+        if (comp.HAS_ERRORS === false && comp.root_frame) {
+
+            createLookupTables(info);
+
+            setBindingVariableIndices(comp, info);
+
+            processBindingVariables(comp, info, presets);
+
+            processHooks(comp, info, presets);
+
+            processMethods(comp, info);
+        }
+
+        // Remove methods 
+        return info;
+
+    } catch (e) {
+        //throw e;
+        console.log(`Error found in component ${comp.name} while converting to a class. location: ${comp.location}.`);
+        console.log(e);
+        return createCompiledComponentClass(createErrorComponent([e], comp.source, comp.location, comp), presets);
+    }
+}
+
+export function createClassInfoObject(): CompiledComponentClass {
+
+    const
+        binding_setup_frame = createCompileFrame("c", ""),
+        init_frame = createCompileFrame("init", "c"),
+        async_init_frame = createCompileFrame("async_init"),
+        terminate_frame = createCompileFrame("terminate"),
+        class_info: CompiledComponentClass = {
+            methods: <any>[],
+            binding_setup_frame,
+            init_frame,
+            async_init_frame,
+            terminate_frame,
+            nluf_public_variables: null,
+            lfu_table_entries: [],
+            lu_public_variables: [],
+            method_frames: [async_init_frame, init_frame, binding_setup_frame],
+            nlu_index: 0,
+        };
+
+    async_init_frame.IS_ASYNC = true;
+
+    return class_info;
+}
+
+
+async function processHTML(
+    component: ComponentData,
+    class_info: CompiledComponentClass,
+    presets: Presets
+) {
+
+    if (component.HTML) {
+        const
+            frame = createCompileFrame("ce"),
+            return_stmt = stmt("return this.makeElement(a);"),
+            { html: [html], template_map } = (await componentDataToTempAST(component, presets));
+
+        // Add templates to runtime template collection
+        if (typeof document != undefined && document.createElement)
+
+            for (const [template_name, template_node] of template_map.entries())
+
+                if (!rt.templates.has(template_name)) {
+
+                    const ele = document.createElement("div");
+
+                    ele.innerHTML = htmlTemplateToString(template_node);
+
+                    rt.templates.set(template_name, <HTMLElement>ele.firstElementChild);
+                }
+
+        return_stmt.nodes[0].nodes[1].nodes[0] = htmlTemplateToJSNode(html);
+
+        appendStmtToFrame(frame, return_stmt);
+
+        class_info.method_frames.push(frame);
+    }
+}
 
 function createBindingName(binding_index_pos: number) {
     return `b${binding_index_pos.toString(36)}`;
@@ -479,77 +581,6 @@ export function finalizeBindingExpression(mutated_node: JSNode, component: Compo
     return { ast: lz.ast, NEED_ASYNC };
 }
 
-
-
-export function createClassInfoObject(): CompiledComponentClass {
-
-    const
-        binding_setup_frame = createCompileFrame("c", ""),
-        init_frame = createCompileFrame("init", "c"),
-        async_init_frame = createCompileFrame("async_init"),
-        terminate_frame = createCompileFrame("terminate"),
-        class_info: CompiledComponentClass = {
-            methods: <any>[],
-            binding_setup_frame,
-            init_frame,
-            async_init_frame,
-            terminate_frame,
-            nluf_public_variables: null,
-            lfu_table_entries: [],
-            lu_public_variables: [],
-            method_frames: [async_init_frame, init_frame, binding_setup_frame],
-            nlu_index: 0,
-        };
-
-    async_init_frame.IS_ASYNC = true;
-
-    return class_info;
-}
-
-export async function createCompiledComponentClass(
-    comp: ComponentData,
-    presets: Presets,
-    INCLUDE_HTML: boolean = true,
-    INCLUDE_CSS: boolean = true
-): Promise<CompiledComponentClass> {
-
-    try {
-
-        const info = createClassInfoObject();
-
-        //HTML INFORMATION
-        if (INCLUDE_HTML)
-            await processHTML(comp, info, presets);
-
-        //CSS INFORMATION
-        if (INCLUDE_CSS)
-            processCSS(comp, info, presets);
-
-        //Javascript Information.
-        if (comp.HAS_ERRORS === false && comp.root_frame) {
-
-            createLookupTables(info);
-
-            setBindingVariableIndices(comp, info);
-
-            processBindingVariables(comp, info, presets);
-
-            processHooks(comp, info, presets);
-
-            processMethods(comp, info);
-        }
-
-        // Remove methods 
-        return info;
-
-    } catch (e) {
-        //throw e;
-        console.log(`Error found in component ${comp.name} while converting to a class. location: ${comp.location}.`);
-        console.log(e);
-        return createCompiledComponentClass(createErrorComponent([e], comp.source, comp.location, comp), presets);
-    }
-}
-
 function processCSS(
     component: ComponentData,
     class_info: CompiledComponentClass,
@@ -564,40 +595,6 @@ function processCSS(
         appendStmtToFrame(frame, stmt(`return \`${style}\`;`));
 
         appendStmtToFrame(class_info.init_frame, stmt(`this.setCSS()`));
-    }
-}
-
-async function processHTML(
-    component: ComponentData,
-    class_info: CompiledComponentClass,
-    presets: Presets
-) {
-
-    if (component.HTML) {
-        const
-            frame = createCompileFrame("ce"),
-            return_stmt = stmt("return this.makeElement(a);"),
-            { html: [html], template_map } = (await componentDataToTempAST(component, presets));
-
-        // Add templates to runtime template collection
-        if (typeof document != undefined && document.createElement)
-
-            for (const [template_name, template_node] of template_map.entries())
-
-                if (!rt.templates.has(template_name)) {
-
-                    const ele = document.createElement("div");
-
-                    ele.innerHTML = htmlTemplateToString(template_node);
-
-                    rt.templates.set(template_name, <HTMLElement>ele.firstElementChild);
-                }
-
-        return_stmt.nodes[0].nodes[1].nodes[0] = DOMLiteralToJSNode(html);
-
-        appendStmtToFrame(frame, return_stmt);
-
-        class_info.method_frames.push(frame);
     }
 }
 
