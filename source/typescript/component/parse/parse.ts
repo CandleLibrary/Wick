@@ -112,7 +112,6 @@ export function processNodeSync(
     SKIP_ROOT: boolean = false
 ) {
 
-    console.log("---------------------------");
     const gen = processNodeGenerator(ast, function_frame, component, presets, SKIP_ROOT);
 
     let val = gen.next();
