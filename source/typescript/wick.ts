@@ -24,7 +24,7 @@ import { WickRTComponent } from "./runtime/component.js";
 import { rt, WickRuntime } from "./runtime/global.js";
 import { srv, WickServer } from "./server.js";
 import parser from "./source_code/parse.js";
-import { WickTest as test } from "./test/wick.test.js";
+import { init, WickTest as test } from "./test/wick.test.js";
 import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE } from "./types/binding";
 import { IntermediateHook } from "./types/hook";
 import { ComponentData, ExtendedComponentData } from "./types/component";
@@ -260,6 +260,12 @@ const wick: WickLibrary = Object.assign(componentCreate,
             server: async function (root_dir: string = "") {
                 await URL.server(root_dir);
             },
+
+            enableServer: async function (root_dir: string = "") {
+                await URL.server(root_dir);
+            },
+
+            enableTest: init,
 
             setWrapper: async function (url) {
                 //create new component
