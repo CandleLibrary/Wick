@@ -45,6 +45,6 @@ assert(component.root_frame.binding_variables.has("data") == true);
 const { hook: hook1 } = runClassHookHandlers(component.hooks[0], component, presets, comp_info);
 const { hook: hook2 } = runClassHookHandlers(component.hooks[1], component, presets, comp_info);
 
-assert(renderCompressed(hook1.write_ast) == "this.ct[0].sd(this.model.data.push((a,b,c)=>a+b+c))");
-assert(renderCompressed(hook2.write_ast) == "this.ct[1].sd(this.model.data.push((a,c)=>a+this[1]+c))");
+assert(renderCompressed(hook1.write_ast) == "this.ct[0].sd(data.push((a,b,c)=>a+b+c));");
+assert(renderCompressed(hook2.write_ast) == "this.ct[1].sd(data.push((a,c)=>a+b+c));");
 //assert(html == "")

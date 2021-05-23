@@ -27,9 +27,10 @@ assert_group("Async Methods", sequence, () => {
     const presets = new Presets();
     const class_info = createClassInfoObject();
     const component = await parseSource(source_string, presets);
+
     processMethods(component, class_info);
 
     assert("Detects when function should be made async", component.frames[1].IS_ASYNC == true);
-    assert("Creates an asynchronous method when compiled", class_info.methods[2].ASYNC == true);
+    assert("Creates an asynchronous method when compiled", class_info.methods[0].ASYNC == true);
 });
 

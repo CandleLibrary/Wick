@@ -8,7 +8,6 @@
 
 import wick from "@candlefw/wick";
 import spark from "@candlefw/spark";
-import { assert } from "console";
 
 //import wick from "../../../build/library/wick.js";
 

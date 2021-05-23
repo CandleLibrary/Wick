@@ -37,3 +37,29 @@ assert_group("Module Import", sequence, () => {
     const str2 = (await RenderPage(component, presets)).page;
 });
 
+
+assert_group("Module Import Within Binding", sequence, () => {
+
+    const source_string = `
+    import wind from "@candlefw/wind" 
+    export default <div>   
+    <container data=\${await (new wind("temp")).fetch()} element=div limit=${3}>
+    </container>
+    </div>`;
+
+    const presets = new Presets();
+    const component = await parseSource(source_string, presets);
+    const comp = await createCompiledComponentClass(component, presets);
+    const str = await componentDataToJSStringCached(component, presets);
+
+    await loadModules(presets);
+    const name = "@candlefw/wind";
+    const hash_name = ModuleHash(name);
+    assert(presets.repo.size > 0);
+    assert(presets.repo.has(name) == true);
+    assert(presets.api[hash_name] != null);
+    assert(presets.api[hash_name].default != null);
+    assert(new presets.api[hash_name].default("test").tx == "test");
+    const str2 = (await RenderPage(component, presets)).page;
+});
+
