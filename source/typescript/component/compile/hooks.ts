@@ -2,6 +2,7 @@ import { traverse } from "@candlefw/conflagrate";
 import { matchAll } from "@candlefw/css";
 import { exp, ext, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, renderCompressed, stmt } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
+import { getFirstMatchingReferenceIdentifier } from "../../common/js.js";
 import { Expression_Is_Static, getCompiledBindingVariableName, getComponentBinding, getStaticValue } from "../../common/binding.js";
 import { setPos } from "../../common/common.js";
 import { css_selector_helpers } from "../../common/css.js";
@@ -399,12 +400,7 @@ loadHookProcessor({
     getDefaultHTMLValue(hook_node, host_node, element_index, component) { return null; }
 });
 
-function getFirstMatchingReferenceIdentifier(input_node: JSNode, id_value: string): JSNode {
-    for (const { node } of traverse(input_node, "nodes").bitFilter("type", JSNodeClass.IDENTIFIER)) {
-        if (node.value == id_value) return node;
-    }
-    return {};
-}
+
 
 /**********************
  * INPUT ELEMENT VALUE ATTRIBUTE

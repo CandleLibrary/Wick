@@ -91,3 +91,10 @@ export function Expression_Contains_Await(input_node: JSNode) {
         return true;
     return false;
 }
+
+export function getFirstMatchingReferenceIdentifier(input_node: JSNode, id_value: string): JSNode {
+    for (const { node } of traverse(input_node, "nodes").bitFilter("type", JSNodeClass.IDENTIFIER)) {
+        if (node.value == id_value) return node;
+    }
+    return null;
+}
