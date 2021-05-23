@@ -18,7 +18,7 @@ import { ModuleHash, PearsonModifiedHash } from "./hash_name.js";
  * @param node 
  * @param pos 
  */
-export function setPos(node, pos: Lexer | any) {
+export function setPos<T>(node: T, pos: Lexer | any): T {
 
     if (!pos)
         throw new TypeError("[pos] is null - this node will not render source maps correctly.");

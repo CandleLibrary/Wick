@@ -1,4 +1,4 @@
-import { JSNode } from "@candlefw/js";
+import { JSNode, JSNodeBase, JSNodeType } from "@candlefw/js";
 
 import { HTMLNode } from "./wick_ast.js";
 import { FunctionFrame } from "./function_frame";
@@ -40,3 +40,15 @@ export interface JSHandler {
         | void
         | Promise<JSNode | void>;
 }
+
+
+export type ComponentIdentifierBinding = 0xFFFFFFFFFFFF;
+
+
+export interface JSComponentBindingNode extends JSNodeBase {
+    type: ComponentIdentifierBinding;
+    value: string,
+}
+
+
+export type WickJSNode = JSNode | JSComponentBindingNode;

@@ -7,12 +7,12 @@ import { FunctionFrame } from "./function_frame";
  */
 export interface CompiledComponentClass {
     methods: JSNode[];
-    binding_setup_stmts: JSNode[];
+    binding_setup_frame: FunctionFrame;
     /**
      * Statements added to the component's init function
      */
-    init_stmts: JSNode[];
-    teardown_stmts: JSNode[];
+    init_frame: FunctionFrame;
+    terminate_frame: FunctionFrame;
     /**
      * Statements added to the component's init_async function
      */
