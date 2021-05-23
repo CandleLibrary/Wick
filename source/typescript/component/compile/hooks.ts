@@ -182,9 +182,9 @@ loadHookProcessor({
 
             if (cv && cv.flags & BINDING_FLAG.FROM_PARENT) {
 
-                const comp_var = component.root_frame.binding_variables.get(<string>local);
+                hook.write_ast = stmt(`this.ch[${index}].ufp(${cv.class_index}, ${local}, f);`);
 
-                hook.write_ast = stmt(`this.ch[${index}].ufp(${cv.class_index}, this[${comp_var.class_index}], f);`);
+                getFirstMatchingReferenceIdentifier(hook.write_ast, local).IS_BINDING_REF = true;
 
                 setPos(hook.write_ast, host_node.pos);
             }
