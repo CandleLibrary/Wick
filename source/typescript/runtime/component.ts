@@ -146,7 +146,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
 
         if (existing_element) {
-            this.ele = existing_element;
             this.integrateElement(existing_element, parent_chain.concat(this));
         } else
             this.ele = this.createElement(presets, parent_chain);
@@ -690,114 +689,110 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     //=========================================================
     //=========================================================
     //=========================================================
-    integrateElement(ele: HTMLElement | Text, component_chain: WickRTComponent[] = [this]): number {
+    integrateElement(ele: HTMLElement, component_chain: WickRTComponent[] = [this]): number {
+        let sk = 0, PROCESS_CHILDREN = true;
 
-        if (ele instanceof Text) {
-            //this.elu.push(ele);
-            return 0;
+        let scope_component: WickRTComponent = this;
+
+        if (!this.ele) {
+
+            ele.classList.add(this.name);
+
+            this.ele = ele;
+
+            this.elu.push(ele);
         } else {
 
-            if (this.ele) {
-                if (ele.hasAttribute("w:own")) {
-                    if (+ele.getAttribute("w:own") != this.affinity) {
-                        return 0;
-                    }
-                }
+            if (ele.hasAttribute("w:own"))
+                if (+ele.getAttribute("w:own") != this.affinity)
+                    return 0;
 
-                if (ele.tagName == "W-B") {
 
-                    const text = document.createTextNode(ele.innerHTML);
+            // Binding Text Node
+            if (ele.tagName == "W-B") {
 
-                    ele.replaceWith(text);
+                const text = document.createTextNode(ele.innerHTML);
 
-                    ele = text;
+                ele.replaceWith(text);
 
-                    this.elu.push(<any>ele);
+                ele = text;
 
-                } else {
+                this.elu.push(<any>ele);
 
-                    if (ele.getAttribute("w:ctr")) {
+                return 0;
 
-                        //If null=n attribute exists then the container will 
-                        //be hydrated by the next n elements, which do not 
-                        //belong to the scope of the current container. 
-                        const
-                            null_count = parseInt(ele.getAttribute("null")) || 0,
-                            null_elements = [];
-
-                        if (null_count > 0) {
-
-                            let prev = ele;
-
-                            for (let i = 0; i < null_count; i++) {
-                                null_elements.push(prev.nextElementSibling);
-                                prev = null_elements[i];
-                            }
-                        }
-
-                        hydrateContainerElement(ele, this, null_elements);
-
-                        this.elu.push(ele);
-
-                        return null_count;
-
-                    } else if (ele.hasAttribute("w:c") && this.ele !== ele) {
-
-                        takeParentAddChild(this, hydrateComponentElement(ele, component_chain));
-
-                        this.elu.push(ele);
-
-                        return 0;
-                    }
-
-                    if (ele.hasAttribute("w:o")) {
-
-                        // Element outside the scope of the current component
-
-                        this.par.elu[+ele.hasAttribute("w:o")] = ele;
-
-                        //@ts-ignore
-                        for (const child of ele.childNodes)
-                            this.par.integrateElement(child, component_chain);
-
-                        return 0;
-
-                    } else if (ele.hasAttribute("w:r")) {
-
-                        const
-                            index = +ele.getAttribute("w:r"),
-                            lu_index = index % 50,
-                            comp_index = (index / 50) | 0;
-
-                        component_chain[comp_index].elu[lu_index] = ele;
-
-                        this.elu.push(ele);
-
-                        //@ts-ignore
-                        for (const child of ele.childNodes)
-                            component_chain[comp_index].integrateElement(child, component_chain);
-
-                        return 0;
-                    } else this.elu.push(ele);
-
-                    if (ele.tagName == "A")
-                        rt.presets.processLink(ele);
-                }
             } else {
-                ele.classList.add(this.name);
-                this.ele = ele;
+
+                if (ele.tagName == "A")
+                    rt.presets.processLink(ele);
+
+                // Attribute that affect scope assignment
+
+                if (ele.hasAttribute("w:o")) {
+
+                    // Element outside the scope of the current component
+
+                    this.par.elu[+ele.hasAttribute("w:o")] = ele;
+
+                    //@ts-ignore
+                    iterateElementChildren(ele, this.par, component_chain);
+
+                    return 0;
+
+                } else if (ele.hasAttribute("w:r")) {
+
+                    const
+                        index = +ele.getAttribute("w:r"),
+                        lu_index = index % 50,
+                        comp_index = (index / 50) | 0;
+
+                    scope_component = component_chain[comp_index];
+
+                    scope_component.elu[lu_index] = ele;
+                }
+
                 this.elu.push(ele);
-            }
 
-            let skip_count = 0;
-            //@ts-ignore
-            for (const child of (ele.childNodes || [])) {
-                if (skip_count-- > 0) continue;
-                skip_count = this.integrateElement(child, component_chain);
-            }
+                //Special Wick Elements
 
-            return 0;
+                if (ele.hasAttribute("w:ctr")) {
+
+                    //If null=n attribute exists then the container will 
+                    //be hydrated by the next n elements, which do not 
+                    //belong to the scope of the current container. 
+                    const
+                        null_count = parseInt(ele.getAttribute("null")) || 0,
+                        null_elements = [];
+
+                    if (null_count > 0) {
+
+                        let prev = ele;
+
+                        for (let i = 0; i < null_count; i++) {
+                            null_elements.push(prev.nextElementSibling);
+                            prev = null_elements[i];
+                        }
+                    }
+
+                    hydrateContainerElement(ele, scope_component, null_elements);
+
+                    sk = null_count;
+
+                    PROCESS_CHILDREN = false;
+
+                } else if (ele.hasAttribute("w:c") && this.ele !== ele) {
+
+                    takeParentAddChild(this, hydrateComponentElement(ele, component_chain));
+
+                    PROCESS_CHILDREN = false;
+                }
+            }
         }
+
+        if (PROCESS_CHILDREN)
+            iterateElementChildren(ele, scope_component, component_chain);
+
+        return sk;
     }
 
     /**
@@ -841,5 +836,17 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.hydrate();
 
         return ele;
+    }
+}
+
+function iterateElementChildren(ele: HTMLElement, scope_component: WickRTComponent, component_chain: WickRTComponent[]) {
+
+    let skip_count = 0;
+
+    for (const child of (Array.from(ele.children) || [])) {
+
+        if (skip_count-- > 0) continue;
+
+        skip_count = scope_component.integrateElement(<HTMLElement>child, component_chain);
     }
 }
