@@ -60,7 +60,7 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
             //are listed. A special null attribute is applied indicating 
             //how many children the container captures. 
             if (node.tagName == "null")
-                string = addAttributesToString(node, `<span hidden=true null=${node.children.length} `) + "</span>";
+                string = addAttributesToString(node, `<span hidden=true null=${node.children.length}`) + "></span>";
             else
                 string = addAttributesToString(node, `<${node.tagName}`) + ">";
 
