@@ -6,7 +6,7 @@ import { IntermediateHook } from "./hook";
 import { Comment } from "./comment.js";
 import { WickComponentErrorStore } from "./errors.js";
 import { FunctionFrame } from "./function_frame";
-import { DOMLiteral } from "./html.js";
+import { DOMLiteral, TemplateHTMLNode } from "./html.js";
 import { HTMLNode } from "./wick_ast.js";
 
 
@@ -119,6 +119,11 @@ export interface ComponentData {
      * of the element.
      */
     root_ele_claims: string[];
+
+    /**
+     * A a template object for use with static pages
+     */
+    template: TemplateHTMLNode;
 }
 
 /**
