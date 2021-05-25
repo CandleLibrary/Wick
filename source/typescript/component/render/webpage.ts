@@ -130,6 +130,7 @@ function renderPageString(
     return `<!DOCTYPE html>
 <html lang="en">
     <head>
+        <meta name="generator" content="candlelib/wick@0.13.7"> 
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         ${head.split("\n").join("\n    ")}
