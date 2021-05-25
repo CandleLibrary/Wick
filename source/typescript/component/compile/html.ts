@@ -87,86 +87,18 @@ export async function componentDataToTempAST(
 
             if (tag_name == "SLOT" && extern_children.length > 0) {
 
-                let r_ = { html: [], template_map };
-
-                if (slot_name != "") {
-
-                    for (let i = 0; i < extern_children.length; i++) {
-
-                        const pkg = extern_children[i];
-
-                        if (pkg.child.slot_name == slot_name && !pkg.USED) {
-                            pkg.USED = true;
-                            pkg.child.host_component_index = pkg.id;
-                            r_.html.push(...(await componentDataToTempAST(
-                                parent_component,
-                                presets,
-                                model,
-                                template_map,
-                                pkg.child,
-                                htmlState.IS_SLOT_REPLACEMENT
-                            )).html);
-                        }
-                    }
-
-                } else {
-
-                    for (let i = 0; i < extern_children.length; i++) {
-
-                        const pkg = extern_children[i];
-
-                        if (!pkg.child.slot_name && !pkg.USED) {
-                            pkg.USED = true;
-                            pkg.child.host_component_index = pkg.id;
-                            r_.html.push(...(await componentDataToTempAST(
-                                parent_component,
-                                presets,
-                                model,
-                                template_map,
-                                pkg.child,
-                                htmlState.IS_SLOT_REPLACEMENT
-                            )).html);
-                        }
-                    }
-                }
+                let r_ = await processSlot(template_map, slot_name, extern_children, parent_component, presets, model);
 
                 if (r_.html.length > 0)
                     return r_;
             }
 
-            await processHooks(html, comp, presets, model, node, parent_component);
+            await processElement(html, comp, presets, model, node, parent_component, tag_name, state, comp_data);
 
-            const COMPONENT_IS_ROOT_ELEMENT = comp.HTML == html;
-
-            node.tagName = tag_name.toLocaleLowerCase();
-
-            if (state & htmlState.IS_SLOT_REPLACEMENT)
-                node.attributes.set("w:r", (html.host_component_index * 50 + html.element_index) + "");
-
-            const HAVE_CLASS = processAttributes(html, comp, state, comp_data, node);
-
-            if (COMPONENT_IS_ROOT_ELEMENT) {
-                node.attributes.set("w:c", "");
-                if (!HAVE_CLASS) {
-                    const class_names = (COMPONENT_IS_ROOT_ELEMENT
-                        ? ((state & htmlState.IS_INTERLEAVED) > 0)
-                            ? comp_data.join(" ")
-                            : comp_data[comp_data.length - 1]
-                        : "");
-                    node.attributes.set("class", class_names);
-                }
-            }
-
-            if ((state & htmlState.IS_INTERLEAVED) > 0) {
-                node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
-            }
-
-        } else if (IS_BINDING) {
-
+        } else if (IS_BINDING)
             await addBindingElement(html, state, node, comp_data, comp, presets, model);
-        } else {
-            node.data = data;
-        }
+        else
+            processTextNode(node, data);
 
         const child_state = (((state) & (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT))
             == (htmlState.IS_INTERLEAVED | htmlState.IS_COMPONENT))
@@ -193,6 +125,96 @@ export async function componentDataToTempAST(
     return { html: [node], template_map };
 }
 
+
+function processTextNode(node: TemplateHTMLNode, data: string) {
+    node.data = data;
+}
+
+async function processElement(html: DOMLiteral, comp: ComponentData, presets: Presets, model: any, node: TemplateHTMLNode, parent_component: ComponentData[], tag_name: string, state: htmlState, comp_data: string[]) {
+    await processHooks(html, comp, presets, model, node, parent_component);
+
+    const COMPONENT_IS_ROOT_ELEMENT = comp.HTML == html;
+
+    node.tagName = tag_name.toLocaleLowerCase();
+
+    setScopeAssignment(state, node, html);
+
+    const HAVE_CLASS = processAttributes(html, comp, state, comp_data, node);
+
+    if (COMPONENT_IS_ROOT_ELEMENT) {
+        node.attributes.set("w:c", "");
+        if (!HAVE_CLASS) {
+            const class_names = (COMPONENT_IS_ROOT_ELEMENT
+                ? ((state & htmlState.IS_INTERLEAVED) > 0)
+                    ? comp_data.join(" ")
+                    : comp_data[comp_data.length - 1]
+                : "");
+            node.attributes.set("class", class_names);
+        }
+    }
+
+    if ((state & htmlState.IS_INTERLEAVED) > 0) {
+        node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
+    }
+}
+
+function setScopeAssignment(state: htmlState, node: TemplateHTMLNode, html: DOMLiteral) {
+    if (state & htmlState.IS_SLOT_REPLACEMENT)
+        node.attributes.set("w:r", (html.host_component_index * 50 + html.element_index) + "");
+}
+
+async function processSlot(
+    template_map: Map<any, any>,
+    slot_name: string,
+    extern_children: { USED: boolean; child: DOMLiteral; id: number; }[],
+    parent_component: ComponentData[],
+    presets: Presets,
+    model: any
+) {
+    let r_ = { html: [], template_map };
+
+    if (slot_name != "") {
+
+        for (let i = 0; i < extern_children.length; i++) {
+
+            const pkg = extern_children[i];
+
+            if (pkg.child.slot_name == slot_name && !pkg.USED) {
+                pkg.USED = true;
+                pkg.child.host_component_index = pkg.id;
+                r_.html.push(...(await componentDataToTempAST(
+                    parent_component,
+                    presets,
+                    model,
+                    template_map,
+                    pkg.child,
+                    htmlState.IS_SLOT_REPLACEMENT
+                )).html);
+            }
+        }
+
+    } else {
+
+        for (let i = 0; i < extern_children.length; i++) {
+
+            const pkg = extern_children[i];
+
+            if (!pkg.child.slot_name && !pkg.USED) {
+                pkg.USED = true;
+                pkg.child.host_component_index = pkg.id;
+                r_.html.push(...(await componentDataToTempAST(
+                    parent_component,
+                    presets,
+                    model,
+                    template_map,
+                    pkg.child,
+                    htmlState.IS_SLOT_REPLACEMENT
+                )).html);
+            }
+        }
+    }
+    return r_;
+}
 
 function processAttributes(
     html: DOMLiteral,
@@ -300,6 +322,8 @@ async function addContainer(
     node.attributes.set("w:ctr", w_ctr);
 
     node.attributes.set("w:ctr-atr", w_ctr_atr);
+
+    setScopeAssignment(state, node, html);
 
     //get data hook 
     await processHooks(html, component, presets, model, node, parent_component);
