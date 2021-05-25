@@ -621,7 +621,7 @@ loadHookProcessor({
 
                 models = await getStaticValue(hook.hook_value, component, presets, outer_model, parent_component);
 
-            if (models && child_comp) {
+            if (models && Array.isArray(models) && child_comp) {
 
                 for (const model of models) {
 

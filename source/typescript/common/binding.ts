@@ -507,8 +507,14 @@ export async function getStaticValueAstFromSourceAST(
 
                 if (val === undefined)
                     return undefined;
-
-                meta.replace(val);
+                if (val && val.type == JSNodeType.ObjectLiteral)
+                    meta.replace({
+                        type: JSNodeType.Parenthesized,
+                        nodes: [val],
+                        pos: val.pos
+                    });
+                else
+                    meta.replace(val);
             } else
                 return undefined;
         }

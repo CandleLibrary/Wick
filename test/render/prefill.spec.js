@@ -119,3 +119,41 @@ export default <div>
     //*/
 
 });
+
+
+assert_group(i, "Binding expressions with static objects", sequence, () => {
+    const source_string = `
+import temp_comp from "./test/render/data/temp_prefill.wick"
+
+var data = {
+    headerA:"test1",
+    headerB:"test2"
+}
+export default <div> 
+    <h1>\${data.headerA}</h1>
+    <h2>\${data.headerB + "-123"}</h2>
+</div>`;
+
+    const presets = new Presets();
+
+    const component = await parseSource(source_string, presets);
+
+    const { html } = await componentDataToTempAST(component, presets);
+
+    const html_string = htmlTemplateToString(html[0]);
+
+    assertTree({
+        t: "div",
+        c: [
+            {
+                t: "h1", c: [
+                    { t: "w-b", c: [{ d: "test1" }] }]
+            }, {
+                t: "h2", c: [
+                    { t: "w-b", c: [{ d: "test2-123" }] }]
+            }
+        ]
+    }, html[0]);
+
+
+});
