@@ -62,7 +62,7 @@ function gatherWickElements() {
                     &&
                     Is_Wick_Component_Element(<any>element)
                 ) {
-                    rt.templates.set(element.classList[0], <any>element);
+                    rt.templates.set(element.id, <any>element);
                     continue;
                 }
 

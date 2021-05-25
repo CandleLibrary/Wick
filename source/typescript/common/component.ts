@@ -100,7 +100,9 @@ export function createComponentData(source_string: string, location: URL): Compo
 
         errors: [],
 
-        root_ele_claims: []
+        root_ele_claims: [],
+
+        template: null
     };
     return component;
 }

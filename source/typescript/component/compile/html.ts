@@ -279,14 +279,20 @@ async function addContainer(
 
         const comp = presets.components.get(name);
 
-        if (!template_map.has(comp.name))
-            template_map.set(comp.name, {
-                tagName: "template",
-                data: "",
-                strings: [],
-                attributes: new Map([["w:c", ""], ["class", comp.name]]),
-                children: [...(await componentDataToTempAST(comp, presets, model, template_map)).html]
-            });
+        if (!template_map.has(comp.name)) {
+
+            if (!comp.template) {
+                comp.template = {
+                    tagName: "template",
+                    data: "",
+                    strings: [],
+                    attributes: new Map([["w:c", ""], ["id", comp.name]]),
+                    children: [...(await componentDataToTempAST(comp, presets, model, template_map)).html]
+                };
+            }
+
+            template_map.set(comp.name, comp.template);
+        }
     }
 
     node.tagName = html.tag_name.toLowerCase();
