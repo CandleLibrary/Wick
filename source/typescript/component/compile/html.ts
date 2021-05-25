@@ -42,7 +42,6 @@ export async function componentDataToTempAST(
         //Convert html to string 
         const {
             tag_name: tag_name = "",
-            attributes: attributes = [],
             children: c = [],
             data: data,
             is_bindings: IS_BINDING,
@@ -51,6 +50,7 @@ export async function componentDataToTempAST(
             namespace_id
         }: DOMLiteral = html,
             children = c.map(i => ({ USED: false, child: i, id: comp_data.length - 1 }));
+
         if (namespace_id)
             node.namespace = namespace_id;
 

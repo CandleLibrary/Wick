@@ -286,7 +286,7 @@ loadHTMLHandlerInternal(
     }, HTMLNodeType.HTMLAttribute
 );
 /*
- * HTML Elements lacking a spec tag.
+ * HTML Elements lacking a WHATWG HTML tag.
  */
 loadHTMLHandlerInternal(
     {
@@ -322,8 +322,6 @@ loadHTMLHandlerInternal(
                     const ctr: HTMLContainerNode = <HTMLContainerNode>Object.assign({
 
                         is_container: true,
-
-                        mango: "as",
 
                         container_id: component.container_count,
 

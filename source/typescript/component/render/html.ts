@@ -33,7 +33,7 @@ export async function componentDataToHTML(
 export function htmlTemplateToString(html: TemplateHTMLNode) {
     for (const { node, meta: { depth, parent, traverse_state } } of bidirectionalTraverse(html, "children")) {
 
-        const depth_str = " ".repeat(depth);
+        const depth_str = "    ";
 
         if (traverse_state == TraverseState.LEAF) {
             if (node.tagName) {
