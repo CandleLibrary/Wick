@@ -215,11 +215,9 @@ export class WickContainer implements Sparky, ObservableWatcher {
         this.last_dom_element = null;
         this.ele = element;
 
-        if (null_elements.length > 0 || this.ele.hasAttribute("null")) {
+        if (null_elements.length > 0 || this.ele.tagName == "NULL") {
 
             this.USE_NULL_ELEMENT = true;
-
-            this.ele.setAttribute("BBB", "222");
 
             if (null_elements.length > 0) {
 
