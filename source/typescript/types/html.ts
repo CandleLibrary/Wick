@@ -1,4 +1,4 @@
-import { Lexer } from "@candlefw/wind";
+import { Lexer } from "@candlelib/wind";
 import Presets from "../common/presets.js";
 import { ComponentData } from "./component";
 import { HTMLNode } from "./wick_ast.js";

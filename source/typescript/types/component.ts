@@ -1,5 +1,5 @@
-import { CSSNode } from "@candlefw/css";
-import URL from "@candlefw/url";
+import { CSSNode } from "@candlelib/css";
+import URL from "@candlelib/url";
 import { WickRTComponent } from "../runtime/component.js";
 import { RuntimeComponent } from "../wick.js";
 import { IntermediateHook } from "./hook";

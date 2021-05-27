@@ -1,4 +1,4 @@
-import { JSNodeType, JSStatementClass } from "@candlefw/js";
+import { JSNodeType, JSStatementClass } from "@candlelib/js";
 import { ComponentData } from "../types/component";
 import { FunctionFrame } from "../types/function_frame";
 import { getGenericMethodNode } from "./js.js";

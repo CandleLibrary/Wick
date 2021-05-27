@@ -1,4 +1,4 @@
-import { Lexer } from "@candlefw/wind";
+import { Lexer } from "@candlelib/wind";
 
 export interface Comment extends Lexer {
     node?: Node;

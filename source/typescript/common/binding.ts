@@ -1,6 +1,6 @@
-import { traverse } from "@candlefw/conflagrate";
-import { JSExpressionClass, JSIdentifier, JSNode, JSNodeClass, JSNodeType, renderCompressed, tools } from "@candlefw/js";
-import { Lexer } from "@candlefw/wind";
+import { traverse } from "@candlelib/conflagrate";
+import { JSExpressionClass, JSIdentifier, JSNode, JSNodeClass, JSNodeType, renderCompressed, tools } from "@candlelib/js";
+import { Lexer } from "@candlelib/wind";
 import { PluginStore } from "../plugin/plugin.js";
 import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, STATIC_BINDING_STATE } from "../types/binding";
 import { ComponentData } from "../types/component";

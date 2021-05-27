@@ -10,7 +10,7 @@ import { RenderPage } from "../../../build/library/component/render/webpage.js";
 assert_group("Module Import", sequence, () => {
 
     const source_string = `
-    import URL from "@candlefw/url"
+    import URL from "@candlelib/url"
 
     const d = new URL("temp");
 
@@ -27,7 +27,7 @@ assert_group("Module Import", sequence, () => {
     const str = await componentDataToJSStringCached(component, presets);
 
     await loadModules(presets);
-    const name = "@candlefw/url";
+    const name = "@candlelib/url";
     const hash_name = ModuleHash(name);
     assert(presets.repo.size > 0);
     assert(presets.repo.has(name) == true);
@@ -41,7 +41,7 @@ assert_group("Module Import", sequence, () => {
 assert_group("Module Import Within Binding", sequence, () => {
 
     const source_string = `
-    import wind from "@candlefw/wind" 
+    import wind from "@candlelib/wind" 
     export default <div>   
     <container data=\${await (new wind("temp")).fetch()} element=div limit=${3}>
     </container>
@@ -53,7 +53,7 @@ assert_group("Module Import Within Binding", sequence, () => {
     const str = await componentDataToJSStringCached(component, presets);
 
     await loadModules(presets);
-    const name = "@candlefw/wind";
+    const name = "@candlelib/wind";
     const hash_name = ModuleHash(name);
     assert(presets.repo.size > 0);
     assert(presets.repo.has(name) == true);

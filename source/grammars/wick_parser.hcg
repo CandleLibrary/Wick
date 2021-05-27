@@ -48,11 +48,11 @@
 
 @IGNORE θws θnl 
 
-@IMPORT ../../node_modules/@candlefw/js/source/grammar/javascript.hcg as js
+@IMPORT ../../node_modules/@candlelib/js/source/grammar/javascript.hcg as js
 
 @IMPORT ./html.hcg as html
 
-@IMPORT ../../node_modules/@candlefw/css/source/grammar/css.hcg as css 
+@IMPORT ../../node_modules/@candlelib/css/source/grammar/css.hcg as css 
 
 <> WICK > COMPONENT                                                                                											
 

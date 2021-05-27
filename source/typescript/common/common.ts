@@ -1,7 +1,7 @@
-import { traverse } from "@candlefw/conflagrate";
-import { JSIdentifierClass, JSNode, JSNodeType } from "@candlefw/js";
-import URL from "@candlefw/url";
-import { Lexer } from "@candlefw/wind";
+import { traverse } from "@candlelib/conflagrate";
+import { JSIdentifierClass, JSNode, JSNodeType } from "@candlelib/js";
+import URL from "@candlelib/url";
+import { Lexer } from "@candlelib/wind";
 import { parseSource } from "../component/parse/source.js";
 import { componentDataToJSCached } from "../component/render/js.js";
 import { BINDING_FLAG, BINDING_VARIABLE_TYPE } from "../types/binding";

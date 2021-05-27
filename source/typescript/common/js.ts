@@ -1,5 +1,5 @@
-import { traverse } from "@candlefw/conflagrate";
-import { exp, JSBindingProperty, JSExpressionClass, JSIdentifier, JSMethod, JSNode, JSNodeClass, JSNodeType } from "@candlefw/js";
+import { traverse } from "@candlelib/conflagrate";
+import { exp, JSBindingProperty, JSExpressionClass, JSIdentifier, JSMethod, JSNode, JSNodeClass, JSNodeType } from "@candlelib/js";
 
 /**
  * Create an AST of the form

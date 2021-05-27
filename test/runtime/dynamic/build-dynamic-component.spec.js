@@ -1,4 +1,4 @@
-import spark from "@candlefw/spark";
+import spark from "@candlelib/spark";
 import wick from "../../../build/library/wick.js";
 import { assertTree } from "../../test-tools/tools.js";
 

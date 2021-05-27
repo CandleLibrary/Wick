@@ -1,5 +1,5 @@
-import { traverse } from "@candlefw/conflagrate";
-import { CSSNode, CSSNodeType, selector } from "@candlefw/css";
+import { traverse } from "@candlelib/conflagrate";
+import { CSSNode, CSSNodeType, selector } from "@candlelib/css";
 import { renderWithFormatting } from "../../render/render.js";
 import { ComponentData, ComponentStyle } from "../../types/component";
 

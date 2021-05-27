@@ -5,11 +5,11 @@ import {
     length,
     parseDeclaration,
     CSSNodeTypeLU
-} from "@candlefw/css";
+} from "@candlelib/css";
 
-import { ParserEnvironment } from "@candlefw/hydrocarbon/build/library/runtime.js";
+import { ParserEnvironment } from "@candlelib/hydrocarbon/build/library/runtime.js";
 
-import { JSParserEnvironment, JSParserEnv, JSNodeTypeLU } from "@candlefw/js";
+import { JSParserEnvironment, JSParserEnv, JSNodeTypeLU } from "@candlelib/js";
 
 import { HTMLNodeTypeLU } from "../types/wick_ast.js";
 

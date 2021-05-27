@@ -1,5 +1,5 @@
 
-import { cfw } from "@candlefw/cfw";
+import { cfw } from "@candlelib/candle";
 import Presets from "../common/presets.js";
 import { PresetOptions } from "../types/presets";
 import { WickRTComponent } from "./component.js";

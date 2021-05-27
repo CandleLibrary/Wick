@@ -1,4 +1,4 @@
-import spark, { Sparky } from "@candlefw/spark";
+import spark, { Sparky } from "@candlelib/spark";
 
 import { ObservableModel, ObservableWatcher } from "../../types/model.js";
 

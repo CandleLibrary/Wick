@@ -1,6 +1,6 @@
-import { cfw } from "@candlefw/cfw";
-import { Transition } from "@candlefw/glow";
-import spark, { Sparky } from "@candlefw/spark";
+import { cfw } from "@candlelib/candle";
+import { Transition } from "@candlelib/glow";
+import spark, { Sparky } from "@candlelib/spark";
 import { WickRTComponent } from "./component.js";
 import { ObservableModel, ObservableWatcher } from "../types/model";
 import { hydrateComponentElements } from "./html.js";

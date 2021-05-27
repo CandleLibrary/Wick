@@ -6,8 +6,8 @@
     https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/oninput
 */
 
-import wick from "@candlefw/wick";
-import spark from "@candlefw/spark";
+import wick from "@candlelib/wick";
+import spark from "@candlelib/spark";
 
 // Bindings should be two-way on input elements [value] attribute 
 // by default

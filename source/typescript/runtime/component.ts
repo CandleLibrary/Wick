@@ -1,4 +1,4 @@
-import spark, { Sparky } from "@candlefw/spark";
+import spark, { Sparky } from "@candlelib/spark";
 import Presets from "../common/presets";
 import { BINDING_FLAG } from "../types/binding";
 import { ObservableModel, ObservableWatcher } from "../types/model";

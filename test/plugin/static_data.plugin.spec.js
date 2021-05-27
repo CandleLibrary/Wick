@@ -1,5 +1,5 @@
 
-import HTML from "@candlefw/html";
+import HTML from "@candlelib/html";
 import Presets from "../../build/library/common/presets.js";
 import { componentDataToTempAST } from "../../build/library/component/compile/html.js";
 import { parseSource } from "../../build/library/component/parse/source.js";

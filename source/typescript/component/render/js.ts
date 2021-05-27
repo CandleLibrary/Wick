@@ -1,5 +1,5 @@
-import { createSourceMap, createSourceMapJSON } from "@candlefw/conflagrate";
-import { stmt } from "@candlefw/js";
+import { createSourceMap, createSourceMapJSON } from "@candlelib/conflagrate";
+import { stmt } from "@candlelib/js";
 import Presets from "../../common/presets.js";
 import { renderWithFormatting, renderWithFormattingAndSourceMap } from "../../render/render.js";
 import { WickRTComponent } from "../../runtime/component.js";

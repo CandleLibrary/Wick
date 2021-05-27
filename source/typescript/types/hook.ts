@@ -1,5 +1,5 @@
-import { Lexer } from "@candlefw/wind";
-import { JSNode, JSStatementClass } from "@candlefw/js";
+import { Lexer } from "@candlelib/wind";
+import { JSNode, JSStatementClass } from "@candlelib/js";
 import { HTMLNode, WickBindingNode, Node } from "./wick_ast.js";
 import Presets from "../common/presets.js";
 import { ComponentData } from "./component";

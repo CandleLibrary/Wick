@@ -3,7 +3,7 @@
     element to a tag type defined by the element attribute value.
 */
 
-import wick from "@candlefw/wick";
+import wick from "@candlelib/wick";
 
 const
 

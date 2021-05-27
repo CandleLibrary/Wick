@@ -1,6 +1,6 @@
-import { traverse } from "@candlefw/conflagrate";
-import { ext, JSIdentifier, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt, tools } from "@candlefw/js";
-import { Lexer } from "@candlefw/wind";
+import { traverse } from "@candlelib/conflagrate";
+import { ext, JSIdentifier, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt, tools } from "@candlelib/js";
+import { Lexer } from "@candlelib/wind";
 import {
     addBindingReference,
     addBindingVariable,

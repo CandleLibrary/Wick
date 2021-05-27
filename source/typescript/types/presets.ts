@@ -1,4 +1,4 @@
-import URL from "@candlefw/url";
+import URL from "@candlelib/url";
 import { PluginStore } from "../plugin/plugin";
 /**
  * A collection of configuration options to customize the wick compiler.

@@ -10,7 +10,7 @@
  * - Inspecting Runtime Components
  */
 
-import { ComponentData } from "../types/component";
+import spark from "@candlelib/spark";
 import { rt } from "../runtime/global.js";
 import { componentDataToCSS } from "../component/render/css.js";
 import Presets from "../common/presets.js";

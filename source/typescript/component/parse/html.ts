@@ -1,6 +1,6 @@
-import { traverse } from "@candlefw/conflagrate";
-import { JSNode, JSNodeType, stmt } from "@candlefw/js";
-import URL from "@candlefw/url";
+import { traverse } from "@candlelib/conflagrate";
+import { JSNode, JSNodeType, stmt } from "@candlelib/js";
+import URL from "@candlelib/url";
 import { ComponentData, Presets } from "source/typescript/wick.js";
 import { addBindingReference, addBindingVariable, addHook } from "../../common/binding.js";
 import { importResource } from "../../common/common.js";

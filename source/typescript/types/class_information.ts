@@ -1,4 +1,4 @@
-import { JSNode } from "@candlefw/js";
+import { JSNode } from "@candlelib/js";
 import { FunctionFrame } from "./function_frame";
 
 /**

@@ -1,4 +1,4 @@
-import wick from "@candlefw/wick";
+import wick from "@candlelib/wick";
 import { getClassString } from "../test-tools/tools.js";
 
 const source = `

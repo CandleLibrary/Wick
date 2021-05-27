@@ -6,8 +6,8 @@
     https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onclick
 */
 
-import wick from "@candlefw/wick";
-import spark from "@candlefw/spark";
+import wick from "@candlelib/wick";
+import spark from "@candlelib/spark";
 
 //import wick from "../../../build/library/wick.js";
 

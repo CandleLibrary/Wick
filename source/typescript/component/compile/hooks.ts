@@ -1,7 +1,7 @@
-import { traverse } from "@candlefw/conflagrate";
-import { matchAll } from "@candlefw/css";
-import { exp, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, stmt } from "@candlefw/js";
-import { Lexer } from "@candlefw/wind";
+import { traverse } from "@candlelib/conflagrate";
+import { matchAll } from "@candlelib/css";
+import { exp, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, stmt } from "@candlelib/js";
+import { Lexer } from "@candlelib/wind";
 import { Expression_Is_Static, getCompiledBindingVariableName, getComponentBinding, getStaticValue } from "../../common/binding.js";
 import { setPos } from "../../common/common.js";
 import { css_selector_helpers } from "../../common/css.js";

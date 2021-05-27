@@ -1,4 +1,4 @@
-import { addModuleToCFW } from "@candlefw/cfw";
+import { addModuleToCFW } from "@candlelib/candle";
 import Presets from "./common/presets.js";
 import { rt } from "./runtime/global.js";
 import {

@@ -1,4 +1,4 @@
-import URL from "@candlefw/url";
+import URL from "@candlelib/url";
 export interface WickServer {
     /**
     */
@@ -17,6 +17,6 @@ export const srv: WickServer = {
         //Polyfill document data
         await URL.server();
 
-        await (await import("@candlefw/html")).default.server();
+        await (await import("@candlelib/html")).default.server();
     }
 };

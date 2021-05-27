@@ -1,4 +1,4 @@
-import { JSFunctionDeclaration, JSIdentifier, JSMethod, JSNode } from "@candlefw/js";
+import { JSFunctionDeclaration, JSIdentifier, JSMethod, JSNode } from "@candlelib/js";
 import { BindingVariable } from "./binding";
 /**
  * Reference information for a single function defined within 

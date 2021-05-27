@@ -14,7 +14,7 @@ import { componentDataToTempAST } from "../../build/library/component/compile/ht
 import { parseSource } from "../../build/library/component/parse/source.js";
 import { createCompiledComponentClass, runClassHookHandlers } from "../../build/library/component/compile/compile.js";
 import { createClassStringObject } from "../../build/library/component/render/js.js";
-import { renderCompressed } from "@candlefw/js";
+import { renderCompressed } from "@candlelib/js";
 
 
 const source = `

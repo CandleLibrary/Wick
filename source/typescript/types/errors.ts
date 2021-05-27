@@ -1,5 +1,5 @@
-import URL from "@candlefw/url";
-import { Lexer } from "@candlefw/wind";
+import URL from "@candlelib/url";
+import { Lexer } from "@candlelib/wind";
 export enum WickComponentErrorCode {
     /**
     * This error occurs when an attempt to retrieve a network resource fails.

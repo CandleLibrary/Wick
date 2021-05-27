@@ -1,5 +1,5 @@
-import { JSNode, JSNodeType } from "@candlefw/js";
-import URL from "@candlefw/url";
+import { JSNode, JSNodeType } from "@candlelib/js";
+import URL from "@candlelib/url";
 import { processUndefinedBindingVariables } from "../../common/binding.js";
 import { createComponentData, createErrorComponent } from "../../common/component.js";
 import { createParserFrame } from "../../common/frame.js";

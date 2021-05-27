@@ -1,5 +1,5 @@
-import spark from "@candlefw/spark";
-import wick from "@candlefw/wick";
+import spark from "@candlelib/spark";
+import wick from "@candlelib/wick";
 
 const source = `
  import { limit } from "@model"

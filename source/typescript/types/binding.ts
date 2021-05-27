@@ -1,12 +1,12 @@
-import { Lexer } from "@candlefw/wind";
-import { JSNode } from "@candlefw/js";
+import { Lexer } from "@candlelib/wind";
+import { JSNode } from "@candlelib/js";
 
 
 
 export const enum BINDING_VARIABLE_TYPE {
     UNDEFINED = 0,
-    
-    
+
+
     /**
      * Indirect variables that require one level
      * of indirection.
@@ -14,7 +14,7 @@ export const enum BINDING_VARIABLE_TYPE {
     INTERNAL_VARIABLE = 1,
     PARENT_VARIABLE = 2,
     MODEL_VARIABLE = 4,
-    
+
     /**
      * A Global variable that should be wrapped into a an
      * observerable 

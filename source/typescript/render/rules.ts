@@ -1,7 +1,7 @@
-import { buildRenderers } from "@candlefw/conflagrate";
-import { JSNodeDefinitions, JSNodeType } from "@candlefw/js";
-import { buildFormatRules, FormatRule as $ } from "@candlefw/conflagrate";
-import { CSSNodeDefinitions } from "@candlefw/css";
+import { buildRenderers } from "@candlelib/conflagrate";
+import { JSNodeDefinitions, JSNodeType } from "@candlelib/js";
+import { buildFormatRules, FormatRule as $ } from "@candlelib/conflagrate";
+import { CSSNodeDefinitions } from "@candlelib/css";
 
 import { HTMLNodeType } from "../types/wick_ast.js";
 import { NodeTypes } from "../source_code/env.js";

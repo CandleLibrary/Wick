@@ -1,5 +1,5 @@
-import html from "@candlefw/html";
-import spark from "@candlefw/spark";
+import html from "@candlelib/html";
+import spark from "@candlelib/spark";
 
 import { htmlTemplateToString } from "../../build/library/component/render/html.js";
 import { componentDataToTempAST } from "../../build/library/component/compile/html.js";

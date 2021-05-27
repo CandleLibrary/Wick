@@ -1,6 +1,6 @@
-import { copy, traverse } from "@candlefw/conflagrate";
-import { CSSNode } from "@candlefw/css";
-import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlefw/js";
+import { copy, traverse } from "@candlelib/conflagrate";
+import { CSSNode } from "@candlelib/css";
+import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlelib/js";
 import { buildExportableDOMNode } from "../../common/html.js";
 import { getBindingRefCount, getRootFrame } from "../../common/binding.js";
 import { createParserFrame } from "../../common/frame.js";

@@ -6,7 +6,7 @@
     https://developer.mozilla.org/en-US/docs/Web/CSS/@media
 */
 
-import wick, { test } from "@candlefw/wick";
+import wick, { test } from "@candlelib/wick";
 import assert from "assert";
 
 await wick.server();

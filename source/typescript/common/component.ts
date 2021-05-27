@@ -1,5 +1,5 @@
-import URL from "@candlefw/url";
-import { Lexer } from "@candlefw/wind";
+import URL from "@candlelib/url";
+import { Lexer } from "@candlelib/wind";
 import { ComponentData } from "../types/component";
 import { DOMLiteral } from "../types/html";
 import { ComponentHash } from "./hash_name.js";

@@ -1,5 +1,5 @@
 //@ts-nocheck
-import HTML from "@candlefw/html";
+import HTML from "@candlelib/html";
 export default function () {
     if (typeof (global) !== "undefined") {
         HTML.polyfill();

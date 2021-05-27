@@ -1,4 +1,4 @@
-import { copy, traverse } from "@candlefw/conflagrate";
+import { copy, traverse } from "@candlelib/conflagrate";
 import {
     exp, JSCallExpression,
     JSExpressionStatement,
@@ -7,7 +7,7 @@ import {
     JSNode,
     JSNodeType,
     stmt
-} from "@candlefw/js";
+} from "@candlelib/js";
 import {
     Binding_Var_Is_Internal_Variable,
     getCompiledBindingVariableName,

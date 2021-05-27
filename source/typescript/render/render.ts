@@ -5,9 +5,9 @@ import {
     renderWithSourceMap as CFLrenderWithSourceMap,
     renderWithFormattingAndSourceMap as CFLrenderWithFormattingAndSourceMap,
     FormatRule
-} from "@candlefw/conflagrate";
-import { FormatFunction as JSFormatFunction, JSNode } from "@candlefw/js";
-import { CSSNode, FormatFunction as CSSFormatFunction } from "@candlefw/css";
+} from "@candlelib/conflagrate";
+import { FormatFunction as JSFormatFunction, JSNode } from "@candlelib/js";
+import { CSSNode, FormatFunction as CSSFormatFunction } from "@candlelib/css";
 
 import { renderers, format_rules } from "../render/rules.js";
 import { Node } from "../types/wick_ast.js";

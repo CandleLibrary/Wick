@@ -1,7 +1,7 @@
-import { JSNode, JSNodeClass } from "@candlefw/js";
-import { Lexer } from "@candlefw/wind";
+import { JSNode, JSNodeClass } from "@candlelib/js";
+import { Lexer } from "@candlelib/wind";
 
-import { CSSNode } from "@candlefw/css";
+import { CSSNode } from "@candlelib/css";
 import { ComponentData } from "./component";
 import { Component } from "../wick";
 
@@ -16,7 +16,7 @@ export const WICK_AST_NODE_TYPE_SIZE = 85;
 
 
 /**
- * Wick node values and types. Extends JavaScript nodes described in @candlefw/js, and CSS nodes described in @candlefw/css
+ * Wick node values and types. Extends JavaScript nodes described in @candlelib/js, and CSS nodes described in @candlelib/css
  */
 
 export const enum HTMLNodeType {

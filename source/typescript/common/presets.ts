@@ -1,4 +1,4 @@
-import URL from "@candlefw/url";
+import URL from "@candlelib/url";
 import { PluginStore } from "../plugin/plugin.js";
 import { WickRTComponent } from "../runtime/component.js";
 import { ComponentClassStrings, ComponentData, ComponentStyle } from "../types/component";
@@ -20,9 +20,9 @@ const DefaultPresets = <PresetOptions>{
         THROW_ON_ERRORS: true,
         INCLUDE_SOURCE_URI: false,
         url: {
-            glow: "@candlefw/glow",
-            wick: "@candlefw/wick",
-            wickrt: "@candlefw/wick",
+            glow: "@candlelib/glow",
+            wick: "@candlelib/wick",
+            wickrt: "@candlelib/wick",
         }
     }
 };

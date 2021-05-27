@@ -1,4 +1,4 @@
-import { JSNode, JSNodeBase, JSNodeType } from "@candlefw/js";
+import { JSNode, JSNodeBase, JSNodeType } from "@candlelib/js";
 
 import { HTMLNode } from "./wick_ast.js";
 import { FunctionFrame } from "./function_frame";
