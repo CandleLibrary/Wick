@@ -31,11 +31,17 @@ export async function componentDataToHTML(
  * Return an HTML string from a TemplateHTMLNode AST object
  */
 export function htmlTemplateToString(html: TemplateHTMLNode) {
+
+    html.strings.length = 0;
+
     for (const { node, meta: { depth, parent, traverse_state } } of bidirectionalTraverse(html, "children")) {
 
         const depth_str = "    ";
 
         if (traverse_state == TraverseState.LEAF) {
+
+            node.strings.length = 0;
+
             if (node.tagName) {
 
                 let string = addAttributesToString(node, `<${node.tagName}`);
@@ -52,6 +58,9 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
             if (parent)
                 parent.strings.push(...node.strings.map(s => depth_str + s));
         } else if (traverse_state == TraverseState.ENTER) {
+
+            node.strings.length = 0;
+
             let string = "";
 
 
