@@ -1,12 +1,12 @@
 import { traverse } from "@candlefw/conflagrate";
 import { matchAll } from "@candlefw/css";
-import { exp, ext, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, renderCompressed, stmt } from "@candlefw/js";
+import { exp, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, stmt } from "@candlefw/js";
 import { Lexer } from "@candlefw/wind";
-import { getFirstMatchingReferenceIdentifier } from "../../common/js.js";
 import { Expression_Is_Static, getCompiledBindingVariableName, getComponentBinding, getStaticValue } from "../../common/binding.js";
 import { setPos } from "../../common/common.js";
 import { css_selector_helpers } from "../../common/css.js";
 import { getFrameFromName } from "../../common/frame.js";
+import { getFirstMatchingReferenceIdentifier } from "../../common/js.js";
 import { BINDING_FLAG } from "../../types/binding";
 import { CompiledComponentClass } from "../../types/class_information";
 import { ComponentData } from "../../types/component";
@@ -16,6 +16,7 @@ import { ContainerDomLiteral, DOMLiteral, TemplateHTMLNode } from "../../types/h
 import { HTMLNode } from "../../types/wick_ast";
 import { postProcessFunctionDeclarationSync } from "../parse/parse.js";
 import { componentDataToTempAST } from "./html.js";
+
 
 
 export const hook_processors: HookProcessor[] = [];
@@ -116,7 +117,9 @@ loadHookProcessor({
 
             if (static_value)
                 return {
-                    attributes: new Map([[tag_name, static_value + ""]])
+                    html: {
+                        attributes: new Map([[tag_name, static_value + ""]])
+                    }
                 };
         }
 
@@ -603,19 +606,19 @@ loadHookProcessor({
 
     async getDefaultHTMLValue(hook, component, presets, outer_model, parent_component) {
 
-        const node: TemplateHTMLNode = { children: [] };
+        let html: TemplateHTMLNode = { children: [] }, templates = null;
 
-        const html: ContainerDomLiteral = <any>getElementAtIndex(component, hook.html_element_index);
+        const container_ele: ContainerDomLiteral = <any>getElementAtIndex(component, hook.html_element_index);
 
         if (
             Expression_Is_Static(hook.hook_value.primary_ast, component, presets, parent_component)
             &&
-            html.component_names.length > 0
+            container_ele.component_names.length > 0
         ) {
 
             const
 
-                comp_name = html.component_names[0],
+                comp_name = container_ele.component_names[0],
 
                 child_comp = presets.components.get(comp_name),
 
@@ -627,12 +630,14 @@ loadHookProcessor({
 
                     const result = await componentDataToTempAST(child_comp, presets, model);
 
-                    node.children.push(result.html[0]);
+                    html.children.push(result.html[0]);
+
+                    templates = result.templates;
                 }
             }
         }
 
-        return node;
+        return { html, templates };
     }
 });
 

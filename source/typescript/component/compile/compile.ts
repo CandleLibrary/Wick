@@ -1,23 +1,68 @@
 import { copy, traverse } from "@candlefw/conflagrate";
-import { exp, JSCallExpression, JSExpressionStatement, JSFunctionDeclaration, JSMethod, JSNode, JSNodeType, stmt } from "@candlefw/js";
-import { Binding_Var_Is_Internal_Variable, getCompiledBindingVariableName, getComponentBinding, Name_Is_A_Binding_Variable } from "../../common/binding.js";
+import {
+    exp, JSCallExpression,
+    JSExpressionStatement,
+    JSFunctionDeclaration,
+    JSMethod,
+    JSNode,
+    JSNodeType,
+    stmt
+} from "@candlefw/js";
+import {
+    Binding_Var_Is_Internal_Variable,
+    getCompiledBindingVariableName,
+    getComponentBinding,
+    Name_Is_A_Binding_Variable
+} from "../../common/binding.js";
 import { setPos } from "../../common/common.js";
 import { createErrorComponent } from "../../common/component.js";
-import { appendStmtToFrame, createCompileFrame, Frame_Has_Statements, getStatementsFromFrame, getStatementsFromRootFrame, prependStmtToFrame } from "../../common/frame.js";
-import { Expression_Contains_Await, getPropertyAST } from "../../common/js.js";
+import {
+    appendStmtToFrame,
+    createCompileFrame,
+    Frame_Has_Statements,
+    getStatementsFromFrame,
+    getStatementsFromRootFrame,
+    prependStmtToFrame
+} from "../../common/frame.js";
+import {
+    Expression_Contains_Await,
+    getPropertyAST
+} from "../../common/js.js";
 import Presets from "../../common/presets.js";
 import { rt } from "../../runtime/global.js";
-import { BINDING_FLAG, BINDING_VARIABLE_TYPE } from "../../types/binding";
+import {
+    BINDING_FLAG,
+    BINDING_VARIABLE_TYPE
+} from "../../types/binding";
 import { CompiledComponentClass } from "../../types/class_information";
 import { ComponentData } from "../../types/component";
 import { FunctionFrame } from "../../types/function_frame";
-import { HOOK_TYPE, IntermediateHook, ProcessedHook } from "../../types/hook";
-import { TemplateHTMLNode } from "../../types/html.js";
-import { HTMLNode, HTMLNodeTypeLU } from "../../types/wick_ast.js";
-import { BindingVariable, Component } from "../../wick.js";
+import {
+    HOOK_TYPE,
+    IntermediateHook,
+    ProcessedHook
+} from "../../types/hook";
+import {
+    TemplateHTMLNode,
+    HookTemplatePackage
+} from "../../types/html.js";
+import {
+    HTMLNode,
+    HTMLNodeTypeLU
+} from "../../types/wick_ast.js";
+import {
+    BindingVariable,
+    Component
+} from "../../wick.js";
 import { componentDataToCSS } from "../render/css.js";
-import { htmlTemplateToJSNode, htmlTemplateToString } from "../render/html.js";
-import { convertAtLookupToElementRef, hook_processors } from "./hooks.js";
+import {
+    htmlTemplateToJSNode,
+    htmlTemplateToString
+} from "../render/html.js";
+import {
+    convertAtLookupToElementRef,
+    hook_processors
+} from "./hooks.js";
 import { componentDataToTempAST } from "./html.js";
 
 export async function createCompiledComponentClass(
@@ -100,7 +145,7 @@ async function processHTML(
         const
             frame = createCompileFrame("ce"),
             return_stmt = stmt("return this.makeElement(a);"),
-            { html: [html], template_map } = (await componentDataToTempAST(component, presets));
+            { html: [html], templates: template_map } = (await componentDataToTempAST(component, presets));
 
         // Add templates to runtime template collection
         if (typeof document != undefined && document.createElement)
@@ -134,16 +179,17 @@ export async function runHTMLHookHandlers(
     presets: Presets,
     model: any = null,
     parent_component: ComponentData
-): Promise<TemplateHTMLNode> {
+): Promise<HookTemplatePackage> {
     for (const handler of hook_processors) {
 
-        let html_element = null;
+        let
+            val: HookTemplatePackage = null;
 
         if (handler.canProcessHook(
             intermediate_hook.selector,
             HTMLNodeTypeLU[intermediate_hook.host_node.type]
         ))
-            html_element = await handler.getDefaultHTMLValue(
+            val = await handler.getDefaultHTMLValue(
                 intermediate_hook,
                 component,
                 presets,
@@ -151,9 +197,9 @@ export async function runHTMLHookHandlers(
                 parent_component
             );
 
-        if (!html_element) continue;
+        if (!val) continue;
 
-        return html_element;
+        return val;
     }
 
     return null;

@@ -59,6 +59,16 @@ export interface TemplateHTMLNode {
     namespace?: number;
 }
 
+export type TemplatePackage = {
+    html: TemplateHTMLNode[];
+    templates: Map<string, TemplateHTMLNode>;
+};
+
+export type HookTemplatePackage = {
+    html?: TemplateHTMLNode;
+    templates?: Map<string, TemplateHTMLNode>;
+};
+
 export interface DOMLiteral {
     host_component_index: number;
 

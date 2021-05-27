@@ -20,7 +20,7 @@ export async function componentDataToHTML(
     presets: Presets = rt.presets,
 ): Promise<{ html: string, template_map: Map<string, TemplateHTMLNode>; }> {
 
-    const { html: [html], template_map } = await componentDataToTempAST(comp, presets);
+    const { html: [html], templates: template_map } = await componentDataToTempAST(comp, presets);
 
     const html_string = htmlTemplateToString(html);
 

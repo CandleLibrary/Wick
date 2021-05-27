@@ -3,7 +3,7 @@ import Presets from "../../common/presets.js";
 import { rt } from "../../runtime/global.js";
 import { ComponentData } from "../../types/component";
 import { IntermediateHook } from "../../types/hook.js";
-import { ContainerDomLiteral, DOMLiteral, htmlState, TemplateHTMLNode } from "../../types/html";
+import { ContainerDomLiteral, DOMLiteral, htmlState, TemplateHTMLNode, TemplatePackage } from "../../types/html";
 import { runHTMLHookHandlers } from "./compile.js";
 
 /**
@@ -20,13 +20,13 @@ export async function componentDataToTempAST(
     comp: ComponentData,
     presets: Presets = rt.presets,
     model = null,
-    template_map = new Map,
+    template_map: TemplatePackage["templates"] = new Map,
     html: DOMLiteral = comp.HTML,
     state: htmlState = htmlState.IS_ROOT | htmlState.IS_COMPONENT,
     extern_children: { USED: boolean; child: DOMLiteral; id: number; }[] = [],
     parent_component: ComponentData[] = null,
     comp_data = [comp.name]
-): Promise<{ html: TemplateHTMLNode[]; template_map: Map<string, TemplateHTMLNode>; }> {
+): Promise<TemplatePackage> {
 
     let node: TemplateHTMLNode = {
         tagName: "",
@@ -117,12 +117,13 @@ export async function componentDataToTempAST(
                 parent_component,
                 comp_data
             );
+
             node.children.push(...html);
         }
 
     }
 
-    return { html: [node], template_map };
+    return { html: [node], templates: template_map };
 }
 
 
@@ -164,7 +165,7 @@ function setScopeAssignment(state: htmlState, node: TemplateHTMLNode, html: DOML
 }
 
 async function processSlot(
-    template_map: Map<any, any>,
+    template_map: TemplatePackage["templates"],
     slot_name: string,
     extern_children: { USED: boolean; child: DOMLiteral; id: number; }[],
     parent_component: ComponentData[],
@@ -251,7 +252,7 @@ async function addComponent(presets: Presets,
     component_name: string,
     state: htmlState,
     node: TemplateHTMLNode,
-    template_map: Map<any, any>,
+    template_map: TemplatePackage["templates"],
     extern_children: { USED: boolean; child: DOMLiteral; id: number; }[],
     children: { USED: boolean; child: DOMLiteral; id: number; }[],
     comp: ComponentData,
@@ -278,14 +279,13 @@ async function addComponent(presets: Presets,
     return { state, node };
 }
 
-
 async function addContainer(
     html: ContainerDomLiteral,
     component: ComponentData,
     presets: Presets,
     state: htmlState,
     comp_data: string[],
-    template_map: Map<any, any>,
+    template_map: TemplatePackage["templates"],
     node: TemplateHTMLNode,
     model: any = null,
     parent_component: ComponentData = null
@@ -304,15 +304,18 @@ async function addContainer(
         if (!template_map.has(comp.name)) {
 
             if (!comp.template) {
+
+                const { html } = await componentDataToTempAST(comp, presets, null, template_map);
+
                 comp.template = {
                     tagName: "template",
                     data: "",
                     strings: [],
                     attributes: new Map([["w:c", ""], ["id", comp.name]]),
-                    children: [...(await componentDataToTempAST(comp, presets, model, template_map)).html]
+                    children: [...html]
                 };
-            }
 
+            }
             template_map.set(comp.name, comp.template);
         }
     }
@@ -326,7 +329,7 @@ async function addContainer(
     setScopeAssignment(state, node, html);
 
     //get data hook 
-    await processHooks(html, component, presets, model, node, parent_component);
+    await processHooks(html, component, presets, model, node, parent_component, template_map);
 
     processAttributes(html, component, state, comp_data, node);
 }
@@ -338,23 +341,29 @@ async function processHooks(
     presets: Presets,
     model: any,
     node: TemplateHTMLNode,
-    parent_component: ComponentData
+    parent_component: ComponentData,
+    template_map: TemplatePackage["templates"],
 ) {
 
     for (const hook of getHookFromElement(html, component)) {
 
-        const ele = await runHTMLHookHandlers(hook, component, presets, model, parent_component);
+        const { html, templates } = (await runHTMLHookHandlers(hook, component, presets, model, parent_component) || {});
 
-        if (ele) {
-            if (ele.attributes)
-                for (const [k, v] of ele.attributes.entries())
+        if (html) {
+            if (html.attributes)
+                for (const [k, v] of html.attributes.entries())
                     node.attributes.set(k, v);
 
-            if (ele.children)
-                node.children.push(...ele.children);
+            if (html.children)
+                node.children.push(...html.children);
 
-            if (ele.data)
-                node.data += ele.data;
+            if (html.data)
+                node.data += html.data;
+        } if (templates) {
+
+            for (const [key, val] of templates.entries())
+                if (!template_map.has(key))
+                    template_map.set(key, val);
         }
     }
 }
