@@ -1010,29 +1010,4 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
         if (OWN_TRANSITION) this.filterExpressionUpdate(transition);
     }
-
-    /**
-     * Called by the ModelContainer when Models have been removed from it.
-     *
-     * @param {Array}  items   An array of items no longer stored in the ModelContainer. 
-    
-    remove(items, transition = createTransition()) {
-        for (const item of items) {
-            for (let j = 0; j < this.comps.length; j++) {
-                let component = this.comps[j];
-                if (component.model == item) {
-                    this.comps.splice(j, 1);
-                    component.transitionOut(0, 0, transition, true, true);
-                    break;
-                }
-            }
-        }
-
-        this.filterExpressionUpdate(transition);
-    }
-
-    down(data, changed_values) {
-        for (let i = 0, l = this.activeComps.length; i < l; i++) this.activeComps[i].update(data);
-    }
-     */
 }
