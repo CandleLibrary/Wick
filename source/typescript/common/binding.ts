@@ -256,7 +256,7 @@ export function processUndefinedBindingVariables(component: ComponentData, prese
     }
 }
 
-export function  getCompiledBindingVariableName(name: string, component: ComponentData) {
+export function getCompiledBindingVariableName(name: string, component: ComponentData) {
 
     const comp_var = getComponentBinding(name, component);
 
