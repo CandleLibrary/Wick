@@ -1,7 +1,11 @@
 import { addModuleToCFW } from "@candlefw/cfw";
 import Presets from "./common/presets.js";
 import { rt } from "./runtime/global.js";
-import { hydrateComponentElements, Is_Wick_Component_Element } from "./runtime/html.js";
+import {
+    hydrateComponentElements,
+    Element_Is_Wick_Component,
+    Element_Is_Wick_Template
+} from "./runtime/html.js";
 import { loadModules } from "./runtime/load_modules.js";
 
 const
@@ -55,24 +59,14 @@ function gatherWickElements() {
 
         for (const element of (Array.from(pending_elements_queue.shift().children ?? [])))
 
-            if (element.nodeType == Node.ELEMENT_NODE) {
+            if (element.nodeType == Node.ELEMENT_NODE)
 
-                if (
-                    element.tagName == "TEMPLATE"
-                    &&
-                    Is_Wick_Component_Element(<any>element)
-                ) {
+                if (Element_Is_Wick_Template(<any>element))
                     rt.templates.set(element.id, <any>element);
-                    continue;
-                }
-
-                const html_ref = element as HTMLElement;
-
-                if (Is_Wick_Component_Element(html_ref))
-                    pending_component_elements.push(html_ref);
+                else if (Element_Is_Wick_Component(element))
+                    pending_component_elements.push(element);
                 else
-                    pending_elements_queue.push(html_ref);
-            }
+                    pending_elements_queue.push(element);
 
     return pending_component_elements;
 }

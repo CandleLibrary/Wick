@@ -53,16 +53,34 @@ export function* getComponentNames(ele: HTMLElement): Generator<string, void, vo
     const len = ele.classList.length;
 
     for (let i = 0; i < len; i++)
-        if (ele.classList[i].match(comp_name_regex))
+        if (String_Is_Wick_Hash_ID(ele.classList[i]))
             yield ele.classList[i];
 }
 
 
-export function Is_Wick_Component_Element(ele: HTMLElement) {
-    return (ele
+function String_Is_Wick_Hash_ID(str): boolean {
+    return !!str.match(comp_name_regex);
+}
+
+export function Element_Is_Wick_Component(ele: HTMLElement) {
+    return (
+        ele
         &&
         ele.hasAttribute("w:c")
-        && [...getComponentNames(ele)].length > 0
+        &&
+        [...getComponentNames(ele)].length > 0
+    );
+}
+
+export function Element_Is_Wick_Template(ele: HTMLElement) {
+    return (
+        ele
+        &&
+        ele.tagName == "TEMPLATE"
+        &&
+        ele.hasAttribute("w:c")
+        &&
+        String_Is_Wick_Hash_ID(ele.id + "")
     );
 }
 
