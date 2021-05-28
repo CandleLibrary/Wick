@@ -1,7 +1,7 @@
 
 import { assert } from "console";
 import Presets from "../../build/library/compiler/common/presets.js";
-import { createCompiledComponentClass, createClassInfoObject, processMethods } from "../../build/library/compiler/ast-compile/compile.js";
+import { createCompiledComponentClass, createClassInfoObject, processMethods } from "../../build/library/compiler/ast-build/build.js";
 import { parseSource } from "../../build/library/compiler/ast-parse/source.js";
 import { componentDataToJSStringCached } from "../../build/library/compiler/ast-render/js.js";
 

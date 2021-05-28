@@ -2,7 +2,7 @@ import { getPackageJsonObject } from "@candlelib/wax";
 import { PresetOptions } from "../../types/all.js";
 import { rt } from "../../runtime/global.js";
 import { ComponentData } from "../../types/component";
-import { createCompiledComponentClass } from "../ast-compile/compile.js";
+import { createCompiledComponentClass } from "../ast-build/build.js";
 import { renderCompressed } from "../source-code-render/render.js";
 import { componentDataToCSS } from "./css.js";
 import { componentDataToHTML, htmlTemplateToString } from "./html.js";

@@ -2,7 +2,7 @@ import { createSourceMap, createSourceMapJSON } from "@candlelib/conflagrate";
 import { stmt } from "@candlelib/js";
 import { WickRTComponent } from "../../runtime/component.js";
 import { CompiledComponentClass, ComponentClassStrings, ComponentData, PresetOptions } from "../../types/all.js";
-import { createCompiledComponentClass } from "../ast-compile/compile.js";
+import { createCompiledComponentClass } from "../ast-build/build.js";
 import { renderWithFormatting, renderWithFormattingAndSourceMap } from "../source-code-render/render.js";
 
 

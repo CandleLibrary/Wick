@@ -8,8 +8,8 @@
  */
 
 import { renderCompressed } from "@candlelib/js";
-import { createCompiledComponentClass, runClassHookHandlers } from "../../build/library/compiler/ast-compile/compile.js";
-import { componentDataToTempAST } from "../../build/library/compiler/ast-compile/html.js";
+import { createCompiledComponentClass, runClassHookHandlers } from "../../build/library/compiler/ast-build/build.js";
+import { componentDataToTempAST } from "../../build/library/compiler/ast-build/html.js";
 import { htmlTemplateToString } from "../../build/library/compiler/ast-ender/html.js";
 import { parseSource } from "../../build/library/compiler/ast-parse/source.js";
 import { createClassStringObject } from "../../build/library/compiler/ast-render/js.js";

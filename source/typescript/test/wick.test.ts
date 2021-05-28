@@ -11,7 +11,7 @@
  */
 
 import spark from "@candlelib/spark";
-import { componentDataToTempAST } from "../compiler/ast-compile/html.js";
+import { componentDataToTempAST } from "../compiler/ast-build/html.js";
 import { componentDataToCSS } from "../compiler/ast-render/css.js";
 import { htmlTemplateToString } from "../compiler/ast-render/html.js";
 import { ComponentDataClass } from "../compiler/common/component.js";

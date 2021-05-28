@@ -3,7 +3,7 @@ import { TraversedNode } from "@candlelib/conflagrate/build/types/types/traverse
 import { exp, JSExpressionClass, JSNode, JSNodeType } from "@candlelib/js";
 import { rt } from "../../runtime/global.js";
 import { ComponentData, TemplateHTMLNode, PresetOptions } from "../../types/all.js";
-import { componentDataToTempAST } from "../ast-compile/html.js";
+import { componentDataToTempAST } from "../ast-build/html.js";
 import { html_void_tags } from "../common/html.js";
 
 

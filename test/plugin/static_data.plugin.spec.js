@@ -1,7 +1,7 @@
 
 import HTML from "@candlelib/html";
 import Presets from "../../build/library/compiler/common/presets.js";
-import { componentDataToTempAST } from "../../build/library/compiler/ast-compile/html.js";
+import { componentDataToTempAST } from "../../build/library/compiler/ast-build/html.js";
 import { parseSource } from "../../build/library/compiler/ast-parse/source.js";
 import { htmlTemplateToString } from "../../build/library/compiler/ast-render/html.js";
 import { addPlugin } from "../../build/library/plugin/plugin.js";

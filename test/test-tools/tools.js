@@ -2,11 +2,11 @@ import html from "@candlelib/html";
 import spark from "@candlelib/spark";
 
 import { htmlTemplateToString } from "../../build/library/compiler/ast-render/html.js";
-import { componentDataToTempAST } from "../../build/library/compiler/ast-compile/html.js";
+import { componentDataToTempAST } from "../../build/library/compiler/ast-build/html.js";
 import { hydrateComponentElements } from "../../build/library/runtime/html.js";
 import Presets from "../../build/library/compiler/common/presets.js";
 import { parseSource } from "../../build/library/compiler/ast-parse/source.js";
-import { createCompiledComponentClass } from "../../build/library/compiler/ast-compile/compile.js";
+import { createCompiledComponentClass } from "../../build/library/compiler/ast-build/build.js";
 import { createClassStringObject, componentDataToJS } from "../../build/library/compiler/ast-render/js.js";
 
 export async function getInstanceHTML(comp, presets) {
