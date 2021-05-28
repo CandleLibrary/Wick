@@ -75,28 +75,27 @@ function gatherWickElements() {
  * Loads templates and hydrates page. Assumes hydratable component 
  * data has already been loaded.
  */
-if (typeof window != "undefined") {
 
-    window.addEventListener("load", async (): Promise<void> => {
-        // Assuming wick.rt.setPresets has been called already.
+wick.rt.init = async function () {
 
-        // Load API modules
-        await loadModules(rt.presets);
+    // Assuming wick.rt.setPresets has been called already.
 
-        /**
-         * Looks through DOM and hydrates any element that has a 'w:c'
-         * attribute. Such elements also require their first class 
-         * name be a Wick component hash name.
-         */
+    // Load API modules
+    await loadModules(rt.presets);
 
-        const elements = gatherWickElements();
+    /**
+     * Looks through DOM and hydrates any element that has a 'w:c'
+     * attribute. Such elements also require their first class 
+     * name be a Wick component hash name.
+     */
 
-        for (const comp of hydrateComponentElements(elements)) {
-            comp.hydrate();
-            comp.connect();
-        }
-    });
-}
+    const elements = gatherWickElements();
+
+    for (const comp of hydrateComponentElements(elements)) {
+        comp.hydrate();
+        comp.connect();
+    }
+};
 
 export { Presets };
 

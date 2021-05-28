@@ -38,6 +38,8 @@ export interface WickRuntime {
     OVERRIDABLE_onComponentCreate(component_instance: WickRTComponent): void;
 
     OVERRIDABLE_onComponentMetaChange(component_meta: any): void;
+
+    init: () => Promise<void>;
 }
 
 const rt: WickRuntime = (() => {
@@ -76,6 +78,8 @@ const rt: WickRuntime = (() => {
 
             return presets;
         },
+
+        init: null
     };
 })();
 

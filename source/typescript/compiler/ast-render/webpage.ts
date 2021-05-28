@@ -42,6 +42,7 @@ export async function RenderPage(
             return `
             import w from "/@cl/wick-rt/";
             w.setPresets(${renderPresets(presets)});
+            w.rt.init();
             ${component_class_declarations}
             `;
         }
