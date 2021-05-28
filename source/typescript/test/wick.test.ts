@@ -86,6 +86,10 @@ export function init() {
         return this.ele.querySelectorAll(selector_string);
     };
 
+    WickRTComponent.prototype.sleep = async function (time: init = 10) {
+        await spark.sleep(time);
+    };
+
     function getEventType(event_name: string) {
         return {
             "input": InputEvent,
