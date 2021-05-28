@@ -3,7 +3,7 @@ import { JSNode } from "@candlelib/js";
 
 
 
-export const enum BINDING_VARIABLE_TYPE {
+export enum BINDING_VARIABLE_TYPE {
     UNDEFINED = 0,
 
 
