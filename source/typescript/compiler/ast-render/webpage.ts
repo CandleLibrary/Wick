@@ -1,4 +1,5 @@
-import { getPackageJsonObject } from "@candlelib/wax";
+//Target actual package file to prevent recursive references
+import URL from "@candlelib/url";
 import { PresetOptions } from "../../types/all.js";
 import { rt } from "../../runtime/global.js";
 import { ComponentData } from "../../types/component";
@@ -6,9 +7,16 @@ import { createCompiledComponentClass } from "../ast-build/build.js";
 import { renderCompressed } from "../source-code-render/render.js";
 import { componentDataToCSS } from "./css.js";
 import { componentDataToHTML, htmlTemplateToString } from "./html.js";
+
+// Load current wick package name and version
+
 import { createClassStringObject } from "./js.js";
 
-const { package: { version, name } } = await getPackageJsonObject(import.meta.url);
+await URL.server();
+
+const base = await URL.resolveRelative("@candlelib/wick");
+
+const { version, name }: any = await (URL.resolveRelative("../package.json", base)).fetchJSON();
 
 type PageRenderHooks = {
     /**
