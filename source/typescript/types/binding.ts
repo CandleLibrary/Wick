@@ -25,7 +25,7 @@ export const enum BINDING_VARIABLE_TYPE {
      * Static variable that could replaced directly with 
      * its assigned value
      */
-    
+
     METHOD_VARIABLE = 16,
     CONST_INTERNAL_VARIABLE = 32,
     API_VARIABLE = 64,

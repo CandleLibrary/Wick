@@ -928,9 +928,9 @@ loadHookProcessor({
 
         const
 
-            node = convertAtLookupToElementRef(<JSStringLiteral>pending_hook_node, component),
+            node = convertAtLookupToElementRef(<any>pending_hook_node, component),
 
-            index = (<JSNode>host_node).nodes.indexOf(pending_hook_node);
+            index = (<any>host_node).nodes.indexOf(pending_hook_node);
 
         if (node) {
             setPos(node, host_node.pos);

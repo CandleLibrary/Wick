@@ -11,7 +11,7 @@ import { PresetOptions } from "../types/presets.js";
 import { HTMLNode } from "../types/wick_ast";
 import { addBindingVariable, addWriteFlagToBindingVariable } from "./binding.js";
 import { GlobalVariables } from "./GlobalVariables.js";
-import { ModuleHash, PearsonModifiedHash } from "./hash_name.js";
+import { ModuleHash } from "./hash_name.js";
 
 /**
  * Set the givin Lexer as the pos val for each node
