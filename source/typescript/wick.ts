@@ -7,8 +7,8 @@ import URL from "@candlelib/url";
 import { ComponentDataClass } from "./common/component.js";
 import { css_selector_helpers } from "./common/css.js";
 import { ComponentHash } from "./common/hash_name.js";
-//Internal
 import Presets from "./common/presets.js";
+import { createCompiledComponentClass, createComponentTemplates } from "./component/compile/compile.js";
 import { parseSource } from "./component/parse/source.js";
 import { componentDataToCSS } from "./component/render/css.js";
 import { componentDataToHTML } from "./component/render/html.js";
@@ -17,20 +17,19 @@ import {
     componentDataToJSCached,
     componentDataToJSStringCached
 } from "./component/render/js.js";
-import { createCompiledComponentClass } from "./component/compile/compile.js";
 import { RenderPage } from "./component/render/webpage.js";
 import { renderWithFormatting } from "./render/render.js";
-import { Observable } from "./runtime/observable/observable.js";
-import { ObservableScheme } from "./runtime/observable/observable_prototyped.js";
 import { WickRTComponent } from "./runtime/component.js";
 import { rt, WickRuntime } from "./runtime/global.js";
+import { Observable } from "./runtime/observable/observable.js";
+import { ObservableScheme } from "./runtime/observable/observable_prototyped.js";
 import { srv, WickServer } from "./server.js";
 import parser from "./source_code/parse.js";
 import { init, WickTest as test } from "./test/wick.test.js";
 import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE } from "./types/binding";
-import { IntermediateHook } from "./types/hook";
 import { ComponentData, ExtendedComponentData } from "./types/component";
 import { FunctionFrame } from "./types/function_frame";
+import { IntermediateHook } from "./types/hook";
 import { DOMLiteral } from "./types/html";
 import { ObservableModel, ObservableWatcher } from "./types/model.js";
 import { PresetOptions } from "./types/presets.js";
@@ -148,9 +147,9 @@ export interface WickCompiler {
  * argument is Presets object and the global presets object has not yet been set, then global presets
  * will be set to the value of this argument.
  * 
- * @returns {ExtendedComponentData}
+ * @returns {Promise<ComponentDataClass>}
  */
-async function componentCreate(input: string | URL, presets: Presets = rt.presets): Promise<ExtendedComponentData> {
+async function componentCreate(input: string | URL, presets: Presets = rt.presets): Promise<ComponentDataClass> {
 
     // Ensure there is a presets object attached to this component.
     if (!presets)
@@ -159,54 +158,17 @@ async function componentCreate(input: string | URL, presets: Presets = rt.preset
     if (!rt.presets)
         rt.presets = presets;
 
-    let comp = null;
+    const comp_data = await parseSource(input, presets);
 
-    const
-        promise = new Promise<ExtendedComponentData>(async res => {
-            comp = await parseSource(input, presets);
-            Object.assign(component, comp);
-            await componentDataToJSCached(component, presets, true, true);
-            await componentDataToJSStringCached(component, presets, true, true);
-            res(component);
-        }),
+    await componentDataToJSCached(comp_data, presets, true, true);
 
-        component = <ExtendedComponentData><unknown>{
-            get class() {
-                return presets.component_class.get(comp.name);
-            },
-            get class_with_integrated_css() {
-                return presets.component_class.get(comp.name);
-            },
-            get class_string() {
-                return presets.component_class_string.get(comp.name);
-            },
-            pending: promise,
-            mount: async (model: any, ele: HTMLElement) => {
+    await componentDataToJSStringCached(comp_data, presets, true, true);
 
-                await component.pending;
+    await createComponentTemplates(presets, rt.templates);
 
-                const comp_inst = new component.class(model);
+    comp_data.presets = presets;
 
-                comp_inst.appendToDOM(ele);
-
-                return comp_inst;
-            }
-        };
-
-    Object.defineProperties(component, {
-
-        /**
-         * Create an instance of the component.
-         */
-        createInstance: {
-            configurable: false,
-            writable: false,
-            value: function (model = null): ExtendedComponentData {
-                return <ExtendedComponentData>new this.class(model);
-            }
-        },
-    });
-    return promise;
+    return comp_data;
 }
 
 /**
@@ -218,7 +180,7 @@ type WickLibrary = typeof componentCreate & WickCompiler & WickRuntime & WickSer
  * 
  * #### HTML - Client Side Component Rendering
  * ```ts
- * import wick from "@candlefw/wick";
+ * import wick from "@candlelib/wick";
  *
  * // Calls to Wick return an object that can then be used to 
  * // render components. The pending attribute allows wick to 
@@ -266,7 +228,10 @@ const wick: WickLibrary = Object.assign(componentCreate,
             enableServer: async function (root_dir: string = "") {
                 await URL.server(root_dir);
             },
-
+            /**
+             * Configure runtime components and component data objects 
+             * with methods useful for testing behavior.
+             */
             enableTest: init,
 
             setWrapper: async function (url) {
