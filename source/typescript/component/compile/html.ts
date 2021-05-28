@@ -218,17 +218,20 @@ async function processSlot(
 }
 
 function processAttributes(
-    html: DOMLiteral,
+    attributes: DOMLiteral["attributes"],
     comp: ComponentData,
     state: htmlState,
     comp_data: string[],
-    node: TemplateHTMLNode
+    node: TemplateHTMLNode,
+    COMPONENT_IS_ROOT_ELEMENT: boolean
 ) {
 
-    let HAVE_CLASS: boolean = false;
-    const COMPONENT_IS_ROOT_ELEMENT = comp.HTML == html;
+    if (!attributes)
+        return false;
 
-    for (const [key, val] of html?.attributes?.values() ?? [])
+    let HAVE_CLASS: boolean = false;
+
+    for (const [key, val] of attributes?.values() ?? [])
         if (key.toLocaleLowerCase() == "class") {
 
             HAVE_CLASS = COMPONENT_IS_ROOT_ELEMENT || HAVE_CLASS;
@@ -239,7 +242,10 @@ function processAttributes(
                     : comp_data[comp_data.length - 1]
                 : "");
 
-            node.attributes.set("class", class_names + ` ${val}`);
+            if (node.attributes.has("class")) {
+                node.attributes.set("class", node.attributes.get("class") + " " + class_names + ` ${val}`);
+            } else
+                node.attributes.set("class", class_names + ` ${val}`);
         }
         else
             node.attributes.set(key, val);
@@ -248,7 +254,9 @@ function processAttributes(
 }
 
 
-async function addComponent(presets: Presets,
+async function addComponent(
+    html: DOMLiteral,
+    presets: Presets,
     component_name: string,
     state: htmlState,
     node: TemplateHTMLNode,
@@ -275,6 +283,17 @@ async function addComponent(presets: Presets,
         comp,
         [...comp_data, c_comp.name]
     ));
+
+    //Merge node attribute data with host entry data, overwrite if necessary
+
+    processAttributes(
+        html.attributes,
+        comp,
+        state,
+        comp_data,
+        node,
+        comp.HTML == html
+    );
 
     return { state, node };
 }
@@ -331,7 +350,7 @@ async function addContainer(
     //get data hook 
     await processHooks(html, component, presets, model, node, parent_component, template_map);
 
-    processAttributes(html, component, state, comp_data, node);
+    processAttributes(html.attributes, component, state, comp_data, node, component.HTML == html);
 }
 
 
