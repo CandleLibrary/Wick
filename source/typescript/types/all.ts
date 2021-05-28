@@ -10,5 +10,4 @@ export * from "./js.js";
 export * from "./model.js";
 export * from "./plugin.js";
 export * from "./presets.js";
-export * from "./types.js";
 export * from "./wick_ast.js";
