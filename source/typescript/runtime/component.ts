@@ -694,24 +694,39 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         let scope_component: WickRTComponent = this;
 
+
+
         if (!this.ele) {
 
             ele.classList.add(this.name);
 
             this.ele = ele;
 
+            ele.wick_component = this;
+
             this.elu.push(ele);
+
+            if (ele.hasAttribute("w:ctr")) {
+
+                debugger;
+
+                //If null=n attribute exists then the container will 
+                //be hydrated by the next n elements, which do not 
+                //belong to the scope of the current container. 
+                ({ sk, PROCESS_CHILDREN } = process_container(ele, scope_component, sk, PROCESS_CHILDREN));
+            }
+
         } else {
 
             if (ele.hasAttribute("w:own"))
                 if (+ele.getAttribute("w:own") != this.affinity)
                     return 0;
 
-
             // Binding Text Node
             if (ele.tagName == "W-B") {
 
                 const text = document.createTextNode(ele.innerHTML);
+
 
                 ele.replaceWith(text);
 
@@ -760,25 +775,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                     //If null=n attribute exists then the container will 
                     //be hydrated by the next n elements, which do not 
                     //belong to the scope of the current container. 
-                    const
-                        null_count = parseInt(ele.getAttribute("null")) || 0,
-                        null_elements = [];
-
-                    if (null_count > 0) {
-
-                        let prev = ele;
-
-                        for (let i = 0; i < null_count; i++) {
-                            null_elements.push(prev.nextElementSibling);
-                            prev = null_elements[i];
-                        }
-                    }
-
-                    hydrateContainerElement(ele, scope_component, null_elements);
-
-                    sk = null_count;
-
-                    PROCESS_CHILDREN = false;
+                    ({ sk, PROCESS_CHILDREN } = process_container(ele, scope_component, sk, PROCESS_CHILDREN));
 
                 } else if (ele.hasAttribute("w:c") && this.ele !== ele) {
 
@@ -837,6 +834,29 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         return ele;
     }
+}
+
+function process_container(ele: HTMLElement, scope_component: WickRTComponent, sk: number, PROCESS_CHILDREN: boolean) {
+    const
+        null_count = parseInt(ele.getAttribute("null")) || 0,
+        null_elements = [];
+
+    if (null_count > 0) {
+
+        let prev = ele;
+
+        for (let i = 0; i < null_count; i++) {
+            null_elements.push(prev.nextElementSibling);
+            prev = null_elements[i];
+        }
+    }
+
+    hydrateContainerElement(ele, scope_component, null_elements);
+
+    sk = null_count;
+
+    PROCESS_CHILDREN = false;
+    return { sk, PROCESS_CHILDREN };
 }
 
 function iterateElementChildren(ele: HTMLElement, scope_component: WickRTComponent, component_chain: WickRTComponent[]) {
