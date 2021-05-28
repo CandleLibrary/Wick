@@ -346,7 +346,7 @@ export async function processWickHTML_AST(ast: HTMLNode, component: ComponentDat
 
 
 
-export function processWickCSS_AST(ast: HTMLNode, component: ComponentData, presets: Presets, url: string = ""): Promise<void> {
+export function processWickCSS_AST(ast: HTMLNode, component: ComponentData, presets: Presets, host_node_index: number, url: string = ""): Promise<void> {
     //Extract style sheet and add to the components stylesheets
     if (url)
         if (presets.styles.has(url)) {
@@ -358,7 +358,8 @@ export function processWickCSS_AST(ast: HTMLNode, component: ComponentData, pres
         style: ComponentStyle = {
             data: stylesheet,
             INLINE: !url,
-            location: url
+            location: url,
+            container_element_index: host_node_index
         };
     if (url)
         presets.styles.set(url, style);

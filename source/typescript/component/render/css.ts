@@ -1,11 +1,11 @@
 import { traverse } from "@candlelib/conflagrate";
 import { CSSNode, CSSNodeType, selector } from "@candlelib/css";
+import { CSSSelectorNode } from "@candlelib/css/build/types/types/node";
+import { getElementAtIndex } from "../../common/html.js";
 import { renderWithFormatting } from "../../render/render.js";
 import { ComponentData, ComponentStyle } from "../../types/component";
 
-export function UpdateSelector(node: CSSNode, name) {
-
-    const class_selector = selector(`.${name}`);
+export function UpdateSelector(node: CSSNode, name, class_selector: CSSSelectorNode) {
 
     node.selectors = node.selectors.map(s => {
 
@@ -21,7 +21,8 @@ export function UpdateSelector(node: CSSNode, name) {
                 case CSSNodeType.TypeSelector:
                     const val = (<any>node).nodes[0].val;
                     if (val == "root") {
-                        replace(Object.assign({}, class_selector, { pos: node.pos, nodes: [] }));
+                        const obj = Object.assign({}, class_selector, { pos: node.pos });
+                        replace(obj);
                         HAS_ROOT = true;
                     } else if (val == "body") {
                         HAS_ROOT = true;
@@ -46,6 +47,20 @@ export function componentToMutatedCSS(css: ComponentStyle, component?: Component
 
     const r = { ast: null };
 
+    const host_ele = getElementAtIndex(component, css.container_element_index);
+
+    let class_selector = null;
+
+    const name = component.name;
+
+    if (host_ele?.component_name && host_ele != component.HTML) {
+        const expat_node = host_ele.attributes.find(([name]) => name == "expat");
+
+        console.log({ expat_node });
+        class_selector = selector(`${host_ele.tag_name}[expat="${expat_node[1]}"]`);
+    } else
+        class_selector = selector(`.${name}`);
+
     for (const { node, meta: { replace } } of traverse(css.data, "nodes")
         .filter("type", CSSNodeType.Rule)
         .makeReplaceable()
@@ -54,7 +69,7 @@ export function componentToMutatedCSS(css: ComponentStyle, component?: Component
         const copy = Object.assign({}, node);
 
         if (component)
-            UpdateSelector(copy, component.name);
+            UpdateSelector(copy, name, class_selector);
 
         replace(copy);
     }

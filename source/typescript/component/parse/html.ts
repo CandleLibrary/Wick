@@ -1,6 +1,7 @@
 import { traverse } from "@candlelib/conflagrate";
 import { JSNode, JSNodeType, stmt } from "@candlelib/js";
 import URL from "@candlelib/url";
+import { ComponentHash } from "../../common/hash_name.js";
 import { ComponentData, Presets } from "source/typescript/wick.js";
 import { addBindingReference, addBindingVariable, addHook } from "../../common/binding.js";
 import { importResource } from "../../common/common.js";
@@ -305,10 +306,17 @@ loadHTMLHandlerInternal(
 
                 node.component = comp;
 
-                if (comp)
+                if (comp) {
 
                     node.component_name = node.component.name;
 
+                    node.attributes.push({
+                        type: HTMLNodeType.HTMLAttribute,
+                        name: "expat",
+                        value: ComponentHash(index + comp.name + name)
+                    });
+
+                }
                 node.tag = "div";
             }
 
@@ -430,9 +438,9 @@ loadHTMLHandlerInternal(
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
             if (index == -1)
-                await processWickCSS_AST(node, component, presets, node.pos.source);
+                await processWickCSS_AST(node, component, presets, host_node.id, node.pos.source);
             else
-                await processWickCSS_AST(node, component, presets);
+                await processWickCSS_AST(node, component, presets, host_node.id);
 
 
             return null;
