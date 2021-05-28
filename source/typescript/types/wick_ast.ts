@@ -1,6 +1,5 @@
 import { JSNode, JSNodeClass } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
-
 import { CSSNode } from "@candlelib/css";
 import { ComponentData } from "./component";
 
