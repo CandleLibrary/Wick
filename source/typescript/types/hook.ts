@@ -1,10 +1,10 @@
-import { Lexer } from "@candlelib/wind";
 import { JSNode, JSStatementClass } from "@candlelib/js";
-import { HTMLNode, WickBindingNode, Node } from "./wick_ast.js";
-import Presets from "../common/presets.js";
-import { ComponentData } from "./component";
+import { Lexer } from "@candlelib/wind";
 import { CompiledComponentClass } from "./class_information";
-import { HookTemplatePackage, TemplateHTMLNode, TemplatePackage } from "./html.js";
+import { ComponentData } from "./component";
+import { HookTemplatePackage } from "./html.js";
+import { PresetOptions } from "./presets.js";
+import { HTMLNode, Node, WickBindingNode } from "./wick_ast.js";
 
 /**
  * Any variable within a component that is defined a GLOBAL value that
@@ -84,14 +84,15 @@ export interface HookProcessor {
         host_ast_node: Node,
         element_index: number,
         component: ComponentData,
-        presets?: Presets,
+        presets?: PresetOptions,
         class_info?: CompiledComponentClass
     ): ProcessedHook;
 
     getDefaultHTMLValue(
         hook: IntermediateHook,
         component: ComponentData,
-        presets?: Presets,
-        model?: any
+        presets: PresetOptions,
+        model: any,
+        parent_component: ComponentData[],
     ): (HookTemplatePackage | Promise<HookTemplatePackage>);
 }

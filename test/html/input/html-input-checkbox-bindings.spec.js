@@ -9,7 +9,7 @@
 import wick from "@candlelib/wick";
 import spark from "@candlelib/spark";
 
-//import wick from "../../../build/library/wick.js";
+//import wick from "../../..//build/library/entry-point/wick-server.js";
 
 // Bindings should be two-way on input elements [value] attribute 
 // by default

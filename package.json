@@ -2,8 +2,8 @@
     "name": "@candlelib/wick",
     "version": "0.13.9",
     "description": "HTML Component Compiler",
-    "main": "./build/library/wick.js",
-    "types": "./build/types/wick.d.ts",
+    "main": "./build/library/entry-point/wick-server.js",
+    "types": "./build/types/entry-point/wick-server.d.ts",
     "type": "module",
     "bin": {
         "wick": "./source/cli.js"

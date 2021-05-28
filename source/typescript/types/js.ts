@@ -1,9 +1,9 @@
-import { JSNode, JSNodeBase, JSNodeType } from "@candlelib/js";
-
-import { HTMLNode } from "./wick_ast.js";
-import { FunctionFrame } from "./function_frame";
+import { JSNode, JSNodeBase } from "@candlelib/js";
 import { ComponentData } from "./component";
-import Presets from "../common/presets.js";
+import { FunctionFrame } from "./function_frame";
+import { PresetOptions } from "./presets.js";
+import { HTMLNode } from "./wick_ast.js";
+
 
 export interface JSHandler {
     priority: number;
@@ -33,7 +33,7 @@ export interface JSHandler {
         parent_node: JSNode | HTMLNode,
         skip: (amount?: number) => void,
         component: ComponentData,
-        presets: Presets,
+        presets: PresetOptions,
         frame: FunctionFrame
     ):
         JSNode

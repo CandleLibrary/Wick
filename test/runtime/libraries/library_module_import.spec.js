@@ -1,11 +1,11 @@
 
-import { parseSource } from "../../../build/library/component/parse/source.js";
-import { createCompiledComponentClass } from "../../../build/library/component/compile/compile.js";
-import { componentDataToJSStringCached } from "../../../build/library/component/render/js.js";
-import Presets from "../../../build/library/common/presets.js";
+import { parseSource } from "../../../build/library/compiler/ast-parse/source.js";
+import { createCompiledComponentClass } from "../../../build/library/compiler/ast-compile/compile.js";
+import { componentDataToJSStringCached } from "../../../build/library/compiler/ast-render/js.js";
+import Presets from "../../../build/library/compiler/common/presets.js";
 import { loadModules } from "../../../build/library/runtime/load_modules.js";
-import { ModuleHash } from "../../../build/library/common/hash_name.js";
-import { RenderPage } from "../../../build/library/component/render/webpage.js";
+import { ModuleHash } from "../../../build/library/compiler/common/hash_name.js";
+import { RenderPage } from "../../../build/library/compiler/ast-render/webpage.js";
 
 assert_group("Module Import", sequence, () => {
 

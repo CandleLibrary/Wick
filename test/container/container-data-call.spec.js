@@ -27,7 +27,6 @@ assert(wick.rt.presets.api.test != undefined);
 assert(wick.rt.presets.api.test.default != undefined);
 
 assert_group("Server run", 5000, sequence, () => {
-    await wick.server();
 
     const
         comp = new comp_data.class(data),

@@ -1,7 +1,7 @@
 
 import { cfw } from "@candlelib/candle";
-import Presets from "../common/presets.js";
-import { PresetOptions } from "../types/presets";
+import Presets from "../compiler/common/presets.js";
+import { PresetOptions, UserPresets } from "../types/presets";
 import { WickRTComponent } from "./component.js";
 
 
@@ -23,13 +23,13 @@ export interface WickRuntime {
      * @param name 
      */
     gC(name: string): typeof WickRTComponent,
-    presets: Presets;
+    presets: PresetOptions;
     /**
      * Replace the current presets with a new set.
      * > Warning:  This will cause a lose of all currently
      * > compiled components.
      */
-    setPresets: (preset_options?: PresetOptions) => Presets,
+    setPresets: (preset_options?: UserPresets) => Presets,
     /**
      * Template elements mapped to component names
      */
@@ -66,13 +66,13 @@ const rt: WickRuntime = (() => {
         OVERRIDABLE_onComponentMetaChange() { },
 
 
-        setPresets: (preset_options: PresetOptions) => {
+        setPresets: (preset_options: UserPresets) => {
 
             //create new component
             const presets = new Presets(preset_options);
 
             //if (!rt.presets)
-            rt.presets = presets;
+            rt.presets = <Presets><any>presets;
 
             return presets;
         },

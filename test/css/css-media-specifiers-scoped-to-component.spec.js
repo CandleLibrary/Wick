@@ -9,8 +9,6 @@
 import wick, { test } from "@candlelib/wick";
 import assert from "assert";
 
-await wick.server();
-
 test.reset();
 
 const comp = (await wick(`<div> <style> @media screen { root { color:red; } .div { position:absolute }  } </style> </div>`));

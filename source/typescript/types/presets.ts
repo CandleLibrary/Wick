@@ -1,5 +1,7 @@
 import URL from "@candlelib/url";
+import { WickRTComponent } from "../runtime/component";
 import { PluginStore } from "../plugin/plugin";
+import { ComponentClassStrings, ComponentData, ComponentStyle } from "./component";
 /**
  * A collection of configuration options to customize the wick compiler.
  */
@@ -62,6 +64,8 @@ export interface PresetOptions {
             wickrt?: string,
             glow?: string;
         };
+
+
     };
 
     /**
@@ -152,6 +156,34 @@ export interface PresetOptions {
     }>;
 
     plugins: PluginStore;
+
+    /**
+     * Store for WickRTComponents.
+     */
+    component_class: Map<string, typeof WickRTComponent>;
+
+    /**
+     * Store for ComponentData
+     */
+    components?: Map<string, ComponentData>;
+
+    css_cache?: any;
+
+    document?: Document;
+
+    window?: Window;
+    /**
+     *  Prevent infinite recursion
+     */
+    wrapper?: typeof WickRTComponent;
+
+    processLink?: any;
+
+    named_components: Map<string, ComponentData>;
+
+    component_class_string: Map<string, ComponentClassStrings>;
+
+    styles?: Map<string, ComponentStyle>;
 }
 
 
@@ -164,4 +196,8 @@ export interface UserPresets {
     };
 
     options?: PresetOptions["options"];
+
+    schemes: any;
+
+    models: any;
 }

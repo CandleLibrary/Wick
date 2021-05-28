@@ -1,9 +1,9 @@
 
 import HTML from "@candlelib/html";
-import Presets from "../../build/library/common/presets.js";
-import { componentDataToTempAST } from "../../build/library/component/compile/html.js";
-import { parseSource } from "../../build/library/component/parse/source.js";
-import { htmlTemplateToString } from "../../build/library/component/render/html.js";
+import Presets from "../../build/library/compiler/common/presets.js";
+import { componentDataToTempAST } from "../../build/library/compiler/ast-compile/html.js";
+import { parseSource } from "../../build/library/compiler/ast-parse/source.js";
+import { htmlTemplateToString } from "../../build/library/compiler/ast-render/html.js";
 import { assertTree } from "../test-tools/tools.js";
 
 await HTML.server();
@@ -121,7 +121,7 @@ export default <div>
 });
 
 
-assert_group(i, "Binding expressions with static objects", sequence, () => {
+assert_group("Binding expressions with static objects", sequence, () => {
     const source_string = `
 import temp_comp from "./test/render/data/temp_prefill.wick"
 

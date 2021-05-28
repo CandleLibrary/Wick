@@ -8,7 +8,7 @@ const output = [{
 }];
 
 export default {
-    input: "./build/library/wick.js",
+    input: ".//build/library/entry-point/wick-server.js",
     treeshake: { unknownGlobalSideEffects: true },
     output,
     plugins: [resolve({ jail: "", modulesOnly: true })],

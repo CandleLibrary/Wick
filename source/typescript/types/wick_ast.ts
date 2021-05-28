@@ -200,7 +200,7 @@ export enum HTMLNodeTypeLU {
 
 
 export interface HTMLNode {
-    comp?: ComponentData,
+    comp?: string,
     import_list?: any[];
 
     is_container?: boolean;

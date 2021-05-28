@@ -247,7 +247,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
             }
 
             if (this.ele.childElementCount > 0)
-                for (const comp of hydrateComponentElements(Array.from(this.ele.children))) {
+                for (const comp of hydrateComponentElements(Array.from(<HTMLElement[]><any>this.ele.children))) {
                     comp.par = parent_comp;
                     comp.hydrate();
                     comp.connect();

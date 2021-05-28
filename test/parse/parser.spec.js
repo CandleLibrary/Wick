@@ -1,10 +1,10 @@
 import { assert } from "console";
-import { Binding_Variable_Has_Static_Default_Value } from "../../build/library/common/binding.js";
-import { createComponentData } from "../../build/library/common/component.js";
-import { createParserFrame } from "../../build/library/common/frame.js";
-import Presets from "../../build/library/common/presets.js";
-import { processCoreAsync } from "../../build/library/component/parse/parse.js";
-import parserSourceString from "../../build/library/source_code/parse.js";
+import { Binding_Variable_Has_Static_Default_Value } from "../../build/library/compiler/common/binding.js";
+import { createComponentData } from "../../build/library/compiler/common/component.js";
+import { createParserFrame } from "../../build/library/compiler/common/frame.js";
+import Presets from "../../build/library/compiler/common/presets.js";
+import { processCoreAsync } from "../../build/library/compiler/ast-parse/parse.js";
+import parserSourceString from "../../build/library/compiler/source-code-parse/parse.js";
 
 
 assert_group("Sanity", () => {

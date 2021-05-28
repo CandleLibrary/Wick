@@ -1,13 +1,13 @@
 import html from "@candlelib/html";
 import spark from "@candlelib/spark";
 
-import { htmlTemplateToString } from "../../build/library/component/render/html.js";
-import { componentDataToTempAST } from "../../build/library/component/compile/html.js";
+import { htmlTemplateToString } from "../../build/library/compiler/ast-render/html.js";
+import { componentDataToTempAST } from "../../build/library/compiler/ast-compile/html.js";
 import { hydrateComponentElements } from "../../build/library/runtime/html.js";
-import Presets from "../../build/library/common/presets.js";
-import { parseSource } from "../../build/library/component/parse/source.js";
-import { createCompiledComponentClass } from "../../build/library/component/compile/compile.js";
-import { createClassStringObject, componentDataToJS } from "../../build/library/component/render/js.js";
+import Presets from "../../build/library/compiler/common/presets.js";
+import { parseSource } from "../../build/library/compiler/ast-parse/source.js";
+import { createCompiledComponentClass } from "../../build/library/compiler/ast-compile/compile.js";
+import { createClassStringObject, componentDataToJS } from "../../build/library/compiler/ast-render/js.js";
 
 export async function getInstanceHTML(comp, presets) {
     return (await componentDataToTempAST(comp, presets)).html[0];

@@ -1,8 +1,8 @@
 import spark, { Sparky } from "@candlelib/spark";
-import Presets from "../common/presets";
+import { DOMLiteral } from "../entry-point/wick-full.js";
 import { BINDING_FLAG } from "../types/binding";
 import { ObservableModel, ObservableWatcher } from "../types/model";
-import { DOMLiteral } from "../wick.js";
+import { PresetOptions } from "../types/presets";
 import { takeParentAddChild } from "./common.js";
 import { WickContainer } from "./container.js";
 import { rt } from "./global.js";
@@ -30,7 +30,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     CONNECTED: boolean;
 
-    presets: Presets;
+    presets: PresetOptions;
 
     nlu: object;
 
@@ -90,7 +90,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         wrapper = null,
         parent_chain: WickRTComponent[] = [],
         default_model_name = "",
-        presets = rt.presets,
+        presets: PresetOptions = rt.presets,
         element_affinity = 0
     ) {
 
@@ -701,7 +701,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             ele.classList.add(this.name);
 
             this.ele = ele;
-
+            //@ts-ignore
             ele.wick_component = this;
 
             this.elu.push(ele);
@@ -727,9 +727,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
                 const text = document.createTextNode(ele.innerHTML);
 
-
                 ele.replaceWith(text);
 
+                //@ts-ignore
                 ele = text;
 
                 this.elu.push(<any>ele);

@@ -11,11 +11,11 @@
  */
 
 import spark from "@candlelib/spark";
-import { ComponentDataClass } from "../common/component.js";
-import Presets from "../common/presets.js";
-import { componentDataToTempAST } from "../component/compile/html.js";
-import { componentDataToCSS } from "../component/render/css.js";
-import { componentDataToHTML, htmlTemplateToString } from "../component/render/html.js";
+import { componentDataToTempAST } from "../compiler/ast-compile/html.js";
+import { componentDataToCSS } from "../compiler/ast-render/css.js";
+import { htmlTemplateToString } from "../compiler/ast-render/html.js";
+import { ComponentDataClass } from "../compiler/common/component.js";
+import Presets from "../compiler/common/presets.js";
 import { WickRTComponent } from "../runtime/component.js";
 import { rt } from "../runtime/global.js";
 import { ComponentData } from "../types/component";

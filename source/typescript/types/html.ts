@@ -1,6 +1,6 @@
 import { Lexer } from "@candlelib/wind";
-import Presets from "../common/presets.js";
 import { ComponentData } from "./component";
+import { PresetOptions } from "./presets.js";
 import { HTMLNode } from "./wick_ast.js";
 
 
@@ -43,7 +43,7 @@ export interface HTMLHandler {
         element_index: number,
         skip: () => void,
         component: ComponentData,
-        presets: Presets
+        presets: PresetOptions
     ):
         HTMLNode
         | void
@@ -118,6 +118,8 @@ export interface DOMLiteral {
     component_name?: string;
 
     container_id?: number;
+
+    parent?: DOMLiteral;
 }
 
 export interface ContainerDomLiteral extends DOMLiteral {
