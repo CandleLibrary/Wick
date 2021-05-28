@@ -1,3 +1,4 @@
+import { ComponentData } from "../types/component";
 import { ContainerDomLiteral, DOMLiteral } from "../types/html";
 import { HTMLContainerNode, HTMLNode } from "../types/wick_ast";
 
@@ -153,3 +154,19 @@ export function buildExportableDOMNode(
 
 export function Is_Tag_From_HTML_Spec(tag_name: string): boolean { return html_tags.has(tag_name.toLowerCase()); }
 
+
+export function getElementAtIndex(comp: ComponentData, index: number, node: DOMLiteral = comp.HTML, counter = { i: 0 }): DOMLiteral {
+
+    if (index == node.element_index)
+        return node;
+
+    if (node.children)
+        for (const child of node.children) {
+            let out = null;
+            if ((out = getElementAtIndex(comp, index, child, counter)))
+                return out;
+        }
+
+    return null;
+}
+;

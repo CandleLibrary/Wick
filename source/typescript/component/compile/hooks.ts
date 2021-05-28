@@ -2,6 +2,7 @@ import { traverse } from "@candlelib/conflagrate";
 import { matchAll } from "@candlelib/css";
 import { exp, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, stmt } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
+import { getElementAtIndex } from "../../common/html.js";
 import { Expression_Is_Static, getCompiledBindingVariableName, getComponentBinding, getStaticValue } from "../../common/binding.js";
 import { setPos } from "../../common/common.js";
 import { css_selector_helpers } from "../../common/css.js";
@@ -979,15 +980,3 @@ export function convertAtLookupToElementRef(string_node: JSStringLiteral, compon
 
     return expression;
 }
-
-function getElementAtIndex(comp: ComponentData, index: number, node: DOMLiteral = comp.HTML, counter = { i: 0 }): DOMLiteral {
-
-    if (index == node.element_index) return node;
-
-    if (node.children) for (const child of node.children) {
-        let out = null;
-        if ((out = getElementAtIndex(comp, index, child, counter))) return out;
-    }
-
-    return null;
-};
