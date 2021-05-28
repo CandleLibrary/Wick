@@ -6,6 +6,23 @@ import { createCompiledComponentClass } from "../compile/compile.js";
 import { componentDataToCSS } from "./css.js";
 import { componentDataToHTML, htmlTemplateToString } from "./html.js";
 import { createClassStringObject } from "./js.js";
+import { getPackageJsonObject } from "@candlelib/wax";
+
+const { package: { version, name } } = await getPackageJsonObject(import.meta.url);
+
+type PageRenderHooks = {
+    /**
+     * Default:
+     * ```js
+     * import w from "/@cl/wick.runtime/"
+     *
+     * w.setPresets({})
+     *
+     * component_class_declarations...
+     * ```
+     */
+    init_script_render: (component_class_declarations: string, presets: Presets) => string;
+};
 
 /**[API]
  * Builds a single page from a wick component, with the
@@ -20,37 +37,42 @@ import { createClassStringObject } from "./js.js";
 export async function RenderPage(
     comp: ComponentData,
     presets: Presets = rt.presets,
-    hooks: {
-        on_element: (arg: DOMLiteral) => DOMLiteral | null | undefined;
-    } = {
-            on_element: noop
-        }): Promise<{
-            /**
-             * A string of template elements that comprise components that are rendered
-             * within containers. 
-             */
-            templates: string,
-            /**
-             * The main component rendered with static data
-             */
-            html: string,
-            /**
-             * All head elements gathered from all components
-             */
-            head: string,
-            /**
-             * All component class code
-             */
-            script: string,
-            /**
-             * All component CSS style data
-             */
-            style: string;
-            /**
-             * A deploy ready page string
-             */
-            page: string;
-        }> {
+    hooks: PageRenderHooks = {
+        init_script_render: (component_class_declarations, presets) => {
+            return `
+            import w from "/@cl/wick/runtime.js";
+            w.setPresets(${renderPresets(presets)});
+            ${component_class_declarations}
+            `;
+        }
+    }
+): Promise<{
+    /**
+     * A string of template elements that comprise components that are rendered
+     * within containers. 
+     */
+    templates: string,
+    /**
+     * The main component rendered with static data
+     */
+    html: string,
+    /**
+     * All head elements gathered from all components
+     */
+    head: string,
+    /**
+     * All component class code
+     */
+    script: string,
+    /**
+     * All component CSS style data
+     */
+    style: string;
+    /**
+     * A deploy ready page string
+     */
+    page: string;
+}> {
 
     if (!comp) return null;
 
@@ -112,7 +134,7 @@ export async function RenderPage(
         style += "\n" + componentDataToCSS(comp);
     }
 
-    const page = renderPageString(presets, templates, html, head, script, style);
+    const page = renderPageString(presets, templates, html, head, script, style, hooks);
 
     return { templates, html, head, script, style, page };
 }
@@ -124,26 +146,24 @@ function renderPageString(
     head: string,
     script: string,
     style: string,
+    hooks: PageRenderHooks
 ): string {
     return `<!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta name="generator" content="candlelib/wick@0.13.7"> 
+        <meta name="generator" content="${name}-${version}"> 
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         ${head.split("\n").join("\n    ")}
         <style>
         ${style.split("\n").join("\n            ")}
         </style>
-        <script type="module" src="${presets.options.url.wickrt}"></script>
     </head>
     <body>
         ${html.split("\n").join("\n        ")}
         ${templates.split("\n").join("\n        ")}
         <script type=module>
-            import w from "${presets.options.url.wickrt}";
-            w.setPresets(${renderPresets(presets)});
-            ${script.split("\n").join("\n            ")}
+            ${hooks.init_script_render(script.split("\n").join("\n            "), presets)}
         </script>
     </body>
 </html>`;
