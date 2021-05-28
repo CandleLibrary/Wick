@@ -3,6 +3,8 @@ import { addModuleToCFW } from "@candlelib/candle";
 import { CSSNode, CSSNodeType, CSSNodeTypeLU } from "@candlelib/css";
 import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlelib/js";
 import URL from "@candlelib/url";
+//Internal
+import { ComponentDataClass } from "./common/component.js";
 import { css_selector_helpers } from "./common/css.js";
 import { ComponentHash } from "./common/hash_name.js";
 //Internal

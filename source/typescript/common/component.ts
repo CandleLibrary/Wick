@@ -1,10 +1,9 @@
 import URL from "@candlelib/url";
 import { Lexer } from "@candlelib/wind";
-import { ComponentData } from "../types/component";
+import { ComponentData, ExtendedComponentData } from "../types/component";
 import { DOMLiteral } from "../types/html";
+import { Presets, WickRTComponent } from "../wick";
 import { ComponentHash } from "./hash_name.js";
-
-
 
 export function createErrorComponent(errors: Error[], src: string, location: URL, component: ComponentData = createComponentData(src, location)) {
 
@@ -64,45 +63,93 @@ export function createErrorComponent(errors: Error[], src: string, location: URL
     return component;
 }
 
-export function createComponentData(source_string: string, location: URL): ComponentData {
+export class ComponentDataClass implements ComponentData {
 
-    const component: ComponentData = <ComponentData>{
+    name: ComponentData["name"];
+    container_count: ComponentData["container_count"];
+    global_model_name: ComponentData["global_model_name"];
+    source: ComponentData["source"];
+    local_component_names: ComponentData["local_component_names"];
+    location: ComponentData["location"];
+    root_frame: ComponentData["root_frame"];
+    HTML: ComponentData["HTML"];
+    HAS_ERRORS: ComponentData["HAS_ERRORS"];
+    names: ComponentData["names"];
+    frames: ComponentData["frames"];
+    HTML_HEAD: ComponentData["HTML_HEAD"];
+    CSS: ComponentData["CSS"];
+    hooks: ComponentData["hooks"];
+    children: ComponentData["children"];
+    errors: ComponentData["errors"];
+    root_ele_claims: ComponentData["root_ele_claims"];
+    template: ComponentData["template"];
 
-        name: ComponentHash(source_string),
+    presets: Presets;
 
-        container_count: 0,
+    constructor(source_string: string, location: URL) {
 
-        global_model_name: "",
+        this.name = ComponentHash(source_string);
 
-        source: source_string,
+        this.container_count = 0;
+
+        this.global_model_name = "";
+
+        this.source = source_string;
         //Local names of imported components that are referenced in HTML expressions. 
-        local_component_names: new Map,
+        this.local_component_names = new Map;
 
-        location: new URL(location),
+        this.location = new URL(location);
 
-        root_frame: null,
+        this.root_frame = null;
 
-        HTML: null,
+        this.HTML = null;
 
-        HAS_ERRORS: false,
+        this.HAS_ERRORS = false;
 
-        names: [],
+        this.names = [];
 
-        frames: [],
+        this.frames = [];
 
-        HTML_HEAD: [],
+        this.HTML_HEAD = [];
 
-        CSS: [],
+        this.CSS = [];
 
-        hooks: [],
+        this.hooks = [];
 
-        children: [],
+        this.children = [];
 
-        errors: [],
+        this.errors = [];
 
-        root_ele_claims: [],
+        this.root_ele_claims = [];
 
-        template: null
-    };
-    return component;
+        this.template = null;
+
+        this.presets = null;
+    }
+
+    get class(): typeof WickRTComponent {
+        return this.presets.component_class.get(this.name);
+    }
+
+    get class_with_integrated_css() {
+        return this.presets.component_class.get(this.name);
+    }
+
+    get class_string() {
+        return this.presets.component_class_string.get(this.name);
+    }
+
+    createInstance(model: any = null): WickRTComponent {
+        return new this.class(model);
+    }
+
+    mount(model: any, ele: HTMLElement): WickRTComponent {
+        const comp_inst = this.createInstance(model);
+        comp_inst.appendToDOM(ele);
+        return comp_inst;
+    }
+}
+
+export function createComponentData(source_string: string, location: URL): ComponentData {
+    return new ComponentDataClass(source_string, location);
 }

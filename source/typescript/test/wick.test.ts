@@ -11,11 +11,15 @@
  */
 
 import spark from "@candlelib/spark";
-import { rt } from "../runtime/global.js";
-import { componentDataToCSS } from "../component/render/css.js";
+import { ComponentDataClass } from "../common/component.js";
 import Presets from "../common/presets.js";
+import { componentDataToTempAST } from "../component/compile/html.js";
+import { componentDataToCSS } from "../component/render/css.js";
+import { componentDataToHTML, htmlTemplateToString } from "../component/render/html.js";
 import { WickRTComponent } from "../runtime/component.js";
-import spark from "@candlefw/spark";
+import { rt } from "../runtime/global.js";
+import { ComponentData } from "../types/component";
+
 
 
 export interface WickTestTools {
@@ -115,6 +119,42 @@ export function init() {
             "lostpointercapture": PointerEvent,
         }[event_name.toString().toLowerCase().replace(/^on/, "")] ?? Event;
     }
+    /**
+     * Returns the components HTML string representation
+     */
+    ComponentDataClass.prototype.getHTMLString = async function (presets = rt.presets) {
+
+        const html = await this.getHTMLTemplate(presets);
+
+        return htmlTemplateToString(html);
+    };
+
+    /**
+     * Returns the HTML template object 
+     */
+    ComponentDataClass.prototype.getHTMLTemplate = async function (presets = rt.presets) {
+
+        const { html } = await componentDataToTempAST(this, presets);
+
+        console.log({ html });
+
+        return html[0];
+    };
+
+    /**
+     * Returns the Templates template object 
+     */
+    ComponentDataClass.prototype.getHTMLTemplateMap = async function (presets = rt.presets) {
+
+        const { template_map } = await componentDataToTempAST(this, presets);
+
+        return template_map;
+    };
+
+    ComponentDataClass.prototype.getCSSString = async function (presets = rt.presets) {
+
+        return componentDataToCSS(this);
+    };
 }
 
 

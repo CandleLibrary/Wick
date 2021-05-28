@@ -21,7 +21,10 @@ export interface ComponentStyle {
      * inlined.
      */
     INLINE: boolean;
+
     location: string;
+
+    container_element_index: number;
 }
 
 export interface ComponentData {

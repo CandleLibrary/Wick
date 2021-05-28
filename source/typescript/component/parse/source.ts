@@ -1,7 +1,7 @@
 import { JSNode, JSNodeType } from "@candlelib/js";
 import URL from "@candlelib/url";
 import { processUndefinedBindingVariables } from "../../common/binding.js";
-import { createComponentData, createErrorComponent } from "../../common/component.js";
+import { ComponentDataClass, createComponentData, createErrorComponent } from "../../common/component.js";
 import { createParserFrame } from "../../common/frame.js";
 import Presets from "../../common/presets.js";
 import parserSourceString from "../../source_code/parse.js";
@@ -48,7 +48,7 @@ const empty_obj = {};
  * @param presets {PresetOptions} - 
  * @param root_url 
  */
-export async function parseSource(input: URL | string, presets?: Presets, root_url: URL = new URL(URL.GLOBAL + "/")): Promise<ComponentData> {
+export async function parseSource(input: URL | string, presets?: Presets, root_url: URL = new URL(URL.GLOBAL + "/")): Promise<ComponentDataClass> {
 
 
     //If this is a node.js environment, make sure URL is able to resolve local files system addresses.

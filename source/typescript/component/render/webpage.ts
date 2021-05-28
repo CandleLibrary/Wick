@@ -1,12 +1,10 @@
 import Presets from "../../common/presets";
-import { noop } from "../../render/noop.js";
 import { renderCompressed } from "../../render/render.js";
 import { rt } from "../../runtime/global.js";
 import { ComponentData } from "../../types/component";
-import { DOMLiteral } from "../../wick.js";
+import { createCompiledComponentClass } from "../compile/compile.js";
 import { componentDataToCSS } from "./css.js";
 import { componentDataToHTML, htmlTemplateToString } from "./html.js";
-import { createCompiledComponentClass } from "../compile/compile.js";
 import { createClassStringObject } from "./js.js";
 
 /**[API]

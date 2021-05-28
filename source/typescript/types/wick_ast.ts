@@ -3,7 +3,6 @@ import { Lexer } from "@candlelib/wind";
 
 import { CSSNode } from "@candlelib/css";
 import { ComponentData } from "./component";
-import { Component } from "../wick";
 
 export const enum HTMLNodeClass {
     HTML_NODE = (1 << 20),
@@ -201,7 +200,7 @@ export enum HTMLNodeTypeLU {
 
 
 export interface HTMLNode {
-    comp?: Component,
+    comp?: ComponentData,
     import_list?: any[];
 
     is_container?: boolean;
@@ -213,7 +212,7 @@ export interface HTMLNode {
     slot_name?: string;
     id?: number;
     child_id?: number;
-    component?: Component;
+    component?: ComponentData;
     component_name?: string;
     /**
      * child nodes 
