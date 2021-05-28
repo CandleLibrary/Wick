@@ -1,9 +1,7 @@
 import URL from "@candlelib/url";
 import HTML from "@candlelib/html";
 import { RenderPage } from "../compiler/ast-render/webpage.js";
-import { WickLibrary } from "./wick-full.js";
-
-import wick from "./wick-full.js";
+import wick, { WickLibrary } from "./wick-full.js";
 
 export interface WickServer {
 
@@ -24,14 +22,9 @@ export interface WickServer {
 
 type WickServerLibrary = WickServer & WickLibrary;
 
+const wick_server: WickServerLibrary = <WickServerLibrary>wick;
 
-const wick_server: WickServerLibrary = Object.assign(wick, <WickServer>{
-
-    utils: {
-        RenderPage: RenderPage
-    }
-
-});
+wick_server.utils.RenderPage = RenderPage;
 
 
 // Initialize server version of dependencies
