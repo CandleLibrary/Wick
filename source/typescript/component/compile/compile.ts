@@ -63,7 +63,7 @@ import {
     convertAtLookupToElementRef,
     hook_processors
 } from "./hooks.js";
-import { componentDataToTempAST } from "./html.js";
+import { componentDataToTempAST, createComponentTemplate } from "./html.js";
 
 export async function createCompiledComponentClass(
     comp: ComponentData,
@@ -145,21 +145,7 @@ async function processHTML(
         const
             frame = createCompileFrame("ce"),
             return_stmt = stmt("return this.makeElement(a);"),
-            { html: [html], templates: template_map } = (await componentDataToTempAST(component, presets));
-
-        // Add templates to runtime template collection
-        if (typeof document != undefined && document.createElement)
-
-            for (const [template_name, template_node] of template_map.entries())
-
-                if (!rt.templates.has(template_name)) {
-
-                    const ele = document.createElement("div");
-
-                    ele.innerHTML = htmlTemplateToString(template_node);
-
-                    rt.templates.set(template_name, <HTMLElement>ele.firstElementChild);
-                }
+            { html: [html] } = (await componentDataToTempAST(component, presets));
 
         return_stmt.nodes[0].nodes[1].nodes[0] = htmlTemplateToJSNode(html);
 
@@ -167,6 +153,30 @@ async function processHTML(
 
         class_info.method_frames.push(frame);
     }
+}
+
+export async function createComponentTemplates(
+    presets: Presets,
+    template_container: Map<string, HTMLElement> = new Map
+) {
+
+    const components = presets.components;
+
+    if (typeof document != undefined && document.createElement)
+
+        for (const [name, component] of components.entries()) {
+
+            const template = await createComponentTemplate(component, presets);
+
+            if (!template_container.has(name)) {
+
+                const ele = document.createElement("div");
+
+                ele.innerHTML = htmlTemplateToString(template);
+
+                template_container.set(name, <HTMLElement>ele.firstElementChild);
+            }
+        }
 }
 
 function createBindingName(binding_index_pos: number) {

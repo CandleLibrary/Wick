@@ -70,7 +70,9 @@ export async function componentDataToTempAST(
         else if (component_name && presets.components.has(component_name)) {
 
             ({ node, state } =
-                await addComponent(presets,
+                await addComponent(
+                    html,
+                    presets,
                     component_name,
                     state,
                     node,
@@ -93,7 +95,7 @@ export async function componentDataToTempAST(
                     return r_;
             }
 
-            await processElement(html, comp, presets, model, node, parent_component, tag_name, state, comp_data);
+            await processElement(html, comp, presets, model, node, parent_component, tag_name, state, comp_data, template_map);
 
         } else if (IS_BINDING)
             await addBindingElement(html, state, node, comp_data, comp, presets, model);
@@ -131,8 +133,18 @@ function processTextNode(node: TemplateHTMLNode, data: string) {
     node.data = data;
 }
 
-async function processElement(html: DOMLiteral, comp: ComponentData, presets: Presets, model: any, node: TemplateHTMLNode, parent_component: ComponentData[], tag_name: string, state: htmlState, comp_data: string[]) {
-    await processHooks(html, comp, presets, model, node, parent_component);
+async function processElement(html: DOMLiteral,
+    comp: ComponentData,
+    presets: Presets,
+    model: any,
+    node: TemplateHTMLNode,
+    parent_component: ComponentData[],
+    tag_name: string,
+    state: htmlState,
+    comp_data: string[],
+    template_map: TemplatePackage["templates"]
+) {
+    await processHooks(html, comp, presets, model, node, parent_component, template_map);
 
     const COMPONENT_IS_ROOT_ELEMENT = comp.HTML == html;
 
@@ -140,7 +152,7 @@ async function processElement(html: DOMLiteral, comp: ComponentData, presets: Pr
 
     setScopeAssignment(state, node, html);
 
-    const HAVE_CLASS = processAttributes(html, comp, state, comp_data, node);
+    const HAVE_CLASS = processAttributes(html.attributes, comp, state, comp_data, node, comp.HTML == html);
 
     if (COMPONENT_IS_ROOT_ELEMENT) {
         node.attributes.set("w:c", "");
@@ -322,19 +334,8 @@ async function addContainer(
 
         if (!template_map.has(comp.name)) {
 
-            if (!comp.template) {
+            const template = await createComponentTemplate(comp, presets, template_map);
 
-                const { html } = await componentDataToTempAST(comp, presets, null, template_map);
-
-                comp.template = {
-                    tagName: "template",
-                    data: "",
-                    strings: [],
-                    attributes: new Map([["w:c", ""], ["id", comp.name]]),
-                    children: [...html]
-                };
-
-            }
             template_map.set(comp.name, comp.template);
         }
     }
@@ -353,6 +354,27 @@ async function addContainer(
     processAttributes(html.attributes, component, state, comp_data, node, component.HTML == html);
 }
 
+
+export async function createComponentTemplate(
+    comp: ComponentData,
+    presets: Presets,
+    template_map: Map<string, TemplateHTMLNode> = new Map
+): Promise<TemplateHTMLNode> {
+    if (!comp.template) {
+
+        const { html } = await componentDataToTempAST(comp, presets, null, template_map);
+
+        comp.template = {
+            tagName: "template",
+            data: "",
+            strings: [],
+            attributes: new Map([["w:c", ""], ["id", comp.name]]),
+            children: [...html]
+        };
+    }
+
+    return comp.template;
+}
 
 async function processHooks(
     html: DOMLiteral,
@@ -381,8 +403,9 @@ async function processHooks(
         } if (templates) {
 
             for (const [key, val] of templates.entries())
-                if (!template_map.has(key))
+                if (!template_map.has(key)) {
                     template_map.set(key, val);
+                }
         }
     }
 }
