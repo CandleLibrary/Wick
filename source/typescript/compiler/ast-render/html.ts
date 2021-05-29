@@ -4,7 +4,7 @@ import { exp, JSExpressionClass, JSNode, JSNodeType } from "@candlelib/js";
 import { rt } from "../../runtime/global.js";
 import { ComponentData, TemplateHTMLNode, PresetOptions } from "../../types/all.js";
 import { componentDataToTempAST } from "../ast-build/html.js";
-import { html_void_tags } from "../common/html.js";
+import { html_void_tags, Is_Tag_From_HTML_Spec, Is_Tag_Void_Element } from "../common/html.js";
 
 
 /**
