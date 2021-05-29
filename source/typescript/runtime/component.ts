@@ -797,30 +797,13 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 * literals. Return list of object ID's and the
 * root element tree.
 */
-    makeElement(ele_obj: DOMLiteral, name_space = ""): HTMLElement {
+    makeElement(ele_obj: /*DOMLiteral*/ string, name_space = ""): HTMLElement {
 
-        const {
-            namespace_id: name_space_index,
-            tag_name: tag_name,
-            element_index: i,
-            attributes: attributes,
-            children: children,
-            data: data
-        } = ele_obj;
+        const temp_ele = document.createElement("div");
 
-        if (name_space_index) name_space = getNameSpace(name_space_index);
+        temp_ele.innerHTML = ele_obj;
 
-        let ele = <HTMLElement>createNamespacedElement(tag_name, name_space, data);
-
-        if (attributes)
-            for (const [name, value] of attributes)
-                ele.setAttribute(name, value);
-
-        if (children)
-            for (const child of children)
-                ele.appendChild(this.makeElement(child, name_space));
-
-        return ele;
+        return <HTMLElement>temp_ele.firstElementChild;
     }
     createElement(presets, parent_chain) {
 

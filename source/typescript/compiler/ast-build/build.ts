@@ -126,8 +126,8 @@ async function processHTML(
             frame = createCompileFrame("ce"),
             return_stmt = stmt("return this.makeElement(a);"),
             { html: [html] } = (await componentDataToTempAST(component, presets));
-
-        return_stmt.nodes[0].nodes[1].nodes[0] = htmlTemplateToJSNode(html);
+            
+        return_stmt.nodes[0].nodes[1].nodes[0] = exp(`\`${htmlTemplateToString(html).replace(/(\`)/g, "\\\`")}\``);
 
         appendStmtToFrame(frame, return_stmt);
 
