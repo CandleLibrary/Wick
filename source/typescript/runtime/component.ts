@@ -706,15 +706,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
             this.elu.push(ele);
 
-            if (ele.hasAttribute("w:ctr")) {
+            if (ele.hasAttribute("w:ctr"))
 
-                debugger;
-
-                //If null=n attribute exists then the container will 
-                //be hydrated by the next n elements, which do not 
-                //belong to the scope of the current container. 
                 ({ sk, PROCESS_CHILDREN } = process_container(ele, scope_component, sk, PROCESS_CHILDREN));
-            }
 
         } else {
 
@@ -770,14 +764,11 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
                 //Special Wick Elements
 
-                if (ele.hasAttribute("w:ctr")) {
+                if (ele.hasAttribute("w:ctr"))
 
-                    //If null=n attribute exists then the container will 
-                    //be hydrated by the next n elements, which do not 
-                    //belong to the scope of the current container. 
                     ({ sk, PROCESS_CHILDREN } = process_container(ele, scope_component, sk, PROCESS_CHILDREN));
 
-                } else if (ele.hasAttribute("w:c") && this.ele !== ele) {
+                else if (ele.hasAttribute("w:c") && this.ele !== ele) {
 
                     takeParentAddChild(this, hydrateComponentElement(ele, component_chain));
 
@@ -819,6 +810,10 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     }
 }
 
+
+//If null=n attribute exists then the container will 
+//be hydrated by the next n elements, which do not 
+//belong to the scope of the current container. 
 function process_container(ele: HTMLElement, scope_component: WickRTComponent, sk: number, PROCESS_CHILDREN: boolean) {
     const
         null_count = parseInt(ele.getAttribute("null")) || 0,
