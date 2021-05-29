@@ -13,8 +13,7 @@ wick.utils.enableTest();
 
 const comp = (await wick(`
 
-var d = "@#canvas",
-    ctx = "@#canvas".getContext("2d");
+var ctx = "@canvas".getContext2D();
 
 function onload(){
     var t =ctx;
@@ -24,7 +23,7 @@ export default <div id="main" class="main">
     <canvas id="canvas" width=50 height=50 />
 </div >`));
 
-assert(i, comp.class_string == "");
+assert(comp.class_string == "");
 
 
 
