@@ -74,6 +74,44 @@ export interface ProcessedHook {
 
     IS_ASYNC?: boolean;
 }
+
+const enum ProcessedHookType {
+    /**
+     * Assigns this hooks AST to the initialization 
+     * function of the runtime component.
+     */
+    INITIALIZE = 0,
+
+    /**
+     * Assigns this hooks AST to the async initialization 
+     * function of the runtime component.
+     */
+    ASYNC_INITIALIZE = 1,
+
+    /**
+     * Assigns this hooks AST to an event driven
+     * functions.  This AST may be joined with other 
+     * hook ASTs of this type if they bear multiple 
+     * dependencies 
+     */
+    VAR_UPDATE = 2,
+
+    /**
+     * Assigns this hooks AST to the de-initialize 
+     * function of the runtime component
+     */
+    DESTROY = 4,
+}
+
+export interface ProcessedHookBeta {
+    /**
+     * The type of the hook. Used to determine the pipeline
+     * which will render this hook.
+     */
+    type: ProcessedHookType;
+    ast: JSNode;
+}
+
 export interface HookProcessor {
     priority: number;
     canProcessHook(hook_selector: HOOK_SELECTOR | string, node_type: string): boolean;

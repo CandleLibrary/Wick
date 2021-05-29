@@ -30,6 +30,10 @@ import {
     processWickJS_AST
 } from "./parse.js";
 
+import {
+    getExtendTypeVal
+} from "../ast-build/hooks-beta.js";
+
 export function findFirstNodeOfType(type: JSNodeType, ast: JSNode) {
 
     for (const { node } of traverse(ast, "nodes"))
@@ -207,6 +211,8 @@ loadJSParseHandlerInternal(
 
                     if (id.type == JSNodeType.IdentifierReference
                         && id.value == "watch") {
+
+                        node.type = <JSNodeType>getExtendTypeVal("watch-call");
 
                         addHook(component, {
                             selector: HOOK_SELECTOR.WATCHED_FRAME_METHOD_CALL,
