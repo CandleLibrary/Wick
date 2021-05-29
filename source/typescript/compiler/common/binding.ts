@@ -142,7 +142,7 @@ export function addBindingVariable(
     frame: FunctionFrame,
     internal_name: string,
     pos: any | Lexer,
-    type: BINDING_VARIABLE_TYPE = BINDING_VARIABLE_TYPE.UNDEFINED,
+    type: BINDING_VARIABLE_TYPE = BINDING_VARIABLE_TYPE.UNDECLARED,
     external_name: string = internal_name,
     flags: BINDING_FLAG = 0,
 ): boolean {
@@ -168,9 +168,9 @@ export function addBindingVariable(
         const existing_binding = root.binding_variables.get(internal_name);
 
         if (
-            existing_binding.type == BINDING_VARIABLE_TYPE.UNDEFINED
+            existing_binding.type == BINDING_VARIABLE_TYPE.UNDECLARED
             &&
-            type != BINDING_VARIABLE_TYPE.UNDEFINED
+            type != BINDING_VARIABLE_TYPE.UNDECLARED
         ) {
 
             root.binding_variables.set(binding_var.internal_name, binding_var);
@@ -236,7 +236,7 @@ export function processUndefinedBindingVariables(component: ComponentData, prese
 
     for (const binding_variable of component.root_frame.binding_variables.values()) {
 
-        if (binding_variable.type == BINDING_VARIABLE_TYPE.UNDEFINED) {
+        if (binding_variable.type == BINDING_VARIABLE_TYPE.UNDECLARED) {
 
             if (!getSetOfEnvironmentGlobalNames().has(binding_variable.external_name)) {
 
@@ -254,7 +254,7 @@ export function getCompiledBindingVariableName(name: string, component: Componen
 
     const comp_var = getComponentBinding(name, component);
 
-    if (!comp_var || comp_var.type == BINDING_VARIABLE_TYPE.UNDEFINED) {
+    if (!comp_var || comp_var.type == BINDING_VARIABLE_TYPE.UNDECLARED) {
         const global_names = getSetOfEnvironmentGlobalNames();
         if (global_names.has(name)) {
             return name;
@@ -273,7 +273,7 @@ export function getCompiledBindingVariableName(name: string, component: Componen
             case BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE:
                 return `this.presets.api.${comp_var.external_name}`;
 
-            case BINDING_VARIABLE_TYPE.UNDEFINED:
+            case BINDING_VARIABLE_TYPE.UNDECLARED:
                 const global_names = getSetOfEnvironmentGlobalNames();
                 if (global_names.has(comp_var.external_name))
                     return comp_var.external_name;
@@ -332,7 +332,7 @@ export function Binding_Variable_Has_Static_Default_Value(
         else if (
             binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE
             ||
-            binding.type == BINDING_VARIABLE_TYPE.UNDEFINED
+            binding.type == BINDING_VARIABLE_TYPE.UNDECLARED
             ||
             // Assume parent binding variable is static.
             // This will be confirmed when the actual value is resolved
@@ -417,7 +417,7 @@ export async function getDefaultBindingValue(
 
                     return await getDefaultBindingValue(hook.hook_value.local, parent_comp, presets, model);
 
-        if ((binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE || binding.type == BINDING_VARIABLE_TYPE.UNDEFINED)) {
+        if ((binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE || binding.type == BINDING_VARIABLE_TYPE.UNDECLARED)) {
 
             if (model) return await convertObjectToJSNode(model[binding.external_name]);
             else return undefined;
