@@ -37,7 +37,7 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
 
         const depth_str = "    ";
 
-        if (traverse_state == TraverseState.LEAF) {
+        if (traverse_state == TraverseState.LEAF && (!node.tagName || Is_Tag_Void_Element(node.tagName))) {
 
             node.strings.length = 0;
 
@@ -56,7 +56,11 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
 
             if (parent)
                 parent.strings.push(...node.strings.map(s => depth_str + s));
-        } else if (traverse_state == TraverseState.ENTER) {
+
+            continue;
+        }
+
+        if (traverse_state == TraverseState.ENTER || traverse_state == TraverseState.LEAF) {
 
             node.strings.length = 0;
 
@@ -73,7 +77,9 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
                 string = addAttributesToString(node, `<${node.tagName}`) + ">";
 
             node.strings.push(string);
-        } else {
+        }
+
+        if (traverse_state == TraverseState.EXIT || traverse_state == TraverseState.LEAF) {
             //Null container elements do not enclose their child elements
             if (node.tagName !== "null")
                 node.strings.push(`</${node.tagName}>`);

@@ -149,6 +149,8 @@ export function buildExportableDOMNode(
 
 export function Is_Tag_From_HTML_Spec(tag_name: string): boolean { return html_tags.has(tag_name.toLowerCase()); }
 
+export function Is_Tag_Void_Element(tag_name: string): boolean { return html_void_tags.has(tag_name.toLowerCase()); }
+
 
 export function getElementAtIndex(comp: ComponentData, index: number, node: DOMLiteral = comp.HTML, counter = { i: 0 }): DOMLiteral {
 
