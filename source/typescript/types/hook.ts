@@ -228,12 +228,8 @@ export interface HookProcessor {
 }
 
 
-export interface IndirectHook {
-    ast: HookNode,
-    ele_index: number;
-}
-
-export interface HookNode {
+export interface IndirectHook<T = Node> {
     type: ExtendedType,
-    nodes: Node[];
+    nodes: T[];
+    ele_index: number;
 }
