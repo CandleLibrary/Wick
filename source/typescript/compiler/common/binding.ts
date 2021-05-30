@@ -1,10 +1,15 @@
-import { traverse } from "@candlelib/conflagrate";
+import { copy, traverse } from "@candlelib/conflagrate";
 import { JSExpressionClass, JSIdentifier, JSNode, JSNodeClass, JSNodeType, renderCompressed, tools } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
 import { PluginStore } from "../../plugin/plugin.js";
-import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, ComponentData, FunctionFrame, HOOK_SELECTOR, IntermediateHook, PLUGIN_TYPE, PresetOptions, STATIC_BINDING_STATE, WickBindingNode } from "../../types/all.js";
+import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, HOOK_SELECTOR, IndirectHook, IntermediateHook, PLUGIN_TYPE, PresetOptions, STATIC_BINDING_STATE, WickBindingNode } from "../../types/all.js";
+import { getExtendTypeVal, ExtendedType, getOriginalTypeOfExtendedType } from "../ast-build/hooks-beta.js";
 import { getSetOfEnvironmentGlobalNames } from "./common.js";
 import { convertObjectToJSNode } from "./js.js";
+
+export const
+    BindingIdentifierBinding = getExtendTypeVal("binding-id", JSNodeType.IdentifierBinding),
+    BindingIdentifierReference = getExtendTypeVal("ref-id", JSNodeType.IdentifierReference);
 
 function getNonTempFrame(frame: FunctionFrame) {
     while (frame && frame.IS_TEMP_CLOSURE)
@@ -37,8 +42,17 @@ export function addBindingReference(input_node: JSNode, input_parent: JSNode, fr
 
         if (!Variable_Is_Declared_In_Closure((<JSIdentifier>node).value, frame)) {
 
+            if (node.type == JSNodeType.IdentifierReference)
+                node.type = BindingIdentifierReference;
+            else
+                node.type = BindingIdentifierBinding;
+
+            console.log({
+                BindingIdentifierReference,
+                BindingIdentifierBinding
+            });
+
             //@ts-ignore
-            node.IS_BINDING_REF = true;
 
             if (!frame.binding_ref_identifiers.includes(<any>node))
                 frame.binding_ref_identifiers.push(<any>node);
@@ -64,7 +78,8 @@ export function getBindingRefCount(frame: FunctionFrame): Map<string, number> {
 export function removeBindingReferences(name: string, frame: FunctionFrame) {
     for (const node of frame.binding_ref_identifiers)
         if (node.value == name)
-            node.IS_BINDING_REF = false;
+            node.type = getOriginalTypeOfExtendedType(no);
+    node.IS_BINDING_REF = false;
 }
 /**
  *  Returns true if var_name has been declared within the frame closure
@@ -130,12 +145,16 @@ export function Name_Is_A_Binding_Variable(var_name: string, frame: FunctionFram
     return getRootFrame(frame).binding_variables.has(var_name);
 }
 
-export function addDefaultValueToBindingVariable(frame: FunctionFrame, name: string, value: JSNode) {
 
+export function addDefaultValueToBindingVariable(frame: FunctionFrame, name: string, value: JSNode, hooks: IntermediateHook[] = []) {
     const root = getRootFrame(frame);
 
-    if (root.binding_variables.has(name))
-        root.binding_variables.get(name).default_val = value;
+    if (root.binding_variables.has(name)) {
+        const binding = root.binding_variables.get(name);
+        binding.backup_default_val = copy(value);
+        binding.default_val = value;
+        binding.default_hooks = hooks;
+    }
 }
 
 export function addBindingVariable(
@@ -250,7 +269,11 @@ export function processUndefinedBindingVariables(component: ComponentData, prese
     }
 }
 
-export function getCompiledBindingVariableName(name: string, component: ComponentData) {
+export function getCompiledBindingVariableName(
+    name: string,
+    component: ComponentData,
+    comp_info: CompiledComponentClass
+) {
 
     const comp_var = getComponentBinding(name, component);
 
@@ -290,7 +313,7 @@ export function getCompiledBindingVariableName(name: string, component: Componen
                 return `window.${comp_var.external_name}`;
 
             default:
-                return `this[${comp_var.class_index}]`;
+                return `this[${comp_info.binding_records.get(name).index}]`;
         }
     else
         return name;
@@ -362,9 +385,11 @@ export function Expression_Is_Static(
     ) {
         switch (node.type) {
 
-
+            case BindingIdentifierBinding:
+            case BindingIdentifierReference:
             case JSNodeType.IdentifierName:
             case JSNodeType.IdentifierReference:
+
 
                 const name = tools.getIdentifierName(node);
 
@@ -446,15 +471,17 @@ export async function getStaticValueAstFromSourceAST(
     model: Object,
     parent_comp: ComponentData[] = null
 ) {
+
+
     const receiver = { ast: null };
 
     for (
         const { node, meta } of traverse(input_node, "nodes")
             .filter(
                 "type",
-                JSNodeType.IdentifierReference,
-                JSNodeType.IdentifierName,
-                JSNodeType.CallExpression
+                JSNodeType.CallExpression,
+                BindingIdentifierBinding,
+                BindingIdentifierReference
             )
             .makeReplaceable()
             .extract(receiver)
@@ -488,7 +515,10 @@ export async function getStaticValueAstFromSourceAST(
 
         } else {
 
+
+
             const name = tools.getIdentifierName(node);
+            console.log("AAAAAAA", name, node.type, node.type & 0xFFFFFFFF);
 
             /**
              * Only accept references whose value can be resolved through binding variable 
@@ -525,14 +555,19 @@ export function addHook(component: ComponentData, hook: IntermediateHook) {
  * or  null
  */
 export async function getStaticValue(
-    binding: WickBindingNode,
+    hook: IndirectHook,
     component: ComponentData,
     presets: PresetOptions,
     model: any = null,
     parent_comp: ComponentData = null
 ) {
 
-    const ast = await getStaticValueAstFromSourceAST(binding.primary_ast, component, presets, model, parent_comp);
+
+    console.log("000000000000000000000000000000", hook);
+
+    const ast = await getStaticValueAstFromSourceAST(<JSNode>hook.ast.nodes[0], component, presets, model, parent_comp);
+
+    console.log({ hook });
 
     if (ast) {
         try {

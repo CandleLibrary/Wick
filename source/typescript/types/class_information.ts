@@ -23,4 +23,11 @@ export interface CompiledComponentClass {
     nluf_public_variables: JSNode;
     nlu_index: number;
     method_frames: FunctionFrame[];
+    write_records: {
+        ast: JSNode,
+        component_variables: string[],
+        HAS_ASYNC: boolean,
+        NO_LOCAL_BINDINGS: boolean;
+    }[],
+    binding_records: Map<string, { nodes: JSNode[], index: number; }>;
 }

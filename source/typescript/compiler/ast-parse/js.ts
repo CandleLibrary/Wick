@@ -612,9 +612,13 @@ loadJSParseHandlerInternal(
 
                         // Remove any hooks created by this step
 
+                        const binding_hooks = component.hooks.slice(hook_length);
+
                         component.hooks.length = hook_length;
 
-                        addDefaultValueToBindingVariable(frame, l_name, <JSNode>new_value);
+                        //Extract all hooks from the frame and apply to the binding variable
+
+                        addDefaultValueToBindingVariable(frame, l_name, <JSNode>new_value, binding_hooks);
 
                         addWriteFlagToBindingVariable(l_name, frame);
 

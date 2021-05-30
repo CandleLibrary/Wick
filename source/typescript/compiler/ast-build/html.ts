@@ -1,5 +1,5 @@
 import { rt } from "../../runtime/global.js";
-import { ComponentData, ContainerDomLiteral, DOMLiteral, htmlState, IntermediateHook, TemplateHTMLNode, TemplatePackage, PresetOptions } from "../../types/all.js";
+import { ComponentData, ContainerDomLiteral, DOMLiteral, htmlState, IntermediateHook, TemplateHTMLNode, TemplatePackage, PresetOptions, IndirectHook } from "../../types/all.js";
 import { getStaticValue } from "../common/binding.js";
 import { runHTMLHookHandlers } from "./build.js";
 
@@ -417,10 +417,11 @@ async function addBindingElement(
     presets: PresetOptions,
     model: any = null
 ) {
-
+    //*
     const
         hook = getHookFromElement(html, comp)[0],
-        val = await getStaticValue(hook.hook_value, comp, presets, model);
+        val = await getStaticValue(hook, comp, presets, model);
+
 
     if ((state & htmlState.IS_INTERLEAVED) > 0)
         node.attributes.set("w:own", "" + comp_data.indexOf(comp.name));
@@ -436,16 +437,16 @@ async function addBindingElement(
             tagName: null,
         });
     }
-
     node.data = html.data || "";
+    //*/
 
 }
-function getHookFromElement(ele: DOMLiteral, comp: ComponentData): IntermediateHook[] {
+function getHookFromElement(ele: DOMLiteral, comp: ComponentData): IndirectHook[] {
 
     let hooks = [];
 
-    for (const hook of comp.hooks) {
-        if (hook.html_element_index == ele.element_index)
+    for (const hook of comp.indirect_hooks) {
+        if (hook.ele_index == ele.element_index)
             hooks.push(hook);
     }
 

@@ -3,7 +3,7 @@ import URL from "@candlelib/url";
 import { Comment, ComponentData, HTMLNode, HTMLNodeClass, PresetOptions } from "../../types/all.js";
 import { processUndefinedBindingVariables } from "../common/binding.js";
 import { ComponentDataClass, createComponentData, createErrorComponent } from "../common/component.js";
-import { createParserFrame } from "../common/frame.js";
+import { createParseFrame } from "../common/frame.js";
 import Presets from "../common/presets.js";
 import parserSourceString from "../source-code-parse/parse.js";
 import { processWickHTML_AST, processWickJS_AST } from "./parse.js";
@@ -128,7 +128,7 @@ export async function parseComponentAST(
     const
         component: ComponentData = createComponentData(source_string, url);
 
-    component.root_frame = createParserFrame(null, component);
+    component.root_frame = createParseFrame(null, component);
 
     component.comments = comments;
 

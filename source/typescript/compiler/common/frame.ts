@@ -3,7 +3,7 @@ import { ComponentData } from "../../types/component";
 import { FunctionFrame } from "../../types/function_frame";
 import { getGenericMethodNode } from "./js.js";
 
-export function createCompileFrame(name, arg_string = "_null_"): FunctionFrame {
+export function createBuildFrame(name, arg_string = "_null_"): FunctionFrame {
     return {
         method_name: name,
         input_names: null,
@@ -18,7 +18,7 @@ export function createCompileFrame(name, arg_string = "_null_"): FunctionFrame {
     };
 }
 
-export function createParserFrame(
+export function createParseFrame(
     parent_frame: any,
     component: ComponentData,
     DO_NOT_ATTACH: boolean = false,

@@ -10,7 +10,7 @@ import {
     WICK_AST_NODE_TYPE_BASE
 } from "../../types/all.js";
 import { getBindingRefCount, getRootFrame } from "../common/binding.js";
-import { createParserFrame } from "../common/frame.js";
+import { createParseFrame } from "../common/frame.js";
 import { buildExportableDOMNode } from "../common/html.js";
 import { html_handlers } from "./html.js";
 import { JS_handlers } from "./js.js";
@@ -24,7 +24,7 @@ export function getFunctionFrame(
     TEMPORARY = DONT_ATTACH
 ) {
     const function_frame = frame
-        ? createParserFrame(frame,
+        ? createParseFrame(frame,
             component, DONT_ATTACH, TEMPORARY)
         : component.root_frame;
 

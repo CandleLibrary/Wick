@@ -2,7 +2,7 @@ import { CSSNode } from "@candlelib/css";
 import URL from "@candlelib/url";
 import { WickRTComponent } from "../runtime/component.js";
 import { RuntimeComponent } from "../entry-point/wick-full.js";
-import { IntermediateHook } from "./hook";
+import { IntermediateHook, IndirectHook } from "./hook";
 import { Comment } from "./comment.js";
 import { WickComponentErrorStore } from "./errors.js";
 import { FunctionFrame } from "./function_frame";
@@ -127,6 +127,8 @@ export interface ComponentData {
      * A a template object for use with static pages
      */
     template: TemplateHTMLNode;
+
+    indirect_hooks: IndirectHook[];
 }
 
 /**

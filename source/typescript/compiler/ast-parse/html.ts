@@ -8,11 +8,13 @@ import {
     HTMLNodeType,
     WickBindingNode, WICK_AST_NODE_TYPE_BASE, WICK_AST_NODE_TYPE_SIZE
 } from "../../types/wick_ast.js";
+import { addIndirectHook, TextNodeHookType } from "../ast-build/hooks-beta.js";
 import { addBindingReference, addBindingVariable, addHook } from "../common/binding.js";
 import { importResource } from "../common/common.js";
+import { createParseFrame } from "../common/frame.js";
 import { ComponentHash } from "../common/hash_name.js";
 import { Is_Tag_From_HTML_Spec } from "../common/html.js";
-import { processFunctionDeclaration, processNodeAsync, processWickCSS_AST, processWickJS_AST } from "./parse.js";
+import { processFunctionDeclaration, processNodeAsync, processNodeSync, processWickCSS_AST, processWickJS_AST } from "./parse.js";
 import { parseComponentAST } from "./source.js";
 
 const default_handler = {
@@ -61,13 +63,23 @@ const process_wick_binding = {
 
     prepareHTMLNode(node: WickBindingNode, host_node, host_element, index, skip, component, presets) {
 
+        const ast = processNodeSync(
+            node.primary_ast,
+            component.root_frame,
+            //createParseFrame(component.root_frame, component, true),
+            component,
+            presets
+        );
+
+        addIndirectHook(component, TextNodeHookType, ast, index + 1);
+        /*
         addHook(component, {
             selector: "",
             hook_value: node,
             host_node: host_node,
             html_element_index: index + 1
         });
-
+        */
         addWickBindingVariableName(node, component);
 
         // Skip processing this node in the outer scope, 
@@ -350,7 +362,8 @@ loadHTMLHandlerInternal(
                         //Check for useif attribute
                         for (const { name, value } of (n.attributes || [])) {
 
-                            if (name == "use-if") {
+                            if (name == "useif") {
+
                                 //create a useif binding for this object
                                 addHook(component, {
                                     selector: HOOK_SELECTOR.CONTAINER_USE_IF,

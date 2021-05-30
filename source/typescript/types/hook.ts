@@ -1,5 +1,6 @@
 import { JSNode, JSStatementClass } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
+import { ExtendedType } from "../compiler/ast-build/hooks-beta";
 import { CompiledComponentClass } from "./class_information";
 import { ComponentData } from "./component";
 import { HookTemplatePackage } from "./html.js";
@@ -133,4 +134,15 @@ export interface HookProcessor {
         model: any,
         parent_component: ComponentData[],
     ): (HookTemplatePackage | Promise<HookTemplatePackage>);
+}
+
+
+export interface IndirectHook {
+    ast: HookNode,
+    ele_index: number;
+}
+
+export interface HookNode {
+    type: ExtendedType,
+    nodes: Node[];
 }

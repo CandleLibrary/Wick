@@ -5,26 +5,33 @@ import {
     JSFunctionDeclaration,
     JSMethod,
     JSNode,
-    JSNodeType,
+    JSNodeType as JST,
+    renderWithFormatting,
     stmt
 } from "@candlelib/js";
 import {
     BindingVariable, BINDING_FLAG,
     BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, HookTemplatePackage, HOOK_TYPE, HTMLNode,
-    HTMLNodeTypeLU, IntermediateHook,
-    ProcessedHook, PresetOptions
+    HTMLNodeTypeLU, IndirectHook, IntermediateHook,
+    PresetOptions, ProcessedHook
 } from "../../types/all.js";
+import { componentDataToCSS } from "../ast-render/css.js";
 import {
+    htmlTemplateToString
+} from "../ast-render/html.js";
+import {
+    BindingIdentifierBinding,
+    BindingIdentifierReference,
     Binding_Var_Is_Internal_Variable,
     getCompiledBindingVariableName,
     getComponentBinding,
     Name_Is_A_Binding_Variable
 } from "../common/binding.js";
 import { setPos } from "../common/common.js";
-import { createErrorComponent } from "../common/component.js";
+import { ComponentDataClass, createErrorComponent } from "../common/component.js";
 import {
     appendStmtToFrame,
-    createCompileFrame,
+    createBuildFrame,
     Frame_Has_Statements,
     getStatementsFromFrame,
     getStatementsFromRootFrame,
@@ -32,18 +39,28 @@ import {
 } from "../common/frame.js";
 import {
     Expression_Contains_Await,
-    getPropertyAST
+    getPropertyAST,
+
 } from "../common/js.js";
-import { componentDataToCSS } from "../ast-render/css.js";
-import {
-    htmlTemplateToJSNode,
-    htmlTemplateToString
-} from "../ast-render/html.js";
+import { processHooksInJS_AST, processIndirectHook, processHookASTs } from "./hooks-beta.js";
 import {
     convertAtLookupToElementRef,
     hook_processors
 } from "./hooks.js";
 import { componentDataToTempAST, createComponentTemplate } from "./html.js";
+
+
+export function processFunctionFrameHook(
+    comp: ComponentData,
+    frame: FunctionFrame,
+    class_info: CompiledComponentClass,
+) {
+    const ast = processHooksInJS_AST(frame.ast, comp);
+
+    //console.log(renderWithFormatting(ast));
+}
+
+
 
 export async function createCompiledComponentClass(
     comp: ComponentData,
@@ -69,11 +86,21 @@ export async function createCompiledComponentClass(
 
             createLookupTables(info);
 
-            setBindingVariableIndices(comp, info);
+            // setBindingVariableIndices(comp, info);
 
-            processBindingVariables(comp, info, presets);
+            // processBindingVariables(comp, info, presets);
 
-            processHooks(comp, info, presets);
+            // processHooks(comp, info, comp.hooks, presets);
+
+            for (const hook of comp.indirect_hooks) {
+                processIndirectHook(comp, hook, info);
+            }
+
+            for (const frame of comp.frames) {
+                processFunctionFrameHook(comp, frame, info);
+            }
+
+            processHookASTs(comp, info);
 
             processMethods(comp, info);
         }
@@ -89,13 +116,30 @@ export async function createCompiledComponentClass(
     }
 }
 
+
+
+function createLookupTables(class_info: CompiledComponentClass) {
+    const
+        nlu = stmt("c.nlu = {};"), nluf = stmt("c.lookup_function_table = [];"),
+        { nodes: [{ nodes: [, lu_functions] }] } = nluf,
+        { nodes: [{ nodes: [, lu_public_variables] }] } = nlu;
+
+    class_info.nluf_public_variables = <any>lu_functions;
+
+    class_info.lfu_table_entries = <any[]>lu_functions.nodes;
+
+    class_info.lu_public_variables = <any[]>lu_public_variables.nodes;
+
+    prependStmtToFrame(class_info.init_frame, nlu, nluf);
+}
+
 export function createClassInfoObject(): CompiledComponentClass {
 
     const
-        binding_setup_frame = createCompileFrame("c", ""),
-        init_frame = createCompileFrame("init", "c"),
-        async_init_frame = createCompileFrame("async_init"),
-        terminate_frame = createCompileFrame("terminate"),
+        binding_setup_frame = createBuildFrame("c", ""),
+        init_frame = createBuildFrame("init", "c"),
+        async_init_frame = createBuildFrame("async_init"),
+        terminate_frame = createBuildFrame("terminate"),
         class_info: CompiledComponentClass = {
             methods: <any>[],
             binding_setup_frame,
@@ -105,6 +149,8 @@ export function createClassInfoObject(): CompiledComponentClass {
             nluf_public_variables: null,
             lfu_table_entries: [],
             lu_public_variables: [],
+            write_records: [],
+            binding_records: new Map(),
             method_frames: [async_init_frame, init_frame, binding_setup_frame],
             nlu_index: 0,
         };
@@ -123,10 +169,10 @@ async function processHTML(
 
     if (component.HTML) {
         const
-            frame = createCompileFrame("ce"),
+            frame = createBuildFrame("ce"),
             return_stmt = stmt("return this.makeElement(a);"),
             { html: [html] } = (await componentDataToTempAST(component, presets));
-            
+
         return_stmt.nodes[0].nodes[1].nodes[0] = exp(`\`${htmlTemplateToString(html).replace(/(\`)/g, "\\\`")}\``);
 
         appendStmtToFrame(frame, return_stmt);
@@ -160,7 +206,7 @@ export async function createComponentTemplates(
 }
 
 function createBindingName(binding_index_pos: number) {
-    return `b${binding_index_pos.toString(36)}`;
+    return `b${binding_index_pos.toString()}`;
 }
 
 export async function runHTMLHookHandlers(
@@ -207,14 +253,14 @@ export function collectBindingReferences(root_node: JSNode, component: Component
 
     for (const { node, meta: { parent } } of traverse(root_node, "nodes")) {
 
-        if (node.type == JSNodeType.IdentifierReference || node.type == JSNodeType.IdentifierBinding) {
+        if (node.type == JST.IdentifierReference || node.type == JST.IdentifierBinding) {
 
             if (!Name_Is_A_Binding_Variable(node.value, component.root_frame))
                 continue;
 
             if (node.IS_BINDING_REF) {
                 //Pop any binding names into the binding information container. 
-                setBindingVariable(node.value, parent && parent.type == JSNodeType.MemberExpression, hook);
+                setBindingVariable(node.value, parent && parent.type == JST.MemberExpression, hook);
             }
         }
     }
@@ -274,13 +320,13 @@ export function runClassHookHandlers(
     return { hook: null, intermediate_hook };
 }
 
-export function processHooks(component: ComponentData, class_info: CompiledComponentClass, presets: PresetOptions) {
+export function processHooks(component: ComponentData, class_info: CompiledComponentClass, hooks: IntermediateHook[], presets: PresetOptions) {
 
     const
 
         registered_elements: Set<number> = new Set,
 
-        processed_hooks = component.hooks
+        processed_hooks = hooks
             .map(b => runClassHookHandlers(b, component, presets, class_info))
             .sort((a, b) => a.hook.priority > b.hook.priority ? -1 : 1),
         /**
@@ -332,7 +378,8 @@ function compileHookFunctions(
 
         const { html_element_index: index } = intermediate_hook,
             {
-                read_ast, write_ast,
+                read_ast,
+                write_ast,
                 initialize_ast,
                 cleanup_ast,
                 type,
@@ -366,12 +413,18 @@ function compileHookFunctions(
 
             } else if (component_variables.size > 1) {
 
-                const frame = createCompileFrame(hook.name, "c=0");
+                const frame = createBuildFrame(hook.name, "c=0");
 
                 //Create binding update method.
-                hook.name = nluf_public_variables.nodes.length + "";
+                //hook.name = nluf_public_variables.nodes.length + "";
                 //@ts-ignore
-                nluf_public_variables.nodes.push(<any>exp(`c.b${hook.name}`));
+                //nluf_public_variables.nodes.push(<any>exp(`c.b${hook.name}`));
+                hook.index = nluf_public_variables.nodes.length;
+
+                nluf_public_variables.nodes.push(<any>exp(`c.${hook.name}`));
+
+                hook.name = "this." + hook.name;
+
 
                 const unresolved_binding_references = [];
 
@@ -410,7 +463,7 @@ function compileHookFunctions(
         if (initialize_ast) {
 
             appendStmtToFrame(init_frame, {
-                type: JSNodeType.ExpressionStatement,
+                type: JST.ExpressionStatement,
                 nodes: [<any>initialize_ast],
                 pos: initialize_ast.pos
             });
@@ -428,7 +481,7 @@ function compileHookFunctions(
     }
 }
 
-function Binding_Var_Is_Directly_Accessed(binding_var: BindingVariable) {
+export function Binding_Var_Is_Directly_Accessed(binding_var: BindingVariable) {
     return (binding_var.type & (BINDING_VARIABLE_TYPE.DIRECT_ACCESS)) > 0;
 }
 
@@ -446,7 +499,7 @@ function compileBindingVariables(
 
         if (flags & BINDING_FLAG.WRITTEN) {
 
-            const frame = createCompileFrame("u" + (class_index >= 0 ? class_index : 9999), "f,c");
+            const frame = createBuildFrame("u" + (class_index >= 0 ? class_index : 9999), "f,c");
 
             for (const { hook } of write_bindings) {
 
@@ -460,22 +513,22 @@ function compileBindingVariables(
                         frame.IS_ASYNC = Expression_Contains_Await(hook.write_ast) || frame.IS_ASYNC;
 
                         if (IS_OBJECT) {
-                            const s = stmt(`if(${getCompiledBindingVariableName(internal_name, component)});`);
+                            const s = stmt(`if(${getCompiledBindingVariableName(internal_name, component, class_info)});`);
                             s.nodes[1] = {
-                                type: <any>JSNodeType.ExpressionStatement,
+                                type: <any>JST.ExpressionStatement,
                                 nodes: [hook.write_ast],
                                 pos: <any>hook.pos
                             };
                             appendStmtToFrame(frame, s);
                         } else
                             appendStmtToFrame(frame, <any>{
-                                type: JSNodeType.ExpressionStatement,
+                                type: JST.ExpressionStatement,
                                 nodes: [hook.write_ast],
                                 pos: <any>hook.pos
                             });
                     }
                     else
-                        appendStmtToFrame(frame, setPos(stmt(`this.call(${hook.name}, c)`), hook.pos));
+                        appendStmtToFrame(frame, setPos(stmt(`this.call(${hook.index}, c)`), hook.pos));
                 }
             }
 
@@ -502,48 +555,56 @@ function compileBindingVariables(
  * @param mutated_node 
  * @param component 
  */
-export function finalizeBindingExpression(mutated_node: JSNode, component: ComponentData): { ast: JSNode, NEED_ASYNC: boolean; } {
+export function finalizeBindingExpression(
+    mutated_node: JSNode,
+    component: ComponentData,
+    comp_info: CompiledComponentClass
+): {
+    ast: JSNode,
+    NEED_ASYNC: boolean;
+} {
     const lz = { ast: null };
     let NEED_ASYNC = false;
     for (const { node, meta: { mutate, skip } } of traverse(mutated_node, "nodes")
         .extract(lz)
         .filter("type",
-            JSNodeType.AwaitExpression,
-            JSNodeType.PostExpression,
-            JSNodeType.PreExpression,
-            JSNodeType.AssignmentExpression,
-            JSNodeType.IdentifierReference,
-            JSNodeType.IdentifierBinding)
+            JST.AwaitExpression, JST.PostExpression, JST.PreExpression, JST.AssignmentExpression,
+            BindingIdentifierBinding, BindingIdentifierReference,
+            JST.IdentifierBinding, JST.IdentifierReference)
         .makeMutable()
         .makeSkippable()
     ) {
 
         switch (node.type) {
-            case JSNodeType.AwaitExpression:
+
+            case JST.IdentifierBinding: case JST.IdentifierReference:
+                if (node.value.slice(0, 5) == ("$$ele")) {
+                    mutate(exp(`this.elu[${node.value.slice(5)}]`));
+                    skip();
+                }
+                break;
+            case JST.AwaitExpression:
                 NEED_ASYNC = true;
                 break;
             //case JSNodeType.ComponentBindingIdentifier
-            case JSNodeType.IdentifierBinding:
-            case JSNodeType.IdentifierReference:
+            case BindingIdentifierBinding: case BindingIdentifierReference:
                 //@ts-ignore
-                if (node.IS_BINDING_REF) {
-                    const
-                        name = <string>node.value,
-                        id = exp(getCompiledBindingVariableName(name, component)),
-                        new_node = setPos(id, node.pos);
+                const
+                    name = <string>node.value,
+                    id = exp(getCompiledBindingVariableName(name, component, comp_info)),
+                    new_node = setPos(id, node.pos);
 
-                    if (!component.root_frame.binding_variables.has(<string>name))
-                        //ts-ignore
-                        throw node.pos.errorMessage(`Undefined reference to ${name}`);
+                if (!component.root_frame.binding_variables.has(<string>name))
+                    //ts-ignore
+                    throw node.pos.errorMessage(`Undefined reference to ${name}`);
 
-                    mutate(new_node);
-                }
+                mutate(new_node);
+
                 break;
 
-            case JSNodeType.PreExpression:
-            case JSNodeType.PostExpression:
+            case JST.PreExpression: case JST.PostExpression:
                 //@ts-ignore
-                if (node.nodes[0].IS_BINDING_REF) {
+                if (Node_Is_Binding_Identifier(node.nodes[0])) {
 
                     const
                         [ref] = node.nodes,
@@ -553,11 +614,11 @@ export function finalizeBindingExpression(mutated_node: JSNode, component: Compo
 
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {
                         const
-                            comp_var_name: string = getCompiledBindingVariableName(name, component),
+                            comp_var_name: string = getCompiledBindingVariableName(name, component, comp_info),
                             assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`),
                             exp_ = exp(`${comp_var_name}${node.symbol[0]}1`);
 
-                        const { ast, NEED_ASYNC: NA } = finalizeBindingExpression(ref, component);
+                        const { ast, NEED_ASYNC: NA } = finalizeBindingExpression(ref, component, comp_info);
 
                         NEED_ASYNC = NA || NEED_ASYNC;
 
@@ -565,7 +626,7 @@ export function finalizeBindingExpression(mutated_node: JSNode, component: Compo
 
                         assignment.nodes[1].nodes.push(<any>exp_);
 
-                        if (node.type == JSNodeType.PreExpression)
+                        if (node.type == JST.PreExpression)
                             assignment.nodes[1].nodes.push(exp("true"));
 
                         mutate(setPos(assignment, node.pos));
@@ -575,9 +636,9 @@ export function finalizeBindingExpression(mutated_node: JSNode, component: Compo
                 }
                 break;
 
-            case JSNodeType.AssignmentExpression:
+            case JST.AssignmentExpression:
                 //@ts-ignore
-                if (node.nodes[0].IS_BINDING_REF) {
+                if (Node_Is_Binding_Identifier(node.nodes[0])) {
                     const
                         [ref, value] = node.nodes,
                         //@ts-ignore
@@ -588,13 +649,12 @@ export function finalizeBindingExpression(mutated_node: JSNode, component: Compo
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {
 
                         const assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`);
-                        const { ast: a1, NEED_ASYNC: NA1 } = finalizeBindingExpression(ref, component);
-                        const { ast: a2, NEED_ASYNC: NA2 } = finalizeBindingExpression(value, component);
+                        const { ast: a1, NEED_ASYNC: NA1 } = finalizeBindingExpression(ref, component, comp_info);
+                        const { ast: a2, NEED_ASYNC: NA2 } = finalizeBindingExpression(value, component, comp_info);
 
                         NEED_ASYNC = NA1 || NA2 || NEED_ASYNC;
 
                         node.nodes = [a1, a2];
-
 
                         if (node.symbol == "=") {
                             assignment.nodes[1].nodes.push(node.nodes[1]);
@@ -617,6 +677,10 @@ export function finalizeBindingExpression(mutated_node: JSNode, component: Compo
     return { ast: lz.ast, NEED_ASYNC };
 }
 
+function Node_Is_Binding_Identifier(node: JSNode) {
+    return node.type == BindingIdentifierBinding || node.type == BindingIdentifierReference;
+}
+
 function processCSS(
     component: ComponentData,
     class_info: CompiledComponentClass,
@@ -626,7 +690,7 @@ function processCSS(
 
     if (style = componentDataToCSS(component)) {
 
-        const frame = createCompileFrame("getCSS");
+        const frame = createBuildFrame("getCSS");
         class_info.method_frames.push(frame);
         appendStmtToFrame(frame, stmt(`return \`${style}\`;`));
 
@@ -648,11 +712,11 @@ function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci:
 
         const cpy: JSFunctionDeclaration | JSMethod = <any>copy(frame.ast);
 
-        const { NEED_ASYNC } = finalizeBindingExpression(cpy, component);
+        const { NEED_ASYNC } = finalizeBindingExpression(cpy, component, ci);
 
         cpy.ASYNC = NEED_ASYNC || frame.IS_ASYNC || cpy.ASYNC;
 
-        cpy.type = JSNodeType.Method;
+        cpy.type = JST.Method;
 
         if (frame.index != undefined)
             //@ts-ignore
@@ -687,31 +751,6 @@ export function processMethods(component: ComponentData, class_info: CompiledCom
         makeComponentMethod(function_block, component, class_info);
 }
 
-function setBindingVariableIndices(component: ComponentData, class_info: CompiledComponentClass) {
-
-    for (const binding_variable of component.root_frame.binding_variables.values()) {
-
-        if (binding_variable.type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS)
-            continue;
-        binding_variable.class_index = class_info.nlu_index++;
-    }
-}
-
-function createLookupTables(class_info: CompiledComponentClass) {
-    const
-        nlu = stmt("c.nlu = {};"), nluf = stmt("c.lookup_function_table = [];"),
-        { nodes: [{ nodes: [, lu_functions] }] } = nluf,
-        { nodes: [{ nodes: [, lu_public_variables] }] } = nlu;
-
-    class_info.nluf_public_variables = <any>lu_functions;
-
-    class_info.lfu_table_entries = <any[]>lu_functions.nodes;
-
-    class_info.lu_public_variables = <any[]>lu_public_variables.nodes;
-
-    prependStmtToFrame(class_info.init_frame, nlu, nluf);
-}
-
 function processBindingVariables(component: ComponentData, class_info: CompiledComponentClass, presets: PresetOptions): void {
 
     for (const binding_variable of component.root_frame.binding_variables.values()) {
@@ -720,7 +759,10 @@ function processBindingVariables(component: ComponentData, class_info: CompiledC
             { external_name, flags, class_index, internal_name, type } = binding_variable,
             nluf_array = exp(`c.u${class_index}`);
 
-        addBindingInitialization(binding_variable, class_info, component, presets);
+        //if (binding_variable.default_hooks)
+        //    processHooks(component, class_info, binding_variable.default_hooks, presets);
+
+        //   addBindingInitialization(binding_variable, class_info, component, presets);
 
         if (type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS)
             continue;
@@ -729,25 +771,5 @@ function processBindingVariables(component: ComponentData, class_info: CompiledC
 
         class_info.lfu_table_entries.push(nluf_array);
 
-    }
-}
-
-function addBindingInitialization(
-    { default_val, class_index, ref_count }: BindingVariable,
-    class_info: CompiledComponentClass,
-    component: ComponentData,
-    presets: PresetOptions
-) {
-    if (default_val && ref_count > 0) {
-
-        const expr = <JSExpressionStatement>stmt(`this.ua(${class_index})`);
-
-        if (default_val.type == JSNodeType.StringLiteral && default_val.value[0] == "@") {
-            const val = convertAtLookupToElementRef(default_val, component);
-            expr.nodes[0].nodes[1].nodes.push(<any>(val || default_val));
-        } else
-            expr.nodes[0].nodes[1].nodes.push(<any>default_val);
-
-        appendStmtToFrame(class_info.init_frame, expr);
     }
 }

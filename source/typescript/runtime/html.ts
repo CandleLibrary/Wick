@@ -50,7 +50,10 @@ export function createNamespacedElement(tag_name, name_space, data = ""): HTMLEl
 }
 
 export function* getComponentNames(ele: HTMLElement): Generator<string, void, void> {
+
+
     const len = ele.classList.length;
+
 
     for (let i = 0; i < len; i++)
         if (String_Is_Wick_Hash_ID(ele.classList[i]))

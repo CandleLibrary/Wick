@@ -84,6 +84,7 @@ export class ComponentDataClass implements ComponentData {
     errors: ComponentData["errors"];
     root_ele_claims: ComponentData["root_ele_claims"];
     template: ComponentData["template"];
+    indirect_hooks: ComponentData["indirect_hooks"];
 
     presets: PresetOptions;
 
@@ -122,6 +123,8 @@ export class ComponentDataClass implements ComponentData {
         this.errors = [];
 
         this.root_ele_claims = [];
+
+        this.indirect_hooks = [];
 
         this.template = null;
 

@@ -1,8 +1,8 @@
-import { traverse } from "@candlelib/conflagrate";
+import { copy, traverse } from "@candlelib/conflagrate";
 import { matchAll } from "@candlelib/css";
 import { exp, JSNode, JSNodeClass, JSNodeType, JSStringLiteral, stmt } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
-import { BINDING_FLAG, CompiledComponentClass, ComponentData, ContainerDomLiteral, DOMLiteral, FunctionFrame, HookProcessor, HOOK_SELECTOR, HOOK_TYPE, HTMLNode, ProcessedHook, TemplateHTMLNode } from "../../types/all.js";
+import { BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, ContainerDomLiteral, DOMLiteral, FunctionFrame, HookProcessor, HOOK_SELECTOR, HOOK_TYPE, HTMLNode, ProcessedHook, TemplateHTMLNode } from "../../types/all.js";
 import { postProcessFunctionDeclarationSync } from "../ast-parse/parse.js";
 import { Expression_Is_Static, getCompiledBindingVariableName, getComponentBinding, getStaticValue } from "../common/binding.js";
 import { setPos } from "../common/common.js";
@@ -353,6 +353,11 @@ loadHookProcessor({
 
         hook.write_ast = stmt(`this.call(${frame.index})`);
 
+
+        other_id[0].IS_BINDING_REF = true;
+
+        hook.write_ast.nodes[0].nodes.push(...other_id);
+
         setPos(hook.write_ast, hook_node.pos);
 
         return hook;
@@ -656,14 +661,35 @@ loadHookProcessor({
 
         if (primary_ast) {
 
+            const prim = copy(primary_ast);
+
+            // Find and disable first matching element that is an undefined reference
+            let result = null;
+            for (const { node } of traverse(prim, "nodes").filter("type", JSNodeType.IdentifierReference, JSNodeType.IdentifierBinding)) {
+                if (node.IS_BINDING_REF) {
+                    const name = node.value;
+                    console.log((name));
+
+                    const binding = getComponentBinding(name, component);
+
+                    if (binding.type == BINDING_VARIABLE_TYPE.UNDECLARED) {
+                        result = node;
+
+                        node.IS_BINDING_REF = false;
+                        break;
+                    }
+                }
+            }
+
             const
-                expression = setPos(exp(`m1 => (1)`), primary_ast.pos);
+                expression = setPos(exp(`m1 => (1)`), prim.pos);
 
-            expression.nodes[1] = primary_ast;
+            expression.nodes[0] = result;
+            expression.nodes[1] = prim;
 
-            setPos(expression, primary_ast.pos);
+            setPos(expression, prim.pos);
 
-            const stmt_ = setPos(stmt(`this.ct[${(<HTMLNode>host_node).container_id}].filter = a`), primary_ast.pos);
+            const stmt_ = setPos(stmt(`this.ct[${(<HTMLNode>host_node).container_id}].filter = a`), prim.pos);
 
             stmt_.nodes[0].nodes[1] = expression;
 
@@ -682,7 +708,7 @@ loadHookProcessor({
 loadHookProcessor({
     priority: 100,
 
-    canProcessHook: (hook_selector, node_type) => hook_selector == "limit",
+    canProcessHook: (hook_selector, node_type) => hook_selector == "WATCHED_FRAME_METHOD_CALL",
 
     processHook(hook_selector, hook_node
         , host_node, element_index, component, presets) {
@@ -919,18 +945,22 @@ loadHookProcessor({
     },
 
     processHook(hook_selector, pending_hook_node, host_node, element_index, component, presets) {
+        if (host_node) {
 
-        const
+            const
 
-            node = convertAtLookupToElementRef(<any>pending_hook_node, component),
+                node = convertAtLookupToElementRef(<any>pending_hook_node, component),
 
-            index = (<any>host_node).nodes.indexOf(pending_hook_node);
+                index = (<any>host_node).nodes.indexOf(pending_hook_node);
 
-        if (node) {
-            setPos(node, host_node.pos);
-            (<JSNode><unknown>host_node).nodes[index] = node;
+            if (node) {
+
+                setPos(node, host_node.pos);
+
+                (<JSNode><unknown>host_node).nodes[index] = node;
+            }
+
         }
-
 
         return null;
     },
@@ -943,9 +973,15 @@ export function convertAtLookupToElementRef(string_node: JSStringLiteral, compon
 
     let html_nodes = null, expression = null;
 
-    switch (css_selector) {
+    switch (css_selector.toLowerCase()) {
+        case "ctxWebGPU":
+            html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
 
-        case "ctx3D":
+            if (html_nodes)
+                expression = exp(`this.elu[${html_nodes.element_index}].getContext("gpupresent")`);
+
+            break;
+        case "ctx3d":
             html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
 
             if (html_nodes)
@@ -953,7 +989,7 @@ export function convertAtLookupToElementRef(string_node: JSStringLiteral, compon
 
             break;
 
-        case "ctx2D":
+        case "ctx2d":
             html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
 
             if (html_nodes)

@@ -1,4 +1,5 @@
-import { JSFunctionDeclaration, JSIdentifier, JSMethod, JSNode } from "@candlelib/js";
+import { JSFunctionDeclaration, JSIdentifier, JSIdentifierBinding, JSIdentifierReference, JSMethod, JSNode } from "@candlelib/js";
+import { ExtendedType } from "../compiler/ast-build/hooks-beta";
 import { BindingVariable } from "./binding";
 /**
  * Reference information for a single function defined within 
@@ -33,7 +34,7 @@ export interface FunctionFrame {
      * Identifiers that have no declaration and no presence in the
      * the global object and thus must be a binding identifier reference.
      */
-    binding_ref_identifiers: (JSIdentifier & { IS_BINDING_REF: boolean; })[];
+    binding_ref_identifiers: ((JSIdentifierBinding & { type: ExtendedType; }) | (JSIdentifierReference & { type: ExtendedType; }))[];
 
     /**
      * Binding variable names that are read by the method.
