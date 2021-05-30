@@ -58,28 +58,16 @@ function addWickBindingVariableName(node: WickBindingNode, component) {
             addBindingReference(n, node.primary_ast, component.root_frame);
 }
 
-const process_wick_binding = {
+loadHTMLHandlerInternal({
+
     priority: 1,
 
-    prepareHTMLNode(node: WickBindingNode, host_node, host_element, index, skip, component, presets) {
+    prepareHTMLNode(node: WickBindingNode, _, _1, index, _2, component, presets) {
 
-        const ast = processNodeSync(
-            node.primary_ast,
-            component.root_frame,
-            //createParseFrame(component.root_frame, component, true),
-            component,
-            presets
-        );
+        const ast = processBindingAST(node, component, presets);
 
-        addIndirectHook(component, TextNodeHookType, ast, index + 1);
-        /*
-        addHook(component, {
-            selector: "",
-            hook_value: node,
-            host_node: host_node,
-            html_element_index: index + 1
-        });
-        */
+        addIndirectHook(component, HT.TextNodeHookType, ast, index + 1);
+
         addWickBindingVariableName(node, component);
 
         // Skip processing this node in the outer scope, 
@@ -92,22 +80,21 @@ const process_wick_binding = {
             pos: node.pos
         };
     }
-};
-
-loadHTMLHandlerInternal(process_wick_binding, HTMLNodeType.WickBinding);
+}, HTMLNodeType.WickBinding);
 
 
 /*[API] ##########################################################
 * 
 * HTML HEAD
 * 
- * HEAD ELEMENT CONTENTS GET APPENDED TO THE HEAD SLOT ON A COMPONENT
- */
+* Elements defined within HEAD tags get appended to the HTML_HEAD array
+* of the component data element
+*/
 loadHTMLHandlerInternal(
     {
         priority: 10,
 
-        prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+        prepareHTMLNode(node, _, _2, _3, _4, component) {
             component.HTML_HEAD.push(...node.nodes);
             return null;
         }
@@ -116,7 +103,8 @@ loadHTMLHandlerInternal(
 
 
 /** ##########################################################
- * BINDING ATTRIBUTE VALUE
+ * BINDING ATTRIBUTE VALUE 
+ * 
  */
 loadHTMLHandlerInternal(
     {
@@ -129,6 +117,33 @@ loadHTMLHandlerInternal(
             if (attrib.IS_BINDING) {
 
                 await processBindingNode(attrib, component, presets, index);
+
+                return null;
+            }
+        }
+    }, HTMLNodeType.HTMLAttribute
+);
+
+/** ###########################################################
+ *  Container Data Attribute
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: -3,
+
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+
+            if (node.name == "data" && host_node.tag == "CONTAINER") {
+
+                // Process the primary expression for Binding Refs and static
+                // data
+                const ast = processBindingAST(node.value, component, presets);
+
+                // Create an indirect hook for container data attribute
+
+                addIndirectHook(component, HT.ContainerDataAttribType, ast, index);
+
+                // Remove the attribute from the container element
 
                 return null;
             }
@@ -168,6 +183,10 @@ loadHTMLHandlerInternal(
         }
     }, HTMLNodeType.HTMLAttribute
 );
+
+function processBindingAST(node: WickBindingNode, component: ComponentData, presets: PresetOptions) {
+    return processNodeSync(node.primary_ast, component.root_frame, component, presets);
+}
 
 function getInputAttributeHookType(type: string) {
     return ({
@@ -295,6 +314,12 @@ loadHTMLHandlerInternal(
         }
     }, HTMLNodeType.HTMLAttribute
 );
+
+/**
+ * Container Attributes
+ */
+
+
 /*
  * HTML Elements lacking a WHATWG HTML tag.
  */

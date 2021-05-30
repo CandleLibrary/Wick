@@ -56,7 +56,7 @@ assert_group("Server - Directly Assigned Dynamic Iterable", () => {
 
     const comp_instance = comp.createInstance();
 
-    await comp_instance.sleep();
+    await comp_instance.sleep(100);
 
     assert(comp_instance.ele.childNodes.length == 3);
     assert(comp_instance.ele.childNodes[0].childNodes[0].data.trim() == "alpha");
@@ -65,7 +65,7 @@ assert_group("Server - Directly Assigned Dynamic Iterable", () => {
 });
 
 
-assert_group("Server - Directly Assigned Dynamic Iterable With Const", () => {
+assert_group("Server - Directly Assigned Dynamic Iterable With Const Binding Variables", () => {
 
     const comp = (await wick_server(`
      import { test } from "@api"
@@ -80,16 +80,21 @@ assert_group("Server - Directly Assigned Dynamic Iterable With Const", () => {
      `));
 
     //Insert Required API value before instantiating components
-    wick_server.rt.addAPI({ test: "alpha" });
+    wick_server.rt.addAPI({ test: "gloria" });
 
-    assert(i, comp.class_string == "");
+    //assert(i, comp.class_string == "");
 
     const comp_instance = comp.createInstance();
 
-    await comp_instance.sleep();
+    await comp_instance.sleep(100);
+
+    // Lookup tables should be be empty, as all variables have static values and
+    // thus been replaced with their values
+    assert(comp_instance.nlu == undefined);
+    assert(comp_instance.lookup_function_table == undefined);
 
     assert(comp_instance.ele.childNodes.length == 3);
-    assert(comp_instance.ele.childNodes[0].childNodes[0].data.trim() == "alpha");
+    assert(comp_instance.ele.childNodes[0].childNodes[0].data.trim() == "gloria");
     assert(comp_instance.ele.childNodes[1].childNodes[0].data.trim() == "bravo");
     assert(comp_instance.ele.childNodes[2].childNodes[0].data.trim() == "philbert");
 });

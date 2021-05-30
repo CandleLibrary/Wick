@@ -100,6 +100,6 @@
                                                                     
                                                                     f:r { {type:env.typ.WickBinding, primary_ast:$$sym2, secondary_ast:$$sym5, DEBUG: $sym1 == "(!(", pos } }
 
-<> BINDING_SYMBOL_START > \${
+<> BINDING_SYMBOL_START > \{
     
-<> BINDING_SYMBOL_END > }
+<> BINDING_SYMBOL_END > \}

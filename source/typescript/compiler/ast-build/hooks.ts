@@ -668,7 +668,6 @@ loadHookProcessor({
             for (const { node } of traverse(prim, "nodes").filter("type", JSNodeType.IdentifierReference, JSNodeType.IdentifierBinding)) {
                 if (node.IS_BINDING_REF) {
                     const name = node.value;
-                    console.log((name));
 
                     const binding = getComponentBinding(name, component);
 

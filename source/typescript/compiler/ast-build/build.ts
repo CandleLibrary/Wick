@@ -52,11 +52,11 @@ import { componentDataToTempAST, createComponentTemplate } from "./html.js";
 
 export function processFunctionFrameHook(
     comp: ComponentData,
+    presets: PresetOptions,
     frame: FunctionFrame,
     class_info: CompiledComponentClass,
 ) {
-    const ast = processHooksInJS_AST(frame.ast, comp);
-
+    const ast = processHookForClass(frame.ast, comp, presets, class_info, -1);
     //console.log(renderWithFormatting(ast));
 }
 
@@ -84,23 +84,28 @@ export async function createCompiledComponentClass(
         //Javascript Information.
         if (comp.HAS_ERRORS === false && comp.root_frame) {
 
-            createLookupTables(info);
+            const {
+                nlu,
+                nluf
+            } = createLookupTables(info);
 
             // setBindingVariableIndices(comp, info);
 
             // processBindingVariables(comp, info, presets);
 
-            // processHooks(comp, info, comp.hooks, presets);
+            for (const hook of comp.indirect_hooks)
+                await processIndirectHook(comp, presets, hook, info);
 
-            for (const hook of comp.indirect_hooks) {
-                processIndirectHook(comp, hook, info);
-            }
-
-            for (const frame of comp.frames) {
-                processFunctionFrameHook(comp, frame, info);
-            }
+            for (const frame of comp.frames)
+                await processFunctionFrameHook(comp, presets, frame, info);
 
             processHookASTs(comp, info);
+
+            if (info.lfu_table_entries.length > 0)
+                prependStmtToFrame(info.init_frame, nlu);
+
+            if (info.lfu_table_entries.length > 0)
+                prependStmtToFrame(info.init_frame, nluf);
 
             processMethods(comp, info);
         }
@@ -109,7 +114,7 @@ export async function createCompiledComponentClass(
         return info;
 
     } catch (e) {
-        //throw e;
+        throw e;
         console.log(`Error found in component ${comp.name} while converting to a class. location: ${comp.location}.`);
         console.log(e);
         return createCompiledComponentClass(createErrorComponent([e], comp.source, comp.location, comp), presets);
@@ -120,9 +125,10 @@ export async function createCompiledComponentClass(
 
 function createLookupTables(class_info: CompiledComponentClass) {
     const
-        nlu = stmt("c.nlu = {};"), nluf = stmt("c.lookup_function_table = [];"),
-        { nodes: [{ nodes: [, lu_functions] }] } = nluf,
-        { nodes: [{ nodes: [, lu_public_variables] }] } = nlu;
+        binding_lu = stmt("c.nlu = {};"),
+        binding_function_lu = stmt("c.lookup_function_table = [];"),
+        { nodes: [{ nodes: [, lu_functions] }] } = binding_function_lu,
+        { nodes: [{ nodes: [, lu_public_variables] }] } = binding_lu;
 
     class_info.nluf_public_variables = <any>lu_functions;
 
@@ -130,7 +136,7 @@ function createLookupTables(class_info: CompiledComponentClass) {
 
     class_info.lu_public_variables = <any[]>lu_public_variables.nodes;
 
-    prependStmtToFrame(class_info.init_frame, nlu, nluf);
+    return { nlu: binding_lu, nluf: binding_function_lu };
 }
 
 export function createClassInfoObject(): CompiledComponentClass {
@@ -241,8 +247,6 @@ export async function runHTMLHookHandlers(
     return null;
 }
 /**
- * 
- * 
  * Updates binding variables
  * @param root_node 
  * @param component 
@@ -319,8 +323,8 @@ export function runClassHookHandlers(
     }
     return { hook: null, intermediate_hook };
 }
-
-export function processHooks(component: ComponentData, class_info: CompiledComponentClass, hooks: IntermediateHook[], presets: PresetOptions) {
+/*
+function processHooks(component: ComponentData, class_info: CompiledComponentClass, hooks: IntermediateHook[], presets: PresetOptions) {
 
     const
 
@@ -331,7 +335,7 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
             .sort((a, b) => a.hook.priority > b.hook.priority ? -1 : 1),
         /**
          * All component variables that have been assigned a value
-         */
+         
         initialized_internal_variables: Set<number> = new Set;
 
     compileHookFunctions(
@@ -347,6 +351,7 @@ export function processHooks(component: ComponentData, class_info: CompiledCompo
 
     compileBindingVariables(component, class_info, write_bindings);
 }
+*/
 
 
 function compileHookFunctions(
@@ -578,8 +583,17 @@ export function finalizeBindingExpression(
         switch (node.type) {
 
             case JST.IdentifierBinding: case JST.IdentifierReference:
+                /**
+                 * Convert convenience names to class property accessors
+                 */
                 if (node.value.slice(0, 5) == ("$$ele")) {
                     mutate(exp(`this.elu[${node.value.slice(5)}]`));
+                    skip();
+                } else if (node.value.slice(0, 5) == ("$$ctr")) {
+                    mutate(exp(`this.ctr[${node.value.slice(5)}]`));
+                    skip();
+                } else if (node.value.slice(0, 4) == ("$$ch")) {
+                    mutate(exp(`this.ch[${node.value.slice(4)}]`));
                     skip();
                 }
                 break;

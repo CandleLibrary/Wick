@@ -1,4 +1,4 @@
-import { JSExpressionClass, JSExpressionStatement, JSIdentifierBinding, JSIdentifierReference, JSNode, stmt } from "@candlelib/js";
+import { JSExpressionClass, JSExpressionStatement, JSIdentifierBinding, JSIdentifierReference, JSNode, renderCompressed, stmt } from "@candlelib/js";
 import { BINDING_VARIABLE_TYPE, ContainerDomLiteral, HTMLNodeType, TemplateHTMLNode } from "../../types/all.js";
 import { registerHookHandler } from "./hook-handler.js";
 import { getExtendTypeVal, getOriginalTypeOfExtendedType } from "../common/extended_types.js";
@@ -23,8 +23,6 @@ registerHookHandler({
     buildJS: (node, comp, presets, element_index, addOnBindingUpdate) => {
 
         const st = <JSExpressionStatement>stmt(`$$ele${element_index}.data = 0`);
-
-        console.log(node);
 
         st.nodes[0].nodes[1] = <JSNode>node.nodes[0];
 
@@ -127,12 +125,14 @@ registerHookHandler<JSIdentifierBinding | JSIdentifierReference, JSExpressionCla
         if (
             binding_var.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
             &&
-            Binding_Variable_Has_Static_Default_Value(binding_var, comp, presets)
+            Binding_Variable_Has_Static_Default_Value(binding_var, comp, presets, true)
         ) {
 
-            // const val = await getStaticValueAstFromSourceAST(node, comp, presets, null, null);
-            //
-            //if (val) return val;
+            const val = await getStaticValueAstFromSourceAST(node, comp, presets, null, null, true);
+
+            if (val) {
+                return val;
+            }
 
             return;
         } else {

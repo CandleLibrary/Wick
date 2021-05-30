@@ -36,10 +36,14 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     lookup_function_table: BindingUpdateFunction[];
 
-    //Children
+    /**
+     * Child component array
+     */
     ch: WickRTComponent[];
 
-    //Parent Component
+    /**
+     * Parent component
+     */
     par: WickRTComponent;
 
     ctr: WickContainer[];
@@ -96,9 +100,10 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         this.name = this.constructor.name;
 
-        this.nlu = {};
+        this.nlu = undefined;
+        this.lookup_function_table = undefined;
+
         this.ch = [];
-        this.lookup_function_table = [];
         this.elu = [];
         this.ctr = [];
         this.pui = [];

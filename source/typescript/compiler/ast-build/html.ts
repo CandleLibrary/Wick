@@ -316,7 +316,7 @@ async function addContainer(
     template_map: TemplatePackage["templates"],
     node: TemplateHTMLNode,
     model: any = null,
-    parent_component: ComponentData = null
+    parent_components: ComponentData[] = null
 ) {
     const {
         component_attribs,
@@ -346,7 +346,7 @@ async function addContainer(
     setScopeAssignment(state, node, html);
 
     //get data hook 
-    await processHooks(html, component, presets, model, node, parent_component, template_map);
+    await processHooks(html, component, presets, model, node, parent_components, template_map);
 
     processAttributes(html.attributes, component, state, comp_data, node, component.HTML == html);
 }
@@ -379,13 +379,13 @@ async function processHooks(
     presets: PresetOptions,
     model: any,
     node: TemplateHTMLNode,
-    parent_component: ComponentData,
+    parent_components: ComponentData[],
     template_map: TemplatePackage["templates"],
 ) {
 
     for (const hook of getHookFromElement(html, component)) {
 
-        const { html, templates } = (await runHTMLHookHandlers(hook, component, presets, model, parent_component) || {});
+        const { html, templates } = (await processHookForHTML(hook, component, presets, model, parent_components) || {});
 
         if (html) {
             if (html.attributes)
@@ -397,6 +397,7 @@ async function processHooks(
 
             if (html.data)
                 node.data += html.data;
+
         } if (templates) {
 
             for (const [key, val] of templates.entries())
@@ -420,7 +421,9 @@ async function addBindingElement(
     //*
     const
         hook = getHookFromElement(html, comp)[0],
-        val = await getStaticValue(hook, comp, presets, model);
+        val = hook
+            ? await getStaticValue(hook, comp, presets, model)
+            : null;
 
 
     if ((state & htmlState.IS_INTERLEAVED) > 0)
@@ -442,7 +445,6 @@ async function addBindingElement(
 
 }
 function getHookFromElement(ele: DOMLiteral, comp: ComponentData): IndirectHook[] {
-
     let hooks = [];
 
     for (const hook of comp.indirect_hooks) {

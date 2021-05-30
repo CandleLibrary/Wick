@@ -56,7 +56,6 @@ export function componentToMutatedCSS(css: ComponentStyle, component?: Component
     if (host_ele?.component_name && host_ele != component.HTML) {
         const expat_node = host_ele.attributes.find(([name]) => name == "expat");
 
-        console.log({ expat_node });
         class_selector = selector(`${host_ele.tag_name}[expat="${expat_node[1]}"]`);
     } else
         class_selector = selector(`.${name}`);

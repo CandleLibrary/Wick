@@ -9,175 +9,13 @@ import { Expression_Contains_Await, getPropertyAST } from "../common/js.js";
 import { Binding_Var_Is_Directly_Accessed } from "./build.js";
 import { ExtendedType } from "../../types/hook";
 import { convertAtLookupToElementRef } from "./hooks.js";
-export type ExtendedType = CSSNodeType | JSNodeType | HTMLNodeType | number;
-
-interface filterFunction {
-    (node: JSNode | CSSNode | HTMLNode | HookNode): boolean;
-}
-
-
-interface buildJSFunction {
-    (
-        node: JSNode | CSSNode | HTMLNode | HookNode,
-        comp: ComponentData,
-        /**
-         * The index number of the ele the hook belongs
-         * to, or -1 if the hook has no association with
-         * an existing element.
-         */
-        ele_index: number,
-        /**
-         * Code that should execute when one or more 
-         * binding variable values are modified
-         * @param ast 
-         */
-        addOnUpdateAST: (ast: JSNode) => void,
-        /**
-         * Code that should execute when one or more 
-         * binding variable values are modified
-         * @param ast 
-         */
-        addOnInitAST: (ast: JSNode) => void,
-        /**
-         * Code that should execute when one or more 
-         * binding variable values are modified
-         * @param ast 
-         */
-        addOnDestroy: (ast: JSNode) => void,
-    ): (JSNode | CSSNode | HTMLNode | HookNode | undefined | null);
-}
-
-interface buildHTMLFunction {
-    (node: JSNode | CSSNode | HTMLNode | HookNode, comp: ComponentData, model: any): (HookTemplatePackage | Promise<HookTemplatePackage>);
-}
-
-interface HookHandlerPackage {
-    types: ExtendedType[],
-    name: string;
-    verify: filterFunction;
-    /**
-     * Build expression to meet the requirements 
-     * of the hook value and optionally assign
-     * expressions to the Init, Deinit, and Update
-     * code paths.
-     */
-    buildJS: buildJSFunction;
-    /**
-     * Attempt to resolve the value of the hook 
-     * expression and assign the evaluated value 
-     * of the expression to the appropriate HTML
-     * binding point ( text.data, ele.attribute );
-     * 
-     * Return an HookTemplatePackage or Promise
-     * that resolves to a HookTemplatePackage, or 
-     * null or Promise that resolves to null. 
-     */
-    buildHTML: buildHTMLFunction;
-}
-
-const extended_types = new Map();
-/**
- * Registers an extended type name and/or retrieve its type value, 
- * which is an integer in the range 1<<32 - (21^2-1)<<32. 
- * 
- * This value can be used to replace a node's type value with the
- * custom type value while parsing, and used as reference when building
- * hooks resolvers. 
- * 
- * @param type_name 
- * @returns 
- */
-export function getExtendTypeVal<T>(type_name: string, original_type: T): ExtendedType & T {
-    const universal_name = type_name.toLocaleLowerCase();
-
-
-    if (extended_types.has(universal_name))
-        return extended_types.get(universal_name);
-    else {
-        const VA = (((extended_types.size + 1) * (0xFFFFFFFF + 1)));
-        const VB = (+original_type);
-        const VC = VA + VB;
-        extended_types.set(universal_name, VC);
-
-        return <T & ExtendedType>getExtendTypeVal(type_name, original_type);
-    }
-}
-
-export function Is_Extend_Type(type: ExtendedType): type is ExtendedType {
-    return (0xFFFFFFFF & type) != type;
-}
-
-export function getOriginalTypeOfExtendedType<T>(type: T & ExtendedType): T {
-    return <any>(0xFFFFFFFF & +type);
-}
-
-const registered_hook_handlers = new Map();
-
-export function registerHookHandler(hook_handler_obj: HookHandlerPackage) {
-    //Verify Basic functions
-    if (!hook_handler_obj)
-        throw new Error("Missing Argument For hook_handler_obj");
-
-    if (!Array.isArray(hook_handler_obj.types) || !hook_handler_obj.types.every(t => typeof t == "number"))
-        throw new Error("hook_handler_obj.types should be an array of ExtendedType numbers");
-
-    if (typeof hook_handler_obj.name != "string")
-        throw new Error("Missing name string for hook_handler_obj");
-
-    if (typeof hook_handler_obj.verify != "function")
-        throw new Error("Missing verify function");
-
-    if (typeof hook_handler_obj.buildJS != "function")
-        throw new Error("Missing buildJS function");
-
-    if (typeof hook_handler_obj.buildHTML != "function")
-        throw new Error("Missing buildHTML function");
-
-    registered_hook_handlers.set(hook_handler_obj.name, hook_handler_obj);
-}
-
-
-/* 
-*   Returns an array of active hookHandlerPackages 
-*/
-export function getHookHandlers(): HookHandlerPackage[] {
-    return [...registered_hook_handlers.values()];
-};
-
-
-export async function processHooksInHTML_AST(ast: Node) {
-
-};
+import { getHookHandlers } from "./hook-handler.js";
 
 
 export function addIndirectHook(comp: ComponentData, type: ExtendedType, ast: Node, ele_index: number) {
-
-    comp.indirect_hooks.push({
-        ast: {
-            type,
-            nodes: [ast]
-        },
-        ele_index
-    });
+    comp.indirect_hooks.push({ type, nodes: [ast], ele_index });
 }
 
-export const TextNodeHookType = getExtendTypeVal("text-node-hook", HTMLNodeType.HTMLText);
-registerHookHandler({
-    name: "Text Node Binding",
-    types: [TextNodeHookType],
-    verify: () => true,
-    buildJS: (node, comp, element_index, addOnBindingUpdate) => {
-
-        const st = <JSExpressionStatement>stmt(`$$ele${element_index}.data = 0`);
-
-        st.nodes[0].nodes[1] = <JSNode>node.nodes[0];
-
-        addOnBindingUpdate(st);
-
-        return null;
-    },
-    buildHTML: (node, comp, model) => null
-});
 /**
  * 
  * 
@@ -205,20 +43,58 @@ export function collectBindingReferences(ast: JSNode, component: ComponentData):
     return [...bindings.values()].sort();
 }
 
-export function processIndirectHook(
+export async function processIndirectHook(
     comp: ComponentData,
+    presets: PresetOptions,
     indirect_hook: IndirectHook,
-    class_info: CompiledComponentClass,
+    class_info: CompiledComponentClass
 ) {
-    const ast = processHooksInJS_AST(indirect_hook.ast, comp, class_info, indirect_hook.ele_index);
-
-    //console.log(renderWithFormatting(ast.nodes[0]));
+    await processHookForClass(indirect_hook, comp, presets, class_info, indirect_hook.ele_index);
 }
 
-export function processHooksInJS_AST(
-    ast: Node | HookNode,
+export async function processHookForHTML(
+    indirect_hook: IndirectHook,
+    comp: ComponentData,
+    presets: PresetOptions,
+    model: any,
+    parent_components: ComponentData[]
+
+): Promise<HookTemplatePackage> {
+
+    var pkg: HookTemplatePackage = null;
+    //@ts-ignore
+
+    for (const handler of getHookHandlers()) {
+
+        if (handler.types.includes(indirect_hook.type) && handler.verify(indirect_hook)) {
+
+            let
+                result = handler.buildHTML(indirect_hook, comp, presets, model, parent_components);
+
+
+            if (result instanceof Promise)
+                result = await result;
+
+            if (result === undefined)
+                continue;
+
+            pkg = result;
+
+            break;
+        }
+    }
+
+
+    return pkg;
+}
+
+export async function processHookForClass(
+    ast: Node | IndirectHook,
 
     component: ComponentData,
+
+    presets: PresetOptions,
+
     class_info: CompiledComponentClass,
     /**
      * The index of the component element which the hook ast affects. 
@@ -279,8 +155,8 @@ export function processHooksInJS_AST(
 
 
     //@ts-ignore
-    for (const { node, meta } of bidirectionalTraverse(ast, "nodes")
-        .makeReplaceable()
+    for (const { node, meta } of bidirectionalTraverse(copy(ast), "nodes")
+        .makeMutable()
         .makeSkippable()
         .extract(extract)
     ) {
@@ -291,13 +167,18 @@ export function processHooksInJS_AST(
 
                 if (handler.types.includes(node.type) && handler.verify(node)) {
 
-                    const
-                        result = handler.buildJS(node, component, element_index, addOnBindingUpdateAst, addInitAST, addDestroyAST);
+                    let
+                        result = await handler.buildJS(node, component, presets, element_index, addOnBindingUpdateAst, addInitAST, addDestroyAST);
+
+                    if (result instanceof Promise)
+                        result = await result;
 
                     if (result === undefined)
                         continue;
-                    else if (result != node)
-                        meta.replace(<any>result);
+
+                    if (result != node)
+                        meta.mutate(<any>result);
+
                     break;
                 }
             }
@@ -314,12 +195,21 @@ export function processHookASTs(comp: ComponentData, comp_info: CompiledComponen
 
     for (const record of comp_info.write_records) {
 
-        const hash = ErrorHash("" + record.HAS_ASYNC + record.NO_LOCAL_BINDINGS + record.component_variables.join());
+        if (record.NO_LOCAL_BINDINGS /*&& Runtime_Required */) {
 
-        if (!hash_groups.has(hash))
-            hash_groups.set(hash, []);
+            //Push record to init
+            if (record.HAS_ASYNC)
+                appendStmtToFrame(comp_info.async_init_frame, record.ast);
+            else
+                appendStmtToFrame(comp_info.init_frame, record.ast);
+        } else {
+            const hash = ErrorHash("" + record.HAS_ASYNC + record.NO_LOCAL_BINDINGS + record.component_variables.join());
 
-        hash_groups.get(hash).push(record);
+            if (!hash_groups.has(hash))
+                hash_groups.set(hash, []);
+
+            hash_groups.get(hash).push(record);
+        }
     }
 
     for (const group of hash_groups.values()) {
@@ -341,7 +231,7 @@ export function processHookASTs(comp: ComponentData, comp_info: CompiledComponen
 
             frame.IS_ASYNC = !!representative.HAS_ASYNC;
 
-            const ids = representative.component_variables.map(v => 0).sort();
+            const ids = representative.component_variables.map(v => comp_info.binding_records.get(v).index).sort();
 
             appendStmtToFrame(frame, stmt(`if(!this.check(${ids}))return 0;`));
 
@@ -353,11 +243,12 @@ export function processHookASTs(comp: ComponentData, comp_info: CompiledComponen
             for (const { nodes } of representative.component_variables.map(n => comp_info.binding_records.get(n)))
                 nodes.push(stmt(`this.call(${binding_join_index}, c)`));
 
+            //Add function name to lookup function table
+
+            comp_info.lfu_table_entries[binding_join_index] = (exp("this." + name));
+
             binding_join_index++;
         }
-
-
-        //console.log(0, 2, group, comp_info.binding_records);
     }
 
 
@@ -377,7 +268,7 @@ function processBindingRecords(comp_info: CompiledComponentClass, comp: Componen
 
         addBindingInitialization(binding, comp_info, comp, index);
 
-        //create a function for the binding variable 
+        //create an update function for the binding variable 
         const frame = createBuildFrame("u" + index, "f,c");
 
         appendStmtToFrame(frame, ...nodes);
@@ -387,6 +278,8 @@ function processBindingRecords(comp_info: CompiledComponentClass, comp: Componen
 
 
         if (Frame_Has_Statements(frame)) {
+
+            //Const variables,
 
             const IS_DIRECT_ACCESS = (type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS) > 0;
 
@@ -411,14 +304,11 @@ function processBindingVariables(
     index: number
 ): void {
 
-    if (type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS)
-        return;
-
-    const nluf_array = exp(`c.u${index}`);
+    const nluf_array_entry = exp(`c.u${index}`);
 
     class_info.lu_public_variables.push(<any>getPropertyAST(external_name, ((flags << 24) | index) + ""));
 
-    class_info.lfu_table_entries.push(nluf_array);
+    class_info.lfu_table_entries[index] = (nluf_array_entry);
 }
 
 function addBindingInitialization(

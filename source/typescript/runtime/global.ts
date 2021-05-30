@@ -79,7 +79,13 @@ const rt: WickRuntime = (() => {
             return presets;
         },
 
-        init: null
+        init: null,
+
+        addAPI(obj) {
+
+            for (const name in obj)
+                rt.presets.api[name] = obj[name];
+        }
     };
 })();
 
