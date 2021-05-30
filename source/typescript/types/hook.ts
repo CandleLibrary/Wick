@@ -1,11 +1,101 @@
-import { JSNode, JSStatementClass } from "@candlelib/js";
+import { CSSNode, CSSNodeType } from "@candlelib/css";
+import { JSNode, JSNodeType, JSStatementClass } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
-import { ExtendedType } from "../compiler/ast-build/hooks-beta";
+import { ComponentData, HookTemplatePackage, HTMLNode, HTMLNodeType, PresetOptions } from "./all.js";
 import { CompiledComponentClass } from "./class_information";
-import { ComponentData } from "./component";
-import { HookTemplatePackage } from "./html.js";
-import { PresetOptions } from "./presets.js";
-import { HTMLNode, Node, WickBindingNode } from "./wick_ast.js";
+import { Node, WickBindingNode } from "./wick_ast.js";
+
+export type ExtendedType = CSSNodeType | JSNodeType | HTMLNodeType | number;
+
+interface filterFunction {
+    (node: JSNode | CSSNode | HTMLNode | IndirectHook): boolean;
+}
+
+type DefaultJSHandlerNodeType = (JSNode | CSSNode | HTMLNode | IndirectHook | undefined | null);
+
+interface buildJSFunction<T, U> {
+    description?: string;
+
+    (
+        /**
+         * The root AST node containing the expression 
+         * of the binding hook
+         */
+        node: T,
+        /**
+         * Component Data Object
+         */
+        comp: ComponentData,
+        presets: PresetOptions,
+        /**
+         * The index number of the ele the hook belongs
+         * to, or -1 if the hook has no association with
+         * an existing element.
+         */
+        ele_index: number,
+
+        /**
+         * Add code that should execute when one or more
+         * binding variable values are modified
+         * @param ast
+         */
+        addOnUpdateAST: (ast: T) => void,
+        /**
+         * Add code that should execute when the component
+         * is initialized, such as event listeners and
+         * context lookups.
+         * @param ast
+         */
+        addOnInitAST: (ast: T) => void,
+        /**
+         * Add code that should execute when the component 
+         * instance is destroyed, as in the case when 
+         * the component is evacuated from a container
+         * @param ast
+         */
+        addOnDestroy: (ast: T) => void
+    ): (U | T) | Promise<(U | T)>;
+}
+
+interface buildHTMLFunction {
+    (
+        hook: IndirectHook,
+        comp: ComponentData,
+        presets: PresetOptions,
+        model: any,
+        /**
+         * A FIFO stack of the current component's parent 
+         * and ancestor components
+         */
+        parent_components: ComponentData[]
+    ): (HookTemplatePackage | Promise<HookTemplatePackage>);
+}
+
+export interface HookHandlerPackage<T = DefaultJSHandlerNodeType, U = DefaultJSHandlerNodeType> {
+    description?: string,
+    types: ExtendedType[];
+    name: string;
+    verify: filterFunction;
+    /**
+     * Build expression to meet the requirements
+     * of the hook value and optionally assign
+     * expressions to the Init, Deinit, and Update
+     * code paths.
+     */
+    buildJS: buildJSFunction<T, U>;
+    /**
+     * Attempt to resolve the value of the hook
+     * expression and assign the evaluated value
+     * of the expression to the appropriate HTML
+     * binding point ( text.data, ele.attribute );
+     *
+     * Return an HookTemplatePackage or Promise
+     * that resolves to a HookTemplatePackage, or
+     * null or Promise that resolves to null.
+     */
+    buildHTML: buildHTMLFunction;
+}
+
 
 /**
  * Any variable within a component that is defined a GLOBAL value that
@@ -63,6 +153,7 @@ export interface ProcessedHook {
      * Code that assigns a value to the binding
      */
     write_ast?: JSStatementClass;
+
     cleanup_ast?: JSStatementClass;
 
     type: HOOK_TYPE;
