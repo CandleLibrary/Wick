@@ -1,15 +1,60 @@
 import { bidirectionalTraverse, copy, traverse, TraverseState } from "@candlelib/conflagrate";
-import { exp, JSExpressionStatement, JSNode, JSNodeType, stmt } from "@candlelib/js";
-import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, HookTemplatePackage, IndirectHook, Node, PresetOptions } from "../../types/all.js";
+import { matchAll } from "@candlelib/css";
+import { exp, JSExpressionStatement, JSNode, JSNodeType, JSStringLiteral, stmt } from "@candlelib/js";
+import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, DOMLiteral, HookTemplatePackage, IndirectHook, Node, PresetOptions } from "../../types/all.js";
+import { ExtendedType } from "../../types/hook";
 import { getComponentBinding, Name_Is_A_Binding_Variable } from "../common/binding.js";
-import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
+import { css_selector_helpers } from "../common/css.js";
 import { appendStmtToFrame, createBuildFrame, Frame_Has_Statements, getStatementsFromFrame } from "../common/frame.js";
 import { ErrorHash } from "../common/hash_name.js";
 import { Expression_Contains_Await, getPropertyAST } from "../common/js.js";
+import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
 import { Binding_Var_Is_Directly_Accessed } from "./build.js";
-import { ExtendedType } from "../../types/hook";
-import { convertAtLookupToElementRef } from "./hooks.js";
 import { getHookHandlers } from "./hook-handler.js";
+
+export function convertAtLookupToElementRef(string_node: JSStringLiteral, component: ComponentData) {
+
+    const css_selector = string_node.value.slice(1); //remove "@"
+
+    let html_nodes = null, expression = null;
+
+    switch (css_selector.toLowerCase()) {
+        case "ctxWebGPU":
+            html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
+
+            if (html_nodes)
+                expression = exp(`this.elu[${html_nodes.element_index}].getContext("gpupresent")`);
+
+            break;
+        case "ctx3d":
+            html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
+
+            if (html_nodes)
+                expression = exp(`this.elu[${html_nodes.element_index}].getContext("3d")`);
+
+            break;
+
+        case "ctx2d":
+            html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
+
+            if (html_nodes)
+                expression = exp(`this.elu[${html_nodes.element_index}].getContext("2d")`);
+
+            break;
+
+        default:
+            html_nodes = matchAll<DOMLiteral>(css_selector, component.HTML, css_selector_helpers);
+
+            if (html_nodes.length > 0)
+
+                expression = (html_nodes.length == 1)
+                    ? exp(`this.elu[${html_nodes[0].element_index}]; `)
+                    : exp(`[${html_nodes.map(e => `this.elu[${e.element_index}]`).join(",")}]`);
+
+    }
+
+    return expression;
+}
 
 
 export function addIndirectHook(comp: ComponentData, type: ExtendedType, ast: Node, ele_index: number) {
@@ -17,8 +62,6 @@ export function addIndirectHook(comp: ComponentData, type: ExtendedType, ast: No
 }
 
 /**
- * 
- * 
  * Updates binding variables
  * @param root_node 
  * @param component 

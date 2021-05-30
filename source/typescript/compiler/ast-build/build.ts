@@ -10,8 +10,8 @@ import {
     stmt
 } from "@candlelib/js";
 import {
-    BindingVariable, BINDING_FLAG,
-    BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, HookTemplatePackage, HOOK_TYPE, HTMLNode,
+    BindingVariable,
+    BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, HookTemplatePackage, HTMLNode,
     HTMLNodeTypeLU, IntermediateHook,
     PresetOptions, ProcessedHook
 } from "../../types/all.js";
@@ -25,24 +25,19 @@ import {
     getComponentBinding,
     Name_Is_A_Binding_Variable
 } from "../common/binding.js";
-import {
-    BindingIdentifierBinding,
-    BindingIdentifierReference
-} from "../common/js_hook_types.js";
 import { setPos } from "../common/common.js";
 import { createErrorComponent } from "../common/component.js";
 import {
     appendStmtToFrame,
     createBuildFrame,
     Frame_Has_Statements,
-    getStatementsFromFrame,
     getStatementsFromRootFrame,
     prependStmtToFrame
 } from "../common/frame.js";
 import {
-    Expression_Contains_Await,
-    getPropertyAST
-} from "../common/js.js";
+    BindingIdentifierBinding,
+    BindingIdentifierReference
+} from "../common/js_hook_types.js";
 import { processHookASTs, processHookForClass, processIndirectHook } from "./hooks-beta.js";
 import {
     hook_processors
@@ -59,8 +54,6 @@ export function processFunctionFrameHook(
     const ast = processHookForClass(frame.ast, comp, presets, class_info, -1);
     //console.log(renderWithFormatting(ast));
 }
-
-
 
 export async function createCompiledComponentClass(
     comp: ComponentData,
@@ -88,10 +81,6 @@ export async function createCompiledComponentClass(
                 nlu,
                 nluf
             } = createLookupTables(info);
-
-            // setBindingVariableIndices(comp, info);
-
-            // processBindingVariables(comp, info, presets);
 
             for (const hook of comp.indirect_hooks)
                 await processIndirectHook(comp, presets, hook, info);
@@ -211,9 +200,6 @@ export async function createComponentTemplates(
         }
 }
 
-function createBindingName(binding_index_pos: number) {
-    return `b${binding_index_pos.toString()}`;
-}
 
 export async function runHTMLHookHandlers(
     intermediate_hook: IntermediateHook,
@@ -323,173 +309,11 @@ export function runClassHookHandlers(
     }
     return { hook: null, intermediate_hook };
 }
-/*
-function processHooks(component: ComponentData, class_info: CompiledComponentClass, hooks: IntermediateHook[], presets: PresetOptions) {
-
-    const
-
-        registered_elements: Set<number> = new Set,
-
-        processed_hooks = hooks
-            .map(b => runClassHookHandlers(b, component, presets, class_info))
-            .sort((a, b) => a.hook.priority > b.hook.priority ? -1 : 1),
-        /**
-         * All component variables that have been assigned a value
-         
-        initialized_internal_variables: Set<number> = new Set;
-
-    compileHookFunctions(
-        component,
-        class_info,
-        presets,
-        processed_hooks,
-        registered_elements,
-        initialized_internal_variables
-    );
-
-    const write_bindings = processed_hooks.filter(b => (b.hook.type & HOOK_TYPE.WRITE) && !!b.hook.write_ast);
-
-    compileBindingVariables(component, class_info, write_bindings);
-}
-*/
-
-
-function compileHookFunctions(
-    component: ComponentData,
-    class_info: CompiledComponentClass,
-    presets: PresetOptions,
-    processed_hooks: { hook: ProcessedHook; intermediate_hook: IntermediateHook; }[],
-    registered_elements: Set<number>,
-    initialized_internal_variables: Set<number>,
-) {
-    let hook_count = 0;
-
-    const
-        {
-            root_frame: { binding_variables: binding_type }
-        } = component,
-
-        {
-            method_frames,
-            terminate_frame,
-            init_frame,
-            async_init_frame,
-            nluf_public_variables
-        } = class_info;
-
-    for (const { hook, intermediate_hook } of processed_hooks) {
-
-        hook.name = createBindingName(hook_count++);
-
-        const { html_element_index: index } = intermediate_hook,
-            {
-                read_ast,
-                write_ast,
-                initialize_ast,
-                cleanup_ast,
-                type,
-                component_variables
-            } = hook;
-
-        /**
-         * register this binding's element if it has not already been done.
-         */
-        if (index > -1 && !registered_elements.has(index)) {
-            prependStmtToFrame(init_frame, stmt(`this.e${index}=this.elu[${index}]`));
-            registered_elements.add(index);
-        }
-
-        if (type & HOOK_TYPE.WRITE && write_ast) {
-            const
-                HAS_ASYNC = Expression_Contains_Await(write_ast),
-                NO_INDIRECT_VARIABLES = [...component_variables.values()]
-                    .map(v => component.root_frame.binding_variables.get(v.name))
-                    .every(Binding_Var_Is_Directly_Accessed);
-
-
-            if (NO_INDIRECT_VARIABLES) {
-                //This code can be included in component initialization
-                if (HAS_ASYNC)
-                    //Use onload method; Create method if necessary
-                    appendStmtToFrame(async_init_frame, write_ast);
-                else
-                    //Use component init method
-                    appendStmtToFrame(init_frame, write_ast);
-
-            } else if (component_variables.size > 1) {
-
-                const frame = createBuildFrame(hook.name, "c=0");
-
-                //Create binding update method.
-                //hook.name = nluf_public_variables.nodes.length + "";
-                //@ts-ignore
-                //nluf_public_variables.nodes.push(<any>exp(`c.b${hook.name}`));
-                hook.index = nluf_public_variables.nodes.length;
-
-                nluf_public_variables.nodes.push(<any>exp(`c.${hook.name}`));
-
-                hook.name = "this." + hook.name;
-
-
-                const unresolved_binding_references = [];
-
-                for (const { name } of component_variables.values()) {
-
-                    if (!component.root_frame.binding_variables.has(name))
-                        throw (hook.pos.errorMessage(`missing binding variable for ${name}`));
-
-                    const binding_var = component.root_frame.binding_variables.get(name);
-
-                    if (Binding_Var_Is_Directly_Accessed(binding_var))
-                        continue;
-
-                    unresolved_binding_references.push(binding_var.class_index);
-                }
-
-                // Create a check call that will cause an early return to occur if any of the indirect 
-                // bindings are undefined
-
-                if (unresolved_binding_references.length > 0)
-                    //@ts-ignore
-                    appendStmtToFrame(frame, stmt(`if(!this.check(${unresolved_binding_references.sort()}))return 0;`));
-
-                frame.IS_ASYNC = HAS_ASYNC || frame.IS_ASYNC;
-
-                appendStmtToFrame(frame, write_ast);
-
-                method_frames.push(frame);
-
-            }
-        }
-
-        if (type & HOOK_TYPE.READ && read_ast)
-            appendStmtToFrame(init_frame, read_ast);
-
-        if (initialize_ast) {
-
-            appendStmtToFrame(init_frame, {
-                type: JST.ExpressionStatement,
-                nodes: [<any>initialize_ast],
-                pos: initialize_ast.pos
-            });
-
-            for (const [, { name }] of component_variables) {
-                const type = binding_type.get(name);
-                if (type && type.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE) {
-                    initialized_internal_variables.add(type.class_index | 0);
-                }
-            }
-        }
-
-        if (cleanup_ast)
-            prependStmtToFrame(terminate_frame, cleanup_ast);
-    }
-}
 
 export function Binding_Var_Is_Directly_Accessed(binding_var: BindingVariable) {
     return (binding_var.type & (BINDING_VARIABLE_TYPE.DIRECT_ACCESS)) > 0;
 }
-
+/*
 function compileBindingVariables(
     component: ComponentData,
     class_info: CompiledComponentClass,
@@ -509,6 +333,14 @@ function compileBindingVariables(
             for (const { hook } of write_bindings) {
 
                 if (hook.component_variables.has(internal_name)) {
+
+                    ##################################
+
+                    Need to review below to make sure
+                    IS_OBJECT needs to be converted
+                    to new wick processing form
+
+                    ##################################
 
                     const { IS_OBJECT } = hook.component_variables.get(internal_name);
 
@@ -536,24 +368,8 @@ function compileBindingVariables(
                         appendStmtToFrame(frame, setPos(stmt(`this.call(${hook.index}, c)`), hook.pos));
                 }
             }
-
-            if (flags & BINDING_FLAG.ALLOW_EXPORT_TO_PARENT)
-                appendStmtToFrame(frame, stmt(`/*if(!(f&${BINDING_FLAG.FROM_PARENT}))*/c.pup(${class_index}, v, f);`));
-
-            if (Frame_Has_Statements(frame))
-
-                if (IS_DIRECT_ACCESS)
-                    // Direct access variables ( API & GLOBALS ) are assigned 
-                    // at at component initialization start. This allows these 
-                    // variables to accessed within the component initialization
-                    // function  
-                    appendStmtToFrame(init_frame, ...getStatementsFromFrame(frame));
-                else
-                    method_frames.push(frame);
-        }
-    }
-}
-
+...
+*/
 /**
  * Converts ComponentBinding expressions and identifers into class based reference expressions.
  * 
@@ -765,25 +581,3 @@ export function processMethods(component: ComponentData, class_info: CompiledCom
         makeComponentMethod(function_block, component, class_info);
 }
 
-function processBindingVariables(component: ComponentData, class_info: CompiledComponentClass, presets: PresetOptions): void {
-
-    for (const binding_variable of component.root_frame.binding_variables.values()) {
-
-        const
-            { external_name, flags, class_index, internal_name, type } = binding_variable,
-            nluf_array = exp(`c.u${class_index}`);
-
-        //if (binding_variable.default_hooks)
-        //    processHooks(component, class_info, binding_variable.default_hooks, presets);
-
-        //   addBindingInitialization(binding_variable, class_info, component, presets);
-
-        if (type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS)
-            continue;
-
-        class_info.lu_public_variables.push(<any>getPropertyAST(external_name, ((flags << 24) | class_index) + ""));
-
-        class_info.lfu_table_entries.push(nluf_array);
-
-    }
-}
