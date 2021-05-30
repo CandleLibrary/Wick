@@ -8,10 +8,10 @@ import {
     HTMLNodeType,
     WickBindingNode, WICK_AST_NODE_TYPE_BASE, WICK_AST_NODE_TYPE_SIZE
 } from "../../types/wick_ast.js";
-import { addIndirectHook, TextNodeHookType } from "../ast-build/hooks-beta.js";
+import * as HT from "../ast-build/hook-types.js";
+import { addIndirectHook } from "../ast-build/hooks-beta.js";
 import { addBindingReference, addBindingVariable, addHook } from "../common/binding.js";
 import { importResource } from "../common/common.js";
-import { createParseFrame } from "../common/frame.js";
 import { ComponentHash } from "../common/hash_name.js";
 import { Is_Tag_From_HTML_Spec } from "../common/html.js";
 import { processFunctionDeclaration, processNodeAsync, processNodeSync, processWickCSS_AST, processWickJS_AST } from "./parse.js";

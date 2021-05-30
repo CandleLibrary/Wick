@@ -1,5 +1,5 @@
 import { JSFunctionDeclaration, JSIdentifier, JSIdentifierBinding, JSIdentifierReference, JSMethod, JSNode } from "@candlelib/js";
-import { ExtendedType } from "../compiler/ast-build/hooks-beta";
+import { ExtendedType } from "./hook";
 import { BindingVariable } from "./binding";
 /**
  * Reference information for a single function defined within 

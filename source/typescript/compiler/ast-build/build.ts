@@ -1,18 +1,18 @@
 import { copy, traverse } from "@candlelib/conflagrate";
 import {
     exp, JSCallExpression,
-    JSExpressionStatement,
+
     JSFunctionDeclaration,
     JSMethod,
     JSNode,
     JSNodeType as JST,
-    renderWithFormatting,
+
     stmt
 } from "@candlelib/js";
 import {
     BindingVariable, BINDING_FLAG,
     BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, HookTemplatePackage, HOOK_TYPE, HTMLNode,
-    HTMLNodeTypeLU, IndirectHook, IntermediateHook,
+    HTMLNodeTypeLU, IntermediateHook,
     PresetOptions, ProcessedHook
 } from "../../types/all.js";
 import { componentDataToCSS } from "../ast-render/css.js";
@@ -20,15 +20,17 @@ import {
     htmlTemplateToString
 } from "../ast-render/html.js";
 import {
-    BindingIdentifierBinding,
-    BindingIdentifierReference,
     Binding_Var_Is_Internal_Variable,
     getCompiledBindingVariableName,
     getComponentBinding,
     Name_Is_A_Binding_Variable
 } from "../common/binding.js";
+import {
+    BindingIdentifierBinding,
+    BindingIdentifierReference
+} from "../common/js_hook_types.js";
 import { setPos } from "../common/common.js";
-import { ComponentDataClass, createErrorComponent } from "../common/component.js";
+import { createErrorComponent } from "../common/component.js";
 import {
     appendStmtToFrame,
     createBuildFrame,
@@ -39,12 +41,10 @@ import {
 } from "../common/frame.js";
 import {
     Expression_Contains_Await,
-    getPropertyAST,
-
+    getPropertyAST
 } from "../common/js.js";
-import { processHooksInJS_AST, processIndirectHook, processHookASTs } from "./hooks-beta.js";
+import { processHookASTs, processHookForClass, processIndirectHook } from "./hooks-beta.js";
 import {
-    convertAtLookupToElementRef,
     hook_processors
 } from "./hooks.js";
 import { componentDataToTempAST, createComponentTemplate } from "./html.js";

@@ -1,7 +1,7 @@
 import { rt } from "../../runtime/global.js";
-import { ComponentData, ContainerDomLiteral, DOMLiteral, htmlState, IntermediateHook, TemplateHTMLNode, TemplatePackage, PresetOptions, IndirectHook } from "../../types/all.js";
+import { ComponentData, ContainerDomLiteral, DOMLiteral, htmlState, IndirectHook, PresetOptions, TemplateHTMLNode, TemplatePackage } from "../../types/all.js";
 import { getStaticValue } from "../common/binding.js";
-import { runHTMLHookHandlers } from "./build.js";
+import { processHookForHTML } from "./hooks-beta.js";
 
 /**
  * Compile component HTML information (including child component and slot information), into a string containing the components html

@@ -30,9 +30,7 @@ import {
     processWickJS_AST
 } from "./parse.js";
 
-import {
-    getExtendTypeVal
-} from "../ast-build/hooks-beta.js";
+import { getExtendTypeVal } from "../common/extended_types.js";
 
 export function findFirstNodeOfType(type: JSNodeType, ast: JSNode) {
 

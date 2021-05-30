@@ -1,9 +1,10 @@
 import { copy, traverse } from "@candlelib/conflagrate";
-import { JSExpressionClass, JSIdentifier, JSNode, JSNodeClass, JSNodeType, renderCompressed, tools } from "@candlelib/js";
+import { exp, JSExpressionClass, JSIdentifier, JSNode, JSNodeClass, JSNodeType, renderCompressed, tools } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
 import { PluginStore } from "../../plugin/plugin.js";
-import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, HOOK_SELECTOR, IndirectHook, IntermediateHook, PLUGIN_TYPE, PresetOptions, STATIC_BINDING_STATE, WickBindingNode } from "../../types/all.js";
-import { getExtendTypeVal, ExtendedType, getOriginalTypeOfExtendedType } from "../ast-build/hooks-beta.js";
+import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, HOOK_SELECTOR, IndirectHook, IntermediateHook, PLUGIN_TYPE, PresetOptions, STATIC_BINDING_STATE } from "../../types/all.js";
+import { getOriginalTypeOfExtendedType } from "./extended_types.js";
+import { BindingIdentifierReference, BindingIdentifierBinding } from "./js_hook_types.js";
 import { getSetOfEnvironmentGlobalNames } from "./common.js";
 import { convertObjectToJSNode } from "./js.js";
 

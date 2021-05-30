@@ -1,13 +1,13 @@
-import { bidirectionalTraverse, traverse, TraverseState } from "@candlelib/conflagrate";
-import { CSSNode, CSSNodeType } from "@candlelib/css";
-import { exp, JSExpressionStatement, JSNode, JSNodeType, renderWithFormatting, stmt } from "@candlelib/js";
-import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, HookNode, HookTemplatePackage, HTMLNode, HTMLNodeType, IndirectHook, Node } from "../../types/all.js";
-import { processWickJS_AST } from "../ast-parse/parse.js";
-import { BindingIdentifierBinding, BindingIdentifierReference, getComponentBinding, Name_Is_A_Binding_Variable } from "../common/binding.js";
+import { bidirectionalTraverse, copy, traverse, TraverseState } from "@candlelib/conflagrate";
+import { exp, JSExpressionStatement, JSNode, JSNodeType, stmt } from "@candlelib/js";
+import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, HookTemplatePackage, IndirectHook, Node, PresetOptions } from "../../types/all.js";
+import { getComponentBinding, Name_Is_A_Binding_Variable } from "../common/binding.js";
+import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
 import { appendStmtToFrame, createBuildFrame, Frame_Has_Statements, getStatementsFromFrame } from "../common/frame.js";
 import { ErrorHash } from "../common/hash_name.js";
 import { Expression_Contains_Await, getPropertyAST } from "../common/js.js";
 import { Binding_Var_Is_Directly_Accessed } from "./build.js";
+import { ExtendedType } from "../../types/hook";
 import { convertAtLookupToElementRef } from "./hooks.js";
 export type ExtendedType = CSSNodeType | JSNodeType | HTMLNodeType | number;
 
