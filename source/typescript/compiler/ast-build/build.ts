@@ -1,19 +1,19 @@
 import { copy, traverse } from "@candlelib/conflagrate";
 import {
     exp, JSCallExpression,
-
     JSFunctionDeclaration,
     JSMethod,
     JSNode,
     JSNodeType as JST,
-
     stmt
 } from "@candlelib/js";
 import {
     BindingVariable,
-    BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, HookTemplatePackage, HTMLNode,
-    HTMLNodeTypeLU, IntermediateHook,
-    PresetOptions, ProcessedHook
+    BINDING_VARIABLE_TYPE,
+    CompiledComponentClass,
+    ComponentData,
+    FunctionFrame,
+    PresetOptions
 } from "../../types/all.js";
 import { componentDataToCSS } from "../ast-render/css.js";
 import {
@@ -22,8 +22,7 @@ import {
 import {
     Binding_Var_Is_Internal_Variable,
     getCompiledBindingVariableName,
-    getComponentBinding,
-    Name_Is_A_Binding_Variable
+    getComponentBinding
 } from "../common/binding.js";
 import { setPos } from "../common/common.js";
 import { createErrorComponent } from "../common/component.js";
@@ -39,20 +38,30 @@ import {
     BindingIdentifierReference
 } from "../common/js_hook_types.js";
 import { processHookASTs, processHookForClass, processIndirectHook } from "./hooks/hooks-beta.js";
-import {
-    hook_processors
-} from "./hooks.js";
 import { componentDataToTempAST, createComponentTemplate } from "./html.js";
 
-
-export function processFunctionFrameHook(
-    comp: ComponentData,
+export async function createComponentTemplates(
     presets: PresetOptions,
-    frame: FunctionFrame,
-    class_info: CompiledComponentClass,
+    template_container: Map<string, HTMLElement> = new Map
 ) {
-    const ast = processHookForClass(frame.ast, comp, presets, class_info, -1);
-    //console.log(renderWithFormatting(ast));
+
+    const components = presets.components;
+
+    if (typeof document != undefined && document.createElement)
+
+        for (const [name, component] of components.entries()) {
+
+            const template = await createComponentTemplate(component, presets);
+
+            if (!template_container.has(name)) {
+
+                const ele = document.createElement("div");
+
+                ele.innerHTML = htmlTemplateToString(template);
+
+                template_container.set(name, <HTMLElement>ele.firstElementChild);
+            }
+        }
 }
 
 export async function createCompiledComponentClass(
@@ -110,7 +119,42 @@ export async function createCompiledComponentClass(
     }
 }
 
+function processCSS(
+    component: ComponentData,
+    class_info: CompiledComponentClass,
+    presets: PresetOptions
+) {
+    let style;
 
+    if (style = componentDataToCSS(component)) {
+
+        const frame = createBuildFrame("getCSS");
+        class_info.method_frames.push(frame);
+        appendStmtToFrame(frame, stmt(`return \`${style}\`;`));
+
+        appendStmtToFrame(class_info.init_frame, stmt(`this.setCSS()`));
+    }
+}
+
+async function processHTML(
+    component: ComponentData,
+    class_info: CompiledComponentClass,
+    presets: PresetOptions
+) {
+
+    if (component.HTML) {
+        const
+            frame = createBuildFrame("ce"),
+            return_stmt = stmt("return this.makeElement(a);"),
+            { html: [html] } = (await componentDataToTempAST(component, presets));
+
+        return_stmt.nodes[0].nodes[1].nodes[0] = exp(`\`${htmlTemplateToString(html).replace(/(\`)/g, "\\\`")}\``);
+
+        appendStmtToFrame(frame, return_stmt);
+
+        class_info.method_frames.push(frame);
+    }
+}
 
 function createLookupTables(class_info: CompiledComponentClass) {
     const
@@ -155,221 +199,20 @@ export function createClassInfoObject(): CompiledComponentClass {
     return class_info;
 }
 
-
-async function processHTML(
-    component: ComponentData,
-    class_info: CompiledComponentClass,
-    presets: PresetOptions
-) {
-
-    if (component.HTML) {
-        const
-            frame = createBuildFrame("ce"),
-            return_stmt = stmt("return this.makeElement(a);"),
-            { html: [html] } = (await componentDataToTempAST(component, presets));
-
-        return_stmt.nodes[0].nodes[1].nodes[0] = exp(`\`${htmlTemplateToString(html).replace(/(\`)/g, "\\\`")}\``);
-
-        appendStmtToFrame(frame, return_stmt);
-
-        class_info.method_frames.push(frame);
-    }
-}
-
-export async function createComponentTemplates(
-    presets: PresetOptions,
-    template_container: Map<string, HTMLElement> = new Map
-) {
-
-    const components = presets.components;
-
-    if (typeof document != undefined && document.createElement)
-
-        for (const [name, component] of components.entries()) {
-
-            const template = await createComponentTemplate(component, presets);
-
-            if (!template_container.has(name)) {
-
-                const ele = document.createElement("div");
-
-                ele.innerHTML = htmlTemplateToString(template);
-
-                template_container.set(name, <HTMLElement>ele.firstElementChild);
-            }
-        }
-}
-
-
-export async function runHTMLHookHandlers(
-    intermediate_hook: IntermediateHook,
-    component: ComponentData,
-    presets: PresetOptions,
-    model: any = null,
-    parent_component: ComponentData
-): Promise<HookTemplatePackage> {
-    for (const handler of hook_processors) {
-
-        let
-            val: HookTemplatePackage = null;
-
-        if (handler.canProcessHook(
-            intermediate_hook.selector,
-            HTMLNodeTypeLU[intermediate_hook.host_node.type]
-        ))
-            val = await handler.getDefaultHTMLValue(
-                intermediate_hook,
-                component,
-                presets,
-                model,
-                parent_component
-            );
-
-        if (!val) continue;
-
-        return val;
-    }
-
-    return null;
-}
-/**
- * Updates binding variables
- * @param root_node 
- * @param component 
- * @param hook 
- * @returns 
- */
-export function collectBindingReferences(root_node: JSNode, component: ComponentData, hook: ProcessedHook = null) {
-
-    for (const { node, meta: { parent } } of traverse(root_node, "nodes")) {
-
-        if (node.type == JST.IdentifierReference || node.type == JST.IdentifierBinding) {
-
-            if (!Name_Is_A_Binding_Variable(node.value, component.root_frame))
-                continue;
-
-            if (node.IS_BINDING_REF) {
-                //Pop any binding names into the binding information container. 
-                setBindingVariable(node.value, parent && parent.type == JST.MemberExpression, hook);
-            }
-        }
-    }
-}
-
-function setBindingVariable(name: string, IS_OBJECT: boolean = false, hook: ProcessedHook) {
-
-    if (hook.component_variables.has(name)) {
-        const variable = hook.component_variables.get(name);
-        variable.IS_OBJECT = IS_OBJECT || variable.IS_OBJECT;
-    } else {
-        hook.component_variables.set(name, {
-            name,
-            IS_OBJECT
-        });
-    }
-}
-
-export function runClassHookHandlers(
-    intermediate_hook: IntermediateHook,
-    component: ComponentData,
-    presets: PresetOptions,
-    class_info: CompiledComponentClass
-): {
-    hook: ProcessedHook,
-    intermediate_hook: IntermediateHook;
-} {
-    for (const handler of hook_processors) {
-
-        let hook: ProcessedHook = null;
-
-        if (handler.canProcessHook(
-            intermediate_hook.selector,
-            (intermediate_hook.host_node
-                ? HTMLNodeTypeLU[intermediate_hook.host_node.type]
-                : "")
-        ))
-            hook = handler.processHook(
-                intermediate_hook.selector,
-                intermediate_hook.hook_value,
-                <HTMLNode>intermediate_hook.host_node,
-                intermediate_hook.html_element_index,
-                component,
-                presets,
-                class_info
-            );
-
-        if (!hook) continue;
-
-        // Add any binding variables to the hooks component_variable set
-        for (const ast of [hook.cleanup_ast, hook.initialize_ast, hook.write_ast, hook.read_ast])
-            if (ast)
-                collectBindingReferences(ast, component, hook);
-
-        return { hook, intermediate_hook };
-    }
-    return { hook: null, intermediate_hook };
-}
-
 export function Binding_Var_Is_Directly_Accessed(binding_var: BindingVariable) {
     return (binding_var.type & (BINDING_VARIABLE_TYPE.DIRECT_ACCESS)) > 0;
 }
-/*
-function compileBindingVariables(
-    component: ComponentData,
+
+export function processFunctionFrameHook(
+    comp: ComponentData,
+    presets: PresetOptions,
+    frame: FunctionFrame,
     class_info: CompiledComponentClass,
-    write_bindings: { hook: ProcessedHook; intermediate_hook: IntermediateHook; }[]
 ) {
+    const ast = processHookForClass(frame.ast, comp, presets, class_info, -1);
+    //console.log(renderWithFormatting(ast));
+}
 
-    const { methods, method_frames, init_frame } = class_info;
-
-    for (const { internal_name, class_index, flags, type } of component.root_frame.binding_variables.values()) {
-
-        const IS_DIRECT_ACCESS = (type & BINDING_VARIABLE_TYPE.DIRECT_ACCESS) > 0;
-
-        if (flags & BINDING_FLAG.WRITTEN) {
-
-            const frame = createBuildFrame("u" + (class_index >= 0 ? class_index : 9999), "f,c");
-
-            for (const { hook } of write_bindings) {
-
-                if (hook.component_variables.has(internal_name)) {
-
-                    ##################################
-
-                    Need to review below to make sure
-                    IS_OBJECT needs to be converted
-                    to new wick processing form
-
-                    ##################################
-
-                    const { IS_OBJECT } = hook.component_variables.get(internal_name);
-
-                    // TODO: Sort bindings and their input outputs to make sure dependencies are met. 
-                    if (hook.component_variables.size <= 1) {
-
-                        frame.IS_ASYNC = Expression_Contains_Await(hook.write_ast) || frame.IS_ASYNC;
-
-                        if (IS_OBJECT) {
-                            const s = stmt(`if(${getCompiledBindingVariableName(internal_name, component, class_info)});`);
-                            s.nodes[1] = {
-                                type: <any>JST.ExpressionStatement,
-                                nodes: [hook.write_ast],
-                                pos: <any>hook.pos
-                            };
-                            appendStmtToFrame(frame, s);
-                        } else
-                            appendStmtToFrame(frame, <any>{
-                                type: JST.ExpressionStatement,
-                                nodes: [hook.write_ast],
-                                pos: <any>hook.pos
-                            });
-                    }
-                    else
-                        appendStmtToFrame(frame, setPos(stmt(`this.call(${hook.index}, c)`), hook.pos));
-                }
-            }
-...
-*/
 /**
  * Converts ComponentBinding expressions and identifers into class based reference expressions.
  * 
@@ -509,23 +352,6 @@ export function finalizeBindingExpression(
 
 function Node_Is_Binding_Identifier(node: JSNode) {
     return node.type == BindingIdentifierBinding || node.type == BindingIdentifierReference;
-}
-
-function processCSS(
-    component: ComponentData,
-    class_info: CompiledComponentClass,
-    presets: PresetOptions
-) {
-    let style;
-
-    if (style = componentDataToCSS(component)) {
-
-        const frame = createBuildFrame("getCSS");
-        class_info.method_frames.push(frame);
-        appendStmtToFrame(frame, stmt(`return \`${style}\`;`));
-
-        appendStmtToFrame(class_info.init_frame, stmt(`this.setCSS()`));
-    }
 }
 
 /**
