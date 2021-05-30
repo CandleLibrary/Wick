@@ -1,4 +1,4 @@
-import { HookHandlerPackage } from "../../types/hook";
+import { HookHandlerPackage } from "../../../types/hook";
 
 const registered_hook_handlers = new Map();
 

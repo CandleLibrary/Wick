@@ -38,7 +38,7 @@ import {
     BindingIdentifierBinding,
     BindingIdentifierReference
 } from "../common/js_hook_types.js";
-import { processHookASTs, processHookForClass, processIndirectHook } from "./hooks-beta.js";
+import { processHookASTs, processHookForClass, processIndirectHook } from "./hooks/hooks-beta.js";
 import {
     hook_processors
 } from "./hooks.js";

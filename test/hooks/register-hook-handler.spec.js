@@ -1,4 +1,4 @@
-import { registerHookHandler } from "../../build/library/compiler/ast-build/hook-handler.js";
+import { registerHookHandler } from "../../build/library/compiler/ast-build/hooks/hook-handler.js";
 
 
 

@@ -1,15 +1,15 @@
 import { bidirectionalTraverse, copy, traverse, TraverseState } from "@candlelib/conflagrate";
 import { matchAll } from "@candlelib/css";
 import { exp, JSExpressionStatement, JSNode, JSNodeType, JSStringLiteral, stmt } from "@candlelib/js";
-import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, DOMLiteral, HookTemplatePackage, IndirectHook, Node, PresetOptions } from "../../types/all.js";
-import { ExtendedType } from "../../types/hook";
-import { getComponentBinding, Name_Is_A_Binding_Variable } from "../common/binding.js";
-import { css_selector_helpers } from "../common/css.js";
-import { appendStmtToFrame, createBuildFrame, Frame_Has_Statements, getStatementsFromFrame } from "../common/frame.js";
-import { ErrorHash } from "../common/hash_name.js";
-import { Expression_Contains_Await, getPropertyAST } from "../common/js.js";
-import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
-import { Binding_Var_Is_Directly_Accessed } from "./build.js";
+import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, DOMLiteral, HookTemplatePackage, IndirectHook, Node, PresetOptions } from "../../../types/all.js";
+import { ExtendedType } from "../../../types/hook";
+import { getComponentBinding, Name_Is_A_Binding_Variable } from "../../common/binding.js";
+import { css_selector_helpers } from "../../common/css.js";
+import { appendStmtToFrame, createBuildFrame, Frame_Has_Statements, getStatementsFromFrame } from "../../common/frame.js";
+import { ErrorHash } from "../../common/hash_name.js";
+import { Expression_Contains_Await, getPropertyAST } from "../../common/js.js";
+import { BindingIdentifierBinding, BindingIdentifierReference } from "../../common/js_hook_types.js";
+import { Binding_Var_Is_Directly_Accessed } from "../build.js";
 import { getHookHandlers } from "./hook-handler.js";
 
 export function convertAtLookupToElementRef(string_node: JSStringLiteral, component: ComponentData) {

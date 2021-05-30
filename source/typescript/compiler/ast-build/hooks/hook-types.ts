@@ -1,11 +1,11 @@
 import { JSExpressionClass, JSExpressionStatement, JSIdentifierBinding, JSIdentifierReference, JSNode, renderCompressed, stmt } from "@candlelib/js";
-import { BINDING_VARIABLE_TYPE, ContainerDomLiteral, HTMLNodeType, TemplateHTMLNode } from "../../types/all.js";
+import { BINDING_VARIABLE_TYPE, ContainerDomLiteral, HTMLNodeType, TemplateHTMLNode } from "../../../types/all.js";
 import { registerHookHandler } from "./hook-handler.js";
-import { getExtendTypeVal, getOriginalTypeOfExtendedType } from "../common/extended_types.js";
-import { getElementAtIndex } from "../common/html.js";
-import { Binding_Variable_Has_Static_Default_Value, Expression_Is_Static, getComponentBinding, getStaticValue, getStaticValueAstFromSourceAST } from "../common/binding.js";
-import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
-import { componentDataToTempAST } from "./html.js";
+import { getExtendTypeVal, getOriginalTypeOfExtendedType } from "../../common/extended_types.js";
+import { getElementAtIndex } from "../../common/html.js";
+import { Binding_Variable_Has_Static_Default_Value, Expression_Is_Static, getComponentBinding, getStaticValue, getStaticValueAstFromSourceAST } from "../../common/binding.js";
+import { BindingIdentifierBinding, BindingIdentifierReference } from "../../common/js_hook_types.js";
+import { componentDataToTempAST } from "../html.js";
 import { IndirectHook } from "source/typescript/types/hook.js";
 
 /**
