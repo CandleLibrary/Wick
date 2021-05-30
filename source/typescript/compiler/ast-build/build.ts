@@ -37,7 +37,7 @@ import {
     BindingIdentifierBinding,
     BindingIdentifierReference
 } from "../common/js_hook_types.js";
-import { processHookASTs, processHookForClass, processIndirectHook } from "./hooks/hooks-beta.js";
+import { processHookASTs, processHookForClass, processIndirectHook } from "./hooks.js";
 import { componentDataToTempAST, createComponentTemplate } from "./html.js";
 
 export async function createComponentTemplates(

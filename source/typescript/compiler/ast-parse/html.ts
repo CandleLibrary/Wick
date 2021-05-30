@@ -9,7 +9,7 @@ import {
     WickBindingNode, WICK_AST_NODE_TYPE_BASE, WICK_AST_NODE_TYPE_SIZE
 } from "../../types/wick_ast.js";
 import * as HT from "../ast-build/hooks/hook-types.js";
-import { addIndirectHook } from "../ast-build/hooks/hooks-beta.js";
+import { addIndirectHook } from "../ast-build/hooks.js";
 import { addBindingReference, addBindingVariable, addHook } from "../common/binding.js";
 import { importResource } from "../common/common.js";
 import { ComponentHash } from "../common/hash_name.js";

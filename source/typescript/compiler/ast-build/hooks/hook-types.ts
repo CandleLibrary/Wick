@@ -12,7 +12,7 @@ import { IndirectHook } from "source/typescript/types/hook.js";
  * Hook Type for Binding Node data properties
  */
 export const TextNodeHookType = getExtendTypeVal("text-node-hook", HTMLNodeType.HTMLText);
-registerHookHandler({
+registerHookHandler<IndirectHook<JSNode> | JSNode, null>({
 
     name: "Text Node Binding",
 
@@ -38,7 +38,7 @@ registerHookHandler({
  * Hook Type for Container Data Attributes 
  */
 export const ContainerDataAttribType = getExtendTypeVal("container-data-hook", HTMLNodeType.HTMLAttribute);
-registerHookHandler<IndirectHook<JSNode>>({
+registerHookHandler<IndirectHook<JSNode> | JSNode, void>({
 
     name: "Container Data Attribute",
 
@@ -130,13 +130,11 @@ registerHookHandler<JSIdentifierBinding | JSIdentifierReference, JSExpressionCla
 
             const val = await getStaticValueAstFromSourceAST(node, comp, presets, null, null, true);
 
-            if (val) {
+            if (val)
                 return val;
-            }
+
 
             return;
-        } else {
-
         }
     },
 
