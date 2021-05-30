@@ -41,6 +41,10 @@ const WickTest: WickTestTools = <WickTestTools>{
 
 export function init() {
 
+    //Reset the presets objects
+
+    rt.presets = new Presets();
+
     if (ENABLED) return;
 
     ENABLED = true;
