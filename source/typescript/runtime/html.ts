@@ -160,6 +160,6 @@ export function hydrateContainerElement(ele: HTMLElement, parent: WickRTComponen
 
     const ctr = new WickContainer(comp_constructors, comp_attributes, ele, parent, null_elements);
 
-    parent.ct.push(ctr);
+    parent.ctr.push(ctr);
 }
 

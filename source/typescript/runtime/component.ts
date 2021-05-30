@@ -42,7 +42,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     //Parent Component
     par: WickRTComponent;
 
-    ct: WickContainer[];
+    ctr: WickContainer[];
     /**
      * Identifier of interval watcher for non-dynamic models.
      */
@@ -100,7 +100,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.ch = [];
         this.lookup_function_table = [];
         this.elu = [];
-        this.ct = [];
+        this.ctr = [];
         this.pui = [];
         this.nui = [];
         this.model = null;
