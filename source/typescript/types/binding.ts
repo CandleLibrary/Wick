@@ -28,14 +28,20 @@ export enum BINDING_VARIABLE_TYPE {
 
     METHOD_VARIABLE = 16,
     CONST_INTERNAL_VARIABLE = 32,
-    MODULE_MEMBER_VARIABLE = 128,
-    MODULE_VARIABLE = 256,
+    MODULE_MEMBER_VARIABLE = 64,
+    MODULE_VARIABLE = 128,
 
     /**
      * Variables that are replaced with direct
      * property access on the associated object
+     * 
+     * This variables are:
+     * CONST_INTERNAL_VARIABLE
+     * METHOD_VARIABLE
+     * MODULE_MEMBER_VARIABLE
+     * MODULE_VARIABLE
      */
-    DIRECT_ACCESS = 16 | 32 | 64 | 128 | 256,
+    DIRECT_ACCESS = 16 | 32 | 64 | 128,
 }
 
 /**
