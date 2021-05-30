@@ -5,7 +5,6 @@ import { ComponentData } from "./component";
 
 export const enum HTMLNodeClass {
     HTML_NODE = (1 << 20),
-
     HTML_ELEMENT = (1 << 21)
 }
 
