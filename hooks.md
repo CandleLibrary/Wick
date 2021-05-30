@@ -1,5 +1,23 @@
 # Standard Wick Hooks
 
+## Plugin Usage
+
+Register a component an Extended Type
+```jsx
+import {
+    getExtendTypeVal
+} from "wick-plugin"
+
+const my_type = getExtendedTypeVal("hello-world-type")
+
+//Install Handler For Node
+
+```
+Lookup value shortcuts - No checks are done to verify that the indexed values exists
+- **Container** - `\$\$ctr\d+`
+- **Element** - `\$\$ele\d+`
+- **Child** - `\$\$ch\d+`
+
 ## Terms
 
 ### Data Direction
