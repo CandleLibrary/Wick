@@ -9,6 +9,7 @@ import {
     WickBindingNode, WICK_AST_NODE_TYPE_BASE, WICK_AST_NODE_TYPE_SIZE
 } from "../../types/wick_ast.js";
 import * as HT from "../ast-build/hooks/hook-types.js";
+import * as CH from "../ast-build/hooks/container.js";
 import { addIndirectHook } from "../ast-build/hooks.js";
 import { addBindingReference, addBindingVariable, addHook } from "../common/binding.js";
 import { importResource } from "../common/common.js";
@@ -141,7 +142,170 @@ loadHTMLHandlerInternal(
 
                 // Create an indirect hook for container data attribute
 
-                addIndirectHook(component, HT.ContainerDataAttribType, ast, index);
+                addIndirectHook(component, CH.ContainerDataHook, ast, index);
+
+                // Remove the attribute from the container element
+
+                return null;
+            }
+        }
+    }, HTMLNodeType.HTMLAttribute
+);
+
+/** ###########################################################
+ *  Container Filter Attribute
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: -3,
+
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+
+            if (node.name == "filter" && host_node.tag == "CONTAINER") {
+
+                // Process the primary expression for Binding Refs and static
+                // data
+                const ast = processBindingAST(node.value, component, presets);
+
+                // Create an indirect hook for container data attribute
+
+                addIndirectHook(component, CH.ContainerFilterHook, ast, index);
+
+                // Remove the attribute from the container element
+
+                return null;
+            }
+        }
+    }, HTMLNodeType.HTMLAttribute
+);
+
+
+/** ###########################################################
+ *  Container Scrub Attribute
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: -3,
+
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+
+            if (node.name == "scrub" && host_node.tag == "CONTAINER") {
+
+                // Process the primary expression for Binding Refs and static
+                // data
+                const ast = processBindingAST(node.value, component, presets);
+
+                // Create an indirect hook for container data attribute
+
+                addIndirectHook(component, CH.ContainerScrubHook, ast, index);
+
+                // Remove the attribute from the container element
+
+                return null;
+            }
+        }
+    }, HTMLNodeType.HTMLAttribute
+);
+
+/** ###########################################################
+ *  Container Sort Attribute
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: -3,
+
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+
+            if (node.name == "sort" && host_node.tag == "CONTAINER") {
+
+                // Process the primary expression for Binding Refs and static
+                // data
+                const ast = processBindingAST(node.value, component, presets);
+
+                // Create an indirect hook for container data attribute
+
+                addIndirectHook(component, CH.ContainerSortHook, ast, index);
+
+                // Remove the attribute from the container element
+
+                return null;
+            }
+        }
+    }, HTMLNodeType.HTMLAttribute
+);
+
+/** ###########################################################
+ *  Container Limit Attribute
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: -3,
+
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+
+            if (node.name == "limit" && host_node.tag == "CONTAINER") {
+
+                // Process the primary expression for Binding Refs and static
+                // data
+                const ast = processBindingAST(node.value, component, presets);
+
+                // Create an indirect hook for container data attribute
+
+                addIndirectHook(component, CH.ContainerLimitHook, ast, index);
+
+                // Remove the attribute from the container element
+
+                return null;
+            }
+        }
+    }, HTMLNodeType.HTMLAttribute
+);
+
+/** ###########################################################
+ *  Container Offset Attribute
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: -3,
+
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+
+            if (node.name == "offset" && host_node.tag == "CONTAINER") {
+
+                // Process the primary expression for Binding Refs and static
+                // data
+                const ast = processBindingAST(node.value, component, presets);
+
+                // Create an indirect hook for container data attribute
+
+                addIndirectHook(component, CH.ContainerOffsetHook, ast, index);
+
+                // Remove the attribute from the container element
+
+                return null;
+            }
+        }
+    }, HTMLNodeType.HTMLAttribute
+);
+
+/** ###########################################################
+ *  Container Shift Attribute
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: -3,
+
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+
+            if (node.name == "shift" && host_node.tag == "CONTAINER") {
+
+                // Process the primary expression for Binding Refs and static
+                // data
+                const ast = processBindingAST(node.value, component, presets);
+
+                // Create an indirect hook for container data attribute
+
+                addIndirectHook(component, CH.ContainerShiftHook, ast, index);
 
                 // Remove the attribute from the container element
 
@@ -242,22 +406,6 @@ loadHTMLHandlerInternal(
                 host_node.tag = node.value;
 
                 return;
-            }
-
-            if (host_node.tag.toLowerCase() == "container") {
-                if (node.name == "data"
-                    || node.name == "filter"
-                    || node.name == "sort"
-                    || node.name == "shift"
-                    || node.name == "offset"
-                    || node.name == "limit"
-                    || node.name == "scrub"
-                ) {
-
-                    node.container_id = host_node.container_id;
-
-                    return;
-                }
             }
 
             return;

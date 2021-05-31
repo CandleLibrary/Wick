@@ -788,8 +788,6 @@ export class WickContainer implements Sparky, ObservableWatcher {
      */
     updateFilter() {
 
-
-
         let output = this.comps.slice();
 
         if (this.filter)
@@ -803,6 +801,16 @@ export class WickContainer implements Sparky, ObservableWatcher {
         this.UPDATE_FILTER = false;
 
         return output;
+    }
+
+    setFilter(value: (arg: WickRTComponent) => boolean) {
+        if (typeof value == "function")
+            this.filter = value;
+    }
+
+    setSort(value: (...arg: WickRTComponent[]) => number) {
+        if (typeof value == "function")
+            this.sort = value;
     }
 
     updateScrub(value: number) {

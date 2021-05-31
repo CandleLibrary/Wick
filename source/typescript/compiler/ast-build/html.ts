@@ -2,6 +2,7 @@ import { rt } from "../../runtime/global.js";
 import { ComponentData, ContainerDomLiteral, DOMLiteral, htmlState, IndirectHook, PresetOptions, TemplateHTMLNode, TemplatePackage } from "../../types/all.js";
 import { getStaticValue } from "../common/binding.js";
 import { processHookForHTML } from "./hooks.js";
+import { ContainerDataHook, ContainerFilterHook, ContainerLimitHook, ContainerOffsetHook, ContainerShiftHook, ContainerSortHook } from "./hooks/container.js";
 
 /**
  * Compile component HTML information (including child component and slot information), into a string containing the components html
@@ -348,6 +349,8 @@ async function addContainer(
     //get data hook 
     await processHooks(html, component, presets, model, node, parent_components, template_map);
 
+    await processContainerHooks(html, component, presets, model, node, parent_components, template_map);
+
     processAttributes(html.attributes, component, state, comp_data, node, component.HTML == html);
 }
 
@@ -373,6 +376,90 @@ export async function createComponentTemplate(
     return comp.template;
 }
 
+async function processContainerHooks(
+    html: ContainerDomLiteral,
+    component: ComponentData,
+    presets: PresetOptions,
+    model: any,
+    node: TemplateHTMLNode,
+    parent_components: ComponentData[],
+    template_map: TemplatePackage["templates"],
+) {
+    const
+        hooks = getHookFromElement(html, component),
+        data_hook = hooks.find(t => t.type == ContainerDataHook),
+        filter_hook = hooks.find(t => t.type == ContainerFilterHook),
+        sort_hook = hooks.find(t => t.type == ContainerSortHook),
+        limit_hook = hooks.find(t => t.type == ContainerLimitHook),
+        offset_hook = hooks.find(t => t.type == ContainerOffsetHook),
+        shift_hook = hooks.find(t => t.type == ContainerShiftHook);
+
+    if (data_hook) {
+
+        let data = await processHookForHTML(data_hook, component, presets, model, parent_components);
+
+        if (Array.isArray(data) && data.length > 0) {
+
+            let limit = data.length, offset = 0, shift = 1;
+
+            if (filter_hook) {
+                const arrow_filter = await processHookForHTML(filter_hook, component, presets, model, parent_components);
+
+                if (arrow_filter)
+                    data = data.filter(arrow_filter);
+            }
+
+            if (sort_hook) {
+                const sort_filter = await processHookForHTML(sort_hook, component, presets, model, parent_components);
+
+                if (sort_filter)
+                    data = data.sort(sort_filter);
+            }
+
+            if (limit_hook) {
+                const pending_limit = await processHookForHTML(limit_hook, component, presets, model, parent_components);
+
+                if (typeof pending_limit == "number")
+                    limit = Math.max(0, Math.min(pending_limit, data.length));
+            }
+
+            if (shift_hook) {
+                const pending_shift = await processHookForHTML(shift_hook, component, presets, model, parent_components);
+
+                if (typeof pending_shift == "number")
+                    shift = Math.max(1, pending_shift);
+            }
+
+            if (offset_hook) {
+                const pending_offset = await processHookForHTML(offset_hook, component, presets, model, parent_components);
+
+                if (typeof pending_offset == "number")
+                    offset = Math.max(0, Math.min(pending_offset, data.length));
+            }
+
+            data = data.slice(offset * shift, offset * shift + limit);
+
+            if (data.length > 0) {
+
+                const
+
+                    comp_name = html.component_names[0],
+
+                    child_comp = presets.components.get(comp_name);
+
+                //Don't forget use-if hooks which may be present in the above component types.
+
+                for (const model of data) {
+
+                    const result = await componentDataToTempAST(child_comp, presets, model, template_map);
+
+                    node.children.push(result.html[0]);
+                }
+            }
+        }
+    }
+}
+
 async function processHooks(
     html: DOMLiteral,
     component: ComponentData,
@@ -383,7 +470,22 @@ async function processHooks(
     template_map: TemplatePackage["templates"],
 ) {
 
-    for (const hook of getHookFromElement(html, component)) {
+    for (const hook of getHookFromElement(html, component)
+        .filter(
+            h => (
+                /**
+                 * Container hooks are handled by processContainerHooks,
+                 * which should be called only on container html elements
+                 */
+                h.type != ContainerDataHook &&
+                h.type != ContainerFilterHook &&
+                h.type != ContainerSortHook &&
+                h.type != ContainerLimitHook &&
+                h.type != ContainerOffsetHook &&
+                h.type != ContainerShiftHook
+            )
+        )
+    ) {
 
         const { html, templates } = (await processHookForHTML(hook, component, presets, model, parent_components) || {});
 

@@ -102,9 +102,9 @@ export async function processHookForHTML(
     model: any,
     parent_components: ComponentData[]
 
-): Promise<HookTemplatePackage> {
+): Promise<HookTemplatePackage | any> {
 
-    var pkg: HookTemplatePackage = null;
+    var pkg: HookTemplatePackage | any = null;
     //@ts-ignore
 
     for (const handler of getHookHandlers()) {
@@ -112,7 +112,7 @@ export async function processHookForHTML(
         if (handler.types.includes(indirect_hook.type) && handler.verify(indirect_hook)) {
 
             let
-                result = handler.buildHTML(indirect_hook, comp, presets, model, parent_components);
+                result = handler.buildHTML(copy(indirect_hook), comp, presets, model, parent_components);
 
 
             if (result instanceof Promise)
