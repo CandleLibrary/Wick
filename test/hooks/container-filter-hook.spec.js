@@ -11,27 +11,28 @@ wick_server.utils.enableTest();
 assert_group("Server - Static filter expression", () => {
 
     const comp = (await wick_server(`
-     const A = "alpha";
+     var R = 2;
+     const A = R + 3;
      var B = "bravo";
      let C = "philbert";
      
      export default <container 
-        data=\${[{name:"A"},{name:"B"},{name:"C"}]}
+        data=\${[{name:"A"},{name:"B"},{name:A}]}
         filter=\${ m.name != "A" }
         >
          <div>\${name}</div>
      </container>
      `));
 
-    const comp_instance = comp.createInstance();
-
     //assert(i, comp.class_string == "");
+
+    const comp_instance = comp.createInstance();
 
     assert(comp_instance.ele.childNodes.length == 2);
     assert(comp_instance.ele.childNodes[0].childNodes[0].tagName.trim() == "W-B");
     assert(comp_instance.ele.childNodes[0].childNodes[0].childNodes[0].data.trim() == "B");
     assert(comp_instance.ele.childNodes[1].childNodes[0].tagName.trim() == "W-B");
-    assert(comp_instance.ele.childNodes[1].childNodes[0].childNodes[0].data.trim() == "C");
+    assert(comp_instance.ele.childNodes[1].childNodes[0].childNodes[0].data.trim() == "5");
 });
 
 // Function filter

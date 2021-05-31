@@ -25,7 +25,7 @@ assert_group("Server - Static sort expression", () => {
 
     const comp_instance = comp.createInstance();
 
-    // assert(i, comp.class_string == "");
+    //assert(i, comp.class_string == "");
 
     assert(comp_instance.ele.childNodes.length == 3);
     assert(comp_instance.ele.childNodes[0].childNodes[0].tagName.trim() == "W-B");

@@ -11,6 +11,7 @@
  */
 
 import spark from "@candlelib/spark";
+import { createCompiledComponentClass } from "../compiler/ast-build/build.js";
 import { componentDataToTempAST } from "../compiler/ast-build/html.js";
 import { componentDataToCSS } from "../compiler/ast-render/css.js";
 import { htmlTemplateToString } from "../compiler/ast-render/html.js";
@@ -157,6 +158,13 @@ export function init() {
         const { template_map } = await componentDataToTempAST(this, presets);
 
         return template_map;
+    };
+
+    /**
+     * Returns the Templates template object 
+     */
+    ComponentDataClass.prototype.getComponentClassInfo = async function (presets = rt.presets): Promise<ComponentDataClass> {
+        return await createCompiledComponentClass(this, rt.presets, true, true);
     };
 
     ComponentDataClass.prototype.getCSSString = async function (presets = rt.presets) {

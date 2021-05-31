@@ -1,11 +1,10 @@
 import { JSExpressionClass, JSExpressionStatement, JSIdentifierBinding, JSIdentifierReference, JSNode, stmt } from "@candlelib/js";
-import { BINDING_VARIABLE_TYPE, HTMLNodeType, TemplateHTMLNode } from "../../../types/all.js";
-import { registerHookHandler } from "./hook-handler.js";
-import { getExtendTypeVal } from "../../common/extended_types.js";
-import { Binding_Variable_Has_Static_Default_Value, getComponentBinding, getStaticValueAstFromSourceAST } from "../../common/binding.js";
-import { BindingIdentifierBinding, BindingIdentifierReference } from "../../common/js_hook_types.js";
-import { componentDataToTempAST } from "../html.js";
 import { IndirectHook } from "source/typescript/types/hook.js";
+import { HTMLNodeType, STATIC_RESOLUTION_TYPE } from "../../../types/all.js";
+import { getBindingStaticResolutionType, getComponentBinding, getStaticValueAstFromSourceAST } from "../../common/binding.js";
+import { getExtendTypeVal } from "../../common/extended_types.js";
+import { BindingIdentifierBinding, BindingIdentifierReference } from "../../common/js_hook_types.js";
+import { registerHookHandler } from "./hook-handler.js";
 
 /**
  * Hook Type for Binding Node data properties
@@ -61,18 +60,14 @@ registerHookHandler<JSIdentifierBinding | JSIdentifierReference, JSExpressionCla
         const binding_var = getComponentBinding(node.value, comp);
 
         if (
-            binding_var.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
-            &&
-            Binding_Variable_Has_Static_Default_Value(binding_var, comp, presets, true)
+            getBindingStaticResolutionType(binding_var, comp, presets)
+            ==
+            STATIC_RESOLUTION_TYPE.CONSTANT_STATIC
         ) {
 
             const val = await getStaticValueAstFromSourceAST(node, comp, presets, null, null, true);
 
-            if (val)
-                return val;
-
-
-            return;
+            if (val) return val;
         }
     },
 

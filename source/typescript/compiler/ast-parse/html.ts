@@ -142,7 +142,7 @@ loadHTMLHandlerInternal(
 
                 // Create an indirect hook for container data attribute
 
-                addIndirectHook(component, CH.ContainerDataHook, ast, index);
+                addIndirectHook(component, CH.ContainerDataHook, ast, index, true);
 
                 // Remove the attribute from the container element
 

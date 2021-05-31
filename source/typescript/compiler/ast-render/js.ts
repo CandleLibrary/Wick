@@ -13,7 +13,7 @@ const
         : str => Buffer.from(str, 'binary').toString('base64');
 
 function componentStringToJS({ class_string: cls, source_map }: ComponentClassStrings, component: ComponentData, presets: PresetOptions) {
-
+    console.log({ cls });
     return (
         eval(
             "c=>" + cls + (presets.options.GENERATE_SOURCE_MAPS ? `\n${source_map}` : "")

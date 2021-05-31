@@ -21,7 +21,7 @@ import {
 } from "../ast-render/html.js";
 import {
     Binding_Var_Is_Internal_Variable,
-    getCompiledBindingVariableName,
+    getCompiledBindingVariableNameFromString,
     getComponentBinding
 } from "../common/binding.js";
 import { setPos } from "../common/common.js";
@@ -112,9 +112,9 @@ export async function createCompiledComponentClass(
         return info;
 
     } catch (e) {
+        console.log(e);
         throw e;
         console.log(`Error found in component ${comp.name} while converting to a class. location: ${comp.location}.`);
-        console.log(e);
         return createCompiledComponentClass(createErrorComponent([e], comp.source, comp.location, comp), presets);
     }
 }
@@ -264,7 +264,7 @@ export function finalizeBindingExpression(
                 //@ts-ignore
                 const
                     name = <string>node.value,
-                    id = exp(getCompiledBindingVariableName(name, component, comp_info)),
+                    id = exp(getCompiledBindingVariableNameFromString(name, component, comp_info)),
                     new_node = setPos(id, node.pos);
 
                 if (!component.root_frame.binding_variables.has(<string>name))
@@ -287,7 +287,7 @@ export function finalizeBindingExpression(
 
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {
                         const
-                            comp_var_name: string = getCompiledBindingVariableName(name, component, comp_info),
+                            comp_var_name: string = getCompiledBindingVariableNameFromString(name, component, comp_info),
                             assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`),
                             exp_ = exp(`${comp_var_name}${node.symbol[0]}1`);
 

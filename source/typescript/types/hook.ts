@@ -229,7 +229,21 @@ export interface HookProcessor {
 
 
 export interface IndirectHook<T = Node> {
+
     type: ExtendedType,
+
     nodes: T[];
+
     ele_index: number;
+
+    /**
+     * Allow the const static resolution of this 
+     * hook to replace any dynamic code that may
+     * be generated. This requires the static
+     * resolution can occur without 
+     * referencing any binding variables that 
+     * have values that could change within a
+     * runtime environnement.
+     */
+    ALLOW_STATIC_REPLACE: boolean;
 }

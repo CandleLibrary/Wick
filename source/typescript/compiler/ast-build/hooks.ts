@@ -1,11 +1,11 @@
 import { bidirectionalTraverse, copy, traverse, TraverseState } from "@candlelib/conflagrate";
 import { matchAll } from "@candlelib/css";
-import { exp, JSExpressionStatement, JSNode, JSNodeType, JSStringLiteral, stmt } from "@candlelib/js";
-import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, DOMLiteral, HookTemplatePackage, IndirectHook, Node, PresetOptions } from "../../types/all.js";
+import { exp, JSExpressionStatement, JSNode, JSNodeType, JSStringLiteral, renderCompressed, stmt } from "@candlelib/js";
+import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, DOMLiteral, HookTemplatePackage, IndirectHook, Node, PresetOptions, STATIC_RESOLUTION_TYPE } from "../../types/all.js";
 import { ExtendedType } from "../../types/hook";
-import { getComponentBinding, Name_Is_A_Binding_Variable } from "../common/binding.js";
+import { Binding_Variable_Has_Static_Default_Value, getBindingStaticResolutionType, getCompiledBindingVariableName, getComponentBinding, getExpressionStaticResolutionType, getStaticValueAstFromSourceAST, Name_Is_A_Binding_Variable } from "../common/binding.js";
 import { css_selector_helpers } from "../common/css.js";
-import { appendStmtToFrame, createBuildFrame, Frame_Has_Statements, getStatementsFromFrame } from "../common/frame.js";
+import { appendStmtToFrame, createBuildFrame, Frame_Has_Statements, getStatementsFromFrame, prependStmtToFrame } from "../common/frame.js";
 import { ErrorHash } from "../common/hash_name.js";
 import { Expression_Contains_Await, getPropertyAST } from "../common/js.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
@@ -57,8 +57,8 @@ export function convertAtLookupToElementRef(string_node: JSStringLiteral, compon
 }
 
 
-export function addIndirectHook(comp: ComponentData, type: ExtendedType, ast: Node, ele_index: number) {
-    comp.indirect_hooks.push({ type, nodes: [ast], ele_index });
+export function addIndirectHook(comp: ComponentData, type: ExtendedType, ast: Node, ele_index: number, ALLOW_STATIC_REPLACE: boolean = false) {
+    comp.indirect_hooks.push({ type, nodes: [ast], ele_index, ALLOW_STATIC_REPLACE });
 }
 
 /**
@@ -92,7 +92,14 @@ export async function processIndirectHook(
     indirect_hook: IndirectHook,
     class_info: CompiledComponentClass
 ) {
-    await processHookForClass(indirect_hook, comp, presets, class_info, indirect_hook.ele_index);
+    await processHookForClass(
+        indirect_hook,
+        comp,
+        presets,
+        class_info,
+        indirect_hook.ele_index,
+        indirect_hook.ALLOW_STATIC_REPLACE
+    );
 }
 
 export async function processHookForHTML(
@@ -113,7 +120,6 @@ export async function processHookForHTML(
 
             let
                 result = handler.buildHTML(copy(indirect_hook), comp, presets, model, parent_components);
-
 
             if (result instanceof Promise)
                 result = await result;
@@ -142,10 +148,16 @@ export async function processHookForClass(
     /**
      * The index of the component element which the hook ast affects. 
      */
-    element_index: number = -1
+    element_index: number = -1,
+
+    ALLOW_STATIC_REPLACE: boolean = false
 ) {
 
-    const extract = { ast: null };
+    const
+        extract = { ast: null },
+        pending_write_asts = [],
+        pending_init_asts = [],
+        pending_destroy_asts = [];
 
 
     /**
@@ -153,48 +165,22 @@ export async function processHookForClass(
      * binding variable values are modified
      * @param ast 
      */
-    function addOnBindingUpdateAst(ast: JSNode) {
-        //Extract binding information from the ast. 
-        const
-            component_variables = collectBindingReferences(ast, component),
-
-            NO_LOCAL_BINDINGS = component_variables.map(v => component.root_frame.binding_variables.get(v))
-                .every(Binding_Var_Is_Directly_Accessed),
-
-            HAS_ASYNC = Expression_Contains_Await(ast),
-
-            // Create BendingDepend AST Node, set the index and add to list of binding depends
-            // Update pending binding records 
-
-            index = class_info.write_records.length;
-
-        class_info.write_records.push({ ast, component_variables, HAS_ASYNC, NO_LOCAL_BINDINGS });
-
-        for (const name of component_variables)
-            if (!class_info.binding_records.has(name))
-                class_info.binding_records.set(
-                    name,
-                    { index: class_info.binding_records.size, nodes: [] }
-                );
-    }
+    function addOnBindingUpdateAst(ast: JSNode) { pending_write_asts.push(ast); }
 
     /**
      * Code that should execute when one or more 
      * binding variable values are modified
      * @param ast 
      */
-    function addInitAST(ast: JSNode) {
-
-    }
+    function addInitAST(ast: JSNode) { pending_init_asts.push(ast); }
 
     /**
      * Code that should execute when one or more 
      * binding variable values are modified
      * @param ast 
      */
-    function addDestroyAST(ast: JSNode) {
+    function addDestroyAST(ast: JSNode) { pending_destroy_asts.push(ast); }
 
-    }
 
 
     //@ts-ignore
@@ -227,9 +213,62 @@ export async function processHookForClass(
             }
     }
 
+    for (const ast of pending_write_asts) {
+
+        if (ALLOW_STATIC_REPLACE) {
+            // Check the hooks AST to determine if it is 
+            // statically resolvable with constant values only
+
+            if (
+                getExpressionStaticResolutionType(ast, component, presets)
+                ==
+                STATIC_RESOLUTION_TYPE.CONSTANT_STATIC
+            ) continue;
+        }
+
+        // Convert runtime static variables to prevent 
+        // creating runtime class objects for the binding
+
+        for (const { node, meta: { mutate } } of traverse(ast, "nodes").makeMutable()
+            .filter("type", BindingIdentifierBinding, BindingIdentifierReference)
+        ) {
+            const name = node.value;
+
+            const binding = component.root_frame.binding_variables.get(name);
+
+            if (
+                (
+                    getBindingStaticResolutionType(binding, component, presets)
+                    &
+                    (STATIC_RESOLUTION_TYPE.WITH_MODEL | STATIC_RESOLUTION_TYPE.WITH_PARENT)
+                ) == 0
+            ) {
+                const val = await getStaticValueAstFromSourceAST(node, component, presets, null, null, true);
+
+                if (val)
+                    mutate(val);
+            }
+        }
+
+        const
+            component_variables = collectBindingReferences(ast, component),
+
+            NO_LOCAL_BINDINGS = component_variables.map(v => component.root_frame.binding_variables.get(v))
+                .every(Binding_Var_Is_Directly_Accessed),
+
+            HAS_ASYNC = Expression_Contains_Await(ast);
+
+        // Create BendingDepend AST Node, set the index and add to list of binding depends
+        // Update pending binding records 
+
+        class_info.write_records.push({ ast, component_variables, HAS_ASYNC, NO_LOCAL_BINDINGS });
+
+        for (const name of component_variables)
+            addBindingRecord(class_info, name, component);
+    }
+
     return extract.ast;
 };
-
 export function processHookASTs(comp: ComponentData, comp_info: CompiledComponentClass) {
 
     const hash_groups: Map<string, CompiledComponentClass["write_records"][0][]> = new Map();
@@ -309,7 +348,7 @@ function processBindingRecords(comp_info: CompiledComponentClass, comp: Componen
 
         processBindingVariables(binding, comp_info, comp, index);
 
-        addBindingInitialization(binding, comp_info, comp, index);
+        //addBindingInitialization(binding, comp_info, comp, index);
 
         //create an update function for the binding variable 
         const frame = createBuildFrame("u" + index, "f,c");
@@ -370,7 +409,28 @@ function addBindingInitialization(
         } else
             expr.nodes[0].nodes[1].nodes.push(<any>default_val);
 
-        appendStmtToFrame(class_info.init_frame, expr);
+        prependStmtToFrame(class_info.init_frame, expr);
+
+        for (const binding_name of collectBindingReferences(expr, component))
+            addBindingRecord(class_info, binding_name, component);
+    }
+}
+
+
+
+function addBindingRecord(class_info: CompiledComponentClass, name: string, component: ComponentData) {
+    if (!class_info.binding_records.has(name)) {
+
+        const binding = component.root_frame.binding_variables.get(name);
+
+        const index = class_info.binding_records.size;
+
+        class_info.binding_records.set(
+            name,
+            { index, nodes: [] }
+        );
+
+        addBindingInitialization(binding, class_info, component, index);
     }
 }
 

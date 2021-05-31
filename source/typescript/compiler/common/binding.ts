@@ -2,7 +2,7 @@ import { copy, traverse } from "@candlelib/conflagrate";
 import { exp, JSExpressionClass, JSIdentifier, JSNode, JSNodeClass, JSNodeType, renderCompressed, tools } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
 import { PluginStore } from "../../plugin/plugin.js";
-import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, HOOK_SELECTOR, IndirectHook, IntermediateHook, PLUGIN_TYPE, PresetOptions, STATIC_BINDING_STATE } from "../../types/all.js";
+import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, HOOK_SELECTOR, IndirectHook, IntermediateHook, PLUGIN_TYPE, PresetOptions, STATIC_BINDING_STATE, STATIC_RESOLUTION_TYPE } from "../../types/all.js";
 import { getSetOfEnvironmentGlobalNames } from "./common.js";
 import { getOriginalTypeOfExtendedType } from "./extended_types.js";
 import { convertObjectToJSNode } from "./js.js";
@@ -261,52 +261,59 @@ export function processUndefinedBindingVariables(component: ComponentData, prese
     }
 }
 
-export function getCompiledBindingVariableName(
+export function getCompiledBindingVariableNameFromString(
     name: string,
     component: ComponentData,
     comp_info?: CompiledComponentClass
 ) {
 
-    const comp_var = getComponentBinding(name, component);
+    const binding = getComponentBinding(name, component);
 
-    if (!comp_var || comp_var.type == BINDING_VARIABLE_TYPE.UNDECLARED) {
+    return getCompiledBindingVariableName(binding, comp_info);
+}
+
+export function getCompiledBindingVariableName(
+    binding: BindingVariable,
+    comp_info?: CompiledComponentClass
+) {
+    if (!binding || binding.type == BINDING_VARIABLE_TYPE.UNDECLARED) {
         const global_names = getSetOfEnvironmentGlobalNames();
-        if (global_names.has(name)) {
-            return name;
+        if (global_names.has(binding.external_name)) {
+            return binding.external_name;
         }
     }
 
-    if (comp_var)
-        switch (comp_var.type) {
+    if (binding)
+        switch (binding.type) {
 
             case BINDING_VARIABLE_TYPE.MODULE_VARIABLE:
-                return `this.presets.api.${comp_var.external_name}.default`;
+                return `this.presets.api.${binding.external_name}.default`;
 
             case BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE:
-                return `this.presets.api.${comp_var.external_name}`;
+                return `this.presets.api.${binding.external_name}`;
 
             case BINDING_VARIABLE_TYPE.UNDECLARED:
                 const global_names = getSetOfEnvironmentGlobalNames();
-                if (global_names.has(comp_var.external_name))
-                    return comp_var.external_name;
+                if (global_names.has(binding.external_name))
+                    return binding.external_name;
 
             //intentional
 
             case BINDING_VARIABLE_TYPE.MODEL_VARIABLE:
-                return `this.model.${comp_var.external_name}`;
+                return `this.model.${binding.external_name}`;
 
             case BINDING_VARIABLE_TYPE.METHOD_VARIABLE:
                 return "this." + name;
 
             case BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE:
-                return `window.${comp_var.external_name}`;
+                return `window.${binding.external_name}`;
 
             default:
-                return `this[${comp_info.binding_records.get(name).index}]`;
+                console.log(binding);
+                return `this[${comp_info.binding_records.get(binding.internal_name).index}]`;
         }
     else
         return name;
-
 }
 
 export function Binding_Var_Is_Internal_Variable(comp_var: BindingVariable) {
@@ -316,113 +323,149 @@ export function Binding_Var_Is_Internal_Variable(comp_var: BindingVariable) {
         comp_var.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
     );
 }
-/**
- * A Binding has a static if it contains no references or call expressions.
- * 
- * If it does contain references, it may still be considered static if the 
- * references are to other binding variables that have static states.
- * 
- * @param binding 
- * @param comp 
- * @returns 
- */
-export function Binding_Variable_Has_Static_Default_Value(
-    binding: BindingVariable,
-    comp: ComponentData,
-    presets: PresetOptions,
-    ASSUME_RUNTIME: boolean = false
-): boolean {
-
-    let STATIC_STATE = binding.STATIC_STATE;
-
-    if (true || STATIC_STATE == STATIC_BINDING_STATE.UNCHECKED || ASSUME_RUNTIME) {
-
-        STATIC_STATE = STATIC_BINDING_STATE.FALSE;
-
-        if (binding.default_val)
-            STATIC_STATE = Expression_Is_Static(binding.default_val, comp, presets, ASSUME_RUNTIME)
-                ? STATIC_BINDING_STATE.TRUE
-                : STATIC_BINDING_STATE.FALSE;
-        else if (
-            (ASSUME_RUNTIME && (
-
-                binding.type == BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE
-                ||
-                binding.type == BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE
-                ||
-                binding.type == BINDING_VARIABLE_TYPE.MODULE_VARIABLE
-            ))
-            ||
-            (
-                // Assume a value for model will be provided by calling 
-                // code that aims to resolve the binding velue
-                binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE
-                ||
-                binding.type == BINDING_VARIABLE_TYPE.UNDECLARED
-            ) ||
-            // Assume parent binding variable is static.
-            // This will be confirmed when the actual value is resolved
-            binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE
-        )
-            STATIC_STATE = STATIC_BINDING_STATE.TRUE;
-
-    }
-
-    binding.STATIC_STATE = STATIC_STATE;
-
-    return STATIC_STATE == STATIC_BINDING_STATE.TRUE;
-}
 
 function haveStaticPluginForRefName(name: string, presets: PresetOptions) {
     return presets.plugins.hasPlugin(PLUGIN_TYPE.STATIC_DATA_FETCH, name);
 }
 
+/**
+ * Returns a STATIC_RESOLUTION_TYPE value representing the static resolution 
+ * requirements of the binding. 
+ * 
+ * @param ast - A valid JSNode AST object
+ * 
+ * @param comp  - A ComponentData object that can resolutions on binding variables 
+ *                that may be references in the ast. 
+ * 
+ * @param presets - A Presets object that can provide resolution on plugin module
+ *                  references within the ast. 
+ * 
+ * @param modules - An optional empty Set that will be used to record all module bindings that 
+ *            are referenced in the ast.
+ * 
+ * @param globals - An optional empty Set that will be used to record all global reference bindings
+ *            that are referenced in the ast.
+ * 
+ * @returns {STATIC_RESOLUTION_TYPE}
+ */
+export function getBindingStaticResolutionType(
+    binding: BindingVariable,
+    comp: ComponentData,
+    presets: PresetOptions,
+    modules: Set<BindingVariable> = null,
+    globals: Set<BindingVariable> = null,
+): STATIC_RESOLUTION_TYPE {
 
-export function Expression_Is_Static(
+    if (!binding.static_resolution_type) {
+
+        let type = 0;
+
+        if (binding.default_val)
+            type = getExpressionStaticResolutionType(binding.default_val, comp, presets);
+
+        else switch (binding.type) {
+
+            case BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE:
+                if (globals)
+                    globals.add(binding);
+                type = STATIC_RESOLUTION_TYPE.STATIC_WITH_GLOBAL;
+                break;
+
+            case BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE:
+            case BINDING_VARIABLE_TYPE.MODULE_VARIABLE:
+                if (modules)
+                    modules.add(binding);
+                type = STATIC_RESOLUTION_TYPE.STATIC_WITH_MODULE;
+                break;
+
+            case BINDING_VARIABLE_TYPE.MODEL_VARIABLE:
+            case BINDING_VARIABLE_TYPE.UNDECLARED:
+                type = STATIC_RESOLUTION_TYPE.STATIC_WITH_MODEL;
+                break;
+
+            case BINDING_VARIABLE_TYPE.PARENT_VARIABLE:
+                type = STATIC_RESOLUTION_TYPE.STATIC_WITH_PARENT;
+                break;
+
+            default:
+                type = STATIC_RESOLUTION_TYPE.INVALID;
+                break;
+        }
+
+        binding.static_resolution_type = type;
+    }
+
+    return binding.static_resolution_type;
+}
+
+/**
+ * Returns a STATIC_RESOLUTION_TYPE value representing the static resolution 
+ * requirements of the expression. 
+ * 
+ * @param ast - A valid JSNode AST object
+ * 
+ * @param comp  - A ComponentData object that can resolutions on binding variables 
+ *                that may be references in the ast. 
+ * 
+ * @param presets - A Presets object that can provide resolution on plugin module
+ *                  references within the ast. 
+ * 
+ * @param m - An optional empty Set that will be used to record all module bindings that 
+ *            are referenced in the ast.
+ * 
+ * @param g - An optional empty Set that will be used to record all global reference bindings
+ *            that are referenced in the ast.
+ * 
+ * @returns {STATIC_RESOLUTION_TYPE}
+ */
+export function getExpressionStaticResolutionType(
     ast: JSNode,
     comp: ComponentData,
     presets: PresetOptions,
-    ASSUME_RUNTIME: boolean = false
-): boolean {
+    m: Set<BindingVariable> = null,
+    g: Set<BindingVariable> = null,
+): STATIC_RESOLUTION_TYPE {
 
-    for (const { node, meta } of traverse(ast, "nodes").makeSkippable()
-    ) {
+    let type: number = STATIC_RESOLUTION_TYPE.CONSTANT_STATIC;
+
+    for (const { node, meta } of traverse(ast, "nodes").makeSkippable()) {
+
+        if (type == STATIC_RESOLUTION_TYPE.INVALID)
+            break;
+
         switch (node.type) {
 
             case BindingIdentifierBinding: case BindingIdentifierReference:
-            case JSNodeType.IdentifierName: case JSNodeType.IdentifierReference:
 
                 const name = tools.getIdentifierName(node);
 
                 let binding = getComponentBinding(name, comp);
 
-                if (binding && Binding_Variable_Has_Static_Default_Value(binding, comp, presets, ASSUME_RUNTIME))
-                    continue;
+                type |= getBindingStaticResolutionType(binding, comp, presets, m, g);
 
-                return false;
+                break;
 
             case JSNodeType.CallExpression: {
-                const [name_node] = node.nodes;
+                const [name_node] = <JSIdentifier[]>node.nodes;
                 if ((name_node.type & JSNodeClass.IDENTIFIER) > 0) {
-                    if (haveStaticPluginForRefName(name_node.value, presets)) {
-                        for (const n of node.nodes.slice(1))
-                            if (!Expression_Is_Static(n, comp, presets, ASSUME_RUNTIME))
-                                return false;
-                        meta.skip();
-                        break;
+                    if (haveStaticPluginForRefName(<string>name_node.value, presets)) {
+                        for (const n of node.nodes.slice(1)) {
+                            type |= getExpressionStaticResolutionType(n, comp, presets, m, g);
+                            meta.skip();
+                        }
                     }
                 }
-            }
-            case JSNodeType.ArrowFunction: case JSNodeType.FunctionDeclaration:
-                return false;
+            } break;
 
+            case JSNodeType.ArrowFunction: case JSNodeType.FunctionDeclaration:
+                type |= STATIC_RESOLUTION_TYPE.INVALID;
         }
     }
 
-    return true;
+    return type;
 }
 
-export async function getDefaultBindingValue(
+export async function getDefaultBindingValueAST(
     name: string,
     comp: ComponentData,
     presets: PresetOptions,
@@ -442,7 +485,7 @@ export async function getDefaultBindingValue(
 
                 if (hook.hook_value.extern == binding.external_name)
 
-                    return await getDefaultBindingValue(hook.hook_value.local, parent_comp, presets, model, null, ASSUME_RUNTIME);
+                    return await getDefaultBindingValueAST(hook.hook_value.local, parent_comp, presets, model, null, ASSUME_RUNTIME);
 
         } /*else*/ if ((binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE || binding.type == BINDING_VARIABLE_TYPE.UNDECLARED)) {
 
@@ -459,15 +502,44 @@ export async function getDefaultBindingValue(
             )
         ) {
 
-            return <JSExpressionClass>exp(getCompiledBindingVariableName(binding.internal_name, comp));
+            return <JSExpressionClass>exp(getCompiledBindingVariableNameFromString(binding.internal_name, comp));
 
-        } else if (Binding_Variable_Has_Static_Default_Value(binding, comp, presets, ASSUME_RUNTIME))
+        } else if (ASSUME_RUNTIME) {
+            if (getBindingStaticResolutionType(binding, comp, presets) != STATIC_RESOLUTION_TYPE.INVALID)
+                return await getStaticValueAstFromSourceAST(binding.default_val, comp, presets, model, parent_comp, ASSUME_RUNTIME);
+        }
+        else if (Is_Statically_Resolvable_On_Server(binding, comp, presets))
+            return await getStaticValueAstFromSourceAST(binding.default_val, comp, presets, model, parent_comp);
 
-            return await getStaticValueAstFromSourceAST(binding.default_val, comp, presets, model, parent_comp, ASSUME_RUNTIME);
     }
 
     return undefined;
 }
+
+function Is_Statically_Resolvable_On_Server(binding: BindingVariable, comp: ComponentData, presets: PresetOptions): boolean {
+    const modules: Set<BindingVariable> = new Set();
+    const globals: Set<BindingVariable> = new Set();
+    const type = getBindingStaticResolutionType(binding, comp, presets, modules, globals);
+
+    if (type == STATIC_RESOLUTION_TYPE.INVALID)
+
+        for (const module of modules)
+            if (!haveStaticPluginForRefName(module.internal_name, presets))
+                return false;
+
+    return true;
+}
+
+/**
+ * Runtime static can include ALL GLOBALS, AND NON LOCAL APIS
+ * @param input_node 
+ * @param comp 
+ * @param presets 
+ * @param model 
+ * @param parent_comp 
+ * @param ASSUME_RUNTIME 
+ * @returns 
+ */
 
 /**
  * Returns a JSNode AST that represents the resolved value
@@ -539,7 +611,7 @@ export async function getStaticValueAstFromSourceAST(
 
             if (comp.root_frame.binding_variables.has(name)) {
 
-                const val = await <any>getDefaultBindingValue(name, comp, presets, model, parent_comp, ASSUME_RUNTIME);
+                const val = await <any>getDefaultBindingValueAST(name, comp, presets, model, parent_comp, ASSUME_RUNTIME);
 
                 if (val === undefined) return undefined;
 
@@ -571,7 +643,7 @@ export async function getStaticValue(
     component: ComponentData,
     presets: PresetOptions,
     model: any = null,
-    parent_comp: ComponentData = null,
+    parent_comp: ComponentData[] = null,
     ASSUME_RUNTIME: boolean = false
 ) {
 

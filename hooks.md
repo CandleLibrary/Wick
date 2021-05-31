@@ -25,7 +25,7 @@ Lookup value shortcuts - No checks are done to verify that the indexed values ex
 - In : Data from user input, parent component, or children components. 
 
 ### Binding Variable
-A variable that is virtualy bound to some value that can be changed by any number of operations. When a binding variable's value changes, any hooks that are dependent on the binding variable will also change to reflect the new value associated with the binding variable.
+A variable that is bound to some value that can be changed by any number of operations. When a binding variable's value changes, any hooks that have expressions that are dependent on the binding variable will also change to reflect the new value associated with the value of the binding variable.
 
 There are 8 types of binding variables:
 - INTERNAL_VARIABLE - var let in root scope
@@ -52,7 +52,7 @@ Binds the hook expression the inputs `value` attribute. If the hook_expression i
 
 If the hook_expression is complex ( anything other than a single var reference), then data direction is out-only: only update from the JS system will cause changes to the elements value attribute; any user input is ignored. 
 
-If `read-only` attribute is present on the `<input>` element, then the above behavior is enforced by default, regardless of the complexity of the hook_expression.
+If `read-only` attribute is present on the `<input>` element, then the above behavior is enforced by default, regardless of the complexity of the hook's expression.
 
 ### Checkbox `checked` Hook
 
