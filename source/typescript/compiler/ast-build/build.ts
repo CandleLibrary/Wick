@@ -37,7 +37,7 @@ import {
     BindingIdentifierBinding,
     BindingIdentifierReference
 } from "../common/js_hook_types.js";
-import { processHookASTs, processHookForClass, processIndirectHook } from "./hooks.js";
+import { addBindingRecord, processHookASTs as processResolvedHooks, processHookForClass, processIndirectHook } from "./hooks.js";
 import { componentDataToTempAST, createComponentTemplate } from "./html.js";
 
 export async function createComponentTemplates(
@@ -65,7 +65,7 @@ export async function createComponentTemplates(
 }
 
 export async function createCompiledComponentClass(
-    comp: ComponentData,
+    component: ComponentData,
     presets: PresetOptions,
     INCLUDE_HTML: boolean = true,
     INCLUDE_CSS: boolean = true
@@ -73,49 +73,74 @@ export async function createCompiledComponentClass(
 
     try {
 
-        const info = createClassInfoObject();
+        const class_info = createClassInfoObject();
 
         //HTML INFORMATION
         if (INCLUDE_HTML)
-            await processHTML(comp, info, presets);
+            await processHTML(component, class_info, presets);
 
         //CSS INFORMATION
         if (INCLUDE_CSS)
-            processCSS(comp, info, presets);
+            processCSS(component, class_info, presets);
 
         //Javascript Information.
-        if (comp.HAS_ERRORS === false && comp.root_frame) {
+        if (component.HAS_ERRORS === false && component.root_frame) {
 
             const {
                 nlu,
                 nluf
-            } = createLookupTables(info);
+            } = createLookupTables(class_info);
 
-            for (const hook of comp.indirect_hooks)
-                await processIndirectHook(comp, presets, hook, info);
+            for (const hook of component.indirect_hooks)
+                await processIndirectHook(component, presets, hook, class_info);
 
-            for (const frame of comp.frames)
-                await processFunctionFrameHook(comp, presets, frame, info);
+            for (const frame of component.frames)
+                await processFunctionFrameHook(component, presets, frame, class_info);
 
-            processHookASTs(comp, info);
+            processResolvedHooks(component, class_info);
 
-            if (info.lfu_table_entries.length > 0)
-                prependStmtToFrame(info.init_frame, nlu);
+            if (class_info.lfu_table_entries.length > 0)
+                prependStmtToFrame(class_info.init_frame, nlu);
 
-            if (info.lfu_table_entries.length > 0)
-                prependStmtToFrame(info.init_frame, nluf);
+            if (class_info.lfu_table_entries.length > 0)
+                prependStmtToFrame(class_info.init_frame, nluf);
 
-            processMethods(comp, info);
+
+            // check for any onload frames. This will be converted to the async_init frame. Any
+            // statements defined in async_init will prepended to the frames statements. Create
+            // a new frame if onload is not present
+            const onload_frame: FunctionFrame = component.frames.filter(s => s.method_name.toLowerCase() == "onload")[0],
+                { root_frame } = component;
+
+            const out_frames = [...class_info.method_frames, ...component.frames.filter(
+                f => (f != onload_frame) && (f != root_frame)
+            )];
+
+            if (onload_frame)
+                prependStmtToFrame(class_info.async_init_frame, ...onload_frame.ast.nodes[2].nodes);
+
+            if (root_frame.IS_ASYNC)
+                appendStmtToFrame(class_info.async_init_frame, ...getStatementsFromRootFrame(root_frame));
+            else
+                appendStmtToFrame(class_info.init_frame, ...getStatementsFromRootFrame(root_frame));
+
+            //Ensure there is an async init method
+            for (const function_block of out_frames)
+                await makeComponentMethod(function_block, component, class_info, presets);
+
+
+
+            //await processMethods(component, class_info, presets);
         }
 
         // Remove methods 
-        return info;
+        return class_info;
 
     } catch (e) {
         console.log(e);
         throw e;
-        console.log(`Error found in component ${comp.name} while converting to a class. location: ${comp.location}.`);
-        return createCompiledComponentClass(createErrorComponent([e], comp.source, comp.location, comp), presets);
+        console.log(`Error found in component ${component.name} while converting to a class. location: ${component.location}.`);
+        return createCompiledComponentClass(createErrorComponent([e], component.source, component.location, component), presets);
     }
 }
 
@@ -203,15 +228,69 @@ export function Binding_Var_Is_Directly_Accessed(binding_var: BindingVariable) {
     return (binding_var.type & (BINDING_VARIABLE_TYPE.DIRECT_ACCESS)) > 0;
 }
 
-export function processFunctionFrameHook(
+export async function processFunctionFrameHook(
     comp: ComponentData,
     presets: PresetOptions,
     frame: FunctionFrame,
     class_info: CompiledComponentClass,
 ) {
-    const ast = processHookForClass(frame.ast, comp, presets, class_info, -1);
-    //console.log(renderWithFormatting(ast));
+    for (const { node, meta: { mutate, skip } } of traverse(frame.ast, "nodes")
+        .makeMutable()
+        .makeSkippable()
+    ) {
+        if (
+            node.type == BindingIdentifierBinding
+            ||
+            node.type == BindingIdentifierReference
+        ) {
+            await addBindingRecord(class_info, node.value, comp);
+        } else if (node.type > 0xFFFFFFFF) {
+            const ast = await processHookForClass(node, comp, presets, class_info, -1, false);
+
+            if (ast != node)
+                mutate(node);
+
+            skip();
+
+            continue;
+        }
+    }
 }
+
+function Node_Is_Binding_Identifier(node: JSNode) {
+    return node.type == BindingIdentifierBinding || node.type == BindingIdentifierReference;
+}
+
+/**
+ * Create new AST that has all undefined references converted to binding
+ * lookups or static values.
+ */
+async function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci: CompiledComponentClass, presets: PresetOptions) {
+
+    if (frame.ast && !frame.IS_ROOT) {
+
+        ////Do not create empty functions
+        if (!Frame_Has_Statements(frame))
+            return;
+
+        const cpy: JSFunctionDeclaration | JSMethod = <any>copy(frame.ast);
+
+        const { NEED_ASYNC } = await finalizeBindingExpression(cpy, component, ci, presets);
+
+        cpy.ASYNC = NEED_ASYNC || frame.IS_ASYNC || cpy.ASYNC;
+
+        cpy.type = JST.Method;
+
+        if (frame.index != undefined)
+            //@ts-ignore
+            cpy.nodes[0].value = `f${frame.index}`;
+
+
+        ci.methods.push(cpy);
+    }
+}
+
+
 
 /**
  * Converts ComponentBinding expressions and identifers into class based reference expressions.
@@ -219,26 +298,22 @@ export function processFunctionFrameHook(
  * @param mutated_node 
  * @param component 
  */
-export function finalizeBindingExpression(
+export async function finalizeBindingExpression(
     mutated_node: JSNode,
     component: ComponentData,
-    comp_info: CompiledComponentClass
-): {
+    comp_info: CompiledComponentClass,
+    presets: PresetOptions
+): Promise<{
     ast: JSNode,
     NEED_ASYNC: boolean;
-} {
+}> {
     const lz = { ast: null };
     let NEED_ASYNC = false;
     for (const { node, meta: { mutate, skip } } of traverse(mutated_node, "nodes")
         .extract(lz)
-        .filter("type",
-            JST.AwaitExpression, JST.PostExpression, JST.PreExpression, JST.AssignmentExpression,
-            BindingIdentifierBinding, BindingIdentifierReference,
-            JST.IdentifierBinding, JST.IdentifierReference)
         .makeMutable()
         .makeSkippable()
     ) {
-
         switch (node.type) {
 
             case JST.IdentifierBinding: case JST.IdentifierReference:
@@ -262,6 +337,7 @@ export function finalizeBindingExpression(
             //case JSNodeType.ComponentBindingIdentifier
             case BindingIdentifierBinding: case BindingIdentifierReference:
                 //@ts-ignore
+
                 const
                     name = <string>node.value,
                     id = exp(getCompiledBindingVariableNameFromString(name, component, comp_info)),
@@ -287,11 +363,12 @@ export function finalizeBindingExpression(
 
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {
                         const
+                            index = comp_info.binding_records.get(name).index,
                             comp_var_name: string = getCompiledBindingVariableNameFromString(name, component, comp_info),
-                            assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`),
+                            assignment: JSCallExpression = <any>exp(`this.ua(${index})`),
                             exp_ = exp(`${comp_var_name}${node.symbol[0]}1`);
 
-                        const { ast, NEED_ASYNC: NA } = finalizeBindingExpression(ref, component, comp_info);
+                        const { ast, NEED_ASYNC: NA } = await finalizeBindingExpression(ref, component, comp_info, presets);
 
                         NEED_ASYNC = NA || NEED_ASYNC;
 
@@ -320,10 +397,10 @@ export function finalizeBindingExpression(
 
                     //Directly assign new value to model variables
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {
-
-                        const assignment: JSCallExpression = <any>exp(`this.ua(${comp_var.class_index})`);
-                        const { ast: a1, NEED_ASYNC: NA1 } = finalizeBindingExpression(ref, component, comp_info);
-                        const { ast: a2, NEED_ASYNC: NA2 } = finalizeBindingExpression(value, component, comp_info);
+                        const index = comp_info.binding_records.get(name).index;
+                        const assignment: JSCallExpression = <any>exp(`this.ua(${index})`);
+                        const { ast: a1, NEED_ASYNC: NA1 } = await finalizeBindingExpression(ref, component, comp_info, presets);
+                        const { ast: a2, NEED_ASYNC: NA2 } = await finalizeBindingExpression(value, component, comp_info, presets);
 
                         NEED_ASYNC = NA1 || NA2 || NEED_ASYNC;
 
@@ -349,61 +426,3 @@ export function finalizeBindingExpression(
 
     return { ast: lz.ast, NEED_ASYNC };
 }
-
-function Node_Is_Binding_Identifier(node: JSNode) {
-    return node.type == BindingIdentifierBinding || node.type == BindingIdentifierReference;
-}
-
-/**
- * Create new AST that has all undefined references converted to binding
- * lookups or static values.
- */
-function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci: CompiledComponentClass) {
-
-    if (frame.ast && !frame.IS_ROOT) {
-
-        ////Do not create empty functions
-        if (!Frame_Has_Statements(frame))
-            return;
-
-        const cpy: JSFunctionDeclaration | JSMethod = <any>copy(frame.ast);
-
-        const { NEED_ASYNC } = finalizeBindingExpression(cpy, component, ci);
-
-        cpy.ASYNC = NEED_ASYNC || frame.IS_ASYNC || cpy.ASYNC;
-
-        cpy.type = JST.Method;
-
-        if (frame.index != undefined)
-            //@ts-ignore
-            cpy.nodes[0].value = `f${frame.index}`;
-
-
-        ci.methods.push(cpy);
-    }
-}
-
-export function processMethods(component: ComponentData, class_info: CompiledComponentClass) {
-    // check for any onload frames. This will be converted to the async_init frame. Any
-    // statements defined in async_init will prepended to the frames statements. Create
-    // a new frame if onload is not present
-    const onload_frame: FunctionFrame = component.frames.filter(s => s.method_name.toLowerCase() == "onload")[0],
-        { root_frame } = component;
-
-    if (onload_frame)
-        prependStmtToFrame(class_info.async_init_frame, ...onload_frame.ast.nodes[2].nodes);
-
-    const out_frames = [...class_info.method_frames, ...component.frames.filter(
-        f => (f != onload_frame) && (f != root_frame)
-    )];
-
-    if (root_frame.IS_ASYNC)
-        appendStmtToFrame(class_info.async_init_frame, ...getStatementsFromRootFrame(root_frame));
-    else
-        appendStmtToFrame(class_info.init_frame, ...getStatementsFromRootFrame(root_frame));
-
-    //Ensure there is an async init method
-    for (const function_block of out_frames)
-        makeComponentMethod(function_block, component, class_info);
-}
-

@@ -1,7 +1,9 @@
-import { JSExpressionClass, JSExpressionStatement, JSIdentifierBinding, JSIdentifierReference, JSNode, stmt } from "@candlelib/js";
+import { matchAll } from "@candlelib/css";
+import { exp, JSExpressionClass, JSExpressionStatement, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt } from "@candlelib/js";
 import { IndirectHook } from "source/typescript/types/hook.js";
-import { HTMLNodeType, STATIC_RESOLUTION_TYPE } from "../../../types/all.js";
+import { BINDING_VARIABLE_TYPE, DOMLiteral, HTMLNodeType, STATIC_RESOLUTION_TYPE } from "../../../types/all.js";
 import { getBindingStaticResolutionType, getComponentBinding, getStaticValueAstFromSourceAST } from "../../common/binding.js";
+import { css_selector_helpers } from "../../common/css.js";
 import { getExtendTypeVal } from "../../common/extended_types.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../../common/js_hook_types.js";
 import { registerHookHandler } from "./hook-handler.js";
@@ -12,7 +14,7 @@ import { registerHookHandler } from "./hook-handler.js";
 export const TextNodeHookType = getExtendTypeVal("text-node-hook", HTMLNodeType.HTMLText);
 registerHookHandler<IndirectHook<JSNode> | JSNode, null>({
 
-    name: "Text Node Binding",
+    name: "Text Node Binding Hook",
 
     types: [TextNodeHookType],
 
@@ -33,6 +35,30 @@ registerHookHandler<IndirectHook<JSNode> | JSNode, null>({
 });
 
 
+/**
+ * Hook Type for Binding Node data properties
+ */
+export const CSSSelectorHook = getExtendTypeVal("css-selector-hook", JSNodeType.StringLiteral);
+
+registerHookHandler<JSStringLiteral, JSStringLiteral>({
+
+    name: "CSS Selector Reference",
+
+    types: [CSSSelectorHook],
+
+    verify: () => true,
+
+    buildJS: (node, comp, presets, element_index, addOnBindingUpdate) => {
+        //Replace the value with a 
+        const exp = convertAtLookupToElementRef(node, comp);
+
+        if (exp) {
+            return exp;
+        }
+    },
+
+    buildHTML: (node, comp, presets, model) => null
+});
 
 
 /**
@@ -63,6 +89,8 @@ registerHookHandler<JSIdentifierBinding | JSIdentifierReference, JSExpressionCla
             getBindingStaticResolutionType(binding_var, comp, presets)
             ==
             STATIC_RESOLUTION_TYPE.CONSTANT_STATIC
+            &&
+            binding_var.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
         ) {
 
             const val = await getStaticValueAstFromSourceAST(node, comp, presets, null, null, true);
@@ -74,3 +102,47 @@ registerHookHandler<JSIdentifierBinding | JSIdentifierReference, JSExpressionCla
     buildHTML: () => null
 });
 
+
+export function convertAtLookupToElementRef(string_node: JSStringLiteral, component: ComponentData) {
+
+    const css_selector = string_node.value.slice(1); //remove "@"
+
+    let html_nodes = null, expression = null;
+
+    switch (css_selector.toLowerCase()) {
+        case "ctxwebgpu":
+            html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
+
+            if (html_nodes)
+                expression = exp(`$$ele${html_nodes.element_index}.getContext("gpupresent")`);
+
+            break;
+        case "ctx3d":
+            html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
+
+            if (html_nodes)
+                expression = exp(`$$ele${html_nodes.element_index}.getContext("3d")`);
+
+            break;
+
+        case "ctx2d":
+            html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
+
+            if (html_nodes)
+                expression = exp(`$$ele${html_nodes.element_index}.getContext("2d")`);
+
+            break;
+
+        default:
+            html_nodes = matchAll<DOMLiteral>(css_selector, component.HTML, css_selector_helpers);
+
+            if (html_nodes.length > 0)
+
+                expression = (html_nodes.length == 1)
+                    ? exp(`$$ele${html_nodes[0].element_index}; `)
+                    : exp(`[${html_nodes.map(e => `$$ele${e.element_index}]`).join(",")}]`);
+
+    }
+
+    return expression;
+}

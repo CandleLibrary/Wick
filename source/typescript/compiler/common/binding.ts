@@ -309,8 +309,7 @@ export function getCompiledBindingVariableName(
                 return `window.${binding.external_name}`;
 
             default:
-                console.log(binding);
-                return `this[${comp_info.binding_records.get(binding.internal_name).index}]`;
+                return `this[${comp_info.binding_records.get(binding.internal_name)?.index ?? -1}]`;
         }
     else
         return name;

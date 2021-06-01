@@ -2,7 +2,7 @@ import { rt } from "../../runtime/global.js";
 import { ComponentData, ContainerDomLiteral, DOMLiteral, htmlState, IndirectHook, PresetOptions, TemplateHTMLNode, TemplatePackage } from "../../types/all.js";
 import { getStaticValue } from "../common/binding.js";
 import { processHookForHTML } from "./hooks.js";
-import { ContainerDataHook, ContainerFilterHook, ContainerLimitHook, ContainerOffsetHook, ContainerShiftHook, ContainerSortHook } from "./hooks/container.js";
+import { ContainerDataHook, ContainerFilterHook, ContainerLimitHook, ContainerOffsetHook, ContainerScrubHook, ContainerShiftHook, ContainerSortHook } from "./hooks/container.js";
 
 /**
  * Compile component HTML information (including child component and slot information), into a string containing the components html
@@ -482,6 +482,7 @@ async function processHooks(
                 h.type != ContainerSortHook &&
                 h.type != ContainerLimitHook &&
                 h.type != ContainerOffsetHook &&
+                h.type != ContainerScrubHook &&
                 h.type != ContainerShiftHook
             )
         )
@@ -491,8 +492,9 @@ async function processHooks(
 
         if (html) {
             if (html.attributes)
-                for (const [k, v] of html.attributes.entries())
-                    node.attributes.set(k, v);
+                for (const [k, v] of html.attributes)
+                    if (v !== undefined)
+                        node.attributes.set(k, v);
 
             if (html.children)
                 node.children.push(...html.children);

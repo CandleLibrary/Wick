@@ -1,9 +1,9 @@
 import { bidirectionalTraverse, copy, traverse, TraverseState } from "@candlelib/conflagrate";
 import { matchAll } from "@candlelib/css";
-import { exp, JSExpressionStatement, JSNode, JSNodeType, JSStringLiteral, renderCompressed, stmt } from "@candlelib/js";
+import { exp, JSExpressionStatement, JSNode, JSNodeType, JSStringLiteral, stmt } from "@candlelib/js";
 import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, DOMLiteral, HookTemplatePackage, IndirectHook, Node, PresetOptions, STATIC_RESOLUTION_TYPE } from "../../types/all.js";
 import { ExtendedType } from "../../types/hook";
-import { Binding_Variable_Has_Static_Default_Value, getBindingStaticResolutionType, getCompiledBindingVariableName, getComponentBinding, getExpressionStaticResolutionType, getStaticValueAstFromSourceAST, Name_Is_A_Binding_Variable } from "../common/binding.js";
+import { getBindingStaticResolutionType, getComponentBinding, getExpressionStaticResolutionType, getStaticValueAstFromSourceAST, Name_Is_A_Binding_Variable } from "../common/binding.js";
 import { css_selector_helpers } from "../common/css.js";
 import { appendStmtToFrame, createBuildFrame, Frame_Has_Statements, getStatementsFromFrame, prependStmtToFrame } from "../common/frame.js";
 import { ErrorHash } from "../common/hash_name.js";
@@ -11,50 +11,6 @@ import { Expression_Contains_Await, getPropertyAST } from "../common/js.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
 import { Binding_Var_Is_Directly_Accessed } from "./build.js";
 import { getHookHandlers } from "./hooks/hook-handler.js";
-
-export function convertAtLookupToElementRef(string_node: JSStringLiteral, component: ComponentData) {
-
-    const css_selector = string_node.value.slice(1); //remove "@"
-
-    let html_nodes = null, expression = null;
-
-    switch (css_selector.toLowerCase()) {
-        case "ctxWebGPU":
-            html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
-
-            if (html_nodes)
-                expression = exp(`this.elu[${html_nodes.element_index}].getContext("gpupresent")`);
-
-            break;
-        case "ctx3d":
-            html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
-
-            if (html_nodes)
-                expression = exp(`this.elu[${html_nodes.element_index}].getContext("3d")`);
-
-            break;
-
-        case "ctx2d":
-            html_nodes = matchAll<DOMLiteral>("canvas", component.HTML, css_selector_helpers)[0];
-
-            if (html_nodes)
-                expression = exp(`this.elu[${html_nodes.element_index}].getContext("2d")`);
-
-            break;
-
-        default:
-            html_nodes = matchAll<DOMLiteral>(css_selector, component.HTML, css_selector_helpers);
-
-            if (html_nodes.length > 0)
-
-                expression = (html_nodes.length == 1)
-                    ? exp(`this.elu[${html_nodes[0].element_index}]; `)
-                    : exp(`[${html_nodes.map(e => `this.elu[${e.element_index}]`).join(",")}]`);
-
-    }
-
-    return expression;
-}
 
 
 export function addIndirectHook(comp: ComponentData, type: ExtendedType, ast: Node, ele_index: number, ALLOW_STATIC_REPLACE: boolean = false) {
@@ -181,8 +137,6 @@ export async function processHookForClass(
      */
     function addDestroyAST(ast: JSNode) { pending_destroy_asts.push(ast); }
 
-
-
     //@ts-ignore
     for (const { node, meta } of bidirectionalTraverse(copy(ast), "nodes")
         .makeMutable()
@@ -213,6 +167,18 @@ export async function processHookForClass(
             }
     }
 
+    for (const ast of pending_init_asts) {
+        const
+            component_variables = collectBindingReferences(ast, component);
+
+        // Create BendingDepend AST Node, set the index and add to list of binding depends
+        // Update pending binding records 
+        appendStmtToFrame(class_info.async_init_frame, ast);
+
+        for (const name of component_variables)
+            await addBindingRecord(class_info, name, component);
+    }
+
     for (const ast of pending_write_asts) {
 
         if (ALLOW_STATIC_REPLACE) {
@@ -237,6 +203,8 @@ export async function processHookForClass(
             const binding = component.root_frame.binding_variables.get(name);
 
             if (
+                binding.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
+                &&
                 (
                     getBindingStaticResolutionType(binding, component, presets)
                     &
@@ -264,7 +232,7 @@ export async function processHookForClass(
         class_info.write_records.push({ ast, component_variables, HAS_ASYNC, NO_LOCAL_BINDINGS });
 
         for (const name of component_variables)
-            addBindingRecord(class_info, name, component);
+            await addBindingRecord(class_info, name, component);
     }
 
     return extract.ast;
@@ -348,8 +316,6 @@ function processBindingRecords(comp_info: CompiledComponentClass, comp: Componen
 
         processBindingVariables(binding, comp_info, comp, index);
 
-        //addBindingInitialization(binding, comp_info, comp, index);
-
         //create an update function for the binding variable 
         const frame = createBuildFrame("u" + index, "f,c");
 
@@ -393,44 +359,32 @@ function processBindingVariables(
     class_info.lfu_table_entries[index] = (nluf_array_entry);
 }
 
-function addBindingInitialization(
-    { default_val }: BindingVariable,
-    class_info: CompiledComponentClass,
-    component: ComponentData,
-    index: number
-) {
-    if (default_val) {
 
-        const expr = <JSExpressionStatement>stmt(`this.ua(${index})`);
+export async function addBindingRecord(class_info: CompiledComponentClass, name: string, component: ComponentData) {
 
-        if (default_val.type == JSNodeType.StringLiteral && default_val.value[0] == "@") {
-            const val = convertAtLookupToElementRef(default_val, component);
-            expr.nodes[0].nodes[1].nodes.push(<any>(val || default_val));
-        } else
-            expr.nodes[0].nodes[1].nodes.push(<any>default_val);
-
-        prependStmtToFrame(class_info.init_frame, expr);
-
-        for (const binding_name of collectBindingReferences(expr, component))
-            addBindingRecord(class_info, binding_name, component);
-    }
-}
-
-
-
-function addBindingRecord(class_info: CompiledComponentClass, name: string, component: ComponentData) {
     if (!class_info.binding_records.has(name)) {
 
         const binding = component.root_frame.binding_variables.get(name);
 
         const index = class_info.binding_records.size;
 
-        class_info.binding_records.set(
-            name,
-            { index, nodes: [] }
-        );
+        const { default_val } = binding;
 
-        addBindingInitialization(binding, class_info, component, index);
+        class_info.binding_records.set(name, { index, nodes: [] });
+
+        if (default_val) {
+
+            const
+                expr = <JSExpressionStatement>stmt(`this.ua(${index})`),
+                ast = await processHookForClass(default_val, component, {}, class_info, -1, false);
+
+            expr.nodes[0].nodes[1].nodes.push(<any>ast);
+
+            prependStmtToFrame(class_info.init_frame, expr);
+
+            for (const binding_name of collectBindingReferences(expr, component))
+                await addBindingRecord(class_info, binding_name, component);
+        }
     }
 }
 

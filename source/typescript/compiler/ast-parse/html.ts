@@ -1,5 +1,5 @@
 import { traverse } from "@candlelib/conflagrate";
-import { JSNode, JSNodeType, stmt } from "@candlelib/js";
+import { exp, JSNode, JSNodeType, stmt } from "@candlelib/js";
 import URL from "@candlelib/url";
 import { BINDING_VARIABLE_TYPE, ComponentData, HOOK_SELECTOR, HTMLHandler, PresetOptions } from "../../types/all.js";
 import {
@@ -10,6 +10,7 @@ import {
 } from "../../types/wick_ast.js";
 import * as HT from "../ast-build/hooks/hook-types.js";
 import * as CH from "../ast-build/hooks/container.js";
+import * as IN from "../ast-build/hooks/input.js";
 import { addIndirectHook } from "../ast-build/hooks.js";
 import { addBindingReference, addBindingVariable, addHook } from "../common/binding.js";
 import { importResource } from "../common/common.js";
@@ -315,48 +316,47 @@ loadHTMLHandlerInternal(
     }, HTMLNodeType.HTMLAttribute
 );
 
-/** ##############################################################################
- * INPUT ATTRIBUTES
+/** ###########################################################
+ *  Input Text Value Attribute
  */
 loadHTMLHandlerInternal(
     {
-        priority: -2,
+        priority: -10,
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
-            if (
-                (node.name == "value" || node.name == "checked")
-                &&
-                <HTMLNode><unknown>node.IS_BINDING
-                &&
-                host_node.type == HTMLNodeType.HTML_INPUT
-            ) {
-                const l = component.hooks.length;
-                await processBindingNode(node, component, presets, index);
-                component.hooks.length = l;
 
-                addHook(component, {
-                    selector: getInputAttributeHookType(node.name),
-                    //@ts-ignore
-                    hook_value: node.value,
-                    host_node: node,
-                    html_element_index: index
-                });
+            if (node.name == "value" && host_node.tag == "INPUT") {
 
-                return null;
+                if (host_node.attributes.some(val => val.value == "text")) {
+
+
+                    // Process the primary expression for Binding Refs and static
+                    // data
+                    const ast = processBindingAST(node.value, component, presets);
+
+                    // Create an indirect hook for container data attribute
+
+                    addIndirectHook(component, IN.TextInputValueHook, ast, index);
+
+                    // Remove the attribute from the container element
+
+                    return null;
+                }
             }
+
         }
     }, HTMLNodeType.HTMLAttribute
 );
 
-function processBindingAST(node: WickBindingNode, component: ComponentData, presets: PresetOptions) {
-    return processNodeSync(node.primary_ast, component.root_frame, component, presets);
-}
+function processBindingAST(node: any | WickBindingNode, component: ComponentData, presets: PresetOptions) {
+    let ast = null;
 
-function getInputAttributeHookType(type: string) {
-    return ({
-        "value": HOOK_SELECTOR.INPUT_VALUE,
-        "checked": HOOK_SELECTOR.CHECKED_VALUE,
-    }[type.toLowerCase()]) ?? HOOK_SELECTOR.INPUT_VALUE;
+    if (typeof node !== "object") {
+        ast = exp(node + "");
+    } else
+        ast = node.primary_ast;
+
+    return processNodeSync(ast, component.root_frame, component, presets);
 }
 
 /** ##############################################################################

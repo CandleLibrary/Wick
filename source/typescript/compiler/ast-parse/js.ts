@@ -31,6 +31,7 @@ import {
 } from "./parse.js";
 
 import { getExtendTypeVal } from "../common/extended_types.js";
+import { CSSSelectorHook } from "../ast-build/hooks/hook-types.js";
 
 export function findFirstNodeOfType(type: JSNodeType, ast: JSNode) {
 
@@ -540,15 +541,10 @@ loadJSParseHandlerInternal(
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
             if ((<JSStringLiteral>node).value[0] == "@") {
-
-                addHook(component, {
-                    selector: HOOK_SELECTOR.ELEMENT_SELECTOR_STRING,
-                    hook_value: node,
-                    host_node: parent_node,
-                    html_element_index: 0,
-                    pos: node.pos
+                
+                return Object.assign({}, node, {
+                    type: CSSSelectorHook
                 });
-
             }
 
             return <JSNode>node;

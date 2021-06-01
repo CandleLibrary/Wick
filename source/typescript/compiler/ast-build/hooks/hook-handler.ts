@@ -23,6 +23,9 @@ export function registerHookHandler<InputNodeType, OutputNodeType>(hook_handler_
     if (typeof hook_handler_obj.buildHTML != "function")
         throw new Error("Missing buildHTML function");
 
+    if (registered_hook_handlers.has(hook_handler_obj.name))
+        throw new Error(`A hook handler named ${hook_handler_obj.name} has already be registered`);
+
     registered_hook_handlers.set(hook_handler_obj.name, hook_handler_obj);
 }
 /*
