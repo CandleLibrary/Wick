@@ -30,8 +30,10 @@ export function getRootFrame(frame: FunctionFrame) {
  */
 export function addBindingReference(input_node: JSNode, input_parent: JSNode, frame: FunctionFrame) {
 
-    for (const { node, meta: { parent: par } } of traverse(input_node, "nodes")
-        .filter("type", JSNodeType.IdentifierReference, JSNodeType.IdentifierBinding)
+    for (const { node } of traverse(input_node, "nodes")
+        .filter("type", 
+            JSNodeType.IdentifierReference, JSNodeType.IdentifierBinding
+        )
     ) {
 
         // name is already declared within the function scope then
@@ -62,7 +64,9 @@ export function getBindingRefCount(frame: FunctionFrame): Map<string, number> {
 
     const name_map = new Map();
 
-    for (const { value } of frame.binding_ref_identifiers.filter(n => n.IS_BINDING_REF))
+    for (const { value } of frame.binding_ref_identifiers.filter(
+        n => n.type == BindingIdentifierBinding || n.type == BindingIdentifierReference)
+    )
         name_map.set(value, (name_map.get(value) || 0) + 1);
 
     return name_map;
@@ -70,8 +74,7 @@ export function getBindingRefCount(frame: FunctionFrame): Map<string, number> {
 export function removeBindingReferences(name: string, frame: FunctionFrame) {
     for (const node of frame.binding_ref_identifiers)
         if (node.value == name)
-            node.type = getOriginalTypeOfExtendedType(no);
-    node.IS_BINDING_REF = false;
+            node.type = getOriginalTypeOfExtendedType(node);
 }
 /**
  *  Returns true if var_name has been declared within the frame closure
