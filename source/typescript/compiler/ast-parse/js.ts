@@ -32,6 +32,7 @@ import {
 
 import { getExtendTypeVal } from "../common/extended_types.js";
 import { CSSSelectorHook } from "../ast-build/hooks/hook-types.js";
+import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
 
 export function findFirstNodeOfType(type: JSNodeType, ast: JSNode) {
 
@@ -487,24 +488,25 @@ loadJSParseHandlerInternal(
 
             const name = (<JSIdentifierReference>node).value;
 
+            if (node.type !== BindingIdentifierReference) {
+                if (
+                    !Variable_Is_Declared_In_Closure(name, frame)
+                    &&
+                    Name_Is_A_Binding_Variable(name, frame)
 
-            if (
-                !Variable_Is_Declared_In_Closure(name, frame)
-                &&
-                Name_Is_A_Binding_Variable(name, frame)
-            ) {
+                ) {
 
-                addBindingReference(
-                    <JSNode>node, <JSNode>parent_node, frame
-                );
+                    addBindingReference(
+                        <JSNode>node, <JSNode>parent_node, frame
+                    );
 
-                addReadFlagToBindingVariable(name, frame);
-            } else
+                    addReadFlagToBindingVariable(name, frame);
+                } else
 
-                addBindingReference(
-                    <JSNode>node, <JSNode>parent_node, frame
-                );
-
+                    addBindingReference(
+                        <JSNode>node, <JSNode>parent_node, frame
+                    );
+            }
             return <JSNode>node;
         }
     }, JSNodeType.IdentifierReference
@@ -519,10 +521,11 @@ loadJSParseHandlerInternal(
 
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
-            const name = tools.getIdentifierName(<JSIdentifierBinding>node);
-
-            if (!Variable_Is_Declared_Locally(name, frame))
-                addNameToDeclaredVariables(name, frame);
+            if (node.type !== BindingIdentifierBinding) {
+                const name = tools.getIdentifierName(<JSIdentifierBinding>node);
+                if (!Variable_Is_Declared_Locally(name, frame))
+                    addNameToDeclaredVariables(name, frame);
+            }
 
             return <JSNode>node;
         }
@@ -541,7 +544,7 @@ loadJSParseHandlerInternal(
         prepareJSNode(node, parent_node, skip, component, presets, frame) {
 
             if ((<JSStringLiteral>node).value[0] == "@") {
-                
+
                 return Object.assign({}, node, {
                     type: CSSSelectorHook
                 });
