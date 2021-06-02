@@ -135,7 +135,7 @@ loadHTMLHandlerInternal(
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
-            if (node.name == "data" && host_node.tag == "CONTAINER") {
+            if (node.name == "data" && host_node.IS_CONTAINER) {
 
                 // Process the primary expression for Binding Refs and static
                 // data
@@ -162,7 +162,7 @@ loadHTMLHandlerInternal(
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
-            if (node.name == "filter" && host_node.tag == "CONTAINER") {
+            if (node.name == "filter" && host_node.IS_CONTAINER) {
 
                 // Process the primary expression for Binding Refs and static
                 // data
@@ -190,7 +190,7 @@ loadHTMLHandlerInternal(
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
-            if (node.name == "scrub" && host_node.tag == "CONTAINER") {
+            if (node.name == "scrub" && host_node.IS_CONTAINER) {
 
                 // Process the primary expression for Binding Refs and static
                 // data
@@ -217,7 +217,7 @@ loadHTMLHandlerInternal(
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
-            if (node.name == "sort" && host_node.tag == "CONTAINER") {
+            if (node.name == "sort" && host_node.IS_CONTAINER) {
 
                 // Process the primary expression for Binding Refs and static
                 // data
@@ -244,7 +244,7 @@ loadHTMLHandlerInternal(
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
-            if (node.name == "limit" && host_node.tag == "CONTAINER") {
+            if (node.name == "limit" && host_node.IS_CONTAINER) {
 
                 // Process the primary expression for Binding Refs and static
                 // data
@@ -271,7 +271,7 @@ loadHTMLHandlerInternal(
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
-            if (node.name == "offset" && host_node.tag == "CONTAINER") {
+            if (node.name == "offset" && host_node.IS_CONTAINER) {
 
                 // Process the primary expression for Binding Refs and static
                 // data
@@ -298,7 +298,7 @@ loadHTMLHandlerInternal(
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
-            if (node.name == "shift" && host_node.tag == "CONTAINER") {
+            if (node.name == "shift" && host_node.IS_CONTAINER) {
 
                 // Process the primary expression for Binding Refs and static
                 // data

@@ -11,6 +11,7 @@
  */
 
 import spark from "@candlelib/spark";
+import HTML from "@candlelib/html";
 import { createCompiledComponentClass } from "../compiler/ast-build/build.js";
 import { componentDataToTempAST } from "../compiler/ast-build/html.js";
 import { componentDataToCSS } from "../compiler/ast-render/css.js";
@@ -58,6 +59,8 @@ export function init() {
      * it will send the event to the first button present 
      * within the component
      */
+
+    HTML.server();
     WickRTComponent.prototype.dispatchEvent = async function (selector_string: string, event_name: string = "", event_data: Object = undefined) {
 
         const ele = this.getFirstMatch(selector_string);
@@ -145,13 +148,20 @@ export function init() {
 
         const { html } = await componentDataToTempAST(this, presets);
 
-        console.log({ html });
 
         return html[0];
     };
 
     /**
-     * Returns the Templates template object 
+     * Returns a DOM tree of the component's HTML structure
+     */
+    ComponentDataClass.prototype.getRootElement = async function (presets = rt.presets): Promise<HTML> {
+
+        return HTML(await this.getHTMLString(presets));
+    };
+
+    /**
+     * Returns the template_map object 
      */
     ComponentDataClass.prototype.getHTMLTemplateMap = async function (presets = rt.presets) {
 

@@ -52,7 +52,7 @@ export async function componentDataToTempAST(
         if (namespace_id)
             node.namespace = namespace_id;
 
-        if (html.is_container == true)
+        if (html.IS_CONTAINER == true)
             await addContainer(
                 <ContainerDomLiteral>html,
                 comp,

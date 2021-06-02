@@ -101,13 +101,13 @@ export function buildExportableDOMNode(
         node.component_name = ast.component_name;
 
 
-    if (ast.is_container) {
+    if (ast.IS_CONTAINER) {
 
         const
             ctr = <ContainerDomLiteral>node,
             ctr_ast = <HTMLContainerNode>ast;
 
-        ctr.is_container = true;
+        ctr.IS_CONTAINER = true;
         ctr.component_names = ctr_ast.component_names;
         ctr.container_id = ctr_ast.container_id;
         ctr.component_attribs = ctr_ast.component_attributes;

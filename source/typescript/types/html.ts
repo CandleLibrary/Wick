@@ -94,7 +94,7 @@ export interface DOMLiteral {
     /**
      * True if the element belongs to a wick container
      */
-    is_container?: boolean;
+    IS_CONTAINER?: boolean;
 
     /**
      * Slot Name
@@ -131,5 +131,5 @@ export interface ContainerDomLiteral extends DOMLiteral {
 
     component_attribs: [string, string][][];
 
-    is_container: true;
+    IS_CONTAINER: true;
 }

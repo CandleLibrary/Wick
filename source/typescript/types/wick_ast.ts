@@ -200,8 +200,12 @@ export enum HTMLNodeTypeLU {
 export interface HTMLNode {
     comp?: string,
     import_list?: any[];
-
-    is_container?: boolean;
+    /**
+     * 
+     * True if the node originally had a container tag.
+     * (tag value may change during parsing) 
+     */
+    IS_CONTAINER?: boolean;
     /**
      * If node is a <container> node, gives the numerical
      * index order of the container.
@@ -281,7 +285,7 @@ export interface HTMLTextNode {
 
 export interface HTMLContainerNode extends HTMLNode {
 
-    is_container: true,
+    IS_CONTAINER: true,
     components: ComponentData[],
 
     component_names: string[],
