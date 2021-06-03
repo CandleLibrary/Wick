@@ -1,0 +1,5 @@
+import { data } from "@parent"
+
+export default <container element="ul" data=${data.data}>
+     <li>${ v }</li> 
+</container>

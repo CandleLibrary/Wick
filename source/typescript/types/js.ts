@@ -5,7 +5,7 @@ import { PresetOptions } from "./presets.js";
 import { HTMLNode } from "./wick_ast.js";
 
 
-export interface JSHandler {
+export interface JSHandler<T = JSNode> {
     priority: number;
     /**
      *
@@ -29,16 +29,17 @@ export interface JSHandler {
      * @return @type {HTMLNode} | @type {void} | @type {Promise}
      */
     prepareJSNode(
-        node: JSNode | HTMLNode,
+        node: T,
         parent_node: JSNode | HTMLNode,
         skip: (amount?: number) => void,
         component: ComponentData,
         presets: PresetOptions,
         frame: FunctionFrame
     ):
-        JSNode
+        T
+        | JSNode
         | void
-        | Promise<JSNode | void>;
+        | Promise<T | JSNode | void>;
 }
 
 

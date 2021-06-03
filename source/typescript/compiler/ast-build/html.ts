@@ -96,7 +96,7 @@ export async function componentDataToTempAST(
             await processElement(html, comp, presets, model, node, parent_component, tag_name, state, comp_data, template_map);
 
         } else if (IS_BINDING)
-            await addBindingElement(html, state, node, comp_data, comp, presets, model);
+            await addBindingElement(html, state, node, comp_data, comp, presets, model, parent_component);
         else
             processTextNode(node, data);
 
@@ -469,7 +469,6 @@ async function processHooks(
     parent_components: ComponentData[],
     template_map: TemplatePackage["templates"],
 ) {
-
     for (const hook of getHookFromElement(html, component)
         .filter(
             h => (
@@ -520,13 +519,15 @@ async function addBindingElement(
     comp_data: string[],
     comp: ComponentData,
     presets: PresetOptions,
-    model: any = null
+    model: any = null,
+    parent_component: ComponentData[]
 ) {
+
     //*
     const
         hook = getHookFromElement(html, comp)[0],
         val = hook
-            ? await getStaticValue(hook, comp, presets, model)
+            ? await getStaticValue(hook, comp, presets, model, parent_component)
             : null;
 
 

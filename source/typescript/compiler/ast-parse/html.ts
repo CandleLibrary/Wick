@@ -8,10 +8,11 @@ import {
     HTMLNodeType,
     WickBindingNode, WICK_AST_NODE_TYPE_BASE, WICK_AST_NODE_TYPE_SIZE
 } from "../../types/wick_ast.js";
-import * as HT from "../ast-build/hooks/hook-types.js";
-import * as CH from "../ast-build/hooks/container.js";
-import * as IN from "../ast-build/hooks/input.js";
 import { addIndirectHook } from "../ast-build/hooks.js";
+import * as CH from "../ast-build/hooks/container.js";
+import * as DF from "../ast-build/hooks/data-flow.js";
+import * as HT from "../ast-build/hooks/hook-types.js";
+import * as IN from "../ast-build/hooks/input.js";
 import { addBindingReference, addBindingVariable, addHook } from "../common/binding.js";
 import { importResource } from "../common/common.js";
 import { ComponentHash } from "../common/hash_name.js";
@@ -59,6 +60,18 @@ function addWickBindingVariableName(node: WickBindingNode, component) {
 
             addBindingReference(n, node.primary_ast, component.root_frame);
 }
+
+function processBindingAST(node: any | WickBindingNode, component: ComponentData, presets: PresetOptions) {
+    let ast = null;
+
+    if (typeof node !== "object") {
+        ast = exp(node + "");
+    } else
+        ast = node.primary_ast;
+
+    return processNodeSync(ast, component.root_frame, component, presets);
+}
+
 
 loadHTMLHandlerInternal({
 
@@ -348,19 +361,39 @@ loadHTMLHandlerInternal(
     }, HTMLNodeType.HTMLAttribute
 );
 
-function processBindingAST(node: any | WickBindingNode, component: ComponentData, presets: PresetOptions) {
-    let ast = null;
 
-    if (typeof node !== "object") {
-        ast = exp(node + "");
-    } else
-        ast = node.primary_ast;
 
-    return processNodeSync(ast, component.root_frame, component, presets);
-}
+/** ##########################################################
+ * ON* ATTRIBUTES
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: 10,
+
+        prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+
+            if (node.name.slice(0, 2) == "on") {
+
+                // Process the primary expression for Binding Refs and static
+                // data
+                const ast = processBindingAST(node.value, component, presets);
+
+                // Create an indirect hook for container data attribute
+
+                addIndirectHook(component, HT.OnEventHook, { action: node.name, nodes: [ast] }, index);
+
+                // Remove the attribute from the container element
+
+                return null;
+
+            }
+        }
+    }, HTMLNodeType.HTMLAttribute
+);
 
 /** ##############################################################################
  * SLOT ATTRIBUTES
+ * Adds slot property strings to host node for later evaluation during build phase
  */
 loadHTMLHandlerInternal(
     {
@@ -379,11 +412,9 @@ loadHTMLHandlerInternal(
     }, HTMLNodeType.HTMLAttribute
 );
 
-/**[API] ##########################################################
+/** ##########################################################
  * 
- * HTMLAttribute Handler
- * 
- * One of six default handlers that parses tag attributes. 
+ * Container Element component & element attributes
  */
 loadHTMLHandlerInternal(
     {
@@ -391,77 +422,139 @@ loadHTMLHandlerInternal(
 
         prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
-            if (node.name == "component") {
+            if (host_node.IS_CONTAINER) {
 
-                const component_name = <string>(<HTMLNode>node).value;
 
-                component.names.push(component_name);
+                if (node.name == "component") {
 
-                // No need to save this wick specific attribute, return [undefined]. 
-                return null;
-            }
+                    const component_name = <string>(<HTMLNode>node).value;
 
-            if (node.name == "element" || node.name == "ele") {
+                    component.names.push(component_name);
 
-                host_node.tag = node.value;
+                    // No need to save this wick specific attribute, return [undefined]. 
+                    return null;
+                }
+
+                if (node.name == "element" || node.name == "ele") {
+
+                    host_node.tag = node.value;
+
+                    return;
+                }
 
                 return;
             }
-
-            return;
         }
     }, HTMLNodeType.HTMLAttribute
+);
+
+
+/** ##########################################################
+ * 
+ * Export and Import attributes on component elements
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: 10,
+
+        prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+
+            if (node.name == "import" && node.value) {
+                const
+                    obj = node.value.split(",").map(v => v.split(":").map(s => s.trim())).map(v => ({ foreign: v[1] || v[0], local: v[0] }));
+
+                for (const { local, foreign } of obj)
+                    addIndirectHook(component, DF.ImportFromChildAttributeHook, { local, foreign }, index);
+
+                return null;
+
+            } else if (node.name == "export" && node.value) {
+
+                const
+                    obj = node.value.split(",").map(v => v.split(":").map(s => s.trim())).map(v => ({ foreign: v[1] || v[0], local: v[0] }));
+
+                for (const { local, foreign } of obj)
+                    addIndirectHook(component, DF.ExportToChildAttributeHook, { local, foreign, child_id: host_node.child_id }, index);
+
+                return null;
+            }
+        }
+    }, HTMLNodeType.HTMLAttribute
+);
+
+/** ##########################################################
+ *  Style Elements
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: -99999,
+
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+
+            if (index == -1)
+                await processWickCSS_AST(node, component, presets, host_node.id, node.pos.source);
+            else
+                await processWickCSS_AST(node, component, presets, host_node.id);
+
+
+            return null;
+        }
+    }, HTMLNodeType.HTML_STYLE
 );
 
 
 loadHTMLHandlerInternal(
     {
-        priority: -4,
+        priority: -99999,
 
-        prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
-
-            if (node.name == "import" && node.value) {
-
-                const
-                    obj = node.value.split(",").map(v => v.split(":").map(s => s.trim())).map(v => ({ extern: v[0], local: v[1] || v[0] }));
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
 
-                for (const { local, extern } of obj) {
-                    addHook(component, {
-                        selector: HOOK_SELECTOR.IMPORT_FROM_CHILD,
-                        hook_value: {
-                            local,
-                            extern,
-                        },
-                        host_node,
-                        html_element_index: index + 1
-                    });
-                }
-
-                return null;
-            } else if (node.name == "export" && node.value) {
+            if (component.local_component_names.has(node.tag)) {
 
                 const
-                    obj = node.value.split(",").map(v => v.split(":").map(s => s.trim())).map(v => ({ local: v[0], extern: v[1] || v[0] }));
+                    name = component.local_component_names.get(node.tag),
+                    comp = presets.components.get(name);
 
+                node.child_id = component.children.push(1) - 1;
 
-                for (const { local, extern } of obj) {
-                    addHook(component, {
-                        selector: HOOK_SELECTOR.EXPORT_TO_CHILD,
-                        hook_value: {
-                            local,
-                            extern,
-                        },
-                        host_node,
-                        html_element_index: index + 1
+                node.component = comp;
+
+                if (comp) {
+
+                    node.component_name = node.component.name;
+
+                    //@ts-ignore
+                    node.attributes.push({
+                        type: HTMLNodeType.HTMLAttribute,
+                        name: "expat",
+                        value: ComponentHash(index + comp.name + name)
                     });
-                }
 
-                return null;
+                }
+                node.tag = "div";
+
+                return node;
             }
         }
-    }, HTMLNodeType.HTMLAttribute
+
+    }, HTMLNodeType.HTML_Element
 );
+
+//#############################################################
+//#############################################################
+//#############################################################
+//#############################################################
+//#############################################################
+//#############################################################
+//                          OLD
+//#############################################################
+//#############################################################
+//#############################################################
+//#############################################################
+//#############################################################
+//#############################################################
+
 
 /**
  * Container Attributes
@@ -510,9 +603,9 @@ loadHTMLHandlerInternal(
                     //Turn children into components if they are not already so.   
                     let ch = null;
 
-                    const ctr: HTMLContainerNode = <HTMLContainerNode>Object.assign({
+                    const ctr: HTMLContainerNode = Object.assign(<HTMLContainerNode>{
 
-                        is_container: true,
+                        IS_CONTAINER: true,
 
                         container_id: component.container_count,
 
@@ -601,7 +694,7 @@ loadHTMLHandlerInternal(
 
     }, HTMLNodeType.HTML_Element
 );
-
+/*
 loadHTMLHandlerInternal(
     {
         priority: -99999,
@@ -614,23 +707,7 @@ loadHTMLHandlerInternal(
         }
     }, HTMLNodeType.HTML_SVG
 );
-
-loadHTMLHandlerInternal(
-    {
-        priority: -99999,
-
-        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
-
-            if (index == -1)
-                await processWickCSS_AST(node, component, presets, host_node.id, node.pos.source);
-            else
-                await processWickCSS_AST(node, component, presets, host_node.id);
-
-
-            return null;
-        }
-    }, HTMLNodeType.HTML_STYLE
-);
+*/
 
 loadHTMLHandlerInternal(
     {

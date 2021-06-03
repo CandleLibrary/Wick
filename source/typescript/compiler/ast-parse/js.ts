@@ -1,5 +1,5 @@
 import { traverse } from "@candlelib/conflagrate";
-import { JSIdentifier, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt, tools } from "@candlelib/js";
+import { JSIdentifier, JSArrowFunction, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt, tools, JSExpressionStatement, JSCallExpression, ext, JSExportDeclaration, JSExportClause } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
 import {
     BINDING_FLAG, BINDING_VARIABLE_TYPE, HOOK_SELECTOR, HTMLNode,
@@ -33,6 +33,8 @@ import {
 import { getExtendTypeVal } from "../common/extended_types.js";
 import { CSSSelectorHook } from "../ast-build/hooks/hook-types.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
+import { ExportToParentHook } from "../ast-build/hooks/data-flow.js";
+import { addIndirectHook } from "../ast-build/hooks.js";
 
 export function findFirstNodeOfType(type: JSNodeType, ast: JSNode) {
 
@@ -50,7 +52,7 @@ const default_handler = {
 export const JS_handlers: Array<JSHandler[]> = Array(512 - WICK_AST_NODE_TYPE_SIZE).fill(null).map(() => [default_handler]);
 
 
-function loadJSParseHandlerInternal(handler: JSHandler, ...types: JSNodeType[]) {
+function loadJSParseHandlerInternal<T = JSNode>(handler: JSHandler<T>, ...types: JSNodeType[]) {
 
     for (const type of types) {
 
@@ -75,7 +77,7 @@ export function loadJSParseHandler(handler: JSHandler, ...types: JSNodeType[]) {
 /* ###################################################################
  * ARROW EXPRESSION
  */
-loadJSParseHandlerInternal(
+loadJSParseHandlerInternal<JSArrowFunction>(
     {
         priority: 1,
 
@@ -197,7 +199,7 @@ loadJSParseHandlerInternal(
 + Post(++|--) and (++|--)Pre increment expressions
 */
 // Naked Style Element. Styles whole component.
-loadJSParseHandlerInternal(
+loadJSParseHandlerInternal<JSExpressionStatement>(
     {
         priority: 1,
 
@@ -212,7 +214,7 @@ loadJSParseHandlerInternal(
                     if (id.type == JSNodeType.IdentifierReference
                         && id.value == "watch") {
 
-                        node.type = <JSNodeType>getExtendTypeVal("watch-call");
+                        expr.type = getExtendTypeVal("watch-call", JSNodeType.CallExpression);
 
                         addHook(component, {
                             selector: HOOK_SELECTOR.WATCHED_FRAME_METHOD_CALL,
@@ -257,7 +259,7 @@ loadJSParseHandlerInternal(
 // be consumed by the components parent element. This creates a one
 // way non-bubbling binding to the parent's scope. The parent scope
 // must bind to the child's name through the bind attribute. 
-loadJSParseHandlerInternal(
+loadJSParseHandlerInternal<JSExportDeclaration>(
     {
         priority: 1,
 
@@ -266,24 +268,34 @@ loadJSParseHandlerInternal(
             const [export_obj] = node.nodes;
 
             if (export_obj.type & HTMLNodeClass.HTML_NODE) {
-                // Don't need this node, it will be assigned to the components
+                // Don't need this node, it will be assigned to the component's
+                // html slot.
+                await processWickHTML_AST(<HTMLNode><any>export_obj, component, presets);
 
-                // Element slot.
-                await processWickHTML_AST(<HTMLNode>export_obj, component, presets);
+                return null;
 
-            } else {
-
-                const [clause] = node.nodes;
+            } else if (export_obj.type == JSNodeType.ExportClause) {
 
                 //Regular export that will be pushed to parent scope space. 
 
-                for (const node of clause.nodes) {
-                    const l_name = tools.getIdentifierName(node);
-                    addBindingVariableFlag(l_name, BINDING_FLAG.ALLOW_EXPORT_TO_PARENT, frame);
+                for (const { nodes: [internal_ref, external_ref] } of export_obj.nodes) {
+
+                    const
+                        internal_name = internal_ref.value,
+                        external_name = external_ref?.value ?? internal_name;
+
+                    addBindingVariable(
+                        component.root_frame,
+                        internal_name,
+                        internal_ref.pos,
+                        BINDING_VARIABLE_TYPE.UNDECLARED,
+                        external_name,
+                        BINDING_FLAG.ALLOW_EXPORT_TO_PARENT
+                    );
                 }
 
-            }
-
+                addIndirectHook(component, ExportToParentHook, export_obj);
+            } //Discard any other type of export as they have no meaning in Wick
             return null;
         }
     }, JSNodeType.ExportDeclaration

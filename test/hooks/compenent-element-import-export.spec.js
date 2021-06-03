@@ -11,10 +11,13 @@ wick_server.utils.enableTest();
 assert_group("Server - Element Export Statement", () => {
 
     const comp = (await wick_server(`
+    import child_component from "./test/hooks/data/import-export-component.wick";
 
-    let count = 0;
+    let my_data = [3,4,5];
     
-    export default  <div export="count:count"></div>
+    export default  <child_component export="my_data:data"></child_component>;
+
+    export {my_data as data}
      `));
 
     assert(i, comp.class_string == "");

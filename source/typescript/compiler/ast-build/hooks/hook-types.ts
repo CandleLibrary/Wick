@@ -1,7 +1,7 @@
 import { matchAll } from "@candlelib/css";
 import { exp, JSExpressionClass, JSExpressionStatement, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt } from "@candlelib/js";
 import { IndirectHook } from "source/typescript/types/hook.js";
-import { BINDING_VARIABLE_TYPE, DOMLiteral, HTMLNodeType, STATIC_RESOLUTION_TYPE } from "../../../types/all.js";
+import { BINDING_VARIABLE_TYPE, ComponentData, DOMLiteral, HTMLNodeType, STATIC_RESOLUTION_TYPE } from "../../../types/all.js";
 import { getBindingStaticResolutionType, getComponentBinding, getStaticValueAstFromSourceAST } from "../../common/binding.js";
 import { css_selector_helpers } from "../../common/css.js";
 import { getExtendTypeVal } from "../../common/extended_types.js";
@@ -36,7 +36,7 @@ registerHookHandler<IndirectHook<JSNode> | JSNode, null>({
 
 
 /**
- * Hook Type for Binding Node data properties
+ * Hook for CSS selector string conversion to element references
  */
 export const CSSSelectorHook = getExtendTypeVal("css-selector-hook", JSNodeType.StringLiteral);
 
@@ -60,6 +60,40 @@ registerHookHandler<JSStringLiteral, JSStringLiteral>({
     buildHTML: (node, comp, presets, model) => null
 });
 
+
+/**
+ * Handles element on* event attributes. Creates an event listener for the event.
+ * Attaches the expression as the body for an arrow function. Applies the arrow
+ * function as the callable argument to event listener function.
+ */
+export const OnEventHook = getExtendTypeVal("on-event-hook", JSNodeType.StringLiteral);
+
+registerHookHandler<IndirectHook<{ nodes: [JSNode], action: string; }>, void>({
+
+    name: "On Event Hook",
+
+    types: [OnEventHook],
+
+    verify: () => true,
+
+    buildJS: (node, comp, presets, element_index, _1, addInit) => {
+        // Replace the value with a 
+        // Get the on* attribute name
+        const { action, nodes: [ast] } = node.nodes[0];
+        const
+            ele_name = "$$ele" + element_index;
+
+        const s = stmt(`${ele_name}.addEventListener("${action.slice(2)}", v=>a)`);
+
+        s.nodes[0].nodes[1].nodes[1].nodes[1] = ast;
+
+        addInit(s);
+
+        console.log({ action, ast });
+    },
+
+    buildHTML: (node, comp, presets, model) => null
+});
 
 /**
  *  
@@ -101,7 +135,6 @@ registerHookHandler<JSIdentifierBinding | JSIdentifierReference, JSExpressionCla
 
     buildHTML: () => null
 });
-
 
 export function convertAtLookupToElementRef(string_node: JSStringLiteral, component: ComponentData) {
 

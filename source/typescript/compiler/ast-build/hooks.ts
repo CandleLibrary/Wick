@@ -1,10 +1,8 @@
 import { bidirectionalTraverse, copy, traverse, TraverseState } from "@candlelib/conflagrate";
-import { matchAll } from "@candlelib/css";
-import { exp, JSExpressionStatement, JSNode, JSNodeType, JSStringLiteral, stmt } from "@candlelib/js";
-import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, DOMLiteral, HookTemplatePackage, IndirectHook, Node, PresetOptions, STATIC_RESOLUTION_TYPE } from "../../types/all.js";
+import { exp, JSExpressionStatement, JSNode, stmt } from "@candlelib/js";
+import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, HookTemplatePackage, IndirectHook, Node, PresetOptions, STATIC_RESOLUTION_TYPE } from "../../types/all.js";
 import { ExtendedType } from "../../types/hook";
-import { getBindingStaticResolutionType, getComponentBinding, getExpressionStaticResolutionType, getStaticValueAstFromSourceAST, Name_Is_A_Binding_Variable } from "../common/binding.js";
-import { css_selector_helpers } from "../common/css.js";
+import { getBindingStaticResolutionType, getComponentBinding, getExpressionStaticResolutionType, getExternalName, getStaticValueAstFromSourceAST, Name_Is_A_Binding_Variable } from "../common/binding.js";
 import { appendStmtToFrame, createBuildFrame, Frame_Has_Statements, getStatementsFromFrame, prependStmtToFrame } from "../common/frame.js";
 import { ErrorHash } from "../common/hash_name.js";
 import { Expression_Contains_Await, getPropertyAST } from "../common/js.js";
@@ -13,8 +11,8 @@ import { Binding_Var_Is_Directly_Accessed } from "./build.js";
 import { getHookHandlers } from "./hooks/hook-handler.js";
 
 
-export function addIndirectHook(comp: ComponentData, type: ExtendedType, ast: Node, ele_index: number, ALLOW_STATIC_REPLACE: boolean = false) {
-    comp.indirect_hooks.push({ type, nodes: [ast], ele_index, ALLOW_STATIC_REPLACE });
+export function addIndirectHook<T>(comp: ComponentData, type: ExtendedType, ast: T, ele_index: number = -1, ALLOW_STATIC_REPLACE: boolean = false) {
+    comp.indirect_hooks.push(<IndirectHook<T>>{ type, nodes: [ast], ele_index, ALLOW_STATIC_REPLACE });
 }
 
 /**
@@ -172,9 +170,14 @@ export async function processHookForClass(
             component_variables = collectBindingReferences(ast, component);
 
         // Create BendingDepend AST Node, set the index and add to list of binding depends
-        // Update pending binding records 
-        appendStmtToFrame(class_info.async_init_frame, ast);
 
+        // If the AST is a simple binding identifier, then don't bother adding to the frame,
+        // the purpose of such ASTs is to register the appropriate binding identify for use
+        // within the component class.
+        if ((ast.type != BindingIdentifierBinding && ast.type != BindingIdentifierReference))
+            appendStmtToFrame(class_info.async_init_frame, ast);
+
+        // Update pending binding records 
         for (const name of component_variables)
             await addBindingRecord(class_info, name, component);
     }
@@ -228,8 +231,8 @@ export async function processHookForClass(
 
         // Create BendingDepend AST Node, set the index and add to list of binding depends
         // Update pending binding records 
-
-        class_info.write_records.push({ ast, component_variables, HAS_ASYNC, NO_LOCAL_BINDINGS });
+        if ((ast.type != BindingIdentifierBinding && ast.type != BindingIdentifierReference))
+            class_info.write_records.push({ ast, component_variables, HAS_ASYNC, NO_LOCAL_BINDINGS });
 
         for (const name of component_variables)
             await addBindingRecord(class_info, name, component);
@@ -314,6 +317,8 @@ function processBindingRecords(comp_info: CompiledComponentClass, comp: Componen
         const binding = getComponentBinding(name, comp),
             { internal_name, class_index, flags, type } = binding;
 
+        binding.class_index = index;
+
         processBindingVariables(binding, comp_info, comp, index);
 
         //create an update function for the binding variable 
@@ -346,7 +351,7 @@ function processBindingRecords(comp_info: CompiledComponentClass, comp: Componen
 
 
 function processBindingVariables(
-    { type, flags, external_name }: BindingVariable,
+    binding: BindingVariable,
     class_info: CompiledComponentClass,
     component: ComponentData,
     index: number
@@ -354,7 +359,7 @@ function processBindingVariables(
 
     const nluf_array_entry = exp(`c.u${index}`);
 
-    class_info.lu_public_variables.push(<any>getPropertyAST(external_name, ((flags << 24) | index) + ""));
+    class_info.lu_public_variables.push(<any>getPropertyAST(getExternalName(binding), ((binding.flags << 24) | index) + ""));
 
     class_info.lfu_table_entries[index] = (nluf_array_entry);
 }

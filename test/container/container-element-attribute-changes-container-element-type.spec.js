@@ -23,7 +23,7 @@ const
 
     elements = comp.ele.children;
 
-assert_group("Server run", sequence, () => {
+assert_group(i, "Server run", sequence, () => {
     assert(elements.length == 5);
     assert(elements[0].tagName == "DIV");
     assert(elements[1].tagName == "UL");
@@ -32,7 +32,7 @@ assert_group("Server run", sequence, () => {
     assert(elements[4].tagName == "DIV");
 });
 
-assert_group("Browser run", sequence, browser, () => {
+assert_group(browser, "Browser run", sequence, () => {
     assert(elements.length == 5);
     assert(elements[0].tagName == "DIV");
     assert(elements[1].tagName == "UL");

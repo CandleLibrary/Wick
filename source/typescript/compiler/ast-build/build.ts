@@ -329,7 +329,13 @@ export async function finalizeBindingExpression(
                 } else if (node.value.slice(0, 4) == ("$$ch")) {
                     mutate(exp(`this.ch[${node.value.slice(4)}]`));
                     skip();
+                } else if (node.value.slice(0, 4) == "$$bi") {
+                    const binding = getComponentBinding(node.value.slice(4), component);
+                    mutate(exp(`${binding.class_index}`));
+                    skip();
                 }
+
+
                 break;
             case JST.AwaitExpression:
                 NEED_ASYNC = true;

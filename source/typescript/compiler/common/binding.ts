@@ -2,7 +2,8 @@ import { copy, traverse } from "@candlelib/conflagrate";
 import { exp, JSExpressionClass, JSIdentifier, JSNode, JSNodeClass, JSNodeType, renderCompressed, tools } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
 import { PluginStore } from "../../plugin/plugin.js";
-import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, HOOK_SELECTOR, IndirectHook, IntermediateHook, PLUGIN_TYPE, PresetOptions, STATIC_BINDING_STATE, STATIC_RESOLUTION_TYPE } from "../../types/all.js";
+import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, IndirectHook, IntermediateHook, PLUGIN_TYPE, PresetOptions, STATIC_BINDING_STATE, STATIC_RESOLUTION_TYPE } from "../../types/all.js";
+import * as ExportToChildAttributeHook from "../ast-build/hooks/data-flow.js";
 import { getSetOfEnvironmentGlobalNames } from "./common.js";
 import { getOriginalTypeOfExtendedType } from "./extended_types.js";
 import { convertObjectToJSNode } from "./js.js";
@@ -31,7 +32,7 @@ export function getRootFrame(frame: FunctionFrame) {
 export function addBindingReference(input_node: JSNode, input_parent: JSNode, frame: FunctionFrame) {
 
     for (const { node } of traverse(input_node, "nodes")
-        .filter("type", 
+        .filter("type",
             JSNodeType.IdentifierReference, JSNodeType.IdentifierBinding
         )
     ) {
@@ -157,9 +158,10 @@ export function addBindingVariable(
     internal_name: string,
     pos: any | Lexer,
     type: BINDING_VARIABLE_TYPE = BINDING_VARIABLE_TYPE.UNDECLARED,
-    external_name: string = internal_name,
+    external_name: string = "", //"$$" + internal_name + "$$",
     flags: BINDING_FLAG = 0,
 ): boolean {
+
 
     const binding_var: BindingVariable = {
         class_index: -1,
@@ -194,11 +196,11 @@ export function addBindingVariable(
             binding_var.ref_count = existing_binding.ref_count;
 
             UPGRADED = true;
-        }
-
-        if (existing_binding.external_name == existing_binding.internal_name
+        } else if (
+            existing_binding.external_name == ""
             &&
-            existing_binding.external_name != external_name) {
+            existing_binding.external_name != external_name
+        ) {
 
             existing_binding.external_name = external_name;
 
@@ -234,16 +236,27 @@ export function addBindingVariableFlag(binding_var_name: string, flag: BINDING_F
 };
 
 /**
- * Return a binding variable object that matches `name` or null
+ * Return a binding variable object whose external name matches `name`,  or return null
  * @param name @string
  * @param component 
  * @returns 
  */
-export function getComponentBinding(name: string, component: ComponentData): BindingVariable {
 
-    if (!component.root_frame.binding_variables.has(name)) return null;
+export function getBindingFromExternalName(external_name: string, component: ComponentData) {
+    return [...component.root_frame.binding_variables.values()].filter(v => getExternalName(v) == external_name)[0] ?? null;
+}
 
-    return component.root_frame.binding_variables.get(name);
+/**
+ * Return a binding variable object whose internal name matches `name`,  or return null
+ * @param internal_name @string
+ * @param component 
+ * @returns 
+ */
+export function getComponentBinding(internal_name: string, component: ComponentData): BindingVariable {
+
+    if (!component.root_frame.binding_variables.has(internal_name)) return null;
+
+    return component.root_frame.binding_variables.get(internal_name);
 }
 
 export function processUndefinedBindingVariables(component: ComponentData, presets: PresetOptions) {
@@ -252,7 +265,7 @@ export function processUndefinedBindingVariables(component: ComponentData, prese
 
         if (binding_variable.type == BINDING_VARIABLE_TYPE.UNDECLARED) {
 
-            if (!getSetOfEnvironmentGlobalNames().has(binding_variable.external_name)) {
+            if (!getSetOfEnvironmentGlobalNames().has(getExternalName(binding_variable))) {
 
                 binding_variable.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE;
 
@@ -279,10 +292,12 @@ export function getCompiledBindingVariableName(
     binding: BindingVariable,
     comp_info?: CompiledComponentClass
 ) {
+    const external_name = getExternalName(binding);
+
     if (!binding || binding.type == BINDING_VARIABLE_TYPE.UNDECLARED) {
         const global_names = getSetOfEnvironmentGlobalNames();
-        if (global_names.has(binding.external_name)) {
-            return binding.external_name;
+        if (global_names.has(external_name)) {
+            return external_name;
         }
     }
 
@@ -290,32 +305,36 @@ export function getCompiledBindingVariableName(
         switch (binding.type) {
 
             case BINDING_VARIABLE_TYPE.MODULE_VARIABLE:
-                return `this.presets.api.${binding.external_name}.default`;
+                return `this.presets.api.${external_name}.default`;
 
             case BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE:
-                return `this.presets.api.${binding.external_name}`;
+                return `this.presets.api.${external_name}`;
 
             case BINDING_VARIABLE_TYPE.UNDECLARED:
                 const global_names = getSetOfEnvironmentGlobalNames();
-                if (global_names.has(binding.external_name))
-                    return binding.external_name;
+                if (global_names.has(external_name))
+                    return external_name;
 
             //intentional
 
             case BINDING_VARIABLE_TYPE.MODEL_VARIABLE:
-                return `this.model.${binding.external_name}`;
+                return `this.model.${external_name}`;
 
             case BINDING_VARIABLE_TYPE.METHOD_VARIABLE:
                 return "this." + name;
 
             case BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE:
-                return `window.${binding.external_name}`;
+                return `window.${external_name}`;
 
             default:
                 return `this[${comp_info.binding_records.get(binding.internal_name)?.index ?? -1}]`;
         }
     else
         return name;
+}
+
+export function getExternalName(binding: BindingVariable) {
+    return binding.external_name == "" ? binding.internal_name : binding.external_name;
 }
 
 export function Binding_Var_Is_Internal_Variable(comp_var: BindingVariable) {
@@ -482,16 +501,17 @@ export async function getDefaultBindingValueAST(
     if (binding) {
 
         if (binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE && parent_comp) {
+            for (const hook of (<ComponentData><any>parent_comp).indirect_hooks.filter(h => h.type == ExportToChildAttributeHook.ExportToChildAttributeHook)) {
 
-            for (const hook of (<ComponentData><any>parent_comp).indirect_hooks.filter(h => h.type == HOOK_SELECTOR.EXPORT_TO_CHILD))
+                if (hook.nodes[0].foreign == binding.external_name) {
 
-                if (hook.hook_value.extern == binding.external_name)
-
-                    return await getDefaultBindingValueAST(hook.hook_value.local, parent_comp, presets, model, null, ASSUME_RUNTIME);
+                    return await getDefaultBindingValueAST(hook.nodes[0].local, parent_comp, presets, model, null, ASSUME_RUNTIME);
+                }
+            }
 
         } /*else*/ if ((binding.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE || binding.type == BINDING_VARIABLE_TYPE.UNDECLARED)) {
 
-            if (model) return await convertObjectToJSNode(model[binding.external_name]);
+            if (model) return await convertObjectToJSNode(model[binding.internal_name]);
 
         } else if (
             ASSUME_RUNTIME
@@ -649,10 +669,12 @@ export async function getStaticValue(
     ASSUME_RUNTIME: boolean = false
 ) {
 
+
     const ast = await getStaticValueAstFromSourceAST(
         <JSNode>hook.nodes[0], component, presets, model, parent_comp, ASSUME_RUNTIME
     );
 
+    console.log("--", model, ast, hook);
 
     if (ast) {
         try {

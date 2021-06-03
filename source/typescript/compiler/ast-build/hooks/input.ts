@@ -31,8 +31,10 @@ registerHookHandler<IndirectHook<JSNode> | JSNode, void>({
             READONLY = getElementAtIndex(comp, element_index)
                 .attributes
                 .some(([v]) => v.toLowerCase() == "readonly");
-        //Determine whether the expression is trivia, simple, or complex.
+        // Determine whether the expression is trivial, simple, or complex.
         // Trivial expressions are built in types. Number, Boolean, and String (and templates without bindings).
+        // Simple expression are single identifiers
+        // Complex expression are anything else
         if (
             root_type == JSNodeType.NumericLiteral ||
             root_type == JSNodeType.BigIntLiteral ||
@@ -43,9 +45,7 @@ registerHookHandler<IndirectHook<JSNode> | JSNode, void>({
         }
 
         // The expression will at least produce an output that will be assigned
-        // to the value attribute
 
-        //This can be made bi-directional
         const s = stmt(`${ele_name}.setAttribute("value", 1)`);
         s.nodes[0].nodes[1].nodes[1] = (expression);
         addOnBindingUpdate(s);

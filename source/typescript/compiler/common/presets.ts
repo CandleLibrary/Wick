@@ -1,8 +1,5 @@
 import URL from "@candlelib/url";
 import { PluginStore } from "../../plugin/plugin.js";
-import { WickRTComponent } from "../../runtime/component.js";
-import { ComponentClassStrings, ComponentData, ComponentStyle } from "../../types/component";
-import { ExtendedComponentData } from "../../types/component.js";
 import { PresetOptions, UserPresets } from "../../types/presets.js";
 
 let CachedPresets = null;

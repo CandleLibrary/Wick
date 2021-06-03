@@ -258,7 +258,15 @@ export interface WickBindingNode extends HTMLNode {
      * External Identifer name, ie: name exported to parent. 
      */
     extern?: string;
+
+    /**
+     * The primary expression in the `${...}` template 
+     */
     primary_ast?: JSNode;
+
+    /**
+     * The secondary expression following a semi-colon in the `${...}` template 
+     */
     secondary_ast?: JSNode;
 
     pos: Lexer;

@@ -128,7 +128,7 @@ export interface ComponentData {
      */
     template: TemplateHTMLNode;
 
-    indirect_hooks: IndirectHook[];
+    indirect_hooks: IndirectHook<any>[];
 }
 
 /**
