@@ -19,7 +19,7 @@ assert_group("Server - Basic Clicker Listener", () => {
     export default  <button onclick=\${count++} > \${ greetings[count % greetings.length] } </button>
      `));
 
-    assert(i, comp.class_string == "");
+    assert(comp.class_string == "");
 });
 
 // Function filter

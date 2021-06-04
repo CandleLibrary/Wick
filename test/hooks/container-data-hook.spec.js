@@ -9,7 +9,7 @@ import wick_browser from "@candlelib/wick";
 
 wick_server.utils.enableTest();
 
-assert_group("Server - Directly Assigned Static Iterable", () => {
+assert_group("Server - Directly Assigned Static Iterable", sequence, () => {
 
     const comp = (await wick_server(`
      const A = "alpha";
@@ -35,7 +35,7 @@ assert_group("Server - Directly Assigned Static Iterable", () => {
 
 // Data statically unresolvable is assigned within dynamic component
 
-assert_group("Server - Directly Assigned Dynamic Iterable", () => {
+assert_group("Server - Directly Assigned Dynamic Iterable", sequence, () => {
 
     const comp = (await wick_server(`
      import { test } from "@api"
@@ -65,7 +65,7 @@ assert_group("Server - Directly Assigned Dynamic Iterable", () => {
 });
 
 
-assert_group("Server - Directly Assigned Dynamic Iterable With Const Binding Variables", () => {
+assert_group("Server - Directly Assigned Dynamic Iterable With Const Binding Variables", sequence, () => {
 
     const comp = (await wick_server(`
      import { test } from "@api"
@@ -82,7 +82,7 @@ assert_group("Server - Directly Assigned Dynamic Iterable With Const Binding Var
     //Insert Required API value before instantiating components
     wick_server.rt.addAPI({ test: "gloria" });
 
-    // assert(i, comp.class_string == "");
+    assert(comp.class_string == "");
 
     const comp_instance = comp.createInstance();
 
@@ -99,26 +99,6 @@ assert_group("Server - Directly Assigned Dynamic Iterable With Const Binding Var
     assert(comp_instance.ele.childNodes[2].childNodes[0].data.trim() == "philbert");
 });
 
- // Awaitable data assignment should show up in async_init.
+// Awaitable data assignment should show up in async_init.
 
- // Fully constant data should not produce class code. 
-
-
-
-/*
-assert_group("Browser - Internal Variable", browser, () => {
-
-    const comp = (await wick_browser(`
-
-    var b = 0;
-
-    export default <div>\${b}</div>
-    `));
-
-    const comp_instance = comp.createInstance();
-    await comp_instance.sleep();
-    assert(comp_instance.ele.childNodes[0] instanceof  TextNode);
-    assert(comp_instance.ele.childNodes[0].data == "0");
-
-});
-*/
+// Fully constant data should not produce class code. 

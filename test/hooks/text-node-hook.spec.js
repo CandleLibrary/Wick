@@ -6,10 +6,9 @@
 import wick_server from "../../build/library/entry-point/wick-server.js";
 import wick_browser from "@candlelib/wick";
 
+assert_group("Server - Internal Variable", sequence, () => {
 
-wick_server.utils.enableTest();
-
-assert_group("Server - Internal Variable", () => {
+    wick_server.utils.enableTest();
 
     const comp = (await wick_server(`
     
@@ -29,6 +28,8 @@ assert_group("Server - Internal Variable", () => {
 
 assert_group("Server - Internal Variable - Prefill", () => {
 
+    wick_server.utils.enableTest();
+
     const comp = (await wick_server(`
     
     var b = "test";
@@ -36,24 +37,23 @@ assert_group("Server - Internal Variable - Prefill", () => {
     export default <div>\${b}</div>
     `));
 
-    const comp_instance = comp.createInstance();
-    assert(comp_instance.ele.childNodes[0].data.trim() == "test");
+    const ele = await comp.getRootElement();
+
+    assert(ele.childNodes[0].childNodes[0].data.trim() == "test");
 });
 
-/*
+
 assert_group("Browser - Internal Variable", browser, () => {
 
     const comp = (await wick_browser(`
 
-    var b = 0;
+    var b = "test";
 
     export default <div>\${b}</div>
     `));
 
     const comp_instance = comp.createInstance();
-    await comp_instance.sleep();
-    assert(comp_instance.ele.childNodes[0] instanceof  TextNode);
-    assert(comp_instance.ele.childNodes[0].data == "0");
+
+    assert(comp_instance.ele.innerText.trim() == "test");
 
 });
-*/

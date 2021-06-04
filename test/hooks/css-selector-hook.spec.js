@@ -25,5 +25,6 @@ assert_group("Server - Basic text input value binding", () => {
 
 
     assert(comp.class_string == "");
+    
     const comp_instance = comp.createInstance();
 });

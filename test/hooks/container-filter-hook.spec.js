@@ -8,7 +8,7 @@ import wick_browser from "@candlelib/wick";
 
 wick_server.utils.enableTest();
 
-assert_group("Server - Static filter expression", () => {
+assert_group("Server - Static filter expression", sequence, () => {
 
     const comp = (await wick_server(`
      var R = 2;
@@ -24,16 +24,15 @@ assert_group("Server - Static filter expression", () => {
      </container>
      `));
 
-    //assert(i, comp.class_string == "");
+    // assert(i, comp.class_string == "");
 
     const comp_instance = comp.createInstance();
 
+
+    // assert("a" == "b");
     assert(comp_instance.ele.childNodes.length == 2);
     assert(comp_instance.ele.childNodes[0].childNodes[0].tagName.trim() == "W-B");
     assert(comp_instance.ele.childNodes[0].childNodes[0].childNodes[0].data.trim() == "B");
     assert(comp_instance.ele.childNodes[1].childNodes[0].tagName.trim() == "W-B");
     assert(comp_instance.ele.childNodes[1].childNodes[0].childNodes[0].data.trim() == "5");
 });
-
-// Function filter
-// Filter function with non-static binding variables

@@ -20,7 +20,7 @@ assert_group("Server - Element Export Statement", () => {
     export {my_data as data}
      `));
 
-    assert(i, comp.class_string == "");
+    assert(comp.class_string == "");
 });
 
 // Function filter

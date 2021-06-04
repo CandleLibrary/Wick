@@ -1,7 +1,7 @@
 import { assert } from "console";
-import { Binding_Variable_Has_Static_Default_Value } from "../../build/library/compiler/common/binding.js";
+import { getBindingStaticResolutionType } from "../../build/library/compiler/common/binding.js";
 import { createComponentData } from "../../build/library/compiler/common/component.js";
-import { createParserFrame } from "../../build/library/compiler/common/frame.js";
+import { createParseFrame } from "../../build/library/compiler/common/frame.js";
 import Presets from "../../build/library/compiler/common/presets.js";
 import { processCoreAsync } from "../../build/library/compiler/ast-parse/parse.js";
 import parserSourceString from "../../build/library/compiler/source-code-parse/parse.js";
@@ -40,7 +40,7 @@ assert_group("Function frame and bindings", () => {
 
     const component = createComponentData(source_string);
 
-    component.root_frame = createParserFrame(null, component);
+    component.root_frame = createParseFrame(null, component);
 
     assert(component.root_frame.IS_ROOT == true);
 
@@ -69,12 +69,12 @@ assert_group("Function frame and bindings", () => {
     assert(E.ref_count == 2);
     assert(F.ref_count == 0);
 
-    assert(Binding_Variable_Has_Static_Default_Value(A, component) == true);
-    assert(Binding_Variable_Has_Static_Default_Value(B, component) == true);
-    assert(Binding_Variable_Has_Static_Default_Value(C, component) == true);
-    assert("Model bindings are assumed to have a static value", Binding_Variable_Has_Static_Default_Value(D, component) == true);
-    assert(Binding_Variable_Has_Static_Default_Value(E, component) == true);
-    assert(Binding_Variable_Has_Static_Default_Value(F, component) == false);
+    assert(getBindingStaticResolutionType(A, component, presets) == 33);
+    assert(getBindingStaticResolutionType(B, component, presets) == 1);
+    assert(getBindingStaticResolutionType(C, component, presets) == 33);
+    assert("Model bindings are assumed to have a static value", getBindingStaticResolutionType(D, component, presets) == 3);
+    assert(getBindingStaticResolutionType(E, component, presets) == 33);
+    assert(getBindingStaticResolutionType(F, component, presets) == 255);
 });
 
 assert_group(s, "JS module with multiple elements", () => {
@@ -105,7 +105,7 @@ assert_group(s, "JS module with multiple elements", () => {
 
     const component = createComponentData(source_string);
 
-    component.root_frame = createParserFrame(null, component);
+    component.root_frame = createParseFrame(null, component);
 
     await processCoreAsync(ast, component.root_frame, component, presets);
 

@@ -5,7 +5,7 @@ import { assert } from "console";
 const source = `
  var count = 0;
  
- export default <button onclick=\${++count}>Clicked \${count} \${count == 1 ? " time" : " times"} </button>
+ export default <button onclick=\${++count}>Clicked \${count}\${count == 1 ? " time" : " times"}</button>
  `;
 
 assert_group("Clicker component updates button's innerHTML", browser, sequence, () => {
@@ -36,5 +36,5 @@ assert_group("Clicker component updates button's innerHTML", browser, sequence, 
     await comp.dispatchEvent("root", "click");
     await comp.dispatchEvent("root", "click");
 
-    assert(comp.ele.innerHTML == "Clicked 9 times");
+    assert(comp.ele.innerText == "Clicked 9 times");
 });

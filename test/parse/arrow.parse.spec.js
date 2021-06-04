@@ -8,7 +8,8 @@
  */
 
 import { renderCompressed } from "@candlelib/js";
-import { createCompiledComponentClass, runClassHookHandlers } from "../../build/library/compiler/ast-build/build.js";
+import { createCompiledComponentClass } from "../../build/library/compiler/ast-build/build.js";
+import { processHookForClass } from "../../build/library/compiler/ast-build/hooks.js";
 import { componentDataToTempAST } from "../../build/library/compiler/ast-build/html.js";
 import { htmlTemplateToString } from "../../build/library/compiler/ast-ender/html.js";
 import { parseSource } from "../../build/library/compiler/ast-parse/source.js";
@@ -39,11 +40,14 @@ assert(component.root_frame.binding_variables.has("c") == false);
 assert(component.root_frame.binding_variables.has("x") == false);
 assert(component.root_frame.binding_variables.has("y") == false);
 assert(component.root_frame.binding_variables.has("data") == true);
+assert(component.indirect_hooks.length == 2);
 
 
-const { hook: hook1 } = runClassHookHandlers(component.hooks[0], component, presets, comp_info);
-const { hook: hook2 } = runClassHookHandlers(component.hooks[1], component, presets, comp_info);
+keep: await processHookForClass(component.hooks[0], component, presets, comp_info);
+keep: await processHookForClass(component.hooks[1], component, presets, comp_info);
 
-assert(renderCompressed(hook1.write_ast) == "this.ct[0].sd(data.push((a,b,c)=>a+b+c));");
-assert(renderCompressed(hook2.write_ast) == "this.ct[1].sd(data.push((a,c)=>a+b+c));");
+assert(comp_info.write_records.length == 2);
+
+assert(renderCompressed(comp_info.write_records[0].ast) == "$$ctr0.sd(data.push((a,b,c)=>a+b+c));");
+assert(renderCompressed(comp_info.write_records[1].ast) == "$$ctr1.sd(data.push((a,c)=>a+b+c));");
 //assert(html == "")
