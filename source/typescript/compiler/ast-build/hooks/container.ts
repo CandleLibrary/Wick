@@ -48,7 +48,6 @@ registerHookHandler<IndirectHook<JSNode>, void | JSNode>({
             &&
             container_ele.component_names.length > 0
         ) {
-            console.log(await getStaticValue(hook.nodes[0], comp, presets, model, parents));
             return await getStaticValue(hook.nodes[0], comp, presets, model, parents);
         }
 
