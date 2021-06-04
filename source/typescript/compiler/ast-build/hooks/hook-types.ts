@@ -1,38 +1,11 @@
 import { matchAll } from "@candlelib/css";
-import { exp, JSExpressionClass, JSExpressionStatement, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt } from "@candlelib/js";
-import { IndirectHook } from "source/typescript/types/hook.js";
-import { BINDING_VARIABLE_TYPE, ComponentData, DOMLiteral, HTMLNodeType, STATIC_RESOLUTION_TYPE } from "../../../types/all.js";
+import { exp, JSExpressionClass, JSIdentifierBinding, JSIdentifierReference, JSNodeType, JSStringLiteral } from "@candlelib/js";
+import { BINDING_VARIABLE_TYPE, ComponentData, DOMLiteral, STATIC_RESOLUTION_TYPE } from "../../../types/all.js";
 import { getBindingStaticResolutionType, getComponentBinding, getStaticValueAstFromSourceAST } from "../../common/binding.js";
 import { css_selector_helpers } from "../../common/css.js";
 import { getExtendTypeVal } from "../../common/extended_types.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../../common/js_hook_types.js";
 import { registerHookHandler } from "./hook-handler.js";
-
-/**
- * Hook Type for Binding Node data properties
- */
-export const TextNodeHookType = getExtendTypeVal("text-node-hook", HTMLNodeType.HTMLText);
-registerHookHandler<IndirectHook<JSNode> | JSNode, null>({
-
-    name: "Text Node Binding Hook",
-
-    types: [TextNodeHookType],
-
-    verify: () => true,
-
-    buildJS: (node, comp, presets, element_index, addOnBindingUpdate) => {
-
-        const st = <JSExpressionStatement>stmt(`$$ele${element_index}.data = 0`);
-
-        st.nodes[0].nodes[1] = <JSNode>node.nodes[0];
-
-        addOnBindingUpdate(st);
-
-        return null;
-    },
-
-    buildHTML: (node, comp, presets, model) => null
-});
 
 
 /**
@@ -60,40 +33,6 @@ registerHookHandler<JSStringLiteral, JSStringLiteral>({
     buildHTML: (node, comp, presets, model) => null
 });
 
-
-/**
- * Handles element on* event attributes. Creates an event listener for the event.
- * Attaches the expression as the body for an arrow function. Applies the arrow
- * function as the callable argument to event listener function.
- */
-export const OnEventHook = getExtendTypeVal("on-event-hook", JSNodeType.StringLiteral);
-
-registerHookHandler<IndirectHook<{ nodes: [JSNode], action: string; }>, void>({
-
-    name: "On Event Hook",
-
-    types: [OnEventHook],
-
-    verify: () => true,
-
-    buildJS: (node, comp, presets, element_index, _1, addInit) => {
-        // Replace the value with a 
-        // Get the on* attribute name
-        const { action, nodes: [ast] } = node.nodes[0];
-        const
-            ele_name = "$$ele" + element_index;
-
-        const s = stmt(`${ele_name}.addEventListener("${action.slice(2)}", v=>a)`);
-
-        s.nodes[0].nodes[1].nodes[1].nodes[1] = ast;
-
-        addInit(s);
-
-        console.log({ action, ast });
-    },
-
-    buildHTML: (node, comp, presets, model) => null
-});
 
 /**
  *  

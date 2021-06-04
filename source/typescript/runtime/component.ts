@@ -132,7 +132,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.presets = presets;
 
 
-        this.model = model; // Soft set of model, to handle access defined in source files.
+        // this.model = model; // Soft set of model, to handle access defined in source files.
 
         const parent = parent_chain[parent_chain.length - 1];
 
@@ -145,7 +145,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             model = presets.models[default_model_name];
         }
 
-        this.model = model;
+        //this.model = model;
 
         this.wrapper = wrapper;
 
@@ -154,14 +154,19 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             this.integrateElement(existing_element, parent_chain.concat(this));
         } else
             this.ele = this.createElement(presets, [this]);
+
+        this.hydrate(model);
     }
 
-    hydrate() {
-        const model = this.model, presets = this.presets, wrapper = this.wrapper;
+    hydrate(model) {
+        const presets = this.presets, wrapper = this.wrapper;
         // Hydration --------------------------------
         this.CONNECTED = true;
+
         this.init(this);
+
         this.setModel(model); //Hard set of model, with proper updating and polling.
+
         this.CONNECTED = false;
         // End Hydration ----------------------------
 
@@ -441,9 +446,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     setModel(model: ObservableModel | any) {
 
         if (this.model) {
-            if (this.polling_id || this.polling_id === 0) {
+            if (this.polling_id >= 0) {
                 clearInterval(this.polling_id);
-                this.polling_id = null;
+                this.polling_id = -1;
             }
 
             if (this.model.unsubscribe)
@@ -456,15 +461,16 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
             this.model = model;
 
-            if (model.subscribe) {
+            if (typeof model.subscribe == "function") {
+
                 model.subscribe(this);
+
             } else {
 
                 //Create a polling monitor
-                if (!this.polling_id) {
-                    this.polling_id = <number><unknown>setInterval(this.onModelUpdate.bind(this), 1000 / 30);
-                }
-
+                if (this.ALLOW_POLLING)
+                    if (this.polling_id < 0)
+                        this.polling_id = <number><unknown>setInterval(this.onModelUpdate.bind(this), 1000 / 15);
             }
 
             this.onModelUpdate.call(this);
@@ -788,11 +794,24 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         return sk;
     }
 
+    attachListener(ele_index: number, event_specifier: string, listener_function: (...args: any[]) => any, REQUIRES_THIS_BINDING: boolean = false) {
+
+        const ele = this.elu[ele_index];
+
+        const fn = REQUIRES_THIS_BINDING ? listener_function.bind(this) : listener_function;
+
+        ele.addEventListener(event_specifier, fn);
+
+        // this.listeners.push([ele_index, event_specifier, fn])
+    }
+
     /**
-* Make DOM Element tree from JS object
-* literals. Return list of object ID's and the
-* root element tree.
-*/
+    * Make DOM Element tree from JS object
+    * literals. Return list of object ID's and the
+    * root element tree.
+    * 
+    * v0.14.0
+    */
     makeElement(ele_obj: /*DOMLiteral*/ string, name_space = ""): HTMLElement {
 
         const temp_ele = document.createElement("div");
@@ -809,7 +828,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         this.integrateElement(ele, parent_chain);
 
-        this.hydrate();
+        //this.hydrate();
 
         return ele;
     }

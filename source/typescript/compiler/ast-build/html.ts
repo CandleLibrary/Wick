@@ -1,3 +1,4 @@
+import { JSNode } from "source/typescript/entry-point/wick-full.js";
 import { rt } from "../../runtime/global.js";
 import { ComponentData, ContainerDomLiteral, DOMLiteral, htmlState, IndirectHook, PresetOptions, TemplateHTMLNode, TemplatePackage } from "../../types/all.js";
 import { getStaticValue } from "../common/binding.js";
@@ -527,7 +528,7 @@ async function addBindingElement(
     const
         hook = getHookFromElement(html, comp)[0],
         val = hook
-            ? await getStaticValue(hook, comp, presets, model, parent_component)
+            ? await getStaticValue(<JSNode>hook.nodes[0], comp, presets, model, parent_component)
             : null;
 
 

@@ -84,7 +84,7 @@ const rt: WickRuntime = (() => {
         addAPI(obj) {
 
             for (const name in obj)
-                rt.presets.api[name] = obj[name];
+                rt.presets.api[name] = { default: obj[name] };
         }
     };
 })();

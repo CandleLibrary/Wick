@@ -92,7 +92,6 @@ wick.rt.init = async function () {
     const elements = gatherWickElements();
 
     for (const comp of hydrateComponentElements(elements)) {
-        comp.hydrate();
         comp.connect();
     }
 };

@@ -14,7 +14,7 @@ import { registerHookHandler } from "./hook-handler.js";
  */
 export const TextInputValueHook = getExtendTypeVal("text-input-value-hook", HTMLNodeType.HTMLAttribute);
 //*
-registerHookHandler<IndirectHook<JSNode> | JSNode, void>({
+registerHookHandler<IndirectHook<JSNode>, JSNode | void>({
 
     name: "Text Input Value Handler",
 
@@ -46,8 +46,8 @@ registerHookHandler<IndirectHook<JSNode> | JSNode, void>({
 
         // The expression will at least produce an output that will be assigned
 
-        const s = stmt(`${ele_name}.setAttribute("value", 1)`);
-        s.nodes[0].nodes[1].nodes[1] = (expression);
+        const s = stmt(`${ele_name}.value = 1`);
+        s.nodes[0].nodes[1] = (expression);
         addOnBindingUpdate(s);
 
         if (
@@ -73,16 +73,16 @@ registerHookHandler<IndirectHook<JSNode> | JSNode, void>({
                 ||
                 binding.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
             ) {
-                const e = exp("a=v");
+                const e = exp(`a=$$ele${element_index}.value`);
                 e.nodes[0] = expression;
-                const s = stmt(`${ele_name}.addEventListener("input", v=>a)`);
-                s.nodes[0].nodes[1].nodes[1].nodes[1] = e;
+                const s = stmt(`this.attachListener(${element_index}, "input",  _=>a)`);
+                s.nodes[0].nodes[1].nodes[2].nodes[1] = e;
                 addInitBindingInit(s);
             } else if (binding.type == BINDING_VARIABLE_TYPE.METHOD_VARIABLE) {
                 const e = exp(`this.${binding.internal_name}(v)`);
                 e.nodes[1].nodes[0] = expression;
-                const s = stmt(`${ele_name}.addEventListener("input", v=>a)`);
-                s.nodes[0].nodes[1].nodes[1].nodes[1] = e;
+                const s = stmt(`this.attachListener(${element_index}, "input",  _=>a)`);
+                s.nodes[0].nodes[1].nodes[2].nodes[1] = e;
                 addInitBindingInit(s);
             }
         }
@@ -97,11 +97,16 @@ registerHookHandler<IndirectHook<JSNode> | JSNode, void>({
             getExpressionStaticResolutionType(<JSNode>hook.nodes[0], comp, presets)
             !==
             STATIC_RESOLUTION_TYPE.INVALID
-        )
-            return {
-                html: { attributes: [["value", await getStaticValue(hook, comp, presets, model, parents)]] }
+        ) {
 
-            };
+            const val = await getStaticValue(hook.nodes[0], comp, presets, model, parents);
+
+            if (val !== null)
+                return <any>{
+                    html: { attributes: [["value", val]] }
+
+                };
+        }
     }
 });
 //*/;

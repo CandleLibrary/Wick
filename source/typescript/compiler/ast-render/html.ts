@@ -55,7 +55,7 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
                 node.strings.push(...node.data.split("\n"));
 
             if (parent)
-                parent.strings.push(...node.strings.map(s => depth_str + s));
+                parent.strings.push(...node.strings.map(s => "" + s));
 
             continue;
         }
@@ -82,14 +82,14 @@ export function htmlTemplateToString(html: TemplateHTMLNode) {
         if (traverse_state == TraverseState.EXIT || traverse_state == TraverseState.LEAF) {
             //Null container elements do not enclose their child elements
             if (node.tagName !== "null")
-                node.strings.push(`</${node.tagName}>`);
+                node.strings.push(`</${node.tagName}>`);;
 
             if (parent)
-                parent.strings.push(...node.strings.map(s => depth_str + s));
+                parent.strings.push(...node.strings.map(s => "" + s));
         }
     };
 
-    return html.strings.join("\n");
+    return html.strings.join("");
 }
 
 function addAttributesToString(node: TraversedNode<TemplateHTMLNode>, string: string) {

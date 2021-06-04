@@ -202,7 +202,7 @@ export interface HTMLNode {
     import_list?: any[];
     /**
      * 
-     * True if the node originally had a container tag.
+     * True if the node originally had a CONTAINER tag.
      * (tag value may change during parsing) 
      */
     IS_CONTAINER?: boolean;
@@ -240,11 +240,54 @@ export interface HTMLNode {
      */
     name?: string;
 
-    attributes?: HTMLNode[];
+    attributes?: HTMLAttribute[];
 
     value?: string;
 }
 
+export interface HTMLBareAttribute {
+    //@ts-ignore
+    type: HTMLNodeType.HTMLAttribute;
+
+    /**
+     * The value of the key component of the 
+     * attribute: <name>=...
+     */
+    name: string;
+    /**
+     * The value of attribute, following
+     * the \= character. May 
+     */
+    value: string,
+    /**
+     * Always `false` for bare attributes
+     */
+    IS_BINDING: false;
+}
+
+export interface HTMLBindingAttribute {
+    //@ts-ignore
+    type: HTMLNodeType.HTMLAttribute;
+
+    /**
+     * The value of the key component of the 
+     * attribute: <name>=...
+     */
+    name: string;
+    /**
+     * The WickBindingNode representing the
+     * JavaScript expression within the binding
+     * block following the \= character:
+     * `... = { <JSExpression> }`
+     */
+    value: WickBindingNode,
+    /**
+     * Always `true` for binding attributes
+     */
+    IS_BINDING: true;
+}
+
+export type HTMLAttribute = HTMLBareAttribute | HTMLBindingAttribute;
 
 export interface WickBindingNode extends HTMLNode {
     //@ts-ignore
@@ -260,12 +303,12 @@ export interface WickBindingNode extends HTMLNode {
     extern?: string;
 
     /**
-     * The primary expression in the `${...}` template 
+     * The primary expression in the `{...}` template 
      */
     primary_ast?: JSNode;
 
     /**
-     * The secondary expression following a semi-colon in the `${...}` template 
+     * The secondary expression following a semi-colon in the `{...}` template 
      */
     secondary_ast?: JSNode;
 

@@ -15,7 +15,7 @@ import { registerHookHandler } from "./hook-handler.js";
  */
 
 export const ContainerDataHook = getExtendTypeVal("container-data-hook", HTMLNodeType.HTMLAttribute);
-registerHookHandler<IndirectHook<JSNode> | JSNode, void>({
+registerHookHandler<IndirectHook<JSNode>, void | JSNode>({
     name: "Container Data Attribute",
 
     types: [ContainerDataHook],
@@ -23,6 +23,7 @@ registerHookHandler<IndirectHook<JSNode> | JSNode, void>({
     verify: () => true,
 
     buildJS: (node, comp, presets, element_index, addOnBindingUpdate) => {
+
 
         const
             ele = getElementAtIndex(comp, element_index),
@@ -37,7 +38,7 @@ registerHookHandler<IndirectHook<JSNode> | JSNode, void>({
     },
 
     buildHTML: async (hook, comp, presets, model, parents) => {
-
+        const ast = hook.nodes[0];
         const container_ele: ContainerDomLiteral = <any>getElementAtIndex(comp, hook.ele_index);
 
         if (
@@ -46,15 +47,17 @@ registerHookHandler<IndirectHook<JSNode> | JSNode, void>({
             STATIC_RESOLUTION_TYPE.INVALID
             &&
             container_ele.component_names.length > 0
-        )
-            return await getStaticValue(hook, comp, presets, model, parents);
+        ) {
+            console.log(await getStaticValue(hook.nodes[0], comp, presets, model, parents));
+            return await getStaticValue(hook.nodes[0], comp, presets, model, parents);
+        }
 
         return [];
     }
 });
 
 export const ContainerFilterHook = getExtendTypeVal("container-filter-hook", HTMLNodeType.HTMLAttribute);
-registerHookHandler<JSNode | JSIdentifier, void>({
+registerHookHandler<JSNode | JSIdentifier | any, void>({
     description: ``,
 
     name: "Container Filter Hook",
@@ -69,7 +72,7 @@ registerHookHandler<JSNode | JSIdentifier, void>({
 });
 
 export const ContainerSortHook = getExtendTypeVal("container-sort-hook", HTMLNodeType.HTMLAttribute);
-registerHookHandler<JSNode | JSIdentifier, void>({
+registerHookHandler<JSNode | JSIdentifier | any, void>({
     description: ``,
 
     name: "Container Sort Hook",
@@ -84,7 +87,7 @@ registerHookHandler<JSNode | JSIdentifier, void>({
 });
 
 export const ContainerLimitHook = getExtendTypeVal("container-limit-hook", HTMLNodeType.HTMLAttribute);
-registerHookHandler<JSNode | JSIdentifier, void>({
+registerHookHandler<JSNode | JSIdentifier | any, void>({
     description: ``,
 
     name: "Container limit Hook",
@@ -99,7 +102,8 @@ registerHookHandler<JSNode | JSIdentifier, void>({
 });
 
 export const ContainerOffsetHook = getExtendTypeVal("container-offset-hook", HTMLNodeType.HTMLAttribute);
-registerHookHandler<JSNode | JSIdentifier, void>({
+registerHookHandler<JSNode | JSIdentifier | any, void>({
+
     description: ``,
 
     name: "Container Offset Hook",
@@ -114,7 +118,8 @@ registerHookHandler<JSNode | JSIdentifier, void>({
 });
 
 export const ContainerShiftHook = getExtendTypeVal("container-shift-hook", HTMLNodeType.HTMLAttribute);
-registerHookHandler<JSNode | JSIdentifier, void>({
+registerHookHandler<JSNode | JSIdentifier | any, void>({
+
     description: ``,
 
     name: "Container Shift Hook",
@@ -129,7 +134,8 @@ registerHookHandler<JSNode | JSIdentifier, void>({
 });
 
 export const ContainerScrubHook = getExtendTypeVal("container-scrub-hook", HTMLNodeType.HTMLAttribute);
-registerHookHandler<JSNode | JSIdentifier, void>({
+registerHookHandler<JSNode | JSIdentifier | any, void>({
+
     description: ``,
 
     name: "Container Scrub Hook",
@@ -194,6 +200,7 @@ function createContainerStaticArrowFunction(argument_size: number = 1) {
 
         let arrow_argument_match = new Array(argument_size).fill(null);
 
+        // console.log("----", arrow_argument_match, renderCompressed(hook.nodes[0]), getListOfUnboundArgs(hook.nodes[0], comp, arrow_argument_match));
         if (getListOfUnboundArgs(hook.nodes[0], comp, arrow_argument_match)) {
 
             if (getExpressionStaticResolutionType(hook.nodes[0], comp, presets) == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
@@ -233,6 +240,7 @@ function getListOfUnboundArgs(node: JSNode, comp: ComponentData, list: JSNode[])
 
     for (const { node: n } of traverse(node, "nodes")
         .filter("type", BindingIdentifierBinding, BindingIdentifierReference)) {
+
         const
             name = n.value,
             binding = getComponentBinding(name, comp);

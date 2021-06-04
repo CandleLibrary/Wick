@@ -9,7 +9,6 @@ import {
 } from "@candlelib/js";
 import {
     BindingVariable,
-    BINDING_VARIABLE_TYPE,
     CompiledComponentClass,
     ComponentData,
     FunctionFrame,
@@ -63,7 +62,14 @@ export async function createComponentTemplates(
             }
         }
 }
-
+/**
+ * Produces a compiled component class from 
+ * @param component 
+ * @param presets 
+ * @param INCLUDE_HTML 
+ * @param INCLUDE_CSS 
+ * @returns 
+ */
 export async function createCompiledComponentClass(
     component: ComponentData,
     presets: PresetOptions,
@@ -74,6 +80,7 @@ export async function createCompiledComponentClass(
     try {
 
         const class_info = createClassInfoObject();
+
 
         //HTML INFORMATION
         if (INCLUDE_HTML)
@@ -222,10 +229,6 @@ export function createClassInfoObject(): CompiledComponentClass {
     async_init_frame.IS_ASYNC = true;
 
     return class_info;
-}
-
-export function Binding_Var_Is_Directly_Accessed(binding_var: BindingVariable) {
-    return (binding_var.type & (BINDING_VARIABLE_TYPE.DIRECT_ACCESS)) > 0;
 }
 
 export async function processFunctionFrameHook(

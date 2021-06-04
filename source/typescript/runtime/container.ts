@@ -987,8 +987,6 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
                         component = <ContainerComponent>new this.comp_constructors[j](item);
 
-                        component.hydrate();
-
                         const attrib_list = this.comp_attributes[j];
 
                         if (attrib_list)

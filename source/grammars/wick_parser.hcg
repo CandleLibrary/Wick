@@ -9,7 +9,7 @@
 #                                                                                                  __/ |
 #                                                                                                 |___/ 
 # 
-# 		2021 v3.1
+# 		2021 v3.2
 # 		
 # 		Copyright (c) MMXX Anthony C Weathersby
 # 		
@@ -63,42 +63,45 @@
 
 +> js::primary_expression > html::TAG  
 
-#   | t:css \: \{ css::CSS \}                                                                               f:r { $sym4 }       			    
+#   | t:css \: \{ css::CSS \}                                                                               f:r { $4 }       			    
 
-+> html::BODY > IMPORT_TAG_LIST html::GOAL_TAG                                             				    f:r { ( $sym2.import_list = $sym1, $sym2 ) }
++> html::BODY > IMPORT_TAG_LIST html::GOAL_TAG                                             				    f:r { ( $2.import_list = $1, $2 ) }
 
-+> html::TAG > < (t:style | t:STYLE) html::ATTRIBUTES? >  css::CSS?  </ (t:style | t:STYLE) >               			                f:r { { type:env.typ.HTML_STYLE,  attributes:$$sym3 || [], nodes:[$$sym5], pos } }
++> html::TAG > < (t:style | t:STYLE) html::ATTRIBUTES? >  css::CSS?  </ (t:style | t:STYLE) >               			                f:r { { type:env.typ.HTML_STYLE,  attributes:$$3 || [], nodes:[$$5], pos } }
     
-+> html::TAG_BODY_ITEM > < (t:script | t:SCRIPT)  html::ATTRIBUTES? > js::script? </ (t:script | t:SCRIPT) >                             f:r { { type:env.typ.HTML_SCRIPT, attributes:$$sym3 || [], nodes:[$$sym5], pos } }
-    | < t:js html::ATTRIBUTES? > js::script? </ t:js >                                        		        f:r { { type:env.typ.HTML_SCRIPT, attributes:$$sym3 || [], nodes:[$$sym5], pos } }
-    #| \( \{ js::expression \{ js::script? \} \} (ERR θws ) \)                                			    f:r {env.fn.element_selector("script", ["on", null, new env.wick_binding(["on",null, $sym2])], $sym4, env, pos) }
++> html::TAG_BODY_ITEM > < (t:script | t:SCRIPT)  html::ATTRIBUTES? > js::script? </ (t:script | t:SCRIPT) >                             f:r { { type:env.typ.HTML_SCRIPT, attributes:$$3 || [], nodes:[$$5], pos } }
+    | < t:js html::ATTRIBUTES? > js::script? </ t:js >                                        		        f:r { { type:env.typ.HTML_SCRIPT, attributes:$$3 || [], nodes:[$$5], pos } }
+    #| \( \{ js::expression \{ js::script? \} \} (ERR θws ) \)                                			    f:r {env.fn.element_selector("script", ["on", null, new env.wick_binding(["on",null, $2])], $4, env, pos) }
 
 
 <> IMPORT_TAG_LIST > IMPORT_TAG(+)
 
 <> IMPORT_TAG > < t:import html::ATTRIBUTES? /? > ( </ t:import > )?                          			    
-                                                                    f:r { { type:env.typ.HTML_IMPORT, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:true, pos } } 
+                                                                    f:r { { type:env.typ.HTML_IMPORT, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:[], VOID:true, pos } } 
 
 +> html::VOID_NAME >  t:f
 
-+> html::ATTRIBUTE > html::ATTRIBUTE_HEAD = ( " WICK_BINDING? " f:r {$$sym2} | WICK_BINDING )  			    
-                                                                    f:r { {type:env.typ.HTMLAttribute, name:$sym1, value:$sym3 || "", IS_BINDING:!!$sym3, pos } }                    
++> html::ATTRIBUTE > html::ATTRIBUTE_HEAD = ( " WICK_BINDING? " f:r {$$2} | WICK_BINDING )  			    
+                                                                    f:r { {type:env.typ.HTMLAttribute, name:$1, value:$3 || "", IS_BINDING:!!$3, pos } }
+
+    | ( \import | \export ) \= js::export_clause
+                                                                    f:r { {type:env.typ.HTMLAttribute, name:$1, value:$3 || "", IS_BINDING:!!$3, pos } }
 
 +> html::TEXT_NODE > WICK_BINDING  
 
 # Add component scoped variable declaration
-# +> js::lexical_declaration > t:comp js::binding_list ;                                                      f:r { { type:env.typ.ComponentVariableDeclaration, symbol:$sym1, nodes:$sym2, pos } }
+# +> js::lexical_declaration > t:comp js::binding_list ;                                                      f:r { { type:env.typ.ComponentVariableDeclaration, symbol:$1, nodes:$2, pos } }
 
 <> WICK_BINDING > CALL_BINDING                              
     | BASIC_BINDING
 
 <> BASIC_BINDING >  ( BINDING_SYMBOL_START )  js::expression? BINDING_SYMBOL_END                                       
                                                                    
-                                                                    f:r { {type:env.typ.WickBinding, primary_ast:$$sym2, secondary_ast:null, DEBUG: $sym1 == "(!(" , pos } }
+                                                                    f:r { {type:env.typ.WickBinding, primary_ast:$$2, secondary_ast:null, DEBUG: $1 == "(!(" , pos } }
 
 <> CALL_BINDING >   ( BINDING_SYMBOL_START )  js::expression?  ( \; js::expression )? BINDING_SYMBOL_END      
                                                                     
-                                                                    f:r { {type:env.typ.WickBinding, primary_ast:$$sym2, secondary_ast:$$sym5, DEBUG: $sym1 == "(!(", pos } }
+                                                                    f:r { {type:env.typ.WickBinding, primary_ast:$$2, secondary_ast:$$5, DEBUG: $1 == "(!(", pos } }
 
 <> BINDING_SYMBOL_START > \{
     

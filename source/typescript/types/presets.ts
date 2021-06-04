@@ -2,6 +2,7 @@ import URL from "@candlelib/url";
 import { WickRTComponent } from "../runtime/component";
 import { PluginStore } from "../plugin/plugin";
 import { ComponentClassStrings, ComponentData, ComponentStyle } from "./component";
+import { string } from "../runtime/observable/string";
 /**
  * A collection of configuration options to customize the wick compiler.
  */
@@ -135,7 +136,15 @@ export interface PresetOptions {
      * Any objects or functions that should be accessible to all components
      * through the `"@api"` import path.
      */
-    api?: any;
+    api?: {
+        [key: string]: {
+            /**
+             * The API object or default export of a module
+             */
+            default: any;
+            [key: string]: any;
+        };
+    };
     /**
      * A list of external resource paths that should be loaded before the first
      * component is instantiated.

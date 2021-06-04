@@ -1,5 +1,5 @@
 import { traverse } from "@candlelib/conflagrate";
-import { JSIdentifier, JSArrowFunction, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt, tools, JSExpressionStatement, JSCallExpression, ext, JSExportDeclaration, JSExportClause } from "@candlelib/js";
+import { JSArrowFunction, JSExportDeclaration, JSExpressionStatement, JSIdentifier, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt, tools } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
 import {
     BINDING_FLAG, BINDING_VARIABLE_TYPE, HOOK_SELECTOR, HTMLNode,
@@ -7,10 +7,13 @@ import {
     HTMLNodeType, JSHandler, WickBindingNode,
     WICK_AST_NODE_TYPE_SIZE
 } from "../../types/all.js";
+import { addIndirectHook } from "../ast-build/hooks.js";
+import { ExportToParentHook } from "../ast-build/hooks/data-flow.js";
+import { CSSSelectorHook } from "../ast-build/hooks/hook-types.js";
 import {
     addBindingReference,
     addBindingVariable,
-    addBindingVariableFlag,
+
     addDefaultValueToBindingVariable,
     addHook,
     addNameToDeclaredVariables,
@@ -21,6 +24,8 @@ import {
     Variable_Is_Declared_Locally
 } from "../common/binding.js";
 import { getFirstReferenceName, importResource, setPos } from "../common/common.js";
+import { getExtendTypeVal } from "../common/extended_types.js";
+import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
 import {
     getFunctionFrame,
     incrementBindingRefCounters, processFunctionDeclaration,
@@ -30,11 +35,6 @@ import {
     processWickJS_AST
 } from "./parse.js";
 
-import { getExtendTypeVal } from "../common/extended_types.js";
-import { CSSSelectorHook } from "../ast-build/hooks/hook-types.js";
-import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
-import { ExportToParentHook } from "../ast-build/hooks/data-flow.js";
-import { addIndirectHook } from "../ast-build/hooks.js";
 
 export function findFirstNodeOfType(type: JSNodeType, ast: JSNode) {
 
@@ -59,9 +59,7 @@ function loadJSParseHandlerInternal<T = JSNode>(handler: JSHandler<T>, ...types:
         const handler_array = JS_handlers[Math.max((type >>> 23), 0)];
 
         handler_array.push(handler);
-
         handler_array.sort((a, b) => a.priority > b.priority ? -1 : 1);;
-
     }
 }
 

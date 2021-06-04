@@ -1,8 +1,8 @@
 import { copy, traverse } from "@candlelib/conflagrate";
-import { exp, JSExpressionClass, JSIdentifier, JSNode, JSNodeClass, JSNodeType, renderCompressed, tools } from "@candlelib/js";
+import { exp, JSAdditiveExpression, JSExpressionClass, JSIdentifier, JSNode, JSNodeClass, JSNodeType, JSNumericLiteral, renderCompressed, tools } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
 import { PluginStore } from "../../plugin/plugin.js";
-import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, IndirectHook, IntermediateHook, PLUGIN_TYPE, PresetOptions, STATIC_BINDING_STATE, STATIC_RESOLUTION_TYPE } from "../../types/all.js";
+import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, IntermediateHook, PLUGIN_TYPE, PresetOptions, STATIC_BINDING_STATE, STATIC_RESOLUTION_TYPE } from "../../types/all.js";
 import * as ExportToChildAttributeHook from "../ast-build/hooks/data-flow.js";
 import { getSetOfEnvironmentGlobalNames } from "./common.js";
 import { getOriginalTypeOfExtendedType } from "./extended_types.js";
@@ -77,24 +77,7 @@ export function removeBindingReferences(name: string, frame: FunctionFrame) {
         if (node.value == name)
             node.type = getOriginalTypeOfExtendedType(node);
 }
-/**
- *  Returns true if var_name has been declared within the frame closure
- */
-export function Variable_Is_Declared_In_Closure(var_name: string, frame: FunctionFrame): boolean {
 
-    if (typeof var_name !== "string") throw new Error("[var_name] must be a string.");
-
-    if (frame.declared_variables.has(var_name))
-        return true;
-    else if (frame.prev)
-        return Variable_Is_Declared_In_Closure(var_name, frame.prev);
-    else
-        return false;
-}
-
-export function Variable_Is_Declared_Locally(var_name: string, frame: FunctionFrame): boolean {
-    return frame.declared_variables.has(var_name);
-}
 /**
  * Add var_name to declared variables. var_name should be declared within a function's arguments list, 
  * or within a let, var, const declaration list. Any binding reference that matches the variable name
@@ -132,13 +115,6 @@ export function addReadFlagToBindingVariable(var_name: string, frame: FunctionFr
     if (frame.output_names.has(var_name)) return;
 
     getNonTempFrame(frame).input_names.add(var_name);
-}
-
-export function Name_Is_A_Binding_Variable(var_name: string, frame: FunctionFrame) {
-
-    if (typeof var_name !== "string") throw new Error("[var_name] must be a string.");
-
-    return getRootFrame(frame).binding_variables.has(var_name);
 }
 
 
@@ -267,11 +243,13 @@ export function processUndefinedBindingVariables(component: ComponentData, prese
 
             if (!getSetOfEnvironmentGlobalNames().has(getExternalName(binding_variable))) {
 
-                binding_variable.type == BINDING_VARIABLE_TYPE.MODEL_VARIABLE;
+                binding_variable.type = BINDING_VARIABLE_TYPE.UNDECLARED;
 
                 binding_variable.flags |= BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL
                     //Assumes binding will inevitably be written to 
                     | BINDING_FLAG.WRITTEN;
+            } else {
+                binding_variable.type = BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE;
             }
         }
     }
@@ -321,7 +299,7 @@ export function getCompiledBindingVariableName(
                 return `this.model.${external_name}`;
 
             case BINDING_VARIABLE_TYPE.METHOD_VARIABLE:
-                return "this." + name;
+                return "this." + binding.internal_name;
 
             case BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE:
                 return `window.${external_name}`;
@@ -337,13 +315,12 @@ export function getExternalName(binding: BindingVariable) {
     return binding.external_name == "" ? binding.internal_name : binding.external_name;
 }
 
-export function Binding_Var_Is_Internal_Variable(comp_var: BindingVariable) {
-    return (
-        comp_var.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
-        ||
-        comp_var.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
-    );
-}
+
+
+// ############################################################
+// Static Compilation
+
+
 
 function haveStaticPluginForRefName(name: string, presets: PresetOptions) {
     return presets.plugins.hasPlugin(PLUGIN_TYPE.STATIC_DATA_FETCH, name);
@@ -381,11 +358,10 @@ export function getBindingStaticResolutionType(
 
         let type = 0;
 
-        if (binding.default_val)
-            type = getExpressionStaticResolutionType(binding.default_val, comp, presets);
-
-        else switch (binding.type) {
-
+        switch (binding.type) {
+            case BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE:
+                type = STATIC_RESOLUTION_TYPE.STATIC_WITH_VARIABLE;
+                break;
             case BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE:
                 if (globals)
                     globals.add(binding);
@@ -408,12 +384,24 @@ export function getBindingStaticResolutionType(
                 type = STATIC_RESOLUTION_TYPE.STATIC_WITH_PARENT;
                 break;
 
+            case BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE:
+                type = STATIC_RESOLUTION_TYPE.CONSTANT_STATIC;
+                break;
+
             default:
                 type = STATIC_RESOLUTION_TYPE.INVALID;
                 break;
         }
 
+        if (binding.default_val) {
+            const v = getExpressionStaticResolutionType(binding.default_val, comp, presets);
+            type |= v;
+        }
+
         binding.static_resolution_type = type;
+
+
+
     }
 
     return binding.static_resolution_type;
@@ -458,11 +446,14 @@ export function getExpressionStaticResolutionType(
 
             case BindingIdentifierBinding: case BindingIdentifierReference:
 
+
                 const name = tools.getIdentifierName(node);
+
 
                 let binding = getComponentBinding(name, comp);
 
                 type |= getBindingStaticResolutionType(binding, comp, presets, m, g);
+
 
                 break;
 
@@ -482,6 +473,7 @@ export function getExpressionStaticResolutionType(
                 type |= STATIC_RESOLUTION_TYPE.INVALID;
         }
     }
+
 
     return type;
 }
@@ -538,20 +530,6 @@ export async function getDefaultBindingValueAST(
     return undefined;
 }
 
-function Is_Statically_Resolvable_On_Server(binding: BindingVariable, comp: ComponentData, presets: PresetOptions): boolean {
-    const modules: Set<BindingVariable> = new Set();
-    const globals: Set<BindingVariable> = new Set();
-    const type = getBindingStaticResolutionType(binding, comp, presets, modules, globals);
-
-    if (type == STATIC_RESOLUTION_TYPE.INVALID)
-
-        for (const module of modules)
-            if (!haveStaticPluginForRefName(module.internal_name, presets))
-                return false;
-
-    return true;
-}
-
 /**
  * Runtime static can include ALL GLOBALS, AND NON LOCAL APIS
  * @param input_node 
@@ -587,6 +565,8 @@ export async function getStaticValueAstFromSourceAST(
         const { node, meta } of traverse(input_node, "nodes")
             .filter(
                 "type",
+                JSNodeType.PostExpression,
+                JSNodeType.PreExpression,
                 JSNodeType.CallExpression,
                 BindingIdentifierBinding,
                 BindingIdentifierReference
@@ -595,7 +575,12 @@ export async function getStaticValueAstFromSourceAST(
             .extract(receiver)
     ) {
 
-        if (node.type == JSNodeType.CallExpression) {
+        if (node.type == JSNodeType.PostExpression || node.type == JSNodeType.PreExpression) {
+            const val = await getStaticValueAstFromSourceAST(node.nodes[0], comp, presets, model, parent_comp, ASSUME_RUNTIME);
+            if (val === undefined)
+                return undefined;
+            meta.replace(val);
+        } else if (node.type == JSNodeType.CallExpression) {
 
             const name = tools.getIdentifierName(node);
 
@@ -624,7 +609,6 @@ export async function getStaticValueAstFromSourceAST(
         } else {
 
             const name = tools.getIdentifierName(node);
-
 
             /**
              * Only accept references whose value can be resolved through binding variable 
@@ -658,10 +642,10 @@ export function addHook(component: ComponentData, hook: IntermediateHook) {
 
 /**
  * Retrieves the real default value of the given binding, 
- * or  null
+ * or return null.
  */
 export async function getStaticValue(
-    hook: IndirectHook,
+    input_ast: JSNode,
     component: ComponentData,
     presets: PresetOptions,
     model: any = null,
@@ -669,22 +653,18 @@ export async function getStaticValue(
     ASSUME_RUNTIME: boolean = false
 ) {
 
-
     const ast = await getStaticValueAstFromSourceAST(
-        <JSNode>hook.nodes[0], component, presets, model, parent_comp, ASSUME_RUNTIME
+        input_ast, component, presets, model, parent_comp, ASSUME_RUNTIME
     );
 
-    console.log("--", model, ast, hook);
-
-    if (ast) {
+    if (ast)
         try {
 
             return eval(renderCompressed(<any>ast));
         } catch (e) {
-
+            console.log(e);
         }
 
-    }
     return null;
 }
 
@@ -699,3 +679,62 @@ PluginStore.addSpec({
     },
     validateSpecifier: (str: string) => (str.match(/^[a-zA-Z\_][\w\_\d]*$/) || []).length > 0
 });
+
+
+
+//###################################################################3
+// BOOLEAN FUNCTIONS
+
+
+
+export function Binding_Var_Is_Directly_Accessed(binding_var: BindingVariable) {
+    return (binding_var.type & (BINDING_VARIABLE_TYPE.DIRECT_ACCESS)) > 0;
+}
+
+export function Variable_Is_Declared_Locally(var_name: string, frame: FunctionFrame): boolean {
+    return frame.declared_variables.has(var_name);
+}
+
+export function Name_Is_A_Binding_Variable(var_name: string, frame: FunctionFrame) {
+
+    if (typeof var_name !== "string") throw new Error("[var_name] must be a string.");
+
+    return getRootFrame(frame).binding_variables.has(var_name);
+}
+
+export function Binding_Var_Is_Internal_Variable(comp_var: BindingVariable) {
+    return (
+        comp_var.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
+        ||
+        comp_var.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
+    );
+}
+
+/**
+ *  Returns true if var_name has been declared within the frame closure
+ */
+export function Variable_Is_Declared_In_Closure(var_name: string, frame: FunctionFrame): boolean {
+
+    if (typeof var_name !== "string") throw new Error("[var_name] must be a string.");
+
+    if (frame.declared_variables.has(var_name))
+        return true;
+    else if (frame.prev)
+        return Variable_Is_Declared_In_Closure(var_name, frame.prev);
+    else
+        return false;
+}
+
+function Is_Statically_Resolvable_On_Server(binding: BindingVariable, comp: ComponentData, presets: PresetOptions): boolean {
+    const modules: Set<BindingVariable> = new Set();
+    const globals: Set<BindingVariable> = new Set();
+    const type = getBindingStaticResolutionType(binding, comp, presets, modules, globals);
+
+    if (type == STATIC_RESOLUTION_TYPE.INVALID)
+
+        for (const module of modules)
+            if (!haveStaticPluginForRefName(module.internal_name, presets))
+                return false;
+
+    return true;
+}

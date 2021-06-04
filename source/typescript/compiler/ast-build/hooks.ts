@@ -1,13 +1,12 @@
 import { bidirectionalTraverse, copy, traverse, TraverseState } from "@candlelib/conflagrate";
-import { exp, JSExpressionStatement, JSNode, stmt } from "@candlelib/js";
+import { exp, JSExpressionStatement, JSNode, renderCompressed, stmt } from "@candlelib/js";
 import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, HookTemplatePackage, IndirectHook, Node, PresetOptions, STATIC_RESOLUTION_TYPE } from "../../types/all.js";
 import { ExtendedType } from "../../types/hook";
-import { getBindingStaticResolutionType, getComponentBinding, getExpressionStaticResolutionType, getExternalName, getStaticValueAstFromSourceAST, Name_Is_A_Binding_Variable } from "../common/binding.js";
+import { Binding_Var_Is_Directly_Accessed, getBindingStaticResolutionType, getComponentBinding, getExpressionStaticResolutionType, getExternalName, getStaticValueAstFromSourceAST, Name_Is_A_Binding_Variable } from "../common/binding.js";
 import { appendStmtToFrame, createBuildFrame, Frame_Has_Statements, getStatementsFromFrame, prependStmtToFrame } from "../common/frame.js";
 import { ErrorHash } from "../common/hash_name.js";
 import { Expression_Contains_Await, getPropertyAST } from "../common/js.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
-import { Binding_Var_Is_Directly_Accessed } from "./build.js";
 import { getHookHandlers } from "./hooks/hook-handler.js";
 
 
@@ -166,8 +165,10 @@ export async function processHookForClass(
     }
 
     for (const ast of pending_init_asts) {
+
         const
             component_variables = collectBindingReferences(ast, component);
+
 
         // Create BendingDepend AST Node, set the index and add to list of binding depends
 
@@ -192,7 +193,9 @@ export async function processHookForClass(
                 getExpressionStaticResolutionType(ast, component, presets)
                 ==
                 STATIC_RESOLUTION_TYPE.CONSTANT_STATIC
-            ) continue;
+            ) {
+                continue;
+            };
         }
 
         // Convert runtime static variables to prevent 
@@ -357,11 +360,17 @@ function processBindingVariables(
     index: number
 ): void {
 
-    const nluf_array_entry = exp(`c.u${index}`);
 
     class_info.lu_public_variables.push(<any>getPropertyAST(getExternalName(binding), ((binding.flags << 24) | index) + ""));
 
-    class_info.lfu_table_entries[index] = (nluf_array_entry);
+    if (binding.type == BINDING_VARIABLE_TYPE.METHOD_VARIABLE) {
+        const nluf_array_entry = exp(`c.u${index}___`);
+        class_info.lfu_table_entries[index] = (nluf_array_entry);
+    } else {
+        const nluf_array_entry = exp(`c.u${index}`);
+        class_info.lfu_table_entries[index] = (nluf_array_entry);
+    }
+
 }
 
 

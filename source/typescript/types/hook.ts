@@ -39,27 +39,27 @@ interface buildJSFunction<T, U> {
          * binding variable values are modified
          * @param ast
          */
-        addOnUpdateAST: (ast: T) => void,
+        addOnUpdateAST: (ast: T | U) => void,
         /**
          * Add code that should execute when the component
          * is initialized, such as event listeners and
          * context lookups.
          * @param ast
          */
-        addOnInitAST: (ast: T) => void,
+        addOnInitAST: (ast: T | U) => void,
         /**
          * Add code that should execute when the component 
          * instance is destroyed, as in the case when 
          * the component is evacuated from a container
          * @param ast
          */
-        addOnDestroy: (ast: T) => void
+        addOnDestroy: (ast: T | U) => void
     ): (U | T) | Promise<(U | T)>;
 }
 
-interface buildHTMLFunction {
+interface buildHTMLFunction<T = IndirectHook<JSNode>> {
     (
-        hook: IndirectHook,
+        hook: T,
         comp: ComponentData,
         presets: PresetOptions,
         model: any,
@@ -93,7 +93,7 @@ export interface HookHandlerPackage<T = DefaultJSHandlerNodeType, U = DefaultJSH
      * that resolves to a HookTemplatePackage, or
      * null or Promise that resolves to null.
      */
-    buildHTML: buildHTMLFunction;
+    buildHTML: buildHTMLFunction<T>;
 }
 
 

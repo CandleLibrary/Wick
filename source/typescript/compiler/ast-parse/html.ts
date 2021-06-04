@@ -3,6 +3,7 @@ import { exp, JSNode, JSNodeType, stmt } from "@candlelib/js";
 import URL from "@candlelib/url";
 import { BINDING_VARIABLE_TYPE, ComponentData, HOOK_SELECTOR, HTMLHandler, PresetOptions } from "../../types/all.js";
 import {
+    HTMLAttribute,
     HTMLContainerNode, HTMLNode,
     HTMLNodeClass,
     HTMLNodeType,
@@ -11,32 +12,38 @@ import {
 import { addIndirectHook } from "../ast-build/hooks.js";
 import * as CH from "../ast-build/hooks/container.js";
 import * as DF from "../ast-build/hooks/data-flow.js";
-import * as HT from "../ast-build/hooks/hook-types.js";
+import * as HTML from "../ast-build/hooks/general-html.js";
 import * as IN from "../ast-build/hooks/input.js";
 import { addBindingReference, addBindingVariable, addHook } from "../common/binding.js";
 import { importResource } from "../common/common.js";
 import { ComponentHash } from "../common/hash_name.js";
 import { Is_Tag_From_HTML_Spec } from "../common/html.js";
-import { processFunctionDeclaration, processNodeAsync, processNodeSync, processWickCSS_AST, processWickJS_AST } from "./parse.js";
+import { processFunctionDeclaration, processNodeAsync, processWickCSS_AST, processWickJS_AST } from "./parse.js";
 import { parseComponentAST } from "./source.js";
 
 const default_handler = {
     priority: -Infinity,
     prepareHTMLNode(node) { return node; }
 };
+function getAttributeValue(name, node: HTMLNode) {
+    for (const att of node.attributes) {
+        if (att.name == name)
+            return att.value;
+    }
+}
+
 
 export const html_handlers: Array<HTMLHandler[]> = Array(WICK_AST_NODE_TYPE_SIZE).fill(null).map(() => [default_handler]);
 
-function loadHTMLHandlerInternal(handler: HTMLHandler, ...types: HTMLNodeType[]) {
+function loadHTMLHandlerInternal<T = HTMLNode, P = HTMLNode>(handler: HTMLHandler<T, P>, ...types: HTMLNodeType[]) {
 
     for (const type of types) {
 
-        const handler_array = html_handlers[Math.max((type >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)];
+        const handler_array: any[] = html_handlers[Math.max((type >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)];
 
         handler_array.push(handler);
 
         handler_array.sort((a, b) => a.priority > b.priority ? -1 : 1);;
-
     }
 }
 
@@ -61,7 +68,7 @@ function addWickBindingVariableName(node: WickBindingNode, component) {
             addBindingReference(n, node.primary_ast, component.root_frame);
 }
 
-function processBindingAST(node: any | WickBindingNode, component: ComponentData, presets: PresetOptions) {
+async function processBindingASTAsync(node: any | WickBindingNode, component: ComponentData, presets: PresetOptions) {
     let ast = null;
 
     if (typeof node !== "object") {
@@ -69,19 +76,21 @@ function processBindingAST(node: any | WickBindingNode, component: ComponentData
     } else
         ast = node.primary_ast;
 
-    return processNodeSync(ast, component.root_frame, component, presets);
+    return processNodeAsync(ast, component.root_frame, component, presets);
 }
 
-
+/** ##########################################################
+ * Text Node Binding
+ */
 loadHTMLHandlerInternal({
 
     priority: 1,
 
-    prepareHTMLNode(node: WickBindingNode, _, _1, index, _2, component, presets) {
+    async prepareHTMLNode(node: WickBindingNode, _, _1, index, _2, component, presets) {
 
-        const ast = processBindingAST(node, component, presets);
+        const ast = await processBindingASTAsync(node, component, presets);
 
-        addIndirectHook(component, HT.TextNodeHookType, ast, index + 1);
+        addIndirectHook(component, HTML.TextNodeHookType, ast, index + 1);
 
         addWickBindingVariableName(node, component);
 
@@ -119,19 +128,20 @@ loadHTMLHandlerInternal(
 
 /** ##########################################################
  * BINDING ATTRIBUTE VALUE 
- * 
  */
-loadHTMLHandlerInternal(
+loadHTMLHandlerInternal<HTMLAttribute>(
     {
-        priority: -4,
+        priority: -9000,
 
-        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+        async prepareHTMLNode(attr, host_node, host_element, index, skip, component, presets) {
 
-            const attrib = <any>node;
+            if (attr.IS_BINDING) {
 
-            if (attrib.IS_BINDING) {
+                const ast = await processBindingASTAsync(attr.value, component, presets);
 
-                await processBindingNode(attrib, component, presets, index);
+                // Create an indirect hook for container data attribute
+
+                addIndirectHook(component, HTML.AttributeHook, { name: attr.name, nodes: [ast] }, index, true);
 
                 return null;
             }
@@ -142,17 +152,17 @@ loadHTMLHandlerInternal(
 /** ###########################################################
  *  Container Data Attribute
  */
-loadHTMLHandlerInternal(
+loadHTMLHandlerInternal<HTMLAttribute>(
     {
         priority: -3,
 
-        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+        async prepareHTMLNode(attr, host_node, host_element, index, skip, component, presets) {
 
-            if (node.name == "data" && host_node.IS_CONTAINER) {
+            if (attr.name == "data" && host_node.IS_CONTAINER) {
 
                 // Process the primary expression for Binding Refs and static
                 // data
-                const ast = processBindingAST(node.value, component, presets);
+                const ast = await processBindingASTAsync(attr.value, component, presets);
 
                 // Create an indirect hook for container data attribute
 
@@ -169,7 +179,7 @@ loadHTMLHandlerInternal(
 /** ###########################################################
  *  Container Filter Attribute
  */
-loadHTMLHandlerInternal(
+loadHTMLHandlerInternal<HTMLAttribute>(
     {
         priority: -3,
 
@@ -179,7 +189,7 @@ loadHTMLHandlerInternal(
 
                 // Process the primary expression for Binding Refs and static
                 // data
-                const ast = processBindingAST(node.value, component, presets);
+                const ast = await processBindingASTAsync(node.value, component, presets);
 
                 // Create an indirect hook for container data attribute
 
@@ -197,7 +207,7 @@ loadHTMLHandlerInternal(
 /** ###########################################################
  *  Container Scrub Attribute
  */
-loadHTMLHandlerInternal(
+loadHTMLHandlerInternal<HTMLAttribute>(
     {
         priority: -3,
 
@@ -207,7 +217,7 @@ loadHTMLHandlerInternal(
 
                 // Process the primary expression for Binding Refs and static
                 // data
-                const ast = processBindingAST(node.value, component, presets);
+                const ast = await processBindingASTAsync(node.value, component, presets);
 
                 // Create an indirect hook for container data attribute
 
@@ -224,7 +234,7 @@ loadHTMLHandlerInternal(
 /** ###########################################################
  *  Container Sort Attribute
  */
-loadHTMLHandlerInternal(
+loadHTMLHandlerInternal<HTMLAttribute>(
     {
         priority: -3,
 
@@ -234,7 +244,7 @@ loadHTMLHandlerInternal(
 
                 // Process the primary expression for Binding Refs and static
                 // data
-                const ast = processBindingAST(node.value, component, presets);
+                const ast = await processBindingASTAsync(node.value, component, presets);
 
                 // Create an indirect hook for container data attribute
 
@@ -251,7 +261,7 @@ loadHTMLHandlerInternal(
 /** ###########################################################
  *  Container Limit Attribute
  */
-loadHTMLHandlerInternal(
+loadHTMLHandlerInternal<HTMLAttribute>(
     {
         priority: -3,
 
@@ -261,7 +271,7 @@ loadHTMLHandlerInternal(
 
                 // Process the primary expression for Binding Refs and static
                 // data
-                const ast = processBindingAST(node.value, component, presets);
+                const ast = await processBindingASTAsync(node.value, component, presets);
 
                 // Create an indirect hook for container data attribute
 
@@ -278,7 +288,7 @@ loadHTMLHandlerInternal(
 /** ###########################################################
  *  Container Offset Attribute
  */
-loadHTMLHandlerInternal(
+loadHTMLHandlerInternal<HTMLAttribute>(
     {
         priority: -3,
 
@@ -288,7 +298,7 @@ loadHTMLHandlerInternal(
 
                 // Process the primary expression for Binding Refs and static
                 // data
-                const ast = processBindingAST(node.value, component, presets);
+                const ast = await processBindingASTAsync(node.value, component, presets);
 
                 // Create an indirect hook for container data attribute
 
@@ -305,7 +315,7 @@ loadHTMLHandlerInternal(
 /** ###########################################################
  *  Container Shift Attribute
  */
-loadHTMLHandlerInternal(
+loadHTMLHandlerInternal<HTMLAttribute>(
     {
         priority: -3,
 
@@ -315,7 +325,7 @@ loadHTMLHandlerInternal(
 
                 // Process the primary expression for Binding Refs and static
                 // data
-                const ast = processBindingAST(node.value, component, presets);
+                const ast = await processBindingASTAsync(node.value, component, presets);
 
                 // Create an indirect hook for container data attribute
 
@@ -332,7 +342,7 @@ loadHTMLHandlerInternal(
 /** ###########################################################
  *  Input Text Value Attribute
  */
-loadHTMLHandlerInternal(
+loadHTMLHandlerInternal<HTMLAttribute>(
     {
         priority: -10,
 
@@ -345,7 +355,7 @@ loadHTMLHandlerInternal(
 
                     // Process the primary expression for Binding Refs and static
                     // data
-                    const ast = processBindingAST(node.value, component, presets);
+                    const ast = await processBindingASTAsync(node.value, component, presets);
 
                     // Create an indirect hook for container data attribute
 
@@ -366,21 +376,21 @@ loadHTMLHandlerInternal(
 /** ##########################################################
  * ON* ATTRIBUTES
  */
-loadHTMLHandlerInternal(
+loadHTMLHandlerInternal<HTMLAttribute>(
     {
         priority: 10,
 
-        prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
             if (node.name.slice(0, 2) == "on") {
 
                 // Process the primary expression for Binding Refs and static
                 // data
-                const ast = processBindingAST(node.value, component, presets);
+                const ast = await processBindingASTAsync(node.value, component, presets);
 
                 // Create an indirect hook for container data attribute
 
-                addIndirectHook(component, HT.OnEventHook, { action: node.name, nodes: [ast] }, index);
+                addIndirectHook(component, HTML.OnEventHook, { action: node.name, nodes: [ast] }, index);
 
                 // Remove the attribute from the container element
 
@@ -395,7 +405,7 @@ loadHTMLHandlerInternal(
  * SLOT ATTRIBUTES
  * Adds slot property strings to host node for later evaluation during build phase
  */
-loadHTMLHandlerInternal(
+loadHTMLHandlerInternal<HTMLAttribute>(
     {
         priority: -2,
 
@@ -416,7 +426,7 @@ loadHTMLHandlerInternal(
  * 
  * Container Element component & element attributes
  */
-loadHTMLHandlerInternal(
+loadHTMLHandlerInternal<HTMLAttribute>(
     {
         priority: 10,
 
@@ -437,7 +447,7 @@ loadHTMLHandlerInternal(
 
                 if (node.name == "element" || node.name == "ele") {
 
-                    host_node.tag = node.value;
+                    host_node.tag = <string>node.value;
 
                     return;
                 }
@@ -453,7 +463,7 @@ loadHTMLHandlerInternal(
  * 
  * Export and Import attributes on component elements
  */
-loadHTMLHandlerInternal(
+loadHTMLHandlerInternal<HTMLAttribute>(
     {
         priority: 10,
 
@@ -502,7 +512,9 @@ loadHTMLHandlerInternal(
     }, HTMLNodeType.HTML_STYLE
 );
 
-
+/** ##########################################################
+ *  Foreign Elements
+ */
 loadHTMLHandlerInternal(
     {
         priority: -99999,
@@ -541,177 +553,32 @@ loadHTMLHandlerInternal(
     }, HTMLNodeType.HTML_Element
 );
 
-//#############################################################
-//#############################################################
-//#############################################################
-//#############################################################
-//#############################################################
-//#############################################################
-//                          OLD
-//#############################################################
-//#############################################################
-//#############################################################
-//#############################################################
-//#############################################################
-//#############################################################
-
-
-/**
- * Container Attributes
- */
-
-
-/*
- * HTML Elements lacking a WHATWG HTML tag.
+/** ##########################################################
+ *  Import Elements
  */
 loadHTMLHandlerInternal(
     {
         priority: -99999,
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+            const url = getAttributeValue("url", node) || "",
+                name = getAttributeValue("name", node) || "";
 
+            await importResource(url, component, presets, node, name, [{ local: name, external: name }], component.root_frame);
 
-            if (component.local_component_names.has(node.tag)) {
-
-                const
-                    name = component.local_component_names.get(node.tag),
-                    comp = presets.components.get(name);
-
-                node.child_id = component.children.push(1) - 1;
-
-                node.component = comp;
-
-                if (comp) {
-
-                    node.component_name = node.component.name;
-
-                    //@ts-ignore
-                    node.attributes.push({
-                        type: HTMLNodeType.HTMLAttribute,
-                        name: "expat",
-                        value: ComponentHash(index + comp.name + name)
-                    });
-
-                }
-                node.tag = "div";
-            }
-
-            switch (node.tag.toLowerCase()) {
-
-                case "container":
-
-                    //Turn children into components if they are not already so.   
-                    let ch = null;
-
-                    const ctr: HTMLContainerNode = Object.assign(<HTMLContainerNode>{
-
-                        IS_CONTAINER: true,
-
-                        container_id: component.container_count,
-
-                        components: [],
-
-                        component_names: [],
-
-                        component_attributes: []
-
-                    }, node);
-
-                    for (const n of ctr.nodes) {
-
-                        ch = n;
-
-                        if (!(n.type & HTMLNodeClass.HTML_ELEMENT)) { continue; }
-
-                        const inherited_attributes = [], core_attributes = [];
-
-                        //Check for useif attribute
-                        for (const { name, value } of (n.attributes || [])) {
-
-                            if (name == "useif") {
-
-                                //create a useif binding for this object
-                                addHook(component, {
-                                    selector: HOOK_SELECTOR.CONTAINER_USE_IF,
-                                    //@ts-ignore
-                                    hook_value: value,
-                                    host_node: ctr,
-                                    html_element_index: index
-                                });
-                            } else if (name == "use-empty") {
-                                addHook(component, {
-                                    selector: HOOK_SELECTOR.CONTAINER_USE_EMPTY,
-                                    //@ts-ignore
-                                    hook_value: value,
-                                    host_node: ctr,
-                                    html_element_index: index
-                                });
-                            } else if (typeof value == "object") { } else
-                                inherited_attributes.push([name, value]);
-                        }
-
-                        ctr.component_attributes.push(inherited_attributes);
-
-                        let comp;
-
-                        if (!Is_Tag_From_HTML_Spec(ch.tag) && component.local_component_names.has(ch.tag))
-                            comp = presets.components.get(component.local_component_names.get(ch.tag));
-                        else
-                            comp = await parseComponentAST(Object.assign({}, ch), ch.pos.slice(), new URL("auto_generated"), presets, []);
-
-                        ch.child_id = component.children.push(1) - 1;
-
-                        ctr.components.push(comp);
-
-                        ctr.component_names.push(comp?.name);
-
-                        component.local_component_names.set(comp?.name, comp?.name);
-
-                    }
-
-                    component.container_count++;
-
-                    // Remove all child nodes from container after they have 
-                    // been processed
-                    ctr.nodes.length = 0;
-
-                    skip();
-
-                    return ctr;
-
-                case "mathml":
-                    node.name_space = 2;
-                    break;
-
-                default:
-                    //TODO Plugin here for custom components.  
-                    break;
-            }
-
-
-            return node;
+            return null;
         }
 
-    }, HTMLNodeType.HTML_Element
+    }, HTMLNodeType.HTML_IMPORT
 );
-/*
+
+
+/** ##########################################################
+ *  Script Elements
+ */
 loadHTMLHandlerInternal(
     {
-        priority: -99999,
-
-        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
-
-            node.name_space = 1;
-
-            return node;
-        }
-    }, HTMLNodeType.HTML_SVG
-);
-*/
-
-loadHTMLHandlerInternal(
-    {
-        priority: -99999,
+        priority: -99998,
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
@@ -749,42 +616,138 @@ loadHTMLHandlerInternal(
     }, HTMLNodeType.HTML_SCRIPT
 );
 
+/** ##########################################################
+ * Imported Components 
+ */
 loadHTMLHandlerInternal(
     {
         priority: -99999,
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
-            const url = getAttributeValue("url", node) || "",
-                name = getAttributeValue("name", node) || "";
 
-            await importResource(url, component, presets, node, name, [{ local: name, external: name }], component.root_frame);
 
-            return null;
+            if (component.local_component_names.has(node.tag)) {
+
+                const
+                    name = component.local_component_names.get(node.tag),
+                    comp = presets.components.get(name);
+
+                node.child_id = component.children.push(1) - 1;
+
+                node.component = comp;
+
+                if (comp) {
+
+                    node.component_name = node.component.name;
+
+                    //@ts-ignore
+                    node.attributes.push({
+                        type: HTMLNodeType.HTMLAttribute,
+                        name: "expat",
+                        value: ComponentHash(index + comp.name + name)
+                    });
+
+                }
+                node.tag = "div";
+            }
+
+            return node;
         }
 
-    }, HTMLNodeType.HTML_IMPORT
+    }, HTMLNodeType.HTML_Element
 );
 
-async function processBindingNode(attrib: any, component: ComponentData, presets: PresetOptions, index: number) {
-    if (attrib.value.primary_ast)
-        attrib.value.primary_ast =
-            await processNodeAsync(attrib.value.primary_ast, component.root_frame, component, presets);
+/** ##########################################################
+ *  Container Elements
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: -99998,
 
-    if (attrib.value.secondary_ast)
-        attrib.value.secondary_ast =
-            await processNodeAsync(attrib.value.secondary_ast, component.root_frame, component, presets);
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
-    addHook(component, {
-        selector: attrib.name,
-        hook_value: attrib.value,
-        host_node: attrib,
-        html_element_index: index
-    });
-}
+            if (node.tag.toLowerCase() == "container") {
 
-function getAttributeValue(name, node: HTMLNode) {
-    for (const att of node.attributes) {
-        if (att.name == name)
-            return att.value;
-    }
-}
+                //Turn children into components if they are not already so.   
+                let ch = null;
+
+                const ctr: HTMLContainerNode = Object.assign(<HTMLContainerNode>{
+
+                    IS_CONTAINER: true,
+
+                    container_id: component.container_count,
+
+                    components: [],
+
+                    component_names: [],
+
+                    component_attributes: []
+
+                }, node);
+
+                for (const n of ctr.nodes) {
+
+                    ch = n;
+
+                    if (!(n.type & HTMLNodeClass.HTML_ELEMENT)) { continue; }
+
+                    const inherited_attributes = [], core_attributes = [];
+
+                    //Check for use-if attribute
+                    for (const { name, value } of (n.attributes || [])) {
+
+                        if (name == "use-if") {
+
+                            //create a useif binding for this object
+                            addHook(component, {
+                                selector: HOOK_SELECTOR.CONTAINER_USE_IF,
+                                //@ts-ignore
+                                hook_value: value,
+                                host_node: ctr,
+                                html_element_index: index
+                            });
+                        } else if (name == "use-empty") {
+                            addHook(component, {
+                                selector: HOOK_SELECTOR.CONTAINER_USE_EMPTY,
+                                //@ts-ignore
+                                hook_value: value,
+                                host_node: ctr,
+                                html_element_index: index
+                            });
+                        } else if (typeof value == "object") { } else
+                            inherited_attributes.push([name, value]);
+                    }
+
+                    ctr.component_attributes.push(inherited_attributes);
+
+                    let comp;
+
+                    if (!Is_Tag_From_HTML_Spec(ch.tag) && component.local_component_names.has(ch.tag))
+                        comp = presets.components.get(component.local_component_names.get(ch.tag));
+                    else
+                        comp = await parseComponentAST(Object.assign({}, ch), ch.pos.slice(), new URL("auto_generated"), presets, []);
+
+                    ch.child_id = component.children.push(1) - 1;
+
+                    ctr.components.push(comp);
+
+                    ctr.component_names.push(comp?.name);
+
+                    component.local_component_names.set(comp?.name, comp?.name);
+
+                }
+
+                component.container_count++;
+
+                // Remove all child nodes from container after they have 
+                // been processed
+                ctr.nodes.length = 0;
+
+                skip();
+
+                return ctr;
+            }
+        }
+
+    }, HTMLNodeType.HTML_Element
+);

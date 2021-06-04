@@ -13,7 +13,7 @@ export const enum htmlState {
     IS_INTERLEAVED = 16
 }
 
-export interface HTMLHandler {
+export interface HTMLHandler<T = HTMLNode, P = HTMLNode> {
     priority: number;
     /**
      *
@@ -37,17 +37,27 @@ export interface HTMLHandler {
      * @return @type {HTMLNode} | @type {void} | @type {Promise}
      */
     prepareHTMLNode(
-        node: HTMLNode,
-        host_node: HTMLNode,
-        host_element_node: HTMLNode,
+        node: T,
+        /**
+         * The host (or parent) HTMLNode or HTMLAttribute of `node`
+         */
+        host_node: P,
+        /**
+         * The host HTMLNode 
+         */
+        host_element_node: P,
+        /**
+         * The index position of the HTMLNode when traversed
+         * depth first. Zero starting position
+         */
         element_index: number,
         skip: () => void,
         component: ComponentData,
         presets: PresetOptions
     ):
-        HTMLNode
+        (T | P)
         | void
-        | Promise<HTMLNode | void>;
+        | Promise<T | P | void>;
 }
 
 export interface TemplateHTMLNode {
