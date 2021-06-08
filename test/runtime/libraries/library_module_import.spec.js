@@ -10,7 +10,7 @@ import { RenderPage } from "../../../build/library/compiler/ast-render/webpage.j
 assert_group("Module Import", sequence, () => {
 
     const source_string = `
-    import URL from "@candlelib/url"
+    import URL from "@candlelib/uri"
 
     const d = new URL("temp");
 
@@ -27,7 +27,7 @@ assert_group("Module Import", sequence, () => {
     const str = await componentDataToJSStringCached(component, presets);
 
     await loadModules(presets);
-    const name = "@candlelib/url";
+    const name = "@candlelib/uri";
     const hash_name = ModuleHash(name);
     assert(presets.repo.size > 0);
     assert(presets.repo.has(name) == true);

@@ -1,6 +1,6 @@
 import { traverse } from "@candlelib/conflagrate";
 import { exp, JSNode, JSNodeType, stmt } from "@candlelib/js";
-import URL from "@candlelib/url";
+import URL from "@candlelib/uri";
 import { BINDING_VARIABLE_TYPE, ComponentData, HOOK_SELECTOR, HTMLHandler, PresetOptions } from "../../types/all.js";
 import {
     HTMLAttribute,

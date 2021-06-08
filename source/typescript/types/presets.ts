@@ -1,4 +1,4 @@
-import URL from "@candlelib/url";
+import URL from "@candlelib/uri";
 import { WickRTComponent } from "../runtime/component";
 import { PluginStore } from "../plugin/plugin";
 import { ComponentClassStrings, ComponentData, ComponentStyle } from "./component";

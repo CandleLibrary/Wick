@@ -2,7 +2,7 @@
 import { addModuleToCFW } from "@candlelib/candle";
 import { CSSNode, CSSNodeType, CSSNodeTypeLU } from "@candlelib/css";
 import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlelib/js";
-import URL from "@candlelib/url";
+import URL from "@candlelib/uri";
 import { createCompiledComponentClass, createComponentTemplates } from "../compiler/ast-build/build.js";
 import { parseSource } from "../compiler/ast-parse/source.js";
 import { componentDataToCSS } from "../compiler/ast-render/css.js";

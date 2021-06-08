@@ -1,4 +1,4 @@
-import URL from "@candlelib/url";
+import URL from "@candlelib/uri";
 import { Lexer } from "@candlelib/wind";
 import { PresetOptions } from "source/typescript/types/presets";
 import { WickRTComponent } from "../../runtime/component.js";

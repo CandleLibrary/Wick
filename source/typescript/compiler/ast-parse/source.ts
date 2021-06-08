@@ -1,5 +1,5 @@
 import { JSNode, JSNodeType } from "@candlelib/js";
-import URL from "@candlelib/url";
+import URL from "@candlelib/uri";
 import { Comment, ComponentData, HTMLNode, HTMLNodeClass, PresetOptions } from "../../types/all.js";
 import { processUndefinedBindingVariables } from "../common/binding.js";
 import { ComponentDataClass, createComponentData, createErrorComponent } from "../common/component.js";

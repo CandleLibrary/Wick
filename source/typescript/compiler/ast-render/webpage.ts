@@ -1,5 +1,5 @@
 //Target actual package file to prevent recursive references
-import URL from "@candlelib/url";
+import URL from "@candlelib/uri";
 import { PresetOptions } from "../../types/all.js";
 import { rt } from "../../runtime/global.js";
 import { ComponentData } from "../../types/component";

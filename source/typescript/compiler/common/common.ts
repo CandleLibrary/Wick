@@ -1,6 +1,6 @@
 import { traverse } from "@candlelib/conflagrate";
 import { JSIdentifierClass, JSNode, JSNodeType } from "@candlelib/js";
-import URL from "@candlelib/url";
+import URL from "@candlelib/uri";
 import { Lexer } from "@candlelib/wind";
 import { BINDING_FLAG, BINDING_VARIABLE_TYPE, ComponentData, FunctionFrame, HTMLNode, PresetOptions } from "../../types/all.js";
 import { parseSource } from "../ast-parse/source.js";

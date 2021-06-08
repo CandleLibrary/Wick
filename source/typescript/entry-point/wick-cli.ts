@@ -27,7 +27,7 @@
 */
 import wick_server from "./wick-server.js";
 import { getPackageJsonObject, getProcessArgs } from "@candlelib/paraffin";
-import URL from "@candlelib/url";
+import URL from "@candlelib/uri";
 
 
 const

@@ -1,4 +1,4 @@
-import URL from "@candlelib/url";
+import URL from "@candlelib/uri";
 import HTML from "@candlelib/html";
 import { RenderPage } from "../compiler/ast-render/webpage.js";
 import wick, { WickLibrary } from "./wick-full.js";

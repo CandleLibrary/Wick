@@ -1,4 +1,4 @@
-import URL from "@candlelib/url";
+import URL from "@candlelib/uri";
 import { PluginStore } from "../../plugin/plugin.js";
 import { PresetOptions, UserPresets } from "../../types/presets.js";
 
