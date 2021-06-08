@@ -659,11 +659,8 @@ export async function getStaticValue(
 
     if (ast)
         try {
-
             return eval(renderCompressed(<any>ast));
-        } catch (e) {
-            console.log(e);
-        }
+        } catch (e) { }
 
     return null;
 }

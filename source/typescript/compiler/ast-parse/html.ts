@@ -365,6 +365,22 @@ loadHTMLHandlerInternal<HTMLAttribute>(
 
                     return null;
                 }
+
+                if (host_node.attributes.some(val => val.value == "checkbox")) {
+
+
+                    // Process the primary expression for Binding Refs and static
+                    // data
+                    const ast = await processBindingASTAsync(node.value, component, presets);
+
+                    // Create an indirect hook for container data attribute
+
+                    addIndirectHook(component, IN.CheckboxInputValueHook, ast, index);
+
+                    // Remove the attribute from the container element
+
+                    return null;
+                }
             }
 
         }
@@ -513,47 +529,6 @@ loadHTMLHandlerInternal(
 );
 
 /** ##########################################################
- *  Foreign Elements
- */
-loadHTMLHandlerInternal(
-    {
-        priority: -99999,
-
-        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
-
-
-            if (component.local_component_names.has(node.tag)) {
-
-                const
-                    name = component.local_component_names.get(node.tag),
-                    comp = presets.components.get(name);
-
-                node.child_id = component.children.push(1) - 1;
-
-                node.component = comp;
-
-                if (comp) {
-
-                    node.component_name = node.component.name;
-
-                    //@ts-ignore
-                    node.attributes.push({
-                        type: HTMLNodeType.HTMLAttribute,
-                        name: "expat",
-                        value: ComponentHash(index + comp.name + name)
-                    });
-
-                }
-                node.tag = "div";
-
-                return node;
-            }
-        }
-
-    }, HTMLNodeType.HTML_Element
-);
-
-/** ##########################################################
  *  Import Elements
  */
 loadHTMLHandlerInternal(
@@ -658,6 +633,94 @@ loadHTMLHandlerInternal(
 );
 
 /** ##########################################################
+ *  Add-HOC Component
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: -999,
+
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+
+
+            if (node.tag.toLocaleLowerCase() == "component") {
+
+                node.tag = "div";
+
+                const comp = await parseComponentAST(Object.assign({}, node), node.pos.slice(), new URL("auto_generated"), presets, []);
+
+                node.nodes.length = 0;
+
+                node.child_id = component.children.push(1) - 1;
+
+                node.component = comp;
+
+                if (comp) {
+
+                    component.local_component_names.set(comp?.name, comp?.name);
+
+                    skip();
+
+                    node.component_name = node.component.name;
+
+                    //@ts-ignore
+                    node.attributes.push({
+                        type: HTMLNodeType.HTMLAttribute,
+                        name: "expat",
+                        value: ComponentHash(index + comp.name)
+                    });
+                    /*
+                    */
+                }
+
+                return node;
+            }
+        }
+
+    }, HTMLNodeType.HTML_Element
+);
+
+/** ##########################################################
+ *  Foreign Elements
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: -99999,
+
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+
+
+            if (component.local_component_names.has(node.tag)) {
+
+                const
+                    name = component.local_component_names.get(node.tag),
+                    comp = presets.components.get(name);
+
+                node.child_id = component.children.push(1) - 1;
+
+                node.component = comp;
+
+                if (comp) {
+
+                    node.component_name = node.component.name;
+
+                    //@ts-ignore
+                    node.attributes.push({
+                        type: HTMLNodeType.HTMLAttribute,
+                        name: "expat",
+                        value: ComponentHash(index + comp.name + name)
+                    });
+
+                }
+                node.tag = "div";
+
+                return node;
+            }
+        }
+
+    }, HTMLNodeType.HTML_Element
+);
+
+/** ##########################################################
  *  Container Elements
  */
 loadHTMLHandlerInternal(
@@ -728,9 +791,7 @@ loadHTMLHandlerInternal(
                         comp = await parseComponentAST(Object.assign({}, ch), ch.pos.slice(), new URL("auto_generated"), presets, []);
 
                     ch.child_id = component.children.push(1) - 1;
-
                     ctr.components.push(comp);
-
                     ctr.component_names.push(comp?.name);
 
                     component.local_component_names.set(comp?.name, comp?.name);
