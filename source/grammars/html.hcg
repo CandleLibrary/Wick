@@ -63,23 +63,23 @@
     | TAG
     | DTD                                                                                                                            
     
-<> ATTRIBUTES > ATTRIBUTE(+)                                    f:r { $$sym1 }
+<> ATTRIBUTES > ATTRIBUTE(+)                                    
 
 <> ATTRIBUTE > ATTRIBUTE_HEAD \= ATTRIBUTE_BODY                                                  
-                                                                f:r { {type:env.typ.HTMLAttribute, name:$sym1, value:$sym3, IS_BINDING:false, pos } }
+                                                                f:r { {type:env.typ.HTMLAttribute, name:$1, value:$3, IS_BINDING:false, pos } }
     | ATTRIBUTE_HEAD                                                                            
-                                                                f:r { {type:env.typ.HTMLAttribute, name:$sym1, value:"", IS_BINDING:false, pos } }
+                                                                f:r { {type:env.typ.HTMLAttribute, name:$1, value:"", IS_BINDING:false, pos } }
 
 <> ATTRIBUTE_HEAD > ' identifier? '                                                             
-                                                                f:r { $$sym2 }
+                                                                f:r { $2 }
     | " identifier? "                                                                           
-                                                                f:r { $$sym2 }
+                                                                f:r { $2 }
     | identifier
 
 <> ATTRIBUTE_BODY > \" BODY_SYMBOLS(*\" ) \"                                                      
-                                                                f:return{ $sym2 || "" }
+                                                                f:r { $2 || "" }
     | \' BODY_SYMBOLS(*\" ) \''                                                                   
-                                                                f:return{ $sym2 || "" }
+                                                                f:r { $2 || "" }
     | identifier
     | g:num                                          
 
