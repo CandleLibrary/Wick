@@ -116,7 +116,7 @@
     "@candlefw/lantern" "*"
     "@candlefw/spark" "*"
     "@candlefw/url" "*"
-    "@candlefw/wax" "*"
+    "@candlelib/paraffin" "*"
     "@candlefw/wick" "*"
     "@candlefw/wind" "*"
     deep-equal "^2.0.1"
@@ -135,9 +135,9 @@
   dependencies:
     "@candlefw/whind" latest
 
-"@candlefw/wax@*":
+"@candlelib/paraffin@*":
   version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@candlefw/wax/-/wax-0.0.3.tgz#7b904569eb5dfe7e3d32403ea50a73e6036cfc9b"
+  resolved "https://registry.yarnpkg.com/@candlelib/paraffin/-/wax-0.0.3.tgz#7b904569eb5dfe7e3d32403ea50a73e6036cfc9b"
   integrity sha512-85i9cPSRNuBmQHx0PBG+m2ichoTCkj6aqANdhcrDpXs6zspM2xqm+FFR9vZ5ZBN30/mh4VRyRsYZqdV4UJgoVw==
   dependencies:
     "@candlefw/conflagrate" "*"
