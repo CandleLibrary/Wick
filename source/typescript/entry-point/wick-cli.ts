@@ -26,7 +26,7 @@
 	compiled. 
 */
 import wick_server from "./wick-server.js";
-import { getPackageJsonObject, getProcessArgs } from "@candlelib/wax";
+import { getPackageJsonObject, getProcessArgs } from "@candlelib/paraffin";
 import URL from "@candlelib/url";
 
 

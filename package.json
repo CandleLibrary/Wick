@@ -6,7 +6,7 @@
     "types": "./build/types/entry-point/wick-server.d.ts",
     "type": "module",
     "bin": {
-        "wick": "./source/cli.js"
+        "candle.wick": "./build/library/entry-point/wick-cli.js"
     },
     "scripts": {
         "prepublishOnly": "tsc && cure test",
@@ -15,7 +15,7 @@
         "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
         "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/html.hcg",
         "compile.test": "node --experimental-modules ./test/config.mjs",
-        "test": "candle.cure --headless ./test/*",
+        "test": "candle.cure --reporter null --headless ./test/*",
         "test.watch": "cfw.test -w ./test/*",
         "server": "lantern"
     },
@@ -59,7 +59,8 @@
         "@candlelib/spark": "0.2.0",
         "@candlelib/url": "0.1.5",
         "@candlelib/wind": "0.4.4",
-        "@candlelib/html": "0.1.1"
+        "@candlelib/html": "0.1.1",
+        "@candlelib/paraffin": "*"
     },
     "esm": {
         "cjs": {
