@@ -160,6 +160,7 @@ export async function parseComponentAST(
             }
 
         } catch (e) {
+            console.log(e);
             parse_errors.push(e, ...(component?.errors ?? []));
         }
     return createErrorComponent(parse_errors, source_string, url, component);
@@ -196,6 +197,7 @@ export async function fetchASTFromRemote(url: URL) {
             errors.push(error);
 
     } catch (e) {
+        console.log(e);
         errors.push(e);
     }
 
