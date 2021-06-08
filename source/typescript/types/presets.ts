@@ -58,7 +58,7 @@ export interface PresetOptions {
         INCLUDE_SOURCE_URI?: boolean;
 
         /**
-         *  CandleFW src URLs used when rendering wick components to pages
+         *  CandleLibrary src URLs used when rendering wick components to pages
          */
         url?: {
             wick?: string,

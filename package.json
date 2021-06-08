@@ -16,12 +16,12 @@
         "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/html.hcg",
         "compile.test": "node --experimental-modules ./test/config.mjs",
         "test": "candle.cure --reporter null --headless ./test/*",
-        "test.watch": "cfw.test -w ./test/*",
+        "test.watch": "candle.cure -w ./test/*",
         "server": "lantern"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/candlefw/wick.git"
+        "url": "git+https://github.com/CandleLibrary/wick.git"
     },
     "keywords": [
         "SPA",
@@ -40,9 +40,9 @@
     "author": "Anthony Weathersby",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/candlefw/wick/issues"
+        "url": "https://github.com/CandleLibrary/wick/issues"
     },
-    "homepage": "https://github.com/candlefw/wick#readme",
+    "homepage": "https://github.com/CandleLibrary/wick#readme",
     "devDependencies": {
         "@candlelib/cure": "0.5.0"
     },

@@ -2,7 +2,7 @@
 # Wick HTML Parser file
 # 
 
-@NAME CandleFW_HTML_Parser
+@NAME CandleLibrary_HTML_Parser
 
 @EXT html
 
