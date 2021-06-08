@@ -2,6 +2,6 @@ import {data as parent_data} from "@parent";
 
 var data = [1,2,3];
 
-export default <div> ${ data } ${ parent_data } </div>
+export default <div> ${ data },${ parent_data } </div>
 
 export { data as my_data }

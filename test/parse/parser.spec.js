@@ -19,7 +19,7 @@ assert_group("Sanity", () => {
     assert("Sanity Parse", ast != null);
 });
 
-assert_group("Function frame and bindings", () => {
+assert_group("Function frame and bindings", sequence, () => {
 
     const source_string = `
 
@@ -77,7 +77,7 @@ assert_group("Function frame and bindings", () => {
     assert(getBindingStaticResolutionType(F, component, presets) == 255);
 });
 
-assert_group(s, "JS module with multiple elements", () => {
+assert_group(s, "JS module with multiple elements", sequence, () => {
 
     var source_string = `
 

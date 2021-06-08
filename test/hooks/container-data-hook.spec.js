@@ -82,7 +82,7 @@ assert_group("Server - Directly Assigned Dynamic Iterable With Const Binding Var
     //Insert Required API value before instantiating components
     wick_server.rt.addAPI({ test: "gloria" });
 
-    assert(comp.class_string == "");
+    //    assert(comp.class_string == "");
 
     const comp_instance = comp.createInstance();
 

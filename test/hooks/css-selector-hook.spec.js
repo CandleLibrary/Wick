@@ -2,19 +2,26 @@
  * Filtered container models 
  */
 
-import wick_server from "../../build/library/entry-point/wick-server.js";
+import spark from "@candlelib/spark";
 import wick_browser from "@candlelib/wick";
 
 
-wick_server.utils.enableTest();
+wick_browser.utils.enableTest();
 
-assert_group("Server - Basic text input value binding", () => {
+assert_group("Browser - Basic CSS selector string", browser, sequence, () => {
 
-    const comp = (await wick_server(`
+    // Needed to allow time for the CSS parser to initialize
+    await spark.sleep(200aaaaadaaaaa);
+
+    const comp = (await wick_browser(`
      
     var temp = "@a.test1";
 
-    temp.style = "color:red";
+    temp.style.color = "red";
+
+    var temp2 = "@a.test2";
+
+    temp2.style.color = "blue";
      
      export default <div> 
         <canvas></canvas>
@@ -22,9 +29,9 @@ assert_group("Server - Basic text input value binding", () => {
         <a class="test2">TESTB</a>
      </div>
      `));
+    const comp_instance = new comp.class();
 
+    assert(comp_instance.ele.children[1].style.color == "red");
+    assert(comp_instance.ele.children[2].style.color == "blue");
 
-    assert(comp.class_string == "");
-    
-    const comp_instance = comp.createInstance();
 });

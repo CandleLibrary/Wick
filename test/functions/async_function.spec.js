@@ -1,9 +1,8 @@
 
 import { assert } from "console";
-import Presets from "../../build/library/compiler/common/presets.js";
-import { createCompiledComponentClass, createClassInfoObject, processMethods } from "../../build/library/compiler/ast-build/build.js";
+import { createCompiledComponentClass } from "../../build/library/compiler/ast-build/build.js";
 import { parseSource } from "../../build/library/compiler/ast-parse/source.js";
-import { componentDataToJSStringCached } from "../../build/library/compiler/ast-render/js.js";
+import Presets from "../../build/library/compiler/common/presets.js";
 
 assert_group("Async Methods", sequence, () => {
 
@@ -25,10 +24,9 @@ assert_group("Async Methods", sequence, () => {
     </div>`;
 
     const presets = new Presets();
-    const class_info = createClassInfoObject();
     const component = await parseSource(source_string, presets);
 
-    processMethods(component, class_info);
+    const class_info = await createCompiledComponentClass(component, presets);
 
     assert("Detects when function should be made async", component.frames[1].IS_ASYNC == true);
     assert("Creates an asynchronous method when compiled", class_info.methods[0].ASYNC == true);

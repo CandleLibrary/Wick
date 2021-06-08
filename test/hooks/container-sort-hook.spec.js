@@ -8,7 +8,7 @@ import wick_browser from "@candlelib/wick";
 
 wick_server.utils.enableTest();
 
-assert_group("Server - Static sort expression", () => {
+assert_group("Server - Static sort expression", sequence, () => {
 
     const comp = (await wick_server(`
      const A = "alpha";

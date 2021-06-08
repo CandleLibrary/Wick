@@ -33,11 +33,11 @@ assert_group(browser, sequence, () => {
 
     await spark.sleep(100);
 
-    assert(await comp.getNumberOfMatches("*") == 3);
+    assert(await comp.getNumberOfMatches("*") == 4);
 
     model.limit = 3;
 
-    await spark.sleep(100);
+    await spark.sleep(200);
 
-    assert(await comp.getNumberOfMatches("*") == 7);
+    assert(await comp.getNumberOfMatches("*") == 9);
 });

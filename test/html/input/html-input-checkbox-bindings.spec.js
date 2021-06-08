@@ -19,7 +19,7 @@ const comp_class = (await wick(`
 import { input_data } from "@model";
 
 export default <div>
-<input type="checkbox" checked=\${input_data}> 
+<input type="checkbox" value=\${input_data}> 
 </div>;`)).class;
 const comp = new comp_class(data);
 
@@ -45,7 +45,7 @@ assert_group(sequence, () => {
 
     data.input_data = false;
 
-    await spark.sleep(40);
+    await spark.sleep(200);
 
     assert(browser, comp.ele.children[0].checked == false);
 
@@ -53,7 +53,7 @@ assert_group(sequence, () => {
 
     comp.ele.children[0].dispatchEvent(new InputEvent("input"), comp.ele.children[0]);
 
-    await spark.sleep(40);
+    await spark.sleep(200);
 
     assert(browser, data.input_data == true);
 
