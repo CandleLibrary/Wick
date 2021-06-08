@@ -661,7 +661,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     call(pending_function_index: number, call_depth: number = 0) {
 
-        if (call_depth >= 1) return;
+        //if (call_depth >= 1) return;
 
         for (const [index] of this.binding_call_set)
             if (index == pending_function_index)
