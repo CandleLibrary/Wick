@@ -15,7 +15,7 @@
         "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
         "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/html.hcg",
         "compile.test": "node --experimental-modules ./test/config.mjs",
-        "test": "candle.cure --reporter null --headless ./test/*",
+        "test": "candle.cure --reporter ci --headless ./test/*",
         "test.watch": "candle.cure -w ./test/*",
         "server": "lantern"
     },
