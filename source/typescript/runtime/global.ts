@@ -40,9 +40,16 @@ export interface WickRuntime {
 
 const rt: WickRuntime = (() => {
 
+    let glow = null;
+
     return <WickRuntime>{
 
-        get glow() { return cfw.glow; },
+        async loadGlow(glow_url: string = "@candlelib/glow") {
+            //Import glow module if it is not present
+            glow = await import(glow_url);
+        },
+
+        get glow() { return glow; },
 
         get p() { return rt.presets; },
 

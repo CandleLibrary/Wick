@@ -67,6 +67,7 @@ export interface PresetOptions {
         };
 
 
+
     };
 
     /**
@@ -193,6 +194,11 @@ export interface PresetOptions {
     component_class_string: Map<string, ComponentClassStrings>;
 
     styles?: Map<string, ComponentStyle>;
+
+    /**
+     * The @candlelib/glow module if it has been imported
+     */
+    glow?: any;
 }
 
 
