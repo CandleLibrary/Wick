@@ -14,9 +14,9 @@ import { createClassStringObject } from "./js.js";
 
 await URL.server();
 
-const base = await URL.resolveRelative("@candlelib/wick");
+const base = await URL.resolveRelative("@candlelib/wick/");
 
-const { version, name }: any = await (URL.resolveRelative("../package.json", base)).fetchJSON();
+const { version, name }: any = await (URL.resolveRelative("./package.json", base)).fetchJSON();
 
 type PageRenderHooks = {
     /**
@@ -130,7 +130,7 @@ export async function RenderPage(
 
         const class_info = await createCompiledComponentClass(comp, presets, false, false);
 
-        const { class_string } = createClassStringObject(comp, class_info, presets);
+        const { class_string } = createClassStringObject(comp, class_info, presets, "w.rt.rC");
 
         if (comp.HTML_HEAD.length > 0) {
             for (const node of comp.HTML_HEAD) {

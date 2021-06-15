@@ -13,7 +13,8 @@ const
         : str => Buffer.from(str, 'binary').toString('base64');
 
 function componentStringToJS({ class_string: cls, source_map }: ComponentClassStrings, component: ComponentData, presets: PresetOptions) {
-
+    //Ensure WickRTComponent is inside closure
+    const class_ref = WickRTComponent;
     return (
         eval(
             "c=>" + cls + (presets.options.GENERATE_SOURCE_MAPS ? `\n${source_map}` : "")
@@ -90,7 +91,8 @@ export async function componentDataToJSStringCached(
 export function createClassStringObject(
     component: ComponentData,
     class_info: CompiledComponentClass,
-    presets: PresetOptions
+    presets: PresetOptions,
+    class_name: string = "WickRTComponent"
 ): ComponentClassStrings {
 
     let cl = "", sm = "";
@@ -101,9 +103,9 @@ export function createClassStringObject(
 
     if (component.global_model_name)
         component_class = stmt(`class ${name} extends 
-        cfw.wick.rt.C {constructor(m,e,p,w){super(m,e,p,w,"${component.global_model_name}");}}`);
+        ${class_name} {constructor(m,e,p,w){super(m,e,p,w,"${component.global_model_name}");}}`);
     else
-        component_class = stmt(`class ${name} extends cfw.wick.rt.C {}`);
+        component_class = stmt(`class ${name} extends ${class_name} {}`);
 
     //@ts-ignore
     component_class.nodes.push(...class_info.methods.filter(m => m.nodes[2].nodes.length > 0));
