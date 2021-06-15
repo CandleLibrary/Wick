@@ -1,9 +1,9 @@
-import { cfw } from "@candlelib/candle";
 import { Transition } from "@candlelib/glow";
 import spark, { Sparky } from "@candlelib/spark";
 import { WickRTComponent } from "./component.js";
 import { ObservableModel, ObservableWatcher } from "../types/model";
 import { hydrateComponentElements } from "./html.js";
+import { rt } from "./global.js";
 
 function getColumnRow(index, offset, set_size) {
     const adjusted_index = index - offset * set_size;
@@ -14,13 +14,13 @@ function getColumnRow(index, offset, set_size) {
 
 //Poly fill for transitions if glow is not included
 function createTransition(val?: boolean) {
-    if (!cfw.glow) {
+    if (!rt.glow) {
         const trs = { add: () => null, addEventListener: (n, v) => v() };
         return {
             in: trs, out: trs, play: () => null, addEventListener: (n, v) => v()
         };
     }
-    else return cfw.glow.createTransition(val);
+    else return rt.glow.createTransition(val);
 }
 
 interface WindowData {
@@ -954,7 +954,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
                 }
             }
 
-            cfw.spark.queueUpdate(this);
+            spark.queueUpdate(this);
         }
     }
     addEvaluator(evalator: (a: any) => boolean) { this.evaluators.push(evalator); }

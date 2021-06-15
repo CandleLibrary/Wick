@@ -1,8 +1,6 @@
 import { Lexer } from "@candlelib/wind";
 import { JSNode } from "@candlelib/js";
 
-
-
 export enum BINDING_VARIABLE_TYPE {
     UNDECLARED = 0,
 

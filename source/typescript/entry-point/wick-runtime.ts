@@ -1,4 +1,3 @@
-import { addModuleToCFW } from "@candlelib/candle";
 import Presets from "../compiler/common/presets.js";
 import { rt } from "../runtime/global.js";
 import {
@@ -99,5 +98,3 @@ wick.rt.init = async function () {
 export { Presets };
 
 export default wick;
-
-addModuleToCFW(wick, "wick");

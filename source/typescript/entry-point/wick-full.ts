@@ -1,5 +1,4 @@
 
-import { addModuleToCFW } from "@candlelib/candle";
 import { CSSNode, CSSNodeType, CSSNodeTypeLU } from "@candlelib/css";
 import { JSNode, JSNodeType, JSNodeTypeLU } from "@candlelib/js";
 import URL from "@candlelib/uri";
@@ -240,8 +239,6 @@ const wick: WickLibrary = Object.assign(componentCreate,
         },
 
     });
-
-addModuleToCFW(wick, "wick");
 
 export default wick;
 

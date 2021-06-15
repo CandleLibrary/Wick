@@ -1,11 +1,7 @@
 
-import { cfw } from "@candlelib/candle";
 import Presets from "../compiler/common/presets.js";
 import { PresetOptions, UserPresets } from "../types/presets";
 import { WickRTComponent } from "./component.js";
-
-
-
 
 export const global_object = (typeof global !== "undefined") ? global : window;
 

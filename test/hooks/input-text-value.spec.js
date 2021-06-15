@@ -3,9 +3,8 @@
  */
 
 import wick_server from "../../build/library/entry-point/wick-server.js";
-import wick_browser from "@candlelib/wick";
-import { TextInputValueHook } from "../../build/library/compiler/ast-build/hooks/input.js";
 
+import { TextInputValueHook } from "../../build/library/compiler/ast-build/hooks/input.js";
 
 wick_server.utils.enableTest();
 
