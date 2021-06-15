@@ -11,7 +11,7 @@ wick_browser.utils.enableTest();
 assert_group("Browser - Basic CSS selector string", browser, sequence, () => {
 
     // Needed to allow time for the CSS parser to initialize
-    await spark.sleep(200aaaaadaaaaa);
+    await spark.sleep(500);
 
     const comp = (await wick_browser(`
      
