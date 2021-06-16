@@ -24,4 +24,4 @@ export default <div>
     </div>
 </container>`));
 
-assert(comp.class_string == "");
+//assert(comp.class_string == "");
