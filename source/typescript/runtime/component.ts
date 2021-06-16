@@ -514,17 +514,13 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
     update(data, flags: number = 0, IMMEDIATE: boolean = false) {
 
-
-
         if (!this.CONNECTED) return;
-
-
 
         for (const name in data) {
 
             const val = data[name];
 
-            if (typeof val !== "undefined") {
+            if (typeof val !== "undefined" && this.nlu) {
 
                 const index = this.nlu[name];
 

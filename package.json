@@ -9,7 +9,7 @@
         "candle.wick": "./build/library/entry-point/wick-cli.js"
     },
     "scripts": {
-        "prepublish": "rm -rf ./build && tsc & sleep 10",
+        "prepublishOnly": "rm -rf ./build && tsc & sleep 10",
         "compile": "hydrocarbon compile --parser glalr -u -o ./source/typescript/parser/ -e ./source/typescript/parser/proxy_parser_environment.js -t module ./source/grammars/wick_parser.hcg",
         "compile.mount": "hydrocarbon compile --parser glalr -u -d -m -e ./build/library/parser/env.js -t module ./source/grammars/wick_parser.hcg",
         "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
