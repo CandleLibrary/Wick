@@ -468,9 +468,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             } else {
 
                 //Create a polling monitor
-                if (this.ALLOW_POLLING)
-                    if (this.polling_id < 0)
-                        this.polling_id = <number><unknown>setInterval(this.onModelUpdate.bind(this), 1000 / 15);
+                //if (this.ALLOW_POLLING)
+                if (this.polling_id < 0)
+                    this.polling_id = <number><unknown>setInterval(this.onModelUpdate.bind(this), 1000 / 15);
             }
 
             this.onModelUpdate.call(this);
