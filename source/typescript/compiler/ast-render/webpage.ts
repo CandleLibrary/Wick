@@ -11,12 +11,11 @@ import { componentDataToHTML, htmlTemplateToString } from "./html.js";
 // Load current wick package name and version
 
 import { createClassStringObject } from "./js.js";
+import { getPackageJsonObject } from "@candlelib/paraffin";
 
 await URL.server();
 
-const base = await URL.resolveRelative("@candlelib/wick/");
-
-const { version, name }: any = await (URL.resolveRelative("./package.json", base)).fetchJSON();
+const { package: { version, name } } = await getPackageJsonObject(URL.getEXEURL(import.meta));
 
 type PageRenderHooks = {
     /**
