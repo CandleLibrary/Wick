@@ -1,20 +1,19 @@
 //Target actual package file to prevent recursive references
+import { getPackageJsonObject } from "@candlelib/paraffin";
 import URL from "@candlelib/uri";
-import { PresetOptions } from "../../types/all.js";
 import { rt } from "../../runtime/global.js";
+import { PresetOptions } from "../../types/all.js";
 import { ComponentData } from "../../types/component";
 import { createCompiledComponentClass } from "../ast-build/build.js";
 import { renderCompressed } from "../source-code-render/render.js";
 import { componentDataToCSS } from "./css.js";
 import { componentDataToHTML, htmlTemplateToString } from "./html.js";
-
-// Load current wick package name and version
-
 import { createClassStringObject } from "./js.js";
-import { getPackageJsonObject } from "@candlelib/paraffin";
+
 
 await URL.server();
 
+// Load current wick package name and version
 const { package: { version, name } } = await getPackageJsonObject(URL.getEXEURL(import.meta));
 
 type PageRenderHooks = {
