@@ -33,6 +33,12 @@
         "REST",
         "APP"
     ],
+    "files": [
+        "/build",
+        "/README.md",
+        "/CHANGELOG.md",
+        "/LICENSE"
+    ],
     "directories": {
         "lib": "source",
         "test": "test"
