@@ -499,23 +499,18 @@ loadJSParseHandlerInternal(
             const name = (<JSIdentifierReference>node).value;
 
             if (node.type !== BindingIdentifierReference) {
-                if (
-                    !Variable_Is_Declared_In_Closure(name, frame)
-                    &&
-                    Name_Is_A_Binding_Variable(name, frame)
-
-                ) {
-
+                if (!Variable_Is_Declared_In_Closure(name, frame)) {
                     addBindingReference(
                         <JSNode>node, <JSNode>parent_node, frame
                     );
 
-                    addReadFlagToBindingVariable(name, frame);
-                } else
+                    if (Name_Is_A_Binding_Variable(name, frame)) {
 
-                    addBindingReference(
-                        <JSNode>node, <JSNode>parent_node, frame
-                    );
+                        addReadFlagToBindingVariable(name, frame);
+                    }
+                } else {
+                    addNameToDeclaredVariables(name, frame);
+                }
             }
             return <JSNode>node;
         }

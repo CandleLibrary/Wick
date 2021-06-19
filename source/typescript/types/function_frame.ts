@@ -1,9 +1,10 @@
 import { JSFunctionDeclaration, JSIdentifier, JSIdentifierBinding, JSIdentifierReference, JSMethod, JSNode } from "@candlelib/js";
 import { ExtendedType } from "./hook";
 import { BindingVariable } from "./binding";
+
 /**
- * Reference information for a single function defined within 
- * a Wick component source file.
+ * Information on the closure of function defined within 
+ * a Wick component.
  */
 export interface FunctionFrame {
     /**

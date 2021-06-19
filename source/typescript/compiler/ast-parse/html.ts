@@ -56,18 +56,6 @@ export function loadHTMLHandler(handler: HTMLHandler, ...types: HTMLNodeType[]) 
     return loadHTMLHandler(modified_handler, ...types);
 }
 
-/*
- * Wick Binding Nodes
- */
-function addWickBindingVariableName(node: WickBindingNode, component) {
-
-    for (const { node: n } of traverse(node.primary_ast, "nodes"))
-
-        if (n.type == JSNodeType.IdentifierReference)
-
-            addBindingReference(n, node.primary_ast, component.root_frame);
-}
-
 async function processBindingASTAsync(node: any | WickBindingNode, component: ComponentData, presets: PresetOptions) {
     let ast = null;
 
@@ -91,8 +79,6 @@ loadHTMLHandlerInternal({
         const ast = await processBindingASTAsync(node, component, presets);
 
         addIndirectHook(component, HTML.TextNodeHookType, ast, index + 1);
-
-        addWickBindingVariableName(node, component);
 
         // Skip processing this node in the outer scope, 
         // it will be replaced with a CompiledBinding node.
