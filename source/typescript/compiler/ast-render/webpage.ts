@@ -128,7 +128,7 @@ export async function RenderPage(
 
         const class_info = await createCompiledComponentClass(comp, presets, false, false);
 
-        const { class_string } = createClassStringObject(comp, class_info, presets, "w.rt.rC");
+        const { class_string } = createClassStringObject(comp, class_info, presets, "w.rt.C");
 
         if (comp.HTML_HEAD.length > 0) {
             for (const node of comp.HTML_HEAD) {
