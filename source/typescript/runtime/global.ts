@@ -9,13 +9,18 @@ export interface WickRuntime {
     glow: any,
 
     /**
-     * Register component CLASS
+     * Runtime Component Class Constructor
+     */
+    C: typeof WickRTComponent;
+
+    /**
+     * Register component class
      * @param arg1 
      */
     rC(arg1: typeof WickRTComponent): void;
 
     /**
-     * Retrieve component CLASS
+     * Retrieve component class
      * @param name 
      */
     gC(name: string): typeof WickRTComponent,
@@ -53,13 +58,14 @@ const rt: WickRuntime = (() => {
 
         get p() { return rt.presets; },
 
-        /**
-         * Runtime Component Class Constructor
-         */
         get C() { return WickRTComponent; },
 
         presets: null,
-
+        /**
+         * Registers component
+         * @param component - A WickTt
+         * @returns 
+         */
         rC: component => (rt.presets.component_class.set(component.name, component), component),
 
         gC: component_name => rt.presets.component_class.get(component_name),
