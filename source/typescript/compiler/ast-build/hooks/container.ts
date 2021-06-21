@@ -1,5 +1,5 @@
 import { traverse } from "@candlelib/conflagrate";
-import { exp, JSExpressionStatement, JSIdentifier, JSNode, renderCompressed, stmt } from "@candlelib/js";
+import { exp, JSExpressionStatement, JSIdentifier, JSNode, JSNodeType, renderCompressed, stmt } from "@candlelib/js";
 import { IndirectHook } from "source/typescript/types/hook.js";
 import { BINDING_VARIABLE_TYPE, ComponentData, ContainerDomLiteral, HTMLNodeType, STATIC_RESOLUTION_TYPE } from "../../../types/all.js";
 import { getComponentBinding, getExpressionStaticResolutionType, getStaticValue, getStaticValueAstFromSourceAST } from "../../common/binding.js";
@@ -165,7 +165,9 @@ function createContainerDynamicValue(container_method_name: string) {
 
 async function createContainerStaticValue(hook: IndirectHook<JSNode>, comp, presets, model, parents) {
 
+
     if (getExpressionStaticResolutionType(hook.nodes[0], comp, presets) == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
+
 
         const ast = await getStaticValueAstFromSourceAST(hook.nodes[0], comp, presets, model, parents, false);
 
@@ -198,16 +200,22 @@ function createContainerStaticArrowFunction(argument_size: number = 1) {
     return async function (hook: IndirectHook<JSNode>, comp, presets, model, parents) {
 
         let arrow_argument_match = new Array(argument_size).fill(null);
+ 
+        let ast = hook.nodes[0];
 
-        // console.log("----", arrow_argument_match, renderCompressed(hook.nodes[0]), getListOfUnboundArgs(hook.nodes[0], comp, arrow_argument_match));
-        if (getListOfUnboundArgs(hook.nodes[0], comp, arrow_argument_match)) {
+        //Expects just an expression statement, but the expression statement in an arrow function will work as well.
+        if (ast.type == JSNodeType.ArrowFunction)
+            ast = ast.nodes[1];
 
-            if (getExpressionStaticResolutionType(hook.nodes[0], comp, presets) == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
+        if (getListOfUnboundArgs(ast, comp, arrow_argument_match)) {
+
+
+            if (getExpressionStaticResolutionType(ast, comp, presets) == STATIC_RESOLUTION_TYPE.CONSTANT_STATIC) {
 
                 const arrow_expression_stmt = exp(`(${arrow_argument_match.map(v => v.value)}) => 1`);
 
                 arrow_expression_stmt.nodes[1] =
-                    await getStaticValueAstFromSourceAST(hook.nodes[0], comp, presets, model, parents, false);;
+                    await getStaticValueAstFromSourceAST(ast, comp, presets, model, parents, false);;
                 try {
                     return eval(renderCompressed(arrow_expression_stmt));
                 } catch (e) { }
@@ -238,16 +246,28 @@ function getListOfUnboundArgs(node: JSNode, comp: ComponentData, list: JSNode[])
     let active_names = new Set();
 
     for (const { node: n } of traverse(node, "nodes")
-        .filter("type", BindingIdentifierBinding, BindingIdentifierReference)) {
+        .filter("type", BindingIdentifierBinding, BindingIdentifierReference, JSNodeType.IdentifierBinding, JSNodeType.IdentifierReference)) {
 
-        const
-            name = n.value,
-            binding = getComponentBinding(name, comp);
+        const name = n.value;
 
-        if (binding.type == BINDING_VARIABLE_TYPE.UNDECLARED) {
 
-            n.type = getOriginalTypeOfExtendedType(n.type);
+        if (n.type == BindingIdentifierBinding || n.type == BindingIdentifierReference) {
 
+
+            const binding = getComponentBinding(name, comp);
+
+            if (binding.type == BINDING_VARIABLE_TYPE.UNDECLARED) {
+
+                n.type = getOriginalTypeOfExtendedType(n.type);
+
+                if (!active_names.has(name)) {
+                    active_names.add(name);
+                    list[index] = n;
+                    if (++index == list.length)
+                        return true;
+                }
+            }
+        } else {
             if (!active_names.has(name)) {
                 active_names.add(name);
                 list[index] = n;
