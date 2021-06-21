@@ -209,7 +209,7 @@ export async function processHookForClass(
             const binding = component.root_frame.binding_variables.get(name);
 
             if (
-                binding.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
+                (binding.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE)
                 &&
                 (
                     getBindingStaticResolutionType(binding, component, presets)
@@ -379,6 +379,9 @@ export async function addBindingRecord(class_info: CompiledComponentClass, name:
     if (!class_info.binding_records.has(name)) {
 
         const binding = component.root_frame.binding_variables.get(name);
+        //Filter out binding variables that can be statically assigned. 
+        if (binding.type == BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE)
+            return;
 
         const index = class_info.binding_records.size;
 

@@ -1,5 +1,5 @@
 import { copy, traverse } from "@candlelib/conflagrate";
-import { exp, JSAdditiveExpression, JSExpressionClass, JSIdentifier, JSNode, JSNodeClass, JSNodeType, JSNumericLiteral, renderCompressed, tools } from "@candlelib/js";
+import { exp, JSExpressionClass, JSIdentifier, JSNode, JSNodeClass, JSNodeType, renderCompressed, tools } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
 import { PluginStore } from "../../plugin/plugin.js";
 import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, IntermediateHook, PLUGIN_TYPE, PresetOptions, STATIC_BINDING_STATE, STATIC_RESOLUTION_TYPE } from "../../types/all.js";
@@ -505,17 +505,18 @@ export async function getDefaultBindingValueAST(
 
             if (model) return await convertObjectToJSNode(model[binding.internal_name]);
 
+        } else if (binding.type == BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE) {
+
+            if (globalThis[name]) return <JSExpressionClass>exp(name);
+
         } else if (
             ASSUME_RUNTIME
             && (
-                binding.type == BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE
-                ||
                 binding.type == BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE
                 ||
                 binding.type == BINDING_VARIABLE_TYPE.MODULE_VARIABLE
             )
         ) {
-
             return <JSExpressionClass>exp(getCompiledBindingVariableNameFromString(binding.internal_name, comp));
 
         } else if (ASSUME_RUNTIME) {
@@ -557,6 +558,7 @@ export async function getStaticValueAstFromSourceAST(
     parent_comp: ComponentData[] = null,
     ASSUME_RUNTIME: boolean = false
 ): Promise<JSExpressionClass> {
+
 
 
     const receiver = { ast: null };
@@ -617,6 +619,7 @@ export async function getStaticValueAstFromSourceAST(
 
             if (comp.root_frame.binding_variables.has(name)) {
 
+
                 const val = await <any>getDefaultBindingValueAST(name, comp, presets, model, parent_comp, ASSUME_RUNTIME);
 
                 if (val === undefined) return undefined;
@@ -652,6 +655,8 @@ export async function getStaticValue(
     parent_comp: ComponentData[] = null,
     ASSUME_RUNTIME: boolean = false
 ) {
+
+
 
     const ast = await getStaticValueAstFromSourceAST(
         input_ast, component, presets, model, parent_comp, ASSUME_RUNTIME
