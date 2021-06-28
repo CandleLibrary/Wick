@@ -92,17 +92,7 @@
 # Add component scoped variable declaration
 # +> js::lexical_declaration > t:comp js::binding_list ;                                                      f:r { { type:env.typ.ComponentVariableDeclaration, symbol:$1, nodes:$2, pos } }
 
-<> WICK_BINDING > CALL_BINDING                              
-    | BASIC_BINDING
-
-<> BASIC_BINDING >  ( BINDING_SYMBOL_START )  js::expression? BINDING_SYMBOL_END                                       
-                                                                   
-                                                                    f:r { {type:env.typ.WickBinding, primary_ast:$$2, secondary_ast:null, DEBUG: $1 == "(!(" , pos } }
-
-<> CALL_BINDING >   ( BINDING_SYMBOL_START )  js::expression?  ( \; js::expression )? BINDING_SYMBOL_END      
+<> WICK_BINDING > \{ \! js::expression?  ( \; js::expression )? \}      
                                                                     
-                                                                    f:r { {type:env.typ.WickBinding, primary_ast:$$2, secondary_ast:$$5, DEBUG: $1 == "(!(", pos } }
+                                                                    f:r { {type:env.typ.WickBinding, primary_ast:$$2, secondary_ast:$$5, DEBUG:!!$$2, pos } }
 
-<> BINDING_SYMBOL_START > \{
-    
-<> BINDING_SYMBOL_END > \}
