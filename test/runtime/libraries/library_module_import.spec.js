@@ -17,7 +17,7 @@ assert_group("Module Import", sequence, () => {
     export default <div>
     var data;
     
-    <container data=\${await d.fetch()} element=div limit=${3}>
+    <container data={await d.fetch()} element=div limit=${3}>
     </container>
     </div>`;
 
@@ -43,7 +43,7 @@ assert_group("Module Import Within Binding", sequence, () => {
     const source_string = `
     import wind from "@candlelib/wind" 
     export default <div>   
-    <container data=\${await (new wind("temp")).fetch()} element=div limit=${3}>
+    <container data={await (new wind("temp")).fetch()} element=div limit=${3}>
     </container>
     </div>`;
 

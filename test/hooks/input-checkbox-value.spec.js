@@ -16,8 +16,8 @@ assert_group("Server - Basic text input value binding", () => {
     var temp = false;
      
      export default <div> 
-        <input type="checkbox" value=\${temp}>
-        \${temp}
+        <input type="checkbox" value={temp}>
+        {temp}
      </div>
      `));
 

@@ -10,12 +10,12 @@ var data = [
 ]
 export default <div>
 
-    <container data=\${data} element=div limit=\${limit} ele=null>
+    <container data={data} element=div limit={limit} ele=null>
         <div>
-            <div class="header">\${header}</div>
-            <container data=\${entries} ele=null>
-                <a href=\${href || "#"} >
-                    \${value}
+            <div class="header">{header}</div>
+            <container data={entries} ele=null>
+                <a href={href || "#"} >
+                    {value}
                 </a>    
             </container>
         </div>

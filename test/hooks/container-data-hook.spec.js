@@ -16,8 +16,8 @@ assert_group("Server - Directly Assigned Static Iterable", sequence, () => {
      var B = "bravo";
      let C = "philbert";
      
-     export default <container data=\${[{name:A},{name:B},{name:C}]}>
-         <div>\${name}</div>
+     export default <container data={[{name:A},{name:B},{name:C}]}>
+         <div>{name}</div>
      </container>
      `));
 
@@ -44,8 +44,8 @@ assert_group("Server - Directly Assigned Dynamic Iterable", sequence, () => {
      var B = "bravo";
      var C = "philbert";
      
-     export default <container data=\${[{name:A},{name:B},{name:C}]}>
-         <div>\${name}</div>
+     export default <container data={[{name:A},{name:B},{name:C}]}>
+         <div>{name}</div>
      </container>
      `));
 
@@ -74,8 +74,8 @@ assert_group("Server - Directly Assigned Dynamic Iterable With Const Binding Var
      const B = "bravo";
      const C = "philbert";
      
-     export default <container data=\${[{name:A},{name:B},{name:C}]}>
-         <div>\${name}</div>
+     export default <container data={[{name:A},{name:B},{name:C}]}>
+         <div>{name}</div>
      </container>
      `));
 

@@ -16,10 +16,10 @@ assert_group("Server - Static sort expression", sequence, () => {
      const C = "philbert";
      
      export default <container 
-        data=\${[{name:"A"},{name:"B"},{name:C}]}
-        sort=\${ m1.name < m2.name ? 1 : -1}
+        data={[{name:"A"},{name:"B"},{name:C}]}
+        sort={ m1.name < m2.name ? 1 : -1}
         >
-         <div>\${name}</div>
+         <div>{name}</div>
      </container>
      `));
 

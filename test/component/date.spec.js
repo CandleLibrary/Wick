@@ -6,9 +6,10 @@ import { assertTree } from "../test-tools/tools.js";
 const source_string = `
  var date = (new Date(0)).getUTCFullYear();
  
- export default <div>\${date}</div>
+ export default <div>{date}</div>
  `;
 assert_group("Expect Date object to be rendered in pre-filled HTML", sequence, () => {
+
     const presets = new Presets;
 
     const component = await parseSource(source_string, presets);

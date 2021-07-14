@@ -17,10 +17,10 @@ import {m1} from "@model"
 var b = 0;
 
 export default <div>
-    <container data=\${test}>
-        <div useif=\${ m.test == 2 + b - c }></div>
-        <div useif=\${ m.test == 4 + b - c }></div>
-        <div useif=\${ m.test == 8 + b - c }></div>
+    <container data={test}>
+        <div useif={ m.test == 2 + b - c }></div>
+        <div useif={ m.test == 4 + b - c }></div>
+        <div useif={ m.test == 8 + b - c }></div>
     </div>
 </container>`));
 

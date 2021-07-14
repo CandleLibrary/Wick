@@ -13,11 +13,11 @@ const
     import { data } from "@model";
 
     export default <div>
-        <container element="div" data=\${ data }>  <a>\${ name }</a> </container>
-        <container element="ul" data=\${ data }>  <a>\${ name }</a> </container>
-        <container element="ol" data=\${ data }>  <a>\${ name }</a> </container>
-        <container element="a" data=\${ data }>  <a>\${ name }</a> </container>
-        <container data=\${ data }>  <a>\${ name }</a> </container>
+        <container element="div" data={ data }>  <a>{ name }</a> </container>
+        <container element="ul" data={ data }>  <a>{ name }</a> </container>
+        <container element="ol" data={ data }>  <a>{ name }</a> </container>
+        <container element="a" data={ data }>  <a>{ name }</a> </container>
+        <container data={ data }>  <a>{ name }</a> </container>
     </div>`)),
     comp = new comp_data.class(data),
 

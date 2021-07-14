@@ -15,7 +15,7 @@ assert_group("Server - Element Export Statement", () => {
 
     let my_data = [4,5,6];
     
-    export default  <child_component export="my_data:data"></child_component>;
+    export default  <child_component export={my_data as data}></child_component>;
 
     export {my_data as data}
      `));

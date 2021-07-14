@@ -16,8 +16,8 @@ const
     import { test } from "@api";
 
     export default <div>
-        <container data=\${ test() }>  <a>\${ name }</a> </container>
-        <container data=\${ test().filter(e=>(e.name==2)) }>  <a>\${ name }</a> </container>
+        <container data={ test() }>  <a>{ name }</a> </container>
+        <container data={ test().filter(e=>(e.name==2)) }>  <a>{ name }</a> </container>
     </div>`));
 
 

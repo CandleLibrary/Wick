@@ -15,8 +15,8 @@ assert_group("Server - Basic text input value binding", () => {
     var temp = "Hello World";
      
      export default <div> 
-        <input type="text" value=\${temp}>
-        \${temp}
+        <input type="text" value={temp}>
+        {temp}
      </div>
      `));
 

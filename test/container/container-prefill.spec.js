@@ -11,10 +11,12 @@ assert_group("Single simple root container element pre-fill with trivial models"
     
     var data = [{v:1},{v:2},{v:3},{v:4},{v:5},{v:6}];
 
-    export default  <container element="div" data=\${ data }>  <a>\${ v }</a> </container>`));
+    export default  <container element="div" data={ data }>  <a>{ v }</a> </container>`));
+
 
     //Extracting an HTML tree structure from the component's template string
     const root_ele = await comp.getRootElement();
+
 
     assert(root_ele.children.length == 6);
     assert(root_ele.children[0].tagName == "A");
@@ -31,18 +33,17 @@ assert_group("Single simple root container element pre-fill with trivial models"
 
 assert_group("Imported container component with data export from host component", sequence, () => {
     const comp = (await wick_server(`
-    import container_component from "./test/container/data/prefill-container-component.wick"
+    import container_component from "./test/container/data/prefill-container-component.wick";
     
     var data = [{v:1},{v:2},{v:3},{v:4},{v:5}];
 
-    export default  <container_component export="data:data"></container_component>`));
-
+    export default  <container_component export={data} ></container_component>`));
     //
 
     //Extracting an HTML tree structure from the component's template string
 
     const root_ele = await comp.getRootElement();
-    //
+
     assert(root_ele.children.length == 5);
     assert(root_ele.tagName == "UL");
     assert(root_ele.children[0].tagName == "LI");

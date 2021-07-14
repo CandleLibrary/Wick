@@ -14,7 +14,7 @@ let count = 0;
 
 var greetings  = ["Hola", "Hello", "Salute"] ;
 
-export default  <button onclick=\${count++} > \${ greetings[count % (greetings.length)] } </button>
+export default  <button onclick={count++} > { greetings[count % (greetings.length)] } </button>
  `));
 
 //assert(comp.class_string == "");

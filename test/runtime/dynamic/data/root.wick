@@ -4,5 +4,5 @@ var data = "testing"
 
 export default <interleaved>
     
-    <div>root ${data}</div>
+    <div>root {data}</div>
 </interleaved>

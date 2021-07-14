@@ -14,7 +14,7 @@ assert_group("Server - Internal Variable", sequence, () => {
     
     var b = "test";
     
-    export default <div>\${b}</div>
+    export default <div>{b}</div>
     `));
 
     const comp_instance = comp.createInstance();
@@ -34,7 +34,7 @@ assert_group("Server - Internal Variable - Prefill", () => {
     
     var b = "test";
     
-    export default <div>\${b}</div>
+    export default <div>{b}</div>
     `));
 
     const ele = await comp.getRootElement();
@@ -49,7 +49,7 @@ assert_group("Browser - Internal Variable", browser, () => {
 
     var b = "test";
 
-    export default <div>\${b}</div>
+    export default <div>{b}</div>
     `));
 
     const comp_instance = comp.createInstance();

@@ -17,10 +17,10 @@ assert_group("Server - Static filter expression", sequence, () => {
      let C = "philbert";
      
      export default <container 
-        data=\${[{name:"A"},{name:"B"},{name:A}]}
-        filter=\${ m.name != "A" }
+        data={[{name:"A"},{name:"B"},{name:A}]}
+        filter={ m.name != "A" }
         >
-         <div>\${name}</div>
+         <div>{name}</div>
      </container>
      `));
 

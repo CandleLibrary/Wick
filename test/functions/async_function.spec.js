@@ -16,7 +16,7 @@ assert_group("Async Methods", sequence, () => {
     }
 
     export default <div>
-        <container data=\${data}>
+        <container data={data}>
             <li>
                 {name}
             </li>

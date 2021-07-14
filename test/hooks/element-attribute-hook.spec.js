@@ -13,7 +13,7 @@ assert_group("Browser - Basic generic attribute", browser, () => {
 
         let count = 0;
 
-        export default  <button count=\${count+1}/>;
+        export default  <button count={count+1}/>;
     `));
 
     const instance = new comp.class();
@@ -31,7 +31,7 @@ assert_group("Browser - Basic style assignment", browser, () => {
 
         let color = "red";
 
-        export default  <button style=\${ \`color:\${color}\`  }/>;
+        export default  <button style={ \`color:{color}\`  }/>;
     `));
 
     const instance = new comp.class();

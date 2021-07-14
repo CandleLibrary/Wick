@@ -17,10 +17,10 @@ assert_group("Server - Static limit value", () => {
      
      
      export default <container 
-        data=\${[{name:"A"},{name:"B"},{name:C}]}
-        limit=\${ 2 }
+        data={[{name:"A"},{name:"B"},{name:C}]}
+        limit={ 2 }
         >
-         <div>\${name}</div>
+         <div>{name}</div>
      </container>
      `));
 
@@ -48,10 +48,10 @@ assert_group("Server - Static limit constant value", () => {
      
      
      export default <container 
-        data=\${[{name:"A"},{name:"B"},{name:C}]}
-        limit=\${ limit }
+        data={[{name:"A"},{name:"B"},{name:C}]}
+        limit={ limit }
         >
-         <div>\${name}</div>
+         <div>{name}</div>
      </container>
      `));
 

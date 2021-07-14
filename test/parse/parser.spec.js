@@ -10,7 +10,7 @@ import parserSourceString from "../../build/library/compiler/source-code-parse/p
 assert_group("Sanity", () => {
     const source_string = `
 
-    export default <div>\${E + D}</div> `;
+    export default <div>{E + D}</div> `;
 
     const { ast } = parserSourceString(source_string);
 
@@ -32,7 +32,7 @@ assert_group("Function frame and bindings", sequence, () => {
         E = A + B + C;
     }
 
-    export default <div>\${E + D}</div> `;
+    export default <div>{E + D}</div> `;
 
     const { ast } = parserSourceString(source_string);
 
@@ -97,7 +97,7 @@ assert_group(s, "JS module with multiple elements", sequence, () => {
 
     var G = <div>test</div>;
     
-    export default <div>\${E + D}</div>`;
+    export default <div>{E + D}</div>`;
 
     const { ast } = parserSourceString(source_string);
 

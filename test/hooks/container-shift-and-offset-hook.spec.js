@@ -16,11 +16,11 @@ assert_group("Server - Static shift and offset values", () => {
      const C = "philbert";
      
      export default <container 
-        data=\${[{name:"A"},{name:"B"},{name:C}]}
-        shift=\${ 2 }
-        offset=\${ 1 }
+        data={[{name:"A"},{name:"B"},{name:C}]}
+        shift={ 2 }
+        offset={ 1 }
         >
-         <div>\${name}</div>
+         <div>{name}</div>
      </container>
      `));
 
