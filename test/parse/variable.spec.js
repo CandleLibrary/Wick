@@ -13,7 +13,7 @@ import Presets from "../../build/library/compiler/common/presets.js";
 import { BINDING_VARIABLE_TYPE } from "../../build/library/types/binding.js";
 
 assert_group("Arrow arguments should not be appear as binding variables", sequence, () => {
-    const source = `<div>\${ data.push((a,b,c)=>a+b+c) }</div>`;
+    const source = `<div>{ data.push((a,b,c)=>a+b+c) }</div>`;
 
     const presets = new Presets();
 
@@ -28,7 +28,7 @@ assert_group("Function arguments should not be appear as binding variables", seq
         
         function test(a,b,c){ return a+b+c };
 
-        export default <div>\${ data.map(test) }</div>
+        export default <div>{ data.map(test) }</div>
     `;
 
     const presets = new Presets();
@@ -48,7 +48,7 @@ assert_group("Variables not declared in function should be binding", sequence, (
         
         function test(a,b,c){ return a+b+c+d };
 
-        export default <div>\${ data.map(test) }</div>
+        export default <div>{ data.map(test) }</div>
     `;
 
     const presets = new Presets();

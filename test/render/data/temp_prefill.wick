@@ -1,9 +1,9 @@
 import { data } from "@parent";
 
 export default <div>
-    <container data=${data}>
+    <container data={data}>
         <div>
-            ${header}
+            {header}
         </div>
     </container>
 </div>

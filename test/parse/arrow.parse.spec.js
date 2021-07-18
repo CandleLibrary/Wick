@@ -22,8 +22,8 @@ var a = 2;
 var b = 3;
 
 export default <div>
-    <container data=\${ data.push((a,b,c)=>a+b+c) }> </container>
-    <container data=\${ data.push((a,c)=>a+b+c) }> </container>
+    <container data={ data.push((a,b,c)=>a+b+c) }> </container>
+    <container data={ data.push((a,c)=>a+b+c) }> </container>
 </div>
 `;
     const presets = new Presets();

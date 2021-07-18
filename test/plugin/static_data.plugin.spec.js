@@ -13,7 +13,7 @@ assert_group("Basic data fetch plugin", sequence, () => {
     const source_string = `
 var test = api("test") + "-success";
 
-export default <div> \${test} </div>`;
+export default <div> {test} </div>`;
 
     const presets = new Presets();
 

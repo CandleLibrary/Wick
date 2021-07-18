@@ -94,7 +94,7 @@ assert_group("Runtime", () => {
     export default <default_slot>
         <div>!!!test!!!</div>
         default text value
-        <div>test \${(d + "123") }</div>
+        <div>test { (d + "123") }</div>
     </default_slot>
     `),
             comp_instance = await createComponentInstance(comp);

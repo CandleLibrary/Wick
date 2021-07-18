@@ -23,7 +23,7 @@ export default <div>
 </div>
  `;
 
-assert_group(browser, sequence, () => {
+assert_group("Browser", browser, sequence, () => {
 
     wick.utils.enableTest();
 

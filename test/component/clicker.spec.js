@@ -5,10 +5,10 @@ import { assert } from "console";
 const source = `
  var count = 0;
  
- export default <button onclick=\${++count}>Clicked \${count}\${count == 1 ? " time" : " times"}</button>
+ export default <button onclick={++count}>Clicked {count}{count == 1 ? " time" : " times"}</button>
  `;
 
-assert_group("Clicker component updates button's innerHTML", browser, sequence, () => {
+assert_group("Clicker component updates button's innerHTML - Browser", browser, sequence, () => {
 
     wick.utils.enableTest();
 

@@ -39,12 +39,10 @@ import spark from "@candlelib/spark";
 const comp = await wick(`
 import {data} from "@model";
 export default <div>
-<input type="text" value=\${data}/>
-<div>\${ data == "test2" ? "yes" : "no" }</div>
+    <input type="text" value={data}/>
+    <div>{ data == "test2" ? "yes" : "no" }</div>
 </div>`);
-assert_group("Text Input", sequence, browser, () => {
-
-
+assert_group("Text Input - Browser", sequence, browser, () => {
 
     const model = { data: "test" };
 

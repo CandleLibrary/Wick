@@ -18,14 +18,14 @@ var data = [
 export default <div>
 
     
-    \${test}
+    {test}
 
-    <container data=\${data} element=div limit=\${3} element=ol>
+    <container data={data} element=div limit={3} element=ol>
         <div>
-            <div class="header">\${header}</div>
-            <container data=\${entries} >
-                <a href=\${href || "#"} >
-                    \${value}
+            <div class="header">{header}</div>
+            <container data={entries} >
+                <a href={href || "#"} >
+                    {value}
                 </a>    
             </container>
 
@@ -85,9 +85,9 @@ import temp_comp from "./test/render/data/temp_prefill.wick"
 var datas = [
     {header:"test1"},
     {header:"test2"}
-]
+];
 export default <div> 
-    <temp_comp export="datas:data"></temp_comp>
+    <temp_comp export={ datas as data}></temp_comp>
 </div>`;
 
     const presets = new Presets();
@@ -130,8 +130,8 @@ var data = {
     headerB:"test2"
 }
 export default <div> 
-    <h1>\${data.headerA}</h1>
-    <h2>\${data.headerB + "-123"}</h2>
+    <h1>{data.headerA}</h1>
+    <h2>{data.headerB + "-123"}</h2>
 </div>`;
 
     const presets = new Presets();

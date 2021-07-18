@@ -14,11 +14,11 @@ const todo_list = [
     ]
     
     export default <div>
-        <container data=\${todo_list} filter=\${m.completed == false} sort=\${m2.priority - m1.priority}>
-            <li> \${task} </li>
+        <container data={todo_list} filter={m.completed == false} sort={m2.priority - m1.priority}>
+            <li> {task} </li>
         </container>
-        <container data=\${todo_list} filter=\${m => m.completed == true} sort=\${(m1, m2) => m2.priority - m1.priority}>
-            <li> \${task} </li>
+        <container data={todo_list} filter={m => m.completed == true} sort={(m1, m2) => m2.priority - m1.priority}>
+            <li> {task} </li>
         </container>
     </div>
  `;

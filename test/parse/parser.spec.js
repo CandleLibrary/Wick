@@ -4,7 +4,7 @@ import { createComponentData } from "../../build/library/compiler/common/compone
 import { createParseFrame } from "../../build/library/compiler/common/frame.js";
 import Presets from "../../build/library/compiler/common/presets.js";
 import { processCoreAsync } from "../../build/library/compiler/ast-parse/parse.js";
-import parserSourceString from "../../build/library/compiler/source-code-parse/parse.js";
+import { parse_component } from "../../build/library/compiler/source-code-parse/parse.js";
 
 
 assert_group("Sanity", () => {
@@ -12,7 +12,7 @@ assert_group("Sanity", () => {
 
     export default <div>{E + D}</div> `;
 
-    const { ast } = parserSourceString(source_string);
+    const { ast } = parse_component(source_string);
 
     const presets = new Presets();
 
@@ -34,7 +34,7 @@ assert_group("Function frame and bindings", sequence, () => {
 
     export default <div>{E + D}</div> `;
 
-    const { ast } = parserSourceString(source_string);
+    const { ast } = parse_component(source_string);
 
     const presets = new Presets();
 
@@ -99,7 +99,7 @@ assert_group(s, "JS module with multiple elements", sequence, () => {
     
     export default <div>{E + D}</div>`;
 
-    const { ast } = parserSourceString(source_string);
+    const { ast } = parse_component(source_string);
 
     const presets = new Presets();
 

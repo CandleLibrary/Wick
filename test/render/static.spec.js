@@ -7,13 +7,13 @@ import Presets from "../../build/library/compiler/common/presets.js";
 const source_string = `<div>
     var data = [{}];
 
-    <container data=\${data} element=div limit=\${3}>
+    <container data={data} element=div limit={3}>
         <div>
-            <div class="header">\${header}</div>
+            <div class="header">{header}</div>
 
-            <container data=\${entries} >
-                <a href=\${href || "#"} >
-                    \${value}
+            <container data={entries} >
+                <a href={href || "#"} >
+                    {value}
                 </a>    
             </container>
 

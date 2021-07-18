@@ -13,14 +13,14 @@ var nav_links = {
 
 
  export default <div>
-    <container class="nav-links" data=\${nav_links} ele=ul>
+    <container class="nav-links" data={nav_links} ele=ul>
         <li class="nav-link">  
-            \${header}
+            {header}
 
             <div class="nav-menu">
-                <container data=\${entries}>
+                <container data={entries}>
                     <li>
-                        <a href=\${href}>\${value}</a>
+                        <a href={href}>{value}</a>
                     </li>
                 </container>
             </div>          

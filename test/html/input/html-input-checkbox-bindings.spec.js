@@ -19,7 +19,7 @@ const comp_class = (await wick(`
 import { input_data } from "@model";
 
 export default <div>
-<input type="checkbox" value=\${input_data}> 
+<input type="checkbox" value={input_data}> 
 </div>;`)).class;
 const comp = new comp_class(data);
 
@@ -27,7 +27,7 @@ const comp = new comp_class(data);
 // Force component update by preempting spark's update
 // cycle
 
-assert_group(sequence, () => {
+assert_group("Browser Test", sequence, () => {
 
     // Ensure component is connected to DOM, otherwise
     // updates to model will have no effect
