@@ -7,7 +7,7 @@
     https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element
 */
 
-import wick from "../../..//build/library/entry-point/wick-server.js";
+import wick from "../../../build/library/entry-point/wick-server.js";
 import assert from "assert";
 import { getInstanceHTML, getRenderedHTML, createComponentInstance, assertTree } from "../../test-tools/tools.js";
 

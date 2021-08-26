@@ -61,6 +61,25 @@ export function init() {
      */
 
     HTML.server();
+
+    WickRTComponent.prototype.ce = function () {
+
+        if (rt.templates.has(this.name)) {
+
+            const template: HTMLTemplateElement = <HTMLTemplateElement>rt.templates.get(this.name);
+
+            if (template) {
+
+                const ele = template.firstChild.clone();
+
+                this.integrateElement(ele);
+
+                return ele;
+            } else
+                console.warn("WickRT :: NO template element for component: " + this.name);
+        }
+    };
+
     WickRTComponent.prototype.dispatchEvent = async function (selector_string: string, event_name: string = "", event_data: Object = undefined) {
 
         const ele = this.getFirstMatch(selector_string);
@@ -97,6 +116,7 @@ export function init() {
     WickRTComponent.prototype.sleep = async function (time: init = 10) {
         await spark.sleep(time);
     };
+
 
     function getEventType(event_name: string) {
         return {

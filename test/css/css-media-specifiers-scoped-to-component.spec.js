@@ -11,6 +11,7 @@ import assert from "assert";
 
 test.reset();
 
+
 const comp = (await wick(`<div> <style> @media screen { root { color:red; } .div { position:absolute }  } </style> </div>`));
 
 assert(test.getCompiledCSSString(comp, "component_class_name") === "@media screen{.component_class_name{color:#ff0000}\n.component_class_name .div{position:absolute}}");

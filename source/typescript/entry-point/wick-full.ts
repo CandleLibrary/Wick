@@ -14,7 +14,7 @@ import {
 import { ComponentDataClass } from "../compiler/common/component.js";
 import { css_selector_helpers } from "../compiler/common/css.js";
 import { ComponentHash } from "../compiler/common/hash_name.js";
-import parser from "../compiler/source-code-parse/parse.js";
+import { parse_component } from "../compiler/source-code-parse/parse.js";
 import { renderWithFormatting } from "../compiler/source-code-render/render.js";
 import { WickRTComponent } from "../runtime/component.js";
 import { rt, WickRuntime } from "../runtime/global.js";
@@ -72,7 +72,7 @@ export interface WickCompiler {
         componentDataToClassString: typeof createCompiledComponentClass;
 
         parse: {
-            parser: typeof parser;
+            parser: typeof parse_component;
             render: typeof renderWithFormatting;
         };
     };
@@ -193,7 +193,7 @@ const wick: WickLibrary = Object.assign(componentCreate,
             parse: {
                 css_selector_helpers: css_selector_helpers,
                 createNameHash: ComponentHash,
-                parser,
+                parser: parse_component,
                 render: renderWithFormatting,
             },
             server: async function (root_dir: string = "") {
@@ -246,7 +246,7 @@ export * from "../compiler/source-code-render/render.js";
 export * from "../compiler/source-code-render/rules.js";
 export {
     //Functions
-    parser,
+    parse_component as parser,
     ComponentHash as createNameHash,
     componentDataToHTML,
     componentDataToCSS,

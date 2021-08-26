@@ -1,5 +1,5 @@
 import { traverse } from "@candlelib/conflagrate";
-import { JSArrowFunction, JSExportDeclaration, JSExpressionStatement, JSIdentifier, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt, tools } from "@candlelib/js";
+import { exp, ext, JSArrowFunction, JSExportDeclaration, JSExpressionStatement, JSIdentifier, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, JSStringLiteral, stmt, tools } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
 import {
     BINDING_FLAG, BINDING_VARIABLE_TYPE, HOOK_SELECTOR, HTMLNode,
@@ -309,7 +309,7 @@ loadJSParseHandlerInternal(
         priority: 1,
 
         async prepareJSNode(node, parent_node, skip, component, presets, frame) {
-
+            console.log("AAAAAAAAAAAAAAA");
             const
                 [name_node] = node.nodes;
 
@@ -396,7 +396,7 @@ loadJSParseHandlerInternal(
             });
         }
 
-    }, JSNodeType.FunctionDeclaration
+    }, JSNodeType.FunctionDeclaration, JSNodeType.FunctionExpression
 );
 
 /*############################################################
@@ -449,8 +449,10 @@ loadJSParseHandlerInternal(
 
             if (!imports)
                 url_value = (<JSIdentifier>from).value;
+            else if (!from)
+                url_value = (<JSIdentifier>imports).value;
             else
-                url_value = (<JSIdentifier>from.nodes[0]).value;
+                url_value = (<JSIdentifier>from?.nodes[0])?.value;
 
             if (url_value) {
 
@@ -475,9 +477,9 @@ loadJSParseHandlerInternal(
 
                     skip();
                 }
-
-                await importResource(url_value, component, presets, node, imports ? (<JSIdentifier>imports.nodes[0]).value : "", names, frame);
+                await importResource(url_value, component, presets, node, (<JSIdentifier>imports?.nodes?.[0])?.value ?? "", names, frame);
             }
+
 
             //Export and import statements should not showup in the final AST.
             skip();
@@ -500,6 +502,9 @@ loadJSParseHandlerInternal(
 
             if (node.type !== BindingIdentifierReference) {
                 if (!Variable_Is_Declared_In_Closure(name, frame)) {
+
+
+
                     addBindingReference(
                         <JSNode>node, <JSNode>parent_node, frame
                     );

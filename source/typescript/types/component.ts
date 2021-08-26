@@ -28,6 +28,12 @@ export interface ComponentStyle {
 }
 
 export interface ComponentData {
+    /**
+     * The radiate client side router should be used if 
+     * this true and the component is the root of the 
+     * component tree. 
+     */
+    RADIATE: boolean;
 
     /**
      * True if errors were encountered when processing

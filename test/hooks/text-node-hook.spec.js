@@ -22,7 +22,7 @@ assert_group("Server - Internal Variable", sequence, () => {
     await comp_instance.sleep();
 
     assert(comp_instance.ele.childNodes[0].type == 1);
-    assert(comp_instance.ele.childNodes[0].data == "test");
+    assert(comp_instance.ele.childNodes[0].data.trim() == "test");
 });
 
 

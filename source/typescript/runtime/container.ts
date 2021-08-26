@@ -114,6 +114,8 @@ export class WickContainer implements Sparky, ObservableWatcher {
     dom_dn: ContainerComponent[];
     dom_up: ContainerComponent[];
 
+    components_pending_removal: ContainerComponent[];
+
     filters: any[];
 
     comp_constructors: typeof WickRTComponent[];
@@ -213,6 +215,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
         this.first_dom_element = null;
         this.last_dom_element = null;
+        this.components_pending_removal = [];
         this.ele = element;
 
         if (null_elements.length > 0 || this.ele.tagName == "NULL") {
@@ -574,6 +577,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
             if (output[i].CONNECTED) {
                 const { row, col } = getColumnRow(i, offset, this.shift_amount);
                 this.addTransitioningComp(output[i], TRANSITION.OUT, DESCENDING, row, col);
+                this.components_pending_removal.push(output[i]);
             }
 
             i++;
@@ -595,6 +599,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
             if (output[i].CONNECTED) {
                 const { row, col } = getColumnRow(i, offset, this.shift_amount);
                 this.addTransitioningComp(output[i], TRANSITION.OUT, DESCENDING, row, col);
+                this.components_pending_removal.push(output[i]);
             }
             i++;
         }
@@ -694,12 +699,22 @@ export class WickContainer implements Sparky, ObservableWatcher {
         return j;
     }
 
+    private removeFromDOM() {
+        for (const component of this.components_pending_removal) {
+            component.removeFromDOM();
+        }
+
+        this.components_pending_removal.length = 0;
+    }
+
     mutateDOM(w_data: WindowData, transition?, output = this.activeComps, NO_TRANSITION = false) {
 
         let
             OWN_TRANSITION = false;
 
         if (!transition) transition = createTransition(), OWN_TRANSITION = true;
+
+        this.components_pending_removal.length = 0;
 
         this.arrange(w_data, output, transition);
 
@@ -710,10 +725,12 @@ export class WickContainer implements Sparky, ObservableWatcher {
         this.primeTransitions(transition);
 
         if (OWN_TRANSITION) {
-            if (NO_TRANSITION)
+            if (NO_TRANSITION) {
+                this.removeFromDOM();
                 return transition;
+            }
             else
-                transition.play();
+                transition.asyncPlay().then(this.removeFromDOM.bind(this));
         }
 
         return transition;

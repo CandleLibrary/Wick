@@ -19,8 +19,8 @@ assert_group("Module Import", sequence, () => {
 
     var data;
     
-    <container data={await d.fetch()} element=div limit={3}>
-    </container>
+    <container data={await d.fetch()} element=div limit={3}> d</container>
+    
     </div>`;
 
     parse_component(source_string);

@@ -7,7 +7,7 @@ import {
     CSSNodeTypeLU
 } from "@candlelib/css";
 
-import { ParserEnvironment } from "@candlelib/hydrocarbon/build/library/runtime.js";
+import { ParserEnvironment } from "@candlelib/hydrocarbon";
 
 import { JSParserEnvironment, JSParserEnv, JSNodeTypeLU } from "@candlelib/js";
 
@@ -15,7 +15,7 @@ import { HTMLNodeTypeLU } from "../../types/all.js";
 
 export const NodeTypes = Object.assign({}, CSSNodeTypeLU, HTMLNodeTypeLU, JSNodeTypeLU);
 
-type WickParserEnvironment = ParserEnvironment & JSParserEnv & {
+type WickParserEnvironment = any & JSParserEnv & {
     ASI: boolean;
     /**
      * Test
@@ -30,13 +30,9 @@ const env = <WickParserEnvironment>{
 
     table: {},
 
-    ASI: true,
-
     typ: NodeTypes,
 
     cls: Object.assign({}, JSParserEnvironment.cls),
-
-    comments: null,
 
     functions: {
         //CSS
@@ -51,32 +47,6 @@ const env = <WickParserEnvironment>{
         reinterpretArrowParameters: JSParserEnvironment.functions.reinterpretArrowParameters,
         reinterpretParenthesized: JSParserEnvironment.functions.reinterpretParenthesized,
         buildJSAST: JSParserEnvironment.functions.buildJSAST,
-
-        eofError(tk, env, output, lex) {
-            //Unexpected End of Input
-            env.addParseError("Unexpected end of input", lex, env.url);
-        },
-
-        generalError(tk, env, output, lex) {
-            //Unexpected value
-            env.addParseError(`Unexpected token [${tk}]`, lex, env.url);
-        },
-
-        frrh: (tk, env: ParserEnvironment & { ASI: boolean; }, output, lex, prv_lex, ss, lu, sp) => {
-            const val = JSParserEnvironment.functions.frrh(tk, env, output, lex, prv_lex, ss, lu, sp);
-
-            if (val >= 0) return val;
-
-            return -1;
-        },
-
-        lrrh: (tk, env: ParserEnvironment & { ASI: boolean; }, output, lex, prv_lex, ss, lu, sp) => {
-            const val = JSParserEnvironment.functions.lrrh(tk, env, output, lex, prv_lex, ss, lu, sp);
-
-            if (val >= 0) return val;
-
-            return -1;
-        },
     },
 
     options: {

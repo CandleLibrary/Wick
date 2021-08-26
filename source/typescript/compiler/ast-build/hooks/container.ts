@@ -200,7 +200,7 @@ function createContainerStaticArrowFunction(argument_size: number = 1) {
     return async function (hook: IndirectHook<JSNode>, comp, presets, model, parents) {
 
         let arrow_argument_match = new Array(argument_size).fill(null);
- 
+
         let ast = hook.nodes[0];
 
         //Expects just an expression statement, but the expression statement in an arrow function will work as well.

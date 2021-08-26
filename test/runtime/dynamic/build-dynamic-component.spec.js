@@ -1,5 +1,5 @@
 import spark from "@candlelib/spark";
-import wick from "../../..//build/library/entry-point/wick-server.js";
+import wick from "../../../build/library/entry-point/wick-server.js";
 import { assertTree } from "../../test-tools/tools.js";
 
 const comp = await wick("./test/runtime/dynamic/data/root.wick");

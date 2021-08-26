@@ -85,17 +85,15 @@ export default class Presets implements PresetOptions {
 
         user_presets.options.url = Object.assign({}, DefaultPresets.options.url, (user_presets.options || {}).url || {});
 
-        this.verifyOptions();
-
         this.url = new URL;
-
-        this.options = user_presets.options;
 
         this.document = typeof document != "undefined" ? document : <Document>{};
 
         this.window = typeof window != "undefined" ? window : <Window>{};
 
         this.wrapper = null;
+
+        this.options = user_presets;
 
         this.api = {};
 
@@ -119,6 +117,17 @@ export default class Presets implements PresetOptions {
 
         this.plugins = new PluginStore;
 
+        //this.options.USE_SHADOWED_STYLE = ((user_presets.options.USE_SHADOWED_STYLE) && (this.options.USE_SHADOW));
+
+        this.integrate_new_options(user_presets);
+
+        CachedPresets = this;
+    }
+
+    integrate_new_options(user_presets: UserPresets | PresetOptions) {
+
+        this.verifyOptions(user_presets);
+
         this.addRepoData(<UserPresets>user_presets);
 
         this.loadModelData(<UserPresets>user_presets);
@@ -126,26 +135,21 @@ export default class Presets implements PresetOptions {
         this.loadSchemeData(<UserPresets>user_presets);
 
         this.loadAPIObjects(<UserPresets>user_presets);
-
-        this.options.USE_SHADOWED_STYLE = ((user_presets.options.USE_SHADOWED_STYLE) && (this.options.USE_SHADOW));
-
-        // Object.freeze(this.options);
-        Object.freeze(this.schemes);
-        //Object.freeze(this.models);
-
-        CachedPresets = this;
     }
 
-    private loadAPIObjects(user_presets: UserPresets) {
+    private loadAPIObjects(user_presets: UserPresets | PresetOptions) {
         if (user_presets.api) {
             for (const name in user_presets.api)
                 this.addAPIObject(name, user_presets.api[name]);
         }
     }
 
-    private verifyOptions() {
-        for (const cn in this.options)
-            if (typeof this.options[cn] != typeof DefaultPresets.options[cn])
+    private verifyOptions(user_presets) {
+
+        const options = user_presets.options;
+
+        for (const cn in options)
+            if (typeof options[cn] != typeof DefaultPresets.options[cn])
                 throw new ReferenceError(`Unrecognized preset ${cn}`);
     }
 

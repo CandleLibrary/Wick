@@ -1,8 +1,9 @@
 import { traverse } from "@candlelib/conflagrate";
-import { CSSNode, CSSNodeType, selector } from "@candlelib/css";
+import { CSSNode, CSSNodeType } from "@candlelib/css";
 import { CSSSelectorNode } from "@candlelib/css/build/types/types/node";
 import { ComponentData, ComponentStyle } from "../../types/all.js";
 import { getElementAtIndex } from "../common/html.js";
+import { parse_css_selector } from "../source-code-parse/parse.js";
 import { renderWithFormatting } from "../source-code-render/render.js";
 
 export function UpdateSelector(node: CSSNode, name, class_selector: CSSSelectorNode) {
@@ -33,7 +34,7 @@ export function UpdateSelector(node: CSSNode, name, class_selector: CSSSelectorN
         }
 
         if (!HAS_ROOT) {
-            const ns = selector(`.${name} ${renderWithFormatting(s)}`);
+            const ns = parse_css_selector(`.${name} ${renderWithFormatting(s)}`);
             ns.pos = s.pos;
             return ns;
         }
@@ -56,9 +57,9 @@ export function componentToMutatedCSS(css: ComponentStyle, component?: Component
     if (host_ele?.component_name && host_ele != component.HTML) {
         const expat_node = host_ele.attributes.find(([name]) => name == "expat");
 
-        class_selector = selector(`${host_ele.tag_name}[expat="${expat_node[1]}"]`);
+        class_selector = parse_css_selector(`${host_ele.tag_name}[expat="${expat_node[1]}"]`);
     } else
-        class_selector = selector(`.${name}`);
+        class_selector = parse_css_selector(`.${name}`);
 
     for (const { node, meta: { replace } } of traverse(css.data, "nodes")
         .filter("type", CSSNodeType.Rule)

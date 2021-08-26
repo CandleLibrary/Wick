@@ -1,6 +1,7 @@
 import { traverse } from "@candlelib/conflagrate";
-import { exp, JSBindingProperty, JSExpressionClass, JSIdentifier, JSMethod, JSNode, JSNodeClass, JSNodeType } from "@candlelib/js";
+import { ext, JSBindingProperty, JSExpressionClass, JSIdentifier, JSMethod, JSNode, JSNodeClass, JSNodeType } from "@candlelib/js";
 
+import { parse_js_exp } from "../source-code-parse/parse.js";
 /**
  * Create an AST of the form
  * ```js
@@ -18,7 +19,9 @@ import { exp, JSBindingProperty, JSExpressionClass, JSIdentifier, JSMethod, JSNo
  * ```
  */
 export function getPropertyAST(name: string | JSNode, value: string | JSNode, COMPUTED: boolean = false) {
-    return exp(`({${name}:${value}})`).nodes[0].nodes[0];
+
+
+    return parse_js_exp(`({${name}:${value}})`).nodes[0].nodes[0];
 }
 
 /**
@@ -29,7 +32,7 @@ export function getPropertyAST(name: string | JSNode, value: string | JSNode, CO
  */
 export function getGenericMethodNode(name = "generic", arg_string = "_null_", body_string = ";"): JSMethod {
 
-    const node = <JSMethod>exp(`({${name}(${arg_string}){${body_string}}})`).nodes[0].nodes[0];
+    const node = <JSMethod>parse_js_exp(`({${name}(${arg_string}){${body_string}}})`).nodes[0].nodes[0];
 
     if (body_string == ";")
         node.nodes[2].nodes.length = 0;
@@ -44,15 +47,15 @@ export function convertObjectToJSNode(obj: any): JSExpressionClass {
 
     switch (typeof obj) {
         case "string":
-            return <JSExpressionClass>exp(`"${obj.replace(/\"/g, "\\\"").replace(/\n/g, "\\\n")}"`);
+            return <JSExpressionClass>parse_js_exp(`"${obj.replace(/\"/g, "\\\"").replace(/\n/g, "\\\n")}"`);
         case "boolean":
         case "undefined":
         case "number":
-            return <JSExpressionClass>exp(`${obj}`);
+            return <JSExpressionClass>parse_js_exp(`${obj}`);
         case "object": {
 
             if (Array.isArray(obj)) {
-                const node = exp("[]");
+                const node = parse_js_exp("[]");
 
                 for (const o of obj)
                     //@ts-ignore
@@ -61,14 +64,14 @@ export function convertObjectToJSNode(obj: any): JSExpressionClass {
                 return <JSExpressionClass>node;
             }
 
-            const node = exp("({})").nodes[0];
+            const node = parse_js_exp("({})").nodes[0];
 
             for (const name in obj) {
                 const val = convertObjectToJSNode(obj[name]);
                 //@ts-ignore
                 node.nodes.push(<JSBindingProperty>{
                     type: JSNodeType.PropertyBinding,
-                    nodes: [exp(name), val],
+                    nodes: [parse_js_exp(name), val],
                     symbol: ":"
                 });
             }

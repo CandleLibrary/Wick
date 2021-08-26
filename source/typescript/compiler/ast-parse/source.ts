@@ -5,7 +5,7 @@ import { processUndefinedBindingVariables } from "../common/binding.js";
 import { ComponentDataClass, createComponentData, createErrorComponent } from "../common/component.js";
 import { createParseFrame } from "../common/frame.js";
 import Presets from "../common/presets.js";
-import parserSourceString from "../source-code-parse/parse.js";
+import { parse_component } from "../source-code-parse/parse.js";
 import { processWickHTML_AST, processWickJS_AST } from "./parse.js";
 
 export const component_cache = {};
@@ -55,7 +55,7 @@ export async function parseSource(input: URL | string, presets?: PresetOptions, 
     let
         source_url: URL = null,
         data: any = empty_obj,
-        errors = [];
+        errors: Error[] = [];
 
     try {
 
@@ -91,9 +91,11 @@ export async function parseSource(input: URL | string, presets?: PresetOptions, 
 
     } catch (e) {
 
+        console.log(e);
+
         //Illegal URL, try parsing string
         try {
-            data = parserSourceString(<string>input, "");
+            data = await parse_component(<string>input);
 
             if (data.error)
                 throw data.error;
@@ -113,7 +115,7 @@ export async function parseSource(input: URL | string, presets?: PresetOptions, 
         comments = []
     } = data;
 
-    return <any>await parseComponentAST(ast, <string>input_string, source_url, presets, errors, comments);
+    return <any>await parseComponentAST(ast, <string>input_string, source_url, presets, null, errors);
 };
 
 export async function parseComponentAST(
@@ -121,8 +123,8 @@ export async function parseComponentAST(
     source_string: string,
     url: URL,
     presets: PresetOptions,
+    parent: ComponentData = null,
     parse_errors: Error[] = [],
-    comments: Comment[] = [],
 ): Promise<ComponentData> {
 
     const
@@ -130,7 +132,12 @@ export async function parseComponentAST(
 
     component.root_frame = createParseFrame(null, component);
 
-    component.comments = comments;
+    component.comments = [];
+
+    if (parent) {
+        for (const [name, val] of parent.local_component_names.entries())
+            component.local_component_names.set(name, val);
+    }
 
     if (ast)
         try {
@@ -188,7 +195,7 @@ export async function fetchASTFromRemote(url: URL) {
         if (url.ext == "css")
             string = `<style>${string}</style>`;
 
-        const { ast: a, comments: c, error } = parserSourceString(string, url.toString());
+        const { ast: a, comments: c, error } = await parse_component(string, url.toString());
 
         ast = a;
         comments = c;

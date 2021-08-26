@@ -1,26 +1,26 @@
-import { PresetOptions } from "../types/presets.js";
+import URI from '@candlelib/uri';
+import { PresetOptions, UserPresets } from "../types/presets.js";
 
 
-export async function loadModules(presets: PresetOptions) {
+export async function loadModules(incoming_options: UserPresets, extant_presets: PresetOptions) {
 
-    for (const repo of presets.repo.values()) {
+    for (const [id, url] of incoming_options.repo) {
 
-        if (!repo.module) {
-
+        if (!extant_presets.api[id]) {
             try {
 
-                const
-                    mod = await import(repo.url);
+                const uri = new URI(url);
 
-                presets.api[repo.hash] = {
+                const
+                    mod = await import(uri + "");
+
+                extant_presets.api[id] = {
                     default: mod.default ?? null,
                     module: mod
                 };
 
             } catch (e) {
-
-                console.log(e);
-
+                console.warn(new Error(`Could not load module ${url}`));
             }
         }
     }

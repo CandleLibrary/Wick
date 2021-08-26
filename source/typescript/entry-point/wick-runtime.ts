@@ -5,10 +5,11 @@ import {
     Element_Is_Wick_Template, hydrateComponentElements
 } from "../runtime/html.js";
 import { loadModules } from "../runtime/load_modules.js";
+import { UserPresets } from '../types/presets.js';
 
-const
+let
     nop = _ => !0,
-    wick = function () {
+    wick_root = function () {
 
         console.warn("Wick.rt is incapable of compiling components. Use the full Wick library instead." +
             " \n\t A dummy component will be generated.");
@@ -26,14 +27,55 @@ const
         return d;
     };
 
-Object.assign(wick, rt);
+const wick = Object.assign(wick_root, {
 
-Object.defineProperty(wick, "rt", { value: rt });
+    rt: rt,
 
-Object.defineProperty(wick, "setWrapper", { value: nop });
+    setWrapper: nop,
 
-Object.defineProperty(wick, "toString", {
-    value: () =>
+    init_module_promise: null,
+
+    async appendPresets(presets_options: UserPresets) {
+
+
+        wick.rt.setPresets(presets_options);
+
+        // Load API modules
+        wick.init_module_promise = loadModules(presets_options, wick.rt.presets);
+
+        return wick.init_module_promise;
+    },
+
+    /**
+     * Loads templates and hydrates page. Assumes hydratable component 
+     * data has already been loaded.
+     */
+    async hydrate() {
+
+        window.addEventListener("load", async () => {
+
+            if (wick.init_module_promise)
+
+                await wick.init_module_promise;
+
+            // Assuming wick.rt.setPresets has been called already.
+
+            /**
+             * Looks through DOM and hydrates any element that has a 'w:c'
+             * attribute. Such elements also require their first class 
+             * name be a Wick component hash name.
+             */
+
+            const elements = gatherWickElements();
+
+            for (const comp of hydrateComponentElements(elements)) {
+                comp.connect();
+            }
+        });
+    },
+
+    toString() {
+        return;
         `
         __           _    _ _____ _____  _   __      _   
        / _|         | |  | |_   _/  __ \| | / /     | |  
@@ -41,15 +83,24 @@ Object.defineProperty(wick, "toString", {
  / __|  _\ \ /\ / / |/\| | | | | |    |    \| '__| __|
 | (__| |  \ V  V /\  /\  /_| |_| \__/\| |\  \ |  | |_ 
 \___|_|   \_/\_(_)\/  \/ \___/ \____/\_| \_/_|   \__|
- `
-
+ `;
+    }
 });
 
+//Register wick as a global variable
+globalThis["wick"] = wick;
 
-function gatherWickElements() {
+/**
+ * Returns an array of Wick Components identifier from a traversal 
+ * 
+ * 
+ * @param dom 
+ * @returns 
+ */
+export function gatherWickElements(dom: HTMLElement = window.document.body) {
 
     const
-        pending_elements_queue: HTMLElement[] = [window.document.body],
+        pending_elements_queue: HTMLElement[] = [dom],
 
         pending_component_elements: HTMLElement[] = [];
 
@@ -70,30 +121,8 @@ function gatherWickElements() {
 }
 
 
-/**
- * Loads templates and hydrates page. Assumes hydratable component 
- * data has already been loaded.
- */
 
-wick.rt.init = async function () {
 
-    // Assuming wick.rt.setPresets has been called already.
-
-    // Load API modules
-    await loadModules(rt.presets);
-
-    /**
-     * Looks through DOM and hydrates any element that has a 'w:c'
-     * attribute. Such elements also require their first class 
-     * name be a Wick component hash name.
-     */
-
-    const elements = gatherWickElements();
-
-    for (const comp of hydrateComponentElements(elements)) {
-        comp.connect();
-    }
-};
 
 export { Presets };
 

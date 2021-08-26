@@ -84,15 +84,15 @@ var todo = [{task: "Clean desk", COMPLETED:false}];
 export default <div>
     
     <input type="text" 
-        onclick:ENTER=${ todo.push({ val:todo_string, COMPLETED:false }), "@input".value = "" }
+        onclick:ENTER={ todo.push({ val:todo_string, COMPLETED:false }), "@input".value = "" }
     />
 
-    <container data=${todo} filter=${!m.COMPLETED} hidden=${ href=="#/active" || href=="#/all" }>
-        <div>${val} <input type="checkbox" value=${COMPLETED}}> </div>
+    <container data={todo} filter={!m.COMPLETED} hidden={ href=="#/active" || href=="#/all" }>
+        <div>{val} <input type="checkbox" value={COMPLETED}}> </div>
     </container>
 
-    <container data=${todo} filter=${m.COMPLETED} hidden=${ href=="#/completed" || href=="#/all" }>
-        <div>${val} <input type="checkbox" value=${COMPLETED}}> </div>
+    <container data={todo} filter={m.COMPLETED} hidden={ href=="#/completed" || href=="#/all" }>
+        <div>{val} <input type="checkbox" value={COMPLETED}}> </div>
     </container>
 
 </div>;

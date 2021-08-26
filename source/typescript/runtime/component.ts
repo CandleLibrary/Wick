@@ -14,6 +14,8 @@ import {
 
 type BindingUpdateFunction = () => void;
 
+export type ComponentElement = HTMLElement & { wick_component: WickRTComponent; };
+
 const enum DATA_DIRECTION {
     DOWN = 1,
     UP = 2
@@ -250,6 +252,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             const template: HTMLTemplateElement = <HTMLTemplateElement>rt.templates.get(this.name);
 
             if (template) {
+
                 const
                     doc = <HTMLElement>template.content.cloneNode(true),
                     ele = <HTMLElement>doc.firstElementChild;
@@ -378,6 +381,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
      * @param transition_name 
      */
     transitionOut(row, col, DESCENDING, transition = null, DESTROY_AFTER_TRANSITION = false) {
+        for (const ch of this.ch)
+            ch.transitionOut(row, col, DESCENDING, transition, false);
 
         this.DESTROY_AFTER_TRANSITION = DESTROY_AFTER_TRANSITION;
 
@@ -385,17 +390,12 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         let transition_time = 0;
 
-        if (this.out_trs)
-            this.out_trs.trs.removeEventListener("stopped", this.out_trs.fn);
-
         if (transition) {
 
-            this.oTO(row, col, DESCENDING, transition.in);
+            this.oTO(row, col, DESCENDING, transition.out);
 
             try {
-                this.out_trs = { trs: transition, fn: this.onTransitionOutEnd.bind(this) };
                 transition_time = transition.out_duration;
-                transition.addEventListener("stopped", this.out_trs.fn);
             } catch (e) {
                 console.log(e);
             }
@@ -427,11 +427,17 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
      * @param trs A transition object that can be used to animate the position change
      */
     transitionIn(row, col, DESCENDING, trs) {
+
+        for (const ch of this.ch)
+            ch.transitionIn(row, col, DESCENDING, trs);
+
         try {
-            this.oTI(row, col, DESCENDING, trs.in); this.TRANSITIONED_IN = true;
+            this.oTI(row, col, DESCENDING, trs.in);
+            this.TRANSITIONED_IN = true;
         } catch (e) {
             console.log(e);
         }
+
     }
 
     /***
@@ -713,9 +719,10 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
             this.elu.push(ele);
 
-            if (ele.hasAttribute("w:ctr"))
+            if (ele.hasAttribute("w:ctr")) {
 
                 ({ sk, PROCESS_CHILDREN } = process_container(ele, scope_component, sk, PROCESS_CHILDREN));
+            }
 
         } else {
 

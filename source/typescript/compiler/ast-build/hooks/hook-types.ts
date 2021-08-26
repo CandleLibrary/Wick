@@ -112,7 +112,7 @@ export function convertAtLookupToElementRef(string_node: JSStringLiteral, compon
 
                 expression = (html_nodes.length == 1)
                     ? exp(`$$ele${html_nodes[0].element_index}; `)
-                    : exp(`[${html_nodes.map(e => `$$ele${e.element_index}]`).join(",")}]`);
+                    : exp(`[${html_nodes.map(e => `$$ele${e.element_index}`).join(",")}]`);
 
     }
 

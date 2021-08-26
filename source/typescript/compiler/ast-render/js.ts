@@ -15,6 +15,7 @@ const
 function componentStringToJS({ class_string: cls, source_map }: ComponentClassStrings, component: ComponentData, presets: PresetOptions) {
     //Ensure WickRTComponent is inside closure
     const class_ref = WickRTComponent;
+
     return (
         eval(
             "c=>" + cls + (presets.options.GENERATE_SOURCE_MAPS ? `\n${source_map}` : "")
@@ -116,7 +117,7 @@ export function createClassStringObject(
             map = [],
             names = new Map();
 
-        cl = renderWithFormattingAndSourceMap(component_class, undefined, undefined, map, 0, names);
+        cl = renderWithFormatting(component_class, undefined, undefined, map, 0, names);
 
         const source_map = createSourceMap(map, component.location.file, component.location.dir, [component.location.file], [], [component.source]);
 

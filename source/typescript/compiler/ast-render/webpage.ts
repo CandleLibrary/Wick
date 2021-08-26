@@ -28,7 +28,38 @@ type PageRenderHooks = {
      * ```
      */
     init_script_render: (component_class_declarations: string, presets: PresetOptions) => string;
+    init_components_render: (component_class_declarations: string, presets: PresetOptions) => string;
 };
+
+
+function renderBasicWickPageInit(component_class_declarations, presets) {
+    return `
+    import w from "/@cl/wick-rt/";
+
+    w.hydrate();
+`;
+}
+
+function renderRadiatePageInit(component_class_declarations, presets) {
+    console.log("Rendering Wick-Radiate Page");
+    return `
+    import init_router from "/@cl/wick-radiate/";
+
+    init_router();
+`;
+}
+
+function renderComponentInit(component_class_declarations, presets) {
+    console.log("Rendering Components Page");
+    return `
+    const w = wick;
+
+    await w.appendPresets(${renderPresets(presets)});
+
+    ${component_class_declarations}
+    `;
+}
+
 
 /**[API]
  * Builds a single page from a wick component, with the
@@ -44,14 +75,10 @@ export async function RenderPage(
     comp: ComponentData,
     presets: PresetOptions = rt.presets,
     hooks: PageRenderHooks = {
-        init_script_render: (component_class_declarations, presets) => {
-            return `
-            import w from "/@cl/wick-rt/";
-            w.setPresets(${renderPresets(presets)});
-            w.rt.init();
-            ${component_class_declarations}
-            `;
-        }
+        init_script_render: comp.RADIATE
+            ? renderRadiatePageInit
+            : renderBasicWickPageInit,
+        init_components_render: renderComponentInit
     }
 ): Promise<{
     /**
@@ -141,12 +168,14 @@ export async function RenderPage(
         style += "\n" + componentDataToCSS(comp);
     }
 
-    const page = renderPageString(presets, templates, html, head, script, style, hooks);
+    const page = comp.RADIATE
+        ? renderRadiatePageString(presets, templates, html, head, script, style, hooks)
+        : renderWickPageString(presets, templates, html, head, script, style, hooks);
 
     return { templates, html, head, script, style, page };
 }
 
-function renderPageString(
+function renderWickPageString(
     presets: PresetOptions,
     templates: string,
     html: string,
@@ -162,19 +191,76 @@ function renderPageString(
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         ${head.split("\n").join("\n    ")}
-        <style>
+        <style id="wick-app-style">
         ${style.split("\n").join("\n            ")}
-        </style>
+        </style>       
+
     </head>
     <body>
         ${html.split("\n").join("\n        ")}
         ${templates.split("\n").join("\n        ")}
-        <script type=module>
+        <script type=module id="wick-init-script">
             ${hooks.init_script_render(script.split("\n").join("\n            "), presets)}
+        </script>
+        <script type=module id="wick-component-script">
+            ${hooks.init_components_render(script.split("\n").join("\n            "), presets)}
         </script>
     </body>
 </html>`;
 }
+
+function renderRadiatePageString(
+    presets: PresetOptions,
+    templates: string,
+    html: string,
+    head: string,
+    script: string,
+    style: string,
+    hooks: PageRenderHooks
+): string {
+    return `<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="generator" content="${name}-${version}"> 
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        ${head.split("\n").join("\n    ")}
+        <style id="wick-app-style">
+        ${style.split("\n").join("\n            ")}
+        </style>
+
+        <style id="radiate">
+            radiate-modals {
+                position:fixed;
+                top:0;
+                left:0;
+            }
+
+            radiate-modal {
+
+            }
+
+            radiate-modals iframe{
+                border: none;
+                width:100vh;
+                height:100vh;
+            }
+        </style>
+    </head>
+    <body>
+        <script> document.body.hidden = true; </script>
+        ${html.split("\n").join("\n        ")}
+        ${templates.split("\n").join("\n        ")}
+        <script type=module id="wick-init-script">
+            ${hooks.init_script_render(script.split("\n").join("\n            "), presets)}
+        </script>
+        <script type=module id="wick-component-script">
+            ${hooks.init_components_render(script.split("\n").join("\n            "), presets)}
+        </script>
+    </body>
+</html>`;
+}
+
 
 function renderPresets(presets: PresetOptions) {
     const out_value = {

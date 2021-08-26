@@ -15,10 +15,8 @@ assert_group("Server - Basic text input value binding", () => {
     var temp = "Hello World";
      
      export default <div> 
-        <input type="text" value={temp}>
-        {temp}
-     </div>
-     `));
+        <input type="text" value={temp}> { temp } dd
+     </div>;`));
 
     assert("Correct hook is created", comp.indirect_hooks.some(s => s.type == TextInputValueHook));
 

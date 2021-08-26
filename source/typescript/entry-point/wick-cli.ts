@@ -25,8 +25,8 @@
 	provide relevant information to ensure the user is aware of what to do once components have been
 	compiled. 
 */
-import wick_server from "./wick-server.js";
-import { getPackageJsonObject, getProcessArgs } from "@candlelib/paraffin";
+
+import { addCLIConfig, getPackageJsonObject, getProcessArgs, processCLIConfig } from "@candlelib/paraffin";
 import URL from "@candlelib/uri";
 
 
@@ -46,25 +46,29 @@ candle.cure <input-component> <output-directory>
 
 `;
 
-const args = getProcessArgs({
-	port: true,
-	p: "port",
-	"help": false,
-	"h": "help",
-	"?": "help"
-});
+const IS_FLAT = addCLIConfig("compile", { key: "flat", help_brief: `Output files to a flat directory structure` });
+const output_directory = addCLIConfig("compile", { key: "output", help_brief: `Directory to output files`, REQUIRES_VALUE: true });
 
-if (args.help) {
-	console.log(HELP_MESSAGE);
-	process.exit(0);
-}
+addCLIConfig("compile",
+	{
+		key: "compile",
+		help_brief:
+			`Statically compile a web application from a source directory.`
+	}
+).callback(
+	async (args) => {
 
-console.log(args);
+		//Find all components
+		//Compile
+		//Analyze component information
+		//Extract dependency information and
+		//wherever possible merge into output folder
+		//Identify the root file. 
+		console.log("hello world");
 
-/**
- * Use Cases
- *
- * Testing
- *
- * Static Site Compiling
- */
+
+		return;
+	}
+);
+
+processCLIConfig();

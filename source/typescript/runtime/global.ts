@@ -1,4 +1,5 @@
 
+import GlowAnimation from '@candlelib/glow';
 import Presets from "../compiler/common/presets.js";
 import { PresetOptions, UserPresets } from "../types/presets";
 import { WickRTComponent } from "./component.js";
@@ -6,12 +7,20 @@ import { WickRTComponent } from "./component.js";
 export const global_object = (typeof global !== "undefined") ? global : window;
 
 export interface WickRuntime {
-    glow: any,
+
+    loadGlow(): Promise<typeof GlowAnimation>,
+
+    glow: typeof GlowAnimation,
 
     /**
      * Runtime Component Class Constructor
      */
     C: typeof WickRTComponent;
+
+    /**
+     * Utilized by radiate system
+     */
+    router: any;
 
     /**
      * Register component class
@@ -51,14 +60,18 @@ const rt: WickRuntime = (() => {
 
         async loadGlow(glow_url: string = "@candlelib/glow") {
             //Import glow module if it is not present
-            glow = await import(glow_url);
+            glow = (await import(glow_url)).default;
+
+            return glow;
         },
 
-        get glow() { return glow; },
+        get glow(): typeof GlowAnimation { return glow; },
 
         get p() { return rt.presets; },
 
         get C() { return WickRTComponent; },
+
+        router: null,
 
         presets: null,
         /**
@@ -79,13 +92,22 @@ const rt: WickRuntime = (() => {
 
         setPresets: (preset_options: UserPresets) => {
 
-            //create new component
-            const presets = new Presets(preset_options);
+            if (rt.presets) {
 
-            //if (!rt.presets)
-            rt.presets = <Presets><any>presets;
+                if (preset_options)
+                    //@ts-ignore
+                    rt.presets.integrate_new_options(preset_options);
 
-            return presets;
+            } else {
+
+                //create new component
+                const presets = new Presets(preset_options);
+
+                //if (!rt.presets)
+                rt.presets = <Presets><any>presets;
+            }
+
+            return <Presets>rt.presets;
         },
 
         init: null,

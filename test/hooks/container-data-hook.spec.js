@@ -48,20 +48,18 @@ assert_group("Server - Directly Assigned Dynamic Iterable", sequence, () => {
          <div>{name}</div>
      </container>
      `));
-
+    assert(comp.class_string == "");
     //Insert Required API value before instantiating components
     wick_server.rt.addAPI({ test: "alpha" });
 
-    //assert(comp.class_string == "");
-
     const comp_instance = comp.createInstance();
 
-    await comp_instance.sleep(100);
+    await comp_instance.sleep(500);
 
     assert(comp_instance.ele.childNodes.length == 3);
-    assert(comp_instance.ele.childNodes[0].childNodes[0].data.trim() == "alpha");
-    assert(comp_instance.ele.childNodes[1].childNodes[0].data.trim() == "bravo");
-    assert(comp_instance.ele.childNodes[2].childNodes[0].data.trim() == "philbert");
+    assert(comp_instance.ele.childNodes[0].childNodes[0].childNodes[0].data.trim() == "alpha");
+    assert(comp_instance.ele.childNodes[1].childNodes[0].childNodes[0].data.trim() == "bravo");
+    assert(comp_instance.ele.childNodes[2].childNodes[0].childNodes[0].data.trim() == "philbert");
 });
 
 
@@ -94,9 +92,9 @@ assert_group("Server - Directly Assigned Dynamic Iterable With Const Binding Var
     assert(comp_instance.lookup_function_table == undefined);
 
     assert(comp_instance.ele.childNodes.length == 3);
-    assert(comp_instance.ele.childNodes[0].childNodes[0].data.trim() == "gloria");
-    assert(comp_instance.ele.childNodes[1].childNodes[0].data.trim() == "bravo");
-    assert(comp_instance.ele.childNodes[2].childNodes[0].data.trim() == "philbert");
+    assert(comp_instance.ele.childNodes[0].childNodes[0].childNodes[0].data.trim() == "gloria");
+    assert(comp_instance.ele.childNodes[1].childNodes[0].childNodes[0].data.trim() == "bravo");
+    assert(comp_instance.ele.childNodes[2].childNodes[0].childNodes[0].data.trim() == "philbert");
 });
 
 // Awaitable data assignment should show up in async_init.

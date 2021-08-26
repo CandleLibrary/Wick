@@ -10,11 +10,7 @@
     },
     "scripts": {
         "prepublishOnly": "rm -rf ./build && tsc & sleep 10",
-        "compile": "hydrocarbon compile --parser glalr -u -o ./source/typescript/parser/ -e ./source/typescript/parser/proxy_parser_environment.js -t module ./source/grammars/wick_parser.hcg",
-        "compile.mount": "hydrocarbon compile --parser glalr -u -d -m -e ./build/library/parser/env.js -t module ./source/grammars/wick_parser.hcg",
-        "compile.js": "hydrocarbon compile -u -o ./source/compiler/js -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/js.hcg",
-        "compile.html": "hydrocarbon compile -u -o ./source/compiler/html -e ./source/compiler/env_proxy.mjs -t mjs ./source/compiler/grammars/html.hcg",
-        "compile.test": "node --experimental-modules ./test/config.mjs",
+        "compile": "./scripts/compile.sh",
         "test": "candle.cure --reporter ci --headless ./test/*",
         "test.watch": "candle.cure -w ./test/*",
         "server": "lantern"
@@ -24,7 +20,10 @@
         "url": "git+https://github.com/CandleLibrary/wick.git"
     },
     "keywords": [
-        "SPA",
+        "Template Component Compiler",
+        "Web Component Parser",
+        "Component",
+        "Web app",
         "PWA",
         "Components",
         "JavaScript",

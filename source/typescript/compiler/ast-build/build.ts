@@ -135,9 +135,6 @@ export async function createCompiledComponentClass(
             for (const function_block of out_frames)
                 await makeComponentMethod(function_block, component, class_info, presets);
 
-
-
-            //await processMethods(component, class_info, presets);
         }
 
         // Remove methods 

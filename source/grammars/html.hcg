@@ -2,13 +2,7 @@
 # Wick HTML Parser file
 # 
 
-@NAME CandleLibrary_HTML_Parser
-
-@EXT html
-
-@IGNORE g:ws g:nl 
-
-@IMPORT ./string.hcg as string
+@IGNORE g:sp g:nl 
 
 ##############################################################################################
 ##############################################################################################
@@ -19,43 +13,43 @@
 <> HTML > RESULT
 
 <> RESULT > DTD(*) BODY                                                                     
-                                                                f:r { $sym2.DTD = $sym1, $sym2 }
+                                                                f:r { $2.DTD = $1, $2 }
 
 <> BODY > GOAL_TAG
 
 <> GOAL_TAG > TAG
 
-<> TAG > < TAGNAME ATTRIBUTES? > TAG_BODY? </ TAGNAME >                                     
-                                        f:r { { type:env.typ["HTML_"+$sym2.toUpperCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:$sym5 || [], VOID:false, pos } }
-    | < TAGNAME ATTRIBUTES? / >                                                             
-                                        f:r { { type:env.typ["HTML_"+$sym2.toUpperCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:false, pos } }
+<> TAG > < TAGNAME ATTRIBUTES? > TAG_BODY? \</ TAGNAME >                                     
+                                        f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:$5 || [], VOID:false, pos } }
+    | < TAGNAME ATTRIBUTES? \/>                                                             
+                                        f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:[], VOID:false, pos } }
     | < VOID_NAME ATTRIBUTES? /? >                                                          
-                                        f:r { { type:env.typ["HTML_"+$sym2.toUpperCase()] || env.typ.HTML_Element, tag:$sym2.toUpperCase(), attributes:$$sym3 || [], nodes:[], VOID:true, pos } }
+                                        f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:[], VOID:true, pos } }
     
-<> DTD > \<! g:id? \-- ?  TEXT_NODE_DATA  \-- ? \>                                                 
-                                                                f:r { { type:"DTD", tag:$$sym2|| "", value:$$sym4 }  }                
+<> DTD > \<! tk:identifier ? \--   TEXT_NODE_DATA  \-- \>                                                 
+                                                                f:r { { type:"DTD", tag:$$2|| "", value:$$4 }  }                
 
 
 ###########################################################################################
 # https://www.w3.org/TR/2011/WD-html-markup-20110113/syntax.html#syntax-elements
 ###########################################################################################
 
-<> VOID_NAME > τinput
-    | τarea
-    | τbase
-    | τbr
-    | τcol
-    | τcommand
-    | τembed
-    | τhr
-    | τimg
-    | τkeygen
-    | τlink
-    | τmeta
-    | τparam
-    | τsource
-    | τtrack
-    | τwbr
+<> VOID_NAME > t:input
+    | t:area
+    | t:base
+    | t:br
+    | t:col
+    | t:command
+    | t:embed
+    | t:hr
+    | t:img
+    | t:keygen
+    | t:link
+    | t:meta
+    | t:param
+    | t:source
+    | t:track
+    | t:wbr
 
 <> TAG_BODY > TAG_BODY_ITEM(+)
 
@@ -70,32 +64,36 @@
     | ATTRIBUTE_HEAD                                                                            
                                                                 f:r { {type:env.typ.HTMLAttribute, name:$1, value:"", IS_BINDING:false, pos } }
 
-<> ATTRIBUTE_HEAD > ' identifier? '                                                             
+<> ATTRIBUTE_HEAD > \' tk:identifier \'                                                             
                                                                 f:r { $2 }
-    | " identifier? "                                                                           
+    | \" tk:identifier \"                                                                           
                                                                 f:r { $2 }
+    | tk:identifier
+
+<> ATTRIBUTE_BODY >                                                       
+    tk:ATTRIBUTE_STRING_VALUE                                                                   
+                                                                f:r { $1.slice(1,-1) }
     | identifier
+    | g:num          
 
-<> ATTRIBUTE_BODY > \" BODY_SYMBOLS(*\" ) \"                                                      
-                                                                f:r { $2 || "" }
-    | \' BODY_SYMBOLS(*\" ) \''                                                                   
-                                                                f:r { $2 || "" }
-    | identifier
-    | g:num                                          
+<> ATTRIBUTE_STRING_VALUE >  \" BODY_SYMBOLS? \"
+    | \' BODY_SYMBOLS? \'
 
-<> TAGNAME > (RED g:nl) identifier
+<> TAGNAME > tk:identifier
 
-
-<> identifier > g:id ( g:id | \- | \: | g:num )(*\" )                                  			
-                                                                f:r { $sym1 + $sym2 } 
+<> identifier > g:id (RST g:sp) ( (RST g:sp) g:id | (RST g:sp) \- |  (RST g:sp) \: | (RST g:sp) g:num )(*\" )           
 
 <> TEXT_NODE > TEXT_NODE_DATA                                                                   
-                                                                f:r { {type:env.typ.HTMLText, data:$sym1, IS_BINDING:false, pos } }
-<> TEXT_NODE_DATA > BODY_SYMBOLS(+\" )                                                            
+                                                                f:r { {type:env.typ.HTMLText, data:$1, IS_BINDING:false, pos } }
+
+<> TEXT_NODE_DATA > ( g:id | g:sym | g:sp | g:nl | g:num  )(*\" )
+
+<> BODY_SYMBOLS > BODY_SYMBOL
+    | BODY_SYMBOLS BODY_SYMBOL
  
-<> BODY_SYMBOLS > g:id 
+<> BODY_SYMBOL > g:id 
     | g:nl 
-    | g:ws 
+    | g:sp 
     | g:sym 
     | g:num 
     | \! 

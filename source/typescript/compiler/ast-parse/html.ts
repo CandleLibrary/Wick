@@ -1,5 +1,5 @@
 import { traverse } from "@candlelib/conflagrate";
-import { exp, JSNode, JSNodeType, stmt } from "@candlelib/js";
+import { exp, JSExportClause, JSNamedImports, JSNode, JSNodeType, stmt } from "@candlelib/js";
 import URL from "@candlelib/uri";
 import { BINDING_VARIABLE_TYPE, ComponentData, HOOK_SELECTOR, HTMLHandler, PresetOptions } from "../../types/all.js";
 import {
@@ -14,8 +14,8 @@ import * as CH from "../ast-build/hooks/container.js";
 import * as DF from "../ast-build/hooks/data-flow.js";
 import * as HTML from "../ast-build/hooks/general-html.js";
 import * as IN from "../ast-build/hooks/input.js";
-import { addBindingReference, addBindingVariable, addHook } from "../common/binding.js";
-import { importResource } from "../common/common.js";
+import { addBindingVariable, addHook } from "../common/binding.js";
+import { importResource, componentNodeSource } from "../common/common.js";
 import { ComponentHash } from "../common/hash_name.js";
 import { Is_Tag_From_HTML_Spec } from "../common/html.js";
 import { processFunctionDeclaration, processNodeAsync, processWickCSS_AST, processWickJS_AST } from "./parse.js";
@@ -472,21 +472,30 @@ loadHTMLHandlerInternal<HTMLAttribute>(
         prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
             if (node.name == "import" && node.value) {
-                const
-                    obj = node.value.split(",").map(v => v.split(":").map(s => s.trim())).map(v => ({ foreign: v[1] || v[0], local: v[0] }));
 
-                for (const { local, foreign } of obj)
-                    addIndirectHook(component, DF.ImportFromChildAttributeHook, { local, foreign }, index);
+                const clause: JSNamedImports = <any>node.value;
+
+                for (const specifier of clause.nodes) {
+                    const external_id = specifier.nodes[0];
+                    const internal_id = specifier.nodes[1] || external_id;
+                    const local = external_id.value;
+                    const foreign = internal_id.value;
+                    addIndirectHook(component, DF.ImportFromChildAttributeHook, { local, foreign, child_id: host_node.child_id }, index);
+                }
 
                 return null;
 
             } else if (node.name == "export" && node.value) {
 
-                const
-                    obj = node.value.split(",").map(v => v.split(":").map(s => s.trim())).map(v => ({ foreign: v[1] || v[0], local: v[0] }));
+                const clause: JSExportClause = <any>node.value;
 
-                for (const { local, foreign } of obj)
+                for (const specifier of clause.nodes) {
+                    const external_id = specifier.nodes[0];
+                    const internal_id = specifier.nodes[1] || external_id;
+                    const local = external_id.value;
+                    const foreign = internal_id.value;
                     addIndirectHook(component, DF.ExportToChildAttributeHook, { local, foreign, child_id: host_node.child_id }, index);
+                }
 
                 return null;
             }
@@ -522,8 +531,12 @@ loadHTMLHandlerInternal(
         priority: -99999,
 
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+
+            console.log(node);
             const url = getAttributeValue("url", node) || "",
                 name = getAttributeValue("name", node) || "";
+
+            console.log({ url, name });
 
             await importResource(url, component, presets, node, name, [{ local: name, external: name }], component.root_frame);
 
@@ -587,6 +600,8 @@ loadHTMLHandlerInternal(
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
 
+            console.log("-----------------------------------", node.tag);
+
             if (component.local_component_names.has(node.tag)) {
 
                 const
@@ -628,11 +643,11 @@ loadHTMLHandlerInternal(
         async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
 
-            if (node.tag.toLocaleLowerCase() == "component") {
+            if (node.tag.toLocaleLowerCase() == "component" || node.tag.toLocaleLowerCase() == "radiate-element") {
 
                 node.tag = "div";
 
-                const comp = await parseComponentAST(Object.assign({}, node), node.pos.slice(), new URL("auto_generated"), presets, []);
+                const comp = await parseComponentAST(Object.assign({}, node), node.pos.slice(), component.location, presets, component);
 
                 node.nodes.length = 0;
 
@@ -664,6 +679,61 @@ loadHTMLHandlerInternal(
 
     }, HTMLNodeType.HTML_Element
 );
+
+/** ##########################################################
+ *  Radiate Element
+ */
+loadHTMLHandlerInternal(
+    {
+        priority: -998,
+
+        async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
+
+
+            if (node.tag.toLocaleLowerCase() == "radiate-element") {
+
+                node.tag = "div";
+
+                const comp = await parseComponentAST(Object.assign({}, node), node.pos.slice(), component.location, presets, component);
+
+                node.nodes.length = 0;
+
+                node.child_id = component.children.push(1) - 1;
+
+                node.component = comp;
+
+                node.attributes.push({
+                    IS_BINDING: false,
+                    name: "radiate",
+                    value: component.name,
+                    type: HTMLNodeType.HTMLAttribute
+                });
+
+                if (comp) {
+
+                    component.local_component_names.set(comp?.name, comp?.name);
+
+                    skip();
+
+                    node.component_name = node.component.name;
+
+                    //@ts-ignore
+                    node.attributes.push({
+                        type: HTMLNodeType.HTMLAttribute,
+                        name: "expat",
+                        value: ComponentHash(index + comp.name)
+                    });
+                    /*
+                    */
+                }
+
+                return node;
+            }
+        }
+
+    }, HTMLNodeType.HTML_Element
+);
+
 
 /** ##########################################################
  *  Foreign Elements
@@ -774,7 +844,7 @@ loadHTMLHandlerInternal(
                     if (!Is_Tag_From_HTML_Spec(ch.tag) && component.local_component_names.has(ch.tag))
                         comp = presets.components.get(component.local_component_names.get(ch.tag));
                     else
-                        comp = await parseComponentAST(Object.assign({}, ch), ch.pos.slice(), new URL("auto_generated"), presets, []);
+                        comp = await parseComponentAST(Object.assign({}, ch), componentNodeSource(component, ch), new URL("auto_generated"), presets, component);
 
                     ch.child_id = component.children.push(1) - 1;
                     ctr.components.push(comp);
@@ -798,3 +868,5 @@ loadHTMLHandlerInternal(
 
     }, HTMLNodeType.HTML_Element
 );
+
+

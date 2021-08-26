@@ -1,8 +1,7 @@
 import URL from "@candlelib/uri";
-import { WickRTComponent } from "../runtime/component";
 import { PluginStore } from "../plugin/plugin";
+import { WickRTComponent } from "../runtime/component";
 import { ComponentClassStrings, ComponentData, ComponentStyle } from "./component";
-import { string } from "../runtime/observable/string";
 /**
  * A collection of configuration options to customize the wick compiler.
  */

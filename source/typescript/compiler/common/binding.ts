@@ -31,6 +31,7 @@ export function getRootFrame(frame: FunctionFrame) {
  */
 export function addBindingReference(input_node: JSNode, input_parent: JSNode, frame: FunctionFrame) {
 
+
     for (const { node } of traverse(input_node, "nodes")
         .filter("type",
             JSNodeType.IdentifierReference, JSNodeType.IdentifierBinding
