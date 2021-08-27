@@ -1,6 +1,6 @@
 import { traverse } from "@candlelib/conflagrate";
 import { JSIdentifierClass, JSNode, JSNodeType } from "@candlelib/js";
-import URL from "@candlelib/uri";
+import URI from '@candlelib/uri';
 import { Lexer } from "@candlelib/wind";
 import { BINDING_FLAG, BINDING_VARIABLE_TYPE, ComponentData, FunctionFrame, HTMLNode, PresetOptions } from "../../types/all.js";
 import { parseSource } from "../ast-parse/source.js";
@@ -53,7 +53,7 @@ export function mergeComponentData(destination_component: ComponentData, source_
     destination_component.frames.push(...source_component.frames);
 }
 /**
- * Attempts to import a component from a URL. Returns true if the resource
+ * Attempts to import a component from a URI. Returns true if the resource
  * is a wick component that could be parsed, false otherwise.
  * @param new_component_url 
  * @param component 
@@ -65,12 +65,12 @@ export async function importComponentData(new_component_url, component, presets,
 
     try {
 
-        const comp_data = await parseSource(new URL(new_component_url), presets, component.location);
+        const comp_data = await parseSource(new URI(new_component_url), presets, component.location);
 
         if (comp_data.HAS_ERRORS)
             return false;
 
-        //const { ast, string, resolved_url } = await acquireComponentASTFromRemoteSource(new URL(new_component_url), component.location);
+        //const { ast, string, resolved_url } = await acquireComponentASTFromRemoteSource(new URI(new_component_url), component.location);
 
         // If the ast is an HTML_NODE with a single style element, then integrate the 
         // css data into the current component. 
@@ -107,7 +107,9 @@ export async function importResource(
 
     const [url, meta] = from_value.split(":");
 
-    switch (url.trim()) {
+    const uri = new URI(url);
+
+    switch (url + "") {
         default:
             // Read file and determine if we have a component, a script or some other resource. REQUIRING
             // extensions would make this whole process 9001% easier. such .html for html components,
@@ -116,12 +118,16 @@ export async function importResource(
             // server.
 
             //Compile Component Data
-            if (!(await importComponentData(
-                from_value,
-                component,
-                presets,
-                default_name
-            ))) {
+            if (
+                !(uri.ext == "wick" || uri.ext == "html")
+                ||
+                !(await importComponentData(
+                    from_value,
+                    component,
+                    presets,
+                    default_name
+                ))
+            ) {
                 let external_name = "";
 
                 if (!presets.repo.has(from_value.trim()))
