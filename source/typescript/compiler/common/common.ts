@@ -127,6 +127,11 @@ export async function importResource(
                 if (!presets.repo.has(from_value.trim()))
                     external_name = addPendingModuleToPresets(presets, from_value);
 
+                for (const name of names)
+                    name.external = external_name;
+
+
+
                 if (default_name)
                     addBindingVariable(frame, default_name, node.pos, BINDING_VARIABLE_TYPE.MODULE_VARIABLE, external_name, flag);
 

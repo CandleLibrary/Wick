@@ -287,7 +287,7 @@ export function getCompiledBindingVariableName(
                 return `this.presets.api.${external_name}.default`;
 
             case BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE:
-                return `this.presets.api.${external_name}`;
+                return `this.presets.api.${external_name}.module`;
 
             case BINDING_VARIABLE_TYPE.UNDECLARED:
                 const global_names = getSetOfEnvironmentGlobalNames();
@@ -324,6 +324,8 @@ export function getExternalName(binding: BindingVariable) {
 
 
 function haveStaticPluginForRefName(name: string, presets: PresetOptions) {
+
+
     return presets.plugins.hasPlugin(PLUGIN_TYPE.STATIC_DATA_FETCH, name);
 }
 
@@ -435,6 +437,7 @@ export function getExpressionStaticResolutionType(
     m: Set<BindingVariable> = null,
     g: Set<BindingVariable> = null,
 ): STATIC_RESOLUTION_TYPE {
+
 
     let type: number = STATIC_RESOLUTION_TYPE.CONSTANT_STATIC;
 
