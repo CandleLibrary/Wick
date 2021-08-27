@@ -2,7 +2,7 @@
 
 import glow from '@candlelib/glow';
 import URI from '@candlelib/uri';
-import Wick from '../entry-point/wick-runtime.js';
+import Wick, { gatherWickElements } from '../entry-point/wick-runtime.js';
 import { Element } from "./element.js";
 import { PageView } from "./page.js";
 
@@ -419,6 +419,8 @@ export class Router {
         if (app_source && dom_app) {
 
             var page: PageView = null;
+
+            gatherWickElements(DOM);
 
             if (document == DOM) {
                 // APP_PAGE Element is used as a stage for all element containers
