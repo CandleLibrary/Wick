@@ -102,7 +102,7 @@ export async function RenderPage(
      * All component CSS style data
      */
     style: string;
-    /**
+    /**hoo
      * A deploy ready page string
      */
     page: string;
@@ -225,6 +225,25 @@ function renderRadiatePageString(
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         ${head.split("\n").join("\n    ")}
+
+        <style id="wick-boiler-plate">
+
+            body {
+                position:absolute; top:0;
+                left:0; width:100%;
+                height:100%; padding:0;
+                margin:0; border:none;
+            }
+
+            li { 
+                list-style:none
+            }
+
+            a {
+                text-decoration:none
+            }
+
+        </style>
         <style id="wick-app-style">
         ${style.split("\n").join("\n            ")}
         </style>
