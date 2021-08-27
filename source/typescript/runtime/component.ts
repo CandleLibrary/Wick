@@ -260,9 +260,9 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                 this.integrateElement(ele);
 
                 return ele;
-            } else
-                console.warn("WickRT :: NO template element for component: " + this.name);
+            }
         }
+        throw new Error("WickRT :: NO template element for component: " + this.name);
     }
 
     removeCSS() {
