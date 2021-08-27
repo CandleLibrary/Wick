@@ -1,6 +1,9 @@
 import { bidirectionalTraverse, copy, traverse, TraverseState } from "@candlelib/conflagrate";
-import { exp, JSExpressionStatement, JSNode, renderCompressed, stmt } from "@candlelib/js";
-import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, HookTemplatePackage, IndirectHook, Node, PresetOptions, STATIC_RESOLUTION_TYPE } from "../../types/all.js";
+import { exp, JSExpressionStatement, JSNode, stmt } from "@candlelib/js";
+import {
+    BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass,
+    ComponentData, HookTemplatePackage, IndirectHook, Node, PresetOptions, STATIC_RESOLUTION_TYPE
+} from "../../types/all.js";
 import { ExtendedType } from "../../types/hook";
 import { Binding_Var_Is_Directly_Accessed, getBindingStaticResolutionType, getComponentBinding, getExpressionStaticResolutionType, getExternalName, getStaticValueAstFromSourceAST, Name_Is_A_Binding_Variable } from "../common/binding.js";
 import { appendStmtToFrame, createBuildFrame, Frame_Has_Statements, getStatementsFromFrame, prependStmtToFrame } from "../common/frame.js";
@@ -166,6 +169,7 @@ export async function processHookForClass(
 
     for (const ast of pending_init_asts) {
 
+
         const
             component_variables = collectBindingReferences(ast, component);
 
@@ -180,7 +184,7 @@ export async function processHookForClass(
 
         // Update pending binding records 
         for (const name of component_variables)
-            await addBindingRecord(class_info, name, component);
+            await addBindingRecord(class_info, name, component, presets);
     }
 
     for (const ast of pending_write_asts) {
@@ -238,7 +242,7 @@ export async function processHookForClass(
             class_info.write_records.push({ ast, component_variables, HAS_ASYNC, NO_LOCAL_BINDINGS });
 
         for (const name of component_variables)
-            await addBindingRecord(class_info, name, component);
+            await addBindingRecord(class_info, name, component, presets);
     }
 
     return extract.ast;
@@ -374,7 +378,13 @@ function processBindingVariables(
 }
 
 
-export async function addBindingRecord(class_info: CompiledComponentClass, name: string, component: ComponentData) {
+export async function addBindingRecord(
+    class_info: CompiledComponentClass,
+    name: string,
+    component: ComponentData,
+    presets: PresetOptions = null
+) {
+
 
     if (!class_info.binding_records.has(name)) {
 
@@ -391,16 +401,16 @@ export async function addBindingRecord(class_info: CompiledComponentClass, name:
 
         if (default_val) {
 
-            const
-                expr = <JSExpressionStatement>stmt(`this.ua(${index})`),
-                ast = await processHookForClass(default_val, component, {}, class_info, -1, false);
+            //     const
+            //         expr = <JSExpressionStatement>stmt(`this.ua(${index})`),
+            //         ast = await processHookForClass(default_val, component, presets, class_info, -1, false);
+            //
+            //     expr.nodes[0].nodes[1].nodes.push(<any>ast);
 
-            expr.nodes[0].nodes[1].nodes.push(<any>ast);
+            //prependStmtToFrame(class_info.init_frame, expr);
 
-            prependStmtToFrame(class_info.init_frame, expr);
-
-            for (const binding_name of collectBindingReferences(expr, component))
-                await addBindingRecord(class_info, binding_name, component);
+            //for (const binding_name of collectBindingReferences(default_val, component))
+            //    await addBindingRecord(class_info, binding_name, component, presets);
         }
     }
 }

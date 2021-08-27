@@ -93,40 +93,7 @@ loadJSParseHandlerInternal<JSArrowFunction>(
     }, JSNodeType.ArrowFunction
 );
 
-/*############################################################
-* ASSIGNMENT + POST/PRE EXPRESSIONS
-+ Post(++|--) and (++|--)Pre increment expressions
-*/
-loadJSParseHandlerInternal(
-    {
-        priority: 1,
 
-        prepareJSNode(node, parent_node, skip, component, presets, frame) {
-            for (const { node: id } of traverse(<JSNode>node, "nodes")
-                .filter("type", JSNodeType.IdentifierReference)
-            ) {
-                const name = (<JSIdentifierReference>id).value;
-
-                if (!Variable_Is_Declared_In_Closure(name, frame)) {
-
-                    if (Name_Is_A_Binding_Variable(name, frame))
-                        addBindingReference(<JSNode>node, <JSNode>parent_node, frame);
-                    else
-                        throw (`Invalid assignment to undeclared variable [${name}]`);
-                    //node.pos.throw(
-                    //`Invalid assignment to undeclared variable [${name}]`
-                    //);
-
-                    addWriteFlagToBindingVariable(name, frame);
-                }
-
-                skip(1);
-
-                break;
-            }
-        }
-    }, JSNodeType.AssignmentExpression, JSNodeType.PostExpression, JSNodeType.PreExpression
-);
 
 /* ###################################################################
  * AWAIT EXPRESSION
@@ -566,6 +533,41 @@ loadJSParseHandlerInternal(
     }, JSNodeType.StringLiteral
 );
 
+/*############################################################
+* ASSIGNMENT + POST/PRE EXPRESSIONS
++ Post(++|--) and (++|--)Pre increment expressions
+*/
+loadJSParseHandlerInternal(
+    {
+        priority: 1,
+
+        prepareJSNode(node, parent_node, skip, component, presets, frame) {
+            for (const { node: id } of traverse(<JSNode>node, "nodes")
+                .filter("type", JSNodeType.IdentifierReference)
+            ) {
+                const name = (<JSIdentifierReference>id).value;
+
+                if (!Variable_Is_Declared_In_Closure(name, frame)) {
+
+                    if (Name_Is_A_Binding_Variable(name, frame))
+                        addBindingReference(<JSNode>node, <JSNode>parent_node, frame);
+                    else
+                        throw (`Invalid assignment to undeclared variable [${name}]`);
+                    //node.pos.throw(
+                    //`Invalid assignment to undeclared variable [${name}]`
+                    //);
+
+                    addWriteFlagToBindingVariable(name, frame);
+                }
+
+                skip(1);
+
+                break;
+            }
+        }
+    }, JSNodeType.AssignmentExpression, JSNodeType.PostExpression, JSNodeType.PreExpression
+);
+
 // ###################################################################
 // VARIABLE DECLARATION STATEMENTS - CONST, LET, VAR
 //
@@ -629,6 +631,10 @@ loadJSParseHandlerInternal(
 
                         addWriteFlagToBindingVariable(l_name, frame);
 
+                        binding.type = JSNodeType.AssignmentExpression;
+
+                        addBindingReference(<JSNode>binding, <JSNode>parent_node, frame);
+
                         meta.skip();
 
                     } else
@@ -654,7 +660,7 @@ loadJSParseHandlerInternal(
 
 
             if (frame.IS_ROOT)
-                return null;
+                return node.nodes;
 
             return <JSNode>node;
         }

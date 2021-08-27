@@ -239,11 +239,13 @@ export async function processFunctionFrameHook(
         .makeSkippable()
     ) {
         if (
+            //@ts-ignore
             node.type == BindingIdentifierBinding
             ||
+            //@ts-ignore
             node.type == BindingIdentifierReference
         ) {
-            await addBindingRecord(class_info, node.value, comp);
+            await addBindingRecord(class_info, node.value, comp, presets);
         } else if (node.type > 0xFFFFFFFF) {
             const ast = await processHookForClass(node, comp, presets, class_info, -1, false);
 
