@@ -1,3 +1,5 @@
+import { SET_ONCE_environment_globals } from './common';
+
 export const GlobalVariables = [
     "AbortController",
     "AbortSignal",
@@ -959,3 +961,16 @@ export const GlobalVariables = [
     "XRWebGLLayer",
     "XSLTProcessor",
 ];
+
+let SET_ONCE_environment_globals = null;
+
+/**
+ * Return a set of global variables names
+ * @returns
+ */
+export function getSetOfEnvironmentGlobalNames(): Set<string> {
+    //Determine what environment we have pull and out the global object. 
+    if (!SET_ONCE_environment_globals)
+        SET_ONCE_environment_globals = new Set(GlobalVariables);
+    return SET_ONCE_environment_globals;
+}

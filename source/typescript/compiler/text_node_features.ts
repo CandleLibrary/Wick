@@ -1,4 +1,4 @@
-import { JSExpressionClass, JSExpressionStatement, JSNode, stmt } from '@candlelib/js';
+import { JSExpressionClass, JSExpressionStatement, JSNode } from '@candlelib/js';
 import {
     HTMLNode, HTMLNodeType,
     IndirectHook, WickBindingNode
@@ -38,9 +38,9 @@ registerFeature(
 
 
         /**
-         * Hook Type for Text Nodse
+         * Hook Type for Text Node
          */
-        build_system.registerHookHandler<IndirectHook<JSExpressionClass> | JSNode, null>({
+        build_system.registerHookHandler<IndirectHook<JSExpressionClass>, JSExpressionStatement>({
 
             name: "Text Node Binding Hook",
 
@@ -50,7 +50,7 @@ registerFeature(
 
             buildJS: (node, comp, presets, element_index, addOnBindingUpdate) => {
 
-                const st = <JSExpressionStatement>stmt(`$$ele${element_index}.data = 0`);
+                const st = build_system.js.stmt<JSExpressionStatement>(`$$ele${element_index}.data = 0`);
 
                 st.nodes[0].nodes[1] = <JSNode>node.nodes[0];
 

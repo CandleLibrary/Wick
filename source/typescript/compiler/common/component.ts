@@ -4,6 +4,7 @@ import { PresetOptions } from "source/typescript/types/presets";
 import { WickRTComponent } from "../../runtime/component.js";
 import { ComponentData } from "../../types/component";
 import { DOMLiteral } from "../../types/html";
+import { addBindingVariable } from './binding.js';
 import { ComponentHash } from "./hash_name.js";
 
 export function createErrorComponent(errors: Error[], src: string, location: URL, component: ComponentData = createComponentData(src, location)) {
@@ -66,6 +67,7 @@ export function createErrorComponent(errors: Error[], src: string, location: URL
 
 export class ComponentDataClass implements ComponentData {
 
+    RADIATE: ComponentData["RADIATE"];
     name: ComponentData["name"];
     container_count: ComponentData["container_count"];
     global_model_name: ComponentData["global_model_name"];
@@ -156,4 +158,28 @@ export class ComponentDataClass implements ComponentData {
 
 export function createComponentData(source_string: string, location: URL): ComponentData {
     return new ComponentDataClass(source_string, location);
+}
+
+/**
+ * Take the data from the source component and merge it into the destination component. Asserts
+ * the source component has only CSS and Javascript data, and does not represent an HTML element.
+ * @param destination_component 
+ * @param source_component 
+ */
+export function mergeComponentData(destination_component: ComponentData, source_component: ComponentData) {
+
+    if (source_component.CSS) destination_component.CSS.push(...source_component.CSS);
+
+    if (!destination_component.HTML)
+        destination_component.HTML = source_component.HTML;
+    else
+        throw new Error(`Cannot combine components. The source component ${source_component.location} contains a default HTML export that conflicts with the destination component ${destination_component.location}`);
+
+    for (const [, { external_name, flags, internal_name, pos, type }] of source_component.root_frame.binding_variables.entries())
+        addBindingVariable(destination_component.root_frame, internal_name, pos, type, external_name, flags);
+
+    for (const name of source_component.names)
+        destination_component.names.push(name);
+
+    destination_component.frames.push(...source_component.frames);
 }

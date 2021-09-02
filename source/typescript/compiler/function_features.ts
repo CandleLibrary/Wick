@@ -1,11 +1,10 @@
 import { copy, traverse } from '@candlelib/conflagrate';
-import { JSFormalParameters, JSIdentifier, JSNode, JSNodeType } from '@candlelib/js';
+import { JSCallExpression, JSFormalParameters, JSIdentifier, JSIdentifierBinding, JSNode, JSNodeType } from '@candlelib/js';
 import {
-    BINDING_VARIABLE_TYPE, HTMLNodeType, IndirectHook, WickBindingNode
+    BINDING_VARIABLE_TYPE, HTMLNodeType, IndirectHook, JSHandler, WickBindingNode
 } from "../types/all.js";
 import { registerFeature } from './build_system.js';
-import { Name_Is_A_Binding_Variable, Variable_Is_Declared_In_Closure } from './common/binding.js';
-import { getFirstReferenceName, getSetOfEnvironmentGlobalNames } from './common/common.js';
+import { BindingIdentifierReference } from './common/js_hook_types.js';
 
 registerFeature(
 
@@ -87,75 +86,46 @@ registerFeature(
                             // hoist binding references to the parameters of the function 
                             // and convert back to normal variables. 
 
-                            const function_frame = await build_system.processFunctionDeclaration(<JSNode>node, component, presets, root_name);
+                            const function_frame = await build_system.
+                                processFunctionDeclaration(<JSNode>node, component, presets, root_name);
 
                             //Grab references to the binding variables
-                            const candidate_params = [
-                                ...new Map(
-                                    function_frame
-                                        .binding_ref_identifiers.filter(({ value }) => {
-                                            const global_names = getSetOfEnvironmentGlobalNames();
-                                            return !global_names.has(value);
-                                        })
-                                        .map(id => [id.value, id])).values()
-                            ];
+                            const call_ids: JSIdentifierBinding[] = <any>function_frame.ast.nodes[1]?.nodes?.filter(
+                                (i): i is JSIdentifierBinding => i.type == JSNodeType.IdentifierBinding
+                            ) ?? [];
 
-                            console.log(candidate_params);
+                            const name = "__" + function_frame.ast.nodes[0].value.slice(1) + "__";
 
-                            const call_ids = candidate_params.map(copy);
-
-                            // Reset the binding identifiers to plain old references and 
-                            // clear them from the function frame.
-
-                            const name_map = new Map();
-                            const param_ids = candidate_params.map(copy).map(id => {
-                                if (!name_map.has(id.value))
-                                    name_map.set(id.value, "$$" + name_map.size);
-
-                                id.value = name_map.get(id.value);
-
-                                return id;
-                            });
-                            //  function_frame.binding_ref_identifiers.forEach(id => {
-                            //      id.type = JSNodeType.IdentifierReference;
-                            //      if (name_map.has(id.value))
-                            //          id.value = name_map.get(id.value);
-                            //  });
-                            //
-                            //  function_frame.binding_ref_identifiers.length = 0;
-
-                            const name = function_frame.ast.nodes[0].value;
-
-                            // Insert plain old versions of the references into the 
-                            // parameters list of the function frame ast. 
+                            function_frame.ast.nodes[0].value = name;
 
                             // This WILL REPLACE any existing parameters of 
                             // the function. 
+                            function_frame.ast.nodes[1] =
+                                <JSFormalParameters>
+                                {
+                                    type: JSNodeType.FormalParameters,
+                                    nodes: [
+                                        <JSIdentifierBinding>
+                                        { type: JSNodeType.IdentifierBinding, value: "c" },
+                                        ...call_ids
+                                    ],
+                                    pos: function_frame.ast.pos
+                                };
 
-                            function_frame.ast.nodes[1] = <JSFormalParameters>{
-                                type: JSNodeType.FormalParameters,
-                                nodes: [
-                                    { type: JSNodeType.IdentifierBinding, value: "c" },
-                                ],
-                                pos: function_frame.ast.pos
-                            };
-
+                            //Create a recursion check to prevent infinite recursions.
                             function_frame.ast.nodes[2].nodes.unshift(build_system.js.stmt(`if(c>0) return;`));
 
                             // Create a new ast node that will server as the caller to the function 
                             // when bindings are updated and insert into an indirect hook. 
 
-                            const call = build_system.js.stmt(`this.${name}(c)`);
+                            const call = build_system.js.expr<JSCallExpression>(`this.${name}(c)`);
 
 
-                            // Push the origin binding ref identifiers into the 
-                            // arguments of the new ast call
-                            // @ts-ignore
-                            call.nodes[0].nodes[1].nodes.push(...call_ids);
+                            //@ts-ignore
+                            call.nodes[1].nodes.push(...call_ids.map(copy).map(i => (i.type = BindingIdentifierReference, i)));
 
-                            console.dir({ call }, { depth: null });
 
-                            build_system.addIndirectHook(component, AutoCallFunction, call, 0, false);
+                            build_system.addIndirectHook(component, AutoCallFunction, [call], 0, false);
 
                             return null;
                         }
@@ -172,30 +142,22 @@ registerFeature(
             }, JSNodeType.FunctionDeclaration, JSNodeType.FunctionExpression
         );
 
-        build_system.registerHookHandler<IndirectHook<JSNode>, JSNode | void>({
+        build_system.registerHookHandler
+            <IndirectHook<[JSCallExpression, ...JSIdentifierBinding[]]>, JSCallExpression | JSIdentifierBinding>
+            ({
+                name: "Automatically Calls Function on binding updates",
+                types: [AutoCallFunction],
+                verify: () => true,
+                buildHTML: () => null,
+                buildJS(node, comp, presets, element_index, addOnBindingUpdate, addInitBindingInit) {
 
-            name: "Automatically Calls Function on binding updates",
+                    const [call_stmt, ...refs] = node.nodes;
 
-            types: [AutoCallFunction],
+                    addOnBindingUpdate(call_stmt, ...refs);
 
-            verify: () => true,
-
-            buildJS: (node, comp, presets, element_index, addOnBindingUpdate, addInitBindingInit) => {
-                // extract the nodes that are binding references
-
-                const call_stmt = node.nodes[0];
-
-                const refs = call_stmt.nodes[0].nodes[1].nodes.slice(1);
-
-                call_stmt.nodes[0].nodes[1].nodes.length = 1;
-
-                addOnBindingUpdate(call_stmt, ...refs);
-
-                return null;
-            },
-
-            buildHTML: () => null
-        });
+                    return null;
+                }
+            });
         /* ###################################################################
          * ARROW EXPRESSION
          */
@@ -221,7 +183,7 @@ registerFeature(
         * FORMAL PARAMETERS
         */
         build_system.registerJSParserHandler(
-            {
+            <JSHandler<JSFormalParameters>>{
                 priority: 1,
 
                 prepareJSNode(node, parent_node, skip, component, presets, frame) {
@@ -236,41 +198,6 @@ registerFeature(
                 }
 
             }, JSNodeType.FormalParameters
-        );
-
-        // ###################################################################
-        // Call Expression Identifiers
-        //
-        // If the identifier is used as the target of a call expression, add the call
-        // expression node to the variable's references list.
-        build_system.registerJSParserHandler(
-            {
-                priority: 1,
-
-                async prepareJSNode(node, parent_node, skip, component, presets, frame) {
-
-                    node = await build_system.processNodeAsync(<JSNode>node, frame, component, presets, true);
-
-                    const
-                        [id] = node.nodes,
-                        name = <string>getFirstReferenceName(<JSNode>id);//.value;
-
-                    if (!Variable_Is_Declared_In_Closure(name, frame)
-                        && Name_Is_A_Binding_Variable(name, frame)) {
-
-                        build_system.addBindingReference(
-                            <JSNode>id,
-                            <JSNode>node,
-                            frame);
-
-                        build_system.addReadFlagToBindingVariable(name, frame);
-
-                        skip(1);
-                    }
-
-                    return <JSNode>node;
-                }
-            }, JSNodeType.CallExpression
         );
 
     }

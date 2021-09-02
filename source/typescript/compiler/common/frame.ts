@@ -1,8 +1,14 @@
-import { JSNodeType, JSStatementClass } from "@candlelib/js";
+import { ext, JSExpressionClass, JSNode, JSNodeClass, JSNodeType, JSStatementClass } from "@candlelib/js";
 import { ComponentData } from "../../types/component";
 import { FunctionFrame } from "../../types/function_frame";
 import { getGenericMethodNode } from "./js.js";
-
+/**
+ * Create a new function frame whose ultimately use is to be 
+ * incorporated into the output class as a class method.
+ * @param name - The name of the method
+ * @param arg_string - A string representing the arguments of the method
+ * @returns {FunctionFrame}
+ */
 export function createBuildFrame(name, arg_string = "_null_"): FunctionFrame {
     return {
         method_name: name,
@@ -67,10 +73,22 @@ export function getStatementsFromFrame(frame: FunctionFrame): JSStatementClass[]
     return [];
 }
 
-export function prependStmtToFrame({ ast }: FunctionFrame, ...stmt: JSStatementClass[]) {
-    ast.nodes[2].nodes.unshift(...stmt);
+export function prependStmtToFrame({ ast }: FunctionFrame, ...stmt: JSNode[]) {
+
+    for (const node of stmt.reverse())
+        if (node.type & (JSNodeClass.DECLARATION | JSNodeClass.STATEMENT)) {
+            if (node.nodes.length == 0) continue;
+            ast.nodes[2].nodes.unshift(<JSStatementClass>node);
+        } else
+            ast.nodes[2].nodes.unshift({ type: JSNodeType.ExpressionStatement, nodes: [<JSExpressionClass>node], pos: node.pos });
 }
 
-export function appendStmtToFrame({ ast }: FunctionFrame, ...stmt: JSStatementClass[]) {
-    ast.nodes[2].nodes.push(...stmt);
+export function appendStmtToFrame({ ast }: FunctionFrame, ...stmt: JSNode[]) {
+
+    for (const node of stmt)
+        if (node.type & (JSNodeClass.DECLARATION | JSNodeClass.STATEMENT)) {
+            if (node.nodes.length == 0) continue;
+            ast.nodes[2].nodes.push(<JSStatementClass>node);
+        } else
+            ast.nodes[2].nodes.push({ type: JSNodeType.ExpressionStatement, nodes: [<JSExpressionClass>node], pos: node.pos });
 }

@@ -34,8 +34,21 @@ import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/
 
 
 
-export function addIndirectHook<T>(comp: ComponentData, type: ExtendedType, ast: T, ele_index: number = -1, ALLOW_STATIC_REPLACE: boolean = false) {
-    comp.indirect_hooks.push(<IndirectHook<T>>{ type, nodes: [ast], ele_index, ALLOW_STATIC_REPLACE });
+export function addIndirectHook<T>(
+    comp: ComponentData,
+    type: ExtendedType,
+    ast: T,
+    ele_index: number = -1,
+    ALLOW_STATIC_REPLACE: boolean = false
+) {
+    comp.indirect_hooks.push(<IndirectHook<T>>{
+        type,
+        nodes: Array.isArray(ast)
+            ? ast
+            : [ast],
+        ele_index,
+        ALLOW_STATIC_REPLACE
+    });
 }
 
 /**
@@ -43,7 +56,7 @@ export function addIndirectHook<T>(comp: ComponentData, type: ExtendedType, ast:
  * @param root_node 
  * @param component 
  * @param hook 
- * @returns 
+ * @returns {string[]}
  */
 export function collectBindingReferences(ast: JSNode, component: ComponentData): string[] {
 
@@ -176,7 +189,15 @@ export async function processHookForClass(
                 if (handler.types.includes(node.type) && handler.verify(node)) {
 
                     let
-                        result = await handler.buildJS(node, component, presets, element_index, addOnBindingUpdateAst, addInitAST, addDestroyAST);
+                        result = await handler.buildJS(
+                            node,
+                            component,
+                            presets,
+                            element_index,
+                            addOnBindingUpdateAst,
+                            addInitAST,
+                            addDestroyAST
+                        );
 
                     if (result instanceof Promise)
                         result = await result;
@@ -320,7 +341,7 @@ export function processHookASTs(comp: ComponentData, comp_info: CompiledComponen
             // Create a group function that will auto update when every 
             // dependent binding variable has value
             const name = "b" + binding_join_index;
-            const frame = createBuildFrame(name, "c");
+            const frame = createBuildFrame(name, "f, c");
 
             frame.IS_ASYNC = !!representative.HAS_ASYNC;
 

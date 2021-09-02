@@ -1,6 +1,6 @@
-import { JSNode, JSNodeClass } from "@candlelib/js";
-import { Lexer } from "@candlelib/wind";
 import { CSSNode } from "@candlelib/css";
+import { Token } from '@candlelib/hydrocarbon';
+import { JSNode } from "@candlelib/js";
 import { ComponentData } from "./component";
 
 export const enum HTMLNodeClass {
@@ -231,7 +231,7 @@ export interface HTMLNode {
 
     name_space?: number;
 
-    pos: Lexer;
+    pos: Token;
 
     tag?: string;
 
@@ -312,7 +312,7 @@ export interface WickBindingNode extends HTMLNode {
      */
     secondary_ast?: JSNode;
 
-    pos: Lexer;
+    pos: Token;
 }
 
 
@@ -331,7 +331,7 @@ export interface HTMLTextNode {
      */
     IS_BINDING; boolean;
 
-    pos: Lexer;
+    pos: Token;
 }
 
 export interface HTMLContainerNode extends HTMLNode {

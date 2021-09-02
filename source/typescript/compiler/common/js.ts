@@ -1,5 +1,5 @@
 import { traverse } from "@candlelib/conflagrate";
-import { ext, JSBindingProperty, JSExpressionClass, JSIdentifier, JSMethod, JSNode, JSNodeClass, JSNodeType } from "@candlelib/js";
+import { ext, JSBindingProperty, JSExpressionClass, JSIdentifier, JSIdentifierClass, JSMethod, JSNode, JSNodeClass, JSNodeType } from "@candlelib/js";
 
 import { parse_js_exp } from "../source-code-parse/parse.js";
 /**
@@ -101,4 +101,19 @@ export function getFirstMatchingReferenceIdentifier(input_node: JSNode, id_value
         if (node.value == id_value) return node;
     }
     return null;
+}
+
+export function getFirstReferenceNode(node: JSNode): JSIdentifierClass {
+    for (const { node: id } of traverse(node, "nodes").filter("type", JSNodeType.IdentifierReference))
+        return <JSIdentifierClass>id;
+    return null;
+}
+
+export function getFirstReferenceName(node: JSNode): string {
+
+    const ref = getFirstReferenceNode(node);
+
+    if (ref)
+        return <string>ref.value;
+    return "";
 }

@@ -161,6 +161,41 @@ registerFeature(
             }, JSNodeType.VariableStatement, JSNodeType.LexicalDeclaration, JSNodeType.LexicalBinding
         );
 
+        // ###################################################################
+        // Call Expression Identifiers
+        //
+        // If the identifier is used as the target of a call expression, add the call
+        // expression node to the variable's references list.
+        build_system.registerJSParserHandler(
+            {
+                priority: 1,
+
+                async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+
+                    node = await build_system.processNodeAsync(<JSNode>node, frame, component, presets, true);
+
+                    const
+                        [id] = node.nodes,
+                        name = <string>build_system.js.getFirstReferenceName(<JSNode>id);//.value;
+
+                    if (!Variable_Is_Declared_In_Closure(name, frame)
+                        && Name_Is_A_Binding_Variable(name, frame)) {
+
+                        build_system.addBindingReference(
+                            <JSNode>id,
+                            <JSNode>node,
+                            frame);
+
+                        build_system.addReadFlagToBindingVariable(name, frame);
+
+                        skip(1);
+                    }
+
+                    return <JSNode>node;
+                }
+            }, JSNodeType.CallExpression
+        );
+
         /**
          *  
          */

@@ -2,6 +2,15 @@ export function log(...args) {
     console.log(...args);
 }
 
-export function dir(...args) {
-    console.dir(...args);
+export function dir(args) {
+    console.dir(args, {
+        breakLength: 75,
+        depth: null,
+        maxArrayLength: Infinity,
+        maxStringLength: Infinity,
+    });
+}
+
+export function error(e: Error) {
+    console.log(error);
 }

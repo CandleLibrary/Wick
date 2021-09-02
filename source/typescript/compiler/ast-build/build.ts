@@ -37,9 +37,15 @@ import {
     BindingIdentifierBinding,
     BindingIdentifierReference
 } from "../common/js_hook_types.js";
-import { addBindingRecord, processHookASTs as processResolvedHooks, processHookForClass, processIndirectHook } from "./hooks.js";
+import {
+    addBindingRecord,
+    processHookASTs as processResolvedHooks,
+    processHookForClass,
+    processIndirectHook
+} from "./hooks.js";
 import { componentDataToTempAST, createComponentTemplate } from "./html.js";
 import * as b_sys from "../build_system.js";
+
 export async function createComponentTemplates(
     presets: PresetOptions,
     template_container: Map<string, HTMLElement> = new Map
@@ -63,6 +69,7 @@ export async function createComponentTemplates(
             }
         }
 }
+
 /**
  * Produces a compiled component class from 
  * @param component 
@@ -275,7 +282,12 @@ function Node_Is_Binding_Identifier(node: JSNode) {
  * Create new AST that has all undefined references converted to binding
  * lookups or static values.
  */
-async function makeComponentMethod(frame: FunctionFrame, component: ComponentData, ci: CompiledComponentClass, presets: PresetOptions) {
+async function makeComponentMethod(
+    frame: FunctionFrame,
+    component: ComponentData,
+    ci: CompiledComponentClass,
+    presets: PresetOptions
+) {
 
     if (frame.ast && !frame.IS_ROOT) {
 
@@ -333,25 +345,27 @@ export async function finalizeBindingExpression(
                  * Convert convenience names to class property accessors
                  */
                 if (node.value.slice(0, 5) == ("$$ele")) {
-                    mutate(exp(`this.elu[${node.value.slice(5)}]`));
+                    mutate(<any>exp(`this.elu[${node.value.slice(5)}]`));
                     skip();
                 } else if (node.value.slice(0, 5) == ("$$ctr")) {
-                    mutate(exp(`this.ctr[${node.value.slice(5)}]`));
+                    mutate(<any>exp(`this.ctr[${node.value.slice(5)}]`));
                     skip();
                 } else if (node.value.slice(0, 4) == ("$$ch")) {
-                    mutate(exp(`this.ch[${node.value.slice(4)}]`));
+                    mutate(<any>exp(`this.ch[${node.value.slice(4)}]`));
                     skip();
                 } else if (node.value.slice(0, 4) == "$$bi") {
                     const binding = getComponentBinding(node.value.slice(4), component);
-                    mutate(exp(`${binding.class_index}`));
+                    mutate(<any>exp(`${binding.class_index}`));
                     skip();
                 }
 
 
                 break;
+
             case JST.AwaitExpression:
                 NEED_ASYNC = true;
                 break;
+
             //case JSNodeType.ComponentBindingIdentifier
             case BindingIdentifierBinding: case BindingIdentifierReference:
                 //@ts-ignore
@@ -363,9 +377,9 @@ export async function finalizeBindingExpression(
 
                 if (!component.root_frame.binding_variables.has(<string>name))
                     //ts-ignore
-                    throw node.pos.errorMessage(`Undefined reference to ${name}`);
+                    throw node.pos.returnError(`Undefined reference to ${name}`);
 
-                mutate(new_node);
+                mutate(<any>new_node);
 
                 break;
 
@@ -381,12 +395,18 @@ export async function finalizeBindingExpression(
 
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {
                         const
-                            index = comp_info.binding_records.get(name).index,
-                            comp_var_name: string = getCompiledBindingVariableNameFromString(name, component, comp_info),
-                            assignment: JSCallExpression = <any>exp(`this.ua(${index})`),
-                            exp_ = exp(`${comp_var_name}${node.symbol[0]}1`);
 
-                        const { ast, NEED_ASYNC: NA } = await finalizeBindingExpression(ref, component, comp_info, presets);
+                            index = comp_info.binding_records.get(name).index,
+
+                            comp_var_name: string =
+                                getCompiledBindingVariableNameFromString(name, component, comp_info),
+
+                            assignment: JSCallExpression = <any>exp(`this.ua(${index})`),
+
+                            exp_ = exp(`${comp_var_name}${node.symbol[0]}1`),
+
+                            { ast, NEED_ASYNC: NA } =
+                                await finalizeBindingExpression(ref, component, comp_info, presets);
 
                         NEED_ASYNC = NA || NEED_ASYNC;
 
@@ -395,7 +415,9 @@ export async function finalizeBindingExpression(
                         assignment.nodes[1].nodes.push(<any>exp_);
 
                         if (node.type == JST.PreExpression)
-                            assignment.nodes[1].nodes.push(exp("true"));
+                            assignment.nodes[1].nodes.push(
+                                <any>exp("true")
+                            );
 
                         mutate(setPos(assignment, node.pos));
 
@@ -415,11 +437,16 @@ export async function finalizeBindingExpression(
 
                     //Directly assign new value to model variables
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {
-                        const index = comp_info.binding_records.get(name).index;
-                        const assignment: JSCallExpression = <any>exp(`this.ua(${index})`);
 
-                        const { ast: a1, NEED_ASYNC: NA1 } = await finalizeBindingExpression(ref, component, comp_info, presets);
-                        const { ast: a2, NEED_ASYNC: NA2 } = await finalizeBindingExpression(value, component, comp_info, presets);
+                        const index = comp_info.binding_records.get(name).index,
+
+                            assignment: JSCallExpression = <any>exp(`this.ua(${index})`),
+
+                            { ast: a1, NEED_ASYNC: NA1 } =
+                                await finalizeBindingExpression(ref, component, comp_info, presets),
+
+                            { ast: a2, NEED_ASYNC: NA2 } =
+                                await finalizeBindingExpression(value, component, comp_info, presets);
 
                         NEED_ASYNC = NA1 || NA2 || NEED_ASYNC;
 

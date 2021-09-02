@@ -1,5 +1,4 @@
 import spark, { Sparky } from "@candlelib/spark";
-import { DOMLiteral } from "../entry-point/wick-full.js";
 import { BINDING_FLAG } from "../types/binding";
 import { ObservableModel, ObservableWatcher } from "../types/model";
 import { PresetOptions } from "../types/presets";
@@ -7,7 +6,6 @@ import { takeParentAddChild } from "./common.js";
 import { WickContainer } from "./container.js";
 import { rt } from "./global.js";
 import {
-    createNamespacedElement, getNameSpace,
     hydrateComponentElement, hydrateContainerElement
 } from "./html.js";
 
@@ -160,8 +158,10 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.hydrate(model);
     }
 
-    hydrate(model) {
+    hydrate(model: Object) {
+
         const presets = this.presets, wrapper = this.wrapper;
+
         // Hydration --------------------------------
         this.CONNECTED = true;
 
@@ -173,9 +173,13 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         // End Hydration ----------------------------
 
         if (wrapper) {
+
             this.ele.appendChild(this.wrapper.ele);
+
             this.wrapper.setModel({ comp: this });
-        } else if (presets.wrapper && this.name !== presets.wrapper.name /*Prevent recursion, which will be infinite */) {
+        } else if /*Prevent recursion, which will be infinite */ (
+            presets.wrapper && this.name !== presets.wrapper.name
+        ) {
             this.wrapper = new (presets.component_class.get(presets.wrapper.name))({ comp: this });
             this.ele.appendChild(this.wrapper.ele);
         }
@@ -191,7 +195,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         rt.OVERRIDABLE_onComponentCreate(this);
 
         for (const child of this.ch)
-            child.hydrate();
+            child.hydrate(null);
     }
 
     destructor() {
@@ -498,9 +502,16 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
 
             if (changed_names) {
+
                 for (const name in changed_names) {
+
                     const flag_id = this.nlu[name];
-                    if (flag_id && (flag_id >>> 24) & BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL)
+
+                    if (
+                        flag_id && (flag_id >>> 24)
+                        &
+                        BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL
+                    )
                         this.ua(flag_id & 0xFFFFFF, model[name]);
                 }
             } else
@@ -556,7 +567,11 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         if (attribute_value !== prev_val) {
 
-            if (!this.call_set.has(attribute_index) && this.lookup_function_table[attribute_index])
+            if (
+                !this.call_set.has(attribute_index)
+                &&
+                this.lookup_function_table[attribute_index]
+            )
                 this.call_set.set(attribute_index, [this.active_flags, this.call_depth]);
 
             this[attribute_index] = attribute_value;
@@ -582,12 +597,15 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     }
 
     /**
-     * Check to see of the index locations are defined
+     * Check to see of the index locations are not undefined
      * @param ids 
      */
     check(...ids) {
+
         for (const id of ids)
-            if (typeof this[id] == "undefined") return false;
+            if (typeof this[id] == "undefined")
+                return false;
+
         return true;
     }
 
@@ -599,6 +617,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     }
 
     updateParent(data) {
+
         if (this.par)
             this.updateFromChild.call(this.par, data);
     }
@@ -619,7 +638,12 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         const method = this.pui[local_index];
 
         if (typeof method == "function") {
-            this.active_flags |= BINDING_FLAG.ALLOW_UPDATE_FROM_CHILD | ((this.ci + 1) << 24);
+
+            this.active_flags |=
+                BINDING_FLAG.ALLOW_UPDATE_FROM_CHILD
+                |
+                ((this.ci + 1) << 24);
+
             method.call(this.par, val, 0);
         }
 
@@ -630,30 +654,43 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.call_depth = 1;
 
         for (const [calls_id, depth] of this.clearActiveBindingCalls()) {
+
             this.lookup_function_table[calls_id].call(this, depth);
+
             this.call_depth = 0;
+
             this.active_flags = 0;
         }
 
         for (const [call_id, args] of this.clearActiveCalls()) {
+
             this.lookup_function_table[call_id].call(this, ...args);
+
             this.call_depth = 0;
+
             this.active_flags = 0;
         }
     }
 
     clearActiveBindingCalls() {
+
         if (this.binding_call_set.length == 0) return empty_array;
 
         const data = this.binding_call_set.slice();
+
         this.binding_call_set.length = 0;
+
         return data;
     }
 
     clearActiveCalls() {
+
         if (this.call_set.size == 0) return empty_array;
+
         const data = [...this.call_set.entries()];
+
         this.call_set.clear();
+
         return data;
     }
 
@@ -662,8 +699,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
     }
 
     call(pending_function_index: number, call_depth: number = 0) {
-
-        //if (call_depth >= 1) return;
 
         for (const [index] of this.binding_call_set)
             if (index == pending_function_index)
@@ -797,7 +832,12 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         return sk;
     }
 
-    attachListener(ele_index: number, event_specifier: string, listener_function: (...args: any[]) => any, REQUIRES_THIS_BINDING: boolean = false) {
+    attachListener(
+        ele_index: number,
+        event_specifier: string,
+        listener_function: (...args: any[]) => any,
+        REQUIRES_THIS_BINDING: boolean = false
+    ) {
 
         const ele = this.elu[ele_index];
 
@@ -823,6 +863,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         return <HTMLElement>temp_ele.firstElementChild;
     }
+
     createElement(presets, parent_chain) {
 
         const ele = this.ce();

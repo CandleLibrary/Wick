@@ -13,7 +13,7 @@ interface filterFunction {
 
 type DefaultJSHandlerNodeType = (JSNode | CSSNode | HTMLNode | IndirectHook | undefined | null);
 
-interface buildJSFunction<T, U> {
+interface buildJSFunction<T, U = T> {
     description?: string;
 
     (
@@ -26,7 +26,9 @@ interface buildJSFunction<T, U> {
          * Component Data Object
          */
         comp: ComponentData,
+
         presets: PresetOptions,
+
         /**
          * The index number of the ele the hook belongs
          * to, or -1 if the hook has no association with
@@ -37,9 +39,16 @@ interface buildJSFunction<T, U> {
         /**
          * Add code that should execute when one or more
          * binding variable values are modified
+         * 
+         * Can optionally add any number of BindingIdentifiers
+         * that represent binding interests of the ast but
+         * are not descendent nodes of the ast. This allows
+         * the build system to create code that will activate
+         * the ast express when any of the bindings are modified.
          * @param ast
          */
-        addOnUpdateAST: (ast: T | U) => void,
+        addOnUpdateAST: (ast: U, ...refs: (T | U)[]) => void,
+
         /**
          * Add code that should execute when the component
          * is initialized, such as event listeners and
@@ -47,6 +56,7 @@ interface buildJSFunction<T, U> {
          * @param ast
          */
         addOnInitAST: (ast: T | U) => void,
+
         /**
          * Add code that should execute when the component 
          * instance is destroyed, as in the case when 
@@ -227,12 +237,17 @@ export interface HookProcessor {
     ): (HookTemplatePackage | Promise<HookTemplatePackage>);
 }
 
-
+/**
+ * Indirect Hooks represent binding expressions ASTs that
+ * are not directly part of the AST structure of any
+ * component frame, and are subsequently incorporated into
+ * the compiled component class during the build process.
+ */
 export interface IndirectHook<T = Node> {
 
     type: ExtendedType,
 
-    nodes: T[];
+    nodes: T;
 
     ele_index: number;
 

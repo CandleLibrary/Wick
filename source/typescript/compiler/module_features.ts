@@ -42,7 +42,7 @@ registerFeature(
             // imports that wick will use to load data from the node's parent's 
             // exports and the presets global object, respectively.
             {
-                priority: Infinity,//This handler cannot be overridden
+                priority: Infinity, //This handler cannot be overridden
 
                 async prepareJSNode(node: JSImportDeclaration, parent_node, skip, component, presets, frame) {
 

@@ -1,25 +1,10 @@
-import { traverse } from '@candlelib/conflagrate';
-import { JSExpressionClass, JSExpressionStatement, JSIdentifier, JSNode, JSNodeType, renderCompressed, stmt } from '@candlelib/js';
-import URI from '@candlelib/uri';
+import { JSNode, JSNodeType } from '@candlelib/js';
 import {
-    BINDING_VARIABLE_TYPE,
-    ComponentData,
-    ContainerDomLiteral,
-    HOOK_SELECTOR,
-    HTMLAttribute,
-    HTMLContainerNode,
-    HTMLNode,
-    HTMLNodeClass,
-    HTMLNodeType,
+    HTMLAttribute, HTMLNodeType,
     IndirectHook,
-    STATIC_RESOLUTION_TYPE,
-    WickBindingNode
+    STATIC_RESOLUTION_TYPE
 } from "../types/all.js";
 import { registerFeature } from './build_system.js';
-import { getExpressionStaticResolutionType, getStaticValue } from "./common/binding.js";
-import { getOriginalTypeOfExtendedType } from "./common/extended_types.js";
-import { getElementAtIndex, Is_Tag_From_HTML_Spec } from "./common/html.js";
-import { BindingIdentifierBinding, BindingIdentifierReference } from "./common/js_hook_types.js";
 
 registerFeature(
 

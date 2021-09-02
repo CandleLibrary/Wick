@@ -15,7 +15,7 @@ import {
 } from "../../types/all.js";
 import { ExportToChildAttributeHook } from '../module_features.js';
 
-import { getSetOfEnvironmentGlobalNames } from "./common.js";
+import { getSetOfEnvironmentGlobalNames } from "./global_variables.js";
 import { getOriginalTypeOfExtendedType } from "./extended_types.js";
 import { convertObjectToJSNode } from "./js.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "./js_hook_types.js";
@@ -325,7 +325,7 @@ export function getCompiledBindingVariableName(
                 return "this." + binding.internal_name;
 
             case BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE:
-                return `window.${external_name}`;
+                return `${external_name}`;
 
             default:
                 return `this[${comp_info.binding_records.get(binding.internal_name)?.index ?? -1}]`;

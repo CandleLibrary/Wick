@@ -1,6 +1,6 @@
 import { matchAll } from '@candlelib/css';
-import { exp, JSNode, JSNodeType, JSNodeTypeLU, stmt } from '@candlelib/js';
-import { log } from '../entry-point/logger.js';
+import { exp, ext, JSNode, JSNodeType, JSNodeTypeLU, stmt } from '@candlelib/js';
+import { dir, log } from '../entry-point/logger.js';
 import {
     DOMLiteral,
     HookHandlerPackage, HTMLHandler,
@@ -26,10 +26,12 @@ import {
     getStaticValue,
     getStaticValueAstFromSourceAST
 } from './common/binding.js';
-import { componentNodeSource, importResource, setPos } from './common/common.js';
+import { getComponentSourceString, setPos } from './common/common.js';
+import { importResource } from "./common/import.js";
 import { css_selector_helpers } from './common/css.js';
 import { getExtendTypeName, getExtendTypeVal } from './common/extended_types.js';
 import { getElementAtIndex } from './common/html.js';
+import { getFirstReferenceName } from './common/js.js';
 
 
 const registered_hook_handlers = new Map();
@@ -165,7 +167,7 @@ const build_system = {
     addReadFlagToBindingVariable: addReadFlagToBindingVariable,
     processBindingAsync: processBindingASTAsync,
     parseComponentAST: parseComponentAST,
-    componentNodeSource: componentNodeSource,
+    componentNodeSource: getComponentSourceString,
     /**
      * Add Function hook?
      */
@@ -235,16 +237,31 @@ const build_system = {
 
     js: {
 
+        getFirstReferenceName: getFirstReferenceName,
+
         /**
          * Parses a JS statement string and returns an AST representation of 
          * the expression, or null if the expression is invalid. 
          */
-        stmt: stmt,
+        stmt: <T>(s: string): T => <T><any>stmt(s),
         /**
          * Parses a JS expression and returns an AST representation of 
          * the expression, or null if the expression is invalid. 
          */
-        expr: exp,
+        expr: <T>(s: string): T => <T><any>exp(s),
+    },
+    /**
+     * Useful tools for debugging.
+     */
+    debug: {
+        /**
+         * Logs a js node and after modifying type information to
+         * make the resulting tree easier to read.
+         * @param node 
+         */
+        logJSNode: (node: JSNode) => {
+            dir(ext(node, true));
+        }
     },
     /**
      * Sets the parser token for this node and all its descendants
