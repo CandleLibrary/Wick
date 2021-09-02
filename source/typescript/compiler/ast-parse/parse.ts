@@ -127,7 +127,15 @@ export function processNodeSync(
     }
     return val.value;
 }
-
+/**
+ * Process a single node through the JSParseHandlers
+ * @param ast 
+ * @param function_frame 
+ * @param component 
+ * @param presets 
+ * @param SKIP_ROOT 
+ * @returns 
+ */
 export async function processNodeAsync(
     ast: JSNode,
     function_frame: FunctionFrame,
@@ -208,7 +216,10 @@ async function loadHTMLImports(ast: HTMLNode, component: ComponentData, presets:
         }
 }
 
-export async function processWickHTML_AST(ast: HTMLNode, component: ComponentData, presets: PresetOptions): Promise<HTMLNode> {
+export async function processWickHTML_AST(ast: HTMLNode,
+    component: ComponentData,
+    presets: PresetOptions
+): Promise<HTMLNode> {
     //Process the import list
 
     //@ts-ignore
@@ -235,6 +246,8 @@ export async function processWickHTML_AST(ast: HTMLNode, component: ComponentDat
         .filter("type", HTMLNodeType.HTMLText)
     ) {
         if (node.type == HTMLNodeType.HTMLText) {
+
+
             const text = <HTMLTextNode>node;
 
             text.data = (<string>text.data).replace(/[ \n]+/g, " ");
@@ -258,14 +271,15 @@ export async function processWickHTML_AST(ast: HTMLNode, component: ComponentDat
 
         let html_node = node;
 
-
         for (const handler of html_handlers[Math.max((node.type >>> 23) - WICK_AST_NODE_TYPE_BASE, 0)]) {
 
             const
                 pending = handler.prepareHTMLNode(node, parent, last_element, ele_index, skip, component, presets),
                 result = (pending instanceof Promise) ? await pending : pending;
 
+
             if (result != node) {
+
                 if (result === null || result) {
 
                     html_node = <HTMLNode>result;
@@ -343,7 +357,13 @@ export async function processWickHTML_AST(ast: HTMLNode, component: ComponentDat
 
 
 
-export function processWickCSS_AST(ast: HTMLNode, component: ComponentData, presets: PresetOptions, host_node_index: number, url: string = ""): Promise<void> {
+export function processWickCSS_AST(
+    ast: HTMLNode,
+    component: ComponentData,
+    presets: PresetOptions,
+    host_node_index: number,
+    url: string = ""
+): Promise<void> {
     //Extract style sheet and add to the components stylesheets
     if (url)
         if (presets.styles.has(url)) {

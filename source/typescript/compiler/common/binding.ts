@@ -2,8 +2,19 @@ import { copy, traverse } from "@candlelib/conflagrate";
 import { exp, JSExpressionClass, JSIdentifier, JSNode, JSNodeClass, JSNodeType, renderCompressed, tools } from "@candlelib/js";
 import { Lexer } from "@candlelib/wind";
 import { PluginStore } from "../../plugin/plugin.js";
-import { BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass, ComponentData, FunctionFrame, IntermediateHook, PLUGIN_TYPE, PresetOptions, STATIC_BINDING_STATE, STATIC_RESOLUTION_TYPE } from "../../types/all.js";
-import * as ExportToChildAttributeHook from "../ast-build/hooks/data-flow.js";
+import {
+    BindingVariable,
+    BINDING_FLAG,
+    BINDING_VARIABLE_TYPE,
+    CompiledComponentClass,
+    ComponentData,
+    FunctionFrame,
+    IntermediateHook,
+    PLUGIN_TYPE,
+    PresetOptions, STATIC_BINDING_STATE, STATIC_RESOLUTION_TYPE
+} from "../../types/all.js";
+import { ExportToChildAttributeHook } from '../module_features.js';
+
 import { getSetOfEnvironmentGlobalNames } from "./common.js";
 import { getOriginalTypeOfExtendedType } from "./extended_types.js";
 import { convertObjectToJSNode } from "./js.js";
@@ -129,7 +140,16 @@ export function addDefaultValueToBindingVariable(frame: FunctionFrame, name: str
         binding.default_hooks = hooks;
     }
 }
-
+/**
+ * TODO: 
+ * @param frame 
+ * @param internal_name 
+ * @param pos 
+ * @param type 
+ * @param external_name 
+ * @param flags 
+ * @returns 
+ */
 export function addBindingVariable(
     frame: FunctionFrame,
     internal_name: string,
@@ -272,6 +292,7 @@ export function getCompiledBindingVariableName(
     comp_info?: CompiledComponentClass
 ) {
     const external_name = getExternalName(binding);
+    const internal_name = getInternalName(binding);
 
     if (!binding || binding.type == BINDING_VARIABLE_TYPE.UNDECLARED) {
         const global_names = getSetOfEnvironmentGlobalNames();
@@ -287,7 +308,8 @@ export function getCompiledBindingVariableName(
                 return `this.presets.api.${external_name}.default`;
 
             case BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE:
-                return `this.presets.api.${external_name}.module`;
+                console.log(binding);
+                return `this.presets.api.${external_name}.module.${internal_name}`;
 
             case BINDING_VARIABLE_TYPE.UNDECLARED:
                 const global_names = getSetOfEnvironmentGlobalNames();
@@ -316,6 +338,9 @@ export function getExternalName(binding: BindingVariable) {
     return binding.external_name == "" ? binding.internal_name : binding.external_name;
 }
 
+export function getInternalName(binding: BindingVariable) {
+    return binding.internal_name;
+}
 
 
 // ############################################################
@@ -497,7 +522,7 @@ export async function getDefaultBindingValueAST(
     if (binding) {
 
         if (binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE && parent_comp) {
-            for (const hook of (<ComponentData><any>parent_comp).indirect_hooks.filter(h => h.type == ExportToChildAttributeHook.ExportToChildAttributeHook)) {
+            for (const hook of (<ComponentData><any>parent_comp).indirect_hooks.filter(h => h.type == ExportToChildAttributeHook)) {
 
                 if (hook.nodes[0].foreign == binding.external_name) {
 

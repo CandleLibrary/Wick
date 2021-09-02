@@ -3,7 +3,7 @@ import { stmt } from "@candlelib/js";
 import { WickRTComponent } from "../../runtime/component.js";
 import { CompiledComponentClass, ComponentClassStrings, ComponentData, PresetOptions } from "../../types/all.js";
 import { createCompiledComponentClass } from "../ast-build/build.js";
-import { renderWithFormatting, renderWithFormattingAndSourceMap } from "../source-code-render/render.js";
+import { renderWithFormatting } from "../source-code-render/render.js";
 
 
 const
@@ -15,6 +15,8 @@ const
 function componentStringToJS({ class_string: cls, source_map }: ComponentClassStrings, component: ComponentData, presets: PresetOptions) {
     //Ensure WickRTComponent is inside closure
     const class_ref = WickRTComponent;
+
+    console.log(cls);
 
     return (
         eval(
@@ -28,6 +30,8 @@ export async function componentDataToJSCached(
     INCLUDE_HTML: boolean = true,
     INCLUDE_CSS: boolean = true
 ): Promise<typeof WickRTComponent> {
+
+
 
     const name = component.name;
 
@@ -49,6 +53,8 @@ export async function componentDataToJSCached(
         }
     }
 
+
+
     return comp;
 }
 
@@ -59,9 +65,13 @@ export async function componentDataToJS(
     INCLUDE_CSS: boolean = true
 ): Promise<typeof WickRTComponent> {
 
+
+
     const comp_class = await createCompiledComponentClass(component, presets, INCLUDE_HTML, INCLUDE_CSS);
 
     const class_strings = createClassStringObject(component, comp_class, presets);
+
+
 
     return componentStringToJS(class_strings, component, presets);
 }
@@ -72,6 +82,8 @@ export async function componentDataToJSStringCached(
     INCLUDE_HTML: boolean = true,
     INCLUDE_CSS: boolean = true
 ): Promise<ComponentClassStrings> {
+
+
 
     const name = component.name;
 
@@ -86,6 +98,8 @@ export async function componentDataToJSStringCached(
         presets.component_class_string.set(name, class_strings);
     }
 
+
+
     return class_strings;
 }
 
@@ -95,6 +109,8 @@ export function createClassStringObject(
     presets: PresetOptions,
     class_name: string = "WickRTComponent"
 ): ComponentClassStrings {
+
+
 
     let cl = "", sm = "";
 
@@ -125,6 +141,8 @@ export function createClassStringObject(
     }
     else
         cl = renderWithFormatting(component_class);
+
+
 
     return {
         class_string: cl + (presets.options.INCLUDE_SOURCE_URI ? +`\n/* ${component.location} */\n` : ""),

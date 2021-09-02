@@ -1,16 +1,37 @@
 import { bidirectionalTraverse, copy, traverse, TraverseState } from "@candlelib/conflagrate";
-import { exp, JSExpressionStatement, JSNode, stmt } from "@candlelib/js";
+import { exp, JSNode, stmt } from "@candlelib/js";
 import {
-    BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, CompiledComponentClass,
-    ComponentData, HookTemplatePackage, IndirectHook, Node, PresetOptions, STATIC_RESOLUTION_TYPE
+    BindingVariable, BINDING_FLAG,
+    BINDING_VARIABLE_TYPE,
+    CompiledComponentClass,
+    ComponentData,
+    HookTemplatePackage,
+    IndirectHook,
+    Node,
+    PresetOptions,
+    STATIC_RESOLUTION_TYPE
 } from "../../types/all.js";
 import { ExtendedType } from "../../types/hook";
-import { Binding_Var_Is_Directly_Accessed, getBindingStaticResolutionType, getComponentBinding, getExpressionStaticResolutionType, getExternalName, getStaticValueAstFromSourceAST, Name_Is_A_Binding_Variable } from "../common/binding.js";
-import { appendStmtToFrame, createBuildFrame, Frame_Has_Statements, getStatementsFromFrame, prependStmtToFrame } from "../common/frame.js";
+import { getHookHandlers } from '../build_system.js';
+import {
+    Binding_Var_Is_Directly_Accessed,
+    getBindingStaticResolutionType,
+    getComponentBinding,
+    getExpressionStaticResolutionType,
+    getExternalName,
+    getStaticValueAstFromSourceAST,
+    Name_Is_A_Binding_Variable
+} from "../common/binding.js";
+import {
+    appendStmtToFrame,
+    createBuildFrame,
+    Frame_Has_Statements,
+    getStatementsFromFrame
+} from "../common/frame.js";
 import { ErrorHash } from "../common/hash_name.js";
 import { Expression_Contains_Await, getPropertyAST } from "../common/js.js";
 import { BindingIdentifierBinding, BindingIdentifierReference } from "../common/js_hook_types.js";
-import { getHookHandlers } from "./hooks/hook-handler.js";
+
 
 
 export function addIndirectHook<T>(comp: ComponentData, type: ExtendedType, ast: T, ele_index: number = -1, ALLOW_STATIC_REPLACE: boolean = false) {
@@ -121,7 +142,11 @@ export async function processHookForClass(
      * binding variable values are modified
      * @param ast 
      */
-    function addOnBindingUpdateAst(ast: JSNode) { pending_write_asts.push(ast); }
+    function addOnBindingUpdateAst(ast: JSNode, ...meta_binding_nodes: any[]) {
+        pending_write_asts.push({
+            ast, meta_binding_nodes: meta_binding_nodes
+        });
+    }
 
     /**
      * Code that should execute when one or more 
@@ -187,7 +212,7 @@ export async function processHookForClass(
             await addBindingRecord(class_info, name, component, presets);
     }
 
-    for (const ast of pending_write_asts) {
+    for (const { ast, meta_binding_nodes } of pending_write_asts) {
 
         if (ALLOW_STATIC_REPLACE) {
             // Check the hooks AST to determine if it is 
@@ -229,9 +254,17 @@ export async function processHookForClass(
         }
 
         const
-            component_variables = collectBindingReferences(ast, component),
+            component_variables = [
 
-            NO_LOCAL_BINDINGS = component_variables.map(v => component.root_frame.binding_variables.get(v))
+                ...collectBindingReferences(ast, component),
+                ...meta_binding_nodes.flatMap(n => collectBindingReferences(n, component))
+            ];
+
+        console.log({ component_variables });
+        const
+
+            NO_LOCAL_BINDINGS = component_variables
+                .map(v => component.root_frame.binding_variables.get(v))
                 .every(Binding_Var_Is_Directly_Accessed),
 
             HAS_ASYNC = Expression_Contains_Await(ast);
@@ -291,7 +324,13 @@ export function processHookASTs(comp: ComponentData, comp_info: CompiledComponen
 
             frame.IS_ASYNC = !!representative.HAS_ASYNC;
 
-            const ids = representative.component_variables.map(v => comp_info.binding_records.get(v).index).sort();
+            const ids = representative.component_variables
+                .filter(v => (
+                    comp.root_frame.binding_variables.get(v).type &
+                    (
+                        BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
+                    )) > 0)
+                .map(v => comp_info.binding_records.get(v).index).sort();
 
             appendStmtToFrame(frame, stmt(`if(!this.check(${ids}))return 0;`));
 
@@ -390,7 +429,17 @@ export async function addBindingRecord(
 
         const binding = component.root_frame.binding_variables.get(name);
         //Filter out binding variables that can be statically assigned. 
-        if (binding.type == BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE)
+        if (
+            (binding.type & (
+                BINDING_VARIABLE_TYPE.GLOBAL_VARIABLE
+                //|
+                //BINDING_VARIABLE_TYPE.MODULE_VARIABLE
+                //|
+                //BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE
+                //|
+                //BINDING_VARIABLE_TYPE.DIRECT_ACCESS
+            )) > 0
+        )
             return;
 
         const index = class_info.binding_records.size;
@@ -398,20 +447,6 @@ export async function addBindingRecord(
         const { default_val } = binding;
 
         class_info.binding_records.set(name, { index, nodes: [] });
-
-        if (default_val) {
-
-            //     const
-            //         expr = <JSExpressionStatement>stmt(`this.ua(${index})`),
-            //         ast = await processHookForClass(default_val, component, presets, class_info, -1, false);
-            //
-            //     expr.nodes[0].nodes[1].nodes.push(<any>ast);
-
-            //prependStmtToFrame(class_info.init_frame, expr);
-
-            //for (const binding_name of collectBindingReferences(default_val, component))
-            //    await addBindingRecord(class_info, binding_name, component, presets);
-        }
     }
 }
 

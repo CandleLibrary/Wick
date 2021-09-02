@@ -1,6 +1,7 @@
 import { ExtendedType } from "../../types/hook";
 
 const extended_types = new Map();
+const extended_types_reverse_lookup = new Map();
 /**
  * Registers an extended type name and/or retrieve its type value,
  * which is an integer in the range 1<<32 - (21^2-1)<<32.
@@ -24,8 +25,14 @@ export function getExtendTypeVal<T>(type_name: string, original_type: T): Extend
         const VC = VA + VB;
         extended_types.set(universal_name, VC);
 
+        extended_types_reverse_lookup.set(VC, universal_name);
+
         return <T & ExtendedType>getExtendTypeVal(type_name, original_type);
     }
+}
+
+export function getExtendTypeName(type_val) {
+    return extended_types_reverse_lookup.get(type_val) ?? "type-not-defined";
 }
 
 export function Is_Extend_Type(type: ExtendedType): type is ExtendedType {

@@ -1,0 +1,208 @@
+import { traverse } from '@candlelib/conflagrate';
+import { JSExpressionClass, JSExpressionStatement, JSIdentifierBinding, JSIdentifierReference, JSNode, JSNodeType, tools } from '@candlelib/js';
+import { BINDING_VARIABLE_TYPE, STATIC_RESOLUTION_TYPE } from '../types/binding.js';
+import { registerFeature } from './build_system.js';
+import { Name_Is_A_Binding_Variable, Variable_Is_Declared_In_Closure, Variable_Is_Declared_Locally } from './common/binding.js';
+import { BindingIdentifierBinding, BindingIdentifierReference } from './common/js_hook_types.js';
+
+registerFeature(
+
+    "CandleLibrary WICK: JS Identifiers and Variables",
+    (build_system) => {
+
+
+        /*############################################################3
+        * IDENTIFIER REFERENCE
+        */
+        build_system.registerJSParserHandler(
+            {
+                priority: 1,
+
+                prepareJSNode(node, parent_node, skip, component, presets, frame) {
+
+                    const name = (<JSIdentifierReference>node).value;
+
+                    if (node.type !== BindingIdentifierReference) {
+                        if (!Variable_Is_Declared_In_Closure(name, frame)) {
+
+                            build_system.addBindingReference(
+                                <JSNode>node, <JSNode>parent_node, frame
+                            );
+
+                            if (Name_Is_A_Binding_Variable(name, frame)) {
+
+                                build_system.addReadFlagToBindingVariable(name, frame);
+                            }
+                        } else {
+                            build_system.addNameToDeclaredVariables(name, frame);
+                        }
+                    }
+                    return <JSNode>node;
+                }
+            }, JSNodeType.IdentifierReference
+        );
+
+        /*############################################################ 
+        * IDENTIFIER BINDING
+        */
+        build_system.registerJSParserHandler(
+            {
+                priority: 1,
+
+                prepareJSNode(node, parent_node, skip, component, presets, frame) {
+
+                    if (node.type !== BindingIdentifierBinding) {
+                        const name = tools.getIdentifierName(<JSIdentifierBinding>node);
+                        if (!Variable_Is_Declared_Locally(name, frame))
+                            build_system.addNameToDeclaredVariables(name, frame);
+                    }
+
+                    return <JSNode>node;
+                }
+            }, JSNodeType.IdentifierBinding
+        );
+        // ###################################################################
+        // VARIABLE DECLARATION STATEMENTS - CONST, LET, VAR
+        //
+        // These variables are accessible by all bindings within the components
+        // scope. 
+        build_system.registerJSParserHandler(
+            {
+                priority: 1,
+
+                async prepareJSNode(node, parent_node, skip, component, presets, frame) {
+
+                    const
+                        n = build_system.setPos(build_system.js.stmt("a,a;"), node.pos),
+                        IS_CONSTANT = (node.type == JSNodeType.LexicalDeclaration && (<any>node).symbol == "const"),
+                        [{ nodes }] = n.nodes;
+
+                    nodes.length = 0;
+
+
+                    //Add all elements to global 
+                    for (const { node: binding, meta } of traverse(node, "nodes", 4)
+                        .filter("type", JSNodeType.IdentifierBinding, JSNodeType.BindingExpression)
+                        .makeMutable()
+                        .makeSkippable()
+                    ) {
+                        if (binding.type == JSNodeType.BindingExpression) {
+
+                            const
+                                [identifier, value] = binding.nodes,
+                                l_name = tools.getIdentifierName(identifier);
+
+                            if (frame.IS_ROOT) {
+
+                                if (!build_system.addBindingVariable(frame, l_name, binding.pos,
+                                    IS_CONSTANT
+                                        ? BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
+                                        : BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
+
+                                )) {
+                                    const msg = `Redeclaration of the binding variable [${l_name}]. 
+                                First declaration here:\n${component.root_frame.binding_variables.get(l_name).pos.blame()}
+                                redeclaration here:\n${(<any>binding.pos).blame()}\nin ${component.location}`;
+                                    throw new ReferenceError(msg);
+                                }
+
+
+                                build_system.addWriteFlagToBindingVariable(l_name, frame);
+
+                                // Change binding type to an Assignment Expression to ensure the 
+                                // build process can correctly create runtime binding hooks. 
+                                //@ts-ignore
+                                binding.type = JSNodeType.AssignmentExpression;
+
+                                build_system.addBindingReference(<JSNode>binding, <JSNode>parent_node, frame);
+
+                                const new_node = await build_system.processNodeAsync(binding, frame, component, presets, true);
+
+                                // Wrap in an expression statement node to ensure proper rendering of 
+                                // semicolons. Particularly important in minified outputs. 
+
+                                const expression_statement: JSExpressionStatement = {
+                                    type: JSNodeType.ExpressionStatement,
+                                    nodes: [<JSExpressionClass>new_node],
+                                    pos: binding.pos
+                                };
+
+                                meta.mutate(expression_statement);
+
+                                meta.skip();
+
+                            } else
+                                build_system.addNameToDeclaredVariables(l_name, frame);
+
+                        } else {
+                            if (frame.IS_ROOT) {
+                                if (!build_system.addBindingVariable(frame, (<JSIdentifierReference>binding).value, binding.pos,
+                                    IS_CONSTANT
+                                        ? BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
+                                        : BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
+
+                                )) {
+                                    const msg = `Redeclaration of the binding variable [${(<JSIdentifierReference>binding).value}]. 
+                                First declaration here:\n${component.root_frame.binding_variables.get((<JSIdentifierReference>binding).value).pos.blame()}
+                                redeclaration here:\n${(<any>binding.pos).blame()}\nin ${component.location}`;
+                                    throw new ReferenceError(msg);
+                                }
+                            } else
+                                build_system.addNameToDeclaredVariables((<JSIdentifierReference>binding).value, frame);
+                        }
+                    }
+
+
+                    if (frame.IS_ROOT)
+                        return node.nodes;
+
+                    return <any>node;
+                }
+            }, JSNodeType.VariableStatement, JSNodeType.LexicalDeclaration, JSNodeType.LexicalBinding
+        );
+
+        /**
+         *  
+         */
+        build_system.registerHookHandler<JSIdentifierBinding | JSIdentifierReference, JSExpressionClass>({
+
+            description: `
+            Auto-Hook For Direct Access Binding Variables
+            * 
+            * CONST_INTERNAL_VARIABLE
+            * METHOD_VARIABLE
+            * MODULE_MEMBER_VARIABLE
+            * MODULE_VARIABLE
+            `,
+
+            name: "Auto-Hook Static-Constant Value",
+
+            types: [BindingIdentifierBinding, BindingIdentifierReference],
+
+            verify: () => true,
+
+            buildJS: async (node, comp, presets, _3, _, _1, _2) => {
+
+                const binding_var = build_system.getComponentBinding(node.value, comp);
+
+                if (
+                    build_system.getBindingStaticResolutionType(binding_var, comp, presets)
+                    ==
+                    STATIC_RESOLUTION_TYPE.CONSTANT_STATIC
+                    &&
+                    binding_var.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
+                ) {
+
+                    const val = await build_system.getStaticValueAstFromSourceAST(node, comp, presets, null, null, true);
+
+                    if (val) return val;
+                }
+            },
+
+            buildHTML: () => null
+        });
+    }
+
+
+
+);

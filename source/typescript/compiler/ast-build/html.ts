@@ -3,7 +3,15 @@ import { rt } from "../../runtime/global.js";
 import { ComponentData, ContainerDomLiteral, DOMLiteral, htmlState, IndirectHook, PresetOptions, TemplateHTMLNode, TemplatePackage } from "../../types/all.js";
 import { getStaticValue } from "../common/binding.js";
 import { processHookForHTML } from "./hooks.js";
-import { ContainerDataHook, ContainerFilterHook, ContainerLimitHook, ContainerOffsetHook, ContainerScrubHook, ContainerShiftHook, ContainerSortHook } from "./hooks/container.js";
+import {
+    ContainerDataHook,
+    ContainerFilterHook,
+    ContainerLimitHook,
+    ContainerOffsetHook,
+    ContainerScrubHook,
+    ContainerShiftHook,
+    ContainerSortHook
+} from "../container_features.js";
 
 /**
  * Compile component HTML information (including child component and slot information), into a string containing the components html

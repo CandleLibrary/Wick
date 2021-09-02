@@ -22,11 +22,52 @@ import { Observable } from "../runtime/observable/observable.js";
 import { ObservableScheme } from "../runtime/observable/observable_prototyped.js";
 import { init, WickTest as test } from "../test/wick.test.js";
 import {
-    BindingVariable, BINDING_FLAG, BINDING_VARIABLE_TYPE, ComponentData, DOMLiteral, ExtendedComponentData, FunctionFrame,
-    HTMLNode, HTMLNodeClass, HTMLNodeTypeLU, IntermediateHook, ObservableModel, ObservableWatcher, PresetOptions
+    BindingVariable,
+    BINDING_FLAG,
+    BINDING_VARIABLE_TYPE,
+    ComponentData,
+    DOMLiteral,
+    ExtendedComponentData,
+    FunctionFrame,
+    HTMLNode,
+    HTMLNodeClass,
+    HTMLNodeTypeLU,
+    IntermediateHook,
+    ObservableModel,
+    ObservableWatcher,
+    PresetOptions
 } from "../types/all.js";
+
 import { Presets } from "./wick-runtime.js";
 
+import * as b_sys from "../compiler/build_system.js";
+
+// Load features. Only need side effects as the proper 
+// systems will automatically register themselves through the
+// build system
+import { log } from './logger.js';
+
+import "../compiler/container_features.js";
+import "../compiler/expression_features.js";
+import "../compiler/function_features.js";
+import "../compiler/html_attribute_features.js";
+import "../compiler/html_event_attribute_features.js";
+import "../compiler/html_general_features.js";
+import "../compiler/identifier_features.js";
+import "../compiler/input_features.js";
+import "../compiler/module_features.js";
+import "../compiler/string_features.js";
+import "../compiler/text_node_features.js";
+
+log("\n\n----------- Initializing Wick ---------------");
+
+log("Loading Wick build features");
+
+await b_sys.loadFeatures();
+
+log("Completed loading of build features");
+
+log("------------ Wick Initialized ---------------\n\n");
 
 /**
  * Exporting the wick compiler
@@ -130,17 +171,24 @@ async function componentCreate(input: string | URL, presets: PresetOptions = rt.
     // Ensure there is a presets object attached to this component.
     if (!presets)
         presets = new Presets();
-
     if (!rt.presets)
         rt.presets = presets;
 
+    b_sys.enableParserFeatures();
+
     const comp_data = await parseSource(input, presets);
+
+    b_sys.disableParserFeatures();
+
+    //Prefill component data
+
 
     await componentDataToJSCached(comp_data, presets, true, true);
 
     await componentDataToJSStringCached(comp_data, presets, true, true);
 
     await createComponentTemplates(presets, rt.templates);
+
 
     comp_data.presets = presets;
 

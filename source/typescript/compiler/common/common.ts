@@ -65,9 +65,9 @@ export async function importComponentData(new_component_url, component, presets,
 
     try {
 
-        const comp_data = await parseSource(new URI(new_component_url), presets, component.location);
+        const new_comp_data = await parseSource(new URI(new_component_url), presets, component.location);
 
-        if (comp_data.HAS_ERRORS)
+        if (new_comp_data.HAS_ERRORS)
             return false;
 
         //const { ast, string, resolved_url } = await acquireComponentASTFromRemoteSource(new URI(new_component_url), component.location);
@@ -77,11 +77,11 @@ export async function importComponentData(new_component_url, component, presets,
 
         //const comp_data = await compileComponent(ast, string, resolved_url, presets);
 
-        componentDataToJSCached(comp_data, presets);
+        componentDataToJSCached(new_comp_data, presets);
 
-        if (local_name) component.local_component_names.set(local_name.toUpperCase(), comp_data.name);
+        if (local_name) component.local_component_names.set(local_name.toUpperCase(), new_comp_data.name);
 
-        if (!comp_data.HTML) mergeComponentData(component, comp_data);
+        if (!new_comp_data.HTML) mergeComponentData(component, new_comp_data);
 
         return true;
 
@@ -111,11 +111,7 @@ export async function importResource(
 
     switch (url + "") {
         default:
-            // Read file and determine if we have a component, a script or some other resource. REQUIRING
-            // extensions would make this whole process 9001% easier. such .html for html components,
-            // .wjs for js components, and any other extension type for other kinds of files.
-            // Also could consider MIME type information for files that served through a web
-            // server.
+            // Read file and determine if we have a component, a script or some other resource. 
 
             //Compile Component Data
             if (

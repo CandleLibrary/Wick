@@ -5,7 +5,8 @@ import {
     JSMethod,
     JSNode,
     JSNodeType as JST,
-    stmt
+    stmt,
+    renderCompressed
 } from "@candlelib/js";
 import {
     BindingVariable,
@@ -38,7 +39,7 @@ import {
 } from "../common/js_hook_types.js";
 import { addBindingRecord, processHookASTs as processResolvedHooks, processHookForClass, processIndirectHook } from "./hooks.js";
 import { componentDataToTempAST, createComponentTemplate } from "./html.js";
-
+import * as b_sys from "../build_system.js";
 export async function createComponentTemplates(
     presets: PresetOptions,
     template_container: Map<string, HTMLElement> = new Map
@@ -76,6 +77,8 @@ export async function createCompiledComponentClass(
     INCLUDE_HTML: boolean = true,
     INCLUDE_CSS: boolean = true
 ): Promise<CompiledComponentClass> {
+
+    b_sys.enableBuildFeatures();
 
     try {
 
@@ -145,6 +148,8 @@ export async function createCompiledComponentClass(
         throw e;
         console.log(`Error found in component ${component.name} while converting to a class. location: ${component.location}.`);
         return createCompiledComponentClass(createErrorComponent([e], component.source, component.location, component), presets);
+    } finally {
+        b_sys.disableBuildFeatures();
     }
 }
 
@@ -245,12 +250,15 @@ export async function processFunctionFrameHook(
             //@ts-ignore
             node.type == BindingIdentifierReference
         ) {
-            await addBindingRecord(class_info, node.value, comp, presets);
-        } else if (node.type > 0xFFFFFFFF) {
-            const ast = await processHookForClass(node, comp, presets, class_info, -1, false);
 
-            if (ast != node)
-                mutate(node);
+            await addBindingRecord(class_info, node.value, comp, presets);
+
+        } else if (node.type > 0xFFFFFFFF) {
+
+            const new_node = await processHookForClass(node, comp, presets, class_info, -1, false);
+
+            if (new_node != node)
+                mutate(new_node);
 
             skip();
 
@@ -276,6 +284,8 @@ async function makeComponentMethod(frame: FunctionFrame, component: ComponentDat
             return;
 
         const cpy: JSFunctionDeclaration | JSMethod = <any>copy(frame.ast);
+
+
 
         const { NEED_ASYNC } = await finalizeBindingExpression(cpy, component, ci, presets);
 
@@ -407,6 +417,7 @@ export async function finalizeBindingExpression(
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {
                         const index = comp_info.binding_records.get(name).index;
                         const assignment: JSCallExpression = <any>exp(`this.ua(${index})`);
+
                         const { ast: a1, NEED_ASYNC: NA1 } = await finalizeBindingExpression(ref, component, comp_info, presets);
                         const { ast: a2, NEED_ASYNC: NA2 } = await finalizeBindingExpression(value, component, comp_info, presets);
 
