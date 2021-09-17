@@ -4,6 +4,7 @@ import { ComponentData, HTMLNode, HTMLNodeClass, PresetOptions } from "../../typ
 import { processUndefinedBindingVariables } from "../common/binding.js";
 import { ComponentDataClass, createComponentData, createErrorComponent } from "../common/component.js";
 import { createParseFrame } from "../common/frame.js";
+import { metrics } from '../metrics.js';
 import { parse_component } from "../source-code-parse/parse.js";
 import { processWickHTML_AST, processWickJS_AST } from "./parse.js";
 
@@ -47,6 +48,8 @@ const empty_obj = {};
  */
 export async function parseSource(input: URL | string, presets?: PresetOptions, root_url: URL = new URL(URL.GLOBAL + "/")): Promise<ComponentDataClass> {
 
+    const run_tag = metrics.startRun("Parse Source Input");
+
 
     //If this is a node.js environment, make sure URL is able to resolve local files system addresses.
     if (typeof (window) == "undefined") await URL.polyfill();
@@ -57,6 +60,7 @@ export async function parseSource(input: URL | string, presets?: PresetOptions, 
         errors: Error[] = [];
 
     try {
+        const run_tag = metrics.startRun("URL");
 
         let url = new URL(input);
 
@@ -85,12 +89,15 @@ export async function parseSource(input: URL | string, presets?: PresetOptions, 
 
         source_url = url;
 
+        metrics.endRun(run_tag);
+
         if (data.errors.length > 0)
             throw data.errors.pop();
 
     } catch (e) {
 
-        console.log(e);
+        const run_tag = metrics.startRun("STRING");
+        //console.log(e);
 
         //Illegal URL, try parsing string
         try {
@@ -104,6 +111,8 @@ export async function parseSource(input: URL | string, presets?: PresetOptions, 
         } catch (a) {
             errors.push(e, a);
         }
+
+        metrics.endRun(run_tag);
     }
 
     const {
@@ -113,7 +122,7 @@ export async function parseSource(input: URL | string, presets?: PresetOptions, 
         error: e = null,
         comments = []
     } = data;
-
+    metrics.endRun(run_tag);
     return <any>await parseComponentAST(ast, <string>input_string, source_url, presets, null, errors);
 };
 
@@ -125,6 +134,8 @@ export async function parseComponentAST(
     parent: ComponentData = null,
     parse_errors: Error[] = [],
 ): Promise<ComponentData> {
+
+    const run_tag = metrics.startRun("Parse Source AST");
 
     const
         component: ComponentData = createComponentData(source_string, url);
@@ -169,6 +180,8 @@ export async function parseComponentAST(
             console.log(e);
             parse_errors.push(e, ...(component?.errors ?? []));
         }
+
+    metrics.endRun(run_tag);
     return createErrorComponent(parse_errors, source_string, url, component);
 
 }

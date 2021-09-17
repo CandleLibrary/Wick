@@ -5,6 +5,7 @@ import { rt } from "../../runtime/global.js";
 import { PresetOptions } from "../../types/all.js";
 import { ComponentData } from "../../types/component";
 import { createCompiledComponentClass } from "../ast-build/build.js";
+import { metrics } from '../metrics.js';
 import { renderCompressed } from "../source-code-render/render.js";
 import { componentDataToCSS } from "./css.js";
 import { componentDataToHTML, htmlTemplateToString } from "./html.js";
@@ -171,6 +172,8 @@ export async function RenderPage(
     const page = comp.RADIATE
         ? renderRadiatePageString(presets, templates, html, head, script, style, hooks)
         : renderWickPageString(presets, templates, html, head, script, style, hooks);
+
+    metrics.report();
 
     return { templates, html, head, script, style, page };
 }

@@ -5,8 +5,7 @@ import {
     JSMethod,
     JSNode,
     JSNodeType as JST,
-    stmt,
-    renderCompressed
+    stmt
 } from "@candlelib/js";
 import {
     BindingVariable,
@@ -19,6 +18,7 @@ import { componentDataToCSS } from "../ast-render/css.js";
 import {
     htmlTemplateToString
 } from "../ast-render/html.js";
+import * as b_sys from "../build_system.js";
 import {
     Binding_Var_Is_Internal_Variable,
     getCompiledBindingVariableNameFromString,
@@ -37,6 +37,7 @@ import {
     BindingIdentifierBinding,
     BindingIdentifierReference
 } from "../common/js_hook_types.js";
+import { metrics } from '../metrics.js';
 import {
     addBindingRecord,
     processHookASTs as processResolvedHooks,
@@ -44,7 +45,6 @@ import {
     processIndirectHook
 } from "./hooks.js";
 import { componentDataToTempAST, createComponentTemplate } from "./html.js";
-import * as b_sys from "../build_system.js";
 
 export async function createComponentTemplates(
     presets: PresetOptions,
@@ -87,10 +87,11 @@ export async function createCompiledComponentClass(
 
     b_sys.enableBuildFeatures();
 
+    const run_tag = metrics.startRun("Class Build");
+
     try {
 
         const class_info = createClassInfoObject();
-
 
         //HTML INFORMATION
         if (INCLUDE_HTML)
@@ -156,6 +157,7 @@ export async function createCompiledComponentClass(
         console.log(`Error found in component ${component.name} while converting to a class. location: ${component.location}.`);
         return createCompiledComponentClass(createErrorComponent([e], component.source, component.location, component), presets);
     } finally {
+        metrics.endRun(run_tag);
         b_sys.disableBuildFeatures();
     }
 }
@@ -167,6 +169,8 @@ function processCSS(
 ) {
     let style;
 
+    const run_tag = metrics.startRun("CSS");
+
     if (style = componentDataToCSS(component)) {
 
         const frame = createBuildFrame("getCSS");
@@ -175,6 +179,8 @@ function processCSS(
 
         appendStmtToFrame(class_info.init_frame, stmt(`this.setCSS()`));
     }
+
+    metrics.endRun(run_tag);
 }
 
 async function processHTML(
@@ -182,6 +188,7 @@ async function processHTML(
     class_info: CompiledComponentClass,
     presets: PresetOptions
 ) {
+    const run_tag = metrics.startRun("HTML");
 
     if (component.HTML) {
         const
@@ -195,9 +202,14 @@ async function processHTML(
 
         class_info.method_frames.push(frame);
     }
+
+    metrics.endRun(run_tag);
 }
 
 function createLookupTables(class_info: CompiledComponentClass) {
+
+    const run_tag = metrics.startRun("Look Up Tables");
+
     const
         binding_lu = stmt("c.nlu = {};"),
         binding_function_lu = stmt("c.lookup_function_table = [];"),
@@ -210,8 +222,12 @@ function createLookupTables(class_info: CompiledComponentClass) {
 
     class_info.lu_public_variables = <any[]>lu_public_variables.nodes;
 
+    metrics.endRun(run_tag);
+
     return { nlu: binding_lu, nluf: binding_function_lu };
+
 }
+
 
 export function createClassInfoObject(): CompiledComponentClass {
 
@@ -246,6 +262,8 @@ export async function processFunctionFrameHook(
     frame: FunctionFrame,
     class_info: CompiledComponentClass,
 ) {
+    const run_tag = metrics.startRun("Function Frames");
+
     for (const { node, meta: { mutate, skip } } of traverse(frame.ast, "nodes")
         .makeMutable()
         .makeSkippable()
@@ -272,6 +290,8 @@ export async function processFunctionFrameHook(
             continue;
         }
     }
+
+    metrics.endRun(run_tag);
 }
 
 function Node_Is_Binding_Identifier(node: JSNode) {
@@ -331,6 +351,8 @@ export async function finalizeBindingExpression(
     ast: JSNode,
     NEED_ASYNC: boolean;
 }> {
+    const run_tag = metrics.startRun("Component Build - Binding Expressions");
+
     const lz = { ast: null };
     let NEED_ASYNC = false;
     for (const { node, meta: { mutate, skip } } of traverse(mutated_node, "nodes")
@@ -469,6 +491,8 @@ export async function finalizeBindingExpression(
                 break;
         }
     }
+
+    metrics.endRun(run_tag);
 
     return { ast: lz.ast, NEED_ASYNC };
 }
