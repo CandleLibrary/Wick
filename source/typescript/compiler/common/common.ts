@@ -50,5 +50,6 @@ export function getComponentSourceString(component: ComponentData, node: Node): 
 
     const { pos } = node;
 
-    return component.source.slice(pos.off, pos.off + pos.tl);
+    //@ts-ignore
+    return pos.slice();
 }

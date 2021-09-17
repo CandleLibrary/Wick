@@ -65,7 +65,7 @@ function PearsonModifiedHash(string: string, size = 8) {
 
 
 function md5(inputString) {
-    var hc = "wick0_ABCDEFGHIJKLMNOPQRSTUVWXYZ$abdefghjlmnopqrstuvxyz123456789";
+    var hc = "wickABCDEFGHIJKLMNOPQRSTUVWXYZabdefghjlmnopqrstuvxyz0123456789kciw";
     function rh(n) { let s = hc[((n >> (i * 30)) & 0x3)]; for (let i = 0; i < 5; i++) s += hc[((n >> (i * 6 + 4)) & 0x3F)]; return s; }
     function ad(x, y) { var l = (x & 0xFFFF) + (y & 0xFFFF); var m = (x >> 16) + (y >> 16) + (l >> 16); return (m << 16) | (l & 0xFFFF); }
     function rl(n, c) { return (n << c) | (n >>> (32 - c)); }
