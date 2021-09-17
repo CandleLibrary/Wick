@@ -12,6 +12,7 @@ import {
     ContainerShiftHook,
     ContainerSortHook
 } from "../container_features.js";
+import * as b_sys from "../build_system.js";
 
 /**
  * Compile component HTML information (including child component and slot information), into a string containing the components html
@@ -371,6 +372,8 @@ export async function createComponentTemplate(
 ): Promise<TemplateHTMLNode> {
     if (!comp.template) {
 
+        b_sys.enableBuildFeatures();
+
         const { html } = await componentDataToTempAST(comp, presets, null, template_map);
 
         comp.template = {
@@ -380,6 +383,8 @@ export async function createComponentTemplate(
             attributes: new Map([["w:c", ""], ["id", comp.name]]),
             children: [...html]
         };
+
+        b_sys.disableBuildFeatures();
     }
 
     return comp.template;
