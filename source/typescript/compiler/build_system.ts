@@ -1,6 +1,6 @@
 import { matchAll } from '@candlelib/css';
 import { exp, ext, JSNode, JSNodeType, JSNodeTypeLU, stmt } from '@candlelib/js';
-import { dir, log } from '../entry-point/logger.js';
+import { dir, log, trace } from '../entry-point/logger.js';
 import {
     DOMLiteral,
     HookHandlerPackage, HTMLHandler,
@@ -9,9 +9,9 @@ import {
     JSHandler
 } from "../types/all.js";
 import { addIndirectHook } from './ast-build/hooks.js';
-import { loadHTMLHandler, loadHTMLHandlerInternal, processBindingASTAsync } from "./ast-parse/html.js";
+import { loadHTMLHandler, loadHTMLHandlerInternal, processBindingASTAsync as processBindingAsync } from "./ast-parse/html.js";
 import { loadJSParseHandler, loadJSParseHandlerInternal } from "./ast-parse/js.js";
-import { processFunctionDeclaration, processNodeAsync, processWickCSS_AST, processWickHTML_AST, processWickJS_AST } from './ast-parse/parse.js';
+import { processFunctionDeclaration, processNodeAsync, processWickCSS_AST, processWickHTML_AST as processHTMLNode, processWickJS_AST as processJSNode } from './ast-parse/parse.js';
 import { parseComponentAST } from './ast-parse/source.js';
 import {
     addBindingReference, addBindingVariable,
@@ -32,6 +32,8 @@ import { css_selector_helpers } from './common/css.js';
 import { getExtendTypeName, getExtendTypeVal } from './common/extended_types.js';
 import { getElementAtIndex } from './common/html.js';
 import { getFirstReferenceName } from './common/js.js';
+import { metrics } from './metrics.js';
+import { AnyAaaaRecord } from 'dns';
 
 
 const registered_hook_handlers = new Map();
@@ -165,7 +167,7 @@ const build_system = {
     addNameToDeclaredVariables: addNameToDeclaredVariables,
     addBindingReference: addBindingReference,
     addReadFlagToBindingVariable: addReadFlagToBindingVariable,
-    processBindingAsync: processBindingASTAsync,
+    processBindingAsync: processBindingAsync,
     parseComponentAST: parseComponentAST,
     componentNodeSource: getComponentSourceString,
     /**
@@ -183,7 +185,7 @@ const build_system = {
      * 
      * Only enabled during parse process.
      */
-    processJSNode: processWickJS_AST,
+    processJSNode: processJSNode,
 
     /**
      * Takes an Wick CSS AST node as an input and incorporates
@@ -201,7 +203,7 @@ const build_system = {
      * 
      * Only enabled during parse process.
      */
-    processHTMLNode: processWickHTML_AST,
+    processHTMLNode: processHTMLNode,
 
 
     /**
@@ -234,6 +236,8 @@ const build_system = {
     getExpressionStaticResolutionType: getExpressionStaticResolutionType,
     getBindingStaticResolutionType: getBindingStaticResolutionType,
     getStaticValueAstFromSourceAST: getStaticValueAstFromSourceAST,
+
+    metrics: metrics,
 
     js: {
 
@@ -275,11 +279,14 @@ export function enableRegistrationFeatures() {
     Object.assign(build_system, registration_system);
 }
 
+let current_name = "";
+
 export function enableInternalRegistrationFeatures() {
     enableRegistrationFeatures();
     Object.assign(build_system, {
         registerJSParserHandler(js_parse_handler: JSHandler<JSNode>, ...types: JSNodeType[]) {
             log(`    Registering JS Handler for ${types.map(g => JSNodeTypeLU[g]).join(" | ")}`);
+
             loadJSParseHandlerInternal(js_parse_handler, ...types);
         },
 
@@ -297,52 +304,70 @@ export function disableRegistrationFeatures() {
     Object.assign(build_system, unregistered_system);
 }
 
+let feature_ref_count: Map<string, number> = new Map;
+function enable_feature_function(name: string, enable_function: (...args) => any) {
 
-let build_features_lock_count = 0;
+    if (!feature_ref_count.has(name))
+        feature_ref_count.set(name, 0);
+    const ref_count = feature_ref_count.get(name);
+    feature_ref_count.set(name, ref_count + 1);
+
+    if (ref_count == 0)
+        build_system[name] = enable_function;
+}
+
+function disable_feature_function(name: string, disable_function: (...args) => any) {
+
+    if (!feature_ref_count.has(name))
+        return;
+
+    const ref_count = feature_ref_count.get(name);
+
+    feature_ref_count.set(name, ref_count - 1);
+
+    if (ref_count == 1)
+        build_system[name] = disable_function;
+}
+
 export function enableBuildFeatures() {
-    console.log({ build_features_lock_count });
-    if (build_features_lock_count++ > 0) return;
-    build_system.addBindingVariable = addBindingVariable;
-    build_system.getStaticValue = getStaticValue;
-    build_system.getElementAtIndex = getElementAtIndex;
-    build_system.getComponentBinding = getComponentBinding;
-    build_system.getExpressionStaticResolutionType = getExpressionStaticResolutionType;
+    enable_feature_function("addBindingVariable", addBindingVariable);
+    enable_feature_function("getStaticValue", getStaticValue);
+    enable_feature_function("getElementAtIndex", getElementAtIndex);
+    enable_feature_function("getComponentBinding", getComponentBinding);
+    enable_feature_function("getExpressionStaticResolutionType", getExpressionStaticResolutionType);
 }
 export function disableBuildFeatures() {
-    if (--build_features_lock_count > 0) return;
-    //@ts-ignore
-    build_system.getStaticValue = () => log("getStaticValue is disabled outside of build contexts");
-    //@ts-ignore
-    build_system.getElementAtIndex = () => log("getElementAtIndex is disabled outside of build contexts");
-    //@ts-ignore
-    build_system.getComponentBinding = () => log("getComponentBinding is disabled outside of build contexts");
-    //@ts-ignore
-    build_system.getComponentBinding = () => log("getExpressionStaticResolutionType is disabled outside of build contexts");
-    //@ts-ignore
-    build_system.addBindingVariable = () => log("addBindingVariable is disabled outside of parsing contexts");
+
+    disable_feature_function("getStaticValue", () => { trace("getStaticValue is disabled outside of build contexts"); });
+    disable_feature_function("getElementAtIndex", () => { trace("getElementAtIndex is disabled outside of build contexts"); });
+    disable_feature_function("getComponentBinding", () => { trace("getComponentBinding is disabled outside of build contexts"); });
+    disable_feature_function("getExpressionStaticResolutionType", () => { trace("getExpressionStaticResolutionType is disabled outside of build contexts"); });
+    disable_feature_function("addBindingVariable", () => { trace("addBindingVariable is disabled outside of parsing contexts"); });
 }
 
 export function enableParserFeatures() {
-    build_system.importResource = importResource;
-    build_system.addIndirectHook = addIndirectHook;
-    build_system.addBindingVariable = addBindingVariable;
-    build_system.processJSNode = processWickJS_AST;
-    build_system.processHTMLNode = processWickHTML_AST;
-    build_system.processBindingAsync = processBindingASTAsync;
+    enable_feature_function("addBindingVariable", addBindingVariable);
+    enable_feature_function("getStaticValue", getStaticValue);
+    enable_feature_function("getElementAtIndex", getElementAtIndex);
+    enable_feature_function("getComponentBinding", getComponentBinding);
+    enable_feature_function("getExpressionStaticResolutionType", getExpressionStaticResolutionType);
+    enable_feature_function("importResource", importResource);
+    enable_feature_function("addIndirectHook", addIndirectHook);
+    enable_feature_function("processJSNode", processJSNode);
+    enable_feature_function("processHTMLNode", processHTMLNode);
+    enable_feature_function("processBindingAsync", processBindingAsync);
 }
 export function disableParserFeatures() {
-    //@ts-ignore
-    build_system.importResource = () => log("importResource is disabled outside of parsing contexts");
-    //@ts-ignore
-    build_system.addIndirectHook = () => log("addIndirectHook is disabled outside of parsing contexts");
-    //@ts-ignore
-    build_system.addBindingVariable = () => log("addBindingVariable is disabled outside of parsing contexts");
-    //@ts-ignore
-    build_system.processJSNode = () => log("processJSNode is disabled outside of parsing contexts");
-    //@ts-ignore
-    build_system.processHTMLNode = () => log("processHTMLNode is disabled outside of parsing contexts");
-    //@ts-ignore
-    build_system.processBindingAsync = () => log("processBindingAsync is disabled outside of parsing contexts");
+    disable_feature_function("getStaticValue", () => { trace("getStaticValue is disabled outside of build contexts"); });
+    disable_feature_function("getElementAtIndex", () => { trace("getElementAtIndex is disabled outside of build contexts"); });
+    disable_feature_function("getComponentBinding", () => { trace("getComponentBinding is disabled outside of build contexts"); });
+    disable_feature_function("getExpressionStaticResolutionType", () => { trace("getExpressionStaticResolutionType is disabled outside of build contexts"); });
+    disable_feature_function("addBindingVariable", () => { trace("addBindingVariable is disabled outside of parsing contexts"); });
+    disable_feature_function("importResource", () => { trace("importResource is disabled outside of parsing contexts"); });
+    disable_feature_function("addIndirectHook", () => { trace("addIndirectHook is disabled outside of parsing contexts"); });
+    disable_feature_function("processJSNode", () => { trace("processJSNode is disabled outside of parsing contexts"); });
+    disable_feature_function("processHTMLNode", () => { trace("processHTMLNode is disabled outside of parsing contexts"); });
+    disable_feature_function("processBindingAsync", () => { trace("processBindingAsync is disabled outside of parsing contexts"); });
 }
 
 export function registerFeature(
@@ -364,10 +389,15 @@ export function registerFeature(
 export async function loadFeatures() {
     enableInternalRegistrationFeatures();
 
+
+
     for (const { name, register } of pending_features) {
         console.log(`\nLoading feature [${name}]`);
+        current_name = name;
         await register(<any>build_system);
     }
+
+    current_name = "";
 
     disableRegistrationFeatures();
 
