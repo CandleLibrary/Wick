@@ -28,6 +28,7 @@ export enum BINDING_VARIABLE_TYPE {
     CONST_INTERNAL_VARIABLE = 32,
     MODULE_MEMBER_VARIABLE = 64,
     MODULE_VARIABLE = 128,
+    MODULE_NAMESPACE_VARIABLE = 256,
 
     /**
      * Variables that are replaced with direct

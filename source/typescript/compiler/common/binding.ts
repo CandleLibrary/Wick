@@ -307,8 +307,10 @@ export function getCompiledBindingVariableName(
             case BINDING_VARIABLE_TYPE.MODULE_VARIABLE:
                 return `this.presets.api.${external_name}.default`;
 
+            case BINDING_VARIABLE_TYPE.MODULE_NAMESPACE_VARIABLE:
+                return `this.presets.api.${external_name}.module`;
+
             case BINDING_VARIABLE_TYPE.MODULE_MEMBER_VARIABLE:
-                console.log(binding);
                 return `this.presets.api.${external_name}.module.${internal_name}`;
 
             case BINDING_VARIABLE_TYPE.UNDECLARED:
