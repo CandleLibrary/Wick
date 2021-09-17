@@ -98,20 +98,25 @@ registerFeature(
 
                             let comp;
 
-                            if (!Is_Tag_From_HTML_Spec(ch.tag) && component.local_component_names.has(ch.tag))
-                                comp = presets.components.get(component.local_component_names.get(ch.tag));
-                            else
-                                comp = await build_system.parseComponentAST(
-                                    Object.assign({}, ch),
-                                    build_system.componentNodeSource(component, ch),
-                                    new URI("auto_generated"), presets, component);
+                            if (ch.tag.toLowerCase() == "self") {
+                                comp = component;
+                            } else {
 
-                            ch.child_id = component.children.push(1) - 1;
+
+                                if (!Is_Tag_From_HTML_Spec(ch.tag) && component.local_component_names.has(ch.tag))
+                                    comp = presets.components.get(component.local_component_names.get(ch.tag));
+                                else
+                                    comp = await build_system.parseComponentAST(
+                                        Object.assign({}, ch),
+                                        build_system.componentNodeSource(component, ch),
+                                        new URI("auto_generated"), presets, component);
+
+                                component.local_component_names.set(comp?.name, comp?.name);
+                                ch.child_id = component.children.push(1) - 1;
+                            }
+
                             ctr.components.push(comp);
                             ctr.component_names.push(comp?.name);
-
-                            component.local_component_names.set(comp?.name, comp?.name);
-
                         }
 
                         component.container_count++;

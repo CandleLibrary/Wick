@@ -339,7 +339,7 @@ async function addContainer(
 
         const comp = presets.components.get(name);
 
-        if (!template_map.has(comp.name)) {
+        if (!template_map.has(comp.name) && comp.name != component.name) {
 
             const template = await createComponentTemplate(comp, presets, template_map);
 
