@@ -1,15 +1,8 @@
 #####################################################################################################
 # 
-#         __          _    _ _____ _____  _   ________  ___  ______  _____ ___________   _               
-#       / _|        | |  | |_   _/  __ \| | / /| ___ \/ _ \ | ___ \/  ___|  ___| ___ \ | |              
-#   ___| |___      _| |  | | | | | /  \/| |/ / | |_/ / /_\ \| |_/ /\ `--.| |__ | |_/ / | |__   ___ __ _ 
-#  / __|  _\ \ /\ / / |/\| | | | | |    |    \ |  __/|  _  ||    /  `--. \  __||    /  | '_ \ / __/ _` |
-# | (__| |  \ V  V /\  /\  /_| |_| \__/\| |\  \| |   | | | || |\ \ /\__/ / |___| |\ \ _| | | | (_| (_| |
-#  \___|_|   \_/\_(_)\/  \/ \___/ \____/\_| \_/\_|   \_| |_/\_| \_|\____/\____/\_| \_(_)_| |_|\___\__, |
-#                                                                                                  __/ |
-#                                                                                                 |___/ 
-# 
-#   2021 v3.2
+#   CandleLib Wick Parser Grammar
+#
+#   2021 v4.0
 #   
 #   Copyright (c) MMXX Anthony C Weathersby
 #   
@@ -30,15 +23,6 @@
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #   SOFTWARE.
-#   
-#   logo courtesy of http://patorjk.com/software/taag
-#   
-#   Font:
-#   DOOM by Frans P. de Vries <fpv@xymph.iaf.nl>  18 Jun 1996
-#   based on Big by Glenn Chappell 4/93 -- based on Standard
-#   figlet release 2.1 -- 12 Aug 1994
-#   Permission is hereby given to modify this font, as long as the
-#   modifier's name is placed on a comment line.
 # 
 #####################################################################################################
 
@@ -49,70 +33,121 @@
 @IMPORT ../../../node_modules/@candlelib/js/source/grammar/javascript.hcg as js
 
 @IMPORT ../../../node_modules/@candlelib/css/source/grammar/css.hcg as css 
+ 
+@EXPORT WICK as wick
 
+@EXPORT js::expression as js_expression
 
+@EXPORT js::statement as js_statement
+
+@EXPORT html::TAG as html
+
+@EXPORT css::STYLE_SHEET as css_stylesheet
+
+@EXPORT css::COMPLEX_SELECTOR as css_selector
 
 <> WICK > COMPONENT                                                                                           
 
-<> COMPONENT > html::HTML
-     | js::javascript 
+<> COMPONENT > 
+         ! html::HTML
+          
+     |    
+          js::javascript 
 
 # This allows JSX like html expressions within JS objects. 
-
 +> js::primary_expression > html::TAG  
 
 #   | t:css \: \{ css::CSS \}                                                                               f:r { $4 }              
 
-+> html::BODY > IMPORT_TAG_LIST html::GOAL_TAG                                                     
-                                            
-                                            f:r { ( $2.import_list = $1, $2 ) }
++> html::BODY > 
 
-+> html::TAG > < (t:style | t:STYLE) html::ATTRIBUTES? >  css::CSS?  \</ (t:style | t:STYLE) >                                  
+          IMPORT_TAG_LIST html::GOAL_TAG                                                     
                                             
-                                            f:r { { type:env.typ.HTML_STYLE,  attributes:$$3 || [], nodes:[$$5], pos } }
+          f:r { ( $2.import_list = $1, $2 ) }
+
++> html::TAG > 
+
+          \< (t:style | t:STYLE) html::ATTRIBUTES? \>  css::CSS?  \</ (t:style | t:STYLE) \>                                  
+                                            
+          f:r { { type:env.typ.HTML_STYLE,  attributes:$$3 || [], nodes:[$$5], pos } }
     
-+> html::TAG_BODY_ITEM > < (t:script | t:SCRIPT)  html::ATTRIBUTES? > js::script? </ (t:script | t:SCRIPT) >                             
++> html::TAG_BODY_ITEM > 
+
+          \< (t:script | t:SCRIPT)  html::ATTRIBUTES? \> js::script? </ (t:script | t:SCRIPT) \>    
                                             
-                                            f:r { { type:env.typ.HTML_SCRIPT, attributes:$$3 || [], nodes:[$$5], pos } }
+          f:r { { type:env.typ.HTML_SCRIPT, attributes:$$3 || [], nodes:[$$5], pos } }
 
-    | < t:js html::ATTRIBUTES? > js::script? \</ t:js >                                                  
+    |     \< t:js html::ATTRIBUTES? \> js::script? \</ t:js \>                                                  
                                             
-                                            f:r { { type:env.typ.HTML_SCRIPT, attributes:$$3 || [], nodes:[$$5], pos } }
-
-
+          f:r { { type:env.typ.HTML_SCRIPT, attributes:$$3 || [], nodes:[$$5], pos } }
 
 <> IMPORT_TAG_LIST > IMPORT_TAG(+)
 
-<> IMPORT_TAG > \<import html::ATTRIBUTES?  \/ ? \> ( \<import> )?                                 
+
+<> IMPORT_TAG > 
+          
+     \<import html::ATTRIBUTES?  \/ ? \> ( \<import> )?                                 
                                             
-                                            f:r { { type:env.typ.HTML_IMPORT, tag:"IMPORT", attributes:$$2 || [], nodes:[], VOID:true, pos } } 
+          f:r { { type:env.typ.HTML_IMPORT, tag:"IMPORT", attributes:$$2 || [], nodes:[], VOID:true, pos } } 
 
 +> html::VOID_NAME >  t:f
 
 
-+> html::ATTRIBUTE > html::ATTRIBUTE_HEAD = ( " WICK_BINDING? " f:r {$$2} | WICK_BINDING )         
-                                            
-                                             f:r { {type:env.typ.HTMLAttribute, name:$1, value:$3 || "", IS_BINDING:!!$3, pos } }
++> html::ATTRIBUTE > 
 
-     | IMPORT_ATTRIBUTE
+
+          html::ATTRIBUTE_HEAD = ( " WICK_BINDING? " f:r {$$2} | WICK_BINDING )         
                                             
+          f:r { {type:env.typ.HTMLAttribute, name:$1, value:$3 || "", IS_BINDING:!!$3, pos } }
+
+     |    IMPORT_ATTRIBUTE                 
                                              
-     | EXPORT_ATTRIBUTE
+     |    EXPORT_ATTRIBUTE
+
+     |    \{ js::binding_identifier \}     
+
+          f:r { 
+                    {
+                         type:env.typ.HTMLAttribute, 
+                         name:$2.value, 
+                         value: { type:env.typ.WickBinding, primary_ast:$2, DEBUG:false, pos }, 
+                         IS_BINDING:true, 
+                         pos 
+                    } 
+               }
                                              
 
-+> html::TEXT_NODE > WICK_BINDING 
++> html::TEXT_NODE > 
+
+          WICK_BINDING 
+
+     |    WICK_SELECTOR_BINDING
+
+
 
 <> IMPORT_ATTRIBUTE > t:import \= js::named_imports
 
      f:r { {type:env.typ.HTMLImportAttribute, name:$1, value:$3, pos } }
+
 
 <> EXPORT_ATTRIBUTE > t:export \= js::named_imports
 
      f:r { {type:env.typ.HTMLExportAttribute,name:$1, value:$3, pos } }
 
 
-<> WICK_BINDING > ( \{! | \{ ) js::expression?  ( \; js::expression )? \}      
+<> WICK_BINDING > ( \{! | \{ ) js::expression  ( \; js::expression )? \}      
                                             
-                                            f:r { {type:env.typ.WickBinding, primary_ast:$$2, secondary_ast:$$3, DEBUG: $$2.length == 2, pos } }
+     f:r { {type:env.typ.WickBinding, primary_ast:$$2, secondary_ast:$$3, DEBUG: $$2.length == 2, pos } }
 
-<> __entries__ > COMPONENT | js::expression | html::TAG | css::STYLE_SHEET | css::COMPLEX_SELECTOR
+<> WICK_SELECTOR_BINDING > \{ 
+     
+          WICK_IF_BINDING_EXPRESSION
+     
+     \}
+
+<> WICK_IF_BINDING_EXPRESSION >
+
+     t:if \( js::expression \) html::TAG ( t:else WICK_IF_BINDING_EXPRESSION )?
+
+
+     f:r { {type:env.typ.WickIfBinding, expresion:$3, node:$5, else: $$6, pos } }

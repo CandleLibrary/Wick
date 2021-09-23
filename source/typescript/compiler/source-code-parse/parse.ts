@@ -1,14 +1,13 @@
-import env from "./env.js";
-
-import parser_loader from "./wick_parser.js";
-
-import { Node } from "../../types/all.js";
+import { HTMLNode } from "@candlelib/html";
 import { JSExpressionClass } from "@candlelib/js";
 import { CSSNode } from "source/typescript/entry-point/wick-full.js";
-import { HTMLNode } from "@candlelib/html";
+import { Node } from "../../types/all.js";
 import { metrics } from '../metrics.js';
+import env from "./env.js";
+import framework from "./parser_new.js";
 
-const parse = await parser_loader;
+const { parse, entry_points } = await framework;
+
 /**
  * Parses wick markup files and produces an AST of HTML, JS, and CSS nodes.
  *
@@ -21,66 +20,63 @@ const parse = await parser_loader;
  *
  */
 export function parse_component(input: string): { ast: Node, comments: Comment[]; error?: any; } {
+
     const run_tag = metrics.startRun("Parse Component");
 
     if (typeof input != "string")
         throw new Error("Invalid input type to wick parser =>" + typeof input);
 
     try {
+        const
+            { result: [ast], err } = parse(input, env, entry_points.wick);
+
+        if (err)
+            throw err;
 
         const
-            { result: [ast] } = parse(input, env),
-
-            //{ value: ast, error } = lrParse<Node>(lex, <ParserData>parser_data, env),
-
             comments = env.comments as Comment[] || [];
 
+
         return { ast, comments, error: null };
+
     } catch (error) {
+
         return { ast: null, comments: null, error };
+
     } finally {
+
         metrics.endRun(run_tag);
     }
 };
 
-export function parse_js_exp(input: string): JSExpressionClass {
-    const run_tag = metrics.startRun("Parse JS Expression");
+function parse_core(input: string, entry_point: number, run_title: string) {
+    const run_tag = metrics.startRun(run_title);
     try {
-        return parse(input, env, parse.javascript__expression).result[0];
+
+        const
+            { result: [ast], err } = parse(input, env, entry_point);
+
+        if (err)
+            throw err;
+
+        return ast;
     } finally {
         metrics.endRun(run_tag);
     }
+}
+
+export function parse_js_exp(input: string): JSExpressionClass {
+    return parse_core(input, entry_points.js_expression, "Parse JS Expression");
 };
 
 export function parse_css(input: string): CSSNode {
-    const run_tag = metrics.startRun("Parse CSS");
-    try {
-        return parse(input, env, parse.css__STYLE_SHEET).result[0];
-    } finally {
-        metrics.endRun(run_tag);
-    }
-};
-    
+    return parse_core(input, entry_points.css_stylesheet, "Parse CSS");
 };
 
 export function parse_css_selector(input: string): CSSNode {
-    const run_tag = metrics.startRun("Parse CSS Selector");
-    try {
-        return parse(input, env, parse.css__COMPLEX_SELECTOR).result[0];
-    } finally {
-        metrics.endRun(run_tag);
-    }
-};
-    
+    return parse_core(input, entry_points.css_selector, "Parse CSS Selector");
 };
 
 export function parse_html(input: string): HTMLNode {
-    const run_tag = metrics.startRun("Parse HTML");
-    try {
-        return parse(input, env, parse.html__TAG).result[0];
-    } finally {
-        metrics.endRun(run_tag);
-    }
-};
-    
+    return parse_core(input, entry_points.html, "Parse HTML");
 };

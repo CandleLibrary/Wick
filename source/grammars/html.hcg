@@ -4,11 +4,7 @@
 
 @IGNORE g:sp g:nl 
 
-##############################################################################################
-##############################################################################################
-#### HTML / ML
-##############################################################################################
-##############################################################################################
+
     
 <> HTML > RESULT
 
@@ -19,11 +15,11 @@
 
 <> GOAL_TAG > TAG
 
-<> TAG > < TAGNAME ATTRIBUTES? > TAG_BODY? \</ TAGNAME >                                     
+<> TAG > \< TAGNAME ATTRIBUTES? \> TAG_BODY? \</ TAGNAME \>                                     
                                         f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:$5 || [], VOID:false, pos } }
-    | < TAGNAME ATTRIBUTES? \/>                                                             
+    | \< TAGNAME ATTRIBUTES? \/>                                                             
                                         f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:[], VOID:false, pos } }
-    | < VOID_NAME ATTRIBUTES? /? >                                                          
+    | \< VOID_NAME ATTRIBUTES? /? >                                                          
                                         f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:[], VOID:true, pos } }
     
 <> DTD > \<! tk:identifier ? \--   TEXT_NODE_DATA  \-- \>                                                 
@@ -73,7 +69,7 @@
 <> ATTRIBUTE_BODY >                                                       
     tk:ATTRIBUTE_STRING_VALUE                                                                   
                                                                 f:r { $1.slice(1,-1) }
-    | identifier
+    | tk:identifier
     | g:num          
 
 <> ATTRIBUTE_STRING_VALUE >  \" BODY_SYMBOLS? \"
@@ -81,7 +77,11 @@
 
 <> TAGNAME > tk:identifier
 
-<> identifier > g:id (RST g:sp) ( (RST g:sp) g:id | (RST g:sp) \- |  (RST g:sp) \: | (RST g:sp) g:num )(*\" )           
+<> identifier > g:id 
+    | identifier (RST g:sp) g:id 
+    | identifier (RST g:sp) \- 
+    | identifier (RST g:sp) \: 
+    | identifier (RST g:sp) g:num 
 
 <> TEXT_NODE > TEXT_NODE_DATA                                                                   
                                                                 f:r { {type:env.typ.HTMLText, data:$1, IS_BINDING:false, pos } }
