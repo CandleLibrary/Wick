@@ -327,8 +327,8 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.update({ connected: true });
     }
 
-    removeFromDOM() {
 
+    removeFromDOM() {
         //Prevent erroneous removal of scope.
         if (this.CONNECTED == false) return;
 
@@ -397,6 +397,11 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         if (transition) {
 
             this.oTO(row, col, DESCENDING, transition.out);
+
+            transition.addEventListener(
+                "stopped",
+                this.onTransitionOutEnd.bind(this)
+            );
 
             try {
                 transition_time = transition.out_duration;
@@ -582,6 +587,26 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         return RETURN_PREVIOUS_VAL ? prev_val : this[attribute_index];
     }
+
+    fua(attribute_index: number, attribute_value: any, RETURN_PREVIOUS_VAL = false) {
+
+        const prev_val = this[attribute_index];
+
+        if (
+            !this.call_set.has(attribute_index)
+            &&
+            this.lookup_function_table[attribute_index]
+        )
+            this.call_set.set(attribute_index, [this.active_flags, this.call_depth]);
+
+        this[attribute_index] = attribute_value;
+
+        //Forcefully update 
+        spark.queueUpdate(this, 0, 0, true);
+
+
+        return RETURN_PREVIOUS_VAL ? prev_val : this[attribute_index];
+    }
     u(flags: DATA_DIRECTION, call_depth: number = this.call_depth) {
 
         const pending_function_indices = this.updated_attributes.values();
@@ -616,12 +641,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.pui[this_index] = this.par["u" + parent_method_index];
     }
 
-    updateParent(data) {
-
-        if (this.par)
-            this.updateFromChild.call(this.par, data);
-    }
-
     updateFromParent(local_index, attribute_value, flags) {
 
         if (flags >> 24 == this.ci + 1)
@@ -632,21 +651,30 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.ua(local_index, attribute_value);
     }
 
+    updateParent(data) {
+        if (this.par)
+            this.updateFromChild.call(this.par, data);
+    }
 
-    updateFromChild(local_index, val, flags) {
 
-        const method = this.pui[local_index];
+    updateFromChild(data) {
 
-        if (typeof method == "function") {
+        for (const key in data) {
 
-            this.active_flags |=
-                BINDING_FLAG.ALLOW_UPDATE_FROM_CHILD
-                |
-                ((this.ci + 1) << 24);
+            const val = data[key];
 
-            method.call(this.par, val, 0);
+            if (typeof val !== "undefined" && this.nlu) {
+
+                const index = this.nlu[key];
+
+                if (((index >>> 24) & BINDING_FLAG.ALLOW_UPDATE_FROM_CHILD)) {
+                    let cd = this.call_depth;
+                    this.call_depth = 0;
+                    this.ua(index & 0xFFFFFF, val);
+                    this.call_depth = cd;
+                }
+            }
         }
-
     };
 
     scheduledUpdate(step_ratio, diff) {

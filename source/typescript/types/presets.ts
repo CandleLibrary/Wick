@@ -1,4 +1,5 @@
 import URL from "@candlelib/uri";
+import Module from 'module';
 import { PluginStore } from "../plugin/plugin";
 import { WickRTComponent } from "../runtime/component";
 import { ComponentClassStrings, ComponentData, ComponentStyle } from "./component";
@@ -203,7 +204,7 @@ export interface PresetOptions {
 
 export interface UserPresets {
 
-    repo?: [[string, string]];
+    repo?: [[string, string, ModuleType]];
 
     api?: {
         [key: string]: any;

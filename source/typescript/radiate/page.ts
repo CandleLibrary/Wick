@@ -1,8 +1,13 @@
 import URI from '@candlelib/uri';
-import { gatherWickElements } from '../entry-point/wick-runtime.js';
 import { ComponentElement, WickRTComponent } from '../runtime/component.js';
 import { hydrateComponentElements } from '../runtime/html.js';
 import { Element } from './element.js';
+
+export const enum PageType {
+    WICK_PAGE,
+    WICK_MODAL,
+    STANDARD
+}
 
 /**
  * Page visualization of the data that model contains.
@@ -12,7 +17,7 @@ export class PageView {
     url: URI;
     eles: Element[];
     finalizing_view;
-    type: string;
+    type: PageType;
     component: WickRTComponent;
     ele: ComponentElement;
     ele_backer: HTMLElement;

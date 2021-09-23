@@ -113,7 +113,7 @@ registerFeature(
                                 };
 
                             //Create a recursion check to prevent infinite recursions.
-                            function_frame.ast.nodes[2].nodes.unshift(build_system.js.stmt(`if(c>0) return;`));
+                            //function_frame.ast.nodes[2].nodes.unshift(build_system.js.stmt(`if(c>0) return;`));
 
                             // Create a new ast node that will server as the caller to the function 
                             // when bindings are updated and insert into an indirect hook. 

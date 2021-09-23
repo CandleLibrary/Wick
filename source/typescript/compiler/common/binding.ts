@@ -317,11 +317,13 @@ export function getCompiledBindingVariableName(
                 const global_names = getSetOfEnvironmentGlobalNames();
                 if (global_names.has(external_name))
                     return external_name;
-
-            //intentional
+                return `this.model.${external_name}`;
 
             case BINDING_VARIABLE_TYPE.MODEL_VARIABLE:
                 return `this.model.${external_name}`;
+
+            //case BINDING_VARIABLE_TYPE.MODEL:
+            //return `this.${external_name}`;
 
             case BINDING_VARIABLE_TYPE.METHOD_VARIABLE:
                 return "this." + binding.internal_name;
@@ -737,6 +739,8 @@ export function Name_Is_A_Binding_Variable(var_name: string, frame: FunctionFram
 
 export function Binding_Var_Is_Internal_Variable(comp_var: BindingVariable) {
     return (
+        comp_var.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE
+        ||
         comp_var.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
         ||
         comp_var.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE

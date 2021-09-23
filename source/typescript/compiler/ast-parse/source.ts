@@ -1,7 +1,7 @@
 import { JSNode, JSNodeType } from "@candlelib/js";
 import URL from "@candlelib/uri";
-import { ComponentData, HTMLNode, HTMLNodeClass, PresetOptions } from "../../types/all.js";
-import { processUndefinedBindingVariables } from "../common/binding.js";
+import { BINDING_FLAG, BINDING_VARIABLE_TYPE, ComponentData, HTMLNode, HTMLNodeClass, PresetOptions } from "../../types/all.js";
+import { addBindingVariable, processUndefinedBindingVariables } from "../common/binding.js";
 import { ComponentDataClass, createComponentData, createErrorComponent } from "../common/component.js";
 import { createParseFrame } from "../common/frame.js";
 import { metrics } from '../metrics.js';
@@ -145,8 +145,23 @@ export async function parseComponentAST(
     component.comments = [];
 
     if (parent) {
-        for (const [name, val] of parent.local_component_names.entries())
+        for (const [name, val] of parent.local_component_names.entries()) {
             component.local_component_names.set(name, val);
+        }
+
+        for (const [name, binding] of parent.root_frame.binding_variables) {
+            if (binding.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE) {
+                addBindingVariable(
+                    component.root_frame,
+                    name,
+                    {},
+                    BINDING_VARIABLE_TYPE.PARENT_VARIABLE,
+                    name,
+                    BINDING_FLAG.ALLOW_EXPORT_TO_PARENT | BINDING_FLAG.FROM_PARENT
+                );
+                binding.flags |= BINDING_FLAG.ALLOW_UPDATE_FROM_CHILD;
+            }
+        }
     }
 
     if (ast)

@@ -279,10 +279,7 @@ export async function processHookForClass(
 
                 ...collectBindingReferences(ast, component),
                 ...meta_binding_nodes.flatMap(n => collectBindingReferences(n, component))
-            ];
-
-        console.log({ component_variables });
-        const
+            ],
 
             NO_LOCAL_BINDINGS = component_variables
                 .map(v => component.root_frame.binding_variables.get(v))
@@ -382,7 +379,7 @@ function processBindingRecords(comp_info: CompiledComponentClass, comp: Componen
     for (const [name, { nodes, index }] of comp_info.binding_records.entries()) {
 
         const binding = getComponentBinding(name, comp),
-            { internal_name, class_index, flags, type } = binding;
+            { internal_name, class_index, flags, type, external_name } = binding;
 
         binding.class_index = index;
 
@@ -393,8 +390,12 @@ function processBindingRecords(comp_info: CompiledComponentClass, comp: Componen
 
         appendStmtToFrame(frame, ...nodes);
 
-        if (flags & BINDING_FLAG.ALLOW_EXPORT_TO_PARENT)
-            appendStmtToFrame(frame, stmt(`/*if(!(f&${BINDING_FLAG.FROM_PARENT}))*/c.pup(${class_index}, v, f);`));
+        if (flags & BINDING_FLAG.ALLOW_EXPORT_TO_PARENT) {
+
+            const stmt_ = stmt(`this.updateParent({${external_name}:this[${index}]});`);
+
+            appendStmtToFrame(frame, stmt_);
+        }
 
 
         if (Frame_Has_Statements(frame)) {
@@ -423,9 +424,14 @@ function processBindingVariables(
     component: ComponentData,
     index: number
 ): void {
-
-
-    class_info.lu_public_variables.push(<any>getPropertyAST(getExternalName(binding), ((binding.flags << 24) | index) + ""));
+    if (
+        true ||
+        binding.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE
+        ||
+        binding.type == BINDING_VARIABLE_TYPE.INTERNAL_VARIABLE
+        ||
+        binding.type == BINDING_VARIABLE_TYPE.CONST_INTERNAL_VARIABLE
+    ) class_info.lu_public_variables.push(<any>getPropertyAST(getExternalName(binding), ((binding.flags << 24) | index) + ""));
 
     if (binding.type == BINDING_VARIABLE_TYPE.METHOD_VARIABLE) {
         const nluf_array_entry = exp(`c.u${index}___`);

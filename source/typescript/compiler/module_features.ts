@@ -62,10 +62,13 @@ registerFeature(
                         const names = [];
 
                         for (const { node: id, meta: { skip } } of traverse(node, "nodes", 4)
-                            .filter("type", JSNodeType.Specifier, JSNodeType.IdentifierModule)
+                            .filter("type",
+                                JSNodeType.Specifier,
+                                JSNodeType.IdentifierModule,
+                                JSNodeType.NameSpaceImport
+                            )
                             .makeSkippable()
                         ) {
-
                             let local = "", external = "";
                             //@ts-ignore
                             if (id.type == JSNodeType.Specifier) {
@@ -73,6 +76,13 @@ registerFeature(
                                 external = <string>id.nodes[0].value;
                                 //@ts-ignore
                                 local = <string>id.nodes[1]?.value ?? external;
+                                //@ts-ignore
+                            } else if (id.type == JSNodeType.NameSpaceImport) {
+                                const name = id.nodes[0];
+                                //@ts-ignore
+                                local = name.value;
+                                //@ts-ignore
+                                external = "namespace";
                             } else {
                                 local = (<any>id).value;
                                 external = (<any>id).value;

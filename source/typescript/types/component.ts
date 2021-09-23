@@ -102,7 +102,8 @@ export interface ComponentData {
     location: URL;
 
     /**
-     * Mapping between import names and hash names of components that referenced in other components.
+     * Mapping between import names and hash names of components that are 
+     * referenced in other components.
      */
     local_component_names: Map<string, string>;
 

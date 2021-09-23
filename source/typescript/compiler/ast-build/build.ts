@@ -9,6 +9,7 @@ import {
 } from "@candlelib/js";
 import {
     BindingVariable,
+    BINDING_VARIABLE_TYPE,
     CompiledComponentClass,
     ComponentData,
     FunctionFrame,
@@ -416,6 +417,10 @@ export async function finalizeBindingExpression(
                         comp_var: BindingVariable = getComponentBinding(name, component);
 
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {
+
+
+                        const update_action = comp_var.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE
+                            ? "fua" : "ua";
                         const
 
                             index = comp_info.binding_records.get(name).index,
@@ -423,7 +428,7 @@ export async function finalizeBindingExpression(
                             comp_var_name: string =
                                 getCompiledBindingVariableNameFromString(name, component, comp_info),
 
-                            assignment: JSCallExpression = <any>exp(`this.ua(${index})`),
+                            assignment: JSCallExpression = <any>exp(`this.${update_action}(${index})`),
 
                             exp_ = exp(`${comp_var_name}${node.symbol[0]}1`),
 
@@ -460,9 +465,12 @@ export async function finalizeBindingExpression(
                     //Directly assign new value to model variables
                     if (Binding_Var_Is_Internal_Variable(comp_var)) {
 
+                        const update_action = comp_var.type == BINDING_VARIABLE_TYPE.PARENT_VARIABLE
+                            ? "fua" : "ua";
+
                         const index = comp_info.binding_records.get(name).index,
 
-                            assignment: JSCallExpression = <any>exp(`this.ua(${index})`),
+                            assignment: JSCallExpression = <any>exp(`this.${update_action}(${index})`),
 
                             { ast: a1, NEED_ASYNC: NA1 } =
                                 await finalizeBindingExpression(ref, component, comp_info, presets),

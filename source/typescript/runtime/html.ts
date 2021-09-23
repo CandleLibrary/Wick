@@ -14,7 +14,7 @@ const namespaces = [
     "www.w3.org/2000/xmlns/",           // XMLNS - 5
 ];
 
-const comp_name_regex = /W[_\$a-zA-Z0-9]+_/;
+
 
 function createText(data) {
     return document.createTextNode(data);
@@ -60,7 +60,7 @@ export function* getComponentNames(ele: HTMLElement): Generator<string, void, vo
             yield ele.classList[i];
 }
 
-
+const comp_name_regex = /W[_\$a-zA-Z0-9]+/;
 function String_Is_Wick_Hash_ID(str): boolean {
     return !!str.match(comp_name_regex);
 }
