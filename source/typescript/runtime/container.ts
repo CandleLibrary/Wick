@@ -18,7 +18,7 @@ function createTransition(val?: boolean) {
         const trs = { add: () => null, addEventListener: (n, v) => v() };
         return {
             in: trs, out: trs, play: () => null, addEventListener: (n, v) => v()
-        };
+        }; sub;
     }
     else return rt.glow.createTransition(val);
 }
@@ -183,7 +183,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
         this.dom_dn = [];
         this.dom_up = [];
-        this.evaluators = [];
+        this.evaluators = Array(component_constructors.length);
         this.transition_list = [];
 
         this._SCHD_ = 0;
@@ -924,7 +924,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
             }
 
             this.comps.length = 0;
-            
+
             this.activeComps.length = 0;
 
             this.primeTransitions(transition);
@@ -975,7 +975,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
             spark.queueUpdate(this);
         }
     }
-    addEvaluator(evalator: (a: any) => boolean) { this.evaluators.push(evalator); }
+    addEvaluator(evaluator: (a: any) => boolean, index) { this.evaluators[index] = evaluator; }
 
     /**
      * Called by the ModelContainer when Models have been added to it.

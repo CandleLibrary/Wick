@@ -118,8 +118,6 @@ export class ComponentDataClass implements ComponentData {
 
         this.CSS = [];
 
-        this.hooks = [];
-
         this.children = [];
 
         this.errors = [];

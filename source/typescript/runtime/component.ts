@@ -158,7 +158,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.hydrate(model);
     }
 
-    hydrate(model: Object) {
+    hydrate(model?: Object) {
 
         const presets = this.presets, wrapper = this.wrapper;
 
@@ -570,7 +570,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         const prev_val = this[attribute_index];
 
-        if (attribute_value !== prev_val) {
+        if (attribute_value !== prev_val || typeof attribute_value == "object") {
 
             if (
                 !this.call_set.has(attribute_index)

@@ -15,7 +15,6 @@ import { processFunctionDeclaration, processNodeAsync, processWickCSS_AST, proce
 import { parseComponentAST } from './ast-parse/source.js';
 import {
     addBindingReference, addBindingVariable,
-    addHook,
     addNameToDeclaredVariables,
     addReadFlagToBindingVariable,
     addWriteFlagToBindingVariable,
@@ -171,11 +170,7 @@ const build_system = {
     parseComponentAST: parseComponentAST,
     componentNodeSource: getComponentSourceString,
     /**
-     * Add Function hook?
-     */
-    addHook: addHook,
-    /**
-     * Process for handling declaration of functoons
+     * Process for handling declaration of functions
      */
     processFunctionDeclaration: processFunctionDeclaration,
 

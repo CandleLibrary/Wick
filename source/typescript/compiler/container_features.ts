@@ -1,5 +1,5 @@
 import { traverse } from '@candlelib/conflagrate';
-import { JSExpressionStatement, JSIdentifier, JSNode, JSNodeType, renderCompressed, stmt } from '@candlelib/js';
+import { ext, JSExpressionStatement, JSIdentifier, JSNode, JSNodeType, renderCompressed, stmt } from '@candlelib/js';
 import URI from '@candlelib/uri';
 import {
     BINDING_VARIABLE_TYPE,
@@ -27,6 +27,8 @@ export const ContainerLimitHook = getExtendTypeVal("container-limit-hook", HTMLN
 export const ContainerOffsetHook = getExtendTypeVal("container-offset-hook", HTMLNodeType.HTMLAttribute);
 export const ContainerShiftHook = getExtendTypeVal("container-shift-hook", HTMLNodeType.HTMLAttribute);
 export const ContainerScrubHook = getExtendTypeVal("container-scrub-hook", HTMLNodeType.HTMLAttribute);
+export const ContainerUseIfHook = getExtendTypeVal("container-use-if", HTMLNodeType.HTMLAttribute);
+export const ContainerUseIfEmptyHook = getExtendTypeVal("container-use-if-empty", HTMLNodeType.HTMLAttribute);
 
 registerFeature(
 
@@ -47,11 +49,13 @@ registerFeature(
                         //Turn children into components if they are not already so.   
                         let ch = null;
 
+                        const container_id = component.container_count;
+
                         const ctr: HTMLContainerNode = Object.assign(<HTMLContainerNode>{
 
                             IS_CONTAINER: true,
 
-                            container_id: component.container_count,
+                            container_id,
 
                             components: [],
 
@@ -69,34 +73,9 @@ registerFeature(
 
                             const inherited_attributes = [], core_attributes = [];
 
-                            //Check for use-if attribute
-                            for (const { name, value } of (n.attributes || [])) {
-
-                                if (name == "use-if") {
-
-                                    //create a useif binding for this object
-                                    build_system.addHook(component, {
-                                        selector: HOOK_SELECTOR.CONTAINER_USE_IF,
-                                        //@ts-ignore
-                                        hook_value: value,
-                                        host_node: ctr,
-                                        html_element_index: index
-                                    });
-                                } else if (name == "use-empty") {
-                                    build_system.addHook(component, {
-                                        selector: HOOK_SELECTOR.CONTAINER_USE_EMPTY,
-                                        //@ts-ignore
-                                        hook_value: value,
-                                        host_node: ctr,
-                                        html_element_index: index
-                                    });
-                                } else if (typeof value == "object") { } else
-                                    inherited_attributes.push([name, value]);
-                            }
-
                             ctr.component_attributes.push(inherited_attributes);
 
-                            let comp;
+                            let comp, comp_index = ctr.components.length;
 
                             if (ch.tag.toLowerCase() == "self") {
                                 comp = component;
@@ -122,6 +101,31 @@ registerFeature(
 
                             ctr.components.push(comp);
                             ctr.component_names.push(comp?.name);
+
+                            if (comp) {
+                                //Check for use-if attribute
+                                for (const { name, value } of (n.attributes || [])) {
+                                    if (typeof value != "string")
+                                        if (name == "use-if") {
+
+                                            build_system.addIndirectHook(component, ContainerUseIfHook, {
+                                                expression: await build_system.processBindingAsync(value, component, presets),
+                                                comp_index: comp_index,
+                                                container_id
+                                            }, index);
+
+                                        } else if (name == "use-if-empty") {
+
+                                            build_system.addIndirectHook(component, ContainerUseIfEmptyHook, {
+                                                hook_value: value.primary_ast,
+                                                component: comp.name,
+                                                container_id
+                                            }, index);
+
+                                        } else if (typeof value == "object") { } else
+                                            inherited_attributes.push([name, value]);
+                                }
+                            }
                         }
 
                         component.container_count++;
@@ -139,7 +143,49 @@ registerFeature(
             }, HTMLNodeType.HTML_Element
         );
 
+        /**
+         * Container use-if attribute
+         */
 
+        build_system.registerHookHandler<IndirectHook<{
+            expression: JSNode,
+            comp_index: number,
+            container_id: number,
+        }>, void | JSNode>({
+
+            name: "Container Use-If",
+
+            types: [ContainerUseIfHook],
+
+            verify: () => true,
+
+            buildHTML: _ => null,
+
+            buildJS: (node, comp, presets, index, write, init, _2) => {
+
+                const {
+                    expression,
+                    comp_index,
+                    container_id,
+                } = node.nodes[0];
+
+                let arrow_argument_match = new Array(1).fill(null);
+
+                console.dir({ index, container_id, node, exp: ext(expression, true) }, { depth: 8 });
+
+                if (getListOfUnboundArgs(expression, comp, arrow_argument_match)) {
+
+                    const arrow_expression_stmt = stmt(`$$ctr${container_id}.addEvaluator(${arrow_argument_match[0].value} => 1, ${comp_index})`);
+
+                    arrow_expression_stmt.nodes[0].nodes[1].nodes[0].nodes[1] = expression;
+
+                    init(arrow_expression_stmt);
+                }
+
+                return null;
+
+            }
+        });
 
         /** ###########################################################
          *  Container Data Attribute
@@ -560,9 +606,7 @@ registerFeature(
 
                 const name = n.value;
 
-
                 if (n.type == BindingIdentifierBinding || n.type == BindingIdentifierReference) {
-
 
                     const binding = build_system.getComponentBinding(name, comp);
 

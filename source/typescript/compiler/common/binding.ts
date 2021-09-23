@@ -672,10 +672,6 @@ export async function getStaticValueAstFromSourceAST(
     return <JSExpressionClass>receiver.ast;
 }
 
-export function addHook(component: ComponentData, hook: IntermediateHook) {
-    component.hooks.push(hook);
-};
-
 /**
  * Retrieves the real default value of the given binding, 
  * or return null.

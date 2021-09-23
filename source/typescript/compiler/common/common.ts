@@ -12,7 +12,7 @@ export function setPos<T>(node: T, pos: Lexer | any): T {
 
     if (!pos) {
 
-        console.warn("[pos] is null - this node will not render source maps correctly.");
+        //console.warn("[pos] is null - this node will not render source maps correctly.");
 
     } else
         //@ts-ignore

@@ -10,7 +10,8 @@ import {
     ContainerOffsetHook,
     ContainerScrubHook,
     ContainerShiftHook,
-    ContainerSortHook
+    ContainerSortHook,
+    ContainerUseIfHook
 } from "../container_features.js";
 import * as b_sys from "../build_system.js";
 
@@ -406,7 +407,8 @@ async function processContainerHooks(
         sort_hook = hooks.find(t => t.type == ContainerSortHook),
         limit_hook = hooks.find(t => t.type == ContainerLimitHook),
         offset_hook = hooks.find(t => t.type == ContainerOffsetHook),
-        shift_hook = hooks.find(t => t.type == ContainerShiftHook);
+        shift_hook = hooks.find(t => t.type == ContainerShiftHook),
+        use_if_hooks = hooks.filter(t => t.type == ContainerUseIfHook);
 
     if (data_hook) {
 
