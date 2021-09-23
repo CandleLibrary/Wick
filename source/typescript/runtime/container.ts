@@ -924,6 +924,7 @@ export class WickContainer implements Sparky, ObservableWatcher {
             }
 
             this.comps.length = 0;
+            
             this.activeComps.length = 0;
 
             this.primeTransitions(transition);

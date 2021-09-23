@@ -200,8 +200,6 @@ export class Element {
 
                 const id_hash: string = component_element.id + "--" + component.name;
 
-                console.log({ id_hash });
-
                 //  this.wraps.push(comp_wrap);
 
                 this.interior_components.set(id_hash, component);

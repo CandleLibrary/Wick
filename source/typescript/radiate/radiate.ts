@@ -385,7 +385,7 @@ export class Router {
      */
     async loadNewPage(
         url: string | URI = new URI("", true),
-        DOM: HTMLElement | Document,
+        DOM: Document,
         pending_modal_reply = null) {
 
         // At this point, the whether the DOM is the actually document our it is an imported

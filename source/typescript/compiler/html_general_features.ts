@@ -122,11 +122,8 @@ registerFeature(
 
                 async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
 
-                    console.log(node);
                     const url = getAttributeValue("url", node) || "",
                         name = getAttributeValue("name", node) || "";
-
-                    console.log({ url, name });
 
                     await build_system.importResource(
                         url,
@@ -200,9 +197,6 @@ registerFeature(
                 priority: -99999,
 
                 async prepareHTMLNode(node, host_node, host_element, index, skip, component, presets) {
-
-
-                    console.log("-----------------------------------", node.tag);
 
                     if (component.local_component_names.has(node.tag)) {
 

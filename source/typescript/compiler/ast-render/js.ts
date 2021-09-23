@@ -16,8 +16,6 @@ function componentStringToJS({ class_string: cls, source_map }: ComponentClassSt
     //Ensure WickRTComponent is inside closure
     const class_ref = WickRTComponent;
 
-    console.log(cls);
-
     return (
         eval(
             "c=>" + cls + (presets.options.GENERATE_SOURCE_MAPS ? `\n${source_map}` : "")
