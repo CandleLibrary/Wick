@@ -129,6 +129,8 @@ export function hydrateComponentElement(hydrate_candidate: HTMLElement, parent_c
 
                 let comp = new (comp_class)(null, hydrate_candidate, u, parent_chain, u, u, affinity++);
 
+                comp.hydrate();
+
                 parent_chain = parent_chain.concat(comp);
 
                 if (!first_comp)

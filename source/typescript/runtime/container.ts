@@ -231,7 +231,6 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
                 for (const comp of hydrateComponentElements(null_elements)) {
                     comp.par = parent_comp;
-                    comp.hydrate();
                     comp.connect();
                     this.activeComps.push(<ContainerComponent>comp);
                     this.comps.push(<ContainerComponent>comp);
@@ -252,7 +251,6 @@ export class WickContainer implements Sparky, ObservableWatcher {
             if (this.ele.childElementCount > 0)
                 for (const comp of hydrateComponentElements(Array.from(<HTMLElement[]><any>this.ele.children))) {
                     comp.par = parent_comp;
-                    comp.hydrate();
                     comp.connect();
                     this.activeComps.push(<ContainerComponent>comp);
                     this.comps.push(<ContainerComponent>comp);
@@ -994,7 +992,9 @@ export class WickContainer implements Sparky, ObservableWatcher {
             let component: ContainerComponent = null;
 
             if (item instanceof WickRTComponent) {
+
                 component = <ContainerComponent>item;
+
             } else {
 
                 for (let j = 0; j < cstr_l; j++) {
@@ -1003,7 +1003,9 @@ export class WickContainer implements Sparky, ObservableWatcher {
 
                     if (j == cstr_l - 1 || (evaluator && evaluator(item))) {
 
-                        component = <ContainerComponent>new this.comp_constructors[j](item);
+                        component = <ContainerComponent>new this.comp_constructors[j](item, null, null, [this.parent]);
+
+                        component.hydrate().initialize(item);
 
                         const attrib_list = this.comp_attributes[j];
 
@@ -1028,8 +1030,6 @@ export class WickContainer implements Sparky, ObservableWatcher {
             component.par = <ContainerComponent>this.parent;
 
             this.comps.push(component);
-
-            component.async_init();
         }
 
         if (OWN_TRANSITION) this.filterExpressionUpdate(transition);

@@ -49,7 +49,8 @@ export class PageView {
     init_components() {
 
         for (const comp of hydrateComponentElements([this.ele]))
-            comp.connect();
+            comp.initialize(null).connect();
+
 
         this.component = this.ele.wick_component;
 

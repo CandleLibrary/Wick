@@ -131,12 +131,10 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
         this.polling_id = -1;
         this.presets = presets;
 
-
-        // this.model = model; // Soft set of model, to handle access defined in source files.
-
         const parent = parent_chain[parent_chain.length - 1];
 
-        if (parent) parent.addChild(this);
+        if (parent)
+            parent.addChild(this);
 
         //Create or assign global model whose name matches the default_model_name;
         if (default_model_name) {
@@ -145,32 +143,51 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             model = presets.models[default_model_name];
         }
 
-        //this.model = model;
-
         this.wrapper = wrapper;
-
 
         if (existing_element) {
             this.integrateElement(existing_element, parent_chain.concat(this));
         } else
             this.ele = this.createElement(presets, [this]);
+    }
 
-        this.hydrate(model);
+    initialize(model) {
+
+        if (this.INITIALIZED)
+            return;
+
+        this.INITIALIZED = true;
+
+
+        for (const child of this.ch)
+            child.initialize(null);
+
+        this.model = model;
+        this.CONNECTED = true;
+
+        this.init(this);
+
+        this.async_init();
+
+        this.model = null;
+        this.setModel(model);
+
+        this.CONNECTED = false;
+
+        return this;
     }
 
     hydrate(model?: Object) {
 
         const presets = this.presets, wrapper = this.wrapper;
 
-        // Hydration --------------------------------
-        this.CONNECTED = true;
-
-        this.init(this);
-
-        this.setModel(model); //Hard set of model, with proper updating and polling.
-
-        this.CONNECTED = false;
-        // End Hydration ----------------------------
+        //   this.CONNECTED = true;
+        //
+        //   this.init(this);
+        //
+        //   this.setModel(model);
+        //
+        //   this.CONNECTED = false;
 
         if (wrapper) {
 
@@ -181,6 +198,7 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             presets.wrapper && this.name !== presets.wrapper.name
         ) {
             this.wrapper = new (presets.component_class.get(presets.wrapper.name))({ comp: this });
+
             this.ele.appendChild(this.wrapper.ele);
         }
 
@@ -190,12 +208,14 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
             console.error(e);
         }
 
-        this.async_init();
+        //  this.async_init();
 
         rt.OVERRIDABLE_onComponentCreate(this);
 
         for (const child of this.ch)
             child.hydrate(null);
+
+        return this;
     }
 
     destructor() {
@@ -220,10 +240,12 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
 
     addChild(cp: WickRTComponent) {
+
         for (const ch of this.ch)
             if (ch == cp) continue;
 
         cp.par = this;
+
 
         this.ch.push(cp);
     }
@@ -505,7 +527,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
 
         if (model) {
 
-
             if (changed_names) {
 
                 for (const name in changed_names) {
@@ -521,9 +542,6 @@ export class WickRTComponent implements Sparky, ObservableWatcher {
                 }
             } else
                 this.update(model, BINDING_FLAG.ALLOW_UPDATE_FROM_MODEL);
-
-            //for (const [call_id, args] of this.clearActiveCalls())
-            //    this.lookup_function_table[call_id].call(this, ...args);
         }
     }
     /**
