@@ -135,6 +135,12 @@ export interface ComponentData {
      */
     template: TemplateHTMLNode;
 
+    /**
+     * A list of component names that whose templates are needed to 
+     * correctly render this component.
+     */
+    templates: Set<string>;
+
     indirect_hooks: IndirectHook<any>[];
 }
 

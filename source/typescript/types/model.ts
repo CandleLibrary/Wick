@@ -1,4 +1,9 @@
 
+/**
+ * An interface for objects that allow components
+ * to subscribe to the object and receive updates
+ * via the subscriber's `onModelUpdate ` method.
+ */
 export interface ObservableModel {
     OBSERVABLE: true,
     subscribe: (ObservableWatcher) => boolean;
