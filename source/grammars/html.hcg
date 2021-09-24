@@ -15,14 +15,14 @@
 
 <> GOAL_TAG > TAG
 
-<> TAG > \< TAGNAME ATTRIBUTES? \> TAG_BODY? \</ TAGNAME \>                                     
+<> TAG > \< TAGNAME ATTRIBUTES? \> TAG_BODY?  \</ TAGNAME \>                                     
                                         f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:$5 || [], VOID:false, pos } }
     | \< TAGNAME ATTRIBUTES? \/>                                                             
                                         f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:[], VOID:false, pos } }
     | \< VOID_NAME ATTRIBUTES? /? >                                                          
                                         f:r { { type:env.typ["HTML_"+$2.toUpperCase()] || env.typ.HTML_Element, tag:$2.toUpperCase(), attributes:$$3 || [], nodes:[], VOID:true, pos } }
     
-<> DTD > \<! tk:identifier ? \--   TEXT_NODE_DATA  \-- \>                                                 
+<> DTD > \<! tk:identifier ? \--  ( g:id | g:sym | g:sp | g:nl | g:num  )(*\" )  \-- \>                                                 
                                                                 f:r { { type:"DTD", tag:$$2|| "", value:$$4 }  }                
 
 

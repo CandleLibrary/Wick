@@ -104,7 +104,7 @@
                                              
      |    EXPORT_ATTRIBUTE
 
-     |    \{ js::binding_identifier \}     
+     |    \{ js::identifier_reference \}     
 
           f:r { 
                     {
