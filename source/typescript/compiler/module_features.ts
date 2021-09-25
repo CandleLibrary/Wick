@@ -61,15 +61,16 @@ registerFeature(
 
                         const names = [];
 
+
                         for (const { node: id, meta: { skip } } of traverse(node, "nodes", 4)
                             .filter("type",
                                 JSNodeType.Specifier,
-                                JSNodeType.IdentifierModule,
                                 JSNodeType.NameSpaceImport
                             )
                             .makeSkippable()
                         ) {
                             let local = "", external = "";
+
                             //@ts-ignore
                             if (id.type == JSNodeType.Specifier) {
                                 //@ts-ignore
@@ -83,15 +84,13 @@ registerFeature(
                                 local = name.value;
                                 //@ts-ignore
                                 external = "namespace";
-                            } else {
-                                local = (<any>id).value;
-                                external = (<any>id).value;
                             }
 
                             names.push({ local, external });
 
                             skip();
                         }
+
                         await build_system.importResource(
                             url_value,
                             component,
@@ -99,7 +98,7 @@ registerFeature(
                             node,
                             (<any>imports?.nodes?.[0])?.value ?? "",
                             names,
-                            frame
+                            frame,
                         );
                     }
 
