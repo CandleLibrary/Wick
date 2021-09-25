@@ -173,7 +173,8 @@ export async function RenderPage(
         ? renderRadiatePageString(presets, templates, html, head, script, style, hooks)
         : renderWickPageString(presets, templates, html, head, script, style, hooks);
 
-    metrics.report();
+    //metrics.report();
+    metrics.clearMetrics();
 
     return { templates, html, head, script, style, page };
 }

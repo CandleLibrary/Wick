@@ -48,6 +48,8 @@ export const metrics = {
 
     clearMetrics() {
         store.clear();
+        hierarchy_stack.length = 0;
+        hierarchy_stack.push("");
     },
 
     report() {
